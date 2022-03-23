@@ -386,7 +386,6 @@ class TestOTEReallifeAnomalySegmentation(OTETrainingTestInterface):
                                                     params_factories_for_test_actions_fx)
         return test_case
 
-    # TODO(lbeynens): move to common fixtures
     @pytest.fixture
     def data_collector_fx(self, request) -> DataCollector:
         setup = deepcopy(request.node.callspec.params)

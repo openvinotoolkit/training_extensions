@@ -259,10 +259,13 @@ def run_export(environment, dataset, task, action_name, expected_optimization_ty
 
     assert (
         exported_model.model_format == ModelFormat.OPENVINO
-    ), f"In action '{action_name}': Wrong model format after export"
+    ), f"In action '{action_name}': Wrong model format after export. " \
+       f"exported_model.model_format=exported_model.model_format"
     assert (
         exported_model.optimization_type == expected_optimization_type
-    ), f"In action '{action_name}': Wrong optimization type"
+    ), f"In action '{action_name}': Wrong optimization type. " \
+       f"exported_model.optimization_type={exported_model.optimization_type}"
+
 
     logger.debug(
         f'For action "{action_name}": Set exported model into environment for export'
