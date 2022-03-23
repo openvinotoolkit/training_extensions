@@ -21,6 +21,7 @@ from ote_sdk.entities.subset import Subset
 
 def load_test_dataset():
     """Helper to create test dataset"""
+
     def gen_image(resolution, x1, y1, x2, y2):
         w, h = resolution
         image = np.full([h, w, 3], fill_value=255, dtype=np.uint8)
