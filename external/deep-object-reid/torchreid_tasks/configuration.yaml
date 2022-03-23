@@ -124,7 +124,7 @@ pot_parameters:
     visible_in_ui: true
     warning: null
   type: PARAMETER_GROUP
-  visible_in_ui: true
+  visible_in_ui: false
 type: CONFIGURABLE_PARAMETERS
 visible_in_ui: true
 nncf_optimization:
@@ -193,4 +193,4 @@ nncf_optimization:
     visible_in_ui: true
     warning: null
   type: PARAMETER_GROUP
-  visible_in_ui: true
+  visible_in_ui: false
