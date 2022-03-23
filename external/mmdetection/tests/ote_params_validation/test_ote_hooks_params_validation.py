@@ -5,7 +5,6 @@ from logging import Logger
 
 import pytest
 import torch.nn as nn
-from mmcv.runner import EpochBasedRunner
 from detection_tasks.extension.utils.hooks import (
     CancelTrainingHook,
     EarlyStoppingHook,
@@ -15,7 +14,7 @@ from detection_tasks.extension.utils.hooks import (
     OTEProgressHook,
     ReduceLROnPlateauLrUpdaterHook,
 )
-
+from mmcv.runner import EpochBasedRunner
 from ote_sdk.test_suite.e2e_test_system import e2e_pytest_unit
 from ote_sdk.tests.parameters_validation.validation_helper import (
     check_value_error_exception_raised,

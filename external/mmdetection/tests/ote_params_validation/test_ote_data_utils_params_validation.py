@@ -16,7 +16,6 @@ from detection_tasks.extension.datasets.data_utils import (
     get_sizes_from_dataset_entity,
     load_dataset_items_coco_format,
 )
-
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.label import Domain, LabelEntity
 from ote_sdk.test_suite.e2e_test_system import e2e_pytest_unit

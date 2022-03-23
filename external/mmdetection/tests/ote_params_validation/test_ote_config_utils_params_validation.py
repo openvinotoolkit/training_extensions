@@ -5,7 +5,6 @@
 from collections import defaultdict
 
 import pytest
-from mmcv import Config
 from detection_tasks.apis.detection.config_utils import (
     cluster_anchors,
     config_from_string,
@@ -23,7 +22,7 @@ from detection_tasks.apis.detection.config_utils import (
     set_hyperparams,
 )
 from detection_tasks.apis.detection.configuration import OTEDetectionConfig
-
+from mmcv import Config
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.label import Domain, LabelEntity
 from ote_sdk.test_suite.e2e_test_system import e2e_pytest_unit
