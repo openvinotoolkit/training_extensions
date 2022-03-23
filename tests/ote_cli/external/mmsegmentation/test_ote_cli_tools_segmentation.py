@@ -57,9 +57,9 @@ args = {
         '--learning_parameters.learning_rate_fixed_iters',
         '0',
         '--learning_parameters.learning_rate_warmup_iters',
-        '15',
+        '25',
         '--learning_parameters.num_iters',
-        '15',
+        '20',
         '--learning_parameters.batch_size',
         '2'
     ]
