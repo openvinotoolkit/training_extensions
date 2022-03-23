@@ -877,11 +877,10 @@ class TestSegmentationToAnnotation:
             label_schema = LabelSchemaEntity(
                 label_groups=[label_group, other_label_group]
             )
-            label_schema.add_child(parent=label_0, child=label_0_1)
-            label_schema.add_child(parent=label_0, child=label_0_2)
+
             label_schema.add_child(parent=label_0_1, child=label_0_1_1)
             converter = ClassificationToAnnotationConverter(label_schema=label_schema)
-            predictions = [(0, 0.9), (1, 0.8)]
+            predictions = [(2, 0.9), (1, 0.8)]
             predictions_to_annotations = converter.convert_to_annotation(predictions)
             check_annotation_scene(
                 annotation_scene=predictions_to_annotations, expected_length=1
@@ -889,11 +888,7 @@ class TestSegmentationToAnnotation:
             check_annotation(
                 predictions_to_annotations.annotations[0],
                 expected_labels=[
-                    ScoredLabel(label=label_0_1_1, probability=0.9),
-                    ScoredLabel(label=label_0_2, probability=0.8),
-                    ScoredLabel(label=label_0_1_1, probability=0.9),
-                    ScoredLabel(label=label_0_1, probability=0.9),
-                    ScoredLabel(label=label_0, probability=0.9),
+                    ScoredLabel(label=label_0_2, probability=0.9)
                 ],
             )
 
