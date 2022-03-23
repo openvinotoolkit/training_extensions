@@ -4,11 +4,12 @@
 
 import pytest
 
-from mmseg.apis.ote.apis.segmentation.ote_utils import (
+from ote_sdk.test_suite.e2e_test_system import e2e_pytest_unit
+from segmentation_tasks.apis.segmentation.ote_utils import (
+    get_activation_map,
     get_task_class,
     load_template,
 )
-from ote_sdk.test_suite.e2e_test_system import e2e_pytest_unit
 
 
 class TestOTEUtilsFunctionsInputParamsValidation:
@@ -57,3 +58,19 @@ class TestOTEUtilsFunctionsInputParamsValidation:
         """
         with pytest.raises(ValueError):
             get_task_class(path=1)  # type: ignore
+
+    @e2e_pytest_unit
+    def test_get_activation_map_input_params_validation(self):
+        """
+        <b>Description:</b>
+        Check "get_activation_map" function input parameters validation
+
+        <b>Input data:</b>
+        "features" unexpected type object
+
+        <b>Expected results:</b>
+        Test passes if ValueError exception is raised when unexpected type object is specified as
+        input parameter for "get_activation_map" function
+        """
+        with pytest.raises(ValueError):
+            get_activation_map(features=None)  # type: ignore

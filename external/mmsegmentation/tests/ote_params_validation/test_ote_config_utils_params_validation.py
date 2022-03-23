@@ -6,7 +6,16 @@ from collections import defaultdict
 
 import pytest
 from mmcv import Config
-from mmseg.apis.ote.apis.segmentation.config_utils import (
+from mmseg.apis.ote.apis.segmentation.configuration import OTESegmentationConfig
+
+from ote_sdk.entities.datasets import DatasetEntity
+from ote_sdk.entities.label import Domain, LabelEntity
+from ote_sdk.test_suite.e2e_test_system import e2e_pytest_unit
+from ote_sdk.tests.parameters_validation.validation_helper import (
+    check_value_error_exception_raised,
+)
+from ote_sdk.usecases.reporting.time_monitor_callback import TimeMonitorCallback
+from segmentation_tasks.apis.segmentation.config_utils import (
     config_from_string,
     config_to_string,
     is_epoch_based_runner,
@@ -25,15 +34,6 @@ from mmseg.apis.ote.apis.segmentation.config_utils import (
     set_num_classes,
     patch_color_conversion,
 )
-from mmseg.apis.ote.apis.segmentation.configuration import OTESegmentationConfig
-
-from ote_sdk.entities.datasets import DatasetEntity
-from ote_sdk.entities.label import Domain, LabelEntity
-from ote_sdk.test_suite.e2e_test_system import e2e_pytest_unit
-from ote_sdk.tests.parameters_validation.validation_helper import (
-    check_value_error_exception_raised,
-)
-from ote_sdk.usecases.reporting.time_monitor_callback import TimeMonitorCallback
 
 
 class TestConfigUtilsInputParamsValidation:

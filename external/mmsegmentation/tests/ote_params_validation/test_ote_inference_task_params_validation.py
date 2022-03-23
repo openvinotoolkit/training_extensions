@@ -4,7 +4,6 @@
 
 import pytest
 
-from mmseg.apis.ote.apis.segmentation.inference_task import OTESegmentationInferenceTask
 from ote_sdk.configuration.configurable_parameters import ConfigurableParameters
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.inference_parameters import InferenceParameters
@@ -16,6 +15,7 @@ from ote_sdk.tests.parameters_validation.validation_helper import (
     check_value_error_exception_raised,
 )
 from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType
+from segmentation_tasks.apis.segmentation.inference_task import OTESegmentationInferenceTask
 
 
 class MockSegmentationInferenceTask(OTESegmentationInferenceTask):

@@ -4,7 +4,6 @@
 
 import pytest
 
-from mmseg.apis.ote.apis.segmentation.train_task import OTESegmentationTrainingTask
 from ote_sdk.configuration.configurable_parameters import ConfigurableParameters
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.label_schema import LabelSchemaEntity
@@ -13,6 +12,7 @@ from ote_sdk.test_suite.e2e_test_system import e2e_pytest_unit
 from ote_sdk.tests.parameters_validation.validation_helper import (
     check_value_error_exception_raised,
 )
+from segmentation_tasks.apis.segmentation.train_task import OTESegmentationTrainingTask
 
 
 class MockSegmentationTrainingTask(OTESegmentationTrainingTask):

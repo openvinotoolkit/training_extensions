@@ -9,18 +9,6 @@ import mmcv
 import numpy as np
 import pytest
 
-from mmseg.apis.ote.extension.datasets.mmdataset import (
-    abs_path_if_valid,
-    OTEDataset,
-    get_annotation_mmseg_format,
-    get_classes_from_annotation,
-    create_annotation_from_hard_seg_map,
-    load_labels_from_annotation,
-    add_labels,
-    check_labels,
-    get_extended_label_names,
-    load_dataset_items,
-)
 from ote_sdk.entities.annotation import (
     Annotation,
     AnnotationSceneEntity,
@@ -35,6 +23,18 @@ from ote_sdk.entities.shapes.rectangle import Rectangle
 from ote_sdk.test_suite.e2e_test_system import e2e_pytest_unit
 from ote_sdk.tests.parameters_validation.validation_helper import (
     check_value_error_exception_raised,
+)
+from segmentation_tasks.extension.datasets.mmdataset import (
+    abs_path_if_valid,
+    OTEDataset,
+    get_annotation_mmseg_format,
+    get_classes_from_annotation,
+    create_annotation_from_hard_seg_map,
+    load_labels_from_annotation,
+    add_labels,
+    check_labels,
+    get_extended_label_names,
+    load_dataset_items,
 )
 
 

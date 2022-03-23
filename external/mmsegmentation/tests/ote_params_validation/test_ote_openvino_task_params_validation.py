@@ -5,12 +5,6 @@
 import numpy as np
 import pytest
 
-from mmseg.apis.ote.apis.segmentation.configuration import OTESegmentationConfig
-from mmseg.apis.ote.apis.segmentation.openvino_task import (
-    OpenVINOSegmentationInferencer,
-    OTEOpenVinoDataLoader,
-    OpenVINOSegmentationTask,
-)
 from ote_sdk.configuration.configurable_parameters import ConfigurableParameters
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.label_schema import LabelSchemaEntity
@@ -21,6 +15,12 @@ from ote_sdk.tests.parameters_validation.validation_helper import (
     check_value_error_exception_raised,
 )
 from ote_sdk.usecases.tasks.interfaces.optimization_interface import OptimizationType
+from segmentation_tasks.apis.segmentation.configuration import OTESegmentationConfig
+from segmentation_tasks.apis.segmentation.openvino_task import (
+    OpenVINOSegmentationInferencer,
+    OTEOpenVinoDataLoader,
+    OpenVINOSegmentationTask,
+)
 
 
 def model():
@@ -158,7 +158,6 @@ class TestOpenVINOSegmentationTaskInputParamsValidation:
             "optimization_type": OptimizationType.POT,
             "dataset": DatasetEntity(),
             "output_model": model(),
-            "optimization_parameters": None,
         }
         unexpected_str = "unexpected string"
         unexpected_values = [
@@ -247,7 +246,7 @@ class TestOpenVINOSegmentationInferencerInputParamsValidation:
         OpenVINOSegmentationInferencer object initialization parameter
         """
         correct_values_dict = {
-            "hparams": OTESegmentationConfig(),
+            "hparams": OTESegmentationConfig("test header"),
             "label_schema": LabelSchemaEntity(),
             "model_file": "some model data",
         }

@@ -3,12 +3,12 @@
 #
 
 import pytest
-from mmseg.apis.ote.extension.utils.pipelines import (
+
+from ote_sdk.test_suite.e2e_test_system import e2e_pytest_unit
+from segmentation_tasks.extension.utils.pipelines import (
     LoadAnnotationFromOTEDataset,
     LoadImageFromOTEDataset,
 )
-
-from ote_sdk.test_suite.e2e_test_system import e2e_pytest_unit
 
 
 class TestLoadImageFromOTEDatasetInputParamsValidation:
