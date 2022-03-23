@@ -136,14 +136,14 @@ def configurable_integer(
     )
 
     metadata.update({MIN_VALUE: min_value, MAX_VALUE: max_value})
+    value_validator = construct_attr_value_validator(min_value, max_value)
+    type_validator = attr_strict_int_validator
 
     return attr.ib(
         default=default_value,
         type=int,
-        validator=[
-            attr_strict_int_validator,
-            construct_attr_value_validator(min_value, max_value),
-        ],
+        validator=[value_validator, type_validator],
+        on_setattr=attr.setters.validate,
         metadata=metadata,
     )
 
@@ -205,13 +205,15 @@ def configurable_float(
     )
 
     metadata.update({MIN_VALUE: min_value, MAX_VALUE: max_value})
+    value_validator = construct_attr_value_validator(min_value, max_value)
+    type_validator = attr_strict_float_on_setattr
 
     return attr.ib(
         default=default_value,
         type=float,
-        validator=construct_attr_value_validator(min_value, max_value),
+        validator=[value_validator, type_validator],
         converter=attr_strict_float_converter,
-        on_setattr=attr_strict_float_on_setattr,
+        on_setattr=[attr.setters.convert, attr.setters.validate],
         metadata=metadata,
     )
 
@@ -268,12 +270,14 @@ def configurable_boolean(
         auto_hpo_state=auto_hpo_state,
         auto_hpo_value=auto_hpo_value,
     )
+    type_validator = attr.validators.instance_of(bool)
 
     return attr.ib(
         default=default_value,
         metadata=metadata,
         type=bool,
-        validator=attr.validators.instance_of(bool),
+        validator=type_validator,
+        on_setattr=attr.setters.validate,
     )
 
 
@@ -332,13 +336,15 @@ def float_selectable(
     )
 
     metadata.update({OPTIONS: options})
+    value_validator = construct_attr_selectable_validator(options)
+    type_validator = attr_strict_float_on_setattr
 
     return attr.ib(
         default=default_value,
         type=float,
-        validator=construct_attr_selectable_validator(options),
+        validator=[value_validator, type_validator],
         converter=attr_strict_float_converter,
-        on_setattr=attr_strict_float_on_setattr,
+        on_setattr=[attr.setters.convert, attr.setters.validate],
         metadata=metadata,
     )
 
@@ -399,15 +405,18 @@ def selectable(
 
     metadata.update(default_value.get_class_info())
 
+    type_validator = attr.validators.instance_of(ConfigurableEnum)
+    value_validator = construct_attr_enum_selectable_onsetattr(default_value)
+
     # The Attribute returned by attr.ib is not compatible with the return typevar TConfigurableEnum. However, as the
     # class containing the Attribute is instantiated the selectable type will correspond to the TConfigurableEnum, so
     # mypy can ignore the error.
     return attr.ib(
         default=default_value,
         type=ConfigurableEnum,
-        validator=attr.validators.instance_of(ConfigurableEnum),
+        validator=[type_validator, value_validator],
         converter=construct_attr_enum_selectable_converter(default_value),
-        on_setattr=construct_attr_enum_selectable_onsetattr(default_value),
+        on_setattr=[attr.setters.convert, value_validator],
         metadata=metadata,
     )  # type: ignore
 

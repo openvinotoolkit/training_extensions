@@ -141,13 +141,6 @@ class TestPrimitiveParameters:
             assert integer_instance._default == 100
             assert integer_instance.type == int
             assert len(integer_instance._validator._validators) == 2
-            assert (
-                integer_instance._validator._validators[0] == attr_strict_int_validator
-            )
-            assert (
-                integer_instance._validator._validators[1].__name__
-                == "attr_validate_value"
-            )
             assert integer_instance.metadata == expected_metadata
 
         # Checking _CountingAttr object returned by "configurable_integer" for default values of optional parameters
@@ -251,7 +244,6 @@ class TestPrimitiveParameters:
             assert isinstance(float_instance, _make._CountingAttr)
             assert float_instance._default == 100.1
             assert float_instance.type == float
-            assert float_instance._validator.__name__ == "attr_validate_value"
             assert float_instance.metadata == expected_metadata
 
         # Checking _CountingAttr object returned by "configurable_float" for default values of optional parameters
@@ -444,10 +436,6 @@ class TestPrimitiveParameters:
             assert isinstance(float_selectable_instance, _make._CountingAttr)
             assert float_selectable_instance._default
             assert float_selectable_instance.type == float
-            assert (
-                float_selectable_instance._validator.__name__
-                == "attr_validate_selectable"
-            )
             assert float_selectable_instance.metadata == expected_metadata
 
         # Checking _CountingAttr object returned by "float_selectable" for default values of optional parameters
@@ -547,10 +535,6 @@ class TestPrimitiveParameters:
             assert isinstance(selectable_instance, _make._CountingAttr)
             assert selectable_instance._default == SomeEnumSelectable.OPTION_C
             assert selectable_instance.type == ConfigurableEnum
-            assert isinstance(
-                selectable_instance._validator, validators._InstanceOfValidator  # type: ignore
-            )
-            assert selectable_instance._validator.type == ConfigurableEnum
             assert selectable_instance.metadata == expected_metadata
 
         # Checking _CountingAttr object returned by "selectable" for default values of optional parameters
