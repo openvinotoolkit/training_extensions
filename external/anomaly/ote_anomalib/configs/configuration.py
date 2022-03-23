@@ -113,6 +113,13 @@ class BaseAnomalyConfig(ConfigurableParameters):
             description="Enable filter pruning algorithm",
         )
 
+        pruning_supported = configurable_boolean(
+            default_value=False,
+            header="Whether filter pruning is supported",
+            description="Whether filter pruning is supported",
+            affects_outcome_of=ModelLifecycle.TRAINING
+        )
+
     dataset = add_parameter_group(DatasetParameters)
     pot_parameters = add_parameter_group(POTParameters)
     nncf_optimization = add_parameter_group(NNCFOptimization)
