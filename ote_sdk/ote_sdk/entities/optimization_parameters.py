@@ -4,10 +4,10 @@
 #
 
 from dataclasses import dataclass
-from typing import Callable
+from typing import Callable, Optional
 
 
-def default_progress_callback(_: int):
+def default_progress_callback(progress: float, score: Optional[float] = None):
     """
     This is the default progress callback for OptimizationParameters.
     """
@@ -34,5 +34,5 @@ class OptimizationParameters:
     """
 
     resume: bool = False
-    update_progress: Callable[[int], None] = default_progress_callback
+    update_progress: Callable[[float, Optional[float]], None] = default_progress_callback
     save_model: Callable[[], None] = default_save_model_callback

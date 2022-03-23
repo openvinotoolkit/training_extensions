@@ -180,7 +180,8 @@ class OTEClassificationNNCFTask(OTEClassificationInferenceTask, IOptimizationTas
             update_progress_callback = optimization_parameters.update_progress
         else:
             update_progress_callback = default_progress_callback
-        time_monitor = TrainingProgressCallback(update_progress_callback, num_epoch=self._cfg.train.max_epoch,
+        num_epoch = self._cfg.nncf_config['accuracy_aware_training']['params']['maximal_total_epochs']
+        time_monitor = TrainingProgressCallback(update_progress_callback, num_epoch=num_epoch,
                                                 num_train_steps=math.ceil(len(dataset.get_subset(Subset.TRAINING)) /
                                                                           self._cfg.train.batch_size),
                                                 num_val_steps=0, num_test_steps=0)

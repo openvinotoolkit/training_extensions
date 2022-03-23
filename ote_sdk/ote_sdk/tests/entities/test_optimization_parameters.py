@@ -72,6 +72,7 @@ class TestOptimizationParameters:
         1. Initiate OptimizationParameters instance
         2. Check members update
         """
+        # TODO: tweak for two-argument case
         opt_params = OptimizationParameters(False)
         assert opt_params.resume is False
         assert (
