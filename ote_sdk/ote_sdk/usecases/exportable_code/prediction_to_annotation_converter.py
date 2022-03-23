@@ -224,8 +224,9 @@ class ClassificationToAnnotationConverter(IPredictionToAnnotationConverter):
         else:
             self.labels = label_schema.get_labels(include_empty=False)
         self.empty_label = get_empty_label(label_schema)
-        multilabel = len(label_schema.get_groups(False)) > 1 and \
-            len(label_schema.get_groups(False)) == len(label_schema.get_labels(include_empty=False))
+        multilabel = len(label_schema.get_groups(False)) > 1 and len(
+            label_schema.get_groups(False)
+        ) == len(label_schema.get_labels(include_empty=False))
         self.hierarchical = not multilabel and len(label_schema.get_groups(False)) > 1
 
         self.label_schema = label_schema

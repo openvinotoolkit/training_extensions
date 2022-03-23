@@ -887,9 +887,7 @@ class TestSegmentationToAnnotation:
             )
             check_annotation(
                 predictions_to_annotations.annotations[0],
-                expected_labels=[
-                    ScoredLabel(label=label_0_2, probability=0.9)
-                ],
+                expected_labels=[ScoredLabel(label=label_0_2, probability=0.9)],
             )
 
     @pytest.mark.components(OteSdkComponent.OTE_SDK)
