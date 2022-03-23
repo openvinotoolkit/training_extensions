@@ -19,17 +19,16 @@ Configurable parameters for anomaly classification task
 from sys import maxsize
 
 from attr import attrs
-from ote_anomalib.configs.configuration_enums import POTQuantizationPreset
 from ote_sdk.configuration import ConfigurableParameters
-from ote_sdk.configuration.elements import (
-    ParameterGroup,
-    add_parameter_group,
-    configurable_boolean,
-    configurable_integer,
-    selectable,
-    string_attribute,
-)
+from ote_sdk.configuration.elements import (ParameterGroup,
+                                            add_parameter_group,
+                                            boolean_attribute,
+                                            configurable_boolean,
+                                            configurable_integer, selectable,
+                                            string_attribute)
 from ote_sdk.configuration.model_lifecycle import ModelLifecycle
+
+from ote_anomalib.configs.configuration_enums import POTQuantizationPreset
 
 
 @attrs
@@ -81,6 +80,7 @@ class BaseAnomalyConfig(ConfigurableParameters):
 
         header = string_attribute("POT Parameters")
         description = header
+        visible_in_ui = boolean_attribute(False)
 
         preset = selectable(
             default_value=POTQuantizationPreset.PERFORMANCE,
