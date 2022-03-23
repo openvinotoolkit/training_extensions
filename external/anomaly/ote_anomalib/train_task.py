@@ -14,19 +14,14 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import io
-
-import torch
 from anomalib.utils.callbacks import MinMaxNormalizationCallback
 from ote_anomalib import AnomalyInferenceTask
 from ote_anomalib.callbacks import ProgressCallback
 from ote_anomalib.data import OTEAnomalyDataModule
 from ote_anomalib.logging import get_logger
 from ote_sdk.entities.datasets import DatasetEntity
-from ote_sdk.entities.metrics import Performance, ScoreMetric
-from ote_sdk.entities.model import ModelEntity, ModelPrecision
+from ote_sdk.entities.model import ModelEntity
 from ote_sdk.entities.train_parameters import TrainParameters
-from ote_sdk.serialization.label_mapper import label_schema_to_bytes
 from ote_sdk.usecases.tasks.interfaces.training_interface import ITrainingTask
 from pytorch_lightning import Trainer
 

@@ -19,16 +19,18 @@ Configurable parameters for anomaly classification task
 from sys import maxsize
 
 from attr import attrs
-from ote_sdk.configuration import ConfigurableParameters
-from ote_sdk.configuration.elements import (ParameterGroup,
-                                            add_parameter_group,
-                                            boolean_attribute,
-                                            configurable_boolean,
-                                            configurable_integer, selectable,
-                                            string_attribute)
-from ote_sdk.configuration.model_lifecycle import ModelLifecycle
-
 from ote_anomalib.configs.configuration_enums import POTQuantizationPreset
+from ote_sdk.configuration import ConfigurableParameters
+from ote_sdk.configuration.elements import (
+    ParameterGroup,
+    add_parameter_group,
+    boolean_attribute,
+    configurable_boolean,
+    configurable_integer,
+    selectable,
+    string_attribute,
+)
+from ote_sdk.configuration.model_lifecycle import ModelLifecycle
 
 
 @attrs
@@ -98,6 +100,10 @@ class BaseAnomalyConfig(ConfigurableParameters):
 
     @attrs
     class NNCFOptimization(ParameterGroup):
+        """
+        Parameters for NNCF optimization
+        """
+
         header = string_attribute("Optimization by NNCF")
         description = header
 
@@ -117,7 +123,7 @@ class BaseAnomalyConfig(ConfigurableParameters):
             default_value=False,
             header="Whether filter pruning is supported",
             description="Whether filter pruning is supported",
-            affects_outcome_of=ModelLifecycle.TRAINING
+            affects_outcome_of=ModelLifecycle.TRAINING,
         )
 
     dataset = add_parameter_group(DatasetParameters)
