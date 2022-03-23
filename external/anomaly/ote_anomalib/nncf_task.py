@@ -205,24 +205,6 @@ class AnomalyNNCFTask(AnomalyInferenceTask, IOptimizationTask):
             "VERSION": 1,
         }
 
-    def save_model(self, output_model: ModelEntity) -> None:
-        """Save the model after training is completed.
-
-        Args:
-            output_model (ModelEntity): Output model onto which the weights are saved.
-        """
-        logger.info("Saving the model weights.")
-        model_info = self._model_info()
-        buffer = io.BytesIO()
-        torch.save(model_info, buffer)
-        output_model.set_data("weights.pth", buffer.getvalue())
-        output_model.set_data("label_schema.json", label_schema_to_bytes(self.task_environment.label_schema))
-        self._set_metadata(output_model)
-
-        f1_score = self.model.image_metrics.F1.compute().item()
-        output_model.performance = Performance(score=ScoreMetric(name="F1 Score", value=f1_score))
-        output_model.precision = self.precision
-
     def _export_to_onnx(self, onnx_path: str):
         """Export model to ONNX
 
