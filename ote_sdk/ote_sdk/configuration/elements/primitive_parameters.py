@@ -414,7 +414,7 @@ def selectable(
     return attr.ib(
         default=default_value,
         type=ConfigurableEnum,
-        validator=[type_validator, value_validator],
+        validator=[type_validator, value_validator],  # type: ignore
         converter=construct_attr_enum_selectable_converter(default_value),
         on_setattr=[attr.setters.convert, value_validator],
         metadata=metadata,
