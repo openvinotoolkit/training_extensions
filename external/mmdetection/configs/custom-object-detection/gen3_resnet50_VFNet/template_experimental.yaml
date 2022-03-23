@@ -1,0 +1,53 @@
+# Description.
+model_template_id: Custom_Object_Detection_Gen3_VFNet
+name: VFNet
+task_type: DETECTION
+task_family: VISION
+instantiation: "CLASS"
+summary:
+  Model achieves the best accuracy but doubles the training time compared to ATSS and has the slowest
+  inference speed.
+application: ~
+
+# Algo backend.
+framework: OTEDetection v2.9.1
+
+# Task implementations.
+entrypoints:
+  base: detection_tasks.apis.detection.OTEDetectionTrainingTask
+  openvino: detection_tasks.apis.detection.OpenVINODetectionTask
+  nncf: detection_tasks.apis.detection.OTEDetectionNNCFTask
+
+# Capabilities.
+capabilities:
+  - compute_representations
+
+# Hyperparameters.
+hyper_parameters:
+  base_path: ../../../../mmdetection/detection_tasks/apis/detection/configuration.yaml
+  parameter_overrides:
+    learning_parameters:
+      batch_size:
+        default_value: 4
+      learning_rate:
+        default_value: 0.01
+      learning_rate_warmup_iters:
+        default_value: 500
+      num_iters:
+        default_value: 300
+    nncf_optimization:
+      enable_quantization:
+        default_value: true
+      enable_pruning:
+        default_value: false
+      maximal_accuracy_degradation:
+        default_value: 1.0
+
+# Training resources.
+max_nodes: 1
+training_targets:
+  - GPU
+
+# Stats.
+gigaflops: 457.4
+size: 126.0
