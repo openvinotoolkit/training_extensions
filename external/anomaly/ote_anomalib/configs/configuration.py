@@ -24,6 +24,7 @@ from ote_sdk.configuration import ConfigurableParameters
 from ote_sdk.configuration.elements import (
     ParameterGroup,
     add_parameter_group,
+    boolean_attribute,
     configurable_integer,
     selectable,
     string_attribute,
@@ -80,6 +81,7 @@ class BaseAnomalyConfig(ConfigurableParameters):
 
         header = string_attribute("POT Parameters")
         description = header
+        visible_in_ui = boolean_attribute(False)
 
         preset = selectable(
             default_value=POTQuantizationPreset.PERFORMANCE,

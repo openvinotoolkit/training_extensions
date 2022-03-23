@@ -241,7 +241,7 @@ pot_parameters:
     visible_in_ui: True
     warning: null
   type: PARAMETER_GROUP
-  visible_in_ui: true
+  visible_in_ui: false
 nncf_optimization:
   description: Optimization by NNCF
   header: Optimization by NNCF
@@ -308,4 +308,4 @@ nncf_optimization:
     visible_in_ui: true
     warning: null
   type: PARAMETER_GROUP
-  visible_in_ui: true
+  visible_in_ui: false
