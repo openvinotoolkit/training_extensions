@@ -60,6 +60,7 @@ from pytorch_lightning import Trainer
 logger = get_logger(__name__)
 
 
+# pylint: disable=too-many-instance-attributes
 class AnomalyInferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
     """Base Anomaly Task."""
 

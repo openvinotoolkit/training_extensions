@@ -46,6 +46,7 @@ from ote_sdk.usecases.tasks.interfaces.optimization_interface import Optimizatio
 logger = get_logger(__name__)
 
 
+# pylint: disable=too-many-instance-attributes
 class OteAnomalyTask:
     """OTE Anomaly Classification Task."""
 
@@ -91,6 +92,7 @@ class OteAnomalyTask:
         logger.info("Creating the base Torch and OpenVINO tasks.")
         self.torch_task = self.create_task(task="base")
 
+        self.trained_model: ModelEntity
         self.openvino_task: OpenVINOAnomalyTask
         self.nncf_task: AnomalyNNCFTask
         self.results = {"category": dataset_path}
