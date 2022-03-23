@@ -14,7 +14,7 @@
 
 import cv2
 import numpy as np
-from typing import Any, Dict, Union
+from typing import Any, Dict, Iterable, Union
 from ote_sdk.utils.argument_checks import check_input_parameters_type
 
 
@@ -101,7 +101,7 @@ class OteClassification(Classification):
 
 
 @check_input_parameters_type()
-def preprocess_features_for_actmap(features: Union[np.ndarray, int, float, str, tuple, list]):
+def preprocess_features_for_actmap(features: Union[np.ndarray, Iterable, int, float]):
     features = np.mean(features, axis=1)
     b, h, w = features.shape
     features = features.reshape(b, h * w)
@@ -112,7 +112,7 @@ def preprocess_features_for_actmap(features: Union[np.ndarray, int, float, str, 
 
 
 @check_input_parameters_type()
-def get_actmap(features: Union[np.ndarray, int, float, str, tuple, list],
+def get_actmap(features: Union[np.ndarray, Iterable, int, float],
                output_res: Union[tuple, list]):
     am = cv2.resize(features, output_res)
     am = 255 * (am - np.min(am)) / (np.max(am) - np.min(am) + 1e-12)

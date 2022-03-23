@@ -225,7 +225,7 @@ class TestOteClassificationParamsValidation:
         input parameter for "preprocess_features_for_actmap" function
         """
         with pytest.raises(ValueError):
-            preprocess_features_for_actmap(features={"unexpected": "dict"})  # type: ignore
+            preprocess_features_for_actmap(features=None)  # type: ignore
 
     @e2e_pytest_unit
     def test_get_actmap_params_validation(self):
@@ -240,16 +240,15 @@ class TestOteClassificationParamsValidation:
         Test passes if ValueError exception is raised when unexpected type object is specified as
         input parameter for "get_actmap" function
         """
-        unexpected_dict = {"unexpected": "dictionary"}
         correct_values_dict = {
             "features": ["some", "features"],
             "output_res": ("iterable", "object")
         }
         unexpected_values = [
             # Unexpected dictionary is specified as "features" parameter
-            ("features", unexpected_dict),
+            ("features", None),
             # Unexpected dictionary is specified as "output_res" parameter
-            ("output_res", unexpected_dict),
+            ("output_res", {"unexpected": "dictionary"}),
         ]
 
         check_value_error_exception_raised(

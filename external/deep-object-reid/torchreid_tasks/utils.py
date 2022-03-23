@@ -24,7 +24,7 @@ import tempfile
 import time
 from os import path as osp
 from operator import itemgetter
-from typing import List, Union
+from typing import Iterable, List, Union
 
 import cv2 as cv
 import numpy as np
@@ -418,7 +418,7 @@ class InferenceProgressCallback(TimeMonitorCallback):
 
 
 @check_input_parameters_type()
-def preprocess_features_for_actmap(features: Union[np.ndarray, int, float, str, tuple, list]):
+def preprocess_features_for_actmap(features: Union[np.ndarray, Iterable, int, float]):
     features = np.mean(features, axis=1)
     b, h, w = features.shape
     features = features.reshape(b, h * w)
@@ -429,7 +429,7 @@ def preprocess_features_for_actmap(features: Union[np.ndarray, int, float, str, 
 
 
 @check_input_parameters_type()
-def get_actmap(features: Union[np.ndarray, int, float, str, tuple, list],
+def get_actmap(features: Union[np.ndarray, Iterable, int, float],
                output_res: Union[tuple, list]):
     am = cv.resize(features, output_res)
     am = 255 * (am - np.min(am)) / (np.max(am) - np.min(am) + 1e-12)
@@ -439,7 +439,7 @@ def get_actmap(features: Union[np.ndarray, int, float, str, tuple, list],
 
 
 @check_input_parameters_type()
-def active_score_from_probs(predictions: Union[np.ndarray, int, float, str, tuple, list]):
+def active_score_from_probs(predictions: Union[np.ndarray, Iterable, int, float]):
     top_idxs = np.argpartition(predictions, -2)[-2:]
     top_probs = predictions[top_idxs]
     return np.max(top_probs) - np.min(top_probs)
