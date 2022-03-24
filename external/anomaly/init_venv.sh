@@ -95,7 +95,8 @@ CONSTRAINTS_FILE=$(tempfile)
 cat constraints.txt >> ${CONSTRAINTS_FILE}
 export PIP_CONSTRAINT=${CONSTRAINTS_FILE}
 
-pip install --upgrade pip || exit 1
+# Newer versions of pip have troubles with NNCF installation from the repo commit.
+pip install pip==21.2.1 || exit 1
 pip install wheel || exit 1
 pip install --upgrade setuptools || exit 1
 
