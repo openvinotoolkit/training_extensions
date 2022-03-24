@@ -4,6 +4,8 @@ id: ""
 learning_parameters:
   batch_size:
     affects_outcome_of: TRAINING
+    auto_hpo_state: not_possible
+    auto_hpo_value: null
     default_value: 8
     description:
       The number of training samples seen in each iteration of training.
@@ -28,6 +30,8 @@ learning_parameters:
   header: Learning Parameters
   learning_rate:
     affects_outcome_of: TRAINING
+    auto_hpo_state: not_possible
+    auto_hpo_value: null
     default_value: 0.001
     description:
       Increasing this value will speed up training convergence but might
@@ -47,6 +51,8 @@ learning_parameters:
     warning: null
   learning_rate_fixed_iters:
     affects_outcome_of: TRAINING
+    auto_hpo_state: not_possible
+    auto_hpo_value: null
     default_value: 100
     description: ""
     editable: true
@@ -64,6 +70,8 @@ learning_parameters:
     warning: null
   learning_rate_warmup_iters:
     affects_outcome_of: TRAINING
+    auto_hpo_state: not_possible
+    auto_hpo_value: null
     default_value: 100
     description: ""
     editable: true
@@ -81,6 +89,8 @@ learning_parameters:
     warning: null
   num_checkpoints:
     affects_outcome_of: NONE
+    auto_hpo_state: not_possible
+    auto_hpo_value: null
     default_value: 5
     description: ""
     editable: true
@@ -98,6 +108,8 @@ learning_parameters:
     warning: null
   num_iters:
     affects_outcome_of: TRAINING
+    auto_hpo_state: not_possible
+    auto_hpo_value: null
     default_value: 1
     description:
       Increasing this value causes the results to be more robust but training
@@ -117,6 +129,8 @@ learning_parameters:
     warning: null
   num_workers:
     affects_outcome_of: NONE
+    auto_hpo_state: not_possible
+    auto_hpo_value: null
     default_value: 4
     description:
       Increasing this value might improve training speed however it might
@@ -132,35 +146,91 @@ learning_parameters:
       operator: AND
       rules: []
       type: UI_RULES
-    value: 0
+    value: 4
     visible_in_ui: true
     warning: null
   type: PARAMETER_GROUP
   visible_in_ui: true
-postprocessing:
-  description: Postprocessing
-  header: Postprocessing
-  class_name:
-    affects_outcome_of: INFERENCE
-    default_value: blur_segmentation
-    description: Model classes with defined pre- and postprocessing
-    editable: false
-    enum_name: Models
-    header: Model class for inference
-    options:
-      Segmentation: segmentation
-      BlurSegmentation: blur_segmentation
-    type: SELECTABLE
+nncf_optimization:
+  description: Optimization by NNCF
+  enable_pruning:
+    affects_outcome_of: TRAINING
+    auto_hpo_state: not_possible
+    auto_hpo_value: null
+    default_value: false
+    description: Enable filter pruning algorithm
+    editable: true
+    header: Enable filter pruning algorithm
+    type: BOOLEAN
     ui_rules:
       action: DISABLE_EDITING
       operator: AND
       rules: []
       type: UI_RULES
-    value: blur_segmentation
-    visible_in_ui: True
+    value: false
+    visible_in_ui: true
     warning: null
+  enable_quantization:
+    affects_outcome_of: TRAINING
+    auto_hpo_state: not_possible
+    auto_hpo_value: null
+    default_value: true
+    description: Enable quantization algorithm
+    editable: true
+    header: Enable quantization algorithm
+    type: BOOLEAN
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: true
+    visible_in_ui: true
+    warning: null
+  header: Optimization by NNCF
+  maximal_accuracy_degradation:
+    affects_outcome_of: TRAINING
+    auto_hpo_state: not_possible
+    auto_hpo_value: null
+    default_value: 1.0
+    description: The maximal allowed accuracy metric drop
+    editable: true
+    header: Maximum accuracy degradation
+    max_value: 100.0
+    min_value: 0.0
+    type: FLOAT
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: 1.0
+    visible_in_ui: true
+    warning: null
+  pruning_supported:
+    affects_outcome_of: TRAINING
+    auto_hpo_state: not_possible
+    auto_hpo_value: null
+    default_value: false
+    description: Whether filter pruning is supported
+    editable: true
+    header: Whether filter pruning is supported
+    type: BOOLEAN
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: false
+    visible_in_ui: true
+    warning: null
+  type: PARAMETER_GROUP
+  visible_in_ui: false
+postprocessing:
   blur_strength:
     affects_outcome_of: INFERENCE
+    auto_hpo_state: not_possible
+    auto_hpo_value: null
     default_value: 1
     description:
       With a higher value, the segmentation output will be smoother, but
@@ -178,8 +248,33 @@ postprocessing:
     value: 1
     visible_in_ui: true
     warning: null
+  class_name:
+    affects_outcome_of: NONE
+    auto_hpo_state: not_possible
+    auto_hpo_value: null
+    default_value: blur_segmentation
+    description: Model classes with defined pre- and postprocessing
+    editable: false
+    enum_name: Models
+    header: Model class for inference
+    options:
+      BlurSegmentation: blur_segmentation
+      Segmentation: segmentation
+    type: SELECTABLE
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: blur_segmentation
+    visible_in_ui: true
+    warning: null
+  description: Postprocessing
+  header: Postprocessing
   soft_threshold:
     affects_outcome_of: INFERENCE
+    auto_hpo_state: not_possible
+    auto_hpo_value: null
     default_value: 0.5
     description:
       The threshold to apply to the probability output of the model, for
@@ -199,16 +294,16 @@ postprocessing:
     warning: null
   type: PARAMETER_GROUP
   visible_in_ui: true
-type: CONFIGURABLE_PARAMETERS
-visible_in_ui: true
 pot_parameters:
   description: POT Parameters
   header: POT Parameters
   preset:
     affects_outcome_of: NONE
+    auto_hpo_state: not_possible
+    auto_hpo_value: null
     default_value: Performance
     description: Quantization preset that defines quantization scheme
-    editable: False
+    editable: false
     enum_name: POTQuantizationPreset
     header: Preset
     options:
@@ -221,13 +316,15 @@ pot_parameters:
       rules: []
       type: UI_RULES
     value: Performance
-    visible_in_ui: False
+    visible_in_ui: false
     warning: null
   stat_subset_size:
     affects_outcome_of: NONE
+    auto_hpo_state: not_possible
+    auto_hpo_value: null
     default_value: 300
     description: Number of data samples used for post-training optimization
-    editable: True
+    editable: true
     header: Number of data samples
     max_value: 9223372036854775807
     min_value: 1
@@ -238,74 +335,9 @@ pot_parameters:
       rules: []
       type: UI_RULES
     value: 300
-    visible_in_ui: True
-    warning: null
-  type: PARAMETER_GROUP
-  visible_in_ui: false
-nncf_optimization:
-  description: Optimization by NNCF
-  header: Optimization by NNCF
-  enable_quantization:
-    affects_outcome_of: TRAINING
-    default_value: true
-    description: Enable quantization algorithm
-    editable: true
-    header: Enable quantization algorithm
-    type: BOOLEAN
-    ui_rules:
-      action: DISABLE_EDITING
-      operator: AND
-      rules: []
-      type: UI_RULES
-    value: true
-    visible_in_ui: true
-    warning: null
-  enable_pruning:
-    affects_outcome_of: TRAINING
-    default_value: false
-    description: Enable filter pruning algorithm
-    editable: true
-    header: Enable filter pruning algorithm
-    type: BOOLEAN
-    ui_rules:
-      action: DISABLE_EDITING
-      operator: AND
-      rules: []
-      type: UI_RULES
-    value: false
-    visible_in_ui: true
-    warning: null
-  pruning_supported:
-    affects_outcome_of: TRAINING
-    default_value: false
-    description: Whether filter pruning is supported
-    editable: false
-    header: Whether filter pruning is supported
-    type: BOOLEAN
-    ui_rules:
-      action: DISABLE_EDITING
-      operator: AND
-      rules: []
-      type: UI_RULES
-    value: false
-    visible_in_ui: false
-    warning: null
-  maximal_accuracy_degradation:
-    affects_outcome_of: TRAINING
-    default_value: 1.0
-    description: The maximal allowed accuracy metric drop
-    editable: true
-    header: Maximum accuracy degradation
-    max_value: 100.0
-    min_value: 0.0
-    type: FLOAT
-    ui_rules:
-      action: DISABLE_EDITING
-      operator: AND
-      rules: []
-      type: UI_RULES
-    value: 1.0
     visible_in_ui: true
     warning: null
   type: PARAMETER_GROUP
   visible_in_ui: false
+type: CONFIGURABLE_PARAMETERS
+visible_in_ui: true

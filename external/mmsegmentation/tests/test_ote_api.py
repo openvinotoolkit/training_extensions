@@ -43,7 +43,7 @@ from ote_sdk.tests.test_helpers import generate_random_annotated_image
 from segmentation_tasks.apis.segmentation import OTESegmentationTrainingTask
 
 
-DEFAULT_TEMPLATE_DIR = osp.join('configs', 'custom-sematic-segmentation', 'ocr-lite-hrnet-18')
+DEFAULT_TEMPLATE_DIR = osp.join('configs', 'custom-sematic-segmentation', 'ocr-lite-hrnet-18-mod2')
 
 
 class API(unittest.TestCase):
