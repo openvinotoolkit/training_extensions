@@ -95,7 +95,7 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
         metadata: Optional[Sequence[MetadataItemEntity]] = None,
         subset: Subset = Subset.NONE,
         ignored_labels: Optional[
-            Union[List[LabelEntity], Tuple[LabelEntity], Set[LabelEntity]]
+            Union[List[LabelEntity], Tuple[LabelEntity, ...], Set[LabelEntity]]
         ] = None,
     ):
         self.__media: IMedia2DEntity = media

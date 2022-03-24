@@ -90,6 +90,7 @@ def check_dictionary_keys_values_type(
         )
 
 
+# pylint: disable=too-many-branches
 def check_parameter_type(parameter, parameter_name, expected_type):
     """Function extracts nested expected types and raises ValueError exception if parameter has unexpected type"""
     # pylint: disable=W0212
@@ -123,10 +124,19 @@ def check_parameter_type(parameter, parameter_name, expected_type):
             parameter_name=parameter_name,
             expected_type=origin_class,
         )
-        if len(nested_elements_class) != 1:
-            raise TypeError(
-                "length of nested expected types for Sequence should be equal to 1"
-            )
+        if origin_class == tuple:
+            tuple_length = len(nested_elements_class)
+            if tuple_length > 2:
+                raise TypeError(
+                    "length of nested expected types for Tuple should not exceed 2"
+                )
+            if tuple_length == 2:
+                nested_elements_class = nested_elements_class[0]
+        else:
+            if len(nested_elements_class) != 1:
+                raise TypeError(
+                    "length of nested expected types for Sequence should be equal to 1"
+                )
         check_nested_elements_type(
             iterable=parameter,
             parameter_name=parameter_name,
