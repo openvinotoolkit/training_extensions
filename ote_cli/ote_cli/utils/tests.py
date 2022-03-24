@@ -319,7 +319,7 @@ def ote_deploy_openvino_testing(template, root, ote_dir, args):
                 "pip",
                 "install",
                 "-e",
-                os.path.join(os.path.dirname(__file__), "..", "..", "ote_sdk"),
+                os.path.join(os.path.dirname(__file__), "..", "..", "..", "ote_sdk"),
             ],
             cwd=os.path.join(deployment_dir, "python"),
             env=collect_env_vars(os.path.join(deployment_dir, "python")),
