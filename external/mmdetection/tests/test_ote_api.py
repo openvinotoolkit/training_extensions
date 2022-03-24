@@ -31,6 +31,7 @@ from ote_sdk.configuration.helper import convert, create
 from ote_sdk.entities.annotation import AnnotationSceneEntity, AnnotationSceneKind
 from ote_sdk.entities.dataset_item import DatasetItemEntity
 from ote_sdk.entities.datasets import DatasetEntity
+from ote_sdk.entities.id import ID
 from ote_sdk.entities.image import Image
 from ote_sdk.entities.inference_parameters import InferenceParameters
 from ote_sdk.entities.model_template import TaskType, task_type_to_label_domain
@@ -368,7 +369,7 @@ class API(unittest.TestCase):
         exported_model = ModelEntity(
             dataset,
             detection_environment.get_model_configuration(),
-            _id=ObjectId())
+            _id=ID(ObjectId()))
         inference_task.export(ExportType.OPENVINO, exported_model)
 
     @staticmethod
@@ -425,7 +426,7 @@ class API(unittest.TestCase):
         output_model = ModelEntity(
             dataset,
             detection_environment.get_model_configuration(),
-            _id=ObjectId())
+            _id=ID(ObjectId()))
         task.train(dataset, output_model)
 
         # Test that output model is valid.
@@ -444,7 +445,7 @@ class API(unittest.TestCase):
         new_model = ModelEntity(
             dataset,
             detection_environment.get_model_configuration(),
-            _id=ObjectId())
+            _id=ID(ObjectId()))
         task._hyperparams.learning_parameters.num_iters = 1
         task.train(dataset, new_model)
         self.assertNotEqual(first_model, new_model)
@@ -467,7 +468,7 @@ class API(unittest.TestCase):
             exported_model = ModelEntity(
                 dataset,
                 detection_environment.get_model_configuration(),
-                _id=ObjectId())
+                _id=ID(ObjectId()))
             task.export(ExportType.OPENVINO, exported_model)
             self.assertEqual(exported_model.model_format, ModelFormat.OPENVINO)
             self.assertEqual(exported_model.optimization_type, ModelOptimizationType.MO)
