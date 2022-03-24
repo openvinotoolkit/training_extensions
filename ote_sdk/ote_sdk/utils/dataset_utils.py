@@ -92,6 +92,7 @@ def get_local_subset(
                 ),
                 metadata=item.metadata,
                 subset=item.subset,
+                roi=item.roi,
                 ignored_labels=item.ignored_labels,
             )
         )
@@ -123,6 +124,7 @@ def get_global_subset(dataset: DatasetEntity) -> DatasetEntity:
                 ),
                 metadata=item.metadata,
                 subset=item.subset,
+                roi=item.roi,
                 ignored_labels=item.ignored_labels,
             )
         )
