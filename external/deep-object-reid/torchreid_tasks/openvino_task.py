@@ -269,7 +269,8 @@ class OpenVINOClassificationTask(IDeploymentTask, IInferenceTask, IEvaluationTas
             if get_nodes_by_type(model, ["FakeQuantize"]):
                 raise RuntimeError("Model is already optimized by POT")
 
-        optimization_parameters.update_progress(10)
+        if optimization_parameters is not None:
+            optimization_parameters.update_progress(10)
 
         engine_config = ADDict({
             'device': 'CPU'
@@ -298,7 +299,8 @@ class OpenVINOClassificationTask(IDeploymentTask, IInferenceTask, IEvaluationTas
 
         compress_model_weights(compressed_model)
 
-        optimization_parameters.update_progress(90)
+        if optimization_parameters is not None:
+            optimization_parameters.update_progress(90)
 
         with tempfile.TemporaryDirectory() as tempdir:
             save_model(compressed_model, tempdir, model_name="model")
@@ -318,4 +320,5 @@ class OpenVINOClassificationTask(IDeploymentTask, IInferenceTask, IEvaluationTas
         self.model = output_model
         self.inferencer = self.load_inferencer()
 
-        optimization_parameters.update_progress(100)
+        if optimization_parameters is not None:
+            optimization_parameters.update_progress(100)
