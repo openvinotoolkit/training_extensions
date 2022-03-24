@@ -36,13 +36,14 @@ class AnomalyLocalizationScores(IPerformanceProvider):
 
     def __init__(self, resultset: ResultSetEntity):
         self.local_score: Optional[ScoreMetric] = None
-        self.dashboard_metrics: Optional[List[MetricsGroup]] = None
+        self.dashboard_metrics: List[MetricsGroup] = []
 
         global_resultset, local_resultset = split_local_global_resultset(resultset)
 
         global_metric = FMeasure(resultset=global_resultset)
         global_performance = global_metric.get_performance()
         self.global_score = global_performance.score
+        self.dashboard_metrics += global_performance.dashboard_metrics
 
         if contains_anomalous_images(local_resultset.ground_truth_dataset):
             local_metric = DiceAverage(
@@ -50,7 +51,7 @@ class AnomalyLocalizationScores(IPerformanceProvider):
             )
             local_performance = local_metric.get_performance()
             self.local_score = local_performance.score
-            self.dashboard_metrics = local_performance.dashboard_metrics
+            self.dashboard_metrics += local_performance.dashboard_metrics
 
     def get_performance(self) -> Performance:
         return AnomalyLocalizationPerformance(
