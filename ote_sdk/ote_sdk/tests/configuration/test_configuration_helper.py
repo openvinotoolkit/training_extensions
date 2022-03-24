@@ -216,9 +216,8 @@ class TestConfigurationHelper:
         # Loading a config that has an invalid value (-5 for epochs) should raise a ValueError due to runtime
         # input validation upon config creation.
         broken_config_path = self.__get_path_to_file("dummy_broken_config.yaml")
-        config = ote_config_helper.create(broken_config_path)
         with pytest.raises(ValueError) as error:
-            ote_config_helper.validate(config)
+            config = ote_config_helper.create(broken_config_path)
 
         assert "Invalid value set for epochs: -5 is out of bounds." == str(error.value)
 
@@ -266,9 +265,8 @@ class TestConfigurationHelper:
         assert ote_config_helper.validate(config)
 
         # Set invalid test_proportion, and assert that this raises an error upon validation
-        config.subset_parameters.test_proportion = 1.1
         with pytest.raises(ValueError):
-            ote_config_helper.validate(config)
+            config.subset_parameters.test_proportion = 1.1
 
         # Assert that validation passes again after restoring a value that is within the bounds
         config.subset_parameters.test_proportion = 0.25
@@ -277,7 +275,6 @@ class TestConfigurationHelper:
         # Set value that is not one of the options for dummy_selectable, assert that this raises a ValueError
         with pytest.raises(ValueError):
             config.dummy_selectable = "invalid_value"
-            ote_config_helper.validate(config)
 
         # Assert that validation passes again after restoring to a value that is in the options list
         config.dummy_selectable = "option_c"
