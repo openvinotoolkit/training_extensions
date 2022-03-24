@@ -217,7 +217,8 @@ class OTETextToSpeechTask(ITrainingTask, IInferenceTask, IEvaluationTask, IExpor
         if len(output_resultset.prediction_dataset):
             l1_loss = l1_loss / len(output_resultset.prediction_dataset)
 
-        output_resultset.performance = l1_loss
+        output_resultset.performance.score.value = l1_loss
+        output_resultset.performance.score.name = "L1 loss"
 
         logger.info(f"Difference between generated and predicted mel-spectrogram: {l1_loss}")
 

@@ -85,17 +85,7 @@ class TestToolsTextToSpeech:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_ote_eval_openvino(self, template):
-        ote_eval_openvino_testing(template, root, ote_dir, args, threshold=0.0)
-
-    @e2e_pytest_component
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_ote_demo(self, template):
-        ote_demo_testing(template, root, ote_dir, args)
-
-    @e2e_pytest_component
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_ote_demo_openvino(self, template):
-        ote_demo_openvino_testing(template, root, ote_dir, args)
+        ote_eval_openvino_testing(template, root, ote_dir, args, threshold=0.01, load_from_dir=True)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
@@ -143,13 +133,3 @@ class TestToolsTextToSpeech:
             pytest.skip("nncf entrypoint is none")
 
         nncf_eval_openvino_testing(template, root, ote_dir, args)
-
-    @e2e_pytest_component
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_pot_optimize(self, template):
-        pot_optimize_testing(template, root, ote_dir, args)
-
-    @e2e_pytest_component
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_pot_eval(self, template):
-        pot_eval_testing(template, root, ote_dir, args)

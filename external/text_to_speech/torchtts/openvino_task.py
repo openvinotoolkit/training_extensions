@@ -15,10 +15,9 @@ from typing import Any, Dict, Tuple, Optional
 import numpy as np
 
 import openvino
+
 print(openvino.__file__)
 from openvino.runtime import Core
-
-
 
 from ote_sdk.entities.inference_parameters import InferenceParameters, default_progress_callback
 from ote_sdk.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
@@ -61,6 +60,7 @@ class OpenVINOTTSTask(IInferenceTask, IEvaluationTask):
     def load_inferencers(self) -> Tuple[Any]:
         encoder = Encoder(self.model.get_data("encoder.xml"), self.ie)
         decoder = Decoder(self.model.get_data("decoder.xml"), self.ie)
+
         return encoder, decoder
 
     @staticmethod
@@ -255,7 +255,8 @@ class OpenVINOTTSTask(IInferenceTask, IEvaluationTask):
         if len(output_resultset.prediction_dataset):
             l1_loss = l1_loss / len(output_resultset.prediction_dataset)
 
-        output_resultset.performance = l1_loss
+        output_resultset.performance.score.value = l1_loss
+        output_resultset.performance.score.name = "L1 loss"
 
         logger.info(f"Difference between generated and predicted mel-spectrogram: {l1_loss}")
 
@@ -291,7 +292,6 @@ class OpenVINOTTSTask(IInferenceTask, IEvaluationTask):
             config_path = os.path.join(tempdir, "config.json")
             with open(config_path, "w", encoding="utf-8") as file:
                 json.dump(parameters, file, ensure_ascii=False, indent=4)
-
 
             # create wheel package
             subprocess.run(

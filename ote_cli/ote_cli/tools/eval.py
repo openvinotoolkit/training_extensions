@@ -25,6 +25,7 @@ from ote_sdk.entities.inference_parameters import InferenceParameters
 from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.subset import Subset
 from ote_sdk.entities.task_environment import TaskEnvironment
+from ote_sdk.entities.model_template import TaskType
 
 from ote_cli.datasets import get_dataset_class
 from ote_cli.registry import find_and_parse_model_template
@@ -127,7 +128,7 @@ def main():
     )
 
     dataset_label_schema = generate_label_schema(dataset, template.task_type)
-    if dataset_label_schema is not None:
+    if dataset_label_schema is not None and template.task_type != TaskType.TEXT_TO_SPEECH:
         check_label_schemas(read_label_schema(args.load_weights), dataset_label_schema)
 
     environment = TaskEnvironment(
