@@ -6,7 +6,6 @@ import logging as log
 import os.path as osp
 from argparse import ArgumentParser, SUPPRESS
 from time import perf_counter
-from matplotlib import pyplot as plt
 
 import numpy as np
 from openvino.runtime import PartialShape, Core
@@ -171,6 +170,7 @@ class AcousticGANIE:
         res = res * 6.0 - 6.0
         return res
 
+
 def main(args):
     """
     Main function that is used to run demo.
@@ -187,11 +187,16 @@ def main(args):
     log.info("Metrics report:")
     log.info("\tLatency: {:.1f} ms".format(latency))
 
-    if len(mel_spectrogram.shape) == 3:
-        mel_spectrogram = mel_spectrogram[0, :, :]
-    fig, (ax1) = plt.subplots(1)
-    ax1.imshow(mel_spectrogram)
-    plt.show()
+    try:
+        from matplotlib import pyplot as plt
+        if len(mel_spectrogram.shape) == 3:
+            mel_spectrogram = mel_spectrogram[0, :, :]
+        fig, (ax1) = plt.subplots(1)
+        ax1.imshow(mel_spectrogram)
+        plt.show()
+    except ModuleNotFoundError:
+        print("module 'matplotlib' for demo is not installed")
+
 
 
 if __name__ == "__main__":

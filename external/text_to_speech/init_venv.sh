@@ -89,7 +89,7 @@ pip install --upgrade pip || exit 1
 if [[ -z $CUDA_VERSION_CODE ]]; then
   export TORCH_VERSION=${TORCH_VERSION}+cpu
 else
-  export TORCH_VERSION=${TORCH_VERSION}
+  export TORCH_VERSION=${TORCH_VERSION}+cu$CUDA_VERSION_CODE
 fi
 
 pip install torch==${TORCH_VERSION} -f https://download.pytorch.org/whl/lts/1.8/torch_lts.html || exit 1
