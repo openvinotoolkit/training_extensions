@@ -738,3 +738,9 @@ class AnomalyLocalizationPerformance(Performance):
     def local_score(self) -> Optional[ScoreMetric]:
         """Return the local metric."""
         return self._local_score
+
+    def __repr__(self):
+        return (
+            f"AnomalyLocalizationPerformance(global_score: {self.global_score.value}, "
+            f"local_score: {self.local_score.value}, dashboard: ({len(self.dashboard_metrics)} metric groups))"
+        )
