@@ -419,7 +419,7 @@ def nncf_eval_testing(template, root, ote_dir, args, threshold):
     for k in trained_performance.keys():
         assert (
             abs(trained_performance[k] - evaluated_performance[k])
-            / trained_performance[k]
+            / (trained_performance[k] + 1e-10)
             <= threshold
         ), f"{trained_performance[k]=}, {evaluated_performance[k]=}"
 
