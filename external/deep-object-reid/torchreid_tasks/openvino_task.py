@@ -69,6 +69,7 @@ except ImportError:
     import warnings
     warnings.warn("ModelAPI was not found.")
 from torchreid_tasks.parameters import OTEClassificationParameters
+from torchreid_tasks.utils import get_multihead_class_info
 
 from zipfile import ZipFile
 from . import model_wrappers
@@ -97,12 +98,17 @@ class OpenVINOClassificationInferencer(BaseInferencer):
 
         multilabel = len(label_schema.get_groups(False)) > 1 and \
             len(label_schema.get_groups(False)) == len(label_schema.get_labels(include_empty=False))
+        hierarchical = not multilabel and len(label_schema.get_groups(False)) > 1
+        multihead_class_info = {}
+        if hierarchical:
+            multihead_class_info = get_multihead_class_info(label_schema)
 
         self.label_schema = label_schema
 
         model_adapter = OpenvinoAdapter(create_core(), model_file, weight_file,
                                         device=device, max_num_requests=num_requests)
-        self.configuration = {'multilabel': multilabel}
+        self.configuration = {'multilabel': multilabel, 'hierarchical': hierarchical,
+                              'multihead_class_info': multihead_class_info}
         self.model = Model.create_model("ote_classification", model_adapter, self.configuration, preload=True)
 
         self.converter = ClassificationToAnnotationConverter(self.label_schema)
