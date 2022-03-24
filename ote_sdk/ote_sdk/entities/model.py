@@ -7,8 +7,6 @@ import datetime
 from enum import IntEnum, auto
 from typing import TYPE_CHECKING, Dict, List, Optional, Union
 
-from bson import ObjectId
-
 from ote_sdk.configuration import ConfigurableParameters
 from ote_sdk.entities.id import ID
 from ote_sdk.entities.label_schema import LabelSchemaEntity
@@ -128,7 +126,7 @@ class ModelEntity:
         optimization_objectives: Optional[Dict[str, str]] = None,
         performance_improvement: Optional[Dict[str, float]] = None,
         model_size_reduction: float = 0.0,
-        _id: Optional[Union[ID, ObjectId]] = None,
+        _id: Optional[ID] = None,
     ):
         _id = ID() if _id is None else _id
         performance = NullPerformance() if performance is None else performance
