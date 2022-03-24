@@ -433,7 +433,7 @@ def ote_demo_deployment_testing(template, root, ote_dir, args):
 
 
 def pot_optimize_testing(template, root, ote_dir, args):
-    work_dir, template_work_dir, algo_backend_dir = get_some_vars(template, root)
+    work_dir, template_work_dir, _ = get_some_vars(template, root)
     command_line = [
         "ote",
         "optimize",
@@ -485,7 +485,7 @@ def pot_eval_testing(template, root, ote_dir, args):
 
 
 def nncf_optimize_testing(template, root, ote_dir, args):
-    work_dir, template_work_dir, algo_backend_dir = get_some_vars(template, root)
+    work_dir, template_work_dir, _ = get_some_vars(template, root)
     command_line = [
         "ote",
         "optimize",
