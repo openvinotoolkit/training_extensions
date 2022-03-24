@@ -92,7 +92,7 @@ class TestToolsDetection:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_ote_eval_openvino(self, template):
-        ote_eval_openvino_testing(template, root, ote_dir, args, threshold=0.1)
+        ote_eval_openvino_testing(template, root, ote_dir, args, threshold=0.2)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
