@@ -54,8 +54,12 @@ args = {
     '--input': 'data/segmentation/custom/images/training',
     'train_params': [
         'params',
+        '--learning_parameters.learning_rate_fixed_iters',
+        '0',
+        '--learning_parameters.learning_rate_warmup_iters',
+        '25',
         '--learning_parameters.num_iters',
-        '2',
+        '20',
         '--learning_parameters.batch_size',
         '2'
     ]
