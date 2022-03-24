@@ -16,7 +16,7 @@ Dataset utils
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from typing import Tuple
+from typing import List, Optional, Tuple
 
 from ote_sdk.entities.annotation import AnnotationSceneEntity, AnnotationSceneKind
 from ote_sdk.entities.dataset_item import DatasetItemEntity
@@ -25,192 +25,158 @@ from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.shapes.rectangle import Rectangle
 
 
+def get_fully_annotated_idx(dataset: DatasetEntity) -> List[int]:
+    """
+    Find the indices of the fully annotated items in a dataset.
+    A dataset item is fully annotated if local annotations are available, or if the item has the `normal` label.
+
+    Args:
+        dataset (DatasetEntity): Dataset that may contain both partially and fully annotated items
+
+    Returns:
+        List[int]: List of indices of the fully annotated dataset items.
+    """
+    local_idx = []
+    for idx, gt_item in enumerate(dataset):
+        local_annotations = [
+            annotation
+            for annotation in gt_item.get_annotations()
+            if not Rectangle.is_full_box(annotation.shape)
+        ]
+        if (
+            not any(label.is_anomalous for label in gt_item.get_shapes_labels())
+            or len(local_annotations) > 0
+        ):
+            local_idx.append(idx)
+    return local_idx
+
+
+def get_local_subset(
+    dataset: DatasetEntity, fully_annotated_idx: Optional[List[int]] = None
+) -> DatasetEntity:
+    """
+    Extract a subset that contains only those dataset items that have local annotations.
+
+    Args:
+        dataset (DatasetEntity): Dataset from which we want to extract the locally annotated subset.
+        fully_annotated_idx (Optional[List[int]]): The indices of the fully annotated dataset items. If not provided,
+            the function will compute the indices before creating the subset.
+
+    Returns:
+        DatasetEntity: Output dataset with only local annotations
+    """
+    local_items = []
+    if fully_annotated_idx is None:
+        fully_annotated_idx = get_fully_annotated_idx(dataset)
+    for idx in fully_annotated_idx:
+        item = dataset[idx]
+
+        local_annotations = [
+            annotation
+            for annotation in item.get_annotations()
+            if not Rectangle.is_full_box(annotation.shape)
+        ]
+        # annotations with the normal label are considered local
+        normal_annotations = [
+            annotation
+            for annotation in item.get_annotations()
+            if not any(label.label.is_anomalous for label in annotation.get_labels())
+        ]
+
+        local_items.append(
+            DatasetItemEntity(
+                media=item.media,
+                annotation_scene=AnnotationSceneEntity(
+                    normal_annotations + local_annotations,
+                    kind=AnnotationSceneKind.ANNOTATION,
+                ),
+                metadata=item.metadata,
+                subset=item.subset,
+                ignored_labels=item.ignored_labels,
+            )
+        )
+    return DatasetEntity(local_items, purpose=dataset.purpose)
+
+
+def get_global_subset(dataset: DatasetEntity) -> DatasetEntity:
+    """
+    Extract a subset that contains only the global annotations.
+
+    Args:
+        dataset (DatasetEntity): Dataset from which we want to extract the globally annotated subset.
+
+    Returns:
+        DatasetEntity: Output dataset with only global annotations
+    """
+    global_items = []
+    for item in dataset:
+        global_annotations = [
+            annotation
+            for annotation in item.get_annotations()
+            if Rectangle.is_full_box(annotation.shape)
+        ]
+        global_items.append(
+            DatasetItemEntity(
+                media=item.media,
+                annotation_scene=AnnotationSceneEntity(
+                    global_annotations, kind=AnnotationSceneKind.ANNOTATION
+                ),
+                metadata=item.metadata,
+                subset=item.subset,
+                ignored_labels=item.ignored_labels,
+            )
+        )
+    return DatasetEntity(global_items, purpose=dataset.purpose)
+
+
 def split_local_global_dataset(
     dataset: DatasetEntity,
 ) -> Tuple[DatasetEntity, DatasetEntity]:
-    """Split a dataset into globally and locally annotated items."""
-    globally_annotated = []
-    locally_annotated = []
-    for gt_item in dataset:
+    """
+    Split a dataset into the globally and locally annotated subsets.
+    Args:
+        dataset (DatasetEntity): Input dataset
 
-        annotations = gt_item.get_annotations()
-        global_annotations = [
-            annotation
-            for annotation in annotations
-            if Rectangle.is_full_box(annotation.shape)
-        ]
-        local_annotations = [
-            annotation
-            for annotation in annotations
-            if not Rectangle.is_full_box(annotation.shape)
-        ]
-
-        if not any(label.is_anomalous for label in gt_item.get_shapes_labels()):
-            # normal images get added to both datasets
-            globally_annotated.append(gt_item)
-            locally_annotated.append(gt_item)
-        else:  # image is abnormal
-            globally_annotated.append(
-                DatasetItemEntity(
-                    media=gt_item.media,
-                    annotation_scene=AnnotationSceneEntity(
-                        global_annotations, kind=AnnotationSceneKind.ANNOTATION
-                    ),
-                    metadata=gt_item.metadata,
-                    subset=gt_item.subset,
-                    ignored_labels=gt_item.ignored_labels,
-                )
-            )
-            # add locally annotated dataset items
-            if len(local_annotations) > 0:
-                locally_annotated.append(
-                    DatasetItemEntity(
-                        media=gt_item.media,
-                        annotation_scene=AnnotationSceneEntity(
-                            local_annotations, kind=AnnotationSceneKind.ANNOTATION
-                        ),
-                        metadata=gt_item.metadata,
-                        subset=gt_item.subset,
-                        ignored_labels=gt_item.ignored_labels,
-                    )
-                )
-    global_gt_dataset = DatasetEntity(globally_annotated, purpose=dataset.purpose)
-    local_gt_dataset = DatasetEntity(locally_annotated, purpose=dataset.purpose)
-    return global_gt_dataset, local_gt_dataset
+    Returns:
+        DatasetEntity: Globally annotated subset
+        DatasetEntity: Locally annotated subset
+    """
+    global_dataset = get_global_subset(dataset)
+    local_dataset = get_local_subset(dataset)
+    return global_dataset, local_dataset
 
 
 def split_local_global_resultset(
     resultset: ResultSetEntity,
 ) -> Tuple[ResultSetEntity, ResultSetEntity]:
-    """Split resultset based on the type of available annotations."""
-    # splits the dataset
-    globally_annotated = []
-    locally_annotated = []
-    globally_predicted = []
-    locally_predicted = []
-    for gt_item, pred_item in zip(
-        resultset.ground_truth_dataset, resultset.prediction_dataset
-    ):
+    """
+    Split a resultset into the globally and locally annotated resultsets.
+    Args:
+        resultset (ResultSetEntity): Input result set
 
-        annotations = gt_item.get_annotations()
-        global_annotations = [
-            annotation
-            for annotation in annotations
-            if Rectangle.is_full_box(annotation.shape)
-        ]
-        local_annotations = [
-            annotation
-            for annotation in annotations
-            if not Rectangle.is_full_box(annotation.shape)
-        ]
-
-        predictions = gt_item.get_annotations()
-        global_predictions = [
-            predictions
-            for predictions in predictions
-            if Rectangle.is_full_box(predictions.shape)
-        ]
-        local_predictions = [
-            predictions
-            for predictions in predictions
-            if not Rectangle.is_full_box(predictions.shape)
-        ]
-
-        if not any(label.is_anomalous for label in gt_item.get_shapes_labels()):
-            # normal images get added to both datasets
-            globally_annotated.append(gt_item)
-            locally_annotated.append(gt_item)
-            globally_predicted.append(
-                DatasetItemEntity(
-                    media=pred_item.media,
-                    annotation_scene=AnnotationSceneEntity(
-                        global_predictions, kind=AnnotationSceneKind.PREDICTION
-                    ),
-                    metadata=pred_item.metadata,
-                    subset=pred_item.subset,
-                    ignored_labels=pred_item.ignored_labels,
-                )
-            )
-            locally_predicted.append(
-                DatasetItemEntity(
-                    media=pred_item.media,
-                    annotation_scene=AnnotationSceneEntity(
-                        local_predictions, kind=AnnotationSceneKind.PREDICTION
-                    ),
-                    metadata=pred_item.metadata,
-                    subset=pred_item.subset,
-                    ignored_labels=pred_item.ignored_labels,
-                )
-            )
-        else:  # image is abnormal
-            globally_annotated.append(
-                DatasetItemEntity(
-                    media=gt_item.media,
-                    annotation_scene=AnnotationSceneEntity(
-                        global_annotations, kind=AnnotationSceneKind.ANNOTATION
-                    ),
-                    metadata=gt_item.metadata,
-                    subset=gt_item.subset,
-                    ignored_labels=gt_item.ignored_labels,
-                )
-            )
-            globally_predicted.append(
-                DatasetItemEntity(
-                    media=pred_item.media,
-                    annotation_scene=AnnotationSceneEntity(
-                        global_predictions, kind=AnnotationSceneKind.PREDICTION
-                    ),
-                    metadata=pred_item.metadata,
-                    subset=pred_item.subset,
-                    ignored_labels=pred_item.ignored_labels,
-                )
-            )
-            # add locally annotated dataset items
-            if len(local_annotations) > 0:
-                locally_annotated.append(
-                    DatasetItemEntity(
-                        media=gt_item.media,
-                        annotation_scene=AnnotationSceneEntity(
-                            local_annotations, kind=AnnotationSceneKind.ANNOTATION
-                        ),
-                        metadata=gt_item.metadata,
-                        subset=gt_item.subset,
-                        ignored_labels=gt_item.ignored_labels,
-                    )
-                )
-                locally_predicted.append(
-                    DatasetItemEntity(
-                        media=pred_item.media,
-                        annotation_scene=AnnotationSceneEntity(
-                            local_predictions, kind=AnnotationSceneKind.PREDICTION
-                        ),
-                        metadata=pred_item.metadata,
-                        subset=pred_item.subset,
-                        ignored_labels=pred_item.ignored_labels,
-                    )
-                )
+    Returns:
+        ResultSetEntity: Globally annotated result set
+        ResultSetEntity: Locally annotated result set
+    """
+    global_gt_dataset, local_gt_dataset = split_local_global_dataset(
+        resultset.ground_truth_dataset
+    )
+    local_idx = get_fully_annotated_idx(resultset.ground_truth_dataset)
+    global_pred_dataset = get_global_subset(resultset.prediction_dataset)
+    local_pred_dataset = get_local_subset(resultset.prediction_dataset, local_idx)
 
     global_resultset = ResultSetEntity(
         model=resultset.model,
-        ground_truth_dataset=DatasetEntity(
-            globally_annotated, purpose=resultset.ground_truth_dataset.purpose
-        ),
-        prediction_dataset=DatasetEntity(
-            globally_predicted, purpose=resultset.prediction_dataset.purpose
-        ),
+        ground_truth_dataset=global_gt_dataset,
+        prediction_dataset=global_pred_dataset,
         purpose=resultset.purpose,
     )
     local_resultset = ResultSetEntity(
         model=resultset.model,
-        ground_truth_dataset=DatasetEntity(
-            locally_annotated, purpose=resultset.ground_truth_dataset.purpose
-        ),
-        prediction_dataset=DatasetEntity(
-            locally_predicted, purpose=resultset.prediction_dataset.purpose
-        ),
+        ground_truth_dataset=local_gt_dataset,
+        prediction_dataset=local_pred_dataset,
         purpose=resultset.purpose,
     )
-
     return global_resultset, local_resultset
 
 
