@@ -136,10 +136,6 @@ class TimeMonitorCallback(Callback):
             self.past_epoch_duration
         )
 
-    def update_step_manually(self, step):
-        self.current_step += step
-        self.update_progress_callback(self.get_progress())
-
     def get_progress(self):
         """
         Returns current progress as a percentage.

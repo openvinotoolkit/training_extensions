@@ -38,7 +38,7 @@ from torchreid.integration.nncf.compression_script_utils import (calculate_lr_fo
                                                                  patch_config)
 from torchreid_tasks.inference_task import OTEClassificationInferenceTask
 from torchreid_tasks.monitors import DefaultMetricsMonitor
-from torchreid_tasks.utils import OTEClassificationDataset, TrainingProgressCallback
+from torchreid_tasks.utils import OTEClassificationDataset, OptimizationProgressCallback
 from torchreid.ops import DataParallel
 from torchreid.utils import set_random_seed, set_model_attr
 
@@ -182,18 +182,19 @@ class OTEClassificationNNCFTask(OTEClassificationInferenceTask, IOptimizationTas
             update_progress_callback = default_progress_callback
 
         num_epoch = self._cfg.nncf_config['accuracy_aware_training']['params']['maximal_total_epochs']
-        num_train_steps = math.ceil(len(dataset.get_subset(Subset.TRAINING)) / self._cfg.train.batch_size)
-        num_test_steps = num_train_steps / 8    # fictional steps for model serialization
-        num_train_steps += num_train_steps / 8  # fictional steps for model initialization
-        time_monitor = TrainingProgressCallback(update_progress_callback, num_epoch=num_epoch,
-                                                num_train_steps=num_train_steps,
-                                                num_val_steps=0, num_test_steps=num_test_steps)
+        train_subset = dataset.get_subset(Subset.TRAINING)
+        time_monitor = OptimizationProgressCallback(update_progress_callback,
+                                                    num_epoch=num_epoch,
+                                                    num_train_steps=math.ceil(len(train_subset) /
+                                                                              self._cfg.train.batch_size),
+                                                    num_val_steps=0, num_test_steps=0,
+                                                    initialization_progress=10,
+                                                    serialization_progress=10)
 
         self.metrics_monitor = DefaultMetricsMonitor()
         self.stop_callback.reset()
 
         set_random_seed(self._cfg.train.seed)
-        train_subset = dataset.get_subset(Subset.TRAINING)
         val_subset = dataset.get_subset(Subset.VALIDATION)
         self._cfg.custom_datasets.roots = [OTEClassificationDataset(train_subset, self._labels, self._multilabel,
                                                                     self._hierarchical, self._multihead_class_info,
@@ -206,7 +207,7 @@ class OTEClassificationNNCFTask(OTEClassificationInferenceTask, IOptimizationTas
         self._compression_ctrl, self._model, self._nncf_metainfo = \
             wrap_nncf_model(self._model, self._cfg, datamanager_for_init=datamanager)
 
-        time_monitor.update_step_manually(0.1 * time_monitor.total_steps)
+        time_monitor.on_initialization_end()
 
         self._cfg.train.lr = calculate_lr_for_nncf_training(self._cfg, self._initial_lr, False)
 
@@ -244,7 +245,7 @@ class OTEClassificationNNCFTask(OTEClassificationInferenceTask, IOptimizationTas
 
         self.save_model(output_model)
 
-        time_monitor.update_step_manually(0.1 * time_monitor.total_steps)
+        time_monitor.on_serialization_end()
 
         output_model.model_format = ModelFormat.BASE_FRAMEWORK
         output_model.optimization_type = self._optimization_type

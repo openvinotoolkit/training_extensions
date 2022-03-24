@@ -400,6 +400,30 @@ class InferenceProgressCallback(TimeMonitorCallback):
         self.update_progress_callback(self.get_progress())
 
 
+class OptimizationProgressCallback(TrainingProgressCallback):
+    def __init__(self, update_progress_callback: UpdateProgressCallback,
+                 initialization_progress: int, serialization_progress: int, **kwargs):
+        super().__init__(update_progress_callback, **kwargs)
+        train_progress = 100 - initialization_progress - serialization_progress
+        self.initialization_steps = self.total_steps * initialization_progress / train_progress
+        self.serialization_steps = self.total_steps * serialization_progress / train_progress
+        self.total_steps += self.initialization_steps + self.serialization_steps
+
+    def on_train_end(self, logs=None):
+        self.current_step = self.total_steps - self.test_steps - self.serialization_steps
+        self.current_epoch = self.total_epochs
+        self.is_training = False
+        self.update_progress_callback(self.get_progress(), score=logs)
+
+    def on_initialization_end(self):
+        self.current_step += self.initialization_steps
+        self.update_progress_callback(self.get_progress())
+
+    def on_serialization_end(self):
+        self.current_step += self.serialization_steps
+        self.update_progress_callback(self.get_progress())
+
+
 def preprocess_features_for_actmap(features):
     features = np.mean(features, axis=1)
     b, h, w = features.shape
