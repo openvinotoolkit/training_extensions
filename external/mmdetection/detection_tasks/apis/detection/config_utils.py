@@ -134,7 +134,9 @@ def patch_adaptive_repeat_dataset(config: Config, num_samples: int,
     :param decay: decaying rate
     :param factor: base repeat factor
     """
-    data_train = get_data_train(config)
+    data_train  = config.data.train
+    if data_train.type ==  'MultiImageMixDataset':
+        data_train = data_train.dataset
     if data_train.type == 'RepeatDataset' and getattr(data_train, 'adaptive_repeat_times', False):
         if is_epoch_based_runner(config.runner):
             cur_epoch = config.runner.max_epochs
@@ -224,7 +226,9 @@ def prepare_work_dir(config: Config) -> str:
 def set_data_classes(config: Config, labels: List[LabelEntity]):
     # Save labels in data configs.
     for subset in ('train', 'val', 'test'):
-        cfg = get_data_train(config) if subset == 'train' else cfg = config.data[subset]
+        if subset == 'train':
+            cfg = get_data_train(config)
+        else: cfg = config.data[subset]
         cfg.labels = labels
         config.data[subset].labels = labels
 
@@ -263,7 +267,9 @@ def patch_datasets(config: Config, domain):
 
     assert 'data' in config
     for subset in ('train', 'val', 'test'):
-        cfg = get_data_train(config) if subset == 'train' else cfg = config.data[subset]
+        if subset == 'train':
+            cfg = get_data_train(config)
+        else: cfg = config.data[subset]
         cfg.type = 'OTEDataset'
         cfg.domain = domain
         cfg.ote_dataset = None
@@ -325,6 +331,6 @@ def cluster_anchors(config: Config, dataset: DatasetEntity, model: BaseDetector)
 
 def get_data_train(config):
     data_train = config.data.train
-    while data_train.dataset:
+    while 'dataset' in data_train:
         data_train = data_train.dataset
     return data_train
