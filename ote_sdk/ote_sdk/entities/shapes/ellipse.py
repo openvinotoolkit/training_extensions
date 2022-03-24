@@ -78,6 +78,7 @@ class Ellipse(Shape):
                 and self.y1 == other.y1
                 and self.x2 == other.x2
                 and self.y2 == other.y2
+                and self.modification_date == other.modification_date
             )
         return False
 

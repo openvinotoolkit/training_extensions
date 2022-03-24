@@ -23,7 +23,7 @@ class InvalidInput(Exception):
     Exception for wrong input format
     """
 
-    def __init__(self, message):
+    def __init__(self, message: str) -> None:
         super().__init__(message)
         self.message = message
 
@@ -33,7 +33,7 @@ class OpenError(Exception):
     Exception for open reader
     """
 
-    def __init__(self, message):
+    def __init__(self, message: str) -> None:
         super().__init__(message)
         self.message = message
 
@@ -70,7 +70,7 @@ class BaseStreamer(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
 
-def _process_run(streamer: BaseStreamer, buffer: multiprocessing.Queue):
+def _process_run(streamer: BaseStreamer, buffer: multiprocessing.Queue) -> None:
     """
     Private function that is run by the thread.
 
@@ -99,7 +99,7 @@ class ThreadedStreamer(BaseStreamer):
         ...    pass
     """
 
-    def __init__(self, streamer: BaseStreamer, buffer_size: int = 2):
+    def __init__(self, streamer: BaseStreamer, buffer_size: int = 2) -> None:
         self.buffer_size = buffer_size
         self.streamer = streamer
 
@@ -146,7 +146,7 @@ class VideoStreamer(BaseStreamer):
         ...    pass
     """
 
-    def __init__(self, input_path: str, loop: bool):
+    def __init__(self, input_path: str, loop: bool) -> None:
         self.media_type = MediaType.VIDEO
         self.loop = loop
         self.cap = cv2.VideoCapture()
@@ -183,7 +183,7 @@ class CameraStreamer(BaseStreamer):
         ...         break
     """
 
-    def __init__(self, camera_device: Optional[int] = None):
+    def __init__(self, camera_device: Optional[int] = None) -> None:
         self.media_type = MediaType.CAMERA
         self.camera_device = 0 if camera_device is None else camera_device
         self.stream = cv2.VideoCapture(self.camera_device)

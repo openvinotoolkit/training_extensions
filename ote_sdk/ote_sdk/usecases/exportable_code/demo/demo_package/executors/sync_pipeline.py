@@ -5,7 +5,7 @@ Sync pipeline executor based on ModelAPI
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from typing import List, Union
+from typing import List, Tuple, Union
 
 import numpy as np
 
@@ -31,9 +31,8 @@ class ChainExecutor:
     Sync executor for task-chain inference
 
     Args:
-        models: List of models for inference in correct order
-        visualizer: for visualize inference results
-        converters: convert model ourtput to annotation scene
+        models: list of models for inference
+        visualizer: visualizer of inference results
     """
 
     def __init__(
@@ -68,7 +67,7 @@ class ChainExecutor:
                         item, parent_annotation, annotation
                     )
                     new_objects.append((new_item, item_annotation))
-                    if parent_annotation.shape == item_annotation.shape:
+                    if model.is_global:
                         for label in item_annotation.get_labels():
                             parent_annotation.append_label(label)
                     else:
@@ -79,7 +78,7 @@ class ChainExecutor:
     @staticmethod
     def crop(
         item: np.ndarray, parent_annotation: Annotation, item_annotation: Annotation
-    ):
+    ) -> Tuple[np.ndarray, Annotation]:
         """
         Crop operation between chain stages
         """
@@ -91,7 +90,7 @@ class ChainExecutor:
         )
         return new_item, item_annotation
 
-    def run(self, input_stream: Union[int, str], loop=False):
+    def run(self, input_stream: Union[int, str], loop: bool = False) -> None:
         """
         Run demo using input stream (image, video stream, camera)
         """
@@ -101,7 +100,6 @@ class ChainExecutor:
                 # getting result for single image
                 annotation_scene = self.single_run(frame)
 
-                # any user's visualizer
                 output = visualizer.draw(frame, annotation_scene)
                 visualizer.show(output)
                 if visualizer.is_quit():

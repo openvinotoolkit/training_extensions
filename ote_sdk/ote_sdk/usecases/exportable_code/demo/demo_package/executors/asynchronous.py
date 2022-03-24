@@ -7,6 +7,7 @@ Async executor based on ModelAPI
 
 from typing import Any, Tuple, Union
 
+import numpy as np
 from openvino.model_zoo.model_api.pipelines import AsyncPipeline
 
 from ote_sdk.usecases.exportable_code.demo.demo_package.model_container import (
@@ -25,7 +26,7 @@ class AsyncExecutor:
 
     Args:
         model: model for inference
-        visualizer: for visualize inference results
+        visualizer: visualizer of inference results
     """
 
     def __init__(self, model: ModelContainer, visualizer: Visualizer) -> None:
@@ -34,7 +35,7 @@ class AsyncExecutor:
         self.converter = create_output_converter(model.task_type, model.labels)
         self.async_pipeline = AsyncPipeline(self.model)
 
-    def run(self, input_stream: Union[int, str], loop=False):
+    def run(self, input_stream: Union[int, str], loop: bool = False) -> None:
         """
         Async inference for input stream (image, video stream, camera)
         """
@@ -63,13 +64,12 @@ class AsyncExecutor:
                 output = self.render_result(results)
                 visualizer.show(output)
 
-    def render_result(self, results: Tuple[Any, dict]):
+    def render_result(self, results: Tuple[Any, dict]) -> np.ndarray:
         """
         Render for results of inference
         """
         predictions, frame_meta = results
         annotation_scene = self.converter.convert_to_annotation(predictions, frame_meta)
         current_frame = frame_meta["frame"]
-        # any user's visualizer
         output = self.visualizer.draw(current_frame, annotation_scene, frame_meta)
         return output

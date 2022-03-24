@@ -13,9 +13,12 @@ import numpy as np
 from openvino.model_zoo.model_api.adapters import OpenvinoAdapter, create_core
 from openvino.model_zoo.model_api.models import Model
 
+from ote_sdk.entities.label_schema import LabelSchemaEntity
 from ote_sdk.serialization.label_mapper import LabelSchemaMapper
 
 from .utils import get_model_path, get_parameters
+
+GLOBAL_TASK_TYPES = ["CLASSIFICATION", "ANOMALY_CLASSIFICATION"]
 
 
 class ModelContainer:
@@ -50,21 +53,28 @@ class ModelContainer:
         )
 
     @property
-    def task_type(self):
+    def task_type(self) -> str:
         """
         Task type property
         """
         return self._task_type
 
     @property
-    def labels(self):
+    def is_global(self) -> bool:
+        """
+        Return True if the task produces global labels, False otherwise
+        """
+        return self._task_type in GLOBAL_TASK_TYPES
+
+    @property
+    def labels(self) -> LabelSchemaEntity:
         """
         Labels property
         """
         return self._labels
 
     @staticmethod
-    def _initialize_wrapper():
+    def _initialize_wrapper() -> None:
         try:
             importlib.import_module("model_wrappers")
         except ModuleNotFoundError:

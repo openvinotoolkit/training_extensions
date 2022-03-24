@@ -23,7 +23,7 @@ class SyncExecutor:
 
     Args:
         model: model for inference
-        visualizer: for visualize inference results
+        visualizer: visualizer of inference results
     """
 
     def __init__(self, model: ModelContainer, visualizer: Visualizer) -> None:
@@ -31,7 +31,7 @@ class SyncExecutor:
         self.visualizer = visualizer
         self.converter = create_output_converter(model.task_type, model.labels)
 
-    def run(self, input_stream: Union[int, str], loop=False):
+    def run(self, input_stream: Union[int, str], loop: bool = False) -> None:
         """
         Run demo using input stream (image, video stream, camera)
         """
@@ -44,7 +44,7 @@ class SyncExecutor:
                 annotation_scene = self.converter.convert_to_annotation(
                     predictions, frame_meta
                 )
-                # any user's visualizer
+
                 output = visualizer.draw(frame, annotation_scene, frame_meta)
                 visualizer.show(output)
                 if visualizer.is_quit():

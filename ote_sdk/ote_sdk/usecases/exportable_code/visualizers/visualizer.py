@@ -72,7 +72,7 @@ class HandlerVisualizer:
 
         return self.visualizer
 
-    def __exit__(self, *exc):
+    def __exit__(self, *exc) -> None:
         cv2.destroyAllWindows()
 
 
@@ -94,7 +94,7 @@ class Visualizer(IVisualizer):
         show_count: bool = False,
         is_one_label: bool = False,
         delay: Optional[int] = None,
-    ):
+    ) -> None:
         self.window_name = "Window" if window_name is None else window_name
         cv2.namedWindow(
             self.window_name,
