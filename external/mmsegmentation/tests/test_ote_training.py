@@ -100,6 +100,8 @@ class SegmentationTrainingTestParameters(DefaultOTETestCreationParametersInterfa
                 dict(
                     model_name=[
                        'Custom_Semantic_Segmentation_Lite-HRNet-18_OCR',
+                       'Custom_Semantic_Segmentation_Lite-HRNet-18-mod2_OCR',
+                       'Custom_Semantic_Segmentation_Lite-HRNet-x-mod3_OCR',
                     ],
                     dataset_name='kvasir_seg_shortened',
                     usecase='precommit',
@@ -107,6 +109,8 @@ class SegmentationTrainingTestParameters(DefaultOTETestCreationParametersInterfa
                 dict(
                     model_name=[
                        'Custom_Semantic_Segmentation_Lite-HRNet-18_OCR',
+                       'Custom_Semantic_Segmentation_Lite-HRNet-18-mod2_OCR',
+                       'Custom_Semantic_Segmentation_Lite-HRNet-x-mod3_OCR',
                     ],
                     dataset_name='kvasir_seg',
                     num_training_iters=KEEP_CONFIG_FIELD_VALUE,
