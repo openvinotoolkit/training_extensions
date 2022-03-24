@@ -150,13 +150,11 @@ def main():
 
     output_model = ModelEntity(dataset, environment.get_model_configuration())
 
-    optimization_parameters = OptimizationParameters()
-
     task.optimize(
         OptimizationType.POT if is_pot else OptimizationType.NNCF,
         dataset,
         output_model,
-        optimization_parameters,
+        OptimizationParameters(),
     )
 
     save_model_data(output_model, args.save_model_to)
