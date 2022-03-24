@@ -180,11 +180,14 @@ class OTEClassificationNNCFTask(OTEClassificationInferenceTask, IOptimizationTas
             update_progress_callback = optimization_parameters.update_progress
         else:
             update_progress_callback = default_progress_callback
+
         num_epoch = self._cfg.nncf_config['accuracy_aware_training']['params']['maximal_total_epochs']
+        num_train_steps = math.ceil(len(dataset.get_subset(Subset.TRAINING)) / self._cfg.train.batch_size)
+        num_test_steps = num_train_steps / 8    # fictional steps for model serialization
+        num_train_steps += num_train_steps / 8  # fictional steps for model initialization
         time_monitor = TrainingProgressCallback(update_progress_callback, num_epoch=num_epoch,
-                                                num_train_steps=math.ceil(len(dataset.get_subset(Subset.TRAINING)) /
-                                                                          self._cfg.train.batch_size),
-                                                num_val_steps=0, num_test_steps=0)
+                                                num_train_steps=num_train_steps,
+                                                num_val_steps=0, num_test_steps=num_test_steps)
 
         self.metrics_monitor = DefaultMetricsMonitor()
         self.stop_callback.reset()
@@ -202,6 +205,8 @@ class OTEClassificationNNCFTask(OTEClassificationInferenceTask, IOptimizationTas
 
         self._compression_ctrl, self._model, self._nncf_metainfo = \
             wrap_nncf_model(self._model, self._cfg, datamanager_for_init=datamanager)
+
+        time_monitor.update_step_manually(0.1 * time_monitor.total_steps)
 
         self._cfg.train.lr = calculate_lr_for_nncf_training(self._cfg, self._initial_lr, False)
 
@@ -238,6 +243,8 @@ class OTEClassificationNNCFTask(OTEClassificationInferenceTask, IOptimizationTas
         logger.info('Training completed')
 
         self.save_model(output_model)
+
+        time_monitor.update_step_manually(0.1 * time_monitor.total_steps)
 
         output_model.model_format = ModelFormat.BASE_FRAMEWORK
         output_model.optimization_type = self._optimization_type
