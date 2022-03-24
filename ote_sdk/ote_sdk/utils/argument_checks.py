@@ -7,53 +7,84 @@ Utils for checking functions and methods arguments
 #
 
 import inspect
+import itertools
 import typing
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
 from functools import wraps
-from os.path import exists
+from os.path import exists, splitext
 
 import yaml
 from numpy import floating
 from omegaconf import DictConfig
 
 IMAGE_FILE_EXTENSIONS = [
-    "bmp",
-    "dib",
-    "jpeg",
-    "jpg",
-    "jpe",
-    "jp2",
-    "png",
-    "webp",
-    "pbm",
-    "pgm",
-    "ppm",
-    "pxm",
-    "pnm",
-    "sr",
-    "ras",
-    "tiff",
-    "tif",
-    "exr",
-    "hdr",
-    "pic",
+    ".bmp",
+    ".dib",
+    ".jpeg",
+    ".jpg",
+    ".jpe",
+    ".jp2",
+    ".png",
+    ".webp",
+    ".pbm",
+    ".pgm",
+    ".ppm",
+    ".pxm",
+    ".pnm",
+    ".sr",
+    ".ras",
+    ".tiff",
+    ".tif",
+    ".exr",
+    ".hdr",
+    ".pic",
 ]
+
+
+def get_bases(parameter) -> set:
+    """Function to get bases classes from parameter"""
+
+    def __get_bases(parameter_type):
+        return [parameter_type.__name__] + list(
+            itertools.chain.from_iterable(
+                __get_bases(t1) for t1 in parameter_type.__bases__
+            )
+        )
+
+    return set(__get_bases(type(parameter)))
+
+
+def get_parameter_repr(parameter) -> str:
+    """Function to get parameter representation"""
+    try:
+        parameter_str = repr(parameter)
+    # pylint: disable=broad-except
+    except Exception:
+        parameter_str = "<unable to get parameter repr>"
+    return parameter_str
 
 
 def raise_value_error_if_parameter_has_unexpected_type(
     parameter, parameter_name, expected_type
 ):
     """Function raises ValueError exception if parameter has unexpected type"""
+    if isinstance(expected_type, typing.ForwardRef):
+        expected_type = expected_type.__forward_arg__
+    if isinstance(expected_type, str):
+        parameter_types = get_bases(parameter)
+        if not any(t == expected_type for t in parameter_types):
+            parameter_str = get_parameter_repr(parameter)
+            raise ValueError(
+                f"Unexpected type of '{parameter_name}' parameter, expected: {expected_type}, "
+                f"actual value: {parameter_str}"
+            )
+        return
     if expected_type == float:
         expected_type = (int, float, floating)
     if not isinstance(parameter, expected_type):
         parameter_type = type(parameter)
-        try:
-            parameter_str = repr(parameter)
-        # pylint: disable=broad-except
-        except Exception:
-            parameter_str = "<unable to get parameter repr>"
+        parameter_str = get_parameter_repr(parameter)
         raise ValueError(
             f"Unexpected type of '{parameter_name}' parameter, expected: {expected_type}, actual: {parameter_type}, "
             f"actual value: {parameter_str}"
@@ -115,11 +146,13 @@ def check_nested_classes_parameters(
         if origin_class == tuple:
             tuple_length = len(nested_elements_class)
             if tuple_length > 2:
-                raise TypeError(
+                raise NotImplementedError(
                     "length of nested expected types for Tuple should not exceed 2"
                 )
             if tuple_length == 2:
                 nested_elements_class = nested_elements_class[0]
+            if nested_elements_class[1] != Ellipsis:
+                raise NotImplementedError("expected homogeneous tuple annotation")
         else:
             if len(nested_elements_class) != 1:
                 raise TypeError(
@@ -222,7 +255,7 @@ def check_file_extension(
     file_path: str, file_path_name: str, expected_extensions: list
 ):
     """Function raises ValueError exception if file has unexpected extension"""
-    file_extension = file_path.split(".")[-1].lower()
+    file_extension = splitext(file_path)[1]
     if file_extension not in expected_extensions:
         raise ValueError(
             f"Unexpected extension of {file_path_name} file. expected: {expected_extensions} actual: {file_extension}"
@@ -341,7 +374,7 @@ class InputConfigCheck(BaseInputArgumentChecker):
                 check_file_extension(
                     file_path=self.parameter,
                     file_path_name=self.parameter_name,
-                    expected_extensions=["yaml"],
+                    expected_extensions=[".yaml"],
                 )
                 check_that_all_characters_printable(
                     parameter=self.parameter, parameter_name=self.parameter_name
@@ -448,5 +481,5 @@ class YamlFilePathCheck(FilePathCheck):
         super().__init__(
             parameter=parameter,
             parameter_name=parameter_name,
-            expected_file_extension=["yaml"],
+            expected_file_extension=[".yaml"],
         )
