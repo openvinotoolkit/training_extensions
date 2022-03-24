@@ -42,20 +42,20 @@ from ote_cli.utils.tests import (
 
 
 args = {
-    '--train-ann-file': 'data/anomaly/segmentation/train.json',
-    '--train-data-roots': 'data/anomaly/shapes',
-    '--val-ann-file': 'data/anomaly/segmentation/val.json',
-    '--val-data-roots': 'data/anomaly/shapes',
-    '--test-ann-files': 'data/anomaly/segmentation/test.json',
-    '--test-data-roots': 'data/anomaly/shapes',
-    '--input': 'data/anomaly/shapes/test/hexagon',
-    'train_params': [],
+    "--train-ann-file": "data/anomaly/segmentation/train.json",
+    "--train-data-roots": "data/anomaly/shapes",
+    "--val-ann-file": "data/anomaly/segmentation/val.json",
+    "--val-data-roots": "data/anomaly/shapes",
+    "--test-ann-files": "data/anomaly/segmentation/test.json",
+    "--test-data-roots": "data/anomaly/shapes",
+    "--input": "data/anomaly/shapes/test/hexagon",
+    "train_params": [],
 }
 
-root = '/tmp/ote_cli/'
+root = "/tmp/ote_cli/"
 ote_dir = os.getcwd()
 
-templates = Registry('external').filter(task_type='ANOMALY_SEGMENTATION').templates
+templates = Registry("external").filter(task_type="ANOMALY_SEGMENTATION").templates
 templates_ids = [template.model_template_id for template in templates]
 
 
