@@ -17,6 +17,8 @@ import os
 import shutil
 from subprocess import run  # nosec
 
+import pytest
+
 
 def get_template_rel_dir(template):
     return os.path.dirname(os.path.relpath(template.model_template_path))
@@ -600,3 +602,24 @@ def nncf_eval_openvino_testing(template, root, ote_dir, args):
     assert os.path.exists(
         f"{template_work_dir}/exported_nncf_{template.model_template_id}/performance.json"
     )
+
+
+def xfail_templates(templates, xfail_template_ids_reasons):
+    xfailed_templates = []
+    for template in templates:
+        reasons = [
+            reason
+            for template_id, reason in xfail_template_ids_reasons
+            if template_id == template.model_template_id
+        ]
+        if len(reasons) == 0:
+            xfailed_templates.append(template)
+        elif len(reasons) == 1:
+            xfailed_templates.append(
+                pytest.param(template, marks=pytest.mark.xfail(reason=reasons[0]))
+            )
+        else:
+            raise RuntimeError(
+                "More than one reason for template. If you have more than one Jira tickets, list them in one reason."
+            )
+    return xfailed_templates
