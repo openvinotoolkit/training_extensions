@@ -255,7 +255,7 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
 
         :param labels: Subset of input labels to filter with; if ``None``, all the shapes within the ROI are returned
         :param include_empty: if True, returns both empty and non-empty labels
-        :param include_ignored: if True, includes the labels in self.__ignored_labels
+        :param include_ignored: if True, includes the labels in ignored_labels
         :return: The intersection of the input label set and those present within the ROI
         """
         is_full_box = Rectangle.is_full_box(self.roi.shape)
@@ -281,9 +281,11 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
                 shape_labels = annotation.get_labels(include_empty)
 
                 if not include_ignored:
-                    for label in shape_labels:
-                        if label.label in self.__ignored_labels:
-                            shape_labels.remove(label)
+                    shape_labels = [
+                        label
+                        for label in shape_labels
+                        if label.label not in self.__ignored_labels
+                    ]
 
                 if labels is not None:
                     shape_labels = [
@@ -345,7 +347,7 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
 
         :param labels: Subset of input labels to filter with; if ``None``, all the labels within the ROI are returned
         :param include_empty: if True, returns both empty and non-empty labels
-        :param include_ignored: if True, includes the labels in self.__ignored_labels
+        :param include_ignored: if True, includes the labels in ignored_labels
         :return: The intersection of the input label set and those present within the ROI
         """
         filtered_labels = set()
@@ -368,7 +370,7 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
 
         :param labels: if supplied only labels present in this list are returned
         :param include_empty: if True, returns both empty and non-empty labels
-        :param include_ignored: if True, includes the labels in self.__ignored_labels
+        :param include_ignored: if True, includes the labels in ignored_labels
         :return: a list of labels from the shapes within the roi of this dataset item
         """
         annotations = self.get_annotations()
