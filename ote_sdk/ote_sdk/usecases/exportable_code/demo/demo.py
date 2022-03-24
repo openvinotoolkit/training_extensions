@@ -43,7 +43,8 @@ def build_argparser():
         "-m",
         "--models",
         help="Required. Path to directory with trained model and configuration file. "
-        "For task chain please provide models-participants in right order",
+        "If you provide several models you will start the task chain pipeline with "
+        "the provided models in the order in which they were specified.",
         nargs="+",
         required=True,
         type=Path,
@@ -51,8 +52,8 @@ def build_argparser():
     args.add_argument(
         "-it",
         "--inference_type",
-        help="Optional. Type of inference. For task-chain you should type 'chain'.",
-        choices=["sync", "async", "chain"],
+        help="Optional. Type of inference for single model.",
+        choices=["sync", "async"],
         default="sync",
         type=str,
     )
@@ -78,13 +79,12 @@ def get_inferencer_class(type_inference, models):
     """
     Return class for inference of models
     """
-    if type_inference == "chain" and len(models) == 1:
-        raise RuntimeError(
-            "For single model please use 'sync' or 'async' type of inference"
-        )
     if len(models) > 1:
         type_inference = "chain"
-        print("You run task chain pipeline with provided models")
+        print(
+            "You started the task chain pipeline with the provided models "
+            "in the order in which they were specified"
+        )
     return EXECUTORS[type_inference]
 
 
