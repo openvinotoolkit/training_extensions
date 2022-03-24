@@ -19,6 +19,7 @@ import openvino
 print(openvino.__file__)
 from openvino.runtime import Core
 
+from ote_sdk.entities.metrics import Performance, ScoreMetric
 from ote_sdk.entities.inference_parameters import InferenceParameters, default_progress_callback
 from ote_sdk.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
 from ote_sdk.usecases.tasks.interfaces.inference_interface import IInferenceTask
@@ -255,8 +256,7 @@ class OpenVINOTTSTask(IInferenceTask, IEvaluationTask):
         if len(output_resultset.prediction_dataset):
             l1_loss = l1_loss / len(output_resultset.prediction_dataset)
 
-        output_resultset.performance.score.value = l1_loss
-        output_resultset.performance.score.name = "L1 loss"
+        output_resultset.performance = Performance(ScoreMetric(name="L1 loss", value=l1_loss))
 
         logger.info(f"Difference between generated and predicted mel-spectrogram: {l1_loss}")
 
@@ -276,7 +276,6 @@ class OpenVINOTTSTask(IInferenceTask, IEvaluationTask):
 
         setup_dir = os.path.dirname(demo.__file__)
         cur_dir = os.path.dirname(__file__)
-        work_dir = f'{cur_dir}/../'
 
         parameters: Dict[str, Any] = {}
         parameters["type_of_model"] = "text_to_speech"
@@ -284,9 +283,8 @@ class OpenVINOTTSTask(IInferenceTask, IEvaluationTask):
         name_of_package = "demo_package"
 
         with tempfile.TemporaryDirectory() as tempdir:
-            copytree(os.path.dirname(self.model.get_data("encoder.xml")), os.path.join(tempdir, "models"))
-            copyfile(os.path.join(setup_dir, "setup.py"), os.path.join(tempdir, "setup.py"))
-            copyfile(os.path.join(work_dir, "openvino-requirements.txt"), os.path.join(tempdir, "requirements.txt"))
+            copyfile(os.path.join(cur_dir, "deploy", "setup.py"), os.path.join(tempdir, "setup.py"))
+            copyfile(os.path.join(cur_dir, "deploy", "requirements.txt"), os.path.join(tempdir, "requirements.txt"))
             copytree(os.path.join(cur_dir, "text_preprocessing"), os.path.join(tempdir, "text_preprocessing"))
             copyfile(os.path.join(cur_dir, "demo.py"), os.path.join(tempdir, "demo.py"))
             config_path = os.path.join(tempdir, "config.json")
@@ -309,11 +307,15 @@ class OpenVINOTTSTask(IInferenceTask, IEvaluationTask):
             wheel_file_name = [f for f in os.listdir(tempdir) if f.endswith(".whl")][0]
 
             with ZipFile(os.path.join(tempdir, "openvino.zip"), "w") as arch:
-                arch.write(os.path.join(tempdir, "models"), os.path.join("python", "models"))
+                arch.writestr(os.path.join("model", "encoder.xml"), self.task_environment.model.get_data("encoder.xml"))
+                arch.writestr(os.path.join("model", "encoder.bin"), self.task_environment.model.get_data("encoder.bin"))
+                arch.writestr(os.path.join("model", "decoder.xml"), self.task_environment.model.get_data("decoder.xml"))
+                arch.writestr(os.path.join("model", "decoder.bin"), self.task_environment.model.get_data("decoder.bin"))
                 arch.write(os.path.join(tempdir, "requirements.txt"), os.path.join("python", "requirements.txt"))
                 arch.write(os.path.join(setup_dir, "README.md"), os.path.join("python", "README.md"))
                 arch.write(os.path.join(setup_dir, "LICENSE"), os.path.join("python", "LICENSE"))
                 arch.write(os.path.join(tempdir, "demo.py"), os.path.join("python", "demo.py"))
+                arch.write(os.path.join(tempdir, "text_preprocessing"), os.path.join("python", "text_preprocessing"))
                 arch.write(os.path.join(tempdir, wheel_file_name), os.path.join("python", wheel_file_name))
             with open(os.path.join(tempdir, "openvino.zip"), "rb") as output_arch:
                 output_model.exportable_code = output_arch.read()

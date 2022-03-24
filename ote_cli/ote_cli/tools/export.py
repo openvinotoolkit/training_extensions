@@ -63,7 +63,7 @@ def main():
     template = find_and_parse_model_template(args.template)
 
     # Get class for Task.
-    is_nncf = is_checkpoint_nncf(args.load_weights)
+    is_nncf = not os.path.isdir(args.load_weights) and is_checkpoint_nncf(args.load_weights)
     task_class = get_impl_class(
         template.entrypoints.nncf if is_nncf else template.entrypoints.base
     )

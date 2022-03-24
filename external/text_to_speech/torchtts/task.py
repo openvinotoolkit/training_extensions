@@ -20,9 +20,8 @@ from ote_sdk.usecases.tasks.interfaces.training_interface import ITrainingTask
 from ote_sdk.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from ote_sdk.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
 from ote_sdk.usecases.tasks.interfaces.unload_interface import IUnload
-from ote_sdk.configuration import cfg_helper
+from ote_sdk.entities.metrics import Performance, ScoreMetric
 from ote_sdk.serialization.label_mapper import label_schema_to_bytes
-from ote_sdk.configuration.helper.utils import ids_to_strings
 from ote_sdk.entities.model import ModelPrecision
 from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType, IExportTask
 from ote_sdk.entities.model import ModelEntity, ModelFormat, ModelOptimizationType
@@ -217,8 +216,7 @@ class OTETextToSpeechTask(ITrainingTask, IInferenceTask, IEvaluationTask, IExpor
         if len(output_resultset.prediction_dataset):
             l1_loss = l1_loss / len(output_resultset.prediction_dataset)
 
-        output_resultset.performance.score.value = l1_loss
-        output_resultset.performance.score.name = "L1 loss"
+        output_resultset.performance = Performance(ScoreMetric(name="L1 loss", value=l1_loss))
 
         logger.info(f"Difference between generated and predicted mel-spectrogram: {l1_loss}")
 

@@ -140,9 +140,14 @@ def read_label_schema(path):
     if not os.path.exists(path):
         return None
 
-    if any(path.endswith(extension) for extension in (".xml", ".bin", ".pth")) or os.path.isdir(path):
+    if any(path.endswith(extension) for extension in (".xml", ".bin", ".pth")):
         with open(
             os.path.join(os.path.dirname(path), "label_schema.json"), encoding="UTF-8"
+        ) as read_file:
+            serialized_label_schema = json.load(read_file)
+    elif os.path.isdir(path):
+        with open(
+            os.path.join(path, "label_schema.json"), encoding="UTF-8"
         ) as read_file:
             serialized_label_schema = json.load(read_file)
     elif path.endswith(".zip"):
