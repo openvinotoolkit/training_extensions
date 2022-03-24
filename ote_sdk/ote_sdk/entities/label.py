@@ -5,7 +5,7 @@
 """This module define the label entity."""
 
 import datetime
-from enum import Enum
+from enum import Enum, auto
 from typing import Optional
 
 from ote_sdk.entities.color import Color
@@ -19,14 +19,15 @@ class Domain(Enum):
     Describes an algorithm domain like classification, detection, ...
     """
 
-    CLASSIFICATION = 0
-    DETECTION = 1
-    SEGMENTATION = 2
-    ANOMALY_CLASSIFICATION = 3
-    ANOMALY_DETECTION = 4
-    ANOMALY_SEGMENTATION = 5
-    INSTANCE_SEGMENTATION = 6
-    ROTATED_DETECTION = 7
+    NULL = auto()
+    CLASSIFICATION = auto()
+    DETECTION = auto()
+    SEGMENTATION = auto()
+    ANOMALY_CLASSIFICATION = auto()
+    ANOMALY_DETECTION = auto()
+    ANOMALY_SEGMENTATION = auto()
+    INSTANCE_SEGMENTATION = auto()
+    ROTATED_DETECTION = auto()
 
     def __str__(self):
         return str(self.name)

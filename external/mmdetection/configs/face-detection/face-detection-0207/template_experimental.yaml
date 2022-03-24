@@ -1,0 +1,56 @@
+# Description.
+model_template_id: face-detection-0207
+name: Face Detection 0207
+task_type: DETECTION
+task_family: VISION
+instantiation: "CLASS"
+summary: One of the fastest Face Detection model (ShuffleNetV2-SSD).
+application: Face detection
+
+# Algo backend.
+framework: OTEDetection v2.9.1
+
+# Task implementations.
+entrypoints:
+  base: detection_tasks.apis.detection.OTEDetectionTrainingTask
+  openvino: detection_tasks.apis.detection.OpenVINODetectionTask
+  nncf: detection_tasks.apis.detection.OTEDetectionNNCFTask
+
+# Capabilities.
+capabilities:
+  - compute_representations
+
+# Hyperparameters.
+hyper_parameters:
+  base_path: ../../../../mmdetection/detection_tasks/apis/detection/configuration.yaml
+  parameter_overrides:
+    learning_parameters:
+      batch_size:
+        default_value: 32
+      learning_rate:
+        default_value: 0.05
+      learning_rate_warmup_iters:
+        default_value: 1200
+      num_iters:
+        default_value: 70
+    nncf_optimization:
+      enable_quantization:
+        default_value: true
+      enable_pruning:
+        default_value: false
+      pruning_supported:
+        default_value: false
+      maximal_accuracy_degradation:
+        default_value: 0.01
+
+# Training resources.
+max_nodes: 1
+training_targets:
+  - GPU
+  - CPU
+
+# Stats.
+gigaflops: 1.04
+size: 0.81
+# Obsolete
+# gpu_nums: 1
