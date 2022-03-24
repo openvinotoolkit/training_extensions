@@ -17,6 +17,29 @@ import yaml
 from numpy import floating
 from omegaconf import DictConfig
 
+IMAGE_FILE_EXTENSIONS = [
+    "bmp",
+    "dib",
+    "jpeg",
+    "jpg",
+    "jpe",
+    "jp2",
+    "png",
+    "webp",
+    "pbm",
+    "pgm",
+    "ppm",
+    "pxm",
+    "pnm",
+    "sr",
+    "ras",
+    "tiff",
+    "tif",
+    "exr",
+    "hdr",
+    "pic",
+]
+
 
 def raise_value_error_if_parameter_has_unexpected_type(
     parameter, parameter_name, expected_type
@@ -392,7 +415,7 @@ class OptionalImageFilePathCheck(OptionalFilePathCheck):
         super().__init__(
             parameter=parameter,
             parameter_name=parameter_name,
-            expected_file_extension=["jpg", "png"],
+            expected_file_extension=IMAGE_FILE_EXTENSIONS,
         )
 
 
