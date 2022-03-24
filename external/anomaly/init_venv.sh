@@ -26,11 +26,6 @@ if [[ $PYTHON_VERSION != "3.8" && $PYTHON_VERSION != "3.9" ]]; then
   exit 1
 fi
 
-if [[ -z $OTE_SDK_PATH ]]; then
-  echo "The environment variable OTE_SDK_PATH is not set -- it is required for creating virtual environment"
-  exit 1
-fi
-
 cd ${work_dir}
 
 if [[ -e ${venv_dir} ]]; then
@@ -112,7 +107,8 @@ fi
 pip install -r requirements.txt
 pip install -e .
 
-pip install -e $OTE_SDK_PATH  || exit 1
+# Install OTE SDK
+pip install -e ../../ote_sdk/ || exit 1
 
 deactivate
 
