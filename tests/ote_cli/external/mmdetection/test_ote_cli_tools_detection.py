@@ -21,7 +21,7 @@ from subprocess import run
 from ote_sdk.test_suite.e2e_test_system import e2e_pytest_component
 
 from ote_cli.registry import Registry
-from common import (
+from ote_cli.utils.tests import (
     collect_env_vars,
     create_venv,
     get_some_vars,
@@ -71,8 +71,8 @@ templates_ids = [template.model_template_id for template in templates]
 class TestToolsDetection:
     @e2e_pytest_component
     def test_create_venv(self):
-        work_dir, template_work_dir, algo_backend_dir = get_some_vars(templates[0], root)
-        create_venv(algo_backend_dir, work_dir, template_work_dir)
+        work_dir, _, algo_backend_dir = get_some_vars(templates[0], root)
+        create_venv(algo_backend_dir, work_dir)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
