@@ -481,7 +481,7 @@ class JsonFilePathCheck(FilePathCheck):
         super().__init__(
             parameter=parameter,
             parameter_name=parameter_name,
-            expected_file_extension=["json"],
+            expected_file_extension=[".json"],
         )
 
 
