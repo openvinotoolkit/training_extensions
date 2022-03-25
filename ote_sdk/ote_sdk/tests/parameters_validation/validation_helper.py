@@ -6,11 +6,13 @@ Common functions for input parameters validation tests
 # SPDX-License-Identifier: Apache-2.0
 #
 
+from typing import Callable
+
 import pytest
 
 
 def check_value_error_exception_raised(
-    correct_parameters: dict, unexpected_values: list, class_or_function
+    correct_parameters: dict, unexpected_values: list, class_or_function: Callable
 ) -> None:
     """
     Function checks that ValueError exception is raised when unexpected type values are specified as parameters for

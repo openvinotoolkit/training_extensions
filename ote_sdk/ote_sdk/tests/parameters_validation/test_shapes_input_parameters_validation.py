@@ -487,8 +487,14 @@ class TestShapeInputParamsValidation:
         rectangle = self.rectangle()
         correct_values_dict = {"x": 0.1, "y": 0.2}
         unexpected_type_value = "unexpected string"
-        for key in correct_values_dict:
-            incorrect_values_dict = dict(correct_values_dict)
-            incorrect_values_dict[key] = unexpected_type_value
-            with pytest.raises(ValueError):
-                rectangle._validate_coordinates(**incorrect_values_dict)
+        unexpected_values = [
+            # Unexpected string is specified as "x" parameter
+            ("x", unexpected_type_value),
+            # Unexpected string is specified as "y" parameter
+            ("y", unexpected_type_value),
+        ]
+        check_value_error_exception_raised(
+            correct_parameters=correct_values_dict,
+            unexpected_values=unexpected_values,
+            class_or_function=rectangle._validate_coordinates,
+        )

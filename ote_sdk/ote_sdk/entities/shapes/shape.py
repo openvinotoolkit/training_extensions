@@ -14,10 +14,7 @@ from shapely.errors import PredicateError, TopologicalError
 from shapely.geometry import Polygon as shapely_polygon
 
 from ote_sdk.entities.scored_label import ScoredLabel
-from ote_sdk.utils.argument_checks import (
-    ShapeParamTypeCheck,
-    check_input_parameters_type,
-)
+from ote_sdk.utils.argument_checks import check_input_parameters_type
 
 if TYPE_CHECKING:
     from ote_sdk.entities.shapes.rectangle import Rectangle
@@ -168,7 +165,7 @@ class Shape(ShapeEntity):
         raise NotImplementedError
 
     # pylint: disable=protected-access
-    @check_input_parameters_type({"other": ShapeParamTypeCheck})
+    @check_input_parameters_type()
     def intersects(self, other: "Shape") -> bool:
         polygon_roi = self._as_shapely_polygon()
         polygon_shape = other._as_shapely_polygon()
@@ -181,7 +178,7 @@ class Shape(ShapeEntity):
             ) from exception
 
     # pylint: disable=protected-access
-    @check_input_parameters_type({"other": ShapeParamTypeCheck})
+    @check_input_parameters_type()
     def contains_center(self, other: "ShapeEntity") -> bool:
         """
         Checks whether the center of the 'other' shape is located in the shape.
