@@ -132,7 +132,7 @@ class TestToolsAnomalySegmentation:
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
 
-        #TODO(AlexanderDokuchaev): return threshold=0.0001 after fix loading NNCF model
+        # TODO(AlexanderDokuchaev): return threshold=0.0001 after fix loading NNCF model
         nncf_eval_testing(template, root, ote_dir, args, threshold=0.3)
 
     @e2e_pytest_component
