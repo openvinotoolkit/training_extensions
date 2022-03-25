@@ -159,7 +159,7 @@ def prepare_for_training(config: Config, train_dataset: DatasetEntity, val_datas
                          time_monitor: TimeMonitorCallback, learning_curves: defaultdict) -> Config:
     config = copy.deepcopy(config)
     prepare_work_dir(config)
-    data_train = get_data_train(config)
+    data_train = get_data_cfg(config)
     data_train.ote_dataset = train_dataset
     config.data.val.ote_dataset = val_dataset
     patch_adaptive_repeat_dataset(config, len(train_dataset))
@@ -181,7 +181,7 @@ def config_to_string(config: Config) -> str:
     config_copy.data.test.labels = None
     config_copy.data.val.ote_dataset = None
     config_copy.data.val.labels = None
-    data_train = get_data_train(config_copy)
+    data_train = get_data_cfg(config_copy)
     data_train.ote_dataset = None
     data_train.labels = None
     return Config(config_copy).pretty_text
@@ -226,10 +226,7 @@ def prepare_work_dir(config: Config) -> str:
 def set_data_classes(config: Config, labels: List[LabelEntity]):
     # Save labels in data configs.
     for subset in ('train', 'val', 'test'):
-        if subset == 'train':
-            cfg = get_data_train(config)
-        else:
-            cfg = config.data[subset]
+        cfg = get_data_cfg(config, subset)
         cfg.labels = labels
         config.data[subset].labels = labels
 
@@ -268,9 +265,7 @@ def patch_datasets(config: Config, domain):
 
     assert 'data' in config
     for subset in ('train', 'val', 'test'):
-        if subset == 'train':
-            cfg = get_data_train(config)
-        else: cfg = config.data[subset]
+        cfg = get_data_cfg(config, subset)
         cfg.type = 'OTEDataset'
         cfg.domain = domain
         cfg.ote_dataset = None
@@ -330,8 +325,8 @@ def cluster_anchors(config: Config, dataset: DatasetEntity, model: BaseDetector)
     return config, model
 
 
-def get_data_train(config):
-    data_train = config.data.train
-    while 'dataset' in data_train:
-        data_train = data_train.dataset
-    return data_train
+def get_data_cfg(config: Config, subset: str = 'train') -> Config:
+    data_cfg = config.data[subset]
+    while 'dataset' in data_cfg:
+        data_cfg = data_cfg.dataset
+    return data_cfg
