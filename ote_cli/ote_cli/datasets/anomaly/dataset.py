@@ -210,7 +210,12 @@ class AnomalySegmentationDataset(BaseAnomalyDataset):
             label: LabelEntity = (
                 self.normal_label if sample.label == "good" else self.abnormal_label
             )
-            annotations = []
+            annotations = [
+                Annotation(
+                    Rectangle.generate_full_box(),
+                    labels=[ScoredLabel(label=label, probability=1.0)],
+                )
+            ]
             if isinstance(sample.masks, list) and len(sample.masks) > 0:
                 for contour in sample.masks:
                     points = [Point(x, y) for x, y in contour]
@@ -232,13 +237,6 @@ class AnomalySegmentationDataset(BaseAnomalyDataset):
                             "will be removed.",
                             UserWarning,
                         )
-            else:
-                annotations.append(
-                    Annotation(
-                        Rectangle.generate_full_box(),
-                        labels=[ScoredLabel(label=self.normal_label, probability=1.0)],
-                    )
-                )
             annotation_scene = AnnotationSceneEntity(
                 annotations=annotations, kind=AnnotationSceneKind.ANNOTATION
             )
@@ -296,7 +294,12 @@ class AnomalyDetectionDataset(BaseAnomalyDataset):
             label: LabelEntity = (
                 self.normal_label if sample.label == "good" else self.abnormal_label
             )
-            annotations = []
+            annotations = [
+                Annotation(
+                    Rectangle.generate_full_box(),
+                    labels=[ScoredLabel(label=label, probability=1.0)],
+                )
+            ]
             if isinstance(sample.bboxes, list) and len(sample.bboxes) > 0:
                 for bbox in sample.bboxes:
                     box = Rectangle(bbox[0], bbox[1], bbox[2], bbox[3])
@@ -317,13 +320,6 @@ class AnomalyDetectionDataset(BaseAnomalyDataset):
                             "will be removed.",
                             UserWarning,
                         )
-            else:
-                annotations.append(
-                    Annotation(
-                        Rectangle.generate_full_box(),
-                        labels=[ScoredLabel(label=self.normal_label, probability=1.0)],
-                    )
-                )
             annotation_scene = AnnotationSceneEntity(
                 annotations=annotations, kind=AnnotationSceneKind.ANNOTATION
             )
