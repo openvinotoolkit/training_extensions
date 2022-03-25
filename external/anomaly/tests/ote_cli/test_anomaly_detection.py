@@ -17,7 +17,7 @@
 import os
 
 import pytest
-from common import (
+from ote_cli.utils.tests import (
     create_venv,
     get_some_vars,
     nncf_eval_openvino_testing,
@@ -61,8 +61,8 @@ templates_ids = [template.model_template_id for template in templates]
 class TestToolsAnomalyDetection:
     @e2e_pytest_component
     def test_create_venv(self):
-        work_dir, template_work_dir, algo_backend_dir = get_some_vars(templates[0], root)
-        create_venv(algo_backend_dir, work_dir, template_work_dir)
+        work_dir, _, algo_backend_dir = get_some_vars(templates[0], root)
+        create_venv(algo_backend_dir, work_dir)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
