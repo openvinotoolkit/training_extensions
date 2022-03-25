@@ -228,7 +228,8 @@ def set_data_classes(config: Config, labels: List[LabelEntity]):
     for subset in ('train', 'val', 'test'):
         if subset == 'train':
             cfg = get_data_train(config)
-        else: cfg = config.data[subset]
+        else:
+            cfg = config.data[subset]
         cfg.labels = labels
         config.data[subset].labels = labels
 
