@@ -25,11 +25,7 @@ from ote_sdk.entities.scored_label import ScoredLabel
 from ote_sdk.entities.shapes.polygon import Point, Polygon
 from ote_sdk.entities.shapes.rectangle import Rectangle
 from ote_sdk.utils.anomaly_utils import create_detection_annotation_from_anomaly_heatmap
-from ote_sdk.utils.labels_utils import (
-    get_ancestors_by_prediction,
-    get_empty_label,
-    get_leaf_labels,
-)
+from ote_sdk.utils.labels_utils import get_empty_label
 from ote_sdk.utils.segmentation_utils import create_annotation_from_segmentation_map
 from ote_sdk.utils.time_utils import now
 
@@ -234,11 +230,7 @@ class ClassificationToAnnotationConverter(IPredictionToAnnotationConverter):
         multilabel = len(label_schema.get_groups(False)) > 1 and len(
             label_schema.get_groups(False)
         ) == len(label_schema.get_labels(include_empty=False))
-
-        self.hierarchical = False
-        if not multilabel and len(label_schema.get_groups(False)) > 1:
-            self.labels = get_leaf_labels(label_schema)
-            self.hierarchical = True
+        self.hierarchical = not multilabel and len(label_schema.get_groups(False)) > 1
 
         self.label_schema = label_schema
 
@@ -248,11 +240,11 @@ class ClassificationToAnnotationConverter(IPredictionToAnnotationConverter):
         labels = []
         for index, score in predictions:
             labels.append(ScoredLabel(self.labels[index], float(score)))
+        if self.hierarchical:
+            labels = self.label_schema.resolve_labels_probabilistic(labels)
 
         if not labels and self.empty_label:
             labels = [ScoredLabel(self.empty_label, probability=1.0)]
-        elif self.hierarchical:
-            labels.extend(get_ancestors_by_prediction(self.label_schema, labels[0]))
 
         annotations = [Annotation(Rectangle.generate_full_box(), labels=labels)]
         return AnnotationSceneEntity(
