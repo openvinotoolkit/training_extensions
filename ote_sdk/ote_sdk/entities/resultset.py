@@ -14,10 +14,7 @@ from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.id import ID
 from ote_sdk.entities.metrics import NullPerformance, Performance
 from ote_sdk.entities.model import ModelEntity
-from ote_sdk.utils.argument_checks import (
-    DatasetParamTypeCheck,
-    check_input_parameters_type,
-)
+from ote_sdk.utils.argument_checks import check_input_parameters_type
 from ote_sdk.utils.time_utils import now
 
 
@@ -71,12 +68,7 @@ class ResultSetEntity(metaclass=abc.ABCMeta):
     """
 
     # pylint: disable=redefined-builtin, too-many-arguments; Requires refactor
-    @check_input_parameters_type(
-        {
-            "ground_truth_dataset": DatasetParamTypeCheck,
-            "prediction_dataset": DatasetParamTypeCheck,
-        }
-    )
+    @check_input_parameters_type()
     def __init__(
         self,
         model: ModelEntity,

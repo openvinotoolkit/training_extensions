@@ -11,6 +11,7 @@ import itertools
 import typing
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
+from contextlib import suppress
 from functools import wraps
 from os.path import exists, splitext
 
@@ -43,7 +44,7 @@ IMAGE_FILE_EXTENSIONS = [
 
 
 def get_bases(parameter) -> set:
-    """Function to get bases classes from parameter"""
+    """Function to get set of all base classes of parameter"""
 
     def __get_bases(parameter_type):
         return [parameter_type.__name__] + list(
@@ -80,6 +81,12 @@ def raise_value_error_if_parameter_has_unexpected_type(
                 f"actual value: {parameter_str}"
             )
         return
+    with suppress(AttributeError):
+        if expected_type.__name__ == "DatasetEntity":
+            check_is_parameter_like_dataset(
+                parameter=parameter, parameter_name=parameter_name
+            )
+            return
     if expected_type == float:
         expected_type = (int, float, floating)
     if not isinstance(parameter, expected_type):
@@ -150,9 +157,9 @@ def check_nested_classes_parameters(
                     "length of nested expected types for Tuple should not exceed 2"
                 )
             if tuple_length == 2:
+                if nested_elements_class[1] != Ellipsis:
+                    raise NotImplementedError("expected homogeneous tuple annotation")
                 nested_elements_class = nested_elements_class[0]
-            if nested_elements_class[1] != Ellipsis:
-                raise NotImplementedError("expected homogeneous tuple annotation")
         else:
             if len(nested_elements_class) != 1:
                 raise TypeError(
@@ -255,7 +262,7 @@ def check_file_extension(
     file_path: str, file_path_name: str, expected_extensions: list
 ):
     """Function raises ValueError exception if file has unexpected extension"""
-    file_extension = splitext(file_path)[1]
+    file_extension = splitext(file_path)[1].lower()
     if file_extension not in expected_extensions:
         raise ValueError(
             f"Unexpected extension of {file_path_name} file. expected: {expected_extensions} actual: {file_extension}"
@@ -353,7 +360,7 @@ class InputConfigCheck(BaseInputArgumentChecker):
         raise_value_error_if_parameter_has_unexpected_type(
             parameter=self.parameter,
             parameter_name=self.parameter_name,
-            expected_type=(str, DictConfig, dict),
+            expected_type=(str, DictConfig, dict),  # type: ignore
         )
         check_that_parameter_is_not_empty(
             parameter=self.parameter, parameter_name=self.parameter_name
@@ -413,54 +420,6 @@ class OptionalFilePathCheck(BaseInputArgumentChecker):
             check_file_path(
                 self.parameter, self.parameter_name, self.expected_file_extensions
             )
-
-
-class DatasetParamTypeCheck(BaseInputArgumentChecker):
-    """Class to check DatasetEntity-type parameters"""
-
-    def __init__(self, parameter, parameter_name):
-        self.parameter = parameter
-        self.parameter_name = parameter_name
-
-    def check(self):
-        """Method raises ValueError exception if parameter is not equal to DataSet"""
-        check_is_parameter_like_dataset(
-            parameter=self.parameter, parameter_name=self.parameter_name
-        )
-
-
-class OptionalDatasetParamTypeCheck(DatasetParamTypeCheck):
-    """Class to check DatasetEntity-type parameters"""
-
-    def check(self):
-        """Method raises ValueError exception if parameter is not equal to DataSet"""
-        if self.parameter is not None:
-            check_is_parameter_like_dataset(
-                parameter=self.parameter, parameter_name=self.parameter_name
-            )
-
-
-class OptionalModelParamTypeCheck(BaseInputArgumentChecker):
-    """Class to check ModelEntity-type parameters"""
-
-    def __init__(self, parameter, parameter_name):
-        self.parameter = parameter
-        self.parameter_name = parameter_name
-
-    def check(self):
-        """Method raises ValueError exception if parameter is not equal to DataSet"""
-        if self.parameter is not None:
-            for expected_attribute in (
-                "__train_dataset__",
-                "__previous_trained_revision__",
-                "__model_format__",
-            ):
-                if not hasattr(self.parameter, expected_attribute):
-                    parameter_type = type(self.parameter)
-                    raise ValueError(
-                        f"parameter '{self.parameter_name}' is not like ModelEntity, actual type: {parameter_type} "
-                        f"which does not have expected '{expected_attribute}' Model attribute"
-                    )
 
 
 class OptionalImageFilePathCheck(OptionalFilePathCheck):
