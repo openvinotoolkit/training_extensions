@@ -17,6 +17,7 @@ from sys import maxsize
 
 from ote_sdk.configuration.elements import (ParameterGroup,
                                             add_parameter_group,
+                                            boolean_attribute,
                                             configurable_boolean,
                                             configurable_float,
                                             configurable_integer,
@@ -90,6 +91,7 @@ class OTEClassificationParameters(ConfigurableParameters):
     class __NNCFOptimization(ParameterGroup):
         header = string_attribute("Optimization by NNCF")
         description = header
+        visible_in_ui = boolean_attribute(False)
 
         enable_quantization = configurable_boolean(
             default_value=True,
@@ -102,6 +104,13 @@ class OTEClassificationParameters(ConfigurableParameters):
             default_value=False,
             header="Enable filter pruning algorithm",
             description="Enable filter pruning algorithm",
+            affects_outcome_of=ModelLifecycle.TRAINING
+        )
+
+        pruning_supported = configurable_boolean(
+            default_value=False,
+            header="Whether filter pruning is supported",
+            description="Whether filter pruning is supported",
             affects_outcome_of=ModelLifecycle.TRAINING
         )
 
@@ -118,6 +127,7 @@ class OTEClassificationParameters(ConfigurableParameters):
     class __POTParameter(ParameterGroup):
         header = string_attribute("POT Parameters")
         description = header
+        visible_in_ui = boolean_attribute(False)
 
         stat_subset_size = configurable_integer(
             header="Number of data samples",

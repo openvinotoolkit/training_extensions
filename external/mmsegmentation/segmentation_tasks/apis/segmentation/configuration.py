@@ -17,6 +17,7 @@ from sys import maxsize
 
 from ote_sdk.configuration.elements import (ParameterGroup,
                                             add_parameter_group,
+                                            boolean_attribute,
                                             configurable_boolean,
                                             configurable_float,
                                             configurable_integer,
@@ -88,7 +89,7 @@ class OTESegmentationConfig(ConfigurableParameters):
         )
 
         num_workers = configurable_integer(
-            default_value=0,
+            default_value=4,
             min_value=0,
             max_value=8,
             header="Number of cpu threads to use during batch generation",
@@ -112,7 +113,7 @@ class OTESegmentationConfig(ConfigurableParameters):
         header = string_attribute("Postprocessing")
         description = header
 
-        class_name = selectable(default_value=Models.BlurSegmetation,
+        class_name = selectable(default_value=Models.BlurSegmentation,
                                 header="Model class for inference",
                                 description="Model classes with defined pre- and postprocessing",
                                 editable=False,
@@ -139,6 +140,7 @@ class OTESegmentationConfig(ConfigurableParameters):
     class __POTParameter(ParameterGroup):
         header = string_attribute("POT Parameters")
         description = header
+        visible_in_ui = boolean_attribute(False)
 
         stat_subset_size = configurable_integer(
             header="Number of data samples",
@@ -158,6 +160,7 @@ class OTESegmentationConfig(ConfigurableParameters):
     class __NNCFOptimization(ParameterGroup):
         header = string_attribute("Optimization by NNCF")
         description = header
+        visible_in_ui = boolean_attribute(False)
 
         enable_quantization = configurable_boolean(
             default_value=True,
@@ -170,6 +173,13 @@ class OTESegmentationConfig(ConfigurableParameters):
             default_value=False,
             header="Enable filter pruning algorithm",
             description="Enable filter pruning algorithm",
+            affects_outcome_of=ModelLifecycle.TRAINING
+        )
+
+        pruning_supported = configurable_boolean(
+            default_value=False,
+            header="Whether filter pruning is supported",
+            description="Whether filter pruning is supported",
             affects_outcome_of=ModelLifecycle.TRAINING
         )
 
