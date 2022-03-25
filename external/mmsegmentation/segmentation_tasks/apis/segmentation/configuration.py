@@ -17,13 +17,14 @@ from sys import maxsize
 
 from ote_sdk.configuration.elements import (ParameterGroup,
                                             add_parameter_group,
+                                            boolean_attribute,
                                             configurable_boolean,
                                             configurable_float,
                                             configurable_integer,
                                             selectable,
                                             string_attribute)
 from ote_sdk.configuration.configurable_parameters import ConfigurableParameters
-from ote_sdk.configuration.model_lifecycle import ModelLifecycle
+from ote_sdk.configuration.enums import ModelLifecycle, AutoHPOState
 
 from .configuration_enums import POTQuantizationPreset, Models
 
@@ -48,7 +49,8 @@ class OTESegmentationConfig(ConfigurableParameters):
             "memory requirements.",
             warning="Increasing this value may cause the system to use more memory than available, "
             "potentially causing out of memory errors, please update with caution.",
-            affects_outcome_of=ModelLifecycle.TRAINING
+            affects_outcome_of=ModelLifecycle.TRAINING,
+            auto_hpo_state=AutoHPOState.POSSIBLE
         )
 
         num_iters = configurable_integer(
@@ -66,7 +68,8 @@ class OTESegmentationConfig(ConfigurableParameters):
             max_value=1e-01,
             header="Learning rate",
             description="Increasing this value will speed up training convergence but might make it unstable.",
-            affects_outcome_of=ModelLifecycle.TRAINING
+            affects_outcome_of=ModelLifecycle.TRAINING,
+            auto_hpo_state=AutoHPOState.POSSIBLE
         )
 
         learning_rate_fixed_iters = configurable_integer(
@@ -88,7 +91,7 @@ class OTESegmentationConfig(ConfigurableParameters):
         )
 
         num_workers = configurable_integer(
-            default_value=0,
+            default_value=4,
             min_value=0,
             max_value=8,
             header="Number of cpu threads to use during batch generation",
@@ -112,7 +115,7 @@ class OTESegmentationConfig(ConfigurableParameters):
         header = string_attribute("Postprocessing")
         description = header
 
-        class_name = selectable(default_value=Models.BlurSegmetation,
+        class_name = selectable(default_value=Models.BlurSegmentation,
                                 header="Model class for inference",
                                 description="Model classes with defined pre- and postprocessing",
                                 editable=False,
@@ -139,6 +142,7 @@ class OTESegmentationConfig(ConfigurableParameters):
     class __POTParameter(ParameterGroup):
         header = string_attribute("POT Parameters")
         description = header
+        visible_in_ui = boolean_attribute(False)
 
         stat_subset_size = configurable_integer(
             header="Number of data samples",
@@ -158,6 +162,7 @@ class OTESegmentationConfig(ConfigurableParameters):
     class __NNCFOptimization(ParameterGroup):
         header = string_attribute("Optimization by NNCF")
         description = header
+        visible_in_ui = boolean_attribute(False)
 
         enable_quantization = configurable_boolean(
             default_value=True,
@@ -170,6 +175,13 @@ class OTESegmentationConfig(ConfigurableParameters):
             default_value=False,
             header="Enable filter pruning algorithm",
             description="Enable filter pruning algorithm",
+            affects_outcome_of=ModelLifecycle.TRAINING
+        )
+
+        pruning_supported = configurable_boolean(
+            default_value=False,
+            header="Whether filter pruning is supported",
+            description="Whether filter pruning is supported",
             affects_outcome_of=ModelLifecycle.TRAINING
         )
 

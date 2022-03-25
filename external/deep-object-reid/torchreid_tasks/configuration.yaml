@@ -20,6 +20,7 @@ learning_parameters:
     visible_in_ui: true
     warning: Increasing this value may cause the system to use more memory than available,
       potentially causing out of memory errors, please update with caution.
+    auto_hpo_state: POSSIBLE
   description: Learning Parameters
   header: Learning Parameters
   learning_rate:
@@ -39,6 +40,7 @@ learning_parameters:
       type: UI_RULES
     visible_in_ui: true
     warning: null
+    auto_hpo_state: POSSIBLE
   max_num_epochs:
     affects_outcome_of: TRAINING
     default_value: 200
@@ -124,7 +126,7 @@ pot_parameters:
     visible_in_ui: true
     warning: null
   type: PARAMETER_GROUP
-  visible_in_ui: true
+  visible_in_ui: false
 type: CONFIGURABLE_PARAMETERS
 visible_in_ui: true
 nncf_optimization:
@@ -160,6 +162,21 @@ nncf_optimization:
     value: false
     visible_in_ui: true
     warning: null
+  pruning_supported:
+    affects_outcome_of: TRAINING
+    default_value: false
+    description: Whether filter pruning is supported
+    editable: false
+    header: Whether filter pruning is supported
+    type: BOOLEAN
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: false
+    visible_in_ui: false
+    warning: null
   maximal_accuracy_degradation:
     affects_outcome_of: TRAINING
     default_value: 1.0
@@ -178,4 +195,4 @@ nncf_optimization:
     visible_in_ui: true
     warning: null
   type: PARAMETER_GROUP
-  visible_in_ui: true
+  visible_in_ui: false
