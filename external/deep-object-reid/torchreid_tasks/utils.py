@@ -259,6 +259,9 @@ def get_multihead_class_info(label_schema: LabelSchemaEntity):
     for j, g in enumerate(single_label_groups):
         class_to_idx[g[0]] = (len(exclusive_groups), j)
 
+    all_labels = label_schema.get_labels(include_empty=False)
+    label_to_idx = {lbl.name: i for i, lbl in enumerate(all_labels)}
+
     mixed_cls_heads_info = {
                             'num_multiclass_heads': len(exclusive_groups),
                             'num_multilabel_classes': len(single_label_groups),
@@ -266,6 +269,7 @@ def get_multihead_class_info(label_schema: LabelSchemaEntity):
                             'num_single_label_classes': num_single_label_classes,
                             'class_to_group_idx': class_to_idx,
                             'all_groups': exclusive_groups + single_label_groups,
+                            'label_to_idx': label_to_idx
                             }
     return mixed_cls_heads_info
 

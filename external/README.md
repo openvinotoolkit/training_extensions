@@ -9,6 +9,12 @@ ID | Name | Complexity (GFlops) | Model size (MB) | Path
 ote_anomaly_classification_padim | PADIM | 3.9 | 168.4 | anomaly/anomaly_classification/configs/padim/template.yaml
 ote_anomaly_classification_stfpm | STFPM | 5.6 | 21.1 | anomaly/anomaly_classification/configs/stfpm/template.yaml
 
+## Anomaly Detection
+ID | Name | Complexity (GFlops) | Model size (MB) | Path
+------- | ------- | ------- | ------- | -------
+ote_anomaly_detection_padim | PADIM | 3.9 | 168.4 | anomaly/anomaly_detection/configs/padim/template.yaml
+ote_anomaly_detection_stfpm | STFPM | 5.6 | 21.1 | anomaly/anomaly_detection/configs/stfpm/template.yaml
+
 ## Anomaly Segmentation
 ID | Name | Complexity (GFlops) | Model size (MB) | Path
 ------- | ------- | ------- | ------- | -------

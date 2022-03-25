@@ -20,7 +20,7 @@ from ote_sdk.utils.argument_checks import check_input_parameters_type
 
 try:
     from openvino.model_zoo.model_api.models.classification import Classification
-    from openvino.model_zoo.model_api.models.types import BooleanValue
+    from openvino.model_zoo.model_api.models.types import BooleanValue, DictValue
     from openvino.model_zoo.model_api.models.utils import pad_image
 except ImportError as e:
     import warnings
@@ -35,7 +35,9 @@ class OteClassification(Classification):
         parameters = super().parameters()
         parameters['resize_type'].update_default_value('standard')
         parameters.update({
-            'multilabel': BooleanValue(default_value=False)
+            'multilabel': BooleanValue(default_value=False),
+            'hierarchical': BooleanValue(default_value=False),
+            'multihead_class_info': DictValue(default_value={})
         })
 
         return parameters
@@ -78,11 +80,11 @@ class OteClassification(Classification):
     def postprocess(self, outputs: Dict[str, np.ndarray], metadata: Dict[str, Any]):
         logits = outputs[self.out_layer_name].squeeze()
         if self.multilabel:
-            predictions = get_multilabel_predictions(logits)
+            return get_multilabel_predictions(logits)
+        if self.hierarchical:
+            return get_hierarchical_predictions(logits, self.multihead_class_info)
 
-        predictions = get_multiclass_predictions(logits)
-
-        return predictions
+        return get_multiclass_predictions(logits)
 
     @check_input_parameters_type()
     def postprocess_aux_outputs(self, outputs: Dict[str, np.ndarray], metadata: Dict[str, Any]):
@@ -91,9 +93,11 @@ class OteClassification(Classification):
         repr_vector = outputs['vector']
 
         logits = outputs[self.out_layer_name].squeeze()
+
         if self.multilabel:
             probs = sigmoid_numpy(logits)
-        probs = softmax_numpy(logits)
+        else:
+            probs = softmax_numpy(logits)
 
         act_score = float(np.max(probs) - np.min(probs))
 
@@ -134,6 +138,32 @@ def softmax_numpy(x: np.ndarray):
 
 
 @check_input_parameters_type()
+def get_hierarchical_predictions(logits: np.ndarray, multihead_class_info: dict,
+                                 pos_thr: float = 0.5, activate: bool = True):
+    predicted_labels = []
+    for i in range(multihead_class_info['num_multiclass_heads']):
+        logits_begin, logits_end = multihead_class_info['head_idx_to_logits_range'][i]
+        head_logits = logits[logits_begin : logits_end]
+        if activate:
+            head_logits = softmax_numpy(head_logits)
+        j = np.argmax(head_logits)
+        label_str = multihead_class_info['all_groups'][i][j]
+        predicted_labels.append((multihead_class_info['label_to_idx'][label_str], head_logits[j]))
+
+    if multihead_class_info['num_multilabel_classes']:
+        logits_begin, logits_end = multihead_class_info['num_single_label_classes'], -1
+        head_logits = logits[logits_begin : logits_end]
+        if activate:
+            head_logits = sigmoid_numpy(head_logits)
+
+        for i in range(head_logits.shape[0]):
+            if head_logits[i] > pos_thr:
+                label_str = multihead_class_info['all_groups'][multihead_class_info['num_multiclass_heads'] + i][0]
+                predicted_labels.append((multihead_class_info['label_to_idx'][label_str], head_logits[i]))
+
+    return predicted_labels
+
+
 def get_multiclass_predictions(logits: np.ndarray, activate: bool = True):
 
     index = np.argmax(logits)
