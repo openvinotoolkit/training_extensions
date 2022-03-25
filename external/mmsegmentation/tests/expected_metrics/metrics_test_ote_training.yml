@@ -1,0 +1,84 @@
+? "ACTION-training_evaluation,model-Custom_Semantic_Segmentation_Lite-HRNet-18_OCR,dataset-kvasir_seg,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.Dice Average":
+    "target_value": 0.88
+    "max_diff_if_less_threshold": 0.01
+    "max_diff_if_greater_threshold": 0.04
+? "ACTION-export_evaluation,model-Custom_Semantic_Segmentation_Lite-HRNet-18_OCR,dataset-kvasir_seg,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.Dice Average":
+    "base": "training_evaluation.metrics.accuracy.Dice Average"
+    "max_diff": 0.01
+? "ACTION-pot_evaluation,model-Custom_Semantic_Segmentation_Lite-HRNet-18_OCR,dataset-kvasir_seg,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.Dice Average":
+    "base": "export_evaluation.metrics.accuracy.Dice Average"
+    "max_diff": 0.04
+? "ACTION-nncf_evaluation,model-Custom_Semantic_Segmentation_Lite-HRNet-18_OCR,dataset-kvasir_seg,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.Dice Average":
+    "base": "training_evaluation.metrics.accuracy.Dice Average"
+    "max_diff_if_less_threshold": 0.015
+? "ACTION-nncf_export_evaluation,model-Custom_Semantic_Segmentation_Lite-HRNet-18_OCR,dataset-kvasir_seg,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.Dice Average":
+    "base": "nncf_evaluation.metrics.accuracy.Dice Average"
+    "max_diff": 0.01
+? "ACTION-training_evaluation,model-Custom_Semantic_Segmentation_Lite-HRNet-18-mod2_OCR,dataset-kvasir_seg,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.Dice Average":
+    "target_value": 0.88
+    "max_diff_if_less_threshold": 0.01
+    "max_diff_if_greater_threshold": 0.04
+? "ACTION-export_evaluation,model-Custom_Semantic_Segmentation_Lite-HRNet-18-mod2_OCR,dataset-kvasir_seg,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.Dice Average":
+    "base": "training_evaluation.metrics.accuracy.Dice Average"
+    "max_diff": 0.01
+? "ACTION-pot_evaluation,model-Custom_Semantic_Segmentation_Lite-HRNet-18-mod2_OCR,dataset-kvasir_seg,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.Dice Average":
+    "base": "export_evaluation.metrics.accuracy.Dice Average"
+    "max_diff": 0.04
+? "ACTION-nncf_evaluation,model-Custom_Semantic_Segmentation_Lite-HRNet-18-mod2_OCR,dataset-kvasir_seg,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.Dice Average":
+    "base": "training_evaluation.metrics.accuracy.Dice Average"
+    "max_diff_if_less_threshold": 0.015
+? "ACTION-nncf_export_evaluation,model-Custom_Semantic_Segmentation_Lite-HRNet-18-mod2_OCR,dataset-kvasir_seg,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.Dice Average":
+    "base": "nncf_evaluation.metrics.accuracy.Dice Average"
+    "max_diff": 0.01
+? "ACTION-training_evaluation,model-Custom_Semantic_Segmentation_Lite-HRNet-x-mod3_OCR,dataset-kvasir_seg,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.Dice Average":
+    "target_value": 0.88
+    "max_diff_if_less_threshold": 0.01
+    "max_diff_if_greater_threshold": 0.04
+? "ACTION-export_evaluation,model-Custom_Semantic_Segmentation_Lite-HRNet-x-mod3_OCR,dataset-kvasir_seg,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.Dice Average":
+    "base": "training_evaluation.metrics.accuracy.Dice Average"
+    "max_diff": 0.01
+? "ACTION-pot_evaluation,model-Custom_Semantic_Segmentation_Lite-HRNet-x-mod3_OCR,dataset-kvasir_seg,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.Dice Average":
+    "base": "export_evaluation.metrics.accuracy.Dice Average"
+    "max_diff": 0.04
+? "ACTION-nncf_evaluation,model-Custom_Semantic_Segmentation_Lite-HRNet-x-mod3_OCR,dataset-kvasir_seg,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.Dice Average":
+    "base": "training_evaluation.metrics.accuracy.Dice Average"
+    "max_diff_if_less_threshold": 0.015
+? "ACTION-nncf_export_evaluation,model-Custom_Semantic_Segmentation_Lite-HRNet-x-mod3_OCR,dataset-kvasir_seg,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.Dice Average":
+    "base": "nncf_evaluation.metrics.accuracy.Dice Average"
+    "max_diff": 0.01
+? "ACTION-training_evaluation,model-Custom_Semantic_Segmentation_Lite-HRNet-s-mod2_OCR,dataset-kvasir_seg,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.Dice Average":
+    "target_value": 0.88
+    "max_diff_if_less_threshold": 0.01
+    "max_diff_if_greater_threshold": 0.04
+? "ACTION-export_evaluation,model-Custom_Semantic_Segmentation_Lite-HRNet-s-mod2_OCR,dataset-kvasir_seg,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.Dice Average":
+    "base": "training_evaluation.metrics.accuracy.Dice Average"
+    "max_diff": 0.01
+? "ACTION-pot_evaluation,model-Custom_Semantic_Segmentation_Lite-HRNet-s-mod2_OCR,dataset-kvasir_seg,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.Dice Average":
+    "base": "export_evaluation.metrics.accuracy.Dice Average"
+    "max_diff": 0.04
+? "ACTION-nncf_evaluation,model-Custom_Semantic_Segmentation_Lite-HRNet-s-mod2_OCR,dataset-kvasir_seg,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.Dice Average":
+    "base": "training_evaluation.metrics.accuracy.Dice Average"
+    "max_diff_if_less_threshold": 0.015
+? "ACTION-nncf_export_evaluation,model-Custom_Semantic_Segmentation_Lite-HRNet-s-mod2_OCR,dataset-kvasir_seg,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.Dice Average":
+    "base": "nncf_evaluation.metrics.accuracy.Dice Average"
+    "max_diff": 0.01

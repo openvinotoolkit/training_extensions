@@ -6,11 +6,10 @@ This module implements utilities for labels
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from typing import List, Optional
+from typing import Optional
 
 from ote_sdk.entities.label import LabelEntity
 from ote_sdk.entities.label_schema import LabelSchemaEntity
-from ote_sdk.entities.scored_label import ScoredLabel
 
 
 def get_empty_label(label_schema: LabelSchemaEntity) -> Optional[LabelEntity]:
@@ -24,26 +23,3 @@ def get_empty_label(label_schema: LabelSchemaEntity) -> Optional[LabelEntity]:
     if empty_candidates:
         return empty_candidates[0]
     return None
-
-
-def get_leaf_labels(label_schema: LabelSchemaEntity) -> List[LabelEntity]:
-    """
-    Get leafs from label tree
-    """
-    leaf_labels = []
-    all_labels = label_schema.get_labels(False)
-    for lbl in all_labels:
-        if not label_schema.get_children(lbl):
-            leaf_labels.append(lbl)
-
-    return leaf_labels
-
-
-def get_ancestors_by_prediction(
-    label_schema: LabelSchemaEntity, prediction: ScoredLabel
-) -> List[ScoredLabel]:
-    """
-    Get all the ancestors for a given label node
-    """
-    ancestor_labels = label_schema.get_ancestors(prediction.get_label())
-    return [ScoredLabel(al, prediction.probability) for al in ancestor_labels]

@@ -22,6 +22,10 @@ from typing import Dict, List, Optional, Union
 import numpy as np
 from anomalib.pre_processing import PreProcessor
 from omegaconf import DictConfig, ListConfig
+from ote_anomalib.data.utils import (
+    contains_anomalous_images,
+    split_local_global_dataset,
+)
 from ote_anomalib.logging import get_logger
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.model_template import TaskType
@@ -83,8 +87,11 @@ class OTEAnomalyDataset(Dataset):
 
     def __getitem__(self, index: int) -> Dict[str, Union[int, Tensor]]:
         dataset_item = self.dataset[index]
+        item: Dict[str, Union[int, Tensor]] = {}
         item = {"index": index}
-        if self.task_type == TaskType.ANOMALY_CLASSIFICATION:
+        if self.task_type in (TaskType.ANOMALY_CLASSIFICATION, TaskType.ANOMALY_DETECTION):
+            # Detection currently relies on image labels only, meaning it'll use image
+            #   threshold to find the predicted bounding boxes.
             item["image"] = self.pre_processor(image=dataset_item.numpy)["image"]
         elif self.task_type == TaskType.ANOMALY_SEGMENTATION:
             if any((isinstance(annotation.shape, Polygon) for annotation in dataset_item.get_annotations())):
@@ -95,7 +102,7 @@ class OTEAnomalyDataset(Dataset):
             item["image"] = pre_processed["image"]
             item["mask"] = pre_processed["mask"]
         else:
-            raise ValueError(f"Unsupported task type: {self.config.dataset.task}")
+            raise ValueError(f"Unsupported task type: {self.task_type}")
 
         if len(dataset_item.get_shapes_labels()) > 0:
             item["label"] = 1 if dataset_item.get_shapes_labels()[0].is_anomalous else 0
@@ -182,7 +189,6 @@ class OTEAnomalyDataModule(LightningDataModule):
         """
         Train Dataloader
         """
-
         dataset = OTEAnomalyDataset(self.config, self.train_ote_dataset, self.task_type)
         return DataLoader(
             dataset,
@@ -195,8 +201,15 @@ class OTEAnomalyDataModule(LightningDataModule):
         """
         Validation Dataloader
         """
-
-        dataset = OTEAnomalyDataset(self.config, self.val_ote_dataset, self.task_type)
+        global_dataset, local_dataset = split_local_global_dataset(self.val_ote_dataset)
+        logger.info(f"Global annotations: {len(global_dataset)}")
+        logger.info(f"Local annotations: {len(local_dataset)}")
+        if contains_anomalous_images(local_dataset):
+            logger.info("Dataset contains polygon annotations. Passing masks to anomalib.")
+            dataset = OTEAnomalyDataset(self.config, local_dataset, TaskType.ANOMALY_SEGMENTATION)
+        else:
+            logger.info("Dataset does not contain polygon annotations. Not passing masks to anomalib.")
+            dataset = OTEAnomalyDataset(self.config, global_dataset, TaskType.ANOMALY_CLASSIFICATION)
         return DataLoader(
             dataset,
             shuffle=False,

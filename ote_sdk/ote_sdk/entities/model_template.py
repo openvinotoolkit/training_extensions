@@ -7,11 +7,13 @@ import copy
 import os
 from dataclasses import dataclass, field
 from enum import Enum, IntEnum, auto
-from typing import Dict, List, Optional, Sequence, Union, cast
+from typing import Dict, List, NamedTuple, Optional, Sequence, Union, cast
 
 from omegaconf import DictConfig, ListConfig, OmegaConf
 
 from ote_sdk.configuration.elements import metadata_keys
+from ote_sdk.configuration.enums import AutoHPOState
+from ote_sdk.configuration.helper.utils import search_in_config_dict
 from ote_sdk.entities.label import Domain
 
 
@@ -73,27 +75,143 @@ class TaskFamily(Enum):
         return str(self.name)
 
 
+class TaskInfo(NamedTuple):
+    """
+    NamedTuple to store information about the task type like label domain, if it is
+    trainable, if it is an anomaly task and if it supports global or local labels.
+    """
+
+    domain: Domain
+    is_trainable: bool
+    is_anomaly: bool
+    is_global: bool
+    is_local: bool
+
+
 class TaskType(Enum):
     """
-    The type of algorithm within the task family.
+    The type of algorithm within the task family. Also contains relevant information
+    about the task type like label domain, if it is trainable, if it is an anomaly task
+    or if it supports global or local labels.
     """
 
-    NULL = auto()
-    DATASET = auto()
-    CLASSIFICATION = auto()
-    SEGMENTATION = auto()
-    DETECTION = auto()
-    ANOMALY_DETECTION = auto()
-    CROP = auto()
-    TILE = auto()
-    INSTANCE_SEGMENTATION = auto()
-    ACTIVELEARNING = auto()
-    ANOMALY_SEGMENTATION = auto()
-    ANOMALY_CLASSIFICATION = auto()
-    ROTATED_DETECTION = auto()
+    def __new__(cls, *args):
+        obj = object.__new__(cls)
+        obj._value_ = args[0]
+        return obj
+
+    # pylint: disable=unused-argument
+    def __init__(
+        self,
+        value: int,
+        task_info: TaskInfo,
+    ):
+        """
+        :param value: Unique integer for .value property of Enum (auto() does not work)
+        :param task_info: NamedTuple containing information about the task's capabilities
+        """
+        self.domain = task_info.domain
+        self.is_trainable = task_info.is_trainable
+        self.is_anomaly = task_info.is_anomaly
+        self.is_global = task_info.is_global
+
+    NULL = 1, TaskInfo(
+        domain=Domain.NULL,
+        is_trainable=False,
+        is_anomaly=False,
+        is_global=False,
+        is_local=False,
+    )
+    DATASET = 2, TaskInfo(
+        domain=Domain.NULL,
+        is_trainable=False,
+        is_anomaly=False,
+        is_global=False,
+        is_local=False,
+    )
+    CLASSIFICATION = 3, TaskInfo(
+        domain=Domain.CLASSIFICATION,
+        is_trainable=True,
+        is_anomaly=False,
+        is_global=True,
+        is_local=False,
+    )
+    SEGMENTATION = 4, TaskInfo(
+        domain=Domain.SEGMENTATION,
+        is_trainable=True,
+        is_anomaly=False,
+        is_global=False,
+        is_local=True,
+    )
+    DETECTION = 5, TaskInfo(
+        domain=Domain.DETECTION,
+        is_trainable=True,
+        is_anomaly=False,
+        is_global=False,
+        is_local=True,
+    )
+    ANOMALY_DETECTION = 6, TaskInfo(
+        domain=Domain.ANOMALY_DETECTION,
+        is_trainable=True,
+        is_anomaly=True,
+        is_global=False,
+        is_local=True,
+    )
+    CROP = 7, TaskInfo(
+        domain=Domain.NULL,
+        is_trainable=False,
+        is_anomaly=False,
+        is_global=False,
+        is_local=False,
+    )
+    TILE = 8, TaskInfo(
+        domain=Domain.NULL,
+        is_trainable=False,
+        is_anomaly=False,
+        is_global=False,
+        is_local=False,
+    )
+    INSTANCE_SEGMENTATION = 9, TaskInfo(
+        domain=Domain.INSTANCE_SEGMENTATION,
+        is_trainable=True,
+        is_anomaly=False,
+        is_global=False,
+        is_local=True,
+    )
+    ACTIVELEARNING = 10, TaskInfo(
+        domain=Domain.NULL,
+        is_trainable=False,
+        is_anomaly=False,
+        is_global=False,
+        is_local=False,
+    )
+    ANOMALY_SEGMENTATION = 11, TaskInfo(
+        domain=Domain.ANOMALY_SEGMENTATION,
+        is_trainable=True,
+        is_anomaly=True,
+        is_global=False,
+        is_local=True,
+    )
+    ANOMALY_CLASSIFICATION = 12, TaskInfo(
+        domain=Domain.ANOMALY_CLASSIFICATION,
+        is_trainable=True,
+        is_anomaly=True,
+        is_global=True,
+        is_local=False,
+    )
+    ROTATED_DETECTION = 13, TaskInfo(
+        domain=Domain.ROTATED_DETECTION,
+        is_trainable=True,
+        is_anomaly=False,
+        is_global=False,
+        is_local=True,
+    )
 
     def __str__(self) -> str:
-        return str(self.name)
+        return self.name
+
+    def __repr__(self) -> str:
+        return self.name
 
 
 def task_type_to_label_domain(task_type: TaskType) -> Domain:
@@ -422,7 +540,22 @@ class ModelTemplate:
         """
         Returns ``True`` if the task is global task i.e. if task produces global labels
         """
-        return self.task_type in [TaskType.CLASSIFICATION]
+        return self.task_type.is_global
+
+    def supports_auto_hpo(self) -> bool:
+        """
+        Returns `True` if the algorithm supports automatic hyper parameter
+        optimization, `False` otherwise
+        """
+        if not self.hyper_parameters.has_valid_configurable_parameters:
+            return False
+        auto_hpo_state_results = search_in_config_dict(
+            self.hyper_parameters.data, key_to_search=metadata_keys.AUTO_HPO_STATE
+        )
+        for result in auto_hpo_state_results:
+            if result[0] == AutoHPOState.POSSIBLE:
+                return True
+        return False
 
 
 class NullModelTemplate(ModelTemplate):
@@ -457,6 +590,7 @@ TRAINABLE_TASK_TYPES: Sequence[TaskType] = (
     TaskType.ANOMALY_DETECTION,
     TaskType.ANOMALY_CLASSIFICATION,
     TaskType.ANOMALY_SEGMENTATION,
+    TaskType.ROTATED_DETECTION,
 )
 
 

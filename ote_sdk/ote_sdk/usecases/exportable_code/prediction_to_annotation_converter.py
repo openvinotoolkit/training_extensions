@@ -24,11 +24,8 @@ from ote_sdk.entities.label_schema import LabelSchemaEntity
 from ote_sdk.entities.scored_label import ScoredLabel
 from ote_sdk.entities.shapes.polygon import Point, Polygon
 from ote_sdk.entities.shapes.rectangle import Rectangle
-from ote_sdk.utils.labels_utils import (
-    get_ancestors_by_prediction,
-    get_empty_label,
-    get_leaf_labels,
-)
+from ote_sdk.utils.anomaly_utils import create_detection_annotation_from_anomaly_heatmap
+from ote_sdk.utils.labels_utils import get_empty_label
 from ote_sdk.utils.segmentation_utils import create_annotation_from_segmentation_map
 from ote_sdk.utils.time_utils import now
 
@@ -151,6 +148,8 @@ def create_converter(
         converter = ClassificationToAnnotationConverter(labels)
     elif converter_type == Domain.ANOMALY_CLASSIFICATION:
         converter = AnomalyClassificationToAnnotationConverter(labels)
+    elif converter_type == Domain.ANOMALY_DETECTION:
+        converter = AnomalyDetectionToAnnotationConverter(labels)
     elif converter_type == Domain.ANOMALY_SEGMENTATION:
         converter = AnomalySegmentationToAnnotationConverter(labels)
     elif converter_type == Domain.INSTANCE_SEGMENTATION:
@@ -231,11 +230,7 @@ class ClassificationToAnnotationConverter(IPredictionToAnnotationConverter):
         multilabel = len(label_schema.get_groups(False)) > 1 and len(
             label_schema.get_groups(False)
         ) == len(label_schema.get_labels(include_empty=False))
-
-        self.hierarchical = False
-        if not multilabel and len(label_schema.get_groups(False)) > 1:
-            self.labels = get_leaf_labels(label_schema)
-            self.hierarchical = True
+        self.hierarchical = not multilabel and len(label_schema.get_groups(False)) > 1
 
         self.label_schema = label_schema
 
@@ -245,11 +240,11 @@ class ClassificationToAnnotationConverter(IPredictionToAnnotationConverter):
         labels = []
         for index, score in predictions:
             labels.append(ScoredLabel(self.labels[index], float(score)))
+        if self.hierarchical:
+            labels = self.label_schema.resolve_labels_probabilistic(labels)
 
         if not labels and self.empty_label:
             labels = [ScoredLabel(self.empty_label, probability=1.0)]
-        elif self.hierarchical:
-            labels.extend(get_ancestors_by_prediction(self.label_schema, labels[0]))
 
         annotations = [Annotation(Rectangle.generate_full_box(), labels=labels)]
         return AnnotationSceneEntity(
@@ -308,6 +303,48 @@ class AnomalySegmentationToAnnotationConverter(IPredictionToAnnotationConverter)
         pred_mask = predictions >= 0.5
         mask = pred_mask.squeeze().astype(np.uint8)
         annotations = create_annotation_from_segmentation_map(
+            mask, predictions, self.label_map
+        )
+        if len(annotations) == 0:
+            # TODO: add confidence to this label
+            annotations = [
+                Annotation(
+                    Rectangle.generate_full_box(),
+                    labels=[ScoredLabel(label=self.normal_label, probability=1.0)],
+                )
+            ]
+        return AnnotationSceneEntity(
+            kind=AnnotationSceneKind.PREDICTION, annotations=annotations
+        )
+
+
+class AnomalyDetectionToAnnotationConverter(IPredictionToAnnotationConverter):
+    """Converts Anomaly Detection Predictions ModelAPI to Annotations."""
+
+    def __init__(self, label_schema: LabelSchemaEntity):
+        """Initialize AnomalyDetectionToAnnotationConverter.
+
+        :param label_schema: Label Schema containing the label info of the task
+        """
+        labels = label_schema.get_labels(include_empty=False)
+        self.normal_label = [label for label in labels if label.name == "Normal"][0]
+        self.anomalous_label = [label for label in labels if label.name == "Anomalous"][
+            0
+        ]
+        self.label_map = {0: self.normal_label, 1: self.anomalous_label}
+
+    def convert_to_annotation(
+        self, predictions: np.ndarray, metadata: Dict[str, Any]
+    ) -> AnnotationSceneEntity:
+        """Convert predictions to OTE Annotation Scene using the metadata.
+
+        :param predictions: Raw predictions from the model.
+        :param metadata: Variable containing metadata information.
+        :return: OTE annotation scene entity object.
+        """
+        pred_mask = predictions >= 0.5
+        mask = pred_mask.squeeze().astype(np.uint8)
+        annotations = create_detection_annotation_from_anomaly_heatmap(
             mask, predictions, self.label_map
         )
         if len(annotations) == 0:

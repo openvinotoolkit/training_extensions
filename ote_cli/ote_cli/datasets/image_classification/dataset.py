@@ -16,7 +16,7 @@ Module contains ImageClassificationDataset
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from torchreid.integration.sc.utils import ClassificationDatasetAdapter
+from torchreid_tasks.utils import ClassificationDatasetAdapter
 
 
 class ImageClassificationDataset(ClassificationDatasetAdapter):
