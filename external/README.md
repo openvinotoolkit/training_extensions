@@ -47,9 +47,10 @@ ID | Name | Complexity (GFlops) | Model size (MB) | Path
 Custom_Rotated_Detection_via_Instance_Segmentation_MaskRCNN_EfficientNetB2B | MaskRCNN-EfficientNetB2B | 68.48 | 13.27 | mmdetection/configs/rotated_detection/efficientnetb2b_maskrcnn/template.yaml
 Custom_Rotated_Detection_via_Instance_Segmentation_MaskRCNN_ResNet50 | MaskRCNN-ResNet50 | 533.8 | 177.9 | mmdetection/configs/rotated_detection/resnet50_maskrcnn/template.yaml
 
-## Semantic Segmentaion
+## Semantic Segmentation
 ID | Name | Complexity (GFlops) | Model size (MB) | Path
 ------- | ------- | ------- | ------- | -------
+Custom_Semantic_Segmentation_Lite-HRNet-s-mod2_OCR | Lite-HRNet-s-mod2 OCR | 1.82 | 3.5 | mmsegmentation/configs/custom-sematic-segmentation/ocr-lite-hrnet-s-mod2/template.yaml
 Custom_Semantic_Segmentation_Lite-HRNet-18_OCR | Lite-HRNet-18 OCR | 3.45 | 4.5 | mmsegmentation/configs/custom-sematic-segmentation/ocr-lite-hrnet-18/template.yaml
 Custom_Semantic_Segmentation_Lite-HRNet-18-mod2_OCR | Lite-HRNet-18-mod2 OCR | 3.63 | 4.8 | mmsegmentation/configs/custom-sematic-segmentation/ocr-lite-hrnet-18-mod2/template.yaml
 Custom_Semantic_Segmentation_Lite-HRNet-x-mod3_OCR | Lite-HRNet-x-mod3 OCR | 13.97 | 6.4 | mmsegmentation/configs/custom-sematic-segmentation/ocr-lite-hrnet-x-mod3/template.yaml
