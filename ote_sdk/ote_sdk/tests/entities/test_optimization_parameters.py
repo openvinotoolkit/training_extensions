@@ -80,7 +80,7 @@ class TestOptimizationParameters:
             is opt_params.update_progress(1)
             is opt_params.update_progress(0, 0.3)
             is opt_params.update_progress(0.5, 1.4)
-            is opt_params.update_progress(1, 6)
+            is opt_params.update_progress(1, -6.1)
             is None
         )
         assert opt_params.save_model() is None
@@ -93,7 +93,7 @@ class TestOptimizationParameters:
                 is opt_params.update_progress(1)
                 is opt_params.update_progress(0, 0.3)
                 is opt_params.update_progress(0.5, 1.4)
-                is opt_params.update_progress(1, 6)
+                is opt_params.update_progress(1, -6.1)
             is None
         )
         assert opt_params.save_model() is None
