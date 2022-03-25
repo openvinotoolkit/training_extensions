@@ -91,7 +91,7 @@ class OTESegmentationConfig(ConfigurableParameters):
         )
 
         num_workers = configurable_integer(
-            default_value=0,
+            default_value=4,
             min_value=0,
             max_value=8,
             header="Number of cpu threads to use during batch generation",
@@ -115,7 +115,7 @@ class OTESegmentationConfig(ConfigurableParameters):
         header = string_attribute("Postprocessing")
         description = header
 
-        class_name = selectable(default_value=Models.BlurSegmetation,
+        class_name = selectable(default_value=Models.BlurSegmentation,
                                 header="Model class for inference",
                                 description="Model classes with defined pre- and postprocessing",
                                 editable=False,
