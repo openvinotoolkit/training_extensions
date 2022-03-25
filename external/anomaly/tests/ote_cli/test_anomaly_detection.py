@@ -41,20 +41,20 @@ from ote_sdk.test_suite.e2e_test_system import e2e_pytest_component
 from ote_cli.registry import Registry
 
 args = {
-    '--train-ann-file': 'data/anomaly/detection/train.json',
-    '--train-data-roots': 'data/anomaly/shapes',
-    '--val-ann-file': 'data/anomaly/detection/val.json',
-    '--val-data-roots': 'data/anomaly/shapes',
-    '--test-ann-files': 'data/anomaly/detection/test.json',
-    '--test-data-roots': 'data/anomaly/shapes',
-    '--input': 'data/anomaly/shapes/test/hexagon',
-    'train_params': [],
+    "--train-ann-file": "data/anomaly/detection/train.json",
+    "--train-data-roots": "data/anomaly/shapes",
+    "--val-ann-file": "data/anomaly/detection/val.json",
+    "--val-data-roots": "data/anomaly/shapes",
+    "--test-ann-files": "data/anomaly/detection/test.json",
+    "--test-data-roots": "data/anomaly/shapes",
+    "--input": "data/anomaly/shapes/test/hexagon",
+    "train_params": [],
 }
 
-root = '/tmp/ote_cli/'
+root = "/tmp/ote_cli/"
 ote_dir = os.getcwd()
 
-templates = Registry('external').filter(task_type='ANOMALY_DETECTION').templates
+templates = Registry("external").filter(task_type="ANOMALY_DETECTION").templates
 templates_ids = [template.model_template_id for template in templates]
 
 
