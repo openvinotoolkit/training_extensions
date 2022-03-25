@@ -331,6 +331,7 @@ class ImageStreamer(BaseStreamer):
         self.media_type = MediaType.IMAGE
         self.filenames = _get_filenames(path=path, media_type=MediaType.IMAGE)
 
+    # pylint: disable=arguments-differ
     @staticmethod
     def get_stream(stream_input: str) -> Iterable[np.ndarray]:
         image = cv2.imread(stream_input)

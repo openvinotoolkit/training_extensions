@@ -127,7 +127,7 @@ class AnomalyNNCFTask(AnomalyInferenceTask, IOptimizationTask):
             for key in model_data["model"].keys():
                 if key.startswith("model."):
                     new_key = key.replace("model.", "")
-                    res = re.search("nncf_module\.(\w+)_backbone\.(.*)", new_key)
+                    res = re.search(r"nncf_module\.(\w+)_backbone\.(.*)", new_key)
                     if res:
                         new_key = f"nncf_module.{res.group(1)}_model.backbone.{res.group(2)}"
                     nncf_modules[new_key] = model_data["model"][key]
