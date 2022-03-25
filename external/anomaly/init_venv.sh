@@ -104,8 +104,8 @@ else
   echo torchvision==${TORCHVISION_VERSION}+cu${CUDA_VERSION_CODE} >> ${CONSTRAINTS_FILE}
 fi
 
-pip install -r requirements.txt
-pip install -e .
+pip install -r requirements.txt || exit 1
+pip install -e . || exit 1
 
 # Install OTE SDK
 pip install -e ../../ote_sdk/ || exit 1
