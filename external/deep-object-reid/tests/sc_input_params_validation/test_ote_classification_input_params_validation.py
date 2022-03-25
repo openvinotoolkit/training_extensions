@@ -9,6 +9,7 @@ from torchreid_tasks.model_wrappers.classification import (
     OteClassification,
     sigmoid_numpy,
     softmax_numpy,
+    get_hierarchical_predictions,
     get_multiclass_predictions,
     get_multilabel_predictions,
     preprocess_features_for_actmap,
@@ -53,6 +54,41 @@ class TestClassificationFunctionsParamsValidation:
         """
         with pytest.raises(ValueError):
             softmax_numpy(x="unexpected string")  # type: ignore
+
+    @e2e_pytest_unit
+    def test_get_hierarchical_predictions_params_validation(self):
+        """
+        <b>Description:</b>
+        Check "get_hierarchical_predictions" function input parameters validation
+
+        <b>Input data:</b>
+        "get_hierarchical_predictions" unexpected type parameters
+
+        <b>Expected results:</b>
+        Test passes if ValueError exception is raised when unexpected type object is specified as
+        input parameter for "get_hierarchical_predictions" function
+        """
+        correct_values_dict = {
+            "logits": np.random.randint(low=0, high=255, size=(10, 16, 3)),
+            "multihead_class_info": {"multihead": "dictionary"},
+        }
+        unexpected_str = "unexpected string"
+        unexpected_values = [
+            # Unexpected string is specified as "logits" parameter
+            ("logits", unexpected_str),
+            # Unexpected string is specified as "multihead_class_info" parameter
+            ("multihead_class_info", unexpected_str),
+            # Unexpected string is specified as "pos_thr" parameter
+            ("pos_thr", unexpected_str),
+            # Unexpected string is specified as "activate" parameter
+            ("activate", unexpected_str),
+        ]
+
+        check_value_error_exception_raised(
+            correct_parameters=correct_values_dict,
+            unexpected_values=unexpected_values,
+            class_or_function=get_hierarchical_predictions,
+        )
 
     @e2e_pytest_unit
     def test_get_multiclass_predictions_params_validation(self):

@@ -45,7 +45,7 @@ class MockOpenVinoInferencer(OpenVINOClassificationInferencer):
         pass
 
 
-class TestOpenVINODetectionTaskInputParamsValidation:
+class TestOpenVINOClassificationTaskInputParamsValidation:
     @e2e_pytest_unit
     def test_openvino_task_init_params_validation(self):
         """

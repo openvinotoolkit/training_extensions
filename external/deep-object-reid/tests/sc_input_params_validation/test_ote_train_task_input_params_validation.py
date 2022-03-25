@@ -67,7 +67,7 @@ class TestOTEClassificationTrainingTaskInputParamsValidation:
             task.save_model(output_model="unexpected string")  # type: ignore
 
     @e2e_pytest_unit
-    def test_ote_classification_train_task_input_params_validation(self):
+    def test_ote_classification_train_task_train_input_params_validation(self):
         """
         <b>Description:</b>
         Check OTEClassificationTrainingTask object "train" method input parameters validation

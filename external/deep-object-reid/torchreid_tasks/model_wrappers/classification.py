@@ -164,6 +164,7 @@ def get_hierarchical_predictions(logits: np.ndarray, multihead_class_info: dict,
     return predicted_labels
 
 
+@check_input_parameters_type()
 def get_multiclass_predictions(logits: np.ndarray, activate: bool = True):
 
     index = np.argmax(logits)
