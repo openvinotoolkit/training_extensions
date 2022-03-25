@@ -21,6 +21,7 @@ from ote_sdk.entities.metrics import (
     MatrixChartInfo,
     MatrixMetric,
     MatrixMetricsGroup,
+    MultiScorePerformance,
     NullMetric,
     NullPerformance,
     Performance,
@@ -1094,3 +1095,67 @@ class TestNullPerformance:
         score_metric = TestScoreMetric().score_metric()
         performance = Performance(score_metric)
         assert null_performance != performance
+
+
+@pytest.mark.components(OteSdkComponent.OTE_SDK)
+class TestMultiScorePerformance:
+    @pytest.mark.priority_medium
+    @pytest.mark.unit
+    @pytest.mark.reqids(Requirements.REQ_1)
+    def test_multi_score_performance(self):
+        """
+        <b>Description:</b>
+        Check MultiScorePerformance class
+
+        <b>Input data:</b>
+        MultiScorePerformance object with specified score
+
+        <b>Expected results:</b>
+        Test passes if MultiScorePerformance object score attribute and __eq__ and __repr__ method return
+        expected values
+
+        <b>Steps</b>
+        1. Check primary and additional score attributes for MultiScorePerformance object
+        2. Check primary and additional score attributes for MultiScorePerformance object when only primary score is
+        passed
+        3. Check primary and additional score attributes for MultiScorePerformance object when only additional score is
+        passed
+        4. Check __eq__ method for equal and unequal Performance objects
+        5. Check __repr__ method
+        """
+        # Positive scenario for Performance object with default parameters
+        primary_score = TestScoreMetric().score_metric()
+        additional_score = TestScoreMetric().score_metric()
+        default_parameters_performance = MultiScorePerformance(
+            primary_score, [additional_score]
+        )
+        assert default_parameters_performance.score == primary_score
+        assert default_parameters_performance.primary_score == primary_score
+        assert default_parameters_performance.additional_scores == [additional_score]
+        assert default_parameters_performance.dashboard_metrics == []
+        # Positive scenario for Performance object with only primary metric
+        only_primary_performance = MultiScorePerformance(primary_score)
+        assert only_primary_performance.score == primary_score
+        assert only_primary_performance.primary_score == primary_score
+        assert only_primary_performance.additional_scores == []
+        assert only_primary_performance.dashboard_metrics == []
+        # Positive scenario for Performance object with only additional metric
+        only_additional_performance = MultiScorePerformance(
+            additional_scores=[additional_score]
+        )
+        assert only_additional_performance.score == additional_score
+        assert only_additional_performance.primary_score is None
+        assert only_additional_performance.additional_scores == [additional_score]
+        assert only_additional_performance.dashboard_metrics == []
+        # Checking __eq__ method
+        equal_default_parameters_performance = MultiScorePerformance(
+            primary_score, [additional_score]
+        )
+        assert default_parameters_performance == equal_default_parameters_performance
+        assert default_parameters_performance != only_primary_performance
+        # Checking __repr__ method
+        assert (
+            repr(default_parameters_performance)
+            == "MultiScorePerformance(score: 2.0, primary_metric: ScoreMetric(name=`Test ScoreMetric`, score=`2.0`), "
+            "additional_metrics: (1 metrics), dashboard: (0 metric groups))"
+        )

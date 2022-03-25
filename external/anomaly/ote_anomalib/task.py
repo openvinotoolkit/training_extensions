@@ -225,7 +225,7 @@ class BaseAnomalyTask(ITrainingTask, IInferenceTask, IEvaluationTask, IExportTas
         if self.task_type == TaskType.ANOMALY_CLASSIFICATION:
             metric = MetricsHelper.compute_f_measure(output_resultset)
         elif self.task_type == TaskType.ANOMALY_SEGMENTATION:
-            metric = MetricsHelper.compute_anomaly_localization_scores(output_resultset)
+            metric = MetricsHelper.compute_anomaly_segmentation_scores(output_resultset)
         else:
             raise ValueError(f"Unknown task type: {self.task_type}")
         output_resultset.performance = metric.get_performance()

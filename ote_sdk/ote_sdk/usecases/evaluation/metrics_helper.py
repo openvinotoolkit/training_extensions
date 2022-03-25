@@ -8,7 +8,10 @@ algorithm implementers to obtain the metrices """
 
 from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.usecases.evaluation.accuracy import Accuracy
-from ote_sdk.usecases.evaluation.anomaly_metrics import AnomalyLocalizationScores
+from ote_sdk.usecases.evaluation.anomaly_metrics import (
+    AnomalyDetectionScores,
+    AnomalySegmentationScores,
+)
 from ote_sdk.usecases.evaluation.averaging import MetricAverageMethod
 from ote_sdk.usecases.evaluation.dice import DiceAverage
 from ote_sdk.usecases.evaluation.f_measure import FMeasure
@@ -71,13 +74,25 @@ class MetricsHelper:
         return Accuracy(resultset=resultset, average=average)
 
     @staticmethod
-    def compute_anomaly_localization_scores(
+    def compute_anomaly_segmentation_scores(
         resultset: ResultSetEntity,
-    ) -> AnomalyLocalizationScores:
+    ) -> AnomalySegmentationScores:
         """
-        Compute the anomaly localization performance metrics on an anomaly segmentation/detection resultset.
+        Compute the anomaly localization performance metrics on an anomaly segmentation resultset.
 
         :param resultset: The resultset used to compute the metrics
         :return: AnomalyLocalizationScores object
         """
-        return AnomalyLocalizationScores(resultset)
+        return AnomalySegmentationScores(resultset)
+
+    @staticmethod
+    def compute_anomaly_detection_scores(
+        resultset: ResultSetEntity,
+    ) -> AnomalyDetectionScores:
+        """
+        Compute the anomaly localization performance metrics on an anomaly detection resultset.
+
+        :param resultset: The resultset used to compute the metrics
+        :return: AnomalyLocalizationScores object
+        """
+        return AnomalyDetectionScores(resultset)
