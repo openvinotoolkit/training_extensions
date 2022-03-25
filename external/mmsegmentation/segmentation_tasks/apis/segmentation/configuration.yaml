@@ -4,7 +4,7 @@ id: ""
 learning_parameters:
   batch_size:
     affects_outcome_of: TRAINING
-    auto_hpo_state: not_possible
+    auto_hpo_state: POSSIBLE
     auto_hpo_value: null
     default_value: 8
     description:
@@ -26,12 +26,11 @@ learning_parameters:
     warning:
       Increasing this value may cause the system to use more memory than available,
       potentially causing out of memory errors, please update with caution.
-    auto_hpo_state: POSSIBLE
   description: Learning Parameters
   header: Learning Parameters
   learning_rate:
     affects_outcome_of: TRAINING
-    auto_hpo_state: not_possible
+    auto_hpo_state: POSSIBLE
     auto_hpo_value: null
     default_value: 0.001
     description:
@@ -50,7 +49,6 @@ learning_parameters:
     value: 0.001
     visible_in_ui: true
     warning: null
-    auto_hpo_state: POSSIBLE
   learning_rate_fixed_iters:
     affects_outcome_of: TRAINING
     auto_hpo_state: not_possible
