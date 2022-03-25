@@ -12,10 +12,11 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import shutil
 import json
 import os
+import shutil
 from subprocess import run  # nosec
+
 
 def get_template_rel_dir(template):
     return os.path.dirname(os.path.relpath(template.model_template_path))
@@ -188,7 +189,11 @@ def ote_eval_openvino_testing(template, root, ote_dir, args, threshold):
         exported_performance = json.load(read_file)
 
     for k in trained_performance.keys():
-        assert abs(trained_performance[k] - exported_performance[k]) / trained_performance[k] <= threshold, f"{trained_performance[k]=}, {exported_performance[k]=}"
+        assert (
+            abs(trained_performance[k] - exported_performance[k])
+            / (trained_performance[k] + 1e-10)
+            <= threshold
+        ), f"{trained_performance[k]=}, {exported_performance[k]=}"
 
 
 def ote_demo_testing(template, root, ote_dir, args):
@@ -285,7 +290,11 @@ def ote_eval_deployment_testing(template, root, ote_dir, args, threshold):
         deployed_performance = json.load(read_file)
 
     for k in exported_performance.keys():
-        assert abs(exported_performance[k] - deployed_performance[k]) / exported_performance[k] <= threshold, f"{exported_performance[k]=}, {deployed_performance[k]=}"
+        assert (
+            abs(exported_performance[k] - deployed_performance[k])
+            / (exported_performance[k] + 1e-10)
+            <= threshold
+        ), f"{exported_performance[k]=}, {deployed_performance[k]=}"
 
 
 def ote_demo_deployment_testing(template, root, ote_dir, args):
@@ -408,8 +417,11 @@ def nncf_eval_testing(template, root, ote_dir, args, threshold):
         evaluated_performance = json.load(read_file)
 
     for k in trained_performance.keys():
-        assert abs(trained_performance[k] - evaluated_performance[k]) / trained_performance[k] <= threshold, \
-            f"{trained_performance[k]=}, {evaluated_performance[k]=}"
+        assert (
+            abs(trained_performance[k] - evaluated_performance[k])
+            / (trained_performance[k] + 1e-10)
+            <= threshold
+        ), f"{trained_performance[k]=}, {evaluated_performance[k]=}"
 
 
 def nncf_eval_openvino_testing(template, root, ote_dir, args):

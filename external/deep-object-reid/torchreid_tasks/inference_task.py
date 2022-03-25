@@ -282,7 +282,7 @@ class OTEClassificationInferenceTask(IInferenceTask, IEvaluationTask, IExportTas
                 onnx_model_path = os.path.join(optimized_model_dir, 'model.onnx')
                 with force_fp32(self._model):
                     self._model.old_forward = self._model.forward
-                    self._model.forward = lambda x: self._model.old_forward(x, return_all=True)
+                    self._model.forward = lambda x: self._model.old_forward(x, return_all=True, apply_scale=True)
                     export_onnx(self._model.eval(), self._cfg, onnx_model_path,
                                 opset=self._cfg.model.export_onnx_opset, output_names=['logits', 'features', 'vector'])
                     self._model.forward = self._model.old_forward

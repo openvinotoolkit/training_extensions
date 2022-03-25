@@ -16,7 +16,6 @@ from ote_sdk.configuration.elements.primitive_parameters import (
     set_common_metadata,
     string_attribute,
 )
-from ote_sdk.configuration.elements.utils import attr_strict_int_validator
 from ote_sdk.configuration.enums import AutoHPOState, ConfigElementType, ModelLifecycle
 from ote_sdk.configuration.ui_rules import NullUIRules, Rule, UIRules
 from ote_sdk.tests.configuration.dummy_config import SomeEnumSelectable
