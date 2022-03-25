@@ -205,7 +205,7 @@ class TestConfigurableParameters:
         ]
 
         # Simulate override
-        config.dummy_float_selectable = auto_hpo_result_float - 0.001
+        config.dummy_float_selectable = auto_hpo_result_float - 1
         config.subset_parameters.train_proportion = auto_hpo_result_train_prop - 0.001
 
         config.update_auto_hpo_states()
