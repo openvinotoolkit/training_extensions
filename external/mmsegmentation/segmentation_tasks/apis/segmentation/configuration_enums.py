@@ -19,7 +19,7 @@ class Models(ConfigurableEnum):
     This Enum represents the types of models for inference
     """
     Segmentation = 'segmentation'
-    BlurSegmetation = 'blur_segmentation'
+    BlurSegmentation = 'blur_segmentation'
 
 class POTQuantizationPreset(ConfigurableEnum):
     """

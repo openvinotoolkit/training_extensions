@@ -224,6 +224,9 @@ class BaseAnomalyTask(ITrainingTask, IInferenceTask, IEvaluationTask, IExportTas
         """
         if self.task_type == TaskType.ANOMALY_CLASSIFICATION:
             metric = MetricsHelper.compute_f_measure(output_resultset)
+        elif self.task_type == TaskType.ANOMALY_DETECTION:
+            global_resultset, local_resultset = split_local_global_resultset(output_resultset)
+            metric = MetricsHelper.compute_f_measure(local_resultset)
         elif self.task_type == TaskType.ANOMALY_SEGMENTATION:
             metric = MetricsHelper.compute_anomaly_segmentation_scores(output_resultset)
         else:

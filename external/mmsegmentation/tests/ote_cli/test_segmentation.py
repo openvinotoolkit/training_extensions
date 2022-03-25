@@ -1,4 +1,4 @@
-"""Tests for image classification with OTE CLI"""
+"""Tests for semantic segmentation with OTE CLI"""
 
 # Copyright (C) 2021 Intel Corporation
 #
@@ -15,12 +15,14 @@
 # and limitations under the License.
 
 import os
+
 import pytest
 
 from ote_sdk.test_suite.e2e_test_system import e2e_pytest_component
 
 from ote_cli.registry import Registry
-from common import (
+
+from ote_cli.utils.tests import (
     create_venv,
     get_some_vars,
     ote_demo_deployment_testing,
@@ -43,34 +45,38 @@ from common import (
 
 
 args = {
-    '--train-ann-file': '',
-    '--train-data-roots': 'data/classification/train',
-    '--val-ann-file': '',
-    '--val-data-roots': 'data/classification/val',
-    '--test-ann-files': '',
-    '--test-data-roots': 'data/classification/val',
-    '--input': 'data/classification/val/0',
+    '--train-ann-file': 'data/segmentation/custom/annotations/training',
+    '--train-data-roots': 'data/segmentation/custom/images/training',
+    '--val-ann-file': 'data/segmentation/custom/annotations/training',
+    '--val-data-roots': 'data/segmentation/custom/images/training',
+    '--test-ann-files': 'data/segmentation/custom/annotations/training',
+    '--test-data-roots': 'data/segmentation/custom/images/training',
+    '--input': 'data/segmentation/custom/images/training',
     'train_params': [
         'params',
-        '--learning_parameters.max_num_epochs',
-        '2',
+        '--learning_parameters.learning_rate_fixed_iters',
+        '0',
+        '--learning_parameters.learning_rate_warmup_iters',
+        '25',
+        '--learning_parameters.num_iters',
+        '20',
         '--learning_parameters.batch_size',
-        '2',
+        '2'
     ]
 }
 
 root = '/tmp/ote_cli/'
 ote_dir = os.getcwd()
 
-templates = Registry('external').filter(task_type='CLASSIFICATION').templates
+templates = Registry('external').filter(task_type='SEGMENTATION').templates
 templates_ids = [template.model_template_id for template in templates]
 
 
-class TestToolsClassification:
+class TestToolsSegmentation:
     @e2e_pytest_component
     def test_create_venv(self):
-        work_dir, template_work_dir, algo_backend_dir = get_some_vars(templates[0], root)
-        create_venv(algo_backend_dir, work_dir, template_work_dir)
+        work_dir, _, algo_backend_dir = get_some_vars(templates[0], root)
+        create_venv(algo_backend_dir, work_dir)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
@@ -90,7 +96,7 @@ class TestToolsClassification:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_ote_eval_openvino(self, template):
-        ote_eval_openvino_testing(template, root, ote_dir, args, threshold=0.0)
+        ote_eval_openvino_testing(template, root, ote_dir, args, threshold=0.1)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
@@ -140,14 +146,16 @@ class TestToolsClassification:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.skip(reason="Issue with model loading 76853")
     def test_nncf_eval(self, template):
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
 
         nncf_eval_testing(template, root, ote_dir, args, threshold=0.001)
-    
+
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.skip(reason="Issue with model loading 76853")
     def test_nncf_eval_openvino(self, template):
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
