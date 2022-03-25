@@ -320,7 +320,7 @@ class TestUtilsFunctionsParamsValidation:
             # Unexpected dictionary is specified as "features" parameter
             ("features", None),
             # Unexpected dictionary is specified as "output_res" parameter
-            ("output_res", {"unexpected": "dictionary"}),
+            ("output_res", None),
         ]
 
         check_value_error_exception_raised(
