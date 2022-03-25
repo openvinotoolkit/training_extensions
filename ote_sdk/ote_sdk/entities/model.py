@@ -18,7 +18,7 @@ from ote_sdk.usecases.adapters.model_adapter import (
     IDataSource,
     ModelAdapter,
 )
-from ote_sdk.utils.argument_checks import check_input_parameters_type
+from ote_sdk.utils.argument_checks import DatasetParamTypeCheck, check_input_parameters_type
 from ote_sdk.utils.time_utils import now
 
 if TYPE_CHECKING:
@@ -90,7 +90,7 @@ class ModelEntity:
 
     # TODO: add tags and allow filtering on those in modelrepo
     # pylint: disable=too-many-arguments,too-many-locals; Requires refactor
-    @check_input_parameters_type()
+    @check_input_parameters_type({"train_dataset": DatasetParamTypeCheck})
     def __init__(
         self,
         train_dataset: "DatasetEntity",
