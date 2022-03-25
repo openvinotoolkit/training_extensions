@@ -260,9 +260,8 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
         """
         is_full_box = Rectangle.is_full_box(self.roi.shape)
         annotations = []
-        if is_full_box and labels is None and not include_empty and not include_ignored:
+        if is_full_box and labels is None and include_empty and include_ignored:
             # Fast path for the case where we do not need to change the shapes
-            # todo: this line is incorrect. CVS-75919
             annotations = self.annotation_scene.annotations
         else:
             # Todo: improve speed. This is O(n) for n shapes.
