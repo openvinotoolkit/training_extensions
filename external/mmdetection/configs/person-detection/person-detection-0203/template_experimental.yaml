@@ -5,8 +5,7 @@ task_type: DETECTION
 task_family: VISION
 instantiation: "CLASS"
 summary: Medium Person Detection model for small and hard objects (MobileNetV2-ATSS).
-application:
-  ~
+application: ~
 
 # Algo backend.
 framework: OTEDetection v2.9.1
@@ -29,7 +28,7 @@ hyper_parameters:
       batch_size:
         default_value: 14
       learning_rate:
-      # LR reduction proportionally to the batch size decrease (because gpu_num=1)
+        # LR reduction proportionally to the batch size decrease (because gpu_num=1)
         default_value: 0.0125
       learning_rate_warmup_iters:
         default_value: 500
@@ -52,6 +51,5 @@ training_targets:
 # Stats.
 gigaflops: 6.57
 size: 2.36
-
 # Obsolete
 # gpu_nums: 2

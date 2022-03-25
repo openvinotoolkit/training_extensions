@@ -5,8 +5,7 @@ task_type: DETECTION
 task_family: VISION
 instantiation: "CLASS"
 summary: Fastest Person Detection model for large and simple objects (MobileNetV2-SSD).
-application:
-  ~
+application: ~
 
 # Algo backend.
 framework: OTEDetection v2.9.1
@@ -52,6 +51,5 @@ training_targets:
 # Stats.
 gigaflops: 0.79
 size: 1.89
-
 # Obsolete
 # gpu_nums: 2

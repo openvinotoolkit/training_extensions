@@ -5,8 +5,7 @@ task_type: DETECTION
 task_family: VISION
 instantiation: "CLASS"
 summary: Accurate person detection model (Resnet50-VFnet) for classic and topdown scenario.
-application:
-  ~
+application: ~
 
 # Algo backend.
 framework: OTEDetection v2.9.1
@@ -52,6 +51,5 @@ training_targets:
 # Stats.
 gigaflops: 449
 size: 36.6
-
 # Obsolete
 # gpu_nums: 4

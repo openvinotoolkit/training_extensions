@@ -5,8 +5,7 @@ task_type: DETECTION
 task_family: VISION
 instantiation: "CLASS"
 summary: Moderate Person Detection model (Resnet50-ATSS) for classic and topdown scenario.
-application:
-  ~
+application: ~
 
 # Algo backend.
 framework: OTEDetection v2.9.1
@@ -52,6 +51,5 @@ training_targets:
 # Stats.
 gigaflops: 362.91
 size: 32.65
-
 # Obsolete
 # gpu_nums: 4
