@@ -260,7 +260,7 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
         """
         is_full_box = Rectangle.is_full_box(self.roi.shape)
         annotations = []
-        if is_full_box and labels is None and not include_empty:
+        if is_full_box and labels is None and not include_empty and not include_ignored:
             # Fast path for the case where we do not need to change the shapes
             # todo: this line is incorrect. CVS-75919
             annotations = self.annotation_scene.annotations
@@ -284,7 +284,7 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
                     shape_labels = [
                         label
                         for label in shape_labels
-                        if label.label not in self.__ignored_labels
+                        if label.label not in self.ignored_labels
                     ]
 
                 if labels is not None:
@@ -355,7 +355,7 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
             if labels is None or label.get_label() in labels:
                 filtered_labels.add(label.get_label())
         if not include_ignored:
-            filtered_labels -= self.__ignored_labels
+            filtered_labels -= self.ignored_labels
         return sorted(list(filtered_labels), key=lambda x: x.name)
 
     def get_shapes_labels(
@@ -381,7 +381,7 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
         )
         label_set = {scored_label.get_label() for scored_label in scored_label_set}
         if not include_ignored:
-            label_set -= self.__ignored_labels
+            label_set -= self.ignored_labels
         if labels is None:
             return list(label_set)
         return [label for label in label_set if label in labels]
