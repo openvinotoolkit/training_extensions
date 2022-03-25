@@ -8,7 +8,7 @@ pip install wheel
 pip install ote_sdk/
 pip install ote_cli/
 pip install pre-commit
-pip install pylint
+pip install pylint==2.12.1
 echo ""
 echo ""
 echo ""
