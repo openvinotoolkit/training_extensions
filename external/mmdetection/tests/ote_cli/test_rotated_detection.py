@@ -36,7 +36,6 @@ from ote_cli.utils.tests import (
     ote_export_testing,
 )
 
-pytestmark = pytest.mark.skipif(True, reason="REMOVE THE LINE BEFORE MERGE TO DEVELOP")
 args = {
     '--train-ann-file': 'data/car_tree_bug/annotations/instances_default.json',
     '--train-data-roots': 'data/car_tree_bug/images',

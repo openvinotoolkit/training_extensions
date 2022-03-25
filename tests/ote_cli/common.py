@@ -19,7 +19,7 @@ from subprocess import run  # nosec
 import logging
 
 
-args_paths = {
+default_train_args_paths = {
     '--train-ann-file': 'data/airport/annotation_example_train.json',
     '--train-data-roots': 'data/airport/train',
     '--val-ann-file': 'data/airport/annotation_example_train.json',
@@ -35,6 +35,7 @@ wrong_paths = {
                }
 
 logger = logging.getLogger(__name__)
+
 
 def get_template_rel_dir(template):
     return os.path.dirname(os.path.relpath(template.model_template_path))
