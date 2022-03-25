@@ -222,7 +222,7 @@ class AnomalyInferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload
         Raises:
             Exception: If export_type is not ExportType.OPENVINO
         """
-        assert export_type == ExportType.OPENVINO
+        assert export_type == ExportType.OPENVINO, f"Incorrect export_type={export_type}"
         output_model.model_format = ModelFormat.OPENVINO
         output_model.optimization_type = ModelOptimizationType.MO
 

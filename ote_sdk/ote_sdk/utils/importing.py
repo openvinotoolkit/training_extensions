@@ -26,7 +26,6 @@ def get_impl_class(impl_path):
     """Returns a class by its path in package."""
 
     task_impl_module_name, task_impl_class_name = impl_path.rsplit(".", 1)
-    logger.debug(f"task_impl_module_name={task_impl_module_name}, task_impl_class_name={task_impl_class_name}")
     task_impl_module = importlib.import_module(task_impl_module_name)
     task_impl_class = getattr(task_impl_module, task_impl_class_name)
 
