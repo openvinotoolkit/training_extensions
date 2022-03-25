@@ -43,7 +43,6 @@ from common import (
     nncf_eval_openvino_testing,
 )
 
-pytestmark = pytest.mark.skipif(True, reason="REMOVE THE LINE BEFORE MERGE TO DEVELOP")
 args = {
     '--train-ann-file': 'data/segmentation/custom/annotations/training',
     '--train-data-roots': 'data/segmentation/custom/images/training',

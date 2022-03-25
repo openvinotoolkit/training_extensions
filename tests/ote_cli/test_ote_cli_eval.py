@@ -23,7 +23,7 @@ from ote_cli.registry import Registry
 from common import (
     create_venv,
     get_some_vars,
-    args_paths,
+    default_train_args_paths,
     wrong_paths,
     ote_common,
     logger
@@ -72,7 +72,7 @@ class TestEvalCommon:
         error_string = "ote eval: error: the following arguments are required: --test-ann-files"
         command_args = [template.model_template_id,
                         '--test-data-roots',
-                        f'{os.path.join(ote_dir, args_paths["--test-data-roots"])}',
+                        f'{os.path.join(ote_dir, default_train_args_paths["--test-data-roots"])}',
                         '--load-weights',
                         f'./trained_{template.model_template_id}/weights.pth',
                         '--save-performance',
@@ -87,7 +87,7 @@ class TestEvalCommon:
         error_string = "ote eval: error: the following arguments are required: --test-data-roots"
         command_args = [template.model_template_id,
                         '--test-ann-file',
-                        f'{os.path.join(ote_dir, args_paths["--test-ann-files"])}',
+                        f'{os.path.join(ote_dir, default_train_args_paths["--test-ann-files"])}',
                         '--load-weights',
                         f'./trained_{template.model_template_id}/weights.pth',
                         '--save-performance',
@@ -102,9 +102,9 @@ class TestEvalCommon:
         error_string = "ote eval: error: the following arguments are required: --load-weights"
         command_args = [template.model_template_id,
                         '--test-ann-file',
-                        f'{os.path.join(ote_dir, args_paths["--test-ann-files"])}',
+                        f'{os.path.join(ote_dir, default_train_args_paths["--test-ann-files"])}',
                         '--test-data-roots',
-                        f'{os.path.join(ote_dir, args_paths["--test-data-roots"])}',
+                        f'{os.path.join(ote_dir, default_train_args_paths["--test-data-roots"])}',
                         '--save-performance',
                         f'./trained_{template.model_template_id}/performance.json']
         ret = ote_common(template, root, 'eval', command_args)
@@ -120,7 +120,7 @@ class TestEvalCommon:
                             '--test-ann-file',
                             case,
                             '--test-data-roots',
-                            f'{os.path.join(ote_dir, args_paths["--test-data-roots"])}',
+                            f'{os.path.join(ote_dir, default_train_args_paths["--test-data-roots"])}',
                             '--load-weights',
                             f'./trained_{template.model_template_id}/weights.pth',
                             '--save-performance',
@@ -136,7 +136,7 @@ class TestEvalCommon:
         for case in wrong_paths.values():
             command_args = [template.model_template_id,
                             '--test-ann-file',
-                            f'{os.path.join(ote_dir, args_paths["--test-ann-files"])}',
+                            f'{os.path.join(ote_dir, default_train_args_paths["--test-ann-files"])}',
                             '--test-data-roots',
                             case,
                             '--load-weights',
@@ -154,9 +154,9 @@ class TestEvalCommon:
         for case in wrong_paths.values():
             command_args = [template.model_template_id,
                             '--test-ann-file',
-                            f'{os.path.join(ote_dir, args_paths["--test-ann-files"])}',
+                            f'{os.path.join(ote_dir, default_train_args_paths["--test-ann-files"])}',
                             '--test-data-roots',
-                            f'{os.path.join(ote_dir, args_paths["--test-data-roots"])}',
+                            f'{os.path.join(ote_dir, default_train_args_paths["--test-data-roots"])}',
                             '--load-weights',
                             case,
                             '--save-performance',

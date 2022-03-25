@@ -46,7 +46,7 @@ def validate_single_path(path: str) -> None:
     Wrapper for single path
     """
     if not is_path_valid(path):
-        raise Exception(f"Path is not valid: {path}")
+        raise ValueError(f"Path is not valid: {path}")
 
 
 def validate_path(test_string: str) -> None:
