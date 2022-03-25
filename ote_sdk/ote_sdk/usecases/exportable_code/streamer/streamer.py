@@ -332,7 +332,6 @@ class ImageStreamer(BaseStreamer):
         self.filenames = _get_filenames(path=path, media_type=MediaType.IMAGE)
 
     @staticmethod
-    # pylint: disable=arguments-differ
     def get_stream(stream_input: str) -> Iterable[np.ndarray]:
         image = cv2.imread(stream_input)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)

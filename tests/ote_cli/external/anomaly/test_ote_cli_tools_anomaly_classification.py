@@ -133,7 +133,7 @@ class TestToolsAnomalyClassification:
             pytest.skip("nncf entrypoint is none")
 
         #TODO(AlexanderDokuchaev): return threshold=0.0001 after fix loading NNCF model
-        nncf_eval_testing(template, root, ote_dir, args, threshold=0.1)
+        nncf_eval_testing(template, root, ote_dir, args, threshold=0.3)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
