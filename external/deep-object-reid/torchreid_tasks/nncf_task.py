@@ -188,7 +188,8 @@ class OTEClassificationNNCFTask(OTEClassificationInferenceTask, IOptimizationTas
                                                     num_train_steps=math.ceil(len(train_subset) /
                                                                               self._cfg.train.batch_size),
                                                     num_val_steps=0, num_test_steps=0,
-                                                    initialization_progress=10,
+                                                    load_progress=5,
+                                                    initialization_progress=5,
                                                     serialization_progress=10)
 
         self.metrics_monitor = DefaultMetricsMonitor()
@@ -226,6 +227,7 @@ class OTEClassificationNNCFTask(OTEClassificationInferenceTask, IOptimizationTas
                                                        **lr_scheduler_kwargs(self._cfg))
 
         logger.info('Start training')
+        time_monitor.on_train_begin()
         run_training(self._cfg, datamanager, train_model, optimizer,
                      scheduler, extra_device_ids, self._cfg.train.lr,
                      should_freeze_aux_models=True,
@@ -235,6 +237,7 @@ class OTEClassificationNNCFTask(OTEClassificationInferenceTask, IOptimizationTas
                      stop_callback=self.stop_callback,
                      nncf_metainfo=self._nncf_metainfo,
                      compression_ctrl=self._compression_ctrl)
+        time_monitor.on_train_end()
 
         self.metrics_monitor.close()
         if self.stop_callback.check_stop():

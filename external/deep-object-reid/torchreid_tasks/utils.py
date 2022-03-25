@@ -401,13 +401,19 @@ class InferenceProgressCallback(TimeMonitorCallback):
 
 
 class OptimizationProgressCallback(TrainingProgressCallback):
-    def __init__(self, update_progress_callback: UpdateProgressCallback,
+    def __init__(self, update_progress_callback: UpdateProgressCallback, load_progress: int,
                  initialization_progress: int, serialization_progress: int, **kwargs):
         super().__init__(update_progress_callback, **kwargs)
-        train_progress = 100 - initialization_progress - serialization_progress
+
+        train_progress = 100 - load_progress - initialization_progress - serialization_progress
+        self.load_steps = self.total_steps * load_progress / train_progress
         self.initialization_steps = self.total_steps * initialization_progress / train_progress
         self.serialization_steps = self.total_steps * serialization_progress / train_progress
-        self.total_steps += self.initialization_steps + self.serialization_steps
+        self.total_steps += self.load_steps + self.initialization_steps + self.serialization_steps
+
+        # set load_steps from the start as the model is already loaded at this point
+        self.current_step = self.load_steps
+        self.update_progress_callback(self.get_progress())
 
     def on_train_end(self, logs=None):
         self.current_step = self.total_steps - self.test_steps - self.serialization_steps
