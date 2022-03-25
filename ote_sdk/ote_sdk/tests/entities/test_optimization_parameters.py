@@ -76,9 +76,12 @@ class TestOptimizationParameters:
         opt_params = OptimizationParameters(False)
         assert opt_params.resume is False
         assert (
-            opt_params.update_progress(-2147483648)
-            is opt_params.update_progress(0)
-            is opt_params.update_progress(2147483648)
+            opt_params.update_progress(0)
+            is opt_params.update_progress(0.5)
+            is opt_params.update_progress(1)
+            is opt_params.update_progress(0, 0.3)
+            is opt_params.update_progress(0.5, 1.4)
+            is opt_params.update_progress(1, 6)
             is None
         )
         assert opt_params.save_model() is None
@@ -86,9 +89,12 @@ class TestOptimizationParameters:
         opt_params = OptimizationParameters(True)
         assert opt_params.resume is True
         assert (
-            opt_params.update_progress(-2147483648)
-            is opt_params.update_progress(0)
-            is opt_params.update_progress(2147483648)
+                opt_params.update_progress(0)
+                is opt_params.update_progress(0.5)
+                is opt_params.update_progress(1)
+                is opt_params.update_progress(0, 0.3)
+                is opt_params.update_progress(0.5, 1.4)
+                is opt_params.update_progress(1, 6)
             is None
         )
         assert opt_params.save_model() is None
