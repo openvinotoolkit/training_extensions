@@ -18,8 +18,6 @@ Utils for dynamically importing stuff
 
 
 import importlib
-from ote_anomalib.logging import get_logger
-logger = get_logger(__name__)
 
 
 def get_impl_class(impl_path):

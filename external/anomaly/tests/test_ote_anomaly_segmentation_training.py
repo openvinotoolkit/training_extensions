@@ -12,10 +12,8 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import glob
 import logging
 import os
-import os.path as osp
 from collections import (namedtuple,
                         OrderedDict)
 from copy import deepcopy
@@ -23,7 +21,6 @@ from pprint import pformat
 from typing import Any, Callable, Dict, List, Optional, Type
 
 import pytest
-import yaml
 from ote_sdk.entities.model import ModelEntity
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.model_template import parse_model_template
@@ -32,7 +29,6 @@ from ote_sdk.entities.subset import Subset
 from ote_sdk.entities.train_parameters import TrainParameters
 
 from ote_anomalib.data.mvtec import OteMvtecDataset
-from ote_anomalib.logging import get_logger
 
 from ote_sdk.configuration.helper import create as ote_sdk_configuration_helper_create
 from ote_sdk.test_suite.training_test_case import (OTETestCaseInterface,

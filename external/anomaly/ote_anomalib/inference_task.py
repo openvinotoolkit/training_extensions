@@ -90,7 +90,6 @@ class AnomalyInferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload
 
         self.trainer: Trainer
 
-
     def get_config(self) -> Union[DictConfig, ListConfig]:
         """Get Anomalib Config from task environment.
 

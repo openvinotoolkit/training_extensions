@@ -266,7 +266,6 @@ def run_export(environment, dataset, task, action_name, expected_optimization_ty
     ), f"In action '{action_name}': Wrong optimization type. " \
        f"exported_model.optimization_type={exported_model.optimization_type}"
 
-
     logger.debug(
         f'For action "{action_name}": Set exported model into environment for export'
     )
