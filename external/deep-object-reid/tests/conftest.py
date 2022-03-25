@@ -5,15 +5,14 @@ try:
     from e2e.conftest_utils import pytest_addoption as _e2e_pytest_addoption # noqa
     from e2e import config # noqa
     from e2e.utils import get_plugins_from_packages
-    from ote_sdk.test_suite.pytest_insertions import *
-    from ote_sdk.test_suite.training_tests_common import REALLIFE_USECASE_CONSTANT
     pytest_plugins = get_plugins_from_packages([e2e])
 except ImportError:
     _e2e_pytest_addoption = None
     pass
-
 import config
-
+import pytest
+from ote_sdk.test_suite.pytest_insertions import *
+from ote_sdk.test_suite.training_tests_common import REALLIFE_USECASE_CONSTANT
 
 pytest_plugins = get_pytest_plugins_from_ote()
 

@@ -1,4 +1,4 @@
-"""Tests for object detection with OTE CLI"""
+"""Tests for anomaly segmentation with OTE CLI"""
 
 # Copyright (C) 2021 Intel Corporation
 #
@@ -16,13 +16,11 @@
 
 import os
 import pytest
-from subprocess import run
 
 from ote_sdk.test_suite.e2e_test_system import e2e_pytest_component
 
 from ote_cli.registry import Registry
-from common import (
-    collect_env_vars,
+from ote_cli.utils.tests import (
     create_venv,
     get_some_vars,
     ote_demo_deployment_testing,
@@ -32,7 +30,6 @@ from common import (
     ote_eval_deployment_testing,
     ote_eval_openvino_testing,
     ote_eval_testing,
-    ote_hpo_testing,
     ote_train_testing,
     ote_export_testing,
     pot_optimize_testing,
@@ -45,34 +42,28 @@ from common import (
 
 
 args = {
-    '--train-ann-file': 'data/airport/annotation_example_train.json',
-    '--train-data-roots': 'data/airport/train',
-    '--val-ann-file': 'data/airport/annotation_example_train.json',
-    '--val-data-roots': 'data/airport/train',
-    '--test-ann-files': 'data/airport/annotation_example_train.json',
-    '--test-data-roots': 'data/airport/train',
-    '--input': 'data/airport/train',
-    'train_params': [
-        'params',
-        '--learning_parameters.num_iters',
-        '2',
-        '--learning_parameters.batch_size',
-        '2'
-    ]
+    "--train-ann-file": "data/anomaly/segmentation/train.json",
+    "--train-data-roots": "data/anomaly/shapes",
+    "--val-ann-file": "data/anomaly/segmentation/val.json",
+    "--val-data-roots": "data/anomaly/shapes",
+    "--test-ann-files": "data/anomaly/segmentation/test.json",
+    "--test-data-roots": "data/anomaly/shapes",
+    "--input": "data/anomaly/shapes/test/hexagon",
+    "train_params": [],
 }
 
-root = '/tmp/ote_cli/'
+root = "/tmp/ote_cli/"
 ote_dir = os.getcwd()
 
-templates = Registry('external').filter(task_type='DETECTION').templates
+templates = Registry("external").filter(task_type="ANOMALY_SEGMENTATION").templates
 templates_ids = [template.model_template_id for template in templates]
 
 
-class TestToolsDetection:
+class TestToolsAnomalySegmentation:
     @e2e_pytest_component
     def test_create_venv(self):
-        work_dir, template_work_dir, algo_backend_dir = get_some_vars(templates[0], root)
-        create_venv(algo_backend_dir, work_dir, template_work_dir)
+        work_dir, _, algo_backend_dir = get_some_vars(templates[0], root)
+        create_venv(algo_backend_dir, work_dir)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
@@ -92,7 +83,7 @@ class TestToolsDetection:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_ote_eval_openvino(self, template):
-        ote_eval_openvino_testing(template, root, ote_dir, args, threshold=0.1)
+        ote_eval_openvino_testing(template, root, ote_dir, args, threshold=0.01)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
@@ -112,17 +103,12 @@ class TestToolsDetection:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_ote_eval_deployment(self, template):
-        ote_eval_deployment_testing(template, root, ote_dir, args, threshold=0.0)
+        ote_eval_deployment_testing(template, root, ote_dir, args, threshold=0.01)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_ote_demo_deployment(self, template):
         ote_demo_deployment_testing(template, root, ote_dir, args)
-
-    @e2e_pytest_component
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_ote_hpo(self, template):
-        ote_hpo_testing(template, root, ote_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
@@ -165,8 +151,3 @@ class TestToolsDetection:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_pot_eval(self, template):
         pot_eval_testing(template, root, ote_dir, args)
-
-    @e2e_pytest_component
-    def test_notebook(self):
-        work_dir = os.path.join(root, 'mmdetection')
-        assert run(['pytest', '--nbmake', 'ote_cli/notebooks/train.ipynb', '-v'], env=collect_env_vars(work_dir)).returncode == 0
