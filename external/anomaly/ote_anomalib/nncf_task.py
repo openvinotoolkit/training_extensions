@@ -17,6 +17,7 @@
 import io
 import json
 import os
+import re
 from typing import Dict, Optional
 
 import torch
@@ -120,18 +121,27 @@ class AnomalyNNCFTask(AnomalyInferenceTask, IOptimizationTask):
         if is_state_nncf(model_data):
             logger.info("Loaded model weights from Task Environment and wrapped by NNCF")
 
-            # Workaround to fix incorrect loading state for wrapped pytorch_lighting model
-            new_model = {}
+            # Fix name mismatch for wrapped model by pytorch_lighting
+            nncf_modules = {}
+            pl_modules = {}
             for key in model_data["model"].keys():
                 if key.startswith("model."):
-                    new_model[key.replace("model.", "")] = model_data["model"][key]
-            model_data["model"] = new_model
+                    new_key = key.replace("model.", "")
+                    res = re.search("nncf_module\.(\w+)_backbone\.(.*)", new_key)
+                    if res:
+                        new_key = f"nncf_module.{res.group(1)}_model.backbone.{res.group(2)}"
+                    nncf_modules[new_key] = model_data["model"][key]
+                else:
+                    pl_modules[key] = model_data["model"][key]
+            model_data["model"] = nncf_modules
 
             self.compression_ctrl, model.model = wrap_nncf_model(
                 model.model,
                 self.optimization_config["nncf_config"],
                 init_state_dict=model_data,
             )
+            # Load extra parameters of pytorch_lighting model
+            model.load_state_dict(pl_modules, strict=False)
         else:
             try:
                 model.load_state_dict(model_data["model"])
