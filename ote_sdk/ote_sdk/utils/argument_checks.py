@@ -11,7 +11,6 @@ import itertools
 import typing
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
-from contextlib import suppress
 from functools import wraps
 from os.path import exists, splitext
 
@@ -81,12 +80,6 @@ def raise_value_error_if_parameter_has_unexpected_type(
                 f"actual value: {parameter_str}"
             )
         return
-    with suppress(AttributeError):
-        if expected_type.__name__ == "DatasetEntity":
-            check_is_parameter_like_dataset(
-                parameter=parameter, parameter_name=parameter_name
-            )
-            return
     if expected_type == float:
         expected_type = (int, float, floating)
     if not isinstance(parameter, expected_type):
@@ -213,10 +206,13 @@ def check_parameter_type(parameter, parameter_name, expected_type):
             )
 
 
-def check_input_parameters_type(checks_types: dict = None):
-    """Decorator to check input parameters type"""
-    if checks_types is None:
-        checks_types = {}
+def check_input_parameters_type(custom_checks: typing.Optional[dict] = None):
+    """
+    Decorator to check input parameters type
+    :param custom_checks: dictionary where key - name of parameter and value - custom check class
+    """
+    if custom_checks is None:
+        custom_checks = {}
 
     def _check_input_parameters_type(function):
         @wraps(function)
@@ -235,21 +231,23 @@ def check_input_parameters_type(checks_types: dict = None):
                     )
                 input_parameters_values_map[key] = value
             # Checking input parameters type
-            for parameter in expected_types_map:
-                input_parameter_actual = input_parameters_values_map.get(parameter)
-                if input_parameter_actual is None:
-                    default_value = expected_types_map.get(parameter).default
+            for parameter_name in expected_types_map:
+                parameter = input_parameters_values_map.get(parameter_name)
+                if parameter is None:
+                    default_value = expected_types_map.get(parameter_name).default
                     # pylint: disable=protected-access
                     if default_value != inspect._empty:  # type: ignore
-                        input_parameter_actual = default_value
-                custom_check = checks_types.get(parameter)
-                if custom_check:
-                    custom_check(input_parameter_actual, parameter).check()
+                        parameter = default_value
+                if parameter_name in custom_checks:
+                    custom_check = custom_checks[parameter_name]
+                    if custom_check is None:
+                        continue
+                    custom_check(parameter, parameter_name).check()
                 else:
                     check_parameter_type(
-                        parameter=input_parameter_actual,
-                        parameter_name=parameter,
-                        expected_type=expected_types_map.get(parameter).annotation,
+                        parameter=parameter,
+                        parameter_name=parameter_name,
+                        expected_type=expected_types_map.get(parameter_name).annotation,
                     )
             return function(**input_parameters_values_map)
 
@@ -360,7 +358,7 @@ class InputConfigCheck(BaseInputArgumentChecker):
         raise_value_error_if_parameter_has_unexpected_type(
             parameter=self.parameter,
             parameter_name=self.parameter_name,
-            expected_type=(str, DictConfig, dict),  # type: ignore
+            expected_type=(str, DictConfig, dict),
         )
         check_that_parameter_is_not_empty(
             parameter=self.parameter, parameter_name=self.parameter_name
@@ -420,6 +418,20 @@ class OptionalFilePathCheck(BaseInputArgumentChecker):
             check_file_path(
                 self.parameter, self.parameter_name, self.expected_file_extensions
             )
+
+
+class DatasetParamTypeCheck(BaseInputArgumentChecker):
+    """Class to check DatasetEntity-type parameters"""
+
+    def __init__(self, parameter, parameter_name):
+        self.parameter = parameter
+        self.parameter_name = parameter_name
+
+    def check(self):
+        """Method raises ValueError exception if parameter is not equal to Dataset"""
+        check_is_parameter_like_dataset(
+            parameter=self.parameter, parameter_name=self.parameter_name
+        )
 
 
 class OptionalImageFilePathCheck(OptionalFilePathCheck):
