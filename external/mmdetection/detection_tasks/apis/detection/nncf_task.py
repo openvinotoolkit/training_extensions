@@ -42,7 +42,7 @@ from mmdet.apis.fake_input import get_fake_input
 from detection_tasks.apis.detection.config_utils import prepare_for_training
 from detection_tasks.apis.detection.configuration import OTEDetectionConfig
 from detection_tasks.apis.detection.inference_task import OTEDetectionInferenceTask
-from detection_tasks.apis.detection.ote_utils import TrainingProgressCallback
+from detection_tasks.apis.detection.ote_utils import OptimizationProgressCallback
 from detection_tasks.extension.utils.hooks import OTELoggerHook
 from mmdet.apis.train import build_val_dataloader
 from mmdet.datasets import build_dataloader, build_dataset
@@ -196,7 +196,7 @@ class OTEDetectionNNCFTask(OTEDetectionInferenceTask, IOptimizationTask):
             update_progress_callback = optimization_parameters.update_progress
         else:
             update_progress_callback = default_progress_callback
-        time_monitor = TrainingProgressCallback(update_progress_callback)
+        time_monitor = OptimizationProgressCallback(update_progress_callback)
         learning_curves = defaultdict(OTELoggerHook.Curve)
         training_config = prepare_for_training(config, train_dataset, val_dataset, time_monitor, learning_curves)
         mm_train_dataset = build_dataset(training_config.data.train)
@@ -207,6 +207,8 @@ class OTEDetectionNNCFTask(OTEDetectionInferenceTask, IOptimizationTask):
         # Initialize NNCF parts if start from not compressed model
         if not self._compression_ctrl:
             self._create_compressed_model(mm_train_dataset, training_config)
+
+        time_monitor.on_initialization_end()
 
         # Run training.
         self._training_work_dir = training_config.work_dir
@@ -228,6 +230,8 @@ class OTEDetectionNNCFTask(OTEDetectionInferenceTask, IOptimizationTask):
             return
 
         self.save_model(output_model)
+
+        time_monitor.on_serialization_end()
 
         output_model.model_format = ModelFormat.BASE_FRAMEWORK
         output_model.optimization_type = self._optimization_type

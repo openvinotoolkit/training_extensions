@@ -97,12 +97,12 @@ def get_task_class(path):
 
 
 class TrainingProgressCallback(TimeMonitorCallback):
-    def __init__(self, update_progress_callback: Union[UpdateProgressCallback, Callable[[int], None]]):
+    def __init__(self, update_progress_callback: UpdateProgressCallback):
         super().__init__(0, 0, 0, 0, update_progress_callback=update_progress_callback)
 
     def on_train_batch_end(self, batch, logs=None):
         super().on_train_batch_end(batch, logs)
-        self.update_progress_callback(int(self.get_progress()))
+        self.update_progress_callback(self.get_progress())
 
     def on_epoch_end(self, epoch, logs=None):
         self.past_epoch_duration.append(time.time() - self.start_epoch_time)
@@ -114,7 +114,7 @@ class TrainingProgressCallback(TimeMonitorCallback):
         if score is not None:
             self.update_progress_callback(self.get_progress(), score=float(score))
         else:
-            self.update_progress_callback(int(self.get_progress()))
+            self.update_progress_callback(self.get_progress())
 
 
 class InferenceProgressCallback(TimeMonitorCallback):
@@ -129,3 +129,50 @@ class InferenceProgressCallback(TimeMonitorCallback):
     def on_test_batch_end(self, batch=None, logs=None):
         super().on_test_batch_end(batch, logs)
         self.update_progress_callback(int(self.get_progress()))
+
+
+class OptimizationProgressCallback(TrainingProgressCallback):
+    """ Progress callback used for optimization using NNCF
+        There are four stages to the progress bar:
+           - 5 % model is loaded
+           - 10 % compressed model is initialized
+           - 90 % compressed model is fine-tuned
+           - 100 % model is serialized
+    """
+    def __init__(self, update_progress_callback: UpdateProgressCallback, load_progress: int = 5,
+                 initialization_progress: int = 5, serialization_progress: int = 10):
+        super().__init__(update_progress_callback=update_progress_callback)
+        if load_progress + initialization_progress + serialization_progress >= 100:
+            raise RuntimeError('Total optimization progress is more than 100%')
+
+        self.load_progress = load_progress
+        self.initialization_progress = initialization_progress
+        self.serialization_progress = serialization_progress
+
+        self.serialization_steps = None
+
+        self.update_progress_callback(load_progress)
+
+    def on_train_begin(self, logs=None):
+        super(OptimizationProgressCallback, self).on_train_begin(logs)
+        train_progress = 100 - self.load_progress - self.initialization_progress - self.serialization_progress
+        load_steps = self.total_steps * self.load_progress / train_progress
+        initialization_steps = self.total_steps * self.initialization_progress / train_progress
+        self.serialization_steps = self.total_steps * self.serialization_progress / train_progress
+        self.total_steps += load_steps + initialization_steps + self.serialization_steps
+
+        self.current_step = load_steps + initialization_steps
+        self.update_progress_callback(self.get_progress())
+
+    def on_train_end(self, logs=None):
+        self.current_step = self.total_steps - self.test_steps - self.serialization_steps
+        self.current_epoch = self.total_epochs
+        self.is_training = False
+        self.update_progress_callback(self.get_progress(), score=logs)
+
+    def on_initialization_end(self):
+        self.update_progress_callback(self.load_progress + self.initialization_progress)
+
+    def on_serialization_end(self):
+        self.current_step += self.serialization_steps
+        self.update_progress_callback(self.get_progress())

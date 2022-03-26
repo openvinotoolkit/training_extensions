@@ -411,10 +411,10 @@ class OptimizationProgressCallback(TimeMonitorCallback):
     def __init__(self, update_progress_callback: UpdateProgressCallback, load_progress: int = 5,
                  initialization_progress: int = 5, serialization_progress: int = 10, **kwargs):
         super().__init__(update_progress_callback=update_progress_callback, **kwargs)
+        if load_progress + initialization_progress + serialization_progress >= 100:
+            raise RuntimeError('Total optimization progress is more than 100%')
 
         train_progress = 100 - load_progress - initialization_progress - serialization_progress
-        if train_progress <= 0:
-            raise RuntimeError('Total optimization progress is more than 100%')
         self.load_steps = self.total_steps * load_progress / train_progress
         self.initialization_steps = self.total_steps * initialization_progress / train_progress
         self.serialization_steps = self.total_steps * serialization_progress / train_progress
