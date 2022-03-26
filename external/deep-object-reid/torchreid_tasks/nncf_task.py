@@ -181,8 +181,9 @@ class OTEClassificationNNCFTask(OTEClassificationInferenceTask, IOptimizationTas
         else:
             update_progress_callback = default_progress_callback
 
-        def tmp(progress, score):
-            update_progress_callback(progress, score)
+        update_progress_callback_ = update_progress_callback
+        def tmp(progress, score=None):
+            update_progress_callback_(progress, score)
             print(f'Progress: {progress}')
         update_progress_callback = tmp
 
