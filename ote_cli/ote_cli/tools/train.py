@@ -120,7 +120,7 @@ def main():
 
     if args.hpo_time_ratio and not args.enable_hpo:
         raise Exception("Parameter --hpo-time-ratio must be used with --enable-hpo key")
-    if args.hpo_time_ratio < 0:
+    elif args.hpo_time_ratio < 0:
         raise ValueError("Parameter --hpo-time-ratio must not be negative")
 
     # Get new values from user's input.
