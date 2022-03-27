@@ -43,7 +43,7 @@ from mmseg.apis import train_segmentor
 from segmentation_tasks.apis.segmentation import OTESegmentationInferenceTask
 from segmentation_tasks.apis.segmentation.config_utils import prepare_for_training
 from segmentation_tasks.apis.segmentation.configuration import OTESegmentationConfig
-from segmentation_tasks.apis.segmentation.ote_utils import TrainingProgressCallback
+from segmentation_tasks.apis.segmentation.ote_utils import OptimizationProgressCallback
 from segmentation_tasks.extension.utils.hooks import OTELoggerHook
 from mmseg.apis.train import build_val_dataloader
 from mmseg.datasets import build_dataloader, build_dataset
@@ -186,7 +186,16 @@ class OTESegmentationNNCFTask(OTESegmentationInferenceTask, IOptimizationTask):
         else:
             update_progress_callback = default_progress_callback
 
-        time_monitor = TrainingProgressCallback(update_progress_callback)
+        update_progress_callback_ = update_progress_callback
+        def tmp(progress, score=None):
+            update_progress_callback_(progress, score)
+            logger.info(f'Progress: {progress}')
+        update_progress_callback = tmp
+
+        time_monitor = OptimizationProgressCallback(update_progress_callback,
+                                                    load_progress=5,
+                                                    initialization_progress=5,
+                                                    serialization_progress=10)
         learning_curves = defaultdict(OTELoggerHook.Curve)
         training_config = prepare_for_training(config, train_dataset, val_dataset, time_monitor, learning_curves)
 
@@ -196,6 +205,8 @@ class OTESegmentationNNCFTask(OTESegmentationInferenceTask, IOptimizationTask):
         # Initialize NNCF parts if start from not compressed model
         if not self._compression_ctrl:
              self._create_compressed_model(mm_train_dataset, training_config)
+
+        time_monitor.on_initialization_end()
 
         self._is_training = True
         self._model.train()
@@ -207,6 +218,8 @@ class OTESegmentationNNCFTask(OTESegmentationInferenceTask, IOptimizationTask):
                         compression_ctrl=self._compression_ctrl)
 
         self.save_model(output_model)
+
+        time_monitor.on_serialization_end()
 
         output_model.model_format = ModelFormat.BASE_FRAMEWORK
         output_model.optimization_type = self._optimization_type
