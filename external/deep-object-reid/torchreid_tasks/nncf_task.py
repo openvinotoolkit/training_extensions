@@ -191,8 +191,8 @@ class OTEClassificationNNCFTask(OTEClassificationInferenceTask, IOptimizationTas
         train_subset = dataset.get_subset(Subset.TRAINING)
         time_monitor = OptimizationProgressCallback(update_progress_callback,
                                                     num_epoch=num_epoch,
-                                                    num_train_steps=math.ceil(len(train_subset) /
-                                                                              self._cfg.train.batch_size),
+                                                    num_train_steps=max(1, math.floor(len(train_subset) /
+                                                                                      self._cfg.train.batch_size)),
                                                     num_val_steps=0, num_test_steps=0,
                                                     load_progress=5,
                                                     initialization_progress=5,
