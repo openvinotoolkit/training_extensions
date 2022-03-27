@@ -34,5 +34,7 @@ class OptimizationParameters:
     """
 
     resume: bool = False
-    update_progress: Callable[[float, Optional[float]], None] = default_progress_callback
+    update_progress: Callable[
+        [float, Optional[float]], None
+    ] = default_progress_callback
     save_model: Callable[[], None] = default_save_model_callback
