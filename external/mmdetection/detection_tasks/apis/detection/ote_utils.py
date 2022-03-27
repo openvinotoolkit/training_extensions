@@ -155,6 +155,7 @@ class OptimizationProgressCallback(TrainingProgressCallback):
 
     def on_train_begin(self, logs=None):
         super(OptimizationProgressCallback, self).on_train_begin(logs)
+        # Callback initialization takes place here after OTEProgressHook.before_run() is called
         train_progress = 100 - self.load_progress - self.initialization_progress - self.serialization_progress
         load_steps = self.total_steps * self.load_progress / train_progress
         initialization_steps = self.total_steps * self.initialization_progress / train_progress
