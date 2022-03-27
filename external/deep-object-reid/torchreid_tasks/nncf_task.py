@@ -184,7 +184,7 @@ class OTEClassificationNNCFTask(OTEClassificationInferenceTask, IOptimizationTas
         update_progress_callback_ = update_progress_callback
         def tmp(progress, score=None):
             update_progress_callback_(progress, score)
-            print(f'Progress: {progress}')
+            logger.info(f'Progress: {progress}')
         update_progress_callback = tmp
 
         num_epoch = self._cfg.nncf_config['accuracy_aware_training']['params']['maximal_total_epochs']

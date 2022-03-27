@@ -200,7 +200,7 @@ class OTEDetectionNNCFTask(OTEDetectionInferenceTask, IOptimizationTask):
         update_progress_callback_ = update_progress_callback
         def tmp(progress, score=None):
             update_progress_callback_(progress, score)
-            print(f'Progress: {progress}')
+            logger.info(f'Progress: {progress}')
         update_progress_callback = tmp
 
         time_monitor = OptimizationProgressCallback(update_progress_callback)
