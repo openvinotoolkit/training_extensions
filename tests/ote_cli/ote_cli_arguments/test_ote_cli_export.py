@@ -30,7 +30,7 @@ from common import (
 
 
 root = '/tmp/ote_cli/'
-ote_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+ote_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
 external_path = os.path.join(ote_dir, "external")
 
 
