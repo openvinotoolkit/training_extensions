@@ -203,7 +203,10 @@ class OTEDetectionNNCFTask(OTEDetectionInferenceTask, IOptimizationTask):
             logger.info(f'Progress: {progress}')
         update_progress_callback = tmp
 
-        time_monitor = OptimizationProgressCallback(update_progress_callback)
+        time_monitor = OptimizationProgressCallback(update_progress_callback,
+                                                    load_progress=5,
+                                                    initialization_progress=5,
+                                                    serialization_progress=10)
         learning_curves = defaultdict(OTELoggerHook.Curve)
         training_config = prepare_for_training(config, train_dataset, val_dataset, time_monitor, learning_curves)
         mm_train_dataset = build_dataset(training_config.data.train)
