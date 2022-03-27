@@ -22,9 +22,9 @@ import importlib
 import os
 import shutil
 from argparse import Namespace
-from typing import Any, cast
+from typing import Any
 
-from ote_anomalib import BaseAnomalyTask, OpenVINOAnomalyTask
+from ote_anomalib import AnomalyNNCFTask, OpenVINOAnomalyTask
 from ote_anomalib.data.mvtec import OteMvtecDataset
 from ote_anomalib.logging import get_logger
 from ote_sdk.configuration.helper import create as create_hyper_parameters
@@ -37,6 +37,7 @@ from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.subset import Subset
 from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.entities.train_parameters import TrainParameters
+from ote_sdk.usecases.adapters.model_adapter import ModelAdapter
 from ote_sdk.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
 from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType
 from ote_sdk.usecases.tasks.interfaces.inference_interface import IInferenceTask
@@ -45,6 +46,7 @@ from ote_sdk.usecases.tasks.interfaces.optimization_interface import Optimizatio
 logger = get_logger(__name__)
 
 
+# pylint: disable=too-many-instance-attributes
 class OteAnomalyTask:
     """OTE Anomaly Classification Task."""
 
@@ -89,8 +91,11 @@ class OteAnomalyTask:
 
         logger.info("Creating the base Torch and OpenVINO tasks.")
         self.torch_task = self.create_task(task="base")
-        self.torch_task = cast(BaseAnomalyTask, self.torch_task)
+
+        self.trained_model: ModelEntity
         self.openvino_task: OpenVINOAnomalyTask
+        self.nncf_task: AnomalyNNCFTask
+        self.results = {"category": dataset_path}
 
     def create_task_environment(self) -> TaskEnvironment:
         """Create task environment."""
@@ -146,7 +151,9 @@ class OteAnomalyTask:
 
         logger.info("Evaluating the base torch model on the validation set.")
         self.evaluate(self.torch_task, result_set)
-        return output_model
+        self.results["torch_fp32"] = result_set.performance.score.value
+        self.trained_model = output_model
+        return self.trained_model
 
     def infer(self, task: IInferenceTask, output_model: ModelEntity) -> ResultSetEntity:
         """Get the predictions using the base Torch or OpenVINO tasks and models.
@@ -196,13 +203,14 @@ class OteAnomalyTask:
         logger.info("Creating the OpenVINO Task.")
 
         self.openvino_task = self.create_task(task="openvino")
-        self.openvino_task = cast(OpenVINOAnomalyTask, self.openvino_task)
 
         logger.info("Inferring the exported model on the validation set.")
         result_set = self.infer(task=self.openvino_task, output_model=exported_model)
 
         logger.info("Evaluating the exported model on the validation set.")
         self.evaluate(task=self.openvino_task, result_set=result_set)
+        self.results["vino_fp32"] = result_set.performance.score.value
+
         return exported_model
 
     def optimize(self) -> None:
@@ -225,6 +233,54 @@ class OteAnomalyTask:
 
         logger.info("Evaluating the optimized model on the validation set.")
         self.evaluate(task=self.openvino_task, result_set=result_set)
+        self.results["pot_int8"] = result_set.performance.score.value
+
+    def optimize_nncf(self) -> None:
+        """Optimize the model via NNCF."""
+        logger.info("Running the NNCF optimization")
+        init_model = ModelEntity(
+            self.dataset,
+            configuration=self.task_environment.get_model_configuration(),
+            model_adapters={"weights.pth": ModelAdapter(self.trained_model.get_data("weights.pth"))},
+        )
+
+        self.task_environment.model = init_model
+        self.nncf_task = self.create_task("nncf")
+
+        optimized_model = ModelEntity(
+            self.dataset,
+            configuration=self.task_environment.get_model_configuration(),
+        )
+        self.nncf_task.optimize(OptimizationType.NNCF, self.dataset, optimized_model)
+
+        logger.info("Inferring the optimised model on the validation set.")
+        result_set = self.infer(task=self.nncf_task, output_model=optimized_model)
+
+        logger.info("Evaluating the optimized model on the validation set.")
+        self.evaluate(task=self.nncf_task, result_set=result_set)
+        self.results["torch_int8"] = result_set.performance.score.value
+
+    def export_nncf(self) -> ModelEntity:
+        """Export NNCF model via openvino."""
+        logger.info("Exporting the model.")
+        exported_model = ModelEntity(
+            train_dataset=self.dataset,
+            configuration=self.task_environment.get_model_configuration(),
+        )
+        self.nncf_task.export(ExportType.OPENVINO, exported_model)
+        self.task_environment.model = exported_model
+
+        logger.info("Creating the OpenVINO Task.")
+
+        self.openvino_task = self.create_task(task="openvino")
+
+        logger.info("Inferring the exported model on the validation set.")
+        result_set = self.infer(task=self.openvino_task, output_model=exported_model)
+
+        logger.info("Evaluating the exported model on the validation set.")
+        self.evaluate(task=self.openvino_task, result_set=result_set)
+        self.results["vino_int8"] = result_set.performance.score.value
+        return exported_model
 
     @staticmethod
     def clean_up() -> None:
@@ -244,9 +300,13 @@ def parse_args() -> Namespace:
     parser = argparse.ArgumentParser(
         description="Sample showcasing how to run Anomaly Classification Task using OTE SDK"
     )
-    parser.add_argument("--model_template_path", default="./anomaly_classification/configs/padim/template.yaml")
+    parser.add_argument(
+        "--model_template_path",
+        default="./anomaly_classification/configs/padim/template.yaml",
+    )
     parser.add_argument("--dataset_path", default="./datasets/MVTec")
     parser.add_argument("--category", default="bottle")
+    parser.add_argument("--optimization", choices=("none", "pot", "nncf"), default="none")
     parser.add_argument("--seed", default=0)
     return parser.parse_args()
 
@@ -260,7 +320,14 @@ def main() -> None:
 
     task.train()
     task.export()
-    task.optimize()
+
+    if args.optimization == "pot":
+        task.optimize()
+
+    if args.optimization == "nncf":
+        task.optimize_nncf()
+        task.export_nncf()
+
     task.clean_up()
 
 

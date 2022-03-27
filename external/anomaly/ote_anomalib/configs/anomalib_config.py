@@ -55,6 +55,6 @@ def update_anomalib_config(anomalib_config: Union[DictConfig, ListConfig], ote_c
         sc_value = sc_value.value if hasattr(sc_value, "value") else sc_value
         anomalib_config[param] = sc_value
     for group in ote_config.groups:
-        # Since pot_parameters are specific to OTE
-        if group != "pot_parameters":
+        # Since pot_parameters and nncf_optimization are specific to OTE
+        if group not in ["pot_parameters", "nncf_optimization"]:
             update_anomalib_config(anomalib_config[group], getattr(ote_config, group))

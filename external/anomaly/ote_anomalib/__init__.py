@@ -16,7 +16,9 @@ Initialization of OTE Anomalib
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+from .inference_task import AnomalyInferenceTask
+from .nncf_task import AnomalyNNCFTask
 from .openvino import OpenVINOAnomalyTask
-from .task import BaseAnomalyTask
+from .train_task import AnomalyTrainingTask
 
-__all__ = ["BaseAnomalyTask", "OpenVINOAnomalyTask"]
+__all__ = ["AnomalyInferenceTask", "AnomalyTrainingTask", "AnomalyNNCFTask", "OpenVINOAnomalyTask"]
