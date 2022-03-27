@@ -1,0 +1,65 @@
+{
+    "trainset": {
+        "data_path": [
+            "/mnt/data_nvme/audio/data/LibriSpeech/train-clean-100",
+            "/mnt/data_nvme/audio/data/LibriSpeech/train-clean-360",
+            "/mnt/data_nvme/audio/data/LibriSpeech/train-other-500"
+        ],
+        "batch_size": 24,
+        "num_workers": 4
+    },
+    "valset": {
+        "data_path": [
+            "/mnt/data_nvme/audio/data/LibriSpeech/test-clean"
+        ],
+        "batch_size": 4,
+        "num_workers": 4
+    },
+    "tokenizer": {
+        "model_path": "tokenizer.bpe",
+        "vocab_size": 256
+    },
+    "audio_transforms": {
+        "train": [
+            {"name": "ToNumpy", "params": {"flatten": true}},
+            {"name": "MelSpectrogram", "params": {"n_mels": 64}},
+            {"name": "ToTensor", "params": {}},
+            {"name": "MelSpecTransform", "params": {"freq_max": 1, "time_max": 1}},
+            {"name": "MelCutoutTransform", "params": {"holes": 1, "freq_max": 30, "time_max": 30}}
+        ],
+        "val": [
+            {"name": "ToNumpy", "params": {"flatten": true}},
+            {"name": "MelSpectrogram", "params": {"n_mels": 64}},
+            {"name": "ToTensor", "params": {}}
+        ]
+    },
+    "metrics": ["CharacterErrorRate", "WordErrorRate"],
+    "model": {
+        "dtype": "QuartzNet",
+        "params": {
+            "cfg": [
+                {"channels_out": 256, "kernel_size": 33, "stride": 2, "dilation": 1, "groups": 1, "repeat": 1, "n_blocks": 1, "separable": true},
+                {"channels_out": 256, "kernel_size": 33, "stride": 1, "dilation": 1, "groups": 1, "repeat": 5, "n_blocks": 1, "separable": true},
+                {"channels_out": 256, "kernel_size": 39, "stride": 1, "dilation": 1, "groups": 1, "repeat": 5, "n_blocks": 1, "separable": true},
+                {"channels_out": 512, "kernel_size": 51, "stride": 1, "dilation": 1, "groups": 1, "repeat": 5, "n_blocks": 1, "separable": true},
+                {"channels_out": 512, "kernel_size": 63, "stride": 1, "dilation": 1, "groups": 1, "repeat": 5, "n_blocks": 1, "separable": true},
+                {"channels_out": 512, "kernel_size": 75, "stride": 1, "dilation": 1, "groups": 1, "repeat": 5, "n_blocks": 1, "separable": true},
+                {"channels_out": 512, "kernel_size": 87, "stride": 1, "dilation": 2, "groups": 1, "repeat": 1, "n_blocks": 1, "separable": true},
+                {"channels_out": 1024, "kernel_size": 1, "stride": 1, "dilation": 1, "groups": 1, "repeat": 1, "n_blocks": 1, "separable": false}
+            ],
+            "n_mels": 64
+        }
+    },
+    "optimizer": {
+        "learning_rate": 5e-4,
+        "weight_decay": 0.0001,
+        "betas": [0.95, 0.5],
+        "epochs": 260,
+        "lr_scheduler": true,
+        "warmup_steps": 0
+    },
+    "pipeline": {
+        "monitor": "wer",
+        "monitor_mode": "min"
+    }
+}

@@ -1,0 +1,34 @@
+# Description.
+name: SpeechToText
+task_type: SPEECH_TO_TEXT
+task_family: AUDIO
+instantiation: "CLASS"
+summary: Speech-To-Text Task
+application:
+  ~
+
+# Algo backend.
+# Would be better to have something more precise and self-contained, e.g.:  docker image or path to Python venv activation script?
+framework: pytorch
+
+# Capabilities.
+capabilities:
+  - compute_representations
+
+# Task implementation.
+entrypoints:
+  base: speech_to_text.ote.task_train.OTESpeechToTextTaskTrain
+
+# Task and hyperparameters.
+hyper_parameters:
+  base_path: "../../../speech_to_text/ote/configuration.yaml"
+  parameter_overrides:
+    learning_parameters:
+      learning_rate:
+        default_value: 5e-4
+
+# Training resources.
+max_nodes: 1
+training_targets:
+  - GPU
+  - CPU

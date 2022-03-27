@@ -68,6 +68,7 @@ class TaskFamily(Enum):
     """
 
     VISION = auto()
+    AUDIO = auto()
     FLOW_CONTROL = auto()
     DATASET = auto()
 
@@ -204,6 +205,13 @@ class TaskType(Enum):
         is_trainable=True,
         is_anomaly=False,
         is_global=False,
+        is_local=True,
+    )
+    SPEECH_TO_TEXT = 14, TaskInfo(
+        domain=Domain.CLASSIFICATION,
+        is_trainable=True,
+        is_anomaly=False,
+        is_global=True,
         is_local=True,
     )
 

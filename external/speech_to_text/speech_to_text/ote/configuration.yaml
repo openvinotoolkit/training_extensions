@@ -1,0 +1,208 @@
+description: Configuration for an speech-to-text task
+export_parameters:
+  description: Export Parameters
+  header: Export Parameters
+  sequence_length:
+    affects_outcome_of: ARCHITECTURE
+    auto_hpo_state: not_possible
+    auto_hpo_value: null
+    default_value: 128
+    description: Length of the input sequence in the exported model.
+    editable: true
+    header: Length of the input sequence in the exported model.
+    max_value: 9223372036854775807
+    min_value: 32
+    type: INTEGER
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: 128
+    visible_in_ui: true
+    warning: null
+  type: PARAMETER_GROUP
+  visible_in_ui: true
+header: Configuration for an speech-to-text task
+learning_parameters:
+  batch_size:
+    affects_outcome_of: TRAINING
+    auto_hpo_state: not_possible
+    auto_hpo_value: null
+    default_value: 32
+    description: The number of training samples seen in each iteration of training.
+      Increasing this value improves training time and may make the training more
+      stable. A larger batch size has higher memory requirements.
+    editable: true
+    header: Batch size
+    max_value: 512
+    min_value: 1
+    type: INTEGER
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: 32
+    visible_in_ui: true
+    warning: Increasing this value may cause the system to use more memory than available,
+      potentially causing out of memory errors, please update with caution.
+  description: Learning Parameters
+  header: Learning Parameters
+  learning_rate:
+    affects_outcome_of: TRAINING
+    auto_hpo_state: not_possible
+    auto_hpo_value: null
+    default_value: 0.0005
+    description: Increasing this value will speed up training convergence but might
+      make it unstable.
+    editable: true
+    header: Learning rate
+    max_value: 1.0
+    min_value: 1.0e-07
+    type: FLOAT
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: 0.0005
+    visible_in_ui: true
+    warning: null
+  learning_rate_warmup_steps:
+    affects_outcome_of: TRAINING
+    auto_hpo_state: not_possible
+    auto_hpo_value: null
+    default_value: 0
+    description: Increasing this value will make training is more stable for high
+      learning affects.
+    editable: true
+    header: Learning rate warmup steps
+    max_value: 9223372036854775807
+    min_value: 0
+    type: INTEGER
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: 0
+    visible_in_ui: true
+    warning: null
+  lr_scheduler:
+    affects_outcome_of: TRAINING
+    auto_hpo_state: not_possible
+    auto_hpo_value: null
+    default_value: true
+    description: Default configurable boolean description
+    editable: true
+    header: Learning rate scheduler
+    type: BOOLEAN
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: true
+    visible_in_ui: true
+    warning: null
+  n_mels:
+    affects_outcome_of: NONE
+    auto_hpo_state: not_possible
+    auto_hpo_value: null
+    default_value: 64
+    description: Num mels.
+    editable: true
+    header: Num mels.
+    max_value: 9223372036854775807
+    min_value: 32
+    type: INTEGER
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: 64
+    visible_in_ui: true
+    warning: null
+  num_epochs:
+    affects_outcome_of: TRAINING
+    auto_hpo_state: not_possible
+    auto_hpo_value: null
+    default_value: 200
+    description: Increasing this value causes the results to be more robust but training
+      time will be longer.
+    editable: true
+    header: Maximum number of training epochs
+    max_value: 9223372036854775807
+    min_value: 1
+    type: INTEGER
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: 200
+    visible_in_ui: true
+    warning: null
+  num_workers:
+    affects_outcome_of: NONE
+    auto_hpo_state: not_possible
+    auto_hpo_value: null
+    default_value: 4
+    description: Num workers.
+    editable: true
+    header: Num workers.
+    max_value: 9223372036854775807
+    min_value: 0
+    type: INTEGER
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: 4
+    visible_in_ui: true
+    warning: null
+  type: PARAMETER_GROUP
+  val_check_interval:
+    affects_outcome_of: TRAINING
+    auto_hpo_state: not_possible
+    auto_hpo_value: null
+    default_value: 1.0
+    description: use to check every n steps (batches)
+    editable: true
+    header: use to check every n steps (batches)
+    max_value: 1.0
+    min_value: 0.0
+    type: FLOAT
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: 1.0
+    visible_in_ui: true
+    warning: null
+  visible_in_ui: true
+  vocab_size:
+    affects_outcome_of: NONE
+    auto_hpo_state: not_possible
+    auto_hpo_value: null
+    default_value: 256
+    description: Vocab size.
+    editable: true
+    header: Vocab size.
+    max_value: 9223372036854775807
+    min_value: 32
+    type: INTEGER
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: 256
+    visible_in_ui: true
+    warning: null
+type: CONFIGURABLE_PARAMETERS
+visible_in_ui: true

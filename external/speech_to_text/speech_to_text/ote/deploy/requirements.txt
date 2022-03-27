@@ -1,0 +1,6 @@
+openvino==2022.1.0.dev20220131
+ote-sdk @ git+https://github.com/openvinotoolkit/training_extensions/@develop#egg=ote-sdk&subdirectory=ote_sdk
+numpy==1.19.5
+Wave==0.0.2
+scipy==1.5.4
+librosa==0.8.1
