@@ -1,4 +1,4 @@
-"""Tests for input parameters with OTE CLI deploy tool"""
+"""Tests for input parameters with OTE CLI export tool"""
 # Copyright (C) 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,30 +24,13 @@ from common import (
     create_venv,
     get_some_vars,
     wrong_paths,
-<<<<<<< HEAD
-<<<<<<< HEAD
     ote_common,
     logger
-=======
-    ote_common
->>>>>>> c9e7fcf1 (test ote cli common args)
-=======
-    ote_common,
-    logger
->>>>>>> 070c0d85 (iteraiton 001)
 )
 
 
 root = '/tmp/ote_cli/'
-<<<<<<< HEAD
-<<<<<<< HEAD
 ote_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
-=======
-ote_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
->>>>>>> c9e7fcf1 (test ote cli common args)
-=======
-ote_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
->>>>>>> 070c0d85 (iteraiton 001)
 external_path = os.path.join(ote_dir, "external")
 
 
@@ -65,7 +48,7 @@ for back_end_ in ('DETECTION',
     params_ids += [back_end_ + ',' + cur_id for cur_id in cur_templates_ids]
 
 
-class TestDeployCommon:
+class TestExportCommon:
     @pytest.fixture()
     @e2e_pytest_component
     @pytest.mark.parametrize("back_end, template", params_values)
@@ -75,34 +58,60 @@ class TestDeployCommon:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
-    def test_ote_deploy_no_template(self, back_end, template, create_venv_fx):
-        error_string = "ote deploy: error: the following arguments are required: template"
-        command_args = []
-        ret = ote_common(template, root, "deploy", command_args)
+    def test_ote_export_no_template(self, back_end, template, create_venv_fx):
+        error_string = "ote export: error: the following arguments are required:" \
+                       " template, --load-weights, --save-model-to"
+        command_line = []
+        ret = ote_common(template, root, 'export', command_line)
         assert ret['exit_code'] != 0, "Exit code must not be equal 0"
         assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
 
     @e2e_pytest_component
     @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
-    def test_ote_deploy_no_weights(self, back_end, template, create_venv_fx):
-        error_string = "ote deploy: error: the following arguments are required: --load-weights"
-        command_args = [template.model_template_id,
+    def test_ote_export_no_weights(self, back_end, template, create_venv_fx):
+        error_string = "ote export: error: the following arguments are required: --load-weights"
+        command_line = [template.model_template_id,
                         f'--save-model-to',
-                        f'./deployed_{template.model_template_id}']
-        ret = ote_common(template, root, "deploy", command_args)
+                        f'./exported_{template.model_template_id}']
+        ret = ote_common(template, root, 'export', command_line)
         assert ret['exit_code'] != 0, "Exit code must not be equal 0"
         assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
 
     @e2e_pytest_component
     @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
-    def test_ote_deploy_wrong_path_load_weights(self, back_end, template, create_venv_fx):
+    def test_ote_export_no_save_to(self, back_end, template, create_venv_fx):
+        error_string = "ote export: error: the following arguments are required: --save-model-to"
+        command_line = [template.model_template_id,
+                        '--load-weights',
+                        f'./trained_{template.model_template_id}/weights.pth']
+        ret = ote_common(template, root, 'export', command_line)
+        assert ret['exit_code'] != 0, "Exit code must not be equal 0"
+        assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
+    def test_ote_export_wrong_path_load_weights(self, back_end, template, create_venv_fx):
         error_string = "Path is not valid"
         for case in wrong_paths.values():
-            command_args = [template.model_template_id,
+            command_line = [template.model_template_id,
                             '--load-weights',
                             case,
-                            '--save-model-to',
-                            f'./deployed_{template.model_template_id}']
-            ret = ote_common(template, root, "deploy", command_args)
+                            f'--save-model-to',
+                            f'./exported_{template.model_template_id}']
+            ret = ote_common(template, root, 'export', command_line)
+            assert ret['exit_code'] != 0, "Exit code must not be equal 0"
+            assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
+    def test_ote_export_wrong_path_save_model_to(self, back_end, template, create_venv_fx):
+        error_string = "Path is not valid"
+        for case in wrong_paths.values():
+            command_line = [template.model_template_id,
+                            '--load-weights',
+                            f'./trained_{template.model_template_id}/weights.pth',
+                            f'--save-model-to',
+                            case]
+            ret = ote_common(template, root, 'export', command_line)
             assert ret['exit_code'] != 0, "Exit code must not be equal 0"
             assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
