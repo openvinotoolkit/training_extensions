@@ -94,7 +94,6 @@ def parse_args():
     )
     parser.add_argument(
         "--hpo-time-ratio",
-        default=4,
         type=float,
         help="Expected ratio of total time to run HPO to time taken for full fine-tuning.",
     )
