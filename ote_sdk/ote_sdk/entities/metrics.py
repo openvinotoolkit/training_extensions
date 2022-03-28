@@ -558,11 +558,11 @@ class MatrixChartInfo(VisualizationInfo):
         )
 
 
-MetricType = TypeVar("MetricType", bound=MetricEntity)
-VisualizationInfoType = TypeVar("VisualizationInfoType", bound=VisualizationInfo)
+_Metric = TypeVar("_Metric", bound=MetricEntity)
+_VisualizationInfo = TypeVar("_VisualizationInfo", bound=VisualizationInfo)
 
 
-class MetricsGroup(Generic[MetricType, VisualizationInfoType]):
+class MetricsGroup(Generic[_Metric, _VisualizationInfo]):
     """
     This class aggregates a list of metric entities and defines how this group will be
     visualized on the UI. This class is the parent class to the different types of
@@ -571,7 +571,7 @@ class MetricsGroup(Generic[MetricType, VisualizationInfoType]):
     :example: An accuracy as a metrics group
 
     >>> acc = ScoreMetric("Accuracy", 0.5)
-    >>> visual_info = BarChartInfo("Accuracy", visualization_type=VisualizationInfoType.BAR)  # show it as radial bar
+    >>> visual_info = BarChartInfo("Accuracy", visualization_type=_VisualizationInfo.BAR)  # show it as radial bar
     >>> metrics_group = BarMetricsGroup([acc], visual_info)
 
     Loss curves as a metrics group
@@ -583,7 +583,7 @@ class MetricsGroup(Generic[MetricType, VisualizationInfoType]):
     """
 
     def __init__(
-        self, metrics: Sequence[MetricType], visualization_info: VisualizationInfoType
+        self, metrics: Sequence[_Metric], visualization_info: _VisualizationInfo
     ):
         if metrics is None or len(metrics) == 0:
             raise ValueError("Metrics cannot be None or empty")
