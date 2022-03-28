@@ -188,8 +188,7 @@ class OTESegmentationNNCFTask(OTESegmentationInferenceTask, IOptimizationTask):
 
         time_monitor = OptimizationProgressCallback(update_progress_callback,
                                                     load_progress=5,
-                                                    initialization_progress=5,
-                                                    serialization_progress=10)
+                                                    initialization_progress=5)
         learning_curves = defaultdict(OTELoggerHook.Curve)
         training_config = prepare_for_training(config, train_dataset, val_dataset, time_monitor, learning_curves)
 
@@ -212,8 +211,6 @@ class OTESegmentationNNCFTask(OTESegmentationInferenceTask, IOptimizationTask):
                         compression_ctrl=self._compression_ctrl)
 
         self.save_model(output_model)
-
-        time_monitor.on_serialization_end()
 
         output_model.model_format = ModelFormat.BASE_FRAMEWORK
         output_model.optimization_type = self._optimization_type

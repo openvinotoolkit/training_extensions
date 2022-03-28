@@ -87,44 +87,34 @@ class OptimizationProgressCallback(TrainingProgressCallback):
         There are four stages to the progress bar:
            - 5 % model is loaded
            - 10 % compressed model is initialized
-           - 90 % compressed model is fine-tuned
-           - 100 % model is serialized
+           - 10-100 % compressed model is being fine-tuned
     """
     def __init__(self, update_progress_callback: UpdateProgressCallback, load_progress: int = 5,
-                 initialization_progress: int = 5, serialization_progress: int = 10):
+                 initialization_progress: int = 5):
         super().__init__(update_progress_callback=update_progress_callback)
-        if load_progress + initialization_progress + serialization_progress >= 100:
+        if load_progress + initialization_progress >= 100:
             raise RuntimeError('Total optimization progress is more than 100%')
 
         self.load_progress = load_progress
         self.initialization_progress = initialization_progress
-        self.serialization_progress = serialization_progress
 
-        self.serialization_steps = None
-
+        # set load_progress from the start as the model is already loaded at this point
         self.update_progress_callback(load_progress)
 
     def on_train_begin(self, logs=None):
         super(OptimizationProgressCallback, self).on_train_begin(logs)
         # Callback initialization takes place here after OTEProgressHook.before_run() is called
-        train_progress = 100 - self.load_progress - self.initialization_progress - self.serialization_progress
+        train_progress = 100 - self.load_progress - self.initialization_progress
         load_steps = self.total_steps * self.load_progress / train_progress
         initialization_steps = self.total_steps * self.initialization_progress / train_progress
-        self.serialization_steps = self.total_steps * self.serialization_progress / train_progress
-        self.total_steps += load_steps + initialization_steps + self.serialization_steps
+        self.total_steps += load_steps + initialization_steps
 
         self.current_step = load_steps + initialization_steps
         self.update_progress_callback(self.get_progress())
 
     def on_train_end(self, logs=None):
-        self.current_step = self.total_steps - self.test_steps - self.serialization_steps
-        self.current_epoch = self.total_epochs
-        self.is_training = False
+        super(OptimizationProgressCallback, self).on_train_end(logs)
         self.update_progress_callback(self.get_progress(), score=logs)
 
     def on_initialization_end(self):
         self.update_progress_callback(self.load_progress + self.initialization_progress)
-
-    def on_serialization_end(self):
-        self.current_step += self.serialization_steps
-        self.update_progress_callback(self.get_progress())

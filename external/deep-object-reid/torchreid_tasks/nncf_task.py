@@ -189,8 +189,7 @@ class OTEClassificationNNCFTask(OTEClassificationInferenceTask, IOptimizationTas
                                                                                       self._cfg.train.batch_size)),
                                                     num_val_steps=0, num_test_steps=0,
                                                     load_progress=5,
-                                                    initialization_progress=5,
-                                                    serialization_progress=10)
+                                                    initialization_progress=5)
 
         self.metrics_monitor = DefaultMetricsMonitor()
         self.stop_callback.reset()
@@ -247,8 +246,6 @@ class OTEClassificationNNCFTask(OTEClassificationInferenceTask, IOptimizationTas
         logger.info('Training completed')
 
         self.save_model(output_model)
-
-        time_monitor.on_serialization_end()
 
         output_model.model_format = ModelFormat.BASE_FRAMEWORK
         output_model.optimization_type = self._optimization_type
