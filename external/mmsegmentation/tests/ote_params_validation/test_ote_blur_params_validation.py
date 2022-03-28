@@ -2,15 +2,13 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 import numpy as np
+from openvino.model_zoo.model_api.adapters.openvino_adapter import OpenvinoAdapter
 
 from ote_sdk.test_suite.e2e_test_system import e2e_pytest_unit
 from ote_sdk.tests.parameters_validation.validation_helper import (
     check_value_error_exception_raised,
 )
-from ote_sdk.usecases.adapters.model_adapter import (
-    IDataSource,
-    ModelAdapter,
-)
+from ote_sdk.usecases.adapters.model_adapter import IDataSource
 from segmentation_tasks.apis.segmentation.model_wrappers.blur import BlurSegmentation
 
 
@@ -24,6 +22,11 @@ class MockDataSource(IDataSource):
 
 
 class MockBlurSegmentation(BlurSegmentation):
+    def __init__(self):
+        pass
+
+
+class MockAdapter(OpenvinoAdapter):
     def __init__(self):
         pass
 
@@ -42,8 +45,7 @@ class TestBlurSegmentationParamsValidation:
         Test passes if ValueError exception is raised when unexpected type object is specified as
         BlurSegmentation object initialization parameter
         """
-        data_source = MockDataSource()
-        model_adapter = ModelAdapter(data_source=data_source)
+        model_adapter = MockAdapter()
         correct_values_dict = {
             "model_adapter": model_adapter,
         }
