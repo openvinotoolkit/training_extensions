@@ -9,8 +9,8 @@ import json
 from pathlib import Path
 from typing import Optional
 
-from ote_sdk.entities.label import Domain
 from ote_sdk.entities.label_schema import LabelSchemaEntity
+from ote_sdk.entities.model_template import TaskType, task_type_to_label_domain
 from ote_sdk.usecases.exportable_code.prediction_to_annotation_converter import (
     create_converter,
 )
@@ -46,21 +46,21 @@ def get_parameters(path: Optional[Path]) -> dict:
     return parameters
 
 
-def create_output_converter(task_type: str, labels: LabelSchemaEntity):
+def create_output_converter(task_type: TaskType, labels: LabelSchemaEntity):
     """
     Create annotation converter according to kind of task
     """
 
-    converter_type = Domain[task_type]
+    converter_type = task_type_to_label_domain(task_type)
     return create_converter(converter_type, labels)
 
 
-def create_visualizer(task_type: str):
+def create_visualizer(task_type: TaskType):
     """
     Create visualizer according to kind of task
     """
 
-    if task_type in ("ANOMALY_CLASSIFICATION", "ANOMALY_SEGMENTATION"):
+    if task_type.is_anomaly:
         return AnomalyVisualizer(window_name="Result")
 
     return Visualizer(window_name="Result")

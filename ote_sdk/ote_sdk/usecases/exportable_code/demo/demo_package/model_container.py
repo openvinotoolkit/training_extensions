@@ -14,11 +14,10 @@ from openvino.model_zoo.model_api.adapters import OpenvinoAdapter, create_core
 from openvino.model_zoo.model_api.models import Model
 
 from ote_sdk.entities.label_schema import LabelSchemaEntity
+from ote_sdk.entities.model_template import TaskType
 from ote_sdk.serialization.label_mapper import LabelSchemaMapper
 
 from .utils import get_model_path, get_parameters
-
-GLOBAL_TASK_TYPES = ["CLASSIFICATION", "ANOMALY_CLASSIFICATION"]
 
 
 class ModelContainer:
@@ -34,7 +33,7 @@ class ModelContainer:
         self._labels = LabelSchemaMapper.backward(
             self.parameters["model_parameters"]["labels"]
         )
-        self._task_type = self.parameters["converter_type"]
+        self._task_type = TaskType[self.parameters["converter_type"]]
 
         # labels for modelAPI wrappers can be empty, because unused in pre- and postprocessing
         self.model_parameters = self.parameters["model_parameters"]
@@ -53,18 +52,11 @@ class ModelContainer:
         )
 
     @property
-    def task_type(self) -> str:
+    def task_type(self) -> TaskType:
         """
         Task type property
         """
         return self._task_type
-
-    @property
-    def is_global(self) -> bool:
-        """
-        Return True if the task produces global labels, False otherwise
-        """
-        return self._task_type in GLOBAL_TASK_TYPES
 
     @property
     def labels(self) -> LabelSchemaEntity:

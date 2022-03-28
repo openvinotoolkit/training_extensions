@@ -67,7 +67,7 @@ class ChainExecutor:
                         item, parent_annotation, annotation
                     )
                     new_objects.append((new_item, item_annotation))
-                    if model.is_global:
+                    if model.task_type.is_global:
                         for label in item_annotation.get_labels():
                             parent_annotation.append_label(label)
                     else:
