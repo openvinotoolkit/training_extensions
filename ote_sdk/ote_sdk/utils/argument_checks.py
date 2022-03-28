@@ -170,7 +170,7 @@ def check_parameter_type(parameter, parameter_name, expected_type):
     # pylint: disable=W0212
     if expected_type in [typing.Any, inspect._empty]:  # type: ignore
         return
-    if not isinstance(expected_type, typing._GenericAlias):  # type: ignore
+    if not isinstance(expected_type, typing._GenericAlias) or expected_type == typing.Iterable:  # type: ignore
         raise_value_error_if_parameter_has_unexpected_type(
             parameter=parameter,
             parameter_name=parameter_name,
