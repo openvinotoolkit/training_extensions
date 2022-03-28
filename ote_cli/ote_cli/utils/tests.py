@@ -35,7 +35,9 @@ def get_some_vars(template, root):
 
 def create_venv(algo_backend_dir, work_dir):
     venv_dir = f"{work_dir}/venv"
+    print("VENV DIR = ", venv_dir)
     if not os.path.exists(venv_dir):
+        print("CREATE")
         assert run([f"./{algo_backend_dir}/init_venv.sh", venv_dir]).returncode == 0
         assert (
             run(
@@ -74,7 +76,7 @@ def patch_demo_py(src_path, dst_path):
         content = [line for line in read_file]
         replaced = False
         for i, line in enumerate(content):
-            if "visualizer = Visualizer(media_type)" in line:
+            if "visualizer = create_visualizer(models[-1].task_type)" in line:
                 content[i] = line.rstrip() + "; visualizer.show = show\n"
                 replaced = True
         assert replaced

@@ -230,6 +230,7 @@ class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask,
             arch.write(os.path.join(work_dir, "LICENSE"), os.path.join("python", "LICENSE"))
             arch.write(os.path.join(work_dir, "README.md"), os.path.join("python", "README.md"))
             arch.write(os.path.join(work_dir, "demo.py"), os.path.join("python", "demo.py"))
+        output_model.exportable_code = zip_buffer.getvalue()
         logger.info('Deploying completed')
 
     def optimize(self,

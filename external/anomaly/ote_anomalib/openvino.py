@@ -428,7 +428,7 @@ class OpenVINOAnomalyTask(IInferenceTask, IEvaluationTask, IOptimizationTask, ID
                 for file in files:
                     file_path = os.path.join(root, file)
                     arch.write(
-                        file_path, os.path.join("python", "model_wrappers", file_path.split("model_wrappers/")[1])
+                        file_path, os.path.join("python", "model_wrappers", file_path.split("exportable_code/")[1])
                     )
             # other python files
             arch.write(os.path.join(work_dir, "requirements.txt"), os.path.join("python", "requirements.txt"))
