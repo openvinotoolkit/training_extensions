@@ -302,6 +302,9 @@ def check_that_all_characters_printable(parameter, parameter_name, allow_crlf=Fa
 def check_is_parameter_like_dataset(parameter, parameter_name):
     """Function raises ValueError exception if parameter does not have __len__, __getitem__ and get_subset attributes of
     DataSet-type object"""
+    if parameter is None:
+        raise ValueError("!!! expected DatasetEntity but parameter is None !!!")
+
     for expected_attribute in ("__len__", "__getitem__", "get_subset"):
         if not hasattr(parameter, expected_attribute):
             parameter_type = type(parameter)
