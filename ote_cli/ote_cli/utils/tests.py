@@ -83,14 +83,6 @@ def patch_demo_py(src_path, dst_path):
             write_file.write("".join(content))
 
 
-def remove_ote_sdk_from_requirements(path):
-    with open(path, encoding="UTF-8") as read_file:
-        content = "".join([line for line in read_file if "ote_sdk" not in line])
-
-    with open(path, "w", encoding="UTF-8") as write_file:
-        write_file.write(content)
-
-
 def ote_train_testing(template, root, ote_dir, args):
     work_dir, template_work_dir, _ = get_some_vars(template, root)
     command_line = [
@@ -295,32 +287,9 @@ def ote_deploy_openvino_testing(template, root, ote_dir, args):
         == 0
     )
 
-    # Remove ote_sdk from requirements.txt, since merge commit (that is created on CI)
-    # is not pushed to github and that's why cannot be cloned.
-    # Install ote_sdk from local folder instead.
-    # Install the demo_package with --no-deps since, requirements.txt
-    # has been embedded to the demo_package during creation.
-    remove_ote_sdk_from_requirements(
-        os.path.join(deployment_dir, "python", "requirements.txt")
-    )
     assert (
         run(
             ["python3", "-m", "pip", "install", "pip", "--upgrade"],
-            cwd=os.path.join(deployment_dir, "python"),
-            env=collect_env_vars(os.path.join(deployment_dir, "python")),
-        ).returncode
-        == 0
-    )
-    assert (
-        run(
-            [
-                "python3",
-                "-m",
-                "pip",
-                "install",
-                "-e",
-                os.path.join(os.path.dirname(__file__), "..", "..", "..", "ote_sdk"),
-            ],
             cwd=os.path.join(deployment_dir, "python"),
             env=collect_env_vars(os.path.join(deployment_dir, "python")),
         ).returncode
