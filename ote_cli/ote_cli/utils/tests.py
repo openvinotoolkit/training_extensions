@@ -310,21 +310,6 @@ def ote_deploy_openvino_testing(template, root, ote_dir, args):
         ).returncode
         == 0
     )
-    assert (
-        run(
-            [
-                "python3",
-                "-m",
-                "pip",
-                "install",
-                "demo_package-0.0-py3-none-any.whl",
-                "--no-deps",
-            ],
-            cwd=os.path.join(deployment_dir, "python"),
-            env=collect_env_vars(os.path.join(deployment_dir, "python")),
-        ).returncode
-        == 0
-    )
 
     # Patch demo since we are not able to run cv2.imshow on CI.
     patch_demo_py(
