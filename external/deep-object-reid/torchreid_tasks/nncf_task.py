@@ -181,13 +181,6 @@ class OTEClassificationNNCFTask(OTEClassificationInferenceTask, IOptimizationTas
         else:
             update_progress_callback = default_progress_callback
 
-        # TEMPORARY FOR DEBUG PURPOSES TODO: remove
-        update_progress_callback_ = update_progress_callback
-        def tmp(progress, score=None):
-            update_progress_callback_(progress, score)
-            logger.info(f'Progress: {progress}')
-        update_progress_callback = tmp
-
         num_epoch = self._cfg.nncf_config['accuracy_aware_training']['params']['maximal_total_epochs']
         train_subset = dataset.get_subset(Subset.TRAINING)
         time_monitor = OptimizationProgressCallback(update_progress_callback,
