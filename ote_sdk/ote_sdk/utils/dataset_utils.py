@@ -82,7 +82,7 @@ def get_local_subset(
             for annotation in item.get_annotations()
             if not any(label.label.is_anomalous for label in annotation.get_labels())
         ]
-
+        # TODO: only append normal items if dataset purpose is training
         local_items.append(
             DatasetItemEntity(
                 media=item.media,
