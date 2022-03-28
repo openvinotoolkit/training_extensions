@@ -54,8 +54,8 @@ onnx==1.10.1
 onnxoptimizer==0.2.6
 onnxruntime==1.9.0
 opencv-python==4.5.3.56
-openvino==2022.1.0.dev20220316
-openvino-dev==2022.1.0.dev20220316
+openvino==2022.1.0
+openvino-dev==2022.1.0
 ordered-set==4.0.2
 packaging==21.0
 pandas==1.1.5

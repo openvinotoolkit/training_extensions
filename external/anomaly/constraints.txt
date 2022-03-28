@@ -10,7 +10,7 @@ numpy==1.19.5
 omegaconf==2.1.1
 onnx==1.10.1
 opencv-python==4.5.3.56
-openvino-dev==2022.1.0.dev20220316
+openvino-dev==2022.1.0
 pillow==9.0.0
 pytorch-lightning==1.5.9
 requests==2.26.0
