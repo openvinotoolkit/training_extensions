@@ -6,7 +6,6 @@ from collections import defaultdict
 
 import pytest
 from mmcv import Config
-from mmseg.apis.ote.apis.segmentation.configuration import OTESegmentationConfig
 
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.label import Domain, LabelEntity
@@ -34,6 +33,7 @@ from segmentation_tasks.apis.segmentation.config_utils import (
     set_num_classes,
     patch_color_conversion,
 )
+from segmentation_tasks.apis.segmentation.configuration import OTESegmentationConfig
 
 
 class TestConfigUtilsInputParamsValidation:
