@@ -372,7 +372,9 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
         :param include_ignored: if True, includes the labels in ignored_labels
         :return: a list of labels from the shapes within the roi of this dataset item
         """
-        annotations = self.get_annotations()
+        annotations = self.get_annotations(
+            labels=labels, include_empty=include_empty, include_ignored=include_ignored
+        )
         scored_label_set = set(
             itertools.chain(
                 *[annotation.get_labels(include_empty) for annotation in annotations]
