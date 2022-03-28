@@ -44,7 +44,7 @@ from .utils import (
 
 # pylint:disable=too-many-arguments
 
-TConfigurableEnum = TypeVar("TConfigurableEnum", bound=ConfigurableEnum)
+_ConfigurableEnum = TypeVar("_ConfigurableEnum", bound=ConfigurableEnum)
 
 
 def set_common_metadata(
@@ -350,7 +350,7 @@ def float_selectable(
 
 
 def selectable(
-    default_value: TConfigurableEnum,
+    default_value: _ConfigurableEnum,
     header: str,
     description: str = "Default selectable description",
     warning: str = None,
@@ -360,7 +360,7 @@ def selectable(
     ui_rules: UIRules = NullUIRules(),
     auto_hpo_state: AutoHPOState = AutoHPOState.NOT_POSSIBLE,
     auto_hpo_value: Optional[str] = None,
-) -> TConfigurableEnum:
+) -> _ConfigurableEnum:
     """
     Constructs a selectable attribute from a pre-defined Enum, with the appropriate metadata. The list of options for
     display in the UI is inferred from the type of the ConfigurableEnum instance passed in as default_value.
@@ -408,8 +408,8 @@ def selectable(
     type_validator = attr.validators.instance_of(ConfigurableEnum)
     value_validator = construct_attr_enum_selectable_onsetattr(default_value)
 
-    # The Attribute returned by attr.ib is not compatible with the return typevar TConfigurableEnum. However, as the
-    # class containing the Attribute is instantiated the selectable type will correspond to the TConfigurableEnum, so
+    # The Attribute returned by attr.ib is not compatible with the return typevar _ConfigurableEnum. However, as the
+    # class containing the Attribute is instantiated the selectable type will correspond to the _ConfigurableEnum, so
     # mypy can ignore the error.
     return attr.ib(
         default=default_value,

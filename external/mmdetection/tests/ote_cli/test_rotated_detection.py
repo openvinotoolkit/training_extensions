@@ -1,4 +1,4 @@
-"""Tests for semantic segmentation with OTE CLI"""
+"""Tests for rotated object detection with OTE CLI"""
 
 # Copyright (C) 2021 Intel Corporation
 #
@@ -22,7 +22,7 @@ from ote_sdk.test_suite.e2e_test_system import e2e_pytest_component
 
 from ote_cli.registry import Registry
 
-from common import (
+from ote_cli.utils.tests import (
     create_venv,
     get_some_vars,
     ote_demo_deployment_testing,
@@ -32,34 +32,23 @@ from common import (
     ote_eval_deployment_testing,
     ote_eval_openvino_testing,
     ote_eval_testing,
-    ote_hpo_testing,
     ote_train_testing,
     ote_export_testing,
-    pot_optimize_testing,
-    pot_eval_testing,
-    nncf_optimize_testing,
-    nncf_export_testing,
-    nncf_eval_testing,
-    nncf_eval_openvino_testing,
 )
 
 
 args = {
-    '--train-ann-file': 'data/segmentation/custom/annotations/training',
-    '--train-data-roots': 'data/segmentation/custom/images/training',
-    '--val-ann-file': 'data/segmentation/custom/annotations/training',
-    '--val-data-roots': 'data/segmentation/custom/images/training',
-    '--test-ann-files': 'data/segmentation/custom/annotations/training',
-    '--test-data-roots': 'data/segmentation/custom/images/training',
-    '--input': 'data/segmentation/custom/images/training',
+    '--train-ann-file': 'data/car_tree_bug/annotations/instances_default.json',
+    '--train-data-roots': 'data/car_tree_bug/images',
+    '--val-ann-file': 'data/car_tree_bug/annotations/instances_default.json',
+    '--val-data-roots': 'data/car_tree_bug/images',
+    '--test-ann-files': 'data/car_tree_bug/annotations/instances_default.json',
+    '--test-data-roots': 'data/car_tree_bug/images',
+    '--input': 'data/car_tree_bug/images',
     'train_params': [
         'params',
-        '--learning_parameters.learning_rate_fixed_iters',
-        '0',
-        '--learning_parameters.learning_rate_warmup_iters',
-        '25',
         '--learning_parameters.num_iters',
-        '20',
+        '5',
         '--learning_parameters.batch_size',
         '2'
     ]
@@ -68,15 +57,15 @@ args = {
 root = '/tmp/ote_cli/'
 ote_dir = os.getcwd()
 
-templates = Registry('external').filter(task_type='SEGMENTATION').templates
+templates = Registry('external').filter(task_type='ROTATED_DETECTION').templates
 templates_ids = [template.model_template_id for template in templates]
 
 
-class TestToolsSegmentation:
+class TestToolsRotatedDetection:
     @e2e_pytest_component
     def test_create_venv(self):
-        work_dir, template_work_dir, algo_backend_dir = get_some_vars(templates[0], root)
-        create_venv(algo_backend_dir, work_dir, template_work_dir)
+        work_dir, _, algo_backend_dir = get_some_vars(templates[0], root)
+        create_venv(algo_backend_dir, work_dir)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
@@ -122,52 +111,3 @@ class TestToolsSegmentation:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_ote_demo_deployment(self, template):
         ote_demo_deployment_testing(template, root, ote_dir, args)
-
-    @e2e_pytest_component
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_ote_hpo(self, template):
-        ote_hpo_testing(template, root, ote_dir, args)
-
-    @e2e_pytest_component
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_nncf_optimize(self, template):
-        if template.entrypoints.nncf is None:
-            pytest.skip("nncf entrypoint is none")
-
-        nncf_optimize_testing(template, root, ote_dir, args)
-
-    @e2e_pytest_component
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_nncf_export(self, template):
-        if template.entrypoints.nncf is None:
-            pytest.skip("nncf entrypoint is none")
-
-        nncf_export_testing(template, root)
-
-    @e2e_pytest_component
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    @pytest.mark.skip(reason="Issue with model loading 76853")
-    def test_nncf_eval(self, template):
-        if template.entrypoints.nncf is None:
-            pytest.skip("nncf entrypoint is none")
-
-        nncf_eval_testing(template, root, ote_dir, args, threshold=0.001)
-
-    @e2e_pytest_component
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    @pytest.mark.skip(reason="Issue with model loading 76853")
-    def test_nncf_eval_openvino(self, template):
-        if template.entrypoints.nncf is None:
-            pytest.skip("nncf entrypoint is none")
-
-        nncf_eval_openvino_testing(template, root, ote_dir, args)
-
-    @e2e_pytest_component
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_pot_optimize(self, template):
-        pot_optimize_testing(template, root, ote_dir, args)
-
-    @e2e_pytest_component
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_pot_eval(self, template):
-        pot_eval_testing(template, root, ote_dir, args)

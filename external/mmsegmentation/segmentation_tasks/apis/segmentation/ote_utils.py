@@ -25,7 +25,7 @@ from ote_sdk.usecases.reporting.time_monitor_callback import TimeMonitorCallback
 
 def load_template(path):
     with open(path) as f:
-        template = yaml.full_load(f)
+        template = yaml.safe_load(f)
     return template
 
 

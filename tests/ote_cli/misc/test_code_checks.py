@@ -1,7 +1,3 @@
-"""
-Initialization of OTE Anomalib
-"""
-
 # Copyright (C) 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,9 +12,13 @@ Initialization of OTE Anomalib
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .inference_task import AnomalyInferenceTask
-from .nncf_task import AnomalyNNCFTask
-from .openvino import OpenVINOAnomalyTask
-from .train_task import AnomalyTrainingTask
+import os
+from subprocess import run
 
-__all__ = ["AnomalyInferenceTask", "AnomalyTrainingTask", "AnomalyNNCFTask", "OpenVINOAnomalyTask"]
+from ote_sdk.test_suite.e2e_test_system import e2e_pytest_component
+
+class TestCodeChecks:
+    @e2e_pytest_component
+    def test_code_checks(self):
+        wd = os.path.join(os.path.dirname(__file__), "..", "..", "..")
+        assert run(["./tests/run_code_checks.sh"], cwd=wd, check=True).returncode == 0
