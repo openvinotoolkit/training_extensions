@@ -105,9 +105,6 @@ def check_dictionary_keys_values_type(
     parameter, parameter_name, expected_key_class, expected_value_class
 ):
     """Function raises ValueError exception if dictionary key or value has unexpected type"""
-    raise_value_error_if_parameter_has_unexpected_type(
-        parameter=parameter, parameter_name=parameter_name, expected_type=dict
-    )
     for key, value in parameter.items():
         check_parameter_type(
             parameter=key,
@@ -125,6 +122,11 @@ def check_nested_classes_parameters(
     parameter, parameter_name, origin_class, nested_elements_class
 ):
     """Function to check type of parameters with nested elements"""
+    # Checking origin class
+    raise_value_error_if_parameter_has_unexpected_type(
+        parameter=parameter, parameter_name=parameter_name, expected_type=origin_class
+    )
+    # Checking nested elements
     if origin_class == dict:
         if len(nested_elements_class) != 2:
             raise TypeError(
@@ -138,11 +140,6 @@ def check_nested_classes_parameters(
             expected_value_class=value,
         )
     if origin_class in [list, set, tuple, Sequence]:
-        raise_value_error_if_parameter_has_unexpected_type(
-            parameter=parameter,
-            parameter_name=parameter_name,
-            expected_type=origin_class,
-        )
         if origin_class == tuple:
             tuple_length = len(nested_elements_class)
             if tuple_length > 2:
@@ -177,16 +174,9 @@ def check_parameter_type(parameter, parameter_name, expected_type):
             expected_type=expected_type,
         )
         return
-    # Checking parameters with nested elements
     expected_type_dict = expected_type.__dict__
     origin_class = expected_type_dict.get("__origin__")
     nested_elements_class = expected_type_dict.get("__args__")
-    check_nested_classes_parameters(
-        parameter=parameter,
-        parameter_name=parameter_name,
-        origin_class=origin_class,
-        nested_elements_class=nested_elements_class,
-    )
     # Union type with nested elements check
     if origin_class == typing.Union:
         expected_args = expected_type_dict.get("__args__")
@@ -204,6 +194,14 @@ def check_parameter_type(parameter, parameter_name, expected_type):
                 f"Unexpected type of '{parameter_name}' parameter, expected: {expected_args}, "
                 f"actual type: {actual_type}, actual value: {parameter}"
             )
+    # Checking parameters with nested elements
+    elif issubclass(origin_class, typing.Iterable):
+        check_nested_classes_parameters(
+            parameter=parameter,
+            parameter_name=parameter_name,
+            origin_class=origin_class,
+            nested_elements_class=nested_elements_class,
+        )
 
 
 def check_input_parameters_type(custom_checks: typing.Optional[dict] = None):
@@ -475,7 +473,7 @@ class YamlFilePathCheck(FilePathCheck):
 
 
 class JsonFilePathCheck(FilePathCheck):
-    """Class to check file path parameters"""
+    """Class to check json file path parameters"""
 
     def __init__(self, parameter, parameter_name):
         super().__init__(
