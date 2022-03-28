@@ -101,7 +101,7 @@ As a model, you can use path to model directory from generated zip. So you can u
 ```
 python3 demo.py \
   -i <path_to_video>/inputVideo.mp4 \
-  -m <path_to_model> \
+  -m <path_to_model>
 ```
 
 You can press `Q` to stop inference during demo running.

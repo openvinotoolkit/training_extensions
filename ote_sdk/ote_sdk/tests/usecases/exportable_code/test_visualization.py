@@ -19,8 +19,7 @@ from ote_sdk.entities.shapes.ellipse import Ellipse
 from ote_sdk.entities.shapes.rectangle import Rectangle
 from ote_sdk.tests.constants.ote_sdk_components import OteSdkComponent
 from ote_sdk.tests.constants.requirements import Requirements
-from ote_sdk.usecases.exportable_code.streamer.streamer import MediaType
-from ote_sdk.usecases.exportable_code.visualization import Visualizer
+from ote_sdk.usecases.exportable_code.visualizers import Visualizer
 from ote_sdk.utils.shape_drawer import ShapeDrawer
 from ote_sdk.utils.time_utils import now
 
@@ -124,33 +123,12 @@ class TestVisualizer:
         check_visualizer_attributes(
             actual_visualizer=visualizer,
             expected_name="Window",
-            expected_delay=0,
-            expected_show_count=False,
-            expected_is_one_label=False,
-        )
-        # Checking attributes of "Visualizer" initialized with default optional parameters except "media_type" is set
-        # to "IMAGE"
-        visualizer = Visualizer(media_type=MediaType.IMAGE)
-        check_visualizer_attributes(
-            actual_visualizer=visualizer,
-            expected_name="Window",
-            expected_delay=0,
-            expected_show_count=False,
-            expected_is_one_label=False,
-        )
-        # Checking attributes of "Visualizer" initialized with default optional parameters except "media_type" is set
-        # to "VIDEO"
-        visualizer = Visualizer(media_type=MediaType.VIDEO)
-        check_visualizer_attributes(
-            actual_visualizer=visualizer,
-            expected_name="Window",
             expected_delay=1,
             expected_show_count=False,
             expected_is_one_label=False,
         )
         # Checking attributes of "Visualizer" initialized with specified optional parameters
         visualizer = Visualizer(
-            media_type=MediaType.CAMERA,
             window_name="Test Visualizer",
             show_count=True,
             is_one_label=True,

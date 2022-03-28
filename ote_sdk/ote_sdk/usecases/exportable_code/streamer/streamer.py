@@ -12,7 +12,7 @@ import os
 import queue
 import sys
 from enum import Enum
-from typing import Dict, Iterator, Optional, Union
+from typing import Iterator, Union
 
 import cv2
 import numpy as np
@@ -146,7 +146,7 @@ class VideoStreamer(BaseStreamer):
         ...    pass
     """
 
-    def __init__(self, input_path: str, loop: bool) -> None:
+    def __init__(self, input_path: str, loop: bool = False) -> None:
         self.media_type = MediaType.VIDEO
         self.loop = loop
         self.cap = cv2.VideoCapture()
@@ -183,10 +183,19 @@ class CameraStreamer(BaseStreamer):
         ...         break
     """
 
-    def __init__(self, camera_device: Optional[int] = None) -> None:
+    def __init__(self, camera_device: int = 0) -> None:
         self.media_type = MediaType.CAMERA
-        self.camera_device = 0 if camera_device is None else camera_device
-        self.stream = cv2.VideoCapture(self.camera_device)
+        self.stream = cv2.VideoCapture()
+        try:
+            status = self.stream.open(camera_device)
+            self.stream.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+            self.stream.set(cv2.CAP_PROP_FPS, 30)
+            self.stream.set(cv2.CAP_PROP_AUTOFOCUS, 1)
+            self.stream.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*"MJPG"))
+            if not status:
+                raise OpenError(f"Can't open the camera from {camera_device}")
+        except ValueError as error:
+            raise InvalidInput(f"Can't find the camera {camera_device}") from error
 
     def __iter__(self) -> Iterator[np.ndarray]:
         """
@@ -220,7 +229,7 @@ class ImageStreamer(BaseStreamer):
         ...     cv2.waitKey(0)
     """
 
-    def __init__(self, input_path: str, loop: bool) -> None:
+    def __init__(self, input_path: str, loop: bool = False) -> None:
         self.loop = loop
         self.media_type = MediaType.IMAGE
         if not os.path.isfile(input_path):
@@ -254,7 +263,7 @@ class DirStreamer(BaseStreamer):
         ...     cv2.waitKey(0)
     """
 
-    def __init__(self, input_path: str, loop: bool) -> None:
+    def __init__(self, input_path: str, loop: bool = False) -> None:
         self.loop = loop
         self.media_type = MediaType.DIR
         self.dir = input_path
@@ -287,36 +296,36 @@ class DirStreamer(BaseStreamer):
 
 
 def get_streamer(
-    input_path: Union[int, str],
+    input_stream: Union[int, str] = 0,
     loop: bool = False,
     threaded: bool = False,
 ) -> BaseStreamer:
     """
     Get streamer object based on the file path or camera device index provided.
-    :param input: Path to file or directory or index for camera.
+    :param input_stream: Path to file or directory or index for camera.
     :param loop: Enable reading the input in a loop.
     :param threaded: Threaded streaming option
     """
-    errors: Dict = {InvalidInput: [], OpenError: []}
+    # errors: Dict = {InvalidInput: [], OpenError: []}
+    errors = []
     streamer: BaseStreamer
     for reader in (ImageStreamer, DirStreamer, VideoStreamer):
         try:
-            streamer = reader(input_path, loop)  # type: ignore
+            streamer = reader(input_stream, loop)  # type: ignore
             if threaded:
                 streamer = ThreadedStreamer(streamer)
             return streamer
         except (InvalidInput, OpenError) as error:
-            errors[type(error)].append(error.message)
+            errors.append(error)
     try:
-        streamer = CameraStreamer(int(input_path))
+        streamer = CameraStreamer(input_stream)  # type: ignore
         if threaded:
             streamer = ThreadedStreamer(streamer)
         return streamer
     except (InvalidInput, OpenError) as error:
-        errors[type(error)].append(error.message)
+        errors.append(error)
 
-    if not errors[OpenError]:
-        print(*errors[InvalidInput], file=sys.stderr, sep="\n")
-    else:
-        print(*errors[OpenError], file=sys.stderr, sep="\n")
+    if errors:
+        raise Exception(errors)
+
     sys.exit(1)
