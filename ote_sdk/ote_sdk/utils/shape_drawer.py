@@ -40,10 +40,10 @@ from ote_sdk.entities.shapes.shape import ShapeEntity
 
 CvTextSize = NewType("CvTextSize", Tuple[Tuple[int, int], int])
 
-AnyType = TypeVar("AnyType")
+_Any = TypeVar("_Any")
 
 
-class DrawerEntity(Generic[AnyType]):
+class DrawerEntity(Generic[_Any]):
     """
     An interface to draw a shape of type ``T`` onto an image.
     """
@@ -52,7 +52,7 @@ class DrawerEntity(Generic[AnyType]):
 
     @abc.abstractmethod
     def draw(
-        self, image: np.ndarray, entity: AnyType, labels: List[ScoredLabel]
+        self, image: np.ndarray, entity: _Any, labels: List[ScoredLabel]
     ) -> np.ndarray:
         """
         Draw an entity to a given frame

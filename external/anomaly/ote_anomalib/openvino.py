@@ -63,7 +63,9 @@ from ote_sdk.usecases.evaluation.metrics_helper import MetricsHelper
 from ote_sdk.usecases.exportable_code import demo
 from ote_sdk.usecases.exportable_code.prediction_to_annotation_converter import (
     AnomalyClassificationToAnnotationConverter,
+    AnomalyDetectionToAnnotationConverter,
     AnomalySegmentationToAnnotationConverter,
+    IPredictionToAnnotationConverter,
 )
 from ote_sdk.usecases.tasks.interfaces.deployment_interface import IDeploymentTask
 from ote_sdk.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
@@ -120,12 +122,17 @@ class OpenVINOAnomalyTask(IInferenceTask, IEvaluationTask, IOptimizationTask, ID
         self.task_type = self.task_environment.model_template.task_type
         self.config = self.get_config()
         self.inferencer = self.load_inferencer()
+
+        self.annotation_converter: IPredictionToAnnotationConverter
         if self.task_type == TaskType.ANOMALY_CLASSIFICATION:
             self.annotation_converter = AnomalyClassificationToAnnotationConverter(self.task_environment.label_schema)
+        elif self.task_type == TaskType.ANOMALY_DETECTION:
+            self.annotation_converter = AnomalyDetectionToAnnotationConverter(self.task_environment.label_schema)
         elif self.task_type == TaskType.ANOMALY_SEGMENTATION:
             self.annotation_converter = AnomalySegmentationToAnnotationConverter(self.task_environment.label_schema)
         else:
             raise ValueError(f"Unknown task type: {self.task_type}")
+
         template_file_path = task_environment.model_template.model_template_path
         self._base_dir = os.path.abspath(os.path.dirname(template_file_path))
 
@@ -167,7 +174,7 @@ class OpenVINOAnomalyTask(IInferenceTask, IEvaluationTask, IOptimizationTask, ID
             )
             if self.task_type == TaskType.ANOMALY_CLASSIFICATION:
                 annotations_scene = self.annotation_converter.convert_to_annotation(pred_score, meta_data)
-            elif self.task_type == TaskType.ANOMALY_SEGMENTATION:
+            elif self.task_type in (TaskType.ANOMALY_DETECTION, TaskType.ANOMALY_SEGMENTATION):
                 annotations_scene = self.annotation_converter.convert_to_annotation(anomaly_map, meta_data)
             else:
                 raise ValueError(f"Unknown task type: {self.task_type}")
@@ -211,6 +218,9 @@ class OpenVINOAnomalyTask(IInferenceTask, IEvaluationTask, IOptimizationTask, ID
         """
         if self.task_type == TaskType.ANOMALY_CLASSIFICATION:
             metric = MetricsHelper.compute_f_measure(output_resultset)
+        elif self.task_type == TaskType.ANOMALY_DETECTION:
+            global_resultset, local_resultset = split_local_global_resultset(output_resultset)
+            metric = MetricsHelper.compute_f_measure(local_resultset)
         elif self.task_type == TaskType.ANOMALY_SEGMENTATION:
             global_resultset, local_resultset = split_local_global_resultset(output_resultset)
             logger.info(f"Global annotations: {len(global_resultset.ground_truth_dataset)}")
@@ -401,9 +411,9 @@ class OpenVINOAnomalyTask(IInferenceTask, IEvaluationTask, IOptimizationTask, ID
 
         work_dir = os.path.dirname(demo.__file__)
         parameters: Dict[str, Any] = {}
-        task_type = (
-            "anomaly_classification" if self.task_type == TaskType.ANOMALY_CLASSIFICATION else "anomaly_segmentation"
-        )
+
+        task_type = str(self.task_type).lower()
+
         parameters["type_of_model"] = task_type
         parameters["converter_type"] = task_type.upper()
         parameters["model_parameters"] = self._get_openvino_configuration()

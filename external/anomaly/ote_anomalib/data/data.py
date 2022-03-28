@@ -87,8 +87,11 @@ class OTEAnomalyDataset(Dataset):
 
     def __getitem__(self, index: int) -> Dict[str, Union[int, Tensor]]:
         dataset_item = self.dataset[index]
+        item: Dict[str, Union[int, Tensor]] = {}
         item = {"index": index}
-        if self.task_type == TaskType.ANOMALY_CLASSIFICATION:
+        if self.task_type in (TaskType.ANOMALY_CLASSIFICATION, TaskType.ANOMALY_DETECTION):
+            # Detection currently relies on image labels only, meaning it'll use image
+            #   threshold to find the predicted bounding boxes.
             item["image"] = self.pre_processor(image=dataset_item.numpy)["image"]
         elif self.task_type == TaskType.ANOMALY_SEGMENTATION:
             if any((isinstance(annotation.shape, Polygon) for annotation in dataset_item.get_annotations())):
@@ -99,7 +102,7 @@ class OTEAnomalyDataset(Dataset):
             item["image"] = pre_processed["image"]
             item["mask"] = pre_processed["mask"]
         else:
-            raise ValueError(f"Unsupported task type: {self.config.dataset.task}")
+            raise ValueError(f"Unsupported task type: {self.task_type}")
 
         if len(dataset_item.get_shapes_labels()) > 0:
             item["label"] = 1 if dataset_item.get_shapes_labels()[0].is_anomalous else 0
