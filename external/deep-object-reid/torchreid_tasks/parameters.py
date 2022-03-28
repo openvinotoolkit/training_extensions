@@ -17,6 +17,7 @@ from sys import maxsize
 
 from ote_sdk.configuration.elements import (ParameterGroup,
                                             add_parameter_group,
+                                            boolean_attribute,
                                             configurable_boolean,
                                             configurable_float,
                                             configurable_integer,
@@ -24,7 +25,7 @@ from ote_sdk.configuration.elements import (ParameterGroup,
                                             string_attribute,
                                             )
 from ote_sdk.configuration.configurable_parameters import ConfigurableParameters
-from ote_sdk.configuration.model_lifecycle import ModelLifecycle
+from ote_sdk.configuration.enums import ModelLifecycle, AutoHPOState
 
 from .parameters_enums import POTQuantizationPreset
 
@@ -48,7 +49,8 @@ class OTEClassificationParameters(ConfigurableParameters):
             "memory requirements.",
             warning="Increasing this value may cause the system to use more memory than available, "
             "potentially causing out of memory errors, please update with caution.",
-            affects_outcome_of=ModelLifecycle.TRAINING
+            affects_outcome_of=ModelLifecycle.TRAINING,
+            auto_hpo_state=AutoHPOState.POSSIBLE
         )
 
         max_num_epochs = configurable_integer(
@@ -68,7 +70,8 @@ class OTEClassificationParameters(ConfigurableParameters):
             header="Learning rate",
             description="Increasing this value will speed up training \
                          convergence but might make it unstable.",
-            affects_outcome_of=ModelLifecycle.TRAINING
+            affects_outcome_of=ModelLifecycle.TRAINING,
+            auto_hpo_state=AutoHPOState.POSSIBLE
         )
 
         enable_lr_finder = configurable_boolean(
@@ -90,6 +93,7 @@ class OTEClassificationParameters(ConfigurableParameters):
     class __NNCFOptimization(ParameterGroup):
         header = string_attribute("Optimization by NNCF")
         description = header
+        visible_in_ui = boolean_attribute(False)
 
         enable_quantization = configurable_boolean(
             default_value=True,
@@ -102,6 +106,13 @@ class OTEClassificationParameters(ConfigurableParameters):
             default_value=False,
             header="Enable filter pruning algorithm",
             description="Enable filter pruning algorithm",
+            affects_outcome_of=ModelLifecycle.TRAINING
+        )
+
+        pruning_supported = configurable_boolean(
+            default_value=False,
+            header="Whether filter pruning is supported",
+            description="Whether filter pruning is supported",
             affects_outcome_of=ModelLifecycle.TRAINING
         )
 
@@ -118,6 +129,7 @@ class OTEClassificationParameters(ConfigurableParameters):
     class __POTParameter(ParameterGroup):
         header = string_attribute("POT Parameters")
         description = header
+        visible_in_ui = boolean_attribute(False)
 
         stat_subset_size = configurable_integer(
             header="Number of data samples",

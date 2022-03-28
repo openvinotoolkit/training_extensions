@@ -17,7 +17,7 @@ import os
 from collections import namedtuple
 from copy import deepcopy
 from pprint import pformat
-from typing import Any, Callable, Dict, List, Optional, Type
+from typing import Any, Callable, Dict, List, Optional
 
 import pytest
 from ote_sdk.entities.datasets import DatasetEntity
@@ -99,14 +99,20 @@ class SegmentationTrainingTestParameters(DefaultOTETestCreationParametersInterfa
         test_bunches = [
                 dict(
                     model_name=[
+                       'Custom_Semantic_Segmentation_Lite-HRNet-s-mod2_OCR',
                        'Custom_Semantic_Segmentation_Lite-HRNet-18_OCR',
+                       'Custom_Semantic_Segmentation_Lite-HRNet-18-mod2_OCR',
+                       'Custom_Semantic_Segmentation_Lite-HRNet-x-mod3_OCR',
                     ],
                     dataset_name='kvasir_seg_shortened',
                     usecase='precommit',
                 ),
                 dict(
                     model_name=[
+                       'Custom_Semantic_Segmentation_Lite-HRNet-s-mod2_OCR',
                        'Custom_Semantic_Segmentation_Lite-HRNet-18_OCR',
+                       'Custom_Semantic_Segmentation_Lite-HRNet-18-mod2_OCR',
+                       'Custom_Semantic_Segmentation_Lite-HRNet-x-mod3_OCR',
                     ],
                     dataset_name='kvasir_seg',
                     num_training_iters=KEEP_CONFIG_FIELD_VALUE,

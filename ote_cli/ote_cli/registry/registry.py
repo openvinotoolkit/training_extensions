@@ -29,7 +29,7 @@ class Registry:
     Class that implements a model templates registry.
     """
 
-    def __init__(self, templates_dir=None, templates=None):
+    def __init__(self, templates_dir=None, templates=None, experimental=False):
         if templates is None:
             if templates_dir is None:
                 templates_dir = os.getenv("TEMPLATES_DIR")
@@ -40,6 +40,13 @@ class Registry:
             template_filenames = glob.glob(
                 os.path.join(templates_dir, "**", "template.yaml"), recursive=True
             )
+            if experimental:
+                template_filenames.extend(
+                    glob.glob(
+                        os.path.join(templates_dir, "**", "template_experimental.yaml"),
+                        recursive=True,
+                    )
+                )
             template_filenames = [os.path.abspath(p) for p in template_filenames]
 
             self.templates = []

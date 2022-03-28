@@ -26,11 +26,6 @@ if [[ $PYTHON_VERSION != "3.8" && $PYTHON_VERSION != "3.9" ]]; then
   exit 1
 fi
 
-if [[ -z $OTE_SDK_PATH ]]; then
-  echo "The environment variable OTE_SDK_PATH is not set -- it is required for creating virtual environment"
-  exit 1
-fi
-
 cd ${work_dir}
 
 if [[ -e ${venv_dir} ]]; then
@@ -95,7 +90,8 @@ CONSTRAINTS_FILE=$(tempfile)
 cat constraints.txt >> ${CONSTRAINTS_FILE}
 export PIP_CONSTRAINT=${CONSTRAINTS_FILE}
 
-pip install --upgrade pip || exit 1
+# Newer versions of pip have troubles with NNCF installation from the repo commit.
+pip install pip==21.2.1 || exit 1
 pip install wheel || exit 1
 pip install --upgrade setuptools || exit 1
 
@@ -109,10 +105,11 @@ else
   echo torchvision==${TORCHVISION_VERSION}+cu${CUDA_VERSION_CODE} >> ${CONSTRAINTS_FILE}
 fi
 
-pip install -r requirements.txt
-pip install -e .
+pip install -r requirements.txt || exit 1
+pip install -e . || exit 1
 
-pip install -e $OTE_SDK_PATH  || exit 1
+# Install OTE SDK
+pip install -e ../../ote_sdk/ || exit 1
 
 deactivate
 

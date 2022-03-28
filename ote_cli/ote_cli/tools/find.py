@@ -31,6 +31,7 @@ def parse_args():
         "--root", help="A root dir where templates should be searched.", default="."
     )
     parser.add_argument("--task_type")
+    parser.add_argument("--experimental", action="store_true")
 
     return parser.parse_args()
 
@@ -42,7 +43,7 @@ def main():
 
     args = parse_args()
 
-    registry = Registry(args.root)
+    registry = Registry(args.root, experimental=args.experimental)
     if args.task_type:
         registry = registry.filter(task_type=args.task_type)
 

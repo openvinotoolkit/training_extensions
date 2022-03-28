@@ -14,17 +14,13 @@
     git checkout -b develop origin/develop
     git submodule update --init --recursive
     ```
-2. Export `OTE_SDK_PATH` environment variable to use it inside our scripts:
-   ```
-   export OTE_SDK_PATH=`pwd`/ote_sdk
-   ```
 
-3. Install prerequisites by running the following:
+2. Install prerequisites by running the following:
    ```
    sudo apt-get install python3-pip python3-venv
    ```
 
-4. Search for available scripts that create python virtual environments for different task types:
+3. Search for available scripts that create python virtual environments for different task types:
    ```bash
    find external/ -name init_venv.sh
    ```
@@ -38,7 +34,7 @@
    Each line in the output gives an `init_venv.sh` script that creates a virtual environment
    for the corresponding task type.
 
-5. Let's choose a task type.
+4. Let's choose a task type.
    Let it be `external/mmdetection` for Object Detection task.
    ```bash
    TASK_ALGO_DIR=./external/mmdetection/
@@ -46,7 +42,7 @@
    Note that we will not use the variable `TASK_ALGO_DIR` inside our scripts, we set it just to
    simplify this guide.
 
-6. Let's create, activate virtual environment for the chosen task, and install `ote_cli`.
+5. Let's create, activate virtual environment for the chosen task, and install `ote_cli`.
    Note that the virtual environment folder may be created in any place in your system,
    but we will create it in the folder `./cur_task_venv` for convenience.
    ```bash
@@ -62,7 +58,7 @@
    from the chosen task folder is used to avoid breaking constraints
    for the OTE task.
 
-7. As soon as `ote_cli` is installed in the virtual environment, you can use
+6. As soon as `ote_cli` is installed in the virtual environment, you can use
    `ote` command line interface described below to run
    train/eval/export/other action for templates related to the chosen task type.
 
