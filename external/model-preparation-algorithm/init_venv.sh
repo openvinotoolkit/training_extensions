@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Copyright (C) 2020-2021 Intel Corporation
+# Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 set -v
@@ -102,47 +102,37 @@ else
   export TORCHVISION_VERSION=${TORCHVISION_VERSION}+cu${CUDA_VERSION_CODE}
 fi
 
-pip install torch==${TORCH_VERSION} torchvision==${TORCHVISION_VERSION} -f https://download.pytorch.org/whl/lts/1.8/torch_lts.html --no-cache || exit 1
+# Install pytorch
 echo torch==${TORCH_VERSION} >> ${CONSTRAINTS_FILE}
 echo torchvision==${TORCHVISION_VERSION} >> ${CONSTRAINTS_FILE}
+pip install torch==${TORCH_VERSION} torchvision==${TORCHVISION_VERSION} -f https://download.pytorch.org/whl/lts/1.8/torch_lts.html -c ${CONSTRAINTS_FILE} || exit 1
 
+# Install mmcv
 pip install --no-cache-dir mmcv-full==${MMCV_VERSION} -c ${CONSTRAINTS_FILE} || exit 1
 
-# Install other requirements.
 # Install mmpycocotools from source to make sure it is compatible with installed numpy version.
 pip install --no-cache-dir --no-binary=mmpycocotools mmpycocotools -c ${CONSTRAINTS_FILE} || exit 1
-cat requirements.txt | xargs -n 1 -L 1 pip install --no-cache -c ${CONSTRAINTS_FILE} || exit 1
 
 # Install OTE SDK
 pip install -e ../../ote_sdk/ -c ${CONSTRAINTS_FILE} || exit 1
 
 # Install detection algo backend & task
-cd ../mmdetection
-SUBMODULE=./submodule
-cat ${SUBMODULE}/requirements.txt | xargs -n 1 -L 1 pip install --no-cache -c ${CONSTRAINTS_FILE} || exit 1
-pip install -e ${SUBMODULE} -c ${CONSTRAINTS_FILE} || exit 1
-pip install -e . -c ${CONSTRAINTS_FILE} || exit 1
-cd -
+pip install -e ../mmdetection/submodule  -c ${CONSTRAINTS_FILE} || exit 1
+pip install -e ../mmdetection -c ${CONSTRAINTS_FILE} || exit 1
 
 # Install segmentation algo backend & task
-cd ../mmsegmentation
-#SUBMODULE=./submodule
-SUBMODULE=../model-preparation-algorithm/submodule/external/mmsegmentation  # Temporary due to mmcv version
-cat ${SUBMODULE}/requirements.txt | xargs -n 1 -L 1 pip install --no-cache -c ${CONSTRAINTS_FILE} || exit 1
-pip install -e ${SUBMODULE} -c ${CONSTRAINTS_FILE} || exit 1
-pip install -e . -c ${CONSTRAINTS_FILE} || exit 1
-cd -
+##pip install -e ../mmsegmentation/submodule -c ${CONSTRAINTS_FILE} || exit 1
+pip install -e ../model-preparation-algorithm/submodule/external/mmsegmentation -c ${CONSTRAINTS_FILE} || exit 1  # Temporary due to mmcv version
+pip install -e ../mmsegmentation -c ${CONSTRAINTS_FILE} || exit 1
 
 # Install MPA algo backend & task
-SUBMODULE=./submodule
-cat ${SUBMODULE}/requirements.txt | xargs -n 1 -L 1 pip install --no-cache -c ${CONSTRAINTS_FILE} || exit 1
-pip install -e ${SUBMODULE} -c ${CONSTRAINTS_FILE} || exit 1
+pip install -e submodule -c ${CONSTRAINTS_FILE} || exit 1
 pip install -e . -c ${CONSTRAINTS_FILE} || exit 1
-MPA_DIR=`realpath ${SUBMODULE}`
+MPA_DIR=`realpath submodule`
 echo "export MPA_DIR=${MPA_DIR}" >> ${venv_dir}/bin/activate
 
 # Install OTE CLI
-pip install -e ../../ote_cli/ -c ${CONSTRAINTS_FILE} || exit 1
+pip install -e ../../ote_cli -c ${CONSTRAINTS_FILE} || exit 1
 
 # Build NNCF extensions
 echo "Build NNCF extensions ..."
