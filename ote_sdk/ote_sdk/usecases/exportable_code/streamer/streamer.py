@@ -185,15 +185,8 @@ class CameraStreamer(BaseStreamer):
 
     def __init__(self, camera_device: int = 0) -> None:
         self.media_type = MediaType.CAMERA
-        self.stream = cv2.VideoCapture()
         try:
-            status = self.stream.open(camera_device)
-            self.stream.set(cv2.CAP_PROP_BUFFERSIZE, 1)
-            self.stream.set(cv2.CAP_PROP_FPS, 30)
-            self.stream.set(cv2.CAP_PROP_AUTOFOCUS, 1)
-            self.stream.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*"MJPG"))
-            if not status:
-                raise OpenError(f"Can't open the camera from {camera_device}")
+            self.stream = cv2.VideoCapture(int(camera_device))
         except ValueError as error:
             raise InvalidInput(f"Can't find the camera {camera_device}") from error
 

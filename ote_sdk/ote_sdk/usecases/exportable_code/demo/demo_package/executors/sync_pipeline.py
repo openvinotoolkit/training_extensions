@@ -22,7 +22,7 @@ from ote_sdk.usecases.exportable_code.demo.demo_package.utils import (
     create_output_converter,
 )
 from ote_sdk.usecases.exportable_code.streamer import get_streamer
-from ote_sdk.usecases.exportable_code.visualizers import HandlerVisualizer, Visualizer
+from ote_sdk.usecases.exportable_code.visualizers import Visualizer
 from ote_sdk.utils.shape_factory import ShapeFactory
 
 
@@ -95,12 +95,11 @@ class ChainExecutor:
         Run demo using input stream (image, video stream, camera)
         """
         streamer = get_streamer(input_stream, loop)
-        with HandlerVisualizer(self.visualizer) as visualizer:
-            for frame in streamer:
-                # getting result for single image
-                annotation_scene = self.single_run(frame)
 
-                output = visualizer.draw(frame, annotation_scene)
-                visualizer.show(output)
-                if visualizer.is_quit():
-                    break
+        for frame in streamer:
+            # getting result for single image
+            annotation_scene = self.single_run(frame)
+            output = self.visualizer.draw(frame, annotation_scene)
+            self.visualizer.show(output)
+            if self.visualizer.is_quit():
+                break

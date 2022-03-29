@@ -45,37 +45,6 @@ class IVisualizer(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
 
-class HandlerVisualizer:
-    """
-    Handler for visualizers
-
-    Args:
-        visualizer: visualize inference results
-    """
-
-    def __init__(self, visualizer: IVisualizer) -> None:
-        self.visualizer = visualizer
-
-    def __enter__(self):
-        cv2.namedWindow(
-            self.visualizer.window_name,
-            cv2.WINDOW_NORMAL | cv2.WINDOW_KEEPRATIO | cv2.WINDOW_GUI_EXPANDED,
-        )
-        if hasattr(self.visualizer, "trackbar_name"):
-            cv2.createTrackbar(
-                self.visualizer.trackbar_name,
-                self.visualizer.window_name,
-                0,
-                100,
-                lambda x: x,
-            )
-
-        return self.visualizer
-
-    def __exit__(self, *exc) -> None:
-        cv2.destroyAllWindows()
-
-
 class Visualizer(IVisualizer):
     """
     Visualize the predicted output by drawing the annotations on the input image.
@@ -96,10 +65,6 @@ class Visualizer(IVisualizer):
         delay: Optional[int] = None,
     ) -> None:
         self.window_name = "Window" if window_name is None else window_name
-        cv2.namedWindow(
-            self.window_name,
-            cv2.WINDOW_NORMAL | cv2.WINDOW_KEEPRATIO | cv2.WINDOW_GUI_EXPANDED,
-        )
         self.shape_drawer = ShapeDrawer(show_count, is_one_label)
 
         self.delay = delay

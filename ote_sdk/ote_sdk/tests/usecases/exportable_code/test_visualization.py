@@ -98,11 +98,7 @@ class TestVisualizer:
 
         <b>Steps</b>
         1. Check attributes of "Visualizer" object initialized with default optional parameters
-        2. Check attributes of "Visualizer" object initialized with default optional parameters except "media_type" is
-        set to "IMAGE"
-        3. Check attributes of "Visualizer" object initialized with default optional parameters except "media_type" is
-        set to "VIDEO"
-        4. Check attributes of "Visualizer" object initialized with specified optional parameters
+        2. Check attributes of "Visualizer" object initialized with specified optional parameters
         """
 
         def check_visualizer_attributes(

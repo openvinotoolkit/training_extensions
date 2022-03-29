@@ -579,7 +579,7 @@ class ShapeDrawer(DrawerEntity[AnnotationSceneEntity]):
                 int(x_coord + 1), int(entity.y_center * image.shape[0])
             )
 
-            # put label bottom if it is out of bounds at the top of the shape, and shift label to left if needed
+            # put label at bottom if it is out of bounds at the top of the shape, and shift label to left if needed
             if y_coord < self.top_margin * image.shape[0]:
                 y_coord = (
                     (entity.y1 * image.shape[0]) + (entity.y2 * image.shape[0]) + offset

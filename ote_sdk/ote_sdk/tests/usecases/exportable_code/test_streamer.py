@@ -237,7 +237,7 @@ class TestStreamer:
         streamer = get_streamer(0)
         assert isinstance(streamer, CameraStreamer)
 
-        streamer = get_streamer(input=0, threaded=True)
+        streamer = get_streamer(input_stream=0, threaded=True)
         assert isinstance(streamer, ThreadedStreamer)
 
     @pytest.mark.priority_medium

@@ -14,7 +14,7 @@ from ote_sdk.usecases.exportable_code.demo.demo_package.utils import (
     create_output_converter,
 )
 from ote_sdk.usecases.exportable_code.streamer import get_streamer
-from ote_sdk.usecases.exportable_code.visualizers import HandlerVisualizer, Visualizer
+from ote_sdk.usecases.exportable_code.visualizers import Visualizer
 
 
 class SyncExecutor:
@@ -37,15 +37,13 @@ class SyncExecutor:
         """
         streamer = get_streamer(input_stream, loop)
 
-        with HandlerVisualizer(self.visualizer) as visualizer:
-            for frame in streamer:
-                # getting result include preprocessing, infer, postprocessing for sync infer
-                predictions, frame_meta = self.model(frame)
-                annotation_scene = self.converter.convert_to_annotation(
-                    predictions, frame_meta
-                )
-
-                output = visualizer.draw(frame, annotation_scene, frame_meta)
-                visualizer.show(output)
-                if visualizer.is_quit():
-                    break
+        for frame in streamer:
+            # getting result include preprocessing, infer, postprocessing for sync infer
+            predictions, frame_meta = self.model(frame)
+            annotation_scene = self.converter.convert_to_annotation(
+                predictions, frame_meta
+            )
+            output = self.visualizer.draw(frame, annotation_scene, frame_meta)
+            self.visualizer.show(output)
+            if self.visualizer.is_quit():
+                break

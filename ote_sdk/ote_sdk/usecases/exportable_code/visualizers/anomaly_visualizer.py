@@ -36,6 +36,10 @@ class AnomalyVisualizer(Visualizer):
         delay: Optional[int] = None,
     ) -> None:
         super().__init__(window_name, show_count, is_one_label, delay)
+        cv2.namedWindow(
+            self.window_name,
+            cv2.WINDOW_NORMAL | cv2.WINDOW_KEEPRATIO | cv2.WINDOW_GUI_EXPANDED,
+        )
         self.trackbar_name = "Opacity"
         cv2.createTrackbar(self.trackbar_name, self.window_name, 0, 100, lambda x: x)
 

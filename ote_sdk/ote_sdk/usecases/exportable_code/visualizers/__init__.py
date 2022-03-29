@@ -6,6 +6,6 @@ Initialization of visualizers
 #
 
 from .anomaly_visualizer import AnomalyVisualizer
-from .visualizer import HandlerVisualizer, Visualizer
+from .visualizer import Visualizer
 
-__all__ = ["HandlerVisualizer", "Visualizer", "AnomalyVisualizer"]
+__all__ = ["AnomalyVisualizer", "Visualizer"]

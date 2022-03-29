@@ -35,9 +35,7 @@ def get_some_vars(template, root):
 
 def create_venv(algo_backend_dir, work_dir):
     venv_dir = f"{work_dir}/venv"
-    print("VENV DIR = ", venv_dir)
     if not os.path.exists(venv_dir):
-        print("CREATE")
         assert run([f"./{algo_backend_dir}/init_venv.sh", venv_dir]).returncode == 0
         assert (
             run(
@@ -77,10 +75,14 @@ def patch_demo_py(src_path, dst_path):
         replaced = False
         for i, line in enumerate(content):
             if "visualizer = create_visualizer(models[-1].task_type)" in line:
-                content[i] = line.rstrip() + "; visualizer.show = show\n"
+                content[i] = "    visualizer = Visualizer(); visualizer.show = show\n"
                 replaced = True
         assert replaced
-        content = ["def show(self):\n", "    pass\n\n"] + content
+        content = [
+            "from ote_sdk.usecases.exportable_code.visualizers import Visualizer\n",
+            "def show(self):\n",
+            "    pass\n\n",
+        ] + content
         with open(dst_path, "w") as write_file:
             write_file.write("".join(content))
 
@@ -325,7 +327,7 @@ def ote_deploy_openvino_testing(template, root, ote_dir, args):
                 "python3",
                 "demo_patched.py",
                 "-m",
-                "../model/model.xml",
+                "../model",
                 "-i",
                 os.path.join(ote_dir, args["--input"]),
             ],
