@@ -8,6 +8,7 @@ from typing import Callable, Optional
 
 
 def default_progress_callback(progress: float, score: Optional[float] = None):
+    # pylint: disable=unused-argument
     """
     This is the default progress callback for OptimizationParameters.
     """
