@@ -29,6 +29,7 @@ from ote_sdk.entities.label import LabelEntity
 from ote_sdk.entities.model_template import TaskType
 from ote_sdk.entities.result_media import ResultMediaEntity
 from ote_sdk.entities.scored_label import ScoredLabel
+from ote_sdk.utils.anomaly_utils import create_detection_annotation_from_anomaly_heatmap
 from ote_sdk.utils.segmentation_utils import create_annotation_from_segmentation_map
 from pytorch_lightning.callbacks import Callback
 
@@ -58,16 +59,21 @@ class AnomalyInferenceCallback(Callback):
             self.ote_dataset, pred_scores, pred_labels, anomaly_maps, pred_masks
         ):
             label = self.anomalous_label if pred_label else self.normal_label
-            if self.task_type == TaskType.ANOMALY_CLASSIFICATION:
-                probability = (1 - pred_score) if pred_score < 0.5 else pred_score
-                dataset_item.append_labels([ScoredLabel(label=label, probability=float(probability))])
+            probability = (1 - pred_score) if pred_score < 0.5 else pred_score
+            dataset_item.append_labels([ScoredLabel(label=label, probability=float(probability))])
+            if self.task_type == TaskType.ANOMALY_DETECTION:
+                dataset_item.append_annotations(
+                    annotations=create_detection_annotation_from_anomaly_heatmap(
+                        hard_prediction=pred_mask,
+                        soft_prediction=anomaly_map,
+                        label_map=self.label_map,
+                    )
+                )
             elif self.task_type == TaskType.ANOMALY_SEGMENTATION:
                 mask = pred_mask.squeeze().astype(np.uint8)
                 dataset_item.append_annotations(
                     create_annotation_from_segmentation_map(mask, anomaly_map.squeeze(), self.label_map)
                 )
-            else:
-                raise ValueError(f"Unknown task type: {self.task_type}")
 
             dataset_item.append_metadata_item(
                 ResultMediaEntity(

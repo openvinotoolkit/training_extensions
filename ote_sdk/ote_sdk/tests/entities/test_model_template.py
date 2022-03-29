@@ -51,7 +51,7 @@ class CommonMethods:
         """Function saves config file with removed override_parameters node. Returns dictionary with path
         to new config file and dictionary with override_parameters"""
         with open(TestHyperParameterData().model_template_path()) as model_to_copy:
-            model_data = yaml.full_load(model_to_copy)
+            model_data = yaml.safe_load(model_to_copy)
             override_parameters = model_data["hyper_parameters"]["parameter_overrides"]
         model_data["hyper_parameters"].pop("parameter_overrides")
         new_config_path = TestHyperParameterData.get_path_to_file(
@@ -373,7 +373,7 @@ class TestHyperParameterData:
         def open_config_file_and_remove_value_key() -> dict:
             """Function returns config file dictionary with removed value key"""
             with open(TestHyperParameterData().config_path()) as config_file:
-                config_content = yaml.full_load(config_file)
+                config_content = yaml.safe_load(config_file)
                 self.remove_value_key_from_config(config_content)
                 return config_content
 
@@ -422,7 +422,7 @@ class TestHyperParameterData:
             return is_value_key_exists
 
         with open(self.config_path()) as config_file:
-            config_data = yaml.full_load(config_file)
+            config_data = yaml.safe_load(config_file)
         # Checking test dataset
         assert search_value_key_in_config(config_data)
         model_template = CommonMethods.cut_parameter_overrides_from_model_template()
@@ -600,7 +600,7 @@ class TestHyperParameterData:
         assert hyper_parameter_data.has_valid_configurable_parameters
         # Check for set class data
         with open(self.config_path()) as config_file:
-            data_to_set = yaml.full_load(config_file)
+            data_to_set = yaml.safe_load(config_file)
         set_hyper_parameter_data = HyperParameterData(self.config_path())
         set_hyper_parameter_data.manually_set_data_and_validate(data_to_set)
         assert set_hyper_parameter_data.data == data_to_set
@@ -965,27 +965,33 @@ class TestModelTemplate:
         Test passes if is_task_global method of ModelTemplate object returns expected bool values related to
         task_type attribute
         <b>Steps</b>
-        1. Check is_task_global method returns True if task_type equal to CLASSIFICATION
-        2. Check is_task_global method returns False if task_type not equal to CLASSIFICATION
+        1. Check is_task_global method returns True if task_type equal to CLASSIFICATION or ANOMALY_CLASSIFICATION
+        2. Check is_task_global method returns False if task_type not equal to CLASSIFICATION or ANOMALY_CLASSIFICATION
         """
-        # Check is_task_global method returns True
-        default_parameters = self.default_model_parameters()
-        task_global_parameters = dict(default_parameters)
-        task_global_parameters["task_type"] = TaskType.CLASSIFICATION
-        task_global_model_template = ModelTemplate(**task_global_parameters)
-        assert task_global_model_template.is_task_global()
-        # Check is_task_global method returns False
+        # Check is_task_global method returns True for CLASSIFICATION and ANOMALY_CLASSIFICATION
+        for global_task_type in (
+            TaskType.CLASSIFICATION,
+            TaskType.ANOMALY_CLASSIFICATION,
+        ):
+            default_parameters = self.default_model_parameters()
+            task_global_parameters = dict(default_parameters)
+            task_global_parameters["task_type"] = global_task_type
+            task_global_model_template = ModelTemplate(**task_global_parameters)
+            assert (
+                task_global_model_template.is_task_global()
+            ), f"Expected True value returned by is_task_global for {global_task_type}"
+        # Check is_task_global method returns False for the other tasks
         non_global_task_parameters = dict(default_parameters)
         non_global_tasks_list = []
         for task_type in TaskType:
-            if task_type != TaskType.CLASSIFICATION:
+            if not task_type.is_global:
                 non_global_tasks_list.append(task_type)
         for non_global_task in non_global_tasks_list:
             non_global_task_parameters["task_type"] = non_global_task
             non_global_task_template = ModelTemplate(**non_global_task_parameters)
             assert not non_global_task_template.is_task_global(), (
-                f"Expected False value returned by is_task_global method for {non_global_task}, only CLASSIFICATION "
-                f"task type is global"
+                f"Expected False value returned by is_task_global method for {non_global_task}, "
+                f"only CLASSIFICATION and ANOMALY_CLASSIFICATION task types are global"
             )
 
 
@@ -1040,6 +1046,7 @@ class TestTaskTypesConstants:
             TaskType.ANOMALY_DETECTION,
             TaskType.ANOMALY_CLASSIFICATION,
             TaskType.ANOMALY_SEGMENTATION,
+            TaskType.ROTATED_DETECTION,
         )
 
 
@@ -1058,7 +1065,7 @@ class TestParseModelTemplate:
         """
         model_template_path = TestHyperParameterData().model_template_path()
         with open(model_template_path) as model_template_file:
-            model_template_content = yaml.full_load(model_template_file)
+            model_template_content = yaml.safe_load(model_template_file)
             model_template_content["model_template_id"] = model_template_content[
                 "name"
             ].replace(" ", "_")
@@ -1136,7 +1143,7 @@ class TestParseModelTemplate:
         )
         model_id = "Parsed_Model_ID_1"
         with open(model_template_path) as model_template_file:
-            id_specified_template_content = yaml.full_load(model_template_file)
+            id_specified_template_content = yaml.safe_load(model_template_file)
             id_specified_template_content["model_template_id"] = model_id
         with open(id_specified_model_path, "w") as new_template:
             new_template.write(yaml.dump(id_specified_template_content))

@@ -20,6 +20,7 @@ Visualisation module.
 import cv2
 import numpy as np
 from ote_sdk.entities.model_template import TaskType
+from ote_sdk.entities.shapes.polygon import Polygon
 
 
 def put_text_on_rect_bg(frame, message, position, color=(255, 255, 0)):
@@ -56,6 +57,8 @@ def draw_masks(frame, predictions, put_object_count=False):
     aggregated_mask = np.zeros(frame.shape[:2], dtype=np.uint8)
     aggregated_colored_mask = np.zeros(frame.shape, dtype=np.uint8)
     for prediction in predictions:
+        if not isinstance(prediction.shape, Polygon):
+            continue
         contours = np.array(
             [[(int(p.x * width), int(p.y * height)) for p in prediction.shape.points]]
         )
@@ -149,7 +152,7 @@ def draw_predictions(task_type, predictions, frame, fit_to_size):
         ratio_y = fit_to_size[1] / height
         ratio = min(ratio_x, ratio_y)
         frame = cv2.resize(frame, None, fx=ratio, fy=ratio)
-    if task_type == TaskType.DETECTION:
+    if task_type in {TaskType.DETECTION, TaskType.ANOMALY_DETECTION}:
         frame = draw_bounding_boxes(frame, predictions, put_object_count=True)
     elif task_type in {TaskType.CLASSIFICATION, TaskType.ANOMALY_CLASSIFICATION}:
         frame = put_labels(frame, predictions)
