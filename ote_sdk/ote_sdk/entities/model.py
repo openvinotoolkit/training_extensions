@@ -18,7 +18,10 @@ from ote_sdk.usecases.adapters.model_adapter import (
     IDataSource,
     ModelAdapter,
 )
-from ote_sdk.utils.argument_checks import DatasetParamTypeCheck, check_input_parameters_type
+from ote_sdk.utils.argument_checks import (
+    DatasetParamTypeCheck,
+    check_input_parameters_type,
+)
 from ote_sdk.utils.time_utils import now
 
 if TYPE_CHECKING:
