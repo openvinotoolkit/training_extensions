@@ -133,32 +133,32 @@ class InferenceProgressCallback(TimeMonitorCallback):
 
 class OptimizationProgressCallback(TrainingProgressCallback):
     """ Progress callback used for optimization using NNCF
-        There are four stages to the progress bar:
+        There are three stages to the progress bar:
            - 5 % model is loaded
            - 10 % compressed model is initialized
            - 10-100 % compressed model is being fine-tuned
     """
-    def __init__(self, update_progress_callback: UpdateProgressCallback, load_progress: int = 5,
-                 initialization_progress: int = 5):
+    def __init__(self, update_progress_callback: UpdateProgressCallback, loading_stage_progress_percentage: int = 5,
+                 initialization_stage_progress_percentage: int = 5):
         super().__init__(update_progress_callback=update_progress_callback)
-        if load_progress + initialization_progress >= 100:
-            raise RuntimeError('Total optimization progress is more than 100%')
+        if loading_stage_progress_percentage + initialization_stage_progress_percentage >= 100:
+            raise RuntimeError('Total optimization progress percentage is more than 100%')
 
-        self.load_progress = load_progress
-        self.initialization_progress = initialization_progress
+        self.loading_stage_progress_percentage = loading_stage_progress_percentage
+        self.initialization_stage_progress_percentage = initialization_stage_progress_percentage
 
-        # set load_progress from the start as the model is already loaded at this point
-        self.update_progress_callback(load_progress)
+        # set loading_stage_progress_percentage from the start as the model is already loaded at this point
+        self.update_progress_callback(loading_stage_progress_percentage)
 
     def on_train_begin(self, logs=None):
         super(OptimizationProgressCallback, self).on_train_begin(logs)
         # Callback initialization takes place here after OTEProgressHook.before_run() is called
-        train_progress = 100 - self.load_progress - self.initialization_progress
-        load_steps = self.total_steps * self.load_progress / train_progress
-        initialization_steps = self.total_steps * self.initialization_progress / train_progress
-        self.total_steps += load_steps + initialization_steps
+        train_percentage = 100 - self.loading_stage_progress_percentage - self.initialization_stage_progress_percentage
+        loading_stage_steps = self.total_steps * self.loading_stage_progress_percentage / train_percentage
+        initialization_stage_steps = self.total_steps * self.initialization_stage_progress_percentage / train_percentage
+        self.total_steps += loading_stage_steps + initialization_stage_steps
 
-        self.current_step = load_steps + initialization_steps
+        self.current_step = loading_stage_steps + initialization_stage_steps
         self.update_progress_callback(self.get_progress())
 
     def on_train_end(self, logs=None):
@@ -166,4 +166,5 @@ class OptimizationProgressCallback(TrainingProgressCallback):
         self.update_progress_callback(self.get_progress(), score=logs)
 
     def on_initialization_end(self):
-        self.update_progress_callback(self.load_progress + self.initialization_progress)
+        self.update_progress_callback(self.loading_stage_progress_percentage +
+                                      self.initialization_stage_progress_percentage)

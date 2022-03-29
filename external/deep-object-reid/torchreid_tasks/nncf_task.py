@@ -188,8 +188,8 @@ class OTEClassificationNNCFTask(OTEClassificationInferenceTask, IOptimizationTas
                                                     num_train_steps=max(1, math.floor(len(train_subset) /
                                                                                       self._cfg.train.batch_size)),
                                                     num_val_steps=0, num_test_steps=0,
-                                                    load_progress=5,
-                                                    initialization_progress=5)
+                                                    loading_stage_progress_percentage=5,
+                                                    initialization_stage_progress_percentage=5)
 
         self.metrics_monitor = DefaultMetricsMonitor()
         self.stop_callback.reset()
