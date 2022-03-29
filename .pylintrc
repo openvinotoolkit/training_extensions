@@ -142,7 +142,8 @@ disable=logging-fstring-interpolation,
         deprecated-sys-function,
         exception-escape,
         comprehension-escape,
-        import-outside-toplevel
+        import-outside-toplevel,
+        arguments-differ
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
