@@ -553,7 +553,7 @@ class ModelTemplate:
             self.hyper_parameters.data, key_to_search=metadata_keys.AUTO_HPO_STATE
         )
         for result in auto_hpo_state_results:
-            if result[0] == AutoHPOState.POSSIBLE:
+            if result[0].lower() == str(AutoHPOState.POSSIBLE):
                 return True
         return False
 
