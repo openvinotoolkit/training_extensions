@@ -3,7 +3,5 @@ Cython
 wheel
 pytorch-lightning==1.5.10
 inflect
-tqdm
-editdistance
 librosa==0.8.1
 addict
