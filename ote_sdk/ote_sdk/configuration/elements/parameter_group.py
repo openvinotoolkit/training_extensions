@@ -170,10 +170,10 @@ class ParameterGroup:
         return False
 
 
-TParameterGroup = TypeVar("TParameterGroup", bound=ParameterGroup)
+_ParameterGroup = TypeVar("_ParameterGroup", bound=ParameterGroup)
 
 
-def add_parameter_group(group: Type[TParameterGroup]) -> TParameterGroup:
+def add_parameter_group(group: Type[_ParameterGroup]) -> _ParameterGroup:
     """
     Wrapper to attr.ib to add nested parameter groups to a configuration.
     """
