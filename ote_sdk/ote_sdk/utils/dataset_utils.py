@@ -183,7 +183,7 @@ def split_local_global_resultset(
 
 
 def contains_anomalous_images(dataset: DatasetEntity) -> bool:
-    """Find the number of local annotations in a resultset."""
+    """Check if a dataset contains any items with the anomalous label."""
     for item in dataset:
         labels = item.get_shapes_labels()
         if any(label.is_anomalous for label in labels):
