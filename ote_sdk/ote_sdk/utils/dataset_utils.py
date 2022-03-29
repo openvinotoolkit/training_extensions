@@ -18,7 +18,7 @@ Dataset utils
 
 from typing import List, Optional, Tuple
 
-from ote_sdk.entities.annotation import AnnotationSceneEntity, AnnotationSceneKind
+from ote_sdk.entities.annotation import AnnotationSceneEntity
 from ote_sdk.entities.dataset_item import DatasetItemEntity
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.resultset import ResultSetEntity
@@ -88,7 +88,7 @@ def get_local_subset(
                 media=item.media,
                 annotation_scene=AnnotationSceneEntity(
                     normal_annotations + local_annotations,
-                    kind=AnnotationSceneKind.ANNOTATION,
+                    kind=item.annotation_scene.kind,
                 ),
                 metadata=item.metadata,
                 subset=item.subset,
@@ -120,7 +120,7 @@ def get_global_subset(dataset: DatasetEntity) -> DatasetEntity:
             DatasetItemEntity(
                 media=item.media,
                 annotation_scene=AnnotationSceneEntity(
-                    global_annotations, kind=AnnotationSceneKind.ANNOTATION
+                    global_annotations, kind=item.annotation_scene.kind
                 ),
                 metadata=item.metadata,
                 subset=item.subset,
