@@ -37,6 +37,7 @@ from compression.graph.model_utils import compress_model_weights, get_nodes_by_t
 from compression.pipeline.initializer import create_pipeline
 from omegaconf import OmegaConf
 from ote_anomalib.configs import get_anomalib_config
+from ote_anomalib.data import LabelNames
 from ote_anomalib.exportable_code import (
     AnomalyBase,
     AnomalyClassification,
@@ -60,6 +61,7 @@ from ote_sdk.entities.model_template import TaskType
 from ote_sdk.entities.optimization_parameters import OptimizationParameters
 from ote_sdk.entities.result_media import ResultMediaEntity
 from ote_sdk.entities.resultset import ResultSetEntity
+from ote_sdk.entities.scored_label import ScoredLabel
 from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.serialization.label_mapper import LabelSchemaMapper, label_schema_to_bytes
 from ote_sdk.usecases.evaluation.metrics_helper import MetricsHelper
@@ -126,6 +128,10 @@ class OpenVINOAnomalyTask(IInferenceTask, IEvaluationTask, IOptimizationTask, ID
         self.config = self.get_config()
         self.inferencer = self.load_inferencer()
 
+        labels = self.task_environment.get_labels()
+        self.normal_label = [label for label in labels if label.name == LabelNames.normal][0]
+        self.anomalous_label = [label for label in labels if label.name == LabelNames.anomalous][0]
+
         self.annotation_converter: IPredictionToAnnotationConverter
         if self.task_type == TaskType.ANOMALY_CLASSIFICATION:
             self.annotation_converter = AnomalyClassificationToAnnotationConverter(self.task_environment.label_schema)
@@ -175,6 +181,13 @@ class OpenVINOAnomalyTask(IInferenceTask, IEvaluationTask, IOptimizationTask, ID
             anomaly_map, pred_score = self.inferencer.predict(
                 dataset_item.numpy, superimpose=False, meta_data=meta_data
             )
+            # TODO: inferencer should return predicted label and mask
+            # add global predictions
+            if pred_score >= 0.5:
+                dataset_item.append_labels([ScoredLabel(label=self.anomalous_label, probability=pred_score)])
+            else:
+                dataset_item.append_labels([ScoredLabel(label=self.normal_label, probability=1 - pred_score)])
+            # add local predictions
             if self.task_type == TaskType.ANOMALY_CLASSIFICATION:
                 annotations_scene = self.annotation_converter.convert_to_annotation(pred_score, meta_data)
             elif self.task_type in (TaskType.ANOMALY_DETECTION, TaskType.ANOMALY_SEGMENTATION):
