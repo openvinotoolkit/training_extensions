@@ -1,3 +1,6 @@
+# Copyright (C) 2022 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
 def check_quartznet_cfg(cfg):
     # check tokenizer params
     assert "tokenizer" in cfg, "Tokenizer parameters not found."
