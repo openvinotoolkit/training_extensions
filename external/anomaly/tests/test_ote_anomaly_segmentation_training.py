@@ -74,8 +74,7 @@ def ote_templates_root_dir_fx():
     return root
 
 def DATASET_PARAMETERS_FIELDS() -> List[str]:
-    return deepcopy(['dataset_path',
-                     ])
+    return deepcopy(['dataset_path'])
 
 DatasetParameters = namedtuple('DatasetParameters', DATASET_PARAMETERS_FIELDS())
 
@@ -84,8 +83,8 @@ def _get_dataset_params_from_dataset_definitions(dataset_definitions, dataset_na
     if dataset_name not in dataset_definitions:
         raise ValueError(f'dataset {dataset_name} is absent in dataset_definitions, '
                          f'dataset_definitions.keys={list(dataset_definitions.keys())}')
-    cur_dataset_definition = dataset_definitions[dataset_name]
-    training_parameters_fields = {k: v for k, v in cur_dataset_definition.items()
+    current_dataset_definition = dataset_definitions[dataset_name]
+    training_parameters_fields = {k: v for k, v in current_dataset_definition.items()
                                   if k in DATASET_PARAMETERS_FIELDS()}
     make_paths_be_abs(training_parameters_fields, dataset_definitions[ROOT_PATH_KEY])
 
@@ -188,9 +187,7 @@ class AnomalySegmentationTrainingTestParameters(DefaultOTETestCreationParameters
         }
         return deepcopy(DEFAULT_TEST_PARAMETERS)
 
-# TODO:sstrehlk: This function copies with minor change OTETestTrainingAction
-#             from ote_sdk.test_suite.
-#             Try to avoid copying of code.
+
 class AnomalySegmentationTestTrainingAction(OTETestTrainingAction):
     _name = "training"
 
@@ -209,7 +206,7 @@ class AnomalySegmentationTestTrainingAction(OTETestTrainingAction):
             raise RuntimeError("Cannot get training performance")
         return performance_to_score_name_value(training_performance)
 
-    def _run_ote_training(self, data_collector):
+    def _run_ote_training(self, data_collector: DataCollector):
         logger.debug(f"self.template_path = {self.template_path}")
 
         print(f"train dataset: {len(self.dataset.get_subset(Subset.TRAINING))} items")
@@ -332,7 +329,7 @@ class TestOTEReallifeAnomalySegmentation(OTETrainingTestInterface):
                 'batch_size': batch_size,
             }
 
-        def _nncf_graph_params_factory() -> Dict:
+        def _nncf_graph_params_factory() -> Dict[str,Callable[[], Dict]]:
             if dataset_definitions is None:
                 pytest.skip('The parameter "--dataset-definitions" is not set')
 
