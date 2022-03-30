@@ -17,7 +17,7 @@ capabilities:
 
 # Task implementation.
 entrypoints:
-  base: speech_to_text.ote.task_train.OTESpeechToTextTaskTrain
+  base: speech_to_text.OTESpeechToTextTaskTrain
 
 # Task and hyperparameters.
 hyper_parameters:
