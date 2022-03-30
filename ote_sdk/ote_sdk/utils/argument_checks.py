@@ -268,7 +268,9 @@ def check_file_extension(
 def check_that_null_character_absents_in_string(parameter: str, parameter_name: str):
     """Function raises ValueError exception if null character: '\0' is specified in path to file"""
     if "\0" in parameter:
-        raise ValueError(f"null char \\0 is specified in {parameter_name}: {parameter}")
+        raise ValueError(
+            rf"null char \\0 is specified in {parameter_name}: {parameter}"
+        )
 
 
 def check_that_file_exists(file_path: str, file_path_name: str):
