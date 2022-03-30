@@ -21,7 +21,6 @@ import os
 import re
 import struct
 import tempfile
-from io import BytesIO
 from zipfile import ZipFile
 
 from ote_sdk.entities.label import Domain, LabelEntity
@@ -99,10 +98,6 @@ def read_model(model_configuration, path, train_dataset):
         with tempfile.TemporaryDirectory() as temp_dir:
             with ZipFile(path) as myzip:
                 myzip.extractall(temp_dir)
-            with ZipFile(
-                os.path.join(temp_dir, "python", "demo_package-0.0-py3-none-any.whl")
-            ) as myzip:
-                myzip.extractall(temp_dir)
 
             model_path = os.path.join(temp_dir, "model", "model")
             model_adapters = {
@@ -110,7 +105,7 @@ def read_model(model_configuration, path, train_dataset):
                 "openvino.bin": ModelAdapter(read_binary(model_path + ".bin")),
             }
 
-            config_path = os.path.join(temp_dir, "demo_package", "config.json")
+            config_path = os.path.join(temp_dir, "model", "config.json")
             with open(config_path, encoding="UTF-8") as f:
                 model_parameters = json.load(f)["model_parameters"]
 
@@ -144,18 +139,10 @@ def read_label_schema(path):
             serialized_label_schema = json.load(read_file)
     elif path.endswith(".zip"):
         with ZipFile(path) as read_zip_file:
-            zfiledata = BytesIO(
-                read_zip_file.read(
-                    os.path.join("python", "demo_package-0.0-py3-none-any.whl")
-                )
-            )
-            with ZipFile(zfiledata) as read_whl_file:
-                with read_whl_file.open(
-                    os.path.join("demo_package", "config.json")
-                ) as read_file:
-                    serialized_label_schema = json.load(read_file)["model_parameters"][
-                        "labels"
-                    ]
+            with read_zip_file.open(os.path.join("model", "config.json")) as read_file:
+                serialized_label_schema = json.load(read_file)["model_parameters"][
+                    "labels"
+                ]
     return LabelSchemaMapper().backward(serialized_label_schema)
 
 
