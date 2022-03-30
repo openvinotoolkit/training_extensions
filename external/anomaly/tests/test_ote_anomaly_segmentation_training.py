@@ -79,7 +79,7 @@ def DATASET_PARAMETERS_FIELDS() -> List[str]:
 DatasetParameters = namedtuple('DatasetParameters', DATASET_PARAMETERS_FIELDS())
 
 
-def _get_dataset_params_from_dataset_definitions(dataset_definitions, dataset_name):
+def _get_dataset_params_from_dataset_definitions(dataset_definitions: Dict[str, Dict[str, str]], dataset_name: str):
     if dataset_name not in dataset_definitions:
         raise ValueError(f'dataset {dataset_name} is absent in dataset_definitions, '
                          f'dataset_definitions.keys={list(dataset_definitions.keys())}')
@@ -97,7 +97,7 @@ def _get_dataset_params_from_dataset_definitions(dataset_definitions, dataset_na
     return params
 
 
-def _create_anomaly_segmentation_dataset_and_labels_schema(dataset_params, dataset_name):
+def _create_anomaly_segmentation_dataset_and_labels_schema(dataset_params: DatasetParameters, dataset_name: str):
     logger.debug(f'Path to dataset: {dataset_params.dataset_path}')
     category_list = [f.path for f in os.scandir(dataset_params.dataset_path) if f.is_dir()]
     items = []
@@ -192,7 +192,7 @@ class AnomalySegmentationTestTrainingAction(OTETestTrainingAction):
     _name = "training"
 
     def __init__(
-        self, dataset, labels_schema, template_path, patience, batch_size
+        self, dataset: DatasetEntity, labels_schema:LabelSchemaEntity(), template_path:str, patience:str, batch_size:str
     ):
         self.dataset = dataset
         self.labels_schema = labels_schema
