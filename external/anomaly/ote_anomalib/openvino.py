@@ -187,16 +187,13 @@ class OpenVINOAnomalyTask(IInferenceTask, IEvaluationTask, IOptimizationTask, ID
                 dataset_item.append_labels([ScoredLabel(label=self.anomalous_label, probability=pred_score)])
             else:
                 dataset_item.append_labels([ScoredLabel(label=self.normal_label, probability=1 - pred_score)])
-            # add local predictions
-            if self.task_type == TaskType.ANOMALY_CLASSIFICATION:
-                annotations_scene = self.annotation_converter.convert_to_annotation(pred_score, meta_data)
-            elif self.task_type in (TaskType.ANOMALY_DETECTION, TaskType.ANOMALY_SEGMENTATION):
-                annotations_scene = self.annotation_converter.convert_to_annotation(anomaly_map, meta_data)
-            else:
-                raise ValueError(f"Unknown task type: {self.task_type}")
 
-            # pylint: disable=protected-access
-            dataset_item.append_annotations(annotations_scene.annotations)
+            if self.task_type in (TaskType.ANOMALY_DETECTION, TaskType.ANOMALY_SEGMENTATION):
+                annotations_scene = self.annotation_converter.convert_to_annotation(anomaly_map, meta_data)
+                # pylint: disable=protected-access
+                dataset_item.append_annotations(annotations_scene.annotations)
+            elif not self.task_type == TaskType.ANOMALY_CLASSIFICATION:
+                raise ValueError(f"Unknown task type: {self.task_type}")
 
             anomaly_map = anomaly_map_to_color_map(anomaly_map, normalize=False)
             heatmap_media = ResultMediaEntity(
