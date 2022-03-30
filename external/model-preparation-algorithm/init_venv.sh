@@ -116,13 +116,17 @@ pip install --no-cache-dir --no-binary=mmpycocotools mmpycocotools -c ${CONSTRAI
 # Install OTE SDK
 pip install -e ../../ote_sdk/ -c ${CONSTRAINTS_FILE} || exit 1
 
-# Install detection algo backend & task
+# Install base classification algo backend & task
+pip install -e ../deep-object-reid/submodule  -c ${CONSTRAINTS_FILE} || exit 1
+pip install -e ../deep-object-reid -c ${CONSTRAINTS_FILE} || exit 1
+
+# Install base detection algo backend & task
 pip install -e ../mmdetection/submodule  -c ${CONSTRAINTS_FILE} || exit 1
 pip install -e ../mmdetection -c ${CONSTRAINTS_FILE} || exit 1
 
-# Install segmentation algo backend & task
+# Install base segmentation algo backend & task
 ##pip install -e ../mmsegmentation/submodule -c ${CONSTRAINTS_FILE} || exit 1
-pip install -e ../model-preparation-algorithm/submodule/external/mmsegmentation -c ${CONSTRAINTS_FILE} || exit 1  # Temporary due to mmcv version
+pip install -e ../model-preparation-algorithm/submodule/external/mmsegmentation -c ${CONSTRAINTS_FILE} || exit 1  # Temporary due to mmcv version mismatch
 pip install -e ../mmsegmentation -c ${CONSTRAINTS_FILE} || exit 1
 
 # Install MPA algo backend & task

@@ -89,9 +89,8 @@ class BaseTask:
             train_data_cfg['data_classes'] = data_classes
             model_classes = [label.name for label in self._model_label_schema]
             self._model_cfg['model_classes'] = model_classes
-            if sorted(model_classes) != sorted(data_classes):
-                new_classes = np.setdiff1d(data_classes, model_classes).tolist()
-                train_data_cfg['old_new_indices'] = self._get_old_new_indices(dataset, new_classes)
+            new_classes = np.setdiff1d(data_classes, model_classes).tolist()
+            train_data_cfg['old_new_indices'] = self._get_old_new_indices(dataset, new_classes)
 
         logger.info(f'running task... kwargs = {kwargs}')
         if self._recipe_cfg is None:

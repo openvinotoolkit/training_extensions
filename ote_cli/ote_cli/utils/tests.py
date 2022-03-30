@@ -100,6 +100,8 @@ def ote_train_testing(template, root, ote_dir, args):
         "--save-model-to",
         f"{template_work_dir}/trained_{template.model_template_id}",
     ]
+    if "--load-weights" in args:
+        command_line.extend(["--load-weights", f'{os.path.join(ote_dir, args["--load-weights"])}'])
     command_line.extend(args["train_params"])
     assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
     assert os.path.exists(
@@ -270,7 +272,7 @@ def ote_deploy_openvino_testing(template, root, ote_dir, args):
         deployment_dir,
     ]
     assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
-    assert run(["unzip", "openvino.zip"], cwd=deployment_dir).returncode == 0
+    assert run(["unzip", "-o", "openvino.zip"], cwd=deployment_dir).returncode == 0
     assert (
         run(
             ["python3", "-m", "venv", "venv"],

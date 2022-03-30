@@ -14,7 +14,6 @@ framework: MPA v1.1.0
 entrypoints:
   base: mpa_tasks.apis.DetectionTrainTask
   openvino: detection_tasks.apis.detection.OpenVINODetectionTask
-  nncf: detection_tasks.apis.detection.OTEDetectionNNCFTask
 
 # Hyperparameters.
 hyper_parameters:
