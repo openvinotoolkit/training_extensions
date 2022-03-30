@@ -77,7 +77,9 @@ class AnomalyInferenceCallback(Callback):
                     )
             elif self.task_type == TaskType.ANOMALY_SEGMENTATION:
                 annotations = create_annotation_from_segmentation_map(
-                    pred_mask.squeeze().astype(np.uint8), anomaly_map.squeeze(), self.label_map
+                    hard_prediction=pred_mask.squeeze().astype(np.uint8),
+                    soft_prediction=anomaly_map.squeeze(),
+                    label_map=self.label_map,
                 )
                 dataset_item.append_annotations(annotations)
                 if len(annotations) == 0:
