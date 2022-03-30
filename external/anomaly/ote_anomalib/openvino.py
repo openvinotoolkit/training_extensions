@@ -307,10 +307,16 @@ class OpenVINOAnomalyTask(IInferenceTask, IEvaluationTask, IOptimizationTask, ID
             if get_nodes_by_type(model, ["FakeQuantize"]):
                 raise RuntimeError("Model is already optimized by POT")
 
+        if optimization_parameters is not None:
+            optimization_parameters.update_progress(10)
+
         engine = IEEngine(config=ADDict({"device": "CPU"}), data_loader=data_loader, metric=None)
         pipeline = create_pipeline(algo_config=self._get_optimization_algorithms_configs(), engine=engine)
         compressed_model = pipeline.run(model)
         compress_model_weights(compressed_model)
+
+        if optimization_parameters is not None:
+            optimization_parameters.update_progress(90)
 
         with tempfile.TemporaryDirectory() as tempdir:
             save_model(compressed_model, tempdir, model_name="model")
@@ -329,6 +335,9 @@ class OpenVINOAnomalyTask(IInferenceTask, IEvaluationTask, IOptimizationTask, ID
 
         self.task_environment.model = output_model
         self.inferencer = self.load_inferencer()
+
+        if optimization_parameters is not None:
+            optimization_parameters.update_progress(100)
 
     def load_inferencer(self) -> OpenVINOInferencer:
         """
