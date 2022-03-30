@@ -5,19 +5,16 @@ Utils for demo
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import importlib
 import json
 from pathlib import Path
 from typing import Optional
 
-from openvino.model_zoo.model_api.adapters import OpenvinoAdapter, create_core
-from openvino.model_zoo.model_api.models import Model
-
-from ote_sdk.entities.label import Domain
-from ote_sdk.serialization.label_mapper import LabelSchemaMapper
+from ote_sdk.entities.label_schema import LabelSchemaEntity
+from ote_sdk.entities.model_template import TaskType, task_type_to_label_domain
 from ote_sdk.usecases.exportable_code.prediction_to_annotation_converter import (
     create_converter,
 )
+from ote_sdk.usecases.exportable_code.visualizers import AnomalyVisualizer, Visualizer
 
 
 def get_model_path(path: Optional[Path]) -> Path:
@@ -49,34 +46,21 @@ def get_parameters(path: Optional[Path]) -> dict:
     return parameters
 
 
-def create_model(model_path: Path, config_file: Optional[Path] = None) -> Model:
-    """
-    Create model using ModelAPI factory
-    """
-
-    model_adapter = OpenvinoAdapter(create_core(), get_model_path(model_path))
-    parameters = get_parameters(config_file)
-    try:
-        importlib.import_module(".model", "demo_package")
-    except ImportError:
-        print("Using model wrapper from Open Model Zoo ModelAPI")
-    # labels for modelAPI wrappers can be empty, because unused in pre- and postprocessing
-    parameters["model_parameters"]["labels"] = []
-    model = Model.create_model(
-        parameters["type_of_model"],
-        model_adapter,
-        parameters["model_parameters"],
-        preload=True,
-    )
-
-    return model
-
-
-def create_output_converter(config_file: Path = None):
+def create_output_converter(task_type: TaskType, labels: LabelSchemaEntity):
     """
     Create annotation converter according to kind of task
     """
-    parameters = get_parameters(config_file)
-    converter_type = Domain[parameters["converter_type"]]
-    labels = LabelSchemaMapper.backward(parameters["model_parameters"]["labels"])
+
+    converter_type = task_type_to_label_domain(task_type)
     return create_converter(converter_type, labels)
+
+
+def create_visualizer(task_type: TaskType):
+    """
+    Create visualizer according to kind of task
+    """
+
+    if task_type.is_anomaly:
+        return AnomalyVisualizer(window_name="Result")
+
+    return Visualizer(window_name="Result")

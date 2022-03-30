@@ -7,18 +7,22 @@ Initialization of streamer
 
 from ote_sdk.usecases.exportable_code.streamer.streamer import (
     CameraStreamer,
+    DirStreamer,
     ImageStreamer,
+    InvalidInput,
+    OpenError,
     ThreadedStreamer,
     VideoStreamer,
-    get_media_type,
     get_streamer,
 )
 
 __all__ = [
     "CameraStreamer",
+    "DirStreamer",
     "ImageStreamer",
     "ThreadedStreamer",
     "VideoStreamer",
-    "get_media_type",
+    "InvalidInput",
+    "OpenError",
     "get_streamer",
 ]

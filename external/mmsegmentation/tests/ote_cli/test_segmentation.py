@@ -165,9 +165,13 @@ class TestToolsSegmentation:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_pot_optimize(self, template):
+        if template.model_template_id.startswith('Custom_Semantic_Segmentation_Lite-HRNet-'):
+            pytest.skip(reason='CVS-82482')
         pot_optimize_testing(template, root, ote_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_pot_eval(self, template):
+        if template.model_template_id.startswith('Custom_Semantic_Segmentation_Lite-HRNet-'):
+            pytest.skip(reason='CVS-82482')
         pot_eval_testing(template, root, ote_dir, args)
