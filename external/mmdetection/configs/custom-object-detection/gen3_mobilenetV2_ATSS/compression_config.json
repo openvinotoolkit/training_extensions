@@ -43,7 +43,7 @@
                 "mode": "adaptive_compression_level",
                     "params": {
                         "initial_training_phase_epochs": 5,
-                        "maximal_total_epochs": 60,
+                        "maximal_total_epochs": 100,
                         "patience_epochs": 5
                     }
             },
