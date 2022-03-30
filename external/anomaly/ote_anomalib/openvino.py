@@ -16,17 +16,15 @@ OpenVINO Anomaly Task
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import inspect
+import io
 import json
 import os
-import subprocess  # nosec
-import sys
 import tempfile
-from shutil import copyfile, copytree
 from typing import Any, Dict, List, Optional
 from zipfile import ZipFile
 
 import numpy as np
+import ote_anomalib.exportable_code
 from addict import Dict as ADDict
 from anomalib.deploy import OpenVINOInferencer
 from anomalib.post_processing import anomaly_map_to_color_map
@@ -305,10 +303,16 @@ class OpenVINOAnomalyTask(IInferenceTask, IEvaluationTask, IOptimizationTask, ID
             if get_nodes_by_type(model, ["FakeQuantize"]):
                 raise RuntimeError("Model is already optimized by POT")
 
+        if optimization_parameters is not None:
+            optimization_parameters.update_progress(10)
+
         engine = IEEngine(config=ADDict({"device": "CPU"}), data_loader=data_loader, metric=None)
         pipeline = create_pipeline(algo_config=self._get_optimization_algorithms_configs(), engine=engine)
         compressed_model = pipeline.run(model)
         compress_model_weights(compressed_model)
+
+        if optimization_parameters is not None:
+            optimization_parameters.update_progress(90)
 
         with tempfile.TemporaryDirectory() as tempdir:
             save_model(compressed_model, tempdir, model_name="model")
@@ -327,6 +331,10 @@ class OpenVINOAnomalyTask(IInferenceTask, IEvaluationTask, IOptimizationTask, ID
 
         self.task_environment.model = output_model
         self.inferencer = self.load_inferencer()
+
+        if optimization_parameters is not None:
+            optimization_parameters.update_progress(100)
+        logger.info("POT optimization completed")
 
     def load_inferencer(self) -> OpenVINOInferencer:
         """
@@ -420,57 +428,26 @@ class OpenVINOAnomalyTask(IInferenceTask, IEvaluationTask, IOptimizationTask, ID
 
         task_type = str(self.task_type).lower()
 
-        if self.task_type == TaskType.ANOMALY_CLASSIFICATION:
-            selected_class = AnomalyClassification
-        elif self.task_type == TaskType.ANOMALY_DETECTION:
-            selected_class = AnomalyDetection
-        elif self.task_type == TaskType.ANOMALY_SEGMENTATION:
-            selected_class = AnomalySegmentation
-        else:
-            raise ValueError(
-                f"{self.task_type} is not supported. "
-                "Only Anomaly <Classification, Detection, Segmentation> are supported"
-            )
-
         parameters["type_of_model"] = task_type
         parameters["converter_type"] = task_type.upper()
         parameters["model_parameters"] = self._get_openvino_configuration()
-        name_of_package = "demo_package"
-
-        with tempfile.TemporaryDirectory() as tempdir:
-            copyfile(os.path.join(work_dir, "setup.py"), os.path.join(tempdir, "setup.py"))
-            copyfile(os.path.join(work_dir, "requirements.txt"), os.path.join(tempdir, "requirements.txt"))
-            copytree(os.path.join(work_dir, name_of_package), os.path.join(tempdir, name_of_package))
-            config_path = os.path.join(tempdir, name_of_package, "config.json")
-            with open(config_path, "w", encoding="utf-8") as file:
-                json.dump(parameters, file, ensure_ascii=False, indent=4)
-
-            copyfile(inspect.getfile(selected_class), os.path.join(tempdir, name_of_package, "model.py"))
-            copyfile(inspect.getfile(AnomalyBase), os.path.join(tempdir, name_of_package, "base.py"))
-
-            # create wheel package
-            subprocess.run(
-                [
-                    sys.executable,
-                    os.path.join(tempdir, "setup.py"),
-                    "bdist_wheel",
-                    "--dist-dir",
-                    tempdir,
-                    "clean",
-                    "--all",
-                ],
-                check=True,
-            )
-            wheel_file_name = [f for f in os.listdir(tempdir) if f.endswith(".whl")][0]
-
-            with ZipFile(os.path.join(tempdir, "openvino.zip"), "w") as arch:
-                arch.writestr(os.path.join("model", "model.xml"), self.task_environment.model.get_data("openvino.xml"))
-                arch.writestr(os.path.join("model", "model.bin"), self.task_environment.model.get_data("openvino.bin"))
-                arch.write(os.path.join(tempdir, "requirements.txt"), os.path.join("python", "requirements.txt"))
-                arch.write(os.path.join(work_dir, "README.md"), os.path.join("python", "README.md"))
-                arch.write(os.path.join(work_dir, "LICENSE"), os.path.join("python", "LICENSE"))
-                arch.write(os.path.join(work_dir, "demo.py"), os.path.join("python", "demo.py"))
-                arch.write(os.path.join(tempdir, wheel_file_name), os.path.join("python", wheel_file_name))
-            with open(os.path.join(tempdir, "openvino.zip"), "rb") as output_arch:
-                output_model.exportable_code = output_arch.read()
+        zip_buffer = io.BytesIO()
+        with ZipFile(zip_buffer, "w") as arch:
+            # model files
+            arch.writestr(os.path.join("model", "model.xml"), self.task_environment.model.get_data("openvino.xml"))
+            arch.writestr(os.path.join("model", "model.bin"), self.task_environment.model.get_data("openvino.bin"))
+            arch.writestr(os.path.join("model", "config.json"), json.dumps(parameters, ensure_ascii=False, indent=4))
+            # model_wrappers files
+            for root, _, files in os.walk(os.path.dirname(ote_anomalib.exportable_code.__file__)):
+                for file in files:
+                    file_path = os.path.join(root, file)
+                    arch.write(
+                        file_path, os.path.join("python", "model_wrappers", file_path.split("exportable_code/")[1])
+                    )
+            # other python files
+            arch.write(os.path.join(work_dir, "requirements.txt"), os.path.join("python", "requirements.txt"))
+            arch.write(os.path.join(work_dir, "LICENSE"), os.path.join("python", "LICENSE"))
+            arch.write(os.path.join(work_dir, "README.md"), os.path.join("python", "README.md"))
+            arch.write(os.path.join(work_dir, "demo.py"), os.path.join("python", "demo.py"))
+        output_model.exportable_code = zip_buffer.getvalue()
         logger.info("Deployment completed.")
