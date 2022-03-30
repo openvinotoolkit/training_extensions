@@ -114,6 +114,7 @@ class TaskType(Enum):
         self.is_trainable = task_info.is_trainable
         self.is_anomaly = task_info.is_anomaly
         self.is_global = task_info.is_global
+        self.is_local = task_info.is_local
 
     NULL = 1, TaskInfo(
         domain=Domain.NULL,
