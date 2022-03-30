@@ -64,21 +64,29 @@ if [ -e "$CUDA_HOME" ]; then
   fi
 fi
 
-# install PyTorch and MMCV.
+# install PyTorch
 export TORCH_VERSION=1.8.2
-export CUDA_VERSION=11.1
 
+# When updating torch version, check command lines at https://pytorch.org/get-started/previous-versions/
+TORCH_PIP_OPTIONS="-f https://download.pytorch.org/whl/lts/1.8/torch_lts.html"
 if [[ -z ${CUDA_VERSION} ]]; then
-  echo "CUDA was not found, installing dependencies in CPU-only mode. If you want to use CUDA, set CUDA_HOME and CUDA_VERSION beforehand."
+  echo "CUDA was not found, installing dependencies in CPU-only mode. If you want to use CUDA, set CUDA_HOME or CUDA_VERSION beforehand."
+  TORCH_VERSION_POSTFIX=+cpu
 else
-  # Remove dots from CUDA version string, if any.
-  CUDA_VERSION_CODE=$(echo ${CUDA_VERSION} | sed -e "s/\.//" -e "s/\(...\).*/\1/")
-  echo "Using CUDA_VERSION ${CUDA_VERSION}"
-  if [[ "${CUDA_VERSION_CODE}" != "111" ]] && [[ "${CUDA_VERSION_CODE}" != "102" ]] ; then
-    echo "CUDA version must be either 11.1 or 10.2"
-    exit 1
+  TORCH_VERSION_POSTFIX=
+  if echo -n "${CUDA_VERSION}" |egrep -q "^10\.([2-9]|[1-9][0-9]+)($|\.)" ; then
+    TORCH_CUDA_VERSION=10.2
+    TORCH_VERSION_POSTFIX=+cu102
   fi
-  echo "export CUDA_HOME=${CUDA_HOME}" >> ${venv_dir}/bin/activate
+  if echo -n "${CUDA_VERSION}" |egrep -q "^11\.([1-9]|[1-9][0-9]+)($|\.)" ; then
+    TORCH_CUDA_VERSION=11.1
+    TORCH_VERSION_POSTFIX=+cu111
+  fi
+  if [[ -z "${TORCH_VERSION_POSTFIX}" ]] ; then
+      echo "Need CUDA 10.* (at least 10.2) or 11.* (at least 11.1) for PyTorch 1.8.2, have CUDA version ${CUDA_VERSION}"
+      exit 1
+  fi
+  echo "Using PyTorch for CUDA ${TORCH_CUDA_VERSION} with local CUDA ${CUDA_VERSION}"
 fi
 
 CONSTRAINTS_FILE=$(tempfile)
@@ -86,14 +94,8 @@ export PIP_CONSTRAINT=${CONSTRAINTS_FILE}
 
 pip install --upgrade pip || exit 1
 
-if [[ -z $CUDA_VERSION_CODE ]]; then
-  export TORCH_VERSION=${TORCH_VERSION}+cpu
-else
-  export TORCH_VERSION=${TORCH_VERSION}+cu$CUDA_VERSION_CODE
-fi
-
-pip install torch==${TORCH_VERSION} -f https://download.pytorch.org/whl/lts/1.8/torch_lts.html || exit 1
-echo torch==${TORCH_VERSION} >> ${CONSTRAINTS_FILE}
+pip install torch==${TORCH_VERSION}${TORCH_VERSION_POSTFIX} ${TORCH_PIP_OPTIONS} || exit 1
+echo torch==${TORCH_VERSION}${TORCH_VERSION_POSTFIX} >> ${CONSTRAINTS_FILE}
 
 # Install other requirements.
 cat requirements.txt | xargs -n 1 -L 1 pip install -c ${CONSTRAINTS_FILE} || exit 1
