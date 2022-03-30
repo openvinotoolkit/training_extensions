@@ -9,7 +9,6 @@ sentencepiece==0.1.96
 torch==1.10.1
 torchaudio==0.10.1
 tqdm==4.62.3
-Wave==0.0.2
 youtokentome==1.0.6
 addict==2.4.0
 openvino==2022.1.0.dev20220131
