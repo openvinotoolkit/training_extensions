@@ -155,6 +155,10 @@ def check_nested_classes_parameters(
                 raise TypeError(
                     "length of nested expected types for Sequence should be equal to 1"
                 )
+        if nested_elements_class == (typing.Any,):
+            if len(parameter) == 0:
+                raise ValueError(f"length of parameter '{parameter_name}' should be more than 0, actual: {parameter}")
+            return
         check_nested_elements_type(
             iterable=parameter,
             parameter_name=parameter_name,
