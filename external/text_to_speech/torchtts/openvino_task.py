@@ -172,11 +172,19 @@ class OpenVINOTTSTask(IInferenceTask, IEvaluationTask):
         return res
 
     def infer_like_test(self, dataset_item):
-        encoder_in = self.encoder.pre_process(dataset_item.numpy)
-        encoder_out = self.encoder.forward(encoder_in)
+        x, x_len = dataset_item
+        encoder_in = self.encoder.preprocess(x, x_len)
+        self.encoder.infer(encoder_in)
 
-        decoder_in = self.decoder.pre_process(self.alignment(encoder_out))
-        mel_spectrogram = self.decoder.forward(decoder_in)
+        encoder_out = {}
+        encoder_out['x_mask'] = self.encoder.request.get_tensor("x_mask").data[:]
+        encoder_out['x_res'] = self.encoder.request.get_tensor("x_res").data[:]
+        encoder_out['log_dur'] = self.encoder.request.get_tensor("log_dur").data[:]
+
+        decoder_in = self.alignment(encoder_out)
+        decoder_in = self.decoder.preprocess(decoder_in['z'], decoder_in['z_mask'])
+        self.decoder.infer(decoder_in)
+        mel_spectrogram = self.decoder.request.get_tensor("mel").data[:]
         return mel_spectrogram
 
     def infer_like_train(self, dataset_item):
@@ -231,12 +239,16 @@ class OpenVINOTTSTask(IInferenceTask, IEvaluationTask):
         for data in valset:
             text, mel = data
             text_len = np.array([text.shape[-1]])
-            mel_len = np.array([mel.shape[-1]])
 
-            text = np.expand_dims(text, 0)
-            mel = np.expand_dims(mel, 0)
-            mel_, _ = self.infer_like_train((text, text_len, mel, mel_len))
-            outputs.append({"gt": mel, "predict": mel_})
+            if mel is None:
+                mel_ = self.infer_like_test((text, text_len))
+                outputs.append({"gt": None, "predict": mel_})
+            else:
+                mel_len = np.array([mel.shape[-1]])
+                text = np.expand_dims(text, 0)
+                mel = np.expand_dims(mel, 0)
+                mel_, _ = self.infer_like_train((text, text_len, mel, mel_len))
+                outputs.append({"gt": mel, "predict": mel_})
 
         for dataset_item, prediction in zip(dataset, outputs):
             dataset_item.annotation_scene.append_annotations([prediction])

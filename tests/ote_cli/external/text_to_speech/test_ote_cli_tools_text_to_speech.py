@@ -30,15 +30,8 @@ from ote_cli.utils.tests import (
     ote_eval_deployment_testing,
     ote_eval_openvino_testing,
     ote_eval_testing,
-    ote_hpo_testing,
     ote_train_testing,
     ote_export_testing,
-    pot_optimize_testing,
-    pot_eval_testing,
-    nncf_optimize_testing,
-    nncf_export_testing,
-    nncf_eval_testing,
-    nncf_eval_openvino_testing,
 )
 
 
@@ -49,6 +42,7 @@ args = {
     '--val-data-roots': 'data/tts',
     '--test-ann-files': 'data/tts/metadata_test.csv',
     '--test-data-roots': 'data/tts',
+    '--input': 'data/tts/demo/sequence.txt',
     'train_params': [
         'params',
         '--learning_parameters.num_epochs',
@@ -90,32 +84,10 @@ class TestToolsTextToSpeech:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_nncf_optimize(self, template):
-        if template.entrypoints.nncf is None:
-            pytest.skip("nncf entrypoint is none")
-
-        nncf_optimize_testing(template, root, ote_dir, args)
+    def test_ote_demo(self, template):
+        ote_demo_testing(template, root, ote_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_nncf_export(self, template):
-        if template.entrypoints.nncf is None:
-            pytest.skip("nncf entrypoint is none")
-
-        nncf_export_testing(template, root)
-
-    @e2e_pytest_component
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_nncf_eval(self, template):
-        if template.entrypoints.nncf is None:
-            pytest.skip("nncf entrypoint is none")
-
-        nncf_eval_testing(template, root, ote_dir, args, threshold=0.001)
-
-    @e2e_pytest_component
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_nncf_eval_openvino(self, template):
-        if template.entrypoints.nncf is None:
-            pytest.skip("nncf entrypoint is none")
-
-        nncf_eval_openvino_testing(template, root, ote_dir, args)
+    def test_ote_demo_openvino(self, template):
+        ote_demo_openvino_testing(template, root, ote_dir, args)

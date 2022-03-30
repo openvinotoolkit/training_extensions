@@ -95,13 +95,16 @@ class TTSDatasetWithSTFT(Dataset):
             x = random_fill(x, p=0.05)
         if self.add_blank:
             x = intersperse(x)
+        x = torch.IntTensor(x)
 
         filename = str(item["audio_path"])
+        if filename is None or filename == 'None':
+            return x, None
+
         mel = self.get_mel(filename)
 
         mel = (mel + 6) / 6.0
 
-        x = torch.IntTensor(x)
         return x, mel
 
     def get_mel(self, filename):
@@ -144,15 +147,19 @@ def collate_tts(batch):
     chars = [pad1d(x[0], max_x_len) for x in batch]
     chars = np.stack(chars)
 
+    chars = torch.tensor(chars).long()
+    char_lens = torch.tensor(char_lens).long()
+
+    if batch[0][1] is None:
+        return chars, char_lens
+
     mel_lens = [x[1].shape[-1] for x in batch]
     max_spec_len = max(mel_lens) + 1
 
     mel = [pad2d(x[1], max_spec_len) for x in batch]
     mel = np.stack(mel)
 
-    chars = torch.tensor(chars).long()
     mel = torch.tensor(mel)
-    char_lens = torch.tensor(char_lens).long()
     mel_lens = torch.tensor(mel_lens).long()
 
     return chars, char_lens, mel, mel_lens

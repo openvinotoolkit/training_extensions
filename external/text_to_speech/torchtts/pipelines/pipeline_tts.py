@@ -130,15 +130,22 @@ class PipelineTTS(pl.LightningModule):
         device = next(self.generator.parameters()).device
 
         for batch in dataloader:
-            x, x_len, m, mel_len = batch
-            x = x.to(device)
-            x_len = x_len.to(device)
-            m = m.to(device)
-            mel_len = mel_len.to(device)
+            if len(batch) == 2:
+                x, x_len = batch
+                x = x.to(device)
+                x_len = x_len.to(device)
+                mel, _, _ = self.generator.generate(x, x_len)
+                res.append({"gt": None, "predict": mel.squeeze().detach().cpu().numpy()})
+            else:
+                x, x_len, m, mel_len = batch
+                x = x.to(device)
+                x_len = x_len.to(device)
+                m = m.to(device)
+                mel_len = mel_len.to(device)
 
-            with torch.no_grad():
-                m_, mel_mask, (att, log_dur, log_dur_, loss_mel_proj, _) = self.generator(x, x_len, m, mel_len)
-                res.append({"gt": m.squeeze().cpu().numpy(), "predict": m_.squeeze().detach().cpu().numpy()})
+                with torch.no_grad():
+                    m_, mel_mask, (att, log_dur, log_dur_, loss_mel_proj, _) = self.generator(x, x_len, m, mel_len)
+                    res.append({"gt": m.squeeze().cpu().numpy(), "predict": m_.squeeze().detach().cpu().numpy()})
 
         self.generator.train()
 

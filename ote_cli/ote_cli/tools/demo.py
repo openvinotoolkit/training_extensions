@@ -17,6 +17,7 @@ Model inference demonstration tool.
 # and limitations under the License.
 
 import argparse
+import os.path
 import time
 from collections import deque
 
@@ -28,7 +29,9 @@ from ote_sdk.entities.datasets import DatasetEntity, DatasetItemEntity
 from ote_sdk.entities.image import Image
 from ote_sdk.entities.inference_parameters import InferenceParameters
 from ote_sdk.entities.task_environment import TaskEnvironment
+from ote_sdk.entities.model_template import Domain
 
+from ote_cli.datasets.text_to_speech.dataset import Text
 from ote_cli.registry import find_and_parse_model_template
 from ote_cli.tools.utils.demo.images_capture import open_images_capture
 from ote_cli.tools.utils.demo.visualization import draw_predictions, put_text_on_rect_bg
@@ -123,41 +126,7 @@ def get_predictions(task, frame):
     return item.get_annotations(), elapsed_time
 
 
-def main():
-    """
-    Main function that is used for model demonstration.
-    """
-
-    # Dynamically create an argument parser based on override parameters.
-    args, template, hyper_parameters = parse_args()
-    # Get new values from user's input.
-    updated_hyper_parameters = gen_params_dict_from_args(args)
-    # Override overridden parameters by user's values.
-    override_parameters(updated_hyper_parameters, hyper_parameters)
-
-    hyper_parameters = create(hyper_parameters)
-
-    # Get classes for Task, ConfigurableParameters and Dataset.
-    if any(args.load_weights.endswith(x) for x in (".bin", ".xml", ".zip")):
-        task_class = get_impl_class(template.entrypoints.openvino)
-    elif args.load_weights.endswith(".pth"):
-        task_class = get_impl_class(template.entrypoints.base)
-    else:
-        raise ValueError(f"Unsupported file: {args.load_weights}")
-
-    environment = TaskEnvironment(
-        model=None,
-        hyper_parameters=hyper_parameters,
-        label_schema=read_label_schema(args.load_weights),
-        model_template=template,
-    )
-
-    environment.model = read_model(
-        environment.get_model_configuration(), args.load_weights, None
-    )
-
-    task = task_class(task_environment=environment)
-
+def demo_cv(task, template, args):
     capture = open_images_capture(args.input, args.loop)
 
     elapsed_times = deque(maxlen=10)
@@ -188,6 +157,97 @@ def main():
                 break
         else:
             print(f"{frame_index=}, {elapsed_time=}, {len(predictions)=}")
+
+
+def get_predictions_tts(task, text):
+    """
+    Returns list of predictions made by task on frame and time spent on doing prediction.
+    """
+
+    empty_annotation = AnnotationSceneEntity(
+        annotations=[], kind=AnnotationSceneKind.PREDICTION
+    )
+
+    item = DatasetItemEntity(
+        media=Text(text, None),
+        annotation_scene=empty_annotation,
+    )
+
+    dataset = DatasetEntity(items=[item])
+
+    start_time = time.perf_counter()
+    predicted_validation_dataset = task.infer(
+        dataset,
+        InferenceParameters(is_evaluation=True),
+    )
+    elapsed_time = time.perf_counter() - start_time
+    item = predicted_validation_dataset[0]
+    return item.get_annotations(), elapsed_time
+
+
+def demo_tts(task, template, args):
+    texts = []
+    with open(args.input, 'r') as f:
+        for line in f:
+            texts.append(line.rstrip())
+
+    elapsed_times = deque(maxlen=10)
+    frame_index = 0
+    for text in texts:
+        predictions, elapsed_time = get_predictions_tts(task, text)
+        elapsed_times.append(elapsed_time)
+        elapsed_time = np.mean(elapsed_times)
+
+        if args.delay >= 0:
+            cv2.imshow("mel", predictions[0]['predict'])
+            if cv2.waitKey(args.delay) == ESC_BUTTON:
+                break
+        else:
+            audio_len = predictions[0]['predict'].shape[-1]
+            print(f"{frame_index=}, {elapsed_time=}, {audio_len=}")
+
+
+def main():
+    """
+    Main function that is used for model demonstration.
+    """
+
+    # Dynamically create an argument parser based on override parameters.
+    args, template, hyper_parameters = parse_args()
+    # Get new values from user's input.
+    updated_hyper_parameters = gen_params_dict_from_args(args)
+    # Override overridden parameters by user's values.
+    override_parameters(updated_hyper_parameters, hyper_parameters)
+
+    hyper_parameters = create(hyper_parameters)
+
+    # Get classes for Task, ConfigurableParameters and Dataset.
+    if any(args.load_weights.endswith(x) for x in (".bin", ".xml", ".zip")) or os.path.isdir(args.load_weights):
+        task_class = get_impl_class(template.entrypoints.openvino)
+    elif args.load_weights.endswith(".pth"):
+        task_class = get_impl_class(template.entrypoints.base)
+    else:
+        raise ValueError(f"Unsupported file: {args.load_weights}")
+
+    environment = TaskEnvironment(
+        model=None,
+        hyper_parameters=hyper_parameters,
+        label_schema=read_label_schema(args.load_weights),
+        model_template=template,
+    )
+
+    environment.model = read_model(
+        environment.get_model_configuration(), args.load_weights, None
+    )
+
+    task = task_class(task_environment=environment)
+
+    if template.task_type.domain == Domain.TEXT_TO_SPEECH:
+        demo_tts(task, template, args)
+    else:
+        demo_cv(task, template, args)
+
+
 
 
 if __name__ == "__main__":

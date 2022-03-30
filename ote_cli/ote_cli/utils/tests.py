@@ -246,13 +246,14 @@ def ote_demo_testing(template, root, ote_dir, args):
     assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
 
 
-def ote_demo_openvino_testing(template, root, ote_dir, args):
+def ote_demo_openvino_testing(template, root, ote_dir, args, load_from_dir=True):
     work_dir, template_work_dir, _ = get_some_vars(template, root)
     command_line = [
         "ote",
         "demo",
         template.model_template_id,
         "--load-weights",
+        f"{template_work_dir}/exported_{template.model_template_id}/" if load_from_dir else
         f"{template_work_dir}/exported_{template.model_template_id}/openvino.xml",
         "--input",
         os.path.join(ote_dir, args["--input"]),
