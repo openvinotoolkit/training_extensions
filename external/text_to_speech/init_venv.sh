@@ -103,15 +103,8 @@ cd monotonic_align && python setup.py build_ext --inplace && cd .. || exit 1
 
 pip install -e . || exit 1
 
-if [[ ! -z $OTE_SDK_PATH ]]; then
-  pip install -e $OTE_SDK_PATH || exit 1
-elif [[ ! -z $SC_SDK_REPO ]]; then
-  pip install -e $SC_SDK_REPO/src/ote_sdk || exit 1
-else
-  echo "OTE_SDK_PATH or SC_SDK_REPO should be specified"
-  exit 1
-fi
-
+# Install OTE SDK
+pip install -e ../../ote_sdk/ || exit 1
 
 deactivate
 

@@ -208,6 +208,13 @@ class TaskType(Enum):
         is_global=False,
         is_local=True,
     )
+    TEXT_TO_SPEECH = 14, TaskInfo(
+        domain=Domain.TEXT_TO_SPEECH,
+        is_trainable=True,
+        is_anomaly=False,
+        is_global=False,
+        is_local=True,
+    )
 
     def __str__(self) -> str:
         return self.name
