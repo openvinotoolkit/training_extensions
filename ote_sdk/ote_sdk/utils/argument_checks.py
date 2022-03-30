@@ -295,7 +295,7 @@ def check_that_all_characters_printable(parameter, parameter_name, allow_crlf=Fa
         )
     if not all_characters_printable:
         raise ValueError(
-            fr"parameter {parameter_name} has not printable symbols: {parameter}"
+            rf"parameter {parameter_name} has not printable symbols: {parameter}"
         )
 
 
