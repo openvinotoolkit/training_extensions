@@ -196,9 +196,9 @@ def params_factories_for_test_actions_fx(current_test_parameters_fx,
             pytest.skip('The parameter "--dataset-definitions" is not set')
 
         model_name = test_parameters['model_name']
-        if "Detection" in model_name:
+        if "Custom_Object_Detection" in model_name:
             domain = Domain.DETECTION
-        elif "Counting_Instance_Segmentation" in model_name:
+        elif "Custom_Counting_Instance_Segmentation" in model_name:
             domain = Domain.INSTANCE_SEGMENTATION
         else:
             domain = None
@@ -231,9 +231,9 @@ def params_factories_for_test_actions_fx(current_test_parameters_fx,
             pytest.skip('The parameter "--dataset-definitions" is not set')
 
         model_name = test_parameters['model_name']
-        if "Detection" in model_name:
+        if "Custom_Object_Detection" in model_name:
             domain = Domain.DETECTION
-        elif "Counting_Instance_Segmentation" in model_name:
+        elif "Custom_Counting_Instance_Segmentation" in model_name:
             domain = Domain.INSTANCE_SEGMENTATION
         else:
             domain = None
@@ -287,9 +287,9 @@ def data_collector_fx(request) -> DataCollector:
         if 'usecase' not in setup:
             setup['usecase'] = setup['test_parameters'].get('usecase')
     model_name = setup['test_parameters'].get('model_name')
-    if "Detection" in model_name:
+    if "Custom_Object_Detection" in model_name:
         subject = 'custom-object-detection'
-    elif "Counting_Instance_Segmentation" in model_name:
+    elif "Custom_Counting_Instance_Segmentation" in model_name:
         subject = 'custom-counting-instance-seg'
     else:
         subject = None
