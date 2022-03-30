@@ -20,7 +20,7 @@ import pytest
 from ote_sdk.test_suite.e2e_test_system import e2e_pytest_component
 
 from ote_cli.registry import Registry
-from common import (
+from ote_cli.utils.tests import (
     create_venv,
     get_some_vars,
     ote_demo_deployment_testing,
@@ -30,6 +30,7 @@ from common import (
     ote_eval_deployment_testing,
     ote_eval_openvino_testing,
     ote_eval_testing,
+    ote_hpo_testing,
     ote_train_testing,
     ote_export_testing,
     pot_optimize_testing,
@@ -65,7 +66,7 @@ class TestToolsTextToSpeech:
     @e2e_pytest_component
     def test_create_venv(self):
         work_dir, template_work_dir, algo_backend_dir = get_some_vars(templates[0], root)
-        create_venv(algo_backend_dir, work_dir, template_work_dir)
+        create_venv(algo_backend_dir, work_dir)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)

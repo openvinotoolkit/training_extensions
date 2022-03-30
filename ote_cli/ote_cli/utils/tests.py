@@ -193,7 +193,7 @@ def ote_eval_testing(template, root, ote_dir, args):
     )
 
 
-def ote_eval_openvino_testing(template, root, ote_dir, args, threshold):
+def ote_eval_openvino_testing(template, root, ote_dir, args, threshold, load_from_dir=True):
     work_dir, template_work_dir, _ = get_some_vars(template, root)
     command_line = [
         "ote",
@@ -204,6 +204,7 @@ def ote_eval_openvino_testing(template, root, ote_dir, args, threshold):
         "--test-data-roots",
         f'{os.path.join(ote_dir, args["--test-data-roots"])}',
         "--load-weights",
+        f"{template_work_dir}/exported_{template.model_template_id}/" if load_from_dir else
         f"{template_work_dir}/exported_{template.model_template_id}/openvino.xml",
         "--save-performance",
         f"{template_work_dir}/exported_{template.model_template_id}/performance.json",
