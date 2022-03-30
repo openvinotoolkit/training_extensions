@@ -24,13 +24,11 @@ from anomalib.models import AnomalyModule
 from anomalib.post_processing import anomaly_map_to_color_map
 from ote_anomalib.data import LabelNames
 from ote_anomalib.logging import get_logger
-from ote_sdk.entities.annotation import Annotation
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.label import LabelEntity
 from ote_sdk.entities.model_template import TaskType
 from ote_sdk.entities.result_media import ResultMediaEntity
 from ote_sdk.entities.scored_label import ScoredLabel
-from ote_sdk.entities.shapes.rectangle import Rectangle
 from ote_sdk.utils.anomaly_utils import create_detection_annotation_from_anomaly_heatmap
 from ote_sdk.utils.segmentation_utils import create_annotation_from_segmentation_map
 from pytorch_lightning.callbacks import Callback
@@ -60,40 +58,33 @@ class AnomalyInferenceCallback(Callback):
         for dataset_item, pred_score, pred_label, anomaly_map, pred_mask in zip(
             self.ote_dataset, pred_scores, pred_labels, anomaly_maps, pred_masks
         ):
+            probability = pred_score if pred_label else 1 - pred_score
             label = self.anomalous_label if pred_label else self.normal_label
-            probability = (1 - pred_score) if pred_score < 0.5 else pred_score
-            dataset_item.append_labels([ScoredLabel(label=label, probability=float(probability))])
+            if self.task_type == TaskType.ANOMALY_CLASSIFICATION:
+                dataset_item.append_labels([ScoredLabel(label=label, probability=float(probability))])
             if self.task_type == TaskType.ANOMALY_DETECTION:
-                dataset_item.append_annotations(
-                    create_detection_annotation_from_anomaly_heatmap(
-                        hard_prediction=pred_mask,
-                        soft_prediction=anomaly_map,
-                        label_map=self.label_map,
-                    )
+                annotations = create_detection_annotation_from_anomaly_heatmap(
+                    hard_prediction=pred_mask,
+                    soft_prediction=anomaly_map,
+                    label_map=self.label_map,
                 )
-                # TODO: only add full normal label if dataset purpose is inference
-                if len(dataset_item.get_annotations()) == 1:
-                    dataset_item.append_annotations(
-                        [
-                            Annotation(
-                                Rectangle.generate_full_box(),
-                                labels=[ScoredLabel(label=self.normal_label, probability=0.5)],
-                            )
-                        ]
+                dataset_item.append_annotations(annotations)
+                if len(annotations) == 0:
+                    dataset_item.append_labels([ScoredLabel(label=self.normal_label, probability=float(probability))])
+                else:
+                    dataset_item.append_labels(
+                        [ScoredLabel(label=self.anomalous_label, probability=float(probability))]
                     )
             elif self.task_type == TaskType.ANOMALY_SEGMENTATION:
-                mask = pred_mask.squeeze().astype(np.uint8)
-                dataset_item.append_annotations(
-                    create_annotation_from_segmentation_map(mask, anomaly_map.squeeze(), self.label_map)
+                annotations = create_annotation_from_segmentation_map(
+                    pred_mask.squeeze().astype(np.uint8), anomaly_map.squeeze(), self.label_map
                 )
-                if len(dataset_item.get_annotations()) == 1:
-                    dataset_item.append_annotations(
-                        [
-                            Annotation(
-                                Rectangle.generate_full_box(),
-                                labels=[ScoredLabel(label=self.normal_label, probability=0.5)],
-                            )
-                        ]
+                dataset_item.append_annotations(annotations)
+                if len(annotations) == 0:
+                    dataset_item.append_labels([ScoredLabel(label=self.normal_label, probability=float(probability))])
+                else:
+                    dataset_item.append_labels(
+                        [ScoredLabel(label=self.anomalous_label, probability=float(probability))]
                     )
 
             dataset_item.append_metadata_item(

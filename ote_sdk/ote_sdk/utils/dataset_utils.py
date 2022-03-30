@@ -52,7 +52,9 @@ def get_fully_annotated_idx(dataset: DatasetEntity) -> List[int]:
 
 
 def get_local_subset(
-    dataset: DatasetEntity, fully_annotated_idx: Optional[List[int]] = None
+    dataset: DatasetEntity,
+    fully_annotated_idx: Optional[List[int]] = None,
+    include_normal: bool = True,
 ) -> DatasetEntity:
     """
     Extract a subset that contains only those dataset items that have local annotations.
@@ -77,17 +79,21 @@ def get_local_subset(
             if not Rectangle.is_full_box(annotation.shape)
         ]
         # annotations with the normal label are considered local
-        normal_annotations = [
-            annotation
-            for annotation in item.get_annotations()
-            if not any(label.label.is_anomalous for label in annotation.get_labels())
-        ]
-        # TODO: only append normal items if dataset purpose is training
+        if include_normal:
+            local_annotations.extend(
+                [
+                    annotation
+                    for annotation in item.get_annotations()
+                    if not any(
+                        label.label.is_anomalous for label in annotation.get_labels()
+                    )
+                ]
+            )
         local_items.append(
             DatasetItemEntity(
                 media=item.media,
                 annotation_scene=AnnotationSceneEntity(
-                    normal_annotations + local_annotations,
+                    local_annotations,
                     kind=item.annotation_scene.kind,
                 ),
                 metadata=item.metadata,
@@ -152,20 +158,22 @@ def split_local_global_resultset(
     resultset: ResultSetEntity,
 ) -> Tuple[ResultSetEntity, ResultSetEntity]:
     """
-    Split a resultset into the globally and locally annotated resultsets.
-    Args:
-        resultset (ResultSetEntity): Input result set
-
-    Returns:
-        ResultSetEntity: Globally annotated result set
-        ResultSetEntity: Locally annotated result set
+        Split a resultset into the globally and locally annotated resultsets.
+        Args:
+            resultset (ResultSetEntity): Input result set
+    ,
+        Returns:
+            ResultSetEntity: Globally annotated result set
+            ResultSetEntity: Locally annotated result set
     """
     global_gt_dataset, local_gt_dataset = split_local_global_dataset(
         resultset.ground_truth_dataset
     )
     local_idx = get_fully_annotated_idx(resultset.ground_truth_dataset)
     global_pred_dataset = get_global_subset(resultset.prediction_dataset)
-    local_pred_dataset = get_local_subset(resultset.prediction_dataset, local_idx)
+    local_pred_dataset = get_local_subset(
+        resultset.prediction_dataset, local_idx, include_normal=False
+    )
 
     global_resultset = ResultSetEntity(
         model=resultset.model,

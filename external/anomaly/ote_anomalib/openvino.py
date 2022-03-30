@@ -66,12 +66,6 @@ from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.serialization.label_mapper import LabelSchemaMapper, label_schema_to_bytes
 from ote_sdk.usecases.evaluation.metrics_helper import MetricsHelper
 from ote_sdk.usecases.exportable_code import demo
-from ote_sdk.usecases.exportable_code.prediction_to_annotation_converter import (
-    AnomalyClassificationToAnnotationConverter,
-    AnomalyDetectionToAnnotationConverter,
-    AnomalySegmentationToAnnotationConverter,
-    IPredictionToAnnotationConverter,
-)
 from ote_sdk.usecases.tasks.interfaces.deployment_interface import IDeploymentTask
 from ote_sdk.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
 from ote_sdk.usecases.tasks.interfaces.inference_interface import IInferenceTask
@@ -79,6 +73,8 @@ from ote_sdk.usecases.tasks.interfaces.optimization_interface import (
     IOptimizationTask,
     OptimizationType,
 )
+from ote_sdk.utils.anomaly_utils import create_detection_annotation_from_anomaly_heatmap
+from ote_sdk.utils.segmentation_utils import create_annotation_from_segmentation_map
 
 logger = get_logger(__name__)
 
@@ -132,16 +128,6 @@ class OpenVINOAnomalyTask(IInferenceTask, IEvaluationTask, IOptimizationTask, ID
         self.normal_label = [label for label in labels if label.name == LabelNames.normal][0]
         self.anomalous_label = [label for label in labels if label.name == LabelNames.anomalous][0]
 
-        self.annotation_converter: IPredictionToAnnotationConverter
-        if self.task_type == TaskType.ANOMALY_CLASSIFICATION:
-            self.annotation_converter = AnomalyClassificationToAnnotationConverter(self.task_environment.label_schema)
-        elif self.task_type == TaskType.ANOMALY_DETECTION:
-            self.annotation_converter = AnomalyDetectionToAnnotationConverter(self.task_environment.label_schema)
-        elif self.task_type == TaskType.ANOMALY_SEGMENTATION:
-            self.annotation_converter = AnomalySegmentationToAnnotationConverter(self.task_environment.label_schema)
-        else:
-            raise ValueError(f"Unknown task type: {self.task_type}")
-
         template_file_path = task_environment.model_template.model_template_path
         self._base_dir = os.path.abspath(os.path.dirname(template_file_path))
 
@@ -182,17 +168,35 @@ class OpenVINOAnomalyTask(IInferenceTask, IEvaluationTask, IOptimizationTask, ID
                 dataset_item.numpy, superimpose=False, meta_data=meta_data
             )
             # TODO: inferencer should return predicted label and mask
-            # add global predictions
-            if pred_score >= 0.5:
-                dataset_item.append_labels([ScoredLabel(label=self.anomalous_label, probability=pred_score)])
+            pred_label = pred_score >= 0.5
+            pred_mask = (anomaly_map >= 0.5).astype(np.uint8)
+            probability = pred_score if pred_label else 1 - pred_score
+            if self.task_type == TaskType.ANOMALY_CLASSIFICATION:
+                label = self.anomalous_label if pred_score >= 0.5 else self.normal_label
+                dataset_item.append_labels([ScoredLabel(label=label, probability=float(probability))])
+            elif self.task_type == TaskType.ANOMALY_SEGMENTATION:
+                annotations = create_annotation_from_segmentation_map(
+                    pred_mask, anomaly_map.squeeze(), {0: self.normal_label, 1: self.anomalous_label}
+                )
+                dataset_item.append_annotations(annotations)
+                if len(annotations) == 0:
+                    dataset_item.append_labels([ScoredLabel(label=self.normal_label, probability=float(probability))])
+                else:
+                    dataset_item.append_labels(
+                        [ScoredLabel(label=self.anomalous_label, probability=float(probability))]
+                    )
+            elif self.task_type == TaskType.ANOMALY_DETECTION:
+                annotations = create_detection_annotation_from_anomaly_heatmap(
+                    pred_mask, anomaly_map.squeeze(), {0: self.normal_label, 1: self.anomalous_label}
+                )
+                dataset_item.append_annotations(annotations)
+                if len(annotations) == 0:
+                    dataset_item.append_labels([ScoredLabel(label=self.normal_label, probability=float(probability))])
+                else:
+                    dataset_item.append_labels(
+                        [ScoredLabel(label=self.anomalous_label, probability=float(probability))]
+                    )
             else:
-                dataset_item.append_labels([ScoredLabel(label=self.normal_label, probability=1 - pred_score)])
-
-            if self.task_type in (TaskType.ANOMALY_DETECTION, TaskType.ANOMALY_SEGMENTATION):
-                annotations_scene = self.annotation_converter.convert_to_annotation(anomaly_map, meta_data)
-                # pylint: disable=protected-access
-                dataset_item.append_annotations(annotations_scene.annotations)
-            elif not self.task_type == TaskType.ANOMALY_CLASSIFICATION:
                 raise ValueError(f"Unknown task type: {self.task_type}")
 
             anomaly_map = anomaly_map_to_color_map(anomaly_map, normalize=False)
