@@ -1,7 +1,6 @@
 # Copyright (C) 2020-2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-
 import logging as log
 import os.path as osp
 from argparse import ArgumentParser, SUPPRESS

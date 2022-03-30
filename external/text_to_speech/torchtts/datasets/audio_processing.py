@@ -1,5 +1,6 @@
-# Copyright (C) 2022 Intel Corporation
-# SPDX-License-Identifier: Apache-2.0
+# File from Glow-TTS https://github.com/jaywalnut310/glow-tts
+# Copyright (c) 2020 Jaehyeon Kim
+# SPDX-License-Identifier: MIT
 #
 import torch
 import numpy as np

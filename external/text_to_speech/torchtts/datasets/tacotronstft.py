@@ -1,6 +1,10 @@
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
+# This file is based on commons.py from Glow-TTS https://github.com/jaywalnut310/glow-tts
+# Copyright (c) 2020 Jaehyeon Kim
+# SPDX-License-Identifier: MIT
+#
 import torch
 from torch import nn
 from librosa.filters import mel as librosa_mel_fn
