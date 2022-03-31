@@ -59,7 +59,6 @@ import speech_to_text.utils as utils
 import pytorch_lightning as pl
 import pytorch_lightning.loggers as pl_loggers
 
-import pickle
 
 logger = logging.getLogger(__name__)
 

@@ -5,7 +5,7 @@
 # Copyright (c) Soumith Chintala 2016
 # SPDX-License-Identifier: BSD-3-Clause
 #
-import pickle
+import pickle  # nosec - disable B403:import-pickle check
 import operator
 from functools import reduce
 from subprocess import run, DEVNULL, CalledProcessError
@@ -182,6 +182,7 @@ def all_gather(data):
 
     for size, tensor in zip(size_list, tensor_list):
         buffer = tensor.cpu().numpy().tobytes()[:size]
-        data_list.append(pickle.loads(buffer))
+        # 'buffer' contains trusted data received from our other instances through all_gather().
+        data_list.append(pickle.loads(buffer))  # nosec - disable B301:pickle check
 
     return data_list

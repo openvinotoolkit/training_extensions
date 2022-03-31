@@ -31,17 +31,17 @@ class WaveformTransformSOX:
         self.p = p
 
     def __call__(self, waveform, sample_rate):
-        if random.random() < self.p:
+        if random.random() < self.p:  # nosec - disable B311:random check
             waveform, sample_rate = torchaudio.sox_effects.apply_effects_tensor(
                 waveform, sample_rate, self.get_effect()
             )
         return waveform, sample_rate
 
     def uniform(self, val_min, val_max):
-        return val_min + (val_max - val_min) * random.random()
+        return val_min + (val_max - val_min) * random.random()  # nosec - disable B311:random check
 
     def randint(self, val_min, val_max):
-        return random.randint(val_min, val_max)
+        return random.randint(val_min, val_max)  # nosec - disable B311:random check
 
 
 class WaveformTransformSpeed(WaveformTransformSOX):
@@ -60,7 +60,7 @@ class WaveformTransformResample(WaveformTransformSOX):
         self.rates = rates
 
     def get_effect(self):
-        return [["rate", str(random.choice(self.rates))]]
+        return [["rate", str(random.choice(self.rates))]]  # nosec - disable B311:random check
 
 
 class WaveformTransformGain(WaveformTransformSOX):
@@ -255,8 +255,8 @@ class MelMaskTransform(nn.Module):
         self.fill_value=fill_value
 
     def generate_line(self, shape: torch.Size, val_min: int, val_max: int) -> Tuple[int, int]:
-        width = random.randint(val_min, val_max + 1)
-        pos = int(random.uniform(0, shape - width))
+        width = random.randint(val_min, val_max + 1)  # nosec - disable B311:random check
+        pos = int(random.uniform(0, shape - width))  # nosec - disable B311:random check
         return pos, width
 
     def generate_line_freq(self, shape: torch.Size) -> Tuple[int, int]:
@@ -266,7 +266,7 @@ class MelMaskTransform(nn.Module):
         return self.generate_line(shape, self.time_min, self.time_max)
 
     def need_apply(self) -> bool:
-        if random.random() < self.p:
+        if random.random() < self.p:  # nosec - disable B311:random check
             return True
         else:
             return False
@@ -284,12 +284,12 @@ class MelSpecTransform(MelMaskTransform):
             return x
         mask = torch.zeros(x.size(), dtype=torch.bool, device=x.device)
         for idx in range(x.size(0)):
-            holes = random.randint(0, self.freq_holes)
+            holes = random.randint(0, self.freq_holes)  # nosec - disable B311:random check
             for i in range(holes):
                 f0, w = self.generate_line_freq(x.size(1))
                 mask[idx, f0:f0+w] = 1
 
-            holes = random.randint(0, self.time_holes)
+            holes = random.randint(0, self.time_holes)  # nosec - disable B311:random check
             for i in range(holes):
                 t0, h = self.generate_line_time(x.size(2))
                 mask[idx, :, t0:t0+h] = 1
@@ -308,7 +308,7 @@ class MelCutoutTransform(MelMaskTransform):
             return x
         mask = torch.zeros(x.size(), dtype=torch.bool, device=x.device)
         for idx in range(x.size(0)):
-            holes = random.randint(0, self.holes)
+            holes = random.randint(0, self.holes)  # nosec - disable B311:random check
             for i in range(holes):
                 f0, w = self.generate_line_freq(x.size(1))
                 t0, h = self.generate_line_time(x.size(2))

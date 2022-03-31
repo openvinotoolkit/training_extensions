@@ -5,7 +5,6 @@
 
 import os
 import pytest
-from subprocess import run
 
 from ote_sdk.test_suite.e2e_test_system import e2e_pytest_component
 
