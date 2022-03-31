@@ -7,8 +7,8 @@ from dataclasses import dataclass
 from typing import Callable, Optional
 
 
+# pylint: disable=unused-argument
 def default_progress_callback(progress: float, score: Optional[float] = None):
-    # pylint: disable=unused-argument
     """
     This is the default progress callback for OptimizationParameters.
     """
