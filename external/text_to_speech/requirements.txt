@@ -1,7 +1,7 @@
 numpy==1.18.0
 Cython
 wheel
-pytorch-lightning==1.5.10
+pytorch-lightning==1.6.0
 inflect
 librosa==0.8.1
 addict
