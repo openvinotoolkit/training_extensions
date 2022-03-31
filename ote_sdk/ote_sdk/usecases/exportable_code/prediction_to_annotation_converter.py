@@ -392,14 +392,16 @@ class MaskToAnnotationConverter(IPredictionToAnnotationConverter):
                     )
                     for point in contour
                 ]
-                annotations.append(
-                    Annotation(
-                        Polygon(points=points),
-                        labels=[
-                            ScoredLabel(self.labels[int(class_idx) - 1], float(score))
-                        ],
+                polygon = Polygon(points=points)
+                if polygon.get_area() > 1e-12:
+                    annotations.append(
+                        Annotation(
+                            polygon,
+                            labels=[
+                                ScoredLabel(self.labels[int(class_idx) - 1], float(score))
+                            ],
+                        )
                     )
-                )
         annotation_scene = AnnotationSceneEntity(
             kind=AnnotationSceneKind.PREDICTION,
             annotations=annotations,
@@ -439,14 +441,16 @@ class RotatedRectToAnnotationConverter(IPredictionToAnnotationConverter):
                     )
                     for point in box_points
                 ]
-                annotations.append(
-                    Annotation(
-                        Polygon(points=points),
-                        labels=[
-                            ScoredLabel(self.labels[int(class_idx) - 1], float(score))
-                        ],
+                polygon = Polygon(points=points)
+                if polygon.get_area() > 1e-12:
+                    annotations.append(
+                        Annotation(
+                            polygon,
+                            labels=[
+                                ScoredLabel(self.labels[int(class_idx) - 1], float(score))
+                            ],
+                        )
                     )
-                )
         annotation_scene = AnnotationSceneEntity(
             kind=AnnotationSceneKind.PREDICTION,
             annotations=annotations,
