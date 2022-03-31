@@ -20,7 +20,7 @@ def get_requirements():
 
 setup(
     name='demo_package',
-    version="0.0.0",
+    version="0.0",
     description='Text to speech demo',
     author='Intel Corporation',
     license='Apache-2.0',

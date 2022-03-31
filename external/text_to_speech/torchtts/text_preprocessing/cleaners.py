@@ -19,7 +19,6 @@ hyperparameter. Some cleaners are English-specific. You'll typically want to use
 '''
 
 import re
-import unicodedata
 from .numbers import normalize_numbers
 
 
@@ -68,7 +67,7 @@ def collapse_whitespace(text):
 
 
 def convert_to_ascii(text):
-  return text #unicodedata.normalize(text)
+  return text
 
 
 def basic_cleaners(text):

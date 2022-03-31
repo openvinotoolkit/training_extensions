@@ -50,6 +50,11 @@ def get_output(net, outputs, name):
     return outputs[key]
 
 
+def add_dir2zip(src_path, dst_path, zipf):
+    for root, dirs, files in os.walk(src_path):
+        for file in files:
+            zipf.write(os.path.join(src_path, root, file), os.path.join(dst_path, file))
+
 class OpenVINOTTSTask(IInferenceTask, IEvaluationTask):
     def __init__(self, task_environment: TaskEnvironment):
         self.task_environment = task_environment
@@ -292,7 +297,6 @@ class OpenVINOTTSTask(IInferenceTask, IEvaluationTask):
         parameters: Dict[str, Any] = {}
         parameters["type_of_model"] = "text_to_speech"
         parameters["converter_type"] = "TEXT_TO_SPEECH"
-        name_of_package = "demo_package"
 
         with tempfile.TemporaryDirectory() as tempdir:
             copyfile(os.path.join(cur_dir, "deploy", "README.md"), os.path.join(tempdir, "README.md"))
@@ -321,15 +325,17 @@ class OpenVINOTTSTask(IInferenceTask, IEvaluationTask):
             wheel_file_name = [f for f in os.listdir(tempdir) if f.endswith(".whl")][0]
 
             with ZipFile(os.path.join(tempdir, "openvino.zip"), "w") as arch:
-                arch.writestr(os.path.join("model", "encoder.xml"), self.task_environment.model.get_data("encoder.xml"))
-                arch.writestr(os.path.join("model", "encoder.bin"), self.task_environment.model.get_data("encoder.bin"))
-                arch.writestr(os.path.join("model", "decoder.xml"), self.task_environment.model.get_data("decoder.xml"))
-                arch.writestr(os.path.join("model", "decoder.bin"), self.task_environment.model.get_data("decoder.bin"))
+                arch.write(self.task_environment.model.get_data("encoder.xml"), os.path.join("model", "encoder.xml"))
+                arch.write(self.task_environment.model.get_data("encoder.bin"), os.path.join("model", "encoder.bin"))
+                arch.write(self.task_environment.model.get_data("decoder.xml"), os.path.join("model", "decoder.xml"))
+                arch.write(self.task_environment.model.get_data("decoder.bin"), os.path.join("model", "decoder.bin"))
                 arch.write(os.path.join(tempdir, "requirements.txt"), os.path.join("python", "requirements.txt"))
                 arch.write(os.path.join(setup_dir, "README.md"), os.path.join("python", "README.md"))
                 arch.write(os.path.join(setup_dir, "LICENSE"), os.path.join("python", "LICENSE"))
                 arch.write(os.path.join(tempdir, "demo.py"), os.path.join("python", "demo.py"))
-                arch.write(os.path.join(tempdir, "text_preprocessing"), os.path.join("python", "text_preprocessing"))
+                add_dir2zip(os.path.join(tempdir, "text_preprocessing"),
+                            os.path.join("python", "text_preprocessing"),
+                            arch)
                 arch.write(os.path.join(tempdir, wheel_file_name), os.path.join("python", wheel_file_name))
             with open(os.path.join(tempdir, "openvino.zip"), "rb") as output_arch:
                 output_model.exportable_code = output_arch.read()
