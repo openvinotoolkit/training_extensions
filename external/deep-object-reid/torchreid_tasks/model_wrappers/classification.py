@@ -45,6 +45,9 @@ class OteClassification(Classification):
 
     def _get_outputs(self):
         layer_name = 'logits'
+        for name, meta in self.outputs.items():
+            if 'logits' in meta.names:
+                layer_name = name
         layer_shape = self.outputs[layer_name].shape
 
         if len(layer_shape) != 2 and len(layer_shape) != 4:

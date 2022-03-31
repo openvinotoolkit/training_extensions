@@ -577,8 +577,18 @@ class TestDatasetItemEntity:
         result_annotations = partial_box_dataset_item.get_annotations(
             include_empty=True
         )
-        expected_annotations = [expected_annotation]
-        self.compare_denormalized_annotations(result_annotations, expected_annotations)
+        self.compare_denormalized_annotations(result_annotations, [expected_annotation])
+
+        # Check if ignored labels are properly removed
+        ignore_labels_dataset_item = (
+            DatasetItemParameters().default_values_dataset_item()
+        )
+        ignore_labels_dataset_item.ignored_labels = (
+            ignore_labels_dataset_item.get_shapes_labels(
+                include_ignored=True, include_empty=True
+            )
+        )
+        assert ignore_labels_dataset_item.get_annotations(include_empty=True) == []
 
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -660,6 +670,7 @@ class TestDatasetItemEntity:
         <b>Steps</b>
         1. Check annotations list returned by "get_roi_labels" for non-specified "labels" parameter
         2. Check annotations list returned by "get_roi_labels" for specified "labels" parameter
+        3. Check annotations list returned by "get_roi_labels" if dataset item ignores a label
         """
         dataset_item = DatasetItemParameters().dataset_item()
         roi_labels = DatasetItemParameters.roi_labels()
@@ -674,6 +685,9 @@ class TestDatasetItemEntity:
         assert dataset_item.get_roi_labels(labels=[empty_roi_label]) == []
         # Scenario for "include_empty" is "True"
         assert dataset_item.get_roi_labels([empty_roi_label], True) == [empty_roi_label]
+        # Scenario for ignored labels
+        dataset_item.ignored_labels = [empty_roi_label]
+        assert dataset_item.get_roi_labels([empty_roi_label], True) == []
 
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -693,6 +707,7 @@ class TestDatasetItemEntity:
         <b>Steps</b>
         1. Check labels list returned by "get_shapes_labels" for non-specified "labels" parameter
         2. Check labels list returned by "get_shapes_labels" for specified "labels" parameter
+        3. Check labels list returned by "get_shapes_labels" if dataset_item ignores labels
         """
         dataset_item = DatasetItemParameters().default_values_dataset_item()
         labels = DatasetItemParameters.labels()
@@ -713,7 +728,17 @@ class TestDatasetItemEntity:
         list_labels = [segmentation_label, non_included_label]
         assert dataset_item.get_shapes_labels(labels=list_labels) == []
         # Scenario for "include_empty" is "True", expected that non_included label will not be shown
-        assert dataset_item.get_shapes_labels(list_labels, True) == [segmentation_label]
+        assert dataset_item.get_shapes_labels(list_labels, include_empty=True) == [
+            segmentation_label
+        ]
+        # Check ignore labels functionality
+        dataset_item.ignored_labels = [detection_label]
+        assert dataset_item.get_shapes_labels(
+            include_empty=True, include_ignored=False
+        ) == [segmentation_label]
+        assert dataset_item.get_shapes_labels(
+            include_empty=False, include_ignored=True
+        ) == [detection_label]
 
     @pytest.mark.priority_medium
     @pytest.mark.unit

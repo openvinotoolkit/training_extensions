@@ -247,6 +247,7 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
         self,
         labels: Optional[List[LabelEntity]] = None,
         include_empty: bool = False,
+        include_ignored: bool = False,
     ) -> List[Annotation]:
         """
         Returns a list of annotations that exist in the dataset item (wrt. ROI). This is done by checking that the
@@ -254,19 +255,21 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
 
         :param labels: Subset of input labels to filter with; if ``None``, all the shapes within the ROI are returned
         :param include_empty: if True, returns both empty and non-empty labels
+        :param include_ignored: if True, includes the labels in ignored_labels
         :return: The intersection of the input label set and those present within the ROI
         """
         is_full_box = Rectangle.is_full_box(self.roi.shape)
         annotations = []
-        if is_full_box and labels is None and not include_empty:
+        if is_full_box and labels is None and include_empty and include_ignored:
             # Fast path for the case where we do not need to change the shapes
-            # todo: this line is incorrect. CVS-75919
             annotations = self.annotation_scene.annotations
         else:
             # Todo: improve speed. This is O(n) for n shapes.
             roi_as_box = ShapeFactory.shape_as_rectangle(self.roi.shape)
 
-            labels_set = {label.name for label in labels} if labels is not None else {}
+            labels_set = (
+                {label.name for label in labels} if labels is not None else set()
+            )
 
             for annotation in self.annotation_scene.annotations:
                 if not is_full_box and not self.roi.shape.contains_center(
@@ -276,13 +279,20 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
 
                 shape_labels = annotation.get_labels(include_empty)
 
+                if not include_ignored:
+                    shape_labels = [
+                        label
+                        for label in shape_labels
+                        if label.label not in self.ignored_labels
+                    ]
+
                 if labels is not None:
                     shape_labels = [
                         label for label in shape_labels if label.name in labels_set
                     ]
 
-                    if len(shape_labels) == 0:
-                        continue
+                if len(shape_labels) == 0:
+                    continue
 
                 if not is_full_box:
                     # Create a denormalized copy of the shape.
@@ -326,23 +336,32 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
         self.annotation_scene.append_annotations(validated_annotations)
 
     def get_roi_labels(
-        self, labels: Optional[List[LabelEntity]] = None, include_empty: bool = False
+        self,
+        labels: Optional[List[LabelEntity]] = None,
+        include_empty: bool = False,
+        include_ignored: bool = False,
     ) -> List[LabelEntity]:
         """
         Return the subset of the input labels which exist in the dataset item (wrt. ROI).
 
         :param labels: Subset of input labels to filter with; if ``None``, all the labels within the ROI are returned
         :param include_empty: if True, returns both empty and non-empty labels
+        :param include_ignored: if True, includes the labels in ignored_labels
         :return: The intersection of the input label set and those present within the ROI
         """
         filtered_labels = set()
         for label in self.roi.get_labels(include_empty):
             if labels is None or label.get_label() in labels:
                 filtered_labels.add(label.get_label())
+        if not include_ignored:
+            filtered_labels -= self.ignored_labels
         return sorted(list(filtered_labels), key=lambda x: x.name)
 
     def get_shapes_labels(
-        self, labels: Optional[List[LabelEntity]] = None, include_empty: bool = False
+        self,
+        labels: Optional[List[LabelEntity]] = None,
+        include_empty: bool = False,
+        include_ignored: bool = False,
     ) -> List[LabelEntity]:
         """
         Get the labels of the shapes present in this dataset item. if a label list is supplied, only labels present
@@ -350,16 +369,20 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
 
         :param labels: if supplied only labels present in this list are returned
         :param include_empty: if True, returns both empty and non-empty labels
+        :param include_ignored: if True, includes the labels in ignored_labels
         :return: a list of labels from the shapes within the roi of this dataset item
         """
-        annotations = self.get_annotations()
+        annotations = self.get_annotations(
+            labels=labels, include_empty=include_empty, include_ignored=include_ignored
+        )
         scored_label_set = set(
             itertools.chain(
                 *[annotation.get_labels(include_empty) for annotation in annotations]
             )
         )
         label_set = {scored_label.get_label() for scored_label in scored_label_set}
-
+        if not include_ignored:
+            label_set -= self.ignored_labels
         if labels is None:
             return list(label_set)
         return [label for label in label_set if label in labels]
