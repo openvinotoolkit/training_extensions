@@ -21,7 +21,7 @@ import shutil
 import subprocess  # nosec
 import tempfile
 from glob import glob
-from typing import Optional, Union
+from typing import Dict, List, Optional, Union
 
 import torch
 from anomalib.models import AnomalyModule, get_model
@@ -38,28 +38,32 @@ from ote_anomalib.logging import get_logger
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.inference_parameters import InferenceParameters
 from ote_sdk.entities.metrics import Performance, ScoreMetric
-from ote_sdk.entities.model import ModelEntity, ModelPrecision
+from ote_sdk.entities.model import (
+    ModelEntity,
+    ModelFormat,
+    ModelOptimizationType,
+    ModelPrecision,
+    OptimizationMethod,
+)
 from ote_sdk.entities.model_template import TaskType
 from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.task_environment import TaskEnvironment
-from ote_sdk.entities.train_parameters import TrainParameters
 from ote_sdk.serialization.label_mapper import label_schema_to_bytes
 from ote_sdk.usecases.evaluation.averaging import MetricAverageMethod
 from ote_sdk.usecases.evaluation.metrics_helper import MetricsHelper
 from ote_sdk.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
 from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType, IExportTask
 from ote_sdk.usecases.tasks.interfaces.inference_interface import IInferenceTask
-from ote_sdk.usecases.tasks.interfaces.training_interface import ITrainingTask
 from ote_sdk.usecases.tasks.interfaces.unload_interface import IUnload
 from pytorch_lightning import Trainer
 
 logger = get_logger(__name__)
 
 
-class BaseAnomalyTask(ITrainingTask, IInferenceTask, IEvaluationTask, IExportTask, IUnload):
+# pylint: disable=too-many-instance-attributes
+class AnomalyInferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
     """Base Anomaly Task."""
 
-    # pylint: disable=too-many-instance-attributes
     def __init__(self, task_environment: TaskEnvironment) -> None:
         """Train, Infer, Export, Optimize and Deploy an Anomaly Classification Task.
 
@@ -73,9 +77,17 @@ class BaseAnomalyTask(ITrainingTask, IInferenceTask, IEvaluationTask, IExportTas
         self.model_name = task_environment.model_template.name
         self.labels = task_environment.get_labels()
 
+        template_file_path = task_environment.model_template.model_template_path
+        self.base_dir = os.path.abspath(os.path.dirname(template_file_path))
+
         # Hyperparameters.
         self.project_path: str = tempfile.mkdtemp(prefix="ote-anomalib")
         self.config = self.get_config()
+
+        # Set default model attributes.
+        self.optimization_methods: List[OptimizationMethod] = []
+        self.precision = [ModelPrecision.FP32]
+        self.optimization_type = ModelOptimizationType.MO
 
         self.model = self.load_model(ote_model=task_environment.model)
 
@@ -87,8 +99,8 @@ class BaseAnomalyTask(ITrainingTask, IInferenceTask, IEvaluationTask, IExportTas
         Returns:
             Union[DictConfig, ListConfig]: Anomalib config.
         """
-        hyper_parameters = self.task_environment.get_hyper_parameters()
-        config = get_anomalib_config(task_name=self.model_name, ote_config=hyper_parameters)
+        self.hyper_parameters = self.task_environment.get_hyper_parameters()
+        config = get_anomalib_config(task_name=self.model_name, ote_config=self.hyper_parameters)
         config.project.path = self.project_path
 
         config.dataset.task = "classification"
@@ -128,57 +140,6 @@ class BaseAnomalyTask(ITrainingTask, IInferenceTask, IEvaluationTask, IExportTas
                 raise ValueError("Could not load the saved model. The model file structure is invalid.") from exception
 
         return model
-
-    def train(
-        self,
-        dataset: DatasetEntity,
-        output_model: ModelEntity,
-        train_parameters: TrainParameters,
-    ) -> None:
-        """Train the anomaly classification model.
-
-        Args:
-            dataset (DatasetEntity): Input dataset.
-            output_model (ModelEntity): Output model to save the model weights.
-            train_parameters (TrainParameters): Training parameters
-        """
-        logger.info("Training the model.")
-
-        config = self.get_config()
-        logger.info("Training Configs '%s'", config)
-
-        datamodule = OTEAnomalyDataModule(config=config, dataset=dataset, task_type=self.task_type)
-        callbacks = [ProgressCallback(parameters=train_parameters), MinMaxNormalizationCallback()]
-
-        self.trainer = Trainer(**config.trainer, logger=False, callbacks=callbacks)
-        self.trainer.fit(model=self.model, datamodule=datamodule)
-
-        self.save_model(output_model)
-
-        logger.info("Training completed.")
-
-    def save_model(self, output_model: ModelEntity) -> None:
-        """Save the model after training is completed.
-
-        Args:
-            output_model (ModelEntity): Output model onto which the weights are saved.
-        """
-        logger.info("Saving the model weights.")
-        config = self.get_config()
-        model_info = {
-            "model": self.model.state_dict(),
-            "config": config,
-            "VERSION": 1,
-        }
-        buffer = io.BytesIO()
-        torch.save(model_info, buffer)
-        output_model.set_data("weights.pth", buffer.getvalue())
-        output_model.set_data("label_schema.json", label_schema_to_bytes(self.task_environment.label_schema))
-        self._set_metadata(output_model)
-
-        f1_score = self.model.image_metrics.F1.compute().item()
-        output_model.performance = Performance(score=ScoreMetric(name="F1 Score", value=f1_score))
-        output_model.precision = [ModelPrecision.FP32]
 
     def cancel_training(self) -> None:
         """Cancel the training `after_batch_end`.
@@ -252,6 +213,20 @@ class BaseAnomalyTask(ITrainingTask, IInferenceTask, IEvaluationTask, IExportTas
             accuracy = MetricsHelper.compute_accuracy(output_resultset).get_performance()
             output_resultset.performance.dashboard_metrics.extend(accuracy.dashboard_metrics)
 
+    def _export_to_onnx(self, onnx_path: str):
+        """Export model to ONNX
+
+        Args:
+             onnx_path (str): path to save ONNX file
+        """
+        height, width = self.config.model.input_size
+        torch.onnx.export(
+            model=self.model.model,
+            args=torch.zeros((1, 3, height, width)).to(self.model.device),
+            f=onnx_path,
+            opset_version=11,
+        )
+
     def export(self, export_type: ExportType, output_model: ModelEntity) -> None:
         """Export model to OpenVINO IR.
 
@@ -264,16 +239,13 @@ class BaseAnomalyTask(ITrainingTask, IInferenceTask, IEvaluationTask, IExportTas
         """
         assert export_type == ExportType.OPENVINO
 
+        output_model.model_format = ModelFormat.OPENVINO
+        output_model.optimization_type = self.optimization_type
+
         # pylint: disable=no-member; need to refactor this
         logger.info("Exporting the OpenVINO model.")
-        height, width = self.config.model.input_size
         onnx_path = os.path.join(self.config.project.path, "onnx_model.onnx")
-        torch.onnx.export(
-            model=self.model.model,
-            args=torch.zeros((1, 3, height, width)).to(self.model.device),
-            f=onnx_path,
-            opset_version=11,
-        )
+        self._export_to_onnx(onnx_path)
         optimize_command = "mo --input_model " + onnx_path + " --output_dir " + self.config.project.path
         subprocess.call(optimize_command, shell=True)
         bin_file = glob(os.path.join(self.config.project.path, "*.bin"))[0]
@@ -282,8 +254,44 @@ class BaseAnomalyTask(ITrainingTask, IInferenceTask, IEvaluationTask, IExportTas
             output_model.set_data("openvino.bin", file.read())
         with open(xml_file, "rb") as file:
             output_model.set_data("openvino.xml", file.read())
+
+        output_model.precision = self.precision
+        output_model.optimization_methods = self.optimization_methods
+
         output_model.set_data("label_schema.json", label_schema_to_bytes(self.task_environment.label_schema))
         self._set_metadata(output_model)
+
+    def _model_info(self) -> Dict:
+        """Return model info to save the model weights.
+
+        Returns:
+           Dict: Model info.
+        """
+
+        return {
+            "model": self.model.state_dict(),
+            "config": self.get_config(),
+            "VERSION": 1,
+        }
+
+    def save_model(self, output_model: ModelEntity) -> None:
+        """Save the model after training is completed.
+
+        Args:
+            output_model (ModelEntity): Output model onto which the weights are saved.
+        """
+        logger.info("Saving the model weights.")
+        model_info = self._model_info()
+        buffer = io.BytesIO()
+        torch.save(model_info, buffer)
+        output_model.set_data("weights.pth", buffer.getvalue())
+        output_model.set_data("label_schema.json", label_schema_to_bytes(self.task_environment.label_schema))
+        self._set_metadata(output_model)
+
+        f1_score = self.model.image_metrics.F1.compute().item()
+        output_model.performance = Performance(score=ScoreMetric(name="F1 Score", value=f1_score))
+        output_model.precision = self.precision
+        output_model.optimization_methods = self.optimization_methods
 
     def _set_metadata(self, output_model: ModelEntity):
         output_model.set_data("image_threshold", self.model.image_threshold.value.cpu().numpy().tobytes())
