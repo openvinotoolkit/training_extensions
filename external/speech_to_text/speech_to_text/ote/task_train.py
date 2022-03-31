@@ -120,7 +120,7 @@ class OTESpeechToTextTaskTrain(ITrainingTask, IInferenceTask, IEvaluationTask, I
         """
         if "weights.ckpt" in input_model.model_adapters:
             path = os.path.join(self._scratch_space, "weights.ckpt")
-            with open(os.path.join(path), "wb") as f:
+            with open(path, "wb") as f:
                 f.write(input_model.get_data("weights.ckpt"))
             ckpt = torch.load(path, map_location="cpu")
             self._pipeline.load_state_dict(ckpt["model"])
