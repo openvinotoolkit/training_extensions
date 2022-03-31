@@ -19,7 +19,7 @@ import pytest
 from ote_sdk.test_suite.e2e_test_system import e2e_pytest_component
 from ote_cli.registry import Registry
 
-from test_ote_cli_common import (
+from ote_cli_test_common import (
     create_venv,
     get_some_vars,
     default_train_args_paths,
