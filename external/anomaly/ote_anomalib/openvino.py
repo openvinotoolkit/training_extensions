@@ -36,12 +36,6 @@ from compression.pipeline.initializer import create_pipeline
 from omegaconf import OmegaConf
 from ote_anomalib.configs import get_anomalib_config
 from ote_anomalib.data import LabelNames
-from ote_anomalib.exportable_code import (
-    AnomalyBase,
-    AnomalyClassification,
-    AnomalyDetection,
-    AnomalySegmentation,
-)
 from ote_anomalib.logging import get_logger
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.inference_parameters import (
