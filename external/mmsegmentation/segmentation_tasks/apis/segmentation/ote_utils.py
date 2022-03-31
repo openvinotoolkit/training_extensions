@@ -59,7 +59,8 @@ class TrainingProgressCallback(TimeMonitorCallback):
         self._calculate_average_epoch()
         score = None
         if hasattr(self.update_progress_callback, 'metric') and isinstance(logs, dict):
-            score = float(logs.get(self.update_progress_callback.metric, None))
+            score = logs.get(self.update_progress_callback.metric, None)
+            score = float(score) if score is not None else None
         self.update_progress_callback(self.get_progress(), score=score)
 
 
@@ -97,7 +98,7 @@ class OptimizationProgressCallback(TrainingProgressCallback):
         self.update_progress_callback(loading_stage_progress_percentage)
 
     def on_train_begin(self, logs=None):
-        super(OptimizationProgressCallback, self).on_train_begin(logs)
+        super().on_train_begin(logs)
         # Callback initialization takes place here after OTEProgressHook.before_run() is called
         train_percentage = 100 - self.loading_stage_progress_percentage - self.initialization_stage_progress_percentage
         loading_stage_steps = self.total_steps * self.loading_stage_progress_percentage / train_percentage
