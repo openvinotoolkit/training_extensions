@@ -17,7 +17,6 @@ import sys
 
 import numpy as np
 from mmcv.utils import get_logger
-from mpa_tasks.utils.config_utils import read_label_schema, read_binary
 from detection_tasks.apis.detection.ote_utils import get_task_class
 from ote_sdk.configuration.helper import create
 from ote_sdk.entities.datasets import DatasetEntity
@@ -30,11 +29,9 @@ from ote_sdk.entities.optimization_parameters import OptimizationParameters
 from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.subset import Subset
 from ote_sdk.entities.task_environment import TaskEnvironment
-from ote_sdk.serialization.label_mapper import (LabelSchemaMapper,
-                                                label_schema_to_bytes)
-from ote_sdk.usecases.adapters.model_adapter import ModelAdapter
 from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType
-from ote_sdk.usecases.tasks.interfaces.optimization_interface import OptimizationType
+from ote_sdk.usecases.tasks.interfaces.optimization_interface import \
+    OptimizationType
 
 logger = get_logger(name='sample')
 
@@ -49,7 +46,7 @@ def parse_args():
 colors = dict(red=(255, 0, 0), green=(0, 255, 0))
 
 
-def load_test_dataset():
+def load_test_dataset(data_type):
     from ote_sdk.entities.annotation import (Annotation, AnnotationSceneEntity,
                                              AnnotationSceneKind)
     from ote_sdk.entities.dataset_item import DatasetItemEntity
@@ -140,13 +137,15 @@ def load_test_dataset():
     ]
     old = old_train + old_val
     new = new_train + new_val
-    return DatasetEntity(old + new), labels
+    if data_type == 'old':
+        return DatasetEntity(old), [labels[0]]
+    else:
+        return DatasetEntity(old + new), labels
 
 
 def main(args):
-    # Need pretrained weight: 'mpa/apis/samples/ckpt/det_cls_il'
-    logger.info('Initialize OLD + NEW dataset')
-    dataset, labels_list = load_test_dataset()
+    logger.info('Train initial model with OLD dataset')
+    dataset, labels_list = load_test_dataset('old')
     labels_schema = LabelSchemaEntity.from_labels(labels_list)
 
     logger.info(f'Train dataset: {len(dataset.get_subset(Subset.TRAINING))} items')
@@ -160,7 +159,7 @@ def main(args):
     params.learning_parameters.num_iters = 10
     params.learning_parameters.learning_rate = 0.01
     params.learning_parameters.learning_rate_warmup_iters = 1
-    params.learning_parameters.batch_size = 2
+    params.learning_parameters.batch_size = 4
 
     logger.info('Setup environment')
     environment = TaskEnvironment(
@@ -170,17 +169,41 @@ def main(args):
         model_template=model_template
     )
 
-    load_weights = 'mpa_tasks/samples/ckpt/det_cls_il/weights.pth'
-    logger.info(f'Load weights: {load_weights}')
-    model_label_schema = LabelSchemaMapper().backward(read_label_schema(load_weights, name=False))
-    model_adapters = {
-        "weights.pth": ModelAdapter(read_binary(load_weights)),
-        "label_schema.json": ModelAdapter(label_schema_to_bytes(model_label_schema))
-    }
-    environment.model = ModelEntity(
-        train_dataset=dataset,
-        configuration=environment.get_model_configuration(),
-        model_adapters=model_adapters,
+    logger.info('Create base Task')
+    task_impl_path = model_template.entrypoints.base
+    task_cls = get_task_class(task_impl_path)
+    task = task_cls(task_environment=environment)
+
+    logger.info('Train model')
+    initial_model = ModelEntity(
+        dataset,
+        environment.get_model_configuration(),
+    )
+    task.train(dataset, initial_model)
+
+    logger.info('Class-incremental learning with OLD + NEW dataset')
+    dataset, labels_list = load_test_dataset('new')
+    labels_schema = LabelSchemaEntity.from_labels(labels_list)
+
+    logger.info(f'Train dataset: {len(dataset.get_subset(Subset.TRAINING))} items')
+    logger.info(f'Validation dataset: {len(dataset.get_subset(Subset.VALIDATION))} items')
+
+    logger.info('Load model template')
+    model_template = parse_model_template(args.template_file_path)
+
+    logger.info('Set hyperparameters')
+    params = create(model_template.hyper_parameters.data)
+    params.learning_parameters.num_iters = 10
+    params.learning_parameters.learning_rate = 0.01
+    params.learning_parameters.learning_rate_warmup_iters = 1
+    params.learning_parameters.batch_size = 4
+
+    logger.info('Setup environment')
+    environment = TaskEnvironment(
+        model=initial_model,
+        hyper_parameters=params,
+        label_schema=labels_schema,
+        model_template=model_template
     )
 
     logger.info('Create base Task')
