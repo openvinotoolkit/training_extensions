@@ -297,8 +297,7 @@ class API(unittest.TestCase):
         print('Task initialized, model optimization starts.')
         training_progress_curve = []
 
-        def progress_callback(progress: int):
-            assert isinstance(progress, int)
+        def progress_callback(progress: float, score: Optional[float] = None):
             training_progress_curve.append(progress)
 
         optimization_parameters = OptimizationParameters
