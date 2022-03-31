@@ -185,7 +185,7 @@ class AnomalyNNCFTask(AnomalyInferenceTask, IOptimizationTask):
         self.trainer.fit(model=self.model, datamodule=datamodule)
         self.compression_ctrl = nncf_callback.nncf_ctrl
         output_model.model_format = ModelFormat.BASE_FRAMEWORK
-        output_model.optimization_type = ModelOptimizationType.NN
+        output_model.optimization_type = ModelOptimizationType.NNCF
         self.save_model(output_model)
 
         logger.info("Training completed.")

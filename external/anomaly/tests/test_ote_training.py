@@ -410,6 +410,6 @@ class TestOTEReallifeAnomalyClassification(OTETrainingTestInterface):
              test_case_fx, data_collector_fx,
              cur_test_expected_metrics_callback_fx):
         if "nncf_graph" in test_parameters["test_stage"]:
-            pytest.xfail("The models has no a reference NNCF graph yet")
+            pytest.xfail("The models has no a reference NNCF graph yet, please see CVS-83365")
         test_case_fx.run_stage(test_parameters['test_stage'], data_collector_fx,
                                cur_test_expected_metrics_callback_fx)
