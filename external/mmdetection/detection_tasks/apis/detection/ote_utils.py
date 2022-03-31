@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+import cv2
 import time
 import colorsys
 import importlib
@@ -19,11 +20,15 @@ import random
 from typing import Callable, Union
 
 import numpy as np
+from torch import Tensor
 import yaml
 from ote_sdk.entities.color import Color
 from ote_sdk.entities.id import ID
 from ote_sdk.entities.label import Domain, LabelEntity
 from ote_sdk.entities.label_schema import LabelGroup, LabelGroupType, LabelSchemaEntity
+from ote_sdk.entities.result_media import ResultMediaEntity
+from ote_sdk.entities.shapes.polygon import Polygon
+from ote_sdk.entities.tensor import TensorEntity
 from ote_sdk.entities.train_parameters import UpdateProgressCallback
 from ote_sdk.usecases.reporting.time_monitor_callback import TimeMonitorCallback
 
@@ -94,6 +99,54 @@ def get_task_class(path):
     module_name, class_name = path.rsplit('.', 1)
     module = importlib.import_module(module_name)
     return getattr(module, class_name)
+
+
+def get_actmap(features, output_res):
+    am = cv2.resize(features, output_res, interpolation=cv2.INTER_NEAREST)
+    denominator = (np.max(am) - np.min(am) + 1e-12) / 255
+    am = (am - np.min(am)) / denominator
+    am = np.uint8(np.floor(am))
+    return am
+
+
+def draw_instance_segm_saliency_map(predictions, dataset_item, labels):
+    """
+    Converts predictions to masks and accumulate them to saliency map.
+    """
+    width, height = dataset_item.width, dataset_item.height
+    aggregated_mask = np.zeros([len(labels), width, height], dtype=np.uint8)
+    for prediction in predictions:
+        if not isinstance(prediction.shape, Polygon):
+            continue
+        contours = np.array(
+            [[(int(p.x * width), int(p.y * height)) for p in prediction.shape.points]]
+        )
+        assert len(prediction.get_labels()) == 1
+        label = prediction.get_labels()[0]
+        color = int(label.probability * 255)
+        cv2.drawContours(aggregated_mask[int(label.id)], contours, -1, color, -1)
+    return aggregated_mask
+
+
+def add_feature_info_to_data_item(feature_info, dataset_item, model, labels):
+    """ Assign feature (representation) vector and saliency map to predictions dataset_item. """
+    width, height = dataset_item.width, dataset_item.height
+    feature_vector, feature_map = feature_info
+    active_score = TensorEntity(name="representation_vector", numpy=feature_vector.reshape(-1))
+    dataset_item.append_metadata_item(active_score, model=model)
+
+    if isinstance(feature_map, Tensor):
+        # TODO: rewrite feature map preprocessing for object detection task, accumulating features through
+        #  several outputs, not just taking the largest feature map
+        feature_map = feature_map[0].detach().cpu().numpy()
+    for label_idx, label in enumerate(labels):
+        cur_label_feat_map = feature_map[label_idx, :, :]
+        act_map = get_actmap(cur_label_feat_map, (width, height))
+        saliency_media = ResultMediaEntity(name="saliency_map", type="Saliency map",
+                                           annotation_scene=dataset_item.annotation_scene,
+                                           label=label, numpy=act_map, roi=dataset_item.roi)
+        dataset_item.append_metadata_item(saliency_media, model=model)
+    return dataset_item
 
 
 class TrainingProgressCallback(TimeMonitorCallback):
