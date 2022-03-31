@@ -19,7 +19,7 @@ def get_requirements():
     return requirements
 
 setup(
-    name='tts_demo',
+    name='demo_package',
     version="0.0.0",
     description='Text to speech demo',
     author='Intel Corporation',

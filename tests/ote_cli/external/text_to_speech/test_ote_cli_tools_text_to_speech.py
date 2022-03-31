@@ -79,4 +79,4 @@ class TestToolsTextToSpeech:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_ote_demo_openvino(self, template):
-        ote_demo_openvino_testing(template, root, ote_dir, args)
+        ote_demo_openvino_testing(template, root, ote_dir, args, load_from_dir=True)

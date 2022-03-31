@@ -295,6 +295,7 @@ class OpenVINOTTSTask(IInferenceTask, IEvaluationTask):
         name_of_package = "demo_package"
 
         with tempfile.TemporaryDirectory() as tempdir:
+            copyfile(os.path.join(cur_dir, "deploy", "README.md"), os.path.join(tempdir, "README.md"))
             copyfile(os.path.join(cur_dir, "deploy", "setup.py"), os.path.join(tempdir, "setup.py"))
             copyfile(os.path.join(cur_dir, "deploy", "requirements.txt"), os.path.join(tempdir, "requirements.txt"))
             copytree(os.path.join(cur_dir, "text_preprocessing"), os.path.join(tempdir, "text_preprocessing"))
