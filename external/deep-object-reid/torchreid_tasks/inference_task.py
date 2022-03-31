@@ -164,6 +164,8 @@ class OTEClassificationInferenceTask(IInferenceTask, IEvaluationTask, IExportTas
         merge_from_files_with_base(self._cfg, config_file_path)
         self._cfg.use_gpu = torch.cuda.device_count() > 0
         self.num_devices = 1 if self._cfg.use_gpu else 0
+        if not self._cfg.use_gpu:
+            self._cfg.train.mix_precision = False
 
         self._cfg.custom_datasets.types = ['external_classification_wrapper', 'external_classification_wrapper']
         self._cfg.custom_datasets.roots = ['']*2
