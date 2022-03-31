@@ -155,10 +155,6 @@ def check_nested_classes_parameters(
                 raise TypeError(
                     "length of nested expected types for Sequence should be equal to 1"
                 )
-        if nested_elements_class == (typing.Any,):
-            if len(parameter) == 0:
-                raise ValueError(f"length of parameter '{parameter_name}' should be more than 0, actual: {parameter}")
-            return
         check_nested_elements_type(
             iterable=parameter,
             parameter_name=parameter_name,
@@ -169,7 +165,7 @@ def check_nested_classes_parameters(
 def check_parameter_type(parameter, parameter_name, expected_type):
     """Function extracts nested expected types and raises ValueError exception if parameter has unexpected type"""
     # pylint: disable=W0212
-    if expected_type in [typing.Any, inspect._empty]:  # type: ignore
+    if expected_type in [typing.Any, (typing.Any,), inspect._empty]:  # type: ignore
         return
     if not isinstance(expected_type, typing._GenericAlias):  # type: ignore
         raise_value_error_if_parameter_has_unexpected_type(
