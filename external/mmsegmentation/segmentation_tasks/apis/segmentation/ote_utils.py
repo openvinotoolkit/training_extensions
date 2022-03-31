@@ -109,7 +109,7 @@ class OptimizationProgressCallback(TrainingProgressCallback):
         self.update_progress_callback(self.get_progress())
 
     def on_train_end(self, logs=None):
-        super(OptimizationProgressCallback, self).on_train_end(logs)
+        super().on_train_end(logs)
         self.update_progress_callback(self.get_progress(), score=logs)
 
     def on_initialization_end(self):
