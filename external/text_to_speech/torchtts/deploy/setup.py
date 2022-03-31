@@ -1,30 +1,22 @@
-import os.path as osp
 from setuptools import setup, Extension, find_packages
 
 import numpy as np
 from Cython.Build import cythonize
 
-repo_root = osp.dirname(osp.realpath(__file__))
 
 def readme():
     with open('README.md') as f:
         content = f.read()
     return content
 
-def get_requirements(filename='requirements.txt'):
-    here = osp.dirname(osp.realpath(__file__))
-    requires = []
-    links = []
-    with open(osp.join(here, filename), 'r') as f:
-        for line in f.readlines():
-            line = line.replace('\n', '')
-            if '-f http' in line:
-                links.append(line)
-            else:
-                requires.append(line)
-    return requires, links
-
-packages, links = get_requirements()
+def get_requirements():
+    requirements = []
+    with open('requirements.txt', 'rt') as req_file:
+        for line in req_file.readlines():
+            line = line.rstrip()
+            if line != '':
+                requirements.append(line)
+    return requirements
 
 setup(
     name='tts_demo',
@@ -33,8 +25,7 @@ setup(
     author='Intel Corporation',
     license='Apache-2.0',
     long_description=readme(),
-    dependency_links=links,
     packages=find_packages(),
-    install_requires=packages,
+    install_requires=get_requirements(),
     keywords=['Text To Speech', 'Deep Learning', 'NLP'],
 )
