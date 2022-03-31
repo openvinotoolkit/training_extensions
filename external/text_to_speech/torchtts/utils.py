@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 import os
-from subprocess import run, DEVNULL, CalledProcessError
+from subprocess import run, DEVNULL, CalledProcessError  # nosec - disable B404:import-subprocess check
 
 import json
 import torch
@@ -76,7 +76,7 @@ def export_ir(onnx_model_path, input_shape=None,
     def get_mo_cmd():
         for mo_cmd in ('mo', 'mo.py'):
             try:
-                run(f'{mo_cmd} -h', stdout=DEVNULL, stderr=DEVNULL, shell=True, check=True)
+                run([mo_cmd, '-h'], stdout=DEVNULL, stderr=DEVNULL, shell=False, check=True)
                 return mo_cmd
             except CalledProcessError:
                 pass
@@ -84,13 +84,14 @@ def export_ir(onnx_model_path, input_shape=None,
 
     mo_cmd = get_mo_cmd()
 
-    command_line = f'{mo_cmd} --input_model="{onnx_model_path}" ' \
-                    f'--output_dir="{optimized_model_dir}" ' \
-                    f'--data_type {data_type} '
+    command_line = [mo_cmd, f'--input_model={onnx_model_path}',
+                    f'--output_dir={optimized_model_dir}',
+                    '--data_type', f'{data_type}']
     if input_shape:
-        command_line += f' --input_shape "{input_shape}" '
+        command_line.extend(['--input_shape', f"{input_shape}"])
 
-    run(command_line, shell=True, check=True)
+    # run() will raise a ValueError in case of an embedded NUL character
+    run(command_line, shell=False, check=True)
 
 
 def find_file(dir, filename):

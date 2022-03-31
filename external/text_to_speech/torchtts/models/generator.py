@@ -270,7 +270,7 @@ class GANTacotron(nn.Module):
         alphabet = string.ascii_lowercase
         if text is None or target_text_len > len(text):
             sz = len(alphabet) - 1
-            text = "".join([alphabet[random.randint(0, sz)] for _ in range(target_text_len)])
+            text = "".join([alphabet[random.randint(0, sz)] for _ in range(target_text_len)])  # nosec - disable B311:random check
 
         device = next(self.parameters()).device
 

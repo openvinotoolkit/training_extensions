@@ -176,6 +176,6 @@ def random_fill(lst, p=0.1):
   trials = min(max(1, int(len(lst) * p)), 30)
 
   for _ in range(trials):
-    idx = random.randint(0, len(lst) - 1)
+    idx = random.randint(0, len(lst) - 1)  # nosec - disable B311:random check
     lst[idx] = item
   return lst

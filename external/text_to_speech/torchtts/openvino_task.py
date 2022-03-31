@@ -5,7 +5,7 @@ import logging
 import os
 import tempfile
 
-import subprocess
+import subprocess  # nosec - disable B404:import-subprocess check
 import sys
 import json
 
@@ -315,6 +315,7 @@ class OpenVINOTTSTask(IInferenceTask, IEvaluationTask):
                     "--all",
                 ],
                 check=True,
+                cwd=tempdir,
             )
             wheel_file_name = [f for f in os.listdir(tempdir) if f.endswith(".whl")][0]
 
