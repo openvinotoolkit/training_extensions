@@ -83,7 +83,7 @@ class Helpers:
         self.content_padding = 3
         self.top_left_box_thickness = 1
         self.content_margin = 2
-        self.label_offset_box_shape = 10
+        self.label_offset_box_shape = 0
         self.black = (0, 0, 0)
         self.white = (255, 255, 255)
         self.yellow = (255, 255, 0)
@@ -226,7 +226,6 @@ class Helpers:
 
         width = text_width + 2 * padding
         height = text_height + baseline + 2 * padding
-
         content_width = width + margin
 
         if (color[0] + color[1] + color[2]) / 3 > 200:
@@ -236,7 +235,6 @@ class Helpers:
 
         def draw_command(img: np.ndarray) -> np.ndarray:
             cursor_pos = Coordinate(int(self.cursor_pos.x), int(self.cursor_pos.y))
-
             self.draw_transparent_rectangle(
                 img,
                 int(cursor_pos.x),
@@ -382,7 +380,6 @@ class ShapeDrawer(DrawerEntity[AnnotationSceneEntity]):
                             image = drawer.draw(
                                 image, annotation.shape, labels=annotation.get_labels()
                             )
-
             if self.is_one_label:
                 image = self.top_left_drawer.draw_labels(image, entity.get_labels())
             if self.show_count:
@@ -482,7 +479,7 @@ class ShapeDrawer(DrawerEntity[AnnotationSceneEntity]):
                 image, x1, y1, x2, y2, base_color, self.alpha_shape
             )
             image = cv2.rectangle(
-                img=image, pt1=(x1, y1), pt2=(x2, y2), color=[0, 0, 0], thickness=2
+                img=image, pt1=(x1, y1), pt2=(x2, y2), color=base_color, thickness=2
             )
 
             (
@@ -498,9 +495,9 @@ class ShapeDrawer(DrawerEntity[AnnotationSceneEntity]):
             y_coord = y1 - self.label_offset_box_shape - content_height
             x_coord = x1
 
-            # put label at bottom if it is out of bounds at the top of the shape, and shift label to left if needed
+            # put label inside if it is out of bounds at the top of the shape, and shift label to left if needed
             if y_coord < self.top_margin * image.shape[0]:
-                y_coord = y2 + self.label_offset_box_shape
+                y_coord = y1 + self.label_offset_box_shape
             if x_coord + content_width > image.shape[1]:
                 x_coord = x2 - content_width
 
@@ -559,7 +556,7 @@ class ShapeDrawer(DrawerEntity[AnnotationSceneEntity]):
                 angle=0,
                 startAngle=0,
                 endAngle=360,
-                color=[0, 0, 0],
+                color=base_color,
                 lineType=cv2.LINE_AA,
             )
 
@@ -641,7 +638,7 @@ class ShapeDrawer(DrawerEntity[AnnotationSceneEntity]):
                 image=result_without_border,
                 contours=[contours],
                 contourIdx=-1,
-                color=[0, 0, 0],
+                color=base_color,
                 thickness=2,
                 lineType=cv2.LINE_AA,
             )

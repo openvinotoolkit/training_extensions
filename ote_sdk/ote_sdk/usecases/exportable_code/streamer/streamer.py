@@ -8,15 +8,34 @@ Streamer for reading input
 
 import abc
 import multiprocessing
+import os
 import queue
 import sys
 from enum import Enum
-from pathlib import Path
-from typing import Iterable, Iterator, List, NamedTuple, Optional, Tuple, Union
+from typing import Iterator, Union
 
 import cv2
 import numpy as np
-from natsort import natsorted
+
+
+class InvalidInput(Exception):
+    """
+    Exception for wrong input format
+    """
+
+    def __init__(self, message: str) -> None:
+        super().__init__(message)
+        self.message = message
+
+
+class OpenError(Exception):
+    """
+    Exception for open reader
+    """
+
+    def __init__(self, message: str) -> None:
+        super().__init__(message)
+        self.message = message
 
 
 class MediaType(Enum):
@@ -25,173 +44,15 @@ class MediaType(Enum):
     """
 
     IMAGE = 1
-    VIDEO = 2
-    CAMERA = 3
-
-
-class MediaExtensions(NamedTuple):
-    """
-    This NamedTuple represents the extensions for input
-    """
-
-    IMAGE: Tuple[str, ...]
-    VIDEO: Tuple[str, ...]
-
-
-MEDIA_EXTENSIONS = MediaExtensions(
-    IMAGE=(".jpg", ".jpeg", ".png", ".ppm", ".bmp", ".pgm", ".tif", ".tiff", ".webp"),
-    VIDEO=(".avi", ".mp4"),
-)
-
-
-def get_media_type(path: Optional[Union[str, Path]]) -> MediaType:
-    """
-    Get Media Type from the input path.
-    :param path: Path to file or directory.
-                 Could be None, which implies camera media type.
-    """
-    if isinstance(path, str):
-        path = Path(path)
-
-    media_type: MediaType
-
-    if path is None:
-        media_type = MediaType.CAMERA
-
-    elif path.is_dir():
-        if _get_filenames(path, MediaType.IMAGE):
-            media_type = MediaType.IMAGE
-
-    elif path.is_file():
-        if _is_file_with_supported_extensions(path, _get_extensions(MediaType.IMAGE)):
-            media_type = MediaType.IMAGE
-        elif _is_file_with_supported_extensions(path, _get_extensions(MediaType.VIDEO)):
-            media_type = MediaType.VIDEO
-        else:
-            raise ValueError("File extension not supported.")
-    else:
-        raise ValueError("File or folder does not exist")
-
-    return media_type
-
-
-def _get_extensions(media_type: MediaType) -> Tuple[str, ...]:
-    """
-    Get extensions of the input media type.
-    :param media_type: Type of the media. Either image or video.
-    :return: Supported extensions for the corresponding media type.
-
-    :example:
-
-        >>> _get_extensions(media_type=MediaType.IMAGE)
-        ('.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.tif', '.tiff', '.webp')
-        >>> _get_extensions(media_type=MediaType.VIDEO)
-        ('.avi', '.mp4')
-
-    """
-    return getattr(MEDIA_EXTENSIONS, media_type.name)
-
-
-def _is_file_with_supported_extensions(path: Path, extensions: Tuple[str, ...]) -> bool:
-    """
-    Check if the file is supported for the media type
-    :param path: File path to check
-    :param extensions: Supported extensions for the media type
-
-    :example:
-
-        >>> from pathlib import Path
-        >>> path = Path("./demo.mp4")
-        >>> extensions = _get_extensions(media_type=MediaType.VIDEO)
-        >>> _is_file_with_supported_extensions(path, extensions)
-        True
-
-        >>> path = Path("demo.jpg")
-        >>> extensions = _get_extensions(media_type=MediaType.IMAGE)
-        >>> _is_file_with_supported_extensions(path, extensions)
-        True
-
-        >>> path = Path("demo.mp3")
-        >>> extensions = _get_extensions(media_type=MediaType.IMAGE)
-        >>> _is_file_with_supported_extensions(path, extensions)
-        False
-
-    """
-    return path.suffix.lower() in extensions
-
-
-def _get_filenames(path: Union[str, Path], media_type: MediaType) -> List[str]:
-    """
-    Get filenames from a directory or a path to a file.
-    :param path: Path to the file or to the location that contains files.
-    :param media_type: Type of the media (image or video)
-
-    :example:
-        >>> path = "../images"
-        >>> _get_filenames(path, media_type=MediaType.IMAGE)
-        ['images/4.jpeg', 'images/1.jpeg', 'images/5.jpeg', 'images/3.jpeg', 'images/2.jpeg']
-
-    """
-    extensions = _get_extensions(media_type)
-    filenames: List[str] = []
-
-    if media_type == MediaType.CAMERA:
-        raise ValueError(
-            "Cannot get filenames for camera. Only image and video files are supported."
-        )
-
-    if isinstance(path, str):
-        path = Path(path)
-
-    if path.is_file():
-        if _is_file_with_supported_extensions(path, extensions):
-            filenames = [path.as_posix()]
-        else:
-            raise ValueError("Extension not supported for media type")
-
-    if path.is_dir():
-        for filename in path.rglob("*"):
-            if _is_file_with_supported_extensions(filename, extensions):
-                filenames.append(filename.as_posix())
-
-    filenames = natsorted(filenames)  # type: ignore[assignment]
-
-    if len(filenames) == 0:
-        raise FileNotFoundError(f"No {media_type.name} file found in {path}!")
-
-    return filenames
-
-
-def _read_video_stream(stream: cv2.VideoCapture) -> Iterator[np.ndarray]:
-    """
-    Read video and yield the frame.
-    :param stream: Video stream captured via OpenCV's VideoCapture
-    :return: Individual frame
-    """
-    while True:
-        frame_available, frame = stream.read()
-        if not frame_available:
-            break
-        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        yield frame
-
-    stream.release()
+    DIR = 2
+    VIDEO = 3
+    CAMERA = 4
 
 
 class BaseStreamer(metaclass=abc.ABCMeta):
     """
     Base Streamer interface to implement Image, Video and Camera streamers.
     """
-
-    @abc.abstractmethod
-    def get_stream(self, stream_input):
-        """
-        Get the streamer object, depending on the media type.
-        :param stream_input: Path to the stream or
-                             camera device index  in case to capture from camera.
-        :return: Streamer object.
-        """
-        raise NotImplementedError
 
     @abc.abstractmethod
     def __iter__(self) -> Iterator[np.ndarray]:
@@ -201,8 +62,15 @@ class BaseStreamer(metaclass=abc.ABCMeta):
         """
         raise NotImplementedError
 
+    @abc.abstractmethod
+    def get_type(self) -> MediaType:
+        """
+        Get type of streamer
+        """
+        raise NotImplementedError
 
-def _process_run(streamer: BaseStreamer, buffer: multiprocessing.Queue):
+
+def _process_run(streamer: BaseStreamer, buffer: multiprocessing.Queue) -> None:
     """
     Private function that is run by the thread.
 
@@ -231,17 +99,14 @@ class ThreadedStreamer(BaseStreamer):
         ...    pass
     """
 
-    def __init__(self, streamer: BaseStreamer, buffer_size: int = 2):
+    def __init__(self, streamer: BaseStreamer, buffer_size: int = 2) -> None:
         self.buffer_size = buffer_size
         self.streamer = streamer
-
-    def get_stream(self, _=None) -> BaseStreamer:
-        return self.streamer
 
     def __iter__(self) -> Iterator[np.ndarray]:
         buffer: multiprocessing.Queue = multiprocessing.Queue(maxsize=self.buffer_size)
         process = multiprocessing.Process(
-            target=_process_run, args=(self.get_stream(), buffer)
+            target=_process_run, args=(self.streamer, buffer)
         )
         # Make thread a daemon so that it will exit when the main program exits as well
         process.daemon = True
@@ -262,11 +127,17 @@ class ThreadedStreamer(BaseStreamer):
             if sys.version_info >= (3, 7) and process.exitcode is None:
                 process.kill()
 
+    def get_type(self) -> MediaType:
+        """
+        Get type of internal streamer
+        """
+        return self.streamer.get_type()
+
 
 class VideoStreamer(BaseStreamer):
     """
     Video Streamer
-    :param path: Path to the video file or directory.
+    :param path: Path to the video file.
 
     :example:
 
@@ -275,17 +146,27 @@ class VideoStreamer(BaseStreamer):
         ...    pass
     """
 
-    def __init__(self, path: str) -> None:
+    def __init__(self, input_path: str, loop: bool = False) -> None:
         self.media_type = MediaType.VIDEO
-        self.filenames = _get_filenames(path, media_type=MediaType.VIDEO)
-
-    def get_stream(self, stream_input: str) -> cv2.VideoCapture:
-        return cv2.VideoCapture(stream_input)
+        self.loop = loop
+        self.cap = cv2.VideoCapture()
+        status = self.cap.open(input_path)
+        if not status:
+            raise InvalidInput(f"Can't open the video from {input_path}")
 
     def __iter__(self) -> Iterator[np.ndarray]:
-        for filename in self.filenames:
-            stream = self.get_stream(stream_input=filename)
-            yield from _read_video_stream(stream)
+        while True:
+            status, image = self.cap.read()
+            if status:
+                yield cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+            else:
+                if self.loop:
+                    self.cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
+                else:
+                    break
+
+    def get_type(self) -> MediaType:
+        return MediaType.VIDEO
 
 
 class CameraStreamer(BaseStreamer):
@@ -302,22 +183,36 @@ class CameraStreamer(BaseStreamer):
         ...         break
     """
 
-    def __init__(self, camera_device: Optional[int] = None):
+    def __init__(self, camera_device: int = 0) -> None:
         self.media_type = MediaType.CAMERA
-        self.camera_device = 0 if camera_device is None else camera_device
-
-    def get_stream(self, stream_input: int):
-        return cv2.VideoCapture(stream_input)
+        try:
+            self.stream = cv2.VideoCapture(int(camera_device))
+        except ValueError as error:
+            raise InvalidInput(f"Can't find the camera {camera_device}") from error
 
     def __iter__(self) -> Iterator[np.ndarray]:
-        stream = self.get_stream(stream_input=self.camera_device)
-        yield from _read_video_stream(stream)
+        """
+        Read video and yield the frame.
+        :param stream: Video stream captured via OpenCV's VideoCapture
+        :return: Individual frame
+        """
+        while True:
+            frame_available, frame = self.stream.read()
+            if not frame_available:
+                break
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            yield frame
+
+        self.stream.release()
+
+    def get_type(self) -> MediaType:
+        return MediaType.CAMERA
 
 
 class ImageStreamer(BaseStreamer):
     """
-    Stream from image file or directory.
-    :param path: Path to an image or directory.
+    Stream from image file.
+    :param path: Path to an image.
 
     :example:
 
@@ -327,56 +222,103 @@ class ImageStreamer(BaseStreamer):
         ...     cv2.waitKey(0)
     """
 
-    def __init__(self, path: str) -> None:
+    def __init__(self, input_path: str, loop: bool = False) -> None:
+        self.loop = loop
         self.media_type = MediaType.IMAGE
-        self.filenames = _get_filenames(path=path, media_type=MediaType.IMAGE)
-
-    @staticmethod
-    def get_stream(stream_input: str) -> Iterable[np.ndarray]:
-        image = cv2.imread(stream_input)
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        yield image
+        if not os.path.isfile(input_path):
+            raise InvalidInput(f"Can't find the image by {input_path}")
+        self.image = cv2.imread(input_path, cv2.IMREAD_COLOR)
+        if self.image is None:
+            raise OpenError(f"Can't open the image from {input_path}")
+        self.image = cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
 
     def __iter__(self) -> Iterator[np.ndarray]:
-        for filename in self.filenames:
-            yield from self.get_stream(stream_input=filename)
+        if not self.loop:
+            yield self.image
+        else:
+            while True:
+                yield self.image
+
+    def get_type(self) -> MediaType:
+        return MediaType.IMAGE
+
+
+class DirStreamer(BaseStreamer):
+    """
+    Stream from directory of images.
+    :param path: Path to directory.
+
+    :example:
+
+        >>> streamer = DirStreamer(path="../images")
+        ... for frame in streamer:
+        ...     cv2.imshow("Window", frame)
+        ...     cv2.waitKey(0)
+    """
+
+    def __init__(self, input_path: str, loop: bool = False) -> None:
+        self.loop = loop
+        self.media_type = MediaType.DIR
+        self.dir = input_path
+        if not os.path.isdir(self.dir):
+            raise InvalidInput(f"Can't find the dir by {input_path}")
+        self.names = sorted(os.listdir(self.dir))
+        if not self.names:
+            raise OpenError(f"The dir {input_path} is empty")
+        self.file_id = 0
+        for name in self.names:
+            filename = os.path.join(self.dir, name)
+            image = cv2.imread(str(filename), cv2.IMREAD_COLOR)
+            if image is not None:
+                return
+        raise OpenError(f"Can't read the first image from {input_path}")
+
+    def __iter__(self) -> Iterator[np.ndarray]:
+        while self.file_id < len(self.names):
+            filename = os.path.join(self.dir, self.names[self.file_id])
+            image = cv2.imread(str(filename), cv2.IMREAD_COLOR)
+            if self.file_id < len(self.names) - 1:
+                self.file_id = self.file_id + 1
+            else:
+                self.file_id = self.file_id + 1 if not self.loop else 0
+            if image is not None:
+                yield cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
+    def get_type(self) -> MediaType:
+        return MediaType.DIR
 
 
 def get_streamer(
-    path: Optional[str] = None,
-    camera_device: Optional[int] = None,
+    input_stream: Union[int, str] = 0,
+    loop: bool = False,
     threaded: bool = False,
 ) -> BaseStreamer:
     """
     Get streamer object based on the file path or camera device index provided.
-    :param path: Path to file or directory.
-    :param camera_device: Camera device index.
+    :param input_stream: Path to file or directory or index for camera.
+    :param loop: Enable reading the input in a loop.
     :param threaded: Threaded streaming option
     """
-    if path is not None and camera_device is not None:
-        raise ValueError(
-            "Both path and camera device is provided. Choose either camera or path to a image/video file."
-        )
-
-    media_type = get_media_type(path)
-
+    # errors: Dict = {InvalidInput: [], OpenError: []}
+    errors = []
     streamer: BaseStreamer
+    for reader in (ImageStreamer, DirStreamer, VideoStreamer):
+        try:
+            streamer = reader(input_stream, loop)  # type: ignore
+            if threaded:
+                streamer = ThreadedStreamer(streamer)
+            return streamer
+        except (InvalidInput, OpenError) as error:
+            errors.append(error)
+    try:
+        streamer = CameraStreamer(input_stream)  # type: ignore
+        if threaded:
+            streamer = ThreadedStreamer(streamer)
+        return streamer
+    except (InvalidInput, OpenError) as error:
+        errors.append(error)
 
-    if path is not None and media_type == MediaType.IMAGE:
-        streamer = ImageStreamer(path)
+    if errors:
+        raise Exception(errors)
 
-    elif path is not None and media_type == MediaType.VIDEO:
-        streamer = VideoStreamer(path)
-
-    elif media_type == MediaType.CAMERA:
-        if camera_device is None:
-            camera_device = 0
-        streamer = CameraStreamer(camera_device)
-
-    else:
-        raise ValueError("Unknown media type")
-
-    if threaded:
-        streamer = ThreadedStreamer(streamer)
-
-    return streamer
+    sys.exit(1)
