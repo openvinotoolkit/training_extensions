@@ -73,6 +73,7 @@ if [[ -z ${CUDA_VERSION} ]]; then
   echo "CUDA was not found, installing dependencies in CPU-only mode. If you want to use CUDA, set CUDA_HOME or CUDA_VERSION beforehand."
   TORCH_VERSION_POSTFIX=+cpu
 else
+  TORCH_CUDA_VERSION=
   TORCH_VERSION_POSTFIX=
   if echo -n "${CUDA_VERSION}" |egrep -q "^10\.([2-9]|[1-9][0-9]+)($|\.)" ; then
     TORCH_CUDA_VERSION=10.2
@@ -82,7 +83,7 @@ else
     TORCH_CUDA_VERSION=11.1
     TORCH_VERSION_POSTFIX=+cu111
   fi
-  if [[ -z "${TORCH_VERSION_POSTFIX}" ]] ; then
+  if [[ -z "${TORCH_CUDA_VERSION}" ]] ; then
       echo "Need CUDA 10.* (at least 10.2) or 11.* (at least 11.1) for PyTorch 1.8.2, have CUDA version ${CUDA_VERSION}"
       exit 1
   fi
@@ -101,7 +102,7 @@ echo torch==${TORCH_VERSION}${TORCH_VERSION_POSTFIX} >> ${CONSTRAINTS_FILE}
 cat requirements.txt | xargs -n 1 -L 1 pip install -c ${CONSTRAINTS_FILE} || exit 1
 cat requirements-deploy.txt | xargs -n 1 -L 1 pip install -c ${CONSTRAINTS_FILE} || exit 1
 
-cd monotonic_align && python setup.py build_ext --inplace && cd .. || exit 1
+cd monotonic_align && mkdir monotonic_align && python setup.py build_ext --inplace && cd .. || exit 1
 
 pip install -e . || exit 1
 
