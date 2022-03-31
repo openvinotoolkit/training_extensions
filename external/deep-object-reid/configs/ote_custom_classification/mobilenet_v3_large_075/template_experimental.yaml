@@ -41,7 +41,7 @@ hyper_parameters:
       enable_pruning:
         default_value: false
       pruning_supported:
-        default_value: false
+        default_value: true
       maximal_accuracy_degradation:
         default_value: 1.0
 
