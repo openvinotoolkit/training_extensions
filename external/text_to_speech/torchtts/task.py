@@ -238,19 +238,19 @@ class OTETextToSpeechTask(ITrainingTask, IInferenceTask, IEvaluationTask, IExpor
 
                 xml_files = [os.path.join(optimized_model_dir, f) for f in os.listdir(optimized_model_dir) if f.endswith('.xml')]
                 failed = True
-                count = 0
+                is_first = True
                 for xml_file in xml_files:
-                    bin_file = xml_file.replace('.xml', '.bin')
+                    bin_file = xml_file.rsplit('.', 1)[0] + '.bin'
                     if not os.path.exists(bin_file):
                         continue
                     failed = False
 
-                    if count == 0:
+                    if is_first:
                         with open(os.path.join(optimized_model_dir, bin_file), "rb") as f:
                             output_model.set_data("openvino.bin", f.read())
                         with open(os.path.join(optimized_model_dir, xml_file), "rb") as f:
                             output_model.set_data("openvino.xml", f.read())
-                    count += 1
+                        is_first = False
 
                     with open(os.path.join(optimized_model_dir, bin_file), "rb") as f:
                         output_model.set_data(os.path.basename(bin_file), f.read())
@@ -275,7 +275,7 @@ class OTETextToSpeechTask(ITrainingTask, IInferenceTask, IEvaluationTask, IExpor
         path = '/proc/self/cgroup'
         is_in_docker = False
         if os.path.isfile(path):
-            with open(path) as f:
+            with open(path, 'r') as f:
                 is_in_docker = is_in_docker or any('docker' in line for line in f)
         is_in_docker = is_in_docker or os.path.exists('/.dockerenv')
         return is_in_docker

@@ -99,7 +99,7 @@ class AcousticGANIE:
             ie = Core()
         self.ie = ie
 
-        self.cmudict = cmudict.CMUDict(osp.join(osp.dirname(osp.realpath(__file__)), 'text_preprocessing/cmu_dictionary'))
+        self.cmudict = cmudict.CMUDict(osp.join(osp.dirname(osp.realpath(__file__)), 'text_preprocessing', 'cmu_dictionary'))
         self.encoder = Encoder(model_encoder, ie, device)
         self.decoder = Decoder(model_decoder, ie, device)
 
@@ -201,7 +201,7 @@ def main(args):
 if __name__ == "__main__":
     parser = ArgumentParser(add_help=False)
     parser.add_argument('-h', '--help', action='help', default=SUPPRESS, help='Show this help message and exit.')
-    parser.add_argument('-m', '--model', help='Optional. Path to an .xml file with a trained model.', default=None)
+    parser.add_argument('-m', '--model', help='Required. Path to an .xml file with a trained model.', required=True)
     parser.add_argument('-i', '--input', help="Input text", default="Hello, my name is demo script. "
                                                                     "I am ready for converting to audio.")
     parser.add_argument('-d', '--device', default='CPU',

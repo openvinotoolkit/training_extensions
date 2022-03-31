@@ -103,7 +103,7 @@ def main():
 
     cmudict_loader = None
     if not (getattr(cfg.data, "cmudict_path", None)) is dict:
-        cmudict_loader = cmudict.CMUDict('../' + cfg.data.cmudict_path)
+        cmudict_loader = cmudict.CMUDict(os.path.join('..', cfg.data.cmudict_path))
 
     if args.onnx_dir is not None:
         if not os.path.exists(args.onnx_dir):
