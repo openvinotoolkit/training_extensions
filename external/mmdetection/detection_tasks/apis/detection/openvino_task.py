@@ -63,6 +63,7 @@ from zipfile import ZipFile
 from mmdet.utils.logger import get_root_logger
 from .configuration import OTEDetectionConfig
 from .ote_utils import add_feature_info_to_data_item, draw_instance_segm_saliency_map
+from .model_wrappers import OTEMaskRCNNModel
 
 logger = get_root_logger()
 
@@ -152,7 +153,7 @@ class OpenVINOMaskInferencer(BaseInferencerWithConverter):
               'header', 'description', 'type', 'visible_in_ui'])}
 
         model = Model.create_model(
-          'maskrcnn',
+          'ote_maskrcnn',
           model_adapter,
           configuration,
           preload=True)
@@ -186,7 +187,7 @@ class OpenVINORotatedRectInferencer(BaseInferencerWithConverter):
               'header', 'description', 'type', 'visible_in_ui'])}
 
         model = Model.create_model(
-          'maskrcnn',
+          'ote_maskrcnn',
           model_adapter,
           configuration,
           preload=True)

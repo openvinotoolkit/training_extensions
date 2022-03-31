@@ -12,4 +12,8 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-__all__ = []
+from .instance_segmentation import OTEMaskRCNNModel
+
+__all__ = [
+    'OTEMaskRCNNModel'
+]
