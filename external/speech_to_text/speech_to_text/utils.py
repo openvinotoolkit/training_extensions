@@ -1,6 +1,10 @@
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
+# This file contains code snippets from torchvision v0.9.2 https://github.com/pytorch/vision/blob/v0.9.2/references/detection/utils.py
+# Copyright (c) Soumith Chintala 2016
+# SPDX-License-Identifier: BSD-3-Clause
+#
 import pickle
 import operator
 from functools import reduce
@@ -122,6 +126,7 @@ def export_ir(onnx_model_path, optimized_model_dir='./ir_model', input_shape=Non
 ### Multi-GPU reduction
 ###################################
 
+# Borrowed from torchvision v0.9.2
 def is_dist_avail_and_initialized():
     if not dist.is_available():
         return False
@@ -130,12 +135,14 @@ def is_dist_avail_and_initialized():
     return True
 
 
+# Borrowed from torchvision v0.9.2
 def get_world_size():
     if not is_dist_avail_and_initialized():
         return 1
     return dist.get_world_size()
 
 
+# Borrowed from torchvision v0.9.2
 def all_gather(data):
     """
     Run all_gather on arbitrary picklable data (not necessarily tensors)
