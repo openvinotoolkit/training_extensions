@@ -8,7 +8,7 @@
 import pickle  # nosec - disable B403:import-pickle check
 import operator
 from functools import reduce
-from subprocess import run, DEVNULL, CalledProcessError
+from subprocess import run, DEVNULL, CalledProcessError  # nosec - disable B404:import-subprocess check
 from collections import OrderedDict
 import json
 import torch
@@ -119,6 +119,7 @@ def export_ir(onnx_model_path, optimized_model_dir='./ir_model', input_shape=Non
                     '--data_type', f'{data_type}']
     if input_shape:
         command_line.extend(['--input_shape', f"{input_shape}"])
+    # run() will raise a ValueError in case of an embedded NUL character
     run(command_line, shell=False, check=True)
 
 
