@@ -50,7 +50,6 @@ from typing import Any, Dict, List, Optional
 import cv2
 import pandas as pd
 from anomalib.data.mvtec import make_mvtec_dataset
-from tqdm import tqdm
 
 
 def create_bboxes_from_mask(mask_path: str) -> List[List[float]]:
@@ -243,7 +242,8 @@ def create_mvtec_ad_annotations(mvtec_data_path: str, mvtec_annotation_path: Opt
         "zipper",
     ]
 
-    for category in tqdm(categories, desc="Creating category annotations."):
+    for category in categories:
+        print(f"Creating annotations for {category}")
         category_data_path = os.path.join(mvtec_data_path, category)
         category_annotation_path = os.path.join(mvtec_annotation_path, category)
         create_mvtec_ad_category_annotations(category_data_path, category_annotation_path)
