@@ -464,6 +464,9 @@ class TestOTEReallifeClassification(OTETrainingTestInterface):
 
         if "nncf_graph" in test_parameters["test_stage"]:
             pytest.xfail("The models has no a reference NNCF graph yet")
-
+        if "mlc_voc" in test_parameters["dataset_name"] \
+            and "MobileNet" in test_parameters["model_name"] \
+                and "nncf_evaluation" in test_parameters["test_stage"]:
+            pytest.xfail("Known issue CVS-83261")
         test_case_fx.run_stage(test_parameters['test_stage'], data_collector_fx,
                                cur_test_expected_metrics_callback_fx)
