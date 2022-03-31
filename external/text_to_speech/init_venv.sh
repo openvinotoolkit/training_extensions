@@ -99,7 +99,7 @@ echo torch==${TORCH_VERSION}${TORCH_VERSION_POSTFIX} >> ${CONSTRAINTS_FILE}
 
 # Install other requirements.
 cat requirements.txt | xargs -n 1 -L 1 pip install -c ${CONSTRAINTS_FILE} || exit 1
-cat openvino-requirements.txt | xargs -n 1 -L 1 pip install -c ${CONSTRAINTS_FILE} || exit 1
+cat requirements-deploy.txt | xargs -n 1 -L 1 pip install -c ${CONSTRAINTS_FILE} || exit 1
 
 cd monotonic_align && python setup.py build_ext --inplace && cd .. || exit 1
 
