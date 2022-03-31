@@ -19,7 +19,7 @@ import pytest
 from ote_sdk.test_suite.e2e_test_system import e2e_pytest_component
 from ote_cli.registry import Registry
 
-from common import (
+from test_ote_cli_common import (
     create_venv,
     get_some_vars,
     default_train_args_paths,
@@ -32,6 +32,7 @@ from common import (
 root = '/tmp/ote_cli/'
 ote_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
 external_path = os.path.join(ote_dir, "external")
+
 
 params_values = []
 params_ids = []
@@ -47,7 +48,7 @@ for back_end_ in ('DETECTION',
     params_ids += [back_end_ + ',' + cur_id for cur_id in cur_templates_ids]
 
 
-class TestTrainCommon:
+class TestOptimizeCommon:
     @pytest.fixture()
     @e2e_pytest_component
     @pytest.mark.parametrize("back_end, template", params_values)
@@ -57,18 +58,116 @@ class TestTrainCommon:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
-    def test_ote_train_no_template(self, back_end, template, create_venv_fx):
-        error_string = "ote train: error: the following arguments are required: template"
+    def test_ote_optimize_no_template(self, back_end, template, create_venv_fx):
+        error_string = "the following arguments are required: template"
         command_line = []
-        ret = ote_common(template, root, 'train', command_line)
+        ret = ote_common(template, root, 'optimize', command_line)
         assert ret['exit_code'] != 0, "Exit code must not be equal 0"
         assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
 
     @e2e_pytest_component
     @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
-    def test_ote_train_no_train_ann_file(self, back_end, template, create_venv_fx):
-        error_string = "ote train: error: the following arguments are required: --train-ann-files"
+    def test_ote_optimize_no_train_ann_file(self, back_end, template, create_venv_fx):
+        error_string = "the following arguments are required: --train-ann-files"
         command_line = [template.model_template_id,
+                        '--train-data-roots',
+                        f'{os.path.join(ote_dir, default_train_args_paths["--train-data-roots"])}',
+                        '--val-ann-file',
+                        f'{os.path.join(ote_dir, default_train_args_paths["--val-ann-file"])}',
+                        '--val-data-roots',
+                        f'{os.path.join(ote_dir, default_train_args_paths["--val-data-roots"])}',
+                        '--load-weights',
+                        f'./exported_{template.model_template_id}/openvino.xml',
+                        '--save-model-to',
+                        f'./trained_{template.model_template_id}']
+        ret = ote_common(template, root, 'optimize', command_line)
+        assert ret['exit_code'] != 0, "Exit code must not be equal 0"
+        assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
+    def test_ote_optimize_no_train_data_roots(self, back_end, template, create_venv_fx):
+        error_string = "the following arguments are required: --train-data-roots"
+        command_line = [template.model_template_id,
+                        '--train-ann-file',
+                        f'{os.path.join(ote_dir, default_train_args_paths["--train-ann-file"])}',
+                        '--val-ann-file',
+                        f'{os.path.join(ote_dir, default_train_args_paths["--val-ann-file"])}',
+                        '--val-data-roots',
+                        f'{os.path.join(ote_dir, default_train_args_paths["--val-data-roots"])}',
+                        '--load-weights',
+                        f'./exported_{template.model_template_id}/openvino.xml',
+                        '--save-model-to',
+                        f'./trained_{template.model_template_id}']
+        ret = ote_common(template, root, 'optimize', command_line)
+        assert ret['exit_code'] != 0, "Exit code must not be equal 0"
+        assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
+    def test_ote_optimize_no_val_ann_file(self, back_end, template, create_venv_fx):
+        error_string = "the following arguments are required: --val-ann-files"
+        command_line = [template.model_template_id,
+                        '--train-ann-file',
+                        f'{os.path.join(ote_dir, default_train_args_paths["--train-ann-file"])}',
+                        '--train-data-roots',
+                        f'{os.path.join(ote_dir, default_train_args_paths["--train-data-roots"])}',
+                        '--val-data-roots',
+                        f'{os.path.join(ote_dir, default_train_args_paths["--val-data-roots"])}',
+                        '--load-weights',
+                        f'./exported_{template.model_template_id}/openvino.xml',
+                        '--save-model-to',
+                        f'./trained_{template.model_template_id}']
+        ret = ote_common(template, root, 'optimize', command_line)
+        assert ret['exit_code'] != 0, "Exit code must not be equal 0"
+        assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
+    def test_ote_optimize_no_val_data_roots(self, back_end, template, create_venv_fx):
+        error_string = "the following arguments are required: --val-data-roots"
+        command_line = [template.model_template_id,
+                        '--train-ann-file',
+                        f'{os.path.join(ote_dir, default_train_args_paths["--train-ann-file"])}',
+                        '--train-data-roots',
+                        f'{os.path.join(ote_dir, default_train_args_paths["--train-data-roots"])}',
+                        '--val-ann-file',
+                        f'{os.path.join(ote_dir, default_train_args_paths["--val-ann-file"])}',
+                        '--load-weights',
+                        f'./exported_{template.model_template_id}/openvino.xml',
+                        '--save-model-to',
+                        f'./trained_{template.model_template_id}']
+        ret = ote_common(template, root, 'optimize', command_line)
+        assert ret['exit_code'] != 0, "Exit code must not be equal 0"
+        assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
+    def test_ote_optimize_no_save_model_to(self, back_end, template, create_venv_fx):
+        error_string = "the following arguments are required: --save-model-to"
+        command_line = [template.model_template_id,
+                        '--train-ann-file',
+                        f'{os.path.join(ote_dir, default_train_args_paths["--train-ann-file"])}',
+                        '--train-data-roots',
+                        f'{os.path.join(ote_dir, default_train_args_paths["--train-data-roots"])}',
+                        '--val-ann-file',
+                        f'{os.path.join(ote_dir, default_train_args_paths["--val-ann-file"])}',
+                        '--val-data-roots',
+                        f'{os.path.join(ote_dir, default_train_args_paths["--val-data-roots"])}',
+                        '--load-weights',
+                        f'./exported_{template.model_template_id}/openvino.xml'
+                        ]
+        ret = ote_common(template, root, 'optimize', command_line)
+        assert ret['exit_code'] != 0, "Exit code must not be equal 0"
+        assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
+    def test_ote_optimize_no_load_weights(self, back_end, template, create_venv_fx):
+        error_string = "the following arguments are required: --load-weights"
+        command_line = [template.model_template_id,
+                        '--train-ann-file',
+                        f'{os.path.join(ote_dir, default_train_args_paths["--train-ann-file"])}',
                         '--train-data-roots',
                         f'{os.path.join(ote_dir, default_train_args_paths["--train-data-roots"])}',
                         '--val-ann-file',
@@ -77,145 +176,13 @@ class TestTrainCommon:
                         f'{os.path.join(ote_dir, default_train_args_paths["--val-data-roots"])}',
                         '--save-model-to',
                         f'./trained_{template.model_template_id}']
-        ret = ote_common(template, root, 'train', command_line)
+        ret = ote_common(template, root, 'optimize', command_line)
         assert ret['exit_code'] != 0, "Exit code must not be equal 0"
         assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
 
     @e2e_pytest_component
     @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
-    def test_ote_train_no_train_data_roots(self, back_end, template, create_venv_fx):
-        error_string = "ote train: error: the following arguments are required: --train-data-roots"
-        command_line = [template.model_template_id,
-                        '--train-ann-file',
-                        f'{os.path.join(ote_dir, default_train_args_paths["--train-ann-file"])}',
-                        '--val-ann-file',
-                        f'{os.path.join(ote_dir, default_train_args_paths["--val-ann-file"])}',
-                        '--val-data-roots',
-                        f'{os.path.join(ote_dir, default_train_args_paths["--val-data-roots"])}',
-                        '--save-model-to',
-                        f'./trained_{template.model_template_id}']
-        ret = ote_common(template, root, 'train', command_line)
-        assert ret['exit_code'] != 0, "Exit code must not be equal 0"
-        assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
-
-    @e2e_pytest_component
-    @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
-    def test_ote_train_no_val_ann_file(self, back_end, template, create_venv_fx):
-        error_string = "ote train: error: the following arguments are required: --val-ann-files"
-        command_line = [template.model_template_id,
-                        '--train-ann-file',
-                        f'{os.path.join(ote_dir, default_train_args_paths["--train-ann-file"])}',
-                        '--train-data-roots',
-                        f'{os.path.join(ote_dir, default_train_args_paths["--train-data-roots"])}',
-                        '--val-data-roots',
-                        f'{os.path.join(ote_dir, default_train_args_paths["--val-data-roots"])}',
-                        '--save-model-to',
-                        f'./trained_{template.model_template_id}']
-        ret = ote_common(template, root, 'train', command_line)
-        assert ret['exit_code'] != 0, "Exit code must not be equal 0"
-        assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
-
-    @e2e_pytest_component
-    @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
-    def test_ote_train_no_val_data_roots(self, back_end, template, create_venv_fx):
-        error_string = "ote train: error: the following arguments are required: --val-data-roots"
-        command_line = [template.model_template_id,
-                        '--train-ann-file',
-                        f'{os.path.join(ote_dir, default_train_args_paths["--train-ann-file"])}',
-                        '--train-data-roots',
-                        f'{os.path.join(ote_dir, default_train_args_paths["--train-data-roots"])}',
-                        '--val-ann-file',
-                        f'{os.path.join(ote_dir, default_train_args_paths["--val-ann-file"])}',
-                        '--save-model-to',
-                        f'./trained_{template.model_template_id}']
-        ret = ote_common(template, root, 'train', command_line)
-        assert ret['exit_code'] != 0, "Exit code must not be equal 0"
-        assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
-
-    @e2e_pytest_component
-    @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
-    def test_ote_train_no_save_model_to(self, back_end, template, create_venv_fx):
-        error_string = "ote train: error: the following arguments are required: --save-model-to"
-        command_line = [template.model_template_id,
-                        '--train-ann-file',
-                        f'{os.path.join(ote_dir, default_train_args_paths["--train-ann-file"])}',
-                        '--train-data-roots',
-                        f'{os.path.join(ote_dir, default_train_args_paths["--train-data-roots"])}',
-                        '--val-ann-file',
-                        f'{os.path.join(ote_dir, default_train_args_paths["--val-ann-file"])}',
-                        '--val-data-roots',
-                        f'{os.path.join(ote_dir, default_train_args_paths["--val-data-roots"])}']
-        ret = ote_common(template, root, 'train', command_line)
-        assert ret['exit_code'] != 0, "Exit code must not be equal 0"
-        assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
-
-    @e2e_pytest_component
-    @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
-    def test_ote_train_hpo_not_enabled(self, back_end, template, create_venv_fx):
-        error_string = "Parameter --hpo-time-ratio must be used with --enable-hpo key"
-        command_line = [template.model_template_id,
-                        '--train-ann-file',
-                        f'{os.path.join(ote_dir, default_train_args_paths["--train-ann-file"])}',
-                        '--train-data-roots',
-                        f'{os.path.join(ote_dir, default_train_args_paths["--train-data-roots"])}',
-                        '--val-ann-file',
-                        f'{os.path.join(ote_dir, default_train_args_paths["--val-ann-file"])}',
-                        '--val-data-roots',
-                        f'{os.path.join(ote_dir, default_train_args_paths["--val-data-roots"])}',
-                        '--save-model-to',
-                        f'./trained_{template.model_template_id}',
-                        '--hpo-time-ratio', '4']
-        ret = ote_common(template, root, 'train', command_line)
-        assert ret['exit_code'] != 0, "Exit code must not be equal 0"
-        assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
-
-    @e2e_pytest_component
-    @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
-    def test_ote_train_string_hpo_value(self, back_end, template, create_venv_fx):
-        error_string = "ote train: error: argument --hpo-time-ratio: invalid float value: 'STRING_VALUE'"
-        command_line = [template.model_template_id,
-                        '--train-ann-file',
-                        f'{os.path.join(ote_dir, default_train_args_paths["--train-ann-file"])}',
-                        '--train-data-roots',
-                        f'{os.path.join(ote_dir, default_train_args_paths["--train-data-roots"])}',
-                        '--val-ann-file',
-                        f'{os.path.join(ote_dir, default_train_args_paths["--val-ann-file"])}',
-                        '--val-data-roots',
-                        f'{os.path.join(ote_dir, default_train_args_paths["--val-data-roots"])}',
-                        '--save-model-to',
-                        f'./trained_{template.model_template_id}',
-                        '--enable-hpo',
-                        '--hpo-time-ratio',
-                        'STRING_VALUE']
-        ret = ote_common(template, root, 'train', command_line)
-        assert ret['exit_code'] != 0, "Exit code must not be equal 0"
-        assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
-
-    @e2e_pytest_component
-    @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
-    def test_ote_train_negative_hpo_value(self, back_end, template, create_venv_fx):
-        error_string = "Parameter --hpo-time-ratio must not be negative"
-        command_line = [template.model_template_id,
-                        '--train-ann-file',
-                        f'{os.path.join(ote_dir, default_train_args_paths["--train-ann-file"])}',
-                        '--train-data-roots',
-                        f'{os.path.join(ote_dir, default_train_args_paths["--train-data-roots"])}',
-                        '--val-ann-file',
-                        f'{os.path.join(ote_dir, default_train_args_paths["--val-ann-file"])}',
-                        '--val-data-roots',
-                        f'{os.path.join(ote_dir, default_train_args_paths["--val-data-roots"])}',
-                        '--save-model-to',
-                        f'./trained_{template.model_template_id}',
-                        '--enable-hpo',
-                        '--hpo-time-ratio',
-                        '-1']
-        ret = ote_common(template, root, 'train', command_line)
-        assert ret['exit_code'] != 0, "Exit code must not be equal 0"
-        assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
-
-    @e2e_pytest_component
-    @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
-    def test_ote_train_wrong_path_train_ann_file(self, back_end, template, create_venv_fx):
+    def test_ote_optimize_wrong_path_train_ann_file(self, back_end, template, create_venv_fx):
         error_string = "Path is not valid"
         for case in wrong_paths.values():
             command_line = [template.model_template_id,
@@ -227,15 +194,17 @@ class TestTrainCommon:
                             f'{os.path.join(ote_dir, default_train_args_paths["--val-ann-file"])}',
                             '--val-data-roots',
                             f'{os.path.join(ote_dir, default_train_args_paths["--val-data-roots"])}',
+                            '--load-weights',
+                            f'./exported_{template.model_template_id}/openvino.xml',
                             '--save-model-to',
                             f'./trained_{template.model_template_id}']
-            ret = ote_common(template, root, 'train', command_line)
+            ret = ote_common(template, root, 'optimize', command_line)
             assert ret['exit_code'] != 0, "Exit code must not be equal 0"
             assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
 
     @e2e_pytest_component
     @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
-    def test_ote_train_wrong_paths_train_data_roots(self, back_end, template, create_venv_fx):
+    def test_ote_optimize_wrong_paths_train_data_roots(self, back_end, template, create_venv_fx):
         error_string = "Path is not valid"
         for case in wrong_paths.values():
             command_line = [template.model_template_id,
@@ -247,15 +216,17 @@ class TestTrainCommon:
                             f'{os.path.join(ote_dir, default_train_args_paths["--val-ann-file"])}',
                             '--val-data-roots',
                             f'{os.path.join(ote_dir, default_train_args_paths["--val-data-roots"])}',
+                            '--load-weights',
+                            f'./exported_{template.model_template_id}/openvino.xml',
                             '--save-model-to',
                             f'./trained_{template.model_template_id}']
-            ret = ote_common(template, root, 'train', command_line)
+            ret = ote_common(template, root, 'optimize', command_line)
             assert ret['exit_code'] != 0, "Exit code must not be equal 0"
             assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
 
     @e2e_pytest_component
     @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
-    def test_ote_train_wrong_paths_val_ann_file(self, back_end, template, create_venv_fx):
+    def test_ote_optimize_wrong_paths_val_ann_file(self, back_end, template, create_venv_fx):
         error_string = "Path is not valid"
         for case in wrong_paths.values():
             command_line = [template.model_template_id,
@@ -267,15 +238,17 @@ class TestTrainCommon:
                             case,
                             '--val-data-roots',
                             f'{os.path.join(ote_dir, default_train_args_paths["--val-data-roots"])}',
+                            '--load-weights',
+                            f'./exported_{template.model_template_id}/openvino.xml',
                             '--save-model-to',
                             f'./trained_{template.model_template_id}']
-            ret = ote_common(template, root, 'train', command_line)
+            ret = ote_common(template, root, 'optimize', command_line)
             assert ret['exit_code'] != 0, "Exit code must not be equal 0"
             assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
 
     @e2e_pytest_component
     @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
-    def test_ote_train_wrong_paths_val_data_roots(self, back_end, template, create_venv_fx):
+    def test_ote_optimize_wrong_paths_val_data_roots(self, back_end, template, create_venv_fx):
         error_string = "Path is not valid"
         for case in wrong_paths.values():
             command_line = [template.model_template_id,
@@ -287,15 +260,17 @@ class TestTrainCommon:
                             f'{os.path.join(ote_dir, default_train_args_paths["--val-ann-file"])}',
                             '--val-data-roots',
                             case,
+                            '--load-weights',
+                            f'./exported_{template.model_template_id}/openvino.xml',
                             '--save-model-to',
                             f'./trained_{template.model_template_id}']
-            ret = ote_common(template, root, 'train', command_line)
+            ret = ote_common(template, root, 'optimize', command_line)
             assert ret['exit_code'] != 0, "Exit code must not be equal 0"
             assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
 
     @e2e_pytest_component
     @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
-    def test_ote_train_wrong_saved_model_to(self, back_end, template, create_venv_fx):
+    def test_ote_optimize_wrong_saved_model_to(self, back_end, template, create_venv_fx):
         error_string = "Path is not valid"
         for case in wrong_paths.values():
             command_line = [template.model_template_id,
@@ -307,8 +282,54 @@ class TestTrainCommon:
                             f'{os.path.join(ote_dir, default_train_args_paths["--val-ann-file"])}',
                             '--val-data-roots',
                             f'{os.path.join(ote_dir, default_train_args_paths["--val-data-roots"])}',
+                            '--load-weights',
+                            f'./exported_{template.model_template_id}/openvino.xml',
                             '--save-model-to',
                             case]
-            ret = ote_common(template, root, 'train', command_line)
+            ret = ote_common(template, root, 'optimize', command_line)
             assert ret['exit_code'] != 0, "Exit code must not be equal 0"
             assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
+    def test_ote_optimize_wrong_load_weights(self, back_end, template, create_venv_fx):
+        error_string = "Path is not valid"
+        for case in wrong_paths.values():
+            command_line = [template.model_template_id,
+                            '--train-ann-file',
+                            f'{os.path.join(ote_dir, default_train_args_paths["--train-ann-file"])}',
+                            '--train-data-roots',
+                            f'{os.path.join(ote_dir, default_train_args_paths["--train-data-roots"])}',
+                            '--val-ann-file',
+                            f'{os.path.join(ote_dir, default_train_args_paths["--val-ann-file"])}',
+                            '--val-data-roots',
+                            f'{os.path.join(ote_dir, default_train_args_paths["--val-data-roots"])}',
+                            '--load-weights',
+                            case,
+                            '--save-model-to',
+                            f'./trained_{template.model_template_id}']
+            ret = ote_common(template, root, 'optimize', command_line)
+            assert ret['exit_code'] != 0, "Exit code must not be equal 0"
+            assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
+    def test_ote_optimize_wrong_save_performance(self, back_end, template, create_venv_fx):
+        for case in wrong_paths.values():
+            command_line = [template.model_template_id,
+                            '--train-ann-file',
+                            f'{os.path.join(ote_dir, default_train_args_paths["--train-ann-file"])}',
+                            '--train-data-roots',
+                            f'{os.path.join(ote_dir, default_train_args_paths["--train-data-roots"])}',
+                            '--val-ann-file',
+                            f'{os.path.join(ote_dir, default_train_args_paths["--val-ann-file"])}',
+                            '--val-data-roots',
+                            f'{os.path.join(ote_dir, default_train_args_paths["--val-data-roots"])}',
+                            '--load-weights',
+                            f'./exported_{template.model_template_id}/openvino.xml',
+                            '--save-model-to',
+                            f'./trained_{template.model_template_id}',
+                            '--save-performance',
+                            case]
+            ret = ote_common(template, root, 'optimize', command_line)
+            assert ret['exit_code'] != 0, "Exit code must not be equal 0"

@@ -197,8 +197,6 @@ def main():
             cv2.imshow("frame", frame)
             if cv2.waitKey(args.delay) == ESC_BUTTON:
                 break
-        elif args.delay < 0:
-            raise ValueError("Value of --delay parameter must not be negative")
         else:
             print(f"{frame_index=}, {elapsed_time=}, {len(predictions)=}")
 
