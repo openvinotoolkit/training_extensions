@@ -74,11 +74,15 @@ def patch_demo_py(src_path, dst_path):
         content = [line for line in read_file]
         replaced = False
         for i, line in enumerate(content):
-            if "visualizer = Visualizer(media_type)" in line:
-                content[i] = line.rstrip() + "; visualizer.show = show\n"
+            if "visualizer = create_visualizer(models[-1].task_type)" in line:
+                content[i] = "    visualizer = Visualizer(); visualizer.show = show\n"
                 replaced = True
         assert replaced
-        content = ["def show(self):\n", "    pass\n\n"] + content
+        content = [
+            "from ote_sdk.usecases.exportable_code.visualizers import Visualizer\n",
+            "def show(self):\n",
+            "    pass\n\n",
+        ] + content
         with open(dst_path, "w") as write_file:
             write_file.write("".join(content))
 
@@ -310,21 +314,6 @@ def ote_deploy_openvino_testing(template, root, ote_dir, args):
         ).returncode
         == 0
     )
-    assert (
-        run(
-            [
-                "python3",
-                "-m",
-                "pip",
-                "install",
-                "demo_package-0.0-py3-none-any.whl",
-                "--no-deps",
-            ],
-            cwd=os.path.join(deployment_dir, "python"),
-            env=collect_env_vars(os.path.join(deployment_dir, "python")),
-        ).returncode
-        == 0
-    )
 
     # Patch demo since we are not able to run cv2.imshow on CI.
     patch_demo_py(
@@ -338,7 +327,7 @@ def ote_deploy_openvino_testing(template, root, ote_dir, args):
                 "python3",
                 "demo_patched.py",
                 "-m",
-                "../model/model.xml",
+                "../model",
                 "-i",
                 os.path.join(ote_dir, args["--input"]),
             ],
