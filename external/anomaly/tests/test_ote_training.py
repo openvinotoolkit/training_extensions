@@ -123,7 +123,7 @@ def get_anomaly_test_action_classes() -> List[Type[BaseOTETestAction]]:
     ]
 
 
-class AnomalyDetectionTrainingTestParameters(DefaultOTETestCreationParametersInterface):
+class AnomalyClassificationTrainingTestParameters(DefaultOTETestCreationParametersInterface):
     def test_case_class(self) -> Type[OTETestCaseInterface]:
         return generate_ote_integration_test_case_class(
             get_anomaly_test_action_classes()
@@ -278,12 +278,12 @@ class AnomalyDetectionTestTrainingAction(OTETestTrainingAction):
         return results
 
 
-class TestOTEReallifeAnomalyDetection(OTETrainingTestInterface):
+class TestOTEReallifeAnomalyClassification(OTETrainingTestInterface):
     """
     The main class of running test in this file.
     """
     PERFORMANCE_RESULTS = None # it is required for e2e system
-    helper = OTETestHelper(AnomalyDetectionTrainingTestParameters())
+    helper = OTETestHelper(AnomalyClassificationTrainingTestParameters())
 
     @classmethod
     def get_list_of_tests(cls, usecase: Optional[str] = None):
