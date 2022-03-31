@@ -63,6 +63,7 @@ def get_local_subset(
         dataset (DatasetEntity): Dataset from which we want to extract the locally annotated subset.
         fully_annotated_idx (Optional[List[int]]): The indices of the fully annotated dataset items. If not provided,
             the function will compute the indices before creating the subset.
+        include_normal (bool): When true, global normal annotations will be included in the local dataset.
 
     Returns:
         DatasetEntity: Output dataset with only local annotations

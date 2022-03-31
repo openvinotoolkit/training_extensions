@@ -165,32 +165,22 @@ class OpenVINOAnomalyTask(IInferenceTask, IEvaluationTask, IOptimizationTask, ID
             probability = pred_score if pred_label else 1 - pred_score
             if self.task_type == TaskType.ANOMALY_CLASSIFICATION:
                 label = self.anomalous_label if pred_score >= 0.5 else self.normal_label
-                dataset_item.append_labels([ScoredLabel(label=label, probability=float(probability))])
             elif self.task_type == TaskType.ANOMALY_SEGMENTATION:
                 annotations = create_annotation_from_segmentation_map(
                     pred_mask, anomaly_map.squeeze(), {0: self.normal_label, 1: self.anomalous_label}
                 )
                 dataset_item.append_annotations(annotations)
-                if len(annotations) == 0:
-                    dataset_item.append_labels([ScoredLabel(label=self.normal_label, probability=float(probability))])
-                else:
-                    dataset_item.append_labels(
-                        [ScoredLabel(label=self.anomalous_label, probability=float(probability))]
-                    )
+                label = self.normal_label if len(annotations) == 0 else self.anomalous_label
             elif self.task_type == TaskType.ANOMALY_DETECTION:
                 annotations = create_detection_annotation_from_anomaly_heatmap(
                     pred_mask, anomaly_map.squeeze(), {0: self.normal_label, 1: self.anomalous_label}
                 )
                 dataset_item.append_annotations(annotations)
-                if len(annotations) == 0:
-                    dataset_item.append_labels([ScoredLabel(label=self.normal_label, probability=float(probability))])
-                else:
-                    dataset_item.append_labels(
-                        [ScoredLabel(label=self.anomalous_label, probability=float(probability))]
-                    )
+                label = self.normal_label if len(annotations) == 0 else self.anomalous_label
             else:
                 raise ValueError(f"Unknown task type: {self.task_type}")
 
+            dataset_item.append_labels([ScoredLabel(label=label, probability=float(probability))])
             anomaly_map = anomaly_map_to_color_map(anomaly_map, normalize=False)
             heatmap_media = ResultMediaEntity(
                 name="Anomaly Map",
