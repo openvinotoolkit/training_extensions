@@ -404,7 +404,7 @@ class API(unittest.TestCase):
             num_iters=5,
             quality_score_threshold=0.5,
             reload_perf_delta_tolerance=0.0,
-            export_perf_delta_tolerance=0.0005,
+            export_perf_delta_tolerance=0.001,
             pot_perf_delta_tolerance=0.1,
             nncf_perf_delta_tolerance=0.1,
             task_type=TaskType.DETECTION):
