@@ -21,13 +21,13 @@ import pytest
 from ote_sdk.test_suite.e2e_test_system import e2e_pytest_component
 from ote_cli.registry import Registry
 
-from ote_cli_test_common import (
+from .ote_cli_test_common import (
     create_venv,
     get_some_vars,
     wrong_paths,
     ote_common,
     logger,
-    default_train_args_paths
+    get_pretrained_artifacts
 )
 
 
@@ -62,24 +62,7 @@ class TestDemoCommon:
     @e2e_pytest_component
     @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
     def get_pretrained_artifacts_fx(self, template, create_venv_fx):
-        _, template_work_dir, _ = get_some_vars(template, root)
-        pretrained_artifact_path = f"{template_work_dir}/trained_{template.model_template_id}"
-        command_args = [
-            template.model_template_id,
-            "--train-ann-file",
-            f'{os.path.join(ote_dir, default_train_args_paths["--train-ann-file"])}',
-            "--train-data-roots",
-            f'{os.path.join(ote_dir, default_train_args_paths["--train-data-roots"])}',
-            "--val-ann-file",
-            f'{os.path.join(ote_dir, default_train_args_paths["--val-ann-file"])}',
-            "--val-data-roots",
-            f'{os.path.join(ote_dir, default_train_args_paths["--val-data-roots"])}',
-            "--save-model-to",
-            pretrained_artifact_path,
-        ]
-        command_args.extend(default_train_args_paths["train_params"])
-        ote_common(template, root, 'train', command_args)
-        assert os.path.exists(pretrained_artifact_path), f"test artifact must exits by path {pretrained_artifact_path}"
+        get_pretrained_artifacts(template, root, ote_dir)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
@@ -184,16 +167,19 @@ class TestDemoCommon:
     @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
     def test_ote_demo_fit_size(self, back_end, template, create_venv_fx, get_pretrained_artifacts_fx):
         _, template_work_dir, _ = get_some_vars(template, root)
+        pretrained_weights = f'{template_work_dir}/trained_{template.model_template_id}/weights.pth'
+        logger.debug(f"Pre-trained weights: {pretrained_weights}")
+        assert os.path.exists(pretrained_weights), f"Pre-trained weights must be available before the test starts"
         command_args = [template.model_template_id,
                         '--load-weights',
-                        f'{template_work_dir}/trained_{template.model_template_id}/weights.pth',
+                        pretrained_weights,
                         '--input',
                         '--delay',
                         '-1',
                         f'{os.path.join(ote_dir, "data/airport/train")}',
                         '--fit-to-size', '1', '1']
         ret = ote_common(template, root, 'demo', command_args)
-        assert ret['exit_code'] != 0, "Exit code must not be equal 0"
+        assert ret['exit_code'] == 0, "Exit code must be equal 0"
 
     @e2e_pytest_component
     @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
@@ -214,9 +200,12 @@ class TestDemoCommon:
     @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
     def test_ote_demo_loop(self, back_end, template, create_venv_fx, get_pretrained_artifacts_fx):
         _, template_work_dir, _ = get_some_vars(template, root)
+        pretrained_weights = f'{template_work_dir}/trained_{template.model_template_id}/weights.pth'
+        logger.debug(f"Pre-trained weights: {pretrained_weights}")
+        assert os.path.exists(pretrained_weights), f"Pre-trained weights must be available before the test starts"
         command_args = [template.model_template_id,
                         '--load-weights',
-                        f'{template_work_dir}/trained_{template.model_template_id}/weights.pth',
+                        pretrained_weights,
                         '--input',
                         f'{os.path.join(ote_dir, "data/airport/train")}',
                         '--delay',
@@ -229,9 +218,12 @@ class TestDemoCommon:
     @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
     def test_ote_demo_display_perf(self, back_end, template, create_venv_fx, get_pretrained_artifacts_fx):
         _, template_work_dir, _ = get_some_vars(template, root)
+        pretrained_weights = f'{template_work_dir}/trained_{template.model_template_id}/weights.pth'
+        logger.debug(f"Pre-trained weights: {pretrained_weights}")
+        assert os.path.exists(pretrained_weights), f"Pre-trained weights must be available before the test starts"
         command_args = [template.model_template_id,
                         '--load-weights',
-                        f'{template_work_dir}/trained_{template.model_template_id}/weights.pth',
+                        pretrained_weights,
                         '--input',
                         f'{os.path.join(ote_dir, "data/airport/train")}',
                         '--delay',

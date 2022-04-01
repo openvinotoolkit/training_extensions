@@ -100,3 +100,30 @@ def ote_common(template, root, tool, cmd_args):
     logger.debug(f"Stderr: {output['stderr']}\n")
     logger.debug(f"Exit_code: {output['exit_code']}\n")
     return output
+
+
+def get_pretrained_artifacts(template, root, ote_dir):
+    _, template_work_dir, _ = get_some_vars(template, root)
+    pretrained_artifact_path = f"{template_work_dir}/trained_{template.model_template_id}"
+    logger.debug(f">>> Current pre-trained artifact: {pretrained_artifact_path}")
+    command_args = [
+        template.model_template_id,
+        "--train-ann-file",
+        f'{os.path.join(ote_dir, default_train_args_paths["--train-ann-file"])}',
+        "--train-data-roots",
+        f'{os.path.join(ote_dir, default_train_args_paths["--train-data-roots"])}',
+        "--val-ann-file",
+        f'{os.path.join(ote_dir, default_train_args_paths["--val-ann-file"])}',
+        "--val-data-roots",
+        f'{os.path.join(ote_dir, default_train_args_paths["--val-data-roots"])}',
+        "--save-model-to",
+        pretrained_artifact_path,
+    ]
+    command_args.extend(default_train_args_paths["train_params"])
+    if not os.path.exists(pretrained_artifact_path):
+        ote_common(template, root, 'train', command_args)
+        assert os.path.exists(pretrained_artifact_path), f"The folder must exists after command execution"
+        weights = os.path.join(pretrained_artifact_path, 'weights.pth')
+        labels = os.path.join(pretrained_artifact_path, 'label_schema.json')
+        assert os.path.exists(weights), f"The {weights} must exists after command execution"
+        assert os.path.exists(labels), f"The {labels} must exists after command execution"
