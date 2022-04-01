@@ -114,12 +114,12 @@ def create_classification_json_items(pd_items: pd.DataFrame) -> Dict[str, Any]:
     Returns:
         Dict[str, Any]: MVTec AD classification JSON items
     """
-    json_items: Dict[str, Any] = {"image_path": {}, "label": {}, "mask_path": {}}
+    json_items: Dict[str, Any] = {"image_path": {}, "label": {}, "masks": {}}
     for index, pd_item in pd_items.iterrows():
-        json_items["image_path"][str(index)] = pd_item.image_path.replace(pd_item.path, "")
+        json_items["image_path"][str(index)] = pd_item.image_path.replace(pd_item.path, "")[1:]
         json_items["label"][str(index)] = pd_item.label
         if pd_item.label != "good":
-            json_items["mask_path"][str(index)] = pd_item.mask_path.replace(pd_item.path, "")
+            json_items["masks"][str(index)] = pd_item.mask_path.replace(pd_item.path, "")[1:]
 
     return json_items
 
@@ -135,7 +135,7 @@ def create_detection_json_items(pd_items: pd.DataFrame) -> Dict[str, Any]:
     """
     json_items: Dict[str, Any] = {"image_path": {}, "label": {}, "bboxes": {}}
     for index, pd_item in pd_items.iterrows():
-        json_items["image_path"][str(index)] = pd_item.image_path.replace(pd_item.path, "")
+        json_items["image_path"][str(index)] = pd_item.image_path.replace(pd_item.path, "")[1:]
         json_items["label"][str(index)] = pd_item.label
         if pd_item.label != "good":
             json_items["bboxes"][str(index)] = create_bboxes_from_mask(pd_item.mask_path)
@@ -154,7 +154,7 @@ def create_segmentation_json_items(pd_items: pd.DataFrame) -> Dict[str, Any]:
     """
     json_items: Dict[str, Any] = {"image_path": {}, "label": {}, "masks": {}}
     for index, pd_item in pd_items.iterrows():
-        json_items["image_path"][str(index)] = pd_item.image_path.replace(pd_item.path, "")
+        json_items["image_path"][str(index)] = pd_item.image_path.replace(pd_item.path, "")[1:]
         json_items["label"][str(index)] = pd_item.label
         if pd_item.label != "good":
             json_items["masks"][str(index)] = create_polygons_from_mask(pd_item.mask_path)
