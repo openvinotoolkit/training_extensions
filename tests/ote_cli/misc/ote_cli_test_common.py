@@ -24,6 +24,13 @@ default_train_args_paths = {
     '--val-data-roots': 'data/airport/train',
     '--test-ann-files': 'data/airport/annotation_example_train.json',
     '--test-data-roots': 'data/airport/train',
+    'train_params': [
+        'params',
+        '--learning_parameters.num_iters',
+        '1',
+        '--learning_parameters.batch_size',
+        '1'
+    ]
 }
 
 wrong_paths = {
