@@ -20,9 +20,12 @@ import pytest
 from ote_sdk.test_suite.e2e_test_system import e2e_pytest_component
 from ote_cli.registry import Registry
 
-from ote_cli_test_common import (
+from ote_cli.ote_cli.utils.tests import (
     create_venv,
     get_some_vars,
+)
+
+from ote_cli_test_common import (
     wrong_paths,
     ote_common,
     logger
@@ -54,7 +57,7 @@ class TestDeployCommon:
     @pytest.mark.parametrize("back_end, template", params_values)
     def create_venv_fx(self, template):
         work_dir, template_work_dir, algo_backend_dir = get_some_vars(template, root)
-        create_venv(algo_backend_dir, work_dir, template_work_dir)
+        create_venv(algo_backend_dir, work_dir)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
