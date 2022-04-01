@@ -24,13 +24,6 @@ default_train_args_paths = {
     '--val-data-roots': 'data/airport/train',
     '--test-ann-files': 'data/airport/annotation_example_train.json',
     '--test-data-roots': 'data/airport/train',
-    'train_params': [
-        'params',
-        '--learning_parameters.num_iters',
-        '1',
-        '--learning_parameters.batch_size',
-        '1'
-    ]
 }
 
 wrong_paths = {
@@ -119,7 +112,6 @@ def get_pretrained_artifacts(template, root, ote_dir):
         "--save-model-to",
         pretrained_artifact_path,
     ]
-    command_args.extend(default_train_args_paths["train_params"])
     if not os.path.exists(pretrained_artifact_path):
         ote_common(template, root, 'train', command_args)
         assert os.path.exists(pretrained_artifact_path), f"The folder must exists after command execution"
