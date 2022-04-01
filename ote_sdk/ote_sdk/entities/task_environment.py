@@ -11,6 +11,7 @@ from ote_sdk.entities.label import LabelEntity
 from ote_sdk.entities.label_schema import LabelSchemaEntity
 from ote_sdk.entities.model import ModelConfiguration, ModelEntity
 from ote_sdk.entities.model_template import ModelTemplate
+from ote_sdk.utils.argument_checks import check_input_parameters_type
 
 TypeVariable = TypeVar("TypeVariable", bound=ConfigurableParameters)
 
@@ -27,6 +28,7 @@ class TaskEnvironment:
     :param label_schema: Label schema associated to this task
     """
 
+    @check_input_parameters_type()
     def __init__(
         self,
         model_template: ModelTemplate,
@@ -34,7 +36,6 @@ class TaskEnvironment:
         hyper_parameters: ConfigurableParameters,
         label_schema: LabelSchemaEntity,
     ):
-
         self.model_template = model_template
         self.model = model
         self.__hyper_parameters = hyper_parameters

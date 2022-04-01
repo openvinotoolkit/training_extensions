@@ -15,6 +15,7 @@ from ote_sdk.configuration.elements import metadata_keys
 from ote_sdk.configuration.enums import AutoHPOState
 from ote_sdk.configuration.helper.utils import search_in_config_dict
 from ote_sdk.entities.label import Domain
+from ote_sdk.utils.argument_checks import YamlFilePathCheck, check_input_parameters_type
 
 
 class TargetDevice(IntEnum):
@@ -606,6 +607,7 @@ def _parse_model_template_from_omegaconf(
     return cast(ModelTemplate, OmegaConf.to_object(config))
 
 
+@check_input_parameters_type({"model_template_path": YamlFilePathCheck})
 def parse_model_template(model_template_path: str) -> ModelTemplate:
     """
     Read a model template from a file.

@@ -383,7 +383,7 @@ class TestSegmentationUtils:
         def check_annotation(
             annotation: Annotation,
             expected_points: list,
-            expected_label: str,
+            expected_label: LabelEntity,
             expected_probability: float,
         ):
             assert isinstance(annotation.shape, Polygon)
@@ -412,11 +412,10 @@ class TestSegmentationUtils:
                 (False, False, False, False, False),
             ]
         )
-        labels = {
-            False: "false_label",
-            True: "true_label",
-            2: "label_2",
-        }
+        false_label = LabelEntity(name="false_label", domain=Domain.DETECTION)
+        true_label = LabelEntity(name="true_label", domain=Domain.DETECTION)
+        non_included_label = LabelEntity("label_2", domain=Domain.DETECTION)
+        labels = {False: false_label, True: true_label, 2: non_included_label}
         annotations = create_annotation_from_segmentation_map(
             hard_prediction=hard_prediction,
             soft_prediction=soft_prediction,
@@ -435,7 +434,7 @@ class TestSegmentationUtils:
                 Point(0.6, 0.4),
                 Point(0.6, 0.2),
             ],
-            expected_label="true_label",
+            expected_label=true_label,
             expected_probability=0.7375,
         )
         # Checking list returned by "create_annotation_from_segmentation_map" for 3-dimensional arrays
@@ -450,7 +449,10 @@ class TestSegmentationUtils:
         hard_prediction = np.array(
             [(0, 0, 2, 2), (1, 1, 2, 2), (1, 1, 2, 2), (1, 1, 2, 2)]
         )
-        labels = {0: "false_label", 1: "class_1", 2: "class_2"}
+        class_1_label = LabelEntity(name="class_1_label", domain=Domain.SEGMENTATION)
+        class_2_label = LabelEntity(name="class_2_label", domain=Domain.SEGMENTATION)
+
+        labels = {0: false_label, 1: class_1_label, 2: class_2_label}
         annotations = create_annotation_from_segmentation_map(
             hard_prediction=hard_prediction,
             soft_prediction=soft_prediction,
@@ -467,7 +469,7 @@ class TestSegmentationUtils:
                 Point(0.25, 0.5),
                 Point(0.25, 0.25),
             ],
-            expected_label="class_1",
+            expected_label=class_1_label,
             expected_probability=0.83333,
         )
         check_annotation(
@@ -482,7 +484,7 @@ class TestSegmentationUtils:
                 Point(0.75, 0.25),
                 Point(0.75, 0.0),
             ],
-            expected_label="class_2",
+            expected_label=class_2_label,
             expected_probability=0.8125,
         )
         # Checking list returned by "create_annotation_from_segmentation_map" for prediction arrays with hole in
@@ -512,9 +514,9 @@ class TestSegmentationUtils:
             ]
         )
         labels = {
-            False: "false_label",
-            True: "true_label",
-            2: "label_2",
+            False: false_label,
+            True: true_label,
+            2: non_included_label,
         }
         with warnings.catch_warnings():
             warnings.filterwarnings("ignore", "The geometry of the segmentation map")
@@ -540,7 +542,7 @@ class TestSegmentationUtils:
                 Point(0.5, 0.25),
                 Point(0.375, 0.25),
             ],
-            expected_label="true_label",
+            expected_label=true_label,
             expected_probability=0.90833,
         )
         check_annotation(
@@ -575,6 +577,6 @@ class TestSegmentationUtils:
                 Point(0.25, 0.0),
                 Point(0.125, 0.0),
             ],
-            expected_label="true_label",
+            expected_label=true_label,
             expected_probability=0.91071,
         )

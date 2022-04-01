@@ -19,6 +19,7 @@ from ote_sdk.entities.dataset_item import DatasetItemEntity
 from ote_sdk.entities.id import ID
 from ote_sdk.entities.label import LabelEntity
 from ote_sdk.entities.subset import Subset
+from ote_sdk.utils.argument_checks import check_input_parameters_type
 
 logger = logging.getLogger(__name__)
 
@@ -122,6 +123,7 @@ class DatasetEntity:
     :param purpose: Purpose for dataset. Refer to :class:`DatasetPurpose` for more info.
     """
 
+    @check_input_parameters_type()
     def __init__(
         self,
         items: Optional[List[DatasetItemEntity]] = None,

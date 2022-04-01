@@ -21,6 +21,7 @@ from ote_sdk.entities.model import ModelEntity
 from ote_sdk.entities.scored_label import ScoredLabel
 from ote_sdk.entities.shapes.rectangle import Rectangle
 from ote_sdk.entities.subset import Subset
+from ote_sdk.utils.argument_checks import check_input_parameters_type
 from ote_sdk.utils.shape_factory import ShapeFactory
 
 logger = logging.getLogger(__name__)
@@ -85,6 +86,7 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
     """
 
     # pylint: disable=too-many-arguments
+    @check_input_parameters_type()
     def __init__(
         self,
         media: IMedia2DEntity,

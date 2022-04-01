@@ -146,7 +146,7 @@ class TestToolsSegmentation:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    @pytest.mark.skip(reason="Issue with model loading 76853")
+    @pytest.mark.skip("Issue with model loading 76853")
     def test_nncf_eval(self, template):
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
@@ -155,7 +155,7 @@ class TestToolsSegmentation:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    @pytest.mark.skip(reason="Issue with model loading 76853")
+    @pytest.mark.skip("Issue with model loading 76853")
     def test_nncf_eval_openvino(self, template):
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
@@ -166,12 +166,12 @@ class TestToolsSegmentation:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_pot_optimize(self, template):
         if template.model_template_id.startswith('Custom_Semantic_Segmentation_Lite-HRNet-'):
-            pytest.skip(reason='CVS-82482')
+            pytest.skip('CVS-82482')
         pot_optimize_testing(template, root, ote_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_pot_eval(self, template):
         if template.model_template_id.startswith('Custom_Semantic_Segmentation_Lite-HRNet-'):
-            pytest.skip(reason='CVS-82482')
+            pytest.skip('CVS-82482')
         pot_eval_testing(template, root, ote_dir, args)
