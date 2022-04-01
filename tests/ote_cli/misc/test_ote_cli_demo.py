@@ -195,39 +195,3 @@ class TestDemoCommon:
         ret = ote_common(template, root, 'demo', command_args)
         assert ret['exit_code'] != 0, "Exit code must not be equal 0"
         assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
-
-    @e2e_pytest_component
-    @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
-    def test_ote_demo_loop(self, back_end, template, create_venv_fx, get_pretrained_artifacts_fx):
-        _, template_work_dir, _ = get_some_vars(template, root)
-        pretrained_weights = f'{template_work_dir}/trained_{template.model_template_id}/weights.pth'
-        logger.debug(f"Pre-trained weights: {pretrained_weights}")
-        assert os.path.exists(pretrained_weights), f"Pre-trained weights must be available before the test starts"
-        command_args = [template.model_template_id,
-                        '--load-weights',
-                        pretrained_weights,
-                        '--input',
-                        f'{os.path.join(ote_dir, "data/airport/train")}',
-                        '--delay',
-                        '-1',
-                        '--loop']
-        ret = ote_common(template, root, 'demo', command_args)
-        assert ret['exit_code'] == 0, "Exit code must not equal 0"
-
-    @e2e_pytest_component
-    @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
-    def test_ote_demo_display_perf(self, back_end, template, create_venv_fx, get_pretrained_artifacts_fx):
-        _, template_work_dir, _ = get_some_vars(template, root)
-        pretrained_weights = f'{template_work_dir}/trained_{template.model_template_id}/weights.pth'
-        logger.debug(f"Pre-trained weights: {pretrained_weights}")
-        assert os.path.exists(pretrained_weights), f"Pre-trained weights must be available before the test starts"
-        command_args = [template.model_template_id,
-                        '--load-weights',
-                        pretrained_weights,
-                        '--input',
-                        f'{os.path.join(ote_dir, "data/airport/train")}',
-                        '--delay',
-                        '-1',
-                        '--display-perf']
-        ret = ote_common(template, root, 'demo', command_args)
-        assert ret['exit_code'] == 0, "Exit code must not equal 0"
