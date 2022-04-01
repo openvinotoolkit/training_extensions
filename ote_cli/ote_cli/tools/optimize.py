@@ -20,6 +20,7 @@ import argparse
 import json
 
 from ote_sdk.configuration.helper import create
+from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.inference_parameters import InferenceParameters
 from ote_sdk.entities.model import ModelEntity
 from ote_sdk.entities.optimization_parameters import OptimizationParameters
@@ -143,7 +144,7 @@ def main():
     )
 
     environment.model = read_model(
-        environment.get_model_configuration(), args.load_weights, None
+        environment.get_model_configuration(), args.load_weights, DatasetEntity()
     )
 
     task = task_class(task_environment=environment)
