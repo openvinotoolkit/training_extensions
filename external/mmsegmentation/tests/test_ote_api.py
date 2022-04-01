@@ -25,10 +25,11 @@ from ote_sdk.configuration.helper import create
 from ote_sdk.entities.annotation import Annotation, AnnotationSceneEntity, AnnotationSceneKind
 from ote_sdk.entities.dataset_item import DatasetItemEntity
 from ote_sdk.entities.datasets import DatasetEntity
+from ote_sdk.entities.id import ID
 from ote_sdk.entities.image import Image
 from ote_sdk.entities.inference_parameters import InferenceParameters
 from ote_sdk.entities.color import Color
-from ote_sdk.entities.label import LabelEntity
+from ote_sdk.entities.label import Domain, LabelEntity
 from ote_sdk.entities.label_schema import LabelGroup, LabelGroupType, LabelSchemaEntity
 from ote_sdk.entities.model import ModelEntity
 from ote_sdk.entities.model_template import parse_model_template
@@ -53,13 +54,12 @@ class API(unittest.TestCase):
 
     @staticmethod
     def generate_label_schema(label_names):
-        label_domain = "segmentation"
         rgb = [int(i) for i in np.random.randint(0, 256, 3)]
         colors = [Color(*rgb) for _ in range(len(label_names))]
-        not_empty_labels = [LabelEntity(name=name, color=colors[i], domain=label_domain, id=i) for i, name in
-                            enumerate(label_names)]
+        not_empty_labels = [LabelEntity(name=name, color=colors[i], domain=Domain.SEGMENTATION,
+                                        id=ID(f"{i:08}")) for i, name in enumerate(label_names)]
         empty_label = LabelEntity(name=f"Empty label", color=Color(42, 43, 46),
-                                  is_empty=True, domain=label_domain, id=len(not_empty_labels))
+                                  is_empty=True, domain=Domain.SEGMENTATION, id=ID(f"{len(not_empty_labels):08}"))
 
         label_schema = LabelSchemaEntity()
         exclusive_group = LabelGroup(name="labels", labels=not_empty_labels, group_type=LabelGroupType.EXCLUSIVE)

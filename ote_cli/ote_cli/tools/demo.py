@@ -153,7 +153,7 @@ def main():
     )
 
     environment.model = read_model(
-        environment.get_model_configuration(), args.load_weights, None
+        environment.get_model_configuration(), args.load_weights, DatasetEntity()
     )
 
     task = task_class(task_environment=environment)

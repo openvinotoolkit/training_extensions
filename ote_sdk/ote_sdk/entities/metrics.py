@@ -558,11 +558,11 @@ class MatrixChartInfo(VisualizationInfo):
         )
 
 
-MetricType = TypeVar("MetricType", bound=MetricEntity)
-VisualizationInfoType = TypeVar("VisualizationInfoType", bound=VisualizationInfo)
+_Metric = TypeVar("_Metric", bound=MetricEntity)
+_VisualizationInfo = TypeVar("_VisualizationInfo", bound=VisualizationInfo)
 
 
-class MetricsGroup(Generic[MetricType, VisualizationInfoType]):
+class MetricsGroup(Generic[_Metric, _VisualizationInfo]):
     """
     This class aggregates a list of metric entities and defines how this group will be
     visualized on the UI. This class is the parent class to the different types of
@@ -571,7 +571,7 @@ class MetricsGroup(Generic[MetricType, VisualizationInfoType]):
     :example: An accuracy as a metrics group
 
     >>> acc = ScoreMetric("Accuracy", 0.5)
-    >>> visual_info = BarChartInfo("Accuracy", visualization_type=VisualizationInfoType.BAR)  # show it as radial bar
+    >>> visual_info = BarChartInfo("Accuracy", visualization_type=_VisualizationInfo.BAR)  # show it as radial bar
     >>> metrics_group = BarMetricsGroup([acc], visual_info)
 
     Loss curves as a metrics group
@@ -583,7 +583,7 @@ class MetricsGroup(Generic[MetricType, VisualizationInfoType]):
     """
 
     def __init__(
-        self, metrics: Sequence[MetricType], visualization_info: VisualizationInfoType
+        self, metrics: Sequence[_Metric], visualization_info: _VisualizationInfo
     ):
         if metrics is None or len(metrics) == 0:
             raise ValueError("Metrics cannot be None or empty")
@@ -675,10 +675,15 @@ class Performance:
             raise ValueError(
                 f"Expected score to be of type `ScoreMetric`, got type `{type(score)}` instead."
             )
-        self.score: ScoreMetric = score
+        self._score: ScoreMetric = score
         self.dashboard_metrics: List[MetricsGroup] = (
             [] if dashboard_metrics is None else dashboard_metrics
         )
+
+    @property
+    def score(self):
+        """Return the score metric."""
+        return self._score
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Performance):
@@ -702,3 +707,62 @@ class NullPerformance(Performance):
 
     def __eq__(self, other):
         return isinstance(other, NullPerformance)
+
+
+class MultiScorePerformance(Performance):
+    """
+    This class can be used in tasks where performance is measured by multiple metrics
+
+    :param primary_score: The main performance score.
+    :param additional_metrics: List of additional scores. When no primary score is provided, the first additional score
+        takes priority as the main project score.
+    :param dashboard_metrics: (optional) additional statistics, containing charts, curves, and other additional info.
+    """
+
+    def __init__(
+        self,
+        primary_score: Optional[ScoreMetric] = None,
+        additional_scores: Optional[List[ScoreMetric]] = None,
+        dashboard_metrics: Optional[List[MetricsGroup]] = None,
+    ):
+        assert primary_score is not None or (
+            additional_scores is not None and len(additional_scores) > 0
+        ), "Provide at least one primary or additional score."
+
+        self._primary_score = primary_score
+        self._additional_scores: List[ScoreMetric] = (
+            [] if additional_scores is None else additional_scores
+        )
+        self.dashboard_metrics: List[MetricsGroup] = (
+            [] if dashboard_metrics is None else dashboard_metrics
+        )
+
+        if self.primary_score is None:
+            super().__init__(self.additional_scores[0], dashboard_metrics)
+        else:
+            super().__init__(self.primary_score, dashboard_metrics)
+
+    @property
+    def primary_score(self) -> Optional[ScoreMetric]:
+        """Return the primary score metric."""
+        return self._primary_score
+
+    @property
+    def additional_scores(self) -> List[ScoreMetric]:
+        """Return the additional score metrics."""
+        return self._additional_scores
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, MultiScorePerformance):
+            return False
+        return (
+            self.primary_score == other.primary_score
+            and self.additional_scores == other.additional_scores
+        )
+
+    def __repr__(self):
+        return (
+            f"MultiScorePerformance(score: {self.score.value}, primary_metric: {self.primary_score}, "
+            f"additional_metrics: ({len(self.additional_scores)} metrics), "
+            f"dashboard: ({len(self.dashboard_metrics)} metric groups))"
+        )

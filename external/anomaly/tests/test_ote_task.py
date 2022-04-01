@@ -43,7 +43,6 @@ class TestAnomalyClassification:
     Anomaly Classification Task Tests.
     """
 
-    # _trainer: OTEAnomalyTrainer
     _trainer: OteAnomalyTask
 
     @staticmethod
@@ -65,7 +64,11 @@ class TestAnomalyClassification:
 
     @TestDataset(num_train=200, num_test=10, dataset_path="./datasets/MVTec", use_mvtec=False)
     def test_ote_train_export_and_optimize(
-        self, task_path, template_path, dataset_path="./datasets/MVTec", category="bottle"
+        self,
+        task_path,
+        template_path,
+        dataset_path="./datasets/MVTec",
+        category="bottle",
     ):
         """
         E2E Train-Export Should Yield Similar Inference Results
@@ -90,10 +93,37 @@ class TestAnomalyClassification:
         openvino_results = self._trainer.infer(task=self._trainer.openvino_task, output_model=output_model)
         self._trainer.evaluate(task=self._trainer.openvino_task, result_set=openvino_results)
 
-        assert np.allclose(base_results.performance.score.value, openvino_results.performance.score.value, atol=0.1)
+        assert np.allclose(
+            base_results.performance.score.value,
+            openvino_results.performance.score.value,
+            atol=0.1,
+        )
+
+        # NNCF optimization
+        self._trainer.optimize_nncf()
+
+        base_nncf_results = self._trainer.infer(task=self._trainer.torch_task, output_model=output_model)
+        self._trainer.evaluate(task=self._trainer.torch_task, result_set=base_nncf_results)
+        if task_path == "anomaly_classification":  # skip this check for anomaly segmentation until we switch metrics
+            assert base_nncf_results.performance.score.value > 0.5
+
+        self._trainer.export_nncf()
+        openvino_results = self._trainer.infer(task=self._trainer.openvino_task, output_model=output_model)
+        self._trainer.evaluate(task=self._trainer.openvino_task, result_set=openvino_results)
+        assert np.allclose(
+            base_nncf_results.performance.score.value,
+            openvino_results.performance.score.value,
+            atol=0.2,
+        )
 
     @TestDataset(num_train=200, num_test=10, dataset_path="./datasets/MVTec", use_mvtec=False)
-    def test_ote_deploy(self, task_path, template_path, dataset_path="./datasets/MVTec", category="bottle"):
+    def test_ote_deploy(
+        self,
+        task_path,
+        template_path,
+        dataset_path="./datasets/MVTec",
+        category="bottle",
+    ):
         """
         E2E Test generation of exportable code.
         """

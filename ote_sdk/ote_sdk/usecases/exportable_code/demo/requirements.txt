@@ -1,3 +1,3 @@
-openvino==2022.1.0.dev20220316
-openmodelzoo-modelapi @ git+https://github.com/openvinotoolkit/open_model_zoo/@ef556fee2cdd92488838b49ef8939c303992d89c#egg=openmodelzoo-modelapi&subdirectory=demos/common/python
-ote-sdk @ git+https://github.com/openvinotoolkit/training_extensions/@7f3890bcc53ce5ebd76ddbc72e149840fbc7595a#egg=ote-sdk&subdirectory=ote_sdk
+openvino==2022.1.0
+openmodelzoo-modelapi @ git+https://github.com/openvinotoolkit/open_model_zoo/@releases/2022/SCv1.1#egg=openmodelzoo-modelapi&subdirectory=demos/common/python
+ote-sdk @ git+https://github.com/openvinotoolkit/training_extensions/@83a70cdd11d7c1bbc11ceb1b758750fb4bd18aae#egg=ote-sdk&subdirectory=ote_sdk

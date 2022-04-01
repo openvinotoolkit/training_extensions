@@ -20,6 +20,7 @@ import argparse
 import os
 
 from ote_sdk.configuration.helper import create
+from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.model import ModelEntity
 from ote_sdk.entities.task_environment import TaskEnvironment
 
@@ -77,12 +78,12 @@ def main():
         model_template=template,
     )
     environment.model = read_model(
-        environment.get_model_configuration(), args.load_weights, None
+        environment.get_model_configuration(), args.load_weights, DatasetEntity()
     )
 
     task = task_class(task_environment=environment)
 
-    deployed_model = ModelEntity(None, environment.get_model_configuration())
+    deployed_model = ModelEntity(DatasetEntity(), environment.get_model_configuration())
 
     os.makedirs(args.save_model_to, exist_ok=True)
     task.deploy(deployed_model)

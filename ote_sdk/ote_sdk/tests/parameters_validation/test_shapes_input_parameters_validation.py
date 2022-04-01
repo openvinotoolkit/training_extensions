@@ -8,6 +8,7 @@ import pytest
 
 from ote_sdk.entities.label import Domain, LabelEntity
 from ote_sdk.entities.scored_label import ScoredLabel
+from ote_sdk.entities.shapes.rectangle import Rectangle
 from ote_sdk.entities.shapes.ellipse import Ellipse
 from ote_sdk.entities.shapes.polygon import Point, Polygon
 from ote_sdk.entities.shapes.rectangle import Rectangle
@@ -22,12 +23,6 @@ from ote_sdk.utils.time_utils import now
 
 @pytest.mark.components(OteSdkComponent.OTE_SDK)
 class TestRectangleInputParamsValidation:
-    @staticmethod
-    def rectangle_label():
-        return ScoredLabel(
-            label=LabelEntity(name="Rectangle label", domain=Domain.DETECTION)
-        )
-
     @pytest.mark.priority_medium
     @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
@@ -35,15 +30,15 @@ class TestRectangleInputParamsValidation:
         """
         <b>Description:</b>
         Check Rectangle object initialization parameters validation
-
         <b>Input data:</b>
         Rectangle object initialization parameters
-
         <b>Expected results:</b>
         Test passes if ValueError exception is raised when unexpected type object is specified as Rectangle
         initialization parameter
         """
-        rectangle_label = self.rectangle_label()
+        rectangle_label = ScoredLabel(
+            label=LabelEntity(name="Rectangle label", domain=Domain.DETECTION)
+        )
         unexpected_type_value = "unexpected str"
         correct_values_dict = {"x1": 0.1, "y1": 0.1, "x2": 0.8, "y2": 0.6}
         unexpected_values = [

@@ -165,7 +165,7 @@ def check_nested_classes_parameters(
 def check_parameter_type(parameter, parameter_name, expected_type):
     """Function extracts nested expected types and raises ValueError exception if parameter has unexpected type"""
     # pylint: disable=W0212
-    if expected_type in [typing.Any, inspect._empty]:  # type: ignore
+    if expected_type in [typing.Any, (typing.Any,), inspect._empty]:  # type: ignore
         return
     if not isinstance(expected_type, typing._GenericAlias):  # type: ignore
         raise_value_error_if_parameter_has_unexpected_type(
@@ -268,7 +268,9 @@ def check_file_extension(
 def check_that_null_character_absents_in_string(parameter: str, parameter_name: str):
     """Function raises ValueError exception if null character: '\0' is specified in path to file"""
     if "\0" in parameter:
-        raise ValueError(f"null char \\0 is specified in {parameter_name}: {parameter}")
+        raise ValueError(
+            rf"null char \\0 is specified in {parameter_name}: {parameter}"
+        )
 
 
 def check_that_file_exists(file_path: str, file_path_name: str):
@@ -295,7 +297,7 @@ def check_that_all_characters_printable(parameter, parameter_name, allow_crlf=Fa
         )
     if not all_characters_printable:
         raise ValueError(
-            fr"parameter {parameter_name} has not printable symbols: {parameter}"
+            rf"parameter {parameter_name} has not printable symbols: {parameter}"
         )
 
 

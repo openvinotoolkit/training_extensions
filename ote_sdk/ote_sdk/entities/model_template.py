@@ -15,6 +15,7 @@ from ote_sdk.configuration.elements import metadata_keys
 from ote_sdk.configuration.enums import AutoHPOState
 from ote_sdk.configuration.helper.utils import search_in_config_dict
 from ote_sdk.entities.label import Domain
+from ote_sdk.utils.argument_checks import YamlFilePathCheck, check_input_parameters_type
 
 
 class TargetDevice(IntEnum):
@@ -114,6 +115,7 @@ class TaskType(Enum):
         self.is_trainable = task_info.is_trainable
         self.is_anomaly = task_info.is_anomaly
         self.is_global = task_info.is_global
+        self.is_local = task_info.is_local
 
     NULL = 1, TaskInfo(
         domain=Domain.NULL,
@@ -553,7 +555,7 @@ class ModelTemplate:
             self.hyper_parameters.data, key_to_search=metadata_keys.AUTO_HPO_STATE
         )
         for result in auto_hpo_state_results:
-            if result[0] == AutoHPOState.POSSIBLE:
+            if str(result[0]).lower() == str(AutoHPOState.POSSIBLE):
                 return True
         return False
 
@@ -605,6 +607,7 @@ def _parse_model_template_from_omegaconf(
     return cast(ModelTemplate, OmegaConf.to_object(config))
 
 
+@check_input_parameters_type({"model_template_path": YamlFilePathCheck})
 def parse_model_template(model_template_path: str) -> ModelTemplate:
     """
     Read a model template from a file.
