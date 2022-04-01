@@ -174,9 +174,9 @@ class TestDemoCommon:
                         '--load-weights',
                         pretrained_weights,
                         '--input',
+                        f'{os.path.join(ote_dir, "data/airport/train")}',
                         '--delay',
                         '-1',
-                        f'{os.path.join(ote_dir, "data/airport/train")}',
                         '--fit-to-size', '1', '1']
         ret = ote_common(template, root, 'demo', command_args)
         assert ret['exit_code'] == 0, "Exit code must be equal 0"
