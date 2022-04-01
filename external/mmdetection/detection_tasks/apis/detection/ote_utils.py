@@ -114,7 +114,7 @@ def draw_instance_segm_saliency_map(predictions, dataset_item, labels):
     Converts predictions to masks and accumulate them to saliency map.
     """
     width, height = dataset_item.width, dataset_item.height
-    aggregated_mask = np.zeros([len(labels), width, height], dtype=np.uint8)
+    aggregated_mask = np.zeros([len(labels), height, width], dtype=np.uint8)
     for prediction in predictions:
         if not isinstance(prediction.shape, Polygon):
             continue
