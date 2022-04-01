@@ -16,7 +16,6 @@ from shapely.geometry import Polygon as shapely_polygon
 
 from ote_sdk.entities.scored_label import ScoredLabel
 from ote_sdk.entities.shapes.shape import Shape, ShapeEntity, ShapeType
-from ote_sdk.utils.argument_checks import check_input_parameters_type
 from ote_sdk.utils.time_utils import now
 
 # pylint: disable=invalid-name
@@ -42,7 +41,6 @@ class Rectangle(Shape):
     """
 
     # pylint: disable=too-many-arguments; Requires refactor
-    @check_input_parameters_type()
     def __init__(
         self,
         x1: float,
