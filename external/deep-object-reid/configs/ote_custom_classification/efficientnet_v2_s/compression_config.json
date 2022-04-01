@@ -13,17 +13,7 @@
         },
         "test": {
             "batch_size": 64
-        },
-        "nncf_aux_config_changes": [
-            {
-                "train": {
-                    "batch_size": 64
-                },
-                "test": {
-                    "batch_size": 64
-                }
-            }
-        ]
+        }
     },
     "nncf_quantization": {
         "nncf_config": {
@@ -56,12 +46,10 @@
             "compression": [
                 {
                     "algorithm": "filter_pruning",
-                    "pruning_init": 0.5,
+                    "pruning_init": 0.1,
                     "params": {
                         "schedule": "baseline",
-                        "pruning_flops_target": 0.5,
-                        "num_init_steps": 0,
-                        "pruning_steps": 0,
+                        "pruning_flops_target": 0.1,
                         "filter_importance": "geometric_median",
                         "prune_downsample_convs": true
                     }
@@ -91,6 +79,7 @@
         }
     },
     "order_of_parts": [
-        "nncf_quantization"
+        "nncf_quantization",
+        "nncf_quantization_pruning"
     ]
 }

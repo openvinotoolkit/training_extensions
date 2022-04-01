@@ -20,7 +20,7 @@ import time
 from ote_sdk.configuration.helper import create
 from ote_sdk.entities.datasets import Subset
 from ote_sdk.entities.inference_parameters import InferenceParameters
-from ote_sdk.entities.model import ModelEntity, ModelPrecision
+from ote_sdk.entities.model import ModelEntity, ModelPrecision, ModelOptimizationType
 from ote_sdk.entities.model_template import parse_model_template
 from ote_sdk.entities.optimization_parameters import OptimizationParameters
 from ote_sdk.entities.resultset import ResultSetEntity
@@ -31,7 +31,7 @@ from ote_sdk.usecases.tasks.interfaces.optimization_interface import Optimizatio
 
 from torchreid.integration.nncf.compression import is_nncf_checkpoint
 from torchreid_tasks.utils import (ClassificationDatasetAdapter,
-                                            get_task_class)
+                                   get_task_class)
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Sample showcasing the new API')
@@ -44,6 +44,8 @@ def parse_args():
                         help='path to the pre-trained aux model weights',
                         default=None)
     parser.add_argument('--optimize', choices=['nncf', 'pot', 'none'], default='pot')
+    parser.add_argument('--enable_quantization', action='store_true')
+    parser.add_argument('--enable_pruning', action='store_true')
     parser.add_argument('--export', action='store_true')
     parser.add_argument('--debug-dump-folder', default='')
     args = parser.parse_args()
@@ -92,8 +94,10 @@ def main(args):
     model_template = parse_model_template(args.template_file_path)
 
     print('Set hyperparameters')
-
     params = create(model_template.hyper_parameters.data)
+    params.nncf_optimization.enable_quantization = args.enable_quantization
+    params.nncf_optimization.enable_pruning = args.enable_pruning
+
     print('Setup environment')
     environment = TaskEnvironment(model=None,
                                   hyper_parameters=params,
@@ -119,8 +123,13 @@ def main(args):
         validate(task, validation_dataset, trained_model)
     else:
         print('Load pre-trained weights')
-        task_impl_path = model_template.entrypoints.nncf if is_nncf_checkpoint(args.weights) \
-            else model_template.entrypoints.base
+        if is_nncf_checkpoint(args.weights):
+            task_impl_path = model_template.entrypoints.nncf
+            optimization_type = ModelOptimizationType.NNCF
+        else:
+            task_impl_path = model_template.entrypoints.base
+            optimization_type = ModelOptimizationType.NONE
+
         weights = load_weights(args.weights)
         model_adapters = {'weights.pth': ModelAdapter(weights)}
         if args.aux_weights is not None:
@@ -131,6 +140,7 @@ def main(args):
             configuration=environment.get_model_configuration(),
             model_adapters=model_adapters,
             precision = [ModelPrecision.FP32],
+            optimization_type=optimization_type
         )
         environment.model = trained_model
 

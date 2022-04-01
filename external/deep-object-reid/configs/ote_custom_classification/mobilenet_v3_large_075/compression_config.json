@@ -58,18 +58,13 @@
             "compression": [
                 {
                     "algorithm": "filter_pruning",
-                    "pruning_init": 0.5,
+                    "pruning_init": 0.1,
                     "params": {
                         "schedule": "baseline",
-                        "pruning_flops_target": 0.5,
-                        "num_init_steps": 0,
-                        "pruning_steps": 0,
+                        "pruning_flops_target": 0.1,
                         "filter_importance": "geometric_median",
                         "prune_downsample_convs": true
-                    },
-                    "ignored_scopes": [
-                        "MobileNetV3/Sequential[classifier]/NNCFLinear[0]/linear_0"
-                    ]
+                    }
                 },
                 {
                     "algorithm": "quantization",

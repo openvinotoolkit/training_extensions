@@ -27,13 +27,6 @@
                     "batchnorm_adaptation": {
                         "num_bn_adaptation_samples": 8192
                     }
-                },
-                "scope_overrides": {
-                    "activations": {
-                        "EfficientNet/Sequential[output]/AngleSimpleLinear[asl]/mm_0": {
-                            "mode": "symmetric"
-                        }
-                    }
                 }
             },
             "accuracy_aware_training": {
@@ -53,12 +46,10 @@
             "compression": [
                 {
                     "algorithm": "filter_pruning",
-                    "pruning_init": 0.5,
+                    "pruning_init": 0.1,
                     "params": {
                         "schedule": "baseline",
-                        "pruning_flops_target": 0.5,
-                        "num_init_steps": 0,
-                        "pruning_steps": 0,
+                        "pruning_flops_target": 0.1,
                         "filter_importance": "geometric_median",
                         "prune_downsample_convs": true
                     }
@@ -72,13 +63,6 @@
                         },
                         "batchnorm_adaptation": {
                             "num_bn_adaptation_samples": 8192
-                        }
-                    },
-                    "scope_overrides": {
-                        "activations": {
-                            "EfficientNet/Sequential[output]/AngleSimpleLinear[asl]/mm_0": {
-                                "mode": "symmetric"
-                            }
                         }
                     }
                 }
