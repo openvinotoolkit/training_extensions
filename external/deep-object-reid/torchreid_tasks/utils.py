@@ -400,6 +400,41 @@ class InferenceProgressCallback(TimeMonitorCallback):
         self.update_progress_callback(self.get_progress())
 
 
+class OptimizationProgressCallback(TimeMonitorCallback):
+    """ Progress callback used for optimization using NNCF
+        There are three stages to the progress bar:
+           - 5 % model is loaded
+           - 10 % compressed model is initialized
+           - 10-100 % compressed model is being fine-tuned
+    """
+    def __init__(self, update_progress_callback: UpdateProgressCallback, loading_stage_progress_percentage: int = 5,
+                 initialization_stage_progress_percentage: int = 5, **kwargs):
+        super().__init__(update_progress_callback=update_progress_callback, **kwargs)
+        if loading_stage_progress_percentage + initialization_stage_progress_percentage >= 100:
+            raise RuntimeError('Total optimization progress percentage is more than 100%')
+
+        train_percentage = 100 - loading_stage_progress_percentage - initialization_stage_progress_percentage
+        self.loading_stage_steps = self.total_steps * loading_stage_progress_percentage / train_percentage
+        self.initialization_stage_steps = self.total_steps * initialization_stage_progress_percentage / train_percentage
+        self.total_steps += self.loading_stage_steps + self.initialization_stage_steps
+
+        # set loading_stage_steps from the start as the model is already loaded at this point
+        self.current_step = self.loading_stage_steps
+        self.update_progress_callback(self.get_progress())
+
+    def on_train_batch_end(self, batch, logs=None):
+        super().on_train_batch_end(batch, logs)
+        self.update_progress_callback(self.get_progress(), score=logs)
+
+    def on_train_end(self, logs=None):
+        super(OptimizationProgressCallback, self).on_train_end(logs)
+        self.update_progress_callback(self.get_progress(), score=logs)
+
+    def on_initialization_end(self):
+        self.current_step += self.initialization_stage_steps
+        self.update_progress_callback(self.get_progress())
+
+
 def preprocess_features_for_actmap(features):
     features = np.mean(features, axis=1)
     b, h, w = features.shape
