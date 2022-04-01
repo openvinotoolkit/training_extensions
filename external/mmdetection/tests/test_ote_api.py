@@ -560,7 +560,8 @@ class API(unittest.TestCase):
 
     @e2e_pytest_api
     def test_training_person_detection_0301(self):
-        self.end_to_end(osp.join('configs', 'person-detection', 'person-detection-0301'))
+        self.end_to_end(osp.join('configs', 'person-detection', 'person-detection-0301'),
+        export_perf_delta_tolerance=0.01)
 
     @e2e_pytest_api
     def test_training_person_detection_0302(self):
