@@ -38,7 +38,7 @@ from torchreid.integration.nncf.compression_script_utils import (calculate_lr_fo
                                                                  patch_config)
 from torchreid_tasks.inference_task import OTEClassificationInferenceTask
 from torchreid_tasks.monitors import DefaultMetricsMonitor
-from torchreid_tasks.utils import OTEClassificationDataset, OptimizationProgressCallback
+from torchreid_tasks.utils import OTEClassificationDataset, OptimizationProgressCallback, force_fp32
 from torchreid.ops import DataParallel
 from torchreid.utils import set_random_seed, set_model_attr
 
@@ -227,15 +227,16 @@ class OTEClassificationNNCFTask(OTEClassificationInferenceTask, IOptimizationTas
 
         logger.info('Start training')
         time_monitor.on_train_begin()
-        run_training(self._cfg, datamanager, train_model, optimizer,
-                     scheduler, extra_device_ids, self._cfg.train.lr,
-                     should_freeze_aux_models=True,
-                     aux_pretrained_dicts=aux_pretrained_dicts,
-                     tb_writer=self.metrics_monitor,
-                     perf_monitor=time_monitor,
-                     stop_callback=self.stop_callback,
-                     nncf_metainfo=self._nncf_metainfo,
-                     compression_ctrl=self._compression_ctrl)
+        with force_fp32(train_model, self._cfg, len(train_subset) < self.FP32_THRESHOLD):
+            run_training(self._cfg, datamanager, train_model, optimizer,
+                        scheduler, extra_device_ids, self._cfg.train.lr,
+                        should_freeze_aux_models=True,
+                        aux_pretrained_dicts=aux_pretrained_dicts,
+                        tb_writer=self.metrics_monitor,
+                        perf_monitor=time_monitor,
+                        stop_callback=self.stop_callback,
+                        nncf_metainfo=self._nncf_metainfo,
+                        compression_ctrl=self._compression_ctrl)
         time_monitor.on_train_end()
 
         self.metrics_monitor.close()

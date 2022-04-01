@@ -62,6 +62,7 @@ logger = logging.getLogger(__name__)
 class OTEClassificationInferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
 
     task_environment: TaskEnvironment
+    FP32_THRESHOLD: int = 100
 
     def __init__(self, task_environment: TaskEnvironment):
         logger.info("Loading OTEClassificationTask.")

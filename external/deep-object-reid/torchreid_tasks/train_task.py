@@ -32,7 +32,8 @@ from scripts.default_config import imagedata_kwargs, lr_scheduler_kwargs, optimi
 from torchreid.apis.training import run_lr_finder, run_training
 from torchreid_tasks.inference_task import OTEClassificationInferenceTask
 from torchreid_tasks.monitors import DefaultMetricsMonitor
-from torchreid_tasks.utils import (OTEClassificationDataset, TrainingProgressCallback)
+from torchreid_tasks.utils import (OTEClassificationDataset,
+                                   TrainingProgressCallback, force_fp32)
 from torchreid.ops import DataParallel
 from torchreid.utils import load_pretrained_weights, set_random_seed
 
@@ -130,15 +131,16 @@ class OTEClassificationTrainingTask(OTEClassificationInferenceTask, ITrainingTas
             scheduler = torchreid.optim.build_lr_scheduler(optimizer, num_iter=datamanager.num_iter,
                                                            **lr_scheduler_kwargs(self._cfg))
 
-        if self._cfg.lr_finder.enable:
-            _, train_model, optimizer, scheduler = \
-                        run_lr_finder(self._cfg, datamanager, train_model, optimizer, scheduler, None,
-                                      rebuild_model=False, gpu_num=self.num_devices, split_models=False)
+        with force_fp32(train_model, self._cfg, len(train_subset) < self.FP32_THRESHOLD):
+            if self._cfg.lr_finder.enable:
+                _, train_model, optimizer, scheduler = \
+                            run_lr_finder(self._cfg, datamanager, train_model, optimizer, scheduler, None,
+                                        rebuild_model=False, gpu_num=self.num_devices, split_models=False)
 
-        _, final_acc = run_training(self._cfg, datamanager, train_model, optimizer,
-                                    scheduler, extra_device_ids, self._cfg.train.lr,
-                                    tb_writer=self.metrics_monitor, perf_monitor=time_monitor,
-                                    stop_callback=self.stop_callback)
+            _, final_acc = run_training(self._cfg, datamanager, train_model, optimizer,
+                                        scheduler, extra_device_ids, self._cfg.train.lr,
+                                        tb_writer=self.metrics_monitor, perf_monitor=time_monitor,
+                                        stop_callback=self.stop_callback)
 
         training_metrics = self._generate_training_metrics_group()
 

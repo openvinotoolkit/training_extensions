@@ -363,13 +363,21 @@ def set_values_as_default(parameters):
 
 
 @contextmanager
-def force_fp32(model):
-    mix_precision_status = get_model_attr(model, 'mix_precision')
-    set_model_attr(model, 'mix_precision', False)
-    try:
+def force_fp32(model, cfg=None, force=True):
+    if force:
+        print('Forcing FP32')
+        mix_precision_status = get_model_attr(model, 'mix_precision')
+        if cfg:
+            cfg.train.mix_precision = False
+        set_model_attr(model, 'mix_precision', False)
+        try:
+            yield model
+        finally:
+            if cfg:
+                cfg.train.mix_precision = mix_precision_status
+            set_model_attr(model, 'mix_precision', mix_precision_status)
+    else:
         yield model
-    finally:
-        set_model_attr(model, 'mix_precision', mix_precision_status)
 
 
 class TrainingProgressCallback(TimeMonitorCallback):
