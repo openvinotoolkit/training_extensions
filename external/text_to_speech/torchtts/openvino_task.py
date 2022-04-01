@@ -15,7 +15,6 @@ from typing import Any, Dict, Tuple, Optional
 import numpy as np
 
 import openvino
-
 print(openvino.__file__)
 from openvino.runtime import Core
 
@@ -64,8 +63,8 @@ class OpenVINOTTSTask(IInferenceTask, IEvaluationTask):
         self.encoder, self.decoder = self.load_inferencers()
 
     def load_inferencers(self) -> Tuple[Any]:
-        encoder = Encoder(self.model.get_data("encoder.xml"), self.ie)
-        decoder = Decoder(self.model.get_data("decoder.xml"), self.ie)
+        encoder = Encoder(self.model.get_data("encoder.xml"), self.model.get_data("encoder.bin"), self.ie)
+        decoder = Decoder(self.model.get_data("decoder.xml"), self.model.get_data("decoder.bin"), self.ie)
 
         return encoder, decoder
 
@@ -297,6 +296,8 @@ class OpenVINOTTSTask(IInferenceTask, IEvaluationTask):
         parameters: Dict[str, Any] = {}
         parameters["type_of_model"] = "text_to_speech"
         parameters["converter_type"] = "TEXT_TO_SPEECH"
+        parameters["model_parameters"] = {}
+        name_of_package = "demo_package"
 
         with tempfile.TemporaryDirectory() as tempdir:
             copyfile(os.path.join(cur_dir, "deploy", "README.md"), os.path.join(tempdir, "README.md"))
@@ -304,7 +305,8 @@ class OpenVINOTTSTask(IInferenceTask, IEvaluationTask):
             copyfile(os.path.join(cur_dir, "deploy", "requirements.txt"), os.path.join(tempdir, "requirements.txt"))
             copytree(os.path.join(cur_dir, "text_preprocessing"), os.path.join(tempdir, "text_preprocessing"))
             copyfile(os.path.join(cur_dir, "demo.py"), os.path.join(tempdir, "demo.py"))
-            config_path = os.path.join(tempdir, "config.json")
+            os.mkdir(os.path.join(tempdir, name_of_package))
+            config_path = os.path.join(tempdir, name_of_package, "config.json")
             with open(config_path, "w", encoding="utf-8") as file:
                 json.dump(parameters, file, ensure_ascii=False, indent=4)
 
@@ -336,6 +338,7 @@ class OpenVINOTTSTask(IInferenceTask, IEvaluationTask):
                 add_dir2zip(os.path.join(tempdir, "text_preprocessing"),
                             os.path.join("python", "text_preprocessing"),
                             arch)
+                add_dir2zip(os.path.join(tempdir, name_of_package), os.path.join(name_of_package), arch)
                 arch.write(os.path.join(tempdir, wheel_file_name), os.path.join("python", wheel_file_name))
             with open(os.path.join(tempdir, "openvino.zip"), "rb") as output_arch:
                 output_model.exportable_code = output_arch.read()

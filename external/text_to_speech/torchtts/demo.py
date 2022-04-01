@@ -28,11 +28,17 @@ class IEModel:
         self.ie = ie
         self.device = device
 
-    def load_network(self, model_xml):
-        model_bin_name = ".".join(osp.basename(model_xml).split('.')[:-1]) + ".bin"
-        model_bin = osp.join(osp.dirname(model_xml), model_bin_name)
-        log.info('Reading AcousticGAN model {}'.format(model_xml))
-        model = self.ie.read_model(model=model_xml, weights=model_bin)
+    def load_network(self, model_path, weights_path):
+        model_from_buffer = isinstance(model_path, bytes) and isinstance(weights_path, bytes)
+        if not model_from_buffer:
+            log.info('Reading AcousticGAN model {}'.format(model_path))
+            model = self.ie.read_model(model_path, weights_path)
+        else:
+            with open("tmp.xml", "wb") as f:
+                f.write(model_path)
+            with open("tmp.bin", "wb") as f:
+                f.write(weights_path)
+            model = self.ie.read_model("tmp.xml", "tmp.bin")
         return model
 
     def create_infer_request(self, model, path=None):
@@ -43,10 +49,10 @@ class IEModel:
 
 
 class Encoder(IEModel):
-    def __init__(self, model_encoder, ie, device='CPU'):
+    def __init__(self, model_path, model_weights, ie, device='CPU'):
         super().__init__(ie, device)
-        self.encoder = self.load_network(model_encoder)
-        self.request = self.create_infer_request(self.encoder, model_encoder)
+        self.encoder = self.load_network(model_path, model_weights)
+        self.request = self.create_infer_request(self.encoder)
         self.enc_input_data_name = "seq"
         self.enc_input_mask_name = "seq_len"
 
@@ -69,10 +75,10 @@ class Encoder(IEModel):
 
 
 class Decoder(IEModel):
-    def __init__(self, model_decoder, ie, device='CPU'):
+    def __init__(self, model_path, model_weights, ie, device='CPU'):
         super().__init__(ie, device)
-        self.decoder = self.load_network(model_decoder)
-        self.request = self.create_infer_request(self.decoder, model_decoder)
+        self.decoder = self.load_network(model_path, model_weights)
+        self.request = self.create_infer_request(self.decoder)
 
         self.dec_input_data_name = "z"
         self.dec_input_mask_name = "z_mask"
@@ -100,8 +106,8 @@ class AcousticGANIE:
         self.ie = ie
 
         self.cmudict = cmudict.CMUDict(osp.join(osp.dirname(osp.realpath(__file__)), 'text_preprocessing', 'cmu_dictionary'))
-        self.encoder = Encoder(model_encoder, ie, device)
-        self.decoder = Decoder(model_decoder, ie, device)
+        self.encoder = Encoder(model_encoder, model_encoder.replace('.xml', '.bin'), ie, device)
+        self.decoder = Decoder(model_decoder, model_decoder.replace('.xml', '.bin'), ie, device)
 
     def seq_to_indexes(self, text):
         res = text_to_sequence(text, dictionary=self.cmudict)

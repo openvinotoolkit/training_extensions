@@ -106,10 +106,18 @@ def read_model(model_configuration, path, train_dataset):
                 myzip.extractall(temp_dir)
 
             model_path = os.path.join(temp_dir, "model", "model")
-            model_adapters = {
-                "openvino.xml": ModelAdapter(read_binary(model_path + ".xml")),
-                "openvino.bin": ModelAdapter(read_binary(model_path + ".bin")),
-            }
+            if os.path.exists(model_path + '.xml'):
+                model_adapters = {
+                    "openvino.xml": ModelAdapter(read_binary(model_path + ".xml")),
+                    "openvino.bin": ModelAdapter(read_binary(model_path + ".bin")),
+                }
+            else:
+                model_path = os.path.join(temp_dir, "model")
+                file_names = os.listdir(model_path)
+                model_adapters = {}
+                for name in file_names:
+                    if name.endswith(".xml") or name.endswith(".bin"):
+                        model_adapters[name] = ModelAdapter(read_binary(os.path.join(model_path, name)))
 
             config_path = os.path.join(temp_dir, "model", "config.json")
             with open(config_path, encoding="UTF-8") as f:
