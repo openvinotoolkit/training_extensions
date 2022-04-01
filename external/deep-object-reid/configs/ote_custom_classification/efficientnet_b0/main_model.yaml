@@ -14,7 +14,8 @@ lr_finder:
 model:
   name: 'efficientnet_b0'
   type: 'classification'
-  pretrained: True
+  pretrained: False
+  load_weights: 'https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/custom_image_classification/efficientnet_b0_imagenet_cls.pth'
   save_all_chkpts: False
 
 custom_datasets:

@@ -20,6 +20,7 @@ import argparse
 import os
 
 from ote_sdk.configuration.helper import create
+from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.model import ModelEntity, ModelOptimizationType
 from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.usecases.adapters.model_adapter import ModelAdapter
@@ -83,7 +84,7 @@ def main():
     model = ModelEntity(
         configuration=environment.get_model_configuration(),
         model_adapters=model_adapters,
-        train_dataset=None,
+        train_dataset=DatasetEntity(),
         optimization_type=ModelOptimizationType.NNCF
         if is_nncf
         else ModelOptimizationType.NONE,
@@ -92,7 +93,7 @@ def main():
 
     task = task_class(task_environment=environment)
 
-    exported_model = ModelEntity(None, environment.get_model_configuration())
+    exported_model = ModelEntity(DatasetEntity(), environment.get_model_configuration())
 
     task.export(ExportType.OPENVINO, exported_model)
 

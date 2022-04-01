@@ -10,6 +10,7 @@ from typing import Optional
 
 from ote_sdk.entities.color import Color
 from ote_sdk.entities.id import ID
+from ote_sdk.utils.argument_checks import check_input_parameters_type
 from ote_sdk.utils.time_utils import now
 
 
@@ -82,6 +83,7 @@ class LabelEntity:
     """
 
     # pylint: disable=redefined-builtin, too-many-instance-attributes, too-many-arguments; Requires refactor
+    @check_input_parameters_type()
     def __init__(
         self,
         name: str,

@@ -392,14 +392,18 @@ class MaskToAnnotationConverter(IPredictionToAnnotationConverter):
                     )
                     for point in contour
                 ]
-                annotations.append(
-                    Annotation(
-                        Polygon(points=points),
-                        labels=[
-                            ScoredLabel(self.labels[int(class_idx) - 1], float(score))
-                        ],
+                polygon = Polygon(points=points)
+                if polygon.get_area() > 1e-12:
+                    annotations.append(
+                        Annotation(
+                            polygon,
+                            labels=[
+                                ScoredLabel(
+                                    self.labels[int(class_idx) - 1], float(score)
+                                )
+                            ],
+                        )
                     )
-                )
         annotation_scene = AnnotationSceneEntity(
             kind=AnnotationSceneKind.PREDICTION,
             annotations=annotations,
@@ -431,22 +435,25 @@ class RotatedRectToAnnotationConverter(IPredictionToAnnotationConverter):
                     continue
                 if len(contour) <= 2:
                     continue
-                box_points = cv2.boxPoints(cv2.minAreaRect(contour))
                 points = [
                     Point(
                         x=point[0] / metadata["original_shape"][1],
                         y=point[1] / metadata["original_shape"][0],
                     )
-                    for point in box_points
+                    for point in cv2.boxPoints(cv2.minAreaRect(contour))
                 ]
-                annotations.append(
-                    Annotation(
-                        Polygon(points=points),
-                        labels=[
-                            ScoredLabel(self.labels[int(class_idx) - 1], float(score))
-                        ],
+                polygon = Polygon(points=points)
+                if polygon.get_area() > 1e-12:
+                    annotations.append(
+                        Annotation(
+                            polygon,
+                            labels=[
+                                ScoredLabel(
+                                    self.labels[int(class_idx) - 1], float(score)
+                                )
+                            ],
+                        )
                     )
-                )
         annotation_scene = AnnotationSceneEntity(
             kind=AnnotationSceneKind.PREDICTION,
             annotations=annotations,
