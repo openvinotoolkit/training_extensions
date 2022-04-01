@@ -388,7 +388,7 @@ class OTEDetectionInferenceTask(IInferenceTask, IExportTask, IEvaluationTask, IU
                 output_model.precision = self._precision
                 output_model.optimization_methods = self._optimization_methods
             except Exception as ex:
-                raise RuntimeError('Optimization was unsuccessful.') from ex
+                raise RuntimeError(f'Optimization was unsuccessful: {ex}') from ex
         output_model.set_data("label_schema.json", label_schema_to_bytes(self._task_environment.label_schema))
         logger.info('Exporting completed')
 
