@@ -21,9 +21,10 @@ from ote_sdk.test_suite.e2e_test_system import e2e_pytest_component
 
 from ote_cli.registry import Registry
 
-templates = Registry('external', experimental=True).templates
+templates = Registry("external", experimental=True).templates
 paths = [os.path.relpath(template.model_template_path) for template in templates]
 ids = [os.path.relpath(template.model_template_id) for template in templates]
+
 
 class TestTemplates:
     @e2e_pytest_component

@@ -33,23 +33,27 @@ from ote_cli_test_common import (
 )
 
 
-root = '/tmp/ote_cli/'
-ote_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
+root = "/tmp/ote_cli/"
+ote_dir = os.path.dirname(
+    os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+)
 external_path = os.path.join(ote_dir, "external")
 
 
 params_values = []
 params_ids = []
-for back_end_ in ('DETECTION',
-                  'CLASSIFICATION',
-                  'ANOMALY_CLASSIFICATION',
-                  'SEGMENTATION',
-                  'ROTATED_DETECTION',
-                  'INSTANCE_SEGMENTATION'):
+for back_end_ in (
+    "DETECTION",
+    "CLASSIFICATION",
+    "ANOMALY_CLASSIFICATION",
+    "SEGMENTATION",
+    "ROTATED_DETECTION",
+    "INSTANCE_SEGMENTATION",
+):
     cur_templates = Registry(external_path).filter(task_type=back_end_).templates
     cur_templates_ids = [template.model_template_id for template in cur_templates]
     params_values += [(back_end_, t) for t in cur_templates]
-    params_ids += [back_end_ + ',' + cur_id for cur_id in cur_templates_ids]
+    params_ids += [back_end_ + "," + cur_id for cur_id in cur_templates_ids]
 
 
 class TestDemoCommon:
@@ -65,111 +69,137 @@ class TestDemoCommon:
     def test_ote_demo_no_template(self, back_end, template, create_venv_fx):
         error_string = "ote demo: error: the following arguments are required: template"
         command_args = []
-        ret = ote_common(template, root, 'demo', command_args)
-        assert ret['exit_code'] != 0, "Exit code must not be equal 0"
-        assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
+        ret = ote_common(template, root, "demo", command_args)
+        assert ret["exit_code"] != 0, "Exit code must not be equal 0"
+        assert error_string in ret["stderr"], f"Different error message {ret['stderr']}"
 
     @e2e_pytest_component
     @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
     def test_ote_demo_no_weights(self, back_end, template, create_venv_fx):
-        error_string = "ote demo: error: the following arguments are required: --load-weights"
-        command_args = [template.model_template_id,
-                        '--input',
-                        f'{os.path.join(ote_dir, "data/airport/train")}']
-        ret = ote_common(template, root, 'demo', command_args)
-        assert ret['exit_code'] != 0, "Exit code must not be equal 0"
-        assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
+        error_string = (
+            "ote demo: error: the following arguments are required: --load-weights"
+        )
+        command_args = [
+            template.model_template_id,
+            "--input",
+            f'{os.path.join(ote_dir, "data/airport/train")}',
+        ]
+        ret = ote_common(template, root, "demo", command_args)
+        assert ret["exit_code"] != 0, "Exit code must not be equal 0"
+        assert error_string in ret["stderr"], f"Different error message {ret['stderr']}"
 
     @e2e_pytest_component
     @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
     def test_ote_demo_no_input(self, back_end, template, create_venv_fx):
-        error_string = "ote demo: error: the following arguments are required: -i/--input"
-        command_args = [template.model_template_id,
-                        '--load-weights',
-                        f'./trained_{template.model_template_id}/weights.pth']
-        ret = ote_common(template, root, 'demo', command_args)
-        assert ret['exit_code'] != 0, "Exit code must not be equal 0"
-        assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
+        error_string = (
+            "ote demo: error: the following arguments are required: -i/--input"
+        )
+        command_args = [
+            template.model_template_id,
+            "--load-weights",
+            f"./trained_{template.model_template_id}/weights.pth",
+        ]
+        ret = ote_common(template, root, "demo", command_args)
+        assert ret["exit_code"] != 0, "Exit code must not be equal 0"
+        assert error_string in ret["stderr"], f"Different error message {ret['stderr']}"
 
     @e2e_pytest_component
     @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
     def test_ote_demo_wrong_weights(self, back_end, template, create_venv_fx):
         error_string = "Path is not valid"
         for case in wrong_paths.values():
-            command_args = [template.model_template_id,
-                            '--load-weights',
-                            case,
-                            '--input',
-                            f'{os.path.join(ote_dir, "data/airport/train")}']
-            ret = ote_common(template, root, 'demo', command_args)
-            assert ret['exit_code'] != 0, "Exit code must not be equal 0"
-            assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
+            command_args = [
+                template.model_template_id,
+                "--load-weights",
+                case,
+                "--input",
+                f'{os.path.join(ote_dir, "data/airport/train")}',
+            ]
+            ret = ote_common(template, root, "demo", command_args)
+            assert ret["exit_code"] != 0, "Exit code must not be equal 0"
+            assert (
+                error_string in ret["stderr"]
+            ), f"Different error message {ret['stderr']}"
 
     @e2e_pytest_component
     @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
     def test_ote_demo_wrong_input(self, back_end, template, create_venv_fx):
         error_string = "ote demo: error: argument -i/--input: expected one argument"
-        command_args = [template.model_template_id,
-                        '--load-weights',
-                        f'./trained_{template.model_template_id}/weights.pth',
-                        '--input']
-        ret = ote_common(template, root, 'demo', command_args)
-        assert ret['exit_code'] != 0, "Exit code must not be equal 0"
-        assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
+        command_args = [
+            template.model_template_id,
+            "--load-weights",
+            f"./trained_{template.model_template_id}/weights.pth",
+            "--input",
+        ]
+        ret = ote_common(template, root, "demo", command_args)
+        assert ret["exit_code"] != 0, "Exit code must not be equal 0"
+        assert error_string in ret["stderr"], f"Different error message {ret['stderr']}"
 
     @e2e_pytest_component
     @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
     def test_ote_demo_fit_size_no_input(self, back_end, template, create_venv_fx):
         error_string = "ote demo: error: argument --fit-to-size: expected 2 arguments"
-        command_args = [template.model_template_id,
-                        '--load-weights',
-                        f'./trained_{template.model_template_id}/weights.pth',
-                        '--input',
-                        f'{os.path.join(ote_dir, "data/airport/train")}',
-                        '--fit-to-size']
-        ret = ote_common(template, root, 'demo', command_args)
-        assert ret['exit_code'] != 0, "Exit code must not be equal 0"
-        assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
+        command_args = [
+            template.model_template_id,
+            "--load-weights",
+            f"./trained_{template.model_template_id}/weights.pth",
+            "--input",
+            f'{os.path.join(ote_dir, "data/airport/train")}',
+            "--fit-to-size",
+        ]
+        ret = ote_common(template, root, "demo", command_args)
+        assert ret["exit_code"] != 0, "Exit code must not be equal 0"
+        assert error_string in ret["stderr"], f"Different error message {ret['stderr']}"
 
     @e2e_pytest_component
     @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
     def test_ote_demo_fit_size_float_input(self, back_end, template, create_venv_fx):
         error_string = "--fit-to-size: invalid int value:"
-        command_args = [template.model_template_id,
-                        '--load-weights',
-                        f'./trained_{template.model_template_id}/weights.pth',
-                        '--input',
-                        f'{os.path.join(ote_dir, "data/airport/train")}',
-                        '--fit-to-size', '0.0', '0.0']
-        ret = ote_common(template, root, 'demo', command_args)
-        assert ret['exit_code'] != 0, "Exit code must not be equal 0"
-        assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
+        command_args = [
+            template.model_template_id,
+            "--load-weights",
+            f"./trained_{template.model_template_id}/weights.pth",
+            "--input",
+            f'{os.path.join(ote_dir, "data/airport/train")}',
+            "--fit-to-size",
+            "0.0",
+            "0.0",
+        ]
+        ret = ote_common(template, root, "demo", command_args)
+        assert ret["exit_code"] != 0, "Exit code must not be equal 0"
+        assert error_string in ret["stderr"], f"Different error message {ret['stderr']}"
 
     @e2e_pytest_component
     @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
     def test_ote_demo_fit_size_negative_input(self, back_end, template, create_venv_fx):
         error_string = "Both values of --fit_to_size parameter must be > 0"
-        command_args = [template.model_template_id,
-                        '--load-weights',
-                        f'./trained_{template.model_template_id}/weights.pth',
-                        '--input',
-                        f'{os.path.join(ote_dir, "data/airport/train")}',
-                        '--fit-to-size', '1', '-1']
-        ret = ote_common(template, root, 'demo', command_args)
-        assert ret['exit_code'] != 0, "Exit code must not be equal 0"
-        assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
+        command_args = [
+            template.model_template_id,
+            "--load-weights",
+            f"./trained_{template.model_template_id}/weights.pth",
+            "--input",
+            f'{os.path.join(ote_dir, "data/airport/train")}',
+            "--fit-to-size",
+            "1",
+            "-1",
+        ]
+        ret = ote_common(template, root, "demo", command_args)
+        assert ret["exit_code"] != 0, "Exit code must not be equal 0"
+        assert error_string in ret["stderr"], f"Different error message {ret['stderr']}"
 
     @e2e_pytest_component
     @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
     def test_ote_demo_delay_wrong_type(self, back_end, template, create_venv_fx):
         error_string = "invalid int value"
-        command_args = [template.model_template_id,
-                        '--load-weights',
-                        f'./trained_{template.model_template_id}/weights.pth',
-                        '--input',
-                        f'{os.path.join(ote_dir, "data/airport/train")}',
-                        '--delay',
-                        'String']
-        ret = ote_common(template, root, 'demo', command_args)
-        assert ret['exit_code'] != 0, "Exit code must not be equal 0"
-        assert error_string in ret['stderr'], f"Different error message {ret['stderr']}"
+        command_args = [
+            template.model_template_id,
+            "--load-weights",
+            f"./trained_{template.model_template_id}/weights.pth",
+            "--input",
+            f'{os.path.join(ote_dir, "data/airport/train")}',
+            "--delay",
+            "String",
+        ]
+        ret = ote_common(template, root, "demo", command_args)
+        assert ret["exit_code"] != 0, "Exit code must not be equal 0"
+        assert error_string in ret["stderr"], f"Different error message {ret['stderr']}"

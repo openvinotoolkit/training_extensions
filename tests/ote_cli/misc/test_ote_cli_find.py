@@ -26,30 +26,30 @@ from ote_cli.utils.tests import (
     get_some_vars,
 )
 
-from ote_cli_test_common import (
-    wrong_paths,
-    ote_common,
-    logger
+from ote_cli_test_common import wrong_paths, ote_common, logger
+
+
+root = "/tmp/ote_cli/"
+ote_dir = os.path.dirname(
+    os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 )
-
-
-root = '/tmp/ote_cli/'
-ote_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
 external_path = os.path.join(ote_dir, "external")
 
 
 params_values = []
 params_ids = []
-for back_end_ in ('DETECTION',
-                  'CLASSIFICATION',
-                  'ANOMALY_CLASSIFICATION',
-                  'SEGMENTATION',
-                  'ROTATED_DETECTION',
-                  'INSTANCE_SEGMENTATION'):
+for back_end_ in (
+    "DETECTION",
+    "CLASSIFICATION",
+    "ANOMALY_CLASSIFICATION",
+    "SEGMENTATION",
+    "ROTATED_DETECTION",
+    "INSTANCE_SEGMENTATION",
+):
     cur_templates = Registry(external_path).filter(task_type=back_end_).templates
     cur_templates_ids = [template.model_template_id for template in cur_templates]
     params_values += [(back_end_, t) for t in cur_templates]
-    params_ids += [back_end_ + ',' + cur_id for cur_id in cur_templates_ids]
+    params_ids += [back_end_ + "," + cur_id for cur_id in cur_templates_ids]
 
 
 class TestFindCommon:
@@ -76,7 +76,9 @@ class TestFindCommon:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("back_end, template", params_values, ids=params_ids)
-    def test_ote_cli_find_root_external_folder(self, back_end, template, create_venv_fx):
+    def test_ote_cli_find_root_external_folder(
+        self, back_end, template, create_venv_fx
+    ):
         command_args = ["--root", external_path]
         ret = ote_common(template, root, "find", command_args)
         assert ret["exit_code"] == 0, "Exit code must be equal 0"
