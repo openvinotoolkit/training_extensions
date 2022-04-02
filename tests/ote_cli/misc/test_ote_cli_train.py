@@ -395,7 +395,7 @@ class TestTrainDetectionTemplateArguments:
     )
     def create_venv_fx(self, template):
         work_dir, template_work_dir, algo_backend_dir = get_some_vars(template, root)
-        create_venv(algo_backend_dir, work_dir, template_work_dir)
+        create_venv(algo_backend_dir, work_dir)
 
     @e2e_pytest_component
     @pytest.mark.parametrize(
