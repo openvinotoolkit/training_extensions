@@ -111,7 +111,7 @@ def get_actmap(features, output_res):
 
 def draw_instance_segm_saliency_map(predictions, dataset_item, labels):
     """
-    Converts predictions to masks and accumulate them to saliency map.
+    Converts predictions to masks and accumulate them to saliency map (naive way).
     """
     width, height = dataset_item.width, dataset_item.height
     aggregated_mask = np.zeros([len(labels), height, width], dtype=np.uint8)
@@ -122,9 +122,10 @@ def draw_instance_segm_saliency_map(predictions, dataset_item, labels):
             [[(int(p.x * width), int(p.y * height)) for p in prediction.shape.points]]
         )
         assert len(prediction.get_labels()) == 1
-        label = prediction.get_labels()[0]
-        color = int(label.probability * 255)
-        cv2.drawContours(aggregated_mask[int(label.id)], contours, -1, color, -1)
+        scored_label = prediction.get_labels()[0]
+        label_id = labels.index(scored_label.label)
+        color = int(scored_label.probability * 255)
+        cv2.drawContours(aggregated_mask[label_id], contours, -1, color, -1)
     return aggregated_mask
 
 
@@ -136,7 +137,7 @@ def add_feature_info_to_data_item(feature_info, dataset_item, model, labels):
     dataset_item.append_metadata_item(active_score, model=model)
 
     if isinstance(feature_map, Tensor):
-        # TODO: rewrite feature map preprocessing for object detection task, accumulating features through
+        # TODO(gzalessk): rewrite feature map preprocessing for object detection task, accumulating features through
         #  several outputs, not just taking the largest feature map
         feature_map = feature_map[0].detach().cpu().numpy()
     for label_idx, label in enumerate(labels):

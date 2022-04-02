@@ -261,14 +261,14 @@ class OTEDetectionInferenceTask(IInferenceTask, IExportTask, IEvaluationTask, IU
         logger.info(f'Confidence threshold {self.confidence_threshold}')
         model = self._model
         with model.register_forward_pre_hook(pre_hook), model.register_forward_hook(hook):
-            prediction_results, _ = self._infer_detector(model, self._config, dataset, dump_features=True, eval=False)
+            prediction_results, _ = self._infer_detector(model, self._config, dataset, eval=False)
         self._add_predictions_to_dataset(prediction_results, dataset, self.confidence_threshold, dump_features)
         logger.info('Inference completed')
         return dataset
 
 
     @staticmethod
-    def _infer_detector(model: torch.nn.Module, config: Config, dataset: DatasetEntity, dump_features: bool = False,
+    def _infer_detector(model: torch.nn.Module, config: Config, dataset: DatasetEntity,
                         eval: Optional[bool] = False, metric_name: Optional[str] = 'mAP') -> Tuple[List, float]:
         model.eval()
         test_config = prepare_for_testing(config, dataset)
