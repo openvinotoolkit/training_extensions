@@ -55,7 +55,9 @@ def ote_common(template, root, tool, cmd_args):
 
 def get_pretrained_artifacts(template, root, ote_dir):
     _, template_work_dir, _ = get_some_vars(template, root)
-    pretrained_artifact_path = f"{template_work_dir}/trained_{template.model_template_id}"
+    pretrained_artifact_path = (
+        f"{template_work_dir}/trained_{template.model_template_id}"
+    )
     logger.debug(f">>> Current pre-trained artifact: {pretrained_artifact_path}")
     if not os.path.exists(pretrained_artifact_path):
         command_args = [
@@ -69,20 +71,33 @@ def get_pretrained_artifacts(template, root, ote_dir):
             "--val-data-roots",
             f'{os.path.join(ote_dir, default_train_args_paths["--val-data-roots"])}',
             "--save-model-to",
-            pretrained_artifact_path]
-        ote_common(template, root, 'train', command_args)
-        assert os.path.exists(pretrained_artifact_path), f"The folder must exists after command execution"
-        weights = os.path.join(pretrained_artifact_path, 'weights.pth')
-        labels = os.path.join(pretrained_artifact_path, 'label_schema.json')
-        assert os.path.exists(weights), f"The {weights} must exists after command execution"
-        assert os.path.exists(labels), f"The {labels} must exists after command execution"
+            pretrained_artifact_path,
+        ]
+        ote_common(template, root, "train", command_args)
+        assert os.path.exists(
+            pretrained_artifact_path
+        ), f"The folder must exists after command execution"
+        weights = os.path.join(pretrained_artifact_path, "weights.pth")
+        labels = os.path.join(pretrained_artifact_path, "label_schema.json")
+        assert os.path.exists(
+            weights
+        ), f"The {weights} must exists after command execution"
+        assert os.path.exists(
+            labels
+        ), f"The {labels} must exists after command execution"
 
 
 def get_exported_artifact(template, root):
     _, template_work_dir, _ = get_some_vars(template, root)
-    pretrained_weights_path = os.path.join(f"{template_work_dir}/trained_{template.model_template_id}", "weights.pth")
-    assert os.path.exists(pretrained_weights_path), f"The weights must be available by path {pretrained_weights_path}"
-    exported_artifact_path = f"{template_work_dir}/exported_{template.model_template_id}"
+    pretrained_weights_path = os.path.join(
+        f"{template_work_dir}/trained_{template.model_template_id}", "weights.pth"
+    )
+    assert os.path.exists(
+        pretrained_weights_path
+    ), f"The weights must be available by path {pretrained_weights_path}"
+    exported_artifact_path = (
+        f"{template_work_dir}/exported_{template.model_template_id}"
+    )
     logger.debug(f">>> Current exported artifact: {exported_artifact_path}")
     if not os.path.exists(exported_artifact_path):
         command_args = [
@@ -90,11 +105,14 @@ def get_exported_artifact(template, root):
             "--load-weights",
             pretrained_weights_path,
             "--save-model-to",
-            exported_artifact_path]
-        ote_common(template, root, 'export', command_args)
+            exported_artifact_path,
+        ]
+        ote_common(template, root, "export", command_args)
         openvino_xml = os.path.join(exported_artifact_path, "openvino.xml")
         assert os.path.exists(openvino_xml), f"openvino.xml must exists after export"
         openvino_bin = os.path.join(exported_artifact_path, "openvino.bin")
         assert os.path.exists(openvino_bin), f"openvino.bin must exists after export"
         label_schema_json = os.path.join(exported_artifact_path, "label_schema.json")
-        assert os.path.exists(label_schema_json), f"label_schema.json must exists after export"
+        assert os.path.exists(
+            label_schema_json
+        ), f"label_schema.json must exists after export"
