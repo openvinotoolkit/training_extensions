@@ -131,9 +131,9 @@ def train_args(
     args_paths,
     _ote_dir_,
     _root_,
-    test_ann_file=True,
+    train_ann_files=True,
     taf_path=None,
-    test_data_roots=True,
+    train_data_roots=True,
     tdr_path=None,
     val_ann_file=True,
     vaf_path=None,
@@ -147,22 +147,22 @@ def train_args(
 ):
     _, twd, _ = get_some_vars(_template_, _root_)
     ret_eval_args = [_template_.model_template_id]
-    if test_ann_file:
-        ret_eval_args.append("--test-ann-file")
+    if train_ann_files:
+        ret_eval_args.append("--train-ann-files")
         if taf_path:
             ret_eval_args.append(taf_path)
         else:
             ret_eval_args.append(
-                f'{os.path.join(_ote_dir_, args_paths["--test-ann-files"])}'
+                f'{os.path.join(_ote_dir_, args_paths["--train-ann-files"])}'
             )
 
-    if test_data_roots:
-        ret_eval_args.append("--test-data-roots")
+    if train_data_roots:
+        ret_eval_args.append("--train-data-roots")
         if tdr_path:
             ret_eval_args.append(tdr_path)
         else:
             ret_eval_args.append(
-                f'{os.path.join(_ote_dir_, args_paths["--test-data-roots"])}'
+                f'{os.path.join(_ote_dir_, args_paths["--train-data-roots"])}'
             )
 
     if val_ann_file:
