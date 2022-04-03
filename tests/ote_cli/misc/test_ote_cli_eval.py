@@ -24,7 +24,7 @@ from ote_cli.utils.tests import (
     get_some_vars,
 )
 
-from .ote_cli_test_common import (
+from ote_cli_test_common import (
     default_train_args_paths,
     wrong_paths,
     ote_common,
@@ -215,7 +215,7 @@ class TestEvalDetectionTemplateArguments:
         params_values_for_be["DETECTION"],
         ids=params_ids_for_be["DETECTION"],
     )
-    def test_ote_export_pp_confidence_threshold_type(self, template, create_venv_fx):
+    def test_ote_eval_pp_confidence_threshold_type(self, template, create_venv_fx):
         _, template_work_dir, _ = get_some_vars(template, root)
         error_string = "invalid float value"
         test_params = [
@@ -224,7 +224,7 @@ class TestEvalDetectionTemplateArguments:
             "String",
         ]
         command_args = eval_args(template, default_train_args_paths, ote_dir, root, additional=test_params)
-        ret = ote_common(template, root, "export", command_args)
+        ret = ote_common(template, root, "eval", command_args)
         assert ret["exit_code"] != 0, "Exit code must not be equal 0"
         assert error_string in ret["stderr"], f"Different error message {ret['stderr']}"
 
@@ -234,7 +234,7 @@ class TestEvalDetectionTemplateArguments:
         params_values_for_be["DETECTION"],
         ids=params_ids_for_be["DETECTION"],
     )
-    def test_ote_export_pp_confidence_threshold(
+    def test_ote_eval_pp_confidence_threshold(
         self, template, get_pretrained_artifacts_fx, create_venv_fx
     ):
         _, template_work_dir, _ = get_some_vars(template, root)
@@ -245,17 +245,13 @@ class TestEvalDetectionTemplateArguments:
         assert os.path.exists(
             pre_trained_weights
         ), f"Pre trained weights must be before test starts"
-        command_args = [
-            template.model_template_id,
-            "--load-weights",
-            pre_trained_weights,
-            "--save-model-to",
-            f"{template_work_dir}/exported_{template.model_template_id}",
+        test_params = [
             "params",
             "--postprocessing.confidence_threshold",
             "0.5",
         ]
-        ret = ote_common(template, root, "export", command_args)
+        command_args = eval_args(template, default_train_args_paths, ote_dir, root, additional=test_params)
+        ret = ote_common(template, root, "eval", command_args)
         assert ret["exit_code"] == 0, "Exit code must be equal 0"
 
     @e2e_pytest_component
@@ -264,22 +260,18 @@ class TestEvalDetectionTemplateArguments:
         params_values_for_be["DETECTION"],
         ids=params_ids_for_be["DETECTION"],
     )
-    def test_ote_export_pp_confidence_threshold_oob(self, template, create_venv_fx):
+    def test_ote_eval_pp_confidence_threshold_oob(self, template, create_venv_fx):
         _, template_work_dir, _ = get_some_vars(template, root)
         error_string = "is out of bounds"
         oob_values = ["-0.1", "1.1"]
         for value in oob_values:
-            command_args = [
-                template.model_template_id,
-                "--load-weights",
-                f"{template_work_dir}/trained_{template.model_template_id}/weights.pth",
-                "--save-model-to",
-                f"{template_work_dir}/exported_{template.model_template_id}",
+            test_params = [
                 "params",
                 "--postprocessing.confidence_threshold",
                 value,
             ]
-            ret = ote_common(template, root, "export", command_args)
+            command_args = eval_args(template, default_train_args_paths, ote_dir, root, additional=test_params)
+            ret = ote_common(template, root, "eval", command_args)
             assert ret["exit_code"] != 0, "Exit code must not be equal 0"
             assert (
                 error_string in ret["stderr"]
@@ -291,22 +283,18 @@ class TestEvalDetectionTemplateArguments:
         params_values_for_be["DETECTION"],
         ids=params_ids_for_be["DETECTION"],
     )
-    def test_ote_export_pp_result_based_confidence_threshold_type(
+    def test_ote_eval_pp_result_based_confidence_threshold_type(
         self, template, create_venv_fx
     ):
         _, template_work_dir, _ = get_some_vars(template, root)
         error_string = "Boolean value expected"
-        command_args = [
-            template.model_template_id,
-            "--load-weights",
-            f"{template_work_dir}/trained_{template.model_template_id}/weights.pth",
-            "--save-model-to",
-            f"{template_work_dir}/exported_{template.model_template_id}",
+        test_params = [
             "params",
             "--postprocessing.result_based_confidence_threshold",
             "NonBoolean",
         ]
-        ret = ote_common(template, root, "export", command_args)
+        command_args = eval_args(template, default_train_args_paths, ote_dir, root, additional=test_params)
+        ret = ote_common(template, root, "eval", command_args)
         assert ret["exit_code"] != 0, "Exit code must not be equal 0"
         assert error_string in ret["stderr"], f"Different error message {ret['stderr']}"
 
@@ -316,7 +304,7 @@ class TestEvalDetectionTemplateArguments:
         params_values_for_be["DETECTION"],
         ids=params_ids_for_be["DETECTION"],
     )
-    def test_ote_export_pp_result_based_confidence_threshold(
+    def test_ote_eval_pp_result_based_confidence_threshold(
         self, template, get_pretrained_artifacts_fx, create_venv_fx
     ):
         _, template_work_dir, _ = get_some_vars(template, root)
@@ -327,15 +315,11 @@ class TestEvalDetectionTemplateArguments:
         assert os.path.exists(
             pre_trained_weights
         ), f"Pre trained weights must be before test starts"
-        command_args = [
-            template.model_template_id,
-            "--load-weights",
-            pre_trained_weights,
-            "--save-model-to",
-            f"{template_work_dir}/exported_{template.model_template_id}",
+        test_params = [
             "params",
             "--postprocessing.result_based_confidence_threshold",
             "False",
         ]
-        ret = ote_common(template, root, "export", command_args)
+        command_args = eval_args(template, default_train_args_paths, ote_dir, root, additional=test_params)
+        ret = ote_common(template, root, "eval", command_args)
         assert ret["exit_code"] == 0, "Exit code must be equal 0"
