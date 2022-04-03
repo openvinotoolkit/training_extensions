@@ -30,7 +30,6 @@ from ote_sdk.configuration.enums.config_element_type import (
 )
 from ote_sdk.configuration.enums.utils import get_enum_names
 from ote_sdk.configuration.ui_rules.rules import NullUIRules, Rule, UIRules
-from ote_sdk.utils.argument_checks import InputConfigCheck, check_input_parameters_type
 
 from .config_element_mapping import (
     GroupElementMapping,
@@ -368,7 +367,6 @@ def from_dict_attr(config_dict: Union[dict, DictConfig]) -> ConfigurableParamete
     return config
 
 
-@check_input_parameters_type({"input_config": InputConfigCheck})
 def create(input_config: Union[str, DictConfig, dict]) -> ConfigurableParameters:
     """
     Create a configuration object from a yaml string, yaml file path, dictionary or OmegaConf DictConfig object.

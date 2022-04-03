@@ -18,10 +18,6 @@ from ote_sdk.usecases.adapters.model_adapter import (
     IDataSource,
     ModelAdapter,
 )
-from ote_sdk.utils.argument_checks import (
-    DatasetParamTypeCheck,
-    check_input_parameters_type,
-)
 from ote_sdk.utils.time_utils import now
 
 if TYPE_CHECKING:
@@ -93,7 +89,6 @@ class ModelEntity:
 
     # TODO: add tags and allow filtering on those in modelrepo
     # pylint: disable=too-many-arguments,too-many-locals; Requires refactor
-    @check_input_parameters_type({"train_dataset": DatasetParamTypeCheck})
     def __init__(
         self,
         train_dataset: "DatasetEntity",
@@ -115,9 +110,9 @@ class ModelEntity:
         target_device: TargetDevice = TargetDevice.CPU,
         target_device_type: Optional[str] = None,
         optimization_type: ModelOptimizationType = ModelOptimizationType.NONE,
-        optimization_methods: Optional[List[OptimizationMethod]] = None,
-        optimization_objectives: Optional[Dict[str, str]] = None,
-        performance_improvement: Optional[Dict[str, float]] = None,
+        optimization_methods: List[OptimizationMethod] = None,
+        optimization_objectives: Dict[str, str] = None,
+        performance_improvement: Dict[str, float] = None,
         model_size_reduction: float = 0.0,
         _id: Optional[ID] = None,
     ):
