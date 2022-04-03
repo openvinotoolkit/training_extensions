@@ -33,21 +33,10 @@ from ote_cli_test_common import (
     root,
     ote_dir,
     get_exported_artifact,
+    optimize_args
 )
 
 params_values, params_ids, params_values_for_be, params_ids_for_be = parser_templates()
-
-COMMON_ARGS = [
-    "--train-ann-files",
-    f'{os.path.join(ote_dir, default_train_args_paths["--train-ann-files"])}',
-    "--train-data-roots",
-    f'{os.path.join(ote_dir, default_train_args_paths["--train-data-roots"])}',
-    "--val-ann-files",
-    f'{os.path.join(ote_dir, default_train_args_paths["--val-ann-files"])}',
-    "--val-data-roots",
-    f'{os.path.join(ote_dir, default_train_args_paths["--val-data-roots"])}',
-    "--load-weights",
-]
 
 
 class TestOptimizeCommon:
@@ -312,13 +301,9 @@ class TestOptimizeCommon:
     ):
         error_string = "Path is not valid"
         for case in wrong_paths.values():
-            command_line = [
-                template.model_template_id,
-                *COMMON_ARGS,
-                f"./exported_{template.model_template_id}/openvino.xml",
-                "--save-model-to",
-                case,
-            ]
+            command_line = optimize_args(
+                template, default_train_args_paths, ote_dir, root, sp_path=case
+            )
             ret = ote_common(template, root, "optimize", command_line)
             assert ret["exit_code"] != 0, "Exit code must not be equal 0"
             assert (
@@ -330,13 +315,9 @@ class TestOptimizeCommon:
     def test_ote_optimize_wrong_load_weights(self, back_end, template, create_venv_fx):
         error_string = "Path is not valid"
         for case in wrong_paths.values():
-            command_line = [
-                template.model_template_id,
-                *COMMON_ARGS,
-                case,
-                "--save-model-to",
-                f"./trained_{template.model_template_id}",
-            ]
+            command_line = optimize_args(
+                template, default_train_args_paths, ote_dir, root, lw_path=case
+            )
             ret = ote_common(template, root, "optimize", command_line)
             assert ret["exit_code"] != 0, "Exit code must not be equal 0"
             assert (
@@ -349,15 +330,9 @@ class TestOptimizeCommon:
         self, back_end, template, create_venv_fx
     ):
         for case in wrong_paths.values():
-            command_line = [
-                template.model_template_id,
-                *COMMON_ARGS,
-                f"./exported_{template.model_template_id}/openvino.xml",
-                "--save-model-to",
-                f"./trained_{template.model_template_id}",
-                "--save-performance",
-                case,
-            ]
+            command_line = optimize_args(
+                template, default_train_args_paths, ote_dir, root, save_performance=True, sp_path=case
+            )
             ret = ote_common(template, root, "optimize", command_line)
             assert ret["exit_code"] != 0, "Exit code must not be equal 0"
 
@@ -403,20 +378,18 @@ class TestOptimizeDetectionTemplateArguments:
         ids=params_ids_for_be["DETECTION"],
     )
     def test_ote_optimize_lp_batch_size_type(self, template, create_venv_fx):
-        _, template_work_dir, _ = get_some_vars(template, root)
         error_string = "invalid int value"
         cases = ["1.0", "Alpha"]
         for case in cases:
-            command_args = [
-                template.model_template_id,
-                *COMMON_ARGS,
-                f"{template_work_dir}/exported_{template.model_template_id}/openvino.xml",
-                "--save-model-to",
-                f"{template_work_dir}/trained_{template.model_template_id}",
+            params = [
                 "params",
                 "--learning_parameters.batch_size",
                 case,
             ]
+            command_args = optimize_args(
+                template, default_train_args_paths, ote_dir, root, additional=params
+            )
+
             ret = ote_common(template, root, "optimize", command_args)
             assert ret["exit_code"] != 0, "Exit code must not be equal 0"
             assert (
@@ -432,19 +405,16 @@ class TestOptimizeDetectionTemplateArguments:
     def test_ote_optimize_lp_batch_size(
         self, template, create_venv_fx, get_exported_artifacts_fx
     ):
-        _, template_work_dir, _ = get_some_vars(template, root)
-        command_args = [
-            template.model_template_id,
-            *COMMON_ARGS,
-            f"{template_work_dir}/exported_{template.model_template_id}/openvino.xml",
-            "--save-model-to",
-            f"{template_work_dir}/trained_{template.model_template_id}",
+        params = [
             "params",
             "--learning_parameters.num_iters",
             "1",
             "--learning_parameters.batch_size",
             "1",
         ]
+        command_args = optimize_args(
+            template, default_train_args_paths, ote_dir, root, additional=params
+        )
         ret = ote_common(template, root, "optimize", command_args)
         assert ret["exit_code"] == 0, "Exit code must be equal 0"
 
@@ -455,20 +425,17 @@ class TestOptimizeDetectionTemplateArguments:
         ids=params_ids_for_be["DETECTION"],
     )
     def test_ote_optimize_lp_batch_size_oob(self, template, create_venv_fx):
-        _, template_work_dir, _ = get_some_vars(template, root)
         error_string = "is out of bounds."
         cases = ["0", "513"]
         for case in cases:
-            command_args = [
-                template.model_template_id,
-                *COMMON_ARGS,
-                f"{template_work_dir}/exported_{template.model_template_id}/openvino.xml",
-                "--save-model-to",
-                f"{template_work_dir}/trained_{template.model_template_id}",
+            params = [
                 "params",
                 "--learning_parameters.batch_size",
                 case,
             ]
+            command_args = optimize_args(
+                template, default_train_args_paths, ote_dir, root, additional=params
+            )
             ret = ote_common(template, root, "optimize", command_args)
             assert ret["exit_code"] != 0, "Exit code must not be equal 0"
             assert (
@@ -482,18 +449,15 @@ class TestOptimizeDetectionTemplateArguments:
         ids=params_ids_for_be["DETECTION"],
     )
     def test_ote_optimize_lp_learning_rate_type(self, template, create_venv_fx):
-        _, template_work_dir, _ = get_some_vars(template, root)
         error_string = "invalid float value"
-        command_args = [
-            template.model_template_id,
-            *COMMON_ARGS,
-            f"{template_work_dir}/exported_{template.model_template_id}/openvino.xml",
-            "--save-model-to",
-            f"{template_work_dir}/trained_{template.model_template_id}",
+        params = [
             "params",
             "--learning_parameters.learning_rate",
             "NotFloat",
         ]
+        command_args = optimize_args(
+            template, default_train_args_paths, ote_dir, root, additional=params
+        )
         ret = ote_common(template, root, "optimize", command_args)
         assert ret["exit_code"] != 0, "Exit code must not be equal 0"
         assert error_string in ret["stderr"], f"Different error message {ret['stderr']}"
@@ -507,13 +471,7 @@ class TestOptimizeDetectionTemplateArguments:
     def test_ote_optimize_lp_learning_rate(
         self, template, create_venv_fx, get_exported_artifacts_fx
     ):
-        _, template_work_dir, _ = get_some_vars(template, root)
-        command_args = [
-            template.model_template_id,
-            *COMMON_ARGS,
-            f"{template_work_dir}/exported_{template.model_template_id}/openvino.xml",
-            "--save-model-to",
-            f"{template_work_dir}/trained_{template.model_template_id}",
+        params = [
             "params",
             "--learning_parameters.num_iters",
             "1",
@@ -522,6 +480,9 @@ class TestOptimizeDetectionTemplateArguments:
             "--learning_parameters.learning_rate",
             "0.01",
         ]
+        command_args = optimize_args(
+            template, default_train_args_paths, ote_dir, root, additional=params
+        )
         ret = ote_common(template, root, "optimize", command_args)
         assert ret["exit_code"] == 0, "Exit code must be equal 0"
 
@@ -532,20 +493,17 @@ class TestOptimizeDetectionTemplateArguments:
         ids=params_ids_for_be["DETECTION"],
     )
     def test_ote_optimize_lp_learning_rate_oob(self, template, create_venv_fx):
-        _, template_work_dir, _ = get_some_vars(template, root)
         error_string = "is out of bounds."
         cases = ["0.0", "0.2"]
         for case in cases:
-            command_args = [
-                template.model_template_id,
-                *COMMON_ARGS,
-                f"{template_work_dir}/exported_{template.model_template_id}/openvino.xml",
-                "--save-model-to",
-                f"{template_work_dir}/trained_{template.model_template_id}",
+            params = [
                 "params",
                 "--learning_parameters.learning_rate",
                 case,
             ]
+            command_args = optimize_args(
+                template, default_train_args_paths, ote_dir, root, additional=params
+            )
             ret = ote_common(template, root, "optimize", command_args)
             assert ret["exit_code"] != 0, "Exit code must not be equal 0"
             assert (
@@ -559,20 +517,17 @@ class TestOptimizeDetectionTemplateArguments:
         ids=params_ids_for_be["DETECTION"],
     )
     def test_ote_optimize_lp_lr_warmup_iters_type(self, template, create_venv_fx):
-        _, template_work_dir, _ = get_some_vars(template, root)
         error_string = "invalid int value"
         cases = ["1.0", "Alpha"]
         for case in cases:
-            command_args = [
-                template.model_template_id,
-                *COMMON_ARGS,
-                f"{template_work_dir}/exported_{template.model_template_id}/openvino.xml",
-                "--save-model-to",
-                f"{template_work_dir}/trained_{template.model_template_id}",
+            params = [
                 "params",
                 "--learning_parameters.learning_rate_warmup_iters",
                 case,
             ]
+            command_args = optimize_args(
+                template, default_train_args_paths, ote_dir, root, additional=params
+            )
             ret = ote_common(template, root, "optimize", command_args)
             assert ret["exit_code"] != 0, "Exit code must not be equal 0"
             assert (
@@ -588,13 +543,7 @@ class TestOptimizeDetectionTemplateArguments:
     def test_ote_optimize_lp_lr_warmup_iters(
         self, template, create_venv_fx, get_exported_artifacts_fx
     ):
-        _, template_work_dir, _ = get_some_vars(template, root)
-        command_args = [
-            template.model_template_id,
-            *COMMON_ARGS,
-            f"{template_work_dir}/exported_{template.model_template_id}/openvino.xml",
-            "--save-model-to",
-            f"{template_work_dir}/trained_{template.model_template_id}",
+        params = [
             "params",
             "--learning_parameters.num_iters",
             "1",
@@ -603,6 +552,9 @@ class TestOptimizeDetectionTemplateArguments:
             "--learning_parameters.learning_rate_warmup_iters",
             "1",
         ]
+        command_args = optimize_args(
+            template, default_train_args_paths, ote_dir, root, additional=params
+        )
         ret = ote_common(template, root, "optimize", command_args)
         assert ret["exit_code"] == 0, "Exit code must be equal 0"
 
@@ -613,20 +565,17 @@ class TestOptimizeDetectionTemplateArguments:
         ids=params_ids_for_be["DETECTION"],
     )
     def test_ote_optimize_lp_lr_warmup_iters_oob(self, template, create_venv_fx):
-        _, template_work_dir, _ = get_some_vars(template, root)
         error_string = "is out of bounds."
         oob_values = ["-1", "10001"]
         for value in oob_values:
-            command_args = [
-                template.model_template_id,
-                *COMMON_ARGS,
-                f"{template_work_dir}/exported_{template.model_template_id}/openvino.xml",
-                "--save-model-to",
-                f"{template_work_dir}/trained_{template.model_template_id}",
+            params = [
                 "params",
                 "--learning_parameters.learning_rate_warmup_iters",
                 value,
             ]
+            command_args = optimize_args(
+                template, default_train_args_paths, ote_dir, root, additional=params
+            )
             ret = ote_common(template, root, "optimize", command_args)
             assert ret["exit_code"] != 0, "Exit code must not be equal 0"
             assert (
@@ -640,20 +589,17 @@ class TestOptimizeDetectionTemplateArguments:
         ids=params_ids_for_be["DETECTION"],
     )
     def test_ote_optimize_lp_num_iters_type(self, template, create_venv_fx):
-        _, template_work_dir, _ = get_some_vars(template, root)
         error_string = "invalid int value"
         cases = ["1.0", "Alpha"]
         for case in cases:
-            command_args = [
-                template.model_template_id,
-                *COMMON_ARGS,
-                f"{template_work_dir}/exported_{template.model_template_id}/openvino.xml",
-                "--save-model-to",
-                f"{template_work_dir}/trained_{template.model_template_id}",
+            params = [
                 "params",
                 "--learning_parameters.num_iters",
                 case,
             ]
+            command_args = optimize_args(
+                template, default_train_args_paths, ote_dir, root, additional=params
+            )
             ret = ote_common(template, root, "optimize", command_args)
             assert ret["exit_code"] != 0, "Exit code must not be equal 0"
             assert (
@@ -669,13 +615,7 @@ class TestOptimizeDetectionTemplateArguments:
     def test_ote_optimize_lp_num_iters_positive_case(
         self, template, create_venv_fx, get_exported_artifacts_fx
     ):
-        _, template_work_dir, _ = get_some_vars(template, root)
-        command_args = [
-            template.model_template_id,
-            *COMMON_ARGS,
-            f"{template_work_dir}/exported_{template.model_template_id}/openvino.xml",
-            "--save-model-to",
-            f"{template_work_dir}/trained_{template.model_template_id}",
+        params = [
             "params",
             "--learning_parameters.num_iters",
             "1",
@@ -684,6 +624,9 @@ class TestOptimizeDetectionTemplateArguments:
             "--learning_parameters.num_iters",
             "1",
         ]
+        command_args = optimize_args(
+            template, default_train_args_paths, ote_dir, root, additional=params
+        )
         ret = ote_common(template, root, "optimize", command_args)
         assert ret["exit_code"] == 0, "Exit code must be equal 0"
 
@@ -694,20 +637,17 @@ class TestOptimizeDetectionTemplateArguments:
         ids=params_ids_for_be["DETECTION"],
     )
     def test_ote_optimize_lp_num_iters_oob(self, template, create_venv_fx):
-        _, template_work_dir, _ = get_some_vars(template, root)
         error_string = "is out of bounds."
         oob_values = ["0", "1000001"]
         for value in oob_values:
-            command_args = [
-                template.model_template_id,
-                *COMMON_ARGS,
-                f"{template_work_dir}/exported_{template.model_template_id}/openvino.xml",
-                "--save-model-to",
-                f"{template_work_dir}/trained_{template.model_template_id}",
+            params = [
                 "params",
                 "--learning_parameters.num_iters",
                 value,
             ]
+            command_args = optimize_args(
+                template, default_train_args_paths, ote_dir, root, additional=params
+            )
             ret = ote_common(template, root, "optimize", command_args)
             assert ret["exit_code"] != 0, "Exit code must not be equal 0"
             assert (
@@ -721,18 +661,15 @@ class TestOptimizeDetectionTemplateArguments:
         ids=params_ids_for_be["DETECTION"],
     )
     def test_ote_optimize_pp_confidence_threshold_type(self, template, create_venv_fx):
-        _, template_work_dir, _ = get_some_vars(template, root)
         error_string = "invalid float value"
-        command_args = [
-            template.model_template_id,
-            *COMMON_ARGS,
-            f"{template_work_dir}/exported_{template.model_template_id}/openvino.xml",
-            "--save-model-to",
-            f"{template_work_dir}/trained_{template.model_template_id}",
+        params = [
             "params",
             "--postprocessing.confidence_threshold",
             "Alpha",
         ]
+        command_args = optimize_args(
+            template, default_train_args_paths, ote_dir, root, additional=params
+        )
         ret = ote_common(template, root, "optimize", command_args)
         assert ret["exit_code"] != 0, "Exit code must not be equal 0"
         assert error_string in ret["stderr"], f"Different error message {ret['stderr']}"
@@ -746,13 +683,7 @@ class TestOptimizeDetectionTemplateArguments:
     def test_ote_optimize_pp_confidence_threshold(
         self, template, create_venv_fx, get_exported_artifacts_fx
     ):
-        _, template_work_dir, _ = get_some_vars(template, root)
-        command_args = [
-            template.model_template_id,
-            *COMMON_ARGS,
-            f"{template_work_dir}/exported_{template.model_template_id}/openvino.xml",
-            "--save-model-to",
-            f"{template_work_dir}/trained_{template.model_template_id}",
+        params = [
             "params",
             "--learning_parameters.num_iters",
             "1",
@@ -761,6 +692,9 @@ class TestOptimizeDetectionTemplateArguments:
             "--postprocessing.confidence_threshold",
             "0.5",
         ]
+        command_args = optimize_args(
+            template, default_train_args_paths, ote_dir, root, additional=params
+        )
         ret = ote_common(template, root, "optimize", command_args)
         assert ret["exit_code"] == 0, "Exit code must be equal 0"
 
@@ -771,20 +705,17 @@ class TestOptimizeDetectionTemplateArguments:
         ids=params_ids_for_be["DETECTION"],
     )
     def test_ote_optimize_pp_confidence_threshold_oob(self, template, create_venv_fx):
-        _, template_work_dir, _ = get_some_vars(template, root)
         error_string = "is out of bounds."
         oob_values = ["-0.9", "1.1"]
         for value in oob_values:
-            command_args = [
-                template.model_template_id,
-                *COMMON_ARGS,
-                f"{template_work_dir}/exported_{template.model_template_id}/openvino.xml",
-                "--save-model-to",
-                f"{template_work_dir}/trained_{template.model_template_id}",
+            params = [
                 "params",
                 "--postprocessing.confidence_threshold",
                 value,
             ]
+            command_args = optimize_args(
+                template, default_train_args_paths, ote_dir, root, additional=params
+            )
             ret = ote_common(template, root, "optimize", command_args)
             assert ret["exit_code"] != 0, "Exit code must not be equal 0"
             assert (
@@ -800,18 +731,15 @@ class TestOptimizeDetectionTemplateArguments:
     def test_ote_optimize_pp_result_based_confidence_threshold_type(
         self, template, create_venv_fx
     ):
-        _, template_work_dir, _ = get_some_vars(template, root)
         error_string = "Boolean value expected"
-        command_args = [
-            template.model_template_id,
-            *COMMON_ARGS,
-            f"{template_work_dir}/exported_{template.model_template_id}/openvino.xml",
-            "--save-model-to",
-            f"{template_work_dir}/trained_{template.model_template_id}",
+        params = [
             "params",
             "--postprocessing.result_based_confidence_threshold",
             "NonBoolean",
         ]
+        command_args = optimize_args(
+            template, default_train_args_paths, ote_dir, root, additional=params
+        )
         ret = ote_common(template, root, "optimize", command_args)
         assert ret["exit_code"] != 0, "Exit code must not be equal 0"
         assert error_string in ret["stderr"], f"Different error message {ret['stderr']}"
@@ -825,13 +753,7 @@ class TestOptimizeDetectionTemplateArguments:
     def test_ote_optimize_pp_result_based_confidence_threshold(
         self, template, create_venv_fx, get_exported_artifacts_fx
     ):
-        _, template_work_dir, _ = get_some_vars(template, root)
-        command_args = [
-            template.model_template_id,
-            *COMMON_ARGS,
-            f"{template_work_dir}/exported_{template.model_template_id}/openvino.xml",
-            "--save-model-to",
-            f"{template_work_dir}/trained_{template.model_template_id}",
+        params = [
             "params",
             "--learning_parameters.num_iters",
             "1",
@@ -840,5 +762,8 @@ class TestOptimizeDetectionTemplateArguments:
             "--postprocessing.result_based_confidence_threshold",
             "False",
         ]
+        command_args = optimize_args(
+            template, default_train_args_paths, ote_dir, root, additional=params
+        )
         ret = ote_common(template, root, "optimize", command_args)
         assert ret["exit_code"] == 0, "Exit code must be equal 0"

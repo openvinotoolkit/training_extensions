@@ -146,64 +146,115 @@ def train_args(
     additional=None,
 ):
     _, twd, _ = get_some_vars(_template_, _root_)
-    ret_eval_args = [_template_.model_template_id]
+    ret_train_args = [_template_.model_template_id]
     if train_ann_files:
-        ret_eval_args.append("--train-ann-files")
+        ret_train_args.append("--train-ann-files")
         if taf_path is not None:
-            ret_eval_args.append(taf_path)
+            ret_train_args.append(taf_path)
         else:
-            ret_eval_args.append(
+            ret_train_args.append(
                 f'{os.path.join(_ote_dir_, args_paths["--train-ann-files"])}'
             )
 
     if train_data_roots:
-        ret_eval_args.append("--train-data-roots")
+        ret_train_args.append("--train-data-roots")
         if tdr_path is not None:
-            ret_eval_args.append(tdr_path)
+            ret_train_args.append(tdr_path)
         else:
-            ret_eval_args.append(
+            ret_train_args.append(
                 f'{os.path.join(_ote_dir_, args_paths["--train-data-roots"])}'
             )
 
     if val_ann_file:
-        ret_eval_args.append("--val-ann-files")
+        ret_train_args.append("--val-ann-files")
         if vaf_path is not None:
-            ret_eval_args.append(vaf_path)
+            ret_train_args.append(vaf_path)
         else:
-            ret_eval_args.append(
+            ret_train_args.append(
                 f'{os.path.join(_ote_dir_, args_paths["--val-ann-files"])}'
             )
 
     if val_data_roots:
-        ret_eval_args.append("--val-data-roots")
+        ret_train_args.append("--val-data-roots")
         if vdr_path is not None:
-            ret_eval_args.append(vdr_path)
+            ret_train_args.append(vdr_path)
         else:
-            ret_eval_args.append(
+            ret_train_args.append(
                 f'{os.path.join(_ote_dir_, args_paths["--val-data-roots"])}'
             )
 
     if save_model_to:
-        ret_eval_args.append("--save-model-to")
+        ret_train_args.append("--save-model-to")
         if smt_path is not None:
-            ret_eval_args.append(smt_path)
+            ret_train_args.append(smt_path)
         else:
-            ret_eval_args.append(
+            ret_train_args.append(
                 f"{twd}/trained_{_template_.model_template_id}"
             )
 
     if l_weights:
-        ret_eval_args.append("--load-weights")
+        ret_train_args.append("--load-weights")
         if lw_path is not None:
-            ret_eval_args.append(lw_path)
+            ret_train_args.append(lw_path)
         else:
-            ret_eval_args.append(
+            ret_train_args.append(
                 f"{twd}/trained_{_template_.model_template_id}/weights.pth"
             )
 
     if additional:
-        ret_eval_args += [*additional]
-    return ret_eval_args
+        ret_train_args += [*additional]
+    return ret_train_args
+
+
+def optimize_args(
+    _template_,
+    args_paths,
+    _ote_dir_,
+    _root_,
+    train_ann_files=True,
+    taf_path=None,
+    train_data_roots=True,
+    tdr_path=None,
+    val_ann_file=True,
+    vaf_path=None,
+    val_data_roots=True,
+    vdr_path=None,
+    save_model_to=True,
+    smt_path=None,
+    l_weights=True,
+    lw_path=None,
+    save_performance=False,
+    sp_path=None,
+    additional=None,
+):
+    _, twd, _ = get_some_vars(_template_, _root_)
+    ret_optimize_args = train_args(
+        _template_,
+        args_paths,
+        _ote_dir_,
+        _root_,
+        train_ann_files,
+        taf_path,
+        train_data_roots,
+        tdr_path,
+        val_ann_file,
+        vaf_path,
+        val_data_roots,
+        vdr_path,
+        save_model_to,
+        smt_path,
+        l_weights,
+        lw_path,
+        additional)
+    if save_performance:
+        ret_optimize_args.append("--save-performance")
+        if sp_path is not None:
+            ret_optimize_args.append(sp_path)
+        else:
+            ret_optimize_args.append(
+                f"{twd}/pot_{_template_.model_template_id}/performance.json",
+            )
+    return ret_optimize_args
 
 
 def ote_common(template, root, tool, cmd_args):
@@ -229,19 +280,9 @@ def get_pretrained_artifacts(template, root, ote_dir):
     )
     logger.debug(f">>> Current pre-trained artifact: {pretrained_artifact_path}")
     if not os.path.exists(pretrained_artifact_path):
-        command_args = [
-            template.model_template_id,
-            "--train-ann-file",
-            f'{os.path.join(ote_dir, default_train_args_paths["--train-ann-file"])}',
-            "--train-data-roots",
-            f'{os.path.join(ote_dir, default_train_args_paths["--train-data-roots"])}',
-            "--val-ann-file",
-            f'{os.path.join(ote_dir, default_train_args_paths["--val-ann-file"])}',
-            "--val-data-roots",
-            f'{os.path.join(ote_dir, default_train_args_paths["--val-data-roots"])}',
-            "--save-model-to",
-            pretrained_artifact_path,
-        ]
+        command_args = train_args(
+            template, default_train_args_paths, ote_dir, root, smt_path=pretrained_artifact_path
+        )
         ote_common(template, root, "train", command_args)
         assert os.path.exists(
             pretrained_artifact_path
