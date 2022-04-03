@@ -34,7 +34,6 @@ from ote_cli_test_common import (
     root,
     ote_dir,
     eval_args,
-
 )
 
 params_values, params_ids, params_values_for_be, params_ids_for_be = parser_templates()
@@ -223,7 +222,9 @@ class TestEvalDetectionTemplateArguments:
             "--postprocessing.confidence_threshold",
             "String",
         ]
-        command_args = eval_args(template, default_train_args_paths, ote_dir, root, additional=test_params)
+        command_args = eval_args(
+            template, default_train_args_paths, ote_dir, root, additional=test_params
+        )
         ret = ote_common(template, root, "eval", command_args)
         assert ret["exit_code"] != 0, "Exit code must not be equal 0"
         assert error_string in ret["stderr"], f"Different error message {ret['stderr']}"
@@ -250,7 +251,9 @@ class TestEvalDetectionTemplateArguments:
             "--postprocessing.confidence_threshold",
             "0.5",
         ]
-        command_args = eval_args(template, default_train_args_paths, ote_dir, root, additional=test_params)
+        command_args = eval_args(
+            template, default_train_args_paths, ote_dir, root, additional=test_params
+        )
         ret = ote_common(template, root, "eval", command_args)
         assert ret["exit_code"] == 0, "Exit code must be equal 0"
 
@@ -270,7 +273,13 @@ class TestEvalDetectionTemplateArguments:
                 "--postprocessing.confidence_threshold",
                 value,
             ]
-            command_args = eval_args(template, default_train_args_paths, ote_dir, root, additional=test_params)
+            command_args = eval_args(
+                template,
+                default_train_args_paths,
+                ote_dir,
+                root,
+                additional=test_params,
+            )
             ret = ote_common(template, root, "eval", command_args)
             assert ret["exit_code"] != 0, "Exit code must not be equal 0"
             assert (
@@ -293,7 +302,9 @@ class TestEvalDetectionTemplateArguments:
             "--postprocessing.result_based_confidence_threshold",
             "NonBoolean",
         ]
-        command_args = eval_args(template, default_train_args_paths, ote_dir, root, additional=test_params)
+        command_args = eval_args(
+            template, default_train_args_paths, ote_dir, root, additional=test_params
+        )
         ret = ote_common(template, root, "eval", command_args)
         assert ret["exit_code"] != 0, "Exit code must not be equal 0"
         assert error_string in ret["stderr"], f"Different error message {ret['stderr']}"
@@ -320,6 +331,8 @@ class TestEvalDetectionTemplateArguments:
             "--postprocessing.result_based_confidence_threshold",
             "False",
         ]
-        command_args = eval_args(template, default_train_args_paths, ote_dir, root, additional=test_params)
+        command_args = eval_args(
+            template, default_train_args_paths, ote_dir, root, additional=test_params
+        )
         ret = ote_common(template, root, "eval", command_args)
         assert ret["exit_code"] == 0, "Exit code must be equal 0"

@@ -32,7 +32,7 @@ from ote_cli_test_common import (
     parser_templates,
     root,
     ote_dir,
-    get_exported_artifact
+    get_exported_artifact,
 )
 
 params_values, params_ids, params_values_for_be, params_ids_for_be = parser_templates()

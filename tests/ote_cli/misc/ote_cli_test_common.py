@@ -52,12 +52,12 @@ def parser_templates():
     params_ids_for_be = {}
 
     for back_end_ in (
-            "DETECTION",
-            "CLASSIFICATION",
-            "ANOMALY_CLASSIFICATION",
-            "SEGMENTATION",
-            "ROTATED_DETECTION",
-            "INSTANCE_SEGMENTATION",
+        "DETECTION",
+        "CLASSIFICATION",
+        "ANOMALY_CLASSIFICATION",
+        "SEGMENTATION",
+        "ROTATED_DETECTION",
+        "INSTANCE_SEGMENTATION",
     ):
         cur_templates = Registry(external_path).filter(task_type=back_end_).templates
         cur_templates_ids = [template.model_template_id for template in cur_templates]
@@ -68,19 +68,21 @@ def parser_templates():
     return params_values, params_ids, params_values_for_be, params_ids_for_be
 
 
-def eval_args(_template_,
-              args_paths,
-              _ote_dir_,
-              _root_,
-              test_ann_file=True,
-              taf_path=None,
-              test_data_roots=True,
-              tdr_path=None,
-              l_weights=True,
-              lw_path=None,
-              save_performance=True,
-              sp_path=None,
-              additional=None):
+def eval_args(
+    _template_,
+    args_paths,
+    _ote_dir_,
+    _root_,
+    test_ann_file=True,
+    taf_path=None,
+    test_data_roots=True,
+    tdr_path=None,
+    l_weights=True,
+    lw_path=None,
+    save_performance=True,
+    sp_path=None,
+    additional=None,
+):
     _, twd, _ = get_some_vars(_template_, _root_)
     ret_eval_args = [_template_.model_template_id]
     if test_ann_file:
@@ -88,28 +90,36 @@ def eval_args(_template_,
         if taf_path:
             ret_eval_args.append(taf_path)
         else:
-            ret_eval_args.append(f'{os.path.join(_ote_dir_, args_paths["--test-ann-files"])}')
+            ret_eval_args.append(
+                f'{os.path.join(_ote_dir_, args_paths["--test-ann-files"])}'
+            )
 
     if test_data_roots:
         ret_eval_args.append("--test-data-roots")
         if tdr_path:
             ret_eval_args.append(tdr_path)
         else:
-            ret_eval_args.append(f'{os.path.join(_ote_dir_, args_paths["--test-data-roots"])}')
+            ret_eval_args.append(
+                f'{os.path.join(_ote_dir_, args_paths["--test-data-roots"])}'
+            )
 
     if l_weights:
         ret_eval_args.append("--load-weights")
         if lw_path:
             ret_eval_args.append(lw_path)
         else:
-            ret_eval_args.append(f"{twd}/trained_{_template_.model_template_id}/weights.pth")
+            ret_eval_args.append(
+                f"{twd}/trained_{_template_.model_template_id}/weights.pth"
+            )
 
     if save_performance:
         ret_eval_args.append("--save-performance")
         if sp_path:
             ret_eval_args.append(sp_path)
         else:
-            ret_eval_args.append(f"{twd}/trained_{_template_.model_template_id}/performance.json")
+            ret_eval_args.append(
+                f"{twd}/trained_{_template_.model_template_id}/performance.json"
+            )
 
     if additional:
         ret_eval_args += [*additional]

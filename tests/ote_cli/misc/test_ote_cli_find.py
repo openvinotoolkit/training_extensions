@@ -30,7 +30,7 @@ from ote_cli_test_common import (
     logger,
     parser_templates,
     root,
-    external_path
+    external_path,
 )
 
 params_values, params_ids, _, _ = parser_templates()
