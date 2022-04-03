@@ -27,9 +27,9 @@ ote_dir = os.path.dirname(
 external_path = os.path.join(ote_dir, "external")
 
 default_train_args_paths = {
-    "--train-ann-file": "data/airport/annotation_example_train.json",
+    "--train-ann-files": "data/airport/annotation_example_train.json",
     "--train-data-roots": "data/airport/train",
-    "--val-ann-file": "data/airport/annotation_example_train.json",
+    "--val-ann-files": "data/airport/annotation_example_train.json",
     "--val-data-roots": "data/airport/train",
     "--test-ann-files": "data/airport/annotation_example_train.json",
     "--test-data-roots": "data/airport/train",
@@ -166,12 +166,12 @@ def train_args(
             )
 
     if val_ann_file:
-        ret_eval_args.append("--val-ann-file")
+        ret_eval_args.append("--val-ann-files")
         if vaf_path:
             ret_eval_args.append(vaf_path)
         else:
             ret_eval_args.append(
-                f'{os.path.join(_ote_dir_, args_paths["--val-ann-file"])}'
+                f'{os.path.join(_ote_dir_, args_paths["--val-ann-files"])}'
             )
 
     if val_data_roots:
