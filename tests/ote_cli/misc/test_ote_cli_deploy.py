@@ -14,41 +14,24 @@
 # and limitations under the License.
 
 
-import os
 import pytest
 
 from ote_sdk.test_suite.e2e_test_system import e2e_pytest_component
-from ote_cli.registry import Registry
 
 from ote_cli.utils.tests import (
     create_venv,
     get_some_vars,
 )
 
-from ote_cli_test_common import wrong_paths, ote_common, logger
-
-
-root = "/tmp/ote_cli/"
-ote_dir = os.path.dirname(
-    os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+from ote_cli_test_common import (
+    wrong_paths,
+    ote_common,
+    logger,
+    parser_templates,
+    root,
 )
-external_path = os.path.join(ote_dir, "external")
 
-
-params_values = []
-params_ids = []
-for back_end_ in (
-    "DETECTION",
-    "CLASSIFICATION",
-    "ANOMALY_CLASSIFICATION",
-    "SEGMENTATION",
-    "ROTATED_DETECTION",
-    "INSTANCE_SEGMENTATION",
-):
-    cur_templates = Registry(external_path).filter(task_type=back_end_).templates
-    cur_templates_ids = [template.model_template_id for template in cur_templates]
-    params_values += [(back_end_, t) for t in cur_templates]
-    params_ids += [back_end_ + "," + cur_id for cur_id in cur_templates_ids]
+params_values, params_ids, _, _ = parser_templates()
 
 
 class TestDeployCommon:

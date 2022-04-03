@@ -15,10 +15,8 @@
 
 import os
 import pytest
-from copy import deepcopy
 
 from ote_sdk.test_suite.e2e_test_system import e2e_pytest_component
-from ote_cli.registry import Registry
 
 from ote_cli.utils.tests import (
     create_venv,
@@ -30,34 +28,12 @@ from ote_cli_test_common import (
     wrong_paths,
     ote_common,
     logger,
+    parser_templates,
+    root,
+    ote_dir,
 )
 
-
-root = "/tmp/ote_cli/"
-ote_dir = os.path.dirname(
-    os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
-)
-external_path = os.path.join(ote_dir, "external")
-
-params_values = []
-params_ids = []
-params_values_for_be = {}
-params_ids_for_be = {}
-
-for back_end_ in (
-    "DETECTION",
-    "CLASSIFICATION",
-    "ANOMALY_CLASSIFICATION",
-    "SEGMENTATION",
-    "ROTATED_DETECTION",
-    "INSTANCE_SEGMENTATION",
-):
-    cur_templates = Registry(external_path).filter(task_type=back_end_).templates
-    cur_templates_ids = [template.model_template_id for template in cur_templates]
-    params_values += [(back_end_, t) for t in cur_templates]
-    params_ids += [back_end_ + "," + cur_id for cur_id in cur_templates_ids]
-    params_values_for_be[back_end_] = deepcopy(cur_templates)
-    params_ids_for_be[back_end_] = deepcopy(cur_templates_ids)
+params_values, params_ids, params_values_for_be, params_ids_for_be = parser_templates()
 
 COMMON_ARGS = [
     "--train-ann-file",
