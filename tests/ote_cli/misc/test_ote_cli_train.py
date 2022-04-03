@@ -31,22 +31,10 @@ from ote_cli_test_common import (
     parser_templates,
     root,
     ote_dir,
+    train_args
 )
 
 params_values, params_ids, params_values_for_be, params_ids_for_be = parser_templates()
-
-COMMON_ARGS = [
-    "--train-ann-file",
-    f'{os.path.join(ote_dir, default_train_args_paths["--train-ann-file"])}',
-    "--train-data-roots",
-    f'{os.path.join(ote_dir, default_train_args_paths["--train-data-roots"])}',
-    "--val-ann-file",
-    f'{os.path.join(ote_dir, default_train_args_paths["--val-ann-file"])}',
-    "--val-data-roots",
-    f'{os.path.join(ote_dir, default_train_args_paths["--val-data-roots"])}',
-    "--save-model-to",
-    f'{os.path.join(ote_dir, "trained_model")}',
-]
 
 
 class TestTrainCommon:
@@ -353,7 +341,10 @@ class TestTrainCommon:
     def test_ote_train_wrong_saved_model_to(self, back_end, template, create_venv_fx):
         error_string = "Path is not valid"
         for case in wrong_paths.values():
-            command_line = [template.model_template_id, *COMMON_ARGS, case]
+            command_line = train_args(
+                            template, default_train_args_paths, ote_dir, root, smt_path=case
+            )
+
             ret = ote_common(template, root, "train", command_line)
             assert ret["exit_code"] != 0, "Exit code must not be equal 0"
             assert (
@@ -383,13 +374,14 @@ class TestTrainDetectionTemplateArguments:
         error_string = "invalid int value"
         cases = ["1.0", "Alpha"]
         for case in cases:
-            command_args = [
-                template.model_template_id,
-                *COMMON_ARGS,
+            test_params = [
                 "params",
                 "--learning_parameters.batch_size",
                 case,
             ]
+            command_args = train_args(
+                            template, default_train_args_paths, ote_dir, root, additional=test_params
+            )
             ret = ote_common(template, root, "train", command_args)
             assert ret["exit_code"] != 0, "Exit code must not be equal 0"
             assert (
@@ -403,15 +395,16 @@ class TestTrainDetectionTemplateArguments:
         ids=params_ids_for_be["DETECTION"],
     )
     def test_ote_train_lp_batch_size(self, template, create_venv_fx):
-        command_args = [
-            template.model_template_id,
-            *COMMON_ARGS,
+        test_params = [
             "params",
             "--learning_parameters.num_iters",
             "1",
             "--learning_parameters.batch_size",
             "1",
         ]
+        command_args = train_args(
+            template, default_train_args_paths, ote_dir, root, additional=test_params
+        )
         ret = ote_common(template, root, "train", command_args)
         assert ret["exit_code"] == 0, "Exit code must be equal 0"
 
@@ -425,13 +418,14 @@ class TestTrainDetectionTemplateArguments:
         error_string = "is out of bounds."
         cases = ["0", "513"]
         for case in cases:
-            command_args = [
-                template.model_template_id,
-                *COMMON_ARGS,
+            test_params = [
                 "params",
                 "--learning_parameters.batch_size",
                 case,
             ]
+            command_args = train_args(
+                template, default_train_args_paths, ote_dir, root, additional=test_params
+            )
             ret = ote_common(template, root, "train", command_args)
             assert ret["exit_code"] != 0, "Exit code must not be equal 0"
             assert (
@@ -446,13 +440,14 @@ class TestTrainDetectionTemplateArguments:
     )
     def test_ote_train_lp_learning_rate_type(self, template, create_venv_fx):
         error_string = "invalid float value"
-        command_args = [
-            template.model_template_id,
-            *COMMON_ARGS,
+        test_params = [
             "params",
             "--learning_parameters.learning_rate",
             "NotFloat",
         ]
+        command_args = train_args(
+            template, default_train_args_paths, ote_dir, root, additional=test_params
+        )
         ret = ote_common(template, root, "train", command_args)
         assert ret["exit_code"] != 0, "Exit code must not be equal 0"
         assert error_string in ret["stderr"], f"Different error message {ret['stderr']}"
@@ -464,9 +459,7 @@ class TestTrainDetectionTemplateArguments:
         ids=params_ids_for_be["DETECTION"],
     )
     def test_ote_train_lp_learning_rate(self, template, create_venv_fx):
-        command_args = [
-            template.model_template_id,
-            *COMMON_ARGS,
+        test_params = [
             "params",
             "--learning_parameters.num_iters",
             "1",
@@ -475,6 +468,9 @@ class TestTrainDetectionTemplateArguments:
             "--learning_parameters.learning_rate",
             "0.01",
         ]
+        command_args = train_args(
+            template, default_train_args_paths, ote_dir, root, additional=test_params
+        )
         ret = ote_common(template, root, "train", command_args)
         assert ret["exit_code"] == 0, "Exit code must be equal 0"
 
@@ -488,13 +484,14 @@ class TestTrainDetectionTemplateArguments:
         error_string = "is out of bounds."
         cases = ["0.0", "0.2"]
         for case in cases:
-            command_args = [
-                template.model_template_id,
-                *COMMON_ARGS,
+            test_params = [
                 "params",
                 "--learning_parameters.learning_rate",
                 case,
             ]
+            command_args = train_args(
+                template, default_train_args_paths, ote_dir, root, additional=test_params
+            )
             ret = ote_common(template, root, "train", command_args)
             assert ret["exit_code"] != 0, "Exit code must not be equal 0"
             assert (
@@ -511,13 +508,14 @@ class TestTrainDetectionTemplateArguments:
         error_string = "invalid int value"
         cases = ["1.0", "Alpha"]
         for case in cases:
-            command_args = [
-                template.model_template_id,
-                *COMMON_ARGS,
+            test_params = [
                 "params",
                 "--learning_parameters.learning_rate_warmup_iters",
                 case,
             ]
+            command_args = train_args(
+                template, default_train_args_paths, ote_dir, root, additional=test_params
+            )
             ret = ote_common(template, root, "train", command_args)
             assert ret["exit_code"] != 0, "Exit code must not be equal 0"
             assert (
@@ -531,9 +529,7 @@ class TestTrainDetectionTemplateArguments:
         ids=params_ids_for_be["DETECTION"],
     )
     def test_ote_train_lp_learning_rate_warmup_iters(self, template, create_venv_fx):
-        command_args = [
-            template.model_template_id,
-            *COMMON_ARGS,
+        test_params = [
             "params",
             "--learning_parameters.num_iters",
             "1",
@@ -542,6 +538,9 @@ class TestTrainDetectionTemplateArguments:
             "--learning_parameters.learning_rate_warmup_iters",
             "1",
         ]
+        command_args = train_args(
+            template, default_train_args_paths, ote_dir, root, additional=test_params
+        )
         ret = ote_common(template, root, "train", command_args)
         assert ret["exit_code"] == 0, "Exit code must be equal 0"
 
@@ -555,13 +554,14 @@ class TestTrainDetectionTemplateArguments:
         error_string = "is out of bounds."
         oob_values = ["-1", "10001"]
         for value in oob_values:
-            command_args = [
-                template.model_template_id,
-                *COMMON_ARGS,
+            test_params = [
                 "params",
                 "--learning_parameters.learning_rate_warmup_iters",
                 value,
             ]
+            command_args = train_args(
+                template, default_train_args_paths, ote_dir, root, additional=test_params
+            )
             ret = ote_common(template, root, "train", command_args)
             assert ret["exit_code"] != 0, "Exit code must not be equal 0"
             assert (
@@ -578,13 +578,14 @@ class TestTrainDetectionTemplateArguments:
         error_string = "invalid int value"
         cases = ["1.0", "Alpha"]
         for case in cases:
-            command_args = [
-                template.model_template_id,
-                *COMMON_ARGS,
+            test_params = [
                 "params",
                 "--learning_parameters.num_iters",
                 case,
             ]
+            command_args = train_args(
+                template, default_train_args_paths, ote_dir, root, additional=test_params
+            )
             ret = ote_common(template, root, "train", command_args)
             assert ret["exit_code"] != 0, "Exit code must not be equal 0"
             assert (
@@ -598,9 +599,7 @@ class TestTrainDetectionTemplateArguments:
         ids=params_ids_for_be["DETECTION"],
     )
     def test_ote_train_lp_num_iters(self, template, create_venv_fx):
-        command_args = [
-            template.model_template_id,
-            *COMMON_ARGS,
+        test_params = [
             "params",
             "--learning_parameters.num_iters",
             "1",
@@ -609,6 +608,9 @@ class TestTrainDetectionTemplateArguments:
             "--learning_parameters.num_iters",
             "1",
         ]
+        command_args = train_args(
+            template, default_train_args_paths, ote_dir, root, additional=test_params
+        )
         ret = ote_common(template, root, "train", command_args)
         assert ret["exit_code"] == 0, "Exit code must be equal 0"
 
@@ -622,13 +624,14 @@ class TestTrainDetectionTemplateArguments:
         error_string = "is out of bounds."
         oob_values = ["0", "1000001"]
         for value in oob_values:
-            command_args = [
-                template.model_template_id,
-                *COMMON_ARGS,
+            test_params = [
                 "params",
                 "--learning_parameters.num_iters",
                 value,
             ]
+            command_args = train_args(
+                template, default_train_args_paths, ote_dir, root, additional=test_params
+            )
             ret = ote_common(template, root, "train", command_args)
             assert ret["exit_code"] != 0, "Exit code must not be equal 0"
             assert (
@@ -643,13 +646,14 @@ class TestTrainDetectionTemplateArguments:
     )
     def test_ote_train_pp_confidence_threshold_type(self, template, create_venv_fx):
         error_string = "invalid float value"
-        command_args = [
-            template.model_template_id,
-            *COMMON_ARGS,
+        test_params = [
             "params",
             "--postprocessing.confidence_threshold",
             "Alpha",
         ]
+        command_args = train_args(
+            template, default_train_args_paths, ote_dir, root, additional=test_params
+        )
         ret = ote_common(template, root, "train", command_args)
         assert ret["exit_code"] != 0, "Exit code must not be equal 0"
         assert error_string in ret["stderr"], f"Different error message {ret['stderr']}"
@@ -661,9 +665,7 @@ class TestTrainDetectionTemplateArguments:
         ids=params_ids_for_be["DETECTION"],
     )
     def test_ote_train_pp_confidence_threshold(self, template, create_venv_fx):
-        command_args = [
-            template.model_template_id,
-            *COMMON_ARGS,
+        test_params = [
             "params",
             "--learning_parameters.num_iters",
             "1",
@@ -672,6 +674,9 @@ class TestTrainDetectionTemplateArguments:
             "--postprocessing.confidence_threshold",
             "0.5",
         ]
+        command_args = train_args(
+            template, default_train_args_paths, ote_dir, root, additional=test_params
+        )
         ret = ote_common(template, root, "train", command_args)
         assert ret["exit_code"] == 0, "Exit code must be equal 0"
 
@@ -685,13 +690,14 @@ class TestTrainDetectionTemplateArguments:
         error_string = "is out of bounds."
         oob_values = ["-0.9", "1.1"]
         for value in oob_values:
-            command_args = [
-                template.model_template_id,
-                *COMMON_ARGS,
+            test_params = [
                 "params",
                 "--postprocessing.confidence_threshold",
                 value,
             ]
+            command_args = train_args(
+                template, default_train_args_paths, ote_dir, root, additional=test_params
+            )
             ret = ote_common(template, root, "train", command_args)
             assert ret["exit_code"] != 0, "Exit code must not be equal 0"
             assert (
@@ -708,13 +714,14 @@ class TestTrainDetectionTemplateArguments:
         self, template, create_venv_fx
     ):
         error_string = "Boolean value expected"
-        command_args = [
-            template.model_template_id,
-            *COMMON_ARGS,
+        test_params = [
             "params",
             "--postprocessing.result_based_confidence_threshold",
             "NonBoolean",
         ]
+        command_args = train_args(
+            template, default_train_args_paths, ote_dir, root, additional=test_params
+        )
         ret = ote_common(template, root, "train", command_args)
         assert ret["exit_code"] != 0, "Exit code must not be equal 0"
         assert error_string in ret["stderr"], f"Different error message {ret['stderr']}"
@@ -728,9 +735,7 @@ class TestTrainDetectionTemplateArguments:
     def test_ote_train_lp_result_based_confidence_threshold(
         self, template, create_venv_fx
     ):
-        command_args = [
-            template.model_template_id,
-            *COMMON_ARGS,
+        test_params = [
             "params",
             "--learning_parameters.num_iters",
             "1",
@@ -739,5 +744,8 @@ class TestTrainDetectionTemplateArguments:
             "--postprocessing.result_based_confidence_threshold",
             "True",
         ]
+        command_args = train_args(
+            template, default_train_args_paths, ote_dir, root, additional=test_params
+        )
         ret = ote_common(template, root, "train", command_args)
         assert ret["exit_code"] == 0, "Exit code must be equal 0"

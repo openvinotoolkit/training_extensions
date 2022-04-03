@@ -126,6 +126,86 @@ def eval_args(
     return ret_eval_args
 
 
+def train_args(
+    _template_,
+    args_paths,
+    _ote_dir_,
+    _root_,
+    test_ann_file=True,
+    taf_path=None,
+    test_data_roots=True,
+    tdr_path=None,
+    val_ann_file=True,
+    vaf_path=None,
+    val_data_roots=True,
+    vdr_path=None,
+    save_model_to=True,
+    smt_path=None,
+    l_weights=False,
+    lw_path=None,
+    additional=None,
+):
+    _, twd, _ = get_some_vars(_template_, _root_)
+    ret_eval_args = [_template_.model_template_id]
+    if test_ann_file:
+        ret_eval_args.append("--test-ann-file")
+        if taf_path:
+            ret_eval_args.append(taf_path)
+        else:
+            ret_eval_args.append(
+                f'{os.path.join(_ote_dir_, args_paths["--test-ann-files"])}'
+            )
+
+    if test_data_roots:
+        ret_eval_args.append("--test-data-roots")
+        if tdr_path:
+            ret_eval_args.append(tdr_path)
+        else:
+            ret_eval_args.append(
+                f'{os.path.join(_ote_dir_, args_paths["--test-data-roots"])}'
+            )
+
+    if val_ann_file:
+        ret_eval_args.append("--val-ann-file")
+        if vaf_path:
+            ret_eval_args.append(vaf_path)
+        else:
+            ret_eval_args.append(
+                f'{os.path.join(_ote_dir_, args_paths["--val-ann-file"])}'
+            )
+
+    if val_data_roots:
+        ret_eval_args.append("--val-data-roots")
+        if vdr_path:
+            ret_eval_args.append(vdr_path)
+        else:
+            ret_eval_args.append(
+                f'{os.path.join(_ote_dir_, args_paths["--val-data-roots"])}'
+            )
+
+    if save_model_to:
+        ret_eval_args.append("--save-model-to")
+        if smt_path:
+            ret_eval_args.append(smt_path)
+        else:
+            ret_eval_args.append(
+                f"{twd}/trained_{_template_.model_template_id}"
+            )
+
+    if l_weights:
+        ret_eval_args.append("--load-weights")
+        if lw_path:
+            ret_eval_args.append(lw_path)
+        else:
+            ret_eval_args.append(
+                f"{twd}/trained_{_template_.model_template_id}/weights.pth"
+            )
+
+    if additional:
+        ret_eval_args += [*additional]
+    return ret_eval_args
+
+
 def ote_common(template, root, tool, cmd_args):
     work_dir, __, _ = get_some_vars(template, root)
     command_line = ["ote", tool, *cmd_args]
