@@ -87,7 +87,7 @@ def eval_args(
     ret_eval_args = [_template_.model_template_id]
     if test_ann_file:
         ret_eval_args.append("--test-ann-file")
-        if taf_path:
+        if taf_path is not None:
             ret_eval_args.append(taf_path)
         else:
             ret_eval_args.append(
@@ -96,7 +96,7 @@ def eval_args(
 
     if test_data_roots:
         ret_eval_args.append("--test-data-roots")
-        if tdr_path:
+        if tdr_path is not None:
             ret_eval_args.append(tdr_path)
         else:
             ret_eval_args.append(
@@ -105,7 +105,7 @@ def eval_args(
 
     if l_weights:
         ret_eval_args.append("--load-weights")
-        if lw_path:
+        if lw_path is not None:
             ret_eval_args.append(lw_path)
         else:
             ret_eval_args.append(
@@ -114,7 +114,7 @@ def eval_args(
 
     if save_performance:
         ret_eval_args.append("--save-performance")
-        if sp_path:
+        if sp_path is not None:
             ret_eval_args.append(sp_path)
         else:
             ret_eval_args.append(
@@ -149,7 +149,7 @@ def train_args(
     ret_eval_args = [_template_.model_template_id]
     if train_ann_files:
         ret_eval_args.append("--train-ann-files")
-        if taf_path:
+        if taf_path is not None:
             ret_eval_args.append(taf_path)
         else:
             ret_eval_args.append(
@@ -158,7 +158,7 @@ def train_args(
 
     if train_data_roots:
         ret_eval_args.append("--train-data-roots")
-        if tdr_path:
+        if tdr_path is not None:
             ret_eval_args.append(tdr_path)
         else:
             ret_eval_args.append(
@@ -167,7 +167,7 @@ def train_args(
 
     if val_ann_file:
         ret_eval_args.append("--val-ann-files")
-        if vaf_path:
+        if vaf_path is not None:
             ret_eval_args.append(vaf_path)
         else:
             ret_eval_args.append(
@@ -176,7 +176,7 @@ def train_args(
 
     if val_data_roots:
         ret_eval_args.append("--val-data-roots")
-        if vdr_path:
+        if vdr_path is not None:
             ret_eval_args.append(vdr_path)
         else:
             ret_eval_args.append(
@@ -185,7 +185,7 @@ def train_args(
 
     if save_model_to:
         ret_eval_args.append("--save-model-to")
-        if smt_path:
+        if smt_path is not None:
             ret_eval_args.append(smt_path)
         else:
             ret_eval_args.append(
@@ -194,7 +194,7 @@ def train_args(
 
     if l_weights:
         ret_eval_args.append("--load-weights")
-        if lw_path:
+        if lw_path is not None:
             ret_eval_args.append(lw_path)
         else:
             ret_eval_args.append(
