@@ -112,7 +112,7 @@ def main():
     validate_path(args.val_data_roots)
     validate_path(args.save_model_to)
     validate_path(args.load_weights)
-    if args.save_performance:
+    if args.save_performance is not None:
         validate_path(args.save_performance)
 
     is_pot = False
