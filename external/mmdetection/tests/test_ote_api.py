@@ -298,8 +298,7 @@ class API(unittest.TestCase):
         print('Task initialized, model optimization starts.')
         training_progress_curve = []
 
-        def progress_callback(progress: int):
-            assert isinstance(progress, int)
+        def progress_callback(progress: float, score: Optional[float] = None):
             training_progress_curve.append(progress)
 
         optimization_parameters = OptimizationParameters
@@ -404,7 +403,7 @@ class API(unittest.TestCase):
             num_iters=5,
             quality_score_threshold=0.5,
             reload_perf_delta_tolerance=0.0,
-            export_perf_delta_tolerance=0.0005,
+            export_perf_delta_tolerance=0.001,
             pot_perf_delta_tolerance=0.1,
             nncf_perf_delta_tolerance=0.1,
             task_type=TaskType.DETECTION):

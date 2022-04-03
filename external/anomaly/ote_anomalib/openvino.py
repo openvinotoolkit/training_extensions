@@ -35,10 +35,7 @@ from compression.graph.model_utils import compress_model_weights, get_nodes_by_t
 from compression.pipeline.initializer import create_pipeline
 from omegaconf import OmegaConf
 from ote_anomalib.configs import get_anomalib_config
-from ote_anomalib.data.utils import (
-    contains_anomalous_images,
-    split_local_global_resultset,
-)
+from ote_anomalib.data import LabelNames
 from ote_anomalib.logging import get_logger
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.inference_parameters import (
@@ -56,17 +53,11 @@ from ote_sdk.entities.model_template import TaskType
 from ote_sdk.entities.optimization_parameters import OptimizationParameters
 from ote_sdk.entities.result_media import ResultMediaEntity
 from ote_sdk.entities.resultset import ResultSetEntity
+from ote_sdk.entities.scored_label import ScoredLabel
 from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.serialization.label_mapper import LabelSchemaMapper, label_schema_to_bytes
-from ote_sdk.usecases.evaluation.averaging import MetricAverageMethod
 from ote_sdk.usecases.evaluation.metrics_helper import MetricsHelper
 from ote_sdk.usecases.exportable_code import demo
-from ote_sdk.usecases.exportable_code.prediction_to_annotation_converter import (
-    AnomalyClassificationToAnnotationConverter,
-    AnomalyDetectionToAnnotationConverter,
-    AnomalySegmentationToAnnotationConverter,
-    IPredictionToAnnotationConverter,
-)
 from ote_sdk.usecases.tasks.interfaces.deployment_interface import IDeploymentTask
 from ote_sdk.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
 from ote_sdk.usecases.tasks.interfaces.inference_interface import IInferenceTask
@@ -74,6 +65,8 @@ from ote_sdk.usecases.tasks.interfaces.optimization_interface import (
     IOptimizationTask,
     OptimizationType,
 )
+from ote_sdk.utils.anomaly_utils import create_detection_annotation_from_anomaly_heatmap
+from ote_sdk.utils.segmentation_utils import create_annotation_from_segmentation_map
 
 logger = get_logger(__name__)
 
@@ -123,15 +116,9 @@ class OpenVINOAnomalyTask(IInferenceTask, IEvaluationTask, IOptimizationTask, ID
         self.config = self.get_config()
         self.inferencer = self.load_inferencer()
 
-        self.annotation_converter: IPredictionToAnnotationConverter
-        if self.task_type == TaskType.ANOMALY_CLASSIFICATION:
-            self.annotation_converter = AnomalyClassificationToAnnotationConverter(self.task_environment.label_schema)
-        elif self.task_type == TaskType.ANOMALY_DETECTION:
-            self.annotation_converter = AnomalyDetectionToAnnotationConverter(self.task_environment.label_schema)
-        elif self.task_type == TaskType.ANOMALY_SEGMENTATION:
-            self.annotation_converter = AnomalySegmentationToAnnotationConverter(self.task_environment.label_schema)
-        else:
-            raise ValueError(f"Unknown task type: {self.task_type}")
+        labels = self.task_environment.get_labels()
+        self.normal_label = [label for label in labels if label.name == LabelNames.normal][0]
+        self.anomalous_label = [label for label in labels if label.name == LabelNames.anomalous][0]
 
         template_file_path = task_environment.model_template.model_template_path
         self._base_dir = os.path.abspath(os.path.dirname(template_file_path))
@@ -172,16 +159,28 @@ class OpenVINOAnomalyTask(IInferenceTask, IEvaluationTask, IOptimizationTask, ID
             anomaly_map, pred_score = self.inferencer.predict(
                 dataset_item.numpy, superimpose=False, meta_data=meta_data
             )
+            # TODO: inferencer should return predicted label and mask
+            pred_label = pred_score >= 0.5
+            pred_mask = (anomaly_map >= 0.5).astype(np.uint8)
+            probability = pred_score if pred_label else 1 - pred_score
             if self.task_type == TaskType.ANOMALY_CLASSIFICATION:
-                annotations_scene = self.annotation_converter.convert_to_annotation(pred_score, meta_data)
-            elif self.task_type in (TaskType.ANOMALY_DETECTION, TaskType.ANOMALY_SEGMENTATION):
-                annotations_scene = self.annotation_converter.convert_to_annotation(anomaly_map, meta_data)
+                label = self.anomalous_label if pred_score >= 0.5 else self.normal_label
+            elif self.task_type == TaskType.ANOMALY_SEGMENTATION:
+                annotations = create_annotation_from_segmentation_map(
+                    pred_mask, anomaly_map.squeeze(), {0: self.normal_label, 1: self.anomalous_label}
+                )
+                dataset_item.append_annotations(annotations)
+                label = self.normal_label if len(annotations) == 0 else self.anomalous_label
+            elif self.task_type == TaskType.ANOMALY_DETECTION:
+                annotations = create_detection_annotation_from_anomaly_heatmap(
+                    pred_mask, anomaly_map.squeeze(), {0: self.normal_label, 1: self.anomalous_label}
+                )
+                dataset_item.append_annotations(annotations)
+                label = self.normal_label if len(annotations) == 0 else self.anomalous_label
             else:
                 raise ValueError(f"Unknown task type: {self.task_type}")
 
-            # pylint: disable=protected-access
-            dataset_item.append_annotations(annotations_scene.annotations)
-
+            dataset_item.append_labels([ScoredLabel(label=label, probability=float(probability))])
             anomaly_map = anomaly_map_to_color_map(anomaly_map, normalize=False)
             heatmap_media = ResultMediaEntity(
                 name="Anomaly Map",
@@ -219,20 +218,9 @@ class OpenVINOAnomalyTask(IInferenceTask, IEvaluationTask, IOptimizationTask, ID
         if self.task_type == TaskType.ANOMALY_CLASSIFICATION:
             metric = MetricsHelper.compute_f_measure(output_resultset)
         elif self.task_type == TaskType.ANOMALY_DETECTION:
-            global_resultset, local_resultset = split_local_global_resultset(output_resultset)
-            metric = MetricsHelper.compute_f_measure(local_resultset)
+            metric = MetricsHelper.compute_anomaly_detection_scores(output_resultset)
         elif self.task_type == TaskType.ANOMALY_SEGMENTATION:
-            global_resultset, local_resultset = split_local_global_resultset(output_resultset)
-            logger.info(f"Global annotations: {len(global_resultset.ground_truth_dataset)}")
-            logger.info(f"Local annotations: {len(local_resultset.ground_truth_dataset)}")
-            logger.info(f"Global predictions: {len(global_resultset.prediction_dataset)}")
-            logger.info(f"Local predictions: {len(local_resultset.prediction_dataset)}")
-            if contains_anomalous_images(local_resultset.ground_truth_dataset):
-                logger.info("Dataset contains polygon annotations. Using pixel-level evaluation metric.")
-                metric = MetricsHelper.compute_dice_averaged_over_pixels(local_resultset, MetricAverageMethod.MICRO)
-            else:
-                logger.info("Dataset does not contain polygon annotations. Using image-level evaluation metric.")
-                metric = MetricsHelper.compute_f_measure(global_resultset)
+            metric = MetricsHelper.compute_anomaly_segmentation_scores(output_resultset)
         else:
             raise ValueError(f"Unknown task type: {self.task_type}")
         output_resultset.performance = metric.get_performance()
