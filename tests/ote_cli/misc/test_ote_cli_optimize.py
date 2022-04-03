@@ -33,7 +33,7 @@ from ote_cli_test_common import (
     root,
     ote_dir,
     get_exported_artifact,
-    optimize_args
+    optimize_args,
 )
 
 params_values, params_ids, params_values_for_be, params_ids_for_be = parser_templates()
@@ -331,7 +331,12 @@ class TestOptimizeCommon:
     ):
         for case in wrong_paths.values():
             command_line = optimize_args(
-                template, default_train_args_paths, ote_dir, root, save_performance=True, sp_path=case
+                template,
+                default_train_args_paths,
+                ote_dir,
+                root,
+                save_performance=True,
+                sp_path=case,
             )
             ret = ote_common(template, root, "optimize", command_line)
             assert ret["exit_code"] != 0, "Exit code must not be equal 0"

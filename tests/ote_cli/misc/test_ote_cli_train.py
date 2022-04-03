@@ -31,7 +31,7 @@ from ote_cli_test_common import (
     parser_templates,
     root,
     ote_dir,
-    train_args
+    train_args,
 )
 
 params_values, params_ids, params_values_for_be, params_ids_for_be = parser_templates()
@@ -342,7 +342,7 @@ class TestTrainCommon:
         error_string = "Path is not valid"
         for case in wrong_paths.values():
             command_line = train_args(
-                            template, default_train_args_paths, ote_dir, root, smt_path=case
+                template, default_train_args_paths, ote_dir, root, smt_path=case
             )
 
             ret = ote_common(template, root, "train", command_line)
@@ -380,7 +380,11 @@ class TestTrainDetectionTemplateArguments:
                 case,
             ]
             command_args = train_args(
-                            template, default_train_args_paths, ote_dir, root, additional=test_params
+                template,
+                default_train_args_paths,
+                ote_dir,
+                root,
+                additional=test_params,
             )
             ret = ote_common(template, root, "train", command_args)
             assert ret["exit_code"] != 0, "Exit code must not be equal 0"
@@ -424,7 +428,11 @@ class TestTrainDetectionTemplateArguments:
                 case,
             ]
             command_args = train_args(
-                template, default_train_args_paths, ote_dir, root, additional=test_params
+                template,
+                default_train_args_paths,
+                ote_dir,
+                root,
+                additional=test_params,
             )
             ret = ote_common(template, root, "train", command_args)
             assert ret["exit_code"] != 0, "Exit code must not be equal 0"
@@ -490,7 +498,11 @@ class TestTrainDetectionTemplateArguments:
                 case,
             ]
             command_args = train_args(
-                template, default_train_args_paths, ote_dir, root, additional=test_params
+                template,
+                default_train_args_paths,
+                ote_dir,
+                root,
+                additional=test_params,
             )
             ret = ote_common(template, root, "train", command_args)
             assert ret["exit_code"] != 0, "Exit code must not be equal 0"
@@ -514,7 +526,11 @@ class TestTrainDetectionTemplateArguments:
                 case,
             ]
             command_args = train_args(
-                template, default_train_args_paths, ote_dir, root, additional=test_params
+                template,
+                default_train_args_paths,
+                ote_dir,
+                root,
+                additional=test_params,
             )
             ret = ote_common(template, root, "train", command_args)
             assert ret["exit_code"] != 0, "Exit code must not be equal 0"
@@ -560,7 +576,11 @@ class TestTrainDetectionTemplateArguments:
                 value,
             ]
             command_args = train_args(
-                template, default_train_args_paths, ote_dir, root, additional=test_params
+                template,
+                default_train_args_paths,
+                ote_dir,
+                root,
+                additional=test_params,
             )
             ret = ote_common(template, root, "train", command_args)
             assert ret["exit_code"] != 0, "Exit code must not be equal 0"
@@ -584,7 +604,11 @@ class TestTrainDetectionTemplateArguments:
                 case,
             ]
             command_args = train_args(
-                template, default_train_args_paths, ote_dir, root, additional=test_params
+                template,
+                default_train_args_paths,
+                ote_dir,
+                root,
+                additional=test_params,
             )
             ret = ote_common(template, root, "train", command_args)
             assert ret["exit_code"] != 0, "Exit code must not be equal 0"
@@ -630,7 +654,11 @@ class TestTrainDetectionTemplateArguments:
                 value,
             ]
             command_args = train_args(
-                template, default_train_args_paths, ote_dir, root, additional=test_params
+                template,
+                default_train_args_paths,
+                ote_dir,
+                root,
+                additional=test_params,
             )
             ret = ote_common(template, root, "train", command_args)
             assert ret["exit_code"] != 0, "Exit code must not be equal 0"
@@ -696,7 +724,11 @@ class TestTrainDetectionTemplateArguments:
                 value,
             ]
             command_args = train_args(
-                template, default_train_args_paths, ote_dir, root, additional=test_params
+                template,
+                default_train_args_paths,
+                ote_dir,
+                root,
+                additional=test_params,
             )
             ret = ote_common(template, root, "train", command_args)
             assert ret["exit_code"] != 0, "Exit code must not be equal 0"

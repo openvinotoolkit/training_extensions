@@ -188,9 +188,7 @@ def train_args(
         if smt_path is not None:
             ret_train_args.append(smt_path)
         else:
-            ret_train_args.append(
-                f"{twd}/trained_{_template_.model_template_id}"
-            )
+            ret_train_args.append(f"{twd}/trained_{_template_.model_template_id}")
 
     if l_weights:
         ret_train_args.append("--load-weights")
@@ -245,7 +243,8 @@ def optimize_args(
         smt_path,
         l_weights,
         lw_path,
-        additional)
+        additional,
+    )
     if save_performance:
         ret_optimize_args.append("--save-performance")
         if sp_path is not None:
@@ -281,7 +280,11 @@ def get_pretrained_artifacts(template, root, ote_dir):
     logger.debug(f">>> Current pre-trained artifact: {pretrained_artifact_path}")
     if not os.path.exists(pretrained_artifact_path):
         command_args = train_args(
-            template, default_train_args_paths, ote_dir, root, smt_path=pretrained_artifact_path
+            template,
+            default_train_args_paths,
+            ote_dir,
+            root,
+            smt_path=pretrained_artifact_path,
         )
         ote_common(template, root, "train", command_args)
         assert os.path.exists(
