@@ -302,7 +302,7 @@ class TestOptimizeCommon:
         error_string = "Path is not valid"
         for case in wrong_paths.values():
             command_line = optimize_args(
-                template, default_train_args_paths, ote_dir, root, sp_path=case
+                template, default_train_args_paths, ote_dir, root, smt_path=case
             )
             ret = ote_common(template, root, "optimize", command_line)
             assert ret["exit_code"] != 0, "Exit code must not be equal 0"
