@@ -76,17 +76,17 @@ class OTEDetectionNNCFTask(OTEDetectionInferenceTask, IOptimizationTask):
         if quantization and pruning:
             self._nncf_preset = "nncf_quantization_pruning"
             self._optimization_methods = [OptimizationMethod.QUANTIZATION, OptimizationMethod.FILTER_PRUNING]
-            self._precision = [ModelPrecision.INT8]
+            self._nncf_precision = [ModelPrecision.INT8]
             return
         if quantization and not pruning:
             self._nncf_preset = "nncf_quantization"
             self._optimization_methods = [OptimizationMethod.QUANTIZATION]
-            self._precision = [ModelPrecision.INT8]
+            self._nncf_precision = [ModelPrecision.INT8]
             return
         if not quantization and pruning:
             self._nncf_preset = "nncf_pruning"
             self._optimization_methods = [OptimizationMethod.FILTER_PRUNING]
-            self._precision = [ModelPrecision.FP32]
+            self._nncf_precision = [ModelPrecision.FP32]
             return
         raise RuntimeError('Not selected optimization algorithm')
 
@@ -237,7 +237,7 @@ class OTEDetectionNNCFTask(OTEDetectionInferenceTask, IOptimizationTask):
         output_model.model_format = ModelFormat.BASE_FRAMEWORK
         output_model.optimization_type = self._optimization_type
         output_model.optimization_methods = self._optimization_methods
-        output_model.precision = self._precision
+        output_model.precision = self._nncf_precision
 
         self._is_training = False
 
