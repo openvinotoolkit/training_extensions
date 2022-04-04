@@ -133,7 +133,7 @@ class ClassificationTrainingTestParameters(DefaultOTETestCreationParametersInter
                        'Custom_Image_Classification_EfficientNet-V2-S',
                        'Custom_Image_Classification_MobileNet-V3-large-1x',
                     ],
-                    dataset_name='lg_chem_short',
+                    dataset_name=['lg_chem_short','mlc_voc_short'],
                     usecase='precommit',
                 ),
                 dict(
@@ -141,7 +141,7 @@ class ClassificationTrainingTestParameters(DefaultOTETestCreationParametersInter
                        'Custom_Image_Classification_EfficientNet-V2-S',
                        'Custom_Image_Classification_MobileNet-V3-large-1x',
                     ],
-                    dataset_name=['lg_chem','cifar100'],
+                    dataset_name=['lg_chem','cifar100','mlc_voc'],
                     max_num_epochs=KEEP_CONFIG_FIELD_VALUE,
                     batch_size=KEEP_CONFIG_FIELD_VALUE,
                     usecase=REALLIFE_USECASE_CONSTANT,
@@ -173,7 +173,7 @@ class ClassificationTrainingTestParameters(DefaultOTETestCreationParametersInter
 
     def default_test_parameters(self) -> Dict[str, Any]:
         DEFAULT_TEST_PARAMETERS = {
-            "max_num_epochs": 1,
+            "max_num_epochs": 3,
             "batch_size": 2,
         }
         return deepcopy(DEFAULT_TEST_PARAMETERS)
@@ -464,6 +464,9 @@ class TestOTEReallifeClassification(OTETrainingTestInterface):
 
         if "nncf_graph" in test_parameters["test_stage"]:
             pytest.xfail("The models has no a reference NNCF graph yet")
-
+        if "mlc_voc" in test_parameters["dataset_name"] \
+            and "MobileNet" in test_parameters["model_name"] \
+                and "nncf_evaluation" in test_parameters["test_stage"]:
+            pytest.xfail("Known issue CVS-83261")
         test_case_fx.run_stage(test_parameters['test_stage'], data_collector_fx,
                                cur_test_expected_metrics_callback_fx)
