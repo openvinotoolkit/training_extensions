@@ -62,7 +62,7 @@ from zipfile import ZipFile
 
 from mmdet.utils.logger import get_root_logger
 from .configuration import OTEDetectionConfig
-from .ote_utils import add_feature_info_to_data_item, draw_instance_segm_saliency_map
+from .ote_utils import add_features_to_data_item, draw_instance_segm_saliency_map
 from .model_wrappers import OTEMaskRCNNModel
 
 logger = get_root_logger()
@@ -89,10 +89,10 @@ class BaseInferencerWithConverter(BaseInferencer):
         predictions = self.post_process(raw_predictions, metadata)
 
         if 'feature_map' in raw_predictions:
-            feature_info = [raw_predictions['feature_vector'], raw_predictions['feature_map']]
+            features = [raw_predictions['feature_vector'], raw_predictions['feature_map']]
         else:
-            feature_info = raw_predictions['feature_vector']
-        return predictions, feature_info
+            features = raw_predictions['feature_vector']
+        return predictions, features
 
     def forward(self, inputs: Dict[str, np.ndarray]) -> Dict[str, np.ndarray]:
         return self.model.infer_sync(inputs)
@@ -248,24 +248,25 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
     def infer(self, dataset: DatasetEntity, inference_parameters: Optional[InferenceParameters] = None) -> DatasetEntity:
         logger.info('Start OpenVINO inference')
         update_progress_callback = default_progress_callback
-        return_saliency_map = False
+        add_saliency_map = False
         if inference_parameters is not None:
             update_progress_callback = inference_parameters.update_progress
-            return_saliency_map = not inference_parameters.is_evaluation
+            add_saliency_map = not inference_parameters.is_evaluation
 
         dataset_size = len(dataset)
         for i, dataset_item in enumerate(dataset, 1):
-            predicted_scene, feature_info = self.inferencer.predict(dataset_item.numpy)
+            predicted_scene, features = self.inferencer.predict(dataset_item.numpy)
             labels = self.task_environment.get_labels(include_empty=False)
-            if return_saliency_map:
-                if self.task_type in {TaskType.INSTANCE_SEGMENTATION, TaskType.ROTATED_DETECTION}:
-                    feature_info = [feature_info,
-                                    draw_instance_segm_saliency_map(predicted_scene.annotations, dataset_item, labels)]
+            if add_saliency_map:
+                # for feature map of one-stage model take the first layer of the classification head
+                if isinstance(features, list) and len(features) > 1:
+                    features[1] = features[1][0]
+                # create feature map of two-stage model from its output
                 else:
-                    # for object detection feature map take the first layer of the classification head
-                    feature_info[1] = feature_info[1][0]
-            dataset_item = add_feature_info_to_data_item(feature_info, dataset_item, self.model,
-                                                         labels, return_saliency_map)
+                    features = [features, draw_instance_segm_saliency_map(predicted_scene.annotations,
+                                                                          dataset_item, labels)]
+            dataset_item = add_features_to_data_item(features, dataset_item, self.model, labels,
+                                                     add_saliency_map)
             dataset_item.append_annotations(predicted_scene.annotations)
             update_progress_callback(int(i / dataset_size * 100))
         logger.info('OpenVINO inference completed')

@@ -49,7 +49,7 @@ from mmdet.apis import export_model
 from detection_tasks.apis.detection.config_utils import patch_config, prepare_for_testing, set_hyperparams
 from detection_tasks.apis.detection.configuration import OTEDetectionConfig
 from detection_tasks.apis.detection.ote_utils import InferenceProgressCallback,\
-    add_feature_info_to_data_item, draw_instance_segm_saliency_map
+    add_features_to_data_item, draw_instance_segm_saliency_map
 from mmdet.datasets import build_dataloader, build_dataset
 from mmdet.models import build_detector
 from mmdet.parallel import MMDataCPU
@@ -170,9 +170,9 @@ class OTEDetectionInferenceTask(IInferenceTask, IExportTask, IEvaluationTask, IU
         return model
 
     def _add_predictions_to_dataset(self, prediction_results, dataset, confidence_threshold=0.0,
-                                    return_saliency_map=False):
+                                    add_saliency_map=False):
         """ Loop over dataset again to assign predictions. Convert from MMDetection format to OTE format. """
-        for dataset_item, (all_results, feature_info) in zip(dataset, prediction_results):
+        for dataset_item, (all_results, features) in zip(dataset, prediction_results):
             width = dataset_item.width
             height = dataset_item.height
 
@@ -218,18 +218,18 @@ class OTEDetectionInferenceTask(IInferenceTask, IExportTask, IEvaluationTask, IU
                             polygon = Polygon(points=points)
                             if polygon.get_area() > 1e-12:
                                 shapes.append(Annotation(polygon, labels=labels, id=ID(f"{label_idx:08}")))
-                    if feature_info:
-                        feature_info = [feature_info,
-                                        draw_instance_segm_saliency_map(shapes, dataset_item, self._labels)]
+                    if features:
+                        features = [features,
+                                    draw_instance_segm_saliency_map(shapes, dataset_item, self._labels)]
             else:
                 raise RuntimeError(
                     f"Detection results assignment not implemented for task: {self._task_type}")
 
             dataset_item.append_annotations(shapes)
-            if feature_info:
-                dataset_item = add_feature_info_to_data_item(feature_info, dataset_item,
-                                                             self._task_environment.model, self._labels,
-                                                             return_saliency_map)
+            if features:
+                dataset_item = add_features_to_data_item(features, dataset_item,
+                                                         self._task_environment.model, self._labels,
+                                                         add_saliency_map)
 
 
     def infer(self, dataset: DatasetEntity, inference_parameters: Optional[InferenceParameters] = None) -> DatasetEntity:
@@ -246,10 +246,10 @@ class OTEDetectionInferenceTask(IInferenceTask, IExportTask, IEvaluationTask, IU
             self.confidence_threshold = self._hyperparams.postprocessing.confidence_threshold
 
         update_progress_callback = default_progress_callback
-        return_saliency_map = False
+        add_saliency_map = False
         if inference_parameters is not None:
             update_progress_callback = inference_parameters.update_progress
-            return_saliency_map = not inference_parameters.is_evaluation
+            add_saliency_map = not inference_parameters.is_evaluation
 
         time_monitor = InferenceProgressCallback(len(dataset), update_progress_callback)
 
@@ -262,8 +262,8 @@ class OTEDetectionInferenceTask(IInferenceTask, IExportTask, IEvaluationTask, IU
         logger.info(f'Confidence threshold {self.confidence_threshold}')
         model = self._model
         with model.register_forward_pre_hook(pre_hook), model.register_forward_hook(hook):
-            prediction_results, _ = self._infer_detector(model, self._config, dataset, eval=False, dump_features=True)
-        self._add_predictions_to_dataset(prediction_results, dataset, self.confidence_threshold, return_saliency_map)
+            prediction_results, _ = self._infer_detector(model, self._config, dataset, dump_features=True, eval=False)
+        self._add_predictions_to_dataset(prediction_results, dataset, self.confidence_threshold, add_saliency_map)
         logger.info('Inference completed')
         return dataset
 
@@ -288,17 +288,14 @@ class OTEDetectionInferenceTask(IInferenceTask, IExportTask, IEvaluationTask, IU
             eval_model = MMDataCPU(model)
 
         eval_predictions = []
-        feature_infos = []
+        features_list = []
 
         # Use a single gpu for testing. Set in both mm_val_dataloader and eval_model
         for data in mm_val_dataloader:
             with torch.no_grad():
-                result, feature_info = eval_model(return_loss=False, rescale=True, **data)
+                result, features = eval_model(return_loss=False, rescale=True, **data)
             eval_predictions.extend(result)
-            if dump_features:
-                feature_infos.append(feature_info)
-            else:
-                feature_infos.append(None)
+            features_list.append(features) if dump_features else features_list.append(None)
 
         # hard-code way to remove EvalHook args
         for key in [
@@ -311,8 +308,8 @@ class OTEDetectionInferenceTask(IInferenceTask, IExportTask, IEvaluationTask, IU
         if eval:
             metric = mm_val_dataset.evaluate(eval_predictions, **config.evaluation)[metric_name]
 
-        assert len(eval_predictions) == len(feature_infos), f'{len(eval_predictions)} != {len(feature_infos)}'
-        eval_predictions = zip(eval_predictions, feature_infos)
+        assert len(eval_predictions) == len(features_list), f'{len(eval_predictions)} != {len(features_list)}'
+        eval_predictions = zip(eval_predictions, features_list)
 
         return eval_predictions, metric
 

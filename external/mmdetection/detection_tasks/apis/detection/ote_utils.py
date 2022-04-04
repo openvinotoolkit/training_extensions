@@ -129,14 +129,14 @@ def draw_instance_segm_saliency_map(predictions, dataset_item, labels):
     return aggregated_mask
 
 
-def add_feature_info_to_data_item(feature_info, dataset_item, model, labels, return_saliency_map):
+def add_features_to_data_item(features, dataset_item, model, labels, add_saliency_map):
     """ Assign feature (representation) vector and saliency map to predictions dataset_item. """
 
-    feature_vector, feature_map = feature_info
-    active_score = TensorEntity(name="representation_vector", numpy=feature_vector.reshape(-1))
-    dataset_item.append_metadata_item(active_score, model=model)
+    feature_vector, feature_map = features
+    feature_vec_media = TensorEntity(name="representation_vector", numpy=feature_vector.reshape(-1))
+    dataset_item.append_metadata_item(feature_vec_media, model=model)
 
-    if return_saliency_map:
+    if add_saliency_map:
         width, height = dataset_item.width, dataset_item.height
         if isinstance(feature_map, Tensor):
             # TODO(gzalessk): rewrite feature map preprocessing for object detection task,
@@ -145,10 +145,10 @@ def add_feature_info_to_data_item(feature_info, dataset_item, model, labels, ret
         for label_idx, label in enumerate(labels):
             cur_label_feat_map = feature_map[label_idx, :, :]
             act_map = get_actmap(cur_label_feat_map, (width, height))
-            saliency_media = ResultMediaEntity(name="saliency_map", type="Saliency map",
-                                               annotation_scene=dataset_item.annotation_scene,
-                                               label=label, numpy=act_map, roi=dataset_item.roi)
-            dataset_item.append_metadata_item(saliency_media, model=model)
+            feature_map_media = ResultMediaEntity(name="saliency_map", type="Saliency map",
+                                                  annotation_scene=dataset_item.annotation_scene,
+                                                  label=label, numpy=act_map, roi=dataset_item.roi)
+            dataset_item.append_metadata_item(feature_map_media, model=model)
     return dataset_item
 
 
