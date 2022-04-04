@@ -218,7 +218,7 @@ class OTEDetectionInferenceTask(IInferenceTask, IExportTask, IEvaluationTask, IU
                             polygon = Polygon(points=points)
                             if polygon.get_area() > 1e-12:
                                 shapes.append(Annotation(polygon, labels=labels, id=ID(f"{label_idx:08}")))
-                    if features:
+                    if add_saliency_map:
                         features = [features,
                                     draw_instance_segm_saliency_map(shapes, dataset_item, self._labels)]
             else:
