@@ -105,10 +105,11 @@ fi
 # Install pytorch
 echo torch==${TORCH_VERSION} >> ${CONSTRAINTS_FILE}
 echo torchvision==${TORCHVISION_VERSION} >> ${CONSTRAINTS_FILE}
-pip install torch==${TORCH_VERSION} torchvision==${TORCHVISION_VERSION} -f https://download.pytorch.org/whl/lts/1.8/torch_lts.html -c ${CONSTRAINTS_FILE} || exit 1
+pip install torch==${TORCH_VERSION} torchvision==${TORCHVISION_VERSION} -f https://download.pytorch.org/whl/lts/${TORCHVISION_VERSION}/torch_lts.html -c ${CONSTRAINTS_FILE} || exit 1
 
 # Install mmcv
 pip install --no-cache-dir mmcv-full==${MMCV_VERSION} -c ${CONSTRAINTS_FILE} || exit 1
+sed -i "s/force=False/force=True/g" ${venv_dir}/lib/python${PYTHON_VERSION}/site-packages/mmcv/utils/registry.py  # Patch: remedy for MMCV registry collision from mmdet/mmseg
 
 # Install mmpycocotools from source to make sure it is compatible with installed numpy version.
 pip install --no-cache-dir --no-binary=mmpycocotools mmpycocotools -c ${CONSTRAINTS_FILE} || exit 1
@@ -126,7 +127,9 @@ pip install -e ../mmdetection -c ${CONSTRAINTS_FILE} || exit 1
 
 # Install base segmentation algo backend & task
 ##pip install -e ../mmsegmentation/submodule -c ${CONSTRAINTS_FILE} || exit 1
-pip install -e ../model-preparation-algorithm/submodule/external/mmsegmentation -c ${CONSTRAINTS_FILE} || exit 1  # Temporary due to mmcv version mismatch
+git submodule update --init --recursive
+rm -rf ./submodule/external/mmsegmentation/configs/ote  # To disable model template scan
+pip install -e ./submodule/external/mmsegmentation -c ${CONSTRAINTS_FILE} || exit 1  # Temporary due to mmcv version mismatch
 pip install -e ../mmsegmentation -c ${CONSTRAINTS_FILE} || exit 1
 
 # Install MPA algo backend & task

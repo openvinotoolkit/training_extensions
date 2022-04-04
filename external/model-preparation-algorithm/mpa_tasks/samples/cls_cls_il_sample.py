@@ -17,7 +17,6 @@ import sys
 
 import numpy as np
 from mmcv.utils import get_logger
-from detection_tasks.apis.detection.ote_utils import get_task_class
 from ote_sdk.configuration.helper import create
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.inference_parameters import InferenceParameters
@@ -30,8 +29,18 @@ from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.subset import Subset
 from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType
-from ote_sdk.usecases.tasks.interfaces.optimization_interface import \
-    OptimizationType
+from ote_sdk.usecases.tasks.interfaces.optimization_interface import OptimizationType
+from detection_tasks.apis.detection.ote_utils import get_task_class
+
+import random
+import torch
+seed = 5
+random.seed(seed)
+np.random.seed(seed)
+torch.manual_seed(seed)
+torch.cuda.manual_seed_all(seed)
+torch.backends.cudnn.deterministic = True
+torch.backends.cudnn.benchmark = False
 
 logger = get_logger(name='sample')
 
@@ -42,103 +51,129 @@ def parse_args():
     parser.add_argument('--export', action='store_true')
     return parser.parse_args()
 
-
-colors = dict(red=(255, 0, 0), green=(0, 255, 0))
-
-
 def load_test_dataset(data_type):
-    from ote_sdk.entities.annotation import (Annotation, AnnotationSceneEntity,
-                                             AnnotationSceneKind)
+    from ote_sdk.entities.annotation import Annotation, AnnotationSceneEntity, AnnotationSceneKind
     from ote_sdk.entities.dataset_item import DatasetItemEntity
     from ote_sdk.entities.image import Image
     from ote_sdk.entities.label import LabelEntity
     from ote_sdk.entities.scored_label import ScoredLabel
     from ote_sdk.entities.shapes.rectangle import Rectangle
     from ote_sdk.entities.subset import Subset
+    import PIL
 
-    def gen_image(resolution, x1, y1, x2, y2, color):
-        w, h = resolution
-        image = np.full([h, w, 3], fill_value=255, dtype=np.uint8)
-        image[int(y1 * h):int(y2 * h), int(x1 * w):int(x2 * w), :] = \
-            np.full([int(h*(y2-y1)), int(w*(x2-x1)), 3], fill_value=colors[color], dtype=np.uint8)
-        return (image, Rectangle(x1=x1, y1=y1, x2=x2, y2=y2))
+    def gen_image(resolution, shape=None):
+
+        image = PIL.Image.new('RGB', resolution, (255, 255, 255))
+        draw = PIL.ImageDraw.Draw(image)
+        h, w = image.size
+        if shape=='rectangle':
+            draw.rectangle((h*0.25, w*0.25, h*0.75, w*0.75), fill=(0, 192, 192), outline=(0, 0, 0))
+        if shape=='polygon':
+            draw.polygon(((h*0.25, w*0.25), (h, w*0.25), (h*0.5,w)), fill=(255, 255, 0), outline=(0, 0, 0))
+        return np.array(image)
 
     images = [
-        (0.0, 0.0, 0.5, 0.5),
-        (0.5, 0.0, 1.0, 0.5),
-        (0.0, 0.5, 0.5, 1.0),
-        (0.5, 0.5, 1.0, 1.0),
-    ]
-    labels = [
-        LabelEntity(name='red', domain=Domain.DETECTION, id=0),  # OLD class
-        LabelEntity(name='green', domain=Domain.DETECTION, id=1),
+        gen_image((32, 32), shape='rectangle'),
+        gen_image((32, 32), shape='polygon'),
     ]
 
-    def get_image(i, subset, label_id):
-        image, bbox = gen_image((640, 480), *images[i], labels[label_id].name)
-        return DatasetItemEntity(
-            media=Image(data=image),
-            annotation_scene=AnnotationSceneEntity(
-                annotations=[Annotation(bbox, labels=[ScoredLabel(label=labels[label_id])])],
-                kind=AnnotationSceneKind.ANNOTATION
-            ),
-            subset=subset,
-        )
+    labels = [
+        LabelEntity(name='rectangle', domain=Domain.CLASSIFICATION, id=0),
+        LabelEntity(name='polygon', domain=Domain.CLASSIFICATION, id=1),  # NEW class
+    ]
+
+    def get_image(i, subset):
+        return DatasetItemEntity(media=Image(data=images[i]),
+                                 annotation_scene=AnnotationSceneEntity(
+                                    annotations=[Annotation(
+                                                 Rectangle(x1=0.0, y1=0.0, x2=1.0, y2=1.0),
+                                                 labels=[ScoredLabel(label=labels[i])]
+                                                 )],
+                                    kind=AnnotationSceneKind.ANNOTATION
+                                    ),
+                                 subset=subset,
+                                 )
 
     old_train = [
-        get_image(0, Subset.TRAINING, 0),
-        get_image(1, Subset.TRAINING, 0),
-        get_image(2, Subset.TRAINING, 0),
-        get_image(3, Subset.TRAINING, 0),
-        get_image(0, Subset.TRAINING, 0),
-        get_image(1, Subset.TRAINING, 0),
-        get_image(2, Subset.TRAINING, 0),
-        get_image(3, Subset.TRAINING, 0),
-        get_image(0, Subset.TRAINING, 0),
-        get_image(1, Subset.TRAINING, 0),
+        get_image(0, Subset.TRAINING),
+        get_image(0, Subset.TRAINING),
+        get_image(0, Subset.TRAINING),
+        get_image(0, Subset.TRAINING),
+        get_image(0, Subset.TRAINING),
+        get_image(0, Subset.TRAINING),
+        get_image(0, Subset.TRAINING),
+        get_image(0, Subset.TRAINING),
+        get_image(0, Subset.TRAINING),
+        get_image(0, Subset.TRAINING),
+        get_image(0, Subset.TRAINING),
+        get_image(0, Subset.TRAINING),
+        get_image(0, Subset.TRAINING),
+        get_image(0, Subset.TRAINING),
+        get_image(0, Subset.TRAINING),
+        get_image(0, Subset.TRAINING),
     ]
+
     old_val = [
-        get_image(0, Subset.VALIDATION, 0),
-        get_image(1, Subset.VALIDATION, 0),
-        get_image(2, Subset.VALIDATION, 0),
-        get_image(3, Subset.VALIDATION, 0),
-        get_image(0, Subset.TESTING, 0),
-        get_image(1, Subset.TESTING, 0),
-        get_image(2, Subset.TESTING, 0),
-        get_image(3, Subset.TESTING, 0),
+        get_image(0, Subset.VALIDATION),
+        get_image(0, Subset.VALIDATION),
+        get_image(0, Subset.VALIDATION),
+        get_image(0, Subset.VALIDATION),
+        get_image(0, Subset.VALIDATION),
+        get_image(0, Subset.VALIDATION),
+        get_image(0, Subset.VALIDATION),
+        get_image(0, Subset.VALIDATION),
+        get_image(0, Subset.VALIDATION),
+        get_image(0, Subset.VALIDATION),
+        get_image(0, Subset.VALIDATION),
+        get_image(0, Subset.VALIDATION),
+        get_image(0, Subset.VALIDATION),
+        get_image(0, Subset.VALIDATION),
+        get_image(0, Subset.VALIDATION),
+        get_image(0, Subset.VALIDATION),
     ]
+
     new_train = [
-        get_image(0, Subset.TRAINING, 0),
-        get_image(1, Subset.TRAINING, 0),
-        get_image(2, Subset.TRAINING, 0),
-        get_image(3, Subset.TRAINING, 0),
-        get_image(0, Subset.TRAINING, 1),
-        get_image(1, Subset.TRAINING, 1),
-        get_image(2, Subset.TRAINING, 1),
-        get_image(3, Subset.TRAINING, 1),
-        get_image(0, Subset.TRAINING, 1),
-        get_image(1, Subset.TRAINING, 1),
+        get_image(0, Subset.TRAINING),
+        get_image(1, Subset.TRAINING),
+        get_image(0, Subset.TRAINING),
+        get_image(1, Subset.TRAINING),
+        get_image(0, Subset.TRAINING),
+        get_image(1, Subset.TRAINING),
+        get_image(0, Subset.TRAINING),
+        get_image(1, Subset.TRAINING),
+        get_image(0, Subset.TRAINING),
+        get_image(1, Subset.TRAINING),
+        get_image(0, Subset.TRAINING),
+        get_image(1, Subset.TRAINING),
+        get_image(0, Subset.TRAINING),
+        get_image(1, Subset.TRAINING),
+        get_image(0, Subset.TRAINING),
+        get_image(1, Subset.TRAINING),
     ]
+
     new_val = [
-        get_image(0, Subset.VALIDATION, 0),
-        get_image(1, Subset.VALIDATION, 0),
-        get_image(2, Subset.VALIDATION, 0),
-        get_image(3, Subset.VALIDATION, 0),
-        get_image(1, Subset.VALIDATION, 1),
-        get_image(2, Subset.VALIDATION, 1),
-        get_image(3, Subset.VALIDATION, 1),
-        get_image(0, Subset.TESTING, 0),
-        get_image(1, Subset.TESTING, 0),
-        get_image(2, Subset.TESTING, 0),
-        get_image(3, Subset.TESTING, 0),
-        get_image(1, Subset.TESTING, 1),
-        get_image(2, Subset.TESTING, 1),
-        get_image(3, Subset.TESTING, 1),
+        get_image(0, Subset.VALIDATION),
+        get_image(1, Subset.VALIDATION),
+        get_image(0, Subset.VALIDATION),
+        get_image(1, Subset.VALIDATION),
+        get_image(0, Subset.VALIDATION),
+        get_image(1, Subset.VALIDATION),
+        get_image(0, Subset.VALIDATION),
+        get_image(1, Subset.VALIDATION),
+        get_image(0, Subset.VALIDATION),
+        get_image(1, Subset.VALIDATION),
+        get_image(0, Subset.VALIDATION),
+        get_image(1, Subset.VALIDATION),
+        get_image(0, Subset.VALIDATION),
+        get_image(1, Subset.VALIDATION),
+        get_image(0, Subset.VALIDATION),
+        get_image(1, Subset.VALIDATION),
     ]
+
     old = old_train + old_val
     new = new_train + new_val
     if data_type == 'old':
-        return DatasetEntity(old), [labels[0]]
+        return DatasetEntity(old), labels[:-1]
     else:
         return DatasetEntity(old + new), labels
 
@@ -156,10 +191,10 @@ def main(args):
 
     logger.info('Set hyperparameters')
     params = create(model_template.hyper_parameters.data)
-    params.learning_parameters.num_iters = 5
-    params.learning_parameters.learning_rate = 0.01
-    params.learning_parameters.learning_rate_warmup_iters = 1
-    params.learning_parameters.batch_size = 4
+    params.learning_parameters.num_iters = 10
+    params.learning_parameters.learning_rate = 0.03
+    params.learning_parameters.learning_rate_warmup_iters = 4
+    params.learning_parameters.batch_size = 16
 
     logger.info('Setup environment')
     environment = TaskEnvironment(
@@ -193,10 +228,10 @@ def main(args):
 
     logger.info('Set hyperparameters')
     params = create(model_template.hyper_parameters.data)
-    params.learning_parameters.num_iters = 5
-    params.learning_parameters.learning_rate = 0.01
-    params.learning_parameters.learning_rate_warmup_iters = 1
-    params.learning_parameters.batch_size = 4
+    params.learning_parameters.num_iters = 10
+    params.learning_parameters.learning_rate = 0.03
+    params.learning_parameters.learning_rate_warmup_iters = 4
+    params.learning_parameters.batch_size = 16
 
     logger.info('Setup environment')
     environment = TaskEnvironment(

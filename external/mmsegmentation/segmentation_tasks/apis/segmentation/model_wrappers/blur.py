@@ -56,7 +56,7 @@ class BlurSegmentation(SegmentationModel):
     def postprocess(self, outputs: Dict[str, np.ndarray], metadata: Dict[str, Any]):
         predictions = outputs[self.output_blob_name].squeeze()
         soft_prediction = np.transpose(predictions, axes=(1, 2, 0))
-        feature_vector = outputs['repr_vector']
+        feature_vector = outputs.get('repr_vector', None)  # Optional output
 
         hard_prediction = create_hard_prediction_from_soft_prediction(
             soft_prediction=soft_prediction,

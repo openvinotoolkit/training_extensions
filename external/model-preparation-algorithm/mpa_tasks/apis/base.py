@@ -4,7 +4,6 @@ import os
 import shutil
 import tempfile
 from typing import Optional, Union
-
 import numpy as np
 import torch
 from mmcv.utils.config import Config, ConfigDict
@@ -22,6 +21,7 @@ from ote_sdk.entities.train_parameters import (TrainParameters,
                                                UpdateProgressCallback)
 from ote_sdk.serialization.label_mapper import LabelSchemaMapper
 
+
 logger = get_logger()
 
 
@@ -29,6 +29,7 @@ class _MPAUpdateProgressCallbackWrapper(UpdateProgressCallback):
     """ UpdateProgressCallback wrapper
         just wrapping the callback instance and provides error free representation as 'pretty_text'
     """
+
     def __init__(self, callback, **kwargs):
         if not callable(callback):
             raise RuntimeError(f'cannot accept a not callable object!! {callback}')
@@ -54,7 +55,7 @@ class BaseTask:
         self._labels = task_environment.get_labels(include_empty=False)
         self._output_path = tempfile.mkdtemp(prefix='MPA-task-')
         logger.info(f'created output path at {self._output_path}')
-        self.confidence_threshold = self._hyperparams.postprocessing.confidence_threshold
+        self.confidence_threshold = self._get_confidence_threshold(self._hyperparams)
         # Set default model attributes.
         self._model_label_schema = []
         self._optimization_methods = []
@@ -84,11 +85,11 @@ class BaseTask:
         self._initialize(dataset)
         # update model config -> model label schema
         data_classes = [label.name for label in self._labels]
+        model_classes = [label.name for label in self._model_label_schema]
+        self._model_cfg['model_classes'] = model_classes
         if dataset is not None:
             train_data_cfg = Stage.get_train_data_cfg(self._data_cfg)
             train_data_cfg['data_classes'] = data_classes
-            model_classes = [label.name for label in self._model_label_schema]
-            self._model_cfg['model_classes'] = model_classes
             new_classes = np.setdiff1d(data_classes, model_classes).tolist()
             train_data_cfg['old_new_indices'] = self._get_old_new_indices(dataset, new_classes)
 
@@ -240,7 +241,7 @@ class BaseTask:
             model_label_schema = LabelSchemaMapper().backward(buffer)
             return model_label_schema.get_labels(include_empty=False)
         else:
-            return []
+            return self._labels
 
     def _get_old_new_indices(self, dataset, new_classes):
         ids_old, ids_new = [], []
@@ -252,6 +253,13 @@ class BaseTask:
             else:
                 ids_old.append(i)
         return {'old': ids_old, 'new': ids_new}
+
+    @staticmethod
+    def _get_confidence_threshold(hyperparams):
+        confidence_threshold = 0.3
+        if hasattr(hyperparams, 'postprocessing') and hasattr(hyperparams.postprocessing, 'confidence_threshold'):
+            confidence_threshold = hyperparams.postprocessing.confidence_threshold
+        return confidence_threshold
 
     def cancel_hook_initialized(self, cancel_interface: CancelInterfaceHook):
         logger.info('cancel hook is initialized')

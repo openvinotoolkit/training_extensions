@@ -5,24 +5,22 @@ from typing import Optional
 import numpy as np
 import torch
 from mmcv.utils import ConfigDict
-from detection_tasks.apis.detection.config_utils import remove_from_config
-from mpa_tasks.configs.base import TrainType
-from mpa_tasks.configs.detection import DetectionConfig
-from mpa_tasks.apis.base import BaseTask
+from segmentation_tasks.apis.segmentation.config_utils import remove_from_config
 from mpa import MPAConstants
+from mpa_tasks.configs.base import TrainType
+from mpa_tasks.configs.segmentation import SegmentationConfig
+from mpa_tasks.apis.base import BaseTask
 from mpa.utils.config_utils import MPAConfig
 from mpa.utils.logger import get_logger
 from ote_sdk.configuration import cfg_helper
 from ote_sdk.configuration.helper.utils import ids_to_strings
-from ote_sdk.entities.annotation import Annotation
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.inference_parameters import InferenceParameters
 from ote_sdk.entities.label import Domain
 from ote_sdk.entities.model import (ModelEntity, ModelFormat,
                                     ModelOptimizationType, ModelPrecision)
+from ote_sdk.entities.result_media import ResultMediaEntity
 from ote_sdk.entities.resultset import ResultSetEntity
-from ote_sdk.entities.scored_label import ScoredLabel
-from ote_sdk.entities.shapes.rectangle import Rectangle
 from ote_sdk.entities.subset import Subset
 from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.entities.tensor import TensorEntity
@@ -37,18 +35,22 @@ from ote_sdk.usecases.tasks.interfaces.inference_interface import \
     IInferenceTask
 from ote_sdk.usecases.tasks.interfaces.training_interface import ITrainingTask
 from ote_sdk.usecases.tasks.interfaces.unload_interface import IUnload
+from ote_sdk.utils.segmentation_utils import (
+    create_annotation_from_segmentation_map,
+    create_hard_prediction_from_soft_prediction)
 
 # from mmdet.apis import export_model
 
 
 logger = get_logger()
 
-TASK_CONFIG = DetectionConfig
+TASK_CONFIG = SegmentationConfig
 
 
-class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask, IUnload):
+class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask, IUnload):
     def __init__(self, task_environment: TaskEnvironment):
         # self._should_stop = False
+        self.freeze = True
         super().__init__(TASK_CONFIG, task_environment)
 
     def infer(self,
@@ -57,37 +59,41 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
               ) -> DatasetEntity:
         logger.info('infer()')
 
-        # If confidence threshold is adaptive then up-to-date value should be stored in the model
-        # and should not be changed during inference. Otherwise user-specified value should be taken.
-        if not self._hyperparams.postprocessing.result_based_confidence_threshold:
-            self.confidence_threshold = self._hyperparams.postprocessing.confidence_threshold
-        logger.info(f'Confidence threshold {self.confidence_threshold}')
+        if inference_parameters is not None:
+            # update_progress_callback = inference_parameters.update_progress
+            is_evaluation = inference_parameters.is_evaluation
+        else:
+            # update_progress_callback = default_infer_progress_callback
+            is_evaluation = False
 
-        stage_module = 'DetectionInferrer'
+        stage_module = 'SegInferrer'
         self._data_cfg = self._init_test_data_cfg(dataset)
+        self._label_dictionary = dict(enumerate(self._labels, 1))
         results = self._run_task(stage_module, mode='train', dataset=dataset)
-        # TODO: InferenceProgressCallback register
         logger.debug(f'result of run_task {stage_module} module = {results}')
-        output = results['outputs']
-        predictions = output['detections']
+        predictions = results['outputs']
         # TODO: feature maps should be came from the inference results
         featuremaps = [None for _ in range(len(predictions))]
-        prediction_results = zip(predictions, featuremaps)
-        self._add_predictions_to_dataset(prediction_results, dataset, self.confidence_threshold)
-        logger.info('Inference completed')
+        for i in range(len(dataset)):
+            result, featuremap, dataset_item = predictions[i], featuremaps[i], dataset[i]
+            self._add_predictions_to_dataset_item(result, featuremap, dataset_item,
+                                                  save_mask_visualization=not is_evaluation)
         return dataset
 
     def evaluate(self,
                  output_result_set: ResultSetEntity,
                  evaluation_metric: Optional[str] = None):
         logger.info('called evaluate()')
+
         if evaluation_metric is not None:
             logger.warning(f'Requested to use {evaluation_metric} metric, '
-                           'but parameter is ignored. Use F-measure instead.')
-        metric = MetricsHelper.compute_f_measure(output_result_set)
-        logger.info(f"F-measure after evaluation: {metric.f_measure.value}")
-        output_result_set.performance = metric.get_performance()
-        logger.info('Evaluation completed')
+                           'but parameter is ignored. Use mDice instead.')
+        logger.info('Computing mDice')
+        metrics = MetricsHelper.compute_dice_averaged_over_pixels(
+            output_result_set
+        )
+        logger.info(f"mDice after evaluation: {metrics.overall_dice.value}")
+        output_result_set.performance = metrics.get_performance()
 
     def unload(self):
         """
@@ -105,7 +111,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         output_model.model_format = ModelFormat.OPENVINO
         output_model.optimization_type = ModelOptimizationType.MO
 
-        stage_module = 'DetectionExporter'
+        stage_module = 'SegExporter'
         results = self._run_task(stage_module, mode='train')
         results = results.get('outputs')
         logger.debug(f'results of run_task = {results}')
@@ -121,12 +127,8 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
                 output_model.set_data('openvino.bin', f.read())
             with open(xml_file, "rb") as f:
                 output_model.set_data('openvino.xml', f.read())
-            output_model.set_data(
-                'confidence_threshold',
-                np.array([self.confidence_threshold], dtype=np.float32).tobytes())
             output_model.precision = self._precision
             output_model.optimization_methods = self._optimization_methods
-            # output_model.model_status = ModelStatus.SUCCESS
             output_model.set_data("label_schema.json", label_schema_to_bytes(self._task_environment.label_schema))
         logger.info('Exporting completed')
 
@@ -144,26 +146,26 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
     def _init_recipe(self):
         logger.info('called _init_recipe()')
 
-        # recipe_root = 'recipes/stages/detection'
-        recipe_root = os.path.join(MPAConstants.RECIPES_PATH, 'stages/detection')
+        recipe_root = os.path.join(MPAConstants.RECIPES_PATH, 'stages/segmentation')
         train_type = self._hyperparams.algo_backend.train_type
         logger.info(f'train type = {train_type}')
 
-        recipe = os.path.join(recipe_root, 'unbiased_teacher.py')
+        recipe = os.path.join(recipe_root, 'class_incr.py')
         if train_type == TrainType.SemiSupervised:
-            recipe = os.path.join(recipe_root, 'unbiased_teacher.py')
+            recipe = os.path.join(recipe_root, 'cutmix_seg.py')
         elif train_type == TrainType.SelfSupervised:
             # recipe = os.path.join(recipe_root, 'pretrain.yaml')
             raise NotImplementedError(f'train type {train_type} is not implemented yet.')
         elif train_type == TrainType.Incremental:
-            recipe = os.path.join(recipe_root, 'imbalance.py')
-            # raise NotImplementedError(f'train type {train_type} is not implemented yet.')
+            recipe = os.path.join(recipe_root, 'class_incr.py')
         else:
             raise NotImplementedError(f'train type {train_type} is not implemented yet.')
 
         self._recipe_cfg = MPAConfig.fromfile(recipe)
         self._patch_datasets(self._recipe_cfg)  # for OTE compatibility
         self._patch_evaluation(self._recipe_cfg)  # for OTE compatibility
+        if not self.freeze:
+            remove_from_config(self._recipe_cfg, 'params_config')
         logger.info(f'initialized recipe = {recipe}')
 
     def _init_model_cfg(self):
@@ -185,43 +187,48 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         )
         return data_cfg
 
-    def _add_predictions_to_dataset(self, prediction_results, dataset, confidence_threshold=0.0):
-        """ Loop over dataset again to assign predictions. Convert from MMDetection format to OTE format. """
-        for dataset_item, (all_bboxes, fmap) in zip(dataset, prediction_results):
-            width = dataset_item.width
-            height = dataset_item.height
+    def _add_predictions_to_dataset_item(self, prediction, feature_vector, dataset_item, save_mask_visualization):
+        soft_prediction = np.transpose(prediction, axes=(1, 2, 0))
+        hard_prediction = create_hard_prediction_from_soft_prediction(
+            soft_prediction=soft_prediction,
+            soft_threshold=self._hyperparams.postprocessing.soft_threshold,
+            blur_strength=self._hyperparams.postprocessing.blur_strength,
+        )
+        annotations = create_annotation_from_segmentation_map(
+            hard_prediction=hard_prediction,
+            soft_prediction=soft_prediction,
+            label_map=self._label_dictionary,
+        )
+        dataset_item.append_annotations(annotations=annotations)
 
-            shapes = []
-            for label_idx, detections in enumerate(all_bboxes):
-                for i in range(detections.shape[0]):
-                    probability = float(detections[i, 4])
-                    coords = detections[i, :4].astype(float).copy()
-                    coords /= np.array([width, height, width, height], dtype=float)
-                    coords = np.clip(coords, 0, 1)
+        if feature_vector is not None:
+            active_score = TensorEntity(name="representation_vector", numpy=feature_vector)
+            dataset_item.append_metadata_item(active_score, model=self._task_environment.model)
 
-                    if probability < confidence_threshold:
-                        continue
+        if save_mask_visualization:
+            for label_index, label in self._label_dictionary.items():
+                if label_index == 0:
+                    continue
 
-                    assigned_label = [ScoredLabel(self._labels[label_idx],
-                                                  probability=probability)]
-                    if coords[3] - coords[1] <= 0 or coords[2] - coords[0] <= 0:
-                        continue
+                if len(soft_prediction.shape) == 3:
+                    current_label_soft_prediction = soft_prediction[:, :, label_index]
+                else:
+                    current_label_soft_prediction = soft_prediction
+                min_soft_score = np.min(current_label_soft_prediction)
+                max_soft_score = np.max(current_label_soft_prediction)
+                factor = 255.0 / (max_soft_score - min_soft_score + 1e-12)
+                result_media_numpy = (factor * (current_label_soft_prediction - min_soft_score)).astype(np.uint8)
 
-                    shapes.append(Annotation(
-                        Rectangle(x1=coords[0], y1=coords[1], x2=coords[2], y2=coords[3]),
-                        labels=assigned_label))
-
-            dataset_item.append_annotations(shapes)
-
-            if fmap is not None:
-                active_score = TensorEntity(name="representation_vector", numpy=fmap)
-                dataset_item.append_metadata_item(active_score)
+                result_media = ResultMediaEntity(name=f'{label.name}',
+                                                 type='Soft Prediction',
+                                                 label=label,
+                                                 annotation_scene=dataset_item.annotation_scene,
+                                                 roi=dataset_item.roi,
+                                                 numpy=result_media_numpy)
+                dataset_item.append_metadata_item(result_media, model=self._task_environment.model)
 
     @staticmethod
-    def _patch_datasets(config: MPAConfig, domain=Domain.DETECTION):
-        # Copied from ote/apis/detection/config_utils.py
-        # Added 'unlabeled' data support
-
+    def _patch_datasets(config: MPAConfig, domain=Domain.SEGMENTATION):
         def patch_color_conversion(pipeline):
             # Default data format for OTE is RGB, while mmdet uses BGR, so negate the color conversion flag.
             for pipeline_step in pipeline:
@@ -233,59 +240,52 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
                     pipeline_step.to_rgb = to_rgb
                 elif pipeline_step.type == 'MultiScaleFlipAug':
                     patch_color_conversion(pipeline_step.transforms)
-
         assert 'data' in config
-        for subset in ('train', 'val', 'test', 'unlabeled'):
+        for subset in ('train', 'val', 'test'):
             cfg = config.data.get(subset, None)
             if not cfg:
                 continue
-            if cfg.type == 'RepeatDataset' or cfg.type == 'MultiImageMixDataset':
+            if cfg.type == 'RepeatDataset':
                 cfg = cfg.dataset
-            cfg.type = 'MPADetDataset'
+            cfg.type = 'MPASegIncrDataset'
             cfg.domain = domain
             cfg.ote_dataset = None
             cfg.labels = None
-            remove_from_config(cfg, 'ann_file')
-            remove_from_config(cfg, 'img_prefix')
-            remove_from_config(cfg, 'classes')  # Get from DatasetEntity
+            remove_from_config(cfg, 'ann_dir')
+            remove_from_config(cfg, 'img_dir')
+            remove_from_config(cfg, 'data_root')
+            remove_from_config(cfg, 'split')
+            remove_from_config(cfg, 'classes')
+
             for pipeline_step in cfg.pipeline:
                 if pipeline_step.type == 'LoadImageFromFile':
                     pipeline_step.type = 'LoadImageFromOTEDataset'
-                if pipeline_step.type == 'LoadAnnotations':
+                elif pipeline_step.type == 'LoadAnnotations':
                     pipeline_step.type = 'LoadAnnotationFromOTEDataset'
                     pipeline_step.domain = domain
-                    pipeline_step.min_size = cfg.pop('min_size', -1)
             patch_color_conversion(cfg.pipeline)
 
     @staticmethod
     def _patch_evaluation(config: MPAConfig):
         cfg = config.evaluation
-        # CocoDataset.evaluate -> CustomDataset.evaluate
         cfg.pop('classwise', None)
-        cfg.metric = 'mAP'
-        cfg.save_best = 'mAP'
+        cfg.metric = 'mIoU'
+        cfg.save_best = 'mIoU'
+        cfg.rule = 'greater'
         # EarlyStoppingHook
         for cfg in config.get('custom_hooks', []):
             if 'EarlyStoppingHook' in cfg.type:
-                cfg.metric = 'mAP'
+                cfg.metric = 'mIoU'
 
 
-class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
+class SegmentationTrainTask(SegmentationInferenceTask, ITrainingTask):
     def save_model(self, output_model: ModelEntity):
         logger.info('called save_model')
         buffer = io.BytesIO()
         hyperparams_str = ids_to_strings(cfg_helper.convert(self._hyperparams, dict, enum_to_str=True))
         labels = {label.name: label.color.rgb_tuple for label in self._labels}
         model_ckpt = torch.load(self._model_ckpt)
-        modelinfo = {
-            'model': model_ckpt['state_dict'], 'config': hyperparams_str, 'labels': labels,
-            'confidence_threshold': self.confidence_threshold, 'VERSION': 1
-        }
-
-        # if hasattr(self._config.model, 'bbox_head') and hasattr(self._config.model.bbox_head, 'anchor_generator'):
-        #     if getattr(self._config.model.bbox_head.anchor_generator, 'reclustering_anchors', False):
-        #         generator = self._model.bbox_head.anchor_generator
-        #         modelinfo['anchors'] = {'heights': generator.heights, 'widths': generator.widths}
+        modelinfo = {'model': model_ckpt['state_dict'], 'config': hyperparams_str, 'labels': labels, 'VERSION': 1}
 
         torch.save(modelinfo, buffer)
         output_model.set_data("weights.pth", buffer.getvalue())
@@ -316,10 +316,9 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
         logger.info('train()')
 
         # learning_curves = defaultdict(OTELoggerHook.Curve)
-        stage_module = 'DetectionTrainer'
+        stage_module = 'SegTrainer'
         self._data_cfg = self._init_train_data_cfg(dataset)
         results = self._run_task(stage_module, mode='train', dataset=dataset, parameters=train_parameters)
-        # logger.info(f'result of run_task {stage_module} module = {results}')
 
         # get output model
         model_ckpt = results.get('final_ckpt')
@@ -333,37 +332,17 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
 
         # get prediction on validation set
         val_dataset = dataset.get_subset(Subset.VALIDATION)
-        self._data_cfg = self._init_test_data_cfg(val_dataset)
-        results = self._run_task(
-            'DetectionInferrer',
-            mode='train',
-            dataset=val_dataset,
+        prediction_dataset = self.infer(
+            val_dataset.with_empty_annotations(),
+            InferenceParameters(is_evaluation=True)
         )
-        preds_val_dataset = val_dataset.with_empty_annotations()
-        logger.debug(f'result of run_task {stage_module} module = {results}')
-        output = results['outputs']
-        val_preds = output['detections']
-        featuremaps = [None for _ in range(len(val_preds))]
-        val_preds = zip(val_preds, featuremaps)
-        self._add_predictions_to_dataset(val_preds, preds_val_dataset, 0.0)
-
         result_set = ResultSetEntity(
             model=output_model,
             ground_truth_dataset=val_dataset,
-            prediction_dataset=preds_val_dataset
+            prediction_dataset=prediction_dataset
         )
 
-        # adjust confidence threshold
-        if self._hyperparams.postprocessing.result_based_confidence_threshold:
-            logger.info('Adjusting the confidence threshold')
-            metric = MetricsHelper.compute_f_measure(result_set, vary_confidence_threshold=True)
-            best_confidence_threshold = metric.best_confidence_threshold.value
-            if best_confidence_threshold is None:
-                raise ValueError("Cannot compute metrics: Invalid confidence threshold!")
-            logger.info(f"Setting confidence threshold to {best_confidence_threshold} based on results")
-            self.confidence_threshold = best_confidence_threshold
-        else:
-            metric = MetricsHelper.compute_f_measure(result_set, vary_confidence_threshold=False)
+        metric = MetricsHelper.compute_dice_averaged_over_pixels(result_set)
 
         # compose performance statistics
         performance = metric.get_performance()
@@ -380,19 +359,18 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
         data_cfg = ConfigDict(
             data=ConfigDict(
                 train=ConfigDict(
-                    ote_dataset=dataset.get_subset(Subset.TRAINING),
-                    labels=self._labels,
+                    dataset=ConfigDict(
+                        ote_dataset=dataset.get_subset(Subset.TRAINING),
+                        labels=self._labels,
+                    )
                 ),
                 val=ConfigDict(
                     ote_dataset=dataset.get_subset(Subset.VALIDATION),
                     labels=self._labels,
                 ),
-                unlabeled=ConfigDict(
-                    ote_dataset=dataset.get_subset(Subset.UNLABELED),
-                    labels=self._labels,
-                ),
             )
         )
+
         # Temparory remedy for cfg.pretty_text error
         for label in self._labels:
             label.hotkey = 'a'

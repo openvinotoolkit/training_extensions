@@ -1,10 +1,10 @@
 # Description.
-model_template_id: Advanced_transfer_learning_for_ATSS_base_object_detection
-name: ATSS
+model_template_id: ClassIncremental_Object_Detection_Gen3_ATSS
+name: ATSS-ClsIncr
 task_type: DETECTION
 task_family: VISION
 instantiation: "CLASS"
-summary: Advanced transfer learning for ATSS object detection with MobileNetV2 backbone.
+summary: Class-Incremental Object Detection for ATSS
 application: ~
 
 # Algo backend.
@@ -12,8 +12,11 @@ framework: MPA v1.1.0
 
 # Task implementations.
 entrypoints:
-  base: mpa_tasks.apis.DetectionTrainTask
+  base: mpa_tasks.apis.detection.DetectionTrainTask
   openvino: detection_tasks.apis.detection.OpenVINODetectionTask
+
+# Capabilities.
+capabilities: []
 
 # Hyperparameters.
 hyper_parameters:
