@@ -165,8 +165,6 @@ class OTEClassificationNNCFTask(OTEClassificationInferenceTask, IOptimizationTas
             raise RuntimeError('NNCF is the only supported optimization')
         if self._compression_ctrl:
             raise RuntimeError('The model is already optimized. NNCF requires the original model for optimization.')
-        if self._cfg.train.ema.enable:
-            raise RuntimeError('EMA model could not be used together with NNCF compression')
         if self._cfg.lr_finder.enable:
             raise RuntimeError('LR finder could not be used together with NNCF compression')
 
