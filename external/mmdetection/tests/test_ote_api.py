@@ -543,35 +543,6 @@ class API(unittest.TestCase):
             osp.join('configs', 'custom-object-detection', 'cspdarknet_YOLOX'))
 
     @e2e_pytest_api
-    def test_training_person_detection_0200(self):
-        self.end_to_end(osp.join('configs', 'person-detection', 'person-detection-0200'))
-
-    @e2e_pytest_api
-    def test_training_person_detection_0201(self):
-        self.end_to_end(osp.join('configs', 'person-detection', 'person-detection-0201'))
-
-    @e2e_pytest_api
-    def test_training_person_detection_0202(self):
-        self.end_to_end(osp.join('configs', 'person-detection', 'person-detection-0202'))
-
-    @e2e_pytest_api
-    def test_training_person_detection_0203(self):
-        self.end_to_end(osp.join('configs', 'person-detection', 'person-detection-0203'), num_iters=7)
-
-    @e2e_pytest_api
-    def test_training_person_detection_0301(self):
-        self.end_to_end(osp.join('configs', 'person-detection', 'person-detection-0301'),
-        export_perf_delta_tolerance=0.01)
-
-    @e2e_pytest_api
-    def test_training_person_detection_0302(self):
-        self.end_to_end(osp.join('configs', 'person-detection', 'person-detection-0302'))
-
-    @e2e_pytest_api
-    def test_training_person_detection_0303(self):
-        self.end_to_end(osp.join('configs', 'person-detection', 'person-detection-0303'))
-
-    @e2e_pytest_api
     @pytest.mark.xfail(reason='CVS-83115')
     def test_training_maskrcnn_resnet50(self):
         self.end_to_end(osp.join('configs',

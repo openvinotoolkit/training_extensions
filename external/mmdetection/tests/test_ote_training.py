@@ -128,6 +128,19 @@ class ObjectDetectionTrainingTestParameters(DefaultOTETestCreationParametersInte
                     batch_size=KEEP_CONFIG_FIELD_VALUE,
                     usecase=REALLIFE_USECASE_CONSTANT,
                 ),
+                dict(
+                    model_name=[
+                       'Person_Detection_0200',
+                       'Person_Detection_0201',
+                       'Person_Detection_0202',
+                       'Person_Detection_0203',
+                       'Person_Detection_0301',
+                       'Person_Detection_0302',
+                       'Person_Detection_0303',
+                    ],
+                    dataset_name='airport_person',
+                    usecase='precommit',
+                ),
 
         ]
         return deepcopy(test_bunches)
