@@ -26,10 +26,12 @@ from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.entities.model import (
     ModelEntity,
 )
+import ote_sdk.usecases.exportable_code.demo as demo
 
 from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.usecases.exportable_code import demo
 from ote_sdk.entities.datasets import DatasetEntity
+from ote_sdk.serialization.label_mapper import LabelSchemaMapper
 
 from torchtts.integration.parameters import OTETextToSpeechTaskParameters
 from torchtts.demo import Encoder, Decoder
@@ -292,20 +294,22 @@ class OpenVINOTTSTask(IInferenceTask, IEvaluationTask):
 
         setup_dir = os.path.dirname(demo.__file__)
         cur_dir = os.path.dirname(__file__)
+        work_dir = os.path.dirname(demo.__file__)
 
         parameters: Dict[str, Any] = {}
         parameters["type_of_model"] = "text_to_speech"
         parameters["converter_type"] = "TEXT_TO_SPEECH"
         parameters["model_parameters"] = {}
+        parameters['model_parameters']['labels'] = LabelSchemaMapper.forward(self.task_environment.label_schema)
+
         name_of_package = "demo_package"
 
         with tempfile.TemporaryDirectory() as tempdir:
-            copyfile(os.path.join(cur_dir, "deploy", "README.md"), os.path.join(tempdir, "README.md"))
             copyfile(os.path.join(cur_dir, "deploy", "setup.py"), os.path.join(tempdir, "setup.py"))
             copyfile(os.path.join(cur_dir, "deploy", "requirements.txt"), os.path.join(tempdir, "requirements.txt"))
-            copytree(os.path.join(cur_dir, "text_preprocessing"), os.path.join(tempdir, "text_preprocessing"))
-            copyfile(os.path.join(cur_dir, "demo.py"), os.path.join(tempdir, "demo.py"))
-            os.mkdir(os.path.join(tempdir, name_of_package))
+            copytree(os.path.join(work_dir, name_of_package), os.path.join(tempdir, name_of_package))
+            copytree(os.path.join(cur_dir, "text_preprocessing"), os.path.join(tempdir, name_of_package, "text_preprocessing"))
+            copyfile(os.path.join(cur_dir, "demo.py"), os.path.join(tempdir, name_of_package, "demo.py"))
             config_path = os.path.join(tempdir, name_of_package, "config.json")
             with open(config_path, "w", encoding="utf-8") as file:
                 json.dump(parameters, file, ensure_ascii=False, indent=4)
@@ -324,6 +328,8 @@ class OpenVINOTTSTask(IInferenceTask, IEvaluationTask):
                 check=True,
                 cwd=tempdir,
             )
+
+
             wheel_file_name = [f for f in os.listdir(tempdir) if f.endswith(".whl")][0]
 
             with ZipFile(os.path.join(tempdir, "openvino.zip"), "w") as arch:
@@ -334,11 +340,10 @@ class OpenVINOTTSTask(IInferenceTask, IEvaluationTask):
                 arch.write(os.path.join(tempdir, "requirements.txt"), os.path.join("python", "requirements.txt"))
                 arch.write(os.path.join(setup_dir, "README.md"), os.path.join("python", "README.md"))
                 arch.write(os.path.join(setup_dir, "LICENSE"), os.path.join("python", "LICENSE"))
-                arch.write(os.path.join(tempdir, "demo.py"), os.path.join("python", "demo.py"))
-                add_dir2zip(os.path.join(tempdir, "text_preprocessing"),
+                arch.write(os.path.join(tempdir, name_of_package, "demo.py"), os.path.join("python", "demo.py"))
+                add_dir2zip(os.path.join(tempdir, name_of_package, "text_preprocessing"),
                             os.path.join("python", "text_preprocessing"),
                             arch)
-                add_dir2zip(os.path.join(tempdir, name_of_package), os.path.join(name_of_package), arch)
                 arch.write(os.path.join(tempdir, wheel_file_name), os.path.join("python", wheel_file_name))
             with open(os.path.join(tempdir, "openvino.zip"), "rb") as output_arch:
                 output_model.exportable_code = output_arch.read()
