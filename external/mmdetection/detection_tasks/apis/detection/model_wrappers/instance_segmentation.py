@@ -26,8 +26,6 @@ class OTEMaskRCNNModel(MaskRCNNModel):
     __model__ = 'OTE_MaskRCNN'
 
     def _get_outputs(self):
-        if self.is_segmentoly:
-            return self._get_segmentoly_outputs()
         outputs = {}
         for layer_name in self.outputs:
             if layer_name.startswith('TopK'):
