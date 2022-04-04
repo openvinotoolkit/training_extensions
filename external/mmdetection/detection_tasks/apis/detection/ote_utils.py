@@ -123,9 +123,9 @@ def draw_instance_segm_saliency_map(predictions, dataset_item, labels):
         )
         assert len(prediction.get_labels()) == 1
         scored_label = prediction.get_labels()[0]
-        label_id = labels.index(scored_label.label)
+        label_idx = labels.index(scored_label.label)
         color = int(scored_label.probability * 255)
-        cv2.drawContours(aggregated_mask[label_id], contours, -1, color, -1)
+        cv2.drawContours(aggregated_mask[label_idx], contours, -1, color, -1)
     return aggregated_mask
 
 
