@@ -153,7 +153,6 @@ class OTEDetectionTrainingTask(OTEDetectionInferenceTask, ITrainingTask):
             config,
             val_dataset,
             metric_name=config.evaluation.metric,
-            dump_features=False,
             eval=True
         )
         preds_val_dataset = val_dataset.with_empty_annotations()
