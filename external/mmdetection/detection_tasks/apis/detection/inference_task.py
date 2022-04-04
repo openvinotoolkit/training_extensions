@@ -169,8 +169,8 @@ class OTEDetectionInferenceTask(IInferenceTask, IExportTask, IEvaluationTask, IU
             model = build_detector(model_cfg)
         return model
 
-
-    def _add_predictions_to_dataset(self, prediction_results, dataset, confidence_threshold=0.0, dump_features=False):
+    def _add_predictions_to_dataset(self, prediction_results, dataset, confidence_threshold=0.0,
+                                    return_saliency_map=False):
         """ Loop over dataset again to assign predictions. Convert from MMDetection format to OTE format. """
         for dataset_item, (all_results, feature_info) in zip(dataset, prediction_results):
             width = dataset_item.width
@@ -218,7 +218,7 @@ class OTEDetectionInferenceTask(IInferenceTask, IExportTask, IEvaluationTask, IU
                             polygon = Polygon(points=points)
                             if polygon.get_area() > 1e-12:
                                 shapes.append(Annotation(polygon, labels=labels, id=ID(f"{label_idx:08}")))
-                    if dump_features:
+                    if feature_info:
                         feature_info = [feature_info,
                                         draw_instance_segm_saliency_map(shapes, dataset_item, self._labels)]
             else:
@@ -226,9 +226,10 @@ class OTEDetectionInferenceTask(IInferenceTask, IExportTask, IEvaluationTask, IU
                     f"Detection results assignment not implemented for task: {self._task_type}")
 
             dataset_item.append_annotations(shapes)
-            if dump_features:
+            if feature_info:
                 dataset_item = add_feature_info_to_data_item(feature_info, dataset_item,
-                                                             self._task_environment.model, self._labels)
+                                                             self._task_environment.model, self._labels,
+                                                             return_saliency_map)
 
 
     def infer(self, dataset: DatasetEntity, inference_parameters: Optional[InferenceParameters] = None) -> DatasetEntity:
@@ -245,10 +246,10 @@ class OTEDetectionInferenceTask(IInferenceTask, IExportTask, IEvaluationTask, IU
             self.confidence_threshold = self._hyperparams.postprocessing.confidence_threshold
 
         update_progress_callback = default_progress_callback
-        dump_features = False
+        return_saliency_map = False
         if inference_parameters is not None:
             update_progress_callback = inference_parameters.update_progress
-            dump_features = not inference_parameters.is_evaluation
+            return_saliency_map = not inference_parameters.is_evaluation
 
         time_monitor = InferenceProgressCallback(len(dataset), update_progress_callback)
 
@@ -261,14 +262,14 @@ class OTEDetectionInferenceTask(IInferenceTask, IExportTask, IEvaluationTask, IU
         logger.info(f'Confidence threshold {self.confidence_threshold}')
         model = self._model
         with model.register_forward_pre_hook(pre_hook), model.register_forward_hook(hook):
-            prediction_results, _ = self._infer_detector(model, self._config, dataset, eval=False)
-        self._add_predictions_to_dataset(prediction_results, dataset, self.confidence_threshold, dump_features)
+            prediction_results, _ = self._infer_detector(model, self._config, dataset, eval=False, dump_features=True)
+        self._add_predictions_to_dataset(prediction_results, dataset, self.confidence_threshold, return_saliency_map)
         logger.info('Inference completed')
         return dataset
 
 
     @staticmethod
-    def _infer_detector(model: torch.nn.Module, config: Config, dataset: DatasetEntity,
+    def _infer_detector(model: torch.nn.Module, config: Config, dataset: DatasetEntity, dump_features: bool = False,
                         eval: Optional[bool] = False, metric_name: Optional[str] = 'mAP') -> Tuple[List, float]:
         model.eval()
         test_config = prepare_for_testing(config, dataset)
@@ -294,7 +295,10 @@ class OTEDetectionInferenceTask(IInferenceTask, IExportTask, IEvaluationTask, IU
             with torch.no_grad():
                 result, feature_info = eval_model(return_loss=False, rescale=True, **data)
             eval_predictions.extend(result)
-            feature_infos.append(feature_info)
+            if dump_features:
+                feature_infos.append(feature_info)
+            else:
+                feature_infos.append(None)
 
         # hard-code way to remove EvalHook args
         for key in [

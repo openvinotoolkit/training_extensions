@@ -248,23 +248,24 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
     def infer(self, dataset: DatasetEntity, inference_parameters: Optional[InferenceParameters] = None) -> DatasetEntity:
         logger.info('Start OpenVINO inference')
         update_progress_callback = default_progress_callback
-        dump_features = False
+        return_saliency_map = False
         if inference_parameters is not None:
             update_progress_callback = inference_parameters.update_progress
-            dump_features = not inference_parameters.is_evaluation
+            return_saliency_map = not inference_parameters.is_evaluation
 
         dataset_size = len(dataset)
         for i, dataset_item in enumerate(dataset, 1):
             predicted_scene, feature_info = self.inferencer.predict(dataset_item.numpy)
-            if dump_features:
-                labels = self.task_environment.get_labels(include_empty=False)
+            labels = self.task_environment.get_labels(include_empty=False)
+            if return_saliency_map:
                 if self.task_type in {TaskType.INSTANCE_SEGMENTATION, TaskType.ROTATED_DETECTION}:
                     feature_info = [feature_info,
                                     draw_instance_segm_saliency_map(predicted_scene.annotations, dataset_item, labels)]
                 else:
                     # for object detection feature map take the first layer of the classification head
                     feature_info[1] = feature_info[1][0]
-                dataset_item = add_feature_info_to_data_item(feature_info, dataset_item, self.model, labels)
+            dataset_item = add_feature_info_to_data_item(feature_info, dataset_item, self.model,
+                                                         labels, return_saliency_map)
             dataset_item.append_annotations(predicted_scene.annotations)
             update_progress_callback(int(i / dataset_size * 100))
         logger.info('OpenVINO inference completed')
