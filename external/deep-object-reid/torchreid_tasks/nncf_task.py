@@ -38,7 +38,7 @@ from torchreid.integration.nncf.compression_script_utils import (calculate_lr_fo
                                                                  patch_config)
 from torchreid_tasks.inference_task import OTEClassificationInferenceTask
 from torchreid_tasks.monitors import DefaultMetricsMonitor
-from torchreid_tasks.utils import OTEClassificationDataset, TrainingProgressCallback
+from torchreid_tasks.utils import OTEClassificationDataset, OptimizationProgressCallback
 from torchreid.ops import DataParallel
 from torchreid.utils import set_random_seed, set_model_attr
 
@@ -165,8 +165,6 @@ class OTEClassificationNNCFTask(OTEClassificationInferenceTask, IOptimizationTas
             raise RuntimeError('NNCF is the only supported optimization')
         if self._compression_ctrl:
             raise RuntimeError('The model is already optimized. NNCF requires the original model for optimization.')
-        if self._cfg.train.ema.enable:
-            raise RuntimeError('EMA model could not be used together with NNCF compression')
         if self._cfg.lr_finder.enable:
             raise RuntimeError('LR finder could not be used together with NNCF compression')
 
@@ -180,16 +178,21 @@ class OTEClassificationNNCFTask(OTEClassificationInferenceTask, IOptimizationTas
             update_progress_callback = optimization_parameters.update_progress
         else:
             update_progress_callback = default_progress_callback
-        time_monitor = TrainingProgressCallback(update_progress_callback, num_epoch=self._cfg.train.max_epoch,
-                                                num_train_steps=math.ceil(len(dataset.get_subset(Subset.TRAINING)) /
-                                                                          self._cfg.train.batch_size),
-                                                num_val_steps=0, num_test_steps=0)
+
+        num_epoch = self._cfg.nncf_config['accuracy_aware_training']['params']['maximal_total_epochs']
+        train_subset = dataset.get_subset(Subset.TRAINING)
+        time_monitor = OptimizationProgressCallback(update_progress_callback,
+                                                    num_epoch=num_epoch,
+                                                    num_train_steps=max(1, math.floor(len(train_subset) /
+                                                                                      self._cfg.train.batch_size)),
+                                                    num_val_steps=0, num_test_steps=0,
+                                                    loading_stage_progress_percentage=5,
+                                                    initialization_stage_progress_percentage=5)
 
         self.metrics_monitor = DefaultMetricsMonitor()
         self.stop_callback.reset()
 
         set_random_seed(self._cfg.train.seed)
-        train_subset = dataset.get_subset(Subset.TRAINING)
         val_subset = dataset.get_subset(Subset.VALIDATION)
         self._cfg.custom_datasets.roots = [OTEClassificationDataset(train_subset, self._labels, self._multilabel,
                                                                     self._hierarchical, self._multihead_class_info,
@@ -201,6 +204,8 @@ class OTEClassificationNNCFTask(OTEClassificationInferenceTask, IOptimizationTas
 
         self._compression_ctrl, self._model, self._nncf_metainfo = \
             wrap_nncf_model(self._model, self._cfg, datamanager_for_init=datamanager)
+
+        time_monitor.on_initialization_end()
 
         self._cfg.train.lr = calculate_lr_for_nncf_training(self._cfg, self._initial_lr, False)
 
@@ -219,6 +224,7 @@ class OTEClassificationNNCFTask(OTEClassificationInferenceTask, IOptimizationTas
                                                        **lr_scheduler_kwargs(self._cfg))
 
         logger.info('Start training')
+        time_monitor.on_train_begin()
         run_training(self._cfg, datamanager, train_model, optimizer,
                      scheduler, extra_device_ids, self._cfg.train.lr,
                      should_freeze_aux_models=True,
@@ -228,6 +234,7 @@ class OTEClassificationNNCFTask(OTEClassificationInferenceTask, IOptimizationTas
                      stop_callback=self.stop_callback,
                      nncf_metainfo=self._nncf_metainfo,
                      compression_ctrl=self._compression_ctrl)
+        time_monitor.on_train_end()
 
         self.metrics_monitor.close()
         if self.stop_callback.check_stop():

@@ -30,10 +30,6 @@ from omegaconf import DictConfig, ListConfig
 from ote_anomalib.callbacks import AnomalyInferenceCallback, ProgressCallback
 from ote_anomalib.configs import get_anomalib_config
 from ote_anomalib.data import OTEAnomalyDataModule
-from ote_anomalib.data.utils import (
-    contains_anomalous_images,
-    split_local_global_resultset,
-)
 from ote_anomalib.logging import get_logger
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.inference_parameters import InferenceParameters
@@ -49,7 +45,6 @@ from ote_sdk.entities.model_template import TaskType
 from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.serialization.label_mapper import label_schema_to_bytes
-from ote_sdk.usecases.evaluation.averaging import MetricAverageMethod
 from ote_sdk.usecases.evaluation.metrics_helper import MetricsHelper
 from ote_sdk.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
 from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType, IExportTask
@@ -191,20 +186,9 @@ class AnomalyInferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload
         if self.task_type == TaskType.ANOMALY_CLASSIFICATION:
             metric = MetricsHelper.compute_f_measure(output_resultset)
         elif self.task_type == TaskType.ANOMALY_DETECTION:
-            global_resultset, local_resultset = split_local_global_resultset(output_resultset)
-            metric = MetricsHelper.compute_f_measure(local_resultset)
+            metric = MetricsHelper.compute_anomaly_detection_scores(output_resultset)
         elif self.task_type == TaskType.ANOMALY_SEGMENTATION:
-            global_resultset, local_resultset = split_local_global_resultset(output_resultset)
-            logger.info(f"Global annotations: {len(global_resultset.ground_truth_dataset)}")
-            logger.info(f"Local annotations: {len(local_resultset.ground_truth_dataset)}")
-            logger.info(f"Global predictions: {len(global_resultset.prediction_dataset)}")
-            logger.info(f"Local predictions: {len(local_resultset.prediction_dataset)}")
-            if contains_anomalous_images(local_resultset.ground_truth_dataset):
-                logger.info("Dataset contains polygon annotations. Using pixel-level evaluation metric.")
-                metric = MetricsHelper.compute_dice_averaged_over_pixels(local_resultset, MetricAverageMethod.MICRO)
-            else:
-                logger.info("Dataset does not contain polygon annotations. Using image-level evaluation metric.")
-                metric = MetricsHelper.compute_f_measure(global_resultset)
+            metric = MetricsHelper.compute_anomaly_segmentation_scores(output_resultset)
         else:
             raise ValueError(f"Unknown task type: {self.task_type}")
         output_resultset.performance = metric.get_performance()
