@@ -105,9 +105,15 @@ class AcousticGANIE:
             ie = Core()
         self.ie = ie
 
+        def xml_to_bin_path(xml_path):
+            if xml_path.endswith('.xml'):
+                return xml_path[:-4] + '.bin'
+            else:
+                return xml_path + '.bin'
+
         self.cmudict = cmudict.CMUDict(osp.join(osp.dirname(osp.realpath(__file__)), 'text_preprocessing', 'cmu_dictionary'))
-        self.encoder = Encoder(model_encoder, model_encoder.replace('.xml', '.bin'), ie, device)
-        self.decoder = Decoder(model_decoder, model_decoder.replace('.xml', '.bin'), ie, device)
+        self.encoder = Encoder(model_encoder, xml_to_bin_path(model_encoder), ie, device)
+        self.decoder = Decoder(model_decoder, xml_to_bin_path(model_decoder), ie, device)
 
     def seq_to_indexes(self, text):
         res = text_to_sequence(text, dictionary=self.cmudict)
