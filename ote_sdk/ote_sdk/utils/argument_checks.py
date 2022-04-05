@@ -231,7 +231,7 @@ def check_input_parameters_type(custom_checks: typing.Optional[dict] = None):
             # Checking input parameters type
             for parameter_name in expected_types_map:
                 parameter = input_parameters_values_map.get(parameter_name)
-                if parameter is None:
+                if parameter_name not in input_parameters_values_map:
                     default_value = expected_types_map.get(parameter_name).default
                     # pylint: disable=protected-access
                     if default_value != inspect._empty:  # type: ignore
@@ -295,7 +295,7 @@ def check_that_all_characters_printable(parameter, parameter_name, allow_crlf=Fa
         )
     if not all_characters_printable:
         raise ValueError(
-            fr"parameter {parameter_name} has not printable symbols: {parameter}"
+            rf"parameter {parameter_name} has not printable symbols: {parameter}"
         )
 
 
