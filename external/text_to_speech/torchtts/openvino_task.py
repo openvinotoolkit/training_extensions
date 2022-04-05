@@ -329,10 +329,10 @@ class OpenVINOTTSTask(IInferenceTask, IEvaluationTask):
                 cwd=tempdir,
             )
 
-
             wheel_file_name = [f for f in os.listdir(tempdir) if f.endswith(".whl")][0]
 
             with ZipFile(os.path.join(tempdir, "openvino.zip"), "w") as arch:
+                arch.write(config_path, os.path.join("model", "config.json"))
                 arch.write(self.task_environment.model.get_data("encoder.xml"), os.path.join("model", "encoder.xml"))
                 arch.write(self.task_environment.model.get_data("encoder.bin"), os.path.join("model", "encoder.bin"))
                 arch.write(self.task_environment.model.get_data("decoder.xml"), os.path.join("model", "decoder.xml"))

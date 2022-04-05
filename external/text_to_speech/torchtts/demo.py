@@ -197,7 +197,6 @@ def main(args):
     latency = (perf_counter() - start_time) * 1e3
     log.info("Metrics report:")
     log.info("\tLatency: {:.1f} ms".format(latency))
-    #visualizer = Visualizer(media_type) - empty line for test
 
     try:
         from matplotlib import pyplot as plt

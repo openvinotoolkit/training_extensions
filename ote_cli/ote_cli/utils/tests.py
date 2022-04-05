@@ -69,7 +69,11 @@ def collect_env_vars(work_dir):
     return vars
 
 
-def patch_demo_py(src_path, dst_path):
+def patch_demo_py(src_path, dst_path, copy_as_is=False):
+    if copy_as_is:
+        shutil.copy(src_path, dst_path)
+        return
+
     with open(src_path) as read_file:
         content = [line for line in read_file]
         replaced = False
@@ -322,6 +326,7 @@ def ote_deploy_openvino_testing(template, root, ote_dir, args, load_from_dir=Fal
     patch_demo_py(
         os.path.join(deployment_dir, "python", "demo.py"),
         os.path.join(deployment_dir, "python", "demo_patched.py"),
+        copy_as_is=load_from_dir
     )
 
     assert (

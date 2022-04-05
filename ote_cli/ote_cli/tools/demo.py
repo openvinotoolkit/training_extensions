@@ -182,7 +182,7 @@ def get_predictions_tts(task, text):
     )
     elapsed_time = time.perf_counter() - start_time
     item = predicted_validation_dataset[0]
-    return item.get_annotations(), elapsed_time
+    return item.get_annotations(labels=None, include_empty=True, include_ignored=True), elapsed_time
 
 
 def demo_tts(task, template, args):
