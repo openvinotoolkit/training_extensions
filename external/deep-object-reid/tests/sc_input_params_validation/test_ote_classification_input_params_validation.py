@@ -24,6 +24,52 @@ class MockClassification(OteClassification):
 
 class TestClassificationFunctionsParamsValidation:
     @e2e_pytest_unit
+    def test_preprocess_features_for_actmap_parameters_params_validation(self):
+        """
+        <b>Description:</b>
+        Check "preprocess_features_for_actmap" function input parameters validation
+
+        <b>Input data:</b>
+        "features" non-expected type object
+
+        <b>Expected results:</b>
+        Test passes if ValueError exception is raised when unexpected type object is specified as
+        input parameter for "preprocess_features_for_actmap" function
+        """
+        with pytest.raises(ValueError):
+            preprocess_features_for_actmap(features=None)  # type: ignore
+
+    @e2e_pytest_unit
+    def test_get_actmap_params_validation(self):
+        """
+        <b>Description:</b>
+        Check "get_actmap" function input parameters validation
+
+        <b>Input data:</b>
+        "get_actmap" unexpected type parameters
+
+        <b>Expected results:</b>
+        Test passes if ValueError exception is raised when unexpected type object is specified as
+        input parameter for "get_actmap" function
+        """
+        correct_values_dict = {
+            "features": ["some", "features"],
+            "output_res": ("iterable", "object")
+        }
+        unexpected_values = [
+            # Unexpected dictionary is specified as "features" parameter
+            ("features", None),
+            # Unexpected dictionary is specified as "output_res" parameter
+            ("output_res", None),
+        ]
+
+        check_value_error_exception_raised(
+            correct_parameters=correct_values_dict,
+            unexpected_values=unexpected_values,
+            class_or_function=get_actmap,
+        )
+
+    @e2e_pytest_unit
     def test_sigmoid_numpy_params_validation(self):
         """
         <b>Description:</b>
@@ -245,50 +291,4 @@ class TestOteClassificationParamsValidation:
             correct_parameters=correct_values_dict,
             unexpected_values=unexpected_values,
             class_or_function=classification.postprocess_aux_outputs,
-        )
-
-    @e2e_pytest_unit
-    def test_preprocess_features_for_actmap_parameters_params_validation(self):
-        """
-        <b>Description:</b>
-        Check "preprocess_features_for_actmap" function input parameters validation
-
-        <b>Input data:</b>
-        "features" non-expected type object
-
-        <b>Expected results:</b>
-        Test passes if ValueError exception is raised when unexpected type object is specified as
-        input parameter for "preprocess_features_for_actmap" function
-        """
-        with pytest.raises(ValueError):
-            preprocess_features_for_actmap(features=None)  # type: ignore
-
-    @e2e_pytest_unit
-    def test_get_actmap_params_validation(self):
-        """
-        <b>Description:</b>
-        Check "get_actmap" function input parameters validation
-
-        <b>Input data:</b>
-        "get_actmap" unexpected type parameters
-
-        <b>Expected results:</b>
-        Test passes if ValueError exception is raised when unexpected type object is specified as
-        input parameter for "get_actmap" function
-        """
-        correct_values_dict = {
-            "features": ["some", "features"],
-            "output_res": ("iterable", "object")
-        }
-        unexpected_values = [
-            # Unexpected dictionary is specified as "features" parameter
-            ("features", None),
-            # Unexpected dictionary is specified as "output_res" parameter
-            ("output_res", None),
-        ]
-
-        check_value_error_exception_raised(
-            correct_parameters=correct_values_dict,
-            unexpected_values=unexpected_values,
-            class_or_function=get_actmap,
         )
