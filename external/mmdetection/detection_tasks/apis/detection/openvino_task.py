@@ -91,7 +91,7 @@ class BaseInferencerWithConverter(BaseInferencer):
         if 'feature_map' in raw_predictions:
             features = [raw_predictions['feature_vector'], raw_predictions['feature_map']]
         else:
-            features = raw_predictions['feature_vector']
+            features = [raw_predictions['feature_vector']]
         return predictions, features
 
     def forward(self, inputs: Dict[str, np.ndarray]) -> Dict[str, np.ndarray]:
@@ -263,8 +263,8 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
                     features[1] = features[1][0]
                 # create feature map of two-stage model from its output
                 else:
-                    features = [features, draw_instance_segm_saliency_map(predicted_scene.annotations,
-                                                                          dataset_item, labels)]
+                    features.append(draw_instance_segm_saliency_map(predicted_scene.annotations,
+                                                                    dataset_item, labels))
             dataset_item = add_features_to_data_item(features, dataset_item, self.model, labels,
                                                      add_saliency_map)
             dataset_item.append_annotations(predicted_scene.annotations)

@@ -132,9 +132,13 @@ def draw_instance_segm_saliency_map(predictions, dataset_item, labels):
 def add_features_to_data_item(features, dataset_item, model, labels, add_saliency_map):
     """ Assign feature (representation) vector and saliency map to predictions dataset_item. """
 
-    feature_vector, feature_map = features
-    feature_vec_media = TensorEntity(name="representation_vector", numpy=feature_vector.reshape(-1))
-    dataset_item.append_metadata_item(feature_vec_media, model=model)
+    if add_saliency_map:
+        feature_vector, feature_map = features
+    else:
+        feature_vector = features[0]
+
+    representation_vector = TensorEntity(name="representation_vector", numpy=feature_vector.reshape(-1))
+    dataset_item.append_metadata_item(representation_vector, model=model)
 
     if add_saliency_map:
         width, height = dataset_item.width, dataset_item.height
