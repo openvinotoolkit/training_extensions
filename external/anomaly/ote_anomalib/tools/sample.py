@@ -22,21 +22,26 @@ import importlib
 import os
 import shutil
 from argparse import Namespace
-from typing import Any, cast
+from typing import Any, Dict, Type, Union
 
-from ote_anomalib import BaseAnomalyTask, OpenVINOAnomalyTask
-from ote_anomalib.data.mvtec import OteMvtecDataset
+from ote_anomalib import AnomalyNNCFTask, OpenVINOAnomalyTask
+from ote_anomalib.data.dataset import (
+    AnomalyClassificationDataset,
+    AnomalyDetectionDataset,
+    AnomalySegmentationDataset,
+)
 from ote_anomalib.logging import get_logger
 from ote_sdk.configuration.helper import create as create_hyper_parameters
 from ote_sdk.entities.inference_parameters import InferenceParameters
 from ote_sdk.entities.label_schema import LabelSchemaEntity
 from ote_sdk.entities.model import ModelEntity
-from ote_sdk.entities.model_template import parse_model_template
+from ote_sdk.entities.model_template import TaskType, parse_model_template
 from ote_sdk.entities.optimization_parameters import OptimizationParameters
 from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.subset import Subset
 from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.entities.train_parameters import TrainParameters
+from ote_sdk.usecases.adapters.model_adapter import ModelAdapter
 from ote_sdk.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
 from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType
 from ote_sdk.usecases.tasks.interfaces.inference_interface import IInferenceTask
@@ -45,10 +50,18 @@ from ote_sdk.usecases.tasks.interfaces.optimization_interface import Optimizatio
 logger = get_logger(__name__)
 
 
+# pylint: disable=too-many-instance-attributes
 class OteAnomalyTask:
     """OTE Anomaly Classification Task."""
 
-    def __init__(self, dataset_path: str, seed: int, model_template_path: str) -> None:
+    def __init__(
+        self,
+        dataset_path: str,
+        train_subset: Dict[str, str],
+        val_subset: Dict[str, str],
+        test_subset: Dict[str, str],
+        model_template_path: str,
+    ) -> None:
         """Initialize OteAnomalyTask.
 
         Args:
@@ -82,15 +95,42 @@ class OteAnomalyTask:
 
         logger.info("Loading MVTec dataset.")
         self.task_type = self.model_template.task_type
-        self.dataset = OteMvtecDataset(path=dataset_path, seed=seed, task_type=self.task_type).generate()
+
+        dataclass = self.get_dataclass()
+
+        self.dataset = dataclass(train_subset, val_subset, test_subset)
 
         logger.info("Creating the task-environment.")
         self.task_environment = self.create_task_environment()
 
         logger.info("Creating the base Torch and OpenVINO tasks.")
         self.torch_task = self.create_task(task="base")
-        self.torch_task = cast(BaseAnomalyTask, self.torch_task)
+
+        self.trained_model: ModelEntity
         self.openvino_task: OpenVINOAnomalyTask
+        self.nncf_task: AnomalyNNCFTask
+        self.results = {"category": dataset_path}
+
+    def get_dataclass(
+        self,
+    ) -> Union[Type[AnomalyDetectionDataset], Type[AnomalySegmentationDataset], Type[AnomalyClassificationDataset]]:
+        """Gets the dataloader based on the task type.
+
+        Raises:
+            ValueError: Validates task type.
+
+        Returns:
+           Dataloader
+        """
+        if self.task_type == TaskType.ANOMALY_DETECTION:
+            dataclass = AnomalyDetectionDataset
+        elif self.task_type == TaskType.ANOMALY_SEGMENTATION:
+            dataclass = AnomalySegmentationDataset
+        elif self.task_type == TaskType.ANOMALY_CLASSIFICATION:
+            dataclass = AnomalyClassificationDataset
+        else:
+            raise ValueError(f"{self.task_type} not a supported task")
+        return dataclass
 
     def create_task_environment(self) -> TaskEnvironment:
         """Create task environment."""
@@ -146,7 +186,9 @@ class OteAnomalyTask:
 
         logger.info("Evaluating the base torch model on the validation set.")
         self.evaluate(self.torch_task, result_set)
-        return output_model
+        self.results["torch_fp32"] = result_set.performance.score.value
+        self.trained_model = output_model
+        return self.trained_model
 
     def infer(self, task: IInferenceTask, output_model: ModelEntity) -> ResultSetEntity:
         """Get the predictions using the base Torch or OpenVINO tasks and models.
@@ -196,13 +238,14 @@ class OteAnomalyTask:
         logger.info("Creating the OpenVINO Task.")
 
         self.openvino_task = self.create_task(task="openvino")
-        self.openvino_task = cast(OpenVINOAnomalyTask, self.openvino_task)
 
         logger.info("Inferring the exported model on the validation set.")
         result_set = self.infer(task=self.openvino_task, output_model=exported_model)
 
         logger.info("Evaluating the exported model on the validation set.")
         self.evaluate(task=self.openvino_task, result_set=result_set)
+        self.results["vino_fp32"] = result_set.performance.score.value
+
         return exported_model
 
     def optimize(self) -> None:
@@ -225,6 +268,54 @@ class OteAnomalyTask:
 
         logger.info("Evaluating the optimized model on the validation set.")
         self.evaluate(task=self.openvino_task, result_set=result_set)
+        self.results["pot_int8"] = result_set.performance.score.value
+
+    def optimize_nncf(self) -> None:
+        """Optimize the model via NNCF."""
+        logger.info("Running the NNCF optimization")
+        init_model = ModelEntity(
+            self.dataset,
+            configuration=self.task_environment.get_model_configuration(),
+            model_adapters={"weights.pth": ModelAdapter(self.trained_model.get_data("weights.pth"))},
+        )
+
+        self.task_environment.model = init_model
+        self.nncf_task = self.create_task("nncf")
+
+        optimized_model = ModelEntity(
+            self.dataset,
+            configuration=self.task_environment.get_model_configuration(),
+        )
+        self.nncf_task.optimize(OptimizationType.NNCF, self.dataset, optimized_model)
+
+        logger.info("Inferring the optimised model on the validation set.")
+        result_set = self.infer(task=self.nncf_task, output_model=optimized_model)
+
+        logger.info("Evaluating the optimized model on the validation set.")
+        self.evaluate(task=self.nncf_task, result_set=result_set)
+        self.results["torch_int8"] = result_set.performance.score.value
+
+    def export_nncf(self) -> ModelEntity:
+        """Export NNCF model via openvino."""
+        logger.info("Exporting the model.")
+        exported_model = ModelEntity(
+            train_dataset=self.dataset,
+            configuration=self.task_environment.get_model_configuration(),
+        )
+        self.nncf_task.export(ExportType.OPENVINO, exported_model)
+        self.task_environment.model = exported_model
+
+        logger.info("Creating the OpenVINO Task.")
+
+        self.openvino_task = self.create_task(task="openvino")
+
+        logger.info("Inferring the exported model on the validation set.")
+        result_set = self.infer(task=self.openvino_task, output_model=exported_model)
+
+        logger.info("Evaluating the exported model on the validation set.")
+        self.evaluate(task=self.openvino_task, result_set=result_set)
+        self.results["vino_int8"] = result_set.performance.score.value
+        return exported_model
 
     @staticmethod
     def clean_up() -> None:
@@ -244,9 +335,16 @@ def parse_args() -> Namespace:
     parser = argparse.ArgumentParser(
         description="Sample showcasing how to run Anomaly Classification Task using OTE SDK"
     )
-    parser.add_argument("--model_template_path", default="./anomaly_classification/configs/padim/template.yaml")
+    parser.add_argument(
+        "--model_template_path",
+        default="./anomaly_classification/configs/padim/template.yaml",
+    )
     parser.add_argument("--dataset_path", default="./datasets/MVTec")
     parser.add_argument("--category", default="bottle")
+    parser.add_argument("--train-ann-files", required=True)
+    parser.add_argument("--val-ann-files", required=True)
+    parser.add_argument("--test-ann-files", required=True)
+    parser.add_argument("--optimization", choices=("none", "pot", "nncf"), default="none")
     parser.add_argument("--seed", default=0)
     return parser.parse_args()
 
@@ -256,11 +354,28 @@ def main() -> None:
     args = parse_args()
     path = os.path.join(args.dataset_path, args.category)
 
-    task = OteAnomalyTask(dataset_path=path, seed=args.seed, model_template_path=args.model_template_path)
+    train_subset = {"ann_file": args.train_ann_files, "data_root": path}
+    val_subset = {"ann_file": args.val_ann_files, "data_root": path}
+    test_subset = {"ann_file": args.test_ann_files, "data_root": path}
+
+    task = OteAnomalyTask(
+        dataset_path=path,
+        train_subset=train_subset,
+        val_subset=val_subset,
+        test_subset=test_subset,
+        model_template_path=args.model_template_path,
+    )
 
     task.train()
     task.export()
-    task.optimize()
+
+    if args.optimization == "pot":
+        task.optimize()
+
+    if args.optimization == "nncf":
+        task.optimize_nncf()
+        task.export_nncf()
+
     task.clean_up()
 
 

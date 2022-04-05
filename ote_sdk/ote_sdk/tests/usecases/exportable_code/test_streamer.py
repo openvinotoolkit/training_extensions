@@ -18,7 +18,9 @@ from ote_sdk.tests.test_helpers import (
 )
 from ote_sdk.usecases.exportable_code.streamer import (
     CameraStreamer,
+    DirStreamer,
     ImageStreamer,
+    OpenError,
     ThreadedStreamer,
     VideoStreamer,
     get_streamer,
@@ -57,23 +59,23 @@ class TestStreamer:
     @pytest.mark.priority_medium
     @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
-    def test_image_streamer_with_folder(self):
+    def test_dir_streamer_with_folder(self):
         """
         <b>Description:</b>
-        Test that ImageStreamer works correctly with a folder of images as input
+        Test that DirStreamer works correctly with a folder of images as input
 
         <b>Input data:</b>
         Folder with 10 random images
 
         <b>Expected results:</b>
-        Test passes if ImageStreamer returns ten images with the correct size
+        Test passes if DirStreamer returns ten images with the correct size
 
         <b>Steps</b>
-        1. Create ImageStreamer
+        1. Create DirStreamer
         2. Request images from streamer
         """
         with generate_random_image_folder(height=360, width=480) as path:
-            streamer = ImageStreamer(path)
+            streamer = DirStreamer(path)
             self.assert_streamer_element(streamer)
 
     @pytest.mark.priority_medium
@@ -101,47 +103,53 @@ class TestStreamer:
     @pytest.mark.priority_medium
     @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
-    def test_video_streamer_with_folder(self):
+    def test_video_streamer_with_loop_flag(self):
         """
         <b>Description:</b>
-        Test that VideoStreamer works correctly with a a folder of videos as input
+        Test that VideoStreamer works correctly with a loop flag
 
         <b>Input data:</b>
-        Folder with random videos
+        Random Video file
 
         <b>Expected results:</b>
         Test passes if VideoStreamer returns frames with the correct amount of dimensions
+        after the end of the video
 
         <b>Steps</b>
         1. Create VideoStreamer
         2. Request frames from streamer
         """
-        with generate_random_video_folder() as path:
-            streamer = VideoStreamer(path)
+        with generate_random_single_video(
+            height=360, width=480, number_of_frames=100
+        ) as path:
+            streamer = VideoStreamer(path, loop=True)
 
-            for frame in streamer:
+            for index, frame in enumerate(streamer):
                 assert frame.shape[-1] == 3
+                if index > 200:
+                    break
 
     @pytest.mark.priority_medium
     @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
-    def test_image_file_fails_on_video_streamer(self):
+    def test_video_streamer_with_single_image(self):
         """
         <b>Description:</b>
-        Test that VideoStreamer raises an exception if an image is passed
+        Test that VideoStreamer works correctly with a single image as input
 
         <b>Input data:</b>
         Random image file
 
         <b>Expected results:</b>
-        Test passes if a ValueError is raised
+        Test passes if VideoStreamer can read the single frame
 
         <b>Steps</b>
-        1. Attempt to create VideoStreamer
+        1. Create VideoStreamer
+        2. Request frame from VideoStreamer
         """
-        with generate_random_single_image() as path:
-            with pytest.raises(ValueError):
-                VideoStreamer(path)
+        with generate_random_single_video(height=360, width=480) as path:
+            streamer = VideoStreamer(path)
+            self.assert_streamer_element(streamer)
 
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -171,25 +179,25 @@ class TestStreamer:
             invalid_file = Path(temp_dir) / "not_valid.bin"
             invalid_file.touch()
 
-            with pytest.raises(ValueError) as context:
+            with pytest.raises(Exception) as context:
                 get_streamer(str(invalid_file))
 
         the_exception = context  # .exception
-        assert "not supported" in str(the_exception), str(the_exception)
+        assert "Can't open" in str(the_exception), str(the_exception)
 
         with tempfile.TemporaryDirectory() as empty_dir:
-            with pytest.raises(FileNotFoundError):
+            with pytest.raises(Exception):
                 get_streamer(empty_dir)
 
         with generate_random_video_folder() as path:
-            with pytest.raises(FileNotFoundError):
+            with pytest.raises(Exception):
                 get_streamer(path)
 
-        with pytest.raises(ValueError) as context:
+        with pytest.raises(Exception) as context:
             get_streamer("not_a_file")
 
         the_exception = context  # .exception
-        assert "does not exist" in str(the_exception), str(the_exception)
+        assert "Can't find" in str(the_exception), str(the_exception)
 
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -224,12 +232,12 @@ class TestStreamer:
 
         with generate_random_image_folder() as path:
             streamer = get_streamer(path)
-            assert isinstance(streamer, ImageStreamer)
+            assert isinstance(streamer, DirStreamer)
 
-        streamer = get_streamer(camera_device=0)
+        streamer = get_streamer(0)
         assert isinstance(streamer, CameraStreamer)
 
-        streamer = get_streamer(camera_device=0, threaded=True)
+        streamer = get_streamer(input_stream=0, threaded=True)
         assert isinstance(streamer, ThreadedStreamer)
 
     @pytest.mark.priority_medium
@@ -244,13 +252,13 @@ class TestStreamer:
         Random Video file
 
         <b>Expected results:</b>
-        Test passes if a ValueError is raised
+        Test passes if a OpenError is raised
 
         <b>Steps</b>
         1. Attempt to create ImageStreamer
         """
         with generate_random_single_video() as path:
-            with pytest.raises(ValueError):
+            with pytest.raises(OpenError):
                 ImageStreamer(path)
 
     @pytest.mark.priority_medium
@@ -343,25 +351,3 @@ class TestStreamer:
                     break
 
             assert frame_count == 5
-
-    @pytest.mark.priority_medium
-    @pytest.mark.unit
-    @pytest.mark.reqids(Requirements.REQ_1)
-    def test_get_streamer_parses_path(self):
-        """
-        <b>Description:</b>
-        Test that get_streamer raises an error if both camera_device and path are provided
-
-        <b>Input data:</b>
-        Path to a folder
-        Camera Index
-
-        <b>Expected results:</b>
-        Test passes if a ValueError is raised
-
-        <b>Steps</b>
-        1. Attempt to call get_streamer with path and camera_device
-        """
-        with generate_random_image_folder(number_of_images=1) as path:
-            with pytest.raises(ValueError):
-                get_streamer(path=path, camera_device=0)

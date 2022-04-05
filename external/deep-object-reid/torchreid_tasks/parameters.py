@@ -25,7 +25,7 @@ from ote_sdk.configuration.elements import (ParameterGroup,
                                             string_attribute,
                                             )
 from ote_sdk.configuration.configurable_parameters import ConfigurableParameters
-from ote_sdk.configuration.model_lifecycle import ModelLifecycle
+from ote_sdk.configuration.enums import ModelLifecycle, AutoHPOState
 
 from .parameters_enums import POTQuantizationPreset
 
@@ -49,7 +49,8 @@ class OTEClassificationParameters(ConfigurableParameters):
             "memory requirements.",
             warning="Increasing this value may cause the system to use more memory than available, "
             "potentially causing out of memory errors, please update with caution.",
-            affects_outcome_of=ModelLifecycle.TRAINING
+            affects_outcome_of=ModelLifecycle.TRAINING,
+            auto_hpo_state=AutoHPOState.POSSIBLE
         )
 
         max_num_epochs = configurable_integer(
@@ -69,7 +70,8 @@ class OTEClassificationParameters(ConfigurableParameters):
             header="Learning rate",
             description="Increasing this value will speed up training \
                          convergence but might make it unstable.",
-            affects_outcome_of=ModelLifecycle.TRAINING
+            affects_outcome_of=ModelLifecycle.TRAINING,
+            auto_hpo_state=AutoHPOState.POSSIBLE
         )
 
         enable_lr_finder = configurable_boolean(

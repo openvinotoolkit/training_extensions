@@ -24,6 +24,7 @@ from subprocess import run  # nosec
 from typing import Optional
 
 import numpy as np
+import pytest
 import torch
 from bson import ObjectId
 from ote_sdk.test_suite.e2e_test_system import e2e_pytest_api
@@ -297,8 +298,7 @@ class API(unittest.TestCase):
         print('Task initialized, model optimization starts.')
         training_progress_curve = []
 
-        def progress_callback(progress: int):
-            assert isinstance(progress, int)
+        def progress_callback(progress: float, score: Optional[float] = None):
             training_progress_curve.append(progress)
 
         optimization_parameters = OptimizationParameters
@@ -403,7 +403,7 @@ class API(unittest.TestCase):
             num_iters=5,
             quality_score_threshold=0.5,
             reload_perf_delta_tolerance=0.0,
-            export_perf_delta_tolerance=0.0005,
+            export_perf_delta_tolerance=0.01,
             pot_perf_delta_tolerance=0.1,
             nncf_perf_delta_tolerance=0.1,
             task_type=TaskType.DETECTION):
@@ -542,12 +542,14 @@ class API(unittest.TestCase):
             osp.join('configs', 'custom-object-detection', 'cspdarknet_YOLOX'))
 
     @e2e_pytest_api
+    @pytest.mark.xfail(reason='CVS-83115')
     def test_training_maskrcnn_resnet50(self):
         self.end_to_end(osp.join('configs',
                         'custom-counting-instance-seg', 'resnet50_maskrcnn'),
                         task_type=TaskType.INSTANCE_SEGMENTATION)
 
     @e2e_pytest_api
+    @pytest.mark.xfail(reason='CVS-83116')
     def test_training_maskrcnn_efficientnetb2b(self):
         self.end_to_end(osp.join('configs',
                         'custom-counting-instance-seg', 'efficientnetb2b_maskrcnn'),

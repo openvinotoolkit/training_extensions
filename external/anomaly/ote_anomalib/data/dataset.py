@@ -55,9 +55,7 @@ class BaseAnomalyDataset(DatasetEntity, ABC):
                 and dataset used for testing. Defaults to None.
         """
         items: List[DatasetItemEntity] = []
-        self.normal_label = LabelEntity(
-            id=ID(0), name="Normal", domain=Domain.ANOMALY_CLASSIFICATION
-        )
+        self.normal_label = LabelEntity(id=ID(0), name="Normal", domain=Domain.ANOMALY_CLASSIFICATION)
         self.abnormal_label = LabelEntity(
             id=ID(1),
             name="Anomalous",
@@ -101,9 +99,7 @@ class BaseAnomalyDataset(DatasetEntity, ABC):
         super().__init__(items=items)
 
     @abstractmethod
-    def get_dataset_items(
-        self, ann_file_path: Path, data_root_dir: Path, subset: Subset
-    ) -> List[DatasetItemEntity]:
+    def get_dataset_items(self, ann_file_path: Path, data_root_dir: Path, subset: Subset) -> List[DatasetItemEntity]:
         """To be implemented ib subclasses."""
         raise NotImplementedError
 
@@ -124,9 +120,7 @@ class AnomalyClassificationDataset(BaseAnomalyDataset):
     >>> testing_dataset = AnomalyClassificationDataset(test_subset=test_subset)
     """
 
-    def get_dataset_items(
-        self, ann_file_path: Path, data_root_dir: Path, subset: Subset
-    ) -> List[DatasetItemEntity]:
+    def get_dataset_items(self, ann_file_path: Path, data_root_dir: Path, subset: Subset) -> List[DatasetItemEntity]:
         """Loads dataset based on the image path in annotation file.
 
         Args:
@@ -148,19 +142,13 @@ class AnomalyClassificationDataset(BaseAnomalyDataset):
             image = Image(file_path=str(data_root_dir / sample.image_path))
             # Create annotation
             shape = Rectangle.generate_full_box()
-            label: LabelEntity = (
-                self.normal_label if sample.label == "good" else self.abnormal_label
-            )
+            label: LabelEntity = self.normal_label if sample.label == "good" else self.abnormal_label
             labels = [ScoredLabel(label, probability=1.0)]
             annotations = [Annotation(shape=shape, labels=labels)]
-            annotation_scene = AnnotationSceneEntity(
-                annotations=annotations, kind=AnnotationSceneKind.ANNOTATION
-            )
+            annotation_scene = AnnotationSceneEntity(annotations=annotations, kind=AnnotationSceneKind.ANNOTATION)
 
             # Create dataset item
-            dataset_item = DatasetItemEntity(
-                media=image, annotation_scene=annotation_scene, subset=subset
-            )
+            dataset_item = DatasetItemEntity(media=image, annotation_scene=annotation_scene, subset=subset)
             # Add to dataset items
             dataset_items.append(dataset_item)
 
@@ -184,9 +172,7 @@ class AnomalySegmentationDataset(BaseAnomalyDataset):
 
     """
 
-    def get_dataset_items(
-        self, ann_file_path: Path, data_root_dir: Path, subset: Subset
-    ) -> List[DatasetItemEntity]:
+    def get_dataset_items(self, ann_file_path: Path, data_root_dir: Path, subset: Subset) -> List[DatasetItemEntity]:
         """Loads dataset based on the image path in annotation file.
 
         Args:
@@ -207,10 +193,13 @@ class AnomalySegmentationDataset(BaseAnomalyDataset):
             # convert path to str as PosixPath is not supported by Image
             image = Image(file_path=str(data_root_dir / sample.image_path))
             # Create annotation
-            label: LabelEntity = (
-                self.normal_label if sample.label == "good" else self.abnormal_label
-            )
-            annotations = []
+            label: LabelEntity = self.normal_label if sample.label == "good" else self.abnormal_label
+            annotations = [
+                Annotation(
+                    Rectangle.generate_full_box(),
+                    labels=[ScoredLabel(label=label, probability=1.0)],
+                )
+            ]
             if isinstance(sample.masks, list) and len(sample.masks) > 0:
                 for contour in sample.masks:
                     points = [Point(x, y) for x, y in contour]
@@ -232,23 +221,10 @@ class AnomalySegmentationDataset(BaseAnomalyDataset):
                             "will be removed.",
                             UserWarning,
                         )
-            else:
-                annotations.append(
-                    Annotation(
-                        Rectangle.generate_full_box(),
-                        labels=[ScoredLabel(label=self.normal_label, probability=1.0)],
-                    )
-                )
-            annotation_scene = AnnotationSceneEntity(
-                annotations=annotations, kind=AnnotationSceneKind.ANNOTATION
-            )
+            annotation_scene = AnnotationSceneEntity(annotations=annotations, kind=AnnotationSceneKind.ANNOTATION)
 
             # Add to dataset items
-            dataset_items.append(
-                DatasetItemEntity(
-                    media=image, annotation_scene=annotation_scene, subset=subset
-                )
-            )
+            dataset_items.append(DatasetItemEntity(media=image, annotation_scene=annotation_scene, subset=subset))
 
         return dataset_items
 
@@ -270,9 +246,7 @@ class AnomalyDetectionDataset(BaseAnomalyDataset):
 
     """
 
-    def get_dataset_items(
-        self, ann_file_path: Path, data_root_dir: Path, subset: Subset
-    ) -> List[DatasetItemEntity]:
+    def get_dataset_items(self, ann_file_path: Path, data_root_dir: Path, subset: Subset) -> List[DatasetItemEntity]:
         """Loads dataset based on the image path in annotation file.
 
         Args:
@@ -293,10 +267,13 @@ class AnomalyDetectionDataset(BaseAnomalyDataset):
             # convert path to str as PosixPath is not supported by Image
             image = Image(file_path=str(data_root_dir / sample.image_path))
             # Create annotation
-            label: LabelEntity = (
-                self.normal_label if sample.label == "good" else self.abnormal_label
-            )
-            annotations = []
+            label: LabelEntity = self.normal_label if sample.label == "good" else self.abnormal_label
+            annotations = [
+                Annotation(
+                    Rectangle.generate_full_box(),
+                    labels=[ScoredLabel(label=label, probability=1.0)],
+                )
+            ]
             if isinstance(sample.bboxes, list) and len(sample.bboxes) > 0:
                 for bbox in sample.bboxes:
                     box = Rectangle(bbox[0], bbox[1], bbox[2], bbox[3])
@@ -317,22 +294,9 @@ class AnomalyDetectionDataset(BaseAnomalyDataset):
                             "will be removed.",
                             UserWarning,
                         )
-            else:
-                annotations.append(
-                    Annotation(
-                        Rectangle.generate_full_box(),
-                        labels=[ScoredLabel(label=self.normal_label, probability=1.0)],
-                    )
-                )
-            annotation_scene = AnnotationSceneEntity(
-                annotations=annotations, kind=AnnotationSceneKind.ANNOTATION
-            )
+            annotation_scene = AnnotationSceneEntity(annotations=annotations, kind=AnnotationSceneKind.ANNOTATION)
 
             # Add to dataset items
-            dataset_items.append(
-                DatasetItemEntity(
-                    media=image, annotation_scene=annotation_scene, subset=subset
-                )
-            )
+            dataset_items.append(DatasetItemEntity(media=image, annotation_scene=annotation_scene, subset=subset))
 
         return dataset_items

@@ -676,20 +676,14 @@ class TestAccuracy:
             name="other_confusion_matrix",
             matrix_values=np.array([[4, 0, 0], [2, 4, 0], [0, 0, 6]]),
         )
-        assert (
-            accuracy._compute_accuracy(
-                average=MetricAverageMethod.MICRO,
-                confusion_matrices=[confusion_matrix, other_confusion_matrix],
-            )
-            == np.float64(0.8333333333333334)
-        )
-        assert (
-            accuracy._compute_accuracy(
-                average=MetricAverageMethod.MACRO,
-                confusion_matrices=[confusion_matrix, other_confusion_matrix],
-            )
-            == np.float64(0.8375)
-        )
+        assert accuracy._compute_accuracy(
+            average=MetricAverageMethod.MICRO,
+            confusion_matrices=[confusion_matrix, other_confusion_matrix],
+        ) == np.float64(0.8333333333333334)
+        assert accuracy._compute_accuracy(
+            average=MetricAverageMethod.MACRO,
+            confusion_matrices=[confusion_matrix, other_confusion_matrix],
+        ) == np.float64(0.8375)
         # Checking "ValueError" exception is raised when empty list is specified as "confusion_matrices"
         with pytest.raises(ValueError):
             accuracy._compute_accuracy(

@@ -213,7 +213,7 @@ class TestHelpers:
         assert helpers.content_padding == 3
         assert helpers.top_left_box_thickness == 1
         assert helpers.content_margin == 2
-        assert helpers.label_offset_box_shape == 10
+        assert helpers.label_offset_box_shape == 0
         assert helpers.black == (0, 0, 0)
         assert helpers.white == (255, 255, 255)
         assert helpers.yellow == (255, 255, 0)
@@ -991,7 +991,7 @@ class TestRectangleDrawer:
         )
         # Drawing rectangle frame
         image_copy = cv2.rectangle(
-            img=image_copy, pt1=(x1, y1), pt2=(x2, y2), color=[0, 0, 0], thickness=2
+            img=image_copy, pt1=(x1, y1), pt2=(x2, y2), color=base_color, thickness=2
         )
         # Generating draw command to add labels to image
         draw_command, _, _ = rectangle_drawer.generate_draw_command_for_labels(
@@ -1050,15 +1050,15 @@ class TestRectangleDrawer:
         for rectangle, expected_cursor_position in [
             (  # without changing labels positions
                 Rectangle(0.1, 0.3, 0.8, 0.5),
-                Coordinate(128, 261),
+                Coordinate(128, 271),
             ),
             (  # with putting labels to the bottom of drawn rectangle
                 Rectangle(0.1, 0.1, 0.9, 0.9),
-                Coordinate(128, 931),
+                Coordinate(128, 102),
             ),
             (  # with shifting labels to the left of drawn rectangle
                 Rectangle(0.6, 0.7, 0.9, 0.9),
-                Coordinate(61, 670),
+                Coordinate(61, 680),
             ),
         ]:
             image = RANDOM_IMAGE.copy()
@@ -1134,7 +1134,7 @@ class TestEllipseDrawer:
             angle=0,
             startAngle=0,
             endAngle=360,
-            color=[0, 0, 0],
+            color=base_color,
             lineType=cv2.LINE_AA,
         )
         # Generating draw command to add labels to image
@@ -1198,20 +1198,20 @@ class TestEllipseDrawer:
         for (ellipse, expected_cursor_position, flagpole_start, flagpole_end,) in [
             (  # without changing labels positions
                 Ellipse(0.1, 0.3, 0.8, 0.5),
-                Coordinate(128.0, 261.2),
-                Coordinate(129.0, 297.2),
+                Coordinate(128.0, 271.2),
+                Coordinate(129.0, 307.2),
                 Coordinate(129, 409),
             ),
             (  # with putting labels to the bottom
                 Ellipse(0.1, 0.1, 0.8, 0.8),
-                Coordinate(128.0, 931.6),
-                Coordinate(129.0, 931.6),
+                Coordinate(128.0, 921.6),
+                Coordinate(129.0, 921.6),
                 Coordinate(129, 460),
             ),
             (  # with shifting labels to the left
                 Ellipse(0.6, 0.7, 0.9, 0.9),
-                Coordinate(299, 670.8),
-                Coordinate(769.0, 706.8),
+                Coordinate(299, 680.8),
+                Coordinate(769.0, 716.8),
                 Coordinate(769, 819),
             ),
         ]:
@@ -1273,7 +1273,7 @@ class TestPolygonDrawer:
             image=result_without_border,
             contours=[contours],
             contourIdx=-1,
-            color=[0, 0, 0],
+            color=base_color,
             thickness=2,
             lineType=cv2.LINE_AA,
         )
@@ -1366,21 +1366,21 @@ class TestPolygonDrawer:
         for (polygon, expected_cursor_position, flagpole_start, flagpole_end,) in [
             (  # without changing labels position
                 polygon_no_change_labels_position,
-                Coordinate(251, 158),
+                Coordinate(251, 168),
                 Coordinate(257, 204),
-                Coordinate(257, 194),
+                Coordinate(257, 204),
             ),
             (  # with putting labels to the bottom
                 polygon_put_labels_to_bottom,
-                Coordinate(251, 726),
+                Coordinate(251, 716),
+                Coordinate(257, 716),
                 Coordinate(257, 102),
-                Coordinate(257, 726),
             ),
             (  # with shifting labels to the left
                 polygon_shift_labels_to_left,
-                Coordinate(251, 158),
+                Coordinate(251, 168),
                 Coordinate(513, 204),
-                Coordinate(513, 194),
+                Coordinate(513, 204),
             ),
         ]:
             image = RANDOM_IMAGE.copy()

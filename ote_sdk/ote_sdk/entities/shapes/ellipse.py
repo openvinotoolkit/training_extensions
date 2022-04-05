@@ -243,7 +243,7 @@ class Ellipse(Shape):
         :return: list of tuple's with coordinates along the ellipse line
         """
         angles = 2 * np.pi * np.arange(number_of_coordinates) / number_of_coordinates
-        e = (1.0 - self.minor_axis ** 2.0 / self.major_axis ** 2.0) ** 0.5
+        e = (1.0 - self.minor_axis**2.0 / self.major_axis**2.0) ** 0.5
         total_size = special.ellipeinc(2.0 * np.pi, e)
         arc_size = total_size / number_of_coordinates
         arcs = np.arange(number_of_coordinates) * arc_size
