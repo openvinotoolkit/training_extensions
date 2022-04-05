@@ -212,7 +212,6 @@ class AnomalyInferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload
         )
 
     def export(self, export_type: ExportType, output_model: ModelEntity) -> None:
-        output_model.optimization_type = ModelOptimizationType.MO
         """Export model to OpenVINO IR.
 
         Args:
