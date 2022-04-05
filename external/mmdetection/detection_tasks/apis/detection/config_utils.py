@@ -20,6 +20,7 @@ import tempfile
 from collections import defaultdict
 from typing import List, Optional, Union
 
+import torch
 from mmcv import Config, ConfigDict
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.label import LabelEntity, Domain
@@ -90,6 +91,12 @@ def patch_config(config: Config, work_dir: str, labels: List[LabelEntity], domai
     # Patch data pipeline, making it OTE-compatible.
     patch_datasets(config, domain)
 
+    # Remove FP16 config if running on CPU device and revert to FP32 
+    # https://github.com/pytorch/pytorch/issues/23377
+    if not torch.cuda.is_available() and 'fp16' in config:
+        logger.info(f'Revert FP16 to FP32 on CPU device')
+        remove_from_config(config, 'fp16')
+
     if 'log_config' not in config:
         config.log_config = ConfigDict()
     # config.log_config.hooks = []
@@ -143,8 +150,10 @@ def patch_adaptive_repeat_dataset(config: Union[Config, ConfigDict], num_samples
     :param decay: decaying rate
     :param factor: base repeat factor
     """
-    if config.data.train.type == 'RepeatDataset' and getattr(
-      config.data.train, 'adaptive_repeat_times', False):
+    data_train  = config.data.train
+    if data_train.type ==  'MultiImageMixDataset':
+        data_train = data_train.dataset
+    if data_train.type == 'RepeatDataset' and getattr(data_train, 'adaptive_repeat_times', False):
         if is_epoch_based_runner(config.runner):
             cur_epoch = config.runner.max_epochs
             new_repeat = max(round(math.exp(decay * num_samples) * factor), 1)
@@ -152,7 +161,7 @@ def patch_adaptive_repeat_dataset(config: Union[Config, ConfigDict], num_samples
             if new_epoch == 1:
                 return
             config.runner.max_epochs = new_epoch
-            config.data.train.times = new_repeat
+            data_train.times = new_repeat
 
 
 @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
@@ -169,11 +178,9 @@ def prepare_for_training(config: Config, train_dataset: DatasetEntity, val_datas
                          time_monitor: TimeMonitorCallback, learning_curves: defaultdict) -> Config:
     config = copy.deepcopy(config)
     prepare_work_dir(config)
+    data_train = get_data_cfg(config)
+    data_train.ote_dataset = train_dataset
     config.data.val.ote_dataset = val_dataset
-    if 'ote_dataset' in config.data.train:
-        config.data.train.ote_dataset = train_dataset
-    else:
-        config.data.train.dataset.ote_dataset = train_dataset
     patch_adaptive_repeat_dataset(config, len(train_dataset))
     config.custom_hooks.append({'type': 'OTEProgressHook', 'time_monitor': time_monitor, 'verbose': True})
     config.log_config.hooks.append({'type': 'OTELoggerHook', 'curves': learning_curves})
@@ -194,12 +201,9 @@ def config_to_string(config: Union[Config, ConfigDict]) -> str:
     config_copy.data.test.labels = None
     config_copy.data.val.ote_dataset = None
     config_copy.data.val.labels = None
-    if 'ote_dataset' in config_copy.data.train:
-        config_copy.data.train.ote_dataset = None
-        config_copy.data.train.labels = None
-    else:
-        config_copy.data.train.dataset.ote_dataset = None
-        config_copy.data.train.dataset.labels = None
+    data_train = get_data_cfg(config_copy)
+    data_train.ote_dataset = None
+    data_train.labels = None
     return Config(config_copy).pretty_text
 
 
@@ -246,11 +250,8 @@ def prepare_work_dir(config: Union[Config, ConfigDict]) -> str:
 def set_data_classes(config: Config, labels: List[LabelEntity]):
     # Save labels in data configs.
     for subset in ('train', 'val', 'test'):
-        cfg = config.data[subset]
-        if cfg.type == 'RepeatDataset' or cfg.type == 'MultiImageMixDataset':
-            cfg.dataset.labels = labels
-        else:
-            cfg.labels = labels
+        cfg = get_data_cfg(config, subset)
+        cfg.labels = labels
         config.data[subset].labels = labels
 
     # Set proper number of classes in model's detection heads.
@@ -289,9 +290,7 @@ def patch_datasets(config: Config, domain: Domain):
 
     assert 'data' in config
     for subset in ('train', 'val', 'test'):
-        cfg = config.data[subset]
-        if cfg.type == 'RepeatDataset' or cfg.type == 'MultiImageMixDataset':
-            cfg = cfg.dataset
+        cfg = get_data_cfg(config, subset)
         cfg.type = 'OTEDataset'
         cfg.domain = domain
         cfg.ote_dataset = None
@@ -352,3 +351,10 @@ def cluster_anchors(config: Config, dataset: DatasetEntity, model: BaseDetector)
     config.model.bbox_head.anchor_generator = config_generator
     model.bbox_head.anchor_generator = model_generator
     return config, model
+
+
+def get_data_cfg(config: Config, subset: str = 'train') -> Config:
+    data_cfg = config.data[subset]
+    while 'dataset' in data_cfg:
+        data_cfg = data_cfg.dataset
+    return data_cfg

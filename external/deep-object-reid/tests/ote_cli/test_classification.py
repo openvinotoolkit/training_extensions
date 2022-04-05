@@ -39,6 +39,7 @@ from ote_cli.utils.tests import (
     nncf_export_testing,
     nncf_eval_testing,
     nncf_eval_openvino_testing,
+    xfail_templates,
 )
 
 
@@ -140,12 +141,13 @@ class TestToolsClassification:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.xfail(reason="CVS-82892")
     def test_nncf_eval(self, template):
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
 
         nncf_eval_testing(template, root, ote_dir, args, threshold=0.001)
-    
+
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_nncf_eval_openvino(self, template):

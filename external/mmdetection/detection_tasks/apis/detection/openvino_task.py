@@ -14,13 +14,11 @@
 
 import attr
 import copy
-import inspect
+import io
 import json
 import numpy as np
 import os
 import ote_sdk.usecases.exportable_code.demo as demo
-import subprocess  # nosec
-import sys
 import tempfile
 from addict import Dict as ADDict
 from compression.api import DataLoader
@@ -67,7 +65,6 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 from zipfile import ZipFile
 
 from mmdet.utils.logger import get_root_logger
-from . import model_wrappers
 from .configuration import OTEDetectionConfig
 
 logger = get_root_logger()
@@ -224,7 +221,6 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
         self.model = self.task_environment.model
         self.task_type = self.task_environment.model_template.task_type
         self.confidence_threshold: float = 0.0
-        self.model_name = task_environment.model_template.model_template_id
         self.inferencer = self.load_inferencer()
         logger.info('OpenVINO task initialization completed')
 
@@ -280,39 +276,26 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
         logger.info('Deploying the model')
 
         work_dir = os.path.dirname(demo.__file__)
-        model_file = inspect.getfile(type(self.inferencer.model))
         parameters = {}
         parameters['type_of_model'] = self.inferencer.model.__model__
         parameters['converter_type'] = str(self.task_type)
         parameters['model_parameters'] = self.inferencer.configuration
         parameters['model_parameters']['labels'] = LabelSchemaMapper.forward(self.task_environment.label_schema)
-        name_of_package = "demo_package"
-        with tempfile.TemporaryDirectory() as tempdir:
-            copyfile(os.path.join(work_dir, "setup.py"), os.path.join(tempdir, "setup.py"))
-            copyfile(os.path.join(work_dir, "requirements.txt"), os.path.join(tempdir, "requirements.txt"))
-            copytree(os.path.join(work_dir, name_of_package), os.path.join(tempdir, name_of_package))
-            config_path = os.path.join(tempdir, name_of_package, "config.json")
-            with open(config_path, "w", encoding='utf-8') as f:
-                json.dump(parameters, f, ensure_ascii=False, indent=4)
-            # generate model.py
-            if (inspect.getmodule(self.inferencer.model) in
-               [module[1] for module in inspect.getmembers(model_wrappers, inspect.ismodule)]):
-                copyfile(model_file, os.path.join(tempdir, name_of_package, "model.py"))
-            # create wheel package
-            subprocess.run([sys.executable, os.path.join(tempdir, "setup.py"), 'bdist_wheel',
-                            '--dist-dir', tempdir, 'clean', '--all'])
-            wheel_file_name = [f for f in os.listdir(tempdir) if f.endswith('.whl')][0]
 
-            with ZipFile(os.path.join(tempdir, "openvino.zip"), 'w') as zip:
-                zip.writestr(os.path.join("model", "model.xml"), self.model.get_data("openvino.xml"))
-                zip.writestr(os.path.join("model", "model.bin"), self.model.get_data("openvino.bin"))
-                zip.write(os.path.join(tempdir, "requirements.txt"), os.path.join("python", "requirements.txt"))
-                zip.write(os.path.join(work_dir, "README.md"), os.path.join("python", "README.md"))
-                zip.write(os.path.join(work_dir, "LICENSE"), os.path.join("python", "LICENSE"))
-                zip.write(os.path.join(work_dir, "demo.py"), os.path.join("python", "demo.py"))
-                zip.write(os.path.join(tempdir, wheel_file_name), os.path.join("python", wheel_file_name))
-            with open(os.path.join(tempdir, "openvino.zip"), "rb") as file:
-                output_model.exportable_code = file.read()
+        zip_buffer = io.BytesIO()
+        with ZipFile(zip_buffer, 'w') as arch:
+            # model files
+            arch.writestr(os.path.join("model", "model.xml"), self.model.get_data("openvino.xml"))
+            arch.writestr(os.path.join("model", "model.bin"), self.model.get_data("openvino.bin"))
+            arch.writestr(
+                os.path.join("model", "config.json"), json.dumps(parameters, ensure_ascii=False, indent=4)
+            )
+            # python files
+            arch.write(os.path.join(work_dir, "requirements.txt"), os.path.join("python", "requirements.txt"))
+            arch.write(os.path.join(work_dir, "LICENSE"), os.path.join("python", "LICENSE"))
+            arch.write(os.path.join(work_dir, "README.md"), os.path.join("python", "README.md"))
+            arch.write(os.path.join(work_dir, "demo.py"), os.path.join("python", "demo.py"))
+        output_model.exportable_code = zip_buffer.getvalue()
         logger.info('Deploying completed')
 
     @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
@@ -347,6 +330,9 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
             if get_nodes_by_type(model, ['FakeQuantize']):
                 raise RuntimeError("Model is already optimized by POT")
 
+        if optimization_parameters is not None:
+            optimization_parameters.update_progress(10)
+
         engine_config = ADDict({
             'device': 'CPU'
         })
@@ -374,6 +360,9 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
 
         compress_model_weights(compressed_model)
 
+        if optimization_parameters is not None:
+            optimization_parameters.update_progress(90)
+
         with tempfile.TemporaryDirectory() as tempdir:
             save_model(compressed_model, tempdir, model_name="model")
             with open(os.path.join(tempdir, "model.xml"), "rb") as f:
@@ -393,3 +382,6 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
         self.model = output_model
         self.inferencer = self.load_inferencer()
         logger.info('POT optimization completed')
+
+        if optimization_parameters is not None:
+            optimization_parameters.update_progress(100)
