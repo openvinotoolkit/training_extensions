@@ -248,7 +248,7 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
     def infer(self, dataset: DatasetEntity, inference_parameters: Optional[InferenceParameters] = None) -> DatasetEntity:
         logger.info('Start OpenVINO inference')
         update_progress_callback = default_progress_callback
-        add_saliency_map = False
+        add_saliency_map = True
         if inference_parameters is not None:
             update_progress_callback = inference_parameters.update_progress
             add_saliency_map = not inference_parameters.is_evaluation
@@ -257,17 +257,8 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
         for i, dataset_item in enumerate(dataset, 1):
             predicted_scene, features = self.inferencer.predict(dataset_item.numpy)
             labels = self.task_environment.get_labels(include_empty=False)
-            if add_saliency_map:
-                # to calculate saliency map of one-stage model, take the first feature map (the largest) of
-                # the classification head
-                if isinstance(features, list) and len(features) > 1:
-                    features[1] = features[1][0]
-                # create saliency map of two-stage model from its output
-                else:
-                    features.append(draw_instance_segm_saliency_map(predicted_scene.annotations,
-                                                                    dataset_item, labels))
-            dataset_item = add_features_to_data_item(features, dataset_item, self.model, labels,
-                                                     add_saliency_map)
+            dataset_item = add_features_to_data_item(features, dataset_item, predicted_scene.annotations,
+                                                     self.model, labels, add_saliency_map)
             dataset_item.append_annotations(predicted_scene.annotations)
             update_progress_callback(int(i / dataset_size * 100))
         logger.info('OpenVINO inference completed')

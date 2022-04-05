@@ -129,23 +129,25 @@ def draw_instance_segm_saliency_map(predictions, dataset_item, labels):
     return aggregated_mask
 
 
-def add_features_to_data_item(features, dataset_item, model, labels, add_saliency_map):
+def add_features_to_data_item(features, dataset_item, shapes, model, labels, add_saliency_map):
     """ Assign feature (representation) vector and saliency map to predictions dataset_item. """
 
-    if add_saliency_map:
-        feature_vector, feature_map = features
-    else:
-        feature_vector = features[0]
-
+    feature_vector = features[0]
     representation_vector = TensorEntity(name="representation_vector", numpy=feature_vector.reshape(-1))
     dataset_item.append_metadata_item(representation_vector, model=model)
 
     if add_saliency_map:
+        if isinstance(features, list) and len(features) > 1:
+            # TODO(gzalessk): rewrite feature map preprocessing for one-stage models, accumulating
+            #  features through several outputs of cls head, not just taking the largest feature map
+            feature_map = features[1][0]
+        else:
+            # create saliency map of two-stage model from its output
+            feature_map = draw_instance_segm_saliency_map(shapes, dataset_item, labels)
+
         width, height = dataset_item.width, dataset_item.height
         if isinstance(feature_map, Tensor):
-            # TODO(gzalessk): rewrite feature map preprocessing for object detection task,
-            #  accumulating features through several outputs, not just taking the largest feature map
-            feature_map = feature_map[0].detach().cpu().numpy()
+            feature_map = feature_map.detach().cpu().numpy()
         for label_idx, label in enumerate(labels):
             cur_label_feat_map = feature_map[label_idx, :, :]
             act_map = get_actmap(cur_label_feat_map, (width, height))

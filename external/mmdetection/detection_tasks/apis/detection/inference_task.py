@@ -218,15 +218,13 @@ class OTEDetectionInferenceTask(IInferenceTask, IExportTask, IEvaluationTask, IU
                             polygon = Polygon(points=points)
                             if polygon.get_area() > 1e-12:
                                 shapes.append(Annotation(polygon, labels=labels, id=ID(f"{label_idx:08}")))
-                    if add_saliency_map and features is not None:
-                        features.append(draw_instance_segm_saliency_map(shapes, dataset_item, self._labels))
             else:
                 raise RuntimeError(
                     f"Detection results assignment not implemented for task: {self._task_type}")
 
             dataset_item.append_annotations(shapes)
             if features is not None:
-                dataset_item = add_features_to_data_item(features, dataset_item,
+                dataset_item = add_features_to_data_item(features, dataset_item, shapes,
                                                          self._task_environment.model, self._labels,
                                                          add_saliency_map)
 
