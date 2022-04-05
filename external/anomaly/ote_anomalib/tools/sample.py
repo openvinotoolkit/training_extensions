@@ -22,16 +22,20 @@ import importlib
 import os
 import shutil
 from argparse import Namespace
-from typing import Any
+from typing import Any, Dict, Type, Union
 
 from ote_anomalib import AnomalyNNCFTask, OpenVINOAnomalyTask
-from ote_anomalib.data.mvtec import OteMvtecDataset
+from ote_anomalib.data.dataset import (
+    AnomalyClassificationDataset,
+    AnomalyDetectionDataset,
+    AnomalySegmentationDataset,
+)
 from ote_anomalib.logging import get_logger
 from ote_sdk.configuration.helper import create as create_hyper_parameters
 from ote_sdk.entities.inference_parameters import InferenceParameters
 from ote_sdk.entities.label_schema import LabelSchemaEntity
 from ote_sdk.entities.model import ModelEntity
-from ote_sdk.entities.model_template import parse_model_template
+from ote_sdk.entities.model_template import TaskType, parse_model_template
 from ote_sdk.entities.optimization_parameters import OptimizationParameters
 from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.subset import Subset
@@ -50,7 +54,14 @@ logger = get_logger(__name__)
 class OteAnomalyTask:
     """OTE Anomaly Classification Task."""
 
-    def __init__(self, dataset_path: str, seed: int, model_template_path: str) -> None:
+    def __init__(
+        self,
+        dataset_path: str,
+        train_subset: Dict[str, str],
+        val_subset: Dict[str, str],
+        test_subset: Dict[str, str],
+        model_template_path: str,
+    ) -> None:
         """Initialize OteAnomalyTask.
 
         Args:
@@ -84,7 +95,10 @@ class OteAnomalyTask:
 
         logger.info("Loading MVTec dataset.")
         self.task_type = self.model_template.task_type
-        self.dataset = OteMvtecDataset(path=dataset_path, seed=seed, task_type=self.task_type).generate()
+
+        dataclass = self.get_dataclass()
+
+        self.dataset = dataclass(train_subset, val_subset, test_subset)
 
         logger.info("Creating the task-environment.")
         self.task_environment = self.create_task_environment()
@@ -96,6 +110,27 @@ class OteAnomalyTask:
         self.openvino_task: OpenVINOAnomalyTask
         self.nncf_task: AnomalyNNCFTask
         self.results = {"category": dataset_path}
+
+    def get_dataclass(
+        self,
+    ) -> Union[Type[AnomalyDetectionDataset], Type[AnomalySegmentationDataset], Type[AnomalyClassificationDataset]]:
+        """Gets the dataloader based on the task type.
+
+        Raises:
+            ValueError: Validates task type.
+
+        Returns:
+           Dataloader
+        """
+        if self.task_type == TaskType.ANOMALY_DETECTION:
+            dataclass = AnomalyDetectionDataset
+        elif self.task_type == TaskType.ANOMALY_SEGMENTATION:
+            dataclass = AnomalySegmentationDataset
+        elif self.task_type == TaskType.ANOMALY_CLASSIFICATION:
+            dataclass = AnomalyClassificationDataset
+        else:
+            raise ValueError(f"{self.task_type} not a supported task")
+        return dataclass
 
     def create_task_environment(self) -> TaskEnvironment:
         """Create task environment."""
@@ -306,6 +341,9 @@ def parse_args() -> Namespace:
     )
     parser.add_argument("--dataset_path", default="./datasets/MVTec")
     parser.add_argument("--category", default="bottle")
+    parser.add_argument("--train-ann-files", required=True)
+    parser.add_argument("--val-ann-files", required=True)
+    parser.add_argument("--test-ann-files", required=True)
     parser.add_argument("--optimization", choices=("none", "pot", "nncf"), default="none")
     parser.add_argument("--seed", default=0)
     return parser.parse_args()
@@ -316,7 +354,17 @@ def main() -> None:
     args = parse_args()
     path = os.path.join(args.dataset_path, args.category)
 
-    task = OteAnomalyTask(dataset_path=path, seed=args.seed, model_template_path=args.model_template_path)
+    train_subset = {"ann_file": args.train_ann_files, "data_root": path}
+    val_subset = {"ann_file": args.val_ann_files, "data_root": path}
+    test_subset = {"ann_file": args.test_ann_files, "data_root": path}
+
+    task = OteAnomalyTask(
+        dataset_path=path,
+        train_subset=train_subset,
+        val_subset=val_subset,
+        test_subset=test_subset,
+        model_template_path=args.model_template_path,
+    )
 
     task.train()
     task.export()
