@@ -10,10 +10,13 @@ from argparse import SUPPRESS, ArgumentParser
 from pathlib import Path
 
 # pylint: disable=no-name-in-module, import-error
-from demo_package import SyncDemo, create_model, create_output_converter
-
-from ote_sdk.usecases.exportable_code.streamer import get_media_type
-from ote_sdk.usecases.exportable_code.visualization import Visualizer
+from ote_sdk.usecases.exportable_code.demo.demo_package import (
+    AsyncExecutor,
+    ChainExecutor,
+    ModelContainer,
+    SyncExecutor,
+    create_visualizer,
+)
 
 
 def build_argparser():
@@ -38,19 +41,51 @@ def build_argparser():
     )
     args.add_argument(
         "-m",
-        "--model",
-        help="Required. Path to an .xml file with a trained model.",
+        "--models",
+        help="Required. Path to directory with trained model and configuration file. "
+        "If you provide several models you will start the task chain pipeline with "
+        "the provided models in the order in which they were specified.",
+        nargs="+",
         required=True,
         type=Path,
     )
     args.add_argument(
-        "-c",
-        "--config",
-        help="Optional. Path to an .json file with parameters for model.",
-        type=Path,
+        "-it",
+        "--inference_type",
+        help="Optional. Type of inference for single model.",
+        choices=["sync", "async"],
+        default="sync",
+        type=str,
+    )
+    args.add_argument(
+        "-l",
+        "--loop",
+        help="Optional. Enable reading the input in a loop.",
+        default=False,
+        action="store_true",
     )
 
     return parser
+
+
+EXECUTORS = {
+    "sync": SyncExecutor,
+    "async": AsyncExecutor,
+    "chain": ChainExecutor,
+}
+
+
+def get_inferencer_class(type_inference, models):
+    """
+    Return class for inference of models
+    """
+    if len(models) > 1:
+        type_inference = "chain"
+        print(
+            "You started the task chain pipeline with the provided models "
+            "in the order in which they were specified"
+        )
+    return EXECUTORS[type_inference]
 
 
 def main():
@@ -58,15 +93,23 @@ def main():
     Main function that is used to run demo.
     """
     args = build_argparser().parse_args()
-    # create components for demo
+    # create models
+    models = []
+    for model_dir in args.models:
+        model = ModelContainer(model_dir)
+        models.append(model)
 
-    model = create_model(args.model, args.config)
-    media_type = get_media_type(args.input)
+    inferencer = get_inferencer_class(args.inference_type, models)
 
-    visualizer = Visualizer(media_type)
-    converter = create_output_converter(args.config)
-    demo = SyncDemo(model, visualizer, converter)
-    demo.run(args.input)
+    # create visualizer
+    visualizer = create_visualizer(models[-1].task_type)
+
+    if len(models) == 1:
+        models = models[0]
+
+    # create inferencer and run
+    demo = inferencer(models, visualizer)
+    demo.run(args.input, args.loop)
 
 
 if __name__ == "__main__":

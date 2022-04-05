@@ -157,6 +157,7 @@ class OTEProgressHook(Hook):
         self.time_monitor.total_steps = max(math.ceil(self.time_monitor.steps_per_epoch * total_epochs), 1)
         self.time_monitor.current_step = 0
         self.time_monitor.current_epoch = 0
+        self.time_monitor.on_train_begin()
 
     @check_input_parameters_type()
     def before_epoch(self, runner: BaseRunner):
