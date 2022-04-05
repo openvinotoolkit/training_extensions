@@ -16,12 +16,8 @@ import datetime
 
 import pytest
 
-from ote_sdk.configuration import ConfigurableParameters
-from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.id import ID
-from ote_sdk.entities.label_schema import LabelSchemaEntity
-from ote_sdk.entities.metrics import NullPerformance, Performance, ScoreMetric
-from ote_sdk.entities.model import ModelConfiguration, ModelEntity
+from ote_sdk.entities.metrics import NullPerformance
 from ote_sdk.entities.resultset import ResultSetEntity, ResultsetPurpose
 from ote_sdk.tests.constants.ote_sdk_components import OteSdkComponent
 from ote_sdk.tests.constants.requirements import Requirements
@@ -77,22 +73,12 @@ class TestResultset:
         2. Check the processing of default values
         3. Check the processing of changed values
         """
-        dataset_entity = DatasetEntity()
-        model_configuration = ModelConfiguration(
-            configurable_parameters=ConfigurableParameters(
-                header="model configurable parameters"
-            ),
-            label_schema=LabelSchemaEntity(),
-        )
-        model = ModelEntity(
-            train_dataset=dataset_entity, configuration=model_configuration
-        )
 
         test_data = {
-            "model": model,
-            "ground_truth_dataset": dataset_entity,
-            "prediction_dataset": dataset_entity,
-            "purpose": ResultsetPurpose.EVALUATION,
+            "model": None,
+            "ground_truth_dataset": None,
+            "prediction_dataset": None,
+            "purpose": None,
             "performance": None,
             "creation_date": None,
             "id": None,
@@ -106,20 +92,18 @@ class TestResultset:
                 "model",
                 "ground_truth_dataset",
                 "prediction_dataset",
+                "purpose",
             ]:
                 assert getattr(result_set, name) == value
                 setattr(result_set, name, set_attr_name)
                 assert getattr(result_set, name) == set_attr_name
 
-        assert result_set.purpose == ResultsetPurpose.EVALUATION
         assert result_set.performance == NullPerformance()
         assert type(result_set.creation_date) == datetime.datetime
         assert result_set.id_ == ID()
 
         assert result_set.has_score_metric() is False
-        result_set.performance = Performance(
-            score=ScoreMetric(name="test_performance", value=0.6)
-        )
+        result_set.performance = "test_performance"
         assert result_set.performance != NullPerformance()
         assert result_set.has_score_metric() is True
 
@@ -127,7 +111,7 @@ class TestResultset:
         result_set.creation_date = creation_date
         assert result_set.creation_date == creation_date
 
-        set_attr_id = ID("123456789")
+        set_attr_id = ID(123456789)
         result_set.id_ = set_attr_id
         assert result_set.id_ == set_attr_id
 

@@ -30,6 +30,7 @@ from ote_sdk.entities.inference_parameters import InferenceParameters
 from ote_sdk.entities.metadata import FloatMetadata, FloatType
 from ote_sdk.entities.model import (ModelEntity, ModelFormat, ModelOptimizationType,
                                     ModelPrecision)
+from ote_sdk.entities.model import OptimizationMethod
 from ote_sdk.entities.result_media import ResultMediaEntity
 from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.scored_label import ScoredLabel
@@ -289,8 +290,9 @@ class OTEClassificationInferenceTask(IInferenceTask, IEvaluationTask, IExportTas
                                 opset=self._cfg.model.export_onnx_opset, output_names=['logits', 'features', 'vector'])
                     self._model.forward = self._model.old_forward
                     del self._model.old_forward
+                pruning_transformation = OptimizationMethod.FILTER_PRUNING in self._optimization_methods
                 export_ir(onnx_model_path, self._cfg.data.norm_mean, self._cfg.data.norm_std,
-                          optimized_model_dir=optimized_model_dir)
+                          optimized_model_dir=optimized_model_dir, pruning_transformation=pruning_transformation)
 
                 bin_file = [f for f in os.listdir(optimized_model_dir) if f.endswith('.bin')][0]
                 xml_file = [f for f in os.listdir(optimized_model_dir) if f.endswith('.xml')][0]

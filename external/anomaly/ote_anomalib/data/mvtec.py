@@ -1,4 +1,21 @@
-"""OTE MVTec Dataset facilitate OTE Anomaly Training."""
+"""OTE MVTec Dataset facilitate OTE Anomaly Training.
+
+License:
+    MVTec AD dataset is released under the Creative Commons
+    Attribution-NonCommercial-ShareAlike 4.0 International License
+    (CC BY-NC-SA 4.0)(https://creativecommons.org/licenses/by-nc-sa/4.0/).
+
+Reference:
+    - Paul Bergmann, Kilian Batzner, Michael Fauser, David Sattlegger, Carsten Steger:
+      The MVTec Anomaly Detection Dataset: A Comprehensive Real-World Dataset for
+      Unsupervised Anomaly Detection; in: International Journal of Computer Vision
+      129(4):1038-1059, 2021, DOI: 10.1007/s11263-020-01400-4.
+
+    - Paul Bergmann, Michael Fauser, David Sattlegger, Carsten Steger: MVTec AD —
+      A Comprehensive Real-World Dataset for Unsupervised Anomaly Detection;
+      in: IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR),
+      9584-9592, 2019, DOI: 10.1109/CVPR.2019.00982.
+"""
 
 # Copyright (C) 2021 Intel Corporation
 #
