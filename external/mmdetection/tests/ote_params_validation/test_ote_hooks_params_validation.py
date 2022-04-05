@@ -12,6 +12,7 @@ from detection_tasks.extension.utils.hooks import (
     FixedMomentumUpdaterHook,
     OTELoggerHook,
     OTEProgressHook,
+    StopLossNanTrainingHook,
     ReduceLROnPlateauLrUpdaterHook,
 )
 from mmcv.runner import EpochBasedRunner
@@ -532,3 +533,22 @@ class TestReduceLROnPlateauLrUpdaterHook:
         hook = self.hook()
         with pytest.raises(ValueError):
             hook.before_run(runner="unexpected string")  # type: ignore
+
+
+class TestStopLossNanTrainingHook:
+    @e2e_pytest_unit
+    def test_stop_loss_nan_train_hook_after_train_iter_params_validation(self):
+        """
+        <b>Description:</b>
+        Check StopLossNanTrainingHook object "after_train_iter" method input parameters validation
+
+        <b>Input data:</b>
+        StopLossNanTrainingHook object, "runner" non-BaseRunner type object
+
+        <b>Expected results:</b>
+        Test passes if ValueError exception is raised when unexpected type object is specified as
+        input parameter for "after_train_iter" method
+        """
+        hook = StopLossNanTrainingHook()
+        with pytest.raises(ValueError):
+            hook.after_train_iter(runner="unexpected string")  # type: ignore

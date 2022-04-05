@@ -9,6 +9,7 @@ from detection_tasks.apis.detection.config_utils import (
     cluster_anchors,
     config_from_string,
     config_to_string,
+    get_data_cfg,
     is_epoch_based_runner,
     patch_adaptive_repeat_dataset,
     patch_config,
@@ -415,4 +416,34 @@ class TestConfigUtilsInputParamsValidation:
             correct_parameters=correct_values_dict,
             unexpected_values=unexpected_values,
             class_or_function=cluster_anchors,
+        )
+
+    @e2e_pytest_unit
+    def test_get_data_cfg_input_params_validation(self):
+        """
+        <b>Description:</b>
+        Check "get_data_cfg" function input parameters validation
+
+        <b>Input data:</b>
+        "get_data_cfg" function input parameters with unexpected type
+
+        <b>Expected results:</b>
+        Test passes if ValueError exception is raised when unexpected type object is specified as input parameter for
+        "get_data_cfg" function
+        """
+        correct_values_dict = {
+            "config": Config(),
+        }
+        unexpected_int = 1
+        unexpected_values = [
+            # Unexpected integer is specified as "config" parameter
+            ("config", unexpected_int),
+            # Unexpected integer is specified as "subset" parameter
+            ("subset", unexpected_int),
+        ]
+
+        check_value_error_exception_raised(
+            correct_parameters=correct_values_dict,
+            unexpected_values=unexpected_values,
+            class_or_function=get_data_cfg,
         )

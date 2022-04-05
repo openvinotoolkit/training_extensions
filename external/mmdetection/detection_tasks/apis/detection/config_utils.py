@@ -353,6 +353,7 @@ def cluster_anchors(config: Config, dataset: DatasetEntity, model: BaseDetector)
     return config, model
 
 
+@check_input_parameters_type()
 def get_data_cfg(config: Config, subset: str = 'train') -> Config:
     data_cfg = config.data[subset]
     while 'dataset' in data_cfg:
