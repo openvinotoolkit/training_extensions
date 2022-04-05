@@ -258,10 +258,11 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
             predicted_scene, features = self.inferencer.predict(dataset_item.numpy)
             labels = self.task_environment.get_labels(include_empty=False)
             if add_saliency_map:
-                # for feature map of one-stage model take the first layer of the classification head
+                # to calculate saliency map of one-stage model, take the first feature map (the largest) of
+                # the classification head
                 if isinstance(features, list) and len(features) > 1:
                     features[1] = features[1][0]
-                # create feature map of two-stage model from its output
+                # create saliency map of two-stage model from its output
                 else:
                     features.append(draw_instance_segm_saliency_map(predicted_scene.annotations,
                                                                     dataset_item, labels))
