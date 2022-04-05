@@ -42,9 +42,7 @@ from ote_sdk.entities.model import (
 from ote_sdk.entities.model_template import TaskType
 from ote_sdk.entities.optimization_parameters import OptimizationParameters
 from ote_sdk.entities.resultset import ResultSetEntity
-from ote_sdk.entities.result_media import ResultMediaEntity
 from ote_sdk.entities.task_environment import TaskEnvironment
-from ote_sdk.entities.tensor import TensorEntity
 from ote_sdk.serialization.label_mapper import LabelSchemaMapper, label_schema_to_bytes
 from ote_sdk.usecases.evaluation.metrics_helper import MetricsHelper
 from ote_sdk.usecases.exportable_code.inference import BaseInferencer
@@ -62,8 +60,8 @@ from zipfile import ZipFile
 
 from mmdet.utils.logger import get_root_logger
 from .configuration import OTEDetectionConfig
-from .ote_utils import add_features_to_data_item, draw_instance_segm_saliency_map
-from .model_wrappers import OTEMaskRCNNModel
+from .ote_utils import add_features_to_data_item
+from . import model_wrappers
 
 logger = get_root_logger()
 
@@ -292,7 +290,13 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
             arch.writestr(
                 os.path.join("model", "config.json"), json.dumps(parameters, ensure_ascii=False, indent=4)
             )
-            # python files
+            # model_wrappers files
+            for root, dirs, files in os.walk(os.path.dirname(model_wrappers.__file__)):
+                for file in files:
+                    file_path = os.path.join(root, file)
+                    arch.write(file_path,
+                               os.path.join("python", "model_wrappers", file_path.split("model_wrappers/")[1]))
+            # other python files
             arch.write(os.path.join(work_dir, "requirements.txt"), os.path.join("python", "requirements.txt"))
             arch.write(os.path.join(work_dir, "LICENSE"), os.path.join("python", "LICENSE"))
             arch.write(os.path.join(work_dir, "README.md"), os.path.join("python", "README.md"))

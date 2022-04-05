@@ -48,8 +48,7 @@ from ote_sdk.serialization.label_mapper import label_schema_to_bytes
 from mmdet.apis import export_model
 from detection_tasks.apis.detection.config_utils import patch_config, prepare_for_testing, set_hyperparams
 from detection_tasks.apis.detection.configuration import OTEDetectionConfig
-from detection_tasks.apis.detection.ote_utils import InferenceProgressCallback,\
-    add_features_to_data_item, draw_instance_segm_saliency_map
+from detection_tasks.apis.detection.ote_utils import InferenceProgressCallback, add_features_to_data_item
 from mmdet.datasets import build_dataloader, build_dataset
 from mmdet.models import build_detector
 from mmdet.parallel import MMDataCPU
