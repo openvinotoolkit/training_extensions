@@ -31,7 +31,7 @@ from ote_sdk.entities.train_parameters import TrainParameters, UpdateProgressCal
 
 from ote_cli.datasets import get_dataset_class
 from ote_cli.utils.importing import get_impl_class
-from ote_cli.utils.io import generate_label_schema
+from ote_cli.utils.io import generate_label_schema, save_model_data, read_model
 
 try:
     import hpopt
@@ -134,12 +134,23 @@ def run_hpo_trainer(
         model_template=model_template,
     )
 
+    train_env.model = read_model(
+        train_env.get_model_configuration(),
+        osp.join(osp.dirname(hp_config["file_path"]), "weights.pth"),
+        None
+    )
+
     hyper_parameters = train_env.get_hyper_parameters()
 
     # set epoch
     if task_type == TaskType.CLASSIFICATION:
         (hyper_parameters.learning_parameters.max_num_epochs) = hp_config["iterations"]
     elif task_type == TaskType.DETECTION:
+        hyper_parameters.learning_parameters.learning_rate_warmup_iters = int(
+            hyper_parameters.learning_parameters.learning_rate_warmup_iters
+            * hp_config["iterations"]
+            / hyper_parameters.learning_parameters.num_iters
+        )
         hyper_parameters.learning_parameters.num_iters = hp_config["iterations"]
     elif task_type == TaskType.SEGMENTATION:
         eph_comp = [
@@ -180,10 +191,10 @@ def run_hpo_trainer(
     impl_class = get_impl_class(train_env.model_template.entrypoints.base)
     task = impl_class(task_environment=train_env)
 
+    if hp_config["resize_width"] == 1:
+        task._config.data.train.adaptive_repeat_times = False
+
     dataset = HpoDataset(dataset, hp_config)
-    if train_env.model:
-        train_env.model.train_dataset = dataset
-        train_env.model.confiugration.configurable_parameters = hyper_parameters
 
     output_model = ModelEntity(
         dataset,
@@ -247,6 +258,16 @@ class HpoManager:
         self.dataset_paths = dataset_paths
         self.work_dir = hpo_save_path
 
+        if environment.model is None:
+            impl_class = get_impl_class(environment.model_template.entrypoints.base)
+            task = impl_class(task_environment=environment)
+            model = ModelEntity(
+                dataset,
+                environment.get_model_configuration(),
+            )
+            task.save_model(model)
+            save_model_data(model, self.work_dir)
+
         try:
             with open(
                 osp.join(
@@ -265,19 +286,6 @@ class HpoManager:
         self.metric = hpopt_cfg.get("metric", "mAP")
 
         num_available_gpus = torch.cuda.device_count()
-
-        if num_available_gpus == 0 and self.algo == "asha":
-            print(
-                "There is no available CUDA devices. The search algorithm of HPO uses smbo instead of asha."
-            )
-
-        if num_available_gpus == 1 and self.algo == "asha":
-            print(
-                "There is only one CUDA devices. The search algorithm of HPO uses smbo instead of asha."
-            )
-
-        if num_available_gpus <= 1:
-            self.algo = "smbo"
 
         self.num_gpus_per_trial = 1
 
@@ -408,6 +416,9 @@ class HpoManager:
                         str(hp_config["trial_id"]),
                     )
                 )
+
+                if self.algo == "asha":
+                    hp_config["resize_width"] = 1
 
                 # Clear hpo_work_dir
                 if osp.exists(hpo_work_dir):
