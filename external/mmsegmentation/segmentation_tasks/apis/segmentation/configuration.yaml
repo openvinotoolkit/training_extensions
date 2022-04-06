@@ -4,7 +4,7 @@ id: ""
 learning_parameters:
   batch_size:
     affects_outcome_of: TRAINING
-    auto_hpo_state: POSSIBLE
+    auto_hpo_state: NOT_POSSIBLE
     auto_hpo_value: null
     default_value: 8
     description:
@@ -30,7 +30,7 @@ learning_parameters:
   header: Learning Parameters
   learning_rate:
     affects_outcome_of: TRAINING
-    auto_hpo_state: POSSIBLE
+    auto_hpo_state: NOT_POSSIBLE
     auto_hpo_value: null
     default_value: 0.001
     description:
