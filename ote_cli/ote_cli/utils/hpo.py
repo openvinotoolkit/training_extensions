@@ -154,12 +154,11 @@ def run_hpo_trainer(
     if task_type == TaskType.CLASSIFICATION:
         (hyper_parameters.learning_parameters.max_num_epochs) = hp_config["iterations"]
     elif task_type == TaskType.DETECTION:
-        if "bracket" not in hp_config:
-            hyper_parameters.learning_parameters.learning_rate_warmup_iters = int(
-                hyper_parameters.learning_parameters.learning_rate_warmup_iters
-                * hp_config["iterations"]
-                / hyper_parameters.learning_parameters.num_iters
-            )
+        hyper_parameters.learning_parameters.learning_rate_warmup_iters = int(
+            hyper_parameters.learning_parameters.learning_rate_warmup_iters
+            * hp_config["iterations"]
+            / hyper_parameters.learning_parameters.num_iters
+        )
         hyper_parameters.learning_parameters.num_iters = hp_config["iterations"]
     elif task_type == TaskType.SEGMENTATION:
         if "bracket" not in hp_config:
@@ -205,6 +204,9 @@ def run_hpo_trainer(
     hpo_impl_class = get_HPO_train_task(impl_class, task_type)
     task = hpo_impl_class(task_environment=train_env)
     task.prepare_hpo(hp_config)
+
+    if hp_config["resize_width"] == 1:
+        task._config.data.train.adaptive_repeat_times = False
 
     dataset = HpoDataset(dataset, hp_config)
 
@@ -320,8 +322,6 @@ class HpoManager:
             )
             task.save_model(model)
             save_model_data(model, self.work_dir)
-        else:
-            save_model_data(environment.model, self.work_dir)
 
         try:
             with open(
@@ -510,6 +510,9 @@ class HpoManager:
                         str(hp_config["trial_id"]),
                     )
                 )
+
+                if self.algo == "asha":
+                    hp_config["resize_width"] = 1
 
                 # Clear hpo_work_dir
                 if osp.exists(hpo_work_dir):
