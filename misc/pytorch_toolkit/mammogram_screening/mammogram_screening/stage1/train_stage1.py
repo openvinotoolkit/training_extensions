@@ -46,9 +46,26 @@ def setup_parameters(config):
                             weight_decay=0.0005)
     scheduler = MultiStepLR(optimizer, milestones=[50, 200, 250], gamma=0.1)
 
-    return epochs, model, train_loader, optimizer, device, val_loader, scheduler, model_path
+    param_dict = {'epochs':epochs,
+                    'model':model,
+                    'train_loader':train_loader,
+                    'optimizer':optimizer,
+                    'device':device,
+                    'val_loader':val_loader,
+                    'scheduler':scheduler,
+                    'model_path':model_path}
 
-def train_model(epochs, model, train_loader, optimizer, device, val_loader, scheduler, model_path):
+    return param_dict
+
+def train_model(param_dict):
+    epochs = param_dict['epochs']
+    model = param_dict['model']
+    train_loader = param_dict['train_loader']
+    optimizer = param_dict['optimizer']
+    device = param_dict['device']
+    val_loader = param_dict['val_loader']
+    scheduler = param_dict['scheduler']
+    model_path = param_dict['model_path']
 
     train_plot = {'bce_loss': [], 'dice_loss': [], 'dice_coeff': []}
     val_plot = {'bce_loss': [], 'dice_loss': [], 'dice_coeff': []}
@@ -77,7 +94,7 @@ def train_model(epochs, model, train_loader, optimizer, device, val_loader, sche
         val_plot['dice_coeff'].append(val_dice)
 
         print(f'Epoch [{epoch+1}/ {epochs}]')
-        print(f'Trainloss: BCE:{train_loss_bce} logDice:{train_loss_dice}WeightedSum:{train_loss_bce+train_loss_dice}')
+        print(f'Trainloss: BCE:{train_loss_bce}logDice:{train_loss_dice}WeightedSum:{train_loss_bce+train_loss_dice}')
         print(f'Train metrics: Dice {train_dice}')
         print(f'Val: BCE {val_loss_bce} log Dice loss, Dice Metric{val_loss_dice}{val_dice}')
 
@@ -99,6 +116,6 @@ if __name__ == '__main__':
     parser.add_argument('--runtype', required=True, help="Specify runtype ['pytorch','onnx','cpu']", type=str)
     args = parser.parse_args()
 
-    config = get_config(action='train',config_path=args.path)
-    epochs, model, train_loader, optimizer, device, val_loader, scheduler, model_path = setup_parameters(config)
-    train_model(epochs, model, train_loader, optimizer, device, val_loader, scheduler, model_path)
+    config_dict = get_config(action='train', config_path=args.path)
+    parameter_dict = setup_parameters(config_dict)
+    train_model(parameter_dict)

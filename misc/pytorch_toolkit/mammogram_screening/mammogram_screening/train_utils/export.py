@@ -48,13 +48,13 @@ class Exporter:
                         dynamic_axes={'input' : {0 : 'batch_size'}, 'output' : {0 : 'batch_size'}},
                         verbose = False)
 
-def export_models():
-    config = get_config(action='export', stage='stage1')
+def export_models(config_pth):
+    config = get_config(action='export', config_path=config_pth, stage='stage1')
     exporter = Exporter(config=config, stage='stage1')
     exporter.export_model_onnx(stage='stage1')
     exporter.export_model_ir(stage='stage1')
 
-    config = get_config(action='export', stage='stage2')
+    config = get_config(action='export', config_path=config_pth, stage='stage2')
     exporter = Exporter(config=config, stage='stage2')
     exporter.export_model_onnx(stage='stage2')
     exporter.export_model_ir(stage='stage2')
@@ -62,4 +62,4 @@ def export_models():
 
 if __name__ == '__main__':
 
-    export_models()
+    export_models(config_pth='configs/')

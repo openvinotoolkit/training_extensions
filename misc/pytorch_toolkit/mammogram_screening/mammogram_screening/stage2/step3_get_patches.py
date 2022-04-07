@@ -92,7 +92,7 @@ def extract_bags(predictions):
         else:
             patches = []
             if cls == 0:
-                for k in range(50):
+                for _ in range(50):
                     (x,y,w,h) = random_patch(img)
                     patches.append([img[y:y+h, x:x+w]])
                 d = {'patches': patches,
@@ -100,7 +100,7 @@ def extract_bags(predictions):
                     'random': True, 'has_mass': False}
                 bags.append(d)
             else:
-                for k in range(50):
+                for _ in range(50):
                     (x,y,w,h) = random_patch(img)
                     patches.append([img[y:y+h, x:x+w]])
                 d = {'patches': patches, 'cls': cls, 'file_name': file_name, 'random': True, 'has_mass': True}

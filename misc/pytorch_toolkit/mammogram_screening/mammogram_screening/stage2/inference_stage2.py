@@ -91,7 +91,7 @@ def run_infer_stage2():
     num_workers = config['num_workers']
 
     if args.runtype == 'pytorch':
-        checkpoint = config['checkpoint'] 
+        checkpoint = config['checkpoint']
     else:
         checkpoint = config['onnx_checkpoint']
 

@@ -3,7 +3,6 @@ import cv2
 import numpy as np
 import math
 
-
 class DualCompose:
     def __init__(self, transforms):
         self.transforms = transforms
@@ -147,9 +146,9 @@ class Shift:
             dy = round(random.uniform(-limit, limit))
 
             height, width, _ = img.shape
-            y1 = limit+1+dy
+            y1 = limit + 1 + dy
             y2 = y1 + height
-            x1 = limit+1+dx
+            x1 = limit + 1 + dx
             x2 = x1 + width
 
             img1 = cv2.copyMakeBorder(img, limit+1, limit+1, limit+1, limit+1, borderType=cv2.BORDER_REFLECT_101)
@@ -194,7 +193,6 @@ class ShiftScale:
 
         return img, mask
 
-
 class ShiftScaleRotate:
     def __init__(self, shift_limit=0.0625, scale_limit=0.1, rotate_limit=45, prob=0.5):
         self.shift_limit = shift_limit
@@ -204,10 +202,7 @@ class ShiftScaleRotate:
 
     def __call__(self, img, mask=None):
         if random.random() < self.prob:
-            # height, width, channel = img.shape
             height, width = img.shape[:2]
-
-
             angle = random.uniform(-self.rotate_limit, self.rotate_limit)
             scale = random.uniform(1-self.scale_limit, 1+self.scale_limit)
             dx = round(random.uniform(-self.shift_limit, self.shift_limit)) * width
@@ -224,10 +219,6 @@ class ShiftScaleRotate:
             box0 = box0.astype(np.float32)
             box1 = box1.astype(np.float32)
             mat = cv2.getPerspectiveTransform(box0, box1)
-            # img = cv2.warpPerspective(img, mat, (width, height),
-            #                           flags=cv2.INTER_LINEAR,
-            #                           borderMode=cv2.BORDER_REFLECT_101)
-
             img = cv2.warpPerspective(img, mat, (width, height),
                                       flags=cv2.INTER_LINEAR,
                                       borderMode=cv2.BORDER_CONSTANT, borderValue=(0, 0, 0))
@@ -266,7 +257,7 @@ class CenterCrop:
 
 class Distort1:
     """"
-    ## unconverntional augmnet ################################################################################3
+    ## unconverntional augmnet
     ## https://stackoverflow.com/questions/6199636/formulas-for-barrel-pincushion-distortion
     ## https://stackoverflow.com/questions/10364201/image-transformation-in-opencv
     ## https://stackoverflow.com/questions/2477774/correcting-fisheye-distortion-programmatically
@@ -282,19 +273,10 @@ class Distort1:
         if random.random() < self.prob:
             height, width, _ = img.shape
 
-            if 0:
-                img = img.copy()
-                for x in range(0, width, 10):
-                    cv2.line(img, (x, 0), (x, height), (1, 1, 1), 1)
-                for y in range(0, height, 10):
-                    cv2.line(img, (0, y), (width, y), (1, 1, 1), 1)
-
             k = random.uniform(-self.distort_limit, self.distort_limit) * 0.00001
             dx = random.uniform(-self.shift_limit, self.shift_limit) * width
             dy = random.uniform(-self.shift_limit, self.shift_limit) * height
 
-            #  map_x, map_y =
-            # cv2.initUndistortRectifyMap(intrinsics, dist_coeffs, None, None, (width,height),cv2.CV_32FC1)
             # https://stackoverflow.com/questions/6199636/formulas-for-barrel-pincushion-distortion
             # https://stackoverflow.com/questions/10364201/image-transformation-in-opencv
             x, y = np.mgrid[0:width:1, 0:height:1]
@@ -369,10 +351,8 @@ class Distort2:
 
         return img, mask
 
-
 def clip(img, dtype, maxval):
     return np.clip(img, 0, maxval).astype(dtype)
-
 
 class RandomFilter:
     """
@@ -395,7 +375,6 @@ class RandomFilter:
 
         return img
 
-
 # https://github.com/pytorch/vision/pull/27/commits/659c854c6971ecc5b94dca3f4459ef2b7e42fb70
 # color augmentation
 
@@ -416,7 +395,6 @@ class RandomBrightness:
             img[..., :3] = clip(alpha * img[...,:3], dtype, maxval)
         return img
 
-
 class RandomContrast:
     def __init__(self, limit=.1, prob=.5):
         self.limit = limit
@@ -433,14 +411,12 @@ class RandomContrast:
             img[:, :, :3] = clip(alpha * img[:, :, :3] + gray, dtype, maxval)
         return img
 
-
 class RandomSaturation:
     def __init__(self, limit=0.3, prob=0.5):
         self.limit = limit
         self.prob = prob
 
     def __call__(self, img):
-        # dont work :(
         if random.random() < self.prob:
             maxval = np.max(img[..., :3])
             dtype = img.dtype
@@ -484,7 +460,6 @@ class CLAHE:
         img_output = cv2.cvtColor(img_yuv, cv2.COLOR_YUV2BGR)
         return img_output
 
-
 def augment(x, mask=None, prob=0.5):
     return DualCompose([
         OneOrOther(
@@ -498,31 +473,21 @@ def augment(x, mask=None, prob=0.5):
         ImageOnly(RandomFilter(limit=0.5, prob=0.2)),
     ])(x, mask)
 
-
 def augment_a_little(x, mask=None, prob=.5):
     return DualCompose([
         HorizontalFlip(prob=.5),
         ShiftScaleRotate(shift_limit=0.0625, scale_limit=0.10, rotate_limit=5, prob=.75)
     ])(x, mask)
 
-
-
-
 def augment_color(x, mask=None, prob=.5):
     return DualCompose([
         RandomFlip(prob=.5),
         ShiftScaleRotate(shift_limit=0.2, scale_limit=0.2, rotate_limit=30, prob=0.5),
-        # ImageOnly(RandomBrightness(limit=0.1)),
-        # ImageOnly(RandomHueSaturationValue()),
-        # ImageOnly(RandomContrast(limit=0.2, prob=0.5)),
-        # ImageOnly(RandomFilter(limit=0.5, prob=0.2))
     ])(x, mask)
 
 
 def augment_color_inference(x, mask=None, prob=.5):
     return DualCompose([
-        #RandomFlip(prob=.5),
-        #ShiftScaleRotate(shift_limit=0.1, scale_limit=0.1, rotate_limit=45, prob=.75),
         ImageOnly(RandomBrightness()),
         ImageOnly(RandomHueSaturationValue()),
         ImageOnly(RandomContrast(limit=0.2, prob=0.5)),

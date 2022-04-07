@@ -13,7 +13,7 @@ from ..train_utils.models import Model2 as Model
 
 if __name__ == '__main__':
 
-    config = get_config(action='train', stage='stage2')
+    config = get_config(action='train', config_path='configs/', stage='stage2')
     epochs = config['epochs']
     num_workers = config['num_workers']
     lr = config['lr']

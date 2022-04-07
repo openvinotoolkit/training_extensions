@@ -51,13 +51,15 @@ def prepare_data_array(img_dir, mass_dir, split):
         img_path = os.path.join(img_dir, case)
         mask_ben_path = os.path.join(mass_dir,'mass_ben_mask', case)
         mask_mlgn_path = os.path.join(mass_dir,'mass_mlgn_mask', case)
-        img = cv2.resize(cv2.imread(img_path, cv2.IMREAD_GRAYSCALE), (320, 640), interpolation=cv2.INTER_CUBIC)
+        img = cv2.resize(
+                        cv2.imread(img_path, cv2.IMREAD_GRAYSCALE),
+                        (320, 640), interpolation=cv2.INTER_CUBIC)
         mask_ben = cv2.resize(
-                            cv2.imread(
-                                mask_ben_path, cv2.IMREAD_GRAYSCALE), (320, 640), interpolation=cv2.INTER_CUBIC)
+                            cv2.imread(mask_ben_path, cv2.IMREAD_GRAYSCALE),
+                            (320, 640), interpolation=cv2.INTER_CUBIC)
         mask_mlgn = cv2.resize(
-                            cv2.imread(
-                                mask_mlgn_path, cv2.IMREAD_GRAYSCALE), (320, 640), interpolation=cv2.INTER_CUBIC)
+                            cv2.imread(mask_mlgn_path, cv2.IMREAD_GRAYSCALE),
+                            (320, 640), interpolation=cv2.INTER_CUBIC)
 
         if np.sum(mask_ben) > 0:
             b_flag = True
