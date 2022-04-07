@@ -75,9 +75,6 @@ class BaseInferencerWithConverter(BaseInferencer):
         return self.model.preprocess(image)
 
     def post_process(self, prediction: Dict[str, np.ndarray], metadata: Dict[str, Any]) -> AnnotationSceneEntity:
-        for output_key, data in prediction.items():
-          if data.dtype.type is np.float16:
-              prediction[output_key] = data.astype(np.float32)
         detections = self.model.postprocess(prediction, metadata)
 
         return self.converter.convert_to_annotation(detections, metadata)
