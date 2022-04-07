@@ -57,7 +57,7 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
     def __init__(self, task_environment: TaskEnvironment):
         # self._should_stop = False
         self.freeze = True
-        self.metric = 'mIoU'
+        self.metric = 'mDice'
         super().__init__(TASK_CONFIG, task_environment)
 
     def infer(self,
@@ -277,13 +277,13 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
     def _patch_evaluation(config: MPAConfig):
         cfg = config.evaluation
         cfg.pop('classwise', None)
-        cfg.metric = 'mIoU'
-        cfg.save_best = 'mIoU'
+        cfg.metric = 'mDice'
+        cfg.save_best = 'mDice'
         cfg.rule = 'greater'
         # EarlyStoppingHook
         for cfg in config.get('custom_hooks', []):
             if 'EarlyStoppingHook' in cfg.type:
-                cfg.metric = 'mIoU'
+                cfg.metric = 'mDice'
 
 
 class SegmentationTrainTask(SegmentationInferenceTask, ITrainingTask):
