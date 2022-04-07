@@ -28,11 +28,8 @@ ote_conftest_insertion(default_repository_name="ote/training_extensions/external
 
 @pytest.fixture
 def ote_test_domain_fx():
-    raise NonImplementedError("Please, implement the fixture ote_test_domain_fx in your test file")
+    raise NotImplementedError("Please, implement the fixture ote_test_domain_fx in your test file")
 
-# @pytest.fixture
-# def ote_test_domain_fx():
-#     return "custom-anomaly-classification"
 
 
 @pytest.fixture
@@ -46,19 +43,7 @@ def ote_test_scenario_fx(current_test_parameters_fx):
 
 @pytest.fixture(scope="session")
 def ote_templates_root_dir_fx():
-    raise NonImplementedError("Please, implement the fixture ote_templates_root_dir_fx in your test file")
-
-
-# @pytest.fixture(scope="session")
-# def ote_templates_root_dir_fx():
-#     import os.path as osp
-#     import logging
-#
-#     logger = logging.getLogger(__name__)
-#     root = osp.dirname(osp.dirname(osp.realpath(__file__)))
-#     root = f"{root}/anomaly_classification/"
-#     logger.debug(f"overloaded ote_templates_root_dir_fx: return {root}")
-#     return root
+    raise NotImplementedError("Please, implement the fixture ote_templates_root_dir_fx in your test file")
 
 
 @pytest.fixture(scope="session")
