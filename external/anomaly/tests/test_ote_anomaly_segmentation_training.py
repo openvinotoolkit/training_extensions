@@ -147,16 +147,16 @@ class AnomalySegmentationTrainingTestParameters(DefaultOTETestCreationParameters
                     dataset_name='mvtec_short',
                     usecase='precommit',
                 ),
-                # dict(
-                #     model_name=[
-                #        'ote_anomaly_segmentation_padim',
-                #        'ote_anomaly_segmentation_stfpm',
-                #     ],
-                #     dataset_name='mvtec',
-                #     patience=KEEP_CONFIG_FIELD_VALUE,
-                #     batch_size=KEEP_CONFIG_FIELD_VALUE,
-                #     usecase=REALLIFE_USECASE_CONSTANT,
-                # ),
+                dict(
+                    model_name=[
+                       'ote_anomaly_segmentation_padim',
+                       'ote_anomaly_segmentation_stfpm',
+                    ],
+                    dataset_name='mvtec',
+                    patience=KEEP_CONFIG_FIELD_VALUE,
+                    batch_size=KEEP_CONFIG_FIELD_VALUE,
+                    usecase=REALLIFE_USECASE_CONSTANT,
+                ),
         ]
         return deepcopy(test_bunches)
 
@@ -413,7 +413,7 @@ class TestOTEReallifeAnomalySegmentation(OTETrainingTestInterface):
              test_parameters,
              test_case_fx, data_collector_fx,
              cur_test_expected_metrics_callback_fx):
-        if "nncf" in test_parameters["test_stage"]:
-            pytest.xfail("NNCF not yet supported for Anomaly Segmentation")
+        # if "nncf" in test_parameters["test_stage"]:
+        #     pytest.xfail("NNCF not yet supported for Anomaly Segmentation")
         test_case_fx.run_stage(test_parameters['test_stage'], data_collector_fx,
                                cur_test_expected_metrics_callback_fx)
