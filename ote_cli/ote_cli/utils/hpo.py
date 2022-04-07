@@ -74,12 +74,14 @@ def run_hpo(args, environment, dataset, task_type):
         hpo = HpoManager(
             environment, dataset, dataset_paths, args.hpo_time_ratio, hpo_save_path
         )
-        hyper_parameters = hpo.run()
+        hyper_parameters, hpo_weight_path = hpo.run()
 
         environment.set_hyper_parameters(hyper_parameters)
 
         if args.load_weights:
             environment.model.confiugration.configurable_parameters = hyper_parameters
+
+        return hpo_weight_path
 
 
 def get_cuda_device_list():
@@ -190,6 +192,13 @@ def run_hpo_trainer(
 
     impl_class = get_impl_class(train_env.model_template.entrypoints.base)
     task = impl_class(task_environment=train_env)
+
+    task._config.work_dir = osp.join(
+        osp.dirname(hp_config["file_path"]),
+        str(hp_config["trial_id"])
+    )
+    task._config.checkpoint_config["max_keep_ckpts"] = hp_config["iterations"] + 10
+    task._config.checkpoint_config["interval"] = 1
 
     if hp_config["resize_width"] == 1:
         task._config.data.train.adaptive_repeat_times = False
@@ -460,6 +469,12 @@ class HpoManager:
 
         best_config = self.hpo.get_best_config()
 
+        if self.environment.model_template.task_type == TaskType.DETECTION:
+            best_config["learning_parameters.learning_rate_warmup_iters"] = 0
+        if self.environment.model_template.task_type == TaskType.SEGMENTATION:
+            best_config["learning_parameters.learning_rate_fixed_iters"] = 0
+            best_config["learning_parameters.learning_rate_warmup_iters"] = 0
+
         hyper_parameters = self.environment.get_hyper_parameters()
         HpoManager.set_hyperparameter(hyper_parameters, best_config)
 
@@ -468,7 +483,18 @@ class HpoManager:
         print("Best Hyper-parameters")
         print(best_config)
 
-        return hyper_parameters
+        hpo_weight_path = osp.join(
+            self.hpo.save_path,
+            str(self.hpo.hpo_status["best_config_id"]),
+            "checkpoints_round_0"
+        )
+
+        for file_name in os.listdir(hpo_weight_path):
+            if "best" in file_name:
+                hpo_weight_path += f"/{file_name}"
+                break
+
+        return hyper_parameters, hpo_weight_path
 
     def __alloc_gpus(self, gpu_alloc_list):
         gpu_list = get_cuda_device_list()
