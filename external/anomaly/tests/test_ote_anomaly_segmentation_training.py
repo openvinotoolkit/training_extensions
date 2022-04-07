@@ -27,6 +27,7 @@ from ote_sdk.entities.model_template import parse_model_template
 from ote_sdk.entities.label_schema import LabelSchemaEntity
 from ote_sdk.entities.subset import Subset
 from ote_sdk.entities.train_parameters import TrainParameters
+from ote_sdk.entities.model_template import TaskType
 
 from ote_anomalib.data.mvtec import OteMvtecDataset
 
@@ -103,11 +104,12 @@ def _create_anomaly_segmentation_dataset_and_labels_schema(dataset_params: Datas
     items = []
     if "short" in dataset_name:
         logger.debug(f'Creating short dataset {dataset_name}')
-        items.extend(OteMvtecDataset(path=dataset_params.dataset_path, seed=0).generate())
+        items.extend(OteMvtecDataset(path=dataset_params.dataset_path, seed=0, task_type=TaskType.ANOMALY_SEGMENTATION)
+                     .generate())
     else:
         for category in category_list:
             logger.debug(f'Creating dataset for {category}')
-            items.extend(OteMvtecDataset(path=category, seed=0).generate())
+            items.extend(OteMvtecDataset(path=category, seed=0, task_type=TaskType.ANOMALY_SEGMENTATION).generate())
     dataset = DatasetEntity(items=items)
     labels = dataset.get_labels()
     labels_schema = LabelSchemaEntity.from_labels(labels)
@@ -145,16 +147,16 @@ class AnomalySegmentationTrainingTestParameters(DefaultOTETestCreationParameters
                     dataset_name='mvtec_short',
                     usecase='precommit',
                 ),
-                dict(
-                    model_name=[
-                       'ote_anomaly_segmentation_padim',
-                       'ote_anomaly_segmentation_stfpm',
-                    ],
-                    dataset_name='mvtec',
-                    patience=KEEP_CONFIG_FIELD_VALUE,
-                    batch_size=KEEP_CONFIG_FIELD_VALUE,
-                    usecase=REALLIFE_USECASE_CONSTANT,
-                ),
+                # dict(
+                #     model_name=[
+                #        'ote_anomaly_segmentation_padim',
+                #        'ote_anomaly_segmentation_stfpm',
+                #     ],
+                #     dataset_name='mvtec',
+                #     patience=KEEP_CONFIG_FIELD_VALUE,
+                #     batch_size=KEEP_CONFIG_FIELD_VALUE,
+                #     usecase=REALLIFE_USECASE_CONSTANT,
+                # ),
         ]
         return deepcopy(test_bunches)
 
