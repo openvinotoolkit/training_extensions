@@ -1,6 +1,7 @@
 import io
 import os
-from typing import Optional
+from collections import defaultdict
+from typing import List, Optional
 
 import torch
 from mpa import MPAConstants
@@ -17,6 +18,9 @@ from mmcv.utils import ConfigDict
 from ote_sdk.entities.subset import Subset
 from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.entities.train_parameters import TrainParameters
+from ote_sdk.entities.metrics import (CurveMetric, LineChartInfo,
+                                      LineMetricsGroup, MetricsGroup,
+                                      Performance, ScoreMetric)
 from ote_sdk.usecases.evaluation.metrics_helper import MetricsHelper
 from ote_sdk.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
 from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType, IExportTask
@@ -26,6 +30,8 @@ from ote_sdk.entities.model import (ModelFormat, ModelOptimizationType)
 from ote_sdk.serialization.label_mapper import label_schema_to_bytes
 
 from ote_sdk.entities.scored_label import ScoredLabel
+from detection_tasks.apis.detection.ote_utils import TrainingProgressCallback
+from detection_tasks.extension.utils.hooks import OTELoggerHook
 from mpa_tasks.configs.base import TrainType
 from mpa_tasks.configs.classification import ClassificationConfig
 from mpa_tasks.apis.base import BaseTask
@@ -220,7 +226,12 @@ class ClassificationTrainTask(ClassificationInferenceTask):
               output_model: ModelEntity,
               train_parameters: Optional[TrainParameters] = None):
         logger.info('train()')
-        self._initialize(dataset, output_model=output_model)
+        # Set OTE LoggerHook & Time Monitor
+        update_progress_callback = default_progress_callback
+        if train_parameters is not None:
+            update_progress_callback = train_parameters.update_progress
+        self._time_monitor = TrainingProgressCallback(update_progress_callback)
+        self._learning_curves = defaultdict(OTELoggerHook.Curve)
 
         stage_module = 'ClsTrainer'
         self._data_cfg = self._init_train_data_cfg(dataset)
@@ -235,21 +246,13 @@ class ClassificationTrainTask(ClassificationInferenceTask):
             # update checkpoint to the newly trained model
             self._model_ckpt = model_ckpt
 
-        # get prediction on validation set
-        val_dataset = dataset.get_subset(Subset.VALIDATION)
-        prediction_dataset = self.infer(val_dataset, InferenceParameters(is_evaluation=True))
-        result_set = ResultSetEntity(
-            model=output_model,
-            ground_truth_dataset=val_dataset,
-            prediction_dataset=prediction_dataset
-        )
-        metric = MetricsHelper.compute_accuracy(result_set)
-
         # compose performance statistics
-        performance = metric.get_performance()
-        logger.info(f'Final model performance: {str(performance)}')
+        training_metrics, final_acc = self._generate_training_metrics_group(self._learning_curves)
         # save resulting model
         self.save_model(output_model)
+        performance = Performance(score=ScoreMetric(value=final_acc, name="accuracy"),
+                                  dashboard_metrics=training_metrics)
+        logger.info(f'Final model performance: {str(performance)}')
         output_model.performance = performance
         logger.info('train done.')
 
@@ -272,3 +275,26 @@ class ClassificationTrainTask(ClassificationInferenceTask):
         for label in self._labels:
             label.hotkey = 'a'
         return data_cfg
+
+    def _generate_training_metrics_group(self, learning_curves) -> Optional[List[MetricsGroup]]:
+            """
+            Parses the classification logs to get metrics from the latest training run
+            :return output List[MetricsGroup]
+            """
+            output: List[MetricsGroup] = []
+            metric_key = 'val/accuracy_top-1'
+
+            # Learning curves
+            best_acc = -1
+            if learning_curves is None:
+                return output
+
+            for key, curve in learning_curves.items():
+                metric_curve = CurveMetric(xs=curve.x,
+                                            ys=curve.y, name=key)
+                if key == metric_key:
+                    best_acc = max(curve.y)
+                visualization_info = LineChartInfo(name=key, x_axis_label="Timestamp", y_axis_label=key)
+                output.append(LineMetricsGroup(metrics=[metric_curve], visualization_info=visualization_info))
+
+            return output, best_acc

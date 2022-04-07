@@ -1,11 +1,14 @@
 import io
 import os
-from typing import Optional
+from collections import defaultdict
+from typing import List, Optional
 
 import numpy as np
 import torch
 from mmcv.utils import ConfigDict
 from segmentation_tasks.apis.segmentation.config_utils import remove_from_config
+from segmentation_tasks.apis.segmentation.ote_utils import TrainingProgressCallback
+from segmentation_tasks.extension.utils.hooks import OTELoggerHook
 from mpa import MPAConstants
 from mpa_tasks.configs.base import TrainType
 from mpa_tasks.configs.segmentation import SegmentationConfig
@@ -17,6 +20,9 @@ from ote_sdk.configuration.helper.utils import ids_to_strings
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.inference_parameters import InferenceParameters
 from ote_sdk.entities.label import Domain
+from ote_sdk.entities.metrics import (CurveMetric, InfoMetric, LineChartInfo,
+                                      MetricsGroup, Performance, ScoreMetric,
+                                      VisualizationInfo, VisualizationType)
 from ote_sdk.entities.model import (ModelEntity, ModelFormat,
                                     ModelOptimizationType, ModelPrecision)
 from ote_sdk.entities.result_media import ResultMediaEntity
@@ -24,7 +30,7 @@ from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.subset import Subset
 from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.entities.tensor import TensorEntity
-from ote_sdk.entities.train_parameters import TrainParameters
+from ote_sdk.entities.train_parameters import TrainParameters, default_progress_callback
 from ote_sdk.serialization.label_mapper import label_schema_to_bytes
 from ote_sdk.usecases.evaluation.metrics_helper import MetricsHelper
 from ote_sdk.usecases.tasks.interfaces.evaluate_interface import \
@@ -51,6 +57,7 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
     def __init__(self, task_environment: TaskEnvironment):
         # self._should_stop = False
         self.freeze = True
+        self.metric = 'mIoU'
         super().__init__(TASK_CONFIG, task_environment)
 
     def infer(self,
@@ -164,6 +171,7 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         self._recipe_cfg = MPAConfig.fromfile(recipe)
         self._patch_datasets(self._recipe_cfg)  # for OTE compatibility
         self._patch_evaluation(self._recipe_cfg)  # for OTE compatibility
+        self.metric = self._recipe_cfg.evaluation.metric
         if not self.freeze:
             remove_from_config(self._recipe_cfg, 'params_config')
         logger.info(f'initialized recipe = {recipe}')
@@ -314,6 +322,13 @@ class SegmentationTrainTask(SegmentationInferenceTask, ITrainingTask):
               output_model: ModelEntity,
               train_parameters: Optional[TrainParameters] = None):
         logger.info('train()')
+        # Set OTE LoggerHook & Time Monitor
+        if train_parameters is not None:
+            update_progress_callback = train_parameters.update_progress
+        else:
+            update_progress_callback = default_progress_callback
+        self._time_monitor = TrainingProgressCallback(update_progress_callback)
+        self._learning_curves = defaultdict(OTELoggerHook.Curve)
 
         # learning_curves = defaultdict(OTELoggerHook.Curve)
         stage_module = 'SegTrainer'
@@ -330,23 +345,11 @@ class SegmentationTrainTask(SegmentationInferenceTask, ITrainingTask):
             # update checkpoint to the newly trained model
             self._model_ckpt = model_ckpt
 
-        # get prediction on validation set
-        val_dataset = dataset.get_subset(Subset.VALIDATION)
-        prediction_dataset = self.infer(
-            val_dataset.with_empty_annotations(),
-            InferenceParameters(is_evaluation=True)
-        )
-        result_set = ResultSetEntity(
-            model=output_model,
-            ground_truth_dataset=val_dataset,
-            prediction_dataset=prediction_dataset
-        )
+        # Get training metrics group from learning curves
+        training_metrics, best_score = self._generate_training_metrics_group(self._learning_curves)
+        performance = Performance(score=ScoreMetric(value=best_score, name=self.metric),
+                                  dashboard_metrics=training_metrics)
 
-        metric = MetricsHelper.compute_dice_averaged_over_pixels(result_set)
-
-        # compose performance statistics
-        performance = metric.get_performance()
-        # performance.dashboard_metrics.extend(self._generate_training_metrics(learning_curves, val_map))
         logger.info(f'Final model performance: {str(performance)}')
         # save resulting model
         self.save_model(output_model)
@@ -375,3 +378,25 @@ class SegmentationTrainTask(SegmentationInferenceTask, ITrainingTask):
         for label in self._labels:
             label.hotkey = 'a'
         return data_cfg
+
+    def _generate_training_metrics_group(self, learning_curves) -> Optional[List[MetricsGroup]]:
+        """
+        Parses the mmsegmentation logs to get metrics from the latest training run
+        :return output List[MetricsGroup]
+        """
+        output: List[MetricsGroup] = []
+        # Model architecture
+        architecture = InfoMetric(name='Model architecture', value=self._model_name)
+        visualization_info_architecture = VisualizationInfo(name="Model architecture",
+                                                            visualisation_type=VisualizationType.TEXT)
+        output.append(MetricsGroup(metrics=[architecture],
+                                   visualization_info=visualization_info_architecture))
+        # Learning curves
+        best_score = -1
+        for key, curve in learning_curves.items():
+            metric_curve = CurveMetric(xs=curve.x, ys=curve.y, name=key)
+            if key == f'val/{self.metric}':
+                best_score = max(curve.y)
+            visualization_info = LineChartInfo(name=key, x_axis_label="Epoch", y_axis_label=key)
+            output.append(MetricsGroup(metrics=[metric_curve], visualization_info=visualization_info))
+        return output, best_score

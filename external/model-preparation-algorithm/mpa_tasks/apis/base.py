@@ -77,6 +77,8 @@ class BaseTask:
         self._model_cfg = None
         self._data_cfg = None
         self._mode = None
+        self._time_monitor = None
+        self._learning_curves = None
         self.cancel_interface = None
         self.reserved_cancel = False
         self.on_hook_initialized = self.OnHookInitialized(self)
@@ -183,6 +185,13 @@ class BaseTask:
         # add Cancel tranining hook
         update_or_add_custom_hook(self._recipe_cfg, ConfigDict(
             type='CancelInterfaceHook', init_callback=self.on_hook_initialized))
+        if self._time_monitor is not None:
+            update_or_add_custom_hook(self._recipe_cfg, ConfigDict(
+                type='OTEProgressHook', time_monitor=self._time_monitor, verbose=True))
+        if self._learning_curves is not None:
+            self._recipe_cfg.log_config.hooks.append(
+                {'type': 'OTELoggerHook', 'curves': self._learning_curves}
+            )
 
         logger.info('initialized.')
 

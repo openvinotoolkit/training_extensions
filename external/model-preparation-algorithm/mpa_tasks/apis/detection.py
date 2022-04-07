@@ -1,11 +1,14 @@
 import io
 import os
-from typing import Optional
+from collections import defaultdict
+from typing import List, Optional
 
 import numpy as np
 import torch
 from mmcv.utils import ConfigDict
 from detection_tasks.apis.detection.config_utils import remove_from_config
+from detection_tasks.apis.detection.ote_utils import TrainingProgressCallback
+from detection_tasks.extension.utils.hooks import OTELoggerHook
 from mpa_tasks.configs.base import TrainType
 from mpa_tasks.configs.detection import DetectionConfig
 from mpa_tasks.apis.base import BaseTask
@@ -18,6 +21,10 @@ from ote_sdk.entities.annotation import Annotation
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.inference_parameters import InferenceParameters
 from ote_sdk.entities.label import Domain
+from ote_sdk.entities.metrics import (BarChartInfo, BarMetricsGroup,
+                                      CurveMetric, LineChartInfo,
+                                      LineMetricsGroup, MetricsGroup,
+                                      ScoreMetric, VisualizationType)
 from ote_sdk.entities.model import (ModelEntity, ModelFormat,
                                     ModelOptimizationType, ModelPrecision)
 from ote_sdk.entities.resultset import ResultSetEntity
@@ -26,7 +33,7 @@ from ote_sdk.entities.shapes.rectangle import Rectangle
 from ote_sdk.entities.subset import Subset
 from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.entities.tensor import TensorEntity
-from ote_sdk.entities.train_parameters import TrainParameters
+from ote_sdk.entities.train_parameters import TrainParameters, default_progress_callback
 from ote_sdk.serialization.label_mapper import label_schema_to_bytes
 from ote_sdk.usecases.evaluation.metrics_helper import MetricsHelper
 from ote_sdk.usecases.tasks.interfaces.evaluate_interface import \
@@ -314,8 +321,13 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
               output_model: ModelEntity,
               train_parameters: Optional[TrainParameters] = None):
         logger.info('train()')
+        # Set OTE LoggerHook & Time Monitor
+        update_progress_callback = default_progress_callback
+        if train_parameters is not None:
+            update_progress_callback = train_parameters.update_progress
+        self._time_monitor = TrainingProgressCallback(update_progress_callback)
+        self._learning_curves = defaultdict(OTELoggerHook.Curve)
 
-        # learning_curves = defaultdict(OTELoggerHook.Curve)
         stage_module = 'DetectionTrainer'
         self._data_cfg = self._init_train_data_cfg(dataset)
         results = self._run_task(stage_module, mode='train', dataset=dataset, parameters=train_parameters)
@@ -343,6 +355,7 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
         logger.debug(f'result of run_task {stage_module} module = {results}')
         output = results['outputs']
         val_preds = output['detections']
+        val_map = output['metric']
         featuremaps = [None for _ in range(len(val_preds))]
         val_preds = zip(val_preds, featuremaps)
         self._add_predictions_to_dataset(val_preds, preds_val_dataset, 0.0)
@@ -367,7 +380,7 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
 
         # compose performance statistics
         performance = metric.get_performance()
-        # performance.dashboard_metrics.extend(self._generate_training_metrics(learning_curves, val_map))
+        performance.dashboard_metrics.extend(self._generate_training_metrics(self._learning_curves, val_map))
         logger.info(f'Final model performance: {str(performance)}')
         # save resulting model
         self.save_model(output_model)
@@ -397,3 +410,35 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
         for label in self._labels:
             label.hotkey = 'a'
         return data_cfg
+
+    def _generate_training_metrics(self, learning_curves, map) -> Optional[List[MetricsGroup]]:
+        """
+        Parses the mmdetection logs to get metrics from the latest training run
+        :return output List[MetricsGroup]
+        """
+        output: List[MetricsGroup] = []
+
+        # Learning curves.
+        for key, curve in learning_curves.items():
+            n, m = len(curve.x), len(curve.y)
+            if n != m:
+                logger.warning(f"Learning curve {key} has inconsistent number of coordinates ({n} vs {m}.")
+                n = min(n, m)
+                curve.x = curve.x[:n]
+                curve.y = curve.y[:n]
+            metric_curve = CurveMetric(
+                xs=np.nan_to_num(curve.x).tolist(),
+                ys=np.nan_to_num(curve.y).tolist(),
+                name=key)
+            visualization_info = LineChartInfo(name=key, x_axis_label="Epoch", y_axis_label=key)
+            output.append(LineMetricsGroup(metrics=[metric_curve], visualization_info=visualization_info))
+
+        # Final mAP value on the validation set.
+        output.append(
+            BarMetricsGroup(
+                metrics=[ScoreMetric(value=map, name="mAP")],
+                visualization_info=BarChartInfo("Validation score", visualization_type=VisualizationType.RADIAL_BAR)
+            )
+        )
+
+        return output
