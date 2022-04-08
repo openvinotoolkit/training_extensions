@@ -8,7 +8,7 @@ from ote_sdk.configuration.elements import (add_parameter_group,
                                             # selectable,
                                             string_attribute)
 
-from .base import BaseConfig
+from mpa_tasks.apis import BaseConfig
 
 
 @attrs

@@ -10,9 +10,8 @@ from segmentation_tasks.apis.segmentation.config_utils import remove_from_config
 from segmentation_tasks.apis.segmentation.ote_utils import TrainingProgressCallback
 from segmentation_tasks.extension.utils.hooks import OTELoggerHook
 from mpa import MPAConstants
-from mpa_tasks.configs.base import TrainType
-from mpa_tasks.configs.segmentation import SegmentationConfig
-from mpa_tasks.apis.base import BaseTask
+from mpa_tasks.apis import BaseTask, TrainType
+from mpa_tasks.apis.segmentation import SegmentationConfig
 from mpa.utils.config_utils import MPAConfig
 from mpa.utils.logger import get_logger
 from ote_sdk.configuration import cfg_helper

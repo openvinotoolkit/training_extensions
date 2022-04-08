@@ -9,9 +9,8 @@ from mmcv.utils import ConfigDict
 from detection_tasks.apis.detection.config_utils import remove_from_config
 from detection_tasks.apis.detection.ote_utils import TrainingProgressCallback
 from detection_tasks.extension.utils.hooks import OTELoggerHook
-from mpa_tasks.configs.base import TrainType
-from mpa_tasks.configs.detection import DetectionConfig
-from mpa_tasks.apis.base import BaseTask
+from mpa_tasks.apis import BaseTask, TrainType
+from mpa_tasks.apis.detection import DetectionConfig
 from mpa import MPAConstants
 from mpa.utils.config_utils import MPAConfig
 from mpa.utils.logger import get_logger

@@ -32,9 +32,8 @@ from ote_sdk.serialization.label_mapper import label_schema_to_bytes
 from ote_sdk.entities.scored_label import ScoredLabel
 from detection_tasks.apis.detection.ote_utils import TrainingProgressCallback
 from detection_tasks.extension.utils.hooks import OTELoggerHook
-from mpa_tasks.configs.base import TrainType
-from mpa_tasks.configs.classification import ClassificationConfig
-from mpa_tasks.apis.base import BaseTask
+from mpa_tasks.apis import BaseTask, TrainType
+from mpa_tasks.apis.classification import ClassificationConfig
 from mpa.utils.config_utils import MPAConfig
 from mpa.utils.logger import get_logger
 from ote_sdk.entities.label import Domain
