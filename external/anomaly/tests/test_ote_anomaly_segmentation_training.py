@@ -142,7 +142,7 @@ class AnomalySegmentationTrainingTestParameters(DefaultOTETestCreationParameters
                 dict(
                     model_name=[
                        'ote_anomaly_segmentation_padim',
-                       'ote_anomaly_segmentation_stfpm',
+                       # 'ote_anomaly_segmentation_stfpm',
                     ],
                     dataset_name='mvtec_short',
                     usecase='precommit',
@@ -150,7 +150,7 @@ class AnomalySegmentationTrainingTestParameters(DefaultOTETestCreationParameters
                 dict(
                     model_name=[
                        'ote_anomaly_segmentation_padim',
-                       'ote_anomaly_segmentation_stfpm',
+                       # 'ote_anomaly_segmentation_stfpm',
                     ],
                     dataset_name='mvtec',
                     patience=KEEP_CONFIG_FIELD_VALUE,
