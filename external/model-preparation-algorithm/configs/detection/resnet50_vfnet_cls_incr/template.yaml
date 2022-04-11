@@ -5,8 +5,7 @@ task_type: DETECTION
 task_family: VISION
 instantiation: "CLASS"
 summary: Class-Incremental Object Detection for VFNet
-application:
-  ~
+application: ~
 
 # Algo backend.
 framework: MPA v1.1.0

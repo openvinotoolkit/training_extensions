@@ -5,8 +5,7 @@ task_type: CLASSIFICATION
 task_family: VISION
 instantiation: "CLASS"
 summary: Class-Incremental Image Classification for MobileNet-V3-learge-0.75x
-application:
-  ~
+application: ~
 
 # Algo backend.
 framework: MPA v1.1.0

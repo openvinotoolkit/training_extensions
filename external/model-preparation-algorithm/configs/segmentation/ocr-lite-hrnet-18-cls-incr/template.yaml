@@ -1,12 +1,11 @@
 # Description.
-model_template_id: ClassIncrementalm_Semantic_Segmentation_Lite-HRNet-18_OCR
+model_template_id: ClassIncremental_Semantic_Segmentation_Lite-HRNet-18_OCR
 name: Lite-HRNet-18 OCR-ClsIncr
 task_type: SEGMENTATION
 task_family: VISION
 instantiation: "CLASS"
 summary: Class-Incremental Semantic Segmentation for Lite-HRNet-18 OCR
-application:
-  ~
+application: ~
 
 # Algo backend.
 framework: MPA v1.1.0

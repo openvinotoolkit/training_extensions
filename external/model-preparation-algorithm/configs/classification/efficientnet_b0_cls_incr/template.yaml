@@ -5,8 +5,7 @@ task_type: CLASSIFICATION
 task_family: VISION
 instantiation: "CLASS"
 summary: Class-Incremental Image Classification for EfficientNet-B0
-application:
-  ~
+application: ~
 
 # Algo backend.
 framework: MPA v1.1.0

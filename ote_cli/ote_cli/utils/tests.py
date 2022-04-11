@@ -105,7 +105,9 @@ def ote_train_testing(template, root, ote_dir, args):
         f"{template_work_dir}/trained_{template.model_template_id}",
     ]
     if "--load-weights" in args:
-        command_line.extend(["--load-weights", f'{os.path.join(ote_dir, args["--load-weights"])}'])
+        command_line.extend(
+            ["--load-weights", f'{os.path.join(ote_dir, args["--load-weights"])}']
+        )
     command_line.extend(args["train_params"])
     assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
     assert os.path.exists(

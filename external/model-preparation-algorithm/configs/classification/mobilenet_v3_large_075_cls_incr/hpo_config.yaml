@@ -4,13 +4,13 @@ early_stop: median_stop
 hp_space:
   learning_parameters.learning_rate:
     param_type: quniform
-    range: 
+    range:
       - 0.005
       - 0.029
       - 0.001
   learning_parameters.batch_size:
     param_type: qloguniform
-    range: 
+    range:
       - 8
       - 64
       - 2

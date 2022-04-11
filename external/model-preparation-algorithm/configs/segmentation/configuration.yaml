@@ -5,7 +5,8 @@ learning_parameters:
   batch_size:
     affects_outcome_of: TRAINING
     default_value: 5
-    description: The number of training samples seen in each iteration of training.
+    description:
+      The number of training samples seen in each iteration of training.
       Increasing this value improves training time and may make the training more
       stable. A larger batch size has higher memory requirements.
     editable: true
@@ -20,7 +21,8 @@ learning_parameters:
       type: UI_RULES
     value: 5
     visible_in_ui: true
-    warning: Increasing this value may cause the system to use more memory than available,
+    warning:
+      Increasing this value may cause the system to use more memory than available,
       potentially causing out of memory errors, please update with caution.
   description: Learning Parameters
   header: Learning Parameters
@@ -29,7 +31,8 @@ learning_parameters:
     auto_hpo_state: POSSIBLE
     auto_hpo_value: null
     default_value: 0.01
-    description: Increasing this value will speed up training convergence but might
+    description:
+      Increasing this value will speed up training convergence but might
       make it unstable.
     editable: true
     header: Learning rate
@@ -68,7 +71,7 @@ learning_parameters:
     auto_hpo_state: not_possible
     auto_hpo_value: null
     default_value: 100
-    description: ''
+    description: ""
     editable: true
     header: Number of iterations for learning rate warmup
     max_value: 10000
@@ -87,7 +90,7 @@ learning_parameters:
     auto_hpo_state: not_possible
     auto_hpo_value: null
     default_value: 5
-    description: ''
+    description: ""
     editable: true
     header: Number of checkpoints that is done during the single training round
     max_value: 100
@@ -106,7 +109,8 @@ learning_parameters:
     auto_hpo_state: not_possible
     auto_hpo_value: null
     default_value: 1
-    description: Increasing this value causes the results to be more robust but training
+    description:
+      Increasing this value causes the results to be more robust but training
       time will be longer.
     editable: true
     header: Number of training iterations
@@ -126,7 +130,8 @@ learning_parameters:
     auto_hpo_state: not_possible
     auto_hpo_value: null
     default_value: 0
-    description: Increasing this value might improve training speed however it might
+    description:
+      Increasing this value might improve training speed however it might
       cause out of memory errors. If the number of workers is set to zero, data loading
       will happen in the main training thread.
     editable: true
@@ -148,7 +153,8 @@ postprocessing:
   confidence_threshold:
     affects_outcome_of: INFERENCE
     default_value: 0.35
-    description: This threshold only takes effect if the threshold is not set based
+    description:
+      This threshold only takes effect if the threshold is not set based
       on the result.
     editable: true
     header: Confidence threshold
@@ -193,11 +199,11 @@ algo_backend:
     enum_name: TrainType
     header: train type
     options:
-      FineTune: 'FineTune'
-      SemiSupervised: 'SemiSupervised'
-      SelfSupervised: 'SelfSupervised'
-      Incremental: 'Incremental'
-      Imbalanced: 'Imbalanced'
+      FineTune: "FineTune"
+      SemiSupervised: "SemiSupervised"
+      SelfSupervised: "SelfSupervised"
+      Incremental: "Incremental"
+      Imbalanced: "Imbalanced"
     type: SELECTABLE
     ui_rules:
       action: DISABLE_EDITING
