@@ -151,8 +151,8 @@ def main():
 
     task = task_class(task_environment=environment)
 
-    if args.enable_hpo:
-        task._config.resume_from = hpo_weight_path
+    # if args.enable_hpo:
+    #     task._config.resume_from = hpo_weight_path
 
     output_model = ModelEntity(dataset, environment.get_model_configuration())
 
