@@ -216,7 +216,7 @@ class OTEDetectionInferenceTask(IInferenceTask, IExportTask, IEvaluationTask, IU
                                 points = [Point(x=point[0] / width, y=point[1] / height) for point in box_points]
                             labels = [ScoredLabel(self._labels[label_idx], probability=probability)]
                             polygon = Polygon(points=points)
-                            if polygon.get_area() > 1e-12:
+                            if cv2.contourArea(contour) > 0 and polygon.get_area() > 1e-12:
                                 shapes.append(Annotation(polygon, labels=labels, id=ID(f"{label_idx:08}")))
             else:
                 raise RuntimeError(
