@@ -9,16 +9,31 @@ to use a proxy server as [here](https://docs.docker.com/network/proxy/#configure
 
 Review the instructions for installation docker [here](https://github.com/NVIDIA/nvidia-docker).
 
-## Step 3. Build image
+## Step 3. Review docker/Dockerfile
+
+Review the string  
+```
+ENV CUR_BE_PATH /training_extensions/external/mmdetection
+```
+and change backend to that you need from list:
+
+|Backend|
+| :--- | 
+| anomaly |
+| deep-object-reid |
+| mmdetection |
+| mmsegmentation |
+
+## Step 4. Build image
 
 In the project folder run in terminal:
 ```
-sudo docker image build --network=host -t ote:test <PATH_TO_DIR_WITH_DOCKERFILE>
+sudo docker image build --network=host -t ote:test <clonned root folder>/docker
 ```
 
 Use `--network` to duplicate the network settings of your localhost into context build.
 
-## Step 4. Run container
+## Step 5. Run container
 Run in terminal:
 ```
 sudo docker run \
@@ -28,7 +43,6 @@ sudo docker run \
 --network=host \
 --shm-size=1g \
 --ulimit memlock=-1 \
---mount type=bind,source=<PATH_TO_OTE_HOME_ON_HOST>,target=/home/training_extention \
 <IMAGE_ID>
  ```
 
@@ -36,3 +50,4 @@ You should not use `--runtime=nvidia` if you don't have GPU.
 
 Use `--shm-size` to increase the size of the shared memory directory.
 
+Now you can use ote on your container
