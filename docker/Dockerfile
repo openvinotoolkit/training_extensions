@@ -1,5 +1,7 @@
 FROM nvidia/cuda:11.1.1-cudnn8-devel-ubuntu20.04
 
+ARG install_be=mmdetection
+
 RUN apt-get update && apt-get install -y --no-install-recommends \
         apt-transport-https \
         git && \
@@ -43,7 +45,7 @@ RUN git clone https://github.com/openvinotoolkit/training_extensions.git && \
     cd  training_extensions && \
     git submodule update --init --recursive
 
-ENV CUR_BE_PATH /training_extensions/external/mmdetection
+ENV CUR_BE_PATH /training_extensions/external/$install_be
 
 RUN bash $CUR_BE_PATH/init_venv.sh /current_back_end
 RUN /current_back_end/bin/pip install -e /training_extensions/ote_cli/ -c $CUR_BE_PATH/constraints.txt

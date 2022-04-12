@@ -9,27 +9,30 @@ to use a proxy server as [here](https://docs.docker.com/network/proxy/#configure
 
 Review the instructions for installation docker [here](https://github.com/NVIDIA/nvidia-docker).
 
-## Step 3. Review docker/Dockerfile
-
-Review the string  
-```
-ENV CUR_BE_PATH /training_extensions/external/mmdetection
-```
-and change backend to that you need from list:
-
-|Backend|
-| :--- | 
-| anomaly |
-| deep-object-reid |
-| mmdetection |
-| mmsegmentation |
 
 ## Step 4. Build image
 
 In the project folder run in terminal:
 ```
-sudo docker image build --network=host -t ote:test <clonned root folder>/docker
+sudo docker image build --network=host -t ote <clonned root folder>/docker
 ```
+
+By default the image will created with the  MMDetection algorithm virtual environment.
+
+If you need other algorithm please use --build-arg install_be=[OTE Algorithm] option.
+
+```
+sudo docker image build --network=host -t ote <clonned root folder>/docker --build-arg install_be=<OTE Algorithm>
+```
+
+Available OTE Algorithms:
+
+|OTE Algorithms| Virtual environment for |
+| :--- | :--- |
+| anomaly |  Anomaly Classification, Detection and Segmentation |
+| deep-object-reid | Image Classification |
+| mmdetection | Object Detection, Counting, Rotated Object Detection |
+| mmsegmentation | Semantic Segmentation |
 
 Use `--network` to duplicate the network settings of your localhost into context build.
 
