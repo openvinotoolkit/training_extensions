@@ -130,6 +130,12 @@ class OTEDetectionInferenceTask(IInferenceTask, IExportTask, IEvaluationTask, IU
                 load_state_dict(model, model_data['model'])
                 logger.info(f"Loaded model weights from Task Environment")
                 logger.info(f"Model architecture: {self._model_name}")
+                for name, weights in model.named_parameters():
+                    if(not torch.isfinite(weights).all()):
+                        logger.info(f"Invalid weights in: {name}. Recreate model from pre-trained weights")
+                        model = self._create_model(self._config, from_scratch=False)
+                        return model
+
             except BaseException as ex:
                 raise ValueError("Could not load the saved model. The model file structure is invalid.") \
                     from ex
