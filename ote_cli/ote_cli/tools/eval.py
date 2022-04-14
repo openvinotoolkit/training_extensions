@@ -142,9 +142,10 @@ def main():
     task = task_class(task_environment=environment)
 
     validation_dataset = dataset.get_subset(Subset.TESTING)
-    predicted_validation_dataset = task.infer(
-        validation_dataset.with_empty_annotations(),
+    predicted_validation_dataset, metric_score = task.infer(
+        validation_dataset,
         InferenceParameters(is_evaluation=True),
+        # validation_dataset.with_empty_annotations(),
     )
 
     resultset = ResultSetEntity(
@@ -159,7 +160,8 @@ def main():
     if args.save_performance:
         with open(args.save_performance, "w", encoding="UTF-8") as write_file:
             json.dump(
-                {resultset.performance.score.name: resultset.performance.score.value},
+                {resultset.performance.score.name: resultset.performance.score.value,
+                 "mAP" : metric_score},
                 write_file,
             )
 
