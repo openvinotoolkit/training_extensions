@@ -206,7 +206,7 @@ class OTEAnomalyDataModule(LightningDataModule):
         logger.info(f"Local annotations: {len(local_dataset)}")
         if contains_anomalous_images(local_dataset):
             logger.info("Dataset contains polygon annotations. Passing masks to anomalib.")
-            dataset = OTEAnomalyDataset(self.config, local_dataset, TaskType.ANOMALY_SEGMENTATION)
+            dataset = OTEAnomalyDataset(self.config, local_dataset, self.task_type)
         else:
             logger.info("Dataset does not contain polygon annotations. Not passing masks to anomalib.")
             dataset = OTEAnomalyDataset(self.config, global_dataset, TaskType.ANOMALY_CLASSIFICATION)
