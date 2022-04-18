@@ -19,6 +19,7 @@ import time
 from os import path as osp
 from pathlib import Path
 from typing import Optional
+from math import ceil
 
 import torch
 import yaml
@@ -200,7 +201,7 @@ def run_hpo_trainer(
     task._config.checkpoint_config["max_keep_ckpts"] = hp_config["iterations"] + 10
     task._config.checkpoint_config["interval"] = 1
 
-    if hp_config["resize_width"] == 1:
+    if "bracket" in hp_config:
         task._config.data.train.adaptive_repeat_times = False
 
     dataset = HpoDataset(dataset, hp_config)
@@ -301,6 +302,16 @@ class HpoManager:
         train_dataset_size = len(dataset.get_subset(Subset.TRAINING))
         val_dataset_size = len(dataset.get_subset(Subset.VALIDATION))
 
+        model_param = (self.environment.
+                       model_template.hyper_parameters.
+                       parameter_overrides["learning_parameters"])
+        default_hyper_parameters = {
+            "learning_parameters.batch_size" :
+                model_param["batch_size"]["default_value"],
+            "learning_parameters.learning_rate" :
+                model_param["learning_rate"]["default_value"]
+        }
+
         hpopt_arguments = dict(
             search_alg="bayes_opt" if self.algo == "smbo" else self.algo,
             search_space=HpoManager.generate_hpo_search_space(hpopt_cfg["hp_space"]),
@@ -315,6 +326,7 @@ class HpoManager:
             non_pure_train_ratio=val_dataset_size
             / (train_dataset_size + val_dataset_size),
             batch_size_name="learning_parameters.batch_size",
+            default_hyper_parameters=default_hyper_parameters
         )
 
         if self.algo == "smbo":
@@ -322,12 +334,19 @@ class HpoManager:
             hpopt_arguments["num_trials"] = hpopt_cfg.get("num_trials")
         elif self.algo == "asha":
             hpopt_arguments["num_brackets"] = hpopt_cfg.get("num_brackets")
-            hpopt_arguments["min_iterations"] = hpopt_cfg.get("min_iterations")
             hpopt_arguments["reduction_factor"] = hpopt_cfg.get("reduction_factor")
             hpopt_arguments["num_trials"] = hpopt_cfg.get("num_trials")
             hpopt_arguments["num_workers"] = (
                 num_available_gpus // self.num_gpus_per_trial
             )
+            if "min_iterations" in hpopt_cfg:
+                hpopt_arguments["min_iterations"] = hpopt_cfg.get("min_iterations")
+            else:
+                hpopt_arguments["min_iterations"] = ceil(
+                    model_param["learning_rate_warmup_iters"]["default_value"]
+                    * model_param["batch_size"]["default_value"]
+                    / train_dataset_size
+                )
 
         HpoManager.remove_empty_keys(hpopt_arguments)
 
@@ -425,9 +444,6 @@ class HpoManager:
                         str(hp_config["trial_id"]),
                     )
                 )
-
-                if self.algo == "asha":
-                    hp_config["resize_width"] = 1
 
                 # Clear hpo_work_dir
                 if osp.exists(hpo_work_dir):
