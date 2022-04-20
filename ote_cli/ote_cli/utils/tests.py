@@ -60,12 +60,16 @@ def extract_export_vars(path):
 def collect_env_vars(work_dir):
     vars = extract_export_vars(f"{work_dir}/venv/bin/activate")
     vars.update({"PATH": f"{work_dir}/venv/bin/:" + os.environ["PATH"]})
-    if "HTTP_PROXY" in os.environ:
-        vars.update({"HTTP_PROXY": os.environ["HTTP_PROXY"]})
-    if "HTTPS_PROXY" in os.environ:
-        vars.update({"HTTPS_PROXY": os.environ["HTTPS_PROXY"]})
-    if "NO_PROXY" in os.environ:
-        vars.update({"NO_PROXY": os.environ["NO_PROXY"]})
+    vars_map = {
+        "HTTP_PROXY": ["http_proxy", "HTTP_PROXY"],
+        "HTTPS_PROXY": ["https_proxy", "HTTPS_PROXY"],
+        "NO_PROXY": ["no_proxy", "NO_PROXY"]
+    }
+    for var, aliases in vars_map.items():
+        for alias in aliases:
+            if alias in os.environ:
+                vars.update({var: os.environ[alias]})
+                break
     return vars
 
 
