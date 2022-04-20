@@ -194,15 +194,26 @@ def run_hpo_trainer(
     impl_class = get_impl_class(train_env.model_template.entrypoints.base)
     task = impl_class(task_environment=train_env)
 
-    task._config.work_dir = osp.join(
-        osp.dirname(hp_config["file_path"]),
-        str(hp_config["trial_id"])
-    )
-    task._config.checkpoint_config["max_keep_ckpts"] = hp_config["iterations"] + 10
-    task._config.checkpoint_config["interval"] = 1
+    if task_type == TaskType.CLASSIFICATION:
+        task._scratch_space = osp.join(
+            osp.dirname(hp_config["file_path"]),
+            str(hp_config["trial_id"])
+        )
+        task._cfg.data.save_dir = task._scratch_space
+        task._cfg.model.save_all_chkpts = True
+    elif task_type in [TaskType.DETECTION, TaskType.SEGMENTATION]:
+        task._config.work_dir = osp.join(
+            osp.dirname(hp_config["file_path"]),
+            str(hp_config["trial_id"])
+        )
+        task._config.checkpoint_config["max_keep_ckpts"] = hp_config["iterations"] + 10
+        task._config.checkpoint_config["interval"] = 1
 
     if "bracket" in hp_config:
-        task._config.data.train.adaptive_repeat_times = False
+        if task_type == TaskType.DETECTION:
+            task._config.data.train.adaptive_repeat_times = False
+        elif task_type == TaskType.SEGMENTATION:
+            task._config.data.train.adaptive_repeat = False
 
     dataset = HpoDataset(dataset, hp_config)
 
@@ -342,11 +353,24 @@ class HpoManager:
             if "min_iterations" in hpopt_cfg:
                 hpopt_arguments["min_iterations"] = hpopt_cfg.get("min_iterations")
             else:
-                hpopt_arguments["min_iterations"] = ceil(
-                    model_param["learning_rate_warmup_iters"]["default_value"]
-                    * model_param["batch_size"]["default_value"]
-                    / train_dataset_size
-                )
+                task_type = self.environment.model_template.task_type
+                if task_type == TaskType.CLASSIFICATION:
+                    with open(osp.join(osp.dirname(
+                        self.environment.model_template.model_template_path
+                    ), "main_model.yaml"), "r") as f:
+                        model_yaml = yaml.safe_load(f)
+                    if "warmup" in model_yaml["train"]:
+                        hpopt_arguments["min_iterations"] = ceil(
+                            model_yaml["train"]["warmup"]
+                            * model_param["batch_size"]["default_value"]
+                            / train_dataset_size
+                        )
+                elif task_type in [TaskType.DETECTION, TaskType.SEGMENTATION]:
+                    hpopt_arguments["min_iterations"] = ceil(
+                        model_param["learning_rate_warmup_iters"]["default_value"]
+                        * model_param["batch_size"]["default_value"]
+                        / train_dataset_size
+                    )
 
         HpoManager.remove_empty_keys(hpopt_arguments)
 
@@ -499,16 +523,23 @@ class HpoManager:
         print("Best Hyper-parameters")
         print(best_config)
 
-        hpo_weight_path = osp.join(
-            self.hpo.save_path,
-            str(self.hpo.hpo_status["best_config_id"]),
-            "checkpoints_round_0"
-        )
+        if self.environment.model_template.task_type == TaskType.CLASSIFICATION:
+            hpo_weight_path = osp.join(
+                self.hpo.save_path,
+                str(self.hpo.hpo_status["best_config_id"]),
+                "best.pth"
+            )
+        elif self.environment.model_template.task_type in [TaskType.DETECTION, TaskType.SEGMENTATION]:
+            hpo_weight_path = osp.join(
+                self.hpo.save_path,
+                str(self.hpo.hpo_status["best_config_id"]),
+                "checkpoints_round_0"
+            )
 
-        for file_name in os.listdir(hpo_weight_path):
-            if "best" in file_name:
-                hpo_weight_path += f"/{file_name}"
-                break
+            for file_name in os.listdir(hpo_weight_path):
+                if "best" in file_name:
+                    hpo_weight_path += f"/{file_name}"
+                    break
 
         return hyper_parameters, hpo_weight_path
 
