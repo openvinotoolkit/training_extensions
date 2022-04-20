@@ -21,6 +21,7 @@ import argparse
 from ote_sdk.configuration.helper import create
 from ote_sdk.entities.inference_parameters import InferenceParameters
 from ote_sdk.entities.model import ModelEntity
+from ote_sdk.entities.model_template import TaskType
 from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.subset import Subset
 from ote_sdk.entities.task_environment import TaskEnvironment
@@ -152,7 +153,10 @@ def main():
     task = task_class(task_environment=environment)
 
     if args.enable_hpo:
-        task._config.resume_from = hpo_weight_path
+        if environment.model_template.task_type == TaskType.CLASSIFICATION:
+            task._cfg.model.resume = hpo_weight_path
+        elif environment.model_template.task_type in [TaskType.DETECTION, TaskType.SEGMENTATION]:
+            task._config.resume_from = hpo_weight_path
 
     output_model = ModelEntity(dataset, environment.get_model_configuration())
 
