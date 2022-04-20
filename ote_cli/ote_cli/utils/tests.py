@@ -63,7 +63,7 @@ def collect_env_vars(work_dir):
     vars_map = {
         "HTTP_PROXY": ["http_proxy", "HTTP_PROXY"],
         "HTTPS_PROXY": ["https_proxy", "HTTPS_PROXY"],
-        "NO_PROXY": ["no_proxy", "NO_PROXY"]
+        "NO_PROXY": ["no_proxy", "NO_PROXY"],
     }
     for var, aliases in vars_map.items():
         for alias in aliases:
