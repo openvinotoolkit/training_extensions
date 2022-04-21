@@ -29,7 +29,7 @@ from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.entities.train_parameters import TrainParameters
 from ote_sdk.tests.test_helpers import generate_random_annotated_image
 
-from mpa_tasks.apis.segmentation import OTESegmentationTrainingTask
+from mpa_tasks.apis.segmentation import SegmentationTrainTask
 
 
 DEFAULT_TEMPLATE_DIR = osp.join('configs', 'segmentation', 'ocr-lite-hrnet-18-cls-incr')
@@ -135,8 +135,8 @@ class API(unittest.TestCase):
         hyper_parameters, model_template = self.setup_configurable_parameters(DEFAULT_TEMPLATE_DIR, num_iters=5)
         segmentation_environment, dataset = self.init_environment(hyper_parameters, model_template, 12)
 
-        task = OTESegmentationTrainingTask(task_environment=segmentation_environment)
-        self.addCleanup(task._delete_scratch_space)
+        task = SegmentationTrainTask(task_environment=segmentation_environment)
+        #self.addCleanup(task._delete_scratch_space)
 
         print('Task initialized, model training starts.')
         training_progress_curve = []
@@ -161,7 +161,7 @@ class API(unittest.TestCase):
         hyper_parameters, model_template = self.setup_configurable_parameters(DEFAULT_TEMPLATE_DIR, num_iters=10)
         segmentation_environment, dataset = self.init_environment(hyper_parameters, model_template, 12)
 
-        task = OTESegmentationTrainingTask(task_environment=segmentation_environment)
+        task = SegmentationTrainTask(task_environment=segmentation_environment)
         self.addCleanup(task._delete_scratch_space)
 
         print('Task initialized, model inference starts.')

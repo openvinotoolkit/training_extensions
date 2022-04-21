@@ -14,7 +14,7 @@ from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.label_schema import LabelSchemaEntity
 from ote_sdk.entities.subset import Subset
 
-from mpa_tasks.extensions.datasets.mpa_seg_dataset import load_dataset_items
+from mpa_tasks.extensions.datasets.mpa_seg_dataset import MPASegIncrDataset#load_dataset_items
 
 from ote_sdk.test_suite.e2e_test_system import DataCollector, e2e_pytest_performance
 from ote_sdk.test_suite.training_tests_common import (make_path_be_abs,
@@ -36,6 +36,7 @@ def DATASET_PARAMETERS_FIELDS() -> List[str]:
                      'images_val_dir',
                      'annotations_test',
                      'images_test_dir',
+                     'pre_trained_model'
                      ])
 
 DatasetParameters = namedtuple('DatasetParameters', DATASET_PARAMETERS_FIELDS())
@@ -63,17 +64,17 @@ def _create_segmentation_dataset_and_labels_schema(dataset_params):
     logger.debug(f'Using for train annotation file {dataset_params.annotations_train}')
     logger.debug(f'Using for val annotation file {dataset_params.annotations_val}')
     labels_list = []
-    items = load_dataset_items(
+    items = MPASegIncrDataset.load_dataset_items(
         ann_file_path=dataset_params.annotations_train,
         data_root_dir=dataset_params.images_train_dir,
         subset=Subset.TRAINING,
         labels_list=labels_list)
-    items.extend(load_dataset_items(
+    items.extend(MPASegIncrDataset.load_dataset_items(
         ann_file_path=dataset_params.annotations_val,
         data_root_dir=dataset_params.images_val_dir,
         subset=Subset.VALIDATION,
         labels_list=labels_list))
-    items.extend(load_dataset_items(
+    items.extend(MPASegIncrDataset.load_dataset_items(
         ann_file_path=dataset_params.annotations_test,
         data_root_dir=dataset_params.images_test_dir,
         subset=Subset.TESTING,
