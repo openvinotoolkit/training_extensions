@@ -39,7 +39,7 @@ from ote_sdk.usecases.tasks.interfaces.optimization_interface import Optimizatio
 
 from mmdet.apis import train_detector
 from mmdet.apis.fake_input import get_fake_input
-from detection_tasks.apis.detection.config_utils import prepare_for_training
+from detection_tasks.apis.detection.config_utils import prepare_for_training, remove_from_config
 from detection_tasks.apis.detection.configuration import OTEDetectionConfig
 from detection_tasks.apis.detection.inference_task import OTEDetectionInferenceTask
 from detection_tasks.apis.detection.ote_utils import OptimizationProgressCallback
@@ -217,6 +217,12 @@ class OTEDetectionNNCFTask(OTEDetectionInferenceTask, IOptimizationTask):
         self._training_work_dir = training_config.work_dir
         self._is_training = True
         self._model.train()
+
+        fp16 = training_config.get("fp16", None)
+
+        if fp16 is not None:
+            remove_from_config(training_config, "fp16")
+            logger.warn("fp16 option is not supported in NNCF. Switch to fp32.")
 
         train_detector(model=self._model,
                        dataset=mm_train_dataset,
