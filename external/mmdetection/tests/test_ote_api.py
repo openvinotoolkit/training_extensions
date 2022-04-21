@@ -548,7 +548,7 @@ class API(unittest.TestCase):
                         task_type=TaskType.INSTANCE_SEGMENTATION)
 
     @e2e_pytest_api
-    @pytest.mark.xfail(reason='It randomly cannot pass export_perf_delta_tolerance or pot_perf_delta_tolerance')
+    @pytest.mark.xfail(reason='CVS-83116')
     def test_training_maskrcnn_efficientnetb2b(self):
         self.end_to_end(osp.join('configs',
                         'custom-counting-instance-seg', 'efficientnetb2b_maskrcnn'),
