@@ -1,3 +1,7 @@
+# Copyright (C) 2022 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
+
 try:
     import e2e.fixtures
 
@@ -38,16 +42,6 @@ def ote_templates_root_dir_fx():
     root = osp.dirname(osp.dirname(osp.realpath(__file__)))
     root = f'{root}/configs/'
     logger.debug(f'overloaded ote_templates_root_dir_fx: return {root}')
-    return root
-
-@pytest.fixture(scope='session')
-def ote_reference_root_dir_fx():
-    import os.path as osp
-    import logging
-    logger = logging.getLogger(__name__)
-    root = osp.dirname(osp.dirname(osp.realpath(__file__)))
-    root = f'{root}/tests/reference/'
-    logger.debug(f'overloaded ote_reference_root_dir_fx: return {root}')
     return root
 
 # pytest magic
