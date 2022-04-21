@@ -126,10 +126,9 @@ pip install -e ../mmdetection/submodule  -c ${CONSTRAINTS_FILE} || exit 1
 pip install -e ../mmdetection -c ${CONSTRAINTS_FILE} || exit 1
 
 # Install base segmentation algo backend & task
-##pip install -e ../mmsegmentation/submodule -c ${CONSTRAINTS_FILE} || exit 1
-git submodule update --init --recursive
-rm -rf ./submodule/external/mmsegmentation/configs/ote  # To disable model template scan
-pip install -e ./submodule/external/mmsegmentation -c ${CONSTRAINTS_FILE} || exit 1  # Temporary due to mmcv version mismatch
+sed -i "s/mmcv-full==1.3.1$/mmcv-full==1.3.14/g" ../mmsegmentation/submodule/requirements/runtime.txt  # Patch: remedy for MMCV version mismatch
+pip install -e ../mmsegmentation/submodule -c ${CONSTRAINTS_FILE} || exit 1
+sed -i "s/mmcv-full==1.3.14/mmcv-full==1.3.1/g" ../mmsegmentation/submodule/requirements/runtime.txt
 pip install -e ../mmsegmentation -c ${CONSTRAINTS_FILE} || exit 1
 
 # Install MPA algo backend & task
