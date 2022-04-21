@@ -542,14 +542,13 @@ class API(unittest.TestCase):
             osp.join('configs', 'custom-object-detection', 'cspdarknet_YOLOX'))
 
     @e2e_pytest_api
-    @pytest.mark.xfail(reason='CVS-83115')
     def test_training_maskrcnn_resnet50(self):
         self.end_to_end(osp.join('configs',
                         'custom-counting-instance-seg', 'resnet50_maskrcnn'),
                         task_type=TaskType.INSTANCE_SEGMENTATION)
 
     @e2e_pytest_api
-    @pytest.mark.xfail(reason='CVS-83116')
+    @pytest.mark.xfail(reason='It randomly cannot pass export_perf_delta_tolerance or pot_perf_delta_tolerance')
     def test_training_maskrcnn_efficientnetb2b(self):
         self.end_to_end(osp.join('configs',
                         'custom-counting-instance-seg', 'efficientnetb2b_maskrcnn'),
