@@ -64,7 +64,7 @@ args = {
 root = '/tmp/ote_cli/'
 ote_dir = os.getcwd()
 
-templates = Registry('external').filter(task_type='DETECTION').templates
+templates = Registry('external/mmdetection').filter(task_type='DETECTION').templates
 templates_ids = [template.model_template_id for template in templates]
 
 

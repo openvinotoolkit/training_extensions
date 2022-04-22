@@ -95,7 +95,7 @@ class OTEDetectionInferenceTask(IInferenceTask, IExportTask, IEvaluationTask, IU
 
         # Set default model attributes.
         self._optimization_methods = []
-        self._precision = [ModelPrecision.FP32]
+        self._precision = [ModelPrecision.FP16] if self._config.get('fp16', None) else [ModelPrecision.FP32]
         self._optimization_type = ModelOptimizationType.MO
 
         # Create and initialize PyTorch model.
@@ -128,8 +128,18 @@ class OTEDetectionInferenceTask(IInferenceTask, IExportTask, IEvaluationTask, IU
 
             try:
                 load_state_dict(model, model_data['model'])
+
+                if "load_from" in self._config:
+                    self._config.load_from = None
+
                 logger.info(f"Loaded model weights from Task Environment")
                 logger.info(f"Model architecture: {self._model_name}")
+                for name, weights in model.named_parameters():
+                    if(not torch.isfinite(weights).all()):
+                        logger.info(f"Invalid weights in: {name}. Recreate model from pre-trained weights")
+                        model = self._create_model(self._config, from_scratch=False)
+                        return model
+
             except BaseException as ex:
                 raise ValueError("Could not load the saved model. The model file structure is invalid.") \
                     from ex
@@ -216,7 +226,7 @@ class OTEDetectionInferenceTask(IInferenceTask, IExportTask, IEvaluationTask, IU
                                 points = [Point(x=point[0] / width, y=point[1] / height) for point in box_points]
                             labels = [ScoredLabel(self._labels[label_idx], probability=probability)]
                             polygon = Polygon(points=points)
-                            if polygon.get_area() > 1e-12:
+                            if cv2.contourArea(contour) > 0 and polygon.get_area() > 1e-12:
                                 shapes.append(Annotation(polygon, labels=labels, id=ID(f"{label_idx:08}")))
             else:
                 raise RuntimeError(
@@ -385,7 +395,7 @@ class OTEDetectionInferenceTask(IInferenceTask, IExportTask, IEvaluationTask, IU
                     model = self._model.cpu()
                 pruning_transformation = OptimizationMethod.FILTER_PRUNING in self._optimization_methods
                 export_model(model, self._config, tempdir, target='openvino',
-                             pruning_transformation=pruning_transformation)
+                             pruning_transformation=pruning_transformation, precision=self._precision[0].name)
                 bin_file = [f for f in os.listdir(tempdir) if f.endswith('.bin')][0]
                 xml_file = [f for f in os.listdir(tempdir) if f.endswith('.xml')][0]
                 with open(os.path.join(tempdir, bin_file), "rb") as f:
