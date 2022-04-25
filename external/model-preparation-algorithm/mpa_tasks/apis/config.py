@@ -1,3 +1,7 @@
+# Copyright (C) 2022 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
+
 from sys import maxsize
 
 from ote_sdk.configuration.elements import (ParameterGroup,

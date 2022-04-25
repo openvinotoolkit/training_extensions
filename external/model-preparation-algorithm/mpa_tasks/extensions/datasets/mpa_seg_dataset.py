@@ -1,3 +1,7 @@
+# Copyright (C) 2022 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
+
 from mmseg.datasets.builder import DATASETS
 from segmentation_tasks.extension.datasets import OTEDataset
 from mpa.utils.logger import get_logger
