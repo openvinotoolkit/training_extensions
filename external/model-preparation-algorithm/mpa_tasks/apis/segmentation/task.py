@@ -11,7 +11,7 @@ import numpy as np
 import torch
 from mmcv.utils import ConfigDict
 from segmentation_tasks.apis.segmentation.config_utils import remove_from_config
-from segmentation_tasks.apis.segmentation.ote_utils import TrainingProgressCallback
+from segmentation_tasks.apis.segmentation.ote_utils import TrainingProgressCallback, InferenceProgressCallback
 from segmentation_tasks.extension.utils.hooks import OTELoggerHook
 from mpa import MPAConstants
 from mpa_tasks.apis import BaseTask, TrainType
@@ -22,6 +22,7 @@ from ote_sdk.configuration import cfg_helper
 from ote_sdk.configuration.helper.utils import ids_to_strings
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.inference_parameters import InferenceParameters
+from ote_sdk.entities.inference_parameters import default_progress_callback as default_infer_progress_callback
 from ote_sdk.entities.label import Domain
 from ote_sdk.entities.metrics import (CurveMetric, InfoMetric, LineChartInfo,
                                       MetricsGroup, Performance, ScoreMetric,
@@ -68,11 +69,13 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         logger.info('infer()')
 
         if inference_parameters is not None:
-            # update_progress_callback = inference_parameters.update_progress
+            update_progress_callback = inference_parameters.update_progress
             is_evaluation = inference_parameters.is_evaluation
         else:
-            # update_progress_callback = default_infer_progress_callback
+            update_progress_callback = default_infer_progress_callback
             is_evaluation = False
+
+        self._time_monitor = InferenceProgressCallback(len(dataset), update_progress_callback)
 
         stage_module = 'SegInferrer'
         self._data_cfg = self._init_test_data_cfg(dataset)

@@ -29,27 +29,6 @@ from ote_sdk.serialization.label_mapper import LabelSchemaMapper
 logger = get_logger()
 
 
-class _MPAUpdateProgressCallbackWrapper(UpdateProgressCallback):
-    """ UpdateProgressCallback wrapper
-        just wrapping the callback instance and provides error free representation as 'pretty_text'
-    """
-
-    def __init__(self, callback, **kwargs):
-        if not callable(callback):
-            raise RuntimeError(f'cannot accept a not callable object!! {callback}')
-        self._callback = callback
-        super().__init__(**kwargs)
-
-    def __repr__(self):
-        return f"'{__name__}._MPAUpdateProgressCallbackWrapper'"
-
-    def __reduce__(self):
-        return (self.__class__, (id(self),))
-
-    def __call__(self, progress: float, score: Optional[float] = None):
-        self._callback(progress, score)
-
-
 class BaseTask:
     def __init__(self, task_config, task_environment: TaskEnvironment):
         self._task_config = task_config
@@ -104,31 +83,9 @@ class BaseTask:
             raise RuntimeError(
                 "'recipe_cfg' is not initialized yet."
                 "call prepare() method before calling this method")
-        # self._stage_module = stage_module
+
         if mode is not None:
             self._mode = mode
-
-        if parameters is not None:
-            if parameters == TrainParameters:
-                hook_name = 'TrainProgressUpdateHook'
-                progress_callback = _MPAUpdateProgressCallbackWrapper(parameters.update_progress)
-                # TODO: update recipe to do RESUME
-                if parameters.resume:
-                    pass
-            elif parameters == InferenceParameters:
-                hook_name = 'InferenceProgressUpdateHook'
-                progress_callback = _MPAUpdateProgressCallbackWrapper(parameters.update_progress)
-        else:
-            hook_name = 'ProgressUpdateHook'
-            progress_callback = None
-        logger.info(f'progress callback = {progress_callback}, hook name = {hook_name}')
-        if progress_callback is not None:
-            progress_update_hook_cfg = ConfigDict(
-                type='ProgressUpdateHook',
-                name=hook_name,
-                callback=progress_callback
-            )
-            update_or_add_custom_hook(self._recipe_cfg, progress_update_hook_cfg)
 
         common_cfg = ConfigDict(dict(output_path=self._output_path))
 

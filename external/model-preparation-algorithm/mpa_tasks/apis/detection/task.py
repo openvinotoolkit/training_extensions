@@ -11,7 +11,7 @@ import numpy as np
 import torch
 from mmcv.utils import ConfigDict
 from detection_tasks.apis.detection.config_utils import remove_from_config
-from detection_tasks.apis.detection.ote_utils import TrainingProgressCallback
+from detection_tasks.apis.detection.ote_utils import TrainingProgressCallback, InferenceProgressCallback
 from detection_tasks.extension.utils.hooks import OTELoggerHook
 from mpa_tasks.apis import BaseTask, TrainType
 from mpa_tasks.apis.detection import DetectionConfig
@@ -67,6 +67,11 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
               ) -> DatasetEntity:
         logger.info('infer()')
 
+        update_progress_callback = default_progress_callback
+        if inference_parameters is not None:
+            update_progress_callback = inference_parameters.update_progress
+
+        self._time_monitor = InferenceProgressCallback(len(dataset), update_progress_callback)
         # If confidence threshold is adaptive then up-to-date value should be stored in the model
         # and should not be changed during inference. Otherwise user-specified value should be taken.
         if not self._hyperparams.postprocessing.result_based_confidence_threshold:
@@ -75,7 +80,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
 
         stage_module = 'DetectionInferrer'
         self._data_cfg = self._init_test_data_cfg(dataset)
-        results = self._run_task(stage_module, mode='train', dataset=dataset)
+        results = self._run_task(stage_module, mode='train', dataset=dataset, parameters=inference_parameters)
         # TODO: InferenceProgressCallback register
         logger.debug(f'result of run_task {stage_module} module = {results}')
         output = results['outputs']
