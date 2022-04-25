@@ -48,8 +48,6 @@ from ote_sdk.utils.segmentation_utils import (
     create_annotation_from_segmentation_map,
     create_hard_prediction_from_soft_prediction)
 
-# from mmdet.apis import export_model
-
 
 logger = get_logger()
 

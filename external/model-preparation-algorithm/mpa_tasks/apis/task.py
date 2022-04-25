@@ -107,14 +107,15 @@ class BaseTask:
         # self._stage_module = stage_module
         if mode is not None:
             self._mode = mode
+
         if parameters is not None:
-            if isinstance(parameters, TrainParameters):
+            if parameters == TrainParameters:
                 hook_name = 'TrainProgressUpdateHook'
                 progress_callback = _MPAUpdateProgressCallbackWrapper(parameters.update_progress)
                 # TODO: update recipe to do RESUME
                 if parameters.resume:
                     pass
-            elif isinstance(parameters, InferenceParameters):
+            elif parameters == InferenceParameters:
                 hook_name = 'InferenceProgressUpdateHook'
                 progress_callback = _MPAUpdateProgressCallbackWrapper(parameters.update_progress)
         else:
@@ -151,6 +152,14 @@ class BaseTask:
             if self._recipe_cfg.get('cleanup_outputs', False):
                 if os.path.exists(self._output_path):
                     shutil.rmtree(self._output_path, ignore_errors=False)
+
+    def _delete_scratch_space(self):
+        """
+        Remove model checkpoints and mpa logs
+        """
+
+        if os.path.exists(self._output_path):
+            shutil.rmtree(self._output_path, ignore_errors=False)
 
     def __del__(self):
         self.finalize()
