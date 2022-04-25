@@ -96,20 +96,20 @@ pip install wheel || exit 1
 pip install --upgrade setuptools || exit 1
 
 if [[ -z $CUDA_VERSION_CODE ]]; then
-  pip install torch==${TORCH_VERSION}+cpu torchvision==${TORCHVISION_VERSION}+cpu -f https://download.pytorch.org/whl/torch_stable.html --no-cache || exit 1
+  pip install torch==${TORCH_VERSION}+cpu torchvision==${TORCHVISION_VERSION}+cpu -f https://download.pytorch.org/whl/torch_stable.html --no-cache -c ${CONSTRAINTS_FILE} || exit 1
   echo torch==${TORCH_VERSION}+cpu >> ${CONSTRAINTS_FILE}
   echo torchvision==${TORCHVISION_VERSION}+cpu >> ${CONSTRAINTS_FILE}
 else
-  pip install torch==${TORCH_VERSION}+cu${CUDA_VERSION_CODE} torchvision==${TORCHVISION_VERSION}+cu${CUDA_VERSION_CODE} -f https://download.pytorch.org/whl/lts/1.8/torch_lts.html --no-cache || exit 1
+  pip install torch==${TORCH_VERSION}+cu${CUDA_VERSION_CODE} torchvision==${TORCHVISION_VERSION}+cu${CUDA_VERSION_CODE} -f https://download.pytorch.org/whl/lts/1.8/torch_lts.html --no-cache -c ${CONSTRAINTS_FILE} || exit 1
   echo torch==${TORCH_VERSION}+cu${CUDA_VERSION_CODE} >> ${CONSTRAINTS_FILE}
   echo torchvision==${TORCHVISION_VERSION}+cu${CUDA_VERSION_CODE} >> ${CONSTRAINTS_FILE}
 fi
 
-pip install -r requirements.txt || exit 1
-pip install -e . || exit 1
+pip install -r requirements.txt -c ${CONSTRAINTS_FILE} || exit 1
+pip install -e . -c ${CONSTRAINTS_FILE} || exit 1
 
 # Install OTE SDK
-pip install -e ../../ote_sdk/ || exit 1
+pip install -e ../../ote_sdk/ -c ${CONSTRAINTS_FILE} || exit 1
 
 deactivate
 

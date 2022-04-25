@@ -102,26 +102,26 @@ else
   export TORCHVISION_VERSION=${TORCHVISION_VERSION}+cu${CUDA_VERSION_CODE}
 fi
 
-pip install torch==${TORCH_VERSION} torchvision==${TORCHVISION_VERSION} -f https://download.pytorch.org/whl/lts/1.8/torch_lts.html --no-cache || exit 1
+pip install torch==${TORCH_VERSION} torchvision==${TORCHVISION_VERSION} -f https://download.pytorch.org/whl/lts/1.8/torch_lts.html --no-cache -c ${CONSTRAINTS_FILE} || exit 1
 echo torch==${TORCH_VERSION} >> ${CONSTRAINTS_FILE}
 echo torchvision==${TORCHVISION_VERSION} >> ${CONSTRAINTS_FILE}
 
-pip install --no-cache-dir mmcv-full==${MMCV_VERSION} || exit 1
+pip install --no-cache-dir mmcv-full==${MMCV_VERSION} -c ${CONSTRAINTS_FILE} || exit 1
 
 # Install other requirements.
 # Install mmpycocotools from source to make sure it is compatible with installed numpy version.
 pip install --no-cache-dir --no-binary=mmpycocotools mmpycocotools || exit 1
 cd submodule
-cat requirements.txt | xargs -n 1 -L 1 pip install --no-cache || exit 1
+cat requirements.txt | xargs -n 1 -L 1 pip install --no-cache -c ${CONSTRAINTS_FILE} || exit 1
 # Install algo backend.
-pip install -e . || exit 1
+pip install -e . -c ${CONSTRAINTS_FILE} || exit 1
 cd ..
 
 # Install OTE SDK
-pip install -e ../../ote_sdk/ || exit 1
+pip install -e ../../ote_sdk/ -c ${CONSTRAINTS_FILE} || exit 1
 
 # Install tasks.
-pip install -e .
+pip install -e . -c ${CONSTRAINTS_FILE}
 
 # Build NNCF extensions
 echo "Build NNCF extensions ..."
