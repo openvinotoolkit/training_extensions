@@ -62,6 +62,8 @@ class BaseTask:
         self._mode = None
         self._time_monitor = None
         self._learning_curves = None
+        self._is_training = False
+        self._should_stop = False
         self.cancel_interface = None
         self.reserved_cancel = False
         self.on_hook_initialized = self.OnHookInitialized(self)
