@@ -50,7 +50,7 @@ class OTEDetectionConfig(ConfigurableParameters):
             warning="Increasing this value may cause the system to use more memory than available, "
             "potentially causing out of memory errors, please update with caution.",
             affects_outcome_of=ModelLifecycle.TRAINING,
-            auto_hpo_state=AutoHPOState.POSSIBLE
+            auto_hpo_state=AutoHPOState.NOT_POSSIBLE
         )
 
         num_iters = configurable_integer(
@@ -69,7 +69,7 @@ class OTEDetectionConfig(ConfigurableParameters):
             header="Learning rate",
             description="Increasing this value will speed up training convergence but might make it unstable.",
             affects_outcome_of=ModelLifecycle.TRAINING,
-            auto_hpo_state=AutoHPOState.POSSIBLE
+            auto_hpo_state=AutoHPOState.NOT_POSSIBLE
         )
 
         learning_rate_warmup_iters = configurable_integer(
