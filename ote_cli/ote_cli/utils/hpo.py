@@ -205,9 +205,6 @@ def run_hpo_trainer(
     task = hpo_impl_class(task_environment=train_env)
     task.prepare_hpo(hp_config)
 
-    if hp_config["resize_width"] == 1:
-        task._config.data.train.adaptive_repeat_times = False
-
     dataset = HpoDataset(dataset, hp_config)
 
     output_model = ModelEntity(
@@ -256,7 +253,7 @@ def get_HPO_train_task(impl_class, task_type):
         def resume(self, resume_path):
             if self._task_type == TaskType.CLASSIFICATION:
                 self._cfg.model.resume = resume_path
-                self._cfg.test.save_initial_metric = True
+                self._cfg.test.test_before_train = True
             elif self._task_type == TaskType.DETECTION:
                 self._config.resume_from = resume_path
                 self._config.data.train.adaptive_repeat_times = False
@@ -552,8 +549,6 @@ class HpoManager:
                 break
 
         best_config = self.hpo.get_best_config()
-
-        # Resume weight is already over warm-up stage
         if task_type == TaskType.DETECTION:
             best_config["learning_parameters.learning_rate_warmup_iters"] = 0
         if task_type == TaskType.SEGMENTATION:

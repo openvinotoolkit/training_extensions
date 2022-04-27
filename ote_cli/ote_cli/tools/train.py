@@ -164,12 +164,9 @@ def main():
         )
 
     if args.enable_hpo:
-        hpo_weight_path = run_hpo(args, environment, dataset, template.task_type)
-
-    task = task_class(task_environment=environment)
-
-    if args.enable_hpo:
-        task._config.resume_from = hpo_weight_path
+        task = run_hpo(args, environment, dataset, template.task_type)
+    else:
+        task = task_class(task_environment=environment)
 
     output_model = ModelEntity(dataset, environment.get_model_configuration())
 
