@@ -11,10 +11,11 @@ from typing import Any, Callable, Dict, List, Optional
 
 import pytest
 from ote_sdk.entities.datasets import DatasetEntity
+from ote_sdk.entities.label import Domain
 from ote_sdk.entities.label_schema import LabelSchemaEntity
 from ote_sdk.entities.subset import Subset
 
-from mpa_tasks.extensions.datasets.mpa_seg_dataset import MPASegIncrDataset#load_dataset_items
+from detection_tasks.extension.datasets.data_utils import load_dataset_items_coco_format
 
 from ote_sdk.test_suite.e2e_test_system import DataCollector, e2e_pytest_performance
 from ote_sdk.test_suite.training_tests_common import (make_path_be_abs,
@@ -36,7 +37,7 @@ def DATASET_PARAMETERS_FIELDS() -> List[str]:
                      'images_val_dir',
                      'annotations_test',
                      'images_test_dir',
-                     'pre_trained_model'
+                     'pre_trained_model',
                      ])
 
 DatasetParameters = namedtuple('DatasetParameters', DATASET_PARAMETERS_FIELDS())
@@ -60,60 +61,88 @@ def _get_dataset_params_from_dataset_definitions(dataset_definitions, dataset_na
     return params
 
 
-def _create_segmentation_dataset_and_labels_schema(dataset_params):
+def _create_object_detection_dataset_and_labels_schema(dataset_params):
     logger.debug(f'Using for train annotation file {dataset_params.annotations_train}')
     logger.debug(f'Using for val annotation file {dataset_params.annotations_val}')
     labels_list = []
-    items = MPASegIncrDataset.load_dataset_items(
+    items = []
+    items.extend(load_dataset_items_coco_format(
         ann_file_path=dataset_params.annotations_train,
         data_root_dir=dataset_params.images_train_dir,
+        domain=Domain.DETECTION,
         subset=Subset.TRAINING,
-        labels_list=labels_list)
-    items.extend(MPASegIncrDataset.load_dataset_items(
+        labels_list=labels_list))
+    items.extend(load_dataset_items_coco_format(
         ann_file_path=dataset_params.annotations_val,
         data_root_dir=dataset_params.images_val_dir,
+        domain=Domain.DETECTION,
         subset=Subset.VALIDATION,
         labels_list=labels_list))
-    items.extend(MPASegIncrDataset.load_dataset_items(
+    items.extend(load_dataset_items_coco_format(
         ann_file_path=dataset_params.annotations_test,
         data_root_dir=dataset_params.images_test_dir,
+        domain=Domain.DETECTION,
         subset=Subset.TESTING,
         labels_list=labels_list))
     dataset = DatasetEntity(items=items)
-    labels_schema = LabelSchemaEntity.from_labels(labels_list)
+    labels_schema = LabelSchemaEntity.from_labels(dataset.get_labels())
     return dataset, labels_schema
 
 
-class SegmentationTrainingTestParameters(DefaultOTETestCreationParametersInterface):
+class DetectionClsIncrTrainingTestParameters(DefaultOTETestCreationParametersInterface):
 
     def test_bunches(self) -> List[Dict[str, Any]]:
         test_bunches = [
                 dict(
                     model_name=[
-                       'ClassIncremental_Semantic_Segmentation_Lite-HRNet-18_OCR',
+                       'ClassIncremental_Object_Detection_Gen3_ATSS',
                     ],
-                    dataset_name='voc_seg_person_car',
+                    dataset_name='coco_det_person_car',
                     usecase='precommit',
                 ),
                 dict(
                     model_name=[
-                       'ClassIncremental_Semantic_Segmentation_Lite-HRNet-18_OCR',
+                       'ClassIncremental_Object_Detection_Gen3_ATSS',
                     ],
-                    dataset_name='voc_seg_person_car',
+                    dataset_name='coco_det_person_car',
                     num_training_iters=KEEP_CONFIG_FIELD_VALUE,
                     batch_size=KEEP_CONFIG_FIELD_VALUE,
                     usecase=REALLIFE_USECASE_CONSTANT,
                 ),
+
         ]
         return deepcopy(test_bunches)
 
 
-class TestOTEReallifeSegmentation(OTETrainingTestInterface):
+def get_dummy_compressed_model(task):
+    """
+    Return compressed model without initialization
+    """
+    # pylint:disable=protected-access
+    from mmdet.integration.nncf import wrap_nncf_model
+    from mmdet.apis.fake_input import get_fake_input
+
+    # Disable quantaizers initialization
+    for compression in task._config.nncf_config['compression']:
+        if compression["algorithm"] == "quantization":
+            compression["initializer"] = {
+                "batchnorm_adaptation": {
+                    "num_bn_adaptation_samples": 0
+                }
+            }
+
+    _, compressed_model = wrap_nncf_model(task._model,
+                                          task._config,
+                                          get_fake_input_func=get_fake_input)
+    return compressed_model
+
+
+class TestOTEReallifeObjectDetectionClsIncr(OTETrainingTestInterface):
     """
     The main class of running test in this file.
     """
     PERFORMANCE_RESULTS = None # it is required for e2e system
-    helper = OTETestHelper(SegmentationTrainingTestParameters())
+    helper = OTETestHelper(DetectionClsIncrTrainingTestParameters())
 
     @classmethod
     def get_list_of_tests(cls, usecase: Optional[str] = None):
@@ -149,7 +178,7 @@ class TestOTEReallifeSegmentation(OTETrainingTestInterface):
             template_path = make_path_be_abs(template_paths[model_name], template_paths[ROOT_PATH_KEY])
 
             logger.debug('training params factory: Before creating dataset and labels_schema')
-            dataset, labels_schema = _create_segmentation_dataset_and_labels_schema(dataset_params)
+            dataset, labels_schema = _create_object_detection_dataset_and_labels_schema(dataset_params)
             logger.debug('training params factory: After creating dataset and labels_schema')
 
             return {
@@ -159,7 +188,39 @@ class TestOTEReallifeSegmentation(OTETrainingTestInterface):
                 'num_training_iters': num_training_iters,
                 'batch_size': batch_size,
             }
-       
+
+        def _nncf_graph_params_factory() -> Dict:
+            if dataset_definitions is None:
+                pytest.skip('The parameter "--dataset-definitions" is not set')
+
+            model_name = test_parameters['model_name']
+            dataset_name = test_parameters['dataset_name']
+
+            dataset_params = _get_dataset_params_from_dataset_definitions(dataset_definitions, dataset_name)
+
+            if model_name not in template_paths:
+                raise ValueError(f'Model {model_name} is absent in template_paths, '
+                                 f'template_paths.keys={list(template_paths.keys())}')
+            template_path = make_path_be_abs(template_paths[model_name], template_paths[ROOT_PATH_KEY])
+
+            logger.debug('training params factory: Before creating dataset and labels_schema')
+            dataset, labels_schema = _create_object_detection_dataset_and_labels_schema(dataset_params)
+            logger.debug('training params factory: After creating dataset and labels_schema')
+
+            return {
+                'dataset': dataset,
+                'labels_schema': labels_schema,
+                'template_path': template_path,
+                'reference_dir': ote_current_reference_dir_fx,
+                'fn_get_compressed_model': get_dummy_compressed_model,
+            }
+
+        params_factories_for_test_actions = {
+            'training': _training_params_factory,
+            'nncf_graph': _nncf_graph_params_factory,
+        }
+        logger.debug('params_factories_for_test_actions_fx: end')
+        return params_factories_for_test_actions
 
     @pytest.fixture
     def test_case_fx(self, current_test_parameters_fx, params_factories_for_test_actions_fx):
@@ -186,7 +247,7 @@ class TestOTEReallifeSegmentation(OTETrainingTestInterface):
         setup['test_type'] = os.environ.get('TT_TEST_TYPE', 'no-test-type') # TODO: get from e2e test type
         setup['scenario'] = 'api' # TODO(lbeynens): get from a fixture!
         setup['test'] = request.node.name
-        setup['subject'] = 'segmentation'
+        setup['subject'] = 'custom-object-detection'
         setup['project'] = 'ote'
         if 'test_parameters' in setup:
             assert isinstance(setup['test_parameters'], dict)
