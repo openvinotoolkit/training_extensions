@@ -127,14 +127,7 @@ class OTEDetectionInferenceTask(IInferenceTask, IExportTask, IEvaluationTask, IU
             model = self._create_model(self._config, from_scratch=True)
 
             try:
-                if "model" in model_data:
-                    load_state_dict(model, model_data['model'])
-                elif "state_dict" in model_data:
-                    load_state_dict(model, model_data['state_dict'])
-
-                if "load_from" in self._config:
-                    self._config.load_from = None
-
+                load_state_dict(model, model_data['model'])
                 logger.info(f"Loaded model weights from Task Environment")
                 logger.info(f"Model architecture: {self._model_name}")
             except BaseException as ex:
@@ -264,11 +257,11 @@ class OTEDetectionInferenceTask(IInferenceTask, IExportTask, IEvaluationTask, IU
         logger.info(f'Confidence threshold {self.confidence_threshold}')
         model = self._model
         with model.register_forward_pre_hook(pre_hook), model.register_forward_hook(hook):
-            prediction_results, metric_score = self._infer_detector(model, self._config, dataset, dump_features=True, eval=True)
+            prediction_results, _ = self._infer_detector(model, self._config, dataset, dump_features=True, eval=False)
         self._add_predictions_to_dataset(prediction_results, dataset, self.confidence_threshold)
 
         logger.info('Inference completed')
-        return dataset, metric_score
+        return dataset
 
 
     @staticmethod
