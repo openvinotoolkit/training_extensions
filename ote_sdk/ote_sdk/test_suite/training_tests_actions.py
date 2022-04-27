@@ -11,6 +11,7 @@ from copy import deepcopy
 from typing import List, Optional, Type
 
 import pytest
+from ote_cli.utils.io import read_binary, read_label_schema
 
 from ote_sdk.configuration.helper import create as ote_sdk_configuration_helper_create
 from ote_sdk.entities.inference_parameters import InferenceParameters
@@ -25,10 +26,7 @@ from ote_sdk.usecases.adapters.model_adapter import ModelAdapter
 from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType
 from ote_sdk.usecases.tasks.interfaces.optimization_interface import OptimizationType
 from ote_sdk.utils.importing import get_impl_class
-from ote_cli.utils.io import (
-    read_binary,
-    read_label_schema,
-)
+
 from .e2e_test_system import DataCollector
 from .logging import get_logger
 from .training_tests_common import (
@@ -98,7 +96,13 @@ class OTETestTrainingAction(BaseOTETestAction):
     _name = "training"
 
     def __init__(
-        self, dataset, labels_schema, template_path, num_training_iters, batch_size, checkpoint=None
+        self,
+        dataset,
+        labels_schema,
+        template_path,
+        num_training_iters,
+        batch_size,
+        checkpoint=None,
     ):
         self.dataset = dataset
         self.labels_schema = labels_schema
@@ -157,7 +161,7 @@ class OTETestTrainingAction(BaseOTETestAction):
         self.environment, self.task = create_environment_and_task(
             params, self.labels_schema, self.model_template
         )
-        model_adapters=None
+        model_adapters = None
 
         if self.checkpoint is not None:
             model_adapters = {
@@ -171,7 +175,7 @@ class OTETestTrainingAction(BaseOTETestAction):
                         )
                     }
                 )
-            
+
         logger.debug("Train model")
         self.output_model = ModelEntity(
             train_dataset=self.dataset,
