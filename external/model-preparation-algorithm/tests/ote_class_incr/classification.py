@@ -86,7 +86,7 @@ def _get_dataset_params_from_dataset_definitions(dataset_definitions, dataset_na
     params = DatasetParameters(**training_parameters_fields)
     return params
 
-def _create_classification_dataset_and_labels_schema(dataset_params):
+def _create_classification_dataset_and_labels_schema(dataset_params, model_name):
     logger.debug(f'Using for train annotation file {dataset_params.annotations_train}')
     logger.debug(f'Using for val annotation file {dataset_params.annotations_val}')
     task_type = TaskType.CLASSIFICATION
@@ -99,8 +99,9 @@ def _create_classification_dataset_and_labels_schema(dataset_params):
         val_subset={"ann_file": dataset_params.annotations_val, "data_root": dataset_params.images_val_dir},
         test_subset={"ann_file": dataset_params.annotations_test, "data_root": dataset_params.images_test_dir}
     )
-    ckpt_path = dataset_params.pre_trained_model
-    
+    ckpt_path = osp.join(osp.join(dataset_params.pre_trained_model.strip('./'), model_name),"weights.pth")
+    logger.info(f"Pretrained path : {ckpt_path}")
+
     labels_schema = generate_label_schema(dataset, task_type)
     return dataset, labels_schema, ckpt_path
 
@@ -218,7 +219,7 @@ class TestOTEReallifeClassification(OTETrainingTestInterface):
             template_path = make_path_be_abs(template_paths[model_name], template_paths[ROOT_PATH_KEY])
 
             logger.debug('training params factory: Before creating dataset and labels_schema')
-            dataset, labels_schema, ckpt_path = _create_classification_dataset_and_labels_schema(dataset_params)
+            dataset, labels_schema, ckpt_path = _create_classification_dataset_and_labels_schema(dataset_params, model_name)
             checkpoint = ckpt_path
             
             logger.debug('training params factory: After creating dataset and labels_schema')

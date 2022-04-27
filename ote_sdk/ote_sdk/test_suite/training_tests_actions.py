@@ -11,6 +11,7 @@ from copy import deepcopy
 from typing import List, Optional, Type
 
 import pytest
+from ote_cli.utils.io import read_binary, read_label_schema
 
 from ote_sdk.configuration.helper import create as ote_sdk_configuration_helper_create
 from ote_sdk.entities.inference_parameters import InferenceParameters
@@ -25,10 +26,7 @@ from ote_sdk.usecases.adapters.model_adapter import ModelAdapter
 from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType
 from ote_sdk.usecases.tasks.interfaces.optimization_interface import OptimizationType
 from ote_sdk.utils.importing import get_impl_class
-from ote_cli.utils.io import (
-    read_binary,
-    read_label_schema,
-)
+
 from .e2e_test_system import DataCollector
 from .logging import get_logger
 from .training_tests_common import (
@@ -80,13 +78,24 @@ class BaseOTETestAction(ABC):
         raise NotImplementedError("The main action method is not implemented")
 
 
-def create_environment_and_task(params, labels_schema, model_template):
+def create_environment_and_task(
+    params, labels_schema, model_template, dataset, model_adapters=None
+):
+
     environment = TaskEnvironment(
         model=None,
         hyper_parameters=params,
         label_schema=labels_schema,
         model_template=model_template,
     )
+
+    if model_adapters is not None:
+        environment.model = ModelEntity(
+            train_dataset=dataset,
+            configuration=environment.get_model_configuration(),
+            model_adapters=model_adapters,
+        )
+
     logger.info("Create base Task")
     task_impl_path = model_template.entrypoints.base
     task_cls = get_impl_class(task_impl_path)
@@ -98,7 +107,13 @@ class OTETestTrainingAction(BaseOTETestAction):
     _name = "training"
 
     def __init__(
-        self, dataset, labels_schema, template_path, num_training_iters, batch_size, checkpoint=None
+        self,
+        dataset,
+        labels_schema,
+        template_path,
+        num_training_iters,
+        batch_size,
+        checkpoint=None,
     ):
         self.dataset = dataset
         self.labels_schema = labels_schema
@@ -153,13 +168,9 @@ class OTETestTrainingAction(BaseOTETestAction):
                 f"{params.learning_parameters.batch_size}"
             )
 
-        logger.debug("Setup environment")
-        self.environment, self.task = create_environment_and_task(
-            params, self.labels_schema, self.model_template
-        )
-        model_adapters=None
-
-        if self.checkpoint is not None:
+        model_adapters = None
+        if isinstance(self.checkpoint, str):
+            logger.debug("Load pretrained model")
             model_adapters = {
                 "weights.pth": ModelAdapter(read_binary(self.checkpoint)),
             }
@@ -171,12 +182,18 @@ class OTETestTrainingAction(BaseOTETestAction):
                         )
                     }
                 )
-            
-        logger.debug("Train model")
+
+        self.environment, self.task = create_environment_and_task(
+            params,
+            self.labels_schema,
+            self.model_template,
+            self.dataset,
+            model_adapters,
+        )
+
         self.output_model = ModelEntity(
-            train_dataset=self.dataset,
-            configuration=self.environment.get_model_configuration(),
-            model_adapters=model_adapters,
+            self.dataset,
+            self.environment.get_model_configuration(),
         )
 
         self.copy_hyperparams = deepcopy(self.task._hyperparams)
