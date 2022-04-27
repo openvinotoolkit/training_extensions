@@ -79,10 +79,16 @@ def run_hpo(args, environment, dataset, task_type):
 
         environment.set_hyper_parameters(hyper_parameters)
 
+        task_class = get_impl_class(environment.model_template.entrypoints.base)
+        task_class = get_HPO_train_task(task_class, task_type)
+
+        task = task_class(task_environment=environment)
+        task.resume(hpo_weight_path)
+
         if args.load_weights:
             environment.model.confiugration.configurable_parameters = hyper_parameters
 
-        return hpo_weight_path
+        return task
 
 
 def get_cuda_device_list():
@@ -192,28 +198,10 @@ def run_hpo_trainer(
     }
 
     impl_class = get_impl_class(train_env.model_template.entrypoints.base)
-    task = impl_class(task_environment=train_env)
 
-    if task_type == TaskType.CLASSIFICATION:
-        task._scratch_space = osp.join(
-            osp.dirname(hp_config["file_path"]),
-            str(hp_config["trial_id"])
-        )
-        task._cfg.data.save_dir = task._scratch_space
-        task._cfg.model.save_all_chkpts = True
-    elif task_type in [TaskType.DETECTION, TaskType.SEGMENTATION]:
-        task._config.work_dir = osp.join(
-            osp.dirname(hp_config["file_path"]),
-            str(hp_config["trial_id"])
-        )
-        task._config.checkpoint_config["max_keep_ckpts"] = hp_config["iterations"] + 10
-        task._config.checkpoint_config["interval"] = 1
-
-    if "bracket" in hp_config:
-        if task_type == TaskType.DETECTION:
-            task._config.data.train.adaptive_repeat_times = False
-        elif task_type == TaskType.SEGMENTATION:
-            task._config.data.train.adaptive_repeat = False
+    hpo_impl_class = get_HPO_train_task(impl_class, task_type)
+    task = hpo_impl_class(task_environment=train_env)
+    task.prepare_hpo(hp_config)
 
     dataset = HpoDataset(dataset, hp_config)
 
@@ -253,6 +241,47 @@ def exec_hpo_trainer(arg_file_name, alloc_gpus):
     )
     time.sleep(10)
 
+
+def get_HPO_train_task(impl_class, task_type):
+    class HpoTrainTask(impl_class):
+        def __init__(self, task_environment):
+            super().__init__(task_environment)
+            self._task_type = task_type
+
+        def resume(self, resume_path):
+            if self._task_type == TaskType.CLASSIFICATION:
+                self._cfg.model.resume = resume_path
+                self._cfg.test.test_before_train = True
+            elif self._task_type == TaskType.DETECTION:
+                self._config.resume_from = resume_path
+                self._config.data.train.adaptive_repeat_times = False
+            elif self._task_type == TaskType.SEGMENTATION:
+                self._config.resume_from = resume_path
+                self._config.data.train.adaptive_repeat = False
+
+        def prepare_hpo(self, hp_config):
+            if self._task_type == TaskType.CLASSIFICATION:
+                self._scratch_space = osp.join(
+                    osp.dirname(hp_config["file_path"]),
+                    str(hp_config["trial_id"])
+                )
+                self._cfg.data.save_dir = self._scratch_space
+                self._cfg.model.save_all_chkpts = True
+            elif self._task_type in [TaskType.DETECTION, TaskType.SEGMENTATION]:
+                self._config.work_dir = osp.join(
+                    osp.dirname(hp_config["file_path"]),
+                    str(hp_config["trial_id"])
+                )
+                self._config.checkpoint_config["max_keep_ckpts"] = hp_config["iterations"] + 10
+                self._config.checkpoint_config["interval"] = 1
+
+            if "bracket" in hp_config:
+                if self._task_type == TaskType.DETECTION:
+                    self._config.data.train.adaptive_repeat_times = False
+                elif self._task_type == TaskType.SEGMENTATION:
+                    self._config.data.train.adaptive_repeat = False
+
+    return HpoTrainTask
 
 class HpoCallback(UpdateProgressCallback):
     """Callback class to report score to hpopt"""
@@ -346,13 +375,14 @@ class HpoManager:
         elif self.algo == "asha":
             hpopt_arguments["num_brackets"] = hpopt_cfg.get("num_brackets")
             hpopt_arguments["reduction_factor"] = hpopt_cfg.get("reduction_factor")
+            hpopt_arguments["min_iterations"] = hpopt_cfg.get("min_iterations")
             hpopt_arguments["num_trials"] = hpopt_cfg.get("num_trials")
             hpopt_arguments["num_workers"] = (
                 num_available_gpus // self.num_gpus_per_trial
             )
-            if "min_iterations" in hpopt_cfg:
-                hpopt_arguments["min_iterations"] = hpopt_cfg.get("min_iterations")
-            else:
+
+            # Prevent each trials from stopped during warmup stage
+            if "min_iterations" not in hpopt_cfg:
                 task_type = self.environment.model_template.task_type
                 if task_type == TaskType.CLASSIFICATION:
                     with open(osp.join(osp.dirname(
@@ -430,7 +460,7 @@ class HpoManager:
 
     def run(self):
         """Execute HPO according to configuration"""
-
+        task_type = self.environment.model_template.task_type
         proc_list = []
         gpu_alloc_list = []
         num_workers = 1
@@ -482,7 +512,7 @@ class HpoManager:
                     ),
                     "model_template": self.environment.model_template,
                     "dataset_paths": self.dataset_paths,
-                    "task_type": self.environment.model_template.task_type,
+                    "task_type": task_type,
                 }
 
                 pickle_path = HpoManager.safe_pickle_dump(
@@ -508,10 +538,9 @@ class HpoManager:
                 break
 
         best_config = self.hpo.get_best_config()
-
-        if self.environment.model_template.task_type == TaskType.DETECTION:
+        if task_type == TaskType.DETECTION:
             best_config["learning_parameters.learning_rate_warmup_iters"] = 0
-        if self.environment.model_template.task_type == TaskType.SEGMENTATION:
+        if task_type == TaskType.SEGMENTATION:
             best_config["learning_parameters.learning_rate_fixed_iters"] = 0
             best_config["learning_parameters.learning_rate_warmup_iters"] = 0
 
@@ -523,13 +552,16 @@ class HpoManager:
         print("Best Hyper-parameters")
         print(best_config)
 
-        if self.environment.model_template.task_type == TaskType.CLASSIFICATION:
-            hpo_weight_path = osp.join(
-                self.hpo.save_path,
-                str(self.hpo.hpo_status["best_config_id"]),
-                "best.pth"
+        if task_type == TaskType.CLASSIFICATION:
+            best_config_id = self.hpo.hpo_status["best_config_id"]
+            hpo_weight_path = osp.realpath(
+                osp.join(
+                    self.hpo.save_path,
+                    str(best_config_id),
+                    "best.pth"
+                )
             )
-        elif self.environment.model_template.task_type in [TaskType.DETECTION, TaskType.SEGMENTATION]:
+        elif task_type in [TaskType.DETECTION, TaskType.SEGMENTATION]:
             hpo_weight_path = osp.join(
                 self.hpo.save_path,
                 str(self.hpo.hpo_status["best_config_id"]),
