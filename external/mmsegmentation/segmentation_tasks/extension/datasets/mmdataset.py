@@ -14,7 +14,7 @@
 
 import json
 import os
-from typing import List, Optional
+from typing import Any, Dict, List, Optional, Sequence
 
 import cv2
 import numpy as np
@@ -28,12 +28,20 @@ from ote_sdk.entities.label import LabelEntity, Domain
 from ote_sdk.entities.scored_label import ScoredLabel
 from ote_sdk.entities.shapes.polygon import Point, Polygon
 from ote_sdk.entities.subset import Subset
+from ote_sdk.utils.argument_checks import (
+    DatasetParamTypeCheck,
+    DirectoryPathCheck,
+    JsonFilePathCheck,
+    OptionalDirectoryPathCheck,
+    check_input_parameters_type,
+)
 
 from mmseg.datasets.builder import DATASETS
 from mmseg.datasets.custom import CustomDataset
 from mmseg.datasets.pipelines import Compose
 
 
+@check_input_parameters_type()
 def get_annotation_mmseg_format(dataset_item: DatasetItemEntity, labels: List[LabelEntity]) -> dict:
     """
     Function to convert a OTE annotation to mmsegmentation format. This is used both
@@ -99,7 +107,9 @@ class OTEDataset(CustomDataset):
 
             return data_info
 
-    def __init__(self, ote_dataset: DatasetEntity, pipeline, classes=None, test_mode: bool = False):
+    @check_input_parameters_type({"ote_dataset": DatasetParamTypeCheck})
+    def __init__(self, ote_dataset: DatasetEntity, pipeline: Sequence[dict], classes: Optional[List[str]] = None,
+                 test_mode: bool = False):
         self.ote_dataset = ote_dataset
         self.test_mode = test_mode
 
@@ -124,7 +134,8 @@ class OTEDataset(CustomDataset):
         self.pipeline = Compose(pipeline)
 
     @staticmethod
-    def filter_labels(all_labels, label_names):
+    @check_input_parameters_type()
+    def filter_labels(all_labels: List[LabelEntity], label_names: List[str]):
         filtered_labels = []
         for label_name in label_names:
             matches = [label for label in all_labels if label.name == label_name]
@@ -142,11 +153,13 @@ class OTEDataset(CustomDataset):
 
         return len(self.data_infos)
 
-    def pre_pipeline(self, results):
+    @check_input_parameters_type()
+    def pre_pipeline(self, results: Dict[str, Any]):
         """Prepare results dict for pipeline."""
 
         results['seg_fields'] = []
 
+    @check_input_parameters_type()
     def prepare_train_img(self, idx: int) -> dict:
         """Get training data and annotations after pipeline.
 
@@ -164,6 +177,7 @@ class OTEDataset(CustomDataset):
 
         return out
 
+    @check_input_parameters_type()
     def prepare_test_img(self, idx: int) -> dict:
         """Get testing data after pipeline.
 
@@ -181,7 +195,8 @@ class OTEDataset(CustomDataset):
 
         return out
 
-    def get_ann_info(self, idx):
+    @check_input_parameters_type()
+    def get_ann_info(self, idx: int):
         """
         This method is used for evaluation of predictions. The CustomDataset class implements a method
         CustomDataset.evaluate, which uses the class method get_ann_info to retrieve annotations.
@@ -195,7 +210,8 @@ class OTEDataset(CustomDataset):
 
         return ann_info
 
-    def get_gt_seg_maps(self, efficient_test=False):
+    @check_input_parameters_type()
+    def get_gt_seg_maps(self, efficient_test: bool = False):
         """Get ground truth segmentation maps for evaluation."""
 
         gt_seg_maps = []
@@ -206,6 +222,7 @@ class OTEDataset(CustomDataset):
         return gt_seg_maps
 
 
+@check_input_parameters_type({"annot_path": JsonFilePathCheck})
 def get_classes_from_annotation(annot_path):
     with open(annot_path) as input_stream:
         content = json.load(input_stream)
@@ -216,6 +233,7 @@ def get_classes_from_annotation(annot_path):
     return categories
 
 
+@check_input_parameters_type({"value": OptionalDirectoryPathCheck})
 def abs_path_if_valid(value):
     if value:
         return os.path.abspath(value)
@@ -223,6 +241,7 @@ def abs_path_if_valid(value):
         return None
 
 
+@check_input_parameters_type()
 def create_annotation_from_hard_seg_map(hard_seg_map: np.ndarray, labels: List[LabelEntity]):
     height, width = hard_seg_map.shape[:2]
     unique_labels = np.unique(hard_seg_map)
@@ -269,6 +288,7 @@ def create_annotation_from_hard_seg_map(hard_seg_map: np.ndarray, labels: List[L
     return annotations
 
 
+@check_input_parameters_type({"ann_dir": OptionalDirectoryPathCheck})
 def load_labels_from_annotation(ann_dir):
     if ann_dir is None:
         return []
@@ -279,7 +299,8 @@ def load_labels_from_annotation(ann_dir):
     return labels
 
 
-def add_labels(cur_labels, new_labels):
+@check_input_parameters_type()
+def add_labels(cur_labels: List[LabelEntity], new_labels: List[tuple]):
     for label_name, label_id in new_labels:
         matching_labels = [label for label in cur_labels if label.name == label_name]
         if len(matching_labels) > 1:
@@ -292,19 +313,22 @@ def add_labels(cur_labels, new_labels):
             cur_labels.append(label)
 
 
-def check_labels(cur_labels, new_labels):
+@check_input_parameters_type()
+def check_labels(cur_labels: List[LabelEntity], new_labels: List[tuple]):
     cur_names = {label.name for label in cur_labels}
     new_names = {label[0] for label in new_labels}
     if cur_names != new_names:
         raise ValueError("Class names don't match from file to file")
 
 
-def get_extended_label_names(labels):
+@check_input_parameters_type()
+def get_extended_label_names(labels: List[LabelEntity]):
     target_labels = [v.name for v in sorted(labels, key=lambda x: x.id)]
     all_labels = ['background'] + target_labels
     return all_labels
 
 
+@check_input_parameters_type({"ann_file_path": DirectoryPathCheck, "data_root_dir": DirectoryPathCheck})
 def load_dataset_items(ann_file_path: str,
                        data_root_dir: str,
                        subset: Subset = Subset.NONE,
