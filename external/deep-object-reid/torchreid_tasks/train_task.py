@@ -18,6 +18,7 @@ import os
 import re
 from copy import deepcopy
 from typing import List, Optional
+import shutil
 
 import torchreid
 from ote_sdk.entities.datasets import DatasetEntity
@@ -139,6 +140,7 @@ class OTEClassificationTrainingTask(OTEClassificationInferenceTask, ITrainingTas
                 scheduler=scheduler,
                 device=device_
             )
+            shutil.copy(self._cfg.model.resume, f"{self._scratch_space}/best.pth")
 
         if self._cfg.use_gpu:
             main_device_ids = list(range(self.num_devices))
