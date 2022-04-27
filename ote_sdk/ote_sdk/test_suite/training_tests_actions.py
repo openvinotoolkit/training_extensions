@@ -4,6 +4,7 @@
 
 import importlib
 import os
+import os.path as osp
 from abc import ABC, abstractmethod
 from collections import OrderedDict
 from copy import deepcopy
@@ -19,10 +20,15 @@ from ote_sdk.entities.optimization_parameters import OptimizationParameters
 from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.subset import Subset
 from ote_sdk.entities.task_environment import TaskEnvironment
+from ote_sdk.serialization.label_mapper import label_schema_to_bytes
+from ote_sdk.usecases.adapters.model_adapter import ModelAdapter
 from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType
 from ote_sdk.usecases.tasks.interfaces.optimization_interface import OptimizationType
 from ote_sdk.utils.importing import get_impl_class
-
+from ote_cli.utils.io import (
+    read_binary,
+    read_label_schema,
+)
 from .e2e_test_system import DataCollector
 from .logging import get_logger
 from .training_tests_common import (
@@ -92,13 +98,14 @@ class OTETestTrainingAction(BaseOTETestAction):
     _name = "training"
 
     def __init__(
-        self, dataset, labels_schema, template_path, num_training_iters, batch_size
+        self, dataset, labels_schema, template_path, num_training_iters, batch_size, checkpoint=None
     ):
         self.dataset = dataset
         self.labels_schema = labels_schema
         self.template_path = template_path
         self.num_training_iters = num_training_iters
         self.batch_size = batch_size
+        self.checkpoint = checkpoint
 
     def _get_training_performance_as_score_name_value(self):
         training_performance = getattr(self.output_model, "performance", None)
@@ -150,11 +157,26 @@ class OTETestTrainingAction(BaseOTETestAction):
         self.environment, self.task = create_environment_and_task(
             params, self.labels_schema, self.model_template
         )
+        model_adapters=None
 
+        if self.checkpoint is not None:
+            model_adapters = {
+                "weights.pth": ModelAdapter(read_binary(self.checkpoint)),
+            }
+            if osp.exists(osp.join(osp.dirname(self.checkpoint), "label_schema.json")):
+                model_adapters.update(
+                    {
+                        "label_schema.json": ModelAdapter(
+                            label_schema_to_bytes(read_label_schema(self.checkpoint))
+                        )
+                    }
+                )
+            
         logger.debug("Train model")
         self.output_model = ModelEntity(
-            self.dataset,
-            self.environment.get_model_configuration(),
+            train_dataset=self.dataset,
+            configuration=self.environment.get_model_configuration(),
+            model_adapters=model_adapters,
         )
 
         self.copy_hyperparams = deepcopy(self.task._hyperparams)

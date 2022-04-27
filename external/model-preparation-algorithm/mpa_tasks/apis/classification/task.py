@@ -15,6 +15,7 @@ from ote_sdk.configuration.helper.utils import ids_to_strings
 
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.inference_parameters import InferenceParameters, default_progress_callback
+from ote_sdk.entities.train_parameters import default_progress_callback as train_default_progress_callback
 from ote_sdk.entities.model import ModelEntity, ModelPrecision  # ModelStatus
 from ote_sdk.entities.resultset import ResultSetEntity
 from mmcv.utils import ConfigDict
@@ -239,7 +240,7 @@ class ClassificationTrainTask(ClassificationInferenceTask):
             return
 
         # Set OTE LoggerHook & Time Monitor
-        update_progress_callback = default_progress_callback
+        update_progress_callback = train_default_progress_callback
         if train_parameters is not None:
             update_progress_callback = train_parameters.update_progress
         self._time_monitor = TrainingProgressCallback(update_progress_callback)
