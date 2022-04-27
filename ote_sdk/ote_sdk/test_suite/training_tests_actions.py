@@ -169,7 +169,7 @@ class OTETestTrainingAction(BaseOTETestAction):
             )
 
         model_adapters = None
-        if isinstance(self.checkpoint, str):
+        if self.checkpoint is not None:
             logger.debug("Load pretrained model")
             model_adapters = {
                 "weights.pth": ModelAdapter(read_binary(self.checkpoint)),
@@ -197,6 +197,8 @@ class OTETestTrainingAction(BaseOTETestAction):
         )
 
         self.copy_hyperparams = deepcopy(self.task._hyperparams)
+
+        logger.debug("Train model")
 
         try:
             self.task.train(self.dataset, self.output_model)
