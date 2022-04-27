@@ -25,7 +25,7 @@ from typing import Any, Callable, Dict, List, Optional, Type
 import pytest
 from ote_sdk.entities.subset import Subset
 from ote_sdk.entities.model_template import TaskType
-from ote_sdk.entities.model import ModelEntity, ModelFormat, ModelOptimizationType
+from ote_sdk.entities.label_schema import LabelSchemaEntity
 from ote_sdk.configuration.helper import create as ote_sdk_configuration_helper_create
 from ote_sdk.usecases.tasks.interfaces.optimization_interface import OptimizationType
 from ote_sdk.utils.importing import get_impl_class
@@ -51,8 +51,7 @@ from ote_sdk.test_suite.training_tests_actions import (OTETestTrainingAction,
                                                        OTETestPotEvaluationAction,
                                                        create_environment_and_task)
 
-from ote_cli.datasets import get_dataset_class
-from ote_cli.utils.io import generate_label_schema
+from torchreid_tasks.utils import ClassificationDatasetAdapter
 
 logger = logging.getLogger(__name__)
 
@@ -89,20 +88,19 @@ def _get_dataset_params_from_dataset_definitions(dataset_definitions, dataset_na
 def _create_classification_dataset_and_labels_schema(dataset_params, model_name):
     logger.debug(f'Using for train annotation file {dataset_params.annotations_train}')
     logger.debug(f'Using for val annotation file {dataset_params.annotations_val}')
-    task_type = TaskType.CLASSIFICATION
-    dataset_class = get_dataset_class(task_type)
-    dataset = dataset_class(
-        train_subset={
-            "ann_file": dataset_params.annotations_train,
-            "data_root": dataset_params.images_train_dir,
-        },
-        val_subset={"ann_file": dataset_params.annotations_val, "data_root": dataset_params.images_val_dir},
-        test_subset={"ann_file": dataset_params.annotations_test, "data_root": dataset_params.images_test_dir}
-    )
-    ckpt_path = osp.join(osp.join(dataset_params.pre_trained_model.strip('./'), model_name),"weights.pth")
+
+    dataset = ClassificationDatasetAdapter(
+        train_data_root=osp.join(dataset_params.images_train_dir),
+        train_ann_file=osp.join(dataset_params.annotations_train),
+        val_data_root=osp.join(dataset_params.images_val_dir),
+        val_ann_file=osp.join(dataset_params.annotations_val),
+        test_data_root=osp.join(dataset_params.images_test_dir),
+        test_ann_file=osp.join(dataset_params.annotations_test))
+    
+    ckpt_path = osp.join(osp.join(dataset_params.pre_trained_model, model_name),"weights.pth")
     logger.info(f"Pretrained path : {ckpt_path}")
 
-    labels_schema = generate_label_schema(dataset, task_type)
+    labels_schema = LabelSchemaEntity.from_labels(dataset.get_labels())
     return dataset, labels_schema, ckpt_path
 
 
@@ -152,7 +150,6 @@ class ClassificationTrainingTestParameters(DefaultOTETestCreationParametersInter
                 ("dataset_name", "dataset"),
                 ("num_training_iters", "num_iters"),
                 ("batch_size", "batch"),
-                ("checkpoint", "ckpt"),
                 ("usecase", "usecase"),
             ]
         )
@@ -164,7 +161,6 @@ class ClassificationTrainingTestParameters(DefaultOTETestCreationParametersInter
             "dataset_name",
             "num_training_iters",
             "batch_size",
-            "checkpoint"
         ] # this needs to distinguish the test case -> transition in helper.cache -> transition in new stages(_OTEIntegrationTestCase)
         return deepcopy(DEFAULT_TEST_PARAMETERS_DEFINING_IMPL_BEHAVIOR)
 
@@ -172,10 +168,8 @@ class ClassificationTrainingTestParameters(DefaultOTETestCreationParametersInter
         DEFAULT_TEST_PARAMETERS = {
             "num_training_iters": 2,
             "batch_size": 16,
-            "checkpoint": None
         } # the mandatory params for running test
         return deepcopy(DEFAULT_TEST_PARAMETERS)
-
 
 class TestOTEReallifeClassification(OTETrainingTestInterface):
     """
@@ -209,7 +203,6 @@ class TestOTEReallifeClassification(OTETrainingTestInterface):
             dataset_name = test_parameters['dataset_name']
             num_training_iters = test_parameters['num_training_iters']
             batch_size = test_parameters['batch_size']
-            checkpoint = test_parameters.get('checkpoint', None)
 
             dataset_params = _get_dataset_params_from_dataset_definitions(dataset_definitions, dataset_name)
 
@@ -255,12 +248,6 @@ class TestOTEReallifeClassification(OTETrainingTestInterface):
                                                     params_factories_for_test_actions_fx) # this needs when test case is changed - give test cases as params to _OTEIntegrationTestCase -> each action will be initialized
         return test_case #_OTEIntegrationTestCase object (constructed stages including action classes initialized by params_factories)
 
-    # deleted because it is in fixture.py
-    # @pytest.fixture
-    # def data_collector_fx(self, request) -> DataCollector:
-    #    yield default_data_collector_fx(request, ote_test_scenario_fx, ote_test_domain_fx)
-
-
     @e2e_pytest_performance
     def test(self,
              test_parameters,
@@ -268,4 +255,3 @@ class TestOTEReallifeClassification(OTETrainingTestInterface):
              cur_test_expected_metrics_callback_fx):
         test_case_fx.run_stage(test_parameters['test_stage'], data_collector_fx,
                                cur_test_expected_metrics_callback_fx)
-    # run test sequentially? - need to know about e2e_pytest_performance decorator
