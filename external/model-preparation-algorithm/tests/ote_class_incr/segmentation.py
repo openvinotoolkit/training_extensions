@@ -171,8 +171,7 @@ class TestOTEReallifeSegmentation(OTETrainingTestInterface):
             import os.path as osp
             ckpt_path = None
             if hasattr(dataset_params, 'pre_trained_model'):
-                # ckpt_path = osp.join(osp.join(dataset_params.pre_trained_model, model_name), "weights.pth")
-                ckpt_path = '/local/jeom/ote-val/external/model-preparation-algorithm/tests/ckpt/weights.pth'
+                ckpt_path = osp.join(osp.join(dataset_params.pre_trained_model, model_name), "weights.pth")
             logger.debug('training params factory: After creating dataset and labels_schema')
 
             return {
