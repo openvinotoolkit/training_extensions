@@ -86,7 +86,7 @@ def run_hpo(args, environment, dataset, task_type):
         task.resume(hpo_weight_path)
 
         if args.load_weights:
-            environment.model.confiugration.configurable_parameters = hyper_parameters
+            environment.model.configuration.configurable_parameters = hyper_parameters
 
         return task
 
@@ -106,7 +106,6 @@ def get_cuda_device_list():
 
 def run_hpo_trainer(
     hp_config,
-    model,
     hyper_parameters,
     model_template,
     dataset_paths,
@@ -137,7 +136,7 @@ def run_hpo_trainer(
     )
 
     train_env = TaskEnvironment(
-        model=model,
+        model=None,
         hyper_parameters=hyper_parameters,
         label_schema=generate_label_schema(dataset, task_type),
         model_template=model_template,
@@ -251,7 +250,7 @@ def get_HPO_train_task(impl_class, task_type):
         def resume(self, resume_path):
             if self._task_type == TaskType.CLASSIFICATION:
                 self._cfg.model.resume = resume_path
-                self._cfg.test.test_before_train = True
+                self._cfg.test.save_initial_metric = True
             elif self._task_type == TaskType.DETECTION:
                 self._config.resume_from = resume_path
                 self._config.data.train.adaptive_repeat_times = False
@@ -317,6 +316,8 @@ class HpoManager:
             )
             task.save_model(model)
             save_model_data(model, self.work_dir)
+        else:
+            save_model_data(environment.model, self.work_dir)
 
         try:
             with open(
@@ -508,7 +509,6 @@ class HpoManager:
 
                 _kwargs = {
                     "hp_config": hp_config,
-                    "model": self.environment.model,
                     "hyper_parameters": vars(
                         self.environment.get_hyper_parameters().learning_parameters
                     ),
@@ -540,6 +540,8 @@ class HpoManager:
                 break
 
         best_config = self.hpo.get_best_config()
+
+        # Resume weight is already over warm-up stage
         if task_type == TaskType.DETECTION:
             best_config["learning_parameters.learning_rate_warmup_iters"] = 0
         if task_type == TaskType.SEGMENTATION:
@@ -572,7 +574,7 @@ class HpoManager:
 
             for file_name in os.listdir(hpo_weight_path):
                 if "best" in file_name:
-                    hpo_weight_path += f"/{file_name}"
+                    hpo_weight_path = osp.join(hpo_weight_path, file_name)
                     break
 
         return hyper_parameters, hpo_weight_path
