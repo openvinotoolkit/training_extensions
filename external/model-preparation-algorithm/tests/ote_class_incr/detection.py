@@ -4,6 +4,7 @@
 
 import logging
 import os
+import os.path as osp
 from collections import namedtuple
 from copy import deepcopy
 from pprint import pformat
@@ -179,6 +180,9 @@ class TestOTEReallifeObjectDetectionClsIncr(OTETrainingTestInterface):
 
             logger.debug('training params factory: Before creating dataset and labels_schema')
             dataset, labels_schema = _create_object_detection_dataset_and_labels_schema(dataset_params)
+            ckpt_path = None
+            if hasattr(dataset_params, 'pre_trained_model'):
+                ckpt_path = osp.join(osp.join(dataset_params.pre_trained_model, model_name),"weights.pth")
             logger.debug('training params factory: After creating dataset and labels_schema')
 
             return {
@@ -187,6 +191,7 @@ class TestOTEReallifeObjectDetectionClsIncr(OTETrainingTestInterface):
                 'template_path': template_path,
                 'num_training_iters': num_training_iters,
                 'batch_size': batch_size,
+                'checkpoint': ckpt_path
             }
 
         def _nncf_graph_params_factory() -> Dict:
