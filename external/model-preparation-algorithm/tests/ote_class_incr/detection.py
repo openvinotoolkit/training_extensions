@@ -97,6 +97,7 @@ class DetectionClsIncrTrainingTestParameters(DefaultOTETestCreationParametersInt
                 dict(
                     model_name=[
                        'ClassIncremental_Object_Detection_Gen3_ATSS',
+                       'ClassIncremental_Object_Detection_Gen3_VFNet',
                     ],
                     dataset_name='coco_det_person_car',
                     usecase='precommit',
@@ -104,6 +105,7 @@ class DetectionClsIncrTrainingTestParameters(DefaultOTETestCreationParametersInt
                 dict(
                     model_name=[
                        'ClassIncremental_Object_Detection_Gen3_ATSS',
+                       'ClassIncremental_Object_Detection_Gen3_VFNet',
                     ],
                     dataset_name='coco_det_person_car',
                     num_training_iters=KEEP_CONFIG_FIELD_VALUE,

@@ -3,6 +3,7 @@
 #
 
 import importlib
+import json
 import os
 import os.path as osp
 from abc import ABC, abstractmethod
@@ -11,7 +12,6 @@ from copy import deepcopy
 from typing import List, Optional, Type
 
 import pytest
-from ote_cli.utils.io import read_binary, read_label_schema
 
 from ote_sdk.configuration.helper import create as ote_sdk_configuration_helper_create
 from ote_sdk.entities.inference_parameters import InferenceParameters
@@ -21,7 +21,7 @@ from ote_sdk.entities.optimization_parameters import OptimizationParameters
 from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.subset import Subset
 from ote_sdk.entities.task_environment import TaskEnvironment
-from ote_sdk.serialization.label_mapper import label_schema_to_bytes
+from ote_sdk.serialization.label_mapper import LabelSchemaMapper, label_schema_to_bytes
 from ote_sdk.usecases.adapters.model_adapter import ModelAdapter
 from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType
 from ote_sdk.usecases.tasks.interfaces.optimization_interface import OptimizationType
@@ -172,13 +172,20 @@ class OTETestTrainingAction(BaseOTETestAction):
         if self.checkpoint is not None:
             logger.debug("Load pretrained model")
             model_adapters = {
-                "weights.pth": ModelAdapter(read_binary(self.checkpoint)),
+                "weights.pth": ModelAdapter(open(self.checkpoint, "rb").read()),
             }
-            if osp.exists(osp.join(osp.dirname(self.checkpoint), "label_schema.json")):
+            label_schema_path = osp.join(
+                osp.dirname(self.checkpoint), "label_schema.json"
+            )
+            if osp.exists(label_schema_path):
+                with open(label_schema_path, encoding="UTF-8") as read_file:
+                    serialized_label_schema = LabelSchemaMapper.backward(
+                        json.load(read_file)
+                    )
                 model_adapters.update(
                     {
                         "label_schema.json": ModelAdapter(
-                            label_schema_to_bytes(read_label_schema(self.checkpoint))
+                            label_schema_to_bytes(serialized_label_schema)
                         )
                     }
                 )

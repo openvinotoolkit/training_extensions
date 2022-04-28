@@ -23,16 +23,12 @@ from typing import Any, Callable, Dict, List, Optional, Type
 
 
 import pytest
-from ote_sdk.entities.subset import Subset
-from ote_sdk.entities.model_template import TaskType
 from ote_sdk.entities.label_schema import LabelSchemaEntity
 from ote_sdk.configuration.helper import create as ote_sdk_configuration_helper_create
-from ote_sdk.usecases.tasks.interfaces.optimization_interface import OptimizationType
-from ote_sdk.utils.importing import get_impl_class
 
 from ote_sdk.test_suite.training_test_case import (OTETestCaseInterface,
                                                    generate_ote_integration_test_case_class)
-from ote_sdk.test_suite.e2e_test_system import DataCollector, e2e_pytest_performance
+from ote_sdk.test_suite.e2e_test_system import e2e_pytest_performance
 from ote_sdk.test_suite.training_tests_common import (make_path_be_abs,
                                                       make_paths_be_abs,
                                                       DEFAULT_FIELD_VALUE_FOR_USING_IN_TEST,
@@ -48,8 +44,7 @@ from ote_sdk.test_suite.training_tests_actions import (OTETestTrainingAction,
                                                        OTETestExportAction,
                                                        OTETestExportEvaluationAction,
                                                        OTETestPotAction,
-                                                       OTETestPotEvaluationAction,
-                                                       create_environment_and_task)
+                                                       OTETestPotEvaluationAction)
 
 from torchreid_tasks.utils import ClassificationDatasetAdapter
 
@@ -97,12 +92,8 @@ def _create_classification_dataset_and_labels_schema(dataset_params, model_name)
         test_data_root=osp.join(dataset_params.images_test_dir),
         test_ann_file=osp.join(dataset_params.annotations_test))
     
-    ckpt_path = osp.join(osp.join(dataset_params.pre_trained_model, model_name),"weights.pth")
-    logger.info(f"Pretrained path : {ckpt_path}")
-
     labels_schema = LabelSchemaEntity.from_labels(dataset.get_labels())
-    return dataset, labels_schema, ckpt_path
-
+    return dataset, labels_schema
 
 def get_image_classification_test_action_classes() -> List[Type[BaseOTETestAction]]:
     return [
@@ -134,7 +125,7 @@ class ClassificationTrainingTestParameters(DefaultOTETestCreationParametersInter
                        'ClassIncremental_Image_Classification_EfficinetNet-B0',
                     ],
                     dataset_name=['cifar10_airplane_automobile_bird_cat_deer_frog'],
-                    max_num_epochs=KEEP_CONFIG_FIELD_VALUE, 
+                    num_training_iters=KEEP_CONFIG_FIELD_VALUE, 
                     batch_size=KEEP_CONFIG_FIELD_VALUE,
                     usecase=REALLIFE_USECASE_CONSTANT,
                 ),
@@ -212,9 +203,11 @@ class TestOTEReallifeClassification(OTETrainingTestInterface):
             template_path = make_path_be_abs(template_paths[model_name], template_paths[ROOT_PATH_KEY])
 
             logger.debug('training params factory: Before creating dataset and labels_schema')
-            dataset, labels_schema, ckpt_path = _create_classification_dataset_and_labels_schema(dataset_params, model_name)
-            checkpoint = ckpt_path
-            
+            dataset, labels_schema = _create_classification_dataset_and_labels_schema(dataset_params, model_name)
+            ckpt_path = None
+            if hasattr(dataset_params, 'pre_trained_model'):
+                ckpt_path = osp.join(osp.join(dataset_params.pre_trained_model, model_name),"weights.pth")
+            logger.info(f"Pretrained path : {ckpt_path}")
             logger.debug('training params factory: After creating dataset and labels_schema')
 
             return {
@@ -223,7 +216,7 @@ class TestOTEReallifeClassification(OTETrainingTestInterface):
                 'template_path': template_path,
                 'num_training_iters': num_training_iters,
                 'batch_size': batch_size,
-                'checkpoint': checkpoint,
+                'checkpoint': ckpt_path
             }
         params_factories_for_test_actions = {
             'training': _training_params_factory, #_name of OTETestTrainingAction is 'training' -> rest of action classes doesn't need param(it will get it from the previous action classes)

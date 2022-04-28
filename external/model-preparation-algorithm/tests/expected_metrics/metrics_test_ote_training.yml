@@ -1,3 +1,29 @@
+? "ACTION-training_evaluation,model-ClassIncremental_Object_Detection_Gen3_ATSS,dataset-coco_det_person_car,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "target_value": 0.72
+    "max_diff_if_less_threshold": 0.01
+    "max_diff_if_greater_threshold": 0.04
+? "ACTION-export_evaluation,model-ClassIncremental_Object_Detection_Gen3_ATSS,dataset-coco_det_person_car,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "training_evaluation.metrics.accuracy.f-measure"
+    "max_diff": 0.01
+? "ACTION-pot_evaluation,model-ClassIncremental_Object_Detection_Gen3_ATSS,dataset-coco_det_person_car,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "export_evaluation.metrics.accuracy.f-measure"
+    "max_diff": 0.04
+? "ACTION-training_evaluation,model-ClassIncremental_Object_Detection_Gen3_VFNet,dataset-coco_det_person_car,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "target_value": 0.65
+    "max_diff_if_less_threshold": 0.01
+    "max_diff_if_greater_threshold": 0.04
+? "ACTION-export_evaluation,model-ClassIncremental_Object_Detection_Gen3_VFNet,dataset-coco_det_person_car,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "training_evaluation.metrics.accuracy.f-measure"
+    "max_diff": 0.01
+? "ACTION-pot_evaluation,model-ClassIncremental_Object_Detection_Gen3_VFNet,dataset-coco_det_person_car,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "export_evaluation.metrics.accuracy.f-measure"
+    "max_diff": 0.04
 ? "ACTION-training_evaluation,model-Semantic_Segmentation_Lite-HRNet-18_OCR,dataset-voc_seg_person_car,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
 : "metrics.accuracy.Dice Average":
     "target_value": 0.88
