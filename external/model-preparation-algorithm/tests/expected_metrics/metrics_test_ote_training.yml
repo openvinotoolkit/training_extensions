@@ -49,4 +49,4 @@
 ? "ACTION-pot_evaluation,model-Semantic_Segmentation_Lite-HRNet-s-mod2_OCR,dataset-voc_seg_person_car,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
 : "metrics.accuracy.Dice Average":
     "base": "export_evaluation.metrics.accuracy.Dice Average"
-    "max_diff": 0.04?
+    "max_diff": 0.04
