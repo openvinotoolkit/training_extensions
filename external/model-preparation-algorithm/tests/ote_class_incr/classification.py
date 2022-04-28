@@ -116,6 +116,9 @@ class ClassificationTrainingTestParameters(DefaultOTETestCreationParametersInter
                 dict(
                     model_name=[
                        'ClassIncremental_Image_Classification_EfficinetNet-B0',
+                       'ClassIncremental_Image_Classification_MobileNet-V3-large-1x',
+                       'ClassIncremental_Image_Classification_MobileNet-V3-large-0.75x',
+                       'ClassIncremental_Image_Classification_MobileNet-V3-small'
                     ],
                     dataset_name=['cifar10_airplane_automobile_bird_cat_deer_frog'],
                     usecase='precommit',
@@ -123,6 +126,9 @@ class ClassificationTrainingTestParameters(DefaultOTETestCreationParametersInter
                 dict(
                     model_name=[
                        'ClassIncremental_Image_Classification_EfficinetNet-B0',
+                       'ClassIncremental_Image_Classification_MobileNet-V3-large-1x',
+                       'ClassIncremental_Image_Classification_MobileNet-V3-large-0.75x',
+                       'ClassIncremental_Image_Classification_MobileNet-V3-small'
                     ],
                     dataset_name=['cifar10_airplane_automobile_bird_cat_deer_frog'],
                     num_training_iters=KEEP_CONFIG_FIELD_VALUE, 
