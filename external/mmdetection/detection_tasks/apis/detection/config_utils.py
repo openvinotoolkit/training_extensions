@@ -16,7 +16,6 @@ import copy
 import glob
 import math
 import os
-from os import path as osp
 import tempfile
 from collections import defaultdict
 from typing import List, Optional
