@@ -52,7 +52,7 @@
     "max_diff": 0.03
 ? "ACTION-training_evaluation,model-ClassIncremental_Object_Detection_Gen3_ATSS,dataset-coco_det_person_car,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
 : "metrics.accuracy.f-measure":
-    "target_value": 0.72
+    "target_value": 0.66
     "max_diff_if_less_threshold": 0.01
     "max_diff_if_greater_threshold": 0.04
 ? "ACTION-export_evaluation,model-ClassIncremental_Object_Detection_Gen3_ATSS,dataset-coco_det_person_car,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
