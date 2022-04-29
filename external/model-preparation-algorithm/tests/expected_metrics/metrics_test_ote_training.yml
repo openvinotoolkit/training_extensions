@@ -76,55 +76,16 @@
 : "metrics.accuracy.f-measure":
     "base": "export_evaluation.metrics.accuracy.f-measure"
     "max_diff": 0.04
-? "ACTION-training_evaluation,model-Semantic_Segmentation_Lite-HRNet-18_OCR,dataset-voc_seg_person_car,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+? "ACTION-training_evaluation,model-ClassIncremental_Semantic_Segmentation_Lite-HRNet-18_OCR,dataset-voc_seg_person_car,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
 : "metrics.accuracy.Dice Average":
-    "target_value": 0.88
+    "target_value": 0.55
     "max_diff_if_less_threshold": 0.01
     "max_diff_if_greater_threshold": 0.04
-? "ACTION-export_evaluation,model-Semantic_Segmentation_Lite-HRNet-18_OCR,dataset-voc_seg_person_car,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+? "ACTION-export_evaluation,model-ClassIncremental_Semantic_Segmentation_Lite-HRNet-18_OCR,dataset-voc_seg_person_car,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
 : "metrics.accuracy.Dice Average":
     "base": "training_evaluation.metrics.accuracy.Dice Average"
-    "max_diff": 0.01
-? "ACTION-pot_evaluation,model-Semantic_Segmentation_Lite-HRNet-18_OCR,dataset-voc_seg_person_car,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+    "max_diff": 0.05
+? "ACTION-pot_evaluation,model-ClassIncremental_Semantic_Segmentation_Lite-HRNet-18_OCR,dataset-voc_seg_person_car,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
 : "metrics.accuracy.Dice Average":
     "base": "export_evaluation.metrics.accuracy.Dice Average"
-    "max_diff": 0.04
-? "ACTION-training_evaluation,model-Semantic_Segmentation_Lite-HRNet-18-mod2_OCR,dataset-voc_seg_person_car,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
-: "metrics.accuracy.Dice Average":
-    "target_value": 0.88
-    "max_diff_if_less_threshold": 0.01
-    "max_diff_if_greater_threshold": 0.04
-? "ACTION-export_evaluation,model-Semantic_Segmentation_Lite-HRNet-18-mod2_OCR,dataset-voc_seg_person_car,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
-: "metrics.accuracy.Dice Average":
-    "base": "training_evaluation.metrics.accuracy.Dice Average"
-    "max_diff": 0.01
-? "ACTION-pot_evaluation,model-Semantic_Segmentation_Lite-HRNet-18-mod2_OCR,dataset-voc_seg_person_car,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
-: "metrics.accuracy.Dice Average":
-    "base": "export_evaluation.metrics.accuracy.Dice Average"
-    "max_diff": 0.04
-? "ACTION-training_evaluation,model-Semantic_Segmentation_Lite-HRNet-x-mod3_OCR,dataset-voc_seg_person_car,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
-: "metrics.accuracy.Dice Average":
-    "target_value": 0.88
-    "max_diff_if_less_threshold": 0.01
-    "max_diff_if_greater_threshold": 0.04
-? "ACTION-export_evaluation,model-Semantic_Segmentation_Lite-HRNet-x-mod3_OCR,dataset-voc_seg_person_car,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
-: "metrics.accuracy.Dice Average":
-    "base": "training_evaluation.metrics.accuracy.Dice Average"
-    "max_diff": 0.01
-? "ACTION-pot_evaluation,model-Semantic_Segmentation_Lite-HRNet-x-mod3_OCR,dataset-voc_seg_person_car,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
-: "metrics.accuracy.Dice Average":
-    "base": "export_evaluation.metrics.accuracy.Dice Average"
-    "max_diff": 0.04
-? "ACTION-training_evaluation,model-Semantic_Segmentation_Lite-HRNet-s-mod2_OCR,dataset-voc_seg_person_car,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
-: "metrics.accuracy.Dice Average":
-    "target_value": 0.88
-    "max_diff_if_less_threshold": 0.01
-    "max_diff_if_greater_threshold": 0.04
-? "ACTION-export_evaluation,model-Semantic_Segmentation_Lite-HRNet-s-mod2_OCR,dataset-voc_seg_person_car,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
-: "metrics.accuracy.Dice Average":
-    "base": "training_evaluation.metrics.accuracy.Dice Average"
-    "max_diff": 0.01
-? "ACTION-pot_evaluation,model-Semantic_Segmentation_Lite-HRNet-s-mod2_OCR,dataset-voc_seg_person_car,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
-: "metrics.accuracy.Dice Average":
-    "base": "export_evaluation.metrics.accuracy.Dice Average"
-    "max_diff": 0.04
+    "max_diff": 0.05
