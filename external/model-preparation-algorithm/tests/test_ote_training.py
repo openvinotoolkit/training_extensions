@@ -124,7 +124,7 @@ def _create_object_detection_dataset_and_labels_schema(dataset_params):
     return dataset, labels_schema
 
 
-class ClassificationClsIncrTrainingTestParameters(DefaultOTETestCreationParametersInterface):
+class MPAClassificationTrainingTestParameters(DefaultOTETestCreationParametersInterface):
     def test_case_class(self) -> Type[OTETestCaseInterface]:
         return generate_ote_integration_test_case_class(
             get_test_action_classes()
@@ -166,7 +166,7 @@ class ClassificationClsIncrTrainingTestParameters(DefaultOTETestCreationParamete
         return deepcopy(DEFAULT_TEST_PARAMETERS)
 
 
-class DetectionClsIncrTrainingTestParameters(DefaultOTETestCreationParametersInterface):
+class MPADetectionTrainingTestParameters(DefaultOTETestCreationParametersInterface):
     def test_case_class(self) -> Type[OTETestCaseInterface]:
         return generate_ote_integration_test_case_class(
             get_test_action_classes()
@@ -197,12 +197,12 @@ class DetectionClsIncrTrainingTestParameters(DefaultOTETestCreationParametersInt
         return deepcopy(test_bunches)
 
 
-class TestOTEReallifeClassificationClsIncr(OTETrainingTestInterface):
+class TestOTEReallifeClassificationMPA(OTETrainingTestInterface):
     """
     The main class of running test in this file.
     """
     PERFORMANCE_RESULTS = None # it is required for e2e system
-    helper = OTETestHelper(ClassificationClsIncrTrainingTestParameters())
+    helper = OTETestHelper(MPAClassificationTrainingTestParameters())
 
     @classmethod
     def get_list_of_tests(cls, usecase: Optional[str] = None):
@@ -285,12 +285,12 @@ class TestOTEReallifeClassificationClsIncr(OTETrainingTestInterface):
                                cur_test_expected_metrics_callback_fx)
 
 
-class TestOTEReallifeObjectDetectionClsIncr(OTETrainingTestInterface):
+class TestOTEReallifeObjectDetectionMPA(OTETrainingTestInterface):
     """
     The main class of running test in this file.
     """
     PERFORMANCE_RESULTS = None # it is required for e2e system
-    helper = OTETestHelper(DetectionClsIncrTrainingTestParameters())
+    helper = OTETestHelper(MPADetectionTrainingTestParameters())
 
     @classmethod
     def get_list_of_tests(cls, usecase: Optional[str] = None):
