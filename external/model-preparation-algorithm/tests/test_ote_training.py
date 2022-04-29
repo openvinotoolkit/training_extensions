@@ -188,7 +188,7 @@ class ClassificationClsIncrTrainingTestParameters(DefaultOTETestCreationParamete
         DEFAULT_TEST_PARAMETERS = {
             "num_training_iters": 2,
             "batch_size": 16,
-        } # the mandatory params for running test
+        }
         return deepcopy(DEFAULT_TEST_PARAMETERS)
 
 
@@ -308,7 +308,7 @@ class TestOTEReallifeClassificationClsIncr(OTETrainingTestInterface):
                 'checkpoint': ckpt_path
             }
         params_factories_for_test_actions = {
-            'training': _training_params_factory, #_name of OTETestTrainingAction is 'training' -> rest of action classes doesn't need param(it will get it from the previous action classes)
+            'training': _training_params_factory,
         }
         logger.debug('params_factories_for_test_actions_fx: end')
         return params_factories_for_test_actions
@@ -327,8 +327,8 @@ class TestOTEReallifeClassificationClsIncr(OTETrainingTestInterface):
         test case class will be created.
         """
         test_case = type(self).helper.get_test_case(current_test_parameters_fx,
-                                                    params_factories_for_test_actions_fx) # this needs when test case is changed - give test cases as params to _OTEIntegrationTestCase -> each action will be initialized
-        return test_case #_OTEIntegrationTestCase object (constructed stages including action classes initialized by params_factories)
+                                                    params_factories_for_test_actions_fx)
+        return test_case
 
     @e2e_pytest_performance
     def test(self,

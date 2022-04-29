@@ -11,6 +11,19 @@
 : "metrics.accuracy.Accuracy":
     "base": "export_evaluation.metrics.accuracy.Accuracy"
     "max_diff": 0.03
+? "ACTION-training_evaluation,model-ClassIncremental_Image_Classification_EfficinetNet-V2-S,dataset-cifar10_cls_incr,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.Accuracy":
+    "target_value": 0.96
+    "max_diff_if_less_threshold": 0.01
+    "max_diff_if_greater_threshold": 0.02
+? "ACTION-export_evaluation,model-ClassIncremental_Image_Classification_EfficinetNet-V2-S,dataset-cifar10_cls_incr,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.Accuracy":
+    "base": "training_evaluation.metrics.accuracy.Accuracy"
+    "max_diff": 0.01
+? "ACTION-pot_evaluation,model-ClassIncremental_Image_Classification_EfficinetNet-V2-S,dataset-cifar10_cls_incr,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.Accuracy":
+    "base": "export_evaluation.metrics.accuracy.Accuracy"
+    "max_diff": 0.03
 ? "ACTION-training_evaluation,model-ClassIncremental_Image_Classification_MobileNet-V3-large-1x,dataset-cifar10_cls_incr,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
 : "metrics.accuracy.Accuracy":
     "target_value": 0.94
