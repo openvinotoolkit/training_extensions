@@ -159,7 +159,7 @@ class ClassificationClsIncrTrainingTestParameters(DefaultOTETestCreationParamete
                 dict(
                     model_name=[
                        'ClassIncremental_Image_Classification_EfficinetNet-B0',
-                    #    'ClassIncremental_Image_Classification_EfficinetNet-V2-S',
+                       'ClassIncremental_Image_Classification_EfficinetNet-V2-S',
                        'ClassIncremental_Image_Classification_MobileNet-V3-large-1x',
                        'ClassIncremental_Image_Classification_MobileNet-V3-large-0.75x',
                        'ClassIncremental_Image_Classification_MobileNet-V3-small'
@@ -170,7 +170,7 @@ class ClassificationClsIncrTrainingTestParameters(DefaultOTETestCreationParamete
                 dict(
                     model_name=[
                        'ClassIncremental_Image_Classification_EfficinetNet-B0',
-                    #    'ClassIncremental_Image_Classification_EfficinetNet-V2-S',
+                       'ClassIncremental_Image_Classification_EfficinetNet-V2-S',
                        'ClassIncremental_Image_Classification_MobileNet-V3-large-1x',
                        'ClassIncremental_Image_Classification_MobileNet-V3-large-0.75x',
                        'ClassIncremental_Image_Classification_MobileNet-V3-small'
