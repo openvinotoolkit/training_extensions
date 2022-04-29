@@ -19,6 +19,7 @@ import time
 from os import path as osp
 from pathlib import Path
 from typing import Optional
+import math
 from math import ceil
 
 import torch
@@ -200,7 +201,7 @@ def run_hpo_trainer(
 
     hpo_impl_class = get_HPO_train_task(impl_class, task_type)
     task = hpo_impl_class(task_environment=train_env)
-    task.prepare_hpo(hp_config)
+    task.prepare_hpo(hp_config, dataset)
 
     dataset = HpoDataset(dataset, hp_config)
 
@@ -253,12 +254,12 @@ def get_HPO_train_task(impl_class, task_type):
                 self._cfg.test.save_initial_metric = True
             elif self._task_type == TaskType.DETECTION:
                 self._config.resume_from = resume_path
-                self._config.data.train.adaptive_repeat_times = False
+                # self._config.data.train.adaptive_repeat_times = False
             elif self._task_type == TaskType.SEGMENTATION:
                 self._config.resume_from = resume_path
-                self._config.data.train.adaptive_repeat = False
+                # self._config.data.train.adaptive_repeat = False
 
-        def prepare_hpo(self, hp_config):
+        def prepare_hpo(self, hp_config, dataset):
             if self._task_type == TaskType.CLASSIFICATION:
                 self._scratch_space = osp.join(
                     osp.dirname(hp_config["file_path"]),
@@ -274,11 +275,39 @@ def get_HPO_train_task(impl_class, task_type):
                 self._config.checkpoint_config["max_keep_ckpts"] = hp_config["iterations"] + 10
                 self._config.checkpoint_config["interval"] = 1
 
+            # if "bracket" in hp_config:
+            #     if self._task_type == TaskType.DETECTION:
+            #         self._config.data.train.adaptive_repeat_times = False
+            #     elif self._task_type == TaskType.SEGMENTATION:
+            #         self._config.data.train.adaptive_repeat = False
+
+            # adjust hp_config if current training configuration enabled the adaptive repeat
+            # for the asha algo. except the first trials
             if "bracket" in hp_config:
+                adjust_rungs_flag = False
                 if self._task_type == TaskType.DETECTION:
-                    self._config.data.train.adaptive_repeat_times = False
+                    if self._config.data.train.adaptive_repeat_times and hp_config["trial_id"] > 0:
+                        adjust_rungs_flag = True
                 elif self._task_type == TaskType.SEGMENTATION:
-                    self._config.data.train.adaptive_repeat = False
+                    if self._config.data.train.adaptive_repeat and hp_config["trial_id"] > 0:
+                        adjust_rungs_flag = True
+
+                if adjust_rungs_flag:
+                    # adjust rungs for HyperBand if adaptive_repeat_times are used for training
+                    train_dataset = dataset.get_subset(Subset.TRAINING)
+                    max_iters = hp_config["iterations"]
+                    min_iters = hp_config["min_iterations"]
+                    new_max, new_min = self._adjust_iterations_for_adaptive_repeat(max_iters, min_iters, len(train_dataset))
+                    print("[HPO-DEBUG] adjust rungs")
+                    print(f"[HPO-DEBUG] (before) {hp_config['rungs']}")
+                    hp_config["rungs"] = hpopt.hyperband_generate_rungs(new_min, new_max)
+                    print(f"[HPO-DEBUG] (after) {hp_config['rungs']}")
+
+        def _adjust_iterations_for_adaptive_repeat(self, max_iters, min_iters, num_samples, decay=-0.002, factor=30):
+            new_repeat = max(round(math.exp(decay * num_samples) * factor), 1)
+            new_max_iters = math.ceil(max_iters / new_repeat)
+            new_min_iters = math.ceil((new_max_iters * min_iters) / max_iters)
+            return new_max_iters, new_min_iters
 
     return HpoTrainTask
 
@@ -406,7 +435,7 @@ class HpoManager:
                     )
 
         HpoManager.remove_empty_keys(hpopt_arguments)
-
+        print(f'****** hpopt args = {hpopt_arguments}')
         self.hpo = hpopt.create(**hpopt_arguments)
 
     def check_resumable(self):
