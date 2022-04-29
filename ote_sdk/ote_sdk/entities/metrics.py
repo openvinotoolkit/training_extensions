@@ -49,6 +49,7 @@ class CountMetric(MetricEntity):
 
     :param name: The name of the metric
     :param value: The value of the metric
+    :param color: Optionally mapped color of the metric (See :class:`Color`)
 
     :example: The count for number of images in a project
 
@@ -58,9 +59,10 @@ class CountMetric(MetricEntity):
 
     value: int
 
-    def __init__(self, name: str, value: int):
+    def __init__(self, name: str, value: int, color: Optional[Color] = None):
         self.name = name
         self.value = value
+        self.color = Color.random() if color is None else color
 
     @staticmethod
     def type():
@@ -124,6 +126,7 @@ class ScoreMetric(MetricEntity):
 
     :param name: The name of the score
     :param value: The value of the score
+    :param color: Optionally mapped color of the score (See :class:`Color`)
 
     :example: Accuracy of a model
 
@@ -131,9 +134,10 @@ class ScoreMetric(MetricEntity):
 
     """
 
-    def __init__(self, name: str, value: float):
+    def __init__(self, name: str, value: float, color: Optional[Color] = None):
         self.name = name
         self.value = value
+        self.color = Color.random() if color is None else color
 
         if math.isnan(value):
             raise ValueError("The value of a ScoreMetric is not allowed to be NaN.")
@@ -141,10 +145,10 @@ class ScoreMetric(MetricEntity):
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, ScoreMetric):
             return False
-        return self.name == other.name and self.value == other.value
+        return self.name == other.name and self.value == other.value and self.color == othes.color
 
     def __repr__(self):
-        return f"ScoreMetric(name=`{self.name}`, score=`{self.value}`)"
+        return f"ScoreMetric(name=`{self.name}`, score=`{self.value}`, color=`{self.color}`)"
 
     @staticmethod
     def type():
@@ -240,9 +244,15 @@ class CurveMetric(MetricEntity):
     :param name: The name of the curve
     :param xs: the list of floats in x-axis
     :param ys: the list of floats in y-axis
+    :param color: Optionally mapped color of the metric (See :class:`Color`)
     """
 
-    def __init__(self, name: str, ys: List[float], xs: Optional[List[float]] = None):
+    def __init__(self,
+        name: str,
+        ys: List[float],
+        xs: Optional[List[float]] = None,
+        color: Optional[Color] = None
+    ):
         self.name = name
         self.__ys = ys
         if xs is not None:
@@ -254,6 +264,7 @@ class CurveMetric(MetricEntity):
         else:
             # if x values are not provided, set them to the 1-index of the y values
             self.__xs = list(range(1, len(self.__ys) + 1))
+        self.color = Color.random() if color is None else color
 
     @property
     def ys(self) -> List[float]:
@@ -272,7 +283,8 @@ class CurveMetric(MetricEntity):
     def __repr__(self):
         return (
             f"CurveMetric(name=`{self.name}`, ys=({len(self.ys)} values), "
-            f"xs=({len(self.xs) if self.xs is not None else 'None'} values))"
+            f"xs=({len(self.xs) if self.xs is not None else 'None'} values),"
+            f"color={self.color})"
         )
 
     @staticmethod
