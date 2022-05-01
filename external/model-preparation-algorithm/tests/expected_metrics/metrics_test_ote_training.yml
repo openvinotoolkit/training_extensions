@@ -101,4 +101,4 @@
 ? "ACTION-pot_evaluation,model-ClassIncremental_Semantic_Segmentation_Lite-HRNet-18_OCR,dataset-voc_cls_incr,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
 : "metrics.accuracy.Dice Average":
     "base": "export_evaluation.metrics.accuracy.Dice Average"
-    "max_diff": 0.05
+    "max_diff": 0.50
