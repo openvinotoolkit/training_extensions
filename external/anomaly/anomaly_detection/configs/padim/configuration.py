@@ -18,7 +18,13 @@ Configurable parameters for Padim anomaly detection task
 
 from attr import attrs
 from ote_anomalib.configs.configuration import BaseAnomalyConfig
-from ote_sdk.configuration.elements import string_attribute
+from ote_anomalib.configs.configuration_enums import ModelBackbone
+from ote_sdk.configuration.elements import (
+    ParameterGroup,
+    add_parameter_group,
+    selectable,
+    string_attribute,
+)
 
 
 @attrs
@@ -29,3 +35,20 @@ class PadimAnomalyDetectionConfig(BaseAnomalyConfig):
 
     header = string_attribute("Configuration for Padim")
     description = header
+
+    @attrs
+    class ModelParameters(ParameterGroup):
+        """
+        Parameter Group for tuning the model
+        """
+
+        header = string_attribute("Model Parameters")
+        description = header
+
+        backbone = selectable(
+            default_value=ModelBackbone.RESNET18,
+            header="Model Backbone",
+            description="Pre-trained backbone used for feature extraction",
+        )
+
+    model = add_parameter_group(ModelParameters)

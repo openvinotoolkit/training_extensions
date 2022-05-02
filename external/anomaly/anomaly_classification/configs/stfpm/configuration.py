@@ -18,10 +18,11 @@ Configurable parameters for STFPM anomaly classification task
 
 from attr import attrs
 from ote_anomalib.configs.configuration import BaseAnomalyConfig
-from ote_anomalib.configs.configuration_enums import EarlyStoppingMetrics
+from ote_anomalib.configs.configuration_enums import EarlyStoppingMetrics, ModelBackbone
 from ote_sdk.configuration.elements import (
     ParameterGroup,
     add_parameter_group,
+    configurable_float,
     configurable_integer,
     selectable,
     string_attribute,
@@ -46,6 +47,36 @@ class STFPMAnomalyClassificationConfig(BaseAnomalyConfig):
 
         header = string_attribute("Model Parameters")
         description = header
+
+        backbone = selectable(
+            default_value=ModelBackbone.RESNET18,
+            header="Model Backbone",
+            description="Pre-trained backbone used for teacher and student network",
+        )
+
+        lr = configurable_float(
+            default_value=0.4,
+            header="Learning Rate",
+            min_value=1e-3,
+            max_value=1,
+            description="Learning rate used for optimizing the Student network.",
+        )
+
+        momentum = configurable_float(
+            default_value=0.9,
+            header="Momentum",
+            min_value=0.1,
+            max_value=1.0,
+            description="Momentum used for SGD optimizer",
+        )
+
+        weight_decay = configurable_float(
+            default_value=0.0001,
+            header="Weight Decay",
+            min_value=1e-5,
+            max_value=1,
+            description="Decay for SGD optimizer",
+        )
 
         @attrs
         class EarlyStoppingParameters(ParameterGroup):
