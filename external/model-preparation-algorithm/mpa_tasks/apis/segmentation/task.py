@@ -8,7 +8,6 @@ from collections import defaultdict
 from typing import List, Optional
 
 import numpy as np
-from pydantic import NoneBytes
 import torch
 from mmcv.utils import ConfigDict
 from segmentation_tasks.apis.segmentation.config_utils import remove_from_config
