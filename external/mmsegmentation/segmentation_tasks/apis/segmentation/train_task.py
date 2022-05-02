@@ -31,6 +31,10 @@ from ote_sdk.entities.train_parameters import TrainParameters
 from ote_sdk.entities.train_parameters import default_progress_callback as default_train_progress_callback
 from ote_sdk.serialization.label_mapper import label_schema_to_bytes
 from ote_sdk.usecases.tasks.interfaces.training_interface import ITrainingTask
+from ote_sdk.utils.argument_checks import (
+    DatasetParamTypeCheck,
+    check_input_parameters_type,
+)
 
 from mmseg.apis import train_segmentor
 from segmentation_tasks.apis.segmentation.config_utils import prepare_for_training, set_hyperparams
@@ -44,6 +48,7 @@ logger = logging.getLogger(__name__)
 
 class OTESegmentationTrainingTask(OTESegmentationInferenceTask, ITrainingTask):
 
+    @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def train(self, dataset: DatasetEntity,
               output_model: ModelEntity,
               train_parameters: Optional[TrainParameters] = None):
@@ -122,6 +127,7 @@ class OTESegmentationTrainingTask(OTESegmentationInferenceTask, ITrainingTask):
 
         return os.path.join(work_dir, out_name)
 
+    @check_input_parameters_type()
     def save_model(self, output_model: ModelEntity):
         hyperparams_str = ids_to_strings(cfg_helper.convert(self._hyperparams, dict, enum_to_str=True))
         labels = {label.name: label.color.rgb_tuple for label in self._labels}

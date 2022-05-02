@@ -208,7 +208,7 @@ class OTEDetectionTrainingTask(OTEDetectionInferenceTask, ITrainingTask):
         torch.save(modelinfo, buffer)
         output_model.set_data("weights.pth", buffer.getvalue())
         output_model.set_data("label_schema.json", label_schema_to_bytes(self._task_environment.label_schema))
-        output_model.precision = [ModelPrecision.FP32]
+        output_model.precision = self._precision
 
 
     def cancel_training(self):

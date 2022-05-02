@@ -7,3 +7,6 @@
 [submodule "external/mmsegmentation"]
 	path = external/mmsegmentation/submodule
 	url = ../../openvinotoolkit/mmsegmentation
+[submodule "external/model-preparation-algorithm/submodule"]
+	path = external/model-preparation-algorithm/submodule
+	url = https://github.com/openvinotoolkit/model_preparation_algorithm

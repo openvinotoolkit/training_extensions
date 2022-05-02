@@ -20,7 +20,7 @@ learning_parameters:
     visible_in_ui: true
     warning: Increasing this value may cause the system to use more memory than available,
       potentially causing out of memory errors, please update with caution.
-    auto_hpo_state: POSSIBLE
+    auto_hpo_state: NOT_POSSIBLE
   description: Learning Parameters
   header: Learning Parameters
   learning_rate:
@@ -40,7 +40,7 @@ learning_parameters:
       type: UI_RULES
     visible_in_ui: true
     warning: null
-    auto_hpo_state: POSSIBLE
+    auto_hpo_state: NOT_POSSIBLE
   max_num_epochs:
     affects_outcome_of: TRAINING
     default_value: 200

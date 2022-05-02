@@ -48,6 +48,10 @@ from ote_sdk.usecases.tasks.interfaces.deployment_interface import IDeploymentTa
 from ote_sdk.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
 from ote_sdk.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from ote_sdk.usecases.tasks.interfaces.optimization_interface import IOptimizationTask, OptimizationType
+from ote_sdk.utils.argument_checks import (
+    DatasetParamTypeCheck,
+    check_input_parameters_type,
+)
 
 from compression.api import DataLoader
 from compression.engines.ie_engine import IEEngine
@@ -67,6 +71,7 @@ logger = logging.getLogger(__name__)
 
 
 class OpenVINOSegmentationInferencer(BaseInferencer):
+    @check_input_parameters_type()
     def __init__(
         self,
         hparams: OTESegmentationConfig,
@@ -93,9 +98,11 @@ class OpenVINOSegmentationInferencer(BaseInferencer):
         self.model = Model.create_model(hparams.postprocessing.class_name.value, model_adapter, self.configuration, preload=True)
         self.converter = SegmentationToAnnotationConverter(label_schema)
 
+    @check_input_parameters_type()
     def pre_process(self, image: np.ndarray) -> Tuple[Dict[str, np.ndarray], Dict[str, Any]]:
         return self.model.preprocess(image)
 
+    @check_input_parameters_type()
     def post_process(self, prediction: Dict[str, np.ndarray], metadata: Dict[str, Any]) -> AnnotationSceneEntity:
         hard_prediction = self.model.postprocess(prediction, metadata)
         soft_prediction = metadata['soft_predictions']
@@ -105,16 +112,19 @@ class OpenVINOSegmentationInferencer(BaseInferencer):
 
         return predicted_scene, soft_prediction, feature_vector
 
+    @check_input_parameters_type()
     def forward(self, inputs: Dict[str, np.ndarray]) -> Dict[str, np.ndarray]:
         return self.model.infer_sync(inputs)
 
 
 class OTEOpenVinoDataLoader(DataLoader):
+    @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def __init__(self, dataset: DatasetEntity, inferencer: BaseInferencer):
         self.dataset = dataset
         self.inferencer = inferencer
 
-    def __getitem__(self, index):
+    @check_input_parameters_type()
+    def __getitem__(self, index: int):
         image = self.dataset[index].numpy
         annotation = self.dataset[index].annotation_scene
         inputs, metadata = self.inferencer.pre_process(image)
@@ -126,6 +136,7 @@ class OTEOpenVinoDataLoader(DataLoader):
 
 
 class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IOptimizationTask):
+    @check_input_parameters_type()
     def __init__(self,
                  task_environment: TaskEnvironment):
         self.task_environment = task_environment
@@ -148,6 +159,7 @@ class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask,
                                               self.model.get_data("openvino.xml"),
                                               self.model.get_data("openvino.bin"))
 
+    @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def infer(self,
               dataset: DatasetEntity,
               inference_parameters: Optional[InferenceParameters] = None) -> DatasetEntity:
@@ -190,6 +202,7 @@ class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask,
 
         return dataset
 
+    @check_input_parameters_type()
     def evaluate(self,
                  output_result_set: ResultSetEntity,
                  evaluation_metric: Optional[str] = None):
@@ -201,6 +214,7 @@ class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask,
 
         output_result_set.performance = metrics.get_performance()
 
+    @check_input_parameters_type()
     def deploy(self,
                output_model: ModelEntity) -> None:
         logger.info('Deploying the model')
@@ -233,11 +247,12 @@ class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask,
         output_model.exportable_code = zip_buffer.getvalue()
         logger.info('Deploying completed')
 
+    @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def optimize(self,
                  optimization_type: OptimizationType,
                  dataset: DatasetEntity,
                  output_model: ModelEntity,
-                 optimization_parameters: Optional[OptimizationParameters]):
+                 optimization_parameters: Optional[OptimizationParameters] = None):
         logger.info('Start POT optimization')
 
         if optimization_type is not OptimizationType.POT:
