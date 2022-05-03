@@ -58,7 +58,7 @@ model:
     auto_hpo_state: not_possible
     auto_hpo_value: null
     default_value: resnet18
-    description: Pre-trained backbone used for teacher and student network
+    description: Pre-trained backbone used for feature extraction
     editable: true
     enum_name: ModelBackbone
     header: Model Backbone

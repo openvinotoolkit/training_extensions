@@ -1,8 +1,8 @@
 """
-Configurable parameters for STFPM anomaly classification task
+Base configuration parameters for STFPM
 """
 
-# Copyright (C) 2021 Intel Corporation
+# Copyright (C) 2022 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,12 +16,6 @@ Configurable parameters for STFPM anomaly classification task
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from attr import attrs
-from ote_anomalib.configs.stfpm import STFPMAnomalyBaseConfig
+from .configuration import STFPMAnomalyBaseConfig
 
-
-@attrs
-class STFPMAnomalyClassificationConfig(STFPMAnomalyBaseConfig):
-    """
-    Configurable parameters for STFPM anomaly classification task.
-    """
+__all__ = ["STFPMAnomalyBaseConfig"]
