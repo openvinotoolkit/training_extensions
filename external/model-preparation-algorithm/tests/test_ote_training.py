@@ -568,5 +568,7 @@ class TestOTEReallifeSegmentationClsIncr(OTETrainingTestInterface):
              test_parameters,
              test_case_fx, data_collector_fx,
              cur_test_expected_metrics_callback_fx):
+        if "pot_evaluation" in test_parameters["test_stage"]:
+            pytest.xfail("Known issue CVS-84576")
         test_case_fx.run_stage(test_parameters['test_stage'], data_collector_fx,
                                cur_test_expected_metrics_callback_fx)
