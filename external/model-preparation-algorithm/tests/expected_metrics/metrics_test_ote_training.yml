@@ -91,13 +91,13 @@
     "max_diff": 0.04
 ? "ACTION-training_evaluation,model-ClassIncremental_Semantic_Segmentation_Lite-HRNet-18_OCR,dataset-voc_cls_incr,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
 : "metrics.accuracy.Dice Average":
-    "target_value": 0.55
+    "target_value": 0.48
     "max_diff_if_less_threshold": 0.01
     "max_diff_if_greater_threshold": 0.05
 ? "ACTION-export_evaluation,model-ClassIncremental_Semantic_Segmentation_Lite-HRNet-18_OCR,dataset-voc_cls_incr,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
 : "metrics.accuracy.Dice Average":
     "base": "training_evaluation.metrics.accuracy.Dice Average"
-    "max_diff": 0.05
+    "max_diff": 0.01
 ? "ACTION-pot_evaluation,model-ClassIncremental_Semantic_Segmentation_Lite-HRNet-18_OCR,dataset-voc_cls_incr,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
 : "metrics.accuracy.Dice Average":
     "base": "export_evaluation.metrics.accuracy.Dice Average"
