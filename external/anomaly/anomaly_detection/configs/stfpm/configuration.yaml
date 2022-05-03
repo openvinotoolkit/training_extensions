@@ -286,5 +286,32 @@ pot_parameters:
     warning: null
   type: PARAMETER_GROUP
   visible_in_ui: false
+trainer:
+  description: Trainer Parameters
+  header: Trainer Parameters
+  max_epochs:
+    affects_outcome_of: TRAINING
+    auto_hpo_state: not_possible
+    auto_hpo_value: null
+    default_value: 100
+    description: Maximum number of epochs to train the model for.
+    editable: true
+    header: Max Epochs
+    max_value: 500
+    min_value: 1
+    type: INTEGER
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: 100
+    visible_in_ui: true
+    warning:
+      Training for very few epochs might lead to poor performance. If Early
+      Stopping is enabled then increasing the value of max epochs might not lead to
+      desired result.
+  type: PARAMETER_GROUP
+  visible_in_ui: true
 type: CONFIGURABLE_PARAMETERS
 visible_in_ui: true

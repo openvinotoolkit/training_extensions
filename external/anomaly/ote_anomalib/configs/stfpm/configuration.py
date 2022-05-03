@@ -99,4 +99,25 @@ class STFPMAnomalyBaseConfig(BaseAnomalyConfig):
 
         early_stopping = add_parameter_group(EarlyStoppingParameters)
 
+    @attrs
+    class TrainerParameters(ParameterGroup):
+        """
+        Parameters related to PyTorch Lightning trainer
+        """
+
+        header = string_attribute("Trainer Parameters")
+        description = header
+
+        max_epochs = configurable_integer(
+            default_value=100,
+            header="Max Epochs",
+            min_value=1,
+            max_value=500,
+            description="Maximum number of epochs to train the model for.",
+            warning="Training for very few epochs might lead to poor performance. If Early Stopping is enabled then "
+            "increasing the value of max epochs might not lead to desired result.",
+            affects_outcome_of=ModelLifecycle.TRAINING,
+        )
+
+    trainer = add_parameter_group(TrainerParameters)
     model = add_parameter_group(ModelParameters)

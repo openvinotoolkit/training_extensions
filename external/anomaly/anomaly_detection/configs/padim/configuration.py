@@ -1,5 +1,5 @@
 """
-Configurable parameters for Padim anomaly segmentation task
+Configurable parameters for Padim anomaly detection task
 """
 
 # Copyright (C) 2021 Intel Corporation
@@ -23,5 +23,5 @@ from ote_anomalib.configs.padim import PadimAnomalyBaseConfig
 @attrs
 class PadimAnomalyDetectionConfig(PadimAnomalyBaseConfig):
     """
-    Configurable parameters for PADIM anomaly segmentation task.
+    Configurable parameters for PADIM anomaly detection task.
     """
