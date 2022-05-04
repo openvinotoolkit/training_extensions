@@ -42,6 +42,10 @@ from ote_sdk.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
 from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType, IExportTask
 from ote_sdk.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from ote_sdk.usecases.tasks.interfaces.unload_interface import IUnload
+from ote_sdk.utils.argument_checks import (
+    DatasetParamTypeCheck,
+    check_input_parameters_type,
+)
 
 
 from mmseg.apis import export_model
@@ -61,6 +65,7 @@ logger = logging.getLogger(__name__)
 class OTESegmentationInferenceTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
     task_environment: TaskEnvironment
 
+    @check_input_parameters_type()
     def __init__(self, task_environment: TaskEnvironment):
         """"
         Task for training semantic segmentation models using OTESegmentation.
@@ -160,6 +165,7 @@ class OTESegmentationInferenceTask(IInferenceTask, IExportTask, IEvaluationTask,
 
         return model
 
+    @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def infer(self, dataset: DatasetEntity,
               inference_parameters: Optional[InferenceParameters] = None) -> DatasetEntity:
         """ Analyzes a dataset using the latest inference model. """
@@ -261,6 +267,7 @@ class OTESegmentationInferenceTask(IInferenceTask, IExportTask, IEvaluationTask,
 
             self._add_predictions_to_dataset_item(result[0], repr_vector, dataset_item, save_mask_visualization)
 
+    @check_input_parameters_type()
     def evaluate(self, output_result_set: ResultSetEntity, evaluation_metric: Optional[str] = None):
         """ Computes performance on a resultset """
 
@@ -304,6 +311,7 @@ class OTESegmentationInferenceTask(IInferenceTask, IExportTask, IEvaluationTask,
             logger.warning(f"Done unloading. "
                            f"Torch is still occupying {torch.cuda.memory_allocated()} bytes of GPU memory")
 
+    @check_input_parameters_type()
     def export(self, export_type: ExportType, output_model: ModelEntity):
         assert export_type == ExportType.OPENVINO
 

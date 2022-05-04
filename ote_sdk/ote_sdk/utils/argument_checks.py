@@ -337,6 +337,24 @@ def check_file_path(parameter, parameter_name, expected_file_extensions):
     check_that_file_exists(file_path=parameter, file_path_name=parameter_name)
 
 
+def check_directory_path(parameter, parameter_name):
+    """Function to check directory path string objects"""
+    raise_value_error_if_parameter_has_unexpected_type(
+        parameter=parameter,
+        parameter_name=parameter_name,
+        expected_type=str,
+    )
+    check_that_parameter_is_not_empty(
+        parameter=parameter, parameter_name=parameter_name
+    )
+    check_that_null_character_absents_in_string(
+        parameter=parameter, parameter_name=parameter_name
+    )
+    check_that_all_characters_printable(
+        parameter=parameter, parameter_name=parameter_name
+    )
+
+
 class BaseInputArgumentChecker(ABC):
     """Abstract class to check input arguments"""
 
@@ -454,3 +472,43 @@ class YamlFilePathCheck(FilePathCheck):
             parameter_name=parameter_name,
             expected_file_extension=[".yaml"],
         )
+
+
+class JsonFilePathCheck(FilePathCheck):
+    """Class to check json file path parameters"""
+
+    def __init__(self, parameter, parameter_name):
+        super().__init__(
+            parameter=parameter,
+            parameter_name=parameter_name,
+            expected_file_extension=[".json"],
+        )
+
+
+class DirectoryPathCheck(BaseInputArgumentChecker):
+    """Class to check directory path parameters"""
+
+    def __init__(self, parameter, parameter_name):
+        self.parameter = parameter
+        self.parameter_name = parameter_name
+
+    def check(self):
+        """Method raises ValueError exception if directory path parameter is not equal to expected"""
+        check_directory_path(
+            parameter=self.parameter, parameter_name=self.parameter_name
+        )
+
+
+class OptionalDirectoryPathCheck(BaseInputArgumentChecker):
+    """Class to check optional directory path parameters"""
+
+    def __init__(self, parameter, parameter_name):
+        self.parameter = parameter
+        self.parameter_name = parameter_name
+
+    def check(self):
+        """Method raises ValueError exception if directory path parameter is not equal to expected"""
+        if self.parameter is not None:
+            check_directory_path(
+                parameter=self.parameter, parameter_name=self.parameter_name
+            )
