@@ -11,7 +11,7 @@ import numpy as np
 import torch
 from mmcv.utils import ConfigDict
 from segmentation_tasks.apis.segmentation.config_utils import remove_from_config
-from segmentation_tasks.apis.segmentation.ote_utils import TrainingProgressCallback
+from segmentation_tasks.apis.segmentation.ote_utils import TrainingProgressCallback, InferenceProgressCallback
 from segmentation_tasks.extension.utils.hooks import OTELoggerHook
 from mpa import MPAConstants
 from mpa_tasks.apis import BaseTask, TrainType
@@ -22,6 +22,7 @@ from ote_sdk.configuration import cfg_helper
 from ote_sdk.configuration.helper.utils import ids_to_strings
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.inference_parameters import InferenceParameters
+from ote_sdk.entities.inference_parameters import default_progress_callback as default_infer_progress_callback
 from ote_sdk.entities.label import Domain
 from ote_sdk.entities.metrics import (CurveMetric, InfoMetric, LineChartInfo,
                                       MetricsGroup, Performance, ScoreMetric,
@@ -48,8 +49,6 @@ from ote_sdk.utils.segmentation_utils import (
     create_annotation_from_segmentation_map,
     create_hard_prediction_from_soft_prediction)
 
-# from mmdet.apis import export_model
-
 
 logger = get_logger()
 
@@ -70,11 +69,13 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         logger.info('infer()')
 
         if inference_parameters is not None:
-            # update_progress_callback = inference_parameters.update_progress
+            update_progress_callback = inference_parameters.update_progress
             is_evaluation = inference_parameters.is_evaluation
         else:
-            # update_progress_callback = default_infer_progress_callback
+            update_progress_callback = default_infer_progress_callback
             is_evaluation = False
+
+        self._time_monitor = InferenceProgressCallback(len(dataset), update_progress_callback)
 
         stage_module = 'SegInferrer'
         self._data_cfg = self._init_test_data_cfg(dataset)
@@ -187,8 +188,10 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         data_cfg = ConfigDict(
             data=ConfigDict(
                 train=ConfigDict(
-                    ote_dataset=None,
-                    labels=self._labels,
+                    dataset=ConfigDict(
+                        ote_dataset=None,
+                        labels=self._labels,
+                    )
                 ),
                 test=ConfigDict(
                     ote_dataset=dataset,
@@ -311,7 +314,7 @@ class SegmentationTrainTask(SegmentationInferenceTask, ITrainingTask):
         will therefore take some time.
         """
         logger.info("Cancel training requested.")
-        # self._should_stop = True
+        self._should_stop = True
         # stop_training_filepath = os.path.join(self._training_work_dir, '.stop_training')
         # open(stop_training_filepath, 'a').close()
         if self.cancel_interface is not None:
@@ -325,6 +328,14 @@ class SegmentationTrainTask(SegmentationInferenceTask, ITrainingTask):
               output_model: ModelEntity,
               train_parameters: Optional[TrainParameters] = None):
         logger.info('train()')
+        # Check for stop signal between pre-eval and training. 
+        # If training is cancelled at this point,
+        if self._should_stop:
+            logger.info('Training cancelled.')
+            self._should_stop = False
+            self._is_training = False
+            return
+
         # Set OTE LoggerHook & Time Monitor
         if train_parameters is not None:
             update_progress_callback = train_parameters.update_progress
@@ -336,7 +347,16 @@ class SegmentationTrainTask(SegmentationInferenceTask, ITrainingTask):
         # learning_curves = defaultdict(OTELoggerHook.Curve)
         stage_module = 'SegTrainer'
         self._data_cfg = self._init_train_data_cfg(dataset)
+        self._is_training = True
         results = self._run_task(stage_module, mode='train', dataset=dataset, parameters=train_parameters)
+
+        # Check for stop signal when training has stopped. 
+        # If should_stop is true, training was cancelled and no new
+        if self._should_stop:
+            logger.info('Training cancelled.')
+            self._should_stop = False
+            self._is_training = False
+            return
 
         # get output model
         model_ckpt = results.get('final_ckpt')
@@ -358,6 +378,7 @@ class SegmentationTrainTask(SegmentationInferenceTask, ITrainingTask):
         self.save_model(output_model)
         output_model.performance = performance
         # output_model.model_status = ModelStatus.SUCCESS
+        self._is_training = False
         logger.info('train done.')
 
     def _init_train_data_cfg(self, dataset: DatasetEntity):

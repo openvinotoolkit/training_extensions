@@ -11,7 +11,7 @@ import numpy as np
 import torch
 from mmcv.utils import ConfigDict
 from detection_tasks.apis.detection.config_utils import remove_from_config
-from detection_tasks.apis.detection.ote_utils import TrainingProgressCallback
+from detection_tasks.apis.detection.ote_utils import TrainingProgressCallback, InferenceProgressCallback
 from detection_tasks.extension.utils.hooks import OTELoggerHook
 from mpa_tasks.apis import BaseTask, TrainType
 from mpa_tasks.apis.detection import DetectionConfig
@@ -67,6 +67,11 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
               ) -> DatasetEntity:
         logger.info('infer()')
 
+        update_progress_callback = default_progress_callback
+        if inference_parameters is not None:
+            update_progress_callback = inference_parameters.update_progress
+
+        self._time_monitor = InferenceProgressCallback(len(dataset), update_progress_callback)
         # If confidence threshold is adaptive then up-to-date value should be stored in the model
         # and should not be changed during inference. Otherwise user-specified value should be taken.
         if not self._hyperparams.postprocessing.result_based_confidence_threshold:
@@ -75,7 +80,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
 
         stage_module = 'DetectionInferrer'
         self._data_cfg = self._init_test_data_cfg(dataset)
-        results = self._run_task(stage_module, mode='train', dataset=dataset)
+        results = self._run_task(stage_module, mode='train', dataset=dataset, parameters=inference_parameters)
         # TODO: InferenceProgressCallback register
         logger.debug(f'result of run_task {stage_module} module = {results}')
         output = results['outputs']
@@ -310,7 +315,7 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
         will therefore take some time.
         """
         logger.info("Cancel training requested.")
-        # self._should_stop = True
+        self._should_stop = True
         # stop_training_filepath = os.path.join(self._training_work_dir, '.stop_training')
         # open(stop_training_filepath, 'a').close()
         if self.cancel_interface is not None:
@@ -324,6 +329,14 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
               output_model: ModelEntity,
               train_parameters: Optional[TrainParameters] = None):
         logger.info('train()')
+        # Check for stop signal when training has stopped. 
+        # If should_stop is true, training was cancelled and no new
+        if self._should_stop:
+            logger.info('Training cancelled.')
+            self._should_stop = False
+            self._is_training = False
+            return
+
         # Set OTE LoggerHook & Time Monitor
         update_progress_callback = default_progress_callback
         if train_parameters is not None:
@@ -333,8 +346,15 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
 
         stage_module = 'DetectionTrainer'
         self._data_cfg = self._init_train_data_cfg(dataset)
+        self._is_training = True
         results = self._run_task(stage_module, mode='train', dataset=dataset, parameters=train_parameters)
-        # logger.info(f'result of run_task {stage_module} module = {results}')
+
+        # Check for stop signal when training has stopped. If should_stop is true, training was cancelled and no new
+        if self._should_stop:
+            logger.info('Training cancelled.')
+            self._should_stop = False
+            self._is_training = False
+            return
 
         # get output model
         model_ckpt = results.get('final_ckpt')
@@ -389,6 +409,7 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
         self.save_model(output_model)
         output_model.performance = performance
         # output_model.model_status = ModelStatus.SUCCESS
+        self._is_training = False
         logger.info('train done.')
 
     def _init_train_data_cfg(self, dataset: DatasetEntity):
