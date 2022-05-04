@@ -23,7 +23,7 @@ learning_parameters:
     warning:
       Increasing this value may cause the system to use more memory than available,
       potentially causing out of memory errors, please update with caution.
-    auto_hpo_state: POSSIBLE
+    auto_hpo_state: NOT_POSSIBLE
   description: Learning Parameters
   header: Learning Parameters
   learning_rate:
@@ -45,7 +45,7 @@ learning_parameters:
     value: 0.01
     visible_in_ui: true
     warning: null
-    auto_hpo_state: POSSIBLE
+    auto_hpo_state: NOT_POSSIBLE
   learning_rate_warmup_iters:
     affects_outcome_of: TRAINING
     default_value: 100

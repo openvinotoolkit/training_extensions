@@ -15,3 +15,11 @@ All notable changes to this project will be documented in this file.
   * Image Classification
   * Object Detection
   * Semantic Segmentation
+
+## \[v0.2.0\]
+### Added
+* Model Preparation Algorithm (MPA), a newly introduced OTE Algorithm backend for advanced transfer learning
+  * Class-Incremental Learning support for OTE models
+    * Image Classification
+    * Object Detection
+    * Semantic Segmentation

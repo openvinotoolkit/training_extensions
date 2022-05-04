@@ -13,6 +13,9 @@
 # and limitations under the License.
 
 import numpy as np
+from typing import Dict, Any
+
+from ote_sdk.utils.argument_checks import check_input_parameters_type
 
 from mmseg.datasets.builder import PIPELINES
 from ..datasets import get_annotation_mmseg_format
@@ -31,10 +34,12 @@ class LoadImageFromOTEDataset:
     :param to_float32: optional bool, True to convert images to fp32. defaults to False
     """
 
+    @check_input_parameters_type()
     def __init__(self, to_float32: bool = False):
         self.to_float32 = to_float32
 
-    def __call__(self, results):
+    @check_input_parameters_type()
+    def __call__(self, results: Dict[str, Any]):
         dataset_item = results['dataset_item']
         img = dataset_item.numpy
         shape = img.shape
@@ -77,7 +82,8 @@ class LoadAnnotationFromOTEDataset:
     def __init__(self):
         pass
 
-    def __call__(self, results):
+    @check_input_parameters_type()
+    def __call__(self, results: Dict[str, Any]):
         dataset_item = results['dataset_item']
         labels = results['ann_info']['labels']
 

@@ -17,6 +17,7 @@ Model training tool.
 # and limitations under the License.
 
 import argparse
+import os.path as osp
 
 from ote_sdk.configuration.helper import create
 from ote_sdk.entities.inference_parameters import InferenceParameters
@@ -25,6 +26,7 @@ from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.subset import Subset
 from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.entities.train_parameters import TrainParameters
+from ote_sdk.serialization.label_mapper import label_schema_to_bytes
 from ote_sdk.usecases.adapters.model_adapter import ModelAdapter
 
 from ote_cli.datasets import get_dataset_class
@@ -32,7 +34,12 @@ from ote_cli.registry import find_and_parse_model_template
 from ote_cli.utils.config import override_parameters
 from ote_cli.utils.hpo import run_hpo
 from ote_cli.utils.importing import get_impl_class
-from ote_cli.utils.io import generate_label_schema, read_binary, save_model_data
+from ote_cli.utils.io import (
+    generate_label_schema,
+    read_binary,
+    read_label_schema,
+    save_model_data,
+)
 from ote_cli.utils.parser import (
     add_hyper_parameters_sub_parser,
     gen_params_dict_from_args,
@@ -138,12 +145,21 @@ def main():
     )
 
     if args.load_weights:
+        model_adapters = {
+            "weights.pth": ModelAdapter(read_binary(args.load_weights)),
+        }
+        if osp.exists(osp.join(osp.dirname(args.load_weights), "label_schema.json")):
+            model_adapters.update(
+                {
+                    "label_schema.json": ModelAdapter(
+                        label_schema_to_bytes(read_label_schema(args.load_weights))
+                    )
+                }
+            )
         environment.model = ModelEntity(
             train_dataset=dataset,
             configuration=environment.get_model_configuration(),
-            model_adapters={
-                "weights.pth": ModelAdapter(read_binary(args.load_weights))
-            },
+            model_adapters=model_adapters,
         )
 
     if args.enable_hpo:

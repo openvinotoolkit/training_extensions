@@ -50,7 +50,7 @@ class OTEClassificationParameters(ConfigurableParameters):
             warning="Increasing this value may cause the system to use more memory than available, "
             "potentially causing out of memory errors, please update with caution.",
             affects_outcome_of=ModelLifecycle.TRAINING,
-            auto_hpo_state=AutoHPOState.POSSIBLE
+            auto_hpo_state=AutoHPOState.NOT_POSSIBLE
         )
 
         max_num_epochs = configurable_integer(
@@ -71,7 +71,7 @@ class OTEClassificationParameters(ConfigurableParameters):
             description="Increasing this value will speed up training \
                          convergence but might make it unstable.",
             affects_outcome_of=ModelLifecycle.TRAINING,
-            auto_hpo_state=AutoHPOState.POSSIBLE
+            auto_hpo_state=AutoHPOState.NOT_POSSIBLE
         )
 
         enable_lr_finder = configurable_boolean(

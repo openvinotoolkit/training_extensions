@@ -18,6 +18,7 @@ class Subset(Enum):
     TESTING = 3
     UNLABELED = 4
     PSEUDOLABELED = 5
+    UNASSIGNED = 6
 
     def __str__(self):
         return str(self.name)

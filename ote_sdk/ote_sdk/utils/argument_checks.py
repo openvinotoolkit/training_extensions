@@ -475,7 +475,7 @@ class YamlFilePathCheck(FilePathCheck):
 
 
 class JsonFilePathCheck(FilePathCheck):
-    """Class to check optional yaml file path parameters"""
+    """Class to check json file path parameters"""
 
     def __init__(self, parameter, parameter_name):
         super().__init__(
