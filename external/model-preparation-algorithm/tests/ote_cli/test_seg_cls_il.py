@@ -61,7 +61,7 @@ templates = Registry('external/model-preparation-algorithm').filter(task_type='S
 templates_ids = [template.model_template_id for template in templates]
 
 
-class TestToolsSegmentation:
+class TestToolsSegClsIncr:
     @e2e_pytest_component
     def test_create_venv(self):
         work_dir, _, algo_backend_dir = get_some_vars(templates[0], root)
