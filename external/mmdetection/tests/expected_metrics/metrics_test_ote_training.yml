@@ -391,5 +391,5 @@
     "max_diff_if_less_threshold": 0.01
 ? "ACTION-nncf_export_evaluation,model-Custom_Counting_Instance_Segmentation_MaskRCNN_EfficientNetB2B,dataset-aeromonas,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
 : "metrics.accuracy.f-measure":
-    "base": 'nncf_evaluation.metrics.accuracy.f-measure'
+    "base": "nncf_evaluation.metrics.accuracy.f-measure"
     "max_diff": 0.01
