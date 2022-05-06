@@ -79,7 +79,7 @@ class BaseOTETestAction(ABC):
 
 
 def create_environment_and_task(
-    params, labels_schema, model_template, dataset, model_adapters=None
+    params, labels_schema, model_template, dataset=None, model_adapters=None
 ):
 
     environment = TaskEnvironment(
