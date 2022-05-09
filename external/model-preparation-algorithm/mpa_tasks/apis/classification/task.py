@@ -15,6 +15,7 @@ from ote_sdk.configuration.helper.utils import ids_to_strings
 
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.inference_parameters import InferenceParameters, default_progress_callback
+from ote_sdk.entities.train_parameters import default_progress_callback as train_default_progress_callback
 from ote_sdk.entities.model import ModelEntity, ModelPrecision  # ModelStatus
 from ote_sdk.entities.resultset import ResultSetEntity
 from mmcv.utils import ConfigDict
@@ -217,6 +218,7 @@ class ClassificationTrainTask(ClassificationInferenceTask):
         The stopping mechanism allows stopping after each iteration, but validation will still be carried out. Stopping
         will therefore take some time.
         """
+        self._should_stop = True
         logger.info("Cancel training requested.")
         if self.cancel_interface is not None:
             self.cancel_interface.cancel()
@@ -229,8 +231,16 @@ class ClassificationTrainTask(ClassificationInferenceTask):
               output_model: ModelEntity,
               train_parameters: Optional[TrainParameters] = None):
         logger.info('train()')
+        # Check for stop signal between pre-eval and training. 
+        # If training is cancelled at this point,
+        if self._should_stop:
+            logger.info('Training cancelled.')
+            self._should_stop = False
+            self._is_training = False
+            return
+
         # Set OTE LoggerHook & Time Monitor
-        update_progress_callback = default_progress_callback
+        update_progress_callback = train_default_progress_callback
         if train_parameters is not None:
             update_progress_callback = train_parameters.update_progress
         self._time_monitor = TrainingProgressCallback(update_progress_callback)
@@ -238,7 +248,16 @@ class ClassificationTrainTask(ClassificationInferenceTask):
 
         stage_module = 'ClsTrainer'
         self._data_cfg = self._init_train_data_cfg(dataset)
+        self._is_training = True
         results = self._run_task(stage_module, mode='train', dataset=dataset, parameters=train_parameters)
+
+        # Check for stop signal between pre-eval and training. 
+        # If training is cancelled at this point,
+        if self._should_stop:
+            logger.info('Training cancelled.')
+            self._should_stop = False
+            self._is_training = False
+            return
 
         # get output model
         model_ckpt = results.get('final_ckpt')
@@ -257,6 +276,7 @@ class ClassificationTrainTask(ClassificationInferenceTask):
                                   dashboard_metrics=training_metrics)
         logger.info(f'Final model performance: {str(performance)}')
         output_model.performance = performance
+        self._is_training = False
         logger.info('train done.')
 
     def _init_train_data_cfg(self, dataset: DatasetEntity):

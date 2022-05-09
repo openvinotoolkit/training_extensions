@@ -3,7 +3,9 @@
 #
 
 import importlib
+import json
 import os
+import os.path as osp
 from abc import ABC, abstractmethod
 from collections import OrderedDict
 from copy import deepcopy
@@ -19,6 +21,8 @@ from ote_sdk.entities.optimization_parameters import OptimizationParameters
 from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.subset import Subset
 from ote_sdk.entities.task_environment import TaskEnvironment
+from ote_sdk.serialization.label_mapper import LabelSchemaMapper, label_schema_to_bytes
+from ote_sdk.usecases.adapters.model_adapter import ModelAdapter
 from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType
 from ote_sdk.usecases.tasks.interfaces.optimization_interface import OptimizationType
 from ote_sdk.utils.importing import get_impl_class
@@ -74,13 +78,24 @@ class BaseOTETestAction(ABC):
         raise NotImplementedError("The main action method is not implemented")
 
 
-def create_environment_and_task(params, labels_schema, model_template):
+def create_environment_and_task(
+    params, labels_schema, model_template, dataset=None, model_adapters=None
+):
+
     environment = TaskEnvironment(
         model=None,
         hyper_parameters=params,
         label_schema=labels_schema,
         model_template=model_template,
     )
+
+    if model_adapters is not None:
+        environment.model = ModelEntity(
+            train_dataset=dataset,
+            configuration=environment.get_model_configuration(),
+            model_adapters=model_adapters,
+        )
+
     logger.info("Create base Task")
     task_impl_path = model_template.entrypoints.base
     task_cls = get_impl_class(task_impl_path)
@@ -92,13 +107,20 @@ class OTETestTrainingAction(BaseOTETestAction):
     _name = "training"
 
     def __init__(
-        self, dataset, labels_schema, template_path, num_training_iters, batch_size
+        self,
+        dataset,
+        labels_schema,
+        template_path,
+        num_training_iters,
+        batch_size,
+        checkpoint=None,
     ):
         self.dataset = dataset
         self.labels_schema = labels_schema
         self.template_path = template_path
         self.num_training_iters = num_training_iters
         self.batch_size = batch_size
+        self.checkpoint = checkpoint
 
     def _get_training_performance_as_score_name_value(self):
         training_performance = getattr(self.output_model, "performance", None)
@@ -146,18 +168,44 @@ class OTETestTrainingAction(BaseOTETestAction):
                 f"{params.learning_parameters.batch_size}"
             )
 
-        logger.debug("Setup environment")
+        model_adapters = None
+        if self.checkpoint is not None:
+            logger.debug("Load pretrained model")
+            model_adapters = {
+                "weights.pth": ModelAdapter(open(self.checkpoint, "rb").read()),
+            }
+            label_schema_path = osp.join(
+                osp.dirname(self.checkpoint), "label_schema.json"
+            )
+            if osp.exists(label_schema_path):
+                with open(label_schema_path, encoding="UTF-8") as read_file:
+                    serialized_label_schema = LabelSchemaMapper.backward(
+                        json.load(read_file)
+                    )
+                model_adapters.update(
+                    {
+                        "label_schema.json": ModelAdapter(
+                            label_schema_to_bytes(serialized_label_schema)
+                        )
+                    }
+                )
+
         self.environment, self.task = create_environment_and_task(
-            params, self.labels_schema, self.model_template
+            params,
+            self.labels_schema,
+            self.model_template,
+            self.dataset,
+            model_adapters,
         )
 
-        logger.debug("Train model")
         self.output_model = ModelEntity(
             self.dataset,
             self.environment.get_model_configuration(),
         )
 
         self.copy_hyperparams = deepcopy(self.task._hyperparams)
+
+        logger.debug("Train model")
 
         try:
             self.task.train(self.dataset, self.output_model)
