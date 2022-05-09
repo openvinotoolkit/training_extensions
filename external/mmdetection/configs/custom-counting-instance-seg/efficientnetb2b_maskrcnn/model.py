@@ -157,3 +157,4 @@ custom_hooks = [
     dict(type='EarlyStoppingHook', patience=10, metric='mAP',
          interval=1, priority=75, iteration_patience=0),
 ]
+fp16 = dict(loss_scale=512.)
