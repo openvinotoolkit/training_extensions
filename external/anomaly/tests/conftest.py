@@ -23,7 +23,6 @@ try:
 except ImportError:
     _e2e_pytest_addoption = None
     pass
-# import config
 import pytest
 from ote_sdk.test_suite.pytest_insertions import (
     get_pytest_plugins_from_ote,
