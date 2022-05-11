@@ -66,18 +66,12 @@ def ote_test_domain_fx():
     return 'anomaly-segmentation'
 
 
-@pytest.fixture(scope='class')
-def ote_templates_root_dir_fx():
-    import os.path as osp
-    import logging
-    logger = logging.getLogger(__name__)
-    root = osp.dirname(osp.dirname(osp.realpath(__file__)))
-    root = f'{root}/anomaly_segmentation/configs/'
-    logger.debug(f'overloaded ote_templates_root_dir_fx: return {root}')
-    return root
-
 def DATASET_PARAMETERS_FIELDS() -> List[str]:
-    return deepcopy(['dataset_path'])
+    return deepcopy(['dataset_path',
+                     # 'annotations_train',
+                     # 'annotations_val',
+                     # 'annotations_test',
+                     ])
 
 DatasetParameters = namedtuple('DatasetParameters', DATASET_PARAMETERS_FIELDS())
 
@@ -147,6 +141,7 @@ class AnomalySegmentationTrainingTestParameters(DefaultOTETestCreationParameters
                        # 'ote_anomaly_segmentation_stfpm',
                     ],
                     dataset_name='mvtec_short',
+                    # dataset_name='mvtec_json_short',
                     usecase='precommit',
                 ),
                 dict(
