@@ -64,6 +64,22 @@ from ote_sdk.test_suite.training_tests_actions import (
 logger = get_logger(__name__)
 
 
+@pytest.fixture
+def ote_test_domain_fx():
+    return "custom-anomaly-classification"
+
+
+@pytest.fixture(scope="session")
+def ote_templates_root_dir_fx():
+    import os.path as osp
+    import logging
+    logger = logging.getLogger(__name__)
+    root = osp.dirname(osp.dirname(osp.realpath(__file__)))
+    root = f"{root}/anomaly_classification/"
+    logger.debug(f"overloaded ote_templates_root_dir_fx: return {root}")
+    return root
+
+
 def DATASET_PARAMETERS_FIELDS() -> List[str]:
     return deepcopy(["dataset_path"])
 

@@ -39,7 +39,7 @@ ote_conftest_insertion(default_repository_name="ote/training_extensions/external
 
 @pytest.fixture
 def ote_test_domain_fx():
-    return "custom-anomaly-classification"
+    raise NotImplementedError("Please, implement the fixture ote_test_domain_fx in your test file")
 
 
 @pytest.fixture
