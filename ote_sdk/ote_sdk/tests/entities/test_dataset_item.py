@@ -66,12 +66,10 @@ class DatasetItemParameters:
         detection_annotation = Annotation(
             shape=rectangle,
             labels=[ScoredLabel(label=labels[0])],
-            id=ID("detection_annotation_1"),
         )
         segmentation_annotation = Annotation(
             shape=other_rectangle,
             labels=[ScoredLabel(label=labels[1])],
-            id=ID("segmentation_annotation_1"),
         )
         return [detection_annotation, segmentation_annotation]
 
@@ -109,7 +107,6 @@ class DatasetItemParameters:
                 modification_date=datetime.datetime(year=2021, month=12, day=9),
             ),
             labels=self.roi_scored_labels(),
-            id=ID("roi_annotation"),
         )
         return roi
 
@@ -161,7 +158,6 @@ class TestDatasetItemEntity:
             expected_annotation = expected_annotations[index]
             # Redefining id and modification_date required because of new Annotation objects created after shape
             # denormalize
-            actual_annotation.id_ = expected_annotation.id_
             actual_annotation.shape.modification_date = (
                 expected_annotation.shape.modification_date
             )
@@ -191,12 +187,10 @@ class TestDatasetItemEntity:
         annotation_to_add = Annotation(
             shape=Rectangle(x1=0.1, y1=0.1, x2=0.7, y2=0.8),
             labels=[ScoredLabel(label=labels_to_add[0])],
-            id=ID("added_annotation_1"),
         )
         other_annotation_to_add = Annotation(
             shape=Rectangle(x1=0.2, y1=0.3, x2=0.8, y2=0.9),
             labels=[ScoredLabel(label=labels_to_add[1])],
-            id=ID("added_annotation_2"),
         )
         return [annotation_to_add, other_annotation_to_add]
 
@@ -399,7 +393,6 @@ class TestDatasetItemEntity:
         rectangle_roi = Annotation(
             Rectangle(x1=0.2, y1=0.1, x2=0.8, y2=0.9),
             [ScoredLabel(roi_label)],
-            ID("rectangle_roi"),
         )
         assert np.array_equal(
             dataset_item.roi_numpy(rectangle_roi), media.numpy[1:9, 3:13]
@@ -408,7 +401,6 @@ class TestDatasetItemEntity:
         ellipse_roi = Annotation(
             Ellipse(x1=0.1, y1=0.0, x2=0.9, y2=0.8),
             [ScoredLabel(roi_label)],
-            ID("ellipse_roi"),
         )
         assert np.array_equal(
             dataset_item.roi_numpy(ellipse_roi), media.numpy[0:8, 2:14]
@@ -425,7 +417,6 @@ class TestDatasetItemEntity:
                 ]
             ),
             labels=[],
-            id=ID("polygon_roi"),
         )
         assert np.array_equal(
             dataset_item.roi_numpy(polygon_roi), media.numpy[4:8, 5:13]
@@ -625,8 +616,6 @@ class TestDatasetItemEntity:
             )
         dataset_item.append_annotations(annotations_to_add)
         # Random id is generated for normalized annotations
-        normalized_annotations[0].id_ = dataset_item.annotation_scene.annotations[2].id_
-        normalized_annotations[1].id_ = dataset_item.annotation_scene.annotations[3].id_
         assert (
             dataset_item.annotation_scene.annotations
             == full_box_annotations + normalized_annotations
@@ -644,7 +633,6 @@ class TestDatasetItemEntity:
         incorrect_shape_annotation = Annotation(
             shape=incorrect_polygon,
             labels=[ScoredLabel(incorrect_shape_label)],
-            id=ID("incorrect_shape_annotation"),
         )
         dataset_item.append_annotations([incorrect_shape_annotation])
         assert (

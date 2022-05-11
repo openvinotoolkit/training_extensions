@@ -12,11 +12,9 @@ from typing import List, Optional, Sequence, Tuple, cast
 
 import cv2
 import numpy as np
-from bson import ObjectId
 
 from ote_sdk.entities.annotation import Annotation
 from ote_sdk.entities.dataset_item import DatasetItemEntity
-from ote_sdk.entities.id import ID
 from ote_sdk.entities.label import LabelEntity
 from ote_sdk.entities.scored_label import ScoredLabel
 from ote_sdk.entities.shapes.polygon import Point, Polygon
@@ -254,7 +252,6 @@ def create_annotation_from_segmentation_map(
                                 Annotation(
                                     shape=polygon,
                                     labels=[ScoredLabel(label, probability)],
-                                    id=ID(ObjectId()),
                                 )
                             )
                         else:

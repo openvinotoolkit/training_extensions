@@ -67,7 +67,6 @@ class TestRectangle:
             "y1": 0.1,
             "x2": 0.3,
             "y2": 0.4,
-            "labels": self.rectangle_labels(),
             "modification_date": datetime(
                 year=2020, month=1, day=1, hour=9, minute=30, second=15, microsecond=2
             ),
@@ -130,11 +129,9 @@ class TestRectangle:
         """
         # Checking default values of optional parameters
         default_params_rectangle = self.horizontal_rectangle()
-        assert default_params_rectangle._labels == []
         assert isinstance(default_params_rectangle.modification_date, datetime)
         # check for specified values of optional parameters
         specified_params_rectangle = self.vertical_rectangle()
-        assert specified_params_rectangle._labels == self.rectangle_labels()
         assert specified_params_rectangle.modification_date == datetime(
             year=2020, month=1, day=1, hour=9, minute=30, second=15, microsecond=2
         )
@@ -237,11 +234,6 @@ class TestRectangle:
         # Check for different types branch
         assert rectangle != str
         # Check for unequal labels parameters. Expected that different labels are not affecting equality
-        unequal_label = LabelEntity(
-            name="Unequal label", domain=Domain.SEGMENTATION, id=ID("unequal_label_1")
-        )
-        unequal_scored_label = ScoredLabel(label=unequal_label)
-        equal_rectangle._labels.append(unequal_scored_label)
         assert rectangle == equal_rectangle
         # Check for instances with unequal parameters combinations
         # Generating all possible scenarios of parameter values submission
@@ -321,7 +313,6 @@ class TestRectangle:
                     "y1": 0.2,
                     "x2": 0.6,
                     "y2": 0.4,
-                    "labels": self.rectangle_labels(),
                 },
                 "params_expected": {"x1": 0.3, "y1": 0.2, "x2": 0.6, "y2": 0.4},
             },
@@ -331,7 +322,6 @@ class TestRectangle:
                     "y1": -0.3,
                     "x2": 1.6,
                     "y2": 1.4,
-                    "labels": self.rectangle_labels(),
                 },
                 "params_expected": {"x1": 0.0, "y1": 0.0, "x2": 1.0, "y2": 1.0},
             },
@@ -341,7 +331,6 @@ class TestRectangle:
                     "y1": 0.0,
                     "x2": 1.0,
                     "y2": 1.0,
-                    "labels": self.rectangle_labels(),
                 },
                 "params_expected": {"x1": 0.0, "y1": 0.0, "x2": 1.0, "y2": 1.0},
             },
@@ -464,29 +453,17 @@ class TestRectangle:
         <b>Description:</b>
         Check Rectangle generate_full_box method
 
-        <b>Input data:</b>
-        Labels specified for full_box instance of Rectangle class
-
         <b>Expected results:</b>
         Test passes if generate_full_box method returns instance of Rectangle class with coordinates
         (x1=0.0, y1=0.0, x2=1.0, y2=1.0)
 
         <b>Steps</b>
         1. Check generate_full_box method for Rectangle instance with no labels specified
-        2. Check generate_full_box method for Rectangle instance with labels specified
         """
-        detection_label = ScoredLabel(
-            LabelEntity(name="detection", domain=Domain.DETECTION)
-        )
-        for label_actual, label_expected in [
-            (None, []),
-            ([detection_label], [detection_label]),
-        ]:
-            full_box = Rectangle.generate_full_box(label_actual)
-            assert full_box.type == ShapeType.RECTANGLE
-            assert full_box.x1 == full_box.y1 == 0.0
-            assert full_box.x2 == full_box.y2 == 1.0
-            assert full_box._labels == label_expected
+        full_box = Rectangle.generate_full_box()
+        assert full_box.type == ShapeType.RECTANGLE
+        assert full_box.x1 == full_box.y1 == 0.0
+        assert full_box.x2 == full_box.y2 == 1.0
 
     @pytest.mark.priority_medium
     @pytest.mark.unit

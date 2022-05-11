@@ -454,7 +454,6 @@ class TestDatasetEntity:
                 assert actual_item.media is expected_item.media
                 assert actual_item.annotation_scene.annotations == []
                 assert actual_item.annotation_scene.kind == expected_kind
-                assert actual_item.roi.id_ != expected_item.roi.id_
                 assert actual_item.roi.shape is expected_item.roi.shape
                 assert actual_item.roi.get_labels() == []
                 assert actual_item.subset is expected_item.subset
