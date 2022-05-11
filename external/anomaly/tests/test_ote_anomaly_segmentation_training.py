@@ -66,7 +66,7 @@ def ote_test_domain_fx():
     return 'anomaly-segmentation'
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope='class')
 def ote_templates_root_dir_fx():
     import os.path as osp
     import logging

@@ -69,7 +69,7 @@ def ote_test_domain_fx():
     return "custom-anomaly-classification"
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="class")
 def ote_templates_root_dir_fx():
     import os.path as osp
     import logging
