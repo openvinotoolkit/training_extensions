@@ -116,7 +116,7 @@ class ProgressCallback(ProgressBar):
     def on_validation_epoch_end(self, trainer, pl_module):
         super().on_validation_epoch_end(trainer, pl_module)
         score = None
-        metric = self.update_progress_callback.metric if hasattr(self.update_progress_callback, 'metric') else None
+        metric = getattr(self.update_progress_callback, 'metric', None)
         if metric in list(trainer.logged_metrics.keys()):
             score = float(trainer.logged_metrics[metric])
         progress = int(self._get_progress('predict'))
