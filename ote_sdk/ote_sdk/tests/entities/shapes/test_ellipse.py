@@ -78,7 +78,6 @@ class TestEllipse:
         assert ellipse.y_center == 0.25
         assert ellipse.minor_axis == 0.25
         assert ellipse.major_axis == 0.25
-        assert ellipse._labels == []
         assert ellipse.modification_date == modification_date
 
         incorrect_ellipse_params = {
