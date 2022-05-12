@@ -154,37 +154,41 @@ def run_hpo_trainer(
     if task_type == TaskType.CLASSIFICATION:
         (hyper_parameters.learning_parameters.max_num_epochs) = hp_config["iterations"]
     elif task_type == TaskType.DETECTION:
-        hyper_parameters.learning_parameters.learning_rate_warmup_iters = int(
-            hyper_parameters.learning_parameters.learning_rate_warmup_iters
-            * hp_config["iterations"]
-            / hyper_parameters.learning_parameters.num_iters
-        )
+        if "bracket" not in hp_config:
+            hyper_parameters.learning_parameters.learning_rate_warmup_iters = int(
+                hyper_parameters.learning_parameters.learning_rate_warmup_iters
+                * hp_config["iterations"]
+                / hyper_parameters.learning_parameters.num_iters
+            )
         hyper_parameters.learning_parameters.num_iters = hp_config["iterations"]
     elif task_type == TaskType.SEGMENTATION:
-        eph_comp = [
-            hyper_parameters.learning_parameters.learning_rate_fixed_iters,
-            hyper_parameters.learning_parameters.learning_rate_warmup_iters,
-            hyper_parameters.learning_parameters.num_iters,
-        ]
+        if "bracket" not in hp_config:
+            eph_comp = [
+                hyper_parameters.learning_parameters.learning_rate_fixed_iters,
+                hyper_parameters.learning_parameters.learning_rate_warmup_iters,
+                hyper_parameters.learning_parameters.num_iters,
+            ]
 
-        eph_comp = list(
-            map(lambda x: x * hp_config["iterations"] / sum(eph_comp), eph_comp)
-        )
+            eph_comp = list(
+                map(lambda x: x * hp_config["iterations"] / sum(eph_comp), eph_comp)
+            )
 
-        for val in sorted(
-            list(range(len(eph_comp))),
-            key=lambda k: eph_comp[k] - int(eph_comp[k]),
-            reverse=True,
-        )[: hp_config["iterations"] - sum(map(int, eph_comp))]:
-            eph_comp[val] += 1
+            for val in sorted(
+                list(range(len(eph_comp))),
+                key=lambda k: eph_comp[k] - int(eph_comp[k]),
+                reverse=True,
+            )[: hp_config["iterations"] - sum(map(int, eph_comp))]:
+                eph_comp[val] += 1
 
-        hyper_parameters.learning_parameters.learning_rate_fixed_iters = int(
-            eph_comp[0]
-        )
-        hyper_parameters.learning_parameters.learning_rate_warmup_iters = int(
-            eph_comp[1]
-        )
-        hyper_parameters.learning_parameters.num_iters = int(eph_comp[2])
+            hyper_parameters.learning_parameters.learning_rate_fixed_iters = int(
+                eph_comp[0]
+            )
+            hyper_parameters.learning_parameters.learning_rate_warmup_iters = int(
+                eph_comp[1]
+            )
+            hyper_parameters.learning_parameters.num_iters = int(eph_comp[2])
+        else:
+            hyper_parameters.learning_parameters.num_iters = hp_config["iterations"]
 
     # set hyper-parameters and print them
     HpoManager.set_hyperparameter(hyper_parameters, hp_config["params"])
@@ -343,6 +347,11 @@ class HpoManager:
         train_dataset_size = len(dataset.get_subset(Subset.TRAINING))
         val_dataset_size = len(dataset.get_subset(Subset.VALIDATION))
 
+        for key, val in hpopt_cfg['hp_space'].items():
+            if "batch" in key:
+                if val['range'][1] > train_dataset_size:
+                    val['range'][1] = train_dataset_size
+
         model_param = (self.environment.
                        model_template.hyper_parameters.
                        parameter_overrides["learning_parameters"])
@@ -401,8 +410,8 @@ class HpoManager:
                 elif task_type in [TaskType.DETECTION, TaskType.SEGMENTATION]:
                     hpopt_arguments["min_iterations"] = ceil(
                         model_param["learning_rate_warmup_iters"]["default_value"]
-                        * model_param["batch_size"]["default_value"]
-                        / train_dataset_size
+                        / ceil(train_dataset_size
+                               / model_param["batch_size"]["default_value"])
                     )
 
         HpoManager.remove_empty_keys(hpopt_arguments)
