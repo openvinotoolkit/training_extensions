@@ -401,7 +401,7 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
 
         roi_annotation = None
         for annotation in self.annotation_scene.annotations:
-            if annotation == self.roi:
+            if annotation.shape == self.roi.shape:
                 roi_annotation = annotation
                 break
 
