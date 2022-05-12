@@ -55,7 +55,7 @@ class Point:
         y1 = roi_shape.y1
         return Point(x=self.x * width + x1, y=self.y * height + y1)
 
-    def denormalize_wrt_roi_shape(self, roi_shape: Rectangle):
+    def denormalize_wrt_roi_shape(self, roi_shape: Rectangle) -> "Point":
         """
         The inverse of normalize_wrt_roi_shape.
         Transforming Polygon from the normalized coordinate system to the `roi` coordinate system.
