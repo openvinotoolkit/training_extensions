@@ -38,6 +38,7 @@ class TestResultMediaEntity:
         rectangle_annotation = Annotation(
             shape=Rectangle(x1=0.1, y1=0.4, x2=0.4, y2=0.9),
             labels=[ScoredLabel(rectangle_label)],
+            id=ID("rectangle_annotation"),
         )
         annotation_scene = AnnotationSceneEntity(
             annotations=[rectangle_annotation],
@@ -64,6 +65,7 @@ class TestResultMediaEntity:
         roi = Annotation(
             shape=Rectangle(x1=0.3, y1=0.2, x2=0.7, y2=0.6),
             labels=[ScoredLabel(roi_label)],
+            id=ID("roi_annotation"),
         )
         result_media_label = LabelEntity(
             "ResultMedia label",

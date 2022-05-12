@@ -8,6 +8,8 @@ import datetime
 from enum import Enum
 from typing import Dict, List, Optional, Set
 
+from bson import ObjectId
+
 from ote_sdk.entities.id import ID
 from ote_sdk.entities.label import LabelEntity
 from ote_sdk.entities.scored_label import ScoredLabel
@@ -21,7 +23,10 @@ class Annotation(metaclass=abc.ABCMeta):
     """
 
     # pylint: disable=redefined-builtin;
-    def __init__(self, shape: ShapeEntity, labels: List[ScoredLabel]):
+    def __init__(
+        self, shape: ShapeEntity, labels: List[ScoredLabel], id: Optional[ID] = None
+    ):
+        self.__id_ = ID(ObjectId()) if id is None else id
         self.__shape = shape
         self.__labels = labels
 
@@ -29,11 +34,33 @@ class Annotation(metaclass=abc.ABCMeta):
         return (
             f"{self.__class__.__name__}("
             f"shape={self.shape}, "
-            f"labels={self.get_labels(include_empty=True)}"
+            f"labels={self.get_labels(include_empty=True)}, "
+            f"id={self.id_})"
         )
 
     @property
-    def shape(self) -> ShapeEntity:
+    def id_(self):
+        """
+        Returns the id for the annotation
+        """
+        return self.__id_
+
+    @id_.setter
+    def id_(self, value):
+        self.__id_ = value
+
+    @property
+    def id(self):
+        """DEPRECATED"""
+        return self.__id_
+
+    @id.setter
+    def id(self, value):
+        """DEPRECATED"""
+        self.__id_ = value
+
+    @property
+    def shape(self):
         """
         Returns the shape that is in the annotation
         """
@@ -86,8 +113,8 @@ class Annotation(metaclass=abc.ABCMeta):
     def __eq__(self, other):
         if isinstance(other, Annotation):
             return (
-                self.get_labels(include_empty=True)
-                == other.get_labels(include_empty=True)
+                self.id_ == other.id_
+                and self.get_labels(True) == other.get_labels(True)
                 and self.shape == other.shape
             )
         return False
