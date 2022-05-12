@@ -118,13 +118,13 @@ class TestRectangle:
         Instance of Rectangle class
 
         <b>Expected results:</b>
-        Test passes if Rectangle instance has expected labels and modification attributes specified during Rectangle
+        Test passes if Rectangle instance has expected modification attributes specified during Rectangle
         class object initiation with optional parameters
 
         <b>Steps</b>
-        1. Compare default label Rectangle instance attribute with expected value
+        1. Compare default Rectangle instance attribute with expected value
         2. Check type of default modification_date Rectangle instance attribute
-        3. Compare specified label Rectangle instance attribute with expected value
+        3. Compare specified Rectangle instance attribute with expected value
         4. Compare specified modification_date Rectangle instance attribute with expected value
         """
         # Checking default values of optional parameters
@@ -221,8 +221,7 @@ class TestRectangle:
         1. Check __eq__ method for instances of Rectangle class with equal parameters
         2. Check __eq__ method for different instances of Rectangle class
         3. Check __eq__ method for instances of different classes
-        4. Check __eq__ method for instances of Rectangle class with unequal labels attribute
-        5. Check __eq__ method for instances of Rectangle class with unequal x1, y1, x2, y2 and
+        4. Check __eq__ method for instances of Rectangle class with unequal x1, y1, x2, y2 and
         modification_date attributes
         """
         rectangle = self.vertical_rectangle()
@@ -233,7 +232,7 @@ class TestRectangle:
         assert rectangle != self.horizontal_rectangle()
         # Check for different types branch
         assert rectangle != str
-        # Check for unequal labels parameters. Expected that different labels are not affecting equality
+
         assert rectangle == equal_rectangle
         # Check for instances with unequal parameters combinations
         # Generating all possible scenarios of parameter values submission
@@ -458,7 +457,7 @@ class TestRectangle:
         (x1=0.0, y1=0.0, x2=1.0, y2=1.0)
 
         <b>Steps</b>
-        1. Check generate_full_box method for Rectangle instance with no labels specified
+        1. Check generate_full_box method for Rectangle instance
         """
         full_box = Rectangle.generate_full_box()
         assert full_box.type == ShapeType.RECTANGLE

@@ -101,7 +101,9 @@ class Rectangle(Shape):
         x2 = min(max(0.0, self.x2), 1.0)
         y2 = min(max(0.0, self.y2), 1.0)
 
-        return Rectangle(x1, y1, x2, y2, self.modification_date)
+        return Rectangle(
+            x1=x1, y1=y1, x2=x2, y2=y2, modification_date=self.modification_date
+        )
 
     def normalize_wrt_roi_shape(self, roi_shape: "Rectangle") -> "Rectangle":
         """
@@ -230,7 +232,7 @@ class Rectangle(Shape):
             return True
         return False
 
-    def crop_numpy_array(self, data: np.ndarray):
+    def crop_numpy_array(self, data: np.ndarray) -> np.ndarray:
         """
         Crop the given Numpy array to the region of interest represented by this
         rectangle.
@@ -252,7 +254,7 @@ class Rectangle(Shape):
         return data[y1:y2, x1:x2, ::]
 
     @property
-    def width(self):
+    def width(self) -> float:
         """
         Returns the width of the rectangle. (x-axis)
 
@@ -267,7 +269,7 @@ class Rectangle(Shape):
         return self.x2 - self.x1
 
     @property
-    def height(self):
+    def height(self) -> float:
         """
         Returns the height of the rectangle. (y-axis)
 
@@ -282,7 +284,7 @@ class Rectangle(Shape):
         return self.y2 - self.y1
 
     @property
-    def diagonal(self):
+    def diagonal(self) -> float:
         """
         Returns the diagonal size/hypotenuse  of the rectangle. (x-axis)
 

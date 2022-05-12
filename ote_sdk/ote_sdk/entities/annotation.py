@@ -29,18 +29,18 @@ class Annotation(metaclass=abc.ABCMeta):
         return (
             f"{self.__class__.__name__}("
             f"shape={self.shape}, "
-            f"labels={self.get_labels(True)}"
+            f"labels={self.get_labels(include_empty=True)}"
         )
 
     @property
-    def shape(self):
+    def shape(self) -> ShapeEntity:
         """
         Returns the shape that is in the annotation
         """
         return self.__shape
 
     @shape.setter
-    def shape(self, value):
+    def shape(self, value) -> None:
         self.__shape = value
 
     def get_labels(self, include_empty: bool = False) -> List[ScoredLabel]:
@@ -67,7 +67,7 @@ class Annotation(metaclass=abc.ABCMeta):
             if include_empty or (not label.is_empty)
         }
 
-    def append_label(self, label: ScoredLabel):
+    def append_label(self, label: ScoredLabel) -> None:
         """
         Appends the scored label to the annotation.
 
@@ -75,7 +75,7 @@ class Annotation(metaclass=abc.ABCMeta):
         """
         self.__labels.append(label)
 
-    def set_labels(self, labels: List[ScoredLabel]):
+    def set_labels(self, labels: List[ScoredLabel]) -> None:
         """
         Sets the labels of the annotation to be the input of the function.
 
@@ -86,7 +86,8 @@ class Annotation(metaclass=abc.ABCMeta):
     def __eq__(self, other):
         if isinstance(other, Annotation):
             return (
-                self.get_labels(True) == other.get_labels(True)
+                self.get_labels(include_empty=True)
+                == other.get_labels(include_empty=True)
                 and self.shape == other.shape
             )
         return False
@@ -160,14 +161,14 @@ class AnnotationSceneEntity(metaclass=abc.ABCMeta):
         )
 
     @property
-    def id_(self):
+    def id_(self) -> ID:
         """
         Returns the ID of the AnnotationSceneEntity.
         """
         return self.__id_
 
     @id_.setter
-    def id_(self, value):
+    def id_(self, value) -> None:
         self.__id_ = value
 
     @property
@@ -181,36 +182,36 @@ class AnnotationSceneEntity(metaclass=abc.ABCMeta):
         self.__id_ = value
 
     @property
-    def kind(self):
+    def kind(self) -> AnnotationSceneKind:
         """
         Returns the AnnotationSceneKind of the AnnotationSceneEntity.
         """
         return self.__kind
 
     @kind.setter
-    def kind(self, value):
+    def kind(self, value) -> None:
         self.__kind = value
 
     @property
-    def editor_name(self):
+    def editor_name(self) -> str:
         """
         Returns the editor's name that made the AnnotationSceneEntity object.
         """
         return self.__editor
 
     @editor_name.setter
-    def editor_name(self, value):
+    def editor_name(self, value) -> None:
         self.__editor = value
 
     @property
-    def creation_date(self):
+    def creation_date(self) -> datetime.datetime:
         """
         Returns the creation date of the AnnotationSceneEntity object.
         """
         return self.__creation_date
 
     @creation_date.setter
-    def creation_date(self, value):
+    def creation_date(self, value) -> None:
         self.__creation_date = value
 
     @property
@@ -231,7 +232,7 @@ class AnnotationSceneEntity(metaclass=abc.ABCMeta):
         """
         return [annotation.shape for annotation in self.annotations]
 
-    def contains_any(self, labels: List[LabelEntity]):
+    def contains_any(self, labels: List[LabelEntity]) -> bool:
         """
         Checks whether the annotation contains any labels in the input parameter.
 
@@ -249,13 +250,13 @@ class AnnotationSceneEntity(metaclass=abc.ABCMeta):
             != 0
         )
 
-    def append_annotation(self, annotation: Annotation):
+    def append_annotation(self, annotation: Annotation) -> None:
         """
         Appends the passed annotation to the list of annotations present in the AnnotationSceneEntity object.
         """
         self.annotations.append(annotation)
 
-    def append_annotations(self, annotations: List[Annotation]):
+    def append_annotations(self, annotations: List[Annotation]) -> None:
         """
         Adds a list of annotations to the annotation scene.
         """
@@ -272,7 +273,7 @@ class AnnotationSceneEntity(metaclass=abc.ABCMeta):
 
         labels: Dict[str, LabelEntity] = {}
         for annotation in self.annotations:
-            for label in annotation.get_labels(include_empty):
+            for label in annotation.get_labels(include_empty=include_empty):
                 id_ = label.id_
                 if id_ not in labels:
                     labels[id_] = label.get_label()

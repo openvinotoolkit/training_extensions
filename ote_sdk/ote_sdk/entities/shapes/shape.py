@@ -40,7 +40,7 @@ class ShapeEntity(metaclass=abc.ABCMeta):
         self._type = shape_type
 
     @property
-    def type(self):
+    def type(self) -> ShapeType:
         """
         Get the type of Shape that this Shape represents
         """

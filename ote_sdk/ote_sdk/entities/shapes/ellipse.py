@@ -81,7 +81,7 @@ class Ellipse(Shape):
         return hash(str(self))
 
     @property
-    def width(self):
+    def width(self) -> float:
         """
         Returns the width of the ellipse. (x-axis)
 
@@ -96,7 +96,7 @@ class Ellipse(Shape):
         return self.x2 - self.x1
 
     @property
-    def height(self):
+    def height(self) -> float:
         """
         Returns the height of the ellipse. (y-axis)
 
@@ -111,14 +111,14 @@ class Ellipse(Shape):
         return self.y2 - self.y1
 
     @property
-    def x_center(self):
+    def x_center(self) -> float:
         """
         Returns the x coordinate in the center of the ellipse.
         """
         return self.x1 + self.width / 2
 
     @property
-    def y_center(self):
+    def y_center(self) -> float:
         """
         Returns the y coordinate in the center of the ellipse.
         """
