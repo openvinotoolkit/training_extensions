@@ -36,6 +36,7 @@ from ote_anomalib.logging import get_logger
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.model import (
     ModelEntity,
+    ModelFormat,
     ModelOptimizationType,
     ModelPrecision,
     OptimizationMethod,
@@ -183,6 +184,8 @@ class AnomalyNNCFTask(AnomalyInferenceTask, IOptimizationTask):
         self.trainer = Trainer(**self.config.trainer, logger=False, callbacks=callbacks)
         self.trainer.fit(model=self.model, datamodule=datamodule)
         self.compression_ctrl = nncf_callback.nncf_ctrl
+        output_model.model_format = ModelFormat.BASE_FRAMEWORK
+        output_model.optimization_type = ModelOptimizationType.NNCF
         self.save_model(output_model)
 
         logger.info("Training completed.")

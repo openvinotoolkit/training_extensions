@@ -12,11 +12,8 @@ import logging
 from enum import Enum
 from typing import Iterator, List, Optional, Sequence, Union, overload
 
-from bson.objectid import ObjectId
-
 from ote_sdk.entities.annotation import AnnotationSceneEntity, AnnotationSceneKind
 from ote_sdk.entities.dataset_item import DatasetItemEntity
-from ote_sdk.entities.id import ID
 from ote_sdk.entities.label import LabelEntity
 from ote_sdk.entities.subset import Subset
 
@@ -140,7 +137,7 @@ class DatasetEntity:
         return self._purpose
 
     @purpose.setter
-    def purpose(self, value: DatasetPurpose):
+    def purpose(self, value: DatasetPurpose) -> None:
         self._purpose = value
 
     def _fetch(self, key):
@@ -277,7 +274,6 @@ class DatasetEntity:
 
                 # reset ROI
                 roi = copy.copy(dataset_item.roi)
-                roi.id_ = ID(ObjectId())
                 roi.set_labels([])
 
                 new_dataset_item = DatasetItemEntity(
@@ -310,7 +306,7 @@ class DatasetEntity:
         )
         return dataset
 
-    def remove(self, item: DatasetItemEntity):
+    def remove(self, item: DatasetItemEntity) -> None:
         """
         Remove an item from the items.
         This function calls remove_at_indices function.
@@ -343,14 +339,14 @@ class DatasetEntity:
             raise ValueError("Media in dataset item cannot be None")
         self._items.append(item)
 
-    def sort_items(self):
+    def sort_items(self) -> None:
         """
         Order the dataset items. Does nothing here, but may be overrided in child classes.
 
         :return: None
         """
 
-    def remove_at_indices(self, indices: List[int]):
+    def remove_at_indices(self, indices: List[int]) -> None:
         """
         Delete items based on the `indices`.
 

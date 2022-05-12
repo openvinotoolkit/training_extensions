@@ -14,7 +14,6 @@ import numpy as np
 from scipy import optimize, special
 from shapely.geometry import Polygon as shapely_polygon
 
-from ote_sdk.entities.scored_label import ScoredLabel
 from ote_sdk.entities.shapes.rectangle import Rectangle
 from ote_sdk.entities.shapes.shape import Shape, ShapeType
 from ote_sdk.utils.time_utils import now
@@ -33,7 +32,6 @@ class Ellipse(Shape):
     :param y1: top y coordinate of encapsulating rectangle
     :param x2: right x coordinate of encapsulating rectangle
     :param y2: bottom y coordinate of encapsulating rectangle
-    :param labels: list of the ScoredLabel's for the Ellipse
     :param modification_date: last modified date
     """
 
@@ -44,14 +42,11 @@ class Ellipse(Shape):
         y1: float,
         x2: float,
         y2: float,
-        labels: Optional[List[ScoredLabel]] = None,
         modification_date: Optional[datetime.datetime] = None,
     ):
-        labels = [] if labels is None else labels
         modification_date = now() if modification_date is None else modification_date
         super().__init__(
-            type=ShapeType.ELLIPSE,
-            labels=labels,
+            shape_type=ShapeType.ELLIPSE,
             modification_date=modification_date,
         )
 
@@ -86,13 +81,13 @@ class Ellipse(Shape):
         return hash(str(self))
 
     @property
-    def width(self):
+    def width(self) -> float:
         """
         Returns the width of the ellipse. (x-axis)
 
         :example:
 
-        >>> e1 = Ellipse(x1=0.5, x2=1.0, y1=0.0, y2=0.5, labels = [])
+        >>> e1 = Ellipse(x1=0.5, x2=1.0, y1=0.0, y2=0.5)
         >>> e1.width
         0.5
 
@@ -101,13 +96,13 @@ class Ellipse(Shape):
         return self.x2 - self.x1
 
     @property
-    def height(self):
+    def height(self) -> float:
         """
         Returns the height of the ellipse. (y-axis)
 
         :example:
 
-        >>> e1 = Ellipse(x1=0.5, x2=1.0, y1=0.0, y2=0.5, labels = [])
+        >>> e1 = Ellipse(x1=0.5, x2=1.0, y1=0.0, y2=0.5)
         >>> e1.height
         0.5
 
@@ -116,14 +111,14 @@ class Ellipse(Shape):
         return self.y2 - self.y1
 
     @property
-    def x_center(self):
+    def x_center(self) -> float:
         """
         Returns the x coordinate in the center of the ellipse.
         """
         return self.x1 + self.width / 2
 
     @property
-    def y_center(self):
+    def y_center(self) -> float:
         """
         Returns the y coordinate in the center of the ellipse.
         """
@@ -136,7 +131,7 @@ class Ellipse(Shape):
 
         :example:
 
-        >>> e1 = Ellipse(x1=0.5, x2=1.0, y1=0.0, y2=0.4, labels = [])
+        >>> e1 = Ellipse(x1=0.5, x2=1.0, y1=0.0, y2=0.4)
         >>> e1.minor_axis
         0.2
 
@@ -153,7 +148,7 @@ class Ellipse(Shape):
 
         :example:
 
-        >>> e1 = Ellipse(x1=0.5, x2=1.0, y1=0.0, y2=0.4, labels = [])
+        >>> e1 = Ellipse(x1=0.5, x2=1.0, y1=0.0, y2=0.4)
         >>> e1.major_axis
         0.25
 
@@ -179,7 +174,7 @@ class Ellipse(Shape):
             >>> roi = Rectangle(x1=0.0, x2=0.5, y1=0.0, y2=0.5)
             >>> normalized = c1.normalize_wrt_roi_shape(roi_shape)
             >>> normalized
-            Ellipse(, x1=0.25, y1=0.25, x2=0.3, y2=0.3, scored_labels=[])
+            Ellipse(, x1=0.25, y1=0.25, x2=0.3, y2=0.3)
 
         :param roi_shape: Region of Interest
         :return: New polygon in the image coordinate system
@@ -214,7 +209,7 @@ class Ellipse(Shape):
             >>> roi = Rectangle(x1=0.5, x2=1.0, y1=0.0, y2=1.0)  # the half-right
             >>> normalized = c1.denormalize_wrt_roi_shape(roi_shape)  # should return top half
             >>> normalized
-            Ellipse(, x1=0.0, y1=0.0, x2=1.0, y2=0.5, scored_labels=[])
+            Ellipse(, x1=0.0, y1=0.0, x2=1.0, y2=0.5)
 
         :param roi_shape: Region of Interest
         :return: New polygon in the ROI coordinate system
