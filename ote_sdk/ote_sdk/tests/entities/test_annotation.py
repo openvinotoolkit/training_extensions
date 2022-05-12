@@ -81,6 +81,8 @@ class TestAnnotation:
 
         annotation = self.annotation
 
+        assert type(annotation.id_) == ID
+        assert annotation.id_ is not None
         assert str(annotation.shape) == "Rectangle(x=0.5, y=0.0, width=0.5, height=0.5)"
         assert annotation.get_labels() == []
 
@@ -107,6 +109,9 @@ class TestAnnotation:
         annotation = self.annotation
         ellipse = Ellipse(x1=0.5, y1=0.1, x2=0.8, y2=0.3)
         annotation.shape = ellipse
+        annotation.id_ = ID(123456789)
+
+        assert annotation.id_ == ID(123456789)
         assert annotation.shape == ellipse
 
     @pytest.mark.priority_medium
@@ -139,7 +144,7 @@ class TestAnnotation:
 
         assert (
             repr(annotation)
-            == "Annotation(shape=Ellipse(x1=0.5, y1=0.1, x2=0.8, y2=0.3), labels=[]"
+            == "Annotation(shape=Ellipse(x1=0.5, y1=0.1, x2=0.8, y2=0.3), labels=[], id=123456789)"
         )
         assert annotation == other_annotation
         assert annotation != third_annotation

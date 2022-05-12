@@ -600,6 +600,7 @@ class ShapeDrawerParams:
         return Annotation(
             shape=Rectangle(x1=0, y1=0, x2=1, y2=1),
             labels=self.full_rectangle_scored_labels(),
+            id=ID("full_rectangle_annotation"),
         )
 
     @staticmethod
@@ -628,6 +629,7 @@ class ShapeDrawerParams:
         return Annotation(
             shape=Rectangle(x1=0.1, y1=0.4, x2=0.4, y2=0.9),
             labels=self.rectangle_scored_labels(),
+            id=ID("rectangle_annotation"),
         )
 
     @staticmethod
@@ -664,6 +666,7 @@ class ShapeDrawerParams:
                 ]
             ),
             labels=self.polygon_scored_labels(),
+            id=ID("polygon_annotation"),
         )
 
     @staticmethod
@@ -692,6 +695,7 @@ class ShapeDrawerParams:
         return Annotation(
             shape=Ellipse(x1=0.5, y1=0.0, x2=1.0, y2=0.5),
             labels=self.ellipse_scored_labels(),
+            id=ID("ellipse_annotation"),
         )
 
     def annotation_scene(self) -> AnnotationSceneEntity:
