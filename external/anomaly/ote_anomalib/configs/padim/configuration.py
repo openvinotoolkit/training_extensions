@@ -1,5 +1,5 @@
 """
-Configurable parameters for STFPM anomaly classification task
+Configurable parameters for Padim anomaly task
 """
 
 # Copyright (C) 2021 Intel Corporation
@@ -17,11 +17,15 @@ Configurable parameters for STFPM anomaly classification task
 # and limitations under the License.
 
 from attr import attrs
-from ote_anomalib.configs.stfpm import STFPMAnomalyBaseConfig
+from ote_anomalib.configs.base import BaseAnomalyConfig
+from ote_sdk.configuration.elements import string_attribute
 
 
 @attrs
-class STFPMAnomalyClassificationConfig(STFPMAnomalyBaseConfig):
+class PadimAnomalyBaseConfig(BaseAnomalyConfig):
     """
-    Configurable parameters for STFPM anomaly classification task.
+    Configurable parameters for PADIM anomaly classification task.
     """
+
+    header = string_attribute("Configuration for Padim")
+    description = header

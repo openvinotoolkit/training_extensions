@@ -3,6 +3,8 @@ dataset:
   header: Dataset Parameters
   num_workers:
     affects_outcome_of: NONE
+    auto_hpo_state: not_possible
+    auto_hpo_value: null
     default_value: 8
     description:
       Increasing this value might improve training speed however it might
@@ -18,10 +20,13 @@ dataset:
       operator: AND
       rules: []
       type: UI_RULES
+    value: 8
     visible_in_ui: true
     warning: null
   train_batch_size:
     affects_outcome_of: TRAINING
+    auto_hpo_state: not_possible
+    auto_hpo_value: null
     default_value: 32
     description:
       The number of training samples seen in each iteration of training.
@@ -37,6 +42,7 @@ dataset:
       operator: AND
       rules: []
       type: UI_RULES
+    value: 32
     visible_in_ui: true
     warning:
       Increasing this value may cause the system to use more memory than available,
@@ -45,11 +51,96 @@ dataset:
   visible_in_ui: true
 description: Configuration for Padim
 header: Configuration for Padim
+id: ""
+model:
+  backbone:
+    affects_outcome_of: NONE
+    auto_hpo_state: not_possible
+    auto_hpo_value: null
+    default_value: resnet18
+    description: Pre-trained backbone used for feature extraction
+    editable: true
+    enum_name: ModelBackbone
+    header: Model Backbone
+    options:
+      RESNET18: resnet18
+      WIDE_RESNET_50: wide_resnet50_2
+    type: SELECTABLE
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: resnet18
+    visible_in_ui: true
+    warning: null
+  description: Model Parameters
+  header: Model Parameters
+  type: PARAMETER_GROUP
+  visible_in_ui: true
+nncf_optimization:
+  description: Optimization by NNCF
+  enable_pruning:
+    affects_outcome_of: NONE
+    auto_hpo_state: not_possible
+    auto_hpo_value: null
+    default_value: false
+    description: Enable filter pruning algorithm
+    editable: true
+    header: Enable filter pruning algorithm
+    type: BOOLEAN
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: false
+    visible_in_ui: true
+    warning: null
+  enable_quantization:
+    affects_outcome_of: NONE
+    auto_hpo_state: not_possible
+    auto_hpo_value: null
+    default_value: true
+    description: Enable quantization algorithm
+    editable: true
+    header: Enable quantization algorithm
+    type: BOOLEAN
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: true
+    visible_in_ui: true
+    warning: null
+  header: Optimization by NNCF
+  pruning_supported:
+    affects_outcome_of: TRAINING
+    auto_hpo_state: not_possible
+    auto_hpo_value: null
+    default_value: false
+    description: Whether filter pruning is supported
+    editable: true
+    header: Whether filter pruning is supported
+    type: BOOLEAN
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: false
+    visible_in_ui: true
+    warning: null
+  type: PARAMETER_GROUP
+  visible_in_ui: true
 pot_parameters:
   description: POT Parameters
   header: POT Parameters
   preset:
     affects_outcome_of: NONE
+    auto_hpo_state: not_possible
+    auto_hpo_value: null
     default_value: Performance
     description: Quantization preset that defines quantization scheme
     editable: true
@@ -64,10 +155,13 @@ pot_parameters:
       operator: AND
       rules: []
       type: UI_RULES
+    value: Performance
     visible_in_ui: true
     warning: null
   stat_subset_size:
     affects_outcome_of: NONE
+    auto_hpo_state: not_possible
+    auto_hpo_value: null
     default_value: 300
     description: Number of data samples used for post-training optimization
     editable: true
@@ -80,57 +174,8 @@ pot_parameters:
       operator: AND
       rules: []
       type: UI_RULES
+    value: 300
     visible_in_ui: true
-    warning: null
-  type: PARAMETER_GROUP
-  visible_in_ui: true
-nncf_optimization:
-  description: Optimization by NNCF
-  header: Optimization by NNCF
-  enable_quantization:
-    affects_outcome_of: TRAINING
-    default_value: true
-    description: Enable quantization algorithm
-    editable: true
-    header: Enable quantization algorithm
-    type: BOOLEAN
-    ui_rules:
-      action: DISABLE_EDITING
-      operator: AND
-      rules: []
-      type: UI_RULES
-    value: true
-    visible_in_ui: true
-    warning: null
-  enable_pruning:
-    affects_outcome_of: TRAINING
-    default_value: false
-    description: Enable filter pruning algorithm
-    editable: true
-    header: Enable filter pruning algorithm
-    type: BOOLEAN
-    ui_rules:
-      action: DISABLE_EDITING
-      operator: AND
-      rules: []
-      type: UI_RULES
-    value: false
-    visible_in_ui: true
-    warning: null
-  pruning_supported:
-    affects_outcome_of: TRAINING
-    default_value: false
-    description: Whether filter pruning is supported
-    editable: false
-    header: Whether filter pruning is supported
-    type: BOOLEAN
-    ui_rules:
-      action: DISABLE_EDITING
-      operator: AND
-      rules: []
-      type: UI_RULES
-    value: false
-    visible_in_ui: false
     warning: null
   type: PARAMETER_GROUP
   visible_in_ui: false
