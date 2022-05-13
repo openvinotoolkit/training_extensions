@@ -135,21 +135,161 @@ class AnomalySegmentationTrainingTestParameters(DefaultOTETestCreationParameters
     def test_bunches(self) -> List[Dict[str, Any]]:
         # Extend with other datasets
         test_bunches = [
+                # dict(
+                #     model_name=[
+                #        'ote_anomaly_segmentation_padim',
+                #        # 'ote_anomaly_segmentation_stfpm',
+                #     ],
+                #     dataset_name='mvtec_short',
+                #     # dataset_name='mvtec_json_short',
+                #     usecase='precommit',
+                # ),
                 dict(
                     model_name=[
                        'ote_anomaly_segmentation_padim',
                        # 'ote_anomaly_segmentation_stfpm',
                     ],
-                    dataset_name='mvtec_short',
-                    # dataset_name='mvtec_json_short',
-                    usecase='precommit',
+                    dataset_name='mvtec_short_bottle',
+                    patience=KEEP_CONFIG_FIELD_VALUE,
+                    batch_size=KEEP_CONFIG_FIELD_VALUE,
+                    usecase=REALLIFE_USECASE_CONSTANT,
                 ),
                 dict(
                     model_name=[
                        'ote_anomaly_segmentation_padim',
                        # 'ote_anomaly_segmentation_stfpm',
                     ],
-                    dataset_name='mvtec',
+                    dataset_name='mvtec_short_cable',
+                    patience=KEEP_CONFIG_FIELD_VALUE,
+                    batch_size=KEEP_CONFIG_FIELD_VALUE,
+                    usecase=REALLIFE_USECASE_CONSTANT,
+                ),
+                dict(
+                    model_name=[
+                       'ote_anomaly_segmentation_padim',
+                       # 'ote_anomaly_segmentation_stfpm',
+                    ],
+                    dataset_name='mvtec_short_capsule',
+                    patience=KEEP_CONFIG_FIELD_VALUE,
+                    batch_size=KEEP_CONFIG_FIELD_VALUE,
+                    usecase=REALLIFE_USECASE_CONSTANT,
+                ),
+                dict(
+                    model_name=[
+                       'ote_anomaly_segmentation_padim',
+                       # 'ote_anomaly_segmentation_stfpm',
+                    ],
+                    dataset_name='mvtec_short_carpet',
+                    patience=KEEP_CONFIG_FIELD_VALUE,
+                    batch_size=KEEP_CONFIG_FIELD_VALUE,
+                    usecase=REALLIFE_USECASE_CONSTANT,
+                ),
+                dict(
+                    model_name=[
+                       'ote_anomaly_segmentation_padim',
+                       # 'ote_anomaly_segmentation_stfpm',
+                    ],
+                    dataset_name='mvtec_short_grid',
+                    patience=KEEP_CONFIG_FIELD_VALUE,
+                    batch_size=KEEP_CONFIG_FIELD_VALUE,
+                    usecase=REALLIFE_USECASE_CONSTANT,
+                ),
+                dict(
+                    model_name=[
+                       'ote_anomaly_segmentation_padim',
+                       # 'ote_anomaly_segmentation_stfpm',
+                    ],
+                    dataset_name='mvtec_short_hazelnut',
+                    patience=KEEP_CONFIG_FIELD_VALUE,
+                    batch_size=KEEP_CONFIG_FIELD_VALUE,
+                    usecase=REALLIFE_USECASE_CONSTANT,
+                ),
+                dict(
+                    model_name=[
+                       'ote_anomaly_segmentation_padim',
+                       # 'ote_anomaly_segmentation_stfpm',
+                    ],
+                    dataset_name='mvtec_short_leather',
+                    patience=KEEP_CONFIG_FIELD_VALUE,
+                    batch_size=KEEP_CONFIG_FIELD_VALUE,
+                    usecase=REALLIFE_USECASE_CONSTANT,
+                ),
+                dict(
+                    model_name=[
+                       'ote_anomaly_segmentation_padim',
+                       # 'ote_anomaly_segmentation_stfpm',
+                    ],
+                    dataset_name='mvtec_short_metal_nut',
+                    patience=KEEP_CONFIG_FIELD_VALUE,
+                    batch_size=KEEP_CONFIG_FIELD_VALUE,
+                    usecase=REALLIFE_USECASE_CONSTANT,
+                ),
+                dict(
+                    model_name=[
+                       'ote_anomaly_segmentation_padim',
+                       # 'ote_anomaly_segmentation_stfpm',
+                    ],
+                    dataset_name='mvtec_short_pill',
+                    patience=KEEP_CONFIG_FIELD_VALUE,
+                    batch_size=KEEP_CONFIG_FIELD_VALUE,
+                    usecase=REALLIFE_USECASE_CONSTANT,
+                ),
+                dict(
+                    model_name=[
+                       'ote_anomaly_segmentation_padim',
+                       # 'ote_anomaly_segmentation_stfpm',
+                    ],
+                    dataset_name='mvtec_short_screw',
+                    patience=KEEP_CONFIG_FIELD_VALUE,
+                    batch_size=KEEP_CONFIG_FIELD_VALUE,
+                    usecase=REALLIFE_USECASE_CONSTANT,
+                ),
+                dict(
+                    model_name=[
+                       'ote_anomaly_segmentation_padim',
+                       # 'ote_anomaly_segmentation_stfpm',
+                    ],
+                    dataset_name='mvtec_short_tile',
+                    patience=KEEP_CONFIG_FIELD_VALUE,
+                    batch_size=KEEP_CONFIG_FIELD_VALUE,
+                    usecase=REALLIFE_USECASE_CONSTANT,
+                ),
+                dict(
+                    model_name=[
+                       'ote_anomaly_segmentation_padim',
+                       # 'ote_anomaly_segmentation_stfpm',
+                    ],
+                    dataset_name='mvtec_short_toothbrush',
+                    patience=KEEP_CONFIG_FIELD_VALUE,
+                    batch_size=KEEP_CONFIG_FIELD_VALUE,
+                    usecase=REALLIFE_USECASE_CONSTANT,
+                ),
+                dict(
+                    model_name=[
+                       'ote_anomaly_segmentation_padim',
+                       # 'ote_anomaly_segmentation_stfpm',
+                    ],
+                    dataset_name='mvtec_short_transistor',
+                    patience=KEEP_CONFIG_FIELD_VALUE,
+                    batch_size=KEEP_CONFIG_FIELD_VALUE,
+                    usecase=REALLIFE_USECASE_CONSTANT,
+                ),
+                dict(
+                    model_name=[
+                       'ote_anomaly_segmentation_padim',
+                       # 'ote_anomaly_segmentation_stfpm',
+                    ],
+                    dataset_name='mvtec_short_wood',
+                    patience=KEEP_CONFIG_FIELD_VALUE,
+                    batch_size=KEEP_CONFIG_FIELD_VALUE,
+                    usecase=REALLIFE_USECASE_CONSTANT,
+                ),
+                dict(
+                    model_name=[
+                       'ote_anomaly_segmentation_padim',
+                       # 'ote_anomaly_segmentation_stfpm',
+                    ],
+                    dataset_name='mvtec_short_zipper',
                     patience=KEEP_CONFIG_FIELD_VALUE,
                     batch_size=KEEP_CONFIG_FIELD_VALUE,
                     usecase=REALLIFE_USECASE_CONSTANT,
