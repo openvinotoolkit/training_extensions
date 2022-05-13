@@ -115,15 +115,15 @@ def get_anomaly_segmentation_test_action_classes() -> List[Type[BaseOTETestActio
     return [
         AnomalySegmentationTestTrainingAction,
         OTETestTrainingEvaluationAction,
-        OTETestExportAction,
-        OTETestExportEvaluationAction,
-        OTETestPotAction,
-        OTETestPotEvaluationAction,
-        OTETestNNCFAction,
-        OTETestNNCFEvaluationAction,
-        OTETestNNCFExportAction,
-        OTETestNNCFExportEvaluationAction,
-        OTETestNNCFGraphAction,
+        # OTETestExportAction,
+        # OTETestExportEvaluationAction,
+        # OTETestPotAction,
+        # OTETestPotEvaluationAction,
+        # OTETestNNCFAction,
+        # OTETestNNCFEvaluationAction,
+        # OTETestNNCFExportAction,
+        # OTETestNNCFExportEvaluationAction,
+        # OTETestNNCFGraphAction,
     ]
 
 class AnomalySegmentationTrainingTestParameters(DefaultOTETestCreationParametersInterface):
@@ -147,7 +147,7 @@ class AnomalySegmentationTrainingTestParameters(DefaultOTETestCreationParameters
                 dict(
                     model_name=[
                        'ote_anomaly_segmentation_padim',
-                       # 'ote_anomaly_segmentation_stfpm',
+                       'ote_anomaly_segmentation_stfpm',
                     ],
                     dataset_name='mvtec_short_bottle',
                     patience=KEEP_CONFIG_FIELD_VALUE,
@@ -157,7 +157,7 @@ class AnomalySegmentationTrainingTestParameters(DefaultOTETestCreationParameters
                 dict(
                     model_name=[
                        'ote_anomaly_segmentation_padim',
-                       # 'ote_anomaly_segmentation_stfpm',
+                       'ote_anomaly_segmentation_stfpm',
                     ],
                     dataset_name='mvtec_short_cable',
                     patience=KEEP_CONFIG_FIELD_VALUE,
@@ -167,7 +167,7 @@ class AnomalySegmentationTrainingTestParameters(DefaultOTETestCreationParameters
                 dict(
                     model_name=[
                        'ote_anomaly_segmentation_padim',
-                       # 'ote_anomaly_segmentation_stfpm',
+                       'ote_anomaly_segmentation_stfpm',
                     ],
                     dataset_name='mvtec_short_capsule',
                     patience=KEEP_CONFIG_FIELD_VALUE,
@@ -177,7 +177,7 @@ class AnomalySegmentationTrainingTestParameters(DefaultOTETestCreationParameters
                 dict(
                     model_name=[
                        'ote_anomaly_segmentation_padim',
-                       # 'ote_anomaly_segmentation_stfpm',
+                       'ote_anomaly_segmentation_stfpm',
                     ],
                     dataset_name='mvtec_short_carpet',
                     patience=KEEP_CONFIG_FIELD_VALUE,
@@ -187,7 +187,7 @@ class AnomalySegmentationTrainingTestParameters(DefaultOTETestCreationParameters
                 dict(
                     model_name=[
                        'ote_anomaly_segmentation_padim',
-                       # 'ote_anomaly_segmentation_stfpm',
+                       'ote_anomaly_segmentation_stfpm',
                     ],
                     dataset_name='mvtec_short_grid',
                     patience=KEEP_CONFIG_FIELD_VALUE,
@@ -197,7 +197,7 @@ class AnomalySegmentationTrainingTestParameters(DefaultOTETestCreationParameters
                 dict(
                     model_name=[
                        'ote_anomaly_segmentation_padim',
-                       # 'ote_anomaly_segmentation_stfpm',
+                       'ote_anomaly_segmentation_stfpm',
                     ],
                     dataset_name='mvtec_short_hazelnut',
                     patience=KEEP_CONFIG_FIELD_VALUE,
@@ -207,7 +207,7 @@ class AnomalySegmentationTrainingTestParameters(DefaultOTETestCreationParameters
                 dict(
                     model_name=[
                        'ote_anomaly_segmentation_padim',
-                       # 'ote_anomaly_segmentation_stfpm',
+                       'ote_anomaly_segmentation_stfpm',
                     ],
                     dataset_name='mvtec_short_leather',
                     patience=KEEP_CONFIG_FIELD_VALUE,
@@ -217,7 +217,7 @@ class AnomalySegmentationTrainingTestParameters(DefaultOTETestCreationParameters
                 dict(
                     model_name=[
                        'ote_anomaly_segmentation_padim',
-                       # 'ote_anomaly_segmentation_stfpm',
+                       'ote_anomaly_segmentation_stfpm',
                     ],
                     dataset_name='mvtec_short_metal_nut',
                     patience=KEEP_CONFIG_FIELD_VALUE,
@@ -227,7 +227,7 @@ class AnomalySegmentationTrainingTestParameters(DefaultOTETestCreationParameters
                 dict(
                     model_name=[
                        'ote_anomaly_segmentation_padim',
-                       # 'ote_anomaly_segmentation_stfpm',
+                       'ote_anomaly_segmentation_stfpm',
                     ],
                     dataset_name='mvtec_short_pill',
                     patience=KEEP_CONFIG_FIELD_VALUE,
@@ -237,7 +237,7 @@ class AnomalySegmentationTrainingTestParameters(DefaultOTETestCreationParameters
                 dict(
                     model_name=[
                        'ote_anomaly_segmentation_padim',
-                       # 'ote_anomaly_segmentation_stfpm',
+                       'ote_anomaly_segmentation_stfpm',
                     ],
                     dataset_name='mvtec_short_screw',
                     patience=KEEP_CONFIG_FIELD_VALUE,
@@ -247,7 +247,7 @@ class AnomalySegmentationTrainingTestParameters(DefaultOTETestCreationParameters
                 dict(
                     model_name=[
                        'ote_anomaly_segmentation_padim',
-                       # 'ote_anomaly_segmentation_stfpm',
+                       'ote_anomaly_segmentation_stfpm',
                     ],
                     dataset_name='mvtec_short_tile',
                     patience=KEEP_CONFIG_FIELD_VALUE,
@@ -257,7 +257,7 @@ class AnomalySegmentationTrainingTestParameters(DefaultOTETestCreationParameters
                 dict(
                     model_name=[
                        'ote_anomaly_segmentation_padim',
-                       # 'ote_anomaly_segmentation_stfpm',
+                       'ote_anomaly_segmentation_stfpm',
                     ],
                     dataset_name='mvtec_short_toothbrush',
                     patience=KEEP_CONFIG_FIELD_VALUE,
@@ -267,7 +267,7 @@ class AnomalySegmentationTrainingTestParameters(DefaultOTETestCreationParameters
                 dict(
                     model_name=[
                        'ote_anomaly_segmentation_padim',
-                       # 'ote_anomaly_segmentation_stfpm',
+                       'ote_anomaly_segmentation_stfpm',
                     ],
                     dataset_name='mvtec_short_transistor',
                     patience=KEEP_CONFIG_FIELD_VALUE,
@@ -277,7 +277,7 @@ class AnomalySegmentationTrainingTestParameters(DefaultOTETestCreationParameters
                 dict(
                     model_name=[
                        'ote_anomaly_segmentation_padim',
-                       # 'ote_anomaly_segmentation_stfpm',
+                       'ote_anomaly_segmentation_stfpm',
                     ],
                     dataset_name='mvtec_short_wood',
                     patience=KEEP_CONFIG_FIELD_VALUE,
@@ -287,7 +287,7 @@ class AnomalySegmentationTrainingTestParameters(DefaultOTETestCreationParameters
                 dict(
                     model_name=[
                        'ote_anomaly_segmentation_padim',
-                       # 'ote_anomaly_segmentation_stfpm',
+                       'ote_anomaly_segmentation_stfpm',
                     ],
                     dataset_name='mvtec_short_zipper',
                     patience=KEEP_CONFIG_FIELD_VALUE,
