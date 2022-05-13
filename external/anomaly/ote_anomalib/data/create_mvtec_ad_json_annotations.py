@@ -223,7 +223,6 @@ def create_mvtec_ad_annotations(mvtec_data_path: str, mvtec_annotation_path: Opt
     """
     if mvtec_annotation_path is None:
         mvtec_annotation_path = mvtec_data_path
-        print(mvtec_annotation_path)
 
     categories = [
         "bottle",
