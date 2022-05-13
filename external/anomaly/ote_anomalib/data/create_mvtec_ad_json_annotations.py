@@ -184,7 +184,7 @@ def create_task_annotations(task: str, data_path: str, annotation_path: str) -> 
     Raises:
         ValueError: When task is not classification, detection or segmentation.
     """
-    annotation_path = os.path.join(data_path, task)
+    annotation_path = os.path.join(annotation_path, task)
     os.makedirs(annotation_path, exist_ok=True)
 
     for split in ["train", "val", "test"]:
@@ -223,6 +223,7 @@ def create_mvtec_ad_annotations(mvtec_data_path: str, mvtec_annotation_path: Opt
     """
     if mvtec_annotation_path is None:
         mvtec_annotation_path = mvtec_data_path
+        print(mvtec_annotation_path)
 
     categories = [
         "bottle",
