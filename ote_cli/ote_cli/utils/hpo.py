@@ -20,6 +20,9 @@ from os import path as osp
 from pathlib import Path
 from typing import Optional
 from math import ceil
+from inspect import isclass
+from enum import Enum
+
 
 import torch
 import yaml
@@ -112,53 +115,24 @@ def run_hpo_trainer(
     task_type,
 ):
     """Run each training of each trial with given hyper parameters"""
-
-    if isinstance(hyper_parameters, dict):
-        current_params = {}
-        for val in hyper_parameters["parameters"]:
-            current_params[val] = hyper_parameters[val]
-        hyper_parameters = create(model_template.hyper_parameters.data)
-        HpoManager.set_hyperparameter(hyper_parameters, current_params)
-
     if dataset_paths is None:
         raise ValueError("Dataset is not defined.")
 
-    impl_class = get_dataset_class(task_type)
-    dataset = impl_class(
-        train_subset={
-            "ann_file": dataset_paths.get("train_ann_file", None),
-            "data_root": dataset_paths.get("train_data_root", None),
-        },
-        val_subset={
-            "ann_file": dataset_paths.get("val_ann_file", None),
-            "data_root": dataset_paths.get("val_data_root", None),
-        },
-    )
-
-    train_env = TaskEnvironment(
-        model=None,
-        hyper_parameters=hyper_parameters,
-        label_schema=generate_label_schema(dataset, task_type),
-        model_template=model_template,
-    )
-
-    train_env.model = read_model(
-        train_env.get_model_configuration(),
-        osp.join(osp.dirname(hp_config["file_path"]), "weights.pth"),
-        None
-    )
-
-    hyper_parameters = train_env.get_hyper_parameters()
+    # User argument Parameters are applied to HPO trial
+    default_hp = create(model_template.hyper_parameters.data)
+    _set_dict_to_parameter_group(default_hp, hyper_parameters)
+    hyper_parameters = default_hp
 
     # set epoch
     if task_type == TaskType.CLASSIFICATION:
-        (hyper_parameters.learning_parameters.max_num_epochs) = hp_config["iterations"]
+        hyper_parameters.learning_parameters.max_num_epochs = hp_config["iterations"]
     elif task_type == TaskType.DETECTION:
-        hyper_parameters.learning_parameters.learning_rate_warmup_iters = int(
-            hyper_parameters.learning_parameters.learning_rate_warmup_iters
-            * hp_config["iterations"]
-            / hyper_parameters.learning_parameters.num_iters
-        )
+        if "bracket" not in hp_config:
+            hyper_parameters.learning_parameters.learning_rate_warmup_iters = int(
+                hyper_parameters.learning_parameters.learning_rate_warmup_iters
+                * hp_config["iterations"]
+                / hyper_parameters.learning_parameters.num_iters
+            )
         hyper_parameters.learning_parameters.num_iters = hp_config["iterations"]
     elif task_type == TaskType.SEGMENTATION:
         if "bracket" not in hp_config:
@@ -193,13 +167,36 @@ def run_hpo_trainer(
     HpoManager.set_hyperparameter(hyper_parameters, hp_config["params"])
     print(f"hyper parameter of current trial : {hp_config['params']}")
 
-    train_env.set_hyper_parameters(hyper_parameters)
+    impl_class = get_dataset_class(task_type)
+    dataset = impl_class(
+        train_subset={
+            "ann_file": dataset_paths.get("train_ann_file", None),
+            "data_root": dataset_paths.get("train_data_root", None),
+        },
+        val_subset={
+            "ann_file": dataset_paths.get("val_ann_file", None),
+            "data_root": dataset_paths.get("val_data_root", None),
+        },
+    )
+
+    train_env = TaskEnvironment(
+        model=None,
+        hyper_parameters=hyper_parameters,
+        label_schema=generate_label_schema(dataset, task_type),
+        model_template=model_template,
+    )
+
+    # load fixed initial weight
+    train_env.model = read_model(
+        train_env.get_model_configuration(),
+        osp.join(osp.dirname(hp_config["file_path"]), "weights.pth"),
+        None
+    )
+
     train_env.model_template.hpo = {
         "hp_config": hp_config,
         "metric": hp_config["metric"],
     }
-
-    impl_class = get_impl_class(train_env.model_template.entrypoints.base)
 
     hpo_impl_class = get_HPO_train_task(impl_class, task_type)
     task = hpo_impl_class(task_environment=train_env)
@@ -284,6 +281,37 @@ def get_HPO_train_task(impl_class, task_type):
                     self._config.data.train.adaptive_repeat = False
 
     return HpoTrainTask
+
+
+def _convert_paramger_group_to_dict(parameter_group):
+    groups = getattr(parameter_group, "groups", None)
+    parameters = getattr(parameter_group, "parameters", None)
+
+    total_arr = []
+    for val in [groups, parameters]:
+        if val is not None:
+            total_arr.extend(val)
+    if not total_arr:
+        return parameter_group
+
+    ret = {}
+    for key in total_arr:
+        val = _convert_paramger_group_to_dict(getattr(parameter_group, key))
+        if not (isclass(val) or isinstance(val, Enum)):
+            ret[key] = val
+
+    return ret
+
+def _set_dict_to_parameter_group(origin_hp, hp_config):
+    """
+    Set given hyper parameter to hyper parameter in environment
+    aligning with "ConfigurableParameters".
+    """
+    for key, val in hp_config.items():
+        if not isinstance(val, dict):
+            setattr(origin_hp, key, val)
+        else:
+            _set_dict_to_parameter_group(getattr(origin_hp, key), val)
 
 class HpoCallback(UpdateProgressCallback):
     """Callback class to report score to hpopt"""
@@ -518,8 +546,8 @@ class HpoManager:
 
                 _kwargs = {
                     "hp_config": hp_config,
-                    "hyper_parameters": vars(
-                        self.environment.get_hyper_parameters().learning_parameters
+                    "hyper_parameters": _convert_paramger_group_to_dict(
+                        self.environment.get_hyper_parameters()
                     ),
                     "model_template": self.environment.model_template,
                     "dataset_paths": self.dataset_paths,
