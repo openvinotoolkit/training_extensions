@@ -44,7 +44,7 @@
 
 ? "ACTION-training_evaluation,model-ote_anomaly_segmentation_padim,dataset-mvtec_short_bottle,patience-CONFIG,batch-CONFIG,usecase-precommit"
 : "metrics.accuracy.Dice Average":
-    "target_value": 0.24
+    "target_value": 0.90
     "max_diff_if_less_threshold": 0.01
     "max_diff_if_greater_threshold": 0.04
 ? "ACTION-export_evaluation,model-ote_anomaly_segmentation_padim,dataset-mvtec_short_bottle,patience-CONFIG,batch-CONFIG,usecase-precommit"
@@ -65,7 +65,7 @@
     "max_diff": 0.01
 ? "ACTION-training_evaluation,model-ote_anomaly_segmentation_stfpm,dataset-mvtec_short_bottle,patience-CONFIG,batch-CONFIG,usecase-precommit"
 : "metrics.accuracy.Dice Average":
-    "target_value": 0.74
+    "target_value": 0.90
     "max_diff_if_less_threshold": 0.01
     "max_diff_if_greater_threshold": 0.04
 ? "ACTION-export_evaluation,model-ote_anomaly_segmentation_stfpm,dataset-mvtec_short_bottle,patience-CONFIG,batch-CONFIG,usecase-precommit"
@@ -87,7 +87,7 @@
 
 ? "ACTION-training_evaluation,model-ote_anomaly_segmentation_padim,dataset-mvtec_short_bottle,patience-CONFIG,batch-CONFIG,usecase-reallife"
 : "metrics.accuracy.Dice Average":
-    "target_value": 0.24
+    "target_value": 0.90
     "max_diff_if_less_threshold": 0.01
     "max_diff_if_greater_threshold": 0.04
 ? "ACTION-export_evaluation,model-ote_anomaly_segmentation_padim,dataset-mvtec_short_bottle,patience-CONFIG,batch-CONFIG,usecase-reallife"
@@ -108,7 +108,7 @@
     "max_diff": 0.01
 ? "ACTION-training_evaluation,model-ote_anomaly_segmentation_stfpm,dataset-mvtec_short_bottle,patience-CONFIG,batch-CONFIG,usecase-reallife"
 : "metrics.accuracy.Dice Average":
-    "target_value": 0.74
+    "target_value": 0.90
     "max_diff_if_less_threshold": 0.01
     "max_diff_if_greater_threshold": 0.04
 ? "ACTION-export_evaluation,model-ote_anomaly_segmentation_stfpm,dataset-mvtec_short_bottle,patience-CONFIG,batch-CONFIG,usecase-reallife"
@@ -131,7 +131,7 @@
 
 ? "ACTION-training_evaluation,model-ote_anomaly_segmentation_padim,dataset-mvtec_short_cable,patience-CONFIG,batch-CONFIG,usecase-reallife"
 : "metrics.accuracy.Dice Average":
-    "target_value": 0.24
+    "target_value": 0.90
     "max_diff_if_less_threshold": 0.01
     "max_diff_if_greater_threshold": 0.04
 ? "ACTION-export_evaluation,model-ote_anomaly_segmentation_padim,dataset-mvtec_short_cable,patience-CONFIG,batch-CONFIG,usecase-reallife"
@@ -152,7 +152,7 @@
     "max_diff": 0.01
 ? "ACTION-training_evaluation,model-ote_anomaly_segmentation_stfpm,dataset-mvtec_short_cable,patience-CONFIG,batch-CONFIG,usecase-reallife"
 : "metrics.accuracy.Dice Average":
-    "target_value": 0.74
+    "target_value": 0.90
     "max_diff_if_less_threshold": 0.01
     "max_diff_if_greater_threshold": 0.04
 ? "ACTION-export_evaluation,model-ote_anomaly_segmentation_stfpm,dataset-mvtec_short_cable,patience-CONFIG,batch-CONFIG,usecase-reallife"
@@ -175,7 +175,7 @@
 
 ? "ACTION-training_evaluation,model-ote_anomaly_segmentation_padim,dataset-mvtec_short_capsule,patience-CONFIG,batch-CONFIG,usecase-reallife"
 : "metrics.accuracy.Dice Average":
-    "target_value": 0.24
+    "target_value": 0.90
     "max_diff_if_less_threshold": 0.01
     "max_diff_if_greater_threshold": 0.04
 ? "ACTION-export_evaluation,model-ote_anomaly_segmentation_padim,dataset-mvtec_short_capsule,patience-CONFIG,batch-CONFIG,usecase-reallife"
@@ -196,7 +196,7 @@
     "max_diff": 0.01
 ? "ACTION-training_evaluation,model-ote_anomaly_segmentation_stfpm,dataset-mvtec_short_capsule,patience-CONFIG,batch-CONFIG,usecase-reallife"
 : "metrics.accuracy.Dice Average":
-    "target_value": 0.74
+    "target_value": 0.90
     "max_diff_if_less_threshold": 0.01
     "max_diff_if_greater_threshold": 0.04
 ? "ACTION-export_evaluation,model-ote_anomaly_segmentation_stfpm,dataset-mvtec_short_capsule,patience-CONFIG,batch-CONFIG,usecase-reallife"
@@ -219,7 +219,7 @@
 
 ? "ACTION-training_evaluation,model-ote_anomaly_segmentation_padim,dataset-mvtec_short_carpet,patience-CONFIG,batch-CONFIG,usecase-reallife"
 : "metrics.accuracy.Dice Average":
-    "target_value": 0.24
+    "target_value": 0.90
     "max_diff_if_less_threshold": 0.01
     "max_diff_if_greater_threshold": 0.04
 ? "ACTION-export_evaluation,model-ote_anomaly_segmentation_padim,dataset-mvtec_short_carpet,patience-CONFIG,batch-CONFIG,usecase-reallife"
@@ -240,7 +240,7 @@
     "max_diff": 0.01
 ? "ACTION-training_evaluation,model-ote_anomaly_segmentation_stfpm,dataset-mvtec_short_carpet,patience-CONFIG,batch-CONFIG,usecase-reallife"
 : "metrics.accuracy.Dice Average":
-    "target_value": 0.74
+    "target_value": 0.90
     "max_diff_if_less_threshold": 0.01
     "max_diff_if_greater_threshold": 0.04
 ? "ACTION-export_evaluation,model-ote_anomaly_segmentation_stfpm,dataset-mvtec_short_carpet,patience-CONFIG,batch-CONFIG,usecase-reallife"
@@ -263,7 +263,7 @@
 
 ? "ACTION-training_evaluation,model-ote_anomaly_segmentation_padim,dataset-mvtec_short_grid,patience-CONFIG,batch-CONFIG,usecase-reallife"
 : "metrics.accuracy.Dice Average":
-    "target_value": 0.24
+    "target_value": 0.90
     "max_diff_if_less_threshold": 0.01
     "max_diff_if_greater_threshold": 0.04
 ? "ACTION-export_evaluation,model-ote_anomaly_segmentation_padim,dataset-mvtec_short_grid,patience-CONFIG,batch-CONFIG,usecase-reallife"
@@ -284,7 +284,7 @@
     "max_diff": 0.01
 ? "ACTION-training_evaluation,model-ote_anomaly_segmentation_stfpm,dataset-mvtec_short_grid,patience-CONFIG,batch-CONFIG,usecase-reallife"
 : "metrics.accuracy.Dice Average":
-    "target_value": 0.74
+    "target_value": 0.90
     "max_diff_if_less_threshold": 0.01
     "max_diff_if_greater_threshold": 0.04
 ? "ACTION-export_evaluation,model-ote_anomaly_segmentation_stfpm,dataset-mvtec_short_grid,patience-CONFIG,batch-CONFIG,usecase-reallife"
@@ -306,7 +306,7 @@
 
 ? "ACTION-training_evaluation,model-ote_anomaly_segmentation_padim,dataset-mvtec_short_hazelnut,patience-CONFIG,batch-CONFIG,usecase-reallife"
 : "metrics.accuracy.Dice Average":
-    "target_value": 0.24
+    "target_value": 0.90
     "max_diff_if_less_threshold": 0.01
     "max_diff_if_greater_threshold": 0.04
 ? "ACTION-export_evaluation,model-ote_anomaly_segmentation_padim,dataset-mvtec_short_hazelnut,patience-CONFIG,batch-CONFIG,usecase-reallife"
@@ -327,7 +327,7 @@
     "max_diff": 0.01
 ? "ACTION-training_evaluation,model-ote_anomaly_segmentation_stfpm,dataset-mvtec_short_hazelnut,patience-CONFIG,batch-CONFIG,usecase-reallife"
 : "metrics.accuracy.Dice Average":
-    "target_value": 0.74
+    "target_value": 0.90
     "max_diff_if_less_threshold": 0.01
     "max_diff_if_greater_threshold": 0.04
 ? "ACTION-export_evaluation,model-ote_anomaly_segmentation_stfpm,dataset-mvtec_short_hazelnut,patience-CONFIG,batch-CONFIG,usecase-reallife"
@@ -350,7 +350,7 @@
 
 ? "ACTION-training_evaluation,model-ote_anomaly_segmentation_padim,dataset-mvtec_short_leather,patience-CONFIG,batch-CONFIG,usecase-reallife"
 : "metrics.accuracy.Dice Average":
-    "target_value": 0.24
+    "target_value": 0.90
     "max_diff_if_less_threshold": 0.01
     "max_diff_if_greater_threshold": 0.04
 ? "ACTION-export_evaluation,model-ote_anomaly_segmentation_padim,dataset-mvtec_short_leather,patience-CONFIG,batch-CONFIG,usecase-reallife"
@@ -371,7 +371,7 @@
     "max_diff": 0.01
 ? "ACTION-training_evaluation,model-ote_anomaly_segmentation_stfpm,dataset-mvtec_short_leather,patience-CONFIG,batch-CONFIG,usecase-reallife"
 : "metrics.accuracy.Dice Average":
-    "target_value": 0.74
+    "target_value": 0.90
     "max_diff_if_less_threshold": 0.01
     "max_diff_if_greater_threshold": 0.04
 ? "ACTION-export_evaluation,model-ote_anomaly_segmentation_stfpm,dataset-mvtec_short_leather,patience-CONFIG,batch-CONFIG,usecase-reallife"
@@ -393,7 +393,7 @@
 
 ? "ACTION-training_evaluation,model-ote_anomaly_segmentation_padim,dataset-mvtec_short_metal_nut,patience-CONFIG,batch-CONFIG,usecase-reallife"
 : "metrics.accuracy.Dice Average":
-    "target_value": 0.24
+    "target_value": 0.90
     "max_diff_if_less_threshold": 0.01
     "max_diff_if_greater_threshold": 0.04
 ? "ACTION-export_evaluation,model-ote_anomaly_segmentation_padim,dataset-mvtec_short_metal_nut,patience-CONFIG,batch-CONFIG,usecase-reallife"
@@ -414,7 +414,7 @@
     "max_diff": 0.01
 ? "ACTION-training_evaluation,model-ote_anomaly_segmentation_stfpm,dataset-mvtec_short_metal_nut,patience-CONFIG,batch-CONFIG,usecase-reallife"
 : "metrics.accuracy.Dice Average":
-    "target_value": 0.74
+    "target_value": 0.90
     "max_diff_if_less_threshold": 0.01
     "max_diff_if_greater_threshold": 0.04
 ? "ACTION-export_evaluation,model-ote_anomaly_segmentation_stfpm,dataset-mvtec_short_metal_nut,patience-CONFIG,batch-CONFIG,usecase-reallife"
@@ -437,7 +437,7 @@
 
 ? "ACTION-training_evaluation,model-ote_anomaly_segmentation_padim,dataset-mvtec_short_pill,patience-CONFIG,batch-CONFIG,usecase-reallife"
 : "metrics.accuracy.Dice Average":
-    "target_value": 0.24
+    "target_value": 0.90
     "max_diff_if_less_threshold": 0.01
     "max_diff_if_greater_threshold": 0.04
 ? "ACTION-export_evaluation,model-ote_anomaly_segmentation_padim,dataset-mvtec_short_pill,patience-CONFIG,batch-CONFIG,usecase-reallife"
@@ -458,7 +458,7 @@
     "max_diff": 0.01
 ? "ACTION-training_evaluation,model-ote_anomaly_segmentation_stfpm,dataset-mvtec_short_pill,patience-CONFIG,batch-CONFIG,usecase-reallife"
 : "metrics.accuracy.Dice Average":
-    "target_value": 0.74
+    "target_value": 0.90
     "max_diff_if_less_threshold": 0.01
     "max_diff_if_greater_threshold": 0.04
 ? "ACTION-export_evaluation,model-ote_anomaly_segmentation_stfpm,dataset-mvtec_short_pill,patience-CONFIG,batch-CONFIG,usecase-reallife"
@@ -480,7 +480,7 @@
 
 ? "ACTION-training_evaluation,model-ote_anomaly_segmentation_padim,dataset-mvtec_short_screw,patience-CONFIG,batch-CONFIG,usecase-reallife"
 : "metrics.accuracy.Dice Average":
-    "target_value": 0.24
+    "target_value": 0.90
     "max_diff_if_less_threshold": 0.01
     "max_diff_if_greater_threshold": 0.04
 ? "ACTION-export_evaluation,model-ote_anomaly_segmentation_padim,dataset-mvtec_short_screw,patience-CONFIG,batch-CONFIG,usecase-reallife"
@@ -501,7 +501,7 @@
     "max_diff": 0.01
 ? "ACTION-training_evaluation,model-ote_anomaly_segmentation_stfpm,dataset-mvtec_short_screw,patience-CONFIG,batch-CONFIG,usecase-reallife"
 : "metrics.accuracy.Dice Average":
-    "target_value": 0.74
+    "target_value": 0.90
     "max_diff_if_less_threshold": 0.01
     "max_diff_if_greater_threshold": 0.04
 ? "ACTION-export_evaluation,model-ote_anomaly_segmentation_stfpm,dataset-mvtec_short_screw,patience-CONFIG,batch-CONFIG,usecase-reallife"
@@ -523,7 +523,7 @@
 
 ? "ACTION-training_evaluation,model-ote_anomaly_segmentation_padim,dataset-mvtec_short_tile,patience-CONFIG,batch-CONFIG,usecase-reallife"
 : "metrics.accuracy.Dice Average":
-    "target_value": 0.24
+    "target_value": 0.90
     "max_diff_if_less_threshold": 0.01
     "max_diff_if_greater_threshold": 0.04
 ? "ACTION-export_evaluation,model-ote_anomaly_segmentation_padim,dataset-mvtec_short_tile,patience-CONFIG,batch-CONFIG,usecase-reallife"
@@ -544,7 +544,7 @@
     "max_diff": 0.01
 ? "ACTION-training_evaluation,model-ote_anomaly_segmentation_stfpm,dataset-mvtec_short_tile,patience-CONFIG,batch-CONFIG,usecase-reallife"
 : "metrics.accuracy.Dice Average":
-    "target_value": 0.74
+    "target_value": 0.90
     "max_diff_if_less_threshold": 0.01
     "max_diff_if_greater_threshold": 0.04
 ? "ACTION-export_evaluation,model-ote_anomaly_segmentation_stfpm,dataset-mvtec_short_tile,patience-CONFIG,batch-CONFIG,usecase-reallife"
@@ -564,52 +564,52 @@
     "base": "nncf_evaluation.metrics.accuracy.Dice Average"
     "max_diff": 0.01
 
-? "ACTION-training_evaluation,model-ote_anomaly_segmentation_padim,dataset-mvtec_short_tootbrush,patience-CONFIG,batch-CONFIG,usecase-reallife"
+? "ACTION-training_evaluation,model-ote_anomaly_segmentation_padim,dataset-mvtec_short_toothbrush,patience-CONFIG,batch-CONFIG,usecase-reallife"
 : "metrics.accuracy.Dice Average":
-    "target_value": 0.24
+    "target_value": 0.90
     "max_diff_if_less_threshold": 0.01
     "max_diff_if_greater_threshold": 0.04
-? "ACTION-export_evaluation,model-ote_anomaly_segmentation_padim,dataset-mvtec_short_tootbrush,patience-CONFIG,batch-CONFIG,usecase-reallife"
+? "ACTION-export_evaluation,model-ote_anomaly_segmentation_padim,dataset-mvtec_short_toothbrush,patience-CONFIG,batch-CONFIG,usecase-reallife"
 : "metrics.accuracy.Dice Average":
     "base": "training_evaluation.metrics.accuracy.Dice Average"
     "max_diff": 0.01
-? "ACTION-pot_evaluation,model-ote_anomaly_segmentation_padim,dataset-mvtec_short_tootbrush,patience-CONFIG,batch-CONFIG,usecase-reallife"
+? "ACTION-pot_evaluation,model-ote_anomaly_segmentation_padim,dataset-mvtec_short_toothbrush,patience-CONFIG,batch-CONFIG,usecase-reallife"
 : "metrics.accuracy.Dice Average":
     "base": "export_evaluation.metrics.accuracy.Dice Average"
     "max_diff": 0.03
-? "ACTION-nncf_evaluation,model-ote_anomaly_segmentation_padim,dataset-mvtec_short_tootbrush,patience-CONFIG,batch-CONFIG,usecase-reallife"
+? "ACTION-nncf_evaluation,model-ote_anomaly_segmentation_padim,dataset-mvtec_short_toothbrush,patience-CONFIG,batch-CONFIG,usecase-reallife"
 : "metrics.accuracy.Dice Average":
     "base": "training_evaluation.metrics.accuracy.Dice Average"
     "max_diff_if_less_threshold": 0.01
-? "ACTION-nncf_export_evaluation,model-ote_anomaly_segmentation_padim,dataset-mvtec_short_tootbrush,patience-CONFIG,batch-CONFIG,usecase-reallife"
+? "ACTION-nncf_export_evaluation,model-ote_anomaly_segmentation_padim,dataset-mvtec_short_toothbrush,patience-CONFIG,batch-CONFIG,usecase-reallife"
 : "metrics.accuracy.Dice Average":
     "base": "nncf_evaluation.metrics.accuracy.Dice Average"
     "max_diff": 0.01
-? "ACTION-training_evaluation,model-ote_anomaly_segmentation_stfpm,dataset-mvtec_short_tootbrush,patience-CONFIG,batch-CONFIG,usecase-reallife"
+? "ACTION-training_evaluation,model-ote_anomaly_segmentation_stfpm,dataset-mvtec_short_toothbrush,patience-CONFIG,batch-CONFIG,usecase-reallife"
 : "metrics.accuracy.Dice Average":
-    "target_value": 0.74
+    "target_value": 0.90
     "max_diff_if_less_threshold": 0.01
     "max_diff_if_greater_threshold": 0.04
-? "ACTION-export_evaluation,model-ote_anomaly_segmentation_stfpm,dataset-mvtec_short_tootbrush,patience-CONFIG,batch-CONFIG,usecase-reallife"
+? "ACTION-export_evaluation,model-ote_anomaly_segmentation_stfpm,dataset-mvtec_short_toothbrush,patience-CONFIG,batch-CONFIG,usecase-reallife"
 : "metrics.accuracy.Dice Average":
     "base": "training_evaluation.metrics.accuracy.Dice Average"
     "max_diff": 0.01
-? "ACTION-pot_evaluation,model-ote_anomaly_segmentation_stfpm,dataset-mvtec_short_tootbrush,patience-CONFIG,batch-CONFIG,usecase-reallife"
+? "ACTION-pot_evaluation,model-ote_anomaly_segmentation_stfpm,dataset-mvtec_short_toothbrush,patience-CONFIG,batch-CONFIG,usecase-reallife"
 : "metrics.accuracy.Dice Average":
     "base": "export_evaluation.metrics.accuracy.Dice Average"
     "max_diff": 0.03
-? "ACTION-nncf_evaluation,model-ote_anomaly_segmentation_stfpm,dataset-mvtec_short_tootbrush,patience-CONFIG,batch-CONFIG,usecase-reallife"
+? "ACTION-nncf_evaluation,model-ote_anomaly_segmentation_stfpm,dataset-mvtec_short_toothbrush,patience-CONFIG,batch-CONFIG,usecase-reallife"
 : "metrics.accuracy.Dice Average":
     "base": "training_evaluation.metrics.accuracy.Dice Average"
     "max_diff_if_less_threshold": 0.01
-? "ACTION-nncf_export_evaluation,model-ote_anomaly_segmentation_stfpm,dataset-mvtec_short_tootbrush,patience-CONFIG,batch-CONFIG,usecase-reallife"
+? "ACTION-nncf_export_evaluation,model-ote_anomaly_segmentation_stfpm,dataset-mvtec_short_toothbrush,patience-CONFIG,batch-CONFIG,usecase-reallife"
 : "metrics.accuracy.Dice Average":
     "base": "nncf_evaluation.metrics.accuracy.Dice Average"
     "max_diff": 0.01
 
 ? "ACTION-training_evaluation,model-ote_anomaly_segmentation_padim,dataset-mvtec_short_transistor,patience-CONFIG,batch-CONFIG,usecase-reallife"
 : "metrics.accuracy.Dice Average":
-    "target_value": 0.24
+    "target_value": 0.90
     "max_diff_if_less_threshold": 0.01
     "max_diff_if_greater_threshold": 0.04
 ? "ACTION-export_evaluation,model-ote_anomaly_segmentation_padim,dataset-mvtec_short_transistor,patience-CONFIG,batch-CONFIG,usecase-reallife"
@@ -630,7 +630,7 @@
     "max_diff": 0.01
 ? "ACTION-training_evaluation,model-ote_anomaly_segmentation_stfpm,dataset-mvtec_short_transistor,patience-CONFIG,batch-CONFIG,usecase-reallife"
 : "metrics.accuracy.Dice Average":
-    "target_value": 0.74
+    "target_value": 0.90
     "max_diff_if_less_threshold": 0.01
     "max_diff_if_greater_threshold": 0.04
 ? "ACTION-export_evaluation,model-ote_anomaly_segmentation_stfpm,dataset-mvtec_short_transistor,patience-CONFIG,batch-CONFIG,usecase-reallife"
@@ -652,7 +652,7 @@
 
 ? "ACTION-training_evaluation,model-ote_anomaly_segmentation_padim,dataset-mvtec_short_wood,patience-CONFIG,batch-CONFIG,usecase-reallife"
 : "metrics.accuracy.Dice Average":
-    "target_value": 0.24
+    "target_value": 0.90
     "max_diff_if_less_threshold": 0.01
     "max_diff_if_greater_threshold": 0.04
 ? "ACTION-export_evaluation,model-ote_anomaly_segmentation_padim,dataset-mvtec_short_wood,patience-CONFIG,batch-CONFIG,usecase-reallife"
@@ -673,7 +673,7 @@
     "max_diff": 0.01
 ? "ACTION-training_evaluation,model-ote_anomaly_segmentation_stfpm,dataset-mvtec_short_wood,patience-CONFIG,batch-CONFIG,usecase-reallife"
 : "metrics.accuracy.Dice Average":
-    "target_value": 0.74
+    "target_value": 0.90
     "max_diff_if_less_threshold": 0.01
     "max_diff_if_greater_threshold": 0.04
 ? "ACTION-export_evaluation,model-ote_anomaly_segmentation_stfpm,dataset-mvtec_short_wood,patience-CONFIG,batch-CONFIG,usecase-reallife"
@@ -695,7 +695,7 @@
     
 ? "ACTION-training_evaluation,model-ote_anomaly_segmentation_padim,dataset-mvtec_short_zipper,patience-CONFIG,batch-CONFIG,usecase-reallife"
 : "metrics.accuracy.Dice Average":
-    "target_value": 0.24
+    "target_value": 0.90
     "max_diff_if_less_threshold": 0.01
     "max_diff_if_greater_threshold": 0.04
 ? "ACTION-export_evaluation,model-ote_anomaly_segmentation_padim,dataset-mvtec_short_zipper,patience-CONFIG,batch-CONFIG,usecase-reallife"
@@ -716,7 +716,7 @@
     "max_diff": 0.01
 ? "ACTION-training_evaluation,model-ote_anomaly_segmentation_stfpm,dataset-mvtec_short_zipper,patience-CONFIG,batch-CONFIG,usecase-reallife"
 : "metrics.accuracy.Dice Average":
-    "target_value": 0.74
+    "target_value": 0.90
     "max_diff_if_less_threshold": 0.01
     "max_diff_if_greater_threshold": 0.04
 ? "ACTION-export_evaluation,model-ote_anomaly_segmentation_stfpm,dataset-mvtec_short_zipper,patience-CONFIG,batch-CONFIG,usecase-reallife"
