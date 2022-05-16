@@ -15,6 +15,7 @@
 import os
 from collections import namedtuple, OrderedDict
 from copy import deepcopy
+
 from pprint import pformat
 from typing import Any, Callable, Dict, List, Optional, Type
 
@@ -25,6 +26,7 @@ from ote_sdk.entities.model_template import parse_model_template
 from ote_sdk.entities.label_schema import LabelSchemaEntity
 from ote_sdk.entities.subset import Subset
 from ote_sdk.entities.train_parameters import TrainParameters
+from ote_sdk.entities.model_template import TaskType
 
 from ote_anomalib.data.mvtec import OteMvtecDataset
 from ote_anomalib.logging import get_logger
@@ -48,17 +50,12 @@ from ote_sdk.test_suite.training_tests_helper import (
 from ote_sdk.test_suite.training_tests_actions import (
     create_environment_and_task,
     OTETestTrainingAction,
-    BaseOTETestAction,
-    OTETestTrainingEvaluationAction,
-    OTETestExportAction,
-    OTETestExportEvaluationAction,
-    OTETestPotAction,
-    OTETestPotEvaluationAction,
-    OTETestNNCFAction,
-    OTETestNNCFEvaluationAction,
-    OTETestNNCFExportAction,
-    OTETestNNCFExportEvaluationAction,
-    OTETestNNCFGraphAction,
+)
+
+from tests.anomaly_common import (
+    _get_dataset_params_from_dataset_definitions,
+    _create_anomaly_dataset_and_labels_schema,
+    get_anomaly_domain_test_action_classes
 )
 
 logger = get_logger(__name__)
@@ -69,72 +66,10 @@ def ote_test_domain_fx():
     return "custom-anomaly-classification"
 
 
-def DATASET_PARAMETERS_FIELDS() -> List[str]:
-    return deepcopy(["dataset_path"])
-
-
-DatasetParameters = namedtuple("DatasetParameters", DATASET_PARAMETERS_FIELDS())  # type: ignore
-
-
-def _get_dataset_params_from_dataset_definitions(dataset_definitions, dataset_name):
-    if dataset_name not in dataset_definitions:
-        raise ValueError(
-            f"dataset {dataset_name} is absent in dataset_definitions, "
-            f"dataset_definitions.keys={list(dataset_definitions.keys())}"
-        )
-    cur_dataset_definition = dataset_definitions[dataset_name]
-    training_parameters_fields = {k: v for k, v in cur_dataset_definition.items() if k in DATASET_PARAMETERS_FIELDS()}
-    print(f"training_parameters_fields: {training_parameters_fields}")
-    make_paths_be_abs(training_parameters_fields, dataset_definitions[ROOT_PATH_KEY])
-    print(f"training_parameters_fields after make_paths_be_abs: {training_parameters_fields}")
-
-    assert set(DATASET_PARAMETERS_FIELDS()) == set(
-        training_parameters_fields.keys()
-    ), f"ERROR: dataset definitions for name={dataset_name} does not contain all required fields"
-    assert all(
-        training_parameters_fields.values()
-    ), f"ERROR: dataset definitions for name={dataset_name} contains empty values for some required fields"
-
-    params = DatasetParameters(**training_parameters_fields)
-    return params
-
-
-def _create_anomaly_classification_dataset_and_labels_schema(dataset_params, dataset_name):
-    logger.debug(f"Path to dataset: {dataset_params.dataset_path}")
-    category_list = [f.path for f in os.scandir(dataset_params.dataset_path) if f.is_dir()]
-    items = []
-    if "short" in dataset_name:
-        logger.debug(f"Creating short dataset {dataset_name}")
-        items.extend(OteMvtecDataset(path=dataset_params.dataset_path, seed=0).generate())
-    else:
-        for category in category_list:
-            logger.debug(f"Creating dataset for {category}")
-            items.extend(OteMvtecDataset(path=category, seed=0).generate())
-    dataset = DatasetEntity(items=items)
-    labels = dataset.get_labels()
-    labels_schema = LabelSchemaEntity.from_labels(labels)
-    return dataset, labels_schema
-
-
-def get_anomaly_test_action_classes() -> List[Type[BaseOTETestAction]]:
-    return [
-        AnomalyDetectionTestTrainingAction,
-        OTETestTrainingEvaluationAction,
-        OTETestExportAction,
-        OTETestExportEvaluationAction,
-        OTETestPotAction,
-        OTETestPotEvaluationAction,
-        OTETestNNCFAction,
-        OTETestNNCFEvaluationAction,
-        OTETestNNCFExportAction,
-        OTETestNNCFExportEvaluationAction,
-        OTETestNNCFGraphAction,
-    ]
-
-
 class AnomalyClassificationTrainingTestParameters(DefaultOTETestCreationParametersInterface):
     def test_case_class(self) -> Type[OTETestCaseInterface]:
-        return generate_ote_integration_test_case_class(get_anomaly_test_action_classes())
+        return generate_ote_integration_test_case_class(
+            get_anomaly_domain_test_action_classes(AnomalyDetectionTestTrainingAction))
 
     def test_bunches(self) -> List[Dict[str, Any]]:
         test_bunches = [
@@ -306,9 +241,8 @@ class TestOTEReallifeAnomalyClassification(OTETrainingTestInterface):
                 )
             template_path = make_path_be_abs(template_paths[model_name], template_paths[ROOT_PATH_KEY])
             logger.debug("training params factory: Before creating dataset and labels_schema")
-            dataset, labels_schema = _create_anomaly_classification_dataset_and_labels_schema(
-                dataset_params, dataset_name
-            )
+            dataset, labels_schema = _create_anomaly_dataset_and_labels_schema(
+                dataset_params, dataset_name, TaskType.ANOMALY_CLASSIFICATION)
             logger.debug("training params factory: After creating dataset and labels_schema")
             return {
                 "dataset": dataset,
@@ -335,9 +269,8 @@ class TestOTEReallifeAnomalyClassification(OTETrainingTestInterface):
             template_path = make_path_be_abs(template_paths[model_name], template_paths[ROOT_PATH_KEY])
 
             logger.debug("training params factory: Before creating dataset and labels_schema")
-            dataset, labels_schema = _create_anomaly_classification_dataset_and_labels_schema(
-                dataset_params, dataset_name
-            )
+            dataset, labels_schema = _create_anomaly_dataset_and_labels_schema(
+                dataset_params, dataset_name, TaskType.ANOMALY_CLASSIFICATION)
             logger.debug("training params factory: After creating dataset and labels_schema")
 
             return {
@@ -400,6 +333,4 @@ class TestOTEReallifeAnomalyClassification(OTETrainingTestInterface):
 
     @e2e_pytest_performance
     def test(self, test_parameters, test_case_fx, data_collector_fx, cur_test_expected_metrics_callback_fx):
-        if "nncf_graph" in test_parameters["test_stage"]:
-            pytest.xfail("The models has no a reference NNCF graph yet, please see CVS-83365")
         test_case_fx.run_stage(test_parameters["test_stage"], data_collector_fx, cur_test_expected_metrics_callback_fx)

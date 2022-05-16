@@ -14,8 +14,7 @@
 
 import logging
 import os
-from collections import (namedtuple,
-                        OrderedDict)
+from collections import OrderedDict
 from copy import deepcopy
 from pprint import pformat
 from typing import Any, Callable, Dict, List, Optional, Type
@@ -29,14 +28,11 @@ from ote_sdk.entities.subset import Subset
 from ote_sdk.entities.train_parameters import TrainParameters
 from ote_sdk.entities.model_template import TaskType
 
-from ote_anomalib.data.mvtec import OteMvtecDataset
-
 from ote_sdk.configuration.helper import create as ote_sdk_configuration_helper_create
 from ote_sdk.test_suite.training_test_case import (OTETestCaseInterface,
                                                    generate_ote_integration_test_case_class)
 from ote_sdk.test_suite.e2e_test_system import DataCollector, e2e_pytest_performance
 from ote_sdk.test_suite.training_tests_common import (make_path_be_abs,
-                                                      make_paths_be_abs,
                                                       performance_to_score_name_value,
                                                       KEEP_CONFIG_FIELD_VALUE,
                                                       REALLIFE_USECASE_CONSTANT,
@@ -45,88 +41,26 @@ from ote_sdk.test_suite.training_tests_helper import (OTETestHelper,
                                                       DefaultOTETestCreationParametersInterface,
                                                       OTETrainingTestInterface)
 from ote_sdk.test_suite.training_tests_actions import (create_environment_and_task,
-                                                       OTETestTrainingAction,
-                                                       BaseOTETestAction,
-                                                       OTETestTrainingEvaluationAction,
-                                                       OTETestExportAction,
-                                                       OTETestExportEvaluationAction,
-                                                       OTETestPotAction,
-                                                       OTETestPotEvaluationAction,
-                                                       OTETestNNCFAction,
-                                                       OTETestNNCFEvaluationAction,
-                                                       OTETestNNCFExportAction,
-                                                       OTETestNNCFExportEvaluationAction,
-                                                       OTETestNNCFGraphAction)
+                                                       OTETestTrainingAction)
+
+from tests.anomaly_common import (
+    _get_dataset_params_from_dataset_definitions,
+    _create_anomaly_dataset_and_labels_schema,
+    get_anomaly_domain_test_action_classes
+)
 
 logger = logging.getLogger(__name__)
 
 
 @pytest.fixture
 def ote_test_domain_fx():
-    return 'anomaly-segmentation'
+    return 'custom-anomaly-segmentation'
 
-
-def DATASET_PARAMETERS_FIELDS() -> List[str]:
-    return deepcopy(['dataset_path'])
-
-DatasetParameters = namedtuple('DatasetParameters', DATASET_PARAMETERS_FIELDS())
-
-
-def _get_dataset_params_from_dataset_definitions(dataset_definitions: Dict[str, Dict[str, str]], dataset_name: str):
-    if dataset_name not in dataset_definitions:
-        raise ValueError(f'dataset {dataset_name} is absent in dataset_definitions, '
-                         f'dataset_definitions.keys={list(dataset_definitions.keys())}')
-    current_dataset_definition = dataset_definitions[dataset_name]
-    training_parameters_fields = {k: v for k, v in current_dataset_definition.items()
-                                  if k in DATASET_PARAMETERS_FIELDS()}
-    make_paths_be_abs(training_parameters_fields, dataset_definitions[ROOT_PATH_KEY])
-
-    assert set(DATASET_PARAMETERS_FIELDS()) == set(training_parameters_fields.keys()), \
-            f'ERROR: dataset definitions for name={dataset_name} does not contain all required fields'
-    assert all(training_parameters_fields.values()), \
-            f'ERROR: dataset definitions for name={dataset_name} contains empty values for some required fields'
-
-    params = DatasetParameters(**training_parameters_fields)
-    return params
-
-
-def _create_anomaly_segmentation_dataset_and_labels_schema(dataset_params: DatasetParameters, dataset_name: str):
-    logger.debug(f'Path to dataset: {dataset_params.dataset_path}')
-    category_list = [f.path for f in os.scandir(dataset_params.dataset_path) if f.is_dir()]
-    items = []
-    if "short" in dataset_name:
-        logger.debug(f'Creating short dataset {dataset_name}')
-        items.extend(OteMvtecDataset(path=dataset_params.dataset_path, seed=0, task_type=TaskType.ANOMALY_SEGMENTATION)
-                     .generate())
-    else:
-        for category in category_list:
-            logger.debug(f'Creating dataset for {category}')
-            items.extend(OteMvtecDataset(path=category, seed=0, task_type=TaskType.ANOMALY_SEGMENTATION).generate())
-    dataset = DatasetEntity(items=items)
-    labels = dataset.get_labels()
-    labels_schema = LabelSchemaEntity.from_labels(labels)
-    return dataset, labels_schema
-
-def get_anomaly_segmentation_test_action_classes() -> List[Type[BaseOTETestAction]]:
-    return [
-        AnomalySegmentationTestTrainingAction,
-        OTETestTrainingEvaluationAction,
-        OTETestExportAction,
-        OTETestExportEvaluationAction,
-        OTETestPotAction,
-        OTETestPotEvaluationAction,
-        OTETestNNCFAction,
-        OTETestNNCFEvaluationAction,
-        OTETestNNCFExportAction,
-        OTETestNNCFExportEvaluationAction,
-        OTETestNNCFGraphAction,
-    ]
 
 class AnomalySegmentationTrainingTestParameters(DefaultOTETestCreationParametersInterface):
     def test_case_class(self) -> Type[OTETestCaseInterface]:
         return generate_ote_integration_test_case_class(
-            get_anomaly_segmentation_test_action_classes()
-        )
+            get_anomaly_domain_test_action_classes(AnomalySegmentationTestTrainingAction))
 
     def test_bunches(self) -> List[Dict[str, Any]]:
         # Extend with other datasets
@@ -453,7 +387,8 @@ class TestOTEReallifeAnomalySegmentation(OTETrainingTestInterface):
                                  f'template_paths.keys={list(template_paths.keys())}')
             template_path = make_path_be_abs(template_paths[model_name], template_paths[ROOT_PATH_KEY])
             logger.debug('training params factory: Before creating dataset and labels_schema')
-            dataset, labels_schema = _create_anomaly_segmentation_dataset_and_labels_schema(dataset_params, dataset_name)
+            dataset, labels_schema = _create_anomaly_dataset_and_labels_schema(
+                dataset_params, dataset_name, TaskType.ANOMALY_SEGMENTATION)
             logger.debug('training params factory: After creating dataset and labels_schema')
             return {
                 'dataset': dataset,
@@ -478,7 +413,8 @@ class TestOTEReallifeAnomalySegmentation(OTETrainingTestInterface):
             template_path = make_path_be_abs(template_paths[model_name], template_paths[ROOT_PATH_KEY])
 
             logger.debug('training params factory: Before creating dataset and labels_schema')
-            dataset, labels_schema = _create_anomaly_segmentation_dataset_and_labels_schema(dataset_params, dataset_name)
+            dataset, labels_schema = _create_anomaly_dataset_and_labels_schema(
+                dataset_params, dataset_name, TaskType.ANOMALY_SEGMENTATION)
             logger.debug('training params factory: After creating dataset and labels_schema')
 
             return {
@@ -541,9 +477,5 @@ class TestOTEReallifeAnomalySegmentation(OTETrainingTestInterface):
         logger.info('data_collector is released')
 
     @e2e_pytest_performance
-    def test(self,
-             test_parameters,
-             test_case_fx, data_collector_fx,
-             cur_test_expected_metrics_callback_fx):
-        test_case_fx.run_stage(test_parameters['test_stage'], data_collector_fx,
-                               cur_test_expected_metrics_callback_fx)
+    def test(self, test_parameters, test_case_fx, data_collector_fx, cur_test_expected_metrics_callback_fx):
+        test_case_fx.run_stage(test_parameters['test_stage'], data_collector_fx, cur_test_expected_metrics_callback_fx)
