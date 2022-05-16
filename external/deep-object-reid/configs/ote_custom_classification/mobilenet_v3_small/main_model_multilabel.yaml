@@ -19,12 +19,9 @@ model:
 custom_datasets:
   roots: ['data/coco/train.json', 'data/coco/val.json']
   types: ['multilabel_classification', 'multilabel_classification']
-  names: ['coco_train', 'coco_val']
 
 data:
   root: './'
-  sources: ['coco_train']
-  targets: ['coco_val']
   height: 224
   width: 224
   norm_mean: [0.485, 0.456, 0.406]

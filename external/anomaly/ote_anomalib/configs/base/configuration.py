@@ -19,7 +19,10 @@ Configurable parameters for anomaly classification task
 from sys import maxsize
 
 from attr import attrs
-from ote_anomalib.configs.configuration_enums import POTQuantizationPreset
+from ote_anomalib.configs.configuration_enums import (
+    ModelBackbone,
+    POTQuantizationPreset,
+)
 from ote_sdk.configuration import ConfigurableParameters
 from ote_sdk.configuration.elements import (
     ParameterGroup,
@@ -126,6 +129,22 @@ class BaseAnomalyConfig(ConfigurableParameters):
             affects_outcome_of=ModelLifecycle.TRAINING,
         )
 
+    @attrs
+    class ModelParameters(ParameterGroup):
+        """
+        Parameter Group for tuning the model
+        """
+
+        header = string_attribute("Model Parameters")
+        description = header
+
+        backbone = selectable(
+            default_value=ModelBackbone.RESNET18,
+            header="Model Backbone",
+            description="Pre-trained backbone used for feature extraction",
+        )
+
+    model = add_parameter_group(ModelParameters)
     dataset = add_parameter_group(DatasetParameters)
     pot_parameters = add_parameter_group(POTParameters)
     nncf_optimization = add_parameter_group(NNCFOptimization)

@@ -1,3 +1,7 @@
+"""
+Configurable parameters for Padim anomaly task
+"""
+
 # Copyright (C) 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,6 +16,16 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .datasets import OTEDataset, get_annotation_mmdet_format
-from .utils import (CancelTrainingHook, FixedMomentumUpdaterHook, LoadImageFromOTEDataset, EpochRunnerWithCancel,
-    LoadAnnotationFromOTEDataset, OTELoggerHook, OTEProgressHook, EarlyStoppingHook, ReduceLROnPlateauLrUpdaterHook)
+from attr import attrs
+from ote_anomalib.configs.base import BaseAnomalyConfig
+from ote_sdk.configuration.elements import string_attribute
+
+
+@attrs
+class PadimAnomalyBaseConfig(BaseAnomalyConfig):
+    """
+    Configurable parameters for PADIM anomaly classification task.
+    """
+
+    header = string_attribute("Configuration for Padim")
+    description = header

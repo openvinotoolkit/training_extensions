@@ -44,3 +44,12 @@ class ModelName(ConfigurableEnum):
 
     STFPM = "stfpm"
     PADIM = "padim"
+
+
+class ModelBackbone(ConfigurableEnum):
+    """
+    This enum represents the common backbones that can be used with Padim and STFPM
+    """
+
+    RESNET18 = "resnet18"
+    WIDE_RESNET_50 = "wide_resnet50_2"

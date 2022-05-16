@@ -1,5 +1,5 @@
 """
-Configurable parameters for Padim anomaly classification task
+Configurable parameters for Padim anomaly segmentation task
 """
 
 # Copyright (C) 2021 Intel Corporation
@@ -17,15 +17,11 @@ Configurable parameters for Padim anomaly classification task
 # and limitations under the License.
 
 from attr import attrs
-from ote_anomalib.configs.configuration import BaseAnomalyConfig
-from ote_sdk.configuration.elements import string_attribute
+from ote_anomalib.configs.padim import PadimAnomalyBaseConfig
 
 
 @attrs
-class PadimAnomalySegmentationConfig(BaseAnomalyConfig):
+class PadimAnomalySegmentationConfig(PadimAnomalyBaseConfig):
     """
-    Configurable parameters for PADIM anomaly classification task.
+    Configurable parameters for PADIM anomaly segmentation task.
     """
-
-    header = string_attribute("Configuration for Padim")
-    description = header

@@ -83,7 +83,7 @@ class MPAClsAPI(unittest.TestCase):
                                    'mobilenet_v3_large_1_cls_incr', 'mobilenet_v3_large_075_cls_incr',
                                    'mobilenet_v3_small_cls_incr']
         for model_template in classification_template:
-            parse_model_template(osp.join('configs', 'classification', model_template, 'template.yaml'))
+            parse_model_template(osp.join('configs', 'classification', model_template, 'template_experimental.yaml'))
 
     @staticmethod
     def generate_label_schema(not_empty_labels, multilabel=False):
@@ -103,7 +103,7 @@ class MPAClsAPI(unittest.TestCase):
 
     @staticmethod
     def setup_configurable_parameters(template_dir, num_iters=10):
-        model_template = parse_model_template(osp.join(template_dir, 'template.yaml'))
+        model_template = parse_model_template(osp.join(template_dir, 'template_experimental.yaml'))
         hyper_parameters = create(model_template.hyper_parameters.data)
         hyper_parameters.learning_parameters.num_iters = num_iters
         return hyper_parameters, model_template
@@ -240,7 +240,7 @@ class MPADetAPI(unittest.TestCase):
     def test_reading_detection_cls_incr_model_template(self):
         detection_template = ['mobilenetv2_atss_cls_incr', 'resnet50_vfnet_cls_incr']
         for model_template in detection_template:
-            parse_model_template(osp.join('configs', 'detection', model_template, 'template.yaml'))
+            parse_model_template(osp.join('configs', 'detection', model_template, 'template_experimental.yaml'))
 
     def init_environment(
             self,
@@ -455,7 +455,7 @@ class MPASegAPI(unittest.TestCase):
     def test_reading_segmentation_cls_incr_model_template(self):
         segmentation_template = ['ocr-lite-hrnet-18-cls-incr']
         for model_template in segmentation_template:
-            parse_model_template(osp.join('configs', 'segmentation', model_template, 'template.yaml'))
+            parse_model_template(osp.join('configs', 'segmentation', model_template, 'template_experimental.yaml'))
 
     @staticmethod
     def generate_label_schema(label_names):
@@ -537,7 +537,7 @@ class MPASegAPI(unittest.TestCase):
 
     @staticmethod
     def setup_configurable_parameters(template_dir, num_iters=10):
-        model_template = parse_model_template(osp.join(template_dir, 'template.yaml'))
+        model_template = parse_model_template(osp.join(template_dir, 'template_experimental.yaml'))
 
         hyper_parameters = create(model_template.hyper_parameters.data)
         hyper_parameters.learning_parameters.learning_rate_fixed_iters = 0
