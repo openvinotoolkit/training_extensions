@@ -214,7 +214,7 @@ class AnomalyDetectionTestTrainingAction(OTETestTrainingAction):
 
         logger.debug("Set hyperparameters")
         params = ote_sdk_configuration_helper_create(self.model_template.hyper_parameters.data)
-        if hasattr(params, "model"):
+        if hasattr(params, "model") and hasattr(params.model, "early_stopping"):
             if self.num_training_iters != KEEP_CONFIG_FIELD_VALUE:
                 params.model.early_stopping.patience = int(self.num_training_iters)
                 logger.debug(f"Set params.model.early_stopping.patience=" f"{params.model.early_stopping.patience}")
