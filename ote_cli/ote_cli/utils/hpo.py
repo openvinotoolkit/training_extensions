@@ -250,7 +250,7 @@ def get_HPO_train_task(impl_class, task_type):
         def resume(self, resume_path):
             if self._task_type == TaskType.CLASSIFICATION:
                 self._cfg.model.resume = resume_path
-                self._cfg.test.test_before_train = True
+                self._cfg.test.save_initial_metric = True
             elif self._task_type == TaskType.DETECTION:
                 self._config.resume_from = resume_path
                 self._config.data.train.adaptive_repeat_times = False
@@ -347,6 +347,8 @@ class HpoManager:
             )
             task.save_model(model)
             save_model_data(model, self.work_dir)
+        else:
+            save_model_data(environment.model, self.work_dir)
 
         try:
             with open(
@@ -535,9 +537,6 @@ class HpoManager:
                         str(hp_config["trial_id"]),
                     )
                 )
-
-                if self.algo == "asha":
-                    hp_config["resize_width"] = 1
 
                 # Clear hpo_work_dir
                 if osp.exists(hpo_work_dir):
