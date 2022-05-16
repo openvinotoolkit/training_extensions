@@ -545,7 +545,5 @@ class TestOTEReallifeAnomalySegmentation(OTETrainingTestInterface):
              test_parameters,
              test_case_fx, data_collector_fx,
              cur_test_expected_metrics_callback_fx):
-        # if "nncf" in test_parameters["test_stage"]:
-        #     pytest.xfail("NNCF not yet supported for Anomaly Segmentation")
         test_case_fx.run_stage(test_parameters['test_stage'], data_collector_fx,
                                cur_test_expected_metrics_callback_fx)
