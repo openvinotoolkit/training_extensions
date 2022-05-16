@@ -67,11 +67,7 @@ def ote_test_domain_fx():
 
 
 def DATASET_PARAMETERS_FIELDS() -> List[str]:
-    return deepcopy(['dataset_path',
-                     # 'annotations_train',
-                     # 'annotations_val',
-                     # 'annotations_test',
-                     ])
+    return deepcopy(['dataset_path'])
 
 DatasetParameters = namedtuple('DatasetParameters', DATASET_PARAMETERS_FIELDS())
 
@@ -115,15 +111,15 @@ def get_anomaly_segmentation_test_action_classes() -> List[Type[BaseOTETestActio
     return [
         AnomalySegmentationTestTrainingAction,
         OTETestTrainingEvaluationAction,
-        # OTETestExportAction,
-        # OTETestExportEvaluationAction,
-        # OTETestPotAction,
-        # OTETestPotEvaluationAction,
-        # OTETestNNCFAction,
-        # OTETestNNCFEvaluationAction,
-        # OTETestNNCFExportAction,
-        # OTETestNNCFExportEvaluationAction,
-        # OTETestNNCFGraphAction,
+        OTETestExportAction,
+        OTETestExportEvaluationAction,
+        OTETestPotAction,
+        OTETestPotEvaluationAction,
+        OTETestNNCFAction,
+        OTETestNNCFEvaluationAction,
+        OTETestNNCFExportAction,
+        OTETestNNCFExportEvaluationAction,
+        OTETestNNCFGraphAction,
     ]
 
 class AnomalySegmentationTrainingTestParameters(DefaultOTETestCreationParametersInterface):
@@ -135,15 +131,14 @@ class AnomalySegmentationTrainingTestParameters(DefaultOTETestCreationParameters
     def test_bunches(self) -> List[Dict[str, Any]]:
         # Extend with other datasets
         test_bunches = [
-                # dict(
-                #     model_name=[
-                #        'ote_anomaly_segmentation_padim',
-                #        # 'ote_anomaly_segmentation_stfpm',
-                #     ],
-                #     dataset_name='mvtec_short',
-                #     # dataset_name='mvtec_json_short',
-                #     usecase='precommit',
-                # ),
+                dict(
+                    model_name=[
+                       'ote_anomaly_segmentation_padim',
+                       'ote_anomaly_segmentation_stfpm',
+                    ],
+                    dataset_name='mvtec_short_bottle',
+                    usecase='precommit',
+                ),
                 dict(
                     model_name=[
                        'ote_anomaly_segmentation_padim',
@@ -361,7 +356,7 @@ class AnomalySegmentationTestTrainingAction(OTETestTrainingAction):
         params = ote_sdk_configuration_helper_create(
             self.model_template.hyper_parameters.data
         )
-        if hasattr(params, 'model'):
+        if hasattr(params, "model") and hasattr(params.model, "early_stopping"):
             if self.num_training_iters != KEEP_CONFIG_FIELD_VALUE:
                 params.model.early_stopping.patience = int(self.num_training_iters)
                 logger.debug(
