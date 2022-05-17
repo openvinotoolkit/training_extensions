@@ -31,6 +31,10 @@ from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.entities.train_parameters import default_progress_callback
 from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType
 from ote_sdk.usecases.tasks.interfaces.optimization_interface import IOptimizationTask, OptimizationType
+from ote_sdk.utils.argument_checks import (
+    DatasetParamTypeCheck,
+    check_input_parameters_type,
+)
 from scripts.default_config import imagedata_kwargs, lr_scheduler_kwargs, optimizer_kwargs
 from torchreid.apis.training import run_training
 from torchreid.integration.nncf.compression import check_nncf_is_enabled, is_nncf_state, wrap_nncf_model
@@ -47,6 +51,7 @@ logger = logging.getLogger(__name__)
 
 class OTEClassificationNNCFTask(OTEClassificationInferenceTask, IOptimizationTask):
 
+    @check_input_parameters_type()
     def __init__(self, task_environment: TaskEnvironment):
         """"
         Task for compressing classification models using NNCF.
@@ -153,12 +158,13 @@ class OTEClassificationNNCFTask(OTEClassificationInferenceTask, IOptimizationTas
             aux_models_data.append(model_data)
         return aux_models_data
 
+    @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def optimize(
         self,
         optimization_type: OptimizationType,
         dataset: DatasetEntity,
         output_model: ModelEntity,
-        optimization_parameters: Optional[OptimizationParameters],
+        optimization_parameters: Optional[OptimizationParameters] = None,
     ):
         """ Optimize a model on a dataset """
         if optimization_type is not OptimizationType.NNCF:
@@ -250,6 +256,7 @@ class OTEClassificationNNCFTask(OTEClassificationInferenceTask, IOptimizationTas
         output_model.optimization_methods = self._optimization_methods
         output_model.precision = self._precision
 
+    @check_input_parameters_type()
     def save_model(self, output_model: ModelEntity):
         state_dict = None
         if self._compression_ctrl is not None:
@@ -259,6 +266,7 @@ class OTEClassificationNNCFTask(OTEClassificationInferenceTask, IOptimizationTas
             }
         self._save_model(output_model, state_dict)
 
+    @check_input_parameters_type()
     def export(self, export_type: ExportType, output_model: ModelEntity):
         if self._compression_ctrl is None:
             super().export(export_type, output_model)
