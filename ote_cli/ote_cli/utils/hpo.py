@@ -86,7 +86,7 @@ def run_hpo(args, environment, dataset, task_type):
         task_class = get_HPO_train_task(task_class, task_type)
 
         task = task_class(task_environment=environment)
-        task.resume(hpo_weight_path)
+        task.resume(hpo_weight_path) # prepare finetune stage to resume
 
         if args.load_weights:
             environment.model.configuration.configurable_parameters = hyper_parameters
@@ -123,7 +123,7 @@ def run_hpo_trainer(
     _set_dict_to_parameter_group(default_hp, hyper_parameters)
     hyper_parameters = default_hp
 
-    # set epoch
+    # set epoch and warm-up stage depending on given epoch
     if task_type == TaskType.CLASSIFICATION:
         hyper_parameters.learning_parameters.max_num_epochs = hp_config["iterations"]
     elif task_type == TaskType.DETECTION:
@@ -167,8 +167,8 @@ def run_hpo_trainer(
     HpoManager.set_hyperparameter(hyper_parameters, hp_config["params"])
     print(f"hyper parameter of current trial : {hp_config['params']}")
 
-    impl_class = get_dataset_class(task_type)
-    dataset = impl_class(
+    dataset_class = get_dataset_class(task_type)
+    dataset = dataset_class(
         train_subset={
             "ann_file": dataset_paths.get("train_ann_file", None),
             "data_root": dataset_paths.get("train_data_root", None),
@@ -198,7 +198,8 @@ def run_hpo_trainer(
         "metric": hp_config["metric"],
     }
 
-    hpo_impl_class = get_HPO_train_task(impl_class, task_type)
+    task_class = get_impl_class(train_env.model_template.entrypoints.base)
+    hpo_impl_class = get_HPO_train_task(task_class, task_type)
     task = hpo_impl_class(task_environment=train_env)
     task.prepare_hpo(hp_config)
 
@@ -271,9 +272,11 @@ def get_HPO_train_task(impl_class, task_type):
                     osp.dirname(hp_config["file_path"]),
                     str(hp_config["trial_id"])
                 )
-                self._config.checkpoint_config["max_keep_ckpts"] = hp_config["iterations"] + 10
+                self._config.checkpoint_config["max_keep_ckpts"] = \
+                    hp_config["iterations"] + 10
                 self._config.checkpoint_config["interval"] = 1
 
+            # turn off adpative epoch when asha is used
             if "bracket" in hp_config:
                 if self._task_type == TaskType.DETECTION:
                     self._config.data.train.adaptive_repeat_times = False
@@ -374,20 +377,25 @@ class HpoManager:
         train_dataset_size = len(dataset.get_subset(Subset.TRAINING))
         val_dataset_size = len(dataset.get_subset(Subset.VALIDATION))
 
-        for key, val in hpopt_cfg['hp_space'].items():
-            if "batch" in key:
-                if val['range'][1] > train_dataset_size:
-                    val['range'][1] = train_dataset_size
+        # make batch size range lower than train set size
+        batch_size_name="learning_parameters.batch_size"
+        if batch_size_name in hpopt_cfg['hp_space']:
+            batch_range = hpopt_cfg['hp_space'][batch_size_name]['range']
+            if batch_range[1] > train_dataset_size:
+                batch_range[1] = train_dataset_size
 
-        model_param = (self.environment.
-                       model_template.hyper_parameters.
-                       parameter_overrides["learning_parameters"])
-        default_hyper_parameters = {
-            "learning_parameters.batch_size" :
-                model_param["batch_size"]["default_value"],
-            "learning_parameters.learning_rate" :
-                model_param["learning_rate"]["default_value"]
-        }
+        # prepare default hyper parameters
+        default_hyper_parameters = {}
+        env_hp = self.environment.get_hyper_parameters()
+        for key in hpopt_cfg['hp_space'].keys():
+            splited_key = key.split(".")
+            target = env_hp
+            for val in splited_key:
+                target = getattr(target, val, None)
+                if target is None:
+                    break
+            if target is not None:
+                default_hyper_parameters[key] = target
 
         hpopt_arguments = dict(
             search_alg="bayes_opt" if self.algo == "smbo" else self.algo,
@@ -402,7 +410,7 @@ class HpoManager:
             expected_time_ratio=expected_time_ratio,
             non_pure_train_ratio=val_dataset_size
             / (train_dataset_size + val_dataset_size),
-            batch_size_name="learning_parameters.batch_size",
+            batch_size_name=batch_size_name,
             default_hyper_parameters=default_hyper_parameters,
             metric=self.metric,
             mode=hpopt_cfg.get("mode", "max")
@@ -420,8 +428,9 @@ class HpoManager:
                 num_available_gpus // self.num_gpus_per_trial
             )
 
-            # Prevent each trials from stopped during warmup stage
-            if "min_iterations" not in hpopt_cfg:
+            # Prevent each trials from being stopped during warmup stage
+            bs = default_hyper_parameters.get(batch_size_name)
+            if "min_iterations" not in hpopt_cfg and bs is not None:
                 task_type = self.environment.model_template.task_type
                 if task_type == TaskType.CLASSIFICATION:
                     with open(osp.join(osp.dirname(
@@ -431,14 +440,13 @@ class HpoManager:
                     if "warmup" in model_yaml["train"]:
                         hpopt_arguments["min_iterations"] = ceil(
                             model_yaml["train"]["warmup"]
-                            * model_param["batch_size"]["default_value"]
+                            * bs
                             / train_dataset_size
                         )
                 elif task_type in [TaskType.DETECTION, TaskType.SEGMENTATION]:
                     hpopt_arguments["min_iterations"] = ceil(
-                        model_param["learning_rate_warmup_iters"]["default_value"]
-                        / ceil(train_dataset_size
-                               / model_param["batch_size"]["default_value"])
+                        env_hp.learning_parameters.learning_rate_warmup_iters
+                        / ceil(train_dataset_size / bs)
                     )
 
         HpoManager.remove_empty_keys(hpopt_arguments)
@@ -576,6 +584,8 @@ class HpoManager:
                 break
 
         best_config = self.hpo.get_best_config()
+
+        # finetune stage resumes hpo trial, so warmup isn't needed
         if task_type == TaskType.DETECTION:
             best_config["learning_parameters.learning_rate_warmup_iters"] = 0
         if task_type == TaskType.SEGMENTATION:

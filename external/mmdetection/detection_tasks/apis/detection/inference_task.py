@@ -137,6 +137,11 @@ class OTEDetectionInferenceTask(IInferenceTask, IExportTask, IEvaluationTask, IU
 
             try:
                 load_state_dict(model, model_data['model'])
+
+                # It prevent model from being overwritten
+                if "load_from" in self._config:
+                    self._config.load_from = None
+
                 logger.info(f"Loaded model weights from Task Environment")
                 logger.info(f"Model architecture: {self._model_name}")
                 for name, weights in model.named_parameters():
