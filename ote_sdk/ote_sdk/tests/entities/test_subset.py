@@ -43,7 +43,6 @@ class TestSubset:
         TESTING = 3
         UNLABELED = 4
         PSEUDOLABELED = 5
-        UNASSIGNED = 6
 
         <b>Steps</b>
         1. Create enum instance
@@ -51,14 +50,14 @@ class TestSubset:
         """
         test_instance = Subset
 
-        for i in range(0, 7):
+        for i in range(0, 6):
             assert test_instance(i) in list(Subset)
 
         with pytest.raises(AttributeError):
             test_instance.WRONG
 
         with pytest.raises(ValueError):
-            test_instance(7)
+            test_instance(6)
 
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -82,14 +81,14 @@ class TestSubset:
         test_instance = Subset
         magic_str_list = [str(i) for i in list(Subset)]
 
-        for i in range(0, 7):
+        for i in range(0, 6):
             assert str(test_instance(i)) in magic_str_list
 
         with pytest.raises(AttributeError):
             str(test_instance.WRONG)
 
         with pytest.raises(ValueError):
-            str(test_instance(7))
+            str(test_instance(6))
 
         assert len(set(magic_str_list)) == len(magic_str_list)
 
@@ -114,13 +113,13 @@ class TestSubset:
         test_instance = Subset
         magic_repr_list = [repr(i) for i in list(Subset)]
 
-        for i in range(0, 7):
+        for i in range(0, 6):
             assert repr(test_instance(i)) in magic_repr_list
 
         with pytest.raises(AttributeError):
             repr(test_instance.WRONG)
 
         with pytest.raises(ValueError):
-            repr(test_instance(7))
+            repr(test_instance(6))
 
         assert len(set(magic_repr_list)) == len(magic_repr_list)
