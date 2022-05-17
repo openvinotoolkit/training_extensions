@@ -3,6 +3,8 @@ dataset:
   header: Dataset Parameters
   num_workers:
     affects_outcome_of: NONE
+    auto_hpo_state: not_possible
+    auto_hpo_value: null
     default_value: 8
     description:
       Increasing this value might improve training speed however it might
@@ -18,10 +20,13 @@ dataset:
       operator: AND
       rules: []
       type: UI_RULES
+    value: 8
     visible_in_ui: true
     warning: null
   train_batch_size:
     affects_outcome_of: TRAINING
+    auto_hpo_state: not_possible
+    auto_hpo_value: null
     default_value: 32
     description:
       The number of training samples seen in each iteration of training.
@@ -37,6 +42,7 @@ dataset:
       operator: AND
       rules: []
       type: UI_RULES
+    value: 32
     visible_in_ui: true
     warning:
       Increasing this value may cause the system to use more memory than available,
@@ -45,13 +51,37 @@ dataset:
   visible_in_ui: true
 description: Configuration for STFPM
 header: Configuration for STFPM
+id: ""
 model:
+  backbone:
+    affects_outcome_of: NONE
+    auto_hpo_state: not_possible
+    auto_hpo_value: null
+    default_value: resnet18
+    description: Pre-trained backbone used for feature extraction
+    editable: true
+    enum_name: ModelBackbone
+    header: Model Backbone
+    options:
+      RESNET18: resnet18
+      WIDE_RESNET_50: wide_resnet50_2
+    type: SELECTABLE
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: resnet18
+    visible_in_ui: true
+    warning: null
   description: Model Parameters
   early_stopping:
     description: Early Stopping Parameters
     header: Early Stopping Parameters
     metric:
       affects_outcome_of: NONE
+      auto_hpo_state: not_possible
+      auto_hpo_value: null
       default_value: image_F1
       description: The metric used to determine if the model should stop training
       editable: true
@@ -66,10 +96,13 @@ model:
         operator: AND
         rules: []
         type: UI_RULES
+      value: image_F1
       visible_in_ui: true
       warning: null
     patience:
       affects_outcome_of: TRAINING
+      auto_hpo_state: not_possible
+      auto_hpo_value: null
       default_value: 10
       description:
         Number of epochs to wait for an improvement in the monitored metric.
@@ -85,6 +118,7 @@ model:
         operator: AND
         rules: []
         type: UI_RULES
+      value: 10
       visible_in_ui: true
       warning:
         Setting this value too low might lead to underfitting. Setting the
@@ -92,6 +126,119 @@ model:
     type: PARAMETER_GROUP
     visible_in_ui: true
   header: Model Parameters
+  lr:
+    affects_outcome_of: NONE
+    auto_hpo_state: not_possible
+    auto_hpo_value: null
+    default_value: 0.4
+    description: Learning rate used for optimizing the Student network.
+    editable: true
+    header: Learning Rate
+    max_value: 1
+    min_value: 0.001
+    type: FLOAT
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: 0.4
+    visible_in_ui: true
+    warning: null
+  momentum:
+    affects_outcome_of: NONE
+    auto_hpo_state: not_possible
+    auto_hpo_value: null
+    default_value: 0.9
+    description: Momentum used for SGD optimizer
+    editable: true
+    header: Momentum
+    max_value: 1.0
+    min_value: 0.1
+    type: FLOAT
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: 0.9
+    visible_in_ui: true
+    warning: null
+  type: PARAMETER_GROUP
+  visible_in_ui: true
+  weight_decay:
+    affects_outcome_of: NONE
+    auto_hpo_state: not_possible
+    auto_hpo_value: null
+    default_value: 0.0001
+    description: Decay for SGD optimizer
+    editable: true
+    header: Weight Decay
+    max_value: 1
+    min_value: 1.0e-05
+    type: FLOAT
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: 0.0001
+    visible_in_ui: true
+    warning: null
+nncf_optimization:
+  description: Optimization by NNCF
+  enable_pruning:
+    affects_outcome_of: NONE
+    auto_hpo_state: not_possible
+    auto_hpo_value: null
+    default_value: false
+    description: Enable filter pruning algorithm
+    editable: true
+    header: Enable filter pruning algorithm
+    type: BOOLEAN
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: false
+    visible_in_ui: true
+    warning: null
+  enable_quantization:
+    affects_outcome_of: NONE
+    auto_hpo_state: not_possible
+    auto_hpo_value: null
+    default_value: true
+    description: Enable quantization algorithm
+    editable: true
+    header: Enable quantization algorithm
+    type: BOOLEAN
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: true
+    visible_in_ui: true
+    warning: null
+  header: Optimization by NNCF
+  pruning_supported:
+    affects_outcome_of: TRAINING
+    auto_hpo_state: not_possible
+    auto_hpo_value: null
+    default_value: false
+    description: Whether filter pruning is supported
+    editable: true
+    header: Whether filter pruning is supported
+    type: BOOLEAN
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: false
+    visible_in_ui: true
+    warning: null
   type: PARAMETER_GROUP
   visible_in_ui: true
 pot_parameters:
@@ -99,6 +246,8 @@ pot_parameters:
   header: POT Parameters
   preset:
     affects_outcome_of: NONE
+    auto_hpo_state: not_possible
+    auto_hpo_value: null
     default_value: Performance
     description: Quantization preset that defines quantization scheme
     editable: true
@@ -113,10 +262,13 @@ pot_parameters:
       operator: AND
       rules: []
       type: UI_RULES
+    value: Performance
     visible_in_ui: true
     warning: null
   stat_subset_size:
     affects_outcome_of: NONE
+    auto_hpo_state: not_possible
+    auto_hpo_value: null
     default_value: 300
     description: Number of data samples used for post-training optimization
     editable: true
@@ -129,59 +281,37 @@ pot_parameters:
       operator: AND
       rules: []
       type: UI_RULES
+    value: 300
     visible_in_ui: true
-    warning: null
-  type: PARAMETER_GROUP
-  visible_in_ui: true
-nncf_optimization:
-  description: Optimization by NNCF
-  header: Optimization by NNCF
-  enable_quantization:
-    affects_outcome_of: TRAINING
-    default_value: true
-    description: Enable quantization algorithm
-    editable: true
-    header: Enable quantization algorithm
-    type: BOOLEAN
-    ui_rules:
-      action: DISABLE_EDITING
-      operator: AND
-      rules: []
-      type: UI_RULES
-    value: true
-    visible_in_ui: true
-    warning: null
-  enable_pruning:
-    affects_outcome_of: TRAINING
-    default_value: false
-    description: Enable filter pruning algorithm
-    editable: true
-    header: Enable filter pruning algorithm
-    type: BOOLEAN
-    ui_rules:
-      action: DISABLE_EDITING
-      operator: AND
-      rules: []
-      type: UI_RULES
-    value: false
-    visible_in_ui: true
-    warning: null
-  pruning_supported:
-    affects_outcome_of: TRAINING
-    default_value: false
-    description: Whether filter pruning is supported
-    editable: false
-    header: Whether filter pruning is supported
-    type: BOOLEAN
-    ui_rules:
-      action: DISABLE_EDITING
-      operator: AND
-      rules: []
-      type: UI_RULES
-    value: false
-    visible_in_ui: false
     warning: null
   type: PARAMETER_GROUP
   visible_in_ui: false
+trainer:
+  description: Trainer Parameters
+  header: Trainer Parameters
+  max_epochs:
+    affects_outcome_of: TRAINING
+    auto_hpo_state: not_possible
+    auto_hpo_value: null
+    default_value: 100
+    description: Maximum number of epochs to train the model for.
+    editable: true
+    header: Max Epochs
+    max_value: 500
+    min_value: 1
+    type: INTEGER
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: 100
+    visible_in_ui: true
+    warning:
+      Training for very few epochs might lead to poor performance. If Early
+      Stopping is enabled then increasing the value of max epochs might not lead to
+      desired result.
+  type: PARAMETER_GROUP
+  visible_in_ui: true
 type: CONFIGURABLE_PARAMETERS
 visible_in_ui: true

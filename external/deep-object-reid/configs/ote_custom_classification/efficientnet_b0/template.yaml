@@ -29,10 +29,12 @@ hyper_parameters:
     learning_parameters:
       batch_size:
         default_value: 32
+        auto_hpo_state: POSSIBLE
       max_num_epochs:
         default_value: 200
       learning_rate:
         default_value: 0.007
+        auto_hpo_state: POSSIBLE
       enable_early_stopping:
         default_value: true
     nncf_optimization:

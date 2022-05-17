@@ -43,6 +43,10 @@ from ote_sdk.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
 from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType, IExportTask
 from ote_sdk.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from ote_sdk.usecases.tasks.interfaces.unload_interface import IUnload
+from ote_sdk.utils.argument_checks import (
+    DatasetParamTypeCheck,
+    check_input_parameters_type,
+)
 from ote_sdk.utils.labels_utils import get_empty_label
 from scripts.default_config import (get_default_config, imagedata_kwargs,
                                     merge_from_files_with_base, model_kwargs)
@@ -64,6 +68,7 @@ class OTEClassificationInferenceTask(IInferenceTask, IEvaluationTask, IExportTas
 
     task_environment: TaskEnvironment
 
+    @check_input_parameters_type()
     def __init__(self, task_environment: TaskEnvironment):
         logger.info("Loading OTEClassificationTask.")
         self._scratch_space = tempfile.mkdtemp(prefix="ote-cls-scratch-")
@@ -186,6 +191,7 @@ class OTEClassificationInferenceTask(IInferenceTask, IEvaluationTask, IExportTas
         self._cfg.lr_finder.enable = self._hyperparams.learning_parameters.enable_lr_finder
         self._cfg.train.early_stopping = self._hyperparams.learning_parameters.enable_early_stopping
 
+    @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def infer(self, dataset: DatasetEntity,
               inference_parameters: Optional[InferenceParameters] = None) -> DatasetEntity:
         """
@@ -265,6 +271,7 @@ class OTEClassificationInferenceTask(IInferenceTask, IEvaluationTask, IExportTas
 
         return dataset
 
+    @check_input_parameters_type()
     def evaluate(
         self, output_resultset: ResultSetEntity, evaluation_metric: Optional[str] = None
     ):
@@ -272,6 +279,7 @@ class OTEClassificationInferenceTask(IInferenceTask, IEvaluationTask, IExportTas
         logger.info(f"Computes performance of {performance}")
         output_resultset.performance = performance
 
+    @check_input_parameters_type()
     def export(self, export_type: ExportType, output_model: ModelEntity):
         assert export_type == ExportType.OPENVINO
         output_model.model_format = ModelFormat.OPENVINO

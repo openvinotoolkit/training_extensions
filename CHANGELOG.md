@@ -2,9 +2,28 @@
 
 All notable changes to this project will be documented in this file.
 
+## \[v0.2.0\]
+### Added
+* Model Preparation Algorithm (MPA), a newly introduced OTE Algorithm backend for advanced transfer learning
+  * Class-Incremental Learning support for OTE models
+    * Image Classification
+    * Object Detection
+    * Semantic Segmentation
+* Object counting & Rotated object detection are added to Object Detection backend
+* Increased support for NNCF / FP16 / HPO
+* Ignored label support
+* Stop training on NaN losses
+
+
+### Changed
+* Major refactoring
+  * Tasks & model templates had been moved to OTE repo from each OTE Algorithm backend
+
+
 ## \[v0.1.1\]
 ### Fixed
 * Some minor issues
+
 
 ## \[v0.1.0\]
 ### Added
@@ -15,3 +34,4 @@ All notable changes to this project will be documented in this file.
   * Image Classification
   * Object Detection
   * Semantic Segmentation
+
