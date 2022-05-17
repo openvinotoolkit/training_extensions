@@ -122,6 +122,7 @@ class OTESegmentationInferenceTask(IInferenceTask, IExportTask, IEvaluationTask,
             try:
                 load_state_dict(model, model_data['model'])
 
+                # It prevent model from being overwritten
                 if "load_from" in self._config:
                     self._config.load_from = None
 
