@@ -113,13 +113,13 @@ class ProgressCallback(ProgressBar):
 
         return self._progress
     
-    def on_validation_epoch_end(self, trainer, pl_module):
-        super().on_validation_epoch_end(trainer, pl_module)
+    def on_train_epoch_end(self, trainer, pl_module):
+        super().on_train_epoch_end(trainer, pl_module)
         score = None
         metric = getattr(self.update_progress_callback, 'metric', None)
         if metric in trainer.logged_metrics:
             score = float(trainer.logged_metrics[metric])
-        progress = int(self._get_progress('predict'))
+        progress = int(self._get_progress('train'))
         self.update_progress_callback(progress=progress, score=score)
 
     def _update_progress(self, stage: str):
