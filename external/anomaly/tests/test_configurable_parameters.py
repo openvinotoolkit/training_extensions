@@ -20,8 +20,8 @@ import logging
 import os
 
 import pytest
-from anomaly_classification.configs.padim import PadimAnomalyClassificationConfig
-from anomaly_classification.configs.stfpm import STFPMAnomalyClassificationConfig
+from configs.anomaly_classification.padim import PadimAnomalyClassificationConfig
+from configs.anomaly_classification.stfpm import STFPMAnomalyClassificationConfig
 from ote_anomalib.configs import get_anomalib_config
 from ote_sdk.configuration.helper import convert, create
 from tests.helpers.config import get_config_and_task_name
@@ -35,7 +35,7 @@ logger = logging.getLogger(__name__)
 )
 def test_configuration_yaml(configurable_parameters, model_name):
     # assert that we can parse the template.yaml
-    template_file_path = os.path.join("anomaly_classification", "configs", model_name, "template.yaml")
+    template_file_path = os.path.join("configs", "anomaly_classification", model_name, "template.yaml")
     configuration_yaml_loaded, task_name = get_config_and_task_name(template_file_path)
 
     configuration = configurable_parameters()
