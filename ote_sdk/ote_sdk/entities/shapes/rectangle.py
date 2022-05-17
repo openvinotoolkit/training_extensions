@@ -9,12 +9,11 @@
 import datetime
 import math
 import warnings
-from typing import List, Optional
+from typing import Optional
 
 import numpy as np
 from shapely.geometry import Polygon as shapely_polygon
 
-from ote_sdk.entities.scored_label import ScoredLabel
 from ote_sdk.entities.shapes.shape import Shape, ShapeEntity, ShapeType
 from ote_sdk.utils.time_utils import now
 
@@ -36,7 +35,6 @@ class Rectangle(Shape):
     :param y1: see above
     :param x2: see above
     :param y2: see above
-    :param labels: list of the ScoredLabel's for the rectangle
     :param modification_date: last modified date
     """
 
@@ -47,14 +45,11 @@ class Rectangle(Shape):
         y1: float,
         x2: float,
         y2: float,
-        labels: Optional[List[ScoredLabel]] = None,
         modification_date: Optional[datetime.datetime] = None,
     ):
-        labels = [] if labels is None else labels
         modification_date = now() if modification_date is None else modification_date
         super().__init__(
-            type=ShapeType.RECTANGLE,
-            labels=labels,
+            shape_type=ShapeType.RECTANGLE,
             modification_date=modification_date,
         )
 
@@ -106,7 +101,9 @@ class Rectangle(Shape):
         x2 = min(max(0.0, self.x2), 1.0)
         y2 = min(max(0.0, self.y2), 1.0)
 
-        return Rectangle(x1, y1, x2, y2, [], self.modification_date)
+        return Rectangle(
+            x1=x1, y1=y1, x2=x2, y2=y2, modification_date=self.modification_date
+        )
 
     def normalize_wrt_roi_shape(self, roi_shape: "Rectangle") -> "Rectangle":
         """
@@ -122,7 +119,7 @@ class Rectangle(Shape):
             >>> roi = Rectangle(x1=0.0, x2=0.5, y1=0.0, y2=0.5)
             >>> normalized = b1.normalize_wrt_roi_shape(roi_shape)
             >>> normalized
-            Box(, x=0.25, y=0.0, width=0.25, height=0.25, scored_labels=[])
+            Box(, x=0.25, y=0.0, width=0.25, height=0.25)
 
         :param roi_shape: Region of Interest
         :return: New polygon in the image coordinate system
@@ -152,14 +149,14 @@ class Rectangle(Shape):
         Box denormalized to a rectangle as ROI
 
             >>> from ote_sdk.entities.annotation import Annotation
-            >>> b1 = Rectangle(x1=0.5, x2=1.0, y1=0.0, y2=0.5, labels = [])
+            >>> b1 = Rectangle(x1=0.5, x2=1.0, y1=0.0, y2=0.5)
             # the top-right
-            >>> roi = Annotation(Rectangle(x1=0.5, x2=1.0, y1=0.0, y2=1.0), labels = [])
+            >>> roi = Annotation(Rectangle(x1=0.5, x2=1.0, y1=0.0, y2=1.0))
             # the half-right
             >>> normalized = b1.denormalize_wrt_roi_shape(roi_shape)
             # should return top half
             >>> normalized
-            Box(, x=0.0, y=0.0, width=1.0, height=0.5, scored_labels=[])
+            Box(, x=0.0, y=0.0, width=1.0, height=0.5)
 
         :param roi_shape: Region of Interest
         :return: New polygon in the ROI coordinate system
@@ -193,26 +190,18 @@ class Rectangle(Shape):
         return shapely_polygon(points)
 
     @classmethod
-    def generate_full_box(
-        cls, labels: Optional[List[ScoredLabel]] = None
-    ) -> "Rectangle":
+    def generate_full_box(cls) -> "Rectangle":
         """
-        Returns a rectangle that fully encapsulates the normalized coordinate space,
-        with `labels`
+        Returns a rectangle that fully encapsulates the normalized coordinate space
 
         :example:
 
         >>> Rectangle.generate_full_box()
-        Box(, x=0.0, y=0.0, width=1.0, height=1.0, scored_labels=[])
-
-        :param labels: labels to assigned to the output rectangle
+        Box(, x=0.0, y=0.0, width=1.0, height=1.0)
 
         :return: a rectangle that fully encapsulates the normalized coordinate space,
-        with `labels`
         """
-        if labels is None:
-            labels = []
-        return cls(x1=0.0, y1=0.0, x2=1.0, y2=1.0, labels=labels)
+        return cls(x1=0.0, y1=0.0, x2=1.0, y2=1.0)
 
     @staticmethod
     def is_full_box(rectangle: ShapeEntity) -> bool:
@@ -222,11 +211,11 @@ class Rectangle(Shape):
 
         :example:
 
-        >>> b1 = Rectangle(x1=0.5, x2=1.0, y1=0.0, y2=1.0, labels = [])
+        >>> b1 = Rectangle(x1=0.5, x2=1.0, y1=0.0, y2=1.0)
         >>> Rectangle.is_full_box(b1)
         False
 
-        >>> b2 = Rectangle(x1=0.0, x2=1.0, y1=0.0, y2=1.0, labels = [])
+        >>> b2 = Rectangle(x1=0.0, x2=1.0, y1=0.0, y2=1.0)
         >>> Rectangle.is_full_box(b2)
         True
 
@@ -243,7 +232,7 @@ class Rectangle(Shape):
             return True
         return False
 
-    def crop_numpy_array(self, data: np.ndarray):
+    def crop_numpy_array(self, data: np.ndarray) -> np.ndarray:
         """
         Crop the given Numpy array to the region of interest represented by this
         rectangle.
@@ -265,13 +254,13 @@ class Rectangle(Shape):
         return data[y1:y2, x1:x2, ::]
 
     @property
-    def width(self):
+    def width(self) -> float:
         """
         Returns the width of the rectangle. (x-axis)
 
         :example:
 
-        >>> b1 = Rectangle(x1=0.5, x2=1.0, y1=0.0, y2=0.5, labels = [])
+        >>> b1 = Rectangle(x1=0.5, x2=1.0, y1=0.0, y2=0.5)
         >>> b1.width
         0.5
 
@@ -280,13 +269,13 @@ class Rectangle(Shape):
         return self.x2 - self.x1
 
     @property
-    def height(self):
+    def height(self) -> float:
         """
         Returns the height of the rectangle. (y-axis)
 
         :example:
 
-        >>> b1 = Rectangle(x1=0.5, x2=1.0, y1=0.0, y2=0.5, labels = [])
+        >>> b1 = Rectangle(x1=0.5, x2=1.0, y1=0.0, y2=0.5)
         >>> b1.height
         0.5
 
@@ -295,13 +284,13 @@ class Rectangle(Shape):
         return self.y2 - self.y1
 
     @property
-    def diagonal(self):
+    def diagonal(self) -> float:
         """
         Returns the diagonal size/hypotenuse  of the rectangle. (x-axis)
 
         :example:
 
-        >>> b1 = Rectangle(x1=0.0, x2=0.3, y1=0.0, y2=0.4, labels = [])
+        >>> b1 = Rectangle(x1=0.0, x2=0.3, y1=0.0, y2=0.4)
         >>> b1.diagonal
         0.5
 
