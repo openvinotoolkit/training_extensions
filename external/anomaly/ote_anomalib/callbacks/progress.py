@@ -112,15 +112,6 @@ class ProgressCallback(ProgressBar):
             raise ValueError(f"Unknown stage {stage}. Available: train, predict and test")
 
         return self._progress
-    
-    def on_train_epoch_end(self, trainer, pl_module):
-        super().on_train_epoch_end(trainer, pl_module)
-        score = None
-        metric = getattr(self.update_progress_callback, 'metric', None)
-        if metric in trainer.logged_metrics:
-            score = float(trainer.logged_metrics[metric])
-        progress = int(self._get_progress('train'))
-        self.update_progress_callback(progress=progress, score=score)
 
     def _update_progress(self, stage: str):
         progress = self._get_progress(stage)
