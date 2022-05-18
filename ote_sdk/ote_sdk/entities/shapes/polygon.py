@@ -14,7 +14,6 @@ from typing import List, Optional
 
 from shapely.geometry import Polygon as shapely_polygon
 
-from ote_sdk.entities.scored_label import ScoredLabel
 from ote_sdk.entities.shapes.rectangle import Rectangle
 from ote_sdk.entities.shapes.shape import Shape, ShapeType
 from ote_sdk.utils.time_utils import now
@@ -56,7 +55,7 @@ class Point:
         y1 = roi_shape.y1
         return Point(x=self.x * width + x1, y=self.y * height + y1)
 
-    def denormalize_wrt_roi_shape(self, roi_shape: Rectangle):
+    def denormalize_wrt_roi_shape(self, roi_shape: Rectangle) -> "Point":
         """
         The inverse of normalize_wrt_roi_shape.
         Transforming Polygon from the normalized coordinate system to the `roi` coordinate system.
@@ -80,7 +79,6 @@ class Polygon(Shape):
     NB Freehand drawings are also stored as polygons.
 
     :param points: list of Point's forming the polygon
-    :param labels: list of the ScoredLabel's for the Polygon
     :param modification_date: last modified date
     """
 
@@ -88,14 +86,11 @@ class Polygon(Shape):
     def __init__(
         self,
         points: List[Point],
-        labels: Optional[List[ScoredLabel]] = None,
         modification_date: Optional[datetime.datetime] = None,
     ):
-        labels = [] if labels is None else labels
         modification_date = now() if modification_date is None else modification_date
         super().__init__(
-            type=ShapeType.POLYGON,
-            labels=labels,
+            shape_type=ShapeType.POLYGON,
             modification_date=modification_date,
         )
 
@@ -151,7 +146,7 @@ class Polygon(Shape):
             >>> roi = Rectangle(x1=0.0, x2=0.5, y1=0.0, y2=0.5)
             >>> normalized = p1.normalize_wrt_roi_shape(roi_shape)
             >>> normalized
-            Polygon(, len(points)=3, scored_labels=[])
+            Polygon(, len(points)=3)
 
         :param roi_shape: Region of Interest
         :return: New polygon in the image coordinate system
@@ -181,7 +176,7 @@ class Polygon(Shape):
             >>> roi = Rectangle(x1=0.5, x2=1.0, y1=0.0, y2=1.0)  # the half-right
             >>> normalized = p1.denormalize_wrt_roi_shape(roi_shape)
             >>> normalized
-            Polygon(, len(points)=3, scored_labels=[])
+            Polygon(, len(points)=3)
 
         :param roi_shape: Region of Interest
         :return: New polygon in the ROI coordinate system

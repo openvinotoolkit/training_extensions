@@ -18,9 +18,6 @@ from datetime import datetime
 
 import pytest
 
-from ote_sdk.entities.color import Color
-from ote_sdk.entities.label import LabelEntity
-from ote_sdk.entities.scored_label import Domain, ScoredLabel
 from ote_sdk.entities.shapes.ellipse import Ellipse
 from ote_sdk.entities.shapes.polygon import Point, Polygon
 from ote_sdk.entities.shapes.rectangle import Rectangle
@@ -85,24 +82,6 @@ class TestShapeEntity:
             with pytest.raises(NotImplementedError):
                 ShapeEntity.contains_center(shape, shape)
             with pytest.raises(NotImplementedError):
-                ShapeEntity.get_labels(shape)
-            with pytest.raises(NotImplementedError):
-                ShapeEntity.append_label(
-                    shape,
-                    ScoredLabel(
-                        LabelEntity(name="classification", domain=Domain.CLASSIFICATION)
-                    ),
-                )
-            with pytest.raises(NotImplementedError):
-                ShapeEntity.set_labels(
-                    shape,
-                    [
-                        ScoredLabel(
-                            LabelEntity(name="detection", domain=Domain.DETECTION)
-                        )
-                    ],
-                )
-            with pytest.raises(NotImplementedError):
                 ShapeEntity.normalize_wrt_roi_shape(shape, rectangle_entity)
             with pytest.raises(NotImplementedError):
                 ShapeEntity.denormalize_wrt_roi_shape(shape, rectangle_entity)
@@ -133,59 +112,11 @@ class TestShape:
             ]
         )
 
-    @staticmethod
-    def generate_labels_list(include_empty: bool = True) -> list:
-        classification_label = ScoredLabel(
-            LabelEntity(
-                name="classification",
-                domain=Domain.CLASSIFICATION,
-                color=Color(red=187, green=28, blue=28),
-                creation_date=datetime(year=2021, month=10, day=25),
-            )
-        )
-        detection_label = ScoredLabel(
-            LabelEntity(
-                name="detection",
-                domain=Domain.DETECTION,
-                color=Color(red=180, green=30, blue=24),
-                creation_date=datetime(year=2021, month=9, day=24),
-            )
-        )
-        empty_label = ScoredLabel(
-            LabelEntity(
-                name="empty_rectangle_label",
-                domain=Domain.CLASSIFICATION,
-                color=Color(red=178, green=25, blue=30),
-                creation_date=datetime(year=2021, month=7, day=26),
-                is_empty=True,
-            )
-        )
-        labels_list = [classification_label, detection_label]
-        if include_empty:
-            labels_list.append(empty_label)
-        return labels_list
-
-    @staticmethod
-    def appendable_label(empty=False) -> ScoredLabel:
-        return ScoredLabel(
-            LabelEntity(
-                name="appended_label",
-                domain=Domain.CLASSIFICATION,
-                color=Color(red=181, green=28, blue=31),
-                creation_date=datetime(year=2021, month=11, day=22),
-                is_empty=empty,
-            )
-        )
-
     def rectangle(self) -> Rectangle:
-        return Rectangle(
-            x1=0.2, y1=0.2, x2=0.6, y2=0.7, labels=self.generate_labels_list()
-        )
+        return Rectangle(x1=0.2, y1=0.2, x2=0.6, y2=0.7)
 
     def ellipse(self) -> Ellipse:
-        return Ellipse(
-            x1=0.4, y1=0.1, x2=0.9, y2=0.8, labels=self.generate_labels_list()
-        )
+        return Ellipse(x1=0.4, y1=0.1, x2=0.9, y2=0.8)
 
     def polygon(self) -> Polygon:
         return Polygon(
@@ -197,7 +128,6 @@ class TestShape:
                 Point(0.8, 0.4),
                 Point(0.3, 0.4),
             ],
-            labels=self.generate_labels_list(),
         )
 
     @staticmethod
@@ -402,166 +332,6 @@ class TestShape:
             assert rectangle_full.contains_center(shape_inside)
         for shape_outside in shapes_outside:
             assert not rectangle_part.contains_center(shape_outside)
-
-    @pytest.mark.priority_medium
-    @pytest.mark.unit
-    @pytest.mark.reqids(Requirements.REQ_1)
-    def test_shape_get_labels(self):
-        """
-        <b>Description:</b>
-        Check Shape get_labels method for Rectangle, Ellipse and Polygon objects
-
-        <b>Expected results:</b>
-        Test passes if get_labels method returns expected values
-
-        <b>Steps</b>
-        1. Check get_labels method for Shapes with no labels specified
-        2. Check get_labels method for Shapes with specified labels and include_empty parameter set to False
-        3. Check get_labels method for Shapes with specified labels and include_empty parameter set to True
-        """
-        # Checks for no labels specified
-        for no_labels_shape in [
-            self.fully_covering_rectangle(),
-            self.fully_covering_ellipse(),
-            self.fully_covering_polygon(),
-        ]:
-            assert no_labels_shape.get_labels() == []
-        # Checks for labels specified and include_empty set to False
-        expected_false_include_empty_labels = self.generate_labels_list(
-            include_empty=False
-        )
-        for false_include_empty_labels_shape in [
-            self.rectangle(),
-            self.ellipse(),
-            self.polygon(),
-        ]:
-            assert (
-                false_include_empty_labels_shape.get_labels()
-                == expected_false_include_empty_labels
-            )
-        # Checks for labels specified and include_empty set to True
-        expected_include_empty_labels = self.generate_labels_list(include_empty=True)
-        for include_empty_labels_shape in [
-            self.rectangle(),
-            self.ellipse(),
-            self.polygon(),
-        ]:
-            assert (
-                include_empty_labels_shape.get_labels(include_empty=True)
-                == expected_include_empty_labels
-            )
-
-    @pytest.mark.priority_medium
-    @pytest.mark.unit
-    @pytest.mark.reqids(Requirements.REQ_1)
-    def test_shape_append_label(self):
-        """
-        <b>Description:</b>
-        Check Shape get_labels method for Rectangle, Ellipse and Polygon objects
-
-        <b>Expected results:</b>
-        Test passes if append_label method returns expected values
-
-        <b>Steps</b>
-        1. Check append_label method to add label to Shape object with no labels specified
-        2. Check append_label method to add empty label to Shape object with no labels specified
-        3. Check append_label method to add label to Shape object with specified labels
-        4. Check append_label method to add empty label to Shape object with specified labels
-        """
-        appendable_label = self.appendable_label()
-        empty_appendable_label = self.appendable_label(empty=True)
-        # Check for adding label to Shape with no labels specified
-        for no_labels_shape in [
-            self.fully_covering_rectangle(),
-            self.fully_covering_ellipse(),
-            self.fully_covering_polygon(),
-        ]:
-            no_labels_shape.append_label(appendable_label)
-            assert no_labels_shape.get_labels() == [appendable_label]
-        # Check for adding empty label to Shape with no labels specified
-        for no_labels_shape in [
-            self.fully_covering_rectangle(),
-            self.fully_covering_ellipse(),
-            self.fully_covering_polygon(),
-        ]:
-            no_labels_shape.append_label(empty_appendable_label)
-            assert no_labels_shape.get_labels() == []
-            assert no_labels_shape.get_labels(include_empty=True) == [
-                empty_appendable_label
-            ]
-        # Check for adding label to Shape with labels specified
-        for shape in [self.rectangle(), self.ellipse(), self.polygon()]:
-            expected_labels = shape.get_labels()
-            expected_labels.append(appendable_label)
-            shape.append_label(appendable_label)
-        # Check for adding empty label to Shape with labels specified
-        expected_labels_false_empty = self.generate_labels_list(include_empty=False)
-        expected_include_empty_labels = self.generate_labels_list(include_empty=True)
-        expected_include_empty_labels.append(empty_appendable_label)
-        for shape in [self.rectangle(), self.ellipse(), self.polygon()]:
-            shape.append_label(empty_appendable_label)
-            assert shape.get_labels() == expected_labels_false_empty
-            assert shape.get_labels(include_empty=True) == expected_include_empty_labels
-
-    @pytest.mark.priority_medium
-    @pytest.mark.unit
-    @pytest.mark.reqids(Requirements.REQ_1)
-    def test_shape_set_labels(self):
-        """
-        <b>Description:</b>
-        Check Shape set_labels method for Rectangle, Ellipse and Polygon objects
-
-        <b>Expected results:</b>
-        Test passes if set_labels method returns expected values
-
-        <b>Steps</b>
-        1. Check set_labels method to add labels list to Shape object with no labels specified
-        2. Check set_labels method to add empty labels list to Shape object with no labels specified
-        3. Check set_labels method to add labels list to Shape object with labels specified
-        4. Check set_labels method to add empty labels list to Shape object with labels specified
-        """
-        not_empty_label = self.appendable_label()
-        new_labels_list = [
-            not_empty_label,
-            ScoredLabel(
-                LabelEntity(
-                    name="new_label",
-                    domain=Domain.CLASSIFICATION,
-                    color=Color(red=183, green=31, blue=28),
-                    creation_date=datetime(year=2021, month=9, day=25),
-                    is_empty=True,
-                )
-            ),
-        ]
-        expected_not_empty_labels_list = [not_empty_label]
-        # Check for adding labels list to Shape with no labels specified
-        for no_labels_shape in [
-            self.fully_covering_rectangle(),
-            self.fully_covering_ellipse(),
-            self.fully_covering_polygon(),
-        ]:
-            no_labels_shape.set_labels(new_labels_list)
-            assert no_labels_shape.get_labels() == expected_not_empty_labels_list
-            assert no_labels_shape.get_labels(include_empty=True) == new_labels_list
-        # Check for adding empty labels list to Shape with no labels specified
-        for no_labels_shape in [
-            self.fully_covering_rectangle(),
-            self.fully_covering_ellipse(),
-            self.fully_covering_polygon(),
-        ]:
-            no_labels_shape.set_labels([])
-            assert no_labels_shape.get_labels() == []
-            assert no_labels_shape.get_labels(include_empty=True) == []
-        # Check for adding labels list to Shape with labels specified
-        for shape in [self.rectangle(), self.ellipse(), self.polygon()]:
-            shape.set_labels(new_labels_list)
-            assert shape.get_labels() == expected_not_empty_labels_list
-            assert shape.get_labels(include_empty=True) == new_labels_list
-        # Check for adding empty labels list to Shape with labels specified
-        for shape in [self.rectangle(), self.ellipse(), self.polygon()]:
-            shape.set_labels([])
-            assert shape.get_labels() == []
-            assert shape.get_labels(include_empty=True) == []
 
     @pytest.mark.priority_medium
     @pytest.mark.unit
