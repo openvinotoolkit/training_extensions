@@ -140,7 +140,7 @@ class DatasetEntity:
         return self._purpose
 
     @purpose.setter
-    def purpose(self, value: DatasetPurpose):
+    def purpose(self, value: DatasetPurpose) -> None:
         self._purpose = value
 
     def _fetch(self, key):
@@ -310,7 +310,7 @@ class DatasetEntity:
         )
         return dataset
 
-    def remove(self, item: DatasetItemEntity):
+    def remove(self, item: DatasetItemEntity) -> None:
         """
         Remove an item from the items.
         This function calls remove_at_indices function.
@@ -343,14 +343,14 @@ class DatasetEntity:
             raise ValueError("Media in dataset item cannot be None")
         self._items.append(item)
 
-    def sort_items(self):
+    def sort_items(self) -> None:
         """
         Order the dataset items. Does nothing here, but may be overrided in child classes.
 
         :return: None
         """
 
-    def remove_at_indices(self, indices: List[int]):
+    def remove_at_indices(self, indices: List[int]) -> None:
         """
         Delete items based on the `indices`.
 

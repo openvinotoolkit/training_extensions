@@ -279,19 +279,22 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
 
                 shape_labels = annotation.get_labels(include_empty)
 
+                check_labels = False
                 if not include_ignored:
                     shape_labels = [
                         label
                         for label in shape_labels
                         if label.label not in self.ignored_labels
                     ]
+                    check_labels = True
 
                 if labels is not None:
                     shape_labels = [
                         label for label in shape_labels if label.name in labels_set
                     ]
+                    check_labels = True
 
-                if len(shape_labels) == 0:
+                if check_labels and len(shape_labels) == 0:
                     continue
 
                 if not is_full_box:
@@ -398,7 +401,7 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
 
         roi_annotation = None
         for annotation in self.annotation_scene.annotations:
-            if annotation == self.roi:
+            if annotation.shape == self.roi.shape:
                 roi_annotation = annotation
                 break
 

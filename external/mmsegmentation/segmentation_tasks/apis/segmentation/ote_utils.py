@@ -14,6 +14,7 @@
 
 
 import importlib
+from typing import Iterable, Union
 import yaml
 import time
 
@@ -21,21 +22,28 @@ import numpy as np
 
 from ote_sdk.entities.train_parameters import UpdateProgressCallback
 from ote_sdk.usecases.reporting.time_monitor_callback import TimeMonitorCallback
+from ote_sdk.utils.argument_checks import (
+    YamlFilePathCheck,
+    check_input_parameters_type,
+)
 
 
+@check_input_parameters_type({"path": YamlFilePathCheck})
 def load_template(path):
     with open(path) as f:
         template = yaml.safe_load(f)
     return template
 
 
-def get_task_class(path):
+@check_input_parameters_type()
+def get_task_class(path: str):
     module_name, class_name = path.rsplit('.', 1)
     module = importlib.import_module(module_name)
     return getattr(module, class_name)
 
 
-def get_activation_map(features):
+@check_input_parameters_type()
+def get_activation_map(features: Union[np.ndarray, Iterable, int, float]):
     min_soft_score = np.min(features)
     max_soft_score = np.max(features)
     factor = 255.0 / (max_soft_score - min_soft_score + 1e-12)

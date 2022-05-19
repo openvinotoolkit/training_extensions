@@ -486,7 +486,7 @@ class ReduceLROnPlateauLrUpdaterHook(LrUpdaterHook):
         for group in runner.optimizer.param_groups:
             group.setdefault('initial_lr', group['lr'])
         self.base_lr = [
-            group['lr'] for group in runner.optimizer.param_groups
+            group['initial_lr'] for group in runner.optimizer.param_groups
         ]
         self.bad_count = 0
         self.last_iter = 0

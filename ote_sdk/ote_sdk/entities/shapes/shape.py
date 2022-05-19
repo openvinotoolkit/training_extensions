@@ -5,14 +5,13 @@
 #
 
 import abc
+import datetime
 import warnings
 from enum import IntEnum, auto
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING
 
 from shapely.errors import PredicateError, TopologicalError
 from shapely.geometry import Polygon as shapely_polygon
-
-from ote_sdk.entities.scored_label import ScoredLabel
 
 if TYPE_CHECKING:
     from ote_sdk.entities.shapes.rectangle import Rectangle
@@ -37,12 +36,11 @@ class ShapeEntity(metaclass=abc.ABCMeta):
     """
 
     # pylint: disable=redefined-builtin
-    def __init__(self, type: ShapeType, labels: List[ScoredLabel]):
-        self._type = type
-        self._labels = labels
+    def __init__(self, shape_type: ShapeType):
+        self._type = shape_type
 
     @property
-    def type(self):
+    def type(self) -> ShapeType:
         """
         Get the type of Shape that this Shape represents
         """
@@ -73,34 +71,6 @@ class ShapeEntity(metaclass=abc.ABCMeta):
 
         :param other: Shape to compare with
         :return: Boolean that indicates whether the center of the other shape is located in the shape
-        """
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def get_labels(self, include_empty: bool = False):
-        """
-        Get scored labels that are assigned to this shape
-
-        :param include_empty: set to True to include empty label (if exists) in the output.
-        :return: List of labels in shape
-        """
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def append_label(self, label: ScoredLabel):
-        """
-        Appends the scored label to the shape.
-
-        :param label: the scored label to be appended to the shape
-        """
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def set_labels(self, labels: List[ScoredLabel]):
-        """
-        Sets the labels of the shape to be the input of the function.
-
-        :param labels: the scored labels to be set as shape labels
         """
         raise NotImplementedError
 
@@ -146,8 +116,8 @@ class Shape(ShapeEntity):
     """
 
     # pylint: disable=redefined-builtin, too-many-arguments; Requires refactor
-    def __init__(self, type: ShapeType, labels: List[ScoredLabel], modification_date):
-        super().__init__(type=type, labels=labels)
+    def __init__(self, shape_type: ShapeType, modification_date: datetime.datetime):
+        super().__init__(shape_type=shape_type)
         self.modification_date = modification_date
 
     def __repr__(self):
@@ -179,17 +149,6 @@ class Shape(ShapeEntity):
         polygon_roi = self._as_shapely_polygon()
         polygon_shape = other._as_shapely_polygon()
         return polygon_roi.contains(polygon_shape.centroid)
-
-    def get_labels(self, include_empty: bool = False) -> List[ScoredLabel]:
-        return [
-            label for label in self._labels if include_empty or (not label.is_empty)
-        ]
-
-    def append_label(self, label: ScoredLabel):
-        self._labels.append(label)
-
-    def set_labels(self, labels: List[ScoredLabel]):
-        self._labels = labels
 
     def _validate_coordinates(self, x: float, y: float) -> bool:
         """

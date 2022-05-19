@@ -403,7 +403,7 @@ class API(unittest.TestCase):
             num_iters=5,
             quality_score_threshold=0.5,
             reload_perf_delta_tolerance=0.0,
-            export_perf_delta_tolerance=0.001,
+            export_perf_delta_tolerance=0.01,
             pot_perf_delta_tolerance=0.1,
             nncf_perf_delta_tolerance=0.1,
             task_type=TaskType.DETECTION):
@@ -542,7 +542,6 @@ class API(unittest.TestCase):
             osp.join('configs', 'custom-object-detection', 'cspdarknet_YOLOX'))
 
     @e2e_pytest_api
-    @pytest.mark.xfail(reason='CVS-83115')
     def test_training_maskrcnn_resnet50(self):
         self.end_to_end(osp.join('configs',
                         'custom-counting-instance-seg', 'resnet50_maskrcnn'),
