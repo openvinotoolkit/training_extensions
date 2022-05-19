@@ -286,7 +286,7 @@ def get_HPO_train_task(impl_class, task_type):
     return HpoTrainTask
 
 
-def _convert_paramger_group_to_dict(parameter_group):
+def _convert_parameter_group_to_dict(parameter_group):
     groups = getattr(parameter_group, "groups", None)
     parameters = getattr(parameter_group, "parameters", None)
 
@@ -299,7 +299,7 @@ def _convert_paramger_group_to_dict(parameter_group):
 
     ret = {}
     for key in total_arr:
-        val = _convert_paramger_group_to_dict(getattr(parameter_group, key))
+        val = _convert_parameter_group_to_dict(getattr(parameter_group, key))
         if not (isclass(val) or isinstance(val, Enum)):
             ret[key] = val
 
@@ -553,7 +553,7 @@ class HpoManager:
 
                 _kwargs = {
                     "hp_config": hp_config,
-                    "hyper_parameters": _convert_paramger_group_to_dict(
+                    "hyper_parameters": _convert_parameter_group_to_dict(
                         self.environment.get_hyper_parameters()
                     ),
                     "model_template": self.environment.model_template,
