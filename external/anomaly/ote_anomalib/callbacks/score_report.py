@@ -31,7 +31,7 @@ class ScoreReportingCallback(Callback):
         else:
             self.score_reporting_callback = None
 
-    def on_train_epoch_end(self, trainer, pl_module):
+    def on_validation_epoch_end(self, trainer, pl_module):
         """
         If score exists in trainer.logged_metrics, report the score.
         """
