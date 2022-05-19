@@ -165,7 +165,7 @@ class TestTaskEnvironment:
             env.get_hyper_parameters().learning_parameters.num_workers
         )  # "default_value"
         config_example_learning_parameters_num_workers = (
-            config_example.learning_parameters._default.factory.num_workers.metadata[
+            config_example.learning_parameters._default.factory.num_workers.get_metadata()[
                 "default_value"
             ]
         )
@@ -199,7 +199,7 @@ class TestTaskEnvironment:
             env.get_hyper_parameters().learning_parameters.batch_size
         )  # "default_value"
         config_example_learning_parameters_batch_size = (
-            config_example.learning_parameters._default.factory.batch_size.metadata[
+            config_example.learning_parameters._default.factory.batch_size.get_metadata()[
                 "default_value"
             ]
         )
@@ -234,7 +234,7 @@ class TestTaskEnvironment:
             env.get_hyper_parameters().learning_parameters.num_iters
         )  # "default_value"
         config_example_learning_parameters_num_iters = (
-            config_example.learning_parameters._default.factory.num_iters.metadata[
+            config_example.learning_parameters._default.factory.num_iters.get_metadata()[
                 "default_value"
             ]
         )
@@ -269,7 +269,7 @@ class TestTaskEnvironment:
             env.get_hyper_parameters().learning_parameters.learning_rate
         )  # "default_value"
         config_example_learning_parameters_learning_rate = (
-            config_example.learning_parameters._default.factory.learning_rate.metadata[
+            config_example.learning_parameters._default.factory.learning_rate.get_metadata()[
                 "default_value"
             ]
         )
@@ -313,7 +313,7 @@ class TestTaskEnvironment:
         # Attempt to access the missing parameter in ConfigExample
         with pytest.raises(AttributeError):
             # AttributeError: type object '__LearningParameters' has no attribute 'num_checkpoints'
-            config_example.learning_parameters._default.factory.num_checkpoints.metadata[
+            config_example.learning_parameters._default.factory.num_checkpoints.get_metadata()[
                 "default_value"
             ]
 
@@ -368,7 +368,7 @@ class TestTaskEnvironment:
         )
         cep = config_example.postprocessing
         config_example_postprocessing_confidence_threshold = (
-            cep._default.factory.confidence_threshold.metadata["default_value"]
+            cep._default.factory.confidence_threshold.get_metadata()["default_value"]
         )
 
         # From dummy_config.yaml because it is missing in dummy_template.yaml "parameter_overrides"
@@ -404,7 +404,7 @@ class TestTaskEnvironment:
         cep = config_example.postprocessing
         def_factory = cep._default.factory
         rbct = def_factory.result_based_confidence_threshold
-        config_example_postprocessing_result_based_confidence_threshold = rbct.metadata[
+        config_example_postprocessing_result_based_confidence_threshold = rbct.get_metadata()[
             "default_value"
         ]
 
