@@ -86,7 +86,13 @@ def run_hpo(args, environment, dataset, task_type):
         task_class = get_HPO_train_task(task_class, task_type)
 
         task = task_class(task_environment=environment)
-        task.resume(hpo_weight_path) # prepare finetune stage to resume
+
+        disable_adapt = False
+        if (task_type in [TaskType.DETECTION, TaskType.SEGMENTATION]
+            and hpo.search_alg == "asha"
+        ):
+            disable_adapt = True
+        task.resume(hpo_weight_path, disable_adapt=disable_adapt) # prepare finetune stage to resume
 
         if args.load_weights:
             environment.model.configuration.configurable_parameters = hyper_parameters
@@ -248,16 +254,18 @@ def get_HPO_train_task(impl_class, task_type):
             super().__init__(task_environment)
             self._task_type = task_type
 
-        def resume(self, resume_path):
+        def resume(self, resume_path, disable_adapt=False):
             if self._task_type == TaskType.CLASSIFICATION:
                 self._cfg.model.resume = resume_path
                 self._cfg.test.save_initial_metric = True
             elif self._task_type == TaskType.DETECTION:
                 self._config.resume_from = resume_path
-                self._config.data.train.adaptive_repeat_times = False
+                if disable_adapt:
+                    self._config.data.train.adaptive_repeat_times = False
             elif self._task_type == TaskType.SEGMENTATION:
                 self._config.resume_from = resume_path
-                self._config.data.train.adaptive_repeat = False
+                if disable_adapt:
+                    self._config.data.train.adaptive_repeat = False
 
         def prepare_hpo(self, hp_config):
             if self._task_type == TaskType.CLASSIFICATION:
