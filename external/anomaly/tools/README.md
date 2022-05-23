@@ -11,7 +11,13 @@ This will generate three folders in `~/training_extensions/data/MVtec/` for clas
 Then, to run sample.py you can use the following command.
 
 ```bash
-python tools/sample.py --dataset_path ~/datasets/MVTec --category bottle --train-ann-files ../../data/MVtec/bottle/segmentation/train.json --val-ann-files ../../data/MVtec/bottle/segmentation/val.json --test-ann-files ../../data/MVtec/bottle/segmentation/test.json --model_template_path ./configs/anomaly_segmentation/padim/template.yaml
+python tools/sample.py \
+    --dataset_path ~/datasets/MVTec \
+    --category bottle \
+    --train-ann-files ../../data/MVtec/bottle/segmentation/train.json \
+    --val-ann-files ../../data/MVtec/bottle/segmentation/val.json \
+    --test-ann-files ../../data/MVtec/bottle/segmentation/test.json \
+    --model_template_path ./configs/anomaly_segmentation/padim/template.yaml
 ```
 
 Optionally, you can also optimize to `nncf` or `pot` by using the `--optimization` flag

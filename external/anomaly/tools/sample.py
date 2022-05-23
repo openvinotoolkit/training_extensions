@@ -61,7 +61,7 @@ class OteAnomalyTask:
         val_subset: Dict[str, str],
         test_subset: Dict[str, str],
         model_template_path: str,
-        seed: Optional[int] = 0,
+        seed: Optional[int] = None,
     ) -> None:
         """Initialize OteAnomalyTask.
 

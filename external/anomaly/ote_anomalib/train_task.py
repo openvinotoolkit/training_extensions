@@ -38,7 +38,7 @@ class AnomalyTrainingTask(AnomalyInferenceTask, ITrainingTask):
         dataset: DatasetEntity,
         output_model: ModelEntity,
         train_parameters: TrainParameters,
-        seed: Optional[int] = 0,
+        seed: Optional[int] = None,
     ) -> None:
         """Train the anomaly classification model.
 
@@ -53,7 +53,7 @@ class AnomalyTrainingTask(AnomalyInferenceTask, ITrainingTask):
 
         config = self.get_config()
 
-        if seed is not None and seed > 0:
+        if seed:
             logger.info(f"Setting seed to {seed}")
             seed_everything(seed, workers=True)
             config.trainer.deterministic = True
