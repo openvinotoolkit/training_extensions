@@ -56,7 +56,7 @@ class TestIMetadata:
 
         test_instance = IMetadata()
         assert isinstance(test_instance, IMetadata)
-        assert str(test_instance.name) == "typing.Union[str, NoneType]"
+        assert str(test_instance.name) == "typing.Optional[str]"
 
         test_instance.name = "String"
         assert test_instance.name == "String"

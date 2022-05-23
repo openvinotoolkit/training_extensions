@@ -479,7 +479,7 @@ class TestCreateFunctions:
             )
             assert isinstance(argument, _make._CountingAttr)
             assert argument.type == int
-            metadata = argument.get_metadata()
+            metadata = argument.metadata
             assert metadata.get("default_value") == 70
             assert metadata.get("description") == "Default integer description"
             assert metadata.get("header") == "non selectable parameter header"
@@ -492,7 +492,7 @@ class TestCreateFunctions:
             argument = arguments_and_values_dict.get("make_arguments").get("selectable")
             assert isinstance(argument, _make._CountingAttr)
             assert argument.type == ConfigurableEnum
-            metadata = argument.get_metadata()
+            metadata = argument.metadata
             assert type(metadata.get("default_value")).__name__ == "test enum"
             assert metadata.get("default_value").name == "test_2"
             assert metadata.get("default_value").value == 2

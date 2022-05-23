@@ -110,21 +110,21 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
                     break
         self.__roi = roi
 
-        self.__metadata: List[MetadataItemEntity] = []
+        self.__metadata: Sequence[MetadataItemEntity] = []
         if metadata is not None:
-            self.__metadata = list(metadata)
+            self.__metadata = metadata
 
         self.__ignored_labels: Set[LabelEntity] = (
             set() if ignored_labels is None else set(ignored_labels)
         )
 
-    def set_metadata(self, metadata: List[MetadataItemEntity]):
+    def set_metadata(self, metadata: Sequence[MetadataItemEntity]):
         """
         Sets the metadata
         """
         self.__metadata = metadata
 
-    def get_metadata(self) -> List[MetadataItemEntity]:
+    def get_metadata(self) -> Sequence[MetadataItemEntity]:
         """
         Returns the metadata
         """

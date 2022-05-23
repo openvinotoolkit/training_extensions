@@ -140,7 +140,7 @@ class TestPrimitiveParameters:
             assert integer_instance._default == 100
             assert integer_instance.type == int
             assert len(integer_instance._validator._validators) == 2
-            assert integer_instance.get_metadata() == expected_metadata
+            assert integer_instance.metadata == expected_metadata
 
         # Checking _CountingAttr object returned by "configurable_integer" for default values of optional parameters
         default_value = 100
@@ -243,7 +243,7 @@ class TestPrimitiveParameters:
             assert isinstance(float_instance, _make._CountingAttr)
             assert float_instance._default == 100.1
             assert float_instance.type == float
-            assert float_instance.get_metadata() == expected_metadata
+            assert float_instance.metadata == expected_metadata
 
         # Checking _CountingAttr object returned by "configurable_float" for default values of optional parameters
         default_value = 100.1
@@ -343,7 +343,7 @@ class TestPrimitiveParameters:
                 boolean_instance._validator, validators._InstanceOfValidator  # type: ignore
             )
             assert boolean_instance._validator.type == bool
-            assert boolean_instance.get_metadata() == expected_metadata
+            assert boolean_instance.metadata == expected_metadata
 
         # Checking _CountingAttr object returned by "configurable_boolean" for default values of optional parameters
         default_value = True
@@ -435,7 +435,7 @@ class TestPrimitiveParameters:
             assert isinstance(float_selectable_instance, _make._CountingAttr)
             assert float_selectable_instance._default
             assert float_selectable_instance.type == float
-            assert float_selectable_instance.get_metadata() == expected_metadata
+            assert float_selectable_instance.metadata == expected_metadata
 
         # Checking _CountingAttr object returned by "float_selectable" for default values of optional parameters
         default_value = 0.1
@@ -534,7 +534,7 @@ class TestPrimitiveParameters:
             assert isinstance(selectable_instance, _make._CountingAttr)
             assert selectable_instance._default == SomeEnumSelectable.OPTION_C
             assert selectable_instance.type == ConfigurableEnum
-            assert selectable_instance.get_metadata() == expected_metadata
+            assert selectable_instance.metadata == expected_metadata
 
         # Checking _CountingAttr object returned by "selectable" for default values of optional parameters
         default_value = SomeEnumSelectable.OPTION_C
