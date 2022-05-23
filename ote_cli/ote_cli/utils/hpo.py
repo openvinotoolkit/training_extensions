@@ -89,7 +89,7 @@ def run_hpo(args, environment, dataset, task_type):
 
         disable_adapt = False
         if (task_type in [TaskType.DETECTION, TaskType.SEGMENTATION]
-            and hpo.search_alg == "asha"
+            and hpo.algo == "asha"
         ):
             disable_adapt = True
         task.resume(hpo_weight_path, disable_adapt=disable_adapt) # prepare finetune stage to resume
@@ -729,6 +729,8 @@ class HpoDataset:
         return self.fullset[self.indices[indx]]
 
     def __getattr__(self, name):
+        if name == "__setstate__":
+            raise AttributeError(name)
         return getattr(self.fullset, name)
 
     def get_subset(self, subset: Subset):
