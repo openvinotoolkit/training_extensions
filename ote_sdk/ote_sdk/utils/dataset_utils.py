@@ -91,7 +91,7 @@ def get_local_subset(
                     local_annotations,
                     kind=item.annotation_scene.kind,
                 ),
-                metadata=item.metadata,
+                metadata=item.get_metadata(),
                 subset=item.subset,
                 roi=item.roi,
                 ignored_labels=item.ignored_labels,
@@ -120,7 +120,7 @@ def get_global_subset(dataset: DatasetEntity) -> DatasetEntity:
                 annotation_scene=AnnotationSceneEntity(
                     global_annotations, kind=item.annotation_scene.kind
                 ),
-                metadata=item.metadata,
+                metadata=item.get_metadata(),
                 subset=item.subset,
                 roi=item.roi,
                 ignored_labels=item.ignored_labels,
