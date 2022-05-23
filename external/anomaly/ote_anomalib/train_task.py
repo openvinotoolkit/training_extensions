@@ -15,6 +15,7 @@
 # and limitations under the License.
 
 from typing import Optional
+
 from anomalib.utils.callbacks import MinMaxNormalizationCallback
 from ote_anomalib import AnomalyInferenceTask
 from ote_anomalib.callbacks import ProgressCallback
