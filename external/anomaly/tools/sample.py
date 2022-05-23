@@ -22,7 +22,7 @@ import importlib
 import os
 import shutil
 from argparse import Namespace
-from typing import Any, Dict, Type, Union
+from typing import Any, Dict, Optional, Type, Union
 
 from ote_anomalib import AnomalyNNCFTask, OpenVINOAnomalyTask
 from ote_anomalib.data.dataset import (
@@ -61,13 +61,18 @@ class OteAnomalyTask:
         val_subset: Dict[str, str],
         test_subset: Dict[str, str],
         model_template_path: str,
+        seed: Optional[int] = 0,
     ) -> None:
         """Initialize OteAnomalyTask.
 
         Args:
             dataset_path (str): Path to the MVTec dataset.
-            seed (int): Seed to split the dataset into train/val/test splits.
+            train_subset (Dict[str, str]): Dictionary containing path to train annotation file and path to dataset.
+            val_subset (Dict[str, str]): Dictionary containing path to validation annotation file and path to dataset.
+            test_subset (Dict[str, str]): Dictionary containing path to test annotation file and path to dataset.
             model_template_path (str): Path to model template.
+            seed (Optional[int]): Setting seed to a value other than 0 also marks PytorchLightning trainer's
+                deterministic flag to True.
 
         Example:
             >>> import os
@@ -78,9 +83,12 @@ class OteAnomalyTask:
 
             >>> model_template_path = "./configs/anomaly_classification/padim/template.yaml"
             >>> dataset_path = "./datasets/MVTec"
-            >>> seed = 0
             >>> task = OteAnomalyTask(
-            ...     dataset_path=dataset_path, seed=seed, model_template_path=model_template_path
+            ...     dataset_path=dataset_path,
+            ...     train_subset={"ann_file": train.json, "data_root": dataset_path},
+            ...     val_subset={"ann_file": val.json, "data_root": dataset_path},
+            ...     test_subset={"ann_file": test.json, "data_root": dataset_path},
+            ...     model_template_path=model_template_path
             ... )
 
             >>> task.train()
@@ -110,6 +118,7 @@ class OteAnomalyTask:
         self.openvino_task: OpenVINOAnomalyTask
         self.nncf_task: AnomalyNNCFTask
         self.results = {"category": dataset_path}
+        self.seed = seed
 
     def get_dataclass(
         self,
@@ -176,9 +185,7 @@ class OteAnomalyTask:
             configuration=self.task_environment.get_model_configuration(),
         )
         self.torch_task.train(
-            dataset=self.dataset,
-            output_model=output_model,
-            train_parameters=TrainParameters(),
+            dataset=self.dataset, output_model=output_model, train_parameters=TrainParameters(), seed=self.seed
         )
 
         logger.info("Inferring the base torch model on the validation set.")
@@ -364,6 +371,7 @@ def main() -> None:
         val_subset=val_subset,
         test_subset=test_subset,
         model_template_path=args.model_template_path,
+        seed=args.seed,
     )
 
     task.train()
