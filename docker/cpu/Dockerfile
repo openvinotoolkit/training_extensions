@@ -15,7 +15,8 @@ RUN apt install -y python3-opencv
 RUN conda clean --all
 
 # Create new user
-RUN useradd -rm -d /home/tami -s /bin/bash -g root -G sudo -u 1001 tami
+RUN groupadd -g 1000 tami
+RUN useradd -rm -d /home/tami -s /bin/bash -g 1000 -u 1000 tami
 USER tami
 RUN mkdir -p /home/tami/workspace
 WORKDIR /home/tami/workspace

@@ -1,6 +1,6 @@
 # Setup Docker Image for CPU Training
 
-Steps to setup Docker* image for CPU training using Intel® oprimized PyTorch*.
+Steps to setup Docker* image for CPU training using Intel® optimized PyTorch*.
 
 ## Step 1. Build image
 
