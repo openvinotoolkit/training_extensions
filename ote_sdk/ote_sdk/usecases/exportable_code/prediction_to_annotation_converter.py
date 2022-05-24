@@ -259,10 +259,8 @@ class AnomalyClassificationToAnnotationConverter(IPredictionToAnnotationConverte
 
     def __init__(self, label_schema: LabelSchemaEntity):
         labels = label_schema.get_labels(include_empty=False)
-        self.normal_label = [label for label in labels if label.name == "Normal"][0]
-        self.anomalous_label = [label for label in labels if label.name == "Anomalous"][
-            0
-        ]
+        self.normal_label = [label for label in labels if not label.is_anomalous][0]
+        self.anomalous_label = [label for label in labels if label.is_anomalous][0]
 
     def convert_to_annotation(
         self, predictions: np.ndarray, metadata: Dict[str, Any]
@@ -290,10 +288,8 @@ class AnomalySegmentationToAnnotationConverter(IPredictionToAnnotationConverter)
 
     def __init__(self, label_schema: LabelSchemaEntity):
         labels = label_schema.get_labels(include_empty=False)
-        self.normal_label = [label for label in labels if label.name == "Normal"][0]
-        self.anomalous_label = [label for label in labels if label.name == "Anomalous"][
-            0
-        ]
+        self.normal_label = [label for label in labels if not label.is_anomalous][0]
+        self.anomalous_label = [label for label in labels if label.is_anomalous][0]
         self.label_map = {0: self.normal_label, 1: self.anomalous_label}
 
     def convert_to_annotation(
@@ -327,10 +323,8 @@ class AnomalyDetectionToAnnotationConverter(IPredictionToAnnotationConverter):
         :param label_schema: Label Schema containing the label info of the task
         """
         labels = label_schema.get_labels(include_empty=False)
-        self.normal_label = [label for label in labels if label.name == "Normal"][0]
-        self.anomalous_label = [label for label in labels if label.name == "Anomalous"][
-            0
-        ]
+        self.normal_label = [label for label in labels if not label.is_anomalous][0]
+        self.anomalous_label = [label for label in labels if label.is_anomalous][0]
         self.label_map = {0: self.normal_label, 1: self.anomalous_label}
 
     def convert_to_annotation(
