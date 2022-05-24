@@ -174,7 +174,7 @@ def prepare_for_testing(config: Union[Config, ConfigDict], dataset: DatasetEntit
 
 @check_input_parameters_type({"train_dataset": DatasetParamTypeCheck,
                               "val_dataset": DatasetParamTypeCheck})
-def prepare_for_training(config: Config, train_dataset: DatasetEntity, val_dataset: DatasetEntity,
+def prepare_for_training(config: Union[Config, ConfigDict], train_dataset: DatasetEntity, val_dataset: DatasetEntity,
                          time_monitor: TimeMonitorCallback, learning_curves: defaultdict) -> Config:
     config = copy.deepcopy(config)
     prepare_work_dir(config)
@@ -354,7 +354,7 @@ def cluster_anchors(config: Config, dataset: DatasetEntity, model: BaseDetector)
 
 
 @check_input_parameters_type()
-def get_data_cfg(config: Config, subset: str = 'train') -> Config:
+def get_data_cfg(config: Union[Config, ConfigDict], subset: str = 'train') -> Config:
     data_cfg = config.data[subset]
     while 'dataset' in data_cfg:
         data_cfg = data_cfg.dataset
