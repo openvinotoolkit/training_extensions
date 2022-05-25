@@ -348,6 +348,7 @@ class HpoManager:
         self.environment = environment
         self.dataset_paths = dataset_paths
         self.work_dir = hpo_save_path
+        self.deleted_hp = {}
 
         if environment.model is None:
             impl_class = get_impl_class(environment.model_template.entrypoints.base)
@@ -391,8 +392,14 @@ class HpoManager:
             batch_range = hpopt_cfg['hp_space'][batch_size_name]['range']
             if batch_range[1] > train_dataset_size:
                 batch_range[1] = train_dataset_size
-            if batch_range[0] < batch_range[1]:
-                batch_range[0] = batch_range[1]
+
+            # If trainset size is lower than min batch size range,
+            # fix batch size to trainset size
+            if batch_range[0] > batch_range[1]:
+                print("Train set size is lower than batch size range."
+                       "Batch size is fixed to train set size.")
+                del hpopt_cfg["hp_space"][batch_size_name]
+                self.deleted_hp[batch_size_name] = train_dataset_size
 
         # prepare default hyper parameters
         default_hyper_parameters = {}
@@ -546,6 +553,9 @@ class HpoManager:
                         if proc.is_alive():
                             proc.join()
                     break
+                
+                for key, val in self.deleted_hp.items():
+                    hp_config[key] = val
 
                 hp_config["metric"] = self.metric
 
@@ -594,6 +604,8 @@ class HpoManager:
                 break
 
         best_config = self.hpo.get_best_config()
+        for key, val in self.deleted_hp.items():
+            best_config[key] = val
 
         # finetune stage resumes hpo trial, so warmup isn't needed
         if task_type == TaskType.DETECTION:
