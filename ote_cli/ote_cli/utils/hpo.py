@@ -391,6 +391,8 @@ class HpoManager:
             batch_range = hpopt_cfg['hp_space'][batch_size_name]['range']
             if batch_range[1] > train_dataset_size:
                 batch_range[1] = train_dataset_size
+            if batch_range[0] < batch_range[1]:
+                batch_range[0] = batch_range[1]
 
         # prepare default hyper parameters
         default_hyper_parameters = {}
