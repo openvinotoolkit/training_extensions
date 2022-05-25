@@ -16,7 +16,7 @@ import time
 import colorsys
 import importlib
 import random
-from typing import Callable, Union
+from typing import Callable, Optional, Sequence, Union
 
 import numpy as np
 import yaml
@@ -26,10 +26,15 @@ from ote_sdk.entities.label import Domain, LabelEntity
 from ote_sdk.entities.label_schema import LabelGroup, LabelGroupType, LabelSchemaEntity
 from ote_sdk.entities.train_parameters import UpdateProgressCallback
 from ote_sdk.usecases.reporting.time_monitor_callback import TimeMonitorCallback
+from ote_sdk.utils.argument_checks import (
+    YamlFilePathCheck,
+    check_input_parameters_type,
+)
 
 
 class ColorPalette:
-    def __init__(self, n, rng=None):
+    @check_input_parameters_type()
+    def __init__(self, n: int, rng: Optional[random.Random] = None):
         assert n > 0
 
         if rng is None:
@@ -40,36 +45,38 @@ class ColorPalette:
         for _ in range(1, n):
             colors_candidates = [(rng.random(), rng.uniform(0.8, 1.0), rng.uniform(0.5, 1.0))
                                  for _ in range(candidates_num)]
-            min_distances = [self.min_distance(hsv_colors, c) for c in colors_candidates]
+            min_distances = [self._min_distance(hsv_colors, c) for c in colors_candidates]
             arg_max = np.argmax(min_distances)
             hsv_colors.append(colors_candidates[arg_max])
 
-        self.palette = [Color(*self.hsv2rgb(*hsv)) for hsv in hsv_colors]
+        self.palette = [Color(*self._hsv2rgb(*hsv)) for hsv in hsv_colors]
 
     @staticmethod
-    def dist(c1, c2):
+    def _dist(c1, c2):
         dh = min(abs(c1[0] - c2[0]), 1 - abs(c1[0] - c2[0])) * 2
         ds = abs(c1[1] - c2[1])
         dv = abs(c1[2] - c2[2])
         return dh * dh + ds * ds + dv * dv
 
     @classmethod
-    def min_distance(cls, colors_set, color_candidate):
-        distances = [cls.dist(o, color_candidate) for o in colors_set]
+    def _min_distance(cls, colors_set, color_candidate):
+        distances = [cls._dist(o, color_candidate) for o in colors_set]
         return np.min(distances)
 
     @staticmethod
-    def hsv2rgb(h, s, v):
+    def _hsv2rgb(h, s, v):
         return tuple(round(c * 255) for c in colorsys.hsv_to_rgb(h, s, v))
 
-    def __getitem__(self, n):
+    @check_input_parameters_type()
+    def __getitem__(self, n: int):
         return self.palette[n % len(self.palette)]
 
     def __len__(self):
         return len(self.palette)
 
 
-def generate_label_schema(label_names, label_domain=Domain.DETECTION):
+@check_input_parameters_type()
+def generate_label_schema(label_names: Sequence[str], label_domain: Domain = Domain.DETECTION):
     colors = ColorPalette(len(label_names)) if len(label_names) > 0 else []
     not_empty_labels = [LabelEntity(name=name, color=colors[i], domain=label_domain, id=ID(f"{i:08}")) for i, name in
                         enumerate(label_names)]
@@ -84,13 +91,15 @@ def generate_label_schema(label_names, label_domain=Domain.DETECTION):
     return label_schema
 
 
+@check_input_parameters_type({"path": YamlFilePathCheck})
 def load_template(path):
     with open(path) as f:
         template = yaml.safe_load(f)
     return template
 
 
-def get_task_class(path):
+@check_input_parameters_type()
+def get_task_class(path: str):
     module_name, class_name = path.rsplit('.', 1)
     module = importlib.import_module(module_name)
     return getattr(module, class_name)

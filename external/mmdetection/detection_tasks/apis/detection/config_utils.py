@@ -18,13 +18,18 @@ import math
 import os
 import tempfile
 from collections import defaultdict
-from typing import List, Optional
+from typing import List, Optional, Union
 
 import torch
 from mmcv import Config, ConfigDict
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.label import LabelEntity, Domain
 from ote_sdk.usecases.reporting.time_monitor_callback import TimeMonitorCallback
+from ote_sdk.utils.argument_checks import (
+    DatasetParamTypeCheck,
+    DirectoryPathCheck,
+    check_input_parameters_type
+)
 
 from detection_tasks.extension.datasets.data_utils import get_anchor_boxes, \
     get_sizes_from_dataset_entity, format_list_to_str
@@ -43,14 +48,16 @@ except ImportError:
 logger = get_root_logger()
 
 
+@check_input_parameters_type()
 def is_epoch_based_runner(runner_config: ConfigDict):
     return 'Epoch' in runner_config.type
 
 
+@check_input_parameters_type({"work_dir": DirectoryPathCheck})
 def patch_config(config: Config, work_dir: str, labels: List[LabelEntity], domain: Domain, random_seed: Optional[int] = None):
     # Set runner if not defined.
     if 'runner' not in config:
-        config.runner = {'type': 'EpochBasedRunner'}
+        config.runner = ConfigDict({'type': 'EpochBasedRunner'})
 
     # Check that there is no conflict in specification of number of training epochs.
     # Move global definition of epochs inside runner config.
@@ -112,6 +119,7 @@ def patch_config(config: Config, work_dir: str, labels: List[LabelEntity], domai
     config.seed = random_seed
 
 
+@check_input_parameters_type()
 def set_hyperparams(config: Config, hyperparams: OTEDetectionConfig):
     config.optimizer.lr = float(hyperparams.learning_parameters.learning_rate)
     config.lr_config.warmup_iters = int(hyperparams.learning_parameters.learning_rate_warmup_iters)
@@ -126,7 +134,8 @@ def set_hyperparams(config: Config, hyperparams: OTEDetectionConfig):
         config.runner.max_iters = total_iterations
 
 
-def patch_adaptive_repeat_dataset(config: Config, num_samples: int,
+@check_input_parameters_type()
+def patch_adaptive_repeat_dataset(config: Union[Config, ConfigDict], num_samples: int,
     decay: float = -0.002, factor: float = 30):
     """ Patch the repeat times and training epochs adatively
 
@@ -155,14 +164,17 @@ def patch_adaptive_repeat_dataset(config: Config, num_samples: int,
             data_train.times = new_repeat
 
 
-def prepare_for_testing(config: Config, dataset: DatasetEntity) -> Config:
+@check_input_parameters_type({"dataset": DatasetParamTypeCheck})
+def prepare_for_testing(config: Union[Config, ConfigDict], dataset: DatasetEntity) -> Config:
     config = copy.deepcopy(config)
     # FIXME. Should working directories be modified here?
     config.data.test.ote_dataset = dataset
     return config
 
 
-def prepare_for_training(config: Config, train_dataset: DatasetEntity, val_dataset: DatasetEntity,
+@check_input_parameters_type({"train_dataset": DatasetParamTypeCheck,
+                              "val_dataset": DatasetParamTypeCheck})
+def prepare_for_training(config: Union[Config, ConfigDict], train_dataset: DatasetEntity, val_dataset: DatasetEntity,
                          time_monitor: TimeMonitorCallback, learning_curves: defaultdict) -> Config:
     config = copy.deepcopy(config)
     prepare_work_dir(config)
@@ -175,7 +187,8 @@ def prepare_for_training(config: Config, train_dataset: DatasetEntity, val_datas
     return config
 
 
-def config_to_string(config: Config) -> str:
+@check_input_parameters_type()
+def config_to_string(config: Union[Config, ConfigDict]) -> str:
     """
     Convert a full mmdetection config to a string.
 
@@ -194,6 +207,7 @@ def config_to_string(config: Config) -> str:
     return Config(config_copy).pretty_text
 
 
+@check_input_parameters_type()
 def config_from_string(config_string: str) -> Config:
     """
     Generate an mmdetection config dict object from a string.
@@ -207,6 +221,7 @@ def config_from_string(config_string: str) -> Config:
         return Config.fromfile(temp_file.name)
 
 
+@check_input_parameters_type()
 def save_config_to_file(config: Config):
     """ Dump the full config to a file. Filename is 'config.py', it is saved in the current work_dir. """
     filepath = os.path.join(config.work_dir, 'config.py')
@@ -215,7 +230,8 @@ def save_config_to_file(config: Config):
         f.write(config_string)
 
 
-def prepare_work_dir(config: Config) -> str:
+@check_input_parameters_type()
+def prepare_work_dir(config: Union[Config, ConfigDict]) -> str:
     base_work_dir = config.work_dir
     checkpoint_dirs = glob.glob(os.path.join(base_work_dir, "checkpoints_round_*"))
     train_round_checkpoint_dir = os.path.join(base_work_dir, f"checkpoints_round_{len(checkpoint_dirs)}")
@@ -230,6 +246,7 @@ def prepare_work_dir(config: Config) -> str:
     return train_round_checkpoint_dir
 
 
+@check_input_parameters_type()
 def set_data_classes(config: Config, labels: List[LabelEntity]):
     # Save labels in data configs.
     for subset in ('train', 'val', 'test'):
@@ -256,7 +273,8 @@ def set_data_classes(config: Config, labels: List[LabelEntity]):
     # self.config.model.CLASSES = label_names
 
 
-def patch_datasets(config: Config, domain):
+@check_input_parameters_type()
+def patch_datasets(config: Config, domain: Domain):
 
     def patch_color_conversion(pipeline):
         # Default data format for OTE is RGB, while mmdet uses BGR, so negate the color conversion flag.
@@ -289,7 +307,8 @@ def patch_datasets(config: Config, domain):
         patch_color_conversion(cfg.pipeline)
 
 
-def remove_from_config(config, key: str):
+@check_input_parameters_type()
+def remove_from_config(config: Union[Config, ConfigDict], key: str):
     if key in config:
         if isinstance(config, Config):
             del config._cfg_dict[key]
@@ -298,6 +317,8 @@ def remove_from_config(config, key: str):
         else:
             raise ValueError(f'Unknown config type {type(config)}')
 
+
+@check_input_parameters_type({"dataset": DatasetParamTypeCheck})
 def cluster_anchors(config: Config, dataset: DatasetEntity, model: BaseDetector):
     if not kmeans_import:
         raise ImportError('Sklearn package is not installed. To enable anchor boxes clustering, please install '
@@ -308,7 +329,7 @@ def cluster_anchors(config: Config, dataset: DatasetEntity, model: BaseDetector)
                  if transforms.type == 'MultiScaleFlipAug']
     prev_generator = config.model.bbox_head.anchor_generator
     group_as = [len(width) for width in prev_generator.widths]
-    wh_stats = get_sizes_from_dataset_entity(dataset, target_wh)
+    wh_stats = get_sizes_from_dataset_entity(dataset, list(target_wh))
 
     if len(wh_stats) < sum(group_as):
         logger.warning(f'There are not enough objects to cluster: {len(wh_stats)} were detected, while it should be '
@@ -332,7 +353,8 @@ def cluster_anchors(config: Config, dataset: DatasetEntity, model: BaseDetector)
     return config, model
 
 
-def get_data_cfg(config: Config, subset: str = 'train') -> Config:
+@check_input_parameters_type()
+def get_data_cfg(config: Union[Config, ConfigDict], subset: str = 'train') -> Config:
     data_cfg = config.data[subset]
     while 'dataset' in data_cfg:
         data_cfg = data_cfg.dataset

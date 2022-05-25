@@ -36,6 +36,10 @@ from ote_sdk.serialization.label_mapper import label_schema_to_bytes
 from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType
 from ote_sdk.usecases.tasks.interfaces.optimization_interface import IOptimizationTask
 from ote_sdk.usecases.tasks.interfaces.optimization_interface import OptimizationType
+from ote_sdk.utils.argument_checks import (
+    DatasetParamTypeCheck,
+    check_input_parameters_type,
+)
 
 from mmdet.apis import train_detector
 from mmdet.apis.fake_input import get_fake_input
@@ -59,6 +63,7 @@ logger = get_root_logger()
 
 class OTEDetectionNNCFTask(OTEDetectionInferenceTask, IOptimizationTask):
 
+    @check_input_parameters_type()
     def __init__(self, task_environment: TaskEnvironment):
         """"
         Task for compressing object detection models using NNCF.
@@ -177,12 +182,13 @@ class OTEDetectionNNCFTask(OTEDetectionInferenceTask, IOptimizationTask):
             get_fake_input_func=get_fake_input,
             is_accuracy_aware=is_acc_aware_training_set)
 
+    @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def optimize(
         self,
         optimization_type: OptimizationType,
         dataset: DatasetEntity,
         output_model: ModelEntity,
-        optimization_parameters: Optional[OptimizationParameters],
+        optimization_parameters: Optional[OptimizationParameters] = None,
     ):
         if optimization_type is not OptimizationType.NNCF:
             raise RuntimeError("NNCF is the only supported optimization")
@@ -247,6 +253,7 @@ class OTEDetectionNNCFTask(OTEDetectionInferenceTask, IOptimizationTask):
 
         self._is_training = False
 
+    @check_input_parameters_type()
     def export(self, export_type: ExportType, output_model: ModelEntity):
         if self._compression_ctrl is None:
             super().export(export_type, output_model)
@@ -256,6 +263,7 @@ class OTEDetectionNNCFTask(OTEDetectionInferenceTask, IOptimizationTask):
             super().export(export_type, output_model)
             self._model.enable_dynamic_graph_building()
 
+    @check_input_parameters_type()
     def save_model(self, output_model: ModelEntity):
         buffer = io.BytesIO()
         hyperparams = self._task_environment.get_hyper_parameters(OTEDetectionConfig)
