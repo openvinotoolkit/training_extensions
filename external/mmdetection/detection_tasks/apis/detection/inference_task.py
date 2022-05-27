@@ -95,7 +95,7 @@ class OTEDetectionInferenceTask(IInferenceTask, IExportTask, IEvaluationTask, IU
 
         # Set default model attributes.
         self._optimization_methods = []
-        self._precision = [ModelPrecision.FP16] if self._config.get('fp16', None) else [ModelPrecision.FP32]
+        self._precision = self._precision_from_config
         self._optimization_type = ModelOptimizationType.MO
 
         # Create and initialize PyTorch model.
@@ -107,6 +107,10 @@ class OTEDetectionInferenceTask(IInferenceTask, IExportTask, IEvaluationTask, IU
         self._is_training = False
         self._should_stop = False
         logger.info('Task initialization completed')
+
+    @property
+    def _precision_from_config(self):
+        return [ModelPrecision.FP16] if self._config.get('fp16', None) else [ModelPrecision.FP32]
 
     @property
     def _hyperparams(self):
