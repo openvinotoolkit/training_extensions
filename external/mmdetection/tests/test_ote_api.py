@@ -521,7 +521,7 @@ class API(unittest.TestCase):
                 self.check_threshold(validation_performance, nncf_performance, nncf_perf_delta_tolerance,
                     'Too big performance difference after NNCF optimization.')
 
-                # Check whether optimize & export maintains model precision
+                # Check whether optimize & export assigns correct model precision
                 nncf_task.export(ExportType.OPENVINO, nncf_model)
 
                 if nncf_task._hyperparams.nncf_optimization.enable_quantization:
