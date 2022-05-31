@@ -14,7 +14,7 @@ from ote_sdk.entities.model_template import TaskType, task_type_to_label_domain
 from ote_sdk.usecases.exportable_code.prediction_to_annotation_converter import (
     create_converter,
 )
-from ote_sdk.usecases.exportable_code.visualizers import AnomalyVisualizer, Visualizer
+from ote_sdk.usecases.exportable_code.visualizers import Visualizer
 
 
 def get_model_path(path: Optional[Path]) -> Path:
@@ -55,12 +55,11 @@ def create_output_converter(task_type: TaskType, labels: LabelSchemaEntity):
     return create_converter(converter_type, labels)
 
 
-def create_visualizer(task_type: TaskType):
+def create_visualizer(_task_type: TaskType):
     """
     Create visualizer according to kind of task
     """
 
-    if task_type.is_anomaly:
-        return AnomalyVisualizer(window_name="Result")
+    # TODO: use anomaly-specific visualizer for anomaly tasks
 
     return Visualizer(window_name="Result")
