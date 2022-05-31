@@ -184,7 +184,7 @@ def create_task_annotations(task: str, data_path: str, annotation_path: str) -> 
     Raises:
         ValueError: When task is not classification, detection or segmentation.
     """
-    annotation_path = os.path.join(data_path, task)
+    annotation_path = os.path.join(annotation_path, task)
     os.makedirs(annotation_path, exist_ok=True)
 
     for split in ["train", "val", "test"]:
