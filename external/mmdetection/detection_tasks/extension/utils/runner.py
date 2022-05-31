@@ -11,11 +11,15 @@
 
 import time
 import warnings
+from typing import List, Sequence, Optional
 
 import mmcv
 import torch.distributed as dist
 from mmcv.runner.utils import get_host_info
 from mmcv.runner import RUNNERS, EpochBasedRunner, IterBasedRunner, IterLoader, get_dist_info
+from torch.utils.data.dataloader import DataLoader
+
+from ote_sdk.utils.argument_checks import check_input_parameters_type
 
 
 @RUNNERS.register_module()
@@ -46,7 +50,8 @@ class EpochRunnerWithCancel(EpochBasedRunner):
             self._max_epochs = self.epoch
         return broadcast_obj[0]
 
-    def train(self, data_loader, **kwargs):
+    @check_input_parameters_type()
+    def train(self, data_loader: DataLoader, **kwargs):
         self.model.train()
         self.mode = 'train'
         self.data_loader = data_loader
@@ -78,7 +83,8 @@ class IterBasedRunnerWithCancel(IterBasedRunner):
         super().__init__(*args, **kwargs)
         self.should_stop = False
 
-    def main_loop(self, workflow, iter_loaders, **kwargs):
+    @check_input_parameters_type()
+    def main_loop(self, workflow: List[tuple], iter_loaders: Sequence[IterLoader], **kwargs):
         while self.iter < self._max_iters:
             for i, flow in enumerate(workflow):
                 self._inner_iter = 0
@@ -95,7 +101,8 @@ class IterBasedRunnerWithCancel(IterBasedRunner):
                     if self.should_stop:
                         return
 
-    def run(self, data_loaders, workflow, max_iters=None, **kwargs):
+    @check_input_parameters_type()
+    def run(self, data_loaders: Sequence[DataLoader], workflow: List[tuple], max_iters: Optional[int] = None, **kwargs):
         assert isinstance(data_loaders, list)
         assert mmcv.is_list_of(workflow, tuple)
         assert len(data_loaders) == len(workflow)

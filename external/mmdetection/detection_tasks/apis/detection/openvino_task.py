@@ -48,6 +48,7 @@ from ote_sdk.usecases.evaluation.metrics_helper import MetricsHelper
 from ote_sdk.usecases.exportable_code.inference import BaseInferencer
 from ote_sdk.usecases.exportable_code.prediction_to_annotation_converter import (
     DetectionBoxToAnnotationConverter,
+    IPredictionToAnnotationConverter,
     MaskToAnnotationConverter,
     RotatedRectToAnnotationConverter,
 )
@@ -55,6 +56,11 @@ from ote_sdk.usecases.tasks.interfaces.deployment_interface import IDeploymentTa
 from ote_sdk.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
 from ote_sdk.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from ote_sdk.usecases.tasks.interfaces.optimization_interface import IOptimizationTask, OptimizationType
+from ote_sdk.utils.argument_checks import (
+    DatasetParamTypeCheck,
+    check_input_parameters_type,
+)
+from shutil import copyfile, copytree
 from typing import Any, Dict, List, Optional, Tuple, Union
 from zipfile import ZipFile
 
@@ -66,24 +72,29 @@ logger = get_root_logger()
 
 class BaseInferencerWithConverter(BaseInferencer):
 
-    def __init__(self, configuration, model, converter) -> None:
+    @check_input_parameters_type()
+    def __init__(self, configuration: dict, model: Model, converter: IPredictionToAnnotationConverter) -> None:
         self.configuration = configuration
         self.model = model
         self.converter = converter
 
+    @check_input_parameters_type()
     def pre_process(self, image: np.ndarray) -> Tuple[Dict[str, np.ndarray], Dict[str, Any]]:
         return self.model.preprocess(image)
 
+    @check_input_parameters_type()
     def post_process(self, prediction: Dict[str, np.ndarray], metadata: Dict[str, Any]) -> AnnotationSceneEntity:
         detections = self.model.postprocess(prediction, metadata)
 
         return self.converter.convert_to_annotation(detections, metadata)
 
+    @check_input_parameters_type()
     def forward(self, inputs: Dict[str, np.ndarray]) -> Dict[str, np.ndarray]:
         return self.model.infer_sync(inputs)
 
 
 class OpenVINODetectionInferencer(BaseInferencerWithConverter):
+    @check_input_parameters_type()
     def __init__(
         self,
         hparams: OTEDetectionConfig,
@@ -115,6 +126,7 @@ class OpenVINODetectionInferencer(BaseInferencerWithConverter):
 
 
 class OpenVINOMaskInferencer(BaseInferencerWithConverter):
+    @check_input_parameters_type()
     def __init__(
         self,
         hparams: OTEDetectionConfig,
@@ -149,6 +161,7 @@ class OpenVINOMaskInferencer(BaseInferencerWithConverter):
 
 
 class OpenVINORotatedRectInferencer(BaseInferencerWithConverter):
+    @check_input_parameters_type()
     def __init__(
         self,
         hparams: OTEDetectionConfig,
@@ -183,11 +196,13 @@ class OpenVINORotatedRectInferencer(BaseInferencerWithConverter):
 
 
 class OTEOpenVinoDataLoader(DataLoader):
+    @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def __init__(self, dataset: DatasetEntity, inferencer: BaseInferencer):
         self.dataset = dataset
         self.inferencer = inferencer
 
-    def __getitem__(self, index):
+    @check_input_parameters_type()
+    def __getitem__(self, index: int):
         image = self.dataset[index].numpy
         annotation = self.dataset[index].annotation_scene
         inputs, metadata = self.inferencer.pre_process(image)
@@ -199,6 +214,7 @@ class OTEOpenVinoDataLoader(DataLoader):
 
 
 class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IOptimizationTask):
+    @check_input_parameters_type()
     def __init__(self, task_environment: TaskEnvironment):
         logger.info('Loading OpenVINO OTEDetectionTask')
         self.task_environment = task_environment
@@ -230,6 +246,7 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
             return OpenVINORotatedRectInferencer(*args)
         raise RuntimeError(f"Unknown OpenVINO Inferencer TaskType: {self.task_type}")
 
+    @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def infer(self, dataset: DatasetEntity, inference_parameters: Optional[InferenceParameters] = None) -> DatasetEntity:
         logger.info('Start OpenVINO inference')
         update_progress_callback = default_progress_callback
@@ -243,6 +260,7 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
         logger.info('OpenVINO inference completed')
         return dataset
 
+    @check_input_parameters_type()
     def evaluate(self,
                  output_result_set: ResultSetEntity,
                  evaluation_metric: Optional[str] = None):
@@ -252,6 +270,7 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
         output_result_set.performance = MetricsHelper.compute_f_measure(output_result_set).get_performance()
         logger.info('OpenVINO metric evaluation completed')
 
+    @check_input_parameters_type()
     def deploy(self,
                output_model: ModelEntity) -> None:
         logger.info('Deploying the model')
@@ -279,11 +298,12 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
         output_model.exportable_code = zip_buffer.getvalue()
         logger.info('Deploying completed')
 
+    @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def optimize(self,
                  optimization_type: OptimizationType,
                  dataset: DatasetEntity,
                  output_model: ModelEntity,
-                 optimization_parameters: Optional[OptimizationParameters]):
+                 optimization_parameters: Optional[OptimizationParameters] = None):
         logger.info('Start POT optimization')
 
         if optimization_type is not OptimizationType.POT:

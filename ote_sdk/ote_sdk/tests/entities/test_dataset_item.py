@@ -254,12 +254,12 @@ class TestDatasetItemEntity:
         default_values_dataset_item = DatasetItemEntity(media, annotations_scene)
         assert default_values_dataset_item.media == media
         assert default_values_dataset_item.annotation_scene == annotations_scene
-        assert not default_values_dataset_item.metadata
+        assert not default_values_dataset_item.get_metadata()
         assert default_values_dataset_item.subset == Subset.NONE
         assert default_values_dataset_item.ignored_labels == set()
         # Checking attributes of DatasetItemEntity object initialized with specified optional parameters
         roi = DatasetItemParameters().roi()
-        metadata = DatasetItemParameters.metadata()
+        metadata = DatasetItemParameters.metadata
         subset = Subset.TESTING
         ignored_labels = set(DatasetItemParameters().labels())
         specified_values_dataset_item = DatasetItemEntity(
@@ -268,7 +268,7 @@ class TestDatasetItemEntity:
         assert specified_values_dataset_item.media == media
         assert specified_values_dataset_item.annotation_scene == annotations_scene
         assert specified_values_dataset_item.roi == roi
-        assert specified_values_dataset_item.metadata == metadata
+        assert specified_values_dataset_item.get_metadata() == metadata
         assert specified_values_dataset_item.subset == subset
         assert specified_values_dataset_item.ignored_labels == ignored_labels
 
@@ -923,7 +923,7 @@ class TestDatasetItemEntity:
             dataset_item.annotation_scene.shapes == copy_dataset.annotation_scene.shapes
         )
         assert dataset_item.roi == copy_dataset.roi
-        assert dataset_item.metadata == copy_dataset.metadata
+        assert dataset_item.get_metadata() == copy_dataset.get_metadata()
         assert dataset_item.subset == copy_dataset.subset
 
     @pytest.mark.priority_medium
@@ -946,7 +946,7 @@ class TestDatasetItemEntity:
         2. Check "metadata" attribute after "append_metadata_item" method with specified "model" parameter
         """
         dataset_item = DatasetItemParameters().dataset_item()
-        expected_metadata = list(dataset_item.metadata)
+        expected_metadata = dataset_item.get_metadata()
         # Checking metadata attribute returned after "append_metadata_item" method with non-specified "model" parameter
         data_to_append = TensorEntity(
             name="appended_metadata",
@@ -954,7 +954,7 @@ class TestDatasetItemEntity:
         )
         expected_metadata.append(MetadataItemEntity(data=data_to_append))
         dataset_item.append_metadata_item(data=data_to_append)
-        assert list(dataset_item.metadata) == expected_metadata
+        assert dataset_item.get_metadata() == expected_metadata
         # Checking metadata attribute returned after "append_metadata_item" method with specified "model" parameter
         metadata_item_with_model = self.metadata_item_with_model()
         data_to_append = metadata_item_with_model.data
@@ -964,7 +964,7 @@ class TestDatasetItemEntity:
         )
         expected_metadata.append(new_metadata_item_with_model)
         dataset_item.append_metadata_item(data_to_append, model_to_append)
-        assert list(dataset_item.metadata) == expected_metadata
+        assert dataset_item.get_metadata() == expected_metadata
 
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -992,7 +992,7 @@ class TestDatasetItemEntity:
         metadata_item_with_model = self.metadata_item_with_model()
         dataset_model = metadata_item_with_model.model
         dataset_item.append_metadata_item(metadata_item_with_model.data, dataset_model)
-        dataset_metadata = list(dataset_item.metadata)
+        dataset_metadata = dataset_item.get_metadata()
         # Checking "get_metadata_by_name_and_model" method for "model" parameter is "None"
         assert dataset_item.get_metadata_by_name_and_model("test_metadata", None) == [
             dataset_metadata[0]

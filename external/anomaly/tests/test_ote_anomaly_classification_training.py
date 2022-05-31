@@ -178,7 +178,8 @@ class AnomalyDetectionTestTrainingAction(OTETestTrainingAction):
         self.copy_hyperparams = deepcopy(self.task.task_environment.get_hyper_parameters())
 
         try:
-            self.task.train(self.dataset, self.output_model, TrainParameters)
+            # fix seed so that result is repeatable
+            self.task.train(self.dataset, self.output_model, TrainParameters, seed=42)
         except Exception as ex:
             raise RuntimeError("Training failed") from ex
 

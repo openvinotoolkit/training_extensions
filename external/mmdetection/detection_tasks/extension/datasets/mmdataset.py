@@ -13,12 +13,16 @@
 # and limitations under the License.
 
 from copy import deepcopy
-from typing import List
+from typing import Any, Dict, List, Sequence
 
 import numpy as np
 from ote_sdk.entities.dataset_item import DatasetItemEntity
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.label import Domain, LabelEntity
+from ote_sdk.utils.argument_checks import (
+    DatasetParamTypeCheck,
+    check_input_parameters_type,
+)
 from ote_sdk.utils.shape_factory import ShapeFactory
 
 from mmdet.core import PolygonMasks
@@ -27,6 +31,7 @@ from mmdet.datasets.custom import CustomDataset
 from mmdet.datasets.pipelines import Compose
 
 
+@check_input_parameters_type()
 def get_annotation_mmdet_format(
     dataset_item: DatasetItemEntity,
     labels: List[LabelEntity],
@@ -130,7 +135,15 @@ class OTEDataset(CustomDataset):
 
             return data_info
 
-    def __init__(self, ote_dataset: DatasetEntity, labels: List[LabelEntity], pipeline, domain, test_mode: bool = False):
+    @check_input_parameters_type({"ote_dataset": DatasetParamTypeCheck})
+    def __init__(
+            self,
+            ote_dataset: DatasetEntity,
+            labels: List[LabelEntity],
+            pipeline: Sequence[dict],
+            domain: Domain,
+            test_mode: bool = False,
+    ):
         self.ote_dataset = ote_dataset
         self.labels = labels
         self.CLASSES = list(label.name for label in labels)
@@ -171,6 +184,7 @@ class OTEDataset(CustomDataset):
     def _filter_imgs(self, min_size=32):
         raise NotImplementedError
 
+    @check_input_parameters_type()
     def prepare_train_img(self, idx: int) -> dict:
         """Get training data and annotations after pipeline.
 
@@ -181,6 +195,7 @@ class OTEDataset(CustomDataset):
         self.pre_pipeline(item)
         return self.pipeline(item)
 
+    @check_input_parameters_type()
     def prepare_test_img(self, idx: int) -> dict:
         """Get testing data after pipeline.
 
@@ -194,13 +209,15 @@ class OTEDataset(CustomDataset):
         return self.pipeline(item)
 
     @staticmethod
-    def pre_pipeline(results: dict):
+    @check_input_parameters_type()
+    def pre_pipeline(results: Dict[str, Any]):
         """Prepare results dict for pipeline. Add expected keys to the dict. """
         results['bbox_fields'] = []
         results['mask_fields'] = []
         results['seg_fields'] = []
 
-    def get_ann_info(self, idx):
+    @check_input_parameters_type()
+    def get_ann_info(self, idx: int):
         """
         This method is used for evaluation of predictions. The CustomDataset class implements a method
         CustomDataset.evaluate, which uses the class method get_ann_info to retrieve annotations.

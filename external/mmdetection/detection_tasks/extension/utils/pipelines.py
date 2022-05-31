@@ -14,7 +14,11 @@
 
 import copy
 
+from typing import Dict, Any, Optional
 import numpy as np
+
+from ote_sdk.entities.label import Domain
+from ote_sdk.utils.argument_checks import check_input_parameters_type
 
 from mmdet.datasets.builder import PIPELINES
 
@@ -34,10 +38,12 @@ class LoadImageFromOTEDataset:
     :param to_float32: optional bool, True to convert images to fp32. defaults to False
     """
 
+    @check_input_parameters_type()
     def __init__(self, to_float32: bool = False):
         self.to_float32 = to_float32
 
-    def __call__(self, results):
+    @check_input_parameters_type()
+    def __call__(self, results: Dict[str, Any]):
         dataset_item = results['dataset_item']
         img = dataset_item.numpy
         shape = img.shape
@@ -77,8 +83,9 @@ class LoadAnnotationFromOTEDataset:
 
     """
 
+    @check_input_parameters_type()
     def __init__(self, min_size : int, with_bbox: bool = True, with_label: bool = True, with_mask: bool = False, with_seg: bool = False,
-                 poly2mask: bool = True, with_text: bool = False, domain=None):
+                 poly2mask: bool = True, with_text: bool = False, domain: Optional[Domain] = None):
         self.with_bbox = with_bbox
         self.with_label = with_label
         self.with_mask = with_mask
@@ -105,7 +112,8 @@ class LoadAnnotationFromOTEDataset:
         results['gt_masks'] = copy.deepcopy(ann_info['masks'])
         return results
 
-    def __call__(self, results):
+    @check_input_parameters_type()
+    def __call__(self, results: Dict[str, Any]):
         dataset_item = results['dataset_item']
         label_list = results['ann_info']['label_list']
         ann_info = get_annotation_mmdet_format(dataset_item, label_list, self.domain, self.min_size)
