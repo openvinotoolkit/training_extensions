@@ -270,6 +270,9 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
                     pipeline_step.type = 'LoadAnnotationFromOTEDataset'
                     pipeline_step.domain = domain
                     pipeline_step.min_size = cfg.pop('min_size', -1)
+                if subset == 'train' and pipeline_step.type == 'Collect':
+                    if 'keys' in pipeline_step and 'ignored_labels' not in pipeline_step['keys']:
+                        pipeline_step['keys'].append('ignored_labels')
             patch_color_conversion(cfg.pipeline)
 
     @staticmethod

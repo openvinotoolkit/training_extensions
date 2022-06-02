@@ -104,6 +104,7 @@ class LoadAnnotationFromOTEDataset:
     @staticmethod
     def _load_labels(results, ann_info):
         results['gt_labels'] = copy.deepcopy(ann_info['labels'])
+        results['ignored_labels'] = copy.deepcopy(ann_info['ignored_labels'])
         return results
 
     @staticmethod

@@ -52,8 +52,13 @@ def get_annotation_mmdet_format(
     gt_bboxes = []
     gt_labels = []
     gt_polygons = []
+    ignored_labels = []
 
     label_idx = {label.id: i for i, label in enumerate(labels)}
+    ignored_idx = [label_idx[lbs.id] for lbs in dataset_item.ignored_labels]
+    ignored_mask = [1 for _ in labels]
+    for idx in ignored_idx:
+        ignored_mask[idx] = 0
 
     for annotation in dataset_item.get_annotations(labels=labels, include_empty=False):
 
@@ -62,11 +67,15 @@ def get_annotation_mmdet_format(
         if min(box.width * width, box.height * height) < min_size:
             continue
 
-        class_indices = [
-            label_idx[label.id]
-            for label in annotation.get_labels(include_empty=False)
-            if label.domain == domain
-        ]
+        class_indices = []
+        ignored_indices = []
+        for ote_lbl in annotation.get_labels(include_empty=False):
+            if ote_lbl.domain == domain:
+                if not ote_lbl in dataset_item.ignored_labels:
+                    class_indices.append(label_idx[ote_lbl.id])
+                else:
+                    class_indices.append(-1)
+            ignored_indices.append(ignored_mask)
 
         n = len(class_indices)
         gt_bboxes.extend([[box.x1 * width, box.y1 * height, box.x2 * width, box.y2 * height] for _ in range(n)])
@@ -75,18 +84,21 @@ def get_annotation_mmdet_format(
             polygon = np.array([p for point in polygon.points for p in [point.x * width, point.y * height]])
             gt_polygons.extend([[polygon] for _ in range(n)])
         gt_labels.extend(class_indices)
+        ignored_labels.extend(ignored_indices)
 
     if len(gt_bboxes) > 0:
         ann_info = dict(
             bboxes=np.array(gt_bboxes, dtype=np.float32).reshape(-1, 4),
             labels=np.array(gt_labels, dtype=int),
             masks=PolygonMasks(
-                gt_polygons, height=height, width=width) if gt_polygons else [])
+                gt_polygons, height=height, width=width) if gt_polygons else [],
+            ignored_labels=np.array(ignored_labels, dtype=int))
     else:
         ann_info = dict(
             bboxes=np.zeros((0, 4), dtype=np.float32),
             labels=np.array([], dtype=int),
-            masks=[])
+            masks=[],
+            ignored_labels=np.array([], dtype=int))
     return ann_info
 
 
