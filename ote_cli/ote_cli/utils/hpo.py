@@ -591,13 +591,6 @@ class HpoManager:
         for key, val in self.deleted_hp.items():
             best_config[key] = val
 
-        # finetune stage resumes hpo trial, so warmup isn't needed
-        if task_type == TaskType.DETECTION:
-            best_config["learning_parameters.learning_rate_warmup_iters"] = 0
-        if task_type == TaskType.SEGMENTATION:
-            best_config["learning_parameters.learning_rate_fixed_iters"] = 0
-            best_config["learning_parameters.learning_rate_warmup_iters"] = 0
-
         hyper_parameters = self.environment.get_hyper_parameters()
         HpoManager.set_hyperparameter(hyper_parameters, best_config)
 
@@ -606,6 +599,14 @@ class HpoManager:
         print("Best Hyper-parameters")
         print(best_config)
 
+        # finetune stage resumes hpo trial, so warmup isn't needed
+        if task_type == TaskType.DETECTION:
+            best_config["learning_parameters.learning_rate_warmup_iters"] = 0
+        elif task_type == TaskType.SEGMENTATION:
+            best_config["learning_parameters.learning_rate_fixed_iters"] = 0
+            best_config["learning_parameters.learning_rate_warmup_iters"] = 0
+
+        # get weight to pass for resume
         if task_type == TaskType.CLASSIFICATION:
             best_config_id = self.hpo.hpo_status["best_config_id"]
             hpo_weight_path = osp.realpath(
