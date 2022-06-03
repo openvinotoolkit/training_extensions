@@ -18,5 +18,6 @@ Callbacks for OTE inference
 
 from .inference import AnomalyInferenceCallback
 from .progress import ProgressCallback
+from .score_report import ScoreReportingCallback
 
-__all__ = ["AnomalyInferenceCallback", "ProgressCallback"]
+__all__ = ["AnomalyInferenceCallback", "ProgressCallback", "ScoreReportingCallback"]

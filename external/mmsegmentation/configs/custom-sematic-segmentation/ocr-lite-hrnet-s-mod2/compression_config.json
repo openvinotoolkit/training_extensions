@@ -35,10 +35,10 @@
                     "preset": "mixed",
                     "initializer": {
                         "range": {
-                            "num_init_samples": 500
+                            "num_init_samples": 5
                         },
                         "batchnorm_adaptation": {
-                            "num_bn_adaptation_samples": 500
+                            "num_bn_adaptation_samples": 5
                         }
                     },
                     "ignored_scopes": [
