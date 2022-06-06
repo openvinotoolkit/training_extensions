@@ -14,6 +14,7 @@
 
 import copy
 import io
+import math
 import os
 import shutil
 import tempfile
@@ -181,12 +182,11 @@ class OTEDetectionInferenceTask(IInferenceTask, IExportTask, IEvaluationTask, IU
                 for label_idx, detections in enumerate(all_results):
                     for i in range(detections.shape[0]):
                         probability = float(detections[i, 4])
+                        if math.isnan(probability) or probability < confidence_threshold:
+                            continue
                         coords = detections[i, :4].astype(float).copy()
                         coords /= np.array([width, height, width, height], dtype=float)
                         coords = np.clip(coords, 0, 1)
-
-                        if probability < confidence_threshold:
-                            continue
 
                         assigned_label = [ScoredLabel(self._labels[label_idx],
                                                       probability=probability)]
@@ -201,13 +201,13 @@ class OTEDetectionInferenceTask(IInferenceTask, IExportTask, IEvaluationTask, IU
                     for mask, probability in zip(masks, boxes[:, 4]):
                         mask = mask.astype(np.uint8)
                         probability = float(probability)
+                        if math.isnan(probability) or probability < confidence_threshold:
+                            continue
                         contours, hierarchies = cv2.findContours(mask, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
                         if hierarchies is None:
                             continue
                         for contour, hierarchy in zip(contours, hierarchies[0]):
-                            if hierarchy[3] != -1:
-                                continue
-                            if len(contour) <= 2 or probability < confidence_threshold:
+                            if hierarchy[3] != -1 or len(contour) <= 2:
                                 continue
                             if self._task_type == TaskType.INSTANCE_SEGMENTATION:
                                 points = [Point(x=point[0][0] / width, y=point[0][1] / height) for point in contour]
