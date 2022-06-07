@@ -62,13 +62,11 @@ def get_annotation_mmdet_format(
         if min(box.width * width, box.height * height) < min_size:
             continue
 
-        class_indices = []
-        for ote_lbl in annotation.get_labels(include_empty=False):
-            if ote_lbl.domain == domain:
-                if ote_lbl in dataset_item.ignored_labels:
-                    class_indices.append(-1)
-                else:
-                    class_indices.append(label_idx[ote_lbl.id])
+        class_indices = [
+            label_idx[label.id]
+            for label in annotation.get_labels(include_empty=False)
+            if label.domain == domain
+        ]
 
         n = len(class_indices)
         gt_bboxes.extend([[box.x1 * width, box.y1 * height, box.x2 * width, box.y2 * height] for _ in range(n)])
