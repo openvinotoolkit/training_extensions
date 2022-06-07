@@ -5,6 +5,7 @@
 """This module define the scored label entity."""
 
 import datetime
+import math
 
 from ote_sdk.entities.color import Color
 from ote_sdk.entities.id import ID
@@ -20,6 +21,8 @@ class ScoredLabel:
     """
 
     def __init__(self, label: LabelEntity, probability: float = 0.0):
+        if math.isnan(probability) or (not 0 <= probability <= 1.0) :
+            raise ValueError(f"Probability should be in range [0, 1], {probability} is given")
         self.label = label
         self.probability = probability
 
