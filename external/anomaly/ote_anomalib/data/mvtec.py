@@ -91,7 +91,7 @@ class OteMvtecDataset:
         self.task_type = task_type
 
         if self.task_type == TaskType.ANOMALY_CLASSIFICATION:
-            self.label_domain = Domain.ANOMALY_SEGMENTATION
+            self.label_domain = Domain.ANOMALY_CLASSIFICATION
         elif self.task_type == TaskType.ANOMALY_SEGMENTATION:
             self.label_domain = Domain.ANOMALY_SEGMENTATION
 
