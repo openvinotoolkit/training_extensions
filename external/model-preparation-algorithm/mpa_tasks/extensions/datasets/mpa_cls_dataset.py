@@ -16,11 +16,8 @@ logger = get_logger()
 
 @DATASETS.register_module()
 class MPAClsDataset(BaseDataset):
-
-    def __init__(self, old_new_indices=None, ote_dataset=None, multilabel=False, hierarhical=False, labels=None, **kwargs):
+    def __init__(self, old_new_indices=None, ote_dataset=None, labels=None, **kwargs):
         self.ote_dataset = ote_dataset
-        self.multilabel = multilabel
-        self.hierarhical = hierarhical  # TODO : support hierarhical dataset
         self.labels = labels
         self.CLASSES = list(label.name for label in labels)
         self.gt_labels = []
@@ -51,14 +48,7 @@ class MPAClsDataset(BaseDataset):
                 label = None
             else:
                 label = int(dataset_item.get_annotations()[0].get_labels()[0].id_)
-            if self.multilabel:
-                onehot_label = np.zeros(len(self.CLASSES))
-                onehot_label[label] = 1
-                self.gt_labels.append(onehot_label)
-            elif self.hierarhical:
-                pass  # TODO: implement hierarhical dataset load_annotations
-            else:
-                self.gt_labels.append(label)
+            self.gt_labels.append(label)
         self.gt_labels = np.array(self.gt_labels)
         
     def __getitem__(self, index):
@@ -94,7 +84,6 @@ class MPAClsDataset(BaseDataset):
                  metric='accuracy',
                  metric_options=None,
                  logger=None):
-        # TODO: change comments to include multilabel, hierarhical informations
         """Evaluate the dataset with new metric 'class_accuracy'
 
         Args:
@@ -110,68 +99,32 @@ class MPAClsDataset(BaseDataset):
         Returns:
             dict: evaluation results
         """
-        if self.multilabel:
-            if metric_options is None:
-                metric_options = {'thr': 0.5}
+        
+        if metric_options is None:
+            metric_options = {'topk': (1, 5) if self.num_classes >= 5 else (1, )}
 
-            if isinstance(metric, str):
-                metrics = [metric]
-            else:
-                metrics = metric
-            allowed_metrics = ['mAP', 'CP', 'CR', 'CF1', 'OP', 'OR', 'OF1']
-            eval_results = {}
+        if isinstance(metric, str):
+            metrics = [metric]
+        else:
+            metrics = metric
+
+        if 'class_accuracy' in metrics:
+            metrics.remove('class_accuracy')
+            self.class_acc = True
+
+        eval_results = super().evaluate(results, metrics, metric_options, logger)
+
+        # Add Evaluation Accuracy score per Class
+        if self.class_acc:
             results = np.vstack(results)
             gt_labels = self.get_gt_labels()
-            num_imgs = len(results)
-            assert len(gt_labels) == num_imgs, 'dataset testing results should '\
-                'be of the same length as gt_labels.'
+            accuracies = self._class_accuracy(results, gt_labels)
+            eval_results.update({f'{c} accuracy': a for c, a in zip(self.CLASSES, accuracies)})
+            eval_results.update({'mean accuracy': np.mean(accuracies)})
 
-            invalid_metrics = set(metrics) - set(allowed_metrics)
-            if len(invalid_metrics) != 0:
-                raise ValueError(f'metric {invalid_metrics} is not supported.')
+        return eval_results
 
-            if 'mAP' in metrics:
-                mAP_value = mAP(results, gt_labels)
-                eval_results['mAP'] = mAP_value
-            if len(set(metrics) - {'mAP'}) != 0:
-                performance_keys = ['CP', 'CR', 'CF1', 'OP', 'OR', 'OF1']
-                performance_values = average_performance(results, gt_labels,
-                                                        **metric_options)
-                for k, v in zip(performance_keys, performance_values):
-                    if k in metrics:
-                        eval_results[k] = v
-
-            return eval_results
-        
-        elif self.hierarhical:
-            pass  # TODO: implement hierarhical dataset evlauate
-        
-        else:
-            if metric_options is None:
-                metric_options = {'topk': (1, 5) if self.num_classes >= 5 else (1, )}
-
-            if isinstance(metric, str):
-                metrics = [metric]
-            else:
-                metrics = metric
-
-            if 'class_accuracy' in metrics:
-                metrics.remove('class_accuracy')
-                self.class_acc = True
-
-            eval_results = super().evaluate(results, metrics, metric_options, logger)
-
-            # Add Evaluation Accuracy score per Class
-            if self.class_acc:
-                results = np.vstack(results)
-                gt_labels = self.get_gt_labels()
-                accuracies = self.class_accuracy(results, gt_labels)
-                eval_results.update({f'{c} accuracy': a for c, a in zip(self.CLASSES, accuracies)})
-                eval_results.update({'mean accuracy': np.mean(accuracies)})
-
-            return eval_results
-
-    def class_accuracy(self, results, gt_labels):
+    def _class_accuracy(self, results, gt_labels):
         accracies = []
         pred_label = results.argsort(axis=1)[:, -1:][:, ::-1]
         for i in range(self.num_classes):
@@ -180,3 +133,71 @@ class MPAClsDataset(BaseDataset):
             cls_acc = np.sum(cls_pred) / len(cls_pred)
             accracies.append(cls_acc)
         return accracies
+
+
+@DATASETS.register_module()
+class MPAMultilabelClsDataset(MPAClsDataset):
+    
+    def load_annotations(self):
+        for dataset_item in self.ote_dataset:
+            if dataset_item.get_annotations() == []:
+                label = None
+            else:
+                label = int(dataset_item.get_annotations()[0].get_labels()[0].id_)
+                onehot_label = np.zeros(len(self.CLASSES))
+                onehot_label[label] = 1
+                self.gt_labels.append(onehot_label)
+        self.gt_labels = np.array(self.gt_labels)
+        
+    def evaluate(self,
+                 results,
+                 metric='mAP',
+                 metric_options=None,
+                 indices=None,
+                 logger=None):
+        """Evaluate the dataset.
+        Args:
+            results (list): Testing results of the dataset.
+            metric (str | list[str]): Metrics to be evaluated.
+                Default value is 'mAP'. Options are 'mAP', 'CP', 'CR', 'CF1',
+                'OP', 'OR' and 'OF1'.
+            metric_options (dict, optional): Options for calculating metrics.
+                Allowed keys are 'k' and 'thr'. Defaults to None
+            logger (logging.Logger | str, optional): Logger used for printing
+                related information during evaluation. Defaults to None.
+        Returns:
+            dict: evaluation results
+        """
+        if metric_options is None or metric_options == {}:
+            metric_options = {'thr': 0.5}
+
+        if isinstance(metric, str):
+            metrics = [metric]
+        else:
+            metrics = metric
+        allowed_metrics = ['mAP', 'CP', 'CR', 'CF1', 'OP', 'OR', 'OF1']
+        eval_results = {}
+        results = np.vstack(results)
+        gt_labels = self.get_gt_labels()
+        if indices is not None:
+            gt_labels = gt_labels[indices]
+        num_imgs = len(results)
+        assert len(gt_labels) == num_imgs, 'dataset testing results should '\
+            'be of the same length as gt_labels.'
+
+        invalid_metrics = set(metrics) - set(allowed_metrics)
+        if len(invalid_metrics) != 0:
+            raise ValueError(f'metric {invalid_metrics} is not supported.')
+
+        if 'mAP' in metrics:
+            mAP_value = mAP(results, gt_labels)
+            eval_results['mAP'] = mAP_value
+        if len(set(metrics) - {'mAP'}) != 0:
+            performance_keys = ['CP', 'CR', 'CF1', 'OP', 'OR', 'OF1']
+            performance_values = average_performance(results, gt_labels,
+                                                     **metric_options)
+            for k, v in zip(performance_keys, performance_values):
+                if k in metrics:
+                    eval_results[k] = v
+
+        return eval_results

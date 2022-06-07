@@ -69,7 +69,7 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         if not self._multilabel and len(task_environment.label_schema.get_groups(False)) > 1:
             self._hierarchical = True
             # self._multihead_class_info = get_multihead_class_info(task_environment.label_schema)
-
+            
     def infer(self,
               dataset: DatasetEntity,
               inference_parameters: Optional[InferenceParameters] = None
@@ -159,12 +159,7 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         elif train_type == TrainType.SelfSupervised:
             raise NotImplementedError(f'train type {train_type} is not implemented yet.')
         elif train_type == TrainType.Incremental:
-            if self._multilabel:
-                recipe = os.path.join(recipe_root, 'class_incr_multilabel.yaml')
-            elif self._hierarchical:
-                recipe = os.path.join(recipe_root, 'class_incr_hierarhical.yaml')  # TODO : support hierarhical
-            else:
-                recipe = os.path.join(recipe_root, 'class_incr.yaml')
+            recipe = os.path.join(recipe_root, 'class_incr.yaml')
         else:
             raise NotImplementedError(f'train type {train_type} is not implemented yet.')
 
@@ -175,13 +170,13 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
 
     def _init_model_cfg(self):
         base_dir = os.path.abspath(os.path.dirname(self.template_file_path))
-        cfg = MPAConfig.fromfile(os.path.join(base_dir, 'model.py'))
         if self._multilabel:
-            cfg.model.head.type = 'MultiLabelLinearClsHead'
-            cfg.model.head.loss.type = 'AsymmetricLoss'  # 이거 recipe.yaml에 model 정의되어있으면 묻힌다!
-            if cfg.model.head.loss.get('type', False) == 'CrossEntropyLoss':
-                cfg.model.head.loss.use_sigmoid = True
-        return cfg
+            model_cfg_path = os.path.join(base_dir, 'model_multilabel.py')
+        elif self._hierarchical:
+            model_cfg_path = os.path.join(base_dir, 'model_hierarchical.py')
+        else:
+            model_cfg_path = os.path.join(base_dir, 'model.py')
+        return MPAConfig.fromfile(model_cfg_path)
 
     def _init_test_data_cfg(self, dataset: DatasetEntity):
         data_cfg = ConfigDict(
@@ -218,11 +213,14 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
                 continue
             if cfg.type == 'RepeatDataset':
                 cfg = cfg.dataset
-            cfg.type = 'MPAClsDataset'
+            if self._multilabel:
+                cfg.type = 'MPAMultilabelClsDataset'
+            elif self._hierarchical:
+                raise NotImplementedError
+            else:
+                cfg.type = 'MPAClsDataset'
             cfg.domain = domain
             cfg.ote_dataset = None
-            cfg.multilabel = self._multilabel
-            cfg.hierarhical = self._hierarchical
             cfg.labels = None
             patch_color_conversion(cfg.pipeline)
 
