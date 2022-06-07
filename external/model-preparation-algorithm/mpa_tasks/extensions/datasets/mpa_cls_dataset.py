@@ -4,8 +4,8 @@
 
 import torch
 import numpy as np
-
 from mmcv.utils.registry import build_from_cfg
+from mmcls.core import average_performance, mAP
 from mmcls.datasets.builder import DATASETS, PIPELINES
 from mmcls.datasets.pipelines import Compose
 from mmcls.datasets.base_dataset import BaseDataset
@@ -17,8 +17,10 @@ logger = get_logger()
 @DATASETS.register_module()
 class MPAClsDataset(BaseDataset):
 
-    def __init__(self, old_new_indices=None, ote_dataset=None, labels=None, **kwargs):
+    def __init__(self, old_new_indices=None, ote_dataset=None, multilabel=False, hierarhical=False, labels=None, **kwargs):
         self.ote_dataset = ote_dataset
+        self.multilabel = multilabel
+        self.hierarhical = hierarhical  # TODO : support hierarhical dataset
         self.labels = labels
         self.CLASSES = list(label.name for label in labels)
         self.gt_labels = []
@@ -49,10 +51,16 @@ class MPAClsDataset(BaseDataset):
                 label = None
             else:
                 label = int(dataset_item.get_annotations()[0].get_labels()[0].id_)
-
-            self.gt_labels.append(label)
+            if self.multilabel:
+                onehot_label = np.zeros(len(self.CLASSES))
+                onehot_label[label] = 1
+                self.gt_labels.append(onehot_label)
+            elif self.hierarhical:
+                pass  # TODO: implement hierarhical dataset load_annotations
+            else:
+                self.gt_labels.append(label)
         self.gt_labels = np.array(self.gt_labels)
-
+        
     def __getitem__(self, index):
         dataset_item = self.ote_dataset[index]
 
@@ -63,7 +71,7 @@ class MPAClsDataset(BaseDataset):
         results['index'] = index
         results['dataset_item'] = dataset_item
         results['height'], results['width'], _ = dataset_item.numpy.shape
-        results['gt_label'] = None if self.gt_labels[index] is None else torch.tensor(self.gt_labels[index])
+        results['gt_label'] = None if len(self.gt_labels) == 0 else torch.tensor(self.gt_labels[index])
         results = self.pipeline(results)
 
         return results
@@ -80,11 +88,13 @@ class MPAClsDataset(BaseDataset):
     def __len__(self):
         return len(self.ote_dataset)
 
+    
     def evaluate(self,
                  results,
                  metric='accuracy',
                  metric_options=None,
                  logger=None):
+        # TODO: change comments to include multilabel, hierarhical informations
         """Evaluate the dataset with new metric 'class_accuracy'
 
         Args:
@@ -100,29 +110,66 @@ class MPAClsDataset(BaseDataset):
         Returns:
             dict: evaluation results
         """
-        if metric_options is None:
-            metric_options = {'topk': (1, 5) if self.num_classes >= 5 else (1, )}
+        if self.multilabel:
+            if metric_options is None:
+                metric_options = {'thr': 0.5}
 
-        if isinstance(metric, str):
-            metrics = [metric]
-        else:
-            metrics = metric
-
-        if 'class_accuracy' in metrics:
-            metrics.remove('class_accuracy')
-            self.class_acc = True
-
-        eval_results = super().evaluate(results, metrics, metric_options, logger)
-
-        # Add Evaluation Accuracy score per Class
-        if self.class_acc:
+            if isinstance(metric, str):
+                metrics = [metric]
+            else:
+                metrics = metric
+            allowed_metrics = ['mAP', 'CP', 'CR', 'CF1', 'OP', 'OR', 'OF1']
+            eval_results = {}
             results = np.vstack(results)
             gt_labels = self.get_gt_labels()
-            accuracies = self.class_accuracy(results, gt_labels)
-            eval_results.update({f'{c} accuracy': a for c, a in zip(self.CLASSES, accuracies)})
-            eval_results.update({'mean accuracy': np.mean(accuracies)})
+            num_imgs = len(results)
+            assert len(gt_labels) == num_imgs, 'dataset testing results should '\
+                'be of the same length as gt_labels.'
 
-        return eval_results
+            invalid_metrics = set(metrics) - set(allowed_metrics)
+            if len(invalid_metrics) != 0:
+                raise ValueError(f'metric {invalid_metrics} is not supported.')
+
+            if 'mAP' in metrics:
+                mAP_value = mAP(results, gt_labels)
+                eval_results['mAP'] = mAP_value
+            if len(set(metrics) - {'mAP'}) != 0:
+                performance_keys = ['CP', 'CR', 'CF1', 'OP', 'OR', 'OF1']
+                performance_values = average_performance(results, gt_labels,
+                                                        **metric_options)
+                for k, v in zip(performance_keys, performance_values):
+                    if k in metrics:
+                        eval_results[k] = v
+
+            return eval_results
+        
+        elif self.hierarhical:
+            pass  # TODO: implement hierarhical dataset evlauate
+        
+        else:
+            if metric_options is None:
+                metric_options = {'topk': (1, 5) if self.num_classes >= 5 else (1, )}
+
+            if isinstance(metric, str):
+                metrics = [metric]
+            else:
+                metrics = metric
+
+            if 'class_accuracy' in metrics:
+                metrics.remove('class_accuracy')
+                self.class_acc = True
+
+            eval_results = super().evaluate(results, metrics, metric_options, logger)
+
+            # Add Evaluation Accuracy score per Class
+            if self.class_acc:
+                results = np.vstack(results)
+                gt_labels = self.get_gt_labels()
+                accuracies = self.class_accuracy(results, gt_labels)
+                eval_results.update({f'{c} accuracy': a for c, a in zip(self.CLASSES, accuracies)})
+                eval_results.update({'mean accuracy': np.mean(accuracies)})
+
+            return eval_results
 
     def class_accuracy(self, results, gt_labels):
         accracies = []

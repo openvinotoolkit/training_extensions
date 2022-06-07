@@ -33,7 +33,7 @@ from ote_sdk.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from ote_sdk.usecases.tasks.interfaces.unload_interface import IUnload
 from ote_sdk.entities.model import (ModelFormat, ModelOptimizationType)
 from ote_sdk.serialization.label_mapper import label_schema_to_bytes
-
+from ote_sdk.utils.labels_utils import get_empty_label
 from ote_sdk.entities.scored_label import ScoredLabel
 from detection_tasks.apis.detection.ote_utils import TrainingProgressCallback
 from detection_tasks.extension.utils.hooks import OTELoggerHook
@@ -52,6 +52,23 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
     def __init__(self, task_environment: TaskEnvironment):
         self._should_stop = False
         super().__init__(TASK_CONFIG, task_environment)
+
+        self._task_environment = task_environment
+        if len(task_environment.get_labels(False)) == 1:
+            self._labels = task_environment.get_labels(include_empty=True)
+        else:
+            self._labels = task_environment.get_labels(include_empty=False)
+        self._empty_label = get_empty_label(task_environment.label_schema)
+        self._multilabel = len(task_environment.label_schema.get_groups(False)) > 1 and \
+                len(task_environment.label_schema.get_groups(False)) == \
+                len(task_environment.get_labels(include_empty=False))
+                
+        # TODO : support hierarhical labels
+        self._multihead_class_info = {}
+        self._hierarchical = False
+        if not self._multilabel and len(task_environment.label_schema.get_groups(False)) > 1:
+            self._hierarchical = True
+            # self._multihead_class_info = get_multihead_class_info(task_environment.label_schema)
 
     def infer(self,
               dataset: DatasetEntity,
@@ -136,23 +153,35 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         train_type = self._hyperparams.algo_backend.train_type
         logger.info(f'train type = {train_type}')
 
-        recipe = os.path.join(recipe_root, 'semisl.yaml')
+        recipe = os.path.join(recipe_root, 'class_incr.yaml')
         if train_type == TrainType.SemiSupervised:
-            recipe = os.path.join(recipe_root, 'semisl.yaml')
+            recipe = os.path.join(recipe_root, 'class_incr.yaml')
         elif train_type == TrainType.SelfSupervised:
             raise NotImplementedError(f'train type {train_type} is not implemented yet.')
         elif train_type == TrainType.Incremental:
-            recipe = os.path.join(recipe_root, 'class_incr.yaml')
+            if self._multilabel:
+                recipe = os.path.join(recipe_root, 'class_incr_multilabel.yaml')
+            elif self._hierarchical:
+                recipe = os.path.join(recipe_root, 'class_incr_hierarhical.yaml')  # TODO : support hierarhical
+            else:
+                recipe = os.path.join(recipe_root, 'class_incr.yaml')
         else:
             raise NotImplementedError(f'train type {train_type} is not implemented yet.')
 
         self._recipe_cfg = MPAConfig.fromfile(recipe)
         self._patch_datasets(self._recipe_cfg)  # for OTE compatibility
+        self._patch_evaluation(self._recipe_cfg)  # for OTE compatibility
         logger.info(f'initialized recipe = {recipe}')
 
     def _init_model_cfg(self):
         base_dir = os.path.abspath(os.path.dirname(self.template_file_path))
-        return MPAConfig.fromfile(os.path.join(base_dir, 'model.py'))
+        cfg = MPAConfig.fromfile(os.path.join(base_dir, 'model.py'))
+        if self._multilabel:
+            cfg.model.head.type = 'MultiLabelLinearClsHead'
+            cfg.model.head.loss.type = 'AsymmetricLoss'  # 이거 recipe.yaml에 model 정의되어있으면 묻힌다!
+            if cfg.model.head.loss.get('type', False) == 'CrossEntropyLoss':
+                cfg.model.head.loss.use_sigmoid = True
+        return cfg
 
     def _init_test_data_cfg(self, dataset: DatasetEntity):
         data_cfg = ConfigDict(
@@ -169,8 +198,7 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         )
         return data_cfg
 
-    @staticmethod
-    def _patch_datasets(config: MPAConfig, domain=Domain.CLASSIFICATION):
+    def _patch_datasets(self, config: MPAConfig, domain=Domain.CLASSIFICATION):
         def patch_color_conversion(pipeline):
             # Default data format for OTE is RGB, while mmdet uses BGR, so negate the color conversion flag.
             for pipeline_step in pipeline:
@@ -193,9 +221,19 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
             cfg.type = 'MPAClsDataset'
             cfg.domain = domain
             cfg.ote_dataset = None
+            cfg.multilabel = self._multilabel
+            cfg.hierarhical = self._hierarchical
             cfg.labels = None
             patch_color_conversion(cfg.pipeline)
 
+    def _patch_evaluation(self, config: MPAConfig):
+        cfg = config.evaluation
+        if self._multilabel:
+            cfg.metric = ['mAP', 'CP', 'OP', 'CR', 'OR', 'CF1', 'OF1']
+        elif self._hierarchical:
+            pass
+        else:
+            pass
 
 class ClassificationTrainTask(ClassificationInferenceTask):
     def save_model(self, output_model: ModelEntity):
@@ -305,7 +343,11 @@ class ClassificationTrainTask(ClassificationInferenceTask):
             :return output List[MetricsGroup]
             """
             output: List[MetricsGroup] = []
-            metric_key = 'val/accuracy_top-1'
+            
+            if self._multilabel or self._hierarchical:
+                metric_key = 'val/mAP'
+            else:
+                metric_key = 'val/accuracy_top-1'
 
             # Learning curves
             best_acc = -1
