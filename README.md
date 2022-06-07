@@ -9,6 +9,8 @@ Deep Learning models and convert them using the [OpenVINO™
 toolkit](https://software.intel.com/en-us/openvino-toolkit) for optimized
 inference.
 
+
+
 ## Prerequisites
 * Ubuntu 18.04 / 20.04
 * Python 3.8+
@@ -20,24 +22,22 @@ inference.
 * [OTE Algorithms](external)
 
 ## Quick start guide
-In order to get started with OpenVINO™ Training Extensions click [here](QUICK_START_GUIDE.md).
+In order to get started with OpenVINO™ Training Extensions see [the quick-start guide](QUICK_START_GUIDE.md).
+
+## GitHub Repository
+The project files can be found in [OpenVINO™ Training Extensions](https://github.com/openvinotoolkit/training_extensions).
+Previously developed models can be found on the [misc branch](https://github.com/openvinotoolkit/training_extensions/tree/misc).
 
 ## License
 Deep Learning Deployment Toolkit is licensed under [Apache License Version 2.0](LICENSE).
 By contributing to the project, you agree to the license and copyright terms therein
 and release your contribution under these terms.
 
-## Misc
-
-Models that were previously developed can be found on the [misc](https://github.com/openvinotoolkit/training_extensions/tree/misc) branch.
-
 ## Contributing
-
-Please read the [Contributing guide](CONTRIBUTING.md) before starting work on a pull request.
+Please read the [Contribution guide](CONTRIBUTING.md) before starting work on a pull request.
 
 ## Known limitations
-
-Currently, training, exporting, evaluation scripts for TensorFlow\*-based models and the most of PyTorch\*-based models from the [misc](#misc) branch are exploratory and are not validated.
+Training, export, and evaluation scripts for TensorFlow- and most PyTorch-based models from the [misc](#misc) branch are, currently, not production-ready. They serve exploratory purposes and are not validated.
 
 ---
 \* Other names and brands may be claimed as the property of others.
