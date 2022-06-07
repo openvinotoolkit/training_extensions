@@ -52,13 +52,8 @@ def get_annotation_mmdet_format(
     gt_bboxes = []
     gt_labels = []
     gt_polygons = []
-    ignored_labels = []
 
     label_idx = {label.id: i for i, label in enumerate(labels)}
-    ignored_idx = [label_idx[lbs.id] for lbs in dataset_item.ignored_labels]
-    ignored_mask = [1 for _ in labels]
-    for idx in ignored_idx:
-        ignored_mask[idx] = 0
 
     for annotation in dataset_item.get_annotations(labels=labels, include_empty=False):
 
@@ -68,14 +63,12 @@ def get_annotation_mmdet_format(
             continue
 
         class_indices = []
-        ignored_indices = []
         for ote_lbl in annotation.get_labels(include_empty=False):
             if ote_lbl.domain == domain:
-                if not ote_lbl in dataset_item.ignored_labels:
-                    class_indices.append(label_idx[ote_lbl.id])
-                else:
+                if ote_lbl in dataset_item.ignored_labels:
                     class_indices.append(-1)
-            ignored_indices.append(ignored_mask)
+                else:
+                    class_indices.append(label_idx[ote_lbl.id])
 
         n = len(class_indices)
         gt_bboxes.extend([[box.x1 * width, box.y1 * height, box.x2 * width, box.y2 * height] for _ in range(n)])
@@ -84,21 +77,18 @@ def get_annotation_mmdet_format(
             polygon = np.array([p for point in polygon.points for p in [point.x * width, point.y * height]])
             gt_polygons.extend([[polygon] for _ in range(n)])
         gt_labels.extend(class_indices)
-        ignored_labels.extend(ignored_indices)
 
     if len(gt_bboxes) > 0:
         ann_info = dict(
             bboxes=np.array(gt_bboxes, dtype=np.float32).reshape(-1, 4),
             labels=np.array(gt_labels, dtype=int),
             masks=PolygonMasks(
-                gt_polygons, height=height, width=width) if gt_polygons else [],
-            ignored_labels=np.array(ignored_labels, dtype=int))
+                gt_polygons, height=height, width=width) if gt_polygons else [])
     else:
         ann_info = dict(
             bboxes=np.zeros((0, 4), dtype=np.float32),
             labels=np.array([], dtype=int),
-            masks=[],
-            ignored_labels=np.array([], dtype=int))
+            masks=[])
     return ann_info
 
 
@@ -133,17 +123,19 @@ class OTEDataset(CustomDataset):
         def __getitem__(self, index):
             """
             Prepare a dict 'data_info' that is expected by the mmdet pipeline to handle images and annotations
-            :return data_info: dictionary that contains the image and image metadata, as well as the labels of the objects
-                in the image
+            :return data_info: dictionary that contains the image and image metadata, as well as the labels of
+            the objects in the image
             """
 
             dataset = self.ote_dataset
             item = dataset[index]
+            label_idx = {label.id: i for i, label in enumerate(self.labels)}
+            ignored_labels = np.array([label_idx[lbs.id] for lbs in item.ignored_labels])
 
             height, width = item.height, item.width
 
             data_info = dict(dataset_item=item, width=width, height=height, index=index,
-                             ann_info=dict(label_list=self.labels))
+                             ann_info=dict(label_list=self.labels), ignored_labels=ignored_labels)
 
             return data_info
 
@@ -240,4 +232,3 @@ class OTEDataset(CustomDataset):
         dataset_item = self.ote_dataset[idx]
         labels = self.labels
         return get_annotation_mmdet_format(dataset_item, labels, self.domain)
-
