@@ -104,8 +104,8 @@ class OTESegmentationTrainingTask(OTESegmentationInferenceTask, ITrainingTask):
 
         # Add loss curves
         training_metrics = self._generate_training_metrics_group(learning_curves)
-        performance = Performance(score=ScoreMetric(value=0, name="None"),
-                                  dashboard_metrics=training_metrics)
+        performance = Performance(score=ScoreMetric(value=max(learning_curves['val/mDice'].y), name="mDice"),dashboard_metrics=training_metrics)
+        # performance = Performance(score=ScoreMetric(value=0, name="None"),dashboard_metrics=training_metrics)
 
         self.save_model(output_model)
         output_model.performance = performance
