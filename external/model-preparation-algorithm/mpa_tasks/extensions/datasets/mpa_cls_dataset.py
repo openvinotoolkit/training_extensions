@@ -118,13 +118,13 @@ class MPAClsDataset(BaseDataset):
         if self.class_acc:
             results = np.vstack(results)
             gt_labels = self.get_gt_labels()
-            accuracies = self._class_accuracy(results, gt_labels)
+            accuracies = self.__class_accuracy(results, gt_labels)
             eval_results.update({f'{c} accuracy': a for c, a in zip(self.CLASSES, accuracies)})
             eval_results.update({'mean accuracy': np.mean(accuracies)})
 
         return eval_results
 
-    def _class_accuracy(self, results, gt_labels):
+    def __class_accuracy(self, results, gt_labels):
         accracies = []
         pred_label = results.argsort(axis=1)[:, -1:][:, ::-1]
         for i in range(self.num_classes):
@@ -137,7 +137,6 @@ class MPAClsDataset(BaseDataset):
 
 @DATASETS.register_module()
 class MPAMultilabelClsDataset(MPAClsDataset):
-    
     def load_annotations(self):
         for dataset_item in self.ote_dataset:
             if dataset_item.get_annotations() == []:

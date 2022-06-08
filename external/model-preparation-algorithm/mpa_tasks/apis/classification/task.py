@@ -98,7 +98,7 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
                  output_result_set: ResultSetEntity,
                  evaluation_metric: Optional[str] = None):
         logger.info('called evaluate()')
-        metric = MetricsHelper.compute_accuracy(output_result_set)  # But this line shows proper accuracy
+        metric = MetricsHelper.compute_accuracy(output_result_set)
         logger.info(f"Accuracy after evaluation: {metric.accuracy.value}")
         output_result_set.performance = metric.get_performance()
         logger.info('Evaluation completed')
@@ -173,7 +173,8 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         if self._multilabel:
             model_cfg_path = os.path.join(base_dir, 'model_multilabel.py')
         elif self._hierarchical:
-            model_cfg_path = os.path.join(base_dir, 'model_hierarchical.py')
+            # model_cfg_path = os.path.join(base_dir, 'model_hierarchical.py')
+            raise NotImplementedError('Hierarchical classification is not yet supported!')
         else:
             model_cfg_path = os.path.join(base_dir, 'model.py')
         return MPAConfig.fromfile(model_cfg_path)
@@ -216,7 +217,8 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
             if self._multilabel:
                 cfg.type = 'MPAMultilabelClsDataset'
             elif self._hierarchical:
-                raise NotImplementedError
+                # cfg.type = 'MPAHierarchicalClsDataset'
+                raise NotImplementedError('Hierarchical classification is not yet supported!')
             else:
                 cfg.type = 'MPAClsDataset'
             cfg.domain = domain
@@ -229,9 +231,10 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         if self._multilabel:
             cfg.metric = ['mAP', 'CP', 'OP', 'CR', 'OR', 'CF1', 'OF1']
         elif self._hierarchical:
-            pass
+            # cfg.metric = ['mAP', 'CP', 'OP', 'CR', 'OR', 'CF1', 'OF1']
+            raise NotImplementedError('Hierarchical classification is not yet supported!')
         else:
-            pass
+            cfg.metric = ['accuracy', 'class_accuracy']
 
 class ClassificationTrainTask(ClassificationInferenceTask):
     def save_model(self, output_model: ModelEntity):
