@@ -50,7 +50,7 @@ class MPAClsDataset(BaseDataset):
                 label = int(dataset_item.get_annotations()[0].get_labels()[0].id_)
             self.gt_labels.append(label)
         self.gt_labels = np.array(self.gt_labels)
-        
+
     def __getitem__(self, index):
         dataset_item = self.ote_dataset[index]
 
@@ -78,7 +78,6 @@ class MPAClsDataset(BaseDataset):
     def __len__(self):
         return len(self.ote_dataset)
 
-    
     def evaluate(self,
                  results,
                  metric='accuracy',
@@ -99,7 +98,7 @@ class MPAClsDataset(BaseDataset):
         Returns:
             dict: evaluation results
         """
-        
+
         if metric_options is None:
             metric_options = {'topk': (1, 5) if self.num_classes >= 5 else (1, )}
 
@@ -147,7 +146,7 @@ class MPAMultilabelClsDataset(MPAClsDataset):
                 onehot_label[label] = 1
                 self.gt_labels.append(onehot_label)
         self.gt_labels = np.array(self.gt_labels)
-        
+
     def evaluate(self,
                  results,
                  metric='mAP',

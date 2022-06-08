@@ -60,16 +60,16 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
             self._labels = task_environment.get_labels(include_empty=False)
         self._empty_label = get_empty_label(task_environment.label_schema)
         self._multilabel = len(task_environment.label_schema.get_groups(False)) > 1 and \
-                len(task_environment.label_schema.get_groups(False)) == \
-                len(task_environment.get_labels(include_empty=False))
-                
+                           len(task_environment.label_schema.get_groups(False)) == \
+                           len(task_environment.get_labels(include_empty=False))
+
         # TODO : support hierarhical labels
         self._multihead_class_info = {}
         self._hierarchical = False
         if not self._multilabel and len(task_environment.label_schema.get_groups(False)) > 1:
             self._hierarchical = True
             # self._multihead_class_info = get_multihead_class_info(task_environment.label_schema)
-            
+
     def infer(self,
               dataset: DatasetEntity,
               inference_parameters: Optional[InferenceParameters] = None
@@ -236,6 +236,7 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         else:
             cfg.metric = ['accuracy', 'class_accuracy']
 
+
 class ClassificationTrainTask(ClassificationInferenceTask):
     def save_model(self, output_model: ModelEntity):
         logger.info('called save_model')
@@ -270,7 +271,7 @@ class ClassificationTrainTask(ClassificationInferenceTask):
               output_model: ModelEntity,
               train_parameters: Optional[TrainParameters] = None):
         logger.info('train()')
-        # Check for stop signal between pre-eval and training. 
+        # Check for stop signal between pre-eval and training.
         # If training is cancelled at this point,
         if self._should_stop:
             logger.info('Training cancelled.')
@@ -290,7 +291,7 @@ class ClassificationTrainTask(ClassificationInferenceTask):
         self._is_training = True
         results = self._run_task(stage_module, mode='train', dataset=dataset, parameters=train_parameters)
 
-        # Check for stop signal between pre-eval and training. 
+        # Check for stop signal between pre-eval and training.
         # If training is cancelled at this point,
         if self._should_stop:
             logger.info('Training cancelled.')
@@ -339,28 +340,28 @@ class ClassificationTrainTask(ClassificationInferenceTask):
         return data_cfg
 
     def _generate_training_metrics_group(self, learning_curves) -> Optional[List[MetricsGroup]]:
-            """
-            Parses the classification logs to get metrics from the latest training run
-            :return output List[MetricsGroup]
-            """
-            output: List[MetricsGroup] = []
-            
-            if self._multilabel or self._hierarchical:
-                metric_key = 'val/mAP'
-            else:
-                metric_key = 'val/accuracy_top-1'
+        """
+        Parses the classification logs to get metrics from the latest training run
+        :return output List[MetricsGroup]
+        """
+        output: List[MetricsGroup] = []
 
-            # Learning curves
-            best_acc = -1
-            if learning_curves is None:
-                return output
+        if self._multilabel or self._hierarchical:
+            metric_key = 'val/mAP'
+        else:
+            metric_key = 'val/accuracy_top-1'
 
-            for key, curve in learning_curves.items():
-                metric_curve = CurveMetric(xs=curve.x,
-                                            ys=curve.y, name=key)
-                if key == metric_key:
-                    best_acc = max(curve.y)
-                visualization_info = LineChartInfo(name=key, x_axis_label="Timestamp", y_axis_label=key)
-                output.append(LineMetricsGroup(metrics=[metric_curve], visualization_info=visualization_info))
+        # Learning curves
+        best_acc = -1
+        if learning_curves is None:
+            return output
 
-            return output, best_acc
+        for key, curve in learning_curves.items():
+            metric_curve = CurveMetric(xs=curve.x,
+                                       ys=curve.y, name=key)
+            if key == metric_key:
+                best_acc = max(curve.y)
+            visualization_info = LineChartInfo(name=key, x_axis_label="Timestamp", y_axis_label=key)
+            output.append(LineMetricsGroup(metrics=[metric_curve], visualization_info=visualization_info))
+
+        return output, best_acc
