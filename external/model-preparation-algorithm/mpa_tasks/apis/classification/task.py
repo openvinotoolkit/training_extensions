@@ -33,7 +33,6 @@ from ote_sdk.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from ote_sdk.usecases.tasks.interfaces.unload_interface import IUnload
 from ote_sdk.entities.model import (ModelFormat, ModelOptimizationType)
 from ote_sdk.serialization.label_mapper import label_schema_to_bytes
-from ote_sdk.utils.labels_utils import get_empty_label
 from ote_sdk.entities.scored_label import ScoredLabel
 from detection_tasks.apis.detection.ote_utils import TrainingProgressCallback
 from detection_tasks.extension.utils.hooks import OTELoggerHook
@@ -58,7 +57,6 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
             self._labels = task_environment.get_labels(include_empty=True)
         else:
             self._labels = task_environment.get_labels(include_empty=False)
-        self._empty_label = get_empty_label(task_environment.label_schema)
         self._multilabel = len(task_environment.label_schema.get_groups(False)) > 1 and \
                            len(task_environment.label_schema.get_groups(False)) == \
                            len(task_environment.get_labels(include_empty=False))
