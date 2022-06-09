@@ -95,15 +95,18 @@ class OTEDataset(CustomDataset):
             :return data_info: dictionary that contains the image and image metadata, as well as the labels of
             the objects in the image
             """
-
             dataset = self.ote_dataset
             item = dataset[index]
+
+            label_idx = {label.id: i for i, label in enumerate(self.labels)}
+            ignored_labels = np.array([label_idx[lbs.id] + 1 for lbs in item.ignored_labels])
 
             data_info = dict(dataset_item=item,
                              width=item.width,
                              height=item.height,
                              index=index,
-                             ann_info=dict(labels=self.labels))
+                             ann_info=dict(labels=self.labels),
+                             ignored_labels=ignored_labels)
 
             return data_info
 

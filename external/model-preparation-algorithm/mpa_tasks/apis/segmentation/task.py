@@ -277,6 +277,17 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
                 elif pipeline_step.type == 'LoadAnnotations':
                     pipeline_step.type = 'LoadAnnotationFromOTEDataset'
                     pipeline_step.domain = domain
+                if subset == 'train' and pipeline_step.type == 'Collect':
+                    if pipeline_step.get('meta_keys', False):
+                        meta_keys = list(pipeline_step['meta_keys'])
+                        meta_keys.append('ignored_labels')
+                    else:
+                        meta_keys = (
+                            'filename', 'ori_filename', 'ori_shape',
+                            'img_shape', 'pad_shape', 'scale_factor', 'flip',
+                            'flip_direction', 'img_norm_cfg', 'ignored_labels'
+                        )
+                    pipeline_step['meta_keys'] = set(meta_keys)
             patch_color_conversion(cfg.pipeline)
 
     @staticmethod
