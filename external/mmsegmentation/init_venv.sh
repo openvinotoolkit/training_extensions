@@ -129,6 +129,9 @@ pip install -e ../model-preparation-algorithm || exit 1
 echo "Build NNCF extensions ..."
 python -c "import nncf"
 
+# Ensure numpy vesion
+pip install numpy==1.21.4
+
 deactivate
 
 echo

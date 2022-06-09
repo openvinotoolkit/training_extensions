@@ -143,7 +143,7 @@ echo "Build NNCF extensions ..."
 python -c "import nncf"
 
 # Ensure numpy vesion
-pip install numpy==1.21.1
+pip install numpy==1.21.4
 
 deactivate
 
