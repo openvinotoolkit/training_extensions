@@ -75,7 +75,7 @@ def load_test_dataset(data_type):
             if type == 'new' and subset == Subset.TRAINING:
                 ignored_labels = [
                     LabelEntity(name='rect', domain=Domain.SEGMENTATION, id=2)
-            ]
+                ]
         else:
             image, gt = gen_rect_image((640, 480))
 
