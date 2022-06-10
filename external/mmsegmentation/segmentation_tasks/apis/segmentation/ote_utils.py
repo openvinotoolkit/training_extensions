@@ -69,6 +69,13 @@ class TrainingProgressCallback(TimeMonitorCallback):
         if hasattr(self.update_progress_callback, 'metric') and isinstance(logs, dict):
             score = logs.get(self.update_progress_callback.metric, None)
             score = float(score) if score is not None else None
+            if score is not None:
+                iter_num = logs.get('current_iters', None)
+                if iter_num is not None:
+                    print(f'score = {score} at epoch {epoch} / {int(iter_num)}')
+                    # as a trick, score (at least if it's accuracy not the loss) and iteration number
+                    # could be assembled just using summation and then disassembeled.
+                    score = score + int(iter_num)
         self.update_progress_callback(self.get_progress(), score=score)
 
 
