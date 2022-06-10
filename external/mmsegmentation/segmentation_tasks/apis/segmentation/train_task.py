@@ -103,9 +103,9 @@ class OTESegmentationTrainingTask(OTESegmentationInferenceTask, ITrainingTask):
         self._model.load_state_dict(best_checkpoint['state_dict'])
 
         # Add loss curves
-        training_metrics = self._generate_training_metrics_group(learning_curves)
-        performance = Performance(score=ScoreMetric(value=max(learning_curves['val/mDice'].y), name="mDice"),dashboard_metrics=training_metrics)
-        # performance = Performance(score=ScoreMetric(value=0, name="None"),dashboard_metrics=training_metrics)
+        training_metrics, best_acc = self._generate_training_metrics_group(learning_curves)
+        performance = Performance(score=ScoreMetric(value=best_acc, name="mDice"),
+                                  dashboard_metrics=training_metrics)
 
         self.save_model(output_model)
         output_model.performance = performance
@@ -159,6 +159,7 @@ class OTESegmentationTrainingTask(OTESegmentationInferenceTask, ITrainingTask):
         :return output List[MetricsGroup]
         """
         output: List[MetricsGroup] = []
+        metric_key = 'val/mDice'
 
         # Model architecture
         architecture = InfoMetric(name='Model architecture', value=self._model_name)
@@ -169,8 +170,10 @@ class OTESegmentationTrainingTask(OTESegmentationInferenceTask, ITrainingTask):
 
         # Learning curves
         for key, curve in learning_curves.items():
+            if key == metric_key:
+                best_acc = max(curve.y)
             metric_curve = CurveMetric(xs=curve.x, ys=curve.y, name=key)
             visualization_info = LineChartInfo(name=key, x_axis_label="Epoch", y_axis_label=key)
             output.append(MetricsGroup(metrics=[metric_curve], visualization_info=visualization_info))
 
-        return output
+        return output, best_acc
