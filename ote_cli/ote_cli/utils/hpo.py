@@ -16,13 +16,12 @@ import shutil
 import subprocess  # nosec
 import sys
 import time
+from enum import Enum
+from inspect import isclass
+from math import ceil
 from os import path as osp
 from pathlib import Path
 from typing import Optional
-from math import ceil
-from inspect import isclass
-from enum import Enum
-
 
 import torch
 import yaml
@@ -35,7 +34,7 @@ from ote_sdk.entities.train_parameters import TrainParameters, UpdateProgressCal
 
 from ote_cli.datasets import get_dataset_class
 from ote_cli.utils.importing import get_impl_class
-from ote_cli.utils.io import generate_label_schema, save_model_data, read_model
+from ote_cli.utils.io import generate_label_schema, read_model, save_model_data
 
 try:
     import hpopt
@@ -63,7 +62,7 @@ def run_hpo(args, environment, dataset, task_type):
                 "Currently supported task types are classification and detection."
                 f"{task_type} is not supported yet."
             )
-            return
+            return None
 
         dataset_paths = {
             "train_ann_file": args.train_ann_files,
@@ -83,11 +82,11 @@ def run_hpo(args, environment, dataset, task_type):
         environment.set_hyper_parameters(hyper_parameters)
 
         task_class = get_impl_class(environment.model_template.entrypoints.base)
-        task_class = get_HPO_train_task(task_class, task_type)
+        task_class = get_train_wrapper_task(task_class, task_type)
 
         task = task_class(task_environment=environment)
 
-        task.resume(hpo_weight_path) # prepare finetune stage to resume
+        task.resume(hpo_weight_path)  # prepare finetune stage to resume
 
         if args.load_weights:
             environment.model.configuration.configurable_parameters = hyper_parameters
@@ -191,7 +190,7 @@ def run_hpo_trainer(
     train_env.model = read_model(
         train_env.get_model_configuration(),
         osp.join(osp.dirname(hp_config["file_path"]), "weights.pth"),
-        None
+        None,
     )
 
     train_env.model_template.hpo = {
@@ -200,7 +199,7 @@ def run_hpo_trainer(
     }
 
     task_class = get_impl_class(train_env.model_template.entrypoints.base)
-    hpo_impl_class = get_HPO_train_task(task_class, task_type)
+    hpo_impl_class = get_train_wrapper_task(task_class, task_type)
     task = hpo_impl_class(task_environment=train_env)
     task.prepare_hpo(hp_config)
 
@@ -243,7 +242,9 @@ def exec_hpo_trainer(arg_file_name, alloc_gpus):
     time.sleep(10)
 
 
-def get_HPO_train_task(impl_class, task_type):
+def get_train_wrapper_task(impl_class, task_type):
+    """get task wrapper for the HPO with given task type"""
+
     class HpoTrainTask(impl_class):
         def __init__(self, task_environment):
             super().__init__(task_environment)
@@ -261,18 +262,17 @@ def get_HPO_train_task(impl_class, task_type):
         def prepare_hpo(self, hp_config):
             if self._task_type == TaskType.CLASSIFICATION:
                 self._scratch_space = osp.join(
-                    osp.dirname(hp_config["file_path"]),
-                    str(hp_config["trial_id"])
+                    osp.dirname(hp_config["file_path"]), str(hp_config["trial_id"])
                 )
                 self._cfg.data.save_dir = self._scratch_space
                 self._cfg.model.save_all_chkpts = True
             elif self._task_type in [TaskType.DETECTION, TaskType.SEGMENTATION]:
                 self._config.work_dir = osp.join(
-                    osp.dirname(hp_config["file_path"]),
-                    str(hp_config["trial_id"])
+                    osp.dirname(hp_config["file_path"]), str(hp_config["trial_id"])
                 )
-                self._config.checkpoint_config["max_keep_ckpts"] = \
+                self._config.checkpoint_config["max_keep_ckpts"] = (
                     hp_config["iterations"] + 10
+                )
                 self._config.checkpoint_config["interval"] = 1
 
     return HpoTrainTask
@@ -297,6 +297,7 @@ def _convert_parameter_group_to_dict(parameter_group):
 
     return ret
 
+
 def _set_dict_to_parameter_group(origin_hp, hp_config):
     """
     Set given hyper parameter to hyper parameter in environment
@@ -307,6 +308,7 @@ def _set_dict_to_parameter_group(origin_hp, hp_config):
             setattr(origin_hp, key, val)
         else:
             _set_dict_to_parameter_group(getattr(origin_hp, key), val)
+
 
 class HpoCallback(UpdateProgressCallback):
     """Callback class to report score to hpopt"""
@@ -319,7 +321,17 @@ class HpoCallback(UpdateProgressCallback):
 
     def __call__(self, progress: float, score: Optional[float] = None):
         if score is not None:
-            if hpopt.report(config=self.hp_config, score=score) == hpopt.Status.STOP:
+            current_iters = -1
+            if score > 1.0:
+                current_iters = int(score)
+                score = float(score - current_iters)
+            print(f"[DEBUG-HPO] score = {score} at iteration {current_iters}")
+            if (
+                hpopt.report(
+                    config=self.hp_config, score=score, current_iters=current_iters
+                )
+                == hpopt.Status.STOP
+            ):
                 self.hpo_task.cancel_training()
 
 
@@ -371,24 +383,26 @@ class HpoManager:
         val_dataset_size = len(dataset.get_subset(Subset.VALIDATION))
 
         # make batch size range lower than train set size
-        batch_size_name="learning_parameters.batch_size"
-        if batch_size_name in hpopt_cfg['hp_space']:
-            batch_range = hpopt_cfg['hp_space'][batch_size_name]['range']
+        batch_size_name = "learning_parameters.batch_size"
+        if batch_size_name in hpopt_cfg["hp_space"]:
+            batch_range = hpopt_cfg["hp_space"][batch_size_name]["range"]
             if batch_range[1] > train_dataset_size:
                 batch_range[1] = train_dataset_size
 
             # If trainset size is lower than min batch size range,
             # fix batch size to trainset size
             if batch_range[0] > batch_range[1]:
-                print("Train set size is lower than batch size range."
-                       "Batch size is fixed to train set size.")
+                print(
+                    "Train set size is lower than batch size range."
+                    "Batch size is fixed to train set size."
+                )
                 del hpopt_cfg["hp_space"][batch_size_name]
                 self.deleted_hp[batch_size_name] = train_dataset_size
 
         # prepare default hyper parameters
         default_hyper_parameters = {}
         env_hp = self.environment.get_hyper_parameters()
-        for key in hpopt_cfg['hp_space'].keys():
+        for key in hpopt_cfg["hp_space"].keys():
             splited_key = key.split(".")
             target = env_hp
             for val in splited_key:
@@ -414,7 +428,7 @@ class HpoManager:
             batch_size_name=batch_size_name,
             default_hyper_parameters=default_hyper_parameters,
             metric=self.metric,
-            mode=hpopt_cfg.get("mode", "max")
+            mode=hpopt_cfg.get("mode", "max"),
         )
 
         if self.algo == "smbo":
@@ -434,15 +448,19 @@ class HpoManager:
             if "min_iterations" not in hpopt_cfg and bs is not None:
                 task_type = self.environment.model_template.task_type
                 if task_type == TaskType.CLASSIFICATION:
-                    with open(osp.join(osp.dirname(
-                        self.environment.model_template.model_template_path
-                    ), "main_model.yaml"), "r") as f:
+                    with open(
+                        osp.join(
+                            osp.dirname(
+                                self.environment.model_template.model_template_path
+                            ),
+                            "main_model.yaml",
+                        ),
+                        "r",
+                    ) as f:
                         model_yaml = yaml.safe_load(f)
                     if "warmup" in model_yaml["train"]:
                         hpopt_arguments["min_iterations"] = ceil(
-                            model_yaml["train"]["warmup"]
-                            * bs
-                            / train_dataset_size
+                            model_yaml["train"]["warmup"] * bs / train_dataset_size
                         )
                 elif task_type in [TaskType.DETECTION, TaskType.SEGMENTATION]:
                     hpopt_arguments["min_iterations"] = ceil(
@@ -451,6 +469,8 @@ class HpoManager:
                     )
 
         HpoManager.remove_empty_keys(hpopt_arguments)
+
+        print(f"[OTE_CLI] [DEBUG-HPO] hpopt args for create hpopt = {hpopt_arguments}")
 
         self.hpo = hpopt.create(**hpopt_arguments)
 
@@ -537,7 +557,7 @@ class HpoManager:
                         if proc.is_alive():
                             proc.join()
                     break
-                
+
                 for key, val in self.deleted_hp.items():
                     hp_config[key] = val
 
@@ -591,36 +611,33 @@ class HpoManager:
         for key, val in self.deleted_hp.items():
             best_config[key] = val
 
-        hyper_parameters = self.environment.get_hyper_parameters()
-        HpoManager.set_hyperparameter(hyper_parameters, best_config)
+        # TODO: is it needed here?
+		# # finetune stage resumes hpo trial, so warmup isn't needed
+        # if task_type == TaskType.DETECTION:
+        #     best_config["learning_parameters.learning_rate_warmup_iters"] = 0
+        # if task_type == TaskType.SEGMENTATION:
+        #     best_config["learning_parameters.learning_rate_fixed_iters"] = 0
+        #     best_config["learning_parameters.learning_rate_warmup_iters"] = 0
+        # 
+        # hyper_parameters = self.environment.get_hyper_parameters()
+        # HpoManager.set_hyperparameter(hyper_parameters, best_config)
 
         self.hpo.print_results()
 
         print("Best Hyper-parameters")
         print(best_config)
 
-        # finetune stage resumes hpo trial, so warmup isn't needed
-        if task_type == TaskType.DETECTION:
-            best_config["learning_parameters.learning_rate_warmup_iters"] = 0
-        elif task_type == TaskType.SEGMENTATION:
-            best_config["learning_parameters.learning_rate_fixed_iters"] = 0
-            best_config["learning_parameters.learning_rate_warmup_iters"] = 0
-
         # get weight to pass for resume
         if task_type == TaskType.CLASSIFICATION:
             best_config_id = self.hpo.hpo_status["best_config_id"]
             hpo_weight_path = osp.realpath(
-                osp.join(
-                    self.hpo.save_path,
-                    str(best_config_id),
-                    "best.pth"
-                )
+                osp.join(self.hpo.save_path, str(best_config_id), "best.pth")
             )
         elif task_type in [TaskType.DETECTION, TaskType.SEGMENTATION]:
             hpo_weight_path = osp.join(
                 self.hpo.save_path,
                 str(self.hpo.hpo_status["best_config_id"]),
-                "checkpoints_round_0"
+                "checkpoints_round_0",
             )
 
             for file_name in os.listdir(hpo_weight_path):
@@ -654,7 +671,7 @@ class HpoManager:
         """Generate search space from user's input"""
         search_space = {}
         for key, val in hp_space_dict.items():
-            search_space[key] = hpopt.search_space(val["param_type"], val["range"])
+            search_space[key] = hpopt.SearchSpace(val["param_type"], val["range"])
         return search_space
 
     @staticmethod
