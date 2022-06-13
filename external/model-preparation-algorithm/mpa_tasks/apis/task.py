@@ -92,6 +92,11 @@ class BaseTask:
         common_cfg = ConfigDict(dict(output_path=self._output_path))
 
         # build workflow using recipe configuration
+        self._recipe_cfg.task_adapt['sampler_type'] = 'balanced'
+        self._recipe_cfg.task_adapt['efficient_mode'] = True        
+        logger.info("============TASK ADAPT CFG============")
+        logger.info(self._recipe_cfg.task_adapt)
+        logger.info("======================================\n")
         workflow = build(self._recipe_cfg, self._mode, stage_type=stage_module, common_cfg=common_cfg)
 
         # run workflow with task specific model config and data config
