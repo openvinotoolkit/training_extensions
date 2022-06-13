@@ -57,6 +57,8 @@ def run_hpo(args, environment, dataset, task_type):
             TaskType.CLASSIFICATION,
             TaskType.DETECTION,
             TaskType.SEGMENTATION,
+            TaskType.INSTANCE_SEGMENTATION,
+            TaskType.ROTATED_DETECTION
         }:
             print(
                 "Currently supported task types are classification and detection."
@@ -86,7 +88,15 @@ def run_hpo(args, environment, dataset, task_type):
 
         task = task_class(task_environment=environment)
 
-        task.resume(hpo_weight_path)  # prepare finetune stage to resume
+        hpopt_cfg = _load_hpopt_config(
+            osp.join(
+                osp.dirname(environment.model_template.model_template_path),
+                "hpo_config.yaml",
+            )
+        )
+
+        if hpopt_cfg.get("resume", False):
+            task.resume(hpo_weight_path)  # prepare finetune stage to resume
 
         if args.load_weights:
             environment.model.configuration.configurable_parameters = hyper_parameters
@@ -126,7 +136,11 @@ def run_hpo_trainer(
     # set epoch and warm-up stage depending on given epoch
     if task_type == TaskType.CLASSIFICATION:
         hyper_parameters.learning_parameters.max_num_epochs = hp_config["iterations"]
-    elif task_type == TaskType.DETECTION:
+    elif task_type in [
+        TaskType.DETECTION,
+        TaskType.INSTANCE_SEGMENTATION,
+        TaskType.ROTATED_DETECTION
+    ]:
         if "bracket" not in hp_config:
             hyper_parameters.learning_parameters.learning_rate_warmup_iters = int(
                 hyper_parameters.learning_parameters.learning_rate_warmup_iters
@@ -254,7 +268,11 @@ def get_train_wrapper_task(impl_class, task_type):
             if self._task_type == TaskType.CLASSIFICATION:
                 self._cfg.model.resume = resume_path
                 self._cfg.test.save_initial_metric = True
-            elif self._task_type == TaskType.DETECTION:
+            elif self._task_type in [
+                TaskType.DETECTION,
+                TaskType.INSTANCE_SEGMENTATION,
+                TaskType.ROTATED_DETECTION
+            ]:
                 self._config.resume_from = resume_path
             elif self._task_type == TaskType.SEGMENTATION:
                 self._config.resume_from = resume_path
@@ -266,7 +284,12 @@ def get_train_wrapper_task(impl_class, task_type):
                 )
                 self._cfg.data.save_dir = self._scratch_space
                 self._cfg.model.save_all_chkpts = True
-            elif self._task_type in [TaskType.DETECTION, TaskType.SEGMENTATION]:
+            elif self._task_type in [
+                TaskType.DETECTION,
+                TaskType.SEGMENTATION,
+                TaskType.INSTANCE_SEGMENTATION,
+                TaskType.ROTATED_DETECTION
+            ]:
                 self._config.work_dir = osp.join(
                     osp.dirname(hp_config["file_path"]), str(hp_config["trial_id"])
                 )
@@ -309,6 +332,15 @@ def _set_dict_to_parameter_group(origin_hp, hp_config):
         else:
             _set_dict_to_parameter_group(getattr(origin_hp, key), val)
 
+def _load_hpopt_config(file_path):
+    try:
+        with open(file_path, "r", encoding="utf-8") as f:
+            hpopt_cfg = yaml.safe_load(f)
+    except FileNotFoundError as err:
+        print("hpo_config.yaml file should be in directory where template.yaml is.")
+        raise err
+
+    return hpopt_cfg
 
 class HpoCallback(UpdateProgressCallback):
     """Callback class to report score to hpopt"""
@@ -358,19 +390,12 @@ class HpoManager:
         else:
             save_model_data(environment.model, self.work_dir)
 
-        try:
-            with open(
-                osp.join(
-                    osp.dirname(self.environment.model_template.model_template_path),
-                    "hpo_config.yaml",
-                ),
-                "r",
-                encoding="utf-8",
-            ) as f:
-                hpopt_cfg = yaml.safe_load(f)
-        except FileNotFoundError as err:
-            print("hpo_config.yaml file should be in directory where template.yaml is.")
-            raise err
+        hpopt_cfg = _load_hpopt_config(
+            osp.join(
+                osp.dirname(self.environment.model_template.model_template_path),
+                "hpo_config.yaml",
+            )
+        )
 
         self.algo = hpopt_cfg.get("search_algorithm", "smbo")
         self.metric = hpopt_cfg.get("metric", "mAP")
@@ -462,7 +487,12 @@ class HpoManager:
                         hpopt_arguments["min_iterations"] = ceil(
                             model_yaml["train"]["warmup"] * bs / train_dataset_size
                         )
-                elif task_type in [TaskType.DETECTION, TaskType.SEGMENTATION]:
+                elif task_type in [
+                    TaskType.DETECTION,
+                    TaskType.SEGMENTATION,
+                    TaskType.INSTANCE_SEGMENTATION,
+                    TaskType.ROTATED_DETECTION
+                ]:
                     hpopt_arguments["min_iterations"] = ceil(
                         env_hp.learning_parameters.learning_rate_warmup_iters
                         / ceil(train_dataset_size / bs)
@@ -619,8 +649,8 @@ class HpoManager:
         #     best_config["learning_parameters.learning_rate_fixed_iters"] = 0
         #     best_config["learning_parameters.learning_rate_warmup_iters"] = 0
         # 
-        # hyper_parameters = self.environment.get_hyper_parameters()
-        # HpoManager.set_hyperparameter(hyper_parameters, best_config)
+        hyper_parameters = self.environment.get_hyper_parameters()
+        HpoManager.set_hyperparameter(hyper_parameters, best_config)
 
         self.hpo.print_results()
 
@@ -633,7 +663,12 @@ class HpoManager:
             hpo_weight_path = osp.realpath(
                 osp.join(self.hpo.save_path, str(best_config_id), "best.pth")
             )
-        elif task_type in [TaskType.DETECTION, TaskType.SEGMENTATION]:
+        elif task_type in [
+            TaskType.DETECTION,
+            TaskType.SEGMENTATION,
+            TaskType.INSTANCE_SEGMENTATION,
+            TaskType.ROTATED_DETECTION
+        ]:
             hpo_weight_path = osp.join(
                 self.hpo.save_path,
                 str(self.hpo.hpo_status["best_config_id"]),
@@ -694,7 +729,12 @@ class HpoManager:
         learning_parameters = environment.get_hyper_parameters().learning_parameters
         if task_type == TaskType.CLASSIFICATION:
             num_full_iterations = learning_parameters.max_num_epochs
-        elif task_type in (TaskType.DETECTION, TaskType.SEGMENTATION):
+        elif task_type in [
+            TaskType.DETECTION,
+            TaskType.SEGMENTATION,
+            TaskType.INSTANCE_SEGMENTATION,
+            TaskType.ROTATED_DETECTION
+        ]:
             num_full_iterations = learning_parameters.num_iters
 
         return num_full_iterations
