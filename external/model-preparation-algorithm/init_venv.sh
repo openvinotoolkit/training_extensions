@@ -111,27 +111,23 @@ pip install torch==${TORCH_VERSION} torchvision==${TORCHVISION_VERSION} -f https
 pip install --no-cache-dir mmcv-full==${MMCV_VERSION} || exit 1
 sed -i "s/force=False/force=True/g" ${venv_dir}/lib/python${PYTHON_VERSION}/site-packages/mmcv/utils/registry.py  # Patch: remedy for MMCV registry collision from mmdet/mmseg
 
-# Install mmpycocotools from source to make sure it is compatible with installed numpy version.
-pip install --no-cache-dir --no-binary=mmpycocotools mmpycocotools || exit 1
-
 # Install OTE SDK
 pip install -e ../../ote_sdk/ || exit 1
 
-# Install base classification algo backend & task
-pip install -e ../deep-object-reid/submodule || exit 1
+# Install tasks
 pip install -e ../deep-object-reid || exit 1
-
-# Install base detection algo backend & task
-pip install -e ../mmdetection/submodule || exit 1
 pip install -e ../mmdetection || exit 1
-
-# Install base segmentation algo backend & task
-pip install -e ../mmsegmentation/submodule || exit 1
 pip install -e ../mmsegmentation || exit 1
-
-# Install MPA algo backend & task
-pip install -e submodule || exit 1
 pip install -e . || exit 1
+
+# Install backends
+pip install -e ../deep-object-reid/submodule || exit 1
+pip install numpy==1.21.4
+pip install --no-cache-dir --no-binary=mmpycocotools mmpycocotools || exit 1
+pip install -e ../mmdetection/submodule || exit 1
+pip install -e ../mmsegmentation/submodule || exit 1
+pip install -e submodule || exit 1
+
 MPA_DIR=`realpath submodule`
 echo "export MPA_DIR=${MPA_DIR}" >> ${venv_dir}/bin/activate
 
@@ -141,9 +137,6 @@ pip install -e ../../ote_cli || exit 1
 # Build NNCF extensions
 echo "Build NNCF extensions ..."
 python -c "import nncf"
-
-# Ensure numpy vesion
-pip install numpy==1.21.4
 
 deactivate
 

@@ -111,32 +111,22 @@ pip install torch==${TORCH_VERSION} torchvision==${TORCHVISION_VERSION} -f https
 pip install --no-cache-dir mmcv-full==${MMCV_VERSION} || exit 1
 sed -i "s/force=False/force=True/g" ${venv_dir}/lib/python${PYTHON_VERSION}/site-packages/mmcv/utils/registry.py  # Patch: remedy for MMCV registry collision from mmdet/mmseg
 
-# Install other requirements.
-# Install mmpycocotools from source to make sure it is compatible with installed numpy version.
-pip install --no-cache-dir --no-binary=mmpycocotools mmpycocotools || exit 1
-cd submodule
-cat requirements.txt | xargs -n 1 -L 1 pip install --no-cache || exit 1
-
-# Install algo backend.
-pip install -e . || exit 1
-cd ..
-
 # Install OTE SDK
 pip install -e ../../ote_sdk/ || exit 1
 
 # Install tasks.
 pip install -e .
-
-# Install MPA (to enable transfer learning feature)
-pip install -e ../model-preparation-algorithm/submodule || exit 1
 pip install -e ../model-preparation-algorithm || exit 1
+
+# Install algo backend.
+pip install numpy==1.21.4
+pip install --no-cache-dir --no-binary=mmpycocotools mmpycocotools || exit 1
+pip install -e ./submodule || exit 1
+pip install -e ../model-preparation-algorithm/submodule || exit 1
 
 # Build NNCF extensions
 echo "Build NNCF extensions ..."
 python -c "import nncf"
-
-# Ensure numpy vesion
-pip install numpy==1.21.4
 
 deactivate
 

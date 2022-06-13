@@ -395,7 +395,7 @@ def force_fp32(model: Module):
 
 class TrainingProgressCallback(TimeMonitorCallback):
     def __init__(self, update_progress_callback: UpdateProgressCallback, **kwargs):
-        super().__init__(0, 0, 0, 0, update_progress_callback=update_progress_callback, **kwargs)
+        super().__init__(update_progress_callback=update_progress_callback, **kwargs)
 
     def on_train_batch_end(self, batch, logs=None):
         super().on_train_batch_end(batch, logs)
