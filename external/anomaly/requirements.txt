@@ -3,3 +3,4 @@ openmodelzoo-modelapi @ git+https://github.com/openvinotoolkit/open_model_zoo/@r
 openvino==2022.1.0
 openvino-dev==2022.1.0
 onnx==1.10.1
+networkx<=2.8.1

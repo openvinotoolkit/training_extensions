@@ -1,4 +1,0 @@
-openvino==2022.1.0
-openvino-dev==2022.1.0
-openmodelzoo-modelapi @ git+https://github.com/openvinotoolkit/open_model_zoo/@releases/2022/SCv1.1#egg=openmodelzoo-modelapi&subdirectory=demos/common/python
-nncf@ git+https://github.com/openvinotoolkit/nncf@464244204fc2c5e80c8164c17d8d266ccae50062#egg=nncf
