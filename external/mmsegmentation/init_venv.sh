@@ -71,7 +71,7 @@ fi
 # install PyTorch and MMCV.
 export TORCH_VERSION=1.8.2
 export TORCHVISION_VERSION=0.9.2
-export MMCV_VERSION=1.3.1
+export MMCV_VERSION=1.3.14
 
 if [[ -z ${CUDA_VERSION} ]]; then
   echo "CUDA was not found, installing dependencies in CPU-only mode. If you want to use CUDA, set CUDA_HOME and CUDA_VERSION beforehand."
@@ -103,22 +103,34 @@ else
   export TORCHVISION_VERSION=${TORCHVISION_VERSION}+cu${CUDA_VERSION_CODE}
 fi
 
-pip install torch==${TORCH_VERSION} torchvision==${TORCHVISION_VERSION} -f https://download.pytorch.org/whl/lts/1.8/torch_lts.html --no-cache || exit 1
+# Install pytorch
 echo torch==${TORCH_VERSION} >> ${CONSTRAINTS_FILE}
 echo torchvision==${TORCHVISION_VERSION} >> ${CONSTRAINTS_FILE}
+pip install torch==${TORCH_VERSION} torchvision==${TORCHVISION_VERSION} -f https://download.pytorch.org/whl/lts/1.8/torch_lts.html || exit 1
 
+# Install mmcv
 pip install --no-cache-dir mmcv-full==${MMCV_VERSION} || exit 1
+sed -i "s/force=False/force=True/g" ${venv_dir}/lib/python${PYTHON_VERSION}/site-packages/mmcv/utils/registry.py  # Patch: remedy for MMCV registry collision from mmdet/mmseg
 
 # Install algo backend.
 pip install -e submodule/ || exit 1
+
 # Install OTE SDK
 pip install -e ../../ote_sdk/ || exit 1
+
 # Install tasks.
 pip install -e . || exit 1
+
+# Install MPA (to enable transfer learning feature)
+pip install -e ../model-preparation-algorithm/submodule || exit 1
+pip install -e ../model-preparation-algorithm || exit 1
 
 # Build NNCF extensions
 echo "Build NNCF extensions ..."
 python -c "import nncf"
+
+# Ensure numpy vesion
+pip install numpy==1.21.4
 
 deactivate
 
