@@ -33,10 +33,10 @@ class TimeMonitorCallback(Callback):
 
     def __init__(
         self,
-        num_epoch,
-        num_train_steps,
-        num_val_steps,
-        num_test_steps,
+        num_epoch: int = 0,
+        num_train_steps: int = 0,
+        num_val_steps: int = 0,
+        num_test_steps: int = 0,
         epoch_history: int = 5,
         step_history: int = 50,
         update_progress_callback: Optional[UpdateProgressCallback] = None,

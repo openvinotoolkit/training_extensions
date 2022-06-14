@@ -35,8 +35,8 @@ from ote_sdk.entities.model import (ModelFormat, ModelOptimizationType)
 from ote_sdk.serialization.label_mapper import label_schema_to_bytes
 
 from ote_sdk.entities.scored_label import ScoredLabel
-from detection_tasks.apis.detection.ote_utils import TrainingProgressCallback
-from detection_tasks.extension.utils.hooks import OTELoggerHook
+from torchreid_tasks.utils import TrainingProgressCallback
+from torchreid_tasks.utils import OTELoggerHook
 from mpa_tasks.apis import BaseTask, TrainType
 from mpa_tasks.apis.classification import ClassificationConfig
 from mpa.utils.config_utils import MPAConfig
@@ -231,7 +231,7 @@ class ClassificationTrainTask(ClassificationInferenceTask):
               output_model: ModelEntity,
               train_parameters: Optional[TrainParameters] = None):
         logger.info('train()')
-        # Check for stop signal between pre-eval and training. 
+        # Check for stop signal between pre-eval and training.
         # If training is cancelled at this point,
         if self._should_stop:
             logger.info('Training cancelled.')
@@ -251,7 +251,7 @@ class ClassificationTrainTask(ClassificationInferenceTask):
         self._is_training = True
         results = self._run_task(stage_module, mode='train', dataset=dataset, parameters=train_parameters)
 
-        # Check for stop signal between pre-eval and training. 
+        # Check for stop signal between pre-eval and training.
         # If training is cancelled at this point,
         if self._should_stop:
             logger.info('Training cancelled.')
