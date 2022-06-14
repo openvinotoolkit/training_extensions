@@ -164,6 +164,9 @@ def main():
 
     if args.enable_hpo:
         task = run_hpo(args, environment, dataset, template.task_type)
+        if task is None:
+            print("cannot run HPO for this task. will train a model without HPO.")
+            task = task_class(task_environment=environment)
     else:
         task = task_class(task_environment=environment)
 

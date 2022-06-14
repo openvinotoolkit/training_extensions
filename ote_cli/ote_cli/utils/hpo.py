@@ -53,15 +53,18 @@ def check_hpopt_available():
 def run_hpo(args, environment, dataset, task_type):
     """Update the environment with better hyper-parameters found by HPO"""
     if check_hpopt_available():
-        if task_type not in {
+        if task_type not in [
             TaskType.CLASSIFICATION,
             TaskType.DETECTION,
             TaskType.SEGMENTATION,
             TaskType.INSTANCE_SEGMENTATION,
-            TaskType.ROTATED_DETECTION
-        }:
+            TaskType.ROTATED_DETECTION,
+            TaskType.ANOMALY_CLASSIFICATION,
+            TaskType.ANOMALY_DETECTION,
+            TaskType.ANOMALY_SEGMENTATION,
+        ]:
             print(
-                "Currently supported task types are classification and detection."
+                "Currently supported task types are classification, detection, segmentation and anomaly"
                 f"{task_type} is not supported yet."
             )
             return None
@@ -357,6 +360,9 @@ class HpoCallback(UpdateProgressCallback):
             if score > 1.0:
                 current_iters = int(score)
                 score = float(score - current_iters)
+            elif score < 0.0:
+                current_iters = int(-score - 1.0)
+                score = 1.0
             print(f"[DEBUG-HPO] score = {score} at iteration {current_iters}")
             if (
                 hpopt.report(
@@ -408,21 +414,34 @@ class HpoManager:
         val_dataset_size = len(dataset.get_subset(Subset.VALIDATION))
 
         # make batch size range lower than train set size
-        batch_size_name = "learning_parameters.batch_size"
-        if batch_size_name in hpopt_cfg["hp_space"]:
-            batch_range = hpopt_cfg["hp_space"][batch_size_name]["range"]
-            if batch_range[1] > train_dataset_size:
-                batch_range[1] = train_dataset_size
+        batch_size_name = None
+        if self.environment.model_template.task_type in [
+            TaskType.DETECTION,
+            TaskType.SEGMENTATION,
+            TaskType.CLASSIFICATION,
+        ]:
+            batch_size_name = "learning_parameters.batch_size"
+        elif self.environment.model_template.task_type in [
+            TaskType.ANOMALY_CLASSIFICATION,
+            TaskType.ANOMALY_DETECTION,
+            TaskType.ANOMALY_SEGMENTATION,
+        ]:
+            batch_size_name = "dataset.train_batch_size"
+        if batch_size_name is not None:
+            if batch_size_name in hpopt_cfg["hp_space"]:
+                batch_range = hpopt_cfg["hp_space"][batch_size_name]["range"]
+                if batch_range[1] > train_dataset_size:
+                    batch_range[1] = train_dataset_size
 
-            # If trainset size is lower than min batch size range,
-            # fix batch size to trainset size
-            if batch_range[0] > batch_range[1]:
-                print(
-                    "Train set size is lower than batch size range."
-                    "Batch size is fixed to train set size."
-                )
-                del hpopt_cfg["hp_space"][batch_size_name]
-                self.deleted_hp[batch_size_name] = train_dataset_size
+                # If trainset size is lower than min batch size range,
+                # fix batch size to trainset size
+                if batch_range[0] > batch_range[1]:
+                    print(
+                        "Train set size is lower than batch size range."
+                        "Batch size is fixed to train set size."
+                    )
+                    del hpopt_cfg["hp_space"][batch_size_name]
+                    self.deleted_hp[batch_size_name] = train_dataset_size
 
         # prepare default hyper parameters
         default_hyper_parameters = {}
@@ -648,7 +667,7 @@ class HpoManager:
         # if task_type == TaskType.SEGMENTATION:
         #     best_config["learning_parameters.learning_rate_fixed_iters"] = 0
         #     best_config["learning_parameters.learning_rate_warmup_iters"] = 0
-        # 
+
         hyper_parameters = self.environment.get_hyper_parameters()
         HpoManager.set_hyperparameter(hyper_parameters, best_config)
 
@@ -674,6 +693,8 @@ class HpoManager:
                 str(self.hpo.hpo_status["best_config_id"]),
                 "checkpoints_round_0",
             )
+        else:
+            hpo_weight_path = None
 
             for file_name in os.listdir(hpo_weight_path):
                 if "best" in file_name:
@@ -726,8 +747,9 @@ class HpoManager:
         num_full_iterations = 0
 
         task_type = environment.model_template.task_type
-        learning_parameters = environment.get_hyper_parameters().learning_parameters
+        params = environment.get_hyper_parameters()
         if task_type == TaskType.CLASSIFICATION:
+            learning_parameters = params.learning_parameters
             num_full_iterations = learning_parameters.max_num_epochs
         elif task_type in [
             TaskType.DETECTION,
@@ -735,7 +757,15 @@ class HpoManager:
             TaskType.INSTANCE_SEGMENTATION,
             TaskType.ROTATED_DETECTION
         ]:
+            learning_parameters = params.learning_parameters
             num_full_iterations = learning_parameters.num_iters
+        elif task_type in [
+            TaskType.ANOMALY_CLASSIFICATION,
+            TaskType.ANOMALY_DETECTION,
+            TaskType.ANOMALY_SEGMENTATION,
+        ]:
+            trainer = params.trainer
+            num_full_iterations = trainer.max_epochs
 
         return num_full_iterations
 
