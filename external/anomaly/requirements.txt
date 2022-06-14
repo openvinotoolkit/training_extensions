@@ -1,4 +1,4 @@
-anomalib @ git+https://github.com/openvinotoolkit/anomalib.git@088b0e5d8c424a4782408ae3f9a4d605739bb6a1
+anomalib @ git+https://github.com/openvinotoolkit/anomalib.git@7b66d2f9b23ac89a4e6ee6eea875c158ef546524
 openmodelzoo-modelapi @ git+https://github.com/openvinotoolkit/open_model_zoo/@releases/2022/SCv1.1#egg=openmodelzoo-modelapi&subdirectory=demos/common/python
 openvino==2022.1.0
 openvino-dev==2022.1.0
