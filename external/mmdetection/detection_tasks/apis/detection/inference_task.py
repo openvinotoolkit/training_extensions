@@ -100,7 +100,7 @@ class OTEDetectionInferenceTask(IInferenceTask, IExportTask, IEvaluationTask, IU
 
         # Set default model attributes.
         self._optimization_methods = []
-        self._precision = [ModelPrecision.FP16] if self._config.get('fp16', None) else [ModelPrecision.FP32]
+        self._precision = self._precision_from_config
         self._optimization_type = ModelOptimizationType.MO
 
         # Create and initialize PyTorch model.
@@ -112,6 +112,10 @@ class OTEDetectionInferenceTask(IInferenceTask, IExportTask, IEvaluationTask, IU
         self._is_training = False
         self._should_stop = False
         logger.info('Task initialization completed')
+
+    @property
+    def _precision_from_config(self):
+        return [ModelPrecision.FP16] if self._config.get('fp16', None) else [ModelPrecision.FP32]
 
     @property
     def _hyperparams(self):
@@ -402,7 +406,8 @@ class OTEDetectionInferenceTask(IInferenceTask, IExportTask, IEvaluationTask, IU
                     model = self._model.cpu()
                 pruning_transformation = OptimizationMethod.FILTER_PRUNING in self._optimization_methods
                 export_model(model, self._config, tempdir, target='openvino',
-                             pruning_transformation=pruning_transformation, precision=self._precision[0].name)
+                             pruning_transformation=pruning_transformation,
+                             precision=self._precision_from_config[0].name)
                 bin_file = [f for f in os.listdir(tempdir) if f.endswith('.bin')][0]
                 xml_file = [f for f in os.listdir(tempdir) if f.endswith('.xml')][0]
                 with open(os.path.join(tempdir, bin_file), "rb") as f:
