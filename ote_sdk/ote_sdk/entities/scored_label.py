@@ -6,10 +6,31 @@
 
 import datetime
 import math
+from dataclasses import dataclass
+from typing import Optional
 
 from ote_sdk.entities.color import Color
 from ote_sdk.entities.id import ID
 from ote_sdk.entities.label import Domain, LabelEntity
+
+
+@dataclass
+class LabelSource:
+    """
+    This dataclass contains information about the source of a scored label.
+
+    For annotations, the id of the user who created the label and for predictions, the
+    id and model storage id of the model that created the prediction. When a user has
+    accepted a predictions as is, both the user id of the user who accepted and the
+    model/model storage id of the model that predicted should be filled in.
+
+    Note that usually the LabelSource is created with default values and the source is
+    set at a later stage.
+    """
+
+    user_id: str = ""
+    model_id: ID = ID()
+    model_storage_id: ID = ID()
 
 
 class ScoredLabel:
@@ -18,13 +39,22 @@ class ScoredLabel:
 
     :param label: a label. See :class:`Label`
     :param probability: a float denoting the probability of the shape belonging to the label.
+    :param label_source: a LabelSource dataclass containing the id of the user who created
+        or the model that predicted this label.
     """
 
-    def __init__(self, label: LabelEntity, probability: float = 0.0):
+    def __init__(
+        self,
+        label: LabelEntity,
+        probability: float = 0.0,
+        label_source: Optional[LabelSource] = None,
+    ):
         if math.isnan(probability) or (not 0 <= probability <= 1.0) :
             raise ValueError(f"Probability should be in range [0, 1], {probability} is given")
+
         self.label = label
         self.probability = probability
+        self.label_source = label_source if label_source is not None else LabelSource()
 
     @property
     def name(self) -> str:
@@ -89,7 +119,8 @@ class ScoredLabel:
     def __repr__(self):
         return (
             f"ScoredLabel({self.id_}, name={self.name}, probability={self.probability}, "
-            f"domain={self.domain}, color={self.color}, hotkey={self.hotkey})"
+            f"domain={self.domain}, color={self.color}, hotkey={self.hotkey}, "
+            f"label_source={self.label_source})"
         )
 
     def __eq__(self, other):
@@ -101,6 +132,7 @@ class ScoredLabel:
                 and self.hotkey == other.hotkey
                 and self.probability == other.probability
                 and self.domain == other.domain
+                and self.label_source == other.label_source
             )
         return False
 
