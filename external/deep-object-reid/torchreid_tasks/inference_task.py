@@ -251,7 +251,7 @@ class OTEClassificationInferenceTask(IInferenceTask, IEvaluationTask, IExportTas
                 scores[i] = softmax_numpy(scores[i])
                 item_labels = get_multiclass_predictions(scores[i], self._labels, activate=False)
 
-            if (self._multilabel or self._hierarchical) and not item_labels:
+            if not item_labels:
                 item_labels = [ScoredLabel(self._empty_label, probability=1.)]
 
             dataset_item.append_labels(item_labels)
