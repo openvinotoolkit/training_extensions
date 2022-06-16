@@ -61,13 +61,6 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
                            len(task_environment.label_schema.get_groups(False)) == \
                            len(task_environment.get_labels(include_empty=False))
 
-        # TODO : support hierarhical labels
-        self._multihead_class_info = {}
-        self._hierarchical = False
-        if not self._multilabel and len(task_environment.label_schema.get_groups(False)) > 1:
-            self._hierarchical = True
-            # self._multihead_class_info = get_multihead_class_info(task_environment.label_schema)
-
     def infer(self,
               dataset: DatasetEntity,
               inference_parameters: Optional[InferenceParameters] = None
@@ -170,9 +163,6 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         base_dir = os.path.abspath(os.path.dirname(self.template_file_path))
         if self._multilabel:
             model_cfg_path = os.path.join(base_dir, 'model_multilabel.py')
-        elif self._hierarchical:
-            # model_cfg_path = os.path.join(base_dir, 'model_hierarchical.py')
-            raise NotImplementedError('Hierarchical classification is not yet supported!')
         else:
             model_cfg_path = os.path.join(base_dir, 'model.py')
         return MPAConfig.fromfile(model_cfg_path)
@@ -212,28 +202,23 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
                 continue
             if cfg.type == 'RepeatDataset':
                 cfg = cfg.dataset
+
             if self._multilabel:
                 cfg.type = 'MPAMultilabelClsDataset'
-            elif self._hierarchical:
-                # cfg.type = 'MPAHierarchicalClsDataset'
-                raise NotImplementedError('Hierarchical classification is not yet supported!')
+                for pipeline_step in cfg.pipeline:
+                    if subset == 'train' and pipeline_step.type == 'Collect':
+                        pipeline_step = BaseTask._get_meta_keys(pipeline_step)
             else:
                 cfg.type = 'MPAClsDataset'
             cfg.domain = domain
             cfg.ote_dataset = None
             cfg.labels = None
-            for pipeline_step in cfg.pipeline:
-                if subset == 'train' and pipeline_step.type == 'Collect':
-                    pipeline_step = BaseTask._get_meta_keys(pipeline_step)
             patch_color_conversion(cfg.pipeline)
 
     def _patch_evaluation(self, config: MPAConfig):
         cfg = config.evaluation
         if self._multilabel:
             cfg.metric = ['mAP', 'CP', 'OP', 'CR', 'OR', 'CF1', 'OF1']
-        elif self._hierarchical:
-            # cfg.metric = ['mAP', 'CP', 'OP', 'CR', 'OR', 'CF1', 'OF1']
-            raise NotImplementedError('Hierarchical classification is not yet supported!')
         else:
             cfg.metric = ['accuracy', 'class_accuracy']
 
@@ -347,7 +332,7 @@ class ClassificationTrainTask(ClassificationInferenceTask):
         """
         output: List[MetricsGroup] = []
 
-        if self._multilabel or self._hierarchical:
+        if self._multilabel:
             metric_key = 'val/mAP'
         else:
             metric_key = 'val/accuracy_top-1'

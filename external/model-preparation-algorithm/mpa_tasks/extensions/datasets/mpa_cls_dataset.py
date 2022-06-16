@@ -46,7 +46,7 @@ class MPAClsDataset(BaseDataset):
     def load_annotations(self):
         for dataset_item in self.ote_dataset:
             if dataset_item.get_annotations() == []:
-                label = None
+                continue
             else:
                 label = int(dataset_item.get_annotations()[0].get_labels()[0].id_)
             self.gt_labels.append(label)
