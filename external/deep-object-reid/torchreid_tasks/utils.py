@@ -18,6 +18,7 @@ from contextlib import contextmanager
 from enum import Enum, auto
 import importlib
 import json
+import math
 import os
 import shutil
 import tempfile
@@ -404,7 +405,11 @@ class TrainingProgressCallback(TimeMonitorCallback):
     def on_epoch_end(self, epoch, logs=None):
         self.past_epoch_duration.append(time.time() - self.start_epoch_time)
         self._calculate_average_epoch()
-        self.update_progress_callback(self.get_progress(), score=float(logs))
+        score = logs
+        if hasattr(self.update_progress_callback, 'metric') and isinstance(logs, dict):
+            score = logs.get(self.update_progress_callback.metric, None)
+            score = float(score) if score is not None else None
+        self.update_progress_callback(self.get_progress(), score=score)
 
 
 class InferenceProgressCallback(TimeMonitorCallback):
@@ -502,6 +507,8 @@ def get_multiclass_predictions(logits: np.ndarray, labels: List[LabelEntity],
     i = np.argmax(logits)
     if activate:
         logits = softmax_numpy(logits)
+    if math.isnan(float(logits[i])):
+        return []
     return [ScoredLabel(labels[i], probability=float(logits[i]))]
 
 
@@ -525,7 +532,7 @@ def get_hierarchical_predictions(logits: np.ndarray, labels: List[LabelEntity],
                                  pos_thr: float = 0.5, activate: bool = True) -> List[ScoredLabel]:
     predicted_labels = []
     for i in range(multihead_class_info['num_multiclass_heads']):
-        logits_begin, logits_end = multihead_class_info['head_idx_to_logits_range'][i]
+        logits_begin, logits_end = multihead_class_info['head_idx_to_logits_range'][str(i)]
         head_logits = logits[logits_begin : logits_end]
         if activate:
             head_logits = softmax_numpy(head_logits)
@@ -547,3 +554,60 @@ def get_hierarchical_predictions(logits: np.ndarray, labels: List[LabelEntity],
                 predicted_labels.append(ScoredLabel(label=ote_label, probability=float(head_logits[i])))
 
     return label_schema.resolve_labels_probabilistic(predicted_labels)
+
+
+# Temp copy from detection_tasks
+# TODO: refactoring to somewhere
+from typing import Any, Dict, Optional
+from mmcv.runner.hooks import HOOKS, Hook, LoggerHook
+from mmcv.runner import BaseRunner, EpochBasedRunner
+from mmcv.runner.dist_utils import master_only
+from ote_sdk.utils.argument_checks import check_input_parameters_type
+@HOOKS.register_module()
+class OTELoggerHook(LoggerHook):
+
+    class Curve:
+        def __init__(self):
+            self.x = []
+            self.y = []
+
+        def __repr__(self):
+            points = []
+            for x, y in zip(self.x, self.y):
+                points.append(f'({x},{y})')
+            return 'curve[' + ','.join(points) + ']'
+
+    @check_input_parameters_type()
+    def __init__(self,
+                 curves: Optional[Dict[Any, Curve]] = None,
+                 interval: int = 10,
+                 ignore_last: bool = True,
+                 reset_flag: bool = True,
+                 by_epoch: bool = True):
+        super().__init__(interval, ignore_last, reset_flag, by_epoch)
+        self.curves = curves if curves is not None else defaultdict(self.Curve)
+
+    @master_only
+    @check_input_parameters_type()
+    def log(self, runner: BaseRunner):
+        tags = self.get_loggable_tags(runner, allow_text=False)
+        if runner.max_epochs is not None:
+            normalized_iter = self.get_iter(runner) / runner.max_iters * runner.max_epochs
+        else:
+            normalized_iter = self.get_iter(runner)
+        for tag, value in tags.items():
+            curve = self.curves[tag]
+            # Remove duplicates.
+            if len(curve.x) > 0 and curve.x[-1] == normalized_iter:
+                curve.x.pop()
+                curve.y.pop()
+            curve.x.append(normalized_iter)
+            curve.y.append(value)
+
+    @check_input_parameters_type()
+    def after_train_epoch(self, runner: BaseRunner):
+        # Iteration counter is increased right after the last iteration in the epoch,
+        # temporarily decrease it back.
+        runner._iter -= 1
+        super().after_train_epoch(runner)
+        runner._iter += 1

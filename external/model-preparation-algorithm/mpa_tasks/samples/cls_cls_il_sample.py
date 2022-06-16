@@ -20,7 +20,7 @@ from ote_sdk.entities.subset import Subset
 from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType
 from ote_sdk.usecases.tasks.interfaces.optimization_interface import OptimizationType
-from detection_tasks.apis.detection.ote_utils import get_task_class
+from torchreid_tasks.utils import get_task_class
 
 import random
 import torch

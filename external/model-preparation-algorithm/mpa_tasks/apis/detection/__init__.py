@@ -7,3 +7,5 @@ from .task import DetectionInferenceTask, DetectionTrainTask
 
 # Load relevant extensions to registry
 import mpa_tasks.extensions.datasets.mpa_det_dataset
+
+import mpa.det

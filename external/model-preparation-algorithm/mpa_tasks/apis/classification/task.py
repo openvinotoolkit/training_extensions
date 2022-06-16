@@ -34,8 +34,8 @@ from ote_sdk.usecases.tasks.interfaces.unload_interface import IUnload
 from ote_sdk.entities.model import (ModelFormat, ModelOptimizationType)
 from ote_sdk.serialization.label_mapper import label_schema_to_bytes
 from ote_sdk.entities.scored_label import ScoredLabel
-from detection_tasks.apis.detection.ote_utils import TrainingProgressCallback
-from detection_tasks.extension.utils.hooks import OTELoggerHook
+from torchreid_tasks.utils import TrainingProgressCallback
+from torchreid_tasks.utils import OTELoggerHook
 from mpa_tasks.apis import BaseTask, TrainType
 from mpa_tasks.apis.classification import ClassificationConfig
 from mpa.utils.config_utils import MPAConfig
