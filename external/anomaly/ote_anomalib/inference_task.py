@@ -173,6 +173,10 @@ class AnomalyInferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload
 
         self.trainer = Trainer(**config.trainer, logger=False, callbacks=callbacks)
         self.trainer.predict(model=self.model, datamodule=datamodule)
+
+        # print gt labels
+        for pred_item in dataset:
+            logger.info(f"Pred: {pred_item.get_shapes_labels()}")
         return dataset
 
     def evaluate(self, output_resultset: ResultSetEntity, evaluation_metric: Optional[str] = None) -> None:
@@ -183,6 +187,10 @@ class AnomalyInferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload
             evaluation_metric (Optional[str], optional): Evaluation metric. Defaults to None. Instead,
                 metric is chosen depending on the task type.
         """
+        # print gt labels
+        for gt_item, pred_item in zip(output_resultset.ground_truth_dataset, output_resultset.prediction_dataset):
+            logger.info(f"GT: {gt_item.get_shapes_labels()}, " f"Pred: {pred_item.get_shapes_labels()}")
+
         if self.task_type == TaskType.ANOMALY_CLASSIFICATION:
             metric = MetricsHelper.compute_f_measure(output_resultset)
         elif self.task_type == TaskType.ANOMALY_DETECTION:
@@ -194,10 +202,6 @@ class AnomalyInferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload
         output_resultset.performance = metric.get_performance()
 
         logger.info(output_resultset)
-
-        # print gt labels
-        for gt_item, pred_item in zip(output_resultset.ground_truth_dataset, output_resultset.prediction_dataset):
-            logger.info(f"GT: {gt_item.get_shapes_labels()}, " f"Pred: {pred_item.get_shapes_labels()}")
         logger.info(f"Computed performance {str(metric.get_performance())}")
 
         if self.task_type == TaskType.ANOMALY_CLASSIFICATION:
