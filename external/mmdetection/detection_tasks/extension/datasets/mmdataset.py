@@ -114,6 +114,7 @@ class OTEDataset(CustomDataset):
         def __init__(self, ote_dataset, labels):
             self.ote_dataset = ote_dataset
             self.labels = labels
+            self.label_idx = {label.id: i for i, label in enumerate(labels)}
 
         def __len__(self):
             return len(self.ote_dataset)
@@ -127,8 +128,7 @@ class OTEDataset(CustomDataset):
 
             dataset = self.ote_dataset
             item = dataset[index]
-            label_idx = {label.id: i for i, label in enumerate(self.labels)}
-            ignored_labels = np.array([label_idx[lbs.id] for lbs in item.ignored_labels])
+            ignored_labels = np.array([self.label_idx[lbs.id] for lbs in item.ignored_labels])
 
             height, width = item.height, item.width
 
