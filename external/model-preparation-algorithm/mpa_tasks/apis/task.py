@@ -7,7 +7,7 @@ import io
 import os
 import shutil
 import tempfile
-from typing import Optional, Union
+from typing import Union
 import numpy as np
 import torch
 from mmcv.utils.config import Config, ConfigDict
@@ -17,12 +17,9 @@ from mpa.stage import Stage
 from mpa.utils.config_utils import update_or_add_custom_hook
 from mpa.utils.logger import get_logger
 from ote_sdk.entities.datasets import DatasetEntity
-from ote_sdk.entities.inference_parameters import InferenceParameters
 from ote_sdk.entities.model import ModelEntity, ModelPrecision
 from ote_sdk.entities.subset import Subset
 from ote_sdk.entities.task_environment import TaskEnvironment
-from ote_sdk.entities.train_parameters import (TrainParameters,
-                                               UpdateProgressCallback)
 from ote_sdk.serialization.label_mapper import LabelSchemaMapper
 
 
@@ -35,6 +32,7 @@ class BaseTask:
         self._task_environment = task_environment
         self._hyperparams = task_environment.get_hyper_parameters(self._task_config)
         self._model_name = task_environment.model_template.name
+        self._task_type = task_environment.model_template.task_type
         self._labels = task_environment.get_labels(include_empty=False)
         self._output_path = tempfile.mkdtemp(prefix='MPA-task-')
         logger.info(f'created output path at {self._output_path}')
