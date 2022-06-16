@@ -114,6 +114,7 @@ class OTEDataset(CustomDataset):
         def __init__(self, ote_dataset, labels):
             self.ote_dataset = ote_dataset
             self.labels = labels
+            self.label_idx = {label.id: i for i, label in enumerate(labels)}
 
         def __len__(self):
             return len(self.ote_dataset)
@@ -121,17 +122,18 @@ class OTEDataset(CustomDataset):
         def __getitem__(self, index):
             """
             Prepare a dict 'data_info' that is expected by the mmdet pipeline to handle images and annotations
-            :return data_info: dictionary that contains the image and image metadata, as well as the labels of the objects
-                in the image
+            :return data_info: dictionary that contains the image and image metadata, as well as the labels of
+            the objects in the image
             """
 
             dataset = self.ote_dataset
             item = dataset[index]
+            ignored_labels = np.array([self.label_idx[lbs.id] for lbs in item.ignored_labels])
 
             height, width = item.height, item.width
 
             data_info = dict(dataset_item=item, width=width, height=height, index=index,
-                             ann_info=dict(label_list=self.labels))
+                             ann_info=dict(label_list=self.labels), ignored_labels=ignored_labels)
 
             return data_info
 
@@ -228,4 +230,3 @@ class OTEDataset(CustomDataset):
         dataset_item = self.ote_dataset[idx]
         labels = self.labels
         return get_annotation_mmdet_format(dataset_item, labels, self.domain)
-
