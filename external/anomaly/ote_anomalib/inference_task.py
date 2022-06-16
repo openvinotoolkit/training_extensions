@@ -193,10 +193,16 @@ class AnomalyInferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload
             raise ValueError(f"Unknown task type: {self.task_type}")
         output_resultset.performance = metric.get_performance()
 
-        for gt_item, pred_item in zip(output_resultset.ground_truth_dataset, output_resultset.prediction_dataset):
+        # print gt labels
+        for gt_item in output_resultset.ground_truth_dataset:
             print(
                 f"GT: [Name: {gt_item.get_shapes_labels()[0].name}, "
                 f"is_anomalous: {gt_item.get_shapes_labels()[0].is_anomalous}], "
+            )
+
+        # print pred labels
+        for pred_item in output_resultset.prediction_dataset:
+            print(
                 f"Pred: [Name: {pred_item.get_shapes_labels()[0].name}, "
                 f"is_anomalous: {pred_item.get_shapes_labels()[0].is_anomalous}]"
             )
