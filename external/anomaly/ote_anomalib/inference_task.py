@@ -193,19 +193,23 @@ class AnomalyInferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload
             raise ValueError(f"Unknown task type: {self.task_type}")
         output_resultset.performance = metric.get_performance()
 
+        logger.info(output_resultset)
+
         # print gt labels
         for gt_item in output_resultset.ground_truth_dataset:
-            logger.info(
-                f"GT: [Name: {gt_item.get_shapes_labels()[0].name}, "
-                f"is_anomalous: {gt_item.get_shapes_labels()[0].is_anomalous}], "
-            )
+            if len(gt_item.get_shapes_labels()) > 0:
+                logger.info(
+                    f"GT: [Name: {gt_item.get_shapes_labels()[0].name}, "
+                    f"is_anomalous: {gt_item.get_shapes_labels()[0].is_anomalous}], "
+                )
 
         # print pred labels
         for pred_item in output_resultset.prediction_dataset:
-            logger.info(
-                f"Pred: [Name: {pred_item.get_shapes_labels()[0].name}, "
-                f"is_anomalous: {pred_item.get_shapes_labels()[0].is_anomalous}]"
-            )
+            if len(pred_item.get_shapes_labels()) > 0:
+                logger.info(
+                    f"Pred: [Name: {pred_item.get_shapes_labels()[0].name}, "
+                    f"is_anomalous: {pred_item.get_shapes_labels()[0].is_anomalous}]"
+                )
         logger.info(f"Computed performance {str(metric.get_performance())}")
 
         if self.task_type == TaskType.ANOMALY_CLASSIFICATION:
