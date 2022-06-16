@@ -12,8 +12,6 @@ logger = get_logger()
 @DATASETS.register_module()
 class MPADetDataset(OTEDataset):
     def __init__(self, **kwargs):
-        logger.info(f"Dataset Info")
-        
         dataset_cfg = kwargs.copy()
         _ = dataset_cfg.pop('org_type', None)
         super().__init__(**dataset_cfg)

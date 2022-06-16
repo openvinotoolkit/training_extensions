@@ -16,7 +16,6 @@ logger = get_logger()
 @DATASETS.register_module()
 class MPAClsDataset(BaseDataset):
 
-    #def __init__(self, old_new_indices=None, ote_dataset=None, labels=None, **kwargs):
     def __init__(self, ote_dataset=None, labels=None, **kwargs):
         self.ote_dataset = ote_dataset
         self.labels = labels
@@ -25,16 +24,9 @@ class MPAClsDataset(BaseDataset):
         pipeline = kwargs['pipeline']
         self.num_classes = len(self.CLASSES)
 
-        logger.info("Dataset arg info")
-        logger.info(f"Labels : {labels}")
-        logger.info(kwargs)
-        
         test_mode = kwargs.get('test_mode', False)
         if test_mode is False:
             self.img_indices = get_cls_img_indices(self.labels, self.ote_dataset)
-        #if old_new_indices is not None:
-        #    self.img_indices['old'] = old_new_indices['old']
-        #    self.img_indices['new'] = old_new_indices['new']
 
         if isinstance(pipeline, dict):
             self.pipeline = {}

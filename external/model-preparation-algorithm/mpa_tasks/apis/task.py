@@ -78,7 +78,6 @@ class BaseTask:
             train_data_cfg = Stage.get_train_data_cfg(self._data_cfg)
             train_data_cfg['data_classes'] = data_classes
             new_classes = np.setdiff1d(data_classes, model_classes).tolist()
-            # train_data_cfg['old_new_indices'] = self._get_old_new_indices(dataset, new_classes)
 
         logger.info(f'running task... kwargs = {kwargs}')
         if self._recipe_cfg is None:
@@ -92,11 +91,6 @@ class BaseTask:
         common_cfg = ConfigDict(dict(output_path=self._output_path))
 
         # build workflow using recipe configuration
-        self._recipe_cfg.task_adapt['sampler_type'] = 'balanced'
-        self._recipe_cfg.task_adapt['efficient_mode'] = True        
-        logger.info("============TASK ADAPT CFG============")
-        logger.info(self._recipe_cfg.task_adapt)
-        logger.info("======================================\n")
         workflow = build(self._recipe_cfg, self._mode, stage_type=stage_module, common_cfg=common_cfg)
 
         # run workflow with task specific model config and data config
@@ -229,16 +223,6 @@ class BaseTask:
         else:
             return self._labels
 
-    #def _get_old_new_indices(self, dataset, new_classes):
-    #    ids_old, ids_new = [], []
-    #    _dataset_label_schema_map = {label.name: label for label in self._labels}
-    #    new_classes = [_dataset_label_schema_map[new_class] for new_class in new_classes]
-    #    for i, item in enumerate(dataset.get_subset(Subset.TRAINING)):
-    #        if item.annotation_scene.contains_any(new_classes):
-    #            ids_new.append(i)
-    #        else:
-    #            ids_old.append(i)
-    #    return {'old': ids_old, 'new': ids_new}
 
     @staticmethod
     def _get_confidence_threshold(hyperparams):

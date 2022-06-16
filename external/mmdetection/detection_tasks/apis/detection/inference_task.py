@@ -249,7 +249,8 @@ class OTEDetectionInferenceTask(IInferenceTask, IExportTask, IEvaluationTask, IU
                 dataset_item.append_metadata_item(active_score, model=self._task_environment.model)
 
 
-    def infer(self, dataset: DatasetEntity, inference_parameters: Optional[InferenceParameters] = None, class_wise: Optional[bool] = False) -> DatasetEntity:
+    @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
+    def infer(self, dataset: DatasetEntity, inference_parameters: Optional[InferenceParameters] = None) -> DatasetEntity:
         """ Analyzes a dataset using the latest inference model. """
 
         logger.info('Infer the model on the dataset')
@@ -277,7 +278,7 @@ class OTEDetectionInferenceTask(IInferenceTask, IExportTask, IEvaluationTask, IU
         logger.info(f'Confidence threshold {self.confidence_threshold}')
         model = self._model
         with model.register_forward_pre_hook(pre_hook), model.register_forward_hook(hook):
-            prediction_results, _ = self._infer_detector(model, self._config, dataset, dump_features=True, eval=class_wise)
+            prediction_results, _ = self._infer_detector(model, self._config, dataset, dump_features=True, eval=False)
         self._add_predictions_to_dataset(prediction_results, dataset, self.confidence_threshold)
 
         logger.info('Inference completed')

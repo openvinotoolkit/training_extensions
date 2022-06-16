@@ -72,11 +72,6 @@ def parse_args():
         "--save-performance",
         help="Path to a json file where computed performance will be stored.",
     )
-    parser.add_argument(
-        "--class-wise",
-        action="store_true",
-        help="Get Class-Wise evaluation score",
-    )
 
     add_hyper_parameters_sub_parser(parser, hyper_parameters, modes=("INFERENCE",))
 
@@ -158,12 +153,6 @@ def main():
         prediction_dataset=predicted_validation_dataset,
     )
     task.evaluate(resultset)
-    if args.class_wise:
-        task.infer(
-            validation_dataset,
-            class_wise=True
-        )
-    
     assert resultset.performance is not None
     print(resultset.performance)
 
