@@ -19,6 +19,7 @@ class MPAClsDataset(BaseDataset):
     def __init__(self, old_new_indices=None, ote_dataset=None, labels=None, **kwargs):
         self.ote_dataset = ote_dataset
         self.labels = labels
+        self.label_idx = {label.id: i for i, label in enumerate(labels)}
         self.CLASSES = list(label.name for label in labels)
         self.gt_labels = []
         pipeline = kwargs['pipeline']
@@ -52,7 +53,9 @@ class MPAClsDataset(BaseDataset):
         self.gt_labels = np.array(self.gt_labels)
 
     def __getitem__(self, index):
-        dataset_item = self.ote_dataset[index]
+        dataset = self.ote_dataset
+        dataset_item = dataset[index]
+        ignored_labels = np.array([self.label_idx[lbs.id] for lbs in dataset_item.ignored_labels])
 
         if self.pipeline is None:
             return dataset_item
@@ -62,6 +65,7 @@ class MPAClsDataset(BaseDataset):
         results['dataset_item'] = dataset_item
         results['height'], results['width'], _ = dataset_item.numpy.shape
         results['gt_label'] = None if len(self.gt_labels) == 0 else torch.tensor(self.gt_labels[index])
+        results['ignored_labels'] = ignored_labels
         results = self.pipeline(results)
 
         return results
