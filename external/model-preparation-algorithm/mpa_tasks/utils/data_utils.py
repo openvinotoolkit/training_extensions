@@ -8,5 +8,5 @@ def get_cls_img_indices(labels, dataset):
         item_labels = item.annotation_scene.get_labels()
         for i_l in item_labels:
             img_indices[i_l.name].append(i)
-    logger.info(img_indices)
+
     return img_indices
