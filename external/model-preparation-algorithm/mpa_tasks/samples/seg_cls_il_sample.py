@@ -68,9 +68,14 @@ def load_test_dataset(data_type):
         LabelEntity(name='rect', domain=Domain.SEGMENTATION, id=2),
     ]
 
-    def get_image(subset, label_id):
+    def get_image(type, subset, label_id):
+        ignored_labels = []
         if label_id == 1:
             image, gt = gen_circle_image((640, 480))
+            if type == 'new' and subset == Subset.TRAINING:
+                ignored_labels = [
+                    LabelEntity(name='rect', domain=Domain.SEGMENTATION, id=2)
+                ]
         else:
             image, gt = gen_rect_image((640, 480))
 
@@ -99,50 +104,51 @@ def load_test_dataset(data_type):
                 kind=AnnotationSceneKind.ANNOTATION
             ),
             subset=subset,
+            ignored_labels=ignored_labels,
         )
 
     old_train = [
-        get_image(Subset.TRAINING, 1),
-        get_image(Subset.TRAINING, 1),
-        get_image(Subset.TRAINING, 1),
-        get_image(Subset.TRAINING, 1),
-        get_image(Subset.TRAINING, 1),
-        get_image(Subset.TRAINING, 1),
-        get_image(Subset.TRAINING, 1),
-        get_image(Subset.TRAINING, 1),
+        get_image('old', Subset.TRAINING, 1),
+        get_image('old', Subset.TRAINING, 1),
+        get_image('old', Subset.TRAINING, 1),
+        get_image('old', Subset.TRAINING, 1),
+        get_image('old', Subset.TRAINING, 1),
+        get_image('old', Subset.TRAINING, 1),
+        get_image('old', Subset.TRAINING, 1),
+        get_image('old', Subset.TRAINING, 1),
     ]
 
     old_val = [
-        get_image(Subset.VALIDATION, 1),
-        get_image(Subset.VALIDATION, 1),
-        get_image(Subset.VALIDATION, 1),
-        get_image(Subset.VALIDATION, 1),
-        get_image(Subset.VALIDATION, 1),
-        get_image(Subset.VALIDATION, 1),
-        get_image(Subset.VALIDATION, 1),
-        get_image(Subset.VALIDATION, 1),
+        get_image('old', Subset.VALIDATION, 1),
+        get_image('old', Subset.VALIDATION, 1),
+        get_image('old', Subset.VALIDATION, 1),
+        get_image('old', Subset.VALIDATION, 1),
+        get_image('old', Subset.VALIDATION, 1),
+        get_image('old', Subset.VALIDATION, 1),
+        get_image('old', Subset.VALIDATION, 1),
+        get_image('old', Subset.VALIDATION, 1),
     ]
 
     new_train = [
-        get_image(Subset.TRAINING, 1),
-        get_image(Subset.TRAINING, 1),
-        get_image(Subset.TRAINING, 1),
-        get_image(Subset.TRAINING, 1),
-        get_image(Subset.TRAINING, 2),
-        get_image(Subset.TRAINING, 2),
-        get_image(Subset.TRAINING, 2),
-        get_image(Subset.TRAINING, 2),
+        get_image('new', Subset.TRAINING, 1),
+        get_image('new', Subset.TRAINING, 1),
+        get_image('new', Subset.TRAINING, 1),
+        get_image('new', Subset.TRAINING, 1),
+        get_image('new', Subset.TRAINING, 2),
+        get_image('new', Subset.TRAINING, 2),
+        get_image('new', Subset.TRAINING, 2),
+        get_image('new', Subset.TRAINING, 2),
     ]
 
     new_val = [
-        get_image(Subset.VALIDATION, 1),
-        get_image(Subset.VALIDATION, 1),
-        get_image(Subset.VALIDATION, 1),
-        get_image(Subset.VALIDATION, 1),
-        get_image(Subset.VALIDATION, 2),
-        get_image(Subset.VALIDATION, 2),
-        get_image(Subset.VALIDATION, 2),
-        get_image(Subset.VALIDATION, 2),
+        get_image('new', Subset.VALIDATION, 1),
+        get_image('new', Subset.VALIDATION, 1),
+        get_image('new', Subset.VALIDATION, 1),
+        get_image('new', Subset.VALIDATION, 1),
+        get_image('new', Subset.VALIDATION, 2),
+        get_image('new', Subset.VALIDATION, 2),
+        get_image('new', Subset.VALIDATION, 2),
+        get_image('new', Subset.VALIDATION, 2),
     ]
     old = old_train + old_val
     new = new_train + new_val
