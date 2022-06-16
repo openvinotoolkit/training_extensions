@@ -271,16 +271,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
                     pipeline_step.domain = domain
                     pipeline_step.min_size = cfg.pop('min_size', -1)
                 if subset == 'train' and pipeline_step.type == 'Collect':
-                    if pipeline_step.get('meta_keys', False):
-                        meta_keys = list(pipeline_step['meta_keys'])
-                        meta_keys.append('ignored_labels')
-                    else:
-                        meta_keys = (
-                            'filename', 'ori_filename', 'ori_shape',
-                            'img_shape', 'pad_shape', 'scale_factor', 'flip',
-                            'flip_direction', 'img_norm_cfg', 'ignored_labels'
-                        )
-                    pipeline_step['meta_keys'] = set(meta_keys)
+                    pipeline_step = BaseTask._get_meta_keys(pipeline_step)
             patch_color_conversion(cfg.pipeline)
 
     @staticmethod
