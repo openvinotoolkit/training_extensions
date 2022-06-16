@@ -195,14 +195,14 @@ class AnomalyInferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload
 
         # print gt labels
         for gt_item in output_resultset.ground_truth_dataset:
-            print(
+            logger.info(
                 f"GT: [Name: {gt_item.get_shapes_labels()[0].name}, "
                 f"is_anomalous: {gt_item.get_shapes_labels()[0].is_anomalous}], "
             )
 
         # print pred labels
         for pred_item in output_resultset.prediction_dataset:
-            print(
+            logger.info(
                 f"Pred: [Name: {pred_item.get_shapes_labels()[0].name}, "
                 f"is_anomalous: {pred_item.get_shapes_labels()[0].is_anomalous}]"
             )
