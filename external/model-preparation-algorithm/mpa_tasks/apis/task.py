@@ -30,6 +30,7 @@ DEFAULT_META_KEYS = (
     'flip', 'flip_direction', 'img_norm_cfg'
 )
 
+
 class BaseTask:
     def __init__(self, task_config, task_environment: TaskEnvironment):
         self._task_config = task_config
