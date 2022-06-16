@@ -222,6 +222,8 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
             cfg.domain = domain
             cfg.ote_dataset = None
             cfg.labels = None
+            if subset == 'train' and pipeline_step.type == 'Collect':
+                pipeline_step = BaseTask._get_meta_keys(pipeline_step)
             patch_color_conversion(cfg.pipeline)
 
     def _patch_evaluation(self, config: MPAConfig):
