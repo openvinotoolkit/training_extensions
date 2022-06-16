@@ -24,6 +24,11 @@ from ote_sdk.serialization.label_mapper import LabelSchemaMapper
 
 
 logger = get_logger()
+DEFAULT_META_KEYS = (
+    'filename', 'ori_filename', 'ori_shape',
+    'img_shape', 'pad_shape', 'scale_factor',
+    'flip', 'flip_direction', 'img_norm_cfg'
+)
 
 
 class BaseTask:
@@ -232,6 +237,13 @@ class BaseTask:
             else:
                 ids_old.append(i)
         return {'old': ids_old, 'new': ids_new}
+
+    @staticmethod
+    def _get_meta_keys(pipeline_step):
+        meta_keys = list(pipeline_step.get('meta_keys', DEFAULT_META_KEYS))
+        meta_keys.append('ignored_labels')
+        pipeline_step['meta_keys'] = set(meta_keys)
+        return pipeline_step
 
     @staticmethod
     def _get_confidence_threshold(hyperparams):
