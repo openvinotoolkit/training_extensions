@@ -270,6 +270,8 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
                     pipeline_step.type = 'LoadAnnotationFromOTEDataset'
                     pipeline_step.domain = domain
                     pipeline_step.min_size = cfg.pop('min_size', -1)
+                if subset == 'train' and pipeline_step.type == 'Collect':
+                    pipeline_step = BaseTask._get_meta_keys(pipeline_step)
             patch_color_conversion(cfg.pipeline)
 
     @staticmethod
@@ -329,7 +331,7 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
               output_model: ModelEntity,
               train_parameters: Optional[TrainParameters] = None):
         logger.info('train()')
-        # Check for stop signal when training has stopped. 
+        # Check for stop signal when training has stopped.
         # If should_stop is true, training was cancelled and no new
         if self._should_stop:
             logger.info('Training cancelled.')
