@@ -1,4 +1,4 @@
-metric: mAP
+metric: Top-1
 search_algorithm: smbo
 early_stop: median_stop
 hp_space:
