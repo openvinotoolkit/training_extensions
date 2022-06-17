@@ -23,9 +23,6 @@ class LabelSource:
     id and model storage id of the model that created the prediction. When a user has
     accepted a predictions as is, both the user id of the user who accepted and the
     model/model storage id of the model that predicted should be filled in.
-
-    Note that usually the LabelSource is created with default values and the source is
-    set at a later stage.
     """
 
     user_id: str = ""
@@ -49,8 +46,10 @@ class ScoredLabel:
         probability: float = 0.0,
         label_source: Optional[LabelSource] = None,
     ):
-        if math.isnan(probability) or (not 0 <= probability <= 1.0) :
-            raise ValueError(f"Probability should be in range [0, 1], {probability} is given")
+        if math.isnan(probability) or (not 0 <= probability <= 1.0):
+            raise ValueError(
+                f"Probability should be in range [0, 1], {probability} is given"
+            )
 
         self.label = label
         self.probability = probability
