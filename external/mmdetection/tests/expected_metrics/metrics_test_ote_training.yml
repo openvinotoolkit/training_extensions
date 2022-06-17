@@ -349,3 +349,47 @@
 : "metrics.accuracy.f-measure":
     "base": "nncf_evaluation.metrics.accuracy.f-measure"
     "max_diff": 0.06
+
+? "ACTION-training_evaluation,model-Custom_Counting_Instance_Segmentation_MaskRCNN_ResNet50,dataset-aeromonas,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "target_value": 0.92
+    "max_diff_if_less_threshold": 0.06
+    "max_diff_if_greater_threshold": 0.06
+? "ACTION-export_evaluation,model-Custom_Counting_Instance_Segmentation_MaskRCNN_ResNet50,dataset-aeromonas,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "training_evaluation.metrics.accuracy.f-measure"
+    "max_diff": 0.01
+? "ACTION-pot_evaluation,model-Custom_Counting_Instance_Segmentation_MaskRCNN_ResNet50,dataset-aeromonas,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "training_evaluation.metrics.accuracy.f-measure"
+    "max_diff": 0.01
+? "ACTION-nncf_evaluation,model-Custom_Counting_Instance_Segmentation_MaskRCNN_ResNet50,dataset-aeromonas,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "training_evaluation.metrics.accuracy.f-measure"
+    "max_diff_if_less_threshold": 0.01
+? "ACTION-nncf_export_evaluation,model-Custom_Counting_Instance_Segmentation_MaskRCNN_ResNet50,dataset-aeromonas,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "nncf_evaluation.metrics.accuracy.f-measure"
+    "max_diff": 0.01
+
+? "ACTION-training_evaluation,model-Custom_Counting_Instance_Segmentation_MaskRCNN_EfficientNetB2B,dataset-aeromonas,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "target_value": 0.92
+    "max_diff_if_less_threshold": 0.06
+    "max_diff_if_greater_threshold": 0.06
+? "ACTION-export_evaluation,model-Custom_Counting_Instance_Segmentation_MaskRCNN_EfficientNetB2B,dataset-aeromonas,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "training_evaluation.metrics.accuracy.f-measure"
+    "max_diff": 0.01
+? "ACTION-pot_evaluation,model-Custom_Counting_Instance_Segmentation_MaskRCNN_EfficientNetB2B,dataset-aeromonas,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "training_evaluation.metrics.accuracy.f-measure"
+    "max_diff": 0.01
+? "ACTION-nncf_evaluation,model-Custom_Counting_Instance_Segmentation_MaskRCNN_EfficientNetB2B,dataset-aeromonas,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "training_evaluation.metrics.accuracy.f-measure"
+    "max_diff_if_less_threshold": 0.01
+? "ACTION-nncf_export_evaluation,model-Custom_Counting_Instance_Segmentation_MaskRCNN_EfficientNetB2B,dataset-aeromonas,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "nncf_evaluation.metrics.accuracy.f-measure"
+    "max_diff": 0.01

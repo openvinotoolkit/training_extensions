@@ -41,7 +41,6 @@ from ote_cli.utils.tests import (
     nncf_export_testing,
     nncf_eval_testing,
     nncf_eval_openvino_testing,
-    xfail_templates,
 )
 
 
@@ -65,7 +64,7 @@ args = {
 root = '/tmp/ote_cli/'
 ote_dir = os.getcwd()
 
-templates = Registry('external').filter(task_type='DETECTION').templates
+templates = Registry('external/mmdetection').filter(task_type='DETECTION').templates
 templates_ids = [template.model_template_id for template in templates]
 
 
@@ -91,12 +90,7 @@ class TestToolsDetection:
         ote_eval_testing(template, root, ote_dir, args)
 
     @e2e_pytest_component
-    @pytest.mark.parametrize("template",
-                             xfail_templates(
-                                 templates, (
-                                     ("Custom_Object_Detection_YOLOX", "CVS-82366"),
-                                 )),
-                             ids=templates_ids)
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_ote_eval_openvino(self, template):
         ote_eval_openvino_testing(template, root, ote_dir, args, threshold=0.1)
 

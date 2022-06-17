@@ -165,7 +165,7 @@ def check_nested_classes_parameters(
 def check_parameter_type(parameter, parameter_name, expected_type):
     """Function extracts nested expected types and raises ValueError exception if parameter has unexpected type"""
     # pylint: disable=W0212
-    if expected_type in [typing.Any, (typing.Any,), inspect._empty]:  # type: ignore
+    if expected_type in [typing.Any, inspect._empty]:  # type: ignore
         return
     if not isinstance(expected_type, typing._GenericAlias):  # type: ignore
         raise_value_error_if_parameter_has_unexpected_type(
@@ -231,7 +231,7 @@ def check_input_parameters_type(custom_checks: typing.Optional[dict] = None):
             # Checking input parameters type
             for parameter_name in expected_types_map:
                 parameter = input_parameters_values_map.get(parameter_name)
-                if parameter is None:
+                if parameter_name not in input_parameters_values_map:
                     default_value = expected_types_map.get(parameter_name).default
                     # pylint: disable=protected-access
                     if default_value != inspect._empty:  # type: ignore
@@ -268,9 +268,7 @@ def check_file_extension(
 def check_that_null_character_absents_in_string(parameter: str, parameter_name: str):
     """Function raises ValueError exception if null character: '\0' is specified in path to file"""
     if "\0" in parameter:
-        raise ValueError(
-            rf"null char \\0 is specified in {parameter_name}: {parameter}"
-        )
+        raise ValueError(f"null char \\0 is specified in {parameter_name}: {parameter}")
 
 
 def check_that_file_exists(file_path: str, file_path_name: str):
@@ -335,6 +333,24 @@ def check_file_path(parameter, parameter_name, expected_file_extensions):
         parameter=parameter, parameter_name=parameter_name
     )
     check_that_file_exists(file_path=parameter, file_path_name=parameter_name)
+
+
+def check_directory_path(parameter, parameter_name):
+    """Function to check directory path string objects"""
+    raise_value_error_if_parameter_has_unexpected_type(
+        parameter=parameter,
+        parameter_name=parameter_name,
+        expected_type=str,
+    )
+    check_that_parameter_is_not_empty(
+        parameter=parameter, parameter_name=parameter_name
+    )
+    check_that_null_character_absents_in_string(
+        parameter=parameter, parameter_name=parameter_name
+    )
+    check_that_all_characters_printable(
+        parameter=parameter, parameter_name=parameter_name
+    )
 
 
 class BaseInputArgumentChecker(ABC):
@@ -454,3 +470,43 @@ class YamlFilePathCheck(FilePathCheck):
             parameter_name=parameter_name,
             expected_file_extension=[".yaml"],
         )
+
+
+class JsonFilePathCheck(FilePathCheck):
+    """Class to check optional yaml file path parameters"""
+
+    def __init__(self, parameter, parameter_name):
+        super().__init__(
+            parameter=parameter,
+            parameter_name=parameter_name,
+            expected_file_extension=[".json"],
+        )
+
+
+class DirectoryPathCheck(BaseInputArgumentChecker):
+    """Class to check directory path parameters"""
+
+    def __init__(self, parameter, parameter_name):
+        self.parameter = parameter
+        self.parameter_name = parameter_name
+
+    def check(self):
+        """Method raises ValueError exception if directory path parameter is not equal to expected"""
+        check_directory_path(
+            parameter=self.parameter, parameter_name=self.parameter_name
+        )
+
+
+class OptionalDirectoryPathCheck(BaseInputArgumentChecker):
+    """Class to check optional directory path parameters"""
+
+    def __init__(self, parameter, parameter_name):
+        self.parameter = parameter
+        self.parameter_name = parameter_name
+
+    def check(self):
+        """Method raises ValueError exception if directory path parameter is not equal to expected"""
+        if self.parameter is not None:
+            check_directory_path(
+                parameter=self.parameter, parameter_name=self.parameter_name
+            )

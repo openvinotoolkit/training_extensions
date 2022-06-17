@@ -35,12 +35,17 @@ from torchreid_tasks.monitors import DefaultMetricsMonitor
 from torchreid_tasks.utils import (OTEClassificationDataset, TrainingProgressCallback)
 from torchreid.ops import DataParallel
 from torchreid.utils import load_pretrained_weights, set_random_seed
+from ote_sdk.utils.argument_checks import (
+    DatasetParamTypeCheck,
+    check_input_parameters_type,
+)
 
 logger = logging.getLogger(__name__)
 
 
 class OTEClassificationTrainingTask(OTEClassificationInferenceTask, ITrainingTask):
 
+    @check_input_parameters_type()
     def __init__(self, task_environment: TaskEnvironment):
         super().__init__(task_environment)
         self._aux_model_snap_paths = {}
@@ -55,6 +60,7 @@ class OTEClassificationTrainingTask(OTEClassificationInferenceTask, ITrainingTas
         logger.info("Cancel training requested.")
         self.stop_callback.stop()
 
+    @check_input_parameters_type()
     def save_model(self, output_model: ModelEntity):
         for name, path in self._aux_model_snap_paths.items():
             with open(path, 'rb') as read_file:
@@ -78,6 +84,7 @@ class OTEClassificationTrainingTask(OTEClassificationInferenceTask, ITrainingTas
 
         return output
 
+    @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def train(self, dataset: DatasetEntity, output_model: ModelEntity,
               train_parameters: Optional[TrainParameters] = None):
         """ Trains a model on a dataset """

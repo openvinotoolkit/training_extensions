@@ -3,7 +3,7 @@
 #
 import json
 import os.path as osp
-from typing import List, Optional
+from typing import Any, Dict, List, Optional, Sequence
 
 import numpy as np
 from ote_sdk.entities.annotation import Annotation, AnnotationSceneEntity, AnnotationSceneKind
@@ -16,11 +16,19 @@ from ote_sdk.entities.scored_label import ScoredLabel
 from ote_sdk.entities.shapes.polygon import Polygon, Point
 from ote_sdk.entities.shapes.rectangle import Rectangle
 from ote_sdk.entities.subset import Subset
+from ote_sdk.utils.argument_checks import (
+    DatasetParamTypeCheck,
+    DirectoryPathCheck,
+    OptionalDirectoryPathCheck,
+    JsonFilePathCheck,
+    check_input_parameters_type,
+)
 from ote_sdk.utils.shape_factory import ShapeFactory
 from pycocotools.coco import COCO
 
 from mmdet.core import BitmapMasks, PolygonMasks
 
+@check_input_parameters_type({"path": JsonFilePathCheck})
 def get_classes_from_annotation(path):
     with open(path) as read_file:
         content = json.load(read_file)
@@ -31,7 +39,8 @@ def get_classes_from_annotation(path):
 
 
 class LoadAnnotations:
-    def __init__(self, with_bbox=True, with_label=True, with_mask=False):
+    @check_input_parameters_type()
+    def __init__(self, with_bbox: bool = True, with_label: bool = True, with_mask: bool = False):
         self.with_bbox = with_bbox
         self.with_label = with_label
         self.with_mask = with_mask
@@ -57,7 +66,8 @@ class LoadAnnotations:
         results['mask_fields'].append('gt_masks')
         return results
 
-    def __call__(self, results):
+    @check_input_parameters_type()
+    def __call__(self, results: Dict[str, Any]):
         if self.with_bbox:
             results = self._load_bboxes(results)
             if results is None:
@@ -77,16 +87,18 @@ class LoadAnnotations:
 
 
 class CocoDataset:
+    @check_input_parameters_type({"ann_file": JsonFilePathCheck,
+                                  "data_root": OptionalDirectoryPathCheck})
     def __init__(
         self,
-        ann_file,
-        classes=None,
-        data_root=None,
-        img_prefix="",
-        test_mode=False,
-        filter_empty_gt=True,
-        min_size=None,
-        with_mask=False,
+        ann_file: str,
+        classes: Optional[Sequence[str]] = None,
+        data_root: Optional[str] = None,
+        img_prefix: str = "",
+        test_mode: bool = False,
+        filter_empty_gt: bool = True,
+        min_size: Optional[int] = None,
+        with_mask: bool = False,
     ):
         self.ann_file = ann_file
         self.data_root = data_root
@@ -112,7 +124,8 @@ class CocoDataset:
     def __len__(self):
         return len(self.data_infos)
 
-    def pre_pipeline(self, results):
+    @check_input_parameters_type()
+    def pre_pipeline(self, results: Dict[str, Any]):
         results["img_prefix"] = self.img_prefix
         results["bbox_fields"] = []
         results["mask_fields"] = []
@@ -122,21 +135,24 @@ class CocoDataset:
         pool = np.where(self.flag == self.flag[idx])[0]
         return np.random.choice(pool)
 
-    def __getitem__(self, idx):
+    @check_input_parameters_type()
+    def __getitem__(self, idx: int):
         return self.prepare_img(idx)
 
     def __iter__(self):
         for i in range(len(self)):
             yield self[i]
 
-    def prepare_img(self, idx):
+    @check_input_parameters_type()
+    def prepare_img(self, idx: int):
         img_info = self.data_infos[idx]
         ann_info = self.get_ann_info(idx)
         results = dict(img_info=img_info, ann_info=ann_info)
         self.pre_pipeline(results)
         return LoadAnnotations(with_mask=self.with_mask)(results)
 
-    def get_classes(self, classes=None):
+    @check_input_parameters_type()
+    def get_classes(self, classes: Optional[Sequence[str]] = None):
         if classes is None:
             return get_classes_from_annotation(self.ann_file)
 
@@ -145,6 +161,7 @@ class CocoDataset:
 
         raise ValueError(f"Unsupported type {type(classes)} of classes.")
 
+    @check_input_parameters_type({"ann_file": JsonFilePathCheck})
     def load_annotations(self, ann_file):
         self.coco = COCO(ann_file)
         self.cat_ids = self.coco.get_cat_ids(cat_names=self.classes)
@@ -157,13 +174,15 @@ class CocoDataset:
             data_infos.append(info)
         return data_infos
 
-    def get_ann_info(self, idx):
+    @check_input_parameters_type()
+    def get_ann_info(self, idx: int):
         img_id = self.data_infos[idx]["id"]
         ann_ids = self.coco.get_ann_ids(img_ids=[img_id])
         ann_info = self.coco.load_anns(ann_ids)
         return self._parse_ann_info(self.data_infos[idx], ann_info)
 
-    def get_cat_ids(self, idx):
+    @check_input_parameters_type()
+    def get_cat_ids(self, idx: int):
         img_id = self.data_infos[idx]["id"]
         ann_ids = self.coco.get_ann_ids(img_ids=[img_id])
         ann_info = self.coco.load_anns(ann_ids)
@@ -246,7 +265,8 @@ class CocoDataset:
         return ann
 
 
-def find_label_by_name(labels, name, domain):
+@check_input_parameters_type()
+def find_label_by_name(labels: Sequence[LabelEntity], name: str, domain: Domain):
     matching_labels = [label for label in labels if label.name == name]
     if len(matching_labels) == 1:
         return matching_labels[0]
@@ -258,6 +278,8 @@ def find_label_by_name(labels, name, domain):
         raise ValueError("Found multiple matching labels")
 
 
+@check_input_parameters_type({"ann_file_path": JsonFilePathCheck,
+                              "data_root_dir": DirectoryPathCheck})
 def load_dataset_items_coco_format(
     ann_file_path: str,
     data_root_dir: str,
@@ -346,7 +368,8 @@ def load_dataset_items_coco_format(
     return dataset_items
 
 
-def get_sizes_from_dataset_entity(dataset: DatasetEntity, target_wh: list):
+@check_input_parameters_type({"dataset": DatasetParamTypeCheck})
+def get_sizes_from_dataset_entity(dataset: DatasetEntity, target_wh: List[int]):
     """
     Function to get sizes of instances in DatasetEntity and to resize it to the target size.
 
@@ -366,7 +389,8 @@ def get_sizes_from_dataset_entity(dataset: DatasetEntity, target_wh: list):
     return wh_stats
 
 
-def get_anchor_boxes(wh_stats, group_as):
+@check_input_parameters_type()
+def get_anchor_boxes(wh_stats: List[tuple], group_as: List[int]):
     from sklearn.cluster import KMeans
     kmeans = KMeans(init='k-means++', n_clusters=sum(group_as), random_state=0).fit(wh_stats)
     centers = kmeans.cluster_centers_
@@ -382,7 +406,8 @@ def get_anchor_boxes(wh_stats, group_as):
     return widths, heights
 
 
-def format_list_to_str(value_lists):
+@check_input_parameters_type()
+def format_list_to_str(value_lists: list):
     """ Decrease floating point digits in logs """
     str_value = ''
     for value_list in value_lists:

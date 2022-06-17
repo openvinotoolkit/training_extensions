@@ -11,6 +11,8 @@ env
 data/*
 .coverage
 
+build/
+dist/
 *egg-info
 
 *.pth

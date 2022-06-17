@@ -17,12 +17,15 @@ import math
 import os
 from math import inf, isnan
 from collections import defaultdict
+from typing import Any, Dict, Optional
 
 from mmcv.runner.hooks import HOOKS, Hook, LoggerHook, LrUpdaterHook
 from mmcv.runner import BaseRunner, EpochBasedRunner
 from mmcv.runner.dist_utils import master_only
 from mmcv.utils import print_log
 
+from ote_sdk.usecases.reporting.time_monitor_callback import TimeMonitorCallback
+from ote_sdk.utils.argument_checks import check_input_parameters_type
 from mmdet.utils.logger import get_root_logger
 
 
@@ -31,6 +34,7 @@ logger = get_root_logger()
 
 @HOOKS.register_module()
 class CancelTrainingHook(Hook):
+    @check_input_parameters_type()
     def __init__(self, interval: int = 5):
         """
         Periodically check whether whether a stop signal is sent to the runner during model training.
@@ -53,6 +57,7 @@ class CancelTrainingHook(Hook):
             runner.should_stop = True  # Set this flag to true to stop the current training epoch
             os.remove(stop_filepath)
 
+    @check_input_parameters_type()
     def after_train_iter(self, runner: BaseRunner):
         if not self.every_n_iters(runner, self.interval):
             return
@@ -68,7 +73,8 @@ class FixedMomentumUpdaterHook(Hook):
         """
         pass
 
-    def before_run(self, runner):
+    @check_input_parameters_type()
+    def before_run(self, runner: BaseRunner):
         pass
 
 
@@ -81,7 +87,8 @@ class EnsureCorrectBestCheckpointHook(Hook):
         """
         pass
 
-    def after_run(self, runner):
+    @check_input_parameters_type()
+    def after_run(self, runner: BaseRunner):
         runner.call_hook('after_train_epoch')
 
 
@@ -99,17 +106,19 @@ class OTELoggerHook(LoggerHook):
                 points.append(f'({x},{y})')
             return 'curve[' + ','.join(points) + ']'
 
+    @check_input_parameters_type()
     def __init__(self,
-                 curves=None,
-                 interval=10,
-                 ignore_last=True,
-                 reset_flag=True,
-                 by_epoch=True):
+                 curves: Optional[Dict[Any, Curve]] = None,
+                 interval: int = 10,
+                 ignore_last: bool = True,
+                 reset_flag: bool = True,
+                 by_epoch: bool = True):
         super().__init__(interval, ignore_last, reset_flag, by_epoch)
         self.curves = curves if curves is not None else defaultdict(self.Curve)
 
     @master_only
-    def log(self, runner):
+    @check_input_parameters_type()
+    def log(self, runner: BaseRunner):
         tags = self.get_loggable_tags(runner, allow_text=False)
         if runner.max_epochs is not None:
             normalized_iter = self.get_iter(runner) / runner.max_iters * runner.max_epochs
@@ -124,7 +133,8 @@ class OTELoggerHook(LoggerHook):
             curve.x.append(normalized_iter)
             curve.y.append(value)
 
-    def after_train_epoch(self, runner):
+    @check_input_parameters_type()
+    def after_train_epoch(self, runner: BaseRunner):
         # Iteration counter is increased right after the last iteration in the epoch,
         # temporarily decrease it back.
         runner._iter -= 1
@@ -134,13 +144,15 @@ class OTELoggerHook(LoggerHook):
 
 @HOOKS.register_module()
 class OTEProgressHook(Hook):
-    def __init__(self, time_monitor, verbose=False):
+    @check_input_parameters_type()
+    def __init__(self, time_monitor: TimeMonitorCallback, verbose: bool = False):
         super().__init__()
         self.time_monitor = time_monitor
         self.verbose = verbose
         self.print_threshold = 1
 
-    def before_run(self, runner):
+    @check_input_parameters_type()
+    def before_run(self, runner: BaseRunner):
         total_epochs = runner.max_epochs if runner.max_epochs is not None else 1
         self.time_monitor.total_epochs = total_epochs
         self.time_monitor.train_steps = runner.max_iters // total_epochs if total_epochs else 1
@@ -150,16 +162,20 @@ class OTEProgressHook(Hook):
         self.time_monitor.current_epoch = 0
         self.time_monitor.on_train_begin()
 
-    def before_epoch(self, runner):
+    @check_input_parameters_type()
+    def before_epoch(self, runner: BaseRunner):
         self.time_monitor.on_epoch_begin(runner.epoch)
 
-    def after_epoch(self, runner):
+    @check_input_parameters_type()
+    def after_epoch(self, runner: BaseRunner):
         self.time_monitor.on_epoch_end(runner.epoch, runner.log_buffer.output)
 
-    def before_iter(self, runner):
+    @check_input_parameters_type()
+    def before_iter(self, runner: BaseRunner):
         self.time_monitor.on_train_batch_begin(1)
 
-    def after_iter(self, runner):
+    @check_input_parameters_type()
+    def after_iter(self, runner: BaseRunner):
         self.time_monitor.on_train_batch_end(1)
         if self.verbose:
             progress = self.progress
@@ -167,13 +183,16 @@ class OTEProgressHook(Hook):
                 logger.warning(f'training progress {progress:.0f}%')
                 self.print_threshold = (progress + 10) // 10 * 10
 
-    def before_val_iter(self, runner):
+    @check_input_parameters_type()
+    def before_val_iter(self, runner: BaseRunner):
         self.time_monitor.on_test_batch_begin(1)
 
-    def after_val_iter(self, runner):
+    @check_input_parameters_type()
+    def after_val_iter(self, runner: BaseRunner):
         self.time_monitor.on_test_batch_end(1)
 
-    def after_run(self, runner):
+    @check_input_parameters_type()
+    def after_run(self, runner: BaseRunner):
         self.time_monitor.on_train_end(1)
         self.time_monitor.update_progress_callback(int(self.time_monitor.get_progress()))
 
@@ -217,10 +236,11 @@ class EarlyStoppingHook(Hook):
     ]
     less_keys = ['loss']
 
+    @check_input_parameters_type()
     def __init__(self,
                  interval: int,
                  metric: str = 'bbox_mAP',
-                 rule: str = None,
+                 rule: Optional[str] = None,
                  patience: int = 5,
                  iteration_patience: int = 500,
                  min_delta: float = 0.0):
@@ -274,19 +294,22 @@ class EarlyStoppingHook(Hook):
         self.key_indicator = key_indicator
         self.compare_func = self.rule_map[self.rule]
 
-    def before_run(self, runner):
+    @check_input_parameters_type()
+    def before_run(self, runner: BaseRunner):
         self.by_epoch = False if runner.max_epochs is None else True
         for hook in runner.hooks:
             if isinstance(hook, LrUpdaterHook):
                 self.warmup_iters = hook.warmup_iters
                 break
 
-    def after_train_iter(self, runner):
+    @check_input_parameters_type()
+    def after_train_iter(self, runner: BaseRunner):
         """Called after every training iter to evaluate the results."""
         if not self.by_epoch:
             self._do_check_stopping(runner)
 
-    def after_train_epoch(self, runner):
+    @check_input_parameters_type()
+    def after_train_epoch(self, runner: BaseRunner):
         """Called after every training epoch to evaluate the results."""
         if self.by_epoch:
             self._do_check_stopping(runner)
@@ -371,14 +394,15 @@ class ReduceLROnPlateauLrUpdaterHook(LrUpdaterHook):
     ]
     less_keys = ['loss']
 
+    @check_input_parameters_type()
     def __init__(self,
-                 min_lr,
-                 interval,
-                 metric='bbox_mAP',
-                 rule=None,
-                 factor=0.1,
-                 patience=3,
-                 iteration_patience=300,
+                 min_lr: float,
+                 interval: int,
+                 metric: str = 'bbox_mAP',
+                 rule: Optional[str] = None,
+                 factor: float = 0.1,
+                 patience: int = 3,
+                 iteration_patience: int = 300,
                  **kwargs):
         super().__init__(**kwargs)
         self.interval = interval
@@ -438,7 +462,8 @@ class ReduceLROnPlateauLrUpdaterHook(LrUpdaterHook):
             return False
         return True
 
-    def get_lr(self, runner, base_lr):
+    @check_input_parameters_type()
+    def get_lr(self, runner: BaseRunner, base_lr: float):
         if not self._should_check_stopping(
                 runner) or self.warmup_iters > runner.iter:
             return base_lr
@@ -480,13 +505,14 @@ class ReduceLROnPlateauLrUpdaterHook(LrUpdaterHook):
             self.current_lr = max(self.current_lr * self.factor, self.min_lr)
         return self.current_lr
 
-    def before_run(self, runner):
+    @check_input_parameters_type()
+    def before_run(self, runner: BaseRunner):
         # TODO: remove overloaded method after fixing the issue
         #  https://github.com/open-mmlab/mmdetection/issues/6572
         for group in runner.optimizer.param_groups:
             group.setdefault('initial_lr', group['lr'])
         self.base_lr = [
-            group['lr'] for group in runner.optimizer.param_groups
+            group['initial_lr'] for group in runner.optimizer.param_groups
         ]
         self.bad_count = 0
         self.last_iter = 0
@@ -497,7 +523,8 @@ class ReduceLROnPlateauLrUpdaterHook(LrUpdaterHook):
 @HOOKS.register_module()
 class StopLossNanTrainingHook(Hook):
 
-    def after_train_iter(self, runner):
+    @check_input_parameters_type()
+    def after_train_iter(self, runner: BaseRunner):
         if isnan(runner.outputs['loss'].item()):
             logger.warning(f"Early Stopping since loss is NaN")
             runner.should_stop = True

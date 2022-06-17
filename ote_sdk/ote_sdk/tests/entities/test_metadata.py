@@ -19,16 +19,13 @@ import re
 
 import pytest
 
-from ote_sdk.configuration import ConfigurableParameters
-from ote_sdk.entities.datasets import DatasetEntity
-from ote_sdk.entities.label_schema import LabelSchemaEntity
 from ote_sdk.entities.metadata import (
     FloatMetadata,
     FloatType,
     IMetadata,
     MetadataItemEntity,
 )
-from ote_sdk.entities.model import ModelConfiguration, ModelEntity
+from ote_sdk.entities.model import ModelEntity
 from ote_sdk.tests.constants.ote_sdk_components import OteSdkComponent
 from ote_sdk.tests.constants.requirements import Requirements
 
@@ -59,7 +56,7 @@ class TestIMetadata:
 
         test_instance = IMetadata()
         assert isinstance(test_instance, IMetadata)
-        assert str(test_instance.name) == "typing.Union[str, NoneType]"
+        assert str(test_instance.name) == "typing.Optional[str]"
 
         test_instance.name = "String"
         assert test_instance.name == "String"
@@ -175,12 +172,8 @@ class TestMetadataItemEntity:
         test_data0 = test_data1 = i_metadata.name
         i_metadata.name = "i_metadata"
         test_data2 = i_metadata.name
-        configuration = ModelConfiguration(
-            configurable_parameters=ConfigurableParameters(header="test header"),
-            label_schema=LabelSchemaEntity(),
-        )
         test_model0 = test_model1 = ModelEntity(
-            train_dataset=DatasetEntity(), configuration=configuration
+            train_dataset="default_dataset", configuration="default_config"
         )
         test_instance0 = MetadataItemEntity(test_data0, test_model0)
         test_instance1 = MetadataItemEntity(test_data1, test_model1)

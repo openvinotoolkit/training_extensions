@@ -293,7 +293,10 @@ class TestCreateConverter:
                 name="Normal", domain=Domain.ANOMALY_CLASSIFICATION, id=ID("1")
             ),
             LabelEntity(
-                name="Anomalous", domain=Domain.ANOMALY_CLASSIFICATION, id=ID("2")
+                name="Anomalous",
+                domain=Domain.ANOMALY_CLASSIFICATION,
+                id=ID("2"),
+                is_anomalous=True,
             ),
         ]
         label_group = LabelGroup(
@@ -310,7 +313,12 @@ class TestCreateConverter:
         # "ANOMALY_DETECTION" is specified as "converter_type"
         labels = [
             LabelEntity(name="Normal", domain=Domain.ANOMALY_DETECTION, id=ID("1")),
-            LabelEntity(name="Anomalous", domain=Domain.ANOMALY_DETECTION, id=ID("2")),
+            LabelEntity(
+                name="Anomalous",
+                domain=Domain.ANOMALY_DETECTION,
+                id=ID("2"),
+                is_anomalous=True,
+            ),
         ]
         label_group = LabelGroup(name="Anomaly detection labels group", labels=labels)
         label_schema = LabelSchemaEntity(label_groups=[label_group])
@@ -325,7 +333,10 @@ class TestCreateConverter:
         labels = [
             LabelEntity(name="Normal", domain=Domain.ANOMALY_SEGMENTATION, id=ID("1")),
             LabelEntity(
-                name="Anomalous", domain=Domain.ANOMALY_SEGMENTATION, id=ID("2")
+                name="Anomalous",
+                domain=Domain.ANOMALY_SEGMENTATION,
+                id=ID("2"),
+                is_anomalous=True,
             ),
         ]
         label_group = LabelGroup(name="Anomaly detection labels group", labels=labels)
@@ -947,8 +958,18 @@ class TestSegmentationToAnnotation:
             non_empty_labels = [
                 LabelEntity(name="Normal", domain=Domain.CLASSIFICATION, id=ID("1")),
                 LabelEntity(name="Normal", domain=Domain.CLASSIFICATION, id=ID("2")),
-                LabelEntity(name="Anomalous", domain=Domain.CLASSIFICATION, id=ID("1")),
-                LabelEntity(name="Anomalous", domain=Domain.CLASSIFICATION, id=ID("2")),
+                LabelEntity(
+                    name="Anomalous",
+                    domain=Domain.CLASSIFICATION,
+                    id=ID("1"),
+                    is_anomalous=True,
+                ),
+                LabelEntity(
+                    name="Anomalous",
+                    domain=Domain.CLASSIFICATION,
+                    id=ID("2"),
+                    is_anomalous=True,
+                ),
             ]
             label_group = LabelGroup(
                 name="Classification labels group", labels=non_empty_labels
@@ -1030,7 +1051,12 @@ class TestSegmentationToAnnotation:
 
         non_empty_labels = [
             LabelEntity(name="Normal", domain=Domain.CLASSIFICATION, id=ID("1")),
-            LabelEntity(name="Anomalous", domain=Domain.CLASSIFICATION, id=ID("2")),
+            LabelEntity(
+                name="Anomalous",
+                domain=Domain.CLASSIFICATION,
+                id=ID("2"),
+                is_anomalous=True,
+            ),
         ]
         label_group = LabelGroup(
             name="Anomaly classification labels group", labels=non_empty_labels

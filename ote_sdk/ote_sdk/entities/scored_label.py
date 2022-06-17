@@ -5,11 +5,11 @@
 """This module define the scored label entity."""
 
 import datetime
+import math
 
 from ote_sdk.entities.color import Color
 from ote_sdk.entities.id import ID
 from ote_sdk.entities.label import Domain, LabelEntity
-from ote_sdk.utils.argument_checks import check_input_parameters_type
 
 
 class ScoredLabel:
@@ -20,8 +20,9 @@ class ScoredLabel:
     :param probability: a float denoting the probability of the shape belonging to the label.
     """
 
-    @check_input_parameters_type()
     def __init__(self, label: LabelEntity, probability: float = 0.0):
+        if math.isnan(probability) or (not 0 <= probability <= 1.0) :
+            raise ValueError(f"Probability should be in range [0, 1], {probability} is given")
         self.label = label
         self.probability = probability
 

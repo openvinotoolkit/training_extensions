@@ -63,7 +63,7 @@ args = {
 root = '/tmp/ote_cli/'
 ote_dir = os.getcwd()
 
-templates = Registry('external').filter(task_type='CLASSIFICATION').templates
+templates = Registry('external/deep-object-reid').filter(task_type='CLASSIFICATION').templates
 templates_ids = [template.model_template_id for template in templates]
 
 
@@ -139,6 +139,7 @@ class TestToolsClassification:
 
         nncf_export_testing(template, root)
 
+    @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     @pytest.mark.xfail(reason="CVS-82892")
     def test_nncf_eval(self, template):

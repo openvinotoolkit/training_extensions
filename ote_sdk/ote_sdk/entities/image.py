@@ -13,10 +13,6 @@ import numpy as np
 from ote_sdk.entities.annotation import Annotation
 from ote_sdk.entities.media import IMedia2DEntity
 from ote_sdk.entities.shapes.rectangle import Rectangle
-from ote_sdk.utils.argument_checks import (
-    OptionalImageFilePathCheck,
-    check_input_parameters_type,
-)
 
 
 class Image(IMedia2DEntity):
@@ -31,7 +27,6 @@ class Image(IMedia2DEntity):
     """
 
     # pylint: disable=too-many-arguments, redefined-builtin
-    @check_input_parameters_type({"file_path": OptionalImageFilePathCheck})
     def __init__(
         self,
         data: Optional[np.ndarray] = None,

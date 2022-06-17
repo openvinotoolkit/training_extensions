@@ -30,6 +30,7 @@ from ote_sdk.entities.inference_parameters import InferenceParameters
 from ote_sdk.entities.metadata import FloatMetadata, FloatType
 from ote_sdk.entities.model import (ModelEntity, ModelFormat, ModelOptimizationType,
                                     ModelPrecision)
+from ote_sdk.entities.model import OptimizationMethod
 from ote_sdk.entities.result_media import ResultMediaEntity
 from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.scored_label import ScoredLabel
@@ -42,6 +43,10 @@ from ote_sdk.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
 from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType, IExportTask
 from ote_sdk.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from ote_sdk.usecases.tasks.interfaces.unload_interface import IUnload
+from ote_sdk.utils.argument_checks import (
+    DatasetParamTypeCheck,
+    check_input_parameters_type,
+)
 from ote_sdk.utils.labels_utils import get_empty_label
 from scripts.default_config import (get_default_config, imagedata_kwargs,
                                     merge_from_files_with_base, model_kwargs)
@@ -63,6 +68,7 @@ class OTEClassificationInferenceTask(IInferenceTask, IEvaluationTask, IExportTas
 
     task_environment: TaskEnvironment
 
+    @check_input_parameters_type()
     def __init__(self, task_environment: TaskEnvironment):
         logger.info("Loading OTEClassificationTask.")
         self._scratch_space = tempfile.mkdtemp(prefix="ote-cls-scratch-")
@@ -185,6 +191,7 @@ class OTEClassificationInferenceTask(IInferenceTask, IEvaluationTask, IExportTas
         self._cfg.lr_finder.enable = self._hyperparams.learning_parameters.enable_lr_finder
         self._cfg.train.early_stopping = self._hyperparams.learning_parameters.enable_early_stopping
 
+    @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def infer(self, dataset: DatasetEntity,
               inference_parameters: Optional[InferenceParameters] = None) -> DatasetEntity:
         """
@@ -244,7 +251,7 @@ class OTEClassificationInferenceTask(IInferenceTask, IEvaluationTask, IExportTas
                 scores[i] = softmax_numpy(scores[i])
                 item_labels = get_multiclass_predictions(scores[i], self._labels, activate=False)
 
-            if (self._multilabel or self._hierarchical) and not item_labels:
+            if not item_labels:
                 item_labels = [ScoredLabel(self._empty_label, probability=1.)]
 
             dataset_item.append_labels(item_labels)
@@ -264,6 +271,7 @@ class OTEClassificationInferenceTask(IInferenceTask, IEvaluationTask, IExportTas
 
         return dataset
 
+    @check_input_parameters_type()
     def evaluate(
         self, output_resultset: ResultSetEntity, evaluation_metric: Optional[str] = None
     ):
@@ -271,6 +279,7 @@ class OTEClassificationInferenceTask(IInferenceTask, IEvaluationTask, IExportTas
         logger.info(f"Computes performance of {performance}")
         output_resultset.performance = performance
 
+    @check_input_parameters_type()
     def export(self, export_type: ExportType, output_model: ModelEntity):
         assert export_type == ExportType.OPENVINO
         output_model.model_format = ModelFormat.OPENVINO
@@ -289,8 +298,9 @@ class OTEClassificationInferenceTask(IInferenceTask, IEvaluationTask, IExportTas
                                 opset=self._cfg.model.export_onnx_opset, output_names=['logits', 'features', 'vector'])
                     self._model.forward = self._model.old_forward
                     del self._model.old_forward
+                pruning_transformation = OptimizationMethod.FILTER_PRUNING in self._optimization_methods
                 export_ir(onnx_model_path, self._cfg.data.norm_mean, self._cfg.data.norm_std,
-                          optimized_model_dir=optimized_model_dir)
+                          optimized_model_dir=optimized_model_dir, pruning_transformation=pruning_transformation)
 
                 bin_file = [f for f in os.listdir(optimized_model_dir) if f.endswith('.bin')][0]
                 xml_file = [f for f in os.listdir(optimized_model_dir) if f.endswith('.xml')][0]

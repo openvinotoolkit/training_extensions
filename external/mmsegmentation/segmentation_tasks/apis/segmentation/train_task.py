@@ -31,6 +31,10 @@ from ote_sdk.entities.train_parameters import TrainParameters
 from ote_sdk.entities.train_parameters import default_progress_callback as default_train_progress_callback
 from ote_sdk.serialization.label_mapper import label_schema_to_bytes
 from ote_sdk.usecases.tasks.interfaces.training_interface import ITrainingTask
+from ote_sdk.utils.argument_checks import (
+    DatasetParamTypeCheck,
+    check_input_parameters_type,
+)
 
 from mmseg.apis import train_segmentor
 from segmentation_tasks.apis.segmentation.config_utils import prepare_for_training, set_hyperparams
@@ -44,6 +48,7 @@ logger = logging.getLogger(__name__)
 
 class OTESegmentationTrainingTask(OTESegmentationInferenceTask, ITrainingTask):
 
+    @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def train(self, dataset: DatasetEntity,
               output_model: ModelEntity,
               train_parameters: Optional[TrainParameters] = None):
@@ -98,8 +103,8 @@ class OTESegmentationTrainingTask(OTESegmentationInferenceTask, ITrainingTask):
         self._model.load_state_dict(best_checkpoint['state_dict'])
 
         # Add loss curves
-        training_metrics = self._generate_training_metrics_group(learning_curves)
-        performance = Performance(score=ScoreMetric(value=0, name="None"),
+        training_metrics, best_score = self._generate_training_metrics_group(learning_curves)
+        performance = Performance(score=ScoreMetric(value=best_score, name="mDice"),
                                   dashboard_metrics=training_metrics)
 
         self.save_model(output_model)
@@ -122,6 +127,7 @@ class OTESegmentationTrainingTask(OTESegmentationInferenceTask, ITrainingTask):
 
         return os.path.join(work_dir, out_name)
 
+    @check_input_parameters_type()
     def save_model(self, output_model: ModelEntity):
         hyperparams_str = ids_to_strings(cfg_helper.convert(self._hyperparams, dict, enum_to_str=True))
         labels = {label.name: label.color.rgb_tuple for label in self._labels}
@@ -149,10 +155,10 @@ class OTESegmentationTrainingTask(OTESegmentationInferenceTask, ITrainingTask):
     def _generate_training_metrics_group(self, learning_curves) -> Optional[List[MetricsGroup]]:
         """
         Parses the mmsegmentation logs to get metrics from the latest training run
-
         :return output List[MetricsGroup]
         """
         output: List[MetricsGroup] = []
+        metric_key = 'val/mDice'
 
         # Model architecture
         architecture = InfoMetric(name='Model architecture', value=self._model_name)
@@ -163,8 +169,10 @@ class OTESegmentationTrainingTask(OTESegmentationInferenceTask, ITrainingTask):
 
         # Learning curves
         for key, curve in learning_curves.items():
+            if key == metric_key:
+                best_score = max(curve.y)
             metric_curve = CurveMetric(xs=curve.x, ys=curve.y, name=key)
             visualization_info = LineChartInfo(name=key, x_axis_label="Epoch", y_axis_label=key)
             output.append(MetricsGroup(metrics=[metric_curve], visualization_info=visualization_info))
 
-        return output
+        return output, best_score

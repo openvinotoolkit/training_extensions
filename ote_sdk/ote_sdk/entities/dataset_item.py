@@ -21,7 +21,6 @@ from ote_sdk.entities.model import ModelEntity
 from ote_sdk.entities.scored_label import ScoredLabel
 from ote_sdk.entities.shapes.rectangle import Rectangle
 from ote_sdk.entities.subset import Subset
-from ote_sdk.utils.argument_checks import check_input_parameters_type
 from ote_sdk.utils.shape_factory import ShapeFactory
 
 logger = logging.getLogger(__name__)
@@ -86,7 +85,6 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
     """
 
     # pylint: disable=too-many-arguments
-    @check_input_parameters_type()
     def __init__(
         self,
         media: IMedia2DEntity,
@@ -112,17 +110,24 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
                     break
         self.__roi = roi
 
-        self.__metadata: List[MetadataItemEntity] = []
+        self.__metadata: Sequence[MetadataItemEntity] = []
         if metadata is not None:
-            self.__metadata = list(metadata)
+            self.__metadata = metadata
 
         self.__ignored_labels: Set[LabelEntity] = (
             set() if ignored_labels is None else set(ignored_labels)
         )
 
-    @property
-    def metadata(self) -> Sequence[MetadataItemEntity]:
-        """Provides access to metadata."""
+    def set_metadata(self, metadata: Sequence[MetadataItemEntity]):
+        """
+        Sets the metadata
+        """
+        self.__metadata = metadata
+
+    def get_metadata(self) -> Sequence[MetadataItemEntity]:
+        """
+        Returns the metadata
+        """
         return self.__metadata
 
     @property
@@ -281,19 +286,22 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
 
                 shape_labels = annotation.get_labels(include_empty)
 
+                check_labels = False
                 if not include_ignored:
                     shape_labels = [
                         label
                         for label in shape_labels
                         if label.label not in self.ignored_labels
                     ]
+                    check_labels = True
 
                 if labels is not None:
                     shape_labels = [
                         label for label in shape_labels if label.name in labels_set
                     ]
+                    check_labels = True
 
-                if len(shape_labels) == 0:
+                if check_labels and len(shape_labels) == 0:
                     continue
 
                 if not is_full_box:
@@ -400,7 +408,7 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
 
         roi_annotation = None
         for annotation in self.annotation_scene.annotations:
-            if annotation == self.roi:
+            if annotation.shape == self.roi.shape:
                 roi_annotation = annotation
                 break
 
@@ -485,6 +493,6 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
         """
         return [
             meta
-            for meta in self.metadata
+            for meta in self.get_metadata()
             if meta.data.name == name and meta.model == model
         ]

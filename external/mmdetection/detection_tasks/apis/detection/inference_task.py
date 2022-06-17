@@ -14,6 +14,7 @@
 
 import copy
 import io
+import math
 import os
 import shutil
 import tempfile
@@ -44,6 +45,10 @@ from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType, IExpo
 from ote_sdk.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from ote_sdk.usecases.tasks.interfaces.unload_interface import IUnload
 from ote_sdk.serialization.label_mapper import label_schema_to_bytes
+from ote_sdk.utils.argument_checks import (
+    DatasetParamTypeCheck,
+    check_input_parameters_type,
+)
 
 from mmdet.apis import export_model
 from detection_tasks.apis.detection.config_utils import patch_config, prepare_for_testing, set_hyperparams
@@ -62,6 +67,7 @@ class OTEDetectionInferenceTask(IInferenceTask, IExportTask, IEvaluationTask, IU
 
     _task_environment: TaskEnvironment
 
+    @check_input_parameters_type()
     def __init__(self, task_environment: TaskEnvironment):
         """"
         Task for inference object detection models using OTEDetection.
@@ -94,7 +100,7 @@ class OTEDetectionInferenceTask(IInferenceTask, IExportTask, IEvaluationTask, IU
 
         # Set default model attributes.
         self._optimization_methods = []
-        self._precision = [ModelPrecision.FP32]
+        self._precision = self._precision_from_config
         self._optimization_type = ModelOptimizationType.MO
 
         # Create and initialize PyTorch model.
@@ -106,6 +112,10 @@ class OTEDetectionInferenceTask(IInferenceTask, IExportTask, IEvaluationTask, IU
         self._is_training = False
         self._should_stop = False
         logger.info('Task initialization completed')
+
+    @property
+    def _precision_from_config(self):
+        return [ModelPrecision.FP16] if self._config.get('fp16', None) else [ModelPrecision.FP32]
 
     @property
     def _hyperparams(self):
@@ -127,8 +137,18 @@ class OTEDetectionInferenceTask(IInferenceTask, IExportTask, IEvaluationTask, IU
 
             try:
                 load_state_dict(model, model_data['model'])
+
+                if "load_from" in self._config:
+                    self._config.load_from = None
+
                 logger.info(f"Loaded model weights from Task Environment")
                 logger.info(f"Model architecture: {self._model_name}")
+                for name, weights in model.named_parameters():
+                    if(not torch.isfinite(weights).all()):
+                        logger.info(f"Invalid weights in: {name}. Recreate model from pre-trained weights")
+                        model = self._create_model(self._config, from_scratch=False)
+                        return model
+
             except BaseException as ex:
                 raise ValueError("Could not load the saved model. The model file structure is invalid.") \
                     from ex
@@ -200,13 +220,13 @@ class OTEDetectionInferenceTask(IInferenceTask, IExportTask, IEvaluationTask, IU
                     for mask, probability in zip(masks, boxes[:, 4]):
                         mask = mask.astype(np.uint8)
                         probability = float(probability)
+                        if math.isnan(probability) or probability < confidence_threshold:
+                            continue
                         contours, hierarchies = cv2.findContours(mask, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
                         if hierarchies is None:
                             continue
                         for contour, hierarchy in zip(contours, hierarchies[0]):
-                            if hierarchy[3] != -1:
-                                continue
-                            if len(contour) <= 2 or probability < confidence_threshold:
+                            if hierarchy[3] != -1 or len(contour) <= 2:
                                 continue
                             if self._task_type == TaskType.INSTANCE_SEGMENTATION:
                                 points = [Point(x=point[0][0] / width, y=point[0][1] / height) for point in contour]
@@ -215,7 +235,7 @@ class OTEDetectionInferenceTask(IInferenceTask, IExportTask, IEvaluationTask, IU
                                 points = [Point(x=point[0] / width, y=point[1] / height) for point in box_points]
                             labels = [ScoredLabel(self._labels[label_idx], probability=probability)]
                             polygon = Polygon(points=points)
-                            if polygon.get_area() > 1e-12:
+                            if cv2.contourArea(contour) > 0 and polygon.get_area() > 1e-12:
                                 shapes.append(Annotation(polygon, labels=labels, id=ID(f"{label_idx:08}")))
             else:
                 raise RuntimeError(
@@ -228,6 +248,7 @@ class OTEDetectionInferenceTask(IInferenceTask, IExportTask, IEvaluationTask, IU
                                                          add_saliency_map)
 
 
+    @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def infer(self, dataset: DatasetEntity, inference_parameters: Optional[InferenceParameters] = None) -> DatasetEntity:
         """ Analyzes a dataset using the latest inference model. """
 
@@ -309,7 +330,7 @@ class OTEDetectionInferenceTask(IInferenceTask, IExportTask, IEvaluationTask, IU
 
         return eval_predictions, metric
 
-
+    @check_input_parameters_type()
     def evaluate(self,
                  output_result_set: ResultSetEntity,
                  evaluation_metric: Optional[str] = None):
@@ -354,6 +375,7 @@ class OTEDetectionInferenceTask(IInferenceTask, IExportTask, IEvaluationTask, IU
             logger.warning(f"Done unloading. "
                            f"Torch is still occupying {torch.cuda.memory_allocated()} bytes of GPU memory")
 
+    @check_input_parameters_type()
     def export(self,
                export_type: ExportType,
                output_model: ModelEntity):
@@ -374,7 +396,8 @@ class OTEDetectionInferenceTask(IInferenceTask, IExportTask, IEvaluationTask, IU
                     model = self._model.cpu()
                 pruning_transformation = OptimizationMethod.FILTER_PRUNING in self._optimization_methods
                 export_model(model, self._config, tempdir, target='openvino',
-                             pruning_transformation=pruning_transformation)
+                             pruning_transformation=pruning_transformation,
+                             precision=self._precision_from_config[0].name)
                 bin_file = [f for f in os.listdir(tempdir) if f.endswith('.bin')][0]
                 xml_file = [f for f in os.listdir(tempdir) if f.endswith('.xml')][0]
                 with open(os.path.join(tempdir, bin_file), "rb") as f:

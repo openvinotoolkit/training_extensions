@@ -17,6 +17,10 @@
 import abc
 
 from torch.utils.tensorboard import SummaryWriter
+from ote_sdk.utils.argument_checks import (
+    DirectoryPathCheck,
+    check_input_parameters_type,
+)
 
 
 class IMetricsMonitor(metaclass=abc.ABCMeta):
@@ -72,10 +76,12 @@ class StopCallback(IStopCallback):
 
 
 class MetricsMonitor(IMetricsMonitor):
+    @check_input_parameters_type({"log_dir": DirectoryPathCheck})
     def __init__(self, log_dir):
         self.log_dir = log_dir
         self.tb = None
 
+    @check_input_parameters_type()
     def add_scalar(self, capture: str, value: float, timestamp: int):
         if not self.tb:
             self.tb = SummaryWriter(self.log_dir)
@@ -102,6 +108,7 @@ class DefaultMetricsMonitor(IMetricsMonitor):
     def __init__(self):
         self.metrics_dict = {}
 
+    @check_input_parameters_type()
     def add_scalar(self, capture: str, value: float, timestamp: int):
         if capture in self.metrics_dict:
             self.metrics_dict[capture].append((timestamp, value))
@@ -111,9 +118,11 @@ class DefaultMetricsMonitor(IMetricsMonitor):
     def get_metric_keys(self):
         return self.metrics_dict.keys()
 
+    @check_input_parameters_type()
     def get_metric_values(self, capture: str):
         return [item[1] for item in self.metrics_dict[capture]]
 
+    @check_input_parameters_type()
     def get_metric_timestamps(self, capture: str):
         return [item[0] for item in self.metrics_dict[capture]]
 

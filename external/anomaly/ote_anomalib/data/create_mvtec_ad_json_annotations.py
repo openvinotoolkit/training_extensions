@@ -87,7 +87,7 @@ def create_bboxes_from_mask(mask_path: str) -> List[List[float]]:
     return bboxes
 
 
-def create_polygons_from_mask(mask_path: str) -> List[List[float]]:
+def create_polygons_from_mask(mask_path: str) -> List[List[List[float]]]:
     """Create polygons from binary mask.
 
     Args:
@@ -99,8 +99,8 @@ def create_polygons_from_mask(mask_path: str) -> List[List[float]]:
     mask = cv2.imread(mask_path, cv2.IMREAD_GRAYSCALE)
     height, width = mask.shape
 
-    polygons = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)[0][0]
-    polygons = [[x / width, y / height] for polygon in polygons for (x, y) in polygon]
+    polygons = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)[0]
+    polygons = [[[point[0][0] / width, point[0][1] / height] for point in polygon] for polygon in polygons]
 
     return polygons
 
@@ -184,7 +184,7 @@ def create_task_annotations(task: str, data_path: str, annotation_path: str) -> 
     Raises:
         ValueError: When task is not classification, detection or segmentation.
     """
-    annotation_path = os.path.join(data_path, task)
+    annotation_path = os.path.join(annotation_path, task)
     os.makedirs(annotation_path, exist_ok=True)
 
     for split in ["train", "val", "test"]:

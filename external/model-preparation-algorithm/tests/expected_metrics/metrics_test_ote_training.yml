@@ -1,0 +1,104 @@
+? "ACTION-training_evaluation,model-ClassIncremental_Image_Classification_EfficinetNet-B0,dataset-cifar10_cls_incr,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.Accuracy":
+    "target_value": 0.96
+    "max_diff_if_less_threshold": 0.015
+    "max_diff_if_greater_threshold": 0.02
+? "ACTION-export_evaluation,model-ClassIncremental_Image_Classification_EfficinetNet-B0,dataset-cifar10_cls_incr,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.Accuracy":
+    "base": "training_evaluation.metrics.accuracy.Accuracy"
+    "max_diff": 0.01
+? "ACTION-pot_evaluation,model-ClassIncremental_Image_Classification_EfficinetNet-B0,dataset-cifar10_cls_incr,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.Accuracy":
+    "base": "export_evaluation.metrics.accuracy.Accuracy"
+    "max_diff": 0.05
+? "ACTION-training_evaluation,model-ClassIncremental_Image_Classification_EfficinetNet-V2-S,dataset-cifar10_cls_incr,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.Accuracy":
+    "target_value": 0.96
+    "max_diff_if_less_threshold": 0.015
+    "max_diff_if_greater_threshold": 0.02
+? "ACTION-export_evaluation,model-ClassIncremental_Image_Classification_EfficinetNet-V2-S,dataset-cifar10_cls_incr,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.Accuracy":
+    "base": "training_evaluation.metrics.accuracy.Accuracy"
+    "max_diff": 0.01
+? "ACTION-pot_evaluation,model-ClassIncremental_Image_Classification_EfficinetNet-V2-S,dataset-cifar10_cls_incr,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.Accuracy":
+    "base": "export_evaluation.metrics.accuracy.Accuracy"
+    "max_diff": 0.05
+? "ACTION-training_evaluation,model-ClassIncremental_Image_Classification_MobileNet-V3-large-1x,dataset-cifar10_cls_incr,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.Accuracy":
+    "target_value": 0.94
+    "max_diff_if_less_threshold": 0.015
+    "max_diff_if_greater_threshold": 0.02
+? "ACTION-export_evaluation,model-ClassIncremental_Image_Classification_MobileNet-V3-large-1x,dataset-cifar10_cls_incr,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.Accuracy":
+    "base": "training_evaluation.metrics.accuracy.Accuracy"
+    "max_diff": 0.01
+? "ACTION-pot_evaluation,model-ClassIncremental_Image_Classification_MobileNet-V3-large-1x,dataset-cifar10_cls_incr,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.Accuracy":
+    "base": "export_evaluation.metrics.accuracy.Accuracy"
+    "max_diff": 0.05
+? "ACTION-training_evaluation,model-ClassIncremental_Image_Classification_MobileNet-V3-large-0.75x,dataset-cifar10_cls_incr,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.Accuracy":
+    "target_value": 0.94
+    "max_diff_if_less_threshold": 0.015
+    "max_diff_if_greater_threshold": 0.02
+? "ACTION-export_evaluation,model-ClassIncremental_Image_Classification_MobileNet-V3-large-0.75x,dataset-cifar10_cls_incr,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.Accuracy":
+    "base": "training_evaluation.metrics.accuracy.Accuracy"
+    "max_diff": 0.01
+? "ACTION-pot_evaluation,model-ClassIncremental_Image_Classification_MobileNet-V3-large-0.75x,dataset-cifar10_cls_incr,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.Accuracy":
+    "base": "export_evaluation.metrics.accuracy.Accuracy"
+    "max_diff": 0.05
+? "ACTION-training_evaluation,model-ClassIncremental_Image_Classification_MobileNet-V3-small,dataset-cifar10_cls_incr,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.Accuracy":
+    "target_value": 0.94
+    "max_diff_if_less_threshold": 0.015
+    "max_diff_if_greater_threshold": 0.02
+? "ACTION-export_evaluation,model-ClassIncremental_Image_Classification_MobileNet-V3-small,dataset-cifar10_cls_incr,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.Accuracy":
+    "base": "training_evaluation.metrics.accuracy.Accuracy"
+    "max_diff": 0.01
+? "ACTION-pot_evaluation,model-ClassIncremental_Image_Classification_MobileNet-V3-small,dataset-cifar10_cls_incr,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.Accuracy":
+    "base": "export_evaluation.metrics.accuracy.Accuracy"
+    "max_diff": 0.05
+? "ACTION-training_evaluation,model-ClassIncremental_Object_Detection_Gen3_ATSS,dataset-coco_cls_incr,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "target_value": 0.66
+    "max_diff_if_less_threshold": 0.01
+    "max_diff_if_greater_threshold": 0.04
+? "ACTION-export_evaluation,model-ClassIncremental_Object_Detection_Gen3_ATSS,dataset-coco_cls_incr,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "training_evaluation.metrics.accuracy.f-measure"
+    "max_diff": 0.01
+? "ACTION-pot_evaluation,model-ClassIncremental_Object_Detection_Gen3_ATSS,dataset-coco_cls_incr,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "export_evaluation.metrics.accuracy.f-measure"
+    "max_diff": 0.04
+? "ACTION-training_evaluation,model-ClassIncremental_Object_Detection_Gen3_VFNet,dataset-coco_cls_incr,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "target_value": 0.65
+    "max_diff_if_less_threshold": 0.01
+    "max_diff_if_greater_threshold": 0.04
+? "ACTION-export_evaluation,model-ClassIncremental_Object_Detection_Gen3_VFNet,dataset-coco_cls_incr,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "training_evaluation.metrics.accuracy.f-measure"
+    "max_diff": 0.01
+? "ACTION-pot_evaluation,model-ClassIncremental_Object_Detection_Gen3_VFNet,dataset-coco_cls_incr,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.f-measure":
+    "base": "export_evaluation.metrics.accuracy.f-measure"
+    "max_diff": 0.04
+? "ACTION-training_evaluation,model-ClassIncremental_Semantic_Segmentation_Lite-HRNet-18_OCR,dataset-voc_cls_incr,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.Dice Average":
+    "target_value": 0.48
+    "max_diff_if_less_threshold": 0.01
+    "max_diff_if_greater_threshold": 0.05
+? "ACTION-export_evaluation,model-ClassIncremental_Semantic_Segmentation_Lite-HRNet-18_OCR,dataset-voc_cls_incr,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.Dice Average":
+    "base": "training_evaluation.metrics.accuracy.Dice Average"
+    "max_diff": 0.01
+? "ACTION-pot_evaluation,model-ClassIncremental_Semantic_Segmentation_Lite-HRNet-18_OCR,dataset-voc_cls_incr,num_iters-CONFIG,batch-CONFIG,usecase-reallife"
+: "metrics.accuracy.Dice Average":
+    "base": "export_evaluation.metrics.accuracy.Dice Average"
+    "max_diff": 0.04

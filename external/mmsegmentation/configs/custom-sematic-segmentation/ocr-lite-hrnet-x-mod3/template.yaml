@@ -14,7 +14,7 @@ framework: OTESegmentation v0.14.0
 entrypoints:
   base: segmentation_tasks.apis.segmentation.OTESegmentationTrainingTask
   openvino: segmentation_tasks.apis.segmentation.OpenVINOSegmentationTask
-  # nncf: segmentation_tasks.apis.segmentation.OTESegmentationNNCFTask
+  nncf: segmentation_tasks.apis.segmentation.OTESegmentationNNCFTask
 
 # Capabilities.
 capabilities:
@@ -27,8 +27,10 @@ hyper_parameters:
     learning_parameters:
       batch_size:
         default_value: 5
+        auto_hpo_state: POSSIBLE
       learning_rate:
         default_value: 0.001
+        auto_hpo_state: POSSIBLE
       learning_rate_fixed_iters:
         default_value: 0
       learning_rate_warmup_iters:

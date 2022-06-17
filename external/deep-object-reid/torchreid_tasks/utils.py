@@ -18,13 +18,14 @@ from contextlib import contextmanager
 from enum import Enum, auto
 import importlib
 import json
+import math
 import os
 import shutil
 import tempfile
 import time
 from os import path as osp
 from operator import itemgetter
-from typing import List
+from typing import Iterable, List, Union
 
 import cv2 as cv
 import numpy as np
@@ -38,11 +39,18 @@ from ote_sdk.entities.image import Image
 from ote_sdk.entities.label import Domain, LabelEntity
 from ote_sdk.entities.label_schema import (LabelGroup, LabelGroupType,
                                            LabelSchemaEntity)
+from ote_sdk.entities.model_template import ModelTemplate
 from ote_sdk.entities.scored_label import ScoredLabel
 from ote_sdk.entities.shapes.rectangle import Rectangle
 from ote_sdk.entities.subset import Subset
 from ote_sdk.entities.train_parameters import UpdateProgressCallback
 from ote_sdk.usecases.reporting.time_monitor_callback import TimeMonitorCallback
+from ote_sdk.utils.argument_checks import (
+    DatasetParamTypeCheck,
+    OptionalDirectoryPathCheck,
+    check_input_parameters_type,
+)
+from torch.nn.modules import Module
 
 from torchreid.utils import set_model_attr, get_model_attr
 
@@ -53,6 +61,12 @@ class ClassificationType(Enum):
 
 
 class ClassificationDatasetAdapter(DatasetEntity):
+    @check_input_parameters_type({"train_ann_file": OptionalDirectoryPathCheck,
+                                  "train_data_root": OptionalDirectoryPathCheck,
+                                  "val_ann_file": OptionalDirectoryPathCheck,
+                                  "val_data_root": OptionalDirectoryPathCheck,
+                                  "test_ann_file": OptionalDirectoryPathCheck,
+                                  "test_data_root": OptionalDirectoryPathCheck})
     def __init__(self,
                  train_ann_file=None,
                  train_data_root=None,
@@ -202,7 +216,8 @@ class ClassificationDatasetAdapter(DatasetEntity):
         return label_schema
 
 
-def generate_label_schema(not_empty_labels, multilabel=False):
+@check_input_parameters_type()
+def generate_label_schema(not_empty_labels: List[LabelEntity], multilabel: bool = False):
     assert len(not_empty_labels) > 1
 
     label_schema = LabelSchemaEntity()
@@ -218,6 +233,7 @@ def generate_label_schema(not_empty_labels, multilabel=False):
     return label_schema
 
 
+@check_input_parameters_type()
 def get_multihead_class_info(label_schema: LabelSchemaEntity):
     all_groups = label_schema.get_groups(include_empty=False)
     all_groups_str = []
@@ -260,8 +276,9 @@ def get_multihead_class_info(label_schema: LabelSchemaEntity):
 
 
 class OTEClassificationDataset:
-    def __init__(self, ote_dataset: DatasetEntity, labels, multilabel=False, hierarchical=False,
-                 mixed_cls_heads_info={}, keep_empty_label=False):
+    @check_input_parameters_type({"ote_dataset": DatasetParamTypeCheck})
+    def __init__(self, ote_dataset: DatasetEntity, labels: List[LabelEntity], multilabel: bool = False,
+                 hierarchical: bool = False, mixed_cls_heads_info: dict = {}, keep_empty_label: bool = False):
         super().__init__()
         self.ote_dataset = ote_dataset
         self.multilabel = multilabel
@@ -313,7 +330,8 @@ class OTEClassificationDataset:
             else:
                 self.annotation.append({'label': class_indices[0]})
 
-    def __getitem__(self, idx):
+    @check_input_parameters_type()
+    def __getitem__(self, idx: int):
         sample = self.ote_dataset[idx].numpy  # This returns 8-bit numpy array of shape (height, width, RGB)
         label = self.annotation[idx]['label']
         return {'img': sample, 'label': label}
@@ -328,13 +346,15 @@ class OTEClassificationDataset:
         return self.label_names
 
 
-def get_task_class(path):
+@check_input_parameters_type()
+def get_task_class(path: str):
     module_name, class_name = path.rsplit('.', 1)
     module = importlib.import_module(module_name)
     return getattr(module, class_name)
 
 
-def reload_hyper_parameters(model_template):
+@check_input_parameters_type()
+def reload_hyper_parameters(model_template: ModelTemplate):
     """ This function copies template.yaml file and its configuration.yaml dependency to temporal folder.
         Then it re-loads hyper parameters from copied template.yaml file.
         This function should not be used in general case, it is assumed that
@@ -353,7 +373,8 @@ def reload_hyper_parameters(model_template):
     assert model_template.hyper_parameters.data
 
 
-def set_values_as_default(parameters):
+@check_input_parameters_type()
+def set_values_as_default(parameters: dict):
     for v in parameters.values():
         if isinstance(v, dict) and 'value' not in v:
             set_values_as_default(v)
@@ -363,7 +384,8 @@ def set_values_as_default(parameters):
 
 
 @contextmanager
-def force_fp32(model):
+@check_input_parameters_type()
+def force_fp32(model: Module):
     mix_precision_status = get_model_attr(model, 'mix_precision')
     set_model_attr(model, 'mix_precision', False)
     try:
@@ -383,7 +405,11 @@ class TrainingProgressCallback(TimeMonitorCallback):
     def on_epoch_end(self, epoch, logs=None):
         self.past_epoch_duration.append(time.time() - self.start_epoch_time)
         self._calculate_average_epoch()
-        self.update_progress_callback(self.get_progress(), score=float(logs))
+        score = logs
+        if hasattr(self.update_progress_callback, 'metric') and isinstance(logs, dict):
+            score = logs.get(self.update_progress_callback.metric, None)
+            score = float(score) if score is not None else None
+        self.update_progress_callback(self.get_progress(), score=score)
 
 
 class InferenceProgressCallback(TimeMonitorCallback):
@@ -435,7 +461,8 @@ class OptimizationProgressCallback(TimeMonitorCallback):
         self.update_progress_callback(self.get_progress())
 
 
-def preprocess_features_for_actmap(features):
+@check_input_parameters_type()
+def preprocess_features_for_actmap(features: Union[np.ndarray, Iterable, int, float]):
     features = np.mean(features, axis=1)
     b, h, w = features.shape
     features = features.reshape(b, h * w)
@@ -445,7 +472,9 @@ def preprocess_features_for_actmap(features):
     return features
 
 
-def get_actmap(features, output_res):
+@check_input_parameters_type()
+def get_actmap(features: Union[np.ndarray, Iterable, int, float],
+               output_res: Union[tuple, list]):
     am = cv.resize(features, output_res)
     am = 255 * (am - np.min(am)) / (np.max(am) - np.min(am) + 1e-12)
     am = np.uint8(np.floor(am))
@@ -453,30 +482,37 @@ def get_actmap(features, output_res):
     return am
 
 
-def active_score_from_probs(predictions):
+@check_input_parameters_type()
+def active_score_from_probs(predictions: Union[np.ndarray, Iterable, int, float]):
     top_idxs = np.argpartition(predictions, -2)[-2:]
     top_probs = predictions[top_idxs]
     return np.max(top_probs) - np.min(top_probs)
 
 
+@check_input_parameters_type()
 def sigmoid_numpy(x: np.ndarray):
     return 1. / (1. + np.exp(-1. * x))
 
 
+@check_input_parameters_type()
 def softmax_numpy(x: np.ndarray):
-    x = np.exp(x)
+    x = np.exp(x - np.max(x))
     x /= np.sum(x)
     return x
 
 
+@check_input_parameters_type()
 def get_multiclass_predictions(logits: np.ndarray, labels: List[LabelEntity],
                                activate: bool = True) -> List[ScoredLabel]:
     i = np.argmax(logits)
     if activate:
         logits = softmax_numpy(logits)
+    if math.isnan(float(logits[i])):
+        return []
     return [ScoredLabel(labels[i], probability=float(logits[i]))]
 
 
+@check_input_parameters_type()
 def get_multilabel_predictions(logits: np.ndarray, labels: List[LabelEntity],
                                pos_thr: float = 0.5, activate: bool = True) -> List[ScoredLabel]:
     if activate:
@@ -490,12 +526,13 @@ def get_multilabel_predictions(logits: np.ndarray, labels: List[LabelEntity],
     return item_labels
 
 
+@check_input_parameters_type()
 def get_hierarchical_predictions(logits: np.ndarray, labels: List[LabelEntity],
                                  label_schema: LabelSchemaEntity, multihead_class_info: dict,
                                  pos_thr: float = 0.5, activate: bool = True) -> List[ScoredLabel]:
     predicted_labels = []
     for i in range(multihead_class_info['num_multiclass_heads']):
-        logits_begin, logits_end = multihead_class_info['head_idx_to_logits_range'][i]
+        logits_begin, logits_end = multihead_class_info['head_idx_to_logits_range'][str(i)]
         head_logits = logits[logits_begin : logits_end]
         if activate:
             head_logits = softmax_numpy(head_logits)
@@ -517,3 +554,60 @@ def get_hierarchical_predictions(logits: np.ndarray, labels: List[LabelEntity],
                 predicted_labels.append(ScoredLabel(label=ote_label, probability=float(head_logits[i])))
 
     return label_schema.resolve_labels_probabilistic(predicted_labels)
+
+
+# Temp copy from detection_tasks
+# TODO: refactoring to somewhere
+from typing import Any, Dict, Optional
+from mmcv.runner.hooks import HOOKS, Hook, LoggerHook
+from mmcv.runner import BaseRunner, EpochBasedRunner
+from mmcv.runner.dist_utils import master_only
+from ote_sdk.utils.argument_checks import check_input_parameters_type
+@HOOKS.register_module()
+class OTELoggerHook(LoggerHook):
+
+    class Curve:
+        def __init__(self):
+            self.x = []
+            self.y = []
+
+        def __repr__(self):
+            points = []
+            for x, y in zip(self.x, self.y):
+                points.append(f'({x},{y})')
+            return 'curve[' + ','.join(points) + ']'
+
+    @check_input_parameters_type()
+    def __init__(self,
+                 curves: Optional[Dict[Any, Curve]] = None,
+                 interval: int = 10,
+                 ignore_last: bool = True,
+                 reset_flag: bool = True,
+                 by_epoch: bool = True):
+        super().__init__(interval, ignore_last, reset_flag, by_epoch)
+        self.curves = curves if curves is not None else defaultdict(self.Curve)
+
+    @master_only
+    @check_input_parameters_type()
+    def log(self, runner: BaseRunner):
+        tags = self.get_loggable_tags(runner, allow_text=False)
+        if runner.max_epochs is not None:
+            normalized_iter = self.get_iter(runner) / runner.max_iters * runner.max_epochs
+        else:
+            normalized_iter = self.get_iter(runner)
+        for tag, value in tags.items():
+            curve = self.curves[tag]
+            # Remove duplicates.
+            if len(curve.x) > 0 and curve.x[-1] == normalized_iter:
+                curve.x.pop()
+                curve.y.pop()
+            curve.x.append(normalized_iter)
+            curve.y.append(value)
+
+    @check_input_parameters_type()
+    def after_train_epoch(self, runner: BaseRunner):
+        # Iteration counter is increased right after the last iteration in the epoch,
+        # temporarily decrease it back.
+        runner._iter -= 1
+        super().after_train_epoch(runner)
+        runner._iter += 1

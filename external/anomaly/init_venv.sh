@@ -65,8 +65,8 @@ if [ -e "$CUDA_HOME" ]; then
 fi
 
 # install PyTorch
-export TORCH_VERSION=1.8.1
-export TORCHVISION_VERSION=0.9.1
+export TORCH_VERSION=1.8.2
+export TORCHVISION_VERSION=0.9.2
 
 if [[ -z ${CUDA_VERSION} ]]; then
   echo "CUDA was not found, installing dependencies in CPU-only mode. If you want to use CUDA, set CUDA_HOME and CUDA_VERSION beforehand."
@@ -79,8 +79,8 @@ else
     exit 1
   fi
   if [[ "${CUDA_VERSION_CODE}" == "111" ]] ; then
-    if [[ "${TORCH_VERSION}" != "1.8.1" ]] ; then
-      echo "if CUDA version is 11.1, then PyTorch must be 1.8.1"
+    if [[ "${TORCH_VERSION}" != "1.8.2" ]] ; then
+      echo "if CUDA version is 11.1, then PyTorch must be 1.8.2"
       exit 1
     fi
   fi
