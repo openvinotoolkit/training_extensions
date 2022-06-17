@@ -49,62 +49,91 @@ def check_hpopt_available():
         return False
     return True
 
+def _check_hpo_enabled_task(task_type: TaskType):
+    return task_type in [
+        TaskType.CLASSIFICATION,
+        TaskType.DETECTION,
+        TaskType.SEGMENTATION,
+        TaskType.INSTANCE_SEGMENTATION,
+        TaskType.ROTATED_DETECTION,
+        TaskType.ANOMALY_CLASSIFICATION,
+        TaskType.ANOMALY_DETECTION,
+        TaskType.ANOMALY_SEGMENTATION,
+    ]
+
+
+def _is_cls_framework_task(task_type: TaskType):
+    return task_type == TaskType.CLASSIFICATION
+
+
+def _is_det_framework_task(task_type: TaskType):
+    return task_type in [
+        TaskType.DETECTION,
+        TaskType.INSTANCE_SEGMENTATION,
+        TaskType.ROTATED_DETECTION
+    ]
+
+
+def _is_seg_framework_task(task_type: TaskType):
+    return task_type == TaskType.SEGMENTATION
+
+
+def _is_anomaly_framework_task(task_type: TaskType):
+    return task_type in [
+        TaskType.ANOMALY_CLASSIFICATION,
+        TaskType.ANOMALY_DETECTION,
+        TaskType.ANOMALY_SEGMENTATION
+    ]
+
 
 def run_hpo(args, environment, dataset, task_type):
     """Update the environment with better hyper-parameters found by HPO"""
-    if check_hpopt_available():
-        if task_type not in [
-            TaskType.CLASSIFICATION,
-            TaskType.DETECTION,
-            TaskType.SEGMENTATION,
-            TaskType.INSTANCE_SEGMENTATION,
-            TaskType.ROTATED_DETECTION,
-            TaskType.ANOMALY_CLASSIFICATION,
-            TaskType.ANOMALY_DETECTION,
-            TaskType.ANOMALY_SEGMENTATION,
-        ]:
-            print(
-                "Currently supported task types are classification, detection, segmentation and anomaly"
-                f"{task_type} is not supported yet."
-            )
-            return None
+    if not check_hpopt_available():
+        return
 
-        dataset_paths = {
-            "train_ann_file": args.train_ann_files,
-            "train_data_root": args.train_data_roots,
-            "val_ann_file": args.val_ann_files,
-            "val_data_root": args.val_data_roots,
-        }
-
-        hpo_save_path = os.path.abspath(
-            os.path.join(os.path.dirname(args.save_model_to), "hpo")
+    if not _check_hpo_enabled_task(task_type):
+        print(
+            "Currently supported task types are classification, detection, segmentation and anomaly"
+            f"{task_type} is not supported yet."
         )
-        hpo = HpoManager(
-            environment, dataset, dataset_paths, args.hpo_time_ratio, hpo_save_path
+        return None
+
+    dataset_paths = {
+        "train_ann_file": args.train_ann_files,
+        "train_data_root": args.train_data_roots,
+        "val_ann_file": args.val_ann_files,
+        "val_data_root": args.val_data_roots,
+    }
+
+    hpo_save_path = os.path.abspath(
+        os.path.join(os.path.dirname(args.save_model_to), "hpo")
+    )
+    hpo = HpoManager(
+        environment, dataset, dataset_paths, args.hpo_time_ratio, hpo_save_path
+    )
+    hyper_parameters, hpo_weight_path = hpo.run()
+
+    environment.set_hyper_parameters(hyper_parameters)
+
+    task_class = get_impl_class(environment.model_template.entrypoints.base)
+    task_class = get_train_wrapper_task(task_class, task_type)
+
+    task = task_class(task_environment=environment)
+
+    hpopt_cfg = _load_hpopt_config(
+        osp.join(
+            osp.dirname(environment.model_template.model_template_path),
+            "hpo_config.yaml",
         )
-        hyper_parameters, hpo_weight_path = hpo.run()
+    )
 
-        environment.set_hyper_parameters(hyper_parameters)
+    if hpopt_cfg.get("resume", False):
+        task.resume(hpo_weight_path)  # prepare finetune stage to resume
 
-        task_class = get_impl_class(environment.model_template.entrypoints.base)
-        task_class = get_train_wrapper_task(task_class, task_type)
+    if args.load_weights:
+        environment.model.configuration.configurable_parameters = hyper_parameters
 
-        task = task_class(task_environment=environment)
-
-        hpopt_cfg = _load_hpopt_config(
-            osp.join(
-                osp.dirname(environment.model_template.model_template_path),
-                "hpo_config.yaml",
-            )
-        )
-
-        if hpopt_cfg.get("resume", False):
-            task.resume(hpo_weight_path)  # prepare finetune stage to resume
-
-        if args.load_weights:
-            environment.model.configuration.configurable_parameters = hyper_parameters
-
-        return task
+    return task
 
 
 def get_cuda_device_list():
@@ -137,13 +166,9 @@ def run_hpo_trainer(
     hyper_parameters = default_hp
 
     # set epoch and warm-up stage depending on given epoch
-    if task_type == TaskType.CLASSIFICATION:
+    if _is_cls_framework_task(task_type):
         hyper_parameters.learning_parameters.max_num_epochs = hp_config["iterations"]
-    elif task_type in [
-        TaskType.DETECTION,
-        TaskType.INSTANCE_SEGMENTATION,
-        TaskType.ROTATED_DETECTION
-    ]:
+    elif _is_det_framework_task(task_type):
         if "bracket" not in hp_config:
             hyper_parameters.learning_parameters.learning_rate_warmup_iters = int(
                 hyper_parameters.learning_parameters.learning_rate_warmup_iters
@@ -151,7 +176,7 @@ def run_hpo_trainer(
                 / hyper_parameters.learning_parameters.num_iters
             )
         hyper_parameters.learning_parameters.num_iters = hp_config["iterations"]
-    elif task_type == TaskType.SEGMENTATION:
+    elif _is_seg_framework_task(task_type):
         if "bracket" not in hp_config:
             eph_comp = [
                 hyper_parameters.learning_parameters.learning_rate_fixed_iters,
@@ -268,31 +293,23 @@ def get_train_wrapper_task(impl_class, task_type):
             self._task_type = task_type
 
         def resume(self, resume_path):
-            if self._task_type == TaskType.CLASSIFICATION:
+            if _is_cls_framework_task(self._task_type):
                 self._cfg.model.resume = resume_path
                 self._cfg.test.save_initial_metric = True
-            elif self._task_type in [
-                TaskType.DETECTION,
-                TaskType.INSTANCE_SEGMENTATION,
-                TaskType.ROTATED_DETECTION
-            ]:
+            elif _is_det_framework_task(self._task_type):
                 self._config.resume_from = resume_path
-            elif self._task_type == TaskType.SEGMENTATION:
+            elif _is_seg_framework_task(self._task_type):
                 self._config.resume_from = resume_path
 
         def prepare_hpo(self, hp_config):
-            if self._task_type == TaskType.CLASSIFICATION:
+            if _is_cls_framework_task(self._task_type):
                 self._scratch_space = osp.join(
                     osp.dirname(hp_config["file_path"]), str(hp_config["trial_id"])
                 )
                 self._cfg.data.save_dir = self._scratch_space
                 self._cfg.model.save_all_chkpts = True
-            elif self._task_type in [
-                TaskType.DETECTION,
-                TaskType.SEGMENTATION,
-                TaskType.INSTANCE_SEGMENTATION,
-                TaskType.ROTATED_DETECTION
-            ]:
+            elif (_is_det_framework_task(self._task_type) or
+                  _is_seg_framework_task(self._task_type)):
                 self._config.work_dir = osp.join(
                     osp.dirname(hp_config["file_path"]), str(hp_config["trial_id"])
                 )
@@ -413,19 +430,15 @@ class HpoManager:
         train_dataset_size = len(dataset.get_subset(Subset.TRAINING))
         val_dataset_size = len(dataset.get_subset(Subset.VALIDATION))
 
+        task_type = self.environment.model_template.task_type
+
         # make batch size range lower than train set size
         batch_size_name = None
-        if self.environment.model_template.task_type in [
-            TaskType.DETECTION,
-            TaskType.SEGMENTATION,
-            TaskType.CLASSIFICATION,
-        ]:
+        if (_is_cls_framework_task(task_type) or
+            _is_det_framework_task(task_type) or
+            _is_seg_framework_task(task_type)):
             batch_size_name = "learning_parameters.batch_size"
-        elif self.environment.model_template.task_type in [
-            TaskType.ANOMALY_CLASSIFICATION,
-            TaskType.ANOMALY_DETECTION,
-            TaskType.ANOMALY_SEGMENTATION,
-        ]:
+        elif _is_anomaly_framework_task(task_type):
             batch_size_name = "dataset.train_batch_size"
         if batch_size_name is not None:
             if batch_size_name in hpopt_cfg["hp_space"]:
@@ -490,8 +503,7 @@ class HpoManager:
             # Prevent each trials from being stopped during warmup stage
             bs = default_hyper_parameters.get(batch_size_name)
             if "min_iterations" not in hpopt_cfg and bs is not None:
-                task_type = self.environment.model_template.task_type
-                if task_type == TaskType.CLASSIFICATION:
+                if _is_cls_framework_task(task_type):
                     with open(
                         osp.join(
                             osp.dirname(
@@ -506,12 +518,8 @@ class HpoManager:
                         hpopt_arguments["min_iterations"] = ceil(
                             model_yaml["train"]["warmup"] * bs / train_dataset_size
                         )
-                elif task_type in [
-                    TaskType.DETECTION,
-                    TaskType.SEGMENTATION,
-                    TaskType.INSTANCE_SEGMENTATION,
-                    TaskType.ROTATED_DETECTION
-                ]:
+                elif (_is_det_framework_task(task_type) or
+                      _is_seg_framework_task(task_type)):
                     hpopt_arguments["min_iterations"] = ceil(
                         env_hp.learning_parameters.learning_rate_warmup_iters
                         / ceil(train_dataset_size / bs)
@@ -677,17 +685,13 @@ class HpoManager:
         print(best_config)
 
         # get weight to pass for resume
-        if task_type == TaskType.CLASSIFICATION:
+        if _is_cls_framework_task(task_type):
             best_config_id = self.hpo.hpo_status["best_config_id"]
             hpo_weight_path = osp.realpath(
                 osp.join(self.hpo.save_path, str(best_config_id), "best.pth")
             )
-        elif task_type in [
-            TaskType.DETECTION,
-            TaskType.SEGMENTATION,
-            TaskType.INSTANCE_SEGMENTATION,
-            TaskType.ROTATED_DETECTION
-        ]:
+        elif (_is_det_framework_task(task_type) or
+              _is_seg_framework_task(task_type)):
             hpo_weight_path = osp.join(
                 self.hpo.save_path,
                 str(self.hpo.hpo_status["best_config_id"]),
@@ -748,22 +752,14 @@ class HpoManager:
 
         task_type = environment.model_template.task_type
         params = environment.get_hyper_parameters()
-        if task_type == TaskType.CLASSIFICATION:
+        if _is_cls_framework_task(task_type):
             learning_parameters = params.learning_parameters
             num_full_iterations = learning_parameters.max_num_epochs
-        elif task_type in [
-            TaskType.DETECTION,
-            TaskType.SEGMENTATION,
-            TaskType.INSTANCE_SEGMENTATION,
-            TaskType.ROTATED_DETECTION
-        ]:
+        elif (_is_det_framework_task(task_type) or
+              _is_seg_framework_task(task_type)):
             learning_parameters = params.learning_parameters
             num_full_iterations = learning_parameters.num_iters
-        elif task_type in [
-            TaskType.ANOMALY_CLASSIFICATION,
-            TaskType.ANOMALY_DETECTION,
-            TaskType.ANOMALY_SEGMENTATION,
-        ]:
+        elif _is_anomaly_framework_task(task_type):
             trainer = params.trainer
             num_full_iterations = trainer.max_epochs
 
