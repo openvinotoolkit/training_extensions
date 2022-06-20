@@ -7,7 +7,7 @@ import io
 import os
 import shutil
 import tempfile
-from typing import Optional, Union
+from typing import Union
 import numpy as np
 import torch
 from mmcv.utils.config import Config, ConfigDict
@@ -17,16 +17,18 @@ from mpa.stage import Stage
 from mpa.utils.config_utils import update_or_add_custom_hook
 from mpa.utils.logger import get_logger
 from ote_sdk.entities.datasets import DatasetEntity
-from ote_sdk.entities.inference_parameters import InferenceParameters
 from ote_sdk.entities.model import ModelEntity, ModelPrecision
 from ote_sdk.entities.subset import Subset
 from ote_sdk.entities.task_environment import TaskEnvironment
-from ote_sdk.entities.train_parameters import (TrainParameters,
-                                               UpdateProgressCallback)
 from ote_sdk.serialization.label_mapper import LabelSchemaMapper
 
 
 logger = get_logger()
+DEFAULT_META_KEYS = (
+    'filename', 'ori_filename', 'ori_shape',
+    'img_shape', 'pad_shape', 'scale_factor',
+    'flip', 'flip_direction', 'img_norm_cfg'
+)
 
 
 class BaseTask:
@@ -224,6 +226,13 @@ class BaseTask:
         else:
             return self._labels
 
+
+    @staticmethod
+    def _get_meta_keys(pipeline_step):
+        meta_keys = list(pipeline_step.get('meta_keys', DEFAULT_META_KEYS))
+        meta_keys.append('ignored_labels')
+        pipeline_step['meta_keys'] = set(meta_keys)
+        return pipeline_step
 
     @staticmethod
     def _get_confidence_threshold(hyperparams):
