@@ -56,9 +56,9 @@ from ote_sdk.tests.test_helpers import generate_random_annotated_image
 from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType
 from ote_sdk.utils.shape_factory import ShapeFactory
 
-DEFAULT_CLS_TEMPLATE_DIR = osp.join('configs', 'classification', 'efficientnet_b0_cls_incr')
-DEFAULT_DET_TEMPLATE_DIR = osp.join('configs', 'detection', 'mobilenetv2_atss_cls_incr')
-DEFAULT_SEG_TEMPLATE_DIR = osp.join('configs', 'segmentation', 'ocr-lite-hrnet-18-cls-incr')
+DEFAULT_CLS_TEMPLATE_DIR = osp.join('external', 'model-preparation-algorithm', 'configs', 'classification', 'efficientnet_b0_cls_incr')
+DEFAULT_DET_TEMPLATE_DIR = osp.join('external', 'model-preparation-algorithm', 'configs', 'detection', 'mobilenetv2_atss_cls_incr')
+DEFAULT_SEG_TEMPLATE_DIR = osp.join('external', 'model-preparation-algorithm', 'configs', 'segmentation', 'ocr-lite-hrnet-18-cls-incr')
 
 
 def eval(task: BaseTask, model: ModelEntity, dataset: DatasetEntity) -> Performance:
@@ -83,7 +83,7 @@ class MPAClsAPI(unittest.TestCase):
                                    'mobilenet_v3_large_1_cls_incr', 'mobilenet_v3_large_075_cls_incr',
                                    'mobilenet_v3_small_cls_incr']
         for model_template in classification_template:
-            parse_model_template(osp.join('configs', 'classification', model_template, 'template_experimental.yaml'))
+            parse_model_template(osp.join('external', 'model-preparation-algorithm', 'configs', 'classification', model_template, 'template_experimental.yaml'))
 
     @staticmethod
     def generate_label_schema(not_empty_labels, multilabel=False):
@@ -240,7 +240,7 @@ class MPADetAPI(unittest.TestCase):
     def test_reading_detection_cls_incr_model_template(self):
         detection_template = ['mobilenetv2_atss_cls_incr', 'resnet50_vfnet_cls_incr']
         for model_template in detection_template:
-            parse_model_template(osp.join('configs', 'detection', model_template, 'template_experimental.yaml'))
+            parse_model_template(osp.join('external', 'model-preparation-algorithm', 'configs', 'detection', model_template, 'template_experimental.yaml'))
 
     def init_environment(
             self,
@@ -455,7 +455,7 @@ class MPASegAPI(unittest.TestCase):
     def test_reading_segmentation_cls_incr_model_template(self):
         segmentation_template = ['ocr-lite-hrnet-18-cls-incr']
         for model_template in segmentation_template:
-            parse_model_template(osp.join('configs', 'segmentation', model_template, 'template_experimental.yaml'))
+            parse_model_template(osp.join('external', 'model-preparation-algorithm', 'configs', 'segmentation', model_template, 'template_experimental.yaml'))
 
     @staticmethod
     def generate_label_schema(label_names):

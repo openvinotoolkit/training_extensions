@@ -165,7 +165,9 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
             model_cfg_path = os.path.join(base_dir, 'model_multilabel.py')
         else:
             model_cfg_path = os.path.join(base_dir, 'model.py')
-        return MPAConfig.fromfile(model_cfg_path)
+        model_cfg = MPAConfig.fromfile(model_cfg_path)
+        model_cfg.multilabel = self._multilabel
+        return model_cfg
 
     def _init_test_data_cfg(self, dataset: DatasetEntity):
         data_cfg = ConfigDict(
