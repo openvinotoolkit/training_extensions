@@ -27,8 +27,6 @@ class MPASegIncrDataset(OTEDataset):
             ote_dataset = kwargs['ote_dataset']
             pipeline = kwargs['pipeline']
             classes = kwargs['labels']
-            if kwargs.get('new_classes', False):
-                new_classes = kwargs.pop('new_classes')
 
         for action in pipeline:
             if 'domain' in action:

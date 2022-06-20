@@ -1,3 +1,7 @@
+# Copyright (C) 2022 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
+
 from mpa.utils.logger import get_logger
 
 logger = get_logger()
