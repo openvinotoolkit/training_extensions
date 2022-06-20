@@ -78,6 +78,7 @@ class BaseTask:
             train_data_cfg = Stage.get_train_data_cfg(self._data_cfg)
             train_data_cfg['data_classes'] = data_classes
             new_classes = np.setdiff1d(data_classes, model_classes).tolist()
+            train_data_cfg['new_classes'] = new_classes
 
         logger.info(f'running task... kwargs = {kwargs}')
         if self._recipe_cfg is None:

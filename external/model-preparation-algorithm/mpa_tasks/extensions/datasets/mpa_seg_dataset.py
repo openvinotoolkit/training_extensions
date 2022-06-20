@@ -5,7 +5,7 @@
 from mmseg.datasets.builder import DATASETS
 from segmentation_tasks.extension.datasets import OTEDataset
 from mpa.utils.logger import get_logger
-from mpa_tasks.utils.data_utils import get_cls_img_indices
+from mpa_tasks.utils.data_utils import get_old_new_img_indices
 
 logger = get_logger()
    
@@ -21,11 +21,14 @@ class MPASegIncrDataset(OTEDataset):
             pipeline = dataset.pipeline
             classes = dataset.labels
             if test_mode is False:
-                self.img_indices = get_cls_img_indices(classes, ote_dataset)
+                new_classes = dataset.new_classes
+                self.img_indices = get_old_new_img_indices(classes, new_classes, ote_dataset)
         else:
             ote_dataset = kwargs['ote_dataset']
             pipeline = kwargs['pipeline']
             classes = kwargs['labels']
+            if kwargs.get('new_classes', False):
+                new_classes = kwargs.pop('new_classes')
 
         for action in pipeline:
             if 'domain' in action:
