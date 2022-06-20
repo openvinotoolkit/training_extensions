@@ -13,6 +13,8 @@ from mpa_tasks.utils.data_utils import get_cls_img_indices
 from mpa.utils.logger import get_logger
 
 logger = get_logger()
+
+
 @DATASETS.register_module()
 class MPAClsDataset(BaseDataset):
 

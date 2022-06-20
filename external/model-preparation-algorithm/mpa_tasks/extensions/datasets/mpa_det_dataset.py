@@ -9,6 +9,7 @@ from mpa_tasks.utils.data_utils import get_old_new_img_indices
 
 logger = get_logger()
 
+
 @DATASETS.register_module()
 class MPADetDataset(OTEDataset):
     def __init__(self, **kwargs):
@@ -17,7 +18,7 @@ class MPADetDataset(OTEDataset):
         if dataset_cfg.get('new_classes', False):
             new_classes = dataset_cfg.pop('new_classes')
         super().__init__(**dataset_cfg)
-        
+
         test_mode = kwargs.get('test_mode', False)
         if test_mode is False:
             self.img_indices = get_old_new_img_indices(self.labels, new_classes, self.ote_dataset)

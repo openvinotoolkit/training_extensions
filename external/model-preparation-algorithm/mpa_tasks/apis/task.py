@@ -226,7 +226,6 @@ class BaseTask:
         else:
             return self._labels
 
-
     @staticmethod
     def _get_meta_keys(pipeline_step):
         meta_keys = list(pipeline_step.get('meta_keys', DEFAULT_META_KEYS))
