@@ -50,6 +50,7 @@ def check_hpopt_available():
     return True
 
 def _check_hpo_enabled_task(task_type: TaskType):
+    """Check whether HPO available task"""
     return task_type in [
         TaskType.CLASSIFICATION,
         TaskType.DETECTION,
@@ -63,10 +64,12 @@ def _check_hpo_enabled_task(task_type: TaskType):
 
 
 def _is_cls_framework_task(task_type: TaskType):
+    """Check whether classification framework task"""
     return task_type == TaskType.CLASSIFICATION
 
 
 def _is_det_framework_task(task_type: TaskType):
+    """Check whether detection framework task"""
     return task_type in [
         TaskType.DETECTION,
         TaskType.INSTANCE_SEGMENTATION,
@@ -75,10 +78,12 @@ def _is_det_framework_task(task_type: TaskType):
 
 
 def _is_seg_framework_task(task_type: TaskType):
+    """Check whether segmentation framework task"""
     return task_type == TaskType.SEGMENTATION
 
 
 def _is_anomaly_framework_task(task_type: TaskType):
+    """Check whether anomaly framework task"""
     return task_type in [
         TaskType.ANOMALY_CLASSIFICATION,
         TaskType.ANOMALY_DETECTION,
@@ -262,6 +267,16 @@ def run_hpo_trainer(
 
     hpopt.finalize_trial(hp_config)
 
+    # remove model weight except best model weight
+    best_model_weight = _get_best_model_weight_path(
+        _get_hpo_dir(hp_config), str(hp_config["trial_id"]), task_type)
+    best_model_weight = osp.realpath(best_model_weight)
+    for dirpath, _, filenames in os.walk(_get_hpo_trial_workdir(hp_config)):
+        for filename in filenames:
+            full_name = osp.join(dirpath, filename)
+            if (not osp.islink(full_name)) and full_name != best_model_weight:
+                os.remove(full_name)
+
 
 def exec_hpo_trainer(arg_file_name, alloc_gpus):
     """Execute new process to train model for ASHA's trial"""
@@ -303,16 +318,12 @@ def get_train_wrapper_task(impl_class, task_type):
 
         def prepare_hpo(self, hp_config):
             if _is_cls_framework_task(self._task_type):
-                self._scratch_space = osp.join(
-                    osp.dirname(hp_config["file_path"]), str(hp_config["trial_id"])
-                )
+                self._scratch_space = _get_hpo_trial_workdir(hp_config)
                 self._cfg.data.save_dir = self._scratch_space
                 self._cfg.model.save_all_chkpts = True
             elif (_is_det_framework_task(self._task_type) or
                   _is_seg_framework_task(self._task_type)):
-                self._config.work_dir = osp.join(
-                    osp.dirname(hp_config["file_path"]), str(hp_config["trial_id"])
-                )
+                self._config.work_dir = _get_hpo_trial_workdir(hp_config)
                 self._config.checkpoint_config["max_keep_ckpts"] = (
                     hp_config["iterations"] + 10
                 )
@@ -352,7 +363,9 @@ def _set_dict_to_parameter_group(origin_hp, hp_config):
         else:
             _set_dict_to_parameter_group(getattr(origin_hp, key), val)
 
+
 def _load_hpopt_config(file_path):
+    """load HPOpt config file"""
     try:
         with open(file_path, "r", encoding="utf-8") as f:
             hpopt_cfg = yaml.safe_load(f)
@@ -361,6 +374,47 @@ def _load_hpopt_config(file_path):
         raise err
 
     return hpopt_cfg
+
+
+def _get_best_model_weight_path(
+    hpo_dir: str,
+    trial_num: str,
+    task_type: TaskType
+):
+    """Return best model weight from HPO trial directory"""
+    if _is_cls_framework_task(task_type):
+        best_weight_path = osp.realpath(
+            osp.join(hpo_dir, str(trial_num), "best.pth")
+        )
+    elif (_is_det_framework_task(task_type) or
+          _is_seg_framework_task(task_type)):
+        best_trial_path = osp.join(
+            hpo_dir,
+            trial_num,
+            "checkpoints_round_0",
+        )
+        for file_name in os.listdir(best_trial_path):
+            if "best" in file_name:
+                best_weight_path = osp.join(best_trial_path, file_name)
+                break
+    elif _is_anomaly_framework_task(task_type):
+        # TODO need to implement later
+        best_weight_path = None
+    else:
+        best_weight_path = None
+
+    return best_weight_path
+
+
+def _get_hpo_dir(hp_config):
+    """Return HPO work directory path from hp_config"""
+    return osp.dirname(hp_config["file_path"])
+
+
+def _get_hpo_trial_workdir(hp_config):
+    """Return HPO trial work directory path from hp_config"""
+    return osp.join(_get_hpo_dir(hp_config), str(hp_config["trial_id"]))
+
 
 class HpoCallback(UpdateProgressCallback):
     """Callback class to report score to hpopt"""
@@ -616,16 +670,11 @@ class HpoManager:
                     break
 
                 for key, val in self.deleted_hp.items():
-                    hp_config[key] = val
+                    hp_config['params'][key] = val
 
                 hp_config["metric"] = self.metric
 
-                hpo_work_dir = osp.abspath(
-                    osp.join(
-                        osp.dirname(hp_config["file_path"]),
-                        str(hp_config["trial_id"]),
-                    )
-                )
+                hpo_work_dir = osp.abspath(_get_hpo_trial_workdir(hp_config))
 
                 # Clear hpo_work_dir
                 if osp.exists(hpo_work_dir):
@@ -685,25 +734,11 @@ class HpoManager:
         print(best_config)
 
         # get weight to pass for resume
-        if _is_cls_framework_task(task_type):
-            best_config_id = self.hpo.hpo_status["best_config_id"]
-            hpo_weight_path = osp.realpath(
-                osp.join(self.hpo.save_path, str(best_config_id), "best.pth")
-            )
-        elif (_is_det_framework_task(task_type) or
-              _is_seg_framework_task(task_type)):
-            hpo_weight_path = osp.join(
-                self.hpo.save_path,
-                str(self.hpo.hpo_status["best_config_id"]),
-                "checkpoints_round_0",
-            )
-        else:
-            hpo_weight_path = None
-
-            for file_name in os.listdir(hpo_weight_path):
-                if "best" in file_name:
-                    hpo_weight_path = osp.join(hpo_weight_path, file_name)
-                    break
+        hpo_weight_path = _get_best_model_weight_path(
+            self.hpo.save_path,
+            str(self.hpo.hpo_status["best_config_id"]),
+            task_type
+        )
 
         return hyper_parameters, hpo_weight_path
 
