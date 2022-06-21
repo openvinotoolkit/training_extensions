@@ -277,6 +277,8 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
                 elif pipeline_step.type == 'LoadAnnotations':
                     pipeline_step.type = 'LoadAnnotationFromOTEDataset'
                     pipeline_step.domain = domain
+                if subset == 'train' and pipeline_step.type == 'Collect':
+                    pipeline_step = BaseTask._get_meta_keys(pipeline_step)
             patch_color_conversion(cfg.pipeline)
 
     @staticmethod
@@ -328,7 +330,7 @@ class SegmentationTrainTask(SegmentationInferenceTask, ITrainingTask):
               output_model: ModelEntity,
               train_parameters: Optional[TrainParameters] = None):
         logger.info('train()')
-        # Check for stop signal between pre-eval and training. 
+        # Check for stop signal between pre-eval and training.
         # If training is cancelled at this point,
         if self._should_stop:
             logger.info('Training cancelled.')
@@ -350,7 +352,7 @@ class SegmentationTrainTask(SegmentationInferenceTask, ITrainingTask):
         self._is_training = True
         results = self._run_task(stage_module, mode='train', dataset=dataset, parameters=train_parameters)
 
-        # Check for stop signal when training has stopped. 
+        # Check for stop signal when training has stopped.
         # If should_stop is true, training was cancelled and no new
         if self._should_stop:
             logger.info('Training cancelled.')

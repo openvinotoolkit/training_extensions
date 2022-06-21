@@ -85,6 +85,7 @@ class OTEDataset(CustomDataset):
         def __init__(self, ote_dataset, labels=None):
             self.ote_dataset = ote_dataset
             self.labels = labels
+            self.label_idx = {label.id: i for i, label in enumerate(labels)}
 
         def __len__(self):
             return len(self.ote_dataset)
@@ -95,15 +96,16 @@ class OTEDataset(CustomDataset):
             :return data_info: dictionary that contains the image and image metadata, as well as the labels of
             the objects in the image
             """
-
             dataset = self.ote_dataset
             item = dataset[index]
+            ignored_labels = np.array([self.label_idx[lbs.id] + 1 for lbs in item.ignored_labels])
 
             data_info = dict(dataset_item=item,
                              width=item.width,
                              height=item.height,
                              index=index,
-                             ann_info=dict(labels=self.labels))
+                             ann_info=dict(labels=self.labels),
+                             ignored_labels=ignored_labels)
 
             return data_info
 
