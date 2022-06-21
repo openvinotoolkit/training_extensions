@@ -182,6 +182,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
             raise NotImplementedError(f'train type {train_type} is not implemented yet.')
 
         self._recipe_cfg = MPAConfig.fromfile(recipe)
+        self._patch_data_pipeline()
         self._patch_datasets(self._recipe_cfg, self._task_type.domain)  # for OTE compatibility
         self._patch_evaluation(self._recipe_cfg)  # for OTE compatibility
         logger.info(f'initialized recipe = {recipe}')
@@ -224,7 +225,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
                             continue
 
                         assigned_label = [ScoredLabel(self._labels[label_idx],
-                                                    probability=probability)]
+                                                      probability=probability)]
                         if coords[3] - coords[1] <= 0 or coords[2] - coords[0] <= 0:
                             continue
 
@@ -262,6 +263,13 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
             if feature_vector is not None:
                 active_score = TensorEntity(name="representation_vector", numpy=feature_vector)
                 dataset_item.append_metadata_item(active_score)
+
+    def _patch_data_pipeline(self):
+        base_dir = os.path.abspath(os.path.dirname(self.template_file_path))
+        data_pipeline_path = os.path.join(base_dir, 'coco_data_pipeline.py')
+        if os.path.isfile(data_pipeline_path):
+            data_pipeline_cfg = MPAConfig.fromfile(data_pipeline_path)
+            self._recipe_cfg.merge_from_dict(data_pipeline_cfg)
 
     @staticmethod
     def _patch_datasets(config: MPAConfig, domain=Domain.DETECTION):
