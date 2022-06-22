@@ -50,12 +50,12 @@ multi_class_args = {
 }
 
 multi_label_args = {
-    '--train-ann-file': '/home/jeom/workspace/data/coco/lvis_train_seed1234@1.0_OLD_NEW_1CLS_multilabel.json',
-    '--train-data-roots': '/home/jeom/workspace/data/coco',
-    '--val-ann-file': '/home/jeom/workspace/data/coco/lvis_val_seed1234@10.0_OLD_NEW_1CLS_multilabel.json',
-    '--val-data-roots': '/home/jeom/workspace/data/coco',
-    '--test-ann-files': '/home/jeom/workspace/data/coco/lvis_val_seed1234@10.0_OLD_NEW_1CLS_multilabel.json',
-    '--test-data-roots': '/home/jeom/workspace/data/coco',
+    '--train-ann-file': 'data/car_tree_bug/car_tree_bug_multilabel_train.json',
+    '--train-data-roots': 'data/car_tree_bug',
+    '--val-ann-file': 'data/car_tree_bug/car_tree_bug_multilabel_val.json',
+    '--val-data-roots': 'data/car_tree_bug',
+    '--test-ann-files': 'data/car_tree_bug/car_tree_bug_multilabel_val.json',
+    '--test-data-roots': 'data/car_tree_bug',
     'train_params': [
         'params',
         '--learning_parameters.num_iters',
@@ -65,7 +65,7 @@ multi_label_args = {
     ]
 }
 
-args = [multi_class_args, multi_label_args]
+args = [multi_label_args, multi_class_args]
 
 root = '/tmp/ote_cli/'
 ote_dir = os.getcwd()
