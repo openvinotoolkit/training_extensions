@@ -9,6 +9,7 @@ from mmcv.utils.registry import build_from_cfg
 from mmcls.datasets.builder import DATASETS, PIPELINES
 from mmcls.datasets.pipelines import Compose
 from mmcls.datasets.base_dataset import BaseDataset
+from mpa_tasks.utils.data_utils import get_cls_img_indices
 from mpa.utils.logger import get_logger
 
 logger = get_logger()
@@ -17,18 +18,17 @@ logger = get_logger()
 @DATASETS.register_module()
 class MPAClsDataset(BaseDataset):
 
-    def __init__(self, old_new_indices=None, ote_dataset=None, labels=None, **kwargs):
+    def __init__(self, ote_dataset=None, labels=None, **kwargs):
         self.ote_dataset = ote_dataset
         self.labels = labels
         self.CLASSES = list(label.name for label in labels)
         self.gt_labels = []
         pipeline = kwargs['pipeline']
-        self.img_indices = dict(old=[], new=[])
         self.num_classes = len(self.CLASSES)
 
-        if old_new_indices is not None:
-            self.img_indices['old'] = old_new_indices['old']
-            self.img_indices['new'] = old_new_indices['new']
+        test_mode = kwargs.get('test_mode', False)
+        if test_mode is False:
+            self.img_indices = get_cls_img_indices(self.labels, self.ote_dataset)
 
         if isinstance(pipeline, dict):
             self.pipeline = {}
