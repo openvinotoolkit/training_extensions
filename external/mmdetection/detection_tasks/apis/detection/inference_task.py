@@ -54,7 +54,7 @@ from ote_sdk.utils.argument_checks import (
 from mmdet.apis import export_model
 from detection_tasks.apis.detection.config_utils import patch_config, prepare_for_testing, set_hyperparams
 from detection_tasks.apis.detection.configuration import OTEDetectionConfig
-from detection_tasks.apis.detection.ote_utils import InferenceProgressCallback
+from detection_tasks.apis.detection.ote_utils import InferenceProgressCallback, get_saliency_map, get_feature_vector
 from mmdet.datasets import build_dataloader, build_dataset
 from mmdet.models import build_detector
 from mmdet.parallel import MMDataCPU
@@ -192,7 +192,7 @@ class OTEDetectionInferenceTask(IInferenceTask, IExportTask, IEvaluationTask, IU
 
     def _add_predictions_to_dataset(self, prediction_results, dataset, confidence_threshold=0.0):
         """ Loop over dataset again to assign predictions. Convert from MMDetection format to OTE format. """
-        for dataset_item, (all_results, feature_vector) in zip(dataset, prediction_results):
+        for dataset_item, (all_results, feature_vector, saliency_map) in zip(dataset, prediction_results):
             width = dataset_item.width
             height = dataset_item.height
 
@@ -247,6 +247,10 @@ class OTEDetectionInferenceTask(IInferenceTask, IExportTask, IEvaluationTask, IU
             if feature_vector is not None:
                 active_score = TensorEntity(name="representation_vector", numpy=feature_vector)
                 dataset_item.append_metadata_item(active_score, model=self._task_environment.model)
+            
+            if saliency_map is not None:
+                TODO: ADD SALIENCY MAP TO DATASET ITEM
+                print('add here')
 
 
     @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
@@ -264,8 +268,10 @@ class OTEDetectionInferenceTask(IInferenceTask, IExportTask, IEvaluationTask, IU
             self.confidence_threshold = self._hyperparams.postprocessing.confidence_threshold
 
         update_progress_callback = default_progress_callback
+        dump_saliency_map = True
         if inference_parameters is not None:
             update_progress_callback = inference_parameters.update_progress
+            dump_saliency_map = not inference_parameters.is_evaluation
 
         time_monitor = InferenceProgressCallback(len(dataset), update_progress_callback)
 
@@ -278,7 +284,8 @@ class OTEDetectionInferenceTask(IInferenceTask, IExportTask, IEvaluationTask, IU
         logger.info(f'Confidence threshold {self.confidence_threshold}')
         model = self._model
         with model.register_forward_pre_hook(pre_hook), model.register_forward_hook(hook):
-            prediction_results, _ = self._infer_detector(model, self._config, dataset, dump_features=True, eval=False)
+            prediction_results, _ = self._infer_detector(model, self._config, dataset, dump_features=True, eval=False, 
+                                                        dump_saliency_map=dump_saliency_map)
         self._add_predictions_to_dataset(prediction_results, dataset, self.confidence_threshold)
 
         logger.info('Inference completed')
@@ -287,7 +294,8 @@ class OTEDetectionInferenceTask(IInferenceTask, IExportTask, IEvaluationTask, IU
 
     @staticmethod
     def _infer_detector(model: torch.nn.Module, config: Config, dataset: DatasetEntity, dump_features: bool = False,
-                        eval: Optional[bool] = False, metric_name: Optional[str] = 'mAP') -> Tuple[List, float]:
+                        eval: Optional[bool] = False, metric_name: Optional[str] = 'mAP', 
+                        dump_saliency_map: bool = False) -> Tuple[List, float]:
         model.eval()
         test_config = prepare_for_testing(config, dataset)
         mm_val_dataset = build_dataset(test_config.data.test)
@@ -306,25 +314,35 @@ class OTEDetectionInferenceTask(IInferenceTask, IExportTask, IEvaluationTask, IU
 
         eval_predictions = []
         feature_vectors = []
+        saliency_maps = []
 
         def dump_features_hook(mod, inp, out):
             with torch.no_grad():
-                feature_map = out[-1]
-                feature_vector = torch.nn.functional.adaptive_avg_pool2d(feature_map, (1, 1))
+                feature_vector = get_feature_vector(out)
                 assert feature_vector.size(0) == 1
             feature_vectors.append(feature_vector.view(-1).detach().cpu().numpy())
 
         def dummy_dump_features_hook(mod, inp, out):
             feature_vectors.append(None)
 
-        hook = dump_features_hook if dump_features else dummy_dump_features_hook
+        def dump_saliency_hook(mod, inp, out):
+            with torch.no_grad():
+                saliency_map = get_saliency_map(out[0])
+            saliency_maps.append(saliency_map.squeeze(0).detach().cpu().numpy())
+        
+        def dummy_dump_saliency_hook(mod, inp, out):
+            saliency_maps.append(None)
+
+        feature_vector_hook = dump_features_hook if dump_features else dummy_dump_features_hook
+        saliency_map_hook = dump_saliency_hook if dump_saliency_map else dummy_dump_saliency_hook
 
         # Use a single gpu for testing. Set in both mm_val_dataloader and eval_model
-        with eval_model.module.backbone.register_forward_hook(hook):
-            for data in mm_val_dataloader:
-                with torch.no_grad():
-                    result = eval_model(return_loss=False, rescale=True, **data)
-                eval_predictions.extend(result)
+        with eval_model.module.backbone.register_forward_hook(feature_vector_hook):
+            with eval_model.module.backbone.register_forward_hook(saliency_map_hook):
+                for data in mm_val_dataloader:
+                    with torch.no_grad():
+                        result = eval_model(return_loss=False, rescale=True, **data)
+                    eval_predictions.extend(result)
 
         # hard-code way to remove EvalHook args
         for key in [
@@ -338,7 +356,8 @@ class OTEDetectionInferenceTask(IInferenceTask, IExportTask, IEvaluationTask, IU
             metric = mm_val_dataset.evaluate(eval_predictions, **config.evaluation)[metric_name]
 
         assert len(eval_predictions) == len(feature_vectors), f'{len(eval_predictions)} != {len(feature_vectors)}'
-        eval_predictions = zip(eval_predictions, feature_vectors)
+        assert len(eval_predictions) == len(saliency_maps), f'{len(eval_predictions)} != {len(saliency_maps)}'
+        eval_predictions = zip(eval_predictions, feature_vectors, saliency_maps)
         return eval_predictions, metric
 
     @check_input_parameters_type()
