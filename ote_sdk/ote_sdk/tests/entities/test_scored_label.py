@@ -73,7 +73,7 @@ class TestScoredLabel:
         car.color = Color(red=16, green=15, blue=56, alpha=255)
         assert repr(car_label) == (
             "ScoredLabel(123456789, name=car, probability=0.4, domain=DETECTION, color="
-            "Color(red=16, green=15, blue=56, alpha=255), hotkey=ctrl+0, "
+            "Color(red=16, green=15, blue=56, alpha=255), hotkey=, "
             "label_source=LabelSource(user_id='User Name', model_id=ID(), "
             "model_storage_id=ID()))"
         )
