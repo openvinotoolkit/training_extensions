@@ -6,11 +6,10 @@ import glob
 import os.path as osp
 import random
 import time
-import unittest
 import warnings
 from concurrent.futures import ThreadPoolExecutor
 from typing import Optional
-
+import pytest
 import cv2 as cv
 import numpy as np
 from bson import ObjectId
@@ -76,7 +75,7 @@ def eval(task: BaseTask, model: ModelEntity, dataset: DatasetEntity) -> Performa
     return result_set.performance
 
 
-class MPAClsAPI(unittest.TestCase):
+class TestMPAClsAPI:
     @e2e_pytest_api
     def test_reading_classification_cls_incr_model_template(self):
         classification_template = ['efficientnet_b0_cls_incr', 'efficientnet_v2_s_cls_incr',
@@ -108,7 +107,7 @@ class MPAClsAPI(unittest.TestCase):
         hyper_parameters.learning_parameters.num_iters = num_iters
         return hyper_parameters, model_template
 
-    def init_environment(self, params, model_template, number_of_images=10):
+    def init_environment(self, params, model_template, multilabel, number_of_images=10):
         resolution = (224, 224)
         colors = [(0,255,0), (0,0,255)]
         cls_names = ['b', 'g']
@@ -146,20 +145,20 @@ class MPAClsAPI(unittest.TestCase):
             items[i].subset = subset
 
         dataset = DatasetEntity(items)
-        labels_schema = self.generate_label_schema(dataset.get_labels(), multilabel=False)
+        labels_schema = self.generate_label_schema(dataset.get_labels(), multilabel=multilabel)
         environment = TaskEnvironment(model=None, hyper_parameters=params, label_schema=labels_schema,
                                     model_template=model_template)
         return environment, dataset
 
     @e2e_pytest_api
-    def test_training_progress_tracking(self):
-        print('Task initialized, model training starts.')
-        training_progress_curve = []
+    @pytest.mark.parametrize("multilabel", [(False), (True)], ids=["multiclass", "multilabel"])
+    def test_training_progress_tracking(self, multilabel):
         hyper_parameters, model_template = self.setup_configurable_parameters(DEFAULT_CLS_TEMPLATE_DIR, num_iters=5)
-        task_environment, dataset = self.init_environment(hyper_parameters, model_template, 20)
+        task_environment, dataset = self.init_environment(hyper_parameters, model_template, multilabel, 20)
         task = ClassificationTrainTask(task_environment=task_environment)
-        task._delete_scratch_space()
+        print('Task initialized, model training starts.')
 
+        training_progress_curve = []
         def progress_callback(progress: float, score: Optional[float] = None):
             training_progress_curve.append(progress)
 
@@ -172,53 +171,53 @@ class MPAClsAPI(unittest.TestCase):
         task.train(dataset, output_model, train_parameters)
 
         assert len(training_progress_curve) > 0
-        training_progress_curve = np.asarray(training_progress_curve)
-        print(training_progress_curve)
         assert np.all(training_progress_curve[1:] >= training_progress_curve[:-1])
 
     @e2e_pytest_api
-    def test_inference_progress_tracking(self):
+    @pytest.mark.parametrize("multilabel", [(False), (True)], ids=["multiclass", "multilabel"])
+    def test_inference_progress_tracking(self, multilabel):
         hyper_parameters, model_template = self.setup_configurable_parameters(DEFAULT_CLS_TEMPLATE_DIR, num_iters=5)
-        task_environment, dataset = self.init_environment(hyper_parameters, model_template, 20)
+        task_environment, dataset = self.init_environment(hyper_parameters, model_template, multilabel, 20)
         task = ClassificationInferenceTask(task_environment=task_environment)
-        task._delete_scratch_space()
-
         print('Task initialized, model inference starts.')
-        inference_progress_curve = []
 
+        inference_progress_curve = []
         def progress_callback(progress: int):
             inference_progress_curve.append(progress)
 
         inference_parameters = InferenceParameters
         inference_parameters.update_progress = progress_callback
-
         task.infer(dataset.with_empty_annotations(), inference_parameters)
 
         assert len(inference_progress_curve) > 0
-        inference_progress_curve = np.asarray(inference_progress_curve)
         assert np.all(inference_progress_curve[1:] >= inference_progress_curve[:-1])
 
     @e2e_pytest_api
-    def test_inference_task(self):
+    @pytest.mark.parametrize("multilabel", [(False), (True)], ids=["multiclass", "multilabel"])
+    def test_inference_task(self, multilabel):
         # Prepare pretrained weights
         hyper_parameters, model_template = self.setup_configurable_parameters(DEFAULT_CLS_TEMPLATE_DIR, num_iters=2)
-        classification_environment, dataset = self.init_environment(hyper_parameters, model_template, 50)
+        classification_environment, dataset = self.init_environment(hyper_parameters, model_template, multilabel, 50)
         val_dataset = dataset.get_subset(Subset.VALIDATION)
 
         train_task = ClassificationTrainTask(task_environment=classification_environment)
-        self.addCleanup(train_task._delete_scratch_space)
 
+        training_progress_curve = []
+        def progress_callback(progress: float, score: Optional[float] = None):
+            training_progress_curve.append(progress)
+
+        train_parameters = TrainParameters
+        train_parameters.update_progress = progress_callback
         trained_model = ModelEntity(
             dataset,
             classification_environment.get_model_configuration(),
         )
-        train_task.train(dataset, trained_model, TrainParameters)
+        train_task.train(dataset, trained_model, train_parameters)
         performance_after_train = eval(train_task, trained_model, val_dataset)
 
         # Create InferenceTask
         classification_environment.model = trained_model
         inference_task = ClassificationInferenceTask(task_environment=classification_environment)
-        self.addCleanup(inference_task._delete_scratch_space)
 
         performance_after_load = eval(inference_task, trained_model, val_dataset)
 
@@ -232,7 +231,7 @@ class MPAClsAPI(unittest.TestCase):
         inference_task.export(ExportType.OPENVINO, exported_model)
 
 
-class MPADetAPI(unittest.TestCase):
+class TestMPADetAPI:
     """
     Collection of tests for OTE API and OTE Model Templates
     """
@@ -352,8 +351,8 @@ class MPADetAPI(unittest.TestCase):
 
         # stopping process has to happen in less than 35 seconds
         train_future.result()
-        self.assertEqual(training_progress_curve[-1], 100)
-        self.assertLess(time.time() - start_time, 100, 'Expected to stop within 100 seconds.')
+        assert training_progress_curve[-1] == 100
+        assert time.time() - start_time < 100, 'Expected to stop within 100 seconds.'
 
         # Test stopping immediately
         start_time = time.time()
@@ -361,7 +360,7 @@ class MPADetAPI(unittest.TestCase):
         detection_task.cancel_training()
 
         train_future.result()
-        self.assertLess(time.time() - start_time, 25)  # stopping process has to happen in less than 25 seconds
+        assert time.time() - start_time < 25  # stopping process has to happen in less than 25 seconds
 
     @e2e_pytest_api
     def test_training_progress_tracking(self):
@@ -369,9 +368,8 @@ class MPADetAPI(unittest.TestCase):
         detection_environment, dataset = self.init_environment(hyper_parameters, model_template, 50)
 
         task = DetectionTrainTask(task_environment=detection_environment)
-        self.addCleanup(task._delete_scratch_space)
-
         print('Task initialized, model training starts.')
+
         training_progress_curve = []
 
         def progress_callback(progress: float, score: Optional[float] = None):
@@ -385,9 +383,8 @@ class MPADetAPI(unittest.TestCase):
         )
         task.train(dataset, output_model, train_parameters)
 
-        self.assertGreater(len(training_progress_curve), 0)
-        training_progress_curve = np.asarray(training_progress_curve)
-        self.assertTrue(np.all(training_progress_curve[1:] >= training_progress_curve[:-1]))
+        assert len(training_progress_curve) > 0
+        assert np.all(training_progress_curve[1:] >= training_progress_curve[:-1])
 
     @e2e_pytest_api
     def test_inference_progress_tracking(self):
@@ -395,8 +392,6 @@ class MPADetAPI(unittest.TestCase):
         detection_environment, dataset = self.init_environment(hyper_parameters, model_template, 50)
 
         task = DetectionInferenceTask(task_environment=detection_environment)
-        self.addCleanup(task._delete_scratch_space)
-
         print('Task initialized, model inference starts.')
         inference_progress_curve = []
 
@@ -406,12 +401,10 @@ class MPADetAPI(unittest.TestCase):
 
         inference_parameters = InferenceParameters
         inference_parameters.update_progress = progress_callback
-
         task.infer(dataset.with_empty_annotations(), inference_parameters)
 
-        self.assertGreater(len(inference_progress_curve), 0)
-        inference_progress_curve = np.asarray(inference_progress_curve)
-        self.assertTrue(np.all(inference_progress_curve[1:] >= inference_progress_curve[:-1]))
+        assert len(inference_progress_curve) > 0
+        assert np.all(inference_progress_curve[1:] >= inference_progress_curve[:-1])
 
     @e2e_pytest_api
     def test_inference_task(self):
@@ -421,19 +414,23 @@ class MPADetAPI(unittest.TestCase):
         val_dataset = dataset.get_subset(Subset.VALIDATION)
 
         train_task = DetectionTrainTask(task_environment=detection_environment)
-        self.addCleanup(train_task._delete_scratch_space)
 
+        training_progress_curve = []
+        def progress_callback(progress: float, score: Optional[float] = None):
+            training_progress_curve.append(progress)
+
+        train_parameters = TrainParameters
+        train_parameters.update_progress = progress_callback
         trained_model = ModelEntity(
             dataset,
             detection_environment.get_model_configuration(),
         )
-        train_task.train(dataset, trained_model, TrainParameters)
+        train_task.train(dataset, trained_model, train_parameters)
         performance_after_train = eval(train_task, trained_model, val_dataset)
 
         # Create InferenceTask
         detection_environment.model = trained_model
         inference_task = DetectionInferenceTask(task_environment=detection_environment)
-        self.addCleanup(inference_task._delete_scratch_space)
 
         performance_after_load = eval(inference_task, trained_model, val_dataset)
 
@@ -447,7 +444,7 @@ class MPADetAPI(unittest.TestCase):
         inference_task.export(ExportType.OPENVINO, exported_model)
 
 
-class MPASegAPI(unittest.TestCase):
+class TestMPASegAPI:
     """
     Collection of tests for OTE API and OTE Model Templates
     """
@@ -589,8 +586,8 @@ class MPASegAPI(unittest.TestCase):
 
         # stopping process has to happen in less than 35 seconds
         train_future.result()
-        self.assertEqual(training_progress_curve[-1], 100)
-        self.assertLess(time.time() - start_time, 100, 'Expected to stop within 100 seconds.')
+        assert training_progress_curve[-1] ==  100
+        assert time.time() - start_time < 100, 'Expected to stop within 100 seconds.'
 
         # Test stopping immediately
         start_time = time.time()
@@ -598,7 +595,7 @@ class MPASegAPI(unittest.TestCase):
         segmentation_task.cancel_training()
 
         train_future.result()
-        self.assertLess(time.time() - start_time, 25)  # stopping process has to happen in less than 25 seconds
+        assert time.time() - start_time < 25  # stopping process has to happen in less than 25 seconds
 
     @e2e_pytest_api
     def test_training_progress_tracking(self):
@@ -606,11 +603,9 @@ class MPASegAPI(unittest.TestCase):
         segmentation_environment, dataset = self.init_environment(hyper_parameters, model_template, 12)
 
         task = SegmentationTrainTask(task_environment=segmentation_environment)
-        #self.addCleanup(task._delete_scratch_space)
-
         print('Task initialized, model training starts.')
-        training_progress_curve = []
 
+        training_progress_curve = []
         def progress_callback(progress: float, score: Optional[float] = None):
             training_progress_curve.append(progress)
 
@@ -622,9 +617,8 @@ class MPASegAPI(unittest.TestCase):
         )
         task.train(dataset, output_model, train_parameters)
 
-        self.assertGreater(len(training_progress_curve), 0)
-        training_progress_curve = np.asarray(training_progress_curve)
-        self.assertTrue(np.all(training_progress_curve[1:] >= training_progress_curve[:-1]))
+        assert len(training_progress_curve) > 0
+        assert np.all(training_progress_curve[1:] >= training_progress_curve[:-1])
 
     @e2e_pytest_api
     def test_inference_progress_tracking(self):
@@ -632,23 +626,19 @@ class MPASegAPI(unittest.TestCase):
         segmentation_environment, dataset = self.init_environment(hyper_parameters, model_template, 12)
 
         task = SegmentationInferenceTask(task_environment=segmentation_environment)
-        self.addCleanup(task._delete_scratch_space)
-
         print('Task initialized, model inference starts.')
-        inference_progress_curve = []
 
+        inference_progress_curve = []
         def progress_callback(progress: int):
             assert isinstance(progress, int)
             inference_progress_curve.append(progress)
 
         inference_parameters = InferenceParameters
         inference_parameters.update_progress = progress_callback
-
         task.infer(dataset.with_empty_annotations(), inference_parameters)
 
-        self.assertGreater(len(inference_progress_curve), 0)
-        inference_progress_curve = np.asarray(inference_progress_curve)
-        self.assertTrue(np.all(inference_progress_curve[1:] >= inference_progress_curve[:-1]))
+        assert len(inference_progress_curve) > 0
+        assert np.all(inference_progress_curve[1:] >= inference_progress_curve[:-1])
 
     @e2e_pytest_api
     def test_inference_task(self):
@@ -658,19 +648,23 @@ class MPASegAPI(unittest.TestCase):
         val_dataset = dataset.get_subset(Subset.VALIDATION)
 
         train_task = SegmentationTrainTask(task_environment=segmentation_environment)
-        self.addCleanup(train_task._delete_scratch_space)
 
+        training_progress_curve = []
+        def progress_callback(progress: float, score: Optional[float] = None):
+            training_progress_curve.append(progress)
+
+        train_parameters = TrainParameters
+        train_parameters.update_progress = progress_callback
         trained_model = ModelEntity(
             dataset,
             segmentation_environment.get_model_configuration(),
         )
-        train_task.train(dataset, trained_model, TrainParameters)
+        train_task.train(dataset, trained_model, train_parameters)
         performance_after_train = eval(train_task, trained_model, val_dataset)
 
         # Create InferenceTask
         segmentation_environment.model = trained_model
         inference_task = SegmentationInferenceTask(task_environment=segmentation_environment)
-        self.addCleanup(inference_task._delete_scratch_space)
 
         performance_after_load = eval(inference_task, trained_model, val_dataset)
 

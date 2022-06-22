@@ -57,7 +57,7 @@ args = {
 root = '/tmp/ote_cli/'
 ote_dir = os.getcwd()
 
-templates = Registry('external/model-preparation-algorithm').filter(task_type='SEGMENTATION').templates
+templates = Registry('external/model-preparation-algorithm', experimental=True).filter(task_type='SEGMENTATION').templates
 templates_ids = [template.model_template_id for template in templates]
 
 
