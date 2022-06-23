@@ -121,9 +121,13 @@ def run_hpo(args, environment, dataset, task_type):
     hpo = HpoManager(
         environment, dataset, dataset_paths, args.hpo_time_ratio, hpo_save_path
     )
-    print(f"{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())} [HPO] started hyper-parameter optimization")
+    print(
+        f"{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())} [HPO] started hyper-parameter optimization"
+    )
     hyper_parameters, hpo_weight_path = hpo.run()
-    print(f"{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())} [HPO] completed hyper-parameter optimization")
+    print(
+        f"{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())} [HPO] completed hyper-parameter optimization"
+    )
 
     environment.set_hyper_parameters(hyper_parameters)
 
