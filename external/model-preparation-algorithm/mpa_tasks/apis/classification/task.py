@@ -146,7 +146,7 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
 
         recipe = os.path.join(recipe_root, 'class_incr.yaml')
         if train_type == TrainType.SemiSupervised:
-            recipe = NotImplementedError(f'train type {train_type} is not implemented yet.')
+            raise NotImplementedError(f'train type {train_type} is not implemented yet.')
         elif train_type == TrainType.SelfSupervised:
             raise NotImplementedError(f'train type {train_type} is not implemented yet.')
         elif train_type == TrainType.Incremental:
@@ -207,14 +207,14 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
 
             if self._multilabel:
                 cfg.type = 'MPAMultilabelClsDataset'
-                for pipeline_step in cfg.pipeline:
-                    if subset == 'train' and pipeline_step.type == 'Collect':
-                        pipeline_step = BaseTask._get_meta_keys(pipeline_step)
             else:
                 cfg.type = 'MPAClsDataset'
             cfg.domain = domain
             cfg.ote_dataset = None
             cfg.labels = None
+            for pipeline_step in cfg.pipeline:
+                if subset == 'train' and pipeline_step.type == 'Collect':
+                    pipeline_step = BaseTask._get_meta_keys(pipeline_step)
             patch_color_conversion(cfg.pipeline)
 
     def _patch_evaluation(self, config: MPAConfig):
