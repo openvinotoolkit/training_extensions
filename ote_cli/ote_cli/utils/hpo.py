@@ -42,6 +42,7 @@ from ote_cli.utils.io import generate_label_schema, read_model, save_model_data
 try:
     import hpopt
 except ImportError:
+    print("cannot import hpopt module")
     hpopt = None
 
 
@@ -120,7 +121,9 @@ def run_hpo(args, environment, dataset, task_type):
     hpo = HpoManager(
         environment, dataset, dataset_paths, args.hpo_time_ratio, hpo_save_path
     )
+    print(f"{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())} [HPO] started hyper-parameter optimization")
     hyper_parameters, hpo_weight_path = hpo.run()
+    print(f"{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())} [HPO] completed hyper-parameter optimization")
 
     environment.set_hyper_parameters(hyper_parameters)
 
@@ -493,6 +496,7 @@ class HpoManager:
         task_type = self.environment.model_template.task_type
 
         # make batch size range lower than train set size
+        env_hp = self.environment.get_hyper_parameters()
         batch_size_name = None
         if (
             _is_cls_framework_task(task_type)
@@ -520,7 +524,6 @@ class HpoManager:
 
         # prepare default hyper parameters
         default_hyper_parameters = {}
-        env_hp = self.environment.get_hyper_parameters()
         for key in hpopt_cfg["hp_space"].keys():
             splited_key = key.split(".")
             target = env_hp
