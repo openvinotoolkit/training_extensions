@@ -117,17 +117,17 @@ class MPAClsDataset(BaseDataset):
 
         eval_results = super().evaluate(results, metrics, metric_options, logger)
 
-        # Add Evaluation Accuracy score per Class
-        if self.class_acc:
+        # Add Evaluation Accuracy score per Class - it can be used only for multi-class dataset.
+        if self.class_acc: 
             results = np.vstack(results)
             gt_labels = self.get_gt_labels()
-            accuracies = self.__class_accuracy(results, gt_labels)
+            accuracies = self.class_accuracy(results, gt_labels)
             eval_results.update({f'{c} accuracy': a for c, a in zip(self.CLASSES, accuracies)})
             eval_results.update({'mean accuracy': np.mean(accuracies)})
 
         return eval_results
 
-    def __class_accuracy(self, results, gt_labels):
+    def class_accuracy(self, results, gt_labels):
         accracies = []
         pred_label = results.argsort(axis=1)[:, -1:][:, ::-1]
         for i in range(self.num_classes):

@@ -146,7 +146,7 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
 
         recipe = os.path.join(recipe_root, 'class_incr.yaml')
         if train_type == TrainType.SemiSupervised:
-            recipe = os.path.join(recipe_root, 'class_incr.yaml')
+            recipe = NotImplementedError(f'train type {train_type} is not implemented yet.')
         elif train_type == TrainType.SelfSupervised:
             raise NotImplementedError(f'train type {train_type} is not implemented yet.')
         elif train_type == TrainType.Incremental:
@@ -162,12 +162,12 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
     def _init_model_cfg(self):
         base_dir = os.path.abspath(os.path.dirname(self.template_file_path))
         if self._multilabel:
-            model_cfg_path = os.path.join(base_dir, 'model_multilabel.py')
+            cfg_path = os.path.join(base_dir, 'model_multilabel.py')
         else:
-            model_cfg_path = os.path.join(base_dir, 'model.py')
-        model_cfg = MPAConfig.fromfile(model_cfg_path)
-        model_cfg.multilabel = self._multilabel
-        return model_cfg
+            cfg_path = os.path.join(base_dir, 'model.py')
+        cfg = MPAConfig.fromfile(cfg_path)
+        cfg.model.multilabel = self._multilabel
+        return cfg
 
     def _init_test_data_cfg(self, dataset: DatasetEntity):
         data_cfg = ConfigDict(
