@@ -5,6 +5,7 @@
 from mmseg.datasets.builder import DATASETS
 from segmentation_tasks.extension.datasets import OTEDataset
 from mpa.utils.logger import get_logger
+from mpa_tasks.utils.data_utils import get_old_new_img_indices
 
 logger = get_logger()
 
@@ -12,17 +13,17 @@ logger = get_logger()
 @DATASETS.register_module()
 class MPASegIncrDataset(OTEDataset):
     def __init__(self, **kwargs):
-        self.img_indices = dict(old=[], new=[])
         pipeline = []
+        test_mode = kwargs.get('test_mode', False)
+        logger.info(f'test_mode : {test_mode}')
         if 'dataset' in kwargs:
             dataset = kwargs['dataset']
-            if 'old_new_indices' in dataset:
-                old_new_indices = dataset.old_new_indices
-                self.img_indices['old'] = old_new_indices['old']
-                self.img_indices['new'] = old_new_indices['new']
             ote_dataset = dataset.ote_dataset
             pipeline = dataset.pipeline
             classes = dataset.labels
+            if test_mode is False:
+                new_classes = dataset.new_classes
+                self.img_indices = get_old_new_img_indices(classes, new_classes, ote_dataset)
         else:
             ote_dataset = kwargs['ote_dataset']
             pipeline = kwargs['pipeline']

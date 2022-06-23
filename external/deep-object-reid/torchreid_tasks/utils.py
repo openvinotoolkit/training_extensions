@@ -496,7 +496,7 @@ def sigmoid_numpy(x: np.ndarray):
 
 @check_input_parameters_type()
 def softmax_numpy(x: np.ndarray):
-    x = np.exp(x)
+    x = np.exp(x - np.max(x))
     x /= np.sum(x)
     return x
 
