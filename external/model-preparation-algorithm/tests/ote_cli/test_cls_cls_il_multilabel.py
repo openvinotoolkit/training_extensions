@@ -32,29 +32,12 @@ from ote_cli.utils.tests import (
 )
 
 
-multi_class_args = {
-    '--train-ann-file': '',
-    '--train-data-roots': 'data/classification/train',
-    '--val-ann-file': '',
-    '--val-data-roots': 'data/classification/val',
-    '--test-ann-files': '',
-    '--test-data-roots': 'data/classification/val',
-    '--input': 'data/classification/val/0',
-    'train_params': [
-        'params',
-        '--learning_parameters.num_iters',
-        '2',
-        '--learning_parameters.batch_size',
-        '2',
-    ]
-}
-
-multi_label_args = {
+args = {
     '--train-ann-file': 'data/car_tree_bug/car_tree_bug_multilabel_train.json',
     '--train-data-roots': 'data/car_tree_bug',
-    '--val-ann-file': 'data/car_tree_bug/car_tree_bug_multilabel_val.json',
+    '--val-ann-file': 'data/car_tree_bug/car_tree_bug_multilabel_train.json',
     '--val-data-roots': 'data/car_tree_bug',
-    '--test-ann-files': 'data/car_tree_bug/car_tree_bug_multilabel_val.json',
+    '--test-ann-files': 'data/car_tree_bug/car_tree_bug_multilabel_train.json',
     '--test-data-roots': 'data/car_tree_bug',
     'train_params': [
         'params',
@@ -65,12 +48,12 @@ multi_label_args = {
     ]
 }
 
-args = [multi_label_args, multi_class_args]
-
-root = '/tmp/ote_cli/'
+root = '/tmp/ote_cli_multilabel/'
 ote_dir = os.getcwd()
+
 templates = Registry('external/model-preparation-algorithm', experimental=True).filter(task_type='CLASSIFICATION').templates
 templates_ids = [template.model_template_id for template in templates]
+
 
 class TestToolsClsClsIncr:
     @e2e_pytest_component
@@ -80,8 +63,7 @@ class TestToolsClsClsIncr:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    @pytest.mark.parametrize("args", args, ids=['multiclass', 'multilabel'])
-    def test_ote_train(self, template, args):
+    def test_ote_train(self, template):
         ote_train_testing(template, root, ote_dir, args)
         _, template_work_dir, _ = get_some_vars(template, root)
         args1 = args.copy()
@@ -90,62 +72,56 @@ class TestToolsClsClsIncr:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    @pytest.mark.parametrize("args", args, ids=['multiclass', 'multilabel'])
-    def test_ote_export(self, template, args):
+    def test_ote_export(self, template):
         ote_export_testing(template, root)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    @pytest.mark.parametrize("args", args, ids=['multiclass', 'multilabel'])
-    def test_ote_eval(self, template, args):
+    def test_ote_eval(self, template):
         ote_eval_testing(template, root, ote_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    @pytest.mark.parametrize("args", args, ids=['multiclass', 'multilabel'])
-    def test_ote_eval_openvino(self, template, args):
+    def test_ote_eval_openvino(self, template):
         ote_eval_openvino_testing(template, root, ote_dir, args, threshold=0.0)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    @pytest.mark.parametrize("args", args, ids=['multiclass', 'multilabel'])
-    def test_ote_demo(self, template, args):
+    def test_ote_demo(self, template):
+        pytest.skip("demo for multi-label classification is not supported now.")
         ote_demo_testing(template, root, ote_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    @pytest.mark.parametrize("args", args, ids=['multiclass', 'multilabel'])
-    def test_ote_demo_openvino(self, template, args):
+    def test_ote_demo_openvino(self, template):
+        pytest.skip("demo for multi-label classification is not supported now.")
         ote_demo_openvino_testing(template, root, ote_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    @pytest.mark.parametrize("args", args, ids=['multiclass', 'multilabel'])
-    def test_ote_deploy_openvino(self, template, args):
+    def test_ote_deploy_openvino(self, template):
+        pytest.xfail("Known issue CVS-84981")
         ote_deploy_openvino_testing(template, root, ote_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    @pytest.mark.parametrize("args", args, ids=['multiclass', 'multilabel'])
-    def test_ote_eval_deployment(self, template, args):
+    def test_ote_eval_deployment(self, template):
         ote_eval_deployment_testing(template, root, ote_dir, args, threshold=0.0)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    @pytest.mark.parametrize("args", args, ids=['multiclass', 'multilabel'])
-    def test_ote_demo_deployment(self, template, args):
+    def test_ote_demo_deployment(self, template):
+        pytest.skip("demo for multi-label classification is not supported now.")
         ote_demo_deployment_testing(template, root, ote_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    @pytest.mark.parametrize("args", args, ids=['multiclass', 'multilabel'])
-    def test_ote_hpo(self, template, args):
+    def test_ote_hpo(self, template):
         ote_hpo_testing(template, root, ote_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    @pytest.mark.parametrize("args", args, ids=['multiclass', 'multilabel'])
-    def test_nncf_optimize(self, template, args):
+    def test_nncf_optimize(self, template):
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
 
@@ -153,8 +129,7 @@ class TestToolsClsClsIncr:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    @pytest.mark.parametrize("args", args, ids=['multiclass', 'multilabel'])
-    def test_nncf_export(self, template, args):
+    def test_nncf_export(self, template):
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
 
@@ -162,7 +137,7 @@ class TestToolsClsClsIncr:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_nncf_eval(self, template, args):
+    def test_nncf_eval(self, template):
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
 
@@ -170,8 +145,7 @@ class TestToolsClsClsIncr:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    @pytest.mark.parametrize("args", args, ids=['multiclass', 'multilabel'])
-    def test_nncf_eval_openvino(self, template, args):
+    def test_nncf_eval_openvino(self, template):
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
 
@@ -179,12 +153,10 @@ class TestToolsClsClsIncr:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    @pytest.mark.parametrize("args", args, ids=['multiclass', 'multilabel'])
-    def test_pot_optimize(self, template, args):
+    def test_pot_optimize(self, template):
         pot_optimize_testing(template, root, ote_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    @pytest.mark.parametrize("args", args, ids=['multiclass', 'multilabel'])
-    def test_pot_eval(self, template, args):
+    def test_pot_eval(self, template):
         pot_eval_testing(template, root, ote_dir, args)
