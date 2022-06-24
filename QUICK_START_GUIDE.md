@@ -217,12 +217,12 @@
    * POT optimization used for models exported in the OpenVINO IR format
 
    For example:
-   Optimise a PyTorch model (.pth) with OpenVINO NNCF:
+   Optimize a PyTorch model (.pth) with OpenVINO NNCF:
    ```
    ote optimize ./external/mmdetection/configs/ote/custom-object-detection/gen3_mobilenetV2_ATSS/template.yaml --load-weights weights.pth --save-model-to ./nncf_output --save-performance ./nncf_output/performance.json --train-ann-file ./data/car_tree_bug/annotations/instances_default.json --train-data-roots ./data/car_tree_bug/images --val-ann-file ./data/car_tree_bug/annotations/instances_default.json --val-data-roots ./data/car_tree_bug/images
    ```
 
-   Optimise OpenVINO model (.bin or .xml) with OpenVINO POT:
+   Optimize OpenVINO model (.bin or .xml) with OpenVINO POT:
    ```
    ote optimize ./external/mmdetection/configs/ote/custom-object-detection/gen3_mobilenetV2_ATSS/template.yaml --load-weights openvino.xml --save-model-to ./pot_output --save-performance ./pot_output/performance.json --train-ann-file ./data/car_tree_bug/annotations/instances_default.json --train-data-roots ./data/car_tree_bug/images --val-ann-file ./data/car_tree_bug/annotations/instances_default.json --val-data-roots ./data/car_tree_bug/images
    ```
