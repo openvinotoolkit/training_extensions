@@ -35,6 +35,7 @@ from ote_sdk.entities.inference_parameters import InferenceParameters, default_p
 from ote_sdk.entities.model import ModelEntity, ModelFormat, ModelOptimizationType, ModelPrecision, OptimizationMethod
 from ote_sdk.entities.model_template import TaskType, task_type_to_label_domain
 from ote_sdk.entities.resultset import ResultSetEntity
+from ote_sdk.entities.result_media import ResultMediaEntity
 from ote_sdk.entities.scored_label import ScoredLabel
 from ote_sdk.entities.shapes.polygon import Point, Polygon
 from ote_sdk.entities.shapes.rectangle import Rectangle
@@ -249,8 +250,12 @@ class OTEDetectionInferenceTask(IInferenceTask, IExportTask, IEvaluationTask, IU
                 dataset_item.append_metadata_item(active_score, model=self._task_environment.model)
             
             if saliency_map is not None:
-                TODO: ADD SALIENCY MAP TO DATASET ITEM
-                print('add here')
+                width, height = dataset_item.width, dataset_item.height
+                saliency_map = cv2.resize(saliency_map, (width, height), interpolation=cv2.INTER_NEAREST)
+                saliency_map_media = ResultMediaEntity(name="saliency_map", type="Saliency map",
+                                                annotation_scene=dataset_item.annotation_scene, 
+                                                numpy=saliency_map, roi=dataset_item.roi)
+                dataset_item.append_metadata_item(saliency_map_media, model=self._task_environment.model)
 
 
     @check_input_parameters_type({"dataset": DatasetParamTypeCheck})

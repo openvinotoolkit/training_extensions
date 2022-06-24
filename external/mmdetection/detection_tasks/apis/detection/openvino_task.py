@@ -14,6 +14,7 @@
 
 import attr
 import copy
+import cv2
 import io
 import json
 import numpy as np
@@ -41,8 +42,10 @@ from ote_sdk.entities.model import (
 )
 from ote_sdk.entities.model_template import TaskType
 from ote_sdk.entities.optimization_parameters import OptimizationParameters
+from ote_sdk.entities.result_media import ResultMediaEntity
 from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.task_environment import TaskEnvironment
+from ote_sdk.entities.tensor import TensorEntity
 from ote_sdk.serialization.label_mapper import LabelSchemaMapper, label_schema_to_bytes
 from ote_sdk.usecases.evaluation.metrics_helper import MetricsHelper
 from ote_sdk.usecases.exportable_code.inference import BaseInferencer
@@ -268,9 +271,18 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
             predicted_scene, features = self.inferencer.predict(dataset_item.numpy)
             dataset_item.append_annotations(predicted_scene.annotations)
             update_progress_callback(int(i / dataset_size * 100))
-            #TODO: ADD FEATURE VECTOR AND SALIENCY MAP TO DATASET ITEM
+            feature_vector = features[0]
+            representation_vector = TensorEntity(name="representation_vector", numpy=feature_vector.reshape(-1))
+            dataset_item.append_metadata_item(representation_vector, model=self.model)
+
             if add_saliency_map:
-              print()
+                saliency_map = features[1][0]
+                width, height = dataset_item.width, dataset_item.height
+                saliency_map = cv2.resize(saliency_map, (width, height), interpolation=cv2.INTER_NEAREST)
+                saliency_map_media = ResultMediaEntity(name="saliency_map", type="Saliency map",
+                                                annotation_scene=dataset_item.annotation_scene, 
+                                                numpy=saliency_map, roi=dataset_item.roi)
+                dataset_item.append_metadata_item(saliency_map_media, model=self.model)
         logger.info('OpenVINO inference completed')
         return dataset
 
