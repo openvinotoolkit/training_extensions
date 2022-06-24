@@ -143,7 +143,13 @@ class OTEDetectionNNCFTask(OTEDetectionInferenceTask, IOptimizationTask):
                     logger.info("Loaded model weights from Task Environment and wrapped by NNCF")
                 else:
                     try:
-                        model.load_state_dict(model_data['model'])
+                        if 'state_dict' in model_data:
+                            state_dict = model_data['state_dict']
+                        elif 'model' in model_data:
+                            state_dict = model_data['model']
+                        else:
+                            state_dict = model_data
+                        model.load_state_dict(state_dict)
                         logger.info(f"Loaded model weights from Task Environment")
                         logger.info(f"Model architecture: {self._model_name}")
                     except BaseException as ex:
