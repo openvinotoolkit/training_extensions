@@ -15,8 +15,7 @@ class MPADetDataset(OTEDataset):
     def __init__(self, **kwargs):
         dataset_cfg = kwargs.copy()
         _ = dataset_cfg.pop('org_type', None)
-        if dataset_cfg.get('new_classes', False):
-            new_classes = dataset_cfg.pop('new_classes')
+        new_classes = dataset_cfg.pop('new_classes', [])
         super().__init__(**dataset_cfg)
 
         test_mode = kwargs.get('test_mode', False)
