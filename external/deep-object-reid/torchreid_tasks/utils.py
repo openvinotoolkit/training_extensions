@@ -397,18 +397,26 @@ def force_fp32(model: Module):
 class TrainingProgressCallback(TimeMonitorCallback):
     def __init__(self, update_progress_callback: UpdateProgressCallback, **kwargs):
         super().__init__(update_progress_callback=update_progress_callback, **kwargs)
+        self._num_iters = 0
 
     def on_train_batch_end(self, batch, logs=None):
         super().on_train_batch_end(batch, logs)
+        self._num_iters += 1
         self.update_progress_callback(self.get_progress(), score=logs)
 
     def on_epoch_end(self, epoch, logs=None):
         self.past_epoch_duration.append(time.time() - self.start_epoch_time)
         self._calculate_average_epoch()
-        score = logs
         if hasattr(self.update_progress_callback, 'metric') and isinstance(logs, dict):
             score = logs.get(self.update_progress_callback.metric, None)
-            score = float(score) if score is not None else None
+        else:
+            score = logs
+        if score is not None:
+            score = float(score)
+            print(f'score = {score} at epoch {self.current_epoch} / {self._num_iters}')
+            # as a trick, score (at least if it's accuracy not the loss) and iteration number
+            # could be assembled just using summation and then disassembeled.
+            score = score + int(self._num_iters)
         self.update_progress_callback(self.get_progress(), score=score)
 
 
