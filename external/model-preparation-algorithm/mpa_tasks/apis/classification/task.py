@@ -77,18 +77,19 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         update_progress_callback = default_progress_callback
         if inference_parameters is not None:
             update_progress_callback = inference_parameters.update_progress
+            
         dataset_size = len(dataset)
         for i, (dataset_item, prediction_item) in enumerate(zip(dataset, predictions)):
+            label = []
             if self._multilabel:
-                label = []
-                for cls_idx, pred in enumerate(prediction_item):
-                    if pred > 0.5:
-                        cls_label = ScoredLabel(self.labels[cls_idx], probability=float(pred))
+                for cls_idx, pred_item in enumerate(prediction_item):
+                    if pred_item > 0.5:
+                        cls_label = ScoredLabel(self.labels[cls_idx], probability=float(pred_item))
                         label.append(cls_label)
             else:
                 label_idx = prediction_item.argmax()
-                proba = prediction_item[label_idx]
-                label = [ScoredLabel(label_idx, probability=proba)]
+                cls_label = ScoredLabel(self._labels[label_idx], probability=float(prediction_item[label_idx]))
+                label.append(cls_label)
             dataset_item.append_labels(label)
             update_progress_callback(int(i / dataset_size * 100))
         return dataset

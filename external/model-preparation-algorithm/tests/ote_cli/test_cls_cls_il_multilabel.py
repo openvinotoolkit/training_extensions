@@ -39,6 +39,7 @@ args = {
     '--val-data-roots': 'data/car_tree_bug',
     '--test-ann-files': 'data/car_tree_bug/car_tree_bug_multilabel_train.json',
     '--test-data-roots': 'data/car_tree_bug',
+    '--input': 'data/car_tree_bug',
     'train_params': [
         'params',
         '--learning_parameters.num_iters',
@@ -106,12 +107,13 @@ class TestToolsClsClsIncr:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_ote_eval_deployment(self, template):
+        pytest.xfail("Known issue CVS-84981")  # require pass for test_ote_deploy_openvino
         ote_eval_deployment_testing(template, root, ote_dir, args, threshold=0.0)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_ote_demo_deployment(self, template):
-        pytest.skip("demo for multi-label classification is not supported now.")
+        pytest.xfail("Known issue CVS-84981, demo for multi-label classification is not supported now.")
         ote_demo_deployment_testing(template, root, ote_dir, args)
 
     @e2e_pytest_component
