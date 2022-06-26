@@ -59,7 +59,7 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
             self._labels = task_environment.get_labels(include_empty=False)
         self._multilabel = len(task_environment.label_schema.get_groups(False)) > 1 and \
                            len(task_environment.label_schema.get_groups(False)) == \
-                           len(task_environment.get_labels(include_empty=False))
+                           len(task_environment.get_labels(include_empty=False))  # noqa:E127
 
     def infer(self,
               dataset: DatasetEntity,
@@ -79,9 +79,17 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
             update_progress_callback = inference_parameters.update_progress
         dataset_size = len(dataset)
         for i, (dataset_item, prediction_item) in enumerate(zip(dataset, predictions)):
-            label_idx = prediction_item.argmax()
-            probability = prediction_item[label_idx]
-            dataset_item.append_labels([ScoredLabel(self._labels[label_idx], probability=probability)])
+            if self._multilabel:
+                label = []
+                for cls_idx, pred in enumerate(prediction_item):
+                    if pred > 0.5:
+                        cls_label = ScoredLabel(self.labels[cls_idx], probability=float(pred))
+                        label.append(cls_label)
+            else:
+                label_idx = prediction_item.argmax()
+                proba = prediction_item[label_idx]
+                label = [ScoredLabel(label_idx, probability=proba)]
+            dataset_item.append_labels(label)
             update_progress_callback(int(i / dataset_size * 100))
         return dataset
 
@@ -220,7 +228,7 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
     def _patch_evaluation(self, config: MPAConfig):
         cfg = config.evaluation
         if self._multilabel:
-            cfg.metric = ['mAP', 'CP', 'OP', 'CR', 'OR', 'CF1', 'OF1']
+            cfg.metric = ['accuracy-mlc', 'mAP', 'CP', 'OP', 'CR', 'OR', 'CF1', 'OF1']
         else:
             cfg.metric = ['accuracy', 'class_accuracy']
 
@@ -335,7 +343,7 @@ class ClassificationTrainTask(ClassificationInferenceTask):
         output: List[MetricsGroup] = []
 
         if self._multilabel:
-            metric_key = 'val/mAP'
+            metric_key = 'val/accuracy-mlc'
         else:
             metric_key = 'val/accuracy_top-1'
 

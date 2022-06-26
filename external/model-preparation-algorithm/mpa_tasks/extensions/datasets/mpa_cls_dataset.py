@@ -4,6 +4,7 @@
 
 import torch
 import numpy as np
+from sklearn.metrics import confusion_matrix as sklearn_confusion_matrix
 from mmcv.utils.registry import build_from_cfg
 from mmcls.core import average_performance, mAP
 from mmcls.datasets.builder import DATASETS, PIPELINES
@@ -46,30 +47,25 @@ class MPAClsDataset(BaseDataset):
 
     def load_annotations(self):
         for dataset_item in self.ote_dataset:
-            if dataset_item.get_annotations() == []:
-                continue
-            else:
-                label = int(dataset_item.get_annotations()[0].get_labels()[0].id_)
+            roi_label = dataset_item.get_roi_labels(self.labels)
+            label = [self.label_idx[lbl.id] for lbl in roi_label] if roi_label else [None]
             self.gt_labels.append(label)
         self.gt_labels = np.array(self.gt_labels)
 
     def __getitem__(self, index):
         dataset = self.ote_dataset
-        dataset_item = dataset[index]
-        ignored_labels = np.array([self.label_idx[lbs.id] for lbs in dataset_item.ignored_labels])
+        item = dataset[index]
+        ignored_labels = np.array([self.label_idx[lbs.id] for lbs in item.ignored_labels])
+
+        height, width = item.height, item.width
+
+        data_info = dict(dataset_item=item, width=width, height=height, index=index,
+                         gt_label=self.gt_labels[index], ignored_labels=ignored_labels)
 
         if self.pipeline is None:
-            return dataset_item
-
-        results = {}
-        results['index'] = index
-        results['dataset_item'] = dataset_item
-        results['height'], results['width'], _ = dataset_item.numpy.shape
-        results['gt_label'] = None if len(self.gt_labels) == 0 else torch.tensor(self.gt_labels[index])
-        results['ignored_labels'] = ignored_labels
-        results = self.pipeline(results)
-
-        return results
+            return data_info
+        else:
+            return self.pipeline(data_info)
 
     def get_gt_labels(self):
         """Get all ground-truth labels (categories).
@@ -143,13 +139,11 @@ class MPAClsDataset(BaseDataset):
 class MPAMultilabelClsDataset(MPAClsDataset):
     def load_annotations(self):
         for dataset_item in self.ote_dataset:
-            if dataset_item.get_annotations() == []:
-                label = None
-            else:
-                label = int(dataset_item.get_annotations()[0].get_labels()[0].id_)
-                onehot_label = np.zeros(len(self.CLASSES))
-                onehot_label[label] = 1
-                self.gt_labels.append(onehot_label)
+            label = np.zeros(len(self.labels))
+            roi_label = dataset_item.get_roi_labels(self.labels)
+            for lbl in roi_label:
+                label[self.label_idx[lbl.id]] = 1
+            self.gt_labels.append(label)
         self.gt_labels = np.array(self.gt_labels)
 
     def evaluate(self,
@@ -178,7 +172,7 @@ class MPAMultilabelClsDataset(MPAClsDataset):
             metrics = [metric]
         else:
             metrics = metric
-        allowed_metrics = ['mAP', 'CP', 'CR', 'CF1', 'OP', 'OR', 'OF1']
+        allowed_metrics = ['accuracy-mlc', 'mAP', 'CP', 'CR', 'CF1', 'OP', 'OR', 'OF1']
         eval_results = {}
         results = np.vstack(results)
         gt_labels = self.get_gt_labels()
@@ -191,6 +185,38 @@ class MPAMultilabelClsDataset(MPAClsDataset):
         invalid_metrics = set(metrics) - set(allowed_metrics)
         if len(invalid_metrics) != 0:
             raise ValueError(f'metric {invalid_metrics} is not supported.')
+
+        if 'accuracy-mlc' in metrics:
+            true_label_idx = []
+            pred_label_idx = []
+            
+            true_label = (gt_labels == 1)
+            pred_label = (results > 0.5)
+            num_class = [i+1 for i in range(len(self.labels))]
+
+            for true_lbl, pred_lbl in zip(true_label, pred_label):
+                true_lbl_idx = set(true_lbl * num_class) - set([0])  ## except empty
+                pred_lbl_idx = set(pred_lbl * num_class) - set([0])
+                true_label_idx.append(true_lbl_idx)
+                pred_label_idx.append(pred_lbl_idx)
+            
+            confusion_matrices = []
+            for cls_idx in num_class:
+                group_labels_idx = set([cls_idx-1])
+                y_true = [int(not group_labels_idx.issubset(true_labels))
+                        for true_labels in true_label_idx]
+                y_pred = [int(not group_labels_idx.issubset(pred_labels))
+                        for pred_labels in pred_label_idx]
+                matrix_data = sklearn_confusion_matrix(y_true, y_pred, labels=list(range(len([0, 1]))))
+                confusion_matrices.append(matrix_data)
+            correct_per_label_group = [
+                np.trace(mat) for mat in confusion_matrices
+            ]
+            total_per_label_group = [
+                np.sum(mat) for mat in confusion_matrices
+            ]
+            acc = np.sum(correct_per_label_group) / np.sum(total_per_label_group)
+            eval_results['accuracy-mlc'] = acc
 
         if 'mAP' in metrics:
             mAP_value = mAP(results, gt_labels)
