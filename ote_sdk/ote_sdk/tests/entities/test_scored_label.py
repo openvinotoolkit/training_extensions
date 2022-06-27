@@ -17,7 +17,7 @@ import pytest
 from ote_sdk.entities.color import Color
 from ote_sdk.entities.id import ID
 from ote_sdk.entities.label import Domain, LabelEntity
-from ote_sdk.entities.scored_label import ScoredLabel
+from ote_sdk.entities.scored_label import LabelSource, ScoredLabel
 from ote_sdk.tests.constants.ote_sdk_components import OteSdkComponent
 from ote_sdk.tests.constants.requirements import Requirements
 
@@ -63,11 +63,17 @@ class TestScoredLabel:
         car_label.probability += delta_probability
         assert car_label.probability == probability
 
+        label_source = LabelSource()
+        assert car_label.label_source == label_source
+        user_name = "User Name"
+        car_label.label_source.user_id = user_name
+        label_source_with_user = LabelSource(user_id=user_name)
+        assert car_label.label_source == label_source_with_user
+
         car.color = Color(red=16, green=15, blue=56, alpha=255)
-        assert (
+        assert repr(car_label) == (
             "ScoredLabel(123456789, name=car, probability=0.4, domain=DETECTION, color="
-            in repr(car_label)
-        )
-        assert "Color(red=16, green=15, blue=56, alpha=255), hotkey=)" in repr(
-            car_label
+            "Color(red=16, green=15, blue=56, alpha=255), hotkey=, "
+            "label_source=LabelSource(user_id='User Name', model_id=ID(), "
+            "model_storage_id=ID()))"
         )
