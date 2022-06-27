@@ -179,7 +179,7 @@ algo_backend:
       operator: AND
       rules: []
       type: UI_RULES
-    value: SelfSupervised
+    value: Incremental
     visible_in_ui: True
     warning: null
   type: PARAMETER_GROUP
