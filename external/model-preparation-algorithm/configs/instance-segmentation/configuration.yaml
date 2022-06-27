@@ -170,8 +170,8 @@ algo_backend:
     enum_name: TrainType
     header: train type
     options:
-      SemiSupervised: "SemiSupervised"
-      SelfSupervised: "SelfSupervised"
+      # SemiSupervised: "SemiSupervised"
+      # SelfSupervised: "SelfSupervised"
       Incremental: "Incremental"
     type: SELECTABLE
     ui_rules:
