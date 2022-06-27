@@ -42,5 +42,5 @@ training_targets:
   - CPU
 
 # Stats.
-gigaflops: 533.8
-size: 177.9
+gigaflops: 68.48
+size: 13.27
