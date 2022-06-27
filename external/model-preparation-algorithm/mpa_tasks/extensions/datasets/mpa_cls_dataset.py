@@ -10,7 +10,7 @@ from mmcls.core import average_performance, mAP
 from mmcls.datasets.builder import DATASETS, PIPELINES
 from mmcls.datasets.pipelines import Compose
 from mmcls.datasets.base_dataset import BaseDataset
-from mpa_tasks.utils.data_utils import get_cls_img_indices
+from mpa_tasks.utils.data_utils import get_cls_img_indices, get_old_new_img_indices
 from mpa.utils.logger import get_logger
 
 logger = get_logger()
@@ -30,7 +30,8 @@ class MPAClsDataset(BaseDataset):
 
         test_mode = kwargs.get('test_mode', False)
         if test_mode is False:
-            self.img_indices = get_cls_img_indices(self.labels, self.ote_dataset)
+            new_classes=kwargs.pop('new_classes',[])
+            self.img_indices = self.get_indices(new_classes)
 
         if isinstance(pipeline, dict):
             self.pipeline = {}
@@ -44,6 +45,9 @@ class MPAClsDataset(BaseDataset):
             _pipeline = [dict(type='LoadImageFromOTEDataset'), *pipeline]
             self.pipeline = Compose([build_from_cfg(p, PIPELINES) for p in _pipeline])
         self.load_annotations()
+
+    def get_indices(self, *args):
+        return get_cls_img_indices(self.labels, self.ote_dataset)
 
     def load_annotations(self):
         for dataset_item in self.ote_dataset:
@@ -137,6 +141,9 @@ class MPAClsDataset(BaseDataset):
 
 @DATASETS.register_module()
 class MPAMultilabelClsDataset(MPAClsDataset):
+    def get_indices(self, new_classes):
+        return get_old_new_img_indices(self.labels, new_classes, self.ote_dataset)
+    
     def load_annotations(self):
         for dataset_item in self.ote_dataset:
             label = np.zeros(len(self.labels))
