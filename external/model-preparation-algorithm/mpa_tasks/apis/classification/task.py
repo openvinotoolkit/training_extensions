@@ -82,8 +82,9 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         for i, (dataset_item, prediction_item) in enumerate(zip(dataset, predictions)):
             label = []
             if self._multilabel:
+                pos_thr = 0.5
                 for cls_idx, pred_item in enumerate(prediction_item):
-                    if pred_item > 0.5:
+                    if pred_item > pos_thr:
                         cls_label = ScoredLabel(self.labels[cls_idx], probability=float(pred_item))
                         label.append(cls_label)
             else:

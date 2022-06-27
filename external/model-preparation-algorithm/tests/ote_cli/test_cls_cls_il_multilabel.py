@@ -31,13 +31,31 @@ from ote_cli.utils.tests import (
     xfail_templates,
 )
 
-
-args = {
-    '--train-ann-file': 'data/car_tree_bug/car_tree_bug_multilabel_train.json',
+# Pre-train w/ 'car', 'tree' classes
+args0 = {
+    '--train-ann-file': 'data/car_tree_bug/car_tree_bug_multilabel_car_tree_train.json',
     '--train-data-roots': 'data/car_tree_bug',
-    '--val-ann-file': 'data/car_tree_bug/car_tree_bug_multilabel_train.json',
+    '--val-ann-file': 'data/car_tree_bug/car_tree_bug_multilabel_car_tree_train.json',
     '--val-data-roots': 'data/car_tree_bug',
-    '--test-ann-files': 'data/car_tree_bug/car_tree_bug_multilabel_train.json',
+    '--test-ann-files': 'data/car_tree_bug/car_tree_bug_multilabel_car_tree_train.json',
+    '--test-data-roots': 'data/car_tree_bug',
+    '--input': 'data/car_tree_bug',
+    'train_params': [
+        'params',
+        '--learning_parameters.num_iters',
+        '2',
+        '--learning_parameters.batch_size',
+        '2',
+    ]
+}
+
+# Class-Incremental learning w/ 'car', 'tree', 'bug' classes
+args = {
+    '--train-ann-file': 'data/car_tree_bug/car_tree_bug_multilabel_car_tree_bug_train.json',
+    '--train-data-roots': 'data/car_tree_bug',
+    '--val-ann-file': 'data/car_tree_bug/car_tree_bug_multilabel_car_tree_bug_train.json',
+    '--val-data-roots': 'data/car_tree_bug',
+    '--test-ann-files': 'data/car_tree_bug/car_tree_bug_multilabel_car_tree_bug_train.json',
     '--test-data-roots': 'data/car_tree_bug',
     '--input': 'data/car_tree_bug',
     'train_params': [
@@ -65,7 +83,7 @@ class TestToolsClsClsIncr:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_ote_train(self, template):
-        ote_train_testing(template, root, ote_dir, args)
+        ote_train_testing(template, root, ote_dir, args0)
         _, template_work_dir, _ = get_some_vars(template, root)
         args1 = args.copy()
         args1['--load-weights'] = f'{template_work_dir}/trained_{template.model_template_id}/weights.pth'

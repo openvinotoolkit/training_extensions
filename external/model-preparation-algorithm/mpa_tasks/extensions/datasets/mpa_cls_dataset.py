@@ -115,7 +115,7 @@ class MPAClsDataset(BaseDataset):
         eval_results = super().evaluate(results, metrics, metric_options, logger)
 
         # Add Evaluation Accuracy score per Class - it can be used only for multi-class dataset.
-        if self.class_acc: 
+        if self.class_acc:
             results = np.vstack(results)
             gt_labels = self.get_gt_labels()
             accuracies = self.class_accuracy(results, gt_labels)
@@ -189,19 +189,19 @@ class MPAMultilabelClsDataset(MPAClsDataset):
         if 'accuracy-mlc' in metrics:
             true_label_idx = []
             pred_label_idx = []
-            
-            true_label = (gt_labels == 1)
-            pred_label = (results > 0.5)
-            num_class = [i+1 for i in range(len(self.labels))]
+            pos_thr = metric_options.get('thr', 0.5)
 
+            true_label = (gt_labels == 1)
+            pred_label = (results > pos_thr)
+            cls_index = [i+1 for i in range(len(self.labels))]
             for true_lbl, pred_lbl in zip(true_label, pred_label):
-                true_lbl_idx = set(true_lbl * num_class) - set([0])  ## except empty
-                pred_lbl_idx = set(pred_lbl * num_class) - set([0])
+                true_lbl_idx = set(true_lbl * cls_index) - set([0])  ## except empty
+                pred_lbl_idx = set(pred_lbl * cls_index) - set([0])
                 true_label_idx.append(true_lbl_idx)
                 pred_label_idx.append(pred_lbl_idx)
             
             confusion_matrices = []
-            for cls_idx in num_class:
+            for cls_idx in cls_index:
                 group_labels_idx = set([cls_idx-1])
                 y_true = [int(not group_labels_idx.issubset(true_labels))
                         for true_labels in true_label_idx]
@@ -209,13 +209,15 @@ class MPAMultilabelClsDataset(MPAClsDataset):
                         for pred_labels in pred_label_idx]
                 matrix_data = sklearn_confusion_matrix(y_true, y_pred, labels=list(range(len([0, 1]))))
                 confusion_matrices.append(matrix_data)
+
             correct_per_label_group = [
                 np.trace(mat) for mat in confusion_matrices
             ]
             total_per_label_group = [
                 np.sum(mat) for mat in confusion_matrices
             ]
-            acc = np.sum(correct_per_label_group) / np.sum(total_per_label_group)
+
+            acc = np.sum(correct_per_label_group) / np.sum(total_per_label_group)  ## MICRO average
             eval_results['accuracy-mlc'] = acc
 
         if 'mAP' in metrics:

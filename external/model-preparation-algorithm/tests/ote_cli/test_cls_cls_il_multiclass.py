@@ -31,15 +31,33 @@ from ote_cli.utils.tests import (
     xfail_templates,
 )
 
+# Pre-train w/ 'intel', 'openvino' classes
+args0 = {
+    '--train-ann-file': '',
+    '--train-data-roots': 'data/text_recognition/initial_data',
+    '--val-ann-file': '',
+    '--val-data-roots': 'data/text_recognition/initial_data',
+    '--test-ann-files': '',
+    '--test-data-roots': 'data/text_recognition/initial_data',
+    '--input': 'data/text_recognition/initial_data/intel',
+    'train_params': [
+        'params',
+        '--learning_parameters.num_iters',
+        '2',
+        '--learning_parameters.batch_size',
+        '2',
+    ]
+}
 
+# Pre-train w/ 'intel', 'openvino', 'opencv' classes
 args = {
     '--train-ann-file': '',
-    '--train-data-roots': 'data/classification/train',
+    '--train-data-roots': 'data/text_recognition/IL_data',
     '--val-ann-file': '',
-    '--val-data-roots': 'data/classification/val',
+    '--val-data-roots': 'data/text_recognition/IL_data',
     '--test-ann-files': '',
-    '--test-data-roots': 'data/classification/val',
-    '--input': 'data/classification/val/0',
+    '--test-data-roots': 'data/text_recognition/IL_data',
+    '--input': 'data/text_recognition/IL_data/intel',
     'train_params': [
         'params',
         '--learning_parameters.num_iters',
@@ -65,7 +83,7 @@ class TestToolsClsClsIncr:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_ote_train(self, template):
-        ote_train_testing(template, root, ote_dir, args)
+        ote_train_testing(template, root, ote_dir, args0)
         _, template_work_dir, _ = get_some_vars(template, root)
         args1 = args.copy()
         args1['--load-weights'] = f'{template_work_dir}/trained_{template.model_template_id}/weights.pth'
