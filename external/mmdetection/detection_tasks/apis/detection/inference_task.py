@@ -55,11 +55,12 @@ from ote_sdk.utils.argument_checks import (
 from mmdet.apis import export_model
 from detection_tasks.apis.detection.config_utils import patch_config, prepare_for_testing, set_hyperparams
 from detection_tasks.apis.detection.configuration import OTEDetectionConfig
-from detection_tasks.apis.detection.ote_utils import InferenceProgressCallback, get_saliency_map, get_feature_vector
+from detection_tasks.apis.detection.ote_utils import InferenceProgressCallback
 from mmdet.datasets import build_dataloader, build_dataset
 from mmdet.models import build_detector
 from mmdet.parallel import MMDataCPU
 from mmdet.utils.collect_env import collect_env
+from mmdet.utils.deployment import get_saliency_map, get_feature_vector
 from mmdet.utils.logger import get_root_logger
 
 logger = get_root_logger()
@@ -330,7 +331,14 @@ class OTEDetectionInferenceTask(IInferenceTask, IExportTask, IEvaluationTask, IU
         def dummy_dump_features_hook(mod, inp, out):
             feature_vectors.append(None)
 
-        def dump_saliency_hook(mod, inp, out):
+        def dump_saliency_hook(model: torch.Module, x: Tuple, out: List[torch.Tensor]):
+            """ Dump the largest feature map to `saliency_maps` cache 
+
+            Args:
+                model (torch.Module): PyTorch model
+                x (Tuple): input 
+                out (List[torch.Tensor]): a list of feature maps 
+            """
             with torch.no_grad():
                 saliency_map = get_saliency_map(out[0])
             saliency_maps.append(saliency_map.squeeze(0).detach().cpu().numpy())

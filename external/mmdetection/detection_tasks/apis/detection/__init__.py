@@ -20,7 +20,7 @@ from .configuration import OTEDetectionConfig
 from .inference_task import OTEDetectionInferenceTask
 from .nncf_task import OTEDetectionNNCFTask
 from .openvino_task import OpenVINODetectionTask
-from .ote_utils import generate_label_schema, get_task_class, load_template, get_saliency_map, get_feature_vector
+from .ote_utils import generate_label_schema, get_task_class, load_template
 from .train_task import OTEDetectionTrainingTask
 
 __all__ = [
@@ -39,5 +39,4 @@ __all__ = [
     prepare_for_training,
     save_config_to_file,
     set_hyperparams,
-    get_saliency_map,
-    get_feature_vector]
+    ]
