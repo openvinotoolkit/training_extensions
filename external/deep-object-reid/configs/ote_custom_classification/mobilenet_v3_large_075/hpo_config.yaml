@@ -1,9 +1,8 @@
 metric: Top-1
-search_algorithm: smbo
-early_stop: median_stop
+search_algorithm: asha
 hp_space:
   learning_parameters.learning_rate:
-    param_type: quniform
+    param_type: qloguniform
     range: 
       - 0.005
       - 0.029
