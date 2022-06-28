@@ -1,10 +1,10 @@
 # Description.
-model_template_id: ClassIncremental_Instance_Segmentation_MaskRCNN_ResNet50
-name: MaskRCNN-ResNet50-ClsIncr
+model_template_id: ClassIncremental_Instance_Segmentation_MaskRCNN_EfficientNetB2B
+name: MaskRCNN-EfficientNetB2B-ClsIncr
 task_type: INSTANCE_SEGMENTATION
 task_family: VISION
 instantiation: "CLASS"
-summary: Class-Incremental Instance Segmentation for MaskRCNN-ResNet50
+summary: Class-Incremental Instance Segmentation for MaskRCNN-EfficientNetB2B
 application: ~
 
 # Algo backend.
@@ -24,11 +24,11 @@ hyper_parameters:
   parameter_overrides:
     learning_parameters:
       batch_size:
-        default_value: 8
+        default_value: 4
       learning_rate:
-        default_value: 0.001
+        default_value: 0.015
       learning_rate_warmup_iters:
-        default_value: 100
+        default_value: 200
       num_iters:
         default_value: 300
     algo_backend:
@@ -41,7 +41,6 @@ training_targets:
   - GPU
   - CPU
 
-# TODO
 # Stats.
-gigaflops: 533.8
-size: 177.9
+gigaflops: 68.48
+size: 13.27

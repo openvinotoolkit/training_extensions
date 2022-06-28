@@ -214,46 +214,48 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
 
             shapes = []
             if self._task_type == TaskType.DETECTION:
-                for label_idx, detections in enumerate(all_results):
-                    for i in range(detections.shape[0]):
-                        probability = float(detections[i, 4])
-                        coords = detections[i, :4].astype(float).copy()
-                        coords /= np.array([width, height, width, height], dtype=float)
-                        coords = np.clip(coords, 0, 1)
+                shapes = self._det_add_predictions_to_dataset(all_results, width, height, confidence_threshold)
+                # for label_idx, detections in enumerate(all_results):
+                #     for i in range(detections.shape[0]):
+                #         probability = float(detections[i, 4])
+                #         coords = detections[i, :4].astype(float).copy()
+                #         coords /= np.array([width, height, width, height], dtype=float)
+                #         coords = np.clip(coords, 0, 1)
 
-                        if probability < confidence_threshold:
-                            continue
+                #         if probability < confidence_threshold:
+                #             continue
 
-                        assigned_label = [ScoredLabel(self._labels[label_idx],
-                                                      probability=probability)]
-                        if coords[3] - coords[1] <= 0 or coords[2] - coords[0] <= 0:
-                            continue
+                #         assigned_label = [ScoredLabel(self._labels[label_idx],
+                #                                       probability=probability)]
+                #         if coords[3] - coords[1] <= 0 or coords[2] - coords[0] <= 0:
+                #             continue
 
-                        shapes.append(Annotation(
-                            Rectangle(x1=coords[0], y1=coords[1], x2=coords[2], y2=coords[3]),
-                            labels=assigned_label))
+                #         shapes.append(Annotation(
+                #             Rectangle(x1=coords[0], y1=coords[1], x2=coords[2], y2=coords[3]),
+                #             labels=assigned_label))
             elif self._task_type in {TaskType.INSTANCE_SEGMENTATION, TaskType.ROTATED_DETECTION}:
-                for label_idx, (boxes, masks) in enumerate(zip(*all_results)):
-                    for mask, probability in zip(masks, boxes[:, 4]):
-                        mask = mask.astype(np.uint8)
-                        probability = float(probability)
-                        contours, hierarchies = cv2.findContours(mask, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
-                        if hierarchies is None:
-                            continue
-                        for contour, hierarchy in zip(contours, hierarchies[0]):
-                            if hierarchy[3] != -1:
-                                continue
-                            if len(contour) <= 2 or probability < confidence_threshold:
-                                continue
-                            if self._task_type == TaskType.INSTANCE_SEGMENTATION:
-                                points = [Point(x=point[0][0] / width, y=point[0][1] / height) for point in contour]
-                            else:
-                                box_points = cv2.boxPoints(cv2.minAreaRect(contour))
-                                points = [Point(x=point[0] / width, y=point[1] / height) for point in box_points]
-                            labels = [ScoredLabel(self._labels[label_idx], probability=probability)]
-                            polygon = Polygon(points=points)
-                            if cv2.contourArea(contour) > 0 and polygon.get_area() > 1e-12:
-                                shapes.append(Annotation(polygon, labels=labels, id=ID(f"{label_idx:08}")))
+                shapes = self._ins_seg_add_predictions_to_dataset(all_results, width, height, confidence_threshold)
+                # for label_idx, (boxes, masks) in enumerate(zip(*all_results)):
+                #     for mask, probability in zip(masks, boxes[:, 4]):
+                #         mask = mask.astype(np.uint8)
+                #         probability = float(probability)
+                #         contours, hierarchies = cv2.findContours(mask, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
+                #         if hierarchies is None:
+                #             continue
+                #         for contour, hierarchy in zip(contours, hierarchies[0]):
+                #             if hierarchy[3] != -1:
+                #                 continue
+                #             if len(contour) <= 2 or probability < confidence_threshold:
+                #                 continue
+                #             if self._task_type == TaskType.INSTANCE_SEGMENTATION:
+                #                 points = [Point(x=point[0][0] / width, y=point[0][1] / height) for point in contour]
+                #             else:
+                #                 box_points = cv2.boxPoints(cv2.minAreaRect(contour))
+                #                 points = [Point(x=point[0] / width, y=point[1] / height) for point in box_points]
+                #             labels = [ScoredLabel(self._labels[label_idx], probability=probability)]
+                #             polygon = Polygon(points=points)
+                #             if cv2.contourArea(contour) > 0 and polygon.get_area() > 1e-12:
+                #                 shapes.append(Annotation(polygon, labels=labels, id=ID(f"{label_idx:08}")))
             else:
                 raise RuntimeError(
                     f"MPA results assignment not implemented for task: {self._task_type}")
@@ -266,8 +268,8 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
 
     def _patch_data_pipeline(self):
         base_dir = os.path.abspath(os.path.dirname(self.template_file_path))
-        data_pipeline_path = os.path.join(base_dir, 'coco_data_pipeline.py')
-        if os.path.isfile(data_pipeline_path):
+        data_pipeline_path = os.path.join(base_dir, 'data_pipeline.py')
+        if os.path.exists(data_pipeline_path):
             data_pipeline_cfg = MPAConfig.fromfile(data_pipeline_path)
             self._recipe_cfg.merge_from_dict(data_pipeline_cfg)
 
@@ -324,6 +326,53 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         for cfg in config.get('custom_hooks', []):
             if 'EarlyStoppingHook' in cfg.type:
                 cfg.metric = 'mAP'
+
+    def _det_add_predictions_to_dataset(self, all_results, width, height, confidence_threshold):
+        shapes = []
+        for label_idx, detections in enumerate(all_results):
+            for i in range(detections.shape[0]):
+                probability = float(detections[i, 4])
+                coords = detections[i, :4].astype(float).copy()
+                coords /= np.array([width, height, width, height], dtype=float)
+                coords = np.clip(coords, 0, 1)
+
+                if probability < confidence_threshold:
+                    continue
+
+                assigned_label = [ScoredLabel(self._labels[label_idx],
+                                              probability=probability)]
+                if coords[3] - coords[1] <= 0 or coords[2] - coords[0] <= 0:
+                    continue
+
+                shapes.append(Annotation(
+                    Rectangle(x1=coords[0], y1=coords[1], x2=coords[2], y2=coords[3]),
+                    labels=assigned_label))
+        return shapes
+
+    def _ins_seg_add_predictions_to_dataset(self, all_results, width, height, confidence_threshold):
+        shapes = []
+        for label_idx, (boxes, masks) in enumerate(zip(*all_results)):
+            for mask, probability in zip(masks, boxes[:, 4]):
+                mask = mask.astype(np.uint8)
+                probability = float(probability)
+                contours, hierarchies = cv2.findContours(mask, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
+                if hierarchies is None:
+                    continue
+                for contour, hierarchy in zip(contours, hierarchies[0]):
+                    if hierarchy[3] != -1:
+                        continue
+                    if len(contour) <= 2 or probability < confidence_threshold:
+                        continue
+                    if self._task_type == TaskType.INSTANCE_SEGMENTATION:
+                        points = [Point(x=point[0][0] / width, y=point[0][1] / height) for point in contour]
+                    else:
+                        box_points = cv2.boxPoints(cv2.minAreaRect(contour))
+                        points = [Point(x=point[0] / width, y=point[1] / height) for point in box_points]
+                    labels = [ScoredLabel(self._labels[label_idx], probability=probability)]
+                    polygon = Polygon(points=points)
+                    if cv2.contourArea(contour) > 0 and polygon.get_area() > 1e-12:
+                        shapes.append(Annotation(polygon, labels=labels, id=ID(f"{label_idx:08}")))
+        return shapes
 
 
 class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
