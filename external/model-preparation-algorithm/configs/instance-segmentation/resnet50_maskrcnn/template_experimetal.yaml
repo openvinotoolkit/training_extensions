@@ -26,7 +26,7 @@ hyper_parameters:
       batch_size:
         default_value: 4
       learning_rate:
-        default_value: 0.001
+        default_value: 0.01
       learning_rate_warmup_iters:
         default_value: 100
       num_iters:
@@ -41,7 +41,6 @@ training_targets:
   - GPU
   - CPU
 
-# TODO
 # Stats.
 gigaflops: 533.8
 size: 177.9
