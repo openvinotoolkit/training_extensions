@@ -466,7 +466,10 @@ class HpoManager:
         self.environment = environment
         self.dataset_paths = dataset_paths
         self.work_dir = hpo_save_path
-        self.deleted_hp = {}
+        # If hyper parameter candidates should be fixed,
+        # they're excluded from hp search space.
+        # But they are used in hpo and included to final hyper parameters as fixed.
+        self.fixed_hp = {}
 
         if environment.model is None:
             impl_class = get_impl_class(environment.model_template.entrypoints.base)
@@ -524,7 +527,7 @@ class HpoManager:
                         "Batch size is fixed to train set size."
                     )
                     del hpopt_cfg["hp_space"][batch_size_name]
-                    self.deleted_hp[batch_size_name] = train_dataset_size
+                    self.fixed_hp[batch_size_name] = train_dataset_size
 
         # prepare default hyper parameters
         default_hyper_parameters = {}
@@ -688,7 +691,7 @@ class HpoManager:
                             proc.join()
                     break
 
-                for key, val in self.deleted_hp.items():
+                for key, val in self.fixed_hp.items():
                     hp_config["params"][key] = val
 
                 hp_config["metric"] = self.metric
@@ -733,7 +736,7 @@ class HpoManager:
                 break
 
         best_config = self.hpo.get_best_config()
-        for key, val in self.deleted_hp.items():
+        for key, val in self.fixed_hp.items():
             best_config[key] = val
 
         # TODO: is it needed here?
