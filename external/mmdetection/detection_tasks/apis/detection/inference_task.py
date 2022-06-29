@@ -332,7 +332,7 @@ class OTEDetectionInferenceTask(IInferenceTask, IExportTask, IEvaluationTask, IU
             feature_vectors.append(None)
 
         def dump_saliency_hook(model: torch.nn.Module, input: Tuple, out: List[torch.Tensor]):
-            """ Dump the largest feature map to `saliency_maps` cache 
+            """ Dump the last feature map to `saliency_maps` cache 
 
             Args:
                 model (torch.nn.Module): PyTorch model
@@ -340,7 +340,7 @@ class OTEDetectionInferenceTask(IInferenceTask, IExportTask, IEvaluationTask, IU
                 out (List[torch.Tensor]): a list of feature maps 
             """
             with torch.no_grad():
-                saliency_map = get_saliency_map(out[0])
+                saliency_map = get_saliency_map(out[-1])
             saliency_maps.append(saliency_map.squeeze(0).detach().cpu().numpy())
         
         def dummy_dump_saliency_hook(model, input, out):
