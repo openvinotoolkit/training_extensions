@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import torch
 import numpy as np
 from sklearn.metrics import confusion_matrix as sklearn_confusion_matrix
 from mmcv.utils.registry import build_from_cfg
@@ -30,7 +29,7 @@ class MPAClsDataset(BaseDataset):
 
         test_mode = kwargs.get('test_mode', False)
         if test_mode is False:
-            new_classes=kwargs.pop('new_classes',[])
+            new_classes = kwargs.pop('new_classes', [])
             self.img_indices = self.get_indices(new_classes)
 
         if isinstance(pipeline, dict):
@@ -143,7 +142,7 @@ class MPAClsDataset(BaseDataset):
 class MPAMultilabelClsDataset(MPAClsDataset):
     def get_indices(self, new_classes):
         return get_old_new_img_indices(self.labels, new_classes, self.ote_dataset)
-    
+
     def load_annotations(self):
         for dataset_item in self.ote_dataset:
             label = np.zeros(len(self.labels))
@@ -202,18 +201,18 @@ class MPAMultilabelClsDataset(MPAClsDataset):
             pred_label = (results > pos_thr)
             cls_index = [i+1 for i in range(len(self.labels))]
             for true_lbl, pred_lbl in zip(true_label, pred_label):
-                true_lbl_idx = set(true_lbl * cls_index) - set([0])  ## except empty
+                true_lbl_idx = set(true_lbl * cls_index) - set([0])  # except empty
                 pred_lbl_idx = set(pred_lbl * cls_index) - set([0])
                 true_label_idx.append(true_lbl_idx)
                 pred_label_idx.append(pred_lbl_idx)
-            
+
             confusion_matrices = []
             for cls_idx in cls_index:
                 group_labels_idx = set([cls_idx-1])
                 y_true = [int(not group_labels_idx.issubset(true_labels))
-                        for true_labels in true_label_idx]
+                          for true_labels in true_label_idx]
                 y_pred = [int(not group_labels_idx.issubset(pred_labels))
-                        for pred_labels in pred_label_idx]
+                          for pred_labels in pred_label_idx]
                 matrix_data = sklearn_confusion_matrix(y_true, y_pred, labels=list(range(len([0, 1]))))
                 confusion_matrices.append(matrix_data)
 
@@ -224,7 +223,7 @@ class MPAMultilabelClsDataset(MPAClsDataset):
                 np.sum(mat) for mat in confusion_matrices
             ]
 
-            acc = np.sum(correct_per_label_group) / np.sum(total_per_label_group)  ## MICRO average
+            acc = np.sum(correct_per_label_group) / np.sum(total_per_label_group)  # MICRO average
             eval_results['accuracy-mlc'] = acc
 
         if 'mAP' in metrics:

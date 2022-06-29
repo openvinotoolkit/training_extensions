@@ -11,7 +11,7 @@ from ote_sdk.configuration.helper import create
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.inference_parameters import InferenceParameters
 from ote_sdk.entities.label import Domain
-from ote_sdk.entities.label_schema import LabelEntity, LabelGroup, LabelGroupType, LabelSchemaEntity
+from ote_sdk.entities.label_schema import LabelGroup, LabelGroupType, LabelSchemaEntity
 from ote_sdk.entities.model import ModelEntity
 from ote_sdk.entities.model_template import parse_model_template
 from ote_sdk.entities.optimization_parameters import OptimizationParameters
@@ -39,6 +39,7 @@ parser.add_argument('--export', action='store_true')
 parser.add_argument('--multilabel', action='store_true')
 args = parser.parse_args()
 
+
 def load_test_dataset(data_type):
     from ote_sdk.entities.annotation import Annotation, AnnotationSceneEntity, AnnotationSceneKind
     from ote_sdk.entities.dataset_item import DatasetItemEntity
@@ -55,23 +56,23 @@ def load_test_dataset(data_type):
         h, w = image.size
         shape = shape.split('+') if '+' in shape else [shape]
         for s in shape:
-            if s =='rectangle':
+            if s == 'rectangle':
                 draw.rectangle((h*0.1, w*0.1, h*0.4, w*0.4), fill=(0, 192, 192), outline=(0, 0, 0))
-            if s =='polygon':
-                draw.polygon(((h*0.5, w*0.25), (h, w*0.25), (h*0.5,w*0.7)), fill=(255, 255, 0), outline=(0, 0, 0))
+            if s == 'polygon':
+                draw.polygon(((h*0.5, w*0.25), (h, w*0.25), (h*0.5, w*0.7)), fill=(255, 255, 0), outline=(0, 0, 0))
             if s == 'pieslice':
                 draw.pieslice(((h*0.1, w*0.5), (h*0.5, w*0.9)), start=50, end=250, fill=(0, 255, 0), outline=(0, 0, 0))
-                
+
         return np.array(image), shape
 
     datas = [
         gen_image((32, 32), shape='rectangle'),
         gen_image((32, 32), shape='polygon'),
-        gen_image((32, 32), shape='rectangle+polygon'), # for multilabel (old)
+        gen_image((32, 32), shape='rectangle+polygon'),  # for multilabel (old)
         gen_image((32, 32), shape='pieslice'),
         gen_image((32, 32), shape='pieslice+rectangle'),
         gen_image((32, 32), shape='pieslice+polygon'),
-        gen_image((32, 32), shape='pieslice+rectangle+polygon') # for multilabel (new)
+        gen_image((32, 32), shape='pieslice+rectangle+polygon')  # for multilabel (new)
     ]
 
     labels = {'rectangle': LabelEntity(name='rectangle', domain=Domain.CLASSIFICATION, id=0),
@@ -111,7 +112,7 @@ def load_test_dataset(data_type):
             for idx in new_img_idx:
                 new_train.append(get_image(idx, Subset.TRAINING))
                 new_val.append(get_image(idx, Subset.VALIDATION))
-        
+
         return old_train+old_val, new_train+new_val
 
     old, new = gen_old_new_dataset(args.multilabel)
@@ -121,6 +122,7 @@ def load_test_dataset(data_type):
         return DatasetEntity(old), labels[:-1]
     else:
         return DatasetEntity(old + new), labels
+
 
 def get_label_schema(labels, multilabel=False):
     label_schema = LabelSchemaEntity()
@@ -132,6 +134,7 @@ def get_label_schema(labels, multilabel=False):
         label_schema.add_group(main_group)
 
     return label_schema
+
 
 def main():
     logger.info('Train initial model with OLD dataset')
