@@ -33,37 +33,37 @@ from ote_cli.utils.tests import (
 
 # Pre-train w/ 'car', 'tree' classes
 args0 = {
-    '--train-ann-file': 'data/car_tree_bug/car_tree_bug_multilabel_car_tree_train.json',
-    '--train-data-roots': 'data/car_tree_bug',
-    '--val-ann-file': 'data/car_tree_bug/car_tree_bug_multilabel_car_tree_train.json',
-    '--val-data-roots': 'data/car_tree_bug',
-    '--test-ann-files': 'data/car_tree_bug/car_tree_bug_multilabel_car_tree_train.json',
-    '--test-data-roots': 'data/car_tree_bug',
-    '--input': 'data/car_tree_bug',
+    '--train-ann-file': 'data/car_tree_bug/annotations/multilabel_car_tree.json',
+    '--train-data-roots': 'data/car_tree_bug/images',
+    '--val-ann-file': 'data/car_tree_bug/annotations/multilabel_car_tree.json',
+    '--val-data-roots': 'data/car_tree_bug/images',
+    '--test-ann-files': 'data/car_tree_bug/annotations/multilabel_car_tree.json',
+    '--test-data-roots': 'data/car_tree_bug/images',
+    '--input': 'data/car_tree_bug/images',
     'train_params': [
         'params',
         '--learning_parameters.num_iters',
         '2',
         '--learning_parameters.batch_size',
-        '2',
+        '4',
     ]
 }
 
 # Class-Incremental learning w/ 'car', 'tree', 'bug' classes
 args = {
-    '--train-ann-file': 'data/car_tree_bug/car_tree_bug_multilabel_car_tree_bug_train.json',
-    '--train-data-roots': 'data/car_tree_bug',
-    '--val-ann-file': 'data/car_tree_bug/car_tree_bug_multilabel_car_tree_bug_train.json',
-    '--val-data-roots': 'data/car_tree_bug',
-    '--test-ann-files': 'data/car_tree_bug/car_tree_bug_multilabel_car_tree_bug_train.json',
-    '--test-data-roots': 'data/car_tree_bug',
-    '--input': 'data/car_tree_bug',
+    '--train-ann-file': 'data/car_tree_bug/annotations/multilabel_default.json',
+    '--train-data-roots': 'data/car_tree_bug/images',
+    '--val-ann-file': 'data/car_tree_bug/annotations/multilabel_default.json',
+    '--val-data-roots': 'data/car_tree_bug/images',
+    '--test-ann-files': 'data/car_tree_bug/annotations/multilabel_default.json',
+    '--test-data-roots': 'data/car_tree_bug/images',
+    '--input': 'data/car_tree_bug/images',
     'train_params': [
         'params',
         '--learning_parameters.num_iters',
         '2',
         '--learning_parameters.batch_size',
-        '2',
+        '4',
     ]
 }
 
