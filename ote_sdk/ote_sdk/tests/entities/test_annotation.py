@@ -175,8 +175,12 @@ class TestAnnotation:
             "[ScoredLabel(987654321, name=person, probability=0.0, domain=DETECTION,"
             in str(annotation.get_labels())
         )
-        assert "color=Color(red=11, green=18, blue=38, alpha=200), hotkey=)]" in str(
+        assert "color=Color(red=11, green=18, blue=38, alpha=200), hotkey=" in str(
             annotation.get_labels()
+        )
+        assert (
+            ", label_source=LabelSource(user_id='', model_id=ID(), model_storage_id=ID()))]"
+            in str(annotation.get_labels())
         )
 
         assert "[ScoredLabel(123456789, name=car" in str(
@@ -188,8 +192,12 @@ class TestAnnotation:
         assert "color=Color(red=16, green=15," in str(
             annotation.get_labels(include_empty=True)
         )
-        assert "blue=56, alpha=255), hotkey=)," in str(
+        assert "blue=56, alpha=255), hotkey=," in str(
             annotation.get_labels(include_empty=True)
+        )
+        assert (
+            "label_source=LabelSource(user_id='', model_id=ID(), model_storage_id=ID())),"
+            in str(annotation.get_labels(include_empty=True))
         )
 
     @pytest.mark.priority_medium
