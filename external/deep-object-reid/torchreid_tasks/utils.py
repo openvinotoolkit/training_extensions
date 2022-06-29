@@ -92,7 +92,6 @@ class ClassificationDatasetAdapter(DatasetEntity):
             if v:
                 self.data_roots[k] = osp.abspath(v)
                 if self.ann_files[k] and '.json' in self.ann_files[k] and osp.isfile(self.ann_files[k]):
-                    self.data_roots[k] = osp.dirname(self.ann_files[k])
                     self.annotations[k], self.data_type = \
                         self._load_text_annotation(self.ann_files[k], self.data_roots[k])
                 else:

@@ -11,7 +11,7 @@ from ote_sdk.configuration.helper import create
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.inference_parameters import InferenceParameters
 from ote_sdk.entities.label import Domain
-from ote_sdk.entities.label_schema import LabelSchemaEntity
+from ote_sdk.entities.label_schema import LabelEntity, LabelGroup, LabelGroupType, LabelSchemaEntity
 from ote_sdk.entities.model import ModelEntity
 from ote_sdk.entities.model_template import parse_model_template
 from ote_sdk.entities.optimization_parameters import OptimizationParameters
@@ -21,7 +21,6 @@ from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType
 from ote_sdk.usecases.tasks.interfaces.optimization_interface import OptimizationType
 from torchreid_tasks.utils import get_task_class
-
 import random
 import torch
 seed = 5
@@ -34,12 +33,11 @@ torch.backends.cudnn.benchmark = False
 
 logger = get_logger(name='sample')
 
-
-def parse_args():
-    parser = argparse.ArgumentParser(description='Sample showcasing the new API')
-    parser.add_argument('template_file_path', help='path to template file')
-    parser.add_argument('--export', action='store_true')
-    return parser.parse_args()
+parser = argparse.ArgumentParser(description='Sample showcasing the new API')
+parser.add_argument('template_file_path', help='path to template file')
+parser.add_argument('--export', action='store_true')
+parser.add_argument('--multilabel', action='store_true')
+args = parser.parse_args()
 
 def load_test_dataset(data_type):
     from ote_sdk.entities.annotation import Annotation, AnnotationSceneEntity, AnnotationSceneKind
@@ -52,126 +50,93 @@ def load_test_dataset(data_type):
     import PIL
 
     def gen_image(resolution, shape=None):
-
         image = PIL.Image.new('RGB', resolution, (255, 255, 255))
         draw = PIL.ImageDraw.Draw(image)
         h, w = image.size
-        if shape=='rectangle':
-            draw.rectangle((h*0.25, w*0.25, h*0.75, w*0.75), fill=(0, 192, 192), outline=(0, 0, 0))
-        if shape=='polygon':
-            draw.polygon(((h*0.25, w*0.25), (h, w*0.25), (h*0.5,w)), fill=(255, 255, 0), outline=(0, 0, 0))
-        return np.array(image)
+        shape = shape.split('+') if '+' in shape else [shape]
+        for s in shape:
+            if s =='rectangle':
+                draw.rectangle((h*0.1, w*0.1, h*0.4, w*0.4), fill=(0, 192, 192), outline=(0, 0, 0))
+            if s =='polygon':
+                draw.polygon(((h*0.5, w*0.25), (h, w*0.25), (h*0.5,w*0.7)), fill=(255, 255, 0), outline=(0, 0, 0))
+            if s == 'pieslice':
+                draw.pieslice(((h*0.1, w*0.5), (h*0.5, w*0.9)), start=50, end=250, fill=(0, 255, 0), outline=(0, 0, 0))
+                
+        return np.array(image), shape
 
-    images = [
+    datas = [
         gen_image((32, 32), shape='rectangle'),
         gen_image((32, 32), shape='polygon'),
+        gen_image((32, 32), shape='rectangle+polygon'), # for multilabel (old)
+        gen_image((32, 32), shape='pieslice'),
+        gen_image((32, 32), shape='pieslice+rectangle'),
+        gen_image((32, 32), shape='pieslice+polygon'),
+        gen_image((32, 32), shape='pieslice+rectangle+polygon') # for multilabel (new)
     ]
 
-    labels = [
-        LabelEntity(name='rectangle', domain=Domain.CLASSIFICATION, id=0),
-        LabelEntity(name='polygon', domain=Domain.CLASSIFICATION, id=1),  # NEW class
-    ]
+    labels = {'rectangle': LabelEntity(name='rectangle', domain=Domain.CLASSIFICATION, id=0),
+              'polygon': LabelEntity(name='polygon', domain=Domain.CLASSIFICATION, id=1),
+              'pieslice': LabelEntity(name='pieslice', domain=Domain.CLASSIFICATION, id=2)}
 
     def get_image(i, subset):
-        return DatasetItemEntity(media=Image(data=images[i]),
+        image, shape = datas[i]
+        lbl = [ScoredLabel(label=labels[s], probability=1.0) for s in shape]
+        return DatasetItemEntity(media=Image(data=image),
                                  annotation_scene=AnnotationSceneEntity(
                                     annotations=[Annotation(
                                                  Rectangle(x1=0.0, y1=0.0, x2=1.0, y2=1.0),
-                                                 labels=[ScoredLabel(label=labels[i])]
+                                                 labels=lbl,
                                                  )],
                                     kind=AnnotationSceneKind.ANNOTATION
                                     ),
                                  subset=subset,
                                  )
 
-    old_train = [
-        get_image(0, Subset.TRAINING),
-        get_image(0, Subset.TRAINING),
-        get_image(0, Subset.TRAINING),
-        get_image(0, Subset.TRAINING),
-        get_image(0, Subset.TRAINING),
-        get_image(0, Subset.TRAINING),
-        get_image(0, Subset.TRAINING),
-        get_image(0, Subset.TRAINING),
-        get_image(0, Subset.TRAINING),
-        get_image(0, Subset.TRAINING),
-        get_image(0, Subset.TRAINING),
-        get_image(0, Subset.TRAINING),
-        get_image(0, Subset.TRAINING),
-        get_image(0, Subset.TRAINING),
-        get_image(0, Subset.TRAINING),
-        get_image(0, Subset.TRAINING),
-    ]
+    def gen_old_new_dataset(multilabel=False):
+        old_train, old_val, new_train, new_val = [], [], [], []
+        old_repeat = 8
+        new_repeat = 4
+        if multilabel:
+            old_img_idx = [0, 1, 2]
+            new_img_idx = [0, 1, 2, 3, 4, 5, 6]
+        else:
+            old_img_idx = [0, 1]
+            new_img_idx = [0, 1, 3]
 
-    old_val = [
-        get_image(0, Subset.VALIDATION),
-        get_image(0, Subset.VALIDATION),
-        get_image(0, Subset.VALIDATION),
-        get_image(0, Subset.VALIDATION),
-        get_image(0, Subset.VALIDATION),
-        get_image(0, Subset.VALIDATION),
-        get_image(0, Subset.VALIDATION),
-        get_image(0, Subset.VALIDATION),
-        get_image(0, Subset.VALIDATION),
-        get_image(0, Subset.VALIDATION),
-        get_image(0, Subset.VALIDATION),
-        get_image(0, Subset.VALIDATION),
-        get_image(0, Subset.VALIDATION),
-        get_image(0, Subset.VALIDATION),
-        get_image(0, Subset.VALIDATION),
-        get_image(0, Subset.VALIDATION),
-    ]
+        for _ in range(old_repeat):
+            for idx in old_img_idx:
+                old_train.append(get_image(idx, Subset.TRAINING))
+                old_val.append(get_image(idx, Subset.VALIDATION))
+        for _ in range(new_repeat):
+            for idx in new_img_idx:
+                new_train.append(get_image(idx, Subset.TRAINING))
+                new_val.append(get_image(idx, Subset.VALIDATION))
+        
+        return old_train+old_val, new_train+new_val
 
-    new_train = [
-        get_image(0, Subset.TRAINING),
-        get_image(1, Subset.TRAINING),
-        get_image(0, Subset.TRAINING),
-        get_image(1, Subset.TRAINING),
-        get_image(0, Subset.TRAINING),
-        get_image(1, Subset.TRAINING),
-        get_image(0, Subset.TRAINING),
-        get_image(1, Subset.TRAINING),
-        get_image(0, Subset.TRAINING),
-        get_image(1, Subset.TRAINING),
-        get_image(0, Subset.TRAINING),
-        get_image(1, Subset.TRAINING),
-        get_image(0, Subset.TRAINING),
-        get_image(1, Subset.TRAINING),
-        get_image(0, Subset.TRAINING),
-        get_image(1, Subset.TRAINING),
-    ]
+    old, new = gen_old_new_dataset(args.multilabel)
+    labels = [i for i in labels.values()]
 
-    new_val = [
-        get_image(0, Subset.VALIDATION),
-        get_image(1, Subset.VALIDATION),
-        get_image(0, Subset.VALIDATION),
-        get_image(1, Subset.VALIDATION),
-        get_image(0, Subset.VALIDATION),
-        get_image(1, Subset.VALIDATION),
-        get_image(0, Subset.VALIDATION),
-        get_image(1, Subset.VALIDATION),
-        get_image(0, Subset.VALIDATION),
-        get_image(1, Subset.VALIDATION),
-        get_image(0, Subset.VALIDATION),
-        get_image(1, Subset.VALIDATION),
-        get_image(0, Subset.VALIDATION),
-        get_image(1, Subset.VALIDATION),
-        get_image(0, Subset.VALIDATION),
-        get_image(1, Subset.VALIDATION),
-    ]
-
-    old = old_train + old_val
-    new = new_train + new_val
     if data_type == 'old':
         return DatasetEntity(old), labels[:-1]
     else:
         return DatasetEntity(old + new), labels
 
+def get_label_schema(labels, multilabel=False):
+    label_schema = LabelSchemaEntity()
+    if multilabel:
+        for label in labels:
+            label_schema.add_group(LabelGroup(name=label.name, labels=[label], group_type=LabelGroupType.EXCLUSIVE))
+    else:
+        main_group = LabelGroup(name="labels", labels=labels, group_type=LabelGroupType.EXCLUSIVE)
+        label_schema.add_group(main_group)
 
-def main(args):
+    return label_schema
+
+def main():
     logger.info('Train initial model with OLD dataset')
     dataset, labels_list = load_test_dataset('old')
-    labels_schema = LabelSchemaEntity.from_labels(labels_list)
+    labels_schema = get_label_schema(labels_list, multilabel=args.multilabel)
 
     logger.info(f'Train dataset: {len(dataset.get_subset(Subset.TRAINING))} items')
     logger.info(f'Validation dataset: {len(dataset.get_subset(Subset.VALIDATION))} items')
@@ -208,7 +173,7 @@ def main(args):
 
     logger.info('Class-incremental learning with OLD + NEW dataset')
     dataset, labels_list = load_test_dataset('new')
-    labels_schema = LabelSchemaEntity.from_labels(labels_list)
+    labels_schema = get_label_schema(labels_list, multilabel=args.multilabel)
 
     logger.info(f'Train dataset: {len(dataset.get_subset(Subset.TRAINING))} items')
     logger.info(f'Validation dataset: {len(dataset.get_subset(Subset.VALIDATION))} items')
@@ -311,4 +276,4 @@ def main(args):
 
 
 if __name__ == '__main__':
-    sys.exit(main(parse_args()) or 0)
+    sys.exit(main() or 0)
