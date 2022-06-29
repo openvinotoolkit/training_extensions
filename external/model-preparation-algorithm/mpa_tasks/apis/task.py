@@ -37,6 +37,7 @@ class BaseTask:
         self._task_environment = task_environment
         self._hyperparams = task_environment.get_hyper_parameters(self._task_config)
         self._model_name = task_environment.model_template.name
+        self._task_type = task_environment.model_template.task_type
         self._labels = task_environment.get_labels(include_empty=False)
         self._output_path = tempfile.mkdtemp(prefix='MPA-task-')
         logger.info(f'created output path at {self._output_path}')
