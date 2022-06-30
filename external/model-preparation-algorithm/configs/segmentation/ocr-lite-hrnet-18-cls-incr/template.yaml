@@ -1,19 +1,19 @@
 # Description.
-model_template_id: ClassIncremental_Object_Detection_Gen3_ATSS
-name: ATSS-ClsIncr
-task_type: DETECTION
+model_template_id: ClassIncremental_Semantic_Segmentation_Lite-HRNet-18_OCR
+name: Lite-HRNet-18 OCR-ClsIncr
+task_type: SEGMENTATION
 task_family: VISION
 instantiation: "CLASS"
-summary: Class-Incremental Object Detection for ATSS
+summary: Class-Incremental Semantic Segmentation for Lite-HRNet-18 OCR
 application: ~
 
 # Algo backend.
-framework: MPA v1.1.0
+framework: OTESegmentation v0.14.0
 
 # Task implementations.
 entrypoints:
-  base: mpa_tasks.apis.detection.DetectionTrainTask
-  openvino: detection_tasks.apis.detection.OpenVINODetectionTask
+  base: mpa_tasks.apis.segmentation.SegmentationTrainTask
+  openvino: segmentation_tasks.apis.segmentation.OpenVINOSegmentationTask
 
 # Capabilities.
 capabilities: []
@@ -27,10 +27,12 @@ hyper_parameters:
         default_value: 4
       learning_rate:
         default_value: 0.001
+      learning_rate_fixed_iters:
+        default_value: 0
       learning_rate_warmup_iters:
-        default_value: 200
+        default_value: 80
       num_iters:
-        default_value: 30
+        default_value: 180
     algo_backend:
       train_type:
         default_value: Incremental
@@ -42,10 +44,5 @@ training_targets:
   - CPU
 
 # Stats.
-gigaflops: 20.6
-size: 9.1
-# # Inference options. Defined by OpenVINO capabilities, not Algo Backend or Platform.
-# inference_targets:
-#   - CPU
-#   - GPU
-#   - VPU
+gigaflops: 3.45
+size: 4.5
