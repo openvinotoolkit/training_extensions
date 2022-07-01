@@ -18,6 +18,7 @@ import os
 import re
 from copy import deepcopy
 from typing import List, Optional
+import shutil
 
 import torchreid
 from ote_sdk.entities.datasets import DatasetEntity
@@ -34,7 +35,8 @@ from torchreid_tasks.inference_task import OTEClassificationInferenceTask
 from torchreid_tasks.monitors import DefaultMetricsMonitor
 from torchreid_tasks.utils import (OTEClassificationDataset, TrainingProgressCallback)
 from torchreid.ops import DataParallel
-from torchreid.utils import load_pretrained_weights, set_random_seed
+from torchreid.utils import (load_pretrained_weights, set_random_seed,
+                             check_isfile, resume_from_checkpoint)
 from ote_sdk.utils.argument_checks import (
     DatasetParamTypeCheck,
     check_input_parameters_type,
@@ -121,6 +123,25 @@ class OTEClassificationTrainingTask(OTEClassificationInferenceTask, ITrainingTas
 
         num_aux_models = len(self._cfg.mutual_learning.aux_configs)
 
+        optimizer = torchreid.optim.build_optimizer(train_model, **optimizer_kwargs(self._cfg))
+
+        if self._cfg.lr_finder.enable:
+            scheduler = None
+        else:
+            scheduler = torchreid.optim.build_lr_scheduler(optimizer, num_iter=datamanager.num_iter,
+                                                           **lr_scheduler_kwargs(self._cfg))
+
+        if self._cfg.model.resume and check_isfile(self._cfg.model.resume):
+            device_ = 'cuda' if self._cfg.use_gpu else 'cpu'
+            self._cfg.train.start_epoch = resume_from_checkpoint(
+                self._cfg.model.resume,
+                train_model,
+                optimizer=optimizer,
+                scheduler=scheduler,
+                device=device_
+            )
+            shutil.copy(self._cfg.model.resume, f"{self._scratch_space}/best.pth")
+
         if self._cfg.use_gpu:
             main_device_ids = list(range(self.num_devices))
             extra_device_ids = [main_device_ids for _ in range(num_aux_models)]
@@ -129,13 +150,6 @@ class OTEClassificationTrainingTask(OTEClassificationInferenceTask, ITrainingTas
         else:
             extra_device_ids = [None for _ in range(num_aux_models)]
 
-        optimizer = torchreid.optim.build_optimizer(train_model, **optimizer_kwargs(self._cfg))
-
-        if self._cfg.lr_finder.enable:
-            scheduler = None
-        else:
-            scheduler = torchreid.optim.build_lr_scheduler(optimizer, num_iter=datamanager.num_iter,
-                                                           **lr_scheduler_kwargs(self._cfg))
 
         if self._cfg.lr_finder.enable:
             _, train_model, optimizer, scheduler = \
