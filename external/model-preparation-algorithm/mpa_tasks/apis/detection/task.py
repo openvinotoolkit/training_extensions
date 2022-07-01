@@ -7,6 +7,7 @@ import os
 from collections import defaultdict
 from typing import List, Optional
 
+import cv2
 import numpy as np
 import torch
 from mmcv.utils import ConfigDict
@@ -22,6 +23,7 @@ from ote_sdk.configuration import cfg_helper
 from ote_sdk.configuration.helper.utils import ids_to_strings
 from ote_sdk.entities.annotation import Annotation
 from ote_sdk.entities.datasets import DatasetEntity
+from ote_sdk.entities.id import ID
 from ote_sdk.entities.inference_parameters import InferenceParameters
 from ote_sdk.entities.label import Domain
 from ote_sdk.entities.metrics import (BarChartInfo, BarMetricsGroup,
@@ -30,8 +32,10 @@ from ote_sdk.entities.metrics import (BarChartInfo, BarMetricsGroup,
                                       ScoreMetric, VisualizationType)
 from ote_sdk.entities.model import (ModelEntity, ModelFormat,
                                     ModelOptimizationType, ModelPrecision)
+from ote_sdk.entities.model_template import TaskType
 from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.scored_label import ScoredLabel
+from ote_sdk.entities.shapes.polygon import Point, Polygon
 from ote_sdk.entities.shapes.rectangle import Rectangle
 from ote_sdk.entities.subset import Subset
 from ote_sdk.entities.task_environment import TaskEnvironment
@@ -159,8 +163,10 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
     def _init_recipe(self):
         logger.info('called _init_recipe()')
 
-        # recipe_root = 'recipes/stages/detection'
         recipe_root = os.path.join(MPAConstants.RECIPES_PATH, 'stages/detection')
+        if self._task_type.domain == Domain.INSTANCE_SEGMENTATION:
+            recipe_root = os.path.join(MPAConstants.RECIPES_PATH, 'stages/instance-segmentation')
+
         train_type = self._hyperparams.algo_backend.train_type
         logger.info(f'train type = {train_type}')
 
@@ -184,7 +190,8 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
             raise NotImplementedError(f'train type {train_type} is not implemented yet.')
 
         self._recipe_cfg = MPAConfig.fromfile(recipe)
-        self._patch_datasets(self._recipe_cfg)  # for OTE compatibility
+        self._patch_data_pipeline()
+        self._patch_datasets(self._recipe_cfg, self._task_type.domain)  # for OTE compatibility
         self._patch_evaluation(self._recipe_cfg)  # for OTE compatibility
         logger.info(f'initialized recipe = {recipe}')
 
@@ -209,35 +216,31 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
 
     def _add_predictions_to_dataset(self, prediction_results, dataset, confidence_threshold=0.0):
         """ Loop over dataset again to assign predictions. Convert from MMDetection format to OTE format. """
-        for dataset_item, (all_bboxes, fmap) in zip(dataset, prediction_results):
+        for dataset_item, (all_results, feature_vector) in zip(dataset, prediction_results):
             width = dataset_item.width
             height = dataset_item.height
 
             shapes = []
-            for label_idx, detections in enumerate(all_bboxes):
-                for i in range(detections.shape[0]):
-                    probability = float(detections[i, 4])
-                    coords = detections[i, :4].astype(float).copy()
-                    coords /= np.array([width, height, width, height], dtype=float)
-                    coords = np.clip(coords, 0, 1)
-
-                    if probability < confidence_threshold:
-                        continue
-
-                    assigned_label = [ScoredLabel(self._labels[label_idx],
-                                                  probability=probability)]
-                    if coords[3] - coords[1] <= 0 or coords[2] - coords[0] <= 0:
-                        continue
-
-                    shapes.append(Annotation(
-                        Rectangle(x1=coords[0], y1=coords[1], x2=coords[2], y2=coords[3]),
-                        labels=assigned_label))
+            if self._task_type == TaskType.DETECTION:
+                shapes = self._det_add_predictions_to_dataset(all_results, width, height, confidence_threshold)
+            elif self._task_type in {TaskType.INSTANCE_SEGMENTATION, TaskType.ROTATED_DETECTION}:
+                shapes = self._ins_seg_add_predictions_to_dataset(all_results, width, height, confidence_threshold)
+            else:
+                raise RuntimeError(
+                    f"MPA results assignment not implemented for task: {self._task_type}")
 
             dataset_item.append_annotations(shapes)
 
-            if fmap is not None:
-                active_score = TensorEntity(name="representation_vector", numpy=fmap)
+            if feature_vector is not None:
+                active_score = TensorEntity(name="representation_vector", numpy=feature_vector)
                 dataset_item.append_metadata_item(active_score)
+
+    def _patch_data_pipeline(self):
+        base_dir = os.path.abspath(os.path.dirname(self.template_file_path))
+        data_pipeline_path = os.path.join(base_dir, 'data_pipeline.py')
+        if os.path.exists(data_pipeline_path):
+            data_pipeline_cfg = MPAConfig.fromfile(data_pipeline_path)
+            self._recipe_cfg.merge_from_dict(data_pipeline_cfg)
 
     @staticmethod
     def _patch_datasets(config: MPAConfig, domain=Domain.DETECTION):
@@ -292,6 +295,53 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         for cfg in config.get('custom_hooks', []):
             if 'EarlyStoppingHook' in cfg.type:
                 cfg.metric = 'mAP'
+
+    def _det_add_predictions_to_dataset(self, all_results, width, height, confidence_threshold):
+        shapes = []
+        for label_idx, detections in enumerate(all_results):
+            for i in range(detections.shape[0]):
+                probability = float(detections[i, 4])
+                coords = detections[i, :4].astype(float).copy()
+                coords /= np.array([width, height, width, height], dtype=float)
+                coords = np.clip(coords, 0, 1)
+
+                if probability < confidence_threshold:
+                    continue
+
+                assigned_label = [ScoredLabel(self._labels[label_idx],
+                                              probability=probability)]
+                if coords[3] - coords[1] <= 0 or coords[2] - coords[0] <= 0:
+                    continue
+
+                shapes.append(Annotation(
+                    Rectangle(x1=coords[0], y1=coords[1], x2=coords[2], y2=coords[3]),
+                    labels=assigned_label))
+        return shapes
+
+    def _ins_seg_add_predictions_to_dataset(self, all_results, width, height, confidence_threshold):
+        shapes = []
+        for label_idx, (boxes, masks) in enumerate(zip(*all_results)):
+            for mask, probability in zip(masks, boxes[:, 4]):
+                mask = mask.astype(np.uint8)
+                probability = float(probability)
+                contours, hierarchies = cv2.findContours(mask, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
+                if hierarchies is None:
+                    continue
+                for contour, hierarchy in zip(contours, hierarchies[0]):
+                    if hierarchy[3] != -1:
+                        continue
+                    if len(contour) <= 2 or probability < confidence_threshold:
+                        continue
+                    if self._task_type == TaskType.INSTANCE_SEGMENTATION:
+                        points = [Point(x=point[0][0] / width, y=point[0][1] / height) for point in contour]
+                    else:
+                        box_points = cv2.boxPoints(cv2.minAreaRect(contour))
+                        points = [Point(x=point[0] / width, y=point[1] / height) for point in box_points]
+                    labels = [ScoredLabel(self._labels[label_idx], probability=probability)]
+                    polygon = Polygon(points=points)
+                    if cv2.contourArea(contour) > 0 and polygon.get_area() > 1e-12:
+                        shapes.append(Annotation(polygon, labels=labels, id=ID(f"{label_idx:08}")))
+        return shapes
 
 
 class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
@@ -382,6 +432,7 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
             'DetectionInferrer',
             mode='train',
             dataset=val_dataset,
+            eval=True
         )
         preds_val_dataset = val_dataset.with_empty_annotations()
         logger.debug(f'result of run_task {stage_module} module = {results}')
