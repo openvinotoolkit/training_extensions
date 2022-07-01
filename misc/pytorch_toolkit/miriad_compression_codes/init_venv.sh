@@ -15,7 +15,7 @@ if [[ -e venv ]]; then
   echo "$ . venv/bin/activate"
 fi
 
-virtualenv ${venv_dir} -p python3 --prompt="(chest_x-ray_screening)"
+virtualenv ${venv_dir} -p python3 --prompt="(compression)"
 
 . ${venv_dir}/bin/activate
 
