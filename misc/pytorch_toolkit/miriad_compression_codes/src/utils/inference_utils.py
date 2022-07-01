@@ -187,4 +187,3 @@ def inference_model(config):
 
             with open(json_fillpath, 'w') as json_file:
                 json.dump(json_content, json_file)
-
