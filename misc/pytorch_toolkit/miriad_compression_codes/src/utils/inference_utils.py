@@ -86,7 +86,6 @@ def inference_model(config):
 		# a global counter & accumulation variables
         n = 0
         all_bits, all_bpp, all_ssim, all_psnr = [], [], [], []
-        # avg_bits, avg_bpp, avg_ssim, avg_psnr = 0., 0., 0., 0.
 
         for idx, (image, _, name) in enumerate(infer_dataloader):
             if torch.cuda.is_available() and config['gpu']:
@@ -188,3 +187,4 @@ def inference_model(config):
 
             with open(json_fillpath, 'w') as json_file:
                 json.dump(json_content, json_file)
+
