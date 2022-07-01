@@ -9,5 +9,4 @@ openvino-dev[onnx]
 onnxruntime==1.8.1
 numpy==1.19.2
 termcolor
-dataloader
 huffman
