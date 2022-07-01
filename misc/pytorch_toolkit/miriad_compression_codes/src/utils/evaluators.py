@@ -1,5 +1,6 @@
+import torch
 from skimage.measure import compare_psnr
-import pytorch_msssim, torch
+import pytorch_msssim
 
 def compare_psnr_batch(original, compressed, **kwargs ):
 
