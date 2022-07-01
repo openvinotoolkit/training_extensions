@@ -79,7 +79,7 @@ def load_test_dataset(data_type):
               'polygon': LabelEntity(name='polygon', domain=Domain.CLASSIFICATION, id=1),
               'pieslice': LabelEntity(name='pieslice', domain=Domain.CLASSIFICATION, id=2)}
 
-    def get_image(i, subset):
+    def get_image(i, subset, ignored_labels=None):
         image, shape = datas[i]
         lbl = [ScoredLabel(label=labels[s], probability=1.0) for s in shape]
         return DatasetItemEntity(media=Image(data=image),
@@ -91,6 +91,7 @@ def load_test_dataset(data_type):
                                     kind=AnnotationSceneKind.ANNOTATION
                                     ),
                                  subset=subset,
+                                 ignored_labels=ignored_labels,
                                  )
 
     def gen_old_new_dataset(multilabel=False):
@@ -100,6 +101,7 @@ def load_test_dataset(data_type):
         if multilabel:
             old_img_idx = [0, 1, 2]
             new_img_idx = [0, 1, 2, 3, 4, 5, 6]
+            ignored_labels = [labels['pieslice']]
         else:
             old_img_idx = [0, 1]
             new_img_idx = [0, 1, 3]
@@ -110,7 +112,10 @@ def load_test_dataset(data_type):
                 old_val.append(get_image(idx, Subset.VALIDATION))
         for _ in range(new_repeat):
             for idx in new_img_idx:
-                new_train.append(get_image(idx, Subset.TRAINING))
+                if multilabel:
+                    new_train.append(get_image(idx, Subset.TRAINING, ignored_labels=ignored_labels))
+                else:
+                    new_train.append(get_image(idx, Subset.TRAINING))
                 new_val.append(get_image(idx, Subset.VALIDATION))
 
         return old_train+old_val, new_train+new_val
