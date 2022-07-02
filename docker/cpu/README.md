@@ -34,7 +34,7 @@ $ docker run -it \
   --rm ote/mmdetection:v0.2.0 /bin/bash
 ```
 ```
-tami@34acbed0e8c7:~/workspace$
+tami@34acbed0e8c7:~/Workspace$
 ```
 
 ## Step 3. Activate virtual environment
@@ -42,7 +42,7 @@ tami@34acbed0e8c7:~/workspace$
 Inside the container, run following command.
 
 ```
-$ source /home/tami/workspace/training_extensions/mmdetection_venv/bin/activate
+$ source /home/tami/Workspace/training_extensions/mmdetection_venv/bin/activate
 ```
 
 ## Step 4. Test CLI
@@ -50,16 +50,16 @@ $ source /home/tami/workspace/training_extensions/mmdetection_venv/bin/activate
 Inside the virtual environment, run following command.
 
 ```
-$ ote find --root /home/tami/workspace/training_extensions/external/mmdetection/
+$ ote find --root /home/tami/Workspace/training_extensions/external/mmdetection/
 ```
 ```
 - id: Custom_Counting_Instance_Segmentation_MaskRCNN_EfficientNetB2B
   name: MaskRCNN-EfficientNetB2B
-  path: /home/tami/workspace/training_extensions/external/mmdetection/configs/custom-counting-instance-seg/efficientnetb2b_maskrcnn/template.yaml
+  path: /home/tami/Workspace/training_extensions/external/mmdetection/configs/custom-counting-instance-seg/efficientnetb2b_maskrcnn/template.yaml
   task_type: INSTANCE_SEGMENTATION
 - id: Custom_Counting_Instance_Segmentation_MaskRCNN_ResNet50
   name: MaskRCNN-ResNet50
-  path: /home/tami/workspace/training_extensions/external/mmdetection/configs/custom-counting-instance-seg/resnet50_maskrcnn/template.yaml
+  path: /home/tami/Workspace/training_extensions/external/mmdetection/configs/custom-counting-instance-seg/resnet50_maskrcnn/template.yaml
   task_type: INSTANCE_SEGMENTATION
 ...
 ```
@@ -69,13 +69,13 @@ $ ote find --root /home/tami/workspace/training_extensions/external/mmdetection/
 Run notebook server.
 
 ```
-$ cd /home/tami/workspace/training_extensions/ote_cli/notebooks
+$ cd /home/tami/Workspace/training_extensions/ote_cli/notebooks
 ```
 ```
 $ jupyter notebook --ip=0.0.0.0
 ```
 ```
-[I 06:46:12.691 NotebookApp] Serving notebooks from local directory: /home/tami/workspace/training_extensions/ote_cli/notebooks
+[I 06:46:12.691 NotebookApp] Serving notebooks from local directory: /home/tami/Workspace/training_extensions/ote_cli/notebooks
 [I 06:46:12.691 NotebookApp] Jupyter Notebook 6.4.11 is running at:
 [I 06:46:12.691 NotebookApp] http://04de438f448e:8888/?token=2bd...2b7
 [I 06:46:12.691 NotebookApp]  or http://127.0.0.1:8888/?token=2bd...2b7
