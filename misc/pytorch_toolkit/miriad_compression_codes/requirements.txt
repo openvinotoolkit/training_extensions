@@ -8,5 +8,6 @@ requests==2.26.0
 openvino-dev[onnx]
 onnxruntime==1.8.1
 numpy==1.19.2
+matplotlib==3.5.2
 termcolor
 huffman
