@@ -25,7 +25,6 @@ from ote_sdk.entities.shapes.rectangle import Rectangle
 from ote_sdk.utils.labels_utils import (
     get_ancestors_by_prediction,
     get_empty_label,
-    get_leaf_labels,
 )
 from ote_sdk.utils.segmentation_utils import create_annotation_from_segmentation_map
 from ote_sdk.utils.time_utils import now
@@ -226,7 +225,6 @@ class ClassificationToAnnotationConverter(IPredictionToAnnotationConverter):
 
         self.hierarchical = False
         if not multilabel and len(label_schema.get_groups(False)) > 1:
-            self.labels = get_leaf_labels(label_schema)
             self.hierarchical = True
 
         self.label_schema = label_schema
