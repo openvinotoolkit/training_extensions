@@ -7,3 +7,5 @@ pandas
 requests==2.26.0
 openvino-dev[onnx]
 onnxruntime
+pytest
+pylint

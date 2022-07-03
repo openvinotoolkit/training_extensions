@@ -75,6 +75,20 @@ Inference models will be made available in the [open_model_zoo](https://github.c
 
 Necessary unit tests have been provided in the tests directory. The sample/toy dataset to be used in the tests can also be downloaded from [here](http://miriad.digital-health.one/sample_data/bmi5/rbis_ddsm_sample.zip).
 
+## How to run
+Follow the below steps to reproduce
+
+1. Create virtual environment: sh init_venv.sh
+2. Activate venv: source venv/bin/activate
+3. Create dataset: python -m mammogram_screening.stage1.data_prep_rbis
+4. Train stage1 model: python -m mammogram_screening.stage1.train_stage1
+5. Inference on stage 1 model: python -m mammogram_screening.stage1.inference_mass_localisation
+6. Prepare dataset (step1): python -m mammogram_screening.stage2.step2_get_predictions_for_all
+7. Prepare dataset (step2): python -m mammogram_screening.stage2.step3_get_patches
+8. Train stage2 model: python -m mammogram_screening.stage2.train_stage2
+9. Inference on stage 2 model: python -m mammogram_screening.stage2.inference_stage2
+
+
 ## **Acknowledgement**
 
 This work is undertaken as part of Intel India Grand Challenge 2016 Project MIRIAD: Many Incarnations of Screening of Radiology for High Throughput Disease Screening via Multiple Instance Reinforcement Learning with Adversarial Deep Neural Networks, sponsored by Intel Technology India Pvt. Ltd., Bangalore, India.

@@ -5,7 +5,7 @@ import subprocess
 
 
 def download_and_extract(path, url, expath):
-    export_command = f'curl {url} --output {path}'
+    export_command = f'curl -JLO {url} --output {path}'
     subprocess.run(export_command, shell = True, check = True)
     with zipfile.ZipFile(path, 'r') as zip_ref:
         zip_ref.extractall(expath)
