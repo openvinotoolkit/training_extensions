@@ -411,7 +411,10 @@ class TrainingProgressCallback(TimeMonitorCallback):
             score = logs.get(self.update_progress_callback.metric, None)
         else:
             score = logs
-        if score is not None:
+        if (
+            score is not None
+            and hasattr(self.update_progress_callback, "hp_config")
+        ):
             score = float(score)
             print(f'score = {score} at epoch {self.current_epoch} / {self._num_iters}')
             # as a trick, score (at least if it's accuracy not the loss) and iteration number
