@@ -16,6 +16,6 @@ Initialization of Anomaly Dataset Utils
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .data import LabelNames, OTEAnomalyDataModule
+from .data import OTEAnomalyDataModule
 
-__all__ = ["OTEAnomalyDataModule", "LabelNames"]
+__all__ = ["OTEAnomalyDataModule"]

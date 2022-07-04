@@ -35,7 +35,6 @@ from compression.graph.model_utils import compress_model_weights, get_nodes_by_t
 from compression.pipeline.initializer import create_pipeline
 from omegaconf import OmegaConf
 from ote_anomalib.configs import get_anomalib_config
-from ote_anomalib.data import LabelNames
 from ote_anomalib.logging import get_logger
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.inference_parameters import (
@@ -117,8 +116,8 @@ class OpenVINOAnomalyTask(IInferenceTask, IEvaluationTask, IOptimizationTask, ID
         self.inferencer = self.load_inferencer()
 
         labels = self.task_environment.get_labels()
-        self.normal_label = [label for label in labels if label.name == LabelNames.normal][0]
-        self.anomalous_label = [label for label in labels if label.name == LabelNames.anomalous][0]
+        self.normal_label = [label for label in labels if not label.is_anomalous][0]
+        self.anomalous_label = [label for label in labels if label.is_anomalous][0]
 
         template_file_path = task_environment.model_template.model_template_path
         self._base_dir = os.path.abspath(os.path.dirname(template_file_path))

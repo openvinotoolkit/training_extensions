@@ -22,7 +22,6 @@ import numpy as np
 import pytorch_lightning as pl
 from anomalib.models import AnomalyModule
 from anomalib.post_processing import anomaly_map_to_color_map
-from ote_anomalib.data import LabelNames
 from ote_anomalib.logging import get_logger
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.label import LabelEntity
@@ -41,8 +40,8 @@ class AnomalyInferenceCallback(Callback):
 
     def __init__(self, ote_dataset: DatasetEntity, labels: List[LabelEntity], task_type: TaskType):
         self.ote_dataset = ote_dataset
-        self.normal_label = [label for label in labels if label.name == LabelNames.normal][0]
-        self.anomalous_label = [label for label in labels if label.name == LabelNames.anomalous][0]
+        self.normal_label = [label for label in labels if not label.is_anomalous][0]
+        self.anomalous_label = [label for label in labels if label.is_anomalous][0]
         self.task_type = task_type
         self.label_map = {0: self.normal_label, 1: self.anomalous_label}
 
