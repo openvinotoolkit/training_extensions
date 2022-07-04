@@ -61,20 +61,26 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         self._multilabel = len(task_environment.label_schema.get_groups(False)) > 1 and \
                            len(task_environment.label_schema.get_groups(False)) == \
                            len(task_environment.get_labels(include_empty=False))  # noqa:E127
-        
+
         self._hierarchical = False
         if not self._multilabel and len(task_environment.label_schema.get_groups(False)) > 1:
             self._hierarchical = True
-            model_template = self._task_environment.model_template
-            template_path = model_template.model_template_path
-            template_path = template_path.replace('model-preparation-algorithm', 'deep-object-reid')
-            template_path = template_path.replace('classification', 'ote_custom_classification')
-            template_path = template_path.replace('_cls_incr', '')
-            model_template.model_template_path = template_path
-            model_template.entrypoints.base = 'torchreid_tasks.train_task.OTEClassificationTrainingTask'
-            model_template.framework = 'OTEClassification v1.2.3'
-            self.ote_train_instance = OTEClassificationTrainingTask(self._task_environment)
-            
+            torchreid_env = self.convert_to_torchreid_env(task_environment)
+            self.torchreid_train_task = OTEClassificationTrainingTask(torchreid_env)
+
+    @staticmethod
+    def convert_to_torchreid_env(task_env):
+        model_template = task_env.model_template
+        rename_dict = {'model-preparation-algorithm': 'deep-object-reid',
+                       'classification' : 'ote_custom_classification',
+                       '_cls_incr' : ''
+                       }
+
+        for key, val in rename_dict.items():
+            model_template.model_template_path = model_template.model_template_path.replace(key, val)
+        model_template.entrypoints.base = 'torchreid_tasks.train_task.OTEClassificationTrainingTask'
+        model_template.framework = 'OTEClassification v1.2.3'
+        return task_env
 
     def infer(self,
               dataset: DatasetEntity,
@@ -82,7 +88,7 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
               ) -> DatasetEntity:
         logger.info('called infer()')
         if self._hierarchical:
-            self = self.ote_train_instance
+            self = self.torchreid_train_task
             return self.infer(dataset, inference_parameters)
         stage_module = 'ClsInferrer'
         self._data_cfg = self._init_test_data_cfg(dataset)
@@ -95,7 +101,7 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         update_progress_callback = default_progress_callback
         if inference_parameters is not None:
             update_progress_callback = inference_parameters.update_progress
-            
+
         dataset_size = len(dataset)
         for i, (dataset_item, prediction_item) in enumerate(zip(dataset, predictions)):
             label = []
@@ -131,7 +137,7 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
                output_model: ModelEntity):
         logger.info('Exporting the model')
         if self._hierarchical:
-            self = self.ote_train_instance
+            self = self.torchreid_train_task
             self.export(export_type, output_model)
             return
         if export_type != ExportType.OPENVINO:
@@ -292,7 +298,7 @@ class ClassificationTrainTask(ClassificationInferenceTask):
               train_parameters: Optional[TrainParameters] = None):
         logger.info('train()')
         if self._hierarchical:
-            self = self.ote_train_instance
+            self = self.torchreid_train_task
             self.train(dataset, output_model, train_parameters)
             return
         # Check for stop signal between pre-eval and training.
