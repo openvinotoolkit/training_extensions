@@ -36,6 +36,7 @@ from ote_sdk.serialization.label_mapper import label_schema_to_bytes
 from ote_sdk.entities.scored_label import ScoredLabel
 from torchreid_tasks.utils import TrainingProgressCallback
 from torchreid_tasks.utils import OTELoggerHook
+from torchreid_tasks.train_task import OTEClassificationTrainingTask
 from mpa_tasks.apis import BaseTask, TrainType
 from mpa_tasks.apis.classification import ClassificationConfig
 from mpa.utils.config_utils import MPAConfig
@@ -60,12 +61,29 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         self._multilabel = len(task_environment.label_schema.get_groups(False)) > 1 and \
                            len(task_environment.label_schema.get_groups(False)) == \
                            len(task_environment.get_labels(include_empty=False))  # noqa:E127
+        
+        self._hierarchical = False
+        if not self._multilabel and len(task_environment.label_schema.get_groups(False)) > 1:
+            self._hierarchical = True
+            model_template = self._task_environment.model_template
+            template_path = model_template.model_template_path
+            template_path = template_path.replace('model-preparation-algorithm', 'deep-object-reid')
+            template_path = template_path.replace('classification', 'ote_custom_classification')
+            template_path = template_path.replace('_cls_incr', '')
+            model_template.model_template_path = template_path
+            model_template.entrypoints.base = 'torchreid_tasks.train_task.OTEClassificationTrainingTask'
+            model_template.framework = 'OTEClassification v1.2.3'
+            self.ote_train_instance = OTEClassificationTrainingTask(self._task_environment)
+            
 
     def infer(self,
               dataset: DatasetEntity,
               inference_parameters: Optional[InferenceParameters] = None
               ) -> DatasetEntity:
         logger.info('called infer()')
+        if self._hierarchical:
+            self = self.ote_train_instance
+            return self.infer(dataset, inference_parameters)
         stage_module = 'ClsInferrer'
         self._data_cfg = self._init_test_data_cfg(dataset)
         dataset = dataset.with_empty_annotations()
@@ -112,6 +130,10 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
                export_type: ExportType,
                output_model: ModelEntity):
         logger.info('Exporting the model')
+        if self._hierarchical:
+            self = self.ote_train_instance
+            self.export(export_type, output_model)
+            return
         if export_type != ExportType.OPENVINO:
             raise RuntimeError(f'not supported export type {export_type}')
         output_model.model_format = ModelFormat.OPENVINO
@@ -269,6 +291,10 @@ class ClassificationTrainTask(ClassificationInferenceTask):
               output_model: ModelEntity,
               train_parameters: Optional[TrainParameters] = None):
         logger.info('train()')
+        if self._hierarchical:
+            self = self.ote_train_instance
+            self.train(dataset, output_model, train_parameters)
+            return
         # Check for stop signal between pre-eval and training.
         # If training is cancelled at this point,
         if self._should_stop:
