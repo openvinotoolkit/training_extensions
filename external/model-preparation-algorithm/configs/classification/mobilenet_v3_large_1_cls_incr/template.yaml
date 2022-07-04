@@ -8,7 +8,7 @@ summary: Class-Incremental Image Classification for MobileNet-V3-large-1x
 application: ~
 
 # Algo backend.
-framework: MPA v1.1.0
+framework: OTEClassification v1.2.3
 
 # Task implementations.
 entrypoints:

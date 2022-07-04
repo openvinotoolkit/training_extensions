@@ -250,17 +250,14 @@ algo_backend:
     enum_name: TrainType
     header: train type
     options:
-      SemiSupervised: "SemiSupervised"
-      SelfSupervised: "SelfSupervised"
       Incremental: "Incremental"
-      DynamicLabels: "DynamicLabels"
     type: SELECTABLE
     ui_rules:
       action: DISABLE_EDITING
       operator: AND
       rules: []
       type: UI_RULES
-    value: SelfSupervised
+    value: Incremental
     visible_in_ui: True
     warning: null
   type: PARAMETER_GROUP
