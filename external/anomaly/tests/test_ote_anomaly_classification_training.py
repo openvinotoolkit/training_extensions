@@ -13,49 +13,44 @@
 # and limitations under the License.
 
 import os
-from collections import namedtuple, OrderedDict
+from collections import OrderedDict
 from copy import deepcopy
-
 from pprint import pformat
 from typing import Any, Callable, Dict, List, Optional, Type
 
 import pytest
+from ote_anomalib.logging import get_logger
+from ote_sdk.configuration.helper import create as ote_sdk_configuration_helper_create
 from ote_sdk.entities.model import ModelEntity
-from ote_sdk.entities.datasets import DatasetEntity
-from ote_sdk.entities.model_template import parse_model_template
-from ote_sdk.entities.label_schema import LabelSchemaEntity
+from ote_sdk.entities.model_template import TaskType, parse_model_template
 from ote_sdk.entities.subset import Subset
 from ote_sdk.entities.train_parameters import TrainParameters
-from ote_sdk.entities.model_template import TaskType
-
-from ote_anomalib.data.mvtec import OteMvtecDataset
-from ote_anomalib.logging import get_logger
-
-from ote_sdk.configuration.helper import create as ote_sdk_configuration_helper_create
-from ote_sdk.test_suite.training_test_case import OTETestCaseInterface, generate_ote_integration_test_case_class
 from ote_sdk.test_suite.e2e_test_system import DataCollector, e2e_pytest_performance
+from ote_sdk.test_suite.training_test_case import (
+    OTETestCaseInterface,
+    generate_ote_integration_test_case_class,
+)
+from ote_sdk.test_suite.training_tests_actions import (
+    OTETestTrainingAction,
+    create_environment_and_task,
+)
 from ote_sdk.test_suite.training_tests_common import (
-    make_path_be_abs,
-    make_paths_be_abs,
-    performance_to_score_name_value,
     KEEP_CONFIG_FIELD_VALUE,
     REALLIFE_USECASE_CONSTANT,
     ROOT_PATH_KEY,
+    make_path_be_abs,
+    performance_to_score_name_value,
 )
 from ote_sdk.test_suite.training_tests_helper import (
-    OTETestHelper,
     DefaultOTETestCreationParametersInterface,
+    OTETestHelper,
     OTETrainingTestInterface,
-)
-from ote_sdk.test_suite.training_tests_actions import (
-    create_environment_and_task,
-    OTETestTrainingAction,
 )
 
 from tests.anomaly_common import (
-    _get_dataset_params_from_dataset_definitions,
     _create_anomaly_dataset_and_labels_schema,
-    get_anomaly_domain_test_action_classes
+    _get_dataset_params_from_dataset_definitions,
+    get_anomaly_domain_test_action_classes,
 )
 
 logger = get_logger(__name__)
@@ -69,7 +64,8 @@ def ote_test_domain_fx():
 class AnomalyClassificationTrainingTestParameters(DefaultOTETestCreationParametersInterface):
     def test_case_class(self) -> Type[OTETestCaseInterface]:
         return generate_ote_integration_test_case_class(
-            get_anomaly_domain_test_action_classes(AnomalyDetectionTestTrainingAction))
+            get_anomaly_domain_test_action_classes(AnomalyDetectionTestTrainingAction)
+        )
 
     def test_bunches(self) -> List[Dict[str, Any]]:
         test_bunches = [
@@ -154,17 +150,27 @@ class AnomalyDetectionTestTrainingAction(OTETestTrainingAction):
 
         logger.debug("Set hyperparameters")
         params = ote_sdk_configuration_helper_create(self.model_template.hyper_parameters.data)
-        if hasattr(params, "model") and hasattr(params.model, "early_stopping"):
+        if hasattr(params, "learning_parameters") and hasattr(params.learning_parameters, "early_stopping"):
             if self.num_training_iters != KEEP_CONFIG_FIELD_VALUE:
-                params.model.early_stopping.patience = int(self.num_training_iters)
-                logger.debug(f"Set params.model.early_stopping.patience=" f"{params.model.early_stopping.patience}")
+                params.learning_parameters.early_stopping.patience = int(self.num_training_iters)
+                logger.debug(
+                    f"Set params.learning_parameters.early_stopping.patience="
+                    f"{params.learning_parameters.early_stopping.patience}"
+                )
             else:
-                logger.debug(f"Keep params.model.early_stopping.patience=" f"{params.model.early_stopping.patience}")
+                logger.debug(
+                    f"Keep params.learning_parameters.early_stopping.patience="
+                    f"{params.learning_parameters.early_stopping.patience}"
+                )
         if self.batch_size != KEEP_CONFIG_FIELD_VALUE:
-            params.dataset.train_batch_size = int(self.batch_size)
-            logger.debug(f"Set params.dataset.train_batch_size=" f"{params.dataset.train_batch_size}")
+            params.learning_parameters.train_batch_size = int(self.batch_size)
+            logger.debug(
+                f"Set params.learning_parameters.train_batch_size=" f"{params.learning_parameters.train_batch_size}"
+            )
         else:
-            logger.debug(f"Keep params.dataset.train_batch_size=" f"{params.dataset.train_batch_size}")
+            logger.debug(
+                f"Keep params.learning_parameters.train_batch_size=" f"{params.learning_parameters.train_batch_size}"
+            )
 
         logger.debug("Setup environment")
         self.environment, self.task = create_environment_and_task(params, self.labels_schema, self.model_template)
@@ -243,7 +249,8 @@ class TestOTEReallifeAnomalyClassification(OTETrainingTestInterface):
             template_path = make_path_be_abs(template_paths[model_name], template_paths[ROOT_PATH_KEY])
             logger.debug("training params factory: Before creating dataset and labels_schema")
             dataset, labels_schema = _create_anomaly_dataset_and_labels_schema(
-                dataset_params, dataset_name, TaskType.ANOMALY_CLASSIFICATION)
+                dataset_params, dataset_name, TaskType.ANOMALY_CLASSIFICATION
+            )
             logger.debug("training params factory: After creating dataset and labels_schema")
             return {
                 "dataset": dataset,
@@ -271,7 +278,8 @@ class TestOTEReallifeAnomalyClassification(OTETrainingTestInterface):
 
             logger.debug("training params factory: Before creating dataset and labels_schema")
             dataset, labels_schema = _create_anomaly_dataset_and_labels_schema(
-                dataset_params, dataset_name, TaskType.ANOMALY_CLASSIFICATION)
+                dataset_params, dataset_name, TaskType.ANOMALY_CLASSIFICATION
+            )
             logger.debug("training params factory: After creating dataset and labels_schema")
 
             return {
