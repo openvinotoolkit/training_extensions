@@ -14,6 +14,8 @@ framework: OTESegmentation v0.14.0
 entrypoints:
   base: mpa_tasks.apis.segmentation.SegmentationTrainTask
   openvino: segmentation_tasks.apis.segmentation.OpenVINOSegmentationTask
+  nncf: mpa_tasks.apis.segmentation.SegmentationNNCFTask
+base_model_path: ../../../../mmsegmentation/configs/custom-sematic-segmentation/ocr-lite-hrnet-s-mod2/template_experimental.yaml
 
 # Capabilities.
 capabilities:
