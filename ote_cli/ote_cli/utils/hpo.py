@@ -6,6 +6,9 @@ Utils for HPO with hpopt
 # SPDX-License-Identifier: Apache-2.0
 #
 
+# pylint: disable=too-many-locals, too-many-instance-attributes, too-many-branches, too-many-statements
+# disbled some pylint refactor related categories
+# TODO: refactor code to resolve these things
 import builtins
 import collections
 import importlib
@@ -16,6 +19,9 @@ import shutil
 import subprocess  # nosec
 import sys
 import time
+from enum import Enum
+from inspect import isclass
+from math import ceil
 from os import path as osp
 from pathlib import Path
 from typing import Optional
@@ -31,11 +37,12 @@ from ote_sdk.entities.train_parameters import TrainParameters, UpdateProgressCal
 
 from ote_cli.datasets import get_dataset_class
 from ote_cli.utils.importing import get_impl_class
-from ote_cli.utils.io import generate_label_schema
+from ote_cli.utils.io import generate_label_schema, read_model, save_model_data
 
 try:
     import hpopt
 except ImportError:
+    print("cannot import hpopt module")
     hpopt = None
 
 
@@ -47,39 +54,104 @@ def check_hpopt_available():
     return True
 
 
+def _check_hpo_enabled_task(task_type: TaskType):
+    """Check whether HPO available task"""
+    return task_type in [
+        TaskType.CLASSIFICATION,
+        TaskType.DETECTION,
+        TaskType.SEGMENTATION,
+        TaskType.INSTANCE_SEGMENTATION,
+        TaskType.ROTATED_DETECTION,
+        TaskType.ANOMALY_CLASSIFICATION,
+        TaskType.ANOMALY_DETECTION,
+        TaskType.ANOMALY_SEGMENTATION,
+    ]
+
+
+def _is_cls_framework_task(task_type: TaskType):
+    """Check whether classification framework task"""
+    return task_type == TaskType.CLASSIFICATION
+
+
+def _is_det_framework_task(task_type: TaskType):
+    """Check whether detection framework task"""
+    return task_type in [
+        TaskType.DETECTION,
+        TaskType.INSTANCE_SEGMENTATION,
+        TaskType.ROTATED_DETECTION,
+    ]
+
+
+def _is_seg_framework_task(task_type: TaskType):
+    """Check whether segmentation framework task"""
+    return task_type == TaskType.SEGMENTATION
+
+
+def _is_anomaly_framework_task(task_type: TaskType):
+    """Check whether anomaly framework task"""
+    return task_type in [
+        TaskType.ANOMALY_CLASSIFICATION,
+        TaskType.ANOMALY_DETECTION,
+        TaskType.ANOMALY_SEGMENTATION,
+    ]
+
+
 def run_hpo(args, environment, dataset, task_type):
     """Update the environment with better hyper-parameters found by HPO"""
-    if check_hpopt_available():
-        if task_type not in {
-            TaskType.CLASSIFICATION,
-            TaskType.DETECTION,
-            TaskType.SEGMENTATION,
-        }:
-            print(
-                "Currently supported task types are classification and detection."
-                f"{task_type} is not supported yet."
-            )
-            return
+    if not check_hpopt_available():
+        return None
 
-        dataset_paths = {
-            "train_ann_file": args.train_ann_files,
-            "train_data_root": args.train_data_roots,
-            "val_ann_file": args.val_ann_files,
-            "val_data_root": args.val_data_roots,
-        }
-
-        hpo_save_path = os.path.abspath(
-            os.path.join(os.path.dirname(args.save_model_to), "hpo")
+    if not _check_hpo_enabled_task(task_type):
+        print(
+            "Currently supported task types are classification, detection, segmentation and anomaly"
+            f"{task_type} is not supported yet."
         )
-        hpo = HpoManager(
-            environment, dataset, dataset_paths, args.hpo_time_ratio, hpo_save_path
+        return None
+
+    dataset_paths = {
+        "train_ann_file": args.train_ann_files,
+        "train_data_root": args.train_data_roots,
+        "val_ann_file": args.val_ann_files,
+        "val_data_root": args.val_data_roots,
+    }
+
+    hpo_save_path = os.path.abspath(
+        os.path.join(os.path.dirname(args.save_model_to), "hpo")
+    )
+    hpo = HpoManager(
+        environment, dataset, dataset_paths, args.hpo_time_ratio, hpo_save_path
+    )
+    print(
+        f"{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())} [HPO] started hyper-parameter optimization"
+    )
+    hyper_parameters, hpo_weight_path = hpo.run()
+    print(
+        f"{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())} [HPO] completed hyper-parameter optimization"
+    )
+
+    environment.set_hyper_parameters(hyper_parameters)
+
+    task_class = get_impl_class(environment.model_template.entrypoints.base)
+    task_class = get_train_wrapper_task(task_class, task_type)
+
+    task = task_class(task_environment=environment)
+
+    hpopt_cfg = _load_hpopt_config(
+        osp.join(
+            osp.dirname(environment.model_template.model_template_path),
+            "hpo_config.yaml",
         )
-        hyper_parameters = hpo.run()
+    )
 
-        environment.set_hyper_parameters(hyper_parameters)
+    if hpopt_cfg.get("resume", False):
+        task.set_resume_path_to_config(
+            hpo_weight_path
+        )  # prepare finetune stage to resume
 
-        if args.load_weights:
-            environment.model.confiugration.configurable_parameters = hyper_parameters
+    if args.load_weights:
+        environment.model.configuration.configurable_parameters = hyper_parameters
+
+    return task
 
 
 def get_cuda_device_list():
@@ -97,26 +169,66 @@ def get_cuda_device_list():
 
 def run_hpo_trainer(
     hp_config,
-    model,
     hyper_parameters,
     model_template,
     dataset_paths,
     task_type,
 ):
     """Run each training of each trial with given hyper parameters"""
-
-    if isinstance(hyper_parameters, dict):
-        current_params = {}
-        for val in hyper_parameters["parameters"]:
-            current_params[val] = hyper_parameters[val]
-        hyper_parameters = create(model_template.hyper_parameters.data)
-        HpoManager.set_hyperparameter(hyper_parameters, current_params)
-
     if dataset_paths is None:
         raise ValueError("Dataset is not defined.")
 
-    impl_class = get_dataset_class(task_type)
-    dataset = impl_class(
+    # User argument Parameters are applied to HPO trial
+    default_hp = create(model_template.hyper_parameters.data)
+    _set_dict_to_parameter_group(default_hp, hyper_parameters)
+    hyper_parameters = default_hp
+
+    # set epoch and warm-up stage depending on given epoch
+    if _is_cls_framework_task(task_type):
+        hyper_parameters.learning_parameters.max_num_epochs = hp_config["iterations"]
+    elif _is_det_framework_task(task_type):
+        if "bracket" not in hp_config:
+            hyper_parameters.learning_parameters.learning_rate_warmup_iters = int(
+                hyper_parameters.learning_parameters.learning_rate_warmup_iters
+                * hp_config["iterations"]
+                / hyper_parameters.learning_parameters.num_iters
+            )
+        hyper_parameters.learning_parameters.num_iters = hp_config["iterations"]
+    elif _is_seg_framework_task(task_type):
+        if "bracket" not in hp_config:
+            eph_comp = [
+                hyper_parameters.learning_parameters.learning_rate_fixed_iters,
+                hyper_parameters.learning_parameters.learning_rate_warmup_iters,
+                hyper_parameters.learning_parameters.num_iters,
+            ]
+
+            eph_comp = list(
+                map(lambda x: x * hp_config["iterations"] / sum(eph_comp), eph_comp)
+            )
+
+            for val in sorted(
+                list(range(len(eph_comp))),
+                key=lambda k: eph_comp[k] - int(eph_comp[k]),
+                reverse=True,
+            )[: hp_config["iterations"] - sum(map(int, eph_comp))]:
+                eph_comp[val] += 1
+
+            hyper_parameters.learning_parameters.learning_rate_fixed_iters = int(
+                eph_comp[0]
+            )
+            hyper_parameters.learning_parameters.learning_rate_warmup_iters = int(
+                eph_comp[1]
+            )
+            hyper_parameters.learning_parameters.num_iters = int(eph_comp[2])
+        else:
+            hyper_parameters.learning_parameters.num_iters = hp_config["iterations"]
+
+    # set hyper-parameters and print them
+    HpoManager.set_hyperparameter(hyper_parameters, hp_config["params"])
+    print(f"hyper parameter of current trial : {hp_config['params']}")
+
+    dataset_class = get_dataset_class(task_type)
+    dataset = dataset_class(
         train_subset={
             "ann_file": dataset_paths.get("train_ann_file", None),
             "data_root": dataset_paths.get("train_data_root", None),
@@ -128,62 +240,30 @@ def run_hpo_trainer(
     )
 
     train_env = TaskEnvironment(
-        model=model,
+        model=None,
         hyper_parameters=hyper_parameters,
         label_schema=generate_label_schema(dataset, task_type),
         model_template=model_template,
     )
 
-    hyper_parameters = train_env.get_hyper_parameters()
+    # load fixed initial weight
+    train_env.model = read_model(
+        train_env.get_model_configuration(),
+        osp.join(osp.dirname(hp_config["file_path"]), "weights.pth"),
+        None,
+    )
 
-    # set epoch
-    if task_type == TaskType.CLASSIFICATION:
-        (hyper_parameters.learning_parameters.max_num_epochs) = hp_config["iterations"]
-    elif task_type == TaskType.DETECTION:
-        hyper_parameters.learning_parameters.num_iters = hp_config["iterations"]
-    elif task_type == TaskType.SEGMENTATION:
-        eph_comp = [
-            hyper_parameters.learning_parameters.learning_rate_fixed_iters,
-            hyper_parameters.learning_parameters.learning_rate_warmup_iters,
-            hyper_parameters.learning_parameters.num_iters,
-        ]
-
-        eph_comp = list(
-            map(lambda x: x * hp_config["iterations"] / sum(eph_comp), eph_comp)
-        )
-
-        for val in sorted(
-            list(range(len(eph_comp))),
-            key=lambda k: eph_comp[k] - int(eph_comp[k]),
-            reverse=True,
-        )[: hp_config["iterations"] - sum(map(int, eph_comp))]:
-            eph_comp[val] += 1
-
-        hyper_parameters.learning_parameters.learning_rate_fixed_iters = int(
-            eph_comp[0]
-        )
-        hyper_parameters.learning_parameters.learning_rate_warmup_iters = int(
-            eph_comp[1]
-        )
-        hyper_parameters.learning_parameters.num_iters = int(eph_comp[2])
-
-    # set hyper-parameters and print them
-    HpoManager.set_hyperparameter(hyper_parameters, hp_config["params"])
-    print(f"hyper parameter of current trial : {hp_config['params']}")
-
-    train_env.set_hyper_parameters(hyper_parameters)
     train_env.model_template.hpo = {
         "hp_config": hp_config,
         "metric": hp_config["metric"],
     }
 
-    impl_class = get_impl_class(train_env.model_template.entrypoints.base)
-    task = impl_class(task_environment=train_env)
+    task_class = get_impl_class(train_env.model_template.entrypoints.base)
+    hpo_impl_class = get_train_wrapper_task(task_class, task_type)
+    task = hpo_impl_class(task_environment=train_env)
+    task.prepare_hpo(hp_config)
 
     dataset = HpoDataset(dataset, hp_config)
-    if train_env.model:
-        train_env.model.train_dataset = dataset
-        train_env.model.confiugration.configurable_parameters = hyper_parameters
 
     output_model = ModelEntity(
         dataset,
@@ -199,6 +279,17 @@ def run_hpo_trainer(
     task.train(dataset=dataset, output_model=output_model, train_parameters=train_param)
 
     hpopt.finalize_trial(hp_config)
+
+    # remove model weight except best model weight
+    best_model_weight = _get_best_model_weight_path(
+        _get_hpo_dir(hp_config), str(hp_config["trial_id"]), task_type
+    )
+    best_model_weight = osp.realpath(best_model_weight)
+    for dirpath, _, filenames in os.walk(_get_hpo_trial_workdir(hp_config)):
+        for filename in filenames:
+            full_name = osp.join(dirpath, filename)
+            if (not osp.islink(full_name)) and full_name != best_model_weight:
+                os.remove(full_name)
 
 
 def exec_hpo_trainer(arg_file_name, alloc_gpus):
@@ -222,6 +313,122 @@ def exec_hpo_trainer(arg_file_name, alloc_gpus):
     time.sleep(10)
 
 
+def get_train_wrapper_task(impl_class, task_type):
+    """get task wrapper for the HPO with given task type"""
+
+    class HpoTrainTask(impl_class):
+        """wrapper class for the HPO"""
+
+        def __init__(self, task_environment):
+            super().__init__(task_environment)
+            self._task_type = task_type
+
+        def set_resume_path_to_config(self, resume_path):
+            """set path for the resume to the config of the each task framework"""
+            if _is_cls_framework_task(self._task_type):
+                self._cfg.model.resume = resume_path
+                self._cfg.test.save_initial_metric = True
+            elif _is_det_framework_task(self._task_type):
+                self._config.resume_from = resume_path
+            elif _is_seg_framework_task(self._task_type):
+                self._config.resume_from = resume_path
+
+        def prepare_hpo(self, hp_config):
+            """update config of the each task framework for the HPO"""
+            if _is_cls_framework_task(self._task_type):
+                # pylint: disable=attribute-defined-outside-init
+                self._scratch_space = _get_hpo_trial_workdir(hp_config)
+                self._cfg.data.save_dir = self._scratch_space
+                self._cfg.model.save_all_chkpts = True
+            elif _is_det_framework_task(self._task_type) or _is_seg_framework_task(
+                self._task_type
+            ):
+                self._config.work_dir = _get_hpo_trial_workdir(hp_config)
+                self._config.checkpoint_config["max_keep_ckpts"] = (
+                    hp_config["iterations"] + 10
+                )
+                self._config.checkpoint_config["interval"] = 1
+
+    return HpoTrainTask
+
+
+def _convert_parameter_group_to_dict(parameter_group):
+    groups = getattr(parameter_group, "groups", None)
+    parameters = getattr(parameter_group, "parameters", None)
+
+    total_arr = []
+    for val in [groups, parameters]:
+        if val is not None:
+            total_arr.extend(val)
+    if not total_arr:
+        return parameter_group
+
+    ret = {}
+    for key in total_arr:
+        val = _convert_parameter_group_to_dict(getattr(parameter_group, key))
+        if not (isclass(val) or isinstance(val, Enum)):
+            ret[key] = val
+
+    return ret
+
+
+def _set_dict_to_parameter_group(origin_hp, hp_config):
+    """
+    Set given hyper parameter to hyper parameter in environment
+    aligning with "ConfigurableParameters".
+    """
+    for key, val in hp_config.items():
+        if not isinstance(val, dict):
+            setattr(origin_hp, key, val)
+        else:
+            _set_dict_to_parameter_group(getattr(origin_hp, key), val)
+
+
+def _load_hpopt_config(file_path):
+    """load HPOpt config file"""
+    try:
+        with open(file_path, "r", encoding="utf-8") as f:
+            hpopt_cfg = yaml.safe_load(f)
+    except FileNotFoundError as err:
+        print("hpo_config.yaml file should be in directory where template.yaml is.")
+        raise err
+
+    return hpopt_cfg
+
+
+def _get_best_model_weight_path(hpo_dir: str, trial_num: str, task_type: TaskType):
+    """Return best model weight from HPO trial directory"""
+    if _is_cls_framework_task(task_type):
+        best_weight_path = osp.realpath(osp.join(hpo_dir, str(trial_num), "best.pth"))
+    elif _is_det_framework_task(task_type) or _is_seg_framework_task(task_type):
+        best_trial_path = osp.join(
+            hpo_dir,
+            trial_num,
+            "checkpoints_round_0",
+        )
+        for file_name in os.listdir(best_trial_path):
+            if "best" in file_name:
+                best_weight_path = osp.join(best_trial_path, file_name)
+                break
+    elif _is_anomaly_framework_task(task_type):
+        # TODO need to implement later
+        best_weight_path = ""
+    else:
+        best_weight_path = ""
+
+    return best_weight_path
+
+
+def _get_hpo_dir(hp_config):
+    """Return HPO work directory path from hp_config"""
+    return osp.dirname(hp_config["file_path"])
+
+
+def _get_hpo_trial_workdir(hp_config):
+    """Return HPO trial work directory path from hp_config"""
+    return osp.join(_get_hpo_dir(hp_config), str(hp_config["trial_id"]))
+
+
 class HpoCallback(UpdateProgressCallback):
     """Callback class to report score to hpopt"""
 
@@ -233,7 +440,20 @@ class HpoCallback(UpdateProgressCallback):
 
     def __call__(self, progress: float, score: Optional[float] = None):
         if score is not None:
-            if hpopt.report(config=self.hp_config, score=score) == hpopt.Status.STOP:
+            current_iters = -1
+            if score > 1.0:
+                current_iters = int(score)
+                score = float(score - current_iters)
+            elif score < 0.0:
+                current_iters = int(-1.0 * score - 1.0)
+                score = 1.0
+            print(f"[DEBUG-HPO] score = {score} at iteration {current_iters}")
+            if (
+                hpopt.report(
+                    config=self.hp_config, score=score, current_iters=current_iters
+                )
+                == hpopt.Status.STOP
+            ):
                 self.hpo_task.cancel_training()
 
 
@@ -246,43 +466,80 @@ class HpoManager:
         self.environment = environment
         self.dataset_paths = dataset_paths
         self.work_dir = hpo_save_path
+        # If hyper parameter candidates should be fixed,
+        # they're excluded from hp search space.
+        # But they are used in hpo and included to final hyper parameters as fixed.
+        self.fixed_hp = {}
 
-        try:
-            with open(
-                osp.join(
-                    osp.dirname(self.environment.model_template.model_template_path),
-                    "hpo_config.yaml",
-                ),
-                "r",
-                encoding="utf-8",
-            ) as f:
-                hpopt_cfg = yaml.safe_load(f)
-        except FileNotFoundError as err:
-            print("hpo_config.yaml file should be in directory where template.yaml is.")
-            raise err
+        if environment.model is None:
+            impl_class = get_impl_class(environment.model_template.entrypoints.base)
+            task = impl_class(task_environment=environment)
+            model = ModelEntity(
+                dataset,
+                environment.get_model_configuration(),
+            )
+            task.save_model(model)
+            save_model_data(model, self.work_dir)
+        else:
+            save_model_data(environment.model, self.work_dir)
+
+        hpopt_cfg = _load_hpopt_config(
+            osp.join(
+                osp.dirname(self.environment.model_template.model_template_path),
+                "hpo_config.yaml",
+            )
+        )
 
         self.algo = hpopt_cfg.get("search_algorithm", "smbo")
         self.metric = hpopt_cfg.get("metric", "mAP")
 
         num_available_gpus = torch.cuda.device_count()
 
-        if num_available_gpus == 0 and self.algo == "asha":
-            print(
-                "There is no available CUDA devices. The search algorithm of HPO uses smbo instead of asha."
-            )
-
-        if num_available_gpus == 1 and self.algo == "asha":
-            print(
-                "There is only one CUDA devices. The search algorithm of HPO uses smbo instead of asha."
-            )
-
-        if num_available_gpus <= 1:
-            self.algo = "smbo"
-
         self.num_gpus_per_trial = 1
 
         train_dataset_size = len(dataset.get_subset(Subset.TRAINING))
         val_dataset_size = len(dataset.get_subset(Subset.VALIDATION))
+
+        task_type = self.environment.model_template.task_type
+
+        # make batch size range lower than train set size
+        env_hp = self.environment.get_hyper_parameters()
+        batch_size_name = None
+        if (
+            _is_cls_framework_task(task_type)
+            or _is_det_framework_task(task_type)
+            or _is_seg_framework_task(task_type)
+        ):
+            batch_size_name = "learning_parameters.batch_size"
+        elif _is_anomaly_framework_task(task_type):
+            batch_size_name = "dataset.train_batch_size"
+        if batch_size_name is not None:
+            if batch_size_name in hpopt_cfg["hp_space"]:
+                batch_range = hpopt_cfg["hp_space"][batch_size_name]["range"]
+                if batch_range[1] > train_dataset_size:
+                    batch_range[1] = train_dataset_size
+
+                # If trainset size is lower than min batch size range,
+                # fix batch size to trainset size
+                if batch_range[0] > batch_range[1]:
+                    print(
+                        "Train set size is lower than batch size range."
+                        "Batch size is fixed to train set size."
+                    )
+                    del hpopt_cfg["hp_space"][batch_size_name]
+                    self.fixed_hp[batch_size_name] = train_dataset_size
+
+        # prepare default hyper parameters
+        default_hyper_parameters = {}
+        for key in hpopt_cfg["hp_space"].keys():
+            splited_key = key.split(".")
+            target = env_hp
+            for val in splited_key:
+                target = getattr(target, val, None)
+                if target is None:
+                    break
+            if target is not None:
+                default_hyper_parameters[key] = target
 
         hpopt_arguments = dict(
             search_alg="bayes_opt" if self.algo == "smbo" else self.algo,
@@ -297,7 +554,10 @@ class HpoManager:
             expected_time_ratio=expected_time_ratio,
             non_pure_train_ratio=val_dataset_size
             / (train_dataset_size + val_dataset_size),
-            batch_size_name="learning_parameters.batch_size",
+            batch_size_name=batch_size_name,
+            default_hyper_parameters=default_hyper_parameters,
+            metric=self.metric,
+            mode=hpopt_cfg.get("mode", "max"),
         )
 
         if self.algo == "smbo":
@@ -305,14 +565,45 @@ class HpoManager:
             hpopt_arguments["num_trials"] = hpopt_cfg.get("num_trials")
         elif self.algo == "asha":
             hpopt_arguments["num_brackets"] = hpopt_cfg.get("num_brackets")
-            hpopt_arguments["min_iterations"] = hpopt_cfg.get("min_iterations")
             hpopt_arguments["reduction_factor"] = hpopt_cfg.get("reduction_factor")
+            hpopt_arguments["min_iterations"] = hpopt_cfg.get("min_iterations")
             hpopt_arguments["num_trials"] = hpopt_cfg.get("num_trials")
             hpopt_arguments["num_workers"] = (
                 num_available_gpus // self.num_gpus_per_trial
             )
 
+            # Prevent each trials from being stopped during warmup stage
+            batch_size = default_hyper_parameters.get(batch_size_name)
+            if "min_iterations" not in hpopt_cfg and batch_size is not None:
+                if _is_cls_framework_task(task_type):
+                    with open(
+                        osp.join(
+                            osp.dirname(
+                                self.environment.model_template.model_template_path
+                            ),
+                            "main_model.yaml",
+                        ),
+                        "r",
+                        encoding="utf-8",
+                    ) as f:
+                        model_yaml = yaml.safe_load(f)
+                    if "warmup" in model_yaml["train"]:
+                        hpopt_arguments["min_iterations"] = ceil(
+                            model_yaml["train"]["warmup"]
+                            * batch_size
+                            / train_dataset_size
+                        )
+                elif _is_det_framework_task(task_type) or _is_seg_framework_task(
+                    task_type
+                ):
+                    hpopt_arguments["min_iterations"] = ceil(
+                        env_hp.learning_parameters.learning_rate_warmup_iters
+                        / ceil(train_dataset_size / batch_size)
+                    )
+
         HpoManager.remove_empty_keys(hpopt_arguments)
+
+        print(f"[OTE_CLI] [DEBUG-HPO] hpopt args for create hpopt = {hpopt_arguments}")
 
         self.hpo = hpopt.create(**hpopt_arguments)
 
@@ -370,7 +661,7 @@ class HpoManager:
 
     def run(self):
         """Execute HPO according to configuration"""
-
+        task_type = self.environment.model_template.task_type
         proc_list = []
         gpu_alloc_list = []
         num_workers = 1
@@ -400,14 +691,12 @@ class HpoManager:
                             proc.join()
                     break
 
+                for key, val in self.fixed_hp.items():
+                    hp_config["params"][key] = val
+
                 hp_config["metric"] = self.metric
 
-                hpo_work_dir = osp.abspath(
-                    osp.join(
-                        osp.dirname(hp_config["file_path"]),
-                        str(hp_config["trial_id"]),
-                    )
-                )
+                hpo_work_dir = osp.abspath(_get_hpo_trial_workdir(hp_config))
 
                 # Clear hpo_work_dir
                 if osp.exists(hpo_work_dir):
@@ -416,13 +705,12 @@ class HpoManager:
 
                 _kwargs = {
                     "hp_config": hp_config,
-                    "model": self.environment.model,
-                    "hyper_parameters": vars(
-                        self.environment.get_hyper_parameters().learning_parameters
+                    "hyper_parameters": _convert_parameter_group_to_dict(
+                        self.environment.get_hyper_parameters()
                     ),
                     "model_template": self.environment.model_template,
                     "dataset_paths": self.dataset_paths,
-                    "task_type": self.environment.model_template.task_type,
+                    "task_type": task_type,
                 }
 
                 pickle_path = HpoManager.safe_pickle_dump(
@@ -448,6 +736,16 @@ class HpoManager:
                 break
 
         best_config = self.hpo.get_best_config()
+        for key, val in self.fixed_hp.items():
+            best_config[key] = val
+
+        # TODO: is it needed here?
+        # # finetune stage resumes hpo trial, so warmup isn't needed
+        # if task_type == TaskType.DETECTION:
+        #     best_config["learning_parameters.learning_rate_warmup_iters"] = 0
+        # if task_type == TaskType.SEGMENTATION:
+        #     best_config["learning_parameters.learning_rate_fixed_iters"] = 0
+        #     best_config["learning_parameters.learning_rate_warmup_iters"] = 0
 
         hyper_parameters = self.environment.get_hyper_parameters()
         HpoManager.set_hyperparameter(hyper_parameters, best_config)
@@ -457,7 +755,12 @@ class HpoManager:
         print("Best Hyper-parameters")
         print(best_config)
 
-        return hyper_parameters
+        # get weight to pass for resume
+        hpo_weight_path = _get_best_model_weight_path(
+            self.hpo.save_path, str(self.hpo.hpo_status["best_config_id"]), task_type
+        )
+
+        return hyper_parameters, hpo_weight_path
 
     def __alloc_gpus(self, gpu_alloc_list):
         gpu_list = get_cuda_device_list()
@@ -483,7 +786,7 @@ class HpoManager:
         """Generate search space from user's input"""
         search_space = {}
         for key, val in hp_space_dict.items():
-            search_space[key] = hpopt.search_space(val["param_type"], val["range"])
+            search_space[key] = hpopt.SearchSpace(val["param_type"], val["range"])
         return search_space
 
     @staticmethod
@@ -503,11 +806,16 @@ class HpoManager:
         num_full_iterations = 0
 
         task_type = environment.model_template.task_type
-        learning_parameters = environment.get_hyper_parameters().learning_parameters
-        if task_type == TaskType.CLASSIFICATION:
+        params = environment.get_hyper_parameters()
+        if _is_cls_framework_task(task_type):
+            learning_parameters = params.learning_parameters
             num_full_iterations = learning_parameters.max_num_epochs
-        elif task_type in (TaskType.DETECTION, TaskType.SEGMENTATION):
+        elif _is_det_framework_task(task_type) or _is_seg_framework_task(task_type):
+            learning_parameters = params.learning_parameters
             num_full_iterations = learning_parameters.num_iters
+        elif _is_anomaly_framework_task(task_type):
+            trainer = params.trainer
+            num_full_iterations = trainer.max_epochs
 
         return num_full_iterations
 
@@ -557,6 +865,8 @@ class HpoDataset:
         return self.fullset[self.indices[indx]]
 
     def __getattr__(self, name):
+        if name == "__setstate__":
+            raise AttributeError(name)
         return getattr(self.fullset, name)
 
     def get_subset(self, subset: Subset):

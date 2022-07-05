@@ -92,7 +92,6 @@ class ClassificationDatasetAdapter(DatasetEntity):
             if v:
                 self.data_roots[k] = osp.abspath(v)
                 if self.ann_files[k] and '.json' in self.ann_files[k] and osp.isfile(self.ann_files[k]):
-                    self.data_roots[k] = osp.dirname(self.ann_files[k])
                     self.annotations[k], self.data_type = \
                         self._load_text_annotation(self.ann_files[k], self.data_roots[k])
                 else:
@@ -195,8 +194,14 @@ class ClassificationDatasetAdapter(DatasetEntity):
     def _label_name_to_project_label(self, label_name):
         return [label for label in self.project_labels if label.name == label_name][0]
 
+    def is_multiclass(self):
+        return self.data_type == ClassificationType.MULTICLASS
+
     def is_multilabel(self):
         return self.data_type == ClassificationType.MULTILABEL
+
+    def is_multihead(self):
+        return self.data_type == ClassificationType.MULTIHEAD
 
     def generate_label_schema(self):
         label_schema = LabelSchemaEntity()
@@ -397,18 +402,29 @@ def force_fp32(model: Module):
 class TrainingProgressCallback(TimeMonitorCallback):
     def __init__(self, update_progress_callback: UpdateProgressCallback, **kwargs):
         super().__init__(update_progress_callback=update_progress_callback, **kwargs)
+        self._num_iters = 0
 
     def on_train_batch_end(self, batch, logs=None):
         super().on_train_batch_end(batch, logs)
+        self._num_iters += 1
         self.update_progress_callback(self.get_progress(), score=logs)
 
     def on_epoch_end(self, epoch, logs=None):
         self.past_epoch_duration.append(time.time() - self.start_epoch_time)
         self._calculate_average_epoch()
-        score = logs
         if hasattr(self.update_progress_callback, 'metric') and isinstance(logs, dict):
             score = logs.get(self.update_progress_callback.metric, None)
-            score = float(score) if score is not None else None
+        else:
+            score = logs
+        if (
+            score is not None
+            and hasattr(self.update_progress_callback, "hp_config")
+        ):
+            score = float(score)
+            print(f'score = {score} at epoch {self.current_epoch} / {self._num_iters}')
+            # as a trick, score (at least if it's accuracy not the loss) and iteration number
+            # could be assembled just using summation and then disassembeled.
+            score = score + int(self._num_iters)
         self.update_progress_callback(self.get_progress(), score=score)
 
 
@@ -532,7 +548,7 @@ def get_hierarchical_predictions(logits: np.ndarray, labels: List[LabelEntity],
                                  pos_thr: float = 0.5, activate: bool = True) -> List[ScoredLabel]:
     predicted_labels = []
     for i in range(multihead_class_info['num_multiclass_heads']):
-        logits_begin, logits_end = multihead_class_info['head_idx_to_logits_range'][str(i)]
+        logits_begin, logits_end = multihead_class_info['head_idx_to_logits_range'][i]
         head_logits = logits[logits_begin : logits_end]
         if activate:
             head_logits = softmax_numpy(head_logits)

@@ -68,7 +68,7 @@ args = {
     ]
 }
 
-root = '/tmp/ote_cli/'
+root = '/tmp/ote_cli_det/'
 ote_dir = os.getcwd()
 
 templates = Registry('external/model-preparation-algorithm', experimental=True).filter(task_type='DETECTION').templates

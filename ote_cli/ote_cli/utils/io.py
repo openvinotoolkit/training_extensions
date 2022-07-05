@@ -151,25 +151,25 @@ def generate_label_schema(dataset, task_type):
     Generates label schema depending on task type.
     """
 
-    if task_type == TaskType.CLASSIFICATION and dataset.is_multilabel():
+    if task_type == TaskType.CLASSIFICATION:
         not_empty_labels = dataset.get_labels()
         assert len(not_empty_labels) > 1
         label_schema = LabelSchemaEntity()
-        empty_label = LabelEntity(
-            name="Empty label", is_empty=True, domain=Domain.CLASSIFICATION
-        )
-        empty_group = LabelGroup(
-            name="empty", labels=[empty_label], group_type=LabelGroupType.EMPTY_LABEL
-        )
-        single_groups = []
-        for label in not_empty_labels:
-            single_groups.append(
-                LabelGroup(
-                    name=label.name, labels=[label], group_type=LabelGroupType.EXCLUSIVE
-                )
-            )
-            label_schema.add_group(single_groups[-1])
-        label_schema.add_group(empty_group)
-        return label_schema
+        if dataset.is_multiclass():
+            main_group = LabelGroup(name="labels", labels=dataset.project_labels, group_type=LabelGroupType.EXCLUSIVE)
+            label_schema.add_group(main_group)
+        elif dataset.is_multilabel() or dataset.is_multihead():
+            emptylabel = LabelEntity(name="Empty label", is_empty=True, domain=Domain.CLASSIFICATION)
+            empty_group = LabelGroup(name="empty", labels=[emptylabel], group_type=LabelGroupType.EMPTY_LABEL)
+            key = [i for i in dataset.annotations.keys()][0]
+            for g in dataset.annotations[key][2]:
+                group_labels = []
+                for cls in g:
+                    group_labels.append(dataset._label_name_to_project_label(cls))
+                labels = group_labels if dataset.is_multilabel() else group_labels[1:]
+                label_schema.add_group(LabelGroup(name=group_labels[0].name,
+                                                  labels=labels, group_type=LabelGroupType.EXCLUSIVE))
+            label_schema.add_group(empty_group)
+            return label_schema
 
     return LabelSchemaEntity.from_labels(dataset.get_labels())
