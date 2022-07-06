@@ -1,6 +1,6 @@
 # Description.
-model_template_id: ClassIncremental_Image_Classification_MobileNet-V3-large-1x
-name: MobileNet-V3-large-1x-ClsIncr
+model_template_id: Image_Classification_MobileNet-V3-large-1x
+name: MobileNet-V3-large-1x
 task_type: CLASSIFICATION
 task_family: VISION
 instantiation: "CLASS"

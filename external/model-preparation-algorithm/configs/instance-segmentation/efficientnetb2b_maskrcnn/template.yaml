@@ -1,6 +1,6 @@
 # Description.
-model_template_id: ClassIncremental_Instance_Segmentation_MaskRCNN_EfficientNetB2B
-name: MaskRCNN-EfficientNetB2B-ClsIncr
+model_template_id: Instance_Segmentation_MaskRCNN_EfficientNetB2B
+name: MaskRCNN-EfficientNetB2B
 task_type: INSTANCE_SEGMENTATION
 task_family: VISION
 instantiation: "CLASS"

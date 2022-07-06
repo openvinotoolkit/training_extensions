@@ -1,6 +1,6 @@
 # Description.
-model_template_id: ClassIncremental_Object_Detection_Gen3_ATSS
-name: ATSS-ClsIncr
+model_template_id: Object_Detection_Gen3_ATSS
+name: ATSS
 task_type: DETECTION
 task_family: VISION
 instantiation: "CLASS"

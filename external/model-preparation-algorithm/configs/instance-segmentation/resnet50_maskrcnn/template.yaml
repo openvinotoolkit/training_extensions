@@ -1,6 +1,6 @@
 # Description.
-model_template_id: ClassIncremental_Instance_Segmentation_MaskRCNN_ResNet50
-name: MaskRCNN-ResNet50-ClsIncr
+model_template_id: Instance_Segmentation_MaskRCNN_ResNet50
+name: MaskRCNN-ResNet50
 task_type: INSTANCE_SEGMENTATION
 task_family: VISION
 instantiation: "CLASS"

@@ -1,6 +1,6 @@
 # Description.
-model_template_id: ClassIncremental_Image_Classification_EfficinetNet-V2-S
-name: EfficientNet-V2-S-ClsIncr
+model_template_id: Image_Classification_EfficinetNet-V2-S
+name: EfficientNet-V2-S
 task_type: CLASSIFICATION
 task_family: VISION
 instantiation: "CLASS"
