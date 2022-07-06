@@ -36,7 +36,7 @@ from ote_sdk.serialization.label_mapper import label_schema_to_bytes
 from ote_sdk.entities.scored_label import ScoredLabel
 from torchreid_tasks.utils import TrainingProgressCallback
 from torchreid_tasks.utils import OTELoggerHook
-from torchreid_tasks.train_task import OTEClassificationTrainingTask
+from torchreid_tasks.utils import get_multihead_class_info as get_hierarchical_class_info
 from mpa_tasks.apis import BaseTask, TrainType
 from mpa_tasks.apis.classification import ClassificationConfig
 from mpa.utils.config_utils import MPAConfig
@@ -65,31 +65,13 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         self._hierarchical = False
         if not self._multilabel and len(task_environment.label_schema.get_groups(False)) > 1:
             self._hierarchical = True
-            torchreid_env = self.convert_to_torchreid_env(task_environment)
-            self.torchreid_train_task = OTEClassificationTrainingTask(torchreid_env)
-
-    @staticmethod
-    def convert_to_torchreid_env(task_env):
-        model_template = task_env.model_template
-        rename_dict = {'model-preparation-algorithm': 'deep-object-reid',
-                       'classification' : 'ote_custom_classification',
-                       '_cls_incr' : ''
-                       }
-
-        for key, val in rename_dict.items():
-            model_template.model_template_path = model_template.model_template_path.replace(key, val)
-        model_template.entrypoints.base = 'torchreid_tasks.train_task.OTEClassificationTrainingTask'
-        model_template.framework = 'OTEClassification v1.2.3'
-        return task_env
+            self._hierarchical_class_info = get_hierarchical_class_info(task_environment.label_schema)
 
     def infer(self,
               dataset: DatasetEntity,
               inference_parameters: Optional[InferenceParameters] = None
               ) -> DatasetEntity:
         logger.info('called infer()')
-        if self._hierarchical:
-            self = self.torchreid_train_task
-            return self.infer(dataset, inference_parameters)
         stage_module = 'ClsInferrer'
         self._data_cfg = self._init_test_data_cfg(dataset)
         dataset = dataset.with_empty_annotations()
@@ -136,10 +118,6 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
                export_type: ExportType,
                output_model: ModelEntity):
         logger.info('Exporting the model')
-        if self._hierarchical:
-            self = self.torchreid_train_task
-            self.export(export_type, output_model)
-            return
         if export_type != ExportType.OPENVINO:
             raise RuntimeError(f'not supported export type {export_type}')
         output_model.model_format = ModelFormat.OPENVINO
@@ -245,6 +223,9 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
 
             if self._multilabel:
                 cfg.type = 'MPAMultilabelClsDataset'
+            elif self._hierarchical:
+                cfg.type = 'MPAHierarchicalClsDataset'
+                cfg.hierarchical_class_info = self._hierarchical_class_info
             else:
                 cfg.type = 'MPAClsDataset'
             cfg.domain = domain
@@ -297,10 +278,6 @@ class ClassificationTrainTask(ClassificationInferenceTask):
               output_model: ModelEntity,
               train_parameters: Optional[TrainParameters] = None):
         logger.info('train()')
-        if self._hierarchical:
-            self = self.torchreid_train_task
-            self.train(dataset, output_model, train_parameters)
-            return
         # Check for stop signal between pre-eval and training.
         # If training is cancelled at this point,
         if self._should_stop:

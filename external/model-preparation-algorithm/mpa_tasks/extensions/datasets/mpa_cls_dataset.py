@@ -238,3 +238,12 @@ class MPAMultilabelClsDataset(MPAClsDataset):
                     eval_results[k] = v
 
         return eval_results
+
+@DATASETS.register_module()
+class MPAHierarchicalClsDataset(MPAMultilabelClsDataset):
+    def __init__(self, **kwargs):
+        self.hierarchical_class_info = kwargs.pop('hierarchical_class_info', None)
+        super().__init__(**kwargs)
+
+    def evaluate(self):
+        raise NotImplementedError
