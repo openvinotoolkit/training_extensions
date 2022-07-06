@@ -76,7 +76,7 @@ def train_model_phase1(config, train_dataset, model,
         psnr = compare_psnr_batch(
             labels.detach().cpu().numpy(), output.detach().cpu().numpy())
         psnr = 20.0 * np.log10(psnr)
-        # flops = scope(model, input_size=(1, 128,128))
+
         if config['efficient_net']:
             if idx % config['interval'] == 0:
                 print('{tag} {0:4d}/{1:4d}/{2:4d} -> Loss: {3:.8f}, \
@@ -164,6 +164,25 @@ def train_model_phase2(config, train_dataloader, model,
 
 
 def validate_model_phase1(config, test_dataloader, model, msecrit):
+    for idx, (images, labels) in enumerate(test_dataloader):
+        if torch.cuda.is_available() and config['gpu']:
+            images, labels = images.cuda(), labels.cuda()
+
+        output = model(images)
+        loss = msecrit(output, labels)  # loss calculation
+        # calculate the metrics (SSIM and pSNR)
+        ssim = compare_ssim_batch(
+            labels.detach().cpu().numpy(), output.detach().cpu().numpy())
+        psnr = compare_psnr_batch(
+            labels.detach().cpu().numpy(), output.detach().cpu().numpy())
+
+        avg_loss = ((n * avg_loss) + loss.item()) / (n + 1)  # running mean
+        avg_ssim = ((n * avg_ssim) + ssim) / (n + 1)  # running mean
+        avg_psnr = ((n * avg_psnr) + psnr) / (n + 1)  # running mean
+        n += 1
+
+
+def validate_model_phase2(config, test_dataloader, model, msecrit):
     for idx, (images, labels) in enumerate(test_dataloader):
         if torch.cuda.is_available() and config['gpu']:
             images, labels = images.cuda(), labels.cuda()
@@ -299,7 +318,7 @@ def train_model(config):
                                    optimizer, msecrit, epoch,
                                    alpha, beta, i)
 
-                # TRAINING DONE
+            # TRAINING DONE
             model.eval()  # switch to evaluation mode
 
             n = 0
@@ -310,7 +329,8 @@ def train_model(config):
                     validate_model_phase1(
                         config, test_dataloader, model, msecrit)
                 else:
-                    # validate_model_phase2(config,test_dataloader, model, msecrit)  ## later
+                    validate_model_phase2(
+                        config, test_dataloader, model, msecrit)  # later
                     pass
 
             avg_psnr = 20.0 * np.log10(avg_psnr)  # convert pSNR to dB
@@ -338,7 +358,7 @@ def train_model(config):
             with open(log_file, 'w') as logfile:
                 json.dump(logg, logfile)
 
-                # model saving, only if the SSIM is better than before
+            # model saving, only if the SSIM is better than before
             if avg_ssim > prev_test_ssim:
                 print(
                     colored('[Saving] model saved to {}'.format(model_file), 'red'))

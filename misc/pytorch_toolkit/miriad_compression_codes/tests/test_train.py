@@ -1,60 +1,156 @@
 import unittest
 import os
-import numpy as np
 from torch.utils.data import DataLoader
+from src.utils.train_utils import train_model
+from src.utils.dataloader import CustomDatasetPhase1, CustomDatasetPhase2
+from src.utils.model import Encoder, Decoder
+from src.utils.download_weights import download_checkpoint, download_data
 from src.utils.get_config import get_config
-from src.utils.data_loader import CustomDatasetPhase1, CustomDatasetPhase2
 
-def augment_color(self, image):
-    # modifying colour tones on input image :-
-    channel_ranges = (self.red_range, self.green_range, self.blue_range)
-    for channel, channel_range in enumerate(channel_ranges):
-        if not channel_range:
-            continue  # no range set, so don't change that channel
-        scale = np.random.uniform(channel_range[0], channel_range[1])
-        image[:, :, channel] = image[:, :, channel] * scale
-    image = np.clip(image, 0, 255)
-    return image
 
 def create_train_test_for_phase1():
     class TrainerTest(unittest.TestCase):
         @classmethod
         def setUpClass(cls):
-            config = get_config(action='train', phase=1)
+            config = get_config(action='train')
             cls.config = config
-            if os.path.exists(config['tr_data_path']):
-                tr_data_path = config['tr_data_path']
+            if os.path.exists(config["default_image_path"]):
+                image_path = config["default_image_path"]
             else:
-                download_data()
-                tr_data_path = config['tr_data_path']
+                if not os.path.exists(config["image_path"]):
+                    download_data()
+                image_path = config["image_path"]
 
-            x_train = np.load(tr_data_path, allow_pickle=True)
-            x_train = np.repeat(x_train, 4, axis=0)
-            train_data = Stage1Dataset(x_train, transform=augment_color)
-            cls.train_loader = DataLoader(train_data, batch_size=1, shuffle=True, num_workers=10)
-            cls.train_bce_list,cls.train_dice_loss_list,cls.train_dice_list =[],[],[]
+            dataset_train = CustomDatasetPhase1(
+                cls.config['dummy_train_list'],
+                cls.config['dummy_labels'],
+                image_path, transform=True)
+            dataset_valid = CustomDatasetPhase1(
+                cls.config['dummy_valid_list'],
+                cls.config['dummy_labels'],
+                image_path, transform=True)
+            dataset_test = CustomDatasetPhase1(
+                cls.config['dummy_test_list'],
+                cls.config['dummy_labels'],
+                image_path, transform=True)
+            cls.data_loader_train = DataLoader(
+                dataset=dataset_train,
+                shuffle=True,
+                pin_memory=False)
+            cls.data_loader_valid = DataLoader(
+                dataset=dataset_valid,
+                shuffle=False,
+                pin_memory=False)
+            cls.data_loader_test = DataLoader(
+                dataset=dataset_test,
+                shuffle=False,
+                pin_memory=False)
+
+        def test_config(self):
+            self.assertGreaterEqual(self.config["lr"], 1e-8)
+            self.assertEqual(self.config["clscount"], 3)
 
         def test_trainer(self):
-            model = UNet(num_filters=32)
-            model.to(self.config['device'])
-            optimizer = optim.SGD(filter(
-                                        lambda p: p.requires_grad,
-                                        model.parameters()),
-                                        lr=self.config['lr'],
-                                        momentum=0.9,
-                                        weight_decay=0.0005)
-            for epoch in range(self.config['epochs']):
-                train_loss_bce, train_loss_dice, train_dice = train_stage1(model,
-                                                                        self.train_loader,
-                                                                        optimizer, epoch,
-                                                                        self.config['epochs'],
-                                                                        self.config['device'],
-                                                                        verbose=True)
-                self.train_bce_list.append(train_loss_bce)
-                self.train_dice_loss_list.append(train_loss_dice)
-                self.train_dice_list.append(train_dice)
+            self.model = Encoder(self.config["clscount"])
+            if not os.path.exists(self.config["checkpoint"]):
+                download_checkpoint()
+            self.device = self.config["device"]
+            self.trainer = train_model(
+                self.model, self.data_loader_train,
+                self.data_loader_valid, self.data_loader_test,
+                self.config["clscount"], self.config["checkpoint"],
+                self.device, self.config["class_names"], self.config["lr"])
+            self.trainer.train(
+                self.config["max_epoch"], self.config["savepath"])
+            cur_train_loss = self.trainer.current_train_loss
+            self.trainer.train(
+                self.config["max_epoch"], self.config["savepath"])
+            self.assertLessEqual(
+                self.trainer.current_train_loss, cur_train_loss)
 
-            self.assertLessEqual(self.train_bce_list[2], self.train_bce_list[0])
-            self.assertLessEqual(self.train_dice_loss_list[2], self.train_dice_loss_list[0])
-            self.assertGreaterEqual(self.train_dice_list[2], self.train_dice_list[0])
     return TrainerTest
+
+
+def create_train_test_for_phase2():
+    class TrainerTestEff(unittest.TestCase):
+        @classmethod
+        def setUpClass(cls):
+            config = get_config(action='train', optimised=True)
+            cls.config = config
+            if os.path.exists(config["default_image_path"]):
+                image_path = config["default_image_path"]
+            else:
+                if not os.path.exists(config["image_path"]):
+                    download_data()
+                image_path = config["image_path"]
+
+            dataset_train = CustomDatasetPhase2(
+                cls.config['dummy_train_list'],
+                cls.config['dummy_labels'],
+                image_path, transform=True)
+            dataset_valid = CustomDatasetPhase2(
+                cls.config['dummy_valid_list'],
+                cls.config['dummy_labels'],
+                image_path, transform=True)
+            dataset_test = CustomDatasetPhase2(
+                cls.config['dummy_test_list'],
+                cls.config['dummy_labels'],
+                image_path, transform=True)
+            cls.data_loader_train = DataLoader(
+                dataset=dataset_train,
+                shuffle=True,
+                pin_memory=False)
+            cls.data_loader_valid = DataLoader(
+                dataset=dataset_valid,
+                shuffle=False,
+                pin_memory=False)
+            cls.data_loader_test = DataLoader(
+                dataset=dataset_test,
+                shuffle=False,
+                pin_memory=False)
+
+        def test_trainer(self):
+            alpha = self.config['alpha'] ** self.config['phi']
+            beta = self.config['beta'] ** self.config['phi']
+            self.model = Decoder(
+                alpha, beta, self.config['class_count'])
+            if not os.path.exists(self.config["checkpoint"]):
+                download_checkpoint()
+            self.device = self.config["device"]
+            self.trainer = train_model(
+                self.model, self.data_loader_train,
+                self.data_loader_valid, self.data_loader_test,
+                self.config["class_count"], self.config["checkpoint"],
+                self.device, self.config["class_names"], self.config["lr"])
+            self.trainer.train(
+                self.config["max_epoch"], self.config["savepath"])
+            cur_train_loss = self.trainer.current_train_loss
+            self.trainer.train(
+                self.config["max_epoch"], self.config["savepath"])
+            self.assertLessEqual(
+                self.trainer.current_train_loss, cur_train_loss)
+
+        def test_config(self):
+            self.config = get_config(action='train', optimised=True)
+            self.learn_rate = self.config["lr"]
+            self.class_count = self.config["class_count"]
+            self.assertGreaterEqual(self.learn_rate, 1e-8)
+            self.assertEqual(self.class_count, 3)
+            self.assertGreaterEqual(self.config['alpha'], 0)
+            self.assertGreaterEqual(self.config['phi'], -1)
+            self.assertLessEqual(self.config['alpha'], 2)
+            self.assertLessEqual(self.config['phi'], 1)
+    return TrainerTestEff
+
+
+class TestTrainer(create_train_test_for_phase1()):
+    'Test case for phase1'
+
+
+class TestTrainerEff(create_train_test_for_phase2()):
+    'Test case for phase2'
+
+
+if __name__ == '__main__':
+
+    unittest.main()
