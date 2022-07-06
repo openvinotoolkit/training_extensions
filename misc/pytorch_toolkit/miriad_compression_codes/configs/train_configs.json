@@ -1,5 +1,5 @@
 {
-    "train":{
+    "train": {
         "traindata": "",
         "testdata": "",
         "batch_size": 10,
@@ -15,9 +15,8 @@
         "efficient_net": "True",
         "iterate": 5,
         "phase": 1
-
     },
-    "inference":{
+    "inference": {
         "model_file": "args.model_file",
         "inferdata": "",
         "bit_depth": 8,
@@ -33,5 +32,4 @@
         "max_samples": 10,
         "phase": 1
     }
-
 }
