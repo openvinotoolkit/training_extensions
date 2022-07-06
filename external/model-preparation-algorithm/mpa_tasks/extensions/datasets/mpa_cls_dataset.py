@@ -242,8 +242,31 @@ class MPAMultilabelClsDataset(MPAClsDataset):
 @DATASETS.register_module()
 class MPAHierarchicalClsDataset(MPAMultilabelClsDataset):
     def __init__(self, **kwargs):
-        self.hierarchical_class_info = kwargs.pop('hierarchical_class_info', None)
+        self.hierarchical_info = kwargs.pop('hierarchical_info', None)
         super().__init__(**kwargs)
+
+    def load_annotations(self):
+        for dataset_item in self.ote_dataset:
+            item_labels = dataset_item.get_roi_labels(self.labels)
+            ignored_labels = dataset_item.ignored_labels
+            num_cls_heads = self.hierarchical_info['num_multiclass_heads']
+
+            class_indices = [0]*(self.hierarchical_info['num_multiclass_heads'] + \
+                                    self.hierarchical_info['num_multilabel_classes'])
+            for j in range(num_cls_heads):
+                class_indices[j] = -1
+            for ote_lbl in item_labels:
+                group_idx, in_group_idx = self.hierarchical_info['class_to_group_idx'][ote_lbl.name]
+                if group_idx < num_cls_heads:
+                    class_indices[group_idx] = in_group_idx
+                else:
+                    if not ote_lbl in ignored_labels:
+                        class_indices[num_cls_heads + in_group_idx] = 1
+                    else:
+                        class_indices[num_cls_heads + in_group_idx] = -1
+            label = class_indices
+            self.gt_labels.append(label)
+        self.gt_labels = np.array(self.gt_labels)
 
     def evaluate(self):
         raise NotImplementedError

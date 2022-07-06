@@ -36,7 +36,7 @@ from ote_sdk.serialization.label_mapper import label_schema_to_bytes
 from ote_sdk.entities.scored_label import ScoredLabel
 from torchreid_tasks.utils import TrainingProgressCallback
 from torchreid_tasks.utils import OTELoggerHook
-from torchreid_tasks.utils import get_multihead_class_info as get_hierarchical_class_info
+from torchreid_tasks.utils import get_multihead_class_info as get_hierarchical_info
 from mpa_tasks.apis import BaseTask, TrainType
 from mpa_tasks.apis.classification import ClassificationConfig
 from mpa.utils.config_utils import MPAConfig
@@ -58,14 +58,22 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
             self._labels = task_environment.get_labels(include_empty=True)
         else:
             self._labels = task_environment.get_labels(include_empty=False)
+        
+        self._multiclass = False
+        self._multilabel = False
+        self._hierarchical = False
+
         self._multilabel = len(task_environment.label_schema.get_groups(False)) > 1 and \
                            len(task_environment.label_schema.get_groups(False)) == \
                            len(task_environment.get_labels(include_empty=False))  # noqa:E127
 
-        self._hierarchical = False
+        self._hierarchical_info = None
         if not self._multilabel and len(task_environment.label_schema.get_groups(False)) > 1:
             self._hierarchical = True
-            self._hierarchical_class_info = get_hierarchical_class_info(task_environment.label_schema)
+            self._hierarchical_info = get_hierarchical_info(task_environment.label_schema)
+        
+        if not self._multilabel and not self._hierarchical:
+            self._multiclass = True
 
     def infer(self,
               dataset: DatasetEntity,
@@ -179,10 +187,15 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         base_dir = os.path.abspath(os.path.dirname(self.template_file_path))
         if self._multilabel:
             cfg_path = os.path.join(base_dir, 'model_multilabel.py')
-        else:
+        elif self._hierarchical:
+            cfg_path = os.path.join(base_dir, 'model_hierarchical.py')
+        elif self._multiclass:
             cfg_path = os.path.join(base_dir, 'model.py')
         cfg = MPAConfig.fromfile(cfg_path)
         cfg.model.multilabel = self._multilabel
+        cfg.model.hierarchical = self._hierarchical # 필요한가?
+        cfg.model.multiclass = self._multiclass
+        cfg.model.head.hierarchical_info = self._hierarchical_info # 이거 위치 고민..
         return cfg
 
     def _init_test_data_cfg(self, dataset: DatasetEntity):
@@ -225,7 +238,7 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
                 cfg.type = 'MPAMultilabelClsDataset'
             elif self._hierarchical:
                 cfg.type = 'MPAHierarchicalClsDataset'
-                cfg.hierarchical_class_info = self._hierarchical_class_info
+                cfg.hierarchical_info = self._hierarchical_info
             else:
                 cfg.type = 'MPAClsDataset'
             cfg.domain = domain
