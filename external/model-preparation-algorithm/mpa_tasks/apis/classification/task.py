@@ -70,6 +70,7 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         if inference_parameters is not None:
             update_progress_callback = inference_parameters.update_progress
         dataset_size = len(dataset)
+        # TODO[EUGENE]: PROCESS FEATURE MAP AND FEATURE VECTOR
         for i, (dataset_item, prediction_item) in enumerate(zip(dataset, predictions)):
             label_idx = prediction_item.argmax()
             probability = prediction_item[label_idx]

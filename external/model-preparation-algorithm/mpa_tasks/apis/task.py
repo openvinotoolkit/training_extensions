@@ -71,7 +71,7 @@ class BaseTask:
         self.reserved_cancel = False
         self.on_hook_initialized = self.OnHookInitialized(self)
 
-    def _run_task(self, stage_module, mode=None, dataset=None, parameters=None, **kwargs):
+    def _run_task(self, stage_module, mode=None, dataset=None, **kwargs):
         self._initialize(dataset)
         # update model config -> model label schema
         data_classes = [label.name for label in self._labels]
