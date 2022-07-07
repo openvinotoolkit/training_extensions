@@ -75,6 +75,7 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         if not self._multilabel and not self._hierarchical:
             self._multiclass = True
 
+    # TODO: hierarchical 잘돌아가는지 확인
     def infer(self,
               dataset: DatasetEntity,
               inference_parameters: Optional[InferenceParameters] = None
@@ -91,6 +92,7 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         update_progress_callback = default_progress_callback
         if inference_parameters is not None:
             update_progress_callback = inference_parameters.update_progress
+        import numpy as np
 
         dataset_size = len(dataset)
         for i, (dataset_item, prediction_item) in enumerate(zip(dataset, predictions)):
@@ -101,6 +103,24 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
                     if pred_item > pos_thr:
                         cls_label = ScoredLabel(self.labels[cls_idx], probability=float(pred_item))
                         label.append(cls_label)
+            elif self._hierarchical:
+                for i in range(self._hierarchical_info['num_multiclass_heads']):
+                    logits_begin, logits_end = self._hierarchical_info['head_idx_to_logits_range'][i]
+                    head_logits = prediction_item[logits_begin : logits_end]
+                    j = np.argmax(head_logits)
+                    label_str = self._hierarchical_info['all_groups'][i][j]
+                    ote_label = next(x for x in self._labels if x.name == label_str)
+                    label.append(ScoredLabel(label=ote_label, probability=float(head_logits[j])))
+
+                if self._hierarchical_info['num_multilabel_classes']:
+                    logits_begin, logits_end = self._hierarchical_info['num_single_label_classes'], -1
+                    head_logits = prediction_item[logits_begin : logits_end]
+
+                    for i in range(head_logits.shape[0]):
+                        if head_logits[i] > pos_thr:
+                            label_str = self._hierarchical_info['all_groups'][self._hierarchical_info['num_multiclass_heads'] + i][0]
+                            ote_label = next(x for x in self._labels if x.name == label_str)
+                            label.append(ScoredLabel(label=ote_label, probability=float(head_logits[i])))
             else:
                 label_idx = prediction_item.argmax()
                 cls_label = ScoredLabel(self._labels[label_idx], probability=float(prediction_item[label_idx]))
@@ -252,6 +272,8 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
     def _patch_evaluation(self, config: MPAConfig):
         cfg = config.evaluation
         if self._multilabel:
+            cfg.metric = ['accuracy-mlc', 'mAP', 'CP', 'OP', 'CR', 'OR', 'CF1', 'OF1']
+        elif self._hierarchical:
             cfg.metric = ['accuracy-mlc', 'mAP', 'CP', 'OP', 'CR', 'OR', 'CF1', 'OF1']
         else:
             cfg.metric = ['accuracy', 'class_accuracy']

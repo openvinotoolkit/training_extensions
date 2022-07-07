@@ -86,7 +86,8 @@ class MPAClsDataset(BaseDataset):
                  results,
                  metric='accuracy',
                  metric_options=None,
-                 logger=None):
+                 logger=None,
+                 gt_labels=None):
         """Evaluate the dataset with new metric 'class_accuracy'
 
         Args:
@@ -115,6 +116,10 @@ class MPAClsDataset(BaseDataset):
             metrics.remove('class_accuracy')
             self.class_acc = True
 
+        if gt_labels is not None: #이 함수 밖의 super를 어떻게 수정하지?
+            def get_gt_labels(self):
+                return gt_labels
+            self.get_gt_labels = get_gt_labels
         eval_results = super().evaluate(results, metrics, metric_options, logger)
 
         # Add Evaluation Accuracy score per Class - it can be used only for multi-class dataset.
@@ -157,7 +162,8 @@ class MPAMultilabelClsDataset(MPAClsDataset):
                  metric='mAP',
                  metric_options=None,
                  indices=None,
-                 logger=None):
+                 logger=None,
+                 gt_labels=None):
         """Evaluate the dataset.
         Args:
             results (list): Testing results of the dataset.
@@ -181,7 +187,7 @@ class MPAMultilabelClsDataset(MPAClsDataset):
         allowed_metrics = ['accuracy-mlc', 'mAP', 'CP', 'CR', 'CF1', 'OP', 'OR', 'OF1']
         eval_results = {}
         results = np.vstack(results)
-        gt_labels = self.get_gt_labels()
+        gt_labels = self.get_gt_labels() if gt_labels is None else gt_labels
         if indices is not None:
             gt_labels = gt_labels[indices]
         num_imgs = len(results)
@@ -264,9 +270,62 @@ class MPAHierarchicalClsDataset(MPAMultilabelClsDataset):
                         class_indices[num_cls_heads + in_group_idx] = 1
                     else:
                         class_indices[num_cls_heads + in_group_idx] = -1
-            label = class_indices
-            self.gt_labels.append(label)
+            self.gt_labels.append(class_indices)
         self.gt_labels = np.array(self.gt_labels)
 
-    def evaluate(self):
-        raise NotImplementedError
+    def evaluate(self,
+                 results,
+                 metric='mAP',
+                 metric_options=None,
+                 indices=None,
+                 logger=None):
+        """Evaluate the dataset.
+        Args:
+            results (list): Testing results of the dataset.
+            metric (str | list[str]): Metrics to be evaluated.
+                Default value is 'mAP'. Options are 'mAP', 'CP', 'CR', 'CF1',
+                'OP', 'OR' and 'OF1'.
+            metric_options (dict, optional): Options for calculating metrics.
+                Allowed keys are 'k' and 'thr'. Defaults to None
+            logger (logging.Logger | str, optional): Logger used for printing
+                related information during evaluation. Defaults to None.
+        Returns:
+            dict: evaluation results
+        """
+        if metric_options is None or metric_options == {}:
+            metric_options = {'thr': 0.5}
+
+        if isinstance(metric, str):
+            metrics = [metric]
+        else:
+            metrics = metric
+        allowed_metrics = ['accuracy-mlc', 'mAP', 'CP', 'CR', 'CF1', 'OP', 'OR', 'OF1']
+        eval_results = {}
+        results = np.vstack(results)
+        gt_labels = self.get_gt_labels()
+        if indices is not None:
+            gt_labels = gt_labels[indices]
+        num_imgs = len(results)
+        assert len(gt_labels) == num_imgs, 'dataset testing results should '\
+            'be of the same length as gt_labels.'
+
+        invalid_metrics = set(metrics) - set(allowed_metrics)
+        if len(invalid_metrics) != 0:
+            raise ValueError(f'metric {invalid_metrics} is not supported.')
+
+        import torch
+        import torch.nn as nn
+        import torch.nn.functional as F
+
+        multiclass_logits = results[:,self.hierarchical_info['head_idx_to_logits_range'][0][0]:
+                                      self.hierarchical_info['head_idx_to_logits_range'][0][1]]
+        multilabel_logits = results[:,self.hierarchical_info['num_single_label_classes']:]
+
+        multiclass_gt = gt_labels[:, 0]
+        multilabel_gt = gt_labels[:,self.hierarchical_info['num_multiclass_heads']:]
+        x = MPAMultilabelClsDataset.evaluate(self, multilabel_logits, metric, gt_labels=multilabel_gt)
+        # y = MPAClsDataset.evaluate(self, multiclass_logits, ['accuracy'], gt_labels=multilabel_gt)
+        return x
+        # multiclass_pred = F.softmax(multiclass_logits) if multiclass_logits is not None else None
+        # multilabel_pred = F.sigmoid(multilabel_logits) if multilabel_logits is not None else None
+        # pred = torch.cat([multiclass_pred, multilabel_pred], axis=1)
