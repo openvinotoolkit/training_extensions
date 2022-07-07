@@ -83,12 +83,13 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         results = self._run_task(stage_module, mode='train', dataset=dataset)
         logger.debug(f'result of run_task {stage_module} module = {results}')
         predictions = results['outputs']
-        # TODO: feature maps should be came from the inference results
-        featuremaps = [None for _ in range(len(predictions))]
-        for i in range(len(dataset)):
-            result, featuremap, dataset_item = predictions[i], featuremaps[i], dataset[i]
-            self._add_predictions_to_dataset_item(result, featuremap, dataset_item,
-                                                  save_mask_visualization=not is_evaluation)
+        segmentations = predictions['segmentations']
+        feature_vectors = predictions['feature_vectors']
+        assert len(segmentations) == len(feature_vectors), \
+                'Number of elements should be the same, however, number of outputs are ' \
+                f"{len(segmentations)} and {len(feature_vectors)}"
+        prediction_results = zip(segmentations, feature_vectors)
+        self._add_predictions_to_dataset(prediction_results, dataset, save_mask_visualization=not is_evaluation)
         return dataset
 
     def evaluate(self,
@@ -201,45 +202,48 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         )
         return data_cfg
 
-    def _add_predictions_to_dataset_item(self, prediction, feature_vector, dataset_item, save_mask_visualization):
-        soft_prediction = np.transpose(prediction, axes=(1, 2, 0))
-        hard_prediction = create_hard_prediction_from_soft_prediction(
-            soft_prediction=soft_prediction,
-            soft_threshold=self._hyperparams.postprocessing.soft_threshold,
-            blur_strength=self._hyperparams.postprocessing.blur_strength,
-        )
-        annotations = create_annotation_from_segmentation_map(
-            hard_prediction=hard_prediction,
-            soft_prediction=soft_prediction,
-            label_map=self._label_dictionary,
-        )
-        dataset_item.append_annotations(annotations=annotations)
+    def _add_predictions_to_dataset(self, prediction_results, dataset, save_mask_visualization):
+        """ Loop over dataset again to assign predictions. Convert from MMDetection format to OTE format. """
+        
+        for dataset_item, (prediction, feature_vector) in zip(dataset, prediction_results):
+            soft_prediction = np.transpose(prediction[0], axes=(1, 2, 0))
+            hard_prediction = create_hard_prediction_from_soft_prediction(
+                soft_prediction=soft_prediction,
+                soft_threshold=self._hyperparams.postprocessing.soft_threshold,
+                blur_strength=self._hyperparams.postprocessing.blur_strength,
+            )
+            annotations = create_annotation_from_segmentation_map(
+                hard_prediction=hard_prediction,
+                soft_prediction=soft_prediction,
+                label_map=self._label_dictionary,
+            )
+            dataset_item.append_annotations(annotations=annotations)
 
-        if feature_vector is not None:
-            active_score = TensorEntity(name="representation_vector", numpy=feature_vector)
-            dataset_item.append_metadata_item(active_score, model=self._task_environment.model)
+            if feature_vector is not None:
+                active_score = TensorEntity(name="representation_vector", numpy=feature_vector)
+                dataset_item.append_metadata_item(active_score, model=self._task_environment.model)
 
-        if save_mask_visualization:
-            for label_index, label in self._label_dictionary.items():
-                if label_index == 0:
-                    continue
+            if save_mask_visualization:
+                for label_index, label in self._label_dictionary.items():
+                    if label_index == 0:
+                        continue
 
-                if len(soft_prediction.shape) == 3:
-                    current_label_soft_prediction = soft_prediction[:, :, label_index]
-                else:
-                    current_label_soft_prediction = soft_prediction
-                min_soft_score = np.min(current_label_soft_prediction)
-                max_soft_score = np.max(current_label_soft_prediction)
-                factor = 255.0 / (max_soft_score - min_soft_score + 1e-12)
-                result_media_numpy = (factor * (current_label_soft_prediction - min_soft_score)).astype(np.uint8)
+                    if len(soft_prediction.shape) == 3:
+                        current_label_soft_prediction = soft_prediction[:, :, label_index]
+                    else:
+                        current_label_soft_prediction = soft_prediction
+                    min_soft_score = np.min(current_label_soft_prediction)
+                    max_soft_score = np.max(current_label_soft_prediction)
+                    factor = 255.0 / (max_soft_score - min_soft_score + 1e-12)
+                    result_media_numpy = (factor * (current_label_soft_prediction - min_soft_score)).astype(np.uint8)
 
-                result_media = ResultMediaEntity(name=f'{label.name}',
-                                                 type='Soft Prediction',
-                                                 label=label,
-                                                 annotation_scene=dataset_item.annotation_scene,
-                                                 roi=dataset_item.roi,
-                                                 numpy=result_media_numpy)
-                dataset_item.append_metadata_item(result_media, model=self._task_environment.model)
+                    result_media = ResultMediaEntity(name=f'{label.name}',
+                                                    type='Soft Prediction',
+                                                    label=label,
+                                                    annotation_scene=dataset_item.annotation_scene,
+                                                    roi=dataset_item.roi,
+                                                    numpy=result_media_numpy)
+                    dataset_item.append_metadata_item(result_media, model=self._task_environment.model)
 
     @staticmethod
     def _patch_datasets(config: MPAConfig, domain=Domain.SEGMENTATION):
