@@ -28,7 +28,7 @@ hyper_parameters:
       learning_rate:
         default_value: 0.001
       learning_rate_warmup_iters:
-        default_value: 30
+        default_value: 10
       num_iters:
         default_value: 300
     algo_backend:

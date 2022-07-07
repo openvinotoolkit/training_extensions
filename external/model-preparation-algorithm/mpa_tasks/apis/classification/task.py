@@ -33,10 +33,10 @@ from ote_sdk.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from ote_sdk.usecases.tasks.interfaces.unload_interface import IUnload
 from ote_sdk.entities.model import (ModelFormat, ModelOptimizationType)
 from ote_sdk.serialization.label_mapper import label_schema_to_bytes
-
 from ote_sdk.entities.scored_label import ScoredLabel
 from torchreid_tasks.utils import TrainingProgressCallback
 from torchreid_tasks.utils import OTELoggerHook
+from torchreid_tasks.train_task import OTEClassificationTrainingTask
 from mpa_tasks.apis import BaseTask, TrainType
 from mpa_tasks.apis.classification import ClassificationConfig
 from mpa.utils.config_utils import MPAConfig
@@ -53,11 +53,43 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         self._should_stop = False
         super().__init__(TASK_CONFIG, task_environment)
 
+        self._task_environment = task_environment
+        if len(task_environment.get_labels(False)) == 1:
+            self._labels = task_environment.get_labels(include_empty=True)
+        else:
+            self._labels = task_environment.get_labels(include_empty=False)
+        self._multilabel = len(task_environment.label_schema.get_groups(False)) > 1 and \
+                           len(task_environment.label_schema.get_groups(False)) == \
+                           len(task_environment.get_labels(include_empty=False))  # noqa:E127
+
+        self._hierarchical = False
+        if not self._multilabel and len(task_environment.label_schema.get_groups(False)) > 1:
+            self._hierarchical = True
+            torchreid_env = self.convert_to_torchreid_env(task_environment)
+            self.torchreid_train_task = OTEClassificationTrainingTask(torchreid_env)
+
+    @staticmethod
+    def convert_to_torchreid_env(task_env):
+        model_template = task_env.model_template
+        rename_dict = {'model-preparation-algorithm': 'deep-object-reid',
+                       'classification' : 'ote_custom_classification',
+                       '_cls_incr' : ''
+                       }
+
+        for key, val in rename_dict.items():
+            model_template.model_template_path = model_template.model_template_path.replace(key, val)
+        model_template.entrypoints.base = 'torchreid_tasks.train_task.OTEClassificationTrainingTask'
+        model_template.framework = 'OTEClassification v1.2.3'
+        return task_env
+
     def infer(self,
               dataset: DatasetEntity,
               inference_parameters: Optional[InferenceParameters] = None
               ) -> DatasetEntity:
         logger.info('called infer()')
+        if self._hierarchical:
+            self = self.torchreid_train_task
+            return self.infer(dataset, inference_parameters)
         stage_module = 'ClsInferrer'
         self._data_cfg = self._init_test_data_cfg(dataset)
         dataset = dataset.with_empty_annotations()
@@ -69,11 +101,21 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         update_progress_callback = default_progress_callback
         if inference_parameters is not None:
             update_progress_callback = inference_parameters.update_progress
+
         dataset_size = len(dataset)
         for i, (dataset_item, prediction_item) in enumerate(zip(dataset, predictions)):
-            label_idx = prediction_item.argmax()
-            probability = prediction_item[label_idx]
-            dataset_item.append_labels([ScoredLabel(self._labels[label_idx], probability=probability)])
+            label = []
+            if self._multilabel:
+                pos_thr = 0.5
+                for cls_idx, pred_item in enumerate(prediction_item):
+                    if pred_item > pos_thr:
+                        cls_label = ScoredLabel(self.labels[cls_idx], probability=float(pred_item))
+                        label.append(cls_label)
+            else:
+                label_idx = prediction_item.argmax()
+                cls_label = ScoredLabel(self._labels[label_idx], probability=float(prediction_item[label_idx]))
+                label.append(cls_label)
+            dataset_item.append_labels(label)
             update_progress_callback(int(i / dataset_size * 100))
         return dataset
 
@@ -81,7 +123,7 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
                  output_result_set: ResultSetEntity,
                  evaluation_metric: Optional[str] = None):
         logger.info('called evaluate()')
-        metric = MetricsHelper.compute_accuracy(output_result_set)  # But this line shows proper accuracy
+        metric = MetricsHelper.compute_accuracy(output_result_set)
         logger.info(f"Accuracy after evaluation: {metric.accuracy.value}")
         output_result_set.performance = metric.get_performance()
         logger.info('Evaluation completed')
@@ -94,6 +136,10 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
                export_type: ExportType,
                output_model: ModelEntity):
         logger.info('Exporting the model')
+        if self._hierarchical:
+            self = self.torchreid_train_task
+            self.export(export_type, output_model)
+            return
         if export_type != ExportType.OPENVINO:
             raise RuntimeError(f'not supported export type {export_type}')
         output_model.model_format = ModelFormat.OPENVINO
@@ -136,9 +182,9 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         train_type = self._hyperparams.algo_backend.train_type
         logger.info(f'train type = {train_type}')
 
-        recipe = os.path.join(recipe_root, 'semisl.yaml')
+        recipe = os.path.join(recipe_root, 'class_incr.yaml')
         if train_type == TrainType.SemiSupervised:
-            recipe = os.path.join(recipe_root, 'semisl.yaml')
+            raise NotImplementedError(f'train type {train_type} is not implemented yet.')
         elif train_type == TrainType.SelfSupervised:
             raise NotImplementedError(f'train type {train_type} is not implemented yet.')
         elif train_type == TrainType.Incremental:
@@ -148,11 +194,18 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
 
         self._recipe_cfg = MPAConfig.fromfile(recipe)
         self._patch_datasets(self._recipe_cfg)  # for OTE compatibility
+        self._patch_evaluation(self._recipe_cfg)  # for OTE compatibility
         logger.info(f'initialized recipe = {recipe}')
 
     def _init_model_cfg(self):
         base_dir = os.path.abspath(os.path.dirname(self.template_file_path))
-        return MPAConfig.fromfile(os.path.join(base_dir, 'model.py'))
+        if self._multilabel:
+            cfg_path = os.path.join(base_dir, 'model_multilabel.py')
+        else:
+            cfg_path = os.path.join(base_dir, 'model.py')
+        cfg = MPAConfig.fromfile(cfg_path)
+        cfg.model.multilabel = self._multilabel
+        return cfg
 
     def _init_test_data_cfg(self, dataset: DatasetEntity):
         data_cfg = ConfigDict(
@@ -169,8 +222,7 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         )
         return data_cfg
 
-    @staticmethod
-    def _patch_datasets(config: MPAConfig, domain=Domain.CLASSIFICATION):
+    def _patch_datasets(self, config: MPAConfig, domain=Domain.CLASSIFICATION):
         def patch_color_conversion(pipeline):
             # Default data format for OTE is RGB, while mmdet uses BGR, so negate the color conversion flag.
             for pipeline_step in pipeline:
@@ -190,11 +242,25 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
                 continue
             if cfg.type == 'RepeatDataset':
                 cfg = cfg.dataset
-            cfg.type = 'MPAClsDataset'
+
+            if self._multilabel:
+                cfg.type = 'MPAMultilabelClsDataset'
+            else:
+                cfg.type = 'MPAClsDataset'
             cfg.domain = domain
             cfg.ote_dataset = None
             cfg.labels = None
+            for pipeline_step in cfg.pipeline:
+                if subset == 'train' and pipeline_step.type == 'Collect':
+                    pipeline_step = BaseTask._get_meta_keys(pipeline_step)
             patch_color_conversion(cfg.pipeline)
+
+    def _patch_evaluation(self, config: MPAConfig):
+        cfg = config.evaluation
+        if self._multilabel:
+            cfg.metric = ['accuracy-mlc', 'mAP', 'CP', 'OP', 'CR', 'OR', 'CF1', 'OF1']
+        else:
+            cfg.metric = ['accuracy', 'class_accuracy']
 
 
 class ClassificationTrainTask(ClassificationInferenceTask):
@@ -231,6 +297,10 @@ class ClassificationTrainTask(ClassificationInferenceTask):
               output_model: ModelEntity,
               train_parameters: Optional[TrainParameters] = None):
         logger.info('train()')
+        if self._hierarchical:
+            self = self.torchreid_train_task
+            self.train(dataset, output_model, train_parameters)
+            return
         # Check for stop signal between pre-eval and training.
         # If training is cancelled at this point,
         if self._should_stop:
@@ -300,24 +370,28 @@ class ClassificationTrainTask(ClassificationInferenceTask):
         return data_cfg
 
     def _generate_training_metrics_group(self, learning_curves) -> Optional[List[MetricsGroup]]:
-            """
-            Parses the classification logs to get metrics from the latest training run
-            :return output List[MetricsGroup]
-            """
-            output: List[MetricsGroup] = []
+        """
+        Parses the classification logs to get metrics from the latest training run
+        :return output List[MetricsGroup]
+        """
+        output: List[MetricsGroup] = []
+
+        if self._multilabel:
+            metric_key = 'val/accuracy-mlc'
+        else:
             metric_key = 'val/accuracy_top-1'
 
-            # Learning curves
-            best_acc = -1
-            if learning_curves is None:
-                return output
+        # Learning curves
+        best_acc = -1
+        if learning_curves is None:
+            return output
 
-            for key, curve in learning_curves.items():
-                metric_curve = CurveMetric(xs=curve.x,
-                                            ys=curve.y, name=key)
-                if key == metric_key:
-                    best_acc = max(curve.y)
-                visualization_info = LineChartInfo(name=key, x_axis_label="Timestamp", y_axis_label=key)
-                output.append(LineMetricsGroup(metrics=[metric_curve], visualization_info=visualization_info))
+        for key, curve in learning_curves.items():
+            metric_curve = CurveMetric(xs=curve.x,
+                                       ys=curve.y, name=key)
+            if key == metric_key:
+                best_acc = max(curve.y)
+            visualization_info = LineChartInfo(name=key, x_axis_label="Timestamp", y_axis_label=key)
+            output.append(LineMetricsGroup(metrics=[metric_curve], visualization_info=visualization_info))
 
-            return output, best_acc
+        return output, best_acc

@@ -1,0 +1,1 @@
+opencv-python==4.5.5.64  # remedy for fixed opencv-python-headless version in e2e-test-framework:w

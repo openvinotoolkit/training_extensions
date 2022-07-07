@@ -11,7 +11,7 @@ lr_finder:
   n_trials: 15
 
 model:
-  name: 'mobilenetv3_large_21k'
+  name: 'mobilenetv3_large'
   type: 'multilabel'
   pretrained: True
   save_all_chkpts: False
@@ -28,7 +28,7 @@ data:
   width: 224
   norm_mean: [0, 0, 0]
   norm_std: [1, 1, 1]
-  save_dir: 'output/mulitilabel/mobilenetv3_large_21k'
+  save_dir: 'output/mulitilabel/mobilenetv3_large'
   workers: 6
   transforms:
     random_flip:

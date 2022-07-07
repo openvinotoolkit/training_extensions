@@ -163,9 +163,12 @@ def main():
         )
 
     if args.enable_hpo:
-        run_hpo(args, environment, dataset, template.task_type)
-
-    task = task_class(task_environment=environment)
+        task = run_hpo(args, environment, dataset, template.task_type)
+        if task is None:
+            print("cannot run HPO for this task. will train a model without HPO.")
+            task = task_class(task_environment=environment)
+    else:
+        task = task_class(task_environment=environment)
 
     output_model = ModelEntity(dataset, environment.get_model_configuration())
 

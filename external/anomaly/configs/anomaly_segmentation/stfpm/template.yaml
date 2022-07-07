@@ -19,6 +19,13 @@ entrypoints:
 # Hyper Parameters
 hyper_parameters:
   base_path: ./configuration.yaml
+  parameter_overrides:
+    dataset:
+      train_batch_size:
+        auto_hpo_state: POSSIBLE
+    model:
+      lr:
+        auto_hpo_state: POSSIBLE
 
 # Training resources.
 max_nodes: 1

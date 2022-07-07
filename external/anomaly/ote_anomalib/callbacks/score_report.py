@@ -37,7 +37,12 @@ class ScoreReportingCallback(Callback):
         """
         if self.score_reporting_callback is not None:
             score = None
-            metric = getattr(self.score_reporting_callback, 'metric', None)
+            metric = getattr(self.score_reporting_callback, "metric", None)
+            print(f"[DEBUG-HPO] logged_metrics = {trainer.logged_metrics}")
             if metric in trainer.logged_metrics:
                 score = float(trainer.logged_metrics[metric])
+                if 1.0 > score:
+                    score = score + int(trainer.global_step)
+                else:
+                    score = -(score + int(trainer.global_step))
             self.score_reporting_callback(progress=0, score=score)
