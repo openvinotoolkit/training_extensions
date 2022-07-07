@@ -70,7 +70,7 @@ args = {
 root = '/tmp/ote_cli_multiclass/'
 ote_dir = os.getcwd()
 
-templates = Registry('external/model-preparation-algorithm', experimental=True).filter(task_type='CLASSIFICATION').templates
+templates = Registry('external/model-preparation-algorithm').filter(task_type='CLASSIFICATION').templates
 templates_ids = [template.model_template_id for template in templates]
 
 
