@@ -164,7 +164,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         logger.info('called _init_recipe()')
 
         recipe_root = os.path.join(MPAConstants.RECIPES_PATH, 'stages/detection')
-        if self._task_type.domain == Domain.INSTANCE_SEGMENTATION:
+        if self._task_type.domain in {Domain.INSTANCE_SEGMENTATION, Domain.ROTATED_DETECTION}:
             recipe_root = os.path.join(MPAConstants.RECIPES_PATH, 'stages/instance-segmentation')
 
         train_type = self._hyperparams.algo_backend.train_type
