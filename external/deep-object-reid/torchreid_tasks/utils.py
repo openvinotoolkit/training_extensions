@@ -495,6 +495,7 @@ def get_actmap(features: Union[np.ndarray, Iterable, int, float],
     am = 255 * (am - np.min(am)) / (np.max(am) - np.min(am) + 1e-12)
     am = np.uint8(np.floor(am))
     am = cv.applyColorMap(am, cv.COLORMAP_JET)
+    am = cv.cvtColor(am, cv.COLOR_BGR2RGB)
     return am
 
 
