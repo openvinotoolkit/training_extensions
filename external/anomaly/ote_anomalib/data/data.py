@@ -193,7 +193,7 @@ class OTEAnomalyDataModule(LightningDataModule):
         return DataLoader(
             dataset,
             shuffle=False,
-            batch_size=self.config.learning_parameters.train_batch_size,
+            batch_size=self.config.dataset.train_batch_size,
             num_workers=self.config.dataset.num_workers,
         )
 
