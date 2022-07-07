@@ -2,6 +2,7 @@ import os
 import numpy as np
 import unittest
 from utils.dataloader import CustomDatasetPhase1, CustomDatasetPhase2
+from utils.train_utils import validate_model_phase1, validate_model_phase2
 from utils import get_config
 from torch.utils.data import DataLoader
 
@@ -23,24 +24,40 @@ def create_inference_test_for_phase1():
 
         def test_pytorch_inference(self):
             inference = CustomDatasetPhase1(
-                dataloader_test=self.tst_loader, checkpoint=self.model_path, device=self.device)
+                dataloader_test=self.tst_loader, checkpoint=self.model_path,
+                device=self.device)
             model = inference.load_model(run_type='pytorch')
-            mean_dice = inference.inference(model, runtype='pytorch')
-            self.assertGreaterEqual(mean_dice, 0)
+            # mean_dice = inference.inference(model, runtype='pytorch')
+            # # self.assertGreaterEqual(mean_dice, 0)
+            # ssim = inference.inference(model, runtype='pytorch')
+            # psnr = inference.inference(model, runtype='pytorch')
+            _, ssim, psnr = validate_model_phase1(config=get_config(phase=1),
+                                                  test_dataloader=self.tst_loader, model=model)
+            self.assertGreater(ssim, 0.8)
+            self.assertGreater(psnr, 30)
 
         def test_onnx_inference(self):
             inference = CustomDatasetPhase1(
-                dataloader_test=self.tst_loader,
-                checkpoint=self.onnx_model_path,
+                dataloader_test=self.tst_loader, checkpoint=self.onnx_model_path,
                 device=self.device)
             model = inference.load_model(run_type='onnx')
-            mean_dice = inference.inference(model, runtype='onnx')
-            self.assertGreaterEqual(mean_dice, -1)
+            # ssim = inference.inference(model, runtype='onnx')
+            # psnr = inference.inference(model, runtype='onnx')
+            _, ssim, psnr = validate_model_phase1(config=get_config(phase=1),
+                                                  test_dataloader=self.tst_loader, model=model)
+            self.assertGreater(ssim, 0.8)
+            self.assertGreater(psnr, 30)
 
         def test_ir_inference(self):
             inference = CustomDatasetPhase1(
-                dataloader_test=self.tst_loader, checkpoint=self.onnx_model_path, device='cpu')
-            model = inference.load_model(run_type='cpu')
-            mean_dice = inference.inference(model, runtype='cpu')
-            self.assertGreaterEqual(mean_dice, -1)
+                dataloader_test=self.tst_loader, checkpoint=self.onnx_model_path,
+                device='cpu')
+            model = inference.load_model(run_type='ir')
+            # ssim = inference.inference(model, runtype='ir')
+            # psnr = inference.inference(model, runtype='ir')
+            _, ssim, psnr = validate_model_phase1(config=get_config(phase=1),
+                                                  test_dataloader=self.tst_loader, model=model)
+            self.assertGreater(ssim, 0.8)
+            self.assertGreater(psnr, 30)
+
     return InferenceTest
