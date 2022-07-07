@@ -97,8 +97,8 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         dataset_size = len(dataset)
         for i, (dataset_item, prediction_item) in enumerate(zip(dataset, predictions)):
             label = []
+            pos_thr = 0.5
             if self._multilabel:
-                pos_thr = 0.5
                 for cls_idx, pred_item in enumerate(prediction_item):
                     if pred_item > pos_thr:
                         cls_label = ScoredLabel(self.labels[cls_idx], probability=float(pred_item))
@@ -113,9 +113,8 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
                     label.append(ScoredLabel(label=ote_label, probability=float(head_logits[j])))
 
                 if self._hierarchical_info['num_multilabel_classes']:
-                    logits_begin, logits_end = self._hierarchical_info['num_single_label_classes'], -1
-                    head_logits = prediction_item[logits_begin : logits_end]
-
+                    logits_begin = self._hierarchical_info['num_single_label_classes']  # 이거 애매한거 해결하기..
+                    head_logits = prediction_item[logits_begin:]
                     for i in range(head_logits.shape[0]):
                         if head_logits[i] > pos_thr:
                             label_str = self._hierarchical_info['all_groups'][self._hierarchical_info['num_multiclass_heads'] + i][0]
@@ -127,6 +126,18 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
                 label.append(cls_label)
             dataset_item.append_labels(label)
             update_progress_callback(int(i / dataset_size * 100))
+        # for idx, item in enumerate(dataset):
+        #     print('item:', idx, sorted([i.name for i in item.get_roi_labels()]))
+        #     temp = []
+        #     if predictions[idx][:2].argmax() == 0:
+        #         temp.append('bug')
+        #     else:
+        #         temp.append('tree')
+            
+        #     if predictions[idx][2] > 0.5:
+        #         temp.append('car')
+        #     print('pred:', idx, sorted(temp))
+
         return dataset
 
     def evaluate(self,
@@ -134,6 +145,16 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
                  evaluation_metric: Optional[str] = None):
         logger.info('called evaluate()')
         metric = MetricsHelper.compute_accuracy(output_result_set)
+
+        gt_dataset = output_result_set.ground_truth_dataset
+        pred_dataset = output_result_set.prediction_dataset
+        # for idx, gt_item in enumerate(gt_dataset):
+
+        # for idx, (gt_item, pred_item) in enumerate(zip(gt_dataset, pred_dataset)):
+        #     print('true:', idx, [i.name for i in gt_item.get_roi_labels()])
+        #     print('pred:', idx, [i.name for i in pred_item.get_annotations()[0].get_labels()])
+        #     print('prob:', idx, [i.probability for i in pred_item.get_annotations()[0].get_labels()])
+        # breakpoint()
         logger.info(f"Accuracy after evaluation: {metric.accuracy.value}")
         output_result_set.performance = metric.get_performance()
         logger.info('Evaluation completed')
@@ -256,9 +277,11 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
 
             if self._multilabel:
                 cfg.type = 'MPAMultilabelClsDataset'
+                cfg.label_groups = self._task_environment.label_schema.get_groups(False)
             elif self._hierarchical:
                 cfg.type = 'MPAHierarchicalClsDataset'
                 cfg.hierarchical_info = self._hierarchical_info
+                cfg.label_groups = self._task_environment.label_schema.get_groups(False)
             else:
                 cfg.type = 'MPAClsDataset'
             cfg.domain = domain
@@ -274,7 +297,7 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         if self._multilabel:
             cfg.metric = ['accuracy-mlc', 'mAP', 'CP', 'OP', 'CR', 'OR', 'CF1', 'OF1']
         elif self._hierarchical:
-            cfg.metric = ['accuracy-mlc', 'mAP', 'CP', 'OP', 'CR', 'OR', 'CF1', 'OF1']
+            cfg.metric = ['MHAcc', 'acc', 'mAP']
         else:
             cfg.metric = ['accuracy', 'class_accuracy']
 

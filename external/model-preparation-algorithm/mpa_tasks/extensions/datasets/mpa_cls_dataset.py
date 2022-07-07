@@ -6,6 +6,7 @@ import numpy as np
 from sklearn.metrics import confusion_matrix as sklearn_confusion_matrix
 from mmcv.utils.registry import build_from_cfg
 from mmcls.core import average_performance, mAP
+from mmcls.models.losses import accuracy
 from mmcls.datasets.builder import DATASETS, PIPELINES
 from mmcls.datasets.pipelines import Compose
 from mmcls.datasets.base_dataset import BaseDataset
@@ -22,6 +23,7 @@ class MPAClsDataset(BaseDataset):
         self.ote_dataset = ote_dataset
         self.labels = labels
         self.label_idx = {label.id: i for i, label in enumerate(labels)}
+        self.label_groups = kwargs['label_groups']
         self.CLASSES = list(label.name for label in labels)
         self.gt_labels = []
         pipeline = kwargs['pipeline']
@@ -116,10 +118,6 @@ class MPAClsDataset(BaseDataset):
             metrics.remove('class_accuracy')
             self.class_acc = True
 
-        if gt_labels is not None: #이 함수 밖의 super를 어떻게 수정하지?
-            def get_gt_labels(self):
-                return gt_labels
-            self.get_gt_labels = get_gt_labels
         eval_results = super().evaluate(results, metrics, metric_options, logger)
 
         # Add Evaluation Accuracy score per Class - it can be used only for multi-class dataset.
@@ -222,6 +220,10 @@ class MPAMultilabelClsDataset(MPAClsDataset):
                 matrix_data = sklearn_confusion_matrix(y_true, y_pred, labels=list(range(len([0, 1]))))
                 confusion_matrices.append(matrix_data)
 
+            # for mat in confusion_matrices:
+            #     print(mat)
+            # # breakpoint()
+            
             correct_per_label_group = [
                 np.trace(mat) for mat in confusion_matrices
             ]
@@ -250,6 +252,7 @@ class MPAHierarchicalClsDataset(MPAMultilabelClsDataset):
     def __init__(self, **kwargs):
         self.hierarchical_info = kwargs.pop('hierarchical_info', None)
         super().__init__(**kwargs)
+        self.label_dict = {i:label for i, label in enumerate(self.labels)}
 
     def load_annotations(self):
         for dataset_item in self.ote_dataset:
@@ -257,21 +260,40 @@ class MPAHierarchicalClsDataset(MPAMultilabelClsDataset):
             ignored_labels = dataset_item.ignored_labels
             num_cls_heads = self.hierarchical_info['num_multiclass_heads']
 
-            class_indices = [0]*(self.hierarchical_info['num_multiclass_heads'] + \
-                                    self.hierarchical_info['num_multilabel_classes'])
+            labels = [0]*(self.hierarchical_info['num_multiclass_heads'] + \
+                                 self.hierarchical_info['num_multilabel_classes'])
             for j in range(num_cls_heads):
-                class_indices[j] = -1
+                labels[j] = -1
             for ote_lbl in item_labels:
                 group_idx, in_group_idx = self.hierarchical_info['class_to_group_idx'][ote_lbl.name]
                 if group_idx < num_cls_heads:
-                    class_indices[group_idx] = in_group_idx
+                    labels[group_idx] = in_group_idx
                 else:
                     if not ote_lbl in ignored_labels:
-                        class_indices[num_cls_heads + in_group_idx] = 1
+                        labels[num_cls_heads + in_group_idx] = 1
                     else:
-                        class_indices[num_cls_heads + in_group_idx] = -1
-            self.gt_labels.append(class_indices)
+                        labels[num_cls_heads + in_group_idx] = -1
+            self.gt_labels.append(labels)
         self.gt_labels = np.array(self.gt_labels)
+
+    @staticmethod
+    def mean_top_k_accuracy(scores, labels, k=1):
+        idx = np.argsort(-scores, axis=-1)[:, :k]
+        labels = np.array(labels)
+        matches = np.any(idx == labels.reshape([-1, 1]), axis=-1)
+
+        classes = np.unique(labels)
+
+        accuracy_values = []
+        for class_id in classes:
+            mask = labels == class_id
+            num_valid = np.sum(mask)
+            if num_valid == 0:
+                continue
+
+            accuracy_values.append(np.sum(matches[mask]) / float(num_valid))
+
+        return np.mean(accuracy_values) if len(accuracy_values) > 0 else 1.0
 
     def evaluate(self,
                  results,
@@ -299,7 +321,8 @@ class MPAHierarchicalClsDataset(MPAMultilabelClsDataset):
             metrics = [metric]
         else:
             metrics = metric
-        allowed_metrics = ['accuracy-mlc', 'mAP', 'CP', 'CR', 'CF1', 'OP', 'OR', 'OF1']
+
+        # allowed_metrics = ['accuracy', 
         eval_results = {}
         results = np.vstack(results)
         gt_labels = self.get_gt_labels()
@@ -309,23 +332,96 @@ class MPAHierarchicalClsDataset(MPAMultilabelClsDataset):
         assert len(gt_labels) == num_imgs, 'dataset testing results should '\
             'be of the same length as gt_labels.'
 
-        invalid_metrics = set(metrics) - set(allowed_metrics)
-        if len(invalid_metrics) != 0:
-            raise ValueError(f'metric {invalid_metrics} is not supported.')
+        # invalid_metrics = set(metrics) - set(allowed_metrics)
+        # if len(invalid_metrics) != 0:
+        #     raise ValueError(f'metric {invalid_metrics} is not supported.')
 
-        import torch
-        import torch.nn as nn
-        import torch.nn.functional as F
+        topk = metric_options.get('topk', (1,))
+        thrs = metric_options.get('thrs')
 
-        multiclass_logits = results[:,self.hierarchical_info['head_idx_to_logits_range'][0][0]:
-                                      self.hierarchical_info['head_idx_to_logits_range'][0][1]]
+        multiclass_logits = []
+        multiclass_accs = []
+        total_acc = 0.
+        total_acc_sl = 0.
+        for i in range(self.hierarchical_info['num_multiclass_heads']):
+            multiclass_logit = results[:,self.hierarchical_info['head_idx_to_logits_range'][i][0]:
+                                        self.hierarchical_info['head_idx_to_logits_range'][i][1]]
+            multiclass_gt = gt_labels[:, i]
+            # multiclass_acc = accuracy(multiclass_logit, multiclass_gt, topk=topk, thrs=thrs)
+            cls_acc = self.mean_top_k_accuracy(multiclass_logit, multiclass_gt, k=1) * 100 # OTE
+            total_acc += cls_acc
+            total_acc_sl += cls_acc
+
+            # multiclass_logits.append(multiclass_logit)
+            # multiclass_accs.append(multiclass_acc)
+        
+        # multiclass_logits = np.concatenate(multiclass_logits, axis=0)
+        # eval_results['accuracy_top-1'] = np.mean(multiclass_accs)
+
         multilabel_logits = results[:,self.hierarchical_info['num_single_label_classes']:]
-
-        multiclass_gt = gt_labels[:, 0]
         multilabel_gt = gt_labels[:,self.hierarchical_info['num_multiclass_heads']:]
-        x = MPAMultilabelClsDataset.evaluate(self, multilabel_logits, metric, gt_labels=multilabel_gt)
-        # y = MPAClsDataset.evaluate(self, multiclass_logits, ['accuracy'], gt_labels=multilabel_gt)
-        return x
-        # multiclass_pred = F.softmax(multiclass_logits) if multiclass_logits is not None else None
-        # multilabel_pred = F.sigmoid(multilabel_logits) if multilabel_logits is not None else None
-        # pred = torch.cat([multiclass_pred, multilabel_pred], axis=1)
+        multilabel_result = MPAMultilabelClsDataset.evaluate(self, multilabel_logits, ['accuracy-mlc', 'mAP', 'CP', 'CR', 'CF1', 'OP', 'OR', 'OF1'], gt_labels=multilabel_gt)
+
+
+        task_labels = self.labels # TODO: not including empty label
+
+        x = [self.label_dict[gt] for gt in multiclass_gt]
+        y = [self.label_dict[gt+(self.hierarchical_info['num_single_label_classes']-1)] for gt in multilabel_gt.squeeze() if gt == 1]
+        # y = {task_labels.index(label) for label in x}
+        # breakpoint()
+
+
+        # if 'accuracy-mlc' in metrics:
+        # true_label_idx = []
+        # pred_label_idx = []
+        # pos_thr = metric_options.get('thr', 0.5)
+        # breakpoint()
+        # true_label = (gt_labels == 1)
+        # pred_label = (results > pos_thr)
+        # cls_index = [i+1 for i in range(len(self.labels))]
+        # for true_lbl, pred_lbl in zip(true_label, pred_label):
+        #     true_lbl_idx = set(true_lbl * cls_index) - set([0])  # except empty
+        #     pred_lbl_idx = set(pred_lbl * cls_index) - set([0])
+        #     true_label_idx.append(true_lbl_idx)
+        #     pred_label_idx.append(pred_lbl_idx)
+
+        # confusion_matrices = []
+        # for cls_idx in cls_index:
+        #     group_labels_idx = set([cls_idx-1])
+        #     y_true = [int(not group_labels_idx.issubset(true_labels))
+        #                 for true_labels in true_label_idx]
+        #     y_pred = [int(not group_labels_idx.issubset(pred_labels))
+        #                 for pred_labels in pred_label_idx]
+        #     matrix_data = sklearn_confusion_matrix(y_true, y_pred, labels=list(range(len([0, 1]))))
+        #     confusion_matrices.append(matrix_data)
+
+        # for mat in confusion_matrices:
+        #     print(mat)
+        # breakpoint()
+            
+        # correct_per_label_group = [
+        #     np.trace(mat) for mat in confusion_matrices
+        # ]
+        # total_per_label_group = [
+        #     np.sum(mat) for mat in confusion_matrices
+        # ]
+
+        # acc = np.sum(correct_per_label_group) / np.sum(total_per_label_group)  # MICRO average
+        # eval_results['accuracy-mlc'] = acc
+
+
+
+
+        ml_map = multilabel_result['mAP']
+        total_acc += ml_map
+        total_acc /= self.hierarchical_info['num_multiclass_heads'] + int(self.hierarchical_info['num_multilabel_classes'] > 0)
+    
+        mhacc = total_acc
+        acc = total_acc_sl / self.hierarchical_info['num_multiclass_heads']
+        map =  ml_map
+        eval_results['MHAcc'] = round(mhacc, 2)
+        eval_results['acc'] = round(acc, 2)
+        eval_results['mAP'] = round(map, 2)
+        # eval_results.update(multilabel_result)
+        return eval_results
+
