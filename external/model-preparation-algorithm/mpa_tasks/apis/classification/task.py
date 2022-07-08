@@ -413,6 +413,8 @@ class ClassificationTrainTask(ClassificationInferenceTask):
 
         if self._multilabel:
             metric_key = 'val/accuracy-mlc'
+        elif self._hierarchical:
+            metric_key = 'val/MHAcc'
         else:
             metric_key = 'val/accuracy_top-1'
 
