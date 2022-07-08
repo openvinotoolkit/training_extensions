@@ -1,7 +1,7 @@
 import torch
 import os
 import subprocess
-from .model import Encoder, Decoder, Autoencoder, load_checkpoint
+from .model import load_checkpoint
 from train_utils import load_model
 
 
@@ -9,6 +9,7 @@ class Exporter:
     def __init__(self, config, optimised):
         self.config = config
         self.checkpoint = config.get('checkpoint')
+
         if optimised:
             alpha = self.config['alpha'] ** self.config['phi']
             beta = self.config['beta'] ** self.config['phi']
