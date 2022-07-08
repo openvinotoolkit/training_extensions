@@ -1,6 +1,6 @@
 import unittest
 import os
-from src.utils.download_weights import download_checkpoint
+from src.utils.downloader import download_checkpoint
 from src.utils.exporter import Exporter
 from src.utils.get_config import get_config
 

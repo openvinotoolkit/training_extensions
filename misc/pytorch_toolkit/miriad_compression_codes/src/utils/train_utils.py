@@ -102,10 +102,10 @@ def train_model_phase2(config, train_dataloader, model,
                        alpha, beta, i):
 
     for idx, (imageset1, imageset2) in enumerate(train_dataloader):
-
         loss1, loss2 = 0., 0.
         psnr1, psnr2 = 0., 0.
         ssim1, ssim2 = 0., 0.
+
         for i in range(len(imageset1[0])):
             data11 = imageset1[0][i]
             data12 = imageset1[1][i]
@@ -127,11 +127,12 @@ def train_model_phase2(config, train_dataloader, model,
             data22 = imageset2[1][j]
             images = data21
             labels = torch.reshape(data22, (1, 1, 128, 128))
-            if torch.cuda.is_available() and config['gpu']:
 
+            if torch.cuda.is_available() and config['gpu']:
                 images, labels = images.cuda(), labels.cuda()
             output = model(images)
             loss2 += msecrit(output, labels)
+
             # compute the required metrics
             ssim2 += compare_ssim_batch(labels.detach().cpu().numpy(),
                                         output.detach().cpu().numpy())
@@ -180,6 +181,7 @@ def validate_model_phase1(config, test_dataloader, model, msecrit):
         avg_ssim = ((n * avg_ssim) + ssim) / (n + 1)  # running mean
         avg_psnr = ((n * avg_psnr) + psnr) / (n + 1)  # running mean
         n += 1
+    return avg_loss, avg_ssim, avg_psnr
 
 
 def validate_model_phase2(config, test_dataloader, model, msecrit):
@@ -199,6 +201,7 @@ def validate_model_phase2(config, test_dataloader, model, msecrit):
         avg_ssim = ((n * avg_ssim) + ssim) / (n + 1)  # running mean
         avg_psnr = ((n * avg_psnr) + psnr) / (n + 1)  # running mean
         n += 1
+    return avg_loss, avg_ssim, avg_psnr
 
 
 def train_model(config):

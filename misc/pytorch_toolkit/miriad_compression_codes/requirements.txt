@@ -12,3 +12,4 @@ numpy==1.19.2
 matplotlib==3.5.2
 termcolor
 huffman
+gdown
