@@ -1,19 +1,19 @@
 # Description.
-model_template_id: Custom_Instance_Segmentation_MaskRCNN_EfficientNetB2B
-name: MaskRCNN-EfficientNetB2B
-task_type: INSTANCE_SEGMENTATION
+model_template_id: Custom_Image_Classification_MobileNet-V3-small
+name: MobileNet-V3-small
+task_type: CLASSIFICATION
 task_family: VISION
 instantiation: "CLASS"
-summary: Class-Incremental Instance Segmentation for MaskRCNN-EfficientNetB2B
+summary: Class-Incremental Image Classification for MobileNet-V3-small
 application: ~
 
 # Algo backend.
-framework: OTEDetection v2.9.1
+framework: OTEClassification v1.2.3
 
 # Task implementations.
 entrypoints:
-  base: mpa_tasks.apis.detection.DetectionTrainTask
-  openvino: detection_tasks.apis.detection.OpenVINODetectionTask
+  base: mpa_tasks.apis.classification.ClassificationTrainTask
+  openvino: torchreid_tasks.openvino_task.OpenVINOClassificationTask
 
 # Capabilities.
 capabilities: []
@@ -24,13 +24,15 @@ hyper_parameters:
   parameter_overrides:
     learning_parameters:
       batch_size:
+        default_value: 32
+      num_workers:
         default_value: 4
       learning_rate:
-        default_value: 0.015
+        default_value: 0.016
       learning_rate_warmup_iters:
-        default_value: 200
+        default_value: 100
       num_iters:
-        default_value: 300
+        default_value: 20
     algo_backend:
       train_type:
         default_value: Incremental
@@ -42,5 +44,5 @@ training_targets:
   - CPU
 
 # Stats.
-gigaflops: 68.48
-size: 13.27
+gigaflops: 0.12
+size: 1.56

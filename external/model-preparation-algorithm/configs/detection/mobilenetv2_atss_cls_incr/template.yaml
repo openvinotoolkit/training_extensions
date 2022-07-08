@@ -1,6 +1,6 @@
 # Description.
-model_template_id: ClassIncremental_Object_Detection_Gen3_ATSS
-name: ATSS-ClsIncr
+model_template_id: Custom_Object_Detection_Gen3_ATSS
+name: ATSS
 task_type: DETECTION
 task_family: VISION
 instantiation: "CLASS"
@@ -28,9 +28,9 @@ hyper_parameters:
       learning_rate:
         default_value: 0.001
       learning_rate_warmup_iters:
-        default_value: 200
-      num_iters:
         default_value: 30
+      num_iters:
+        default_value: 300
     algo_backend:
       train_type:
         default_value: Incremental

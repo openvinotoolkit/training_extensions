@@ -1,19 +1,19 @@
 # Description.
-model_template_id: ClassIncremental_Image_Classification_MobileNet-V3-small
-name: MobileNet-V3-small-ClsIncr
-task_type: CLASSIFICATION
+model_template_id: Custom_Rotated_Detection_via_Instance_Segmentation_MaskRCNN_ResNet50
+name: MaskRCNN-ResNet50
+task_type: ROTATED_DETECTION
 task_family: VISION
 instantiation: "CLASS"
-summary: Class-Incremental Image Classification for MobileNet-V3-small
+summary: Class-Incremental Rotated object detection for MaskRCNN-ResNet50
 application: ~
 
 # Algo backend.
-framework: OTEClassification v1.2.3
+framework: OTEDetection v2.9.1
 
 # Task implementations.
 entrypoints:
-  base: mpa_tasks.apis.classification.ClassificationTrainTask
-  openvino: torchreid_tasks.openvino_task.OpenVINOClassificationTask
+  base: mpa_tasks.apis.detection.DetectionTrainTask
+  openvino: detection_tasks.apis.detection.OpenVINODetectionTask
 
 # Capabilities.
 capabilities: []
@@ -24,15 +24,13 @@ hyper_parameters:
   parameter_overrides:
     learning_parameters:
       batch_size:
-        default_value: 32
-      num_workers:
         default_value: 4
       learning_rate:
-        default_value: 0.016
+        default_value: 0.01
       learning_rate_warmup_iters:
         default_value: 100
       num_iters:
-        default_value: 20
+        default_value: 300
     algo_backend:
       train_type:
         default_value: Incremental
@@ -44,5 +42,5 @@ training_targets:
   - CPU
 
 # Stats.
-gigaflops: 0.12
-size: 1.56
+gigaflops: 533.8
+size: 177.9
