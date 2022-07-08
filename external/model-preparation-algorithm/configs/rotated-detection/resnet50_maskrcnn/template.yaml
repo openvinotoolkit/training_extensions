@@ -1,5 +1,5 @@
 # Description.
-model_template_id: Rotated_Detection_via_Instance_Segmentation_MaskRCNN_ResNet50
+model_template_id: Custom_Rotated_Detection_via_Instance_Segmentation_MaskRCNN_ResNet50
 name: MaskRCNN-ResNet50
 task_type: ROTATED_DETECTION
 task_family: VISION

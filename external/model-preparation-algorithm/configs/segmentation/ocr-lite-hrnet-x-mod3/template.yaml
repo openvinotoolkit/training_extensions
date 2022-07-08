@@ -1,5 +1,5 @@
 # Description.
-model_template_id: Semantic_Segmentation_Lite-HRNet-x-mod3
+model_template_id: Custom_Semantic_Segmentation_Lite-HRNet-x-mod3
 name: Lite-HRNet-x-mod3
 task_type: SEGMENTATION
 task_family: VISION

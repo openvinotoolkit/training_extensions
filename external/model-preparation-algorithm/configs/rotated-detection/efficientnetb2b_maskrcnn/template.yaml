@@ -1,5 +1,5 @@
 # Description.
-model_template_id: Rotated_Detection_via_Instance_Segmentation_MaskRCNN_EfficientNetB2B
+model_template_id: Custom_Rotated_Detection_via_Instance_Segmentation_MaskRCNN_EfficientNetB2B
 name: MaskRCNN-EfficientNetB2B
 task_type: ROTATED_DETECTION
 task_family: VISION
