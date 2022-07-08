@@ -203,7 +203,7 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         return data_cfg
 
     def _add_predictions_to_dataset(self, prediction_results, dataset, save_mask_visualization):
-        """ Loop over dataset again to assign predictions. Convert from MMDetection format to OTE format. """
+        """ Loop over dataset again to assign predictions. Convert from MMSegmentation format to OTE format. """
         
         for dataset_item, (prediction, feature_vector) in zip(dataset, prediction_results):
             soft_prediction = np.transpose(prediction[0], axes=(1, 2, 0))
