@@ -177,11 +177,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
             # recipe = os.path.join(recipe_root, 'pretrain.yaml')
             raise NotImplementedError(f'train type {train_type} is not implemented yet.')
         elif train_type == TrainType.Incremental:
-            if self._model_name.split('-')[0] == 'YOLOX':
-                recipe = os.path.join(recipe_root, 'imbalance_yolox.py')
-            elif self.model_name.split('-')[0] == 'SSD':
-                recipe = os.path.join(recipe_root, 'imbalance_ssd.py')
-            elif self.model_name.split('-')[0] == 'ATSS':
+            if self._model_name.split('-')[0] in ['ATSS', 'SSD', 'YOLOX']:
                 recipe = os.path.join(recipe_root, 'imbalance.py')
             else:
                 raise NotImplementedError(f'{self._model_name} is not implemented')
