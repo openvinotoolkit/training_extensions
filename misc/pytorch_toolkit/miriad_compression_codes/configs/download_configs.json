@@ -1,0 +1,18 @@
+{
+    "stage1":{
+        "url":"http://miriad.digital-health.one/models/bmi5/checkpoint_stage1.zip",
+        "dest_path":"model_weights/checkpoint_stage1.zip",
+        "drive_url": "https://drive.google.com/file/d/1u6Al-R-kwDgbfjGQTZNxhIt4wIZ_AXNw/view?usp=sharing"
+
+    },
+    "stage2":{
+        "url":"http://miriad.digital-health.one/models/bmi5/checkpoint_stage2.zip",
+        "dest_path":"model_weights/checkpoint_stage2.zip",
+        "drive_url": "https://drive.google.com/file/d/1Hdmoe_o_9C3fuCdWao9CIc28PzWT4Jh3/view?usp=sharing"
+    },
+    "test_data":{
+        "url":"http://miriad.digital-health.one/sample_data/bmi5/rbis_ddsm_sample.zip",
+        "dest_path":"test_data/rbis_ddsm_sample.zip",
+        "drive_url": "https://drive.google.com/file/d/14Go-4lbWj9RFGwsz1sBWBaveC0yJrHUd/view?usp=sharing"
+    }
+}
