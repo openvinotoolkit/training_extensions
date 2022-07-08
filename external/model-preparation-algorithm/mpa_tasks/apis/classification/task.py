@@ -236,7 +236,8 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         cfg.model.multilabel = self._multilabel
         cfg.model.hierarchical = self._hierarchical # 필요한가?
         cfg.model.multiclass = self._multiclass
-        cfg.model.head.hierarchical_info = self._hierarchical_info # 이거 위치 고민..
+        if self._hierarchical:
+            cfg.model.head.hierarchical_info = self._hierarchical_info # 이거 위치 고민..
         return cfg
 
     def _init_test_data_cfg(self, dataset: DatasetEntity):
