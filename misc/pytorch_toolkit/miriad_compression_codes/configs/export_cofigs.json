@@ -1,0 +1,13 @@
+{
+    "export": {
+        "checkpoint": "model_weights/miriad.pth",
+        "input_shape": [
+            1,
+            3,
+            1024,
+            1024
+        ],
+        "model_name_onnx": "miriad.onnx",
+        "model_name": "miriad"
+    }
+}
