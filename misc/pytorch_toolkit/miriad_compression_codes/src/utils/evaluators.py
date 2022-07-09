@@ -1,5 +1,6 @@
 import torch
-from skimage.measure import compare_psnr
+# from skimage.measure import compare_psnr  # no longer works version 0.16 onwards
+from skimage.metrics import peak_signal_noise_ratio as compare_psnr
 import pytorch_ssim_psnr
 
 

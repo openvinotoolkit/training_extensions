@@ -7,9 +7,9 @@ from termcolor import colored
 import json
 import random
 from torch.utils import data
-from dataloader import CustomDatasetPhase1, CustomDatasetPhase2
-from model import AutoEncoder, Decoder
-from evaluators import compare_psnr_batch, compare_ssim_batch
+from .dataloader import CustomDatasetPhase1, CustomDatasetPhase2
+from .model import AutoEncoder, Decoder
+from .evaluators import compare_psnr_batch, compare_ssim_batch
 cudnn.benchmark = True
 
 

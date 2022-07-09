@@ -5,8 +5,7 @@ from math import exp
 import numpy as np
 from torchmetrics import StructuralSimilarityIndexMeasure
 from torchmetrics import PeakSignalNoiseRatio
-
-from typing import Tensor, Tuple, List, Union, Optional
+from torch import Tensor
 
 
 def gaussian(window_size, sigma):

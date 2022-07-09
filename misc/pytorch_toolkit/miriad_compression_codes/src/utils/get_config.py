@@ -2,9 +2,10 @@ import os
 import json
 
 
-def get_config(action, phase):
+def get_config(action, phase, config_path=""):
 
-    root_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+    root_path = os.path.dirname(os.path.dirname(
+        os.path.dirname(os.path.realpath(__file__))))
     config_path = os.path.join(root_path, 'configs')
 
     if action == 'download':

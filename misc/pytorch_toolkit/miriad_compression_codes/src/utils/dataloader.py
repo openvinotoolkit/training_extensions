@@ -12,8 +12,7 @@ class CustomDatasetPhase1(data.Dataset):
                  transform_images=None, transform_masks=None,
                  images_path_rel='.', masks_path_rel='.',
                  preserve_names=False):
-        self.path_to_dataset = os.path.abspath(
-            path_to_dataset)  # root folder of the dataset
+        self.path_to_dataset = os.path.abspath(path_to_dataset)  # root folder of the dataset
         self.images_path_rel = images_path_rel  # relative path to images
         # relative path to masks (same as images)
         self.masks_path_rel = masks_path_rel
