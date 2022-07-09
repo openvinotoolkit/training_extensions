@@ -298,7 +298,7 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         if self._multilabel:
             cfg.metric = ['accuracy-mlc', 'mAP', 'CP', 'OP', 'CR', 'OR', 'CF1', 'OF1']
         elif self._hierarchical:
-            cfg.metric = ['MHAcc', 'acc', 'mAP']
+            cfg.metric = ['MHAcc', 'avgClsAcc', 'mAP']
         else:
             cfg.metric = ['accuracy', 'class_accuracy']
 
