@@ -1,10 +1,10 @@
 # Description.
-model_template_id: Custom_Image_Classification_EfficinetNet-B0
-name: EfficientNet-B0
+model_template_id: MobileNet-V3-small
+name: MobileNet-V3-small
 task_type: CLASSIFICATION
 task_family: VISION
 instantiation: "CLASS"
-summary: Provides better performance on large datasets, but may be not so stable in case of small amount of training data.
+summary: Custom Image Classification MobileNet-V3-small
 application:
   ~
 
@@ -33,7 +33,7 @@ hyper_parameters:
       max_num_epochs:
         default_value: 200
       learning_rate:
-        default_value: 0.007
+        default_value: 0.016
         auto_hpo_state: POSSIBLE
       enable_early_stopping:
         default_value: true
@@ -54,5 +54,5 @@ training_targets:
   - CPU
 
 # Stats.
-gigaflops: 0.81
-size: 4.09
+gigaflops: 0.12
+size: 1.56

@@ -1,10 +1,10 @@
 # Description.
-model_template_id: Custom_Image_Classification_MobileNet-V3-large-0.75x
-name: MobileNet-V3-large-0.75x
+model_template_id: ClassIncremental_Image_Classification_MobileNet-V3-small
+name: MobileNet-V3-small-ClsIncr
 task_type: CLASSIFICATION
 task_family: VISION
 instantiation: "CLASS"
-summary: Class-Incremental Image Classification for MobileNet-V3-learge-0.75x
+summary: Class-Incremental Image Classification for MobileNet-V3-small
 application: ~
 
 # Algo backend.
@@ -44,5 +44,5 @@ training_targets:
   - CPU
 
 # Stats.
-gigaflops: 0.32
-size: 2.76
+gigaflops: 0.12
+size: 1.56
