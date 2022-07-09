@@ -8,6 +8,7 @@ from collections import defaultdict
 from typing import List, Optional
 
 import torch
+import numpy as np
 from mpa import MPAConstants
 
 from ote_sdk.configuration import cfg_helper
@@ -59,7 +60,6 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         else:
             self._labels = task_environment.get_labels(include_empty=False)
         
-        self._multiclass = False
         self._multilabel = False
         self._hierarchical = False
 
@@ -71,11 +71,7 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         if not self._multilabel and len(task_environment.label_schema.get_groups(False)) > 1:
             self._hierarchical = True
             self._hierarchical_info = get_hierarchical_info(task_environment.label_schema)
-        
-        if not self._multilabel and not self._hierarchical:
-            self._multiclass = True
 
-    # TODO: hierarchical 잘돌아가는지 확인
     def infer(self,
               dataset: DatasetEntity,
               inference_parameters: Optional[InferenceParameters] = None
@@ -92,7 +88,6 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         update_progress_callback = default_progress_callback
         if inference_parameters is not None:
             update_progress_callback = inference_parameters.update_progress
-        import numpy as np
 
         dataset_size = len(dataset)
         for i, (dataset_item, prediction_item) in enumerate(zip(dataset, predictions)):
@@ -103,7 +98,7 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
                     if pred_item > pos_thr:
                         cls_label = ScoredLabel(self.labels[cls_idx], probability=float(pred_item))
                         label.append(cls_label)
-            elif self._hierarchical:
+            elif self._hierarchical:  # 확인
                 for i in range(self._hierarchical_info['num_multiclass_heads']):
                     logits_begin, logits_end = self._hierarchical_info['head_idx_to_logits_range'][i]
                     head_logits = prediction_item[logits_begin : logits_end]
@@ -126,17 +121,6 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
                 label.append(cls_label)
             dataset_item.append_labels(label)
             update_progress_callback(int(i / dataset_size * 100))
-        # for idx, item in enumerate(dataset):
-        #     print('item:', idx, sorted([i.name for i in item.get_roi_labels()]))
-        #     temp = []
-        #     if predictions[idx][:2].argmax() == 0:
-        #         temp.append('bug')
-        #     else:
-        #         temp.append('tree')
-            
-        #     if predictions[idx][2] > 0.5:
-        #         temp.append('car')
-        #     print('pred:', idx, sorted(temp))
 
         return dataset
 
@@ -145,16 +129,6 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
                  evaluation_metric: Optional[str] = None):
         logger.info('called evaluate()')
         metric = MetricsHelper.compute_accuracy(output_result_set)
-
-        gt_dataset = output_result_set.ground_truth_dataset
-        pred_dataset = output_result_set.prediction_dataset
-        # for idx, gt_item in enumerate(gt_dataset):
-
-        # for idx, (gt_item, pred_item) in enumerate(zip(gt_dataset, pred_dataset)):
-        #     print('true:', idx, [i.name for i in gt_item.get_roi_labels()])
-        #     print('pred:', idx, [i.name for i in pred_item.get_annotations()[0].get_labels()])
-        #     print('prob:', idx, [i.probability for i in pred_item.get_annotations()[0].get_labels()])
-        # breakpoint()
         logger.info(f"Accuracy after evaluation: {metric.accuracy.value}")
         output_result_set.performance = metric.get_performance()
         logger.info('Evaluation completed')
@@ -230,14 +204,13 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
             cfg_path = os.path.join(base_dir, 'model_multilabel.py')
         elif self._hierarchical:
             cfg_path = os.path.join(base_dir, 'model_hierarchical.py')
-        elif self._multiclass:
+        else:
             cfg_path = os.path.join(base_dir, 'model.py')
         cfg = MPAConfig.fromfile(cfg_path)
         cfg.model.multilabel = self._multilabel
-        cfg.model.hierarchical = self._hierarchical # 필요한가?
-        cfg.model.multiclass = self._multiclass
+        cfg.model.hierarchical = self._hierarchical
         if self._hierarchical:
-            cfg.model.head.hierarchical_info = self._hierarchical_info # 이거 위치 고민..
+            cfg.model.head.hierarchical_info = self._hierarchical_info
         return cfg
 
     def _init_test_data_cfg(self, dataset: DatasetEntity):
@@ -278,11 +251,9 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
 
             if self._multilabel:
                 cfg.type = 'MPAMultilabelClsDataset'
-                cfg.label_groups = self._task_environment.label_schema.get_groups(False)
             elif self._hierarchical:
                 cfg.type = 'MPAHierarchicalClsDataset'
                 cfg.hierarchical_info = self._hierarchical_info
-                cfg.label_groups = self._task_environment.label_schema.get_groups(False)
             else:
                 cfg.type = 'MPAClsDataset'
             cfg.domain = domain

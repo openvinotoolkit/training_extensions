@@ -23,7 +23,6 @@ class MPAClsDataset(BaseDataset):
         self.ote_dataset = ote_dataset
         self.labels = labels
         self.label_idx = {label.id: i for i, label in enumerate(labels)}
-        self.label_groups = kwargs['label_groups']
         self.CLASSES = list(label.name for label in labels)
         self.gt_labels = []
         pipeline = kwargs['pipeline']
@@ -88,8 +87,7 @@ class MPAClsDataset(BaseDataset):
                  results,
                  metric='accuracy',
                  metric_options=None,
-                 logger=None,
-                 gt_labels=None):
+                 logger=None):
         """Evaluate the dataset with new metric 'class_accuracy'
 
         Args:
@@ -160,8 +158,7 @@ class MPAMultilabelClsDataset(MPAClsDataset):
                  metric='mAP',
                  metric_options=None,
                  indices=None,
-                 logger=None,
-                 gt_labels=None):
+                 logger=None):
         """Evaluate the dataset.
         Args:
             results (list): Testing results of the dataset.
@@ -185,7 +182,7 @@ class MPAMultilabelClsDataset(MPAClsDataset):
         allowed_metrics = ['accuracy-mlc', 'mAP', 'CP', 'CR', 'CF1', 'OP', 'OR', 'OF1']
         eval_results = {}
         results = np.vstack(results)
-        gt_labels = self.get_gt_labels() if gt_labels is None else gt_labels
+        gt_labels = self.get_gt_labels()
         if indices is not None:
             gt_labels = gt_labels[indices]
         num_imgs = len(results)
@@ -219,10 +216,6 @@ class MPAMultilabelClsDataset(MPAClsDataset):
                           for pred_labels in pred_label_idx]
                 matrix_data = sklearn_confusion_matrix(y_true, y_pred, labels=list(range(len([0, 1]))))
                 confusion_matrices.append(matrix_data)
-
-            # for mat in confusion_matrices:
-            #     print(mat)
-            # # breakpoint()
             
             correct_per_label_group = [
                 np.trace(mat) for mat in confusion_matrices
@@ -252,7 +245,6 @@ class MPAHierarchicalClsDataset(MPAMultilabelClsDataset):
     def __init__(self, **kwargs):
         self.hierarchical_info = kwargs.pop('hierarchical_info', None)
         super().__init__(**kwargs)
-        self.label_dict = {i:label for i, label in enumerate(self.labels)}
 
     def load_annotations(self): # TODO : 전체 데이터셋 다 되는지 확인
         for i, _ in enumerate(self.ote_dataset):
