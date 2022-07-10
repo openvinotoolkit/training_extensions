@@ -41,15 +41,11 @@ def create_train_test_for_phase1():
                 pin_memory=False)
 
         def test_trainer(self):
-            self.model = Encoder(self.config["class_count"])
+            self.model = Encoder(n_downconv=self.config["n_digestunits"])
             if not os.path.exists(self.config["checkpoint"]):
                 download_checkpoint(phase=1)
             self.device = self.config["device"]
-            self.trainer = train_model(
-                self.model, self.data_loader_train,
-                self.data_loader_valid, self.data_loader_test,
-                self.config["clscount"], self.config["checkpoint"],
-                self.device, self.config["class_names"], self.config["lr"])
+            self.trainer = train_model(self.config)
             self.trainer.train(
                 self.config["max_epoch"], self.config["savepath"])
             cur_train_loss = self.trainer.current_train_loss
@@ -77,13 +73,13 @@ def create_train_test_for_phase2():
             config = get_config(action='train', phase=2)
             cls.config = config
             if os.path.exists(config["default_image_path"]):
-                image_path = config["default_image_path"]
+                # image_path = config["default_image_path"]
                 path_to_latent = config["path_to_latent"]
                 path_to_gdtruth = config["path_to_gdtruth"]
             else:
                 if not os.path.exists(config["image_path"]):
                     download_data(phase=2)
-                image_path = config["image_path"]
+                # image_path = config["image_path"]
                 path_to_latent = config["path_to_latent"]
                 path_to_gdtruth = config["path_to_gdtruth"]
 
@@ -110,10 +106,11 @@ def create_train_test_for_phase2():
                 pin_memory=False)
 
         def test_trainer(self):
-            alpha = self.config['alpha'] ** self.config['phi']
-            beta = self.config['beta'] ** self.config['phi']
-            self.model = Decoder(
-                alpha, beta, self.config['class_count'])
+            # alpha = self.config['alpha'] ** self.config['phi']
+            # beta = self.config['beta'] ** self.config['phi']
+            # self.model = Decoder(
+            #     alpha, beta, self.config['class_count'])
+            self.model = Decoder(n_upconv=self.config['n_digestunits'])
             if not os.path.exists(self.config["checkpoint"]):
                 download_checkpoint(phase=2)
             self.device = self.config["device"]

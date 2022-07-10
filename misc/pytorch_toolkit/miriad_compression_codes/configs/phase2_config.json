@@ -54,6 +54,7 @@
         "alpha": 1.833,
         "beta": 1.044,
         "phi": -0.1,
+        "n_digestunits": 3,
         "savepath": "model_weights",
         "default_image_path": "test_data/cbis_sample/test",
         "image_path": "test_data/cbis_sample/test",

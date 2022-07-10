@@ -53,6 +53,7 @@
         "device": "cuda",
         "max_epoch": 3,
         "alpha": 1.833,
+        "n_digestunits": 3,
         "savepath": "model_weights",
         "default_image_path": "test_data/cbis_sample/test",
         "image_path": "test_data/cbis_sample/test"
