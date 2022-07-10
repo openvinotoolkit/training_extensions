@@ -609,10 +609,7 @@ class OTELoggerHook(LoggerHook):
     def log(self, runner: BaseRunner):
         tags = self.get_loggable_tags(runner, allow_text=False)
         if runner.max_epochs is not None:
-            if runner.data_loader.drop_last and runner.max_iters == 0:
-                normalized_iter = float(runner.epoch+1)
-            else:
-                normalized_iter = self.get_iter(runner) / runner.max_iters * runner.max_epochs
+            normalized_iter = self.get_iter(runner) / runner.max_iters * runner.max_epochs
         else:
             normalized_iter = self.get_iter(runner)
         for tag, value in tags.items():
