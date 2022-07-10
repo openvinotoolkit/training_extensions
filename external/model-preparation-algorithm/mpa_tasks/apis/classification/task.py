@@ -35,6 +35,7 @@ from ote_sdk.usecases.tasks.interfaces.unload_interface import IUnload
 from ote_sdk.entities.model import (ModelFormat, ModelOptimizationType)
 from ote_sdk.serialization.label_mapper import label_schema_to_bytes
 from ote_sdk.entities.scored_label import ScoredLabel
+from ote_sdk.utils.labels_utils import get_empty_label
 from torchreid_tasks.utils import TrainingProgressCallback
 from torchreid_tasks.utils import OTELoggerHook
 from torchreid_tasks.utils import get_multihead_class_info as get_hierarchical_info
@@ -59,7 +60,7 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
             self._labels = task_environment.get_labels(include_empty=True)
         else:
             self._labels = task_environment.get_labels(include_empty=False)
-        
+        self._empty_label = get_empty_label(task_environment.label_schema)
         self._multilabel = False
         self._hierarchical = False
 
@@ -91,35 +92,50 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
 
         dataset_size = len(dataset)
         for i, (dataset_item, prediction_item) in enumerate(zip(dataset, predictions)):
-            label = []
+            item_labels = []
             pos_thr = 0.5
+
             if self._multilabel:
                 for cls_idx, pred_item in enumerate(prediction_item):
                     if pred_item > pos_thr:
                         cls_label = ScoredLabel(self.labels[cls_idx], probability=float(pred_item))
-                        label.append(cls_label)
-            elif self._hierarchical:  # 확인
+                        item_labels.append(cls_label)
+                    else:
+                        logger.info('item_labels is empty.')
+                        item_labels.append(ScoredLabel(self._empty_label, probability=1.))
+
+            elif self._hierarchical:
                 for i in range(self._hierarchical_info['num_multiclass_heads']):
                     logits_begin, logits_end = self._hierarchical_info['head_idx_to_logits_range'][i]
                     head_logits = prediction_item[logits_begin : logits_end]
-                    j = np.argmax(head_logits)
+                    j = np.argmax(head_logits)  # Assume logits already passed softmax
                     label_str = self._hierarchical_info['all_groups'][i][j]
                     ote_label = next(x for x in self._labels if x.name == label_str)
-                    label.append(ScoredLabel(label=ote_label, probability=float(head_logits[j])))
+                    item_labels.append(ScoredLabel(label=ote_label, probability=float(head_logits[j])))
 
                 if self._hierarchical_info['num_multilabel_classes']:
-                    logits_begin = self._hierarchical_info['num_single_label_classes']  # 이거 애매한거 해결하기..
-                    head_logits = prediction_item[logits_begin:]
+                    logits_begin, logits_end = self._hierarchical_info['num_single_label_classes'], -1
+                    head_logits = prediction_item[logits_begin : logits_end]
                     for i in range(head_logits.shape[0]):
-                        if head_logits[i] > pos_thr:
+                        if head_logits[i] > pos_thr:  # Assume logits already passed sigmoid
                             label_str = self._hierarchical_info['all_groups'][self._hierarchical_info['num_multiclass_heads'] + i][0]
                             ote_label = next(x for x in self._labels if x.name == label_str)
-                            label.append(ScoredLabel(label=ote_label, probability=float(head_logits[i])))
+                            item_labels.append(ScoredLabel(label=ote_label, probability=float(head_logits[i])))
+                
+                item_labels = self._task_environment.label_schema.resolve_labels_probabilistic(item_labels)
+                if not item_labels:
+                    logger.info('item_labels is empty.')
+                    item_labels.append(ScoredLabel(self._empty_label, probability=1.))
             else:
-                label_idx = prediction_item.argmax()
-                cls_label = ScoredLabel(self._labels[label_idx], probability=float(prediction_item[label_idx]))
-                label.append(cls_label)
-            dataset_item.append_labels(label)
+                if any(np.isnan(prediction_item)):
+                    logger.info('Nan in prediction_item')
+                    continue
+                else:
+                    label_idx = prediction_item.argmax()
+                    cls_label = ScoredLabel(self._labels[label_idx], probability=float(prediction_item[label_idx]))
+                    item_labels.append(cls_label)
+
+            dataset_item.append_labels(item_labels)
             update_progress_callback(int(i / dataset_size * 100))
 
         return dataset
@@ -253,7 +269,6 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
                 cfg.type = 'MPAMultilabelClsDataset'
             elif self._hierarchical:
                 cfg.type = 'MPAHierarchicalClsDataset'
-                cfg.hierarchical_info = self._hierarchical_info
                 if subset == 'train':
                     cfg.drop_last = True  # For stable hierarchical information indexing
             else:
@@ -261,6 +276,10 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
             cfg.domain = domain
             cfg.ote_dataset = None
             cfg.labels = None
+            cfg.empty_label = self._empty_label
+            cfg.hierarchical = self._hierarchical
+            cfg.multilabel = self._multilabel
+            cfg.hierarchical_info = self._hierarchical_info
             for pipeline_step in cfg.pipeline:
                 if subset == 'train' and pipeline_step.type == 'Collect':
                     pipeline_step = BaseTask._get_meta_keys(pipeline_step)
