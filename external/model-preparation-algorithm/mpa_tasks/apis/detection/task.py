@@ -178,7 +178,6 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
             raise NotImplementedError(f'train type {train_type} is not implemented yet.')
         elif train_type == TrainType.Incremental:
             recipe = os.path.join(recipe_root, 'imbalance.py')
-            # raise NotImplementedError(f'train type {train_type} is not implemented yet.')
         else:
             raise NotImplementedError(f'train type {train_type} is not implemented yet.')
 
