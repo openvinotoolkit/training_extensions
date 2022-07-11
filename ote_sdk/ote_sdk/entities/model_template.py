@@ -487,6 +487,7 @@ class ModelTemplate:
     capabilities: List[str] = field(default_factory=list)
     grpc_address: Optional[str] = None
     entrypoints: Optional[EntryPoints] = None
+    base_model_path: str = ""
     exportable_code_paths: ExportableCodePaths = field(
         default_factory=ExportableCodePaths
     )

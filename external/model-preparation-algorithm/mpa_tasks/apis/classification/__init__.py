@@ -3,7 +3,7 @@
 #
 
 from .config import ClassificationConfig
-from .task import ClassificationInferenceTask, ClassificationTrainTask
+from .task import ClassificationInferenceTask, ClassificationTrainTask, ClassificationNNCFTask
 
 # Load relevant extensions to registry
 import mpa_tasks.extensions.datasets.mpa_cls_dataset
