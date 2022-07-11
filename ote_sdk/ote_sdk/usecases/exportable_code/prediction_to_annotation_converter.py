@@ -238,7 +238,7 @@ class ClassificationToAnnotationConverter(IPredictionToAnnotationConverter):
         self, predictions: List[Tuple[int, float]], metadata: Optional[Dict] = None
     ) -> AnnotationSceneEntity:
         labels = []
-        for index, score in predictions:
+        for index, (score, featuremap, vector) in enumerate(predictions):
             labels.append(ScoredLabel(self.labels[index], float(score)))
         if self.hierarchical:
             labels = self.label_schema.resolve_labels_probabilistic(labels)
