@@ -102,7 +102,7 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
                         cls_label = ScoredLabel(self.labels[cls_idx], probability=float(pred_item))
                         item_labels.append(cls_label)
                     else:
-                        logger.info('item_labels is empty.')
+                        logger.info('Confidence is smaller than pos_thr, empty_label will be appended to item_labels.')
                         item_labels.append(ScoredLabel(self._empty_label, probability=1.))
 
             elif self._hierarchical:
