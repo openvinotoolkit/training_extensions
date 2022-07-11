@@ -18,7 +18,8 @@ logger = get_logger()
 @DATASETS.register_module()
 class MPAClsDataset(BaseDataset):
 
-    def __init__(self, ote_dataset=None, labels=None, empty_label=None, multilabel=False, hierarchical=False, hierarchical_info=None, **kwargs):
+    def __init__(self, ote_dataset=None, labels=None, empty_label=None, multilabel=False,
+                 hierarchical=False, hierarchical_info=None, **kwargs):
         self.ote_dataset = ote_dataset
         self.labels = labels
         self.label_names = [label.name for label in self.labels]
@@ -62,14 +63,14 @@ class MPAClsDataset(BaseDataset):
             if item_labels:
                 if not self.hierarchical:
                     for ote_lbl in item_labels:
-                        if not ote_lbl in ignored_labels:
+                        if ote_lbl not in ignored_labels:
                             class_indices.append(self.label_names.index(ote_lbl.name))
                         else:
                             class_indices.append(-1)
                 else:
                     num_cls_heads = self.hierarchical_info['num_multiclass_heads']
 
-                    class_indices = [0]*(self.hierarchical_info['num_multiclass_heads'] + \
+                    class_indices = [0]*(self.hierarchical_info['num_multiclass_heads'] +
                                          self.hierarchical_info['num_multilabel_classes'])
                     for j in range(num_cls_heads):
                         class_indices[j] = -1
@@ -78,14 +79,14 @@ class MPAClsDataset(BaseDataset):
                         if group_idx < num_cls_heads:
                             class_indices[group_idx] = in_group_idx
                         else:
-                            if not ote_lbl in ignored_labels:
+                            if ote_lbl not in ignored_labels:
                                 class_indices[num_cls_heads + in_group_idx] = 1
                             else:
                                 class_indices[num_cls_heads + in_group_idx] = -1
 
-            else: # this supposed to happen only on inference stage or if we have a negative in multilabel data
+            else:  # this supposed to happen only on inference stage or if we have a negative in multilabel data
                 if self.hierarchical_info:
-                    class_indices = [-1]*(self.hierarchical_info['num_multiclass_heads'] + \
+                    class_indices = [-1]*(self.hierarchical_info['num_multiclass_heads'] +
                                           self.hierarchical_info['num_multilabel_classes'])
                 else:
                     class_indices.append(-1)
@@ -273,9 +274,9 @@ class MPAMultilabelClsDataset(MPAClsDataset):
 
         return eval_results
 
+
 @DATASETS.register_module()
 class MPAHierarchicalClsDataset(MPAMultilabelClsDataset):
-
     @staticmethod
     def mean_top_k_accuracy(scores, labels, k=1):
         idx = np.argsort(-scores, axis=-1)[:, :k]
@@ -339,8 +340,8 @@ class MPAHierarchicalClsDataset(MPAMultilabelClsDataset):
         total_acc = 0.
         total_acc_sl = 0.
         for i in range(self.hierarchical_info['num_multiclass_heads']):
-            multiclass_logit = results[:,self.hierarchical_info['head_idx_to_logits_range'][i][0]:
-                                        self.hierarchical_info['head_idx_to_logits_range'][i][1]]
+            multiclass_logit = results[:, self.hierarchical_info['head_idx_to_logits_range'][i][0]:
+                                          self.hierarchical_info['head_idx_to_logits_range'][i][1]]  # noqa: E127
             multiclass_gt = gt_labels[:, i]
             cls_acc = self.mean_top_k_accuracy(multiclass_logit, multiclass_gt, k=1)
             total_acc += cls_acc
@@ -348,12 +349,13 @@ class MPAHierarchicalClsDataset(MPAMultilabelClsDataset):
 
         mAP_value = 0.
         if self.hierarchical_info['num_multilabel_classes'] and 'mAP' in metrics:
-            multilabel_logits = results[:,self.hierarchical_info['num_single_label_classes']:]
-            multilabel_gt = gt_labels[:,self.hierarchical_info['num_multiclass_heads']:]
+            multilabel_logits = results[:, self.hierarchical_info['num_single_label_classes']:]
+            multilabel_gt = gt_labels[:, self.hierarchical_info['num_multiclass_heads']:]
             mAP_value = mAP(multilabel_logits, multilabel_gt)
 
         total_acc += mAP_value
-        total_acc /= self.hierarchical_info['num_multiclass_heads'] + int(self.hierarchical_info['num_multilabel_classes'] > 0)
+        total_acc /= (self.hierarchical_info['num_multiclass_heads'] +
+                      int(self.hierarchical_info['num_multilabel_classes'] > 0))
 
         eval_results['MHAcc'] = total_acc
         eval_results['avgClsAcc'] = total_acc_sl / self.hierarchical_info['num_multiclass_heads']

@@ -119,10 +119,9 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
                     head_logits = prediction_item[logits_begin : logits_end]
                     for i in range(head_logits.shape[0]):
                         if head_logits[i] > pos_thr:  # Assume logits already passed sigmoid
-                            label_str = self._hierarchical_info['all_groups'][self._hierarchical_info['num_multiclass_heads'] + i][0]
+                            label_str = self._hierarchical_info['all_groups'][self._hierarchical_info['num_multiclass_heads']+i][0]
                             ote_label = next(x for x in self._labels if x.name == label_str)
                             item_labels.append(ScoredLabel(label=ote_label, probability=float(head_logits[i])))
-                
                 item_labels = self._task_environment.label_schema.resolve_labels_probabilistic(item_labels)
                 if not item_labels:
                     logger.info('item_labels is empty.')
