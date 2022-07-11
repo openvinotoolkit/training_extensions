@@ -125,7 +125,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         output_model.optimization_type = ModelOptimizationType.MO
 
         stage_module = 'DetectionExporter'
-        results = self._run_task(stage_module, mode='train')
+        results = self._run_task(stage_module, mode='train', precision=self._precision_from_config[0].name)
         results = results.get('outputs')
         logger.debug(f'results of run_task = {results}')
         if results is None:
@@ -143,7 +143,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
             output_model.set_data(
                 'confidence_threshold',
                 np.array([self.confidence_threshold], dtype=np.float32).tobytes())
-            output_model.precision = self._precision
+            output_model.precision = self._precision_from_config
             output_model.optimization_methods = self._optimization_methods
             # output_model.model_status = ModelStatus.SUCCESS
             output_model.set_data("label_schema.json", label_schema_to_bytes(self._task_environment.label_schema))
