@@ -22,8 +22,8 @@ class Exporter:
         load_checkpoint(self.model, self.checkpoint)
 
     def export_model_ir(self):
-        input_model = os.path.join(os.path.split(self.checkpoint)[
-                                   0], self.config.get('model_name_onnx'))
+        input_model = os.path.join(
+        os.path.split(self.checkpoint)[0], self.config.get('model_name_onnx'))
         input_shape = self.config.get('input_shape')
         output_dir = os.path.split(self.checkpoint)[0]
         export_command = f"""mo \

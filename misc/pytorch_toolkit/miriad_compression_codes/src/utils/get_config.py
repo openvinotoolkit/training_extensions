@@ -1,5 +1,6 @@
 import os
 import json
+from webbrowser import get
 
 
 def get_config(action, phase, config_path=""):
@@ -22,3 +23,6 @@ def get_config(action, phase, config_path=""):
             config = config_file[action]
 
     return config
+
+conf = get_config('inference', 2, "/home/flamingo2/Downloads/training_extensions/misc/pytorch_toolkit/miriad_compression_codes/configs")
+print(conf['path_to_latent'])

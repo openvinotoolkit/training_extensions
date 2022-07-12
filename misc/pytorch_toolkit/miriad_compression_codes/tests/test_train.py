@@ -114,11 +114,7 @@ def create_train_test_for_phase2():
             if not os.path.exists(self.config["checkpoint"]):
                 download_checkpoint(phase=2)
             self.device = self.config["device"]
-            self.trainer = train_model(
-                self.model, self.data_loader_train,
-                self.data_loader_valid, self.data_loader_test,
-                self.config["class_count"], self.config["checkpoint"],
-                self.device, self.config["class_names"], self.config["lr"])
+            self.trainer = train_model(self.config)
             self.trainer.train(
                 self.config["max_epoch"], self.config["savepath"])
             cur_train_loss = self.trainer.current_train_loss

@@ -213,7 +213,7 @@ def train_model(config):
 
     if config['phase'] == 1:
         # Dataset & dataloader for training
-        train_dataset = CustomDatasetPhase1(config['traindata'],
+        train_dataset = CustomDatasetPhase1(config['train_data'],
                                             transform_images=images_transforms,
                                             transform_masks=labels_transforms)
         train_dataset.choose_random_subset(config['subset_size'])
@@ -223,7 +223,7 @@ def train_model(config):
                                            shuffle=True)
 
         # CBISDDSM dataset & dataloader for inference
-        test_dataset = CustomDatasetPhase1(config['testdata'],
+        test_dataset = CustomDatasetPhase1(config['test_data'],
                                            transform_images=images_transforms,
                                            transform_masks=labels_transforms)
         test_dataloader = data.DataLoader(test_dataset,
@@ -231,8 +231,10 @@ def train_model(config):
                                           pin_memory=True, shuffle=False)
 
     else:
-        path_train_latent = config['traindata'] + "/latent/d_1/"
-        path_train_gdtruth = config['traindata'] + "/gd_truth/"
+        # path_train_latent = config['default_image_path'] + "latent/"
+        # path_train_gdtruth = config['default_image_path'] + "gd_truth/"
+        path_train_latent = config['path_to_latent']
+        path_train_gdtruth = config['path_to_gdtruth']
 
         train_dataset = CustomDatasetPhase2(path_train_latent,
                                             path_train_gdtruth, transform_images=None,
@@ -243,8 +245,10 @@ def train_model(config):
                                            shuffle=True, collate_fn=my_collate)
 
         # Dataset & dataloader for inference
-        path_test_latent = config['testdata'] + "/latent/d_1/"
-        path_test_gdtruth = config['testdata'] + "/gd_truth/"
+        # path_test_latent = config['test_data'] + "latent/" 
+        # path_test_gdtruth = config['test_data'] + "gd_truth/"
+        path_test_latent = config['path_to_latent']
+        path_test_gdtruth = config['path_to_gdtruth']
 
         test_dataset = CustomDatasetPhase2(path_test_latent,
                                            path_test_gdtruth, transform_images=None,

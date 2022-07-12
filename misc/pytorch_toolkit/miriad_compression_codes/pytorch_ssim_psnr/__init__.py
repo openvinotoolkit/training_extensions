@@ -1,5 +1,4 @@
 import torch
-import torchmetrics
 import torch.nn.functional as F
 from math import exp
 import numpy as np
@@ -34,28 +33,29 @@ def reduce_tensor(x: Tensor, reduction='mean'):
 # Classes to re-use window
 
 class SSIM(torch.nn.Module):
-    def __init__(self, window_size=11, size_average=True, val_range=None):
+    def __init__(self, window_size=11, reduction='mean', val_range=None):
         super(SSIM, self).__init__()
         self.window_size = window_size
-        self.size_average = size_average
+        self.reduction = reduction
         self.val_range = val_range
 
         # Assume 1 channel for SSIM
         self.channel = 1
         self.window = create_window(window_size)
 
-    def forward(self, img1, img2):
-        (_, channel, _, _) = img1.size()
+    def forward(self, input: Tensor, target: Tensor):
+        (_, channel, _, _) = input.size()
 
-        if channel == self.channel and self.window.dtype == img1.dtype:
+        if channel == self.channel and self.window.dtype == input.dtype:
             window = self.window
         else:
             window = create_window(self.window_size, channel).to(
-                img1.device).type(img1.dtype)
+                input.device).type(input.dtype)
             self.window = window
             self.channel = channel
         ssim = StructuralSimilarityIndexMeasure()
-        return ssim(img1, img2, window=window, window_size=self.window_size, size_average=self.size_average)
+        return ssim(preds=input, target=target, kernel=window, kernel_size=self.window_size, 
+        reduction=self.reduction, data_rage=self.val_range)
 
 
 class PSNR(torch.nn.Module):
