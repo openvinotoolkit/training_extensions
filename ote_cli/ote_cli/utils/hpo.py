@@ -504,15 +504,7 @@ class HpoManager:
 
         # make batch size range lower than train set size
         env_hp = self.environment.get_hyper_parameters()
-        batch_size_name = None
-        if (
-            _is_cls_framework_task(task_type)
-            or _is_det_framework_task(task_type)
-            or _is_seg_framework_task(task_type)
-        ):
-            batch_size_name = "learning_parameters.batch_size"
-        elif _is_anomaly_framework_task(task_type):
-            batch_size_name = "dataset.train_batch_size"
+        batch_size_name = "learning_parameters.batch_size"
         if batch_size_name is not None:
             if batch_size_name in hpopt_cfg["hp_space"]:
                 batch_range = hpopt_cfg["hp_space"][batch_size_name]["range"]
@@ -814,8 +806,8 @@ class HpoManager:
             learning_parameters = params.learning_parameters
             num_full_iterations = learning_parameters.num_iters
         elif _is_anomaly_framework_task(task_type):
-            trainer = params.trainer
-            num_full_iterations = trainer.max_epochs
+            learning_parameters = params.learning_parameters
+            num_full_iterations = learning_parameters.max_epochs
 
         return num_full_iterations
 
