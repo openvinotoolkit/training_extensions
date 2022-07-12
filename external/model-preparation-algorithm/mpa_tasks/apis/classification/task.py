@@ -94,9 +94,13 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         self._data_cfg = self._init_test_data_cfg(dataset)
         dataset = dataset.with_empty_annotations()
 
-        results = self._run_task(stage_module, mode='train', dataset=dataset)
+        dump_features = True
+        dump_saliency_map = not inference_parameters.is_evaluation if inference_parameters else True        
+        results = self._run_task(stage_module, mode='train', dataset=dataset, dump_features=dump_features,
+                                dump_saliency_map=dump_saliency_map)
+        # TODO[EUGENE]: POST PROCESS RESULTS
         logger.debug(f'result of run_task {stage_module} module = {results}')
-        logits, featuremap, vector = results['outputs']
+        predictions = results['outputs']
 
         update_progress_callback = default_progress_callback
         if inference_parameters is not None:
