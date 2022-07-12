@@ -31,7 +31,7 @@ from ote_sdk.entities.metrics import (BarChartInfo, BarMetricsGroup,
                                       LineMetricsGroup, MetricsGroup,
                                       ScoreMetric, VisualizationType)
 from ote_sdk.entities.model import (ModelEntity, ModelFormat,
-                                    ModelOptimizationType, ModelPrecision)
+                                    ModelOptimizationType)
 from ote_sdk.entities.model_template import TaskType
 from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.result_media import ResultMediaEntity
