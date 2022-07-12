@@ -1,14 +1,14 @@
 # Description.
-model_template_id: Custom_Object_Detection_Gen3_ATSS
-name: ATSS
+model_template_id: ClassIncremental_Object_Detection_YOLOX
+name: YOLOX-ClsIncr
 task_type: DETECTION
 task_family: VISION
 instantiation: "CLASS"
-summary: Class-Incremental Object Detection for ATSS
+summary: Class-Incremental Object Detection for YOLOX
 application: ~
 
 # Algo backend.
-framework: OTEDetection v2.9.1
+framework: MPA v1.1.0
 
 # Task implementations.
 entrypoints:
@@ -24,13 +24,13 @@ hyper_parameters:
   parameter_overrides:
     learning_parameters:
       batch_size:
-        default_value: 4
+        default_value: 16
       learning_rate:
-        default_value: 0.001
+        default_value: 0.0025
       learning_rate_warmup_iters:
-        default_value: 10
+        default_value: 500
       num_iters:
-        default_value: 100
+        default_value: 300
     algo_backend:
       train_type:
         default_value: Incremental
