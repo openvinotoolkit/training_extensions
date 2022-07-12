@@ -20,8 +20,10 @@ from ote_sdk.entities.model import ModelEntity, ModelPrecision  # ModelStatus
 from ote_sdk.entities.resultset import ResultSetEntity
 from mmcv.utils import ConfigDict
 
+from ote_sdk.entities.result_media import ResultMediaEntity
 from ote_sdk.entities.subset import Subset
 from ote_sdk.entities.task_environment import TaskEnvironment
+from ote_sdk.entities.tensor import TensorEntity
 from ote_sdk.entities.train_parameters import TrainParameters
 from ote_sdk.entities.metrics import (CurveMetric, LineChartInfo,
                                       LineMetricsGroup, MetricsGroup,
@@ -39,6 +41,7 @@ from torchreid_tasks.utils import OTELoggerHook
 from torchreid_tasks.train_task import OTEClassificationTrainingTask
 from mpa_tasks.apis import BaseTask, TrainType
 from mpa_tasks.apis.classification import ClassificationConfig
+from mpa_tasks.utils.data_utils import get_actmap
 from mpa.utils.config_utils import MPAConfig
 from mpa.utils.logger import get_logger
 from ote_sdk.entities.label import Domain
@@ -98,29 +101,16 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         dump_saliency_map = not inference_parameters.is_evaluation if inference_parameters else True        
         results = self._run_task(stage_module, mode='train', dataset=dataset, dump_features=dump_features,
                                 dump_saliency_map=dump_saliency_map)
-        # TODO[EUGENE]: POST PROCESS RESULTS
         logger.debug(f'result of run_task {stage_module} module = {results}')
         predictions = results['outputs']
+        prediction_results = zip(predictions['eval_predictions'], predictions['feature_vectors'], 
+                                  predictions['saliency_maps'])
 
         update_progress_callback = default_progress_callback
         if inference_parameters is not None:
             update_progress_callback = inference_parameters.update_progress
 
-        dataset_size = len(dataset)
-        for i, (dataset_item, prediction_item) in enumerate(zip(dataset, predictions)):
-            label = []
-            if self._multilabel:
-                pos_thr = 0.5
-                for cls_idx, pred_item in enumerate(prediction_item):
-                    if pred_item > pos_thr:
-                        cls_label = ScoredLabel(self.labels[cls_idx], probability=float(pred_item))
-                        label.append(cls_label)
-            else:
-                label_idx = prediction_item.argmax()
-                cls_label = ScoredLabel(self._labels[label_idx], probability=float(prediction_item[label_idx]))
-                label.append(cls_label)
-            dataset_item.append_labels(label)
-            update_progress_callback(int(i / dataset_size * 100))
+        self._add_predictions_to_dataset(prediction_results, dataset)
         return dataset
 
     def evaluate(self,
@@ -167,6 +157,33 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
                 output_model.set_data('openvino.xml', f.read())
         output_model.set_data("label_schema.json", label_schema_to_bytes(self._task_environment.label_schema))
         logger.info('Exporting completed')
+
+    def _add_predictions_to_dataset(self, prediction_results, dataset):
+        """ Loop over dataset again to assign predictions. Convert from MMClassification format to OTE format. """
+        for dataset_item, (prediction_item, feature_vector, saliency_map) in zip(dataset, prediction_results):
+            label = []
+            if self._multilabel:
+                pos_thr = 0.5
+                for cls_idx, pred_item in enumerate(prediction_item):
+                    if pred_item > pos_thr:
+                        cls_label = ScoredLabel(self.labels[cls_idx], probability=float(pred_item))
+                        label.append(cls_label)
+            else:
+                label_idx = prediction_item.argmax()
+                cls_label = ScoredLabel(self._labels[label_idx], probability=float(prediction_item[label_idx]))
+                label.append(cls_label)
+            dataset_item.append_labels(label)
+            if feature_vector is not None:
+                active_score = TensorEntity(name="representation_vector", numpy=feature_vector)
+                dataset_item.append_metadata_item(active_score)
+            
+            if saliency_map is not None:
+                saliency_map = get_actmap(saliency_map, (dataset_item.width, dataset_item.height) )
+                saliency_map_media = ResultMediaEntity(name="saliency_map", type="Saliency map",
+                                                annotation_scene=dataset_item.annotation_scene, 
+                                                numpy=saliency_map, roi=dataset_item.roi, label=label[0].label)
+                dataset_item.append_metadata_item(saliency_map_media, model=self._task_environment.model)
+
 
     def _init_recipe_hparam(self) -> dict:
         return ConfigDict(
