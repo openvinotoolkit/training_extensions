@@ -20,10 +20,9 @@ entrypoints:
 hyper_parameters:
   base_path: ./configuration.yaml
   parameter_overrides:
-    dataset:
+    learning_parameters:
       train_batch_size:
         auto_hpo_state: POSSIBLE
-    model:
       lr:
         auto_hpo_state: POSSIBLE
 

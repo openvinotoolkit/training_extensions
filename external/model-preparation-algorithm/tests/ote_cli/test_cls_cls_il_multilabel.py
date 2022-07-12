@@ -31,28 +31,46 @@ from ote_cli.utils.tests import (
     xfail_templates,
 )
 
-
-args = {
-    '--train-ann-file': '',
-    '--train-data-roots': 'data/classification/train',
-    '--val-ann-file': '',
-    '--val-data-roots': 'data/classification/val',
-    '--test-ann-files': '',
-    '--test-data-roots': 'data/classification/val',
-    '--input': 'data/classification/val/0',
+# Pre-train w/ 'car', 'tree' classes
+args0 = {
+    '--train-ann-file': 'data/car_tree_bug/annotations/multilabel_car_tree.json',
+    '--train-data-roots': 'data/car_tree_bug/images',
+    '--val-ann-file': 'data/car_tree_bug/annotations/multilabel_car_tree.json',
+    '--val-data-roots': 'data/car_tree_bug/images',
+    '--test-ann-files': 'data/car_tree_bug/annotations/multilabel_car_tree.json',
+    '--test-data-roots': 'data/car_tree_bug/images',
+    '--input': 'data/car_tree_bug/images',
     'train_params': [
         'params',
         '--learning_parameters.num_iters',
         '2',
         '--learning_parameters.batch_size',
-        '2',
+        '4',
     ]
 }
 
-root = '/tmp/ote_cli/'
+# Class-Incremental learning w/ 'car', 'tree', 'bug' classes
+args = {
+    '--train-ann-file': 'data/car_tree_bug/annotations/multilabel_default.json',
+    '--train-data-roots': 'data/car_tree_bug/images',
+    '--val-ann-file': 'data/car_tree_bug/annotations/multilabel_default.json',
+    '--val-data-roots': 'data/car_tree_bug/images',
+    '--test-ann-files': 'data/car_tree_bug/annotations/multilabel_default.json',
+    '--test-data-roots': 'data/car_tree_bug/images',
+    '--input': 'data/car_tree_bug/images',
+    'train_params': [
+        'params',
+        '--learning_parameters.num_iters',
+        '2',
+        '--learning_parameters.batch_size',
+        '4',
+    ]
+}
+
+root = '/tmp/ote_cli_multilabel/'
 ote_dir = os.getcwd()
 
-templates = Registry('external/model-preparation-algorithm').filter(task_type='CLASSIFICATION').templates
+templates = Registry('external/model-preparation-algorithm', experimental=True).filter(task_type='CLASSIFICATION').templates
 templates_ids = [template.model_template_id for template in templates]
 
 
@@ -65,7 +83,7 @@ class TestToolsClsClsIncr:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_ote_train(self, template):
-        ote_train_testing(template, root, ote_dir, args)
+        ote_train_testing(template, root, ote_dir, args0)
         _, template_work_dir, _ = get_some_vars(template, root)
         args1 = args.copy()
         args1['--load-weights'] = f'{template_work_dir}/trained_{template.model_template_id}/weights.pth'
@@ -89,26 +107,31 @@ class TestToolsClsClsIncr:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_ote_demo(self, template):
+        pytest.skip("demo for multi-label classification is not supported now.")
         ote_demo_testing(template, root, ote_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_ote_demo_openvino(self, template):
+        pytest.skip("demo for multi-label classification is not supported now.")
         ote_demo_openvino_testing(template, root, ote_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_ote_deploy_openvino(self, template):
+        pytest.xfail("Known issue CVS-84981")
         ote_deploy_openvino_testing(template, root, ote_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_ote_eval_deployment(self, template):
+        pytest.xfail("Known issue CVS-84981")  # require pass for test_ote_deploy_openvino
         ote_eval_deployment_testing(template, root, ote_dir, args, threshold=0.0)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_ote_demo_deployment(self, template):
+        pytest.xfail("Known issue CVS-84981, demo for multi-label classification is not supported now.")
         ote_demo_deployment_testing(template, root, ote_dir, args)
 
     @e2e_pytest_component
