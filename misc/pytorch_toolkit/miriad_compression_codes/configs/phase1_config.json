@@ -1,7 +1,7 @@
 {
     "train": {
-        "traindata": "",
-        "testdata": "",
+        "train_data": "phase1data/train/",
+        "test_data": "phase1data/test/",
         "batch_size": 10,
         "epochs": 5,
         "gpu": "True",
@@ -12,6 +12,7 @@
         "depth": 3,
         "width": 64,
         "phi": 1,
+        "phase": 1,
         "efficient_net": "True",
         "iterate": 5,
         "lr": 1e-8,
@@ -55,8 +56,8 @@
         "alpha": 1.833,
         "n_digestunits": 3,
         "savepath": "model_weights",
-        "default_image_path": "test_data/cbis_sample/test",
-        "image_path": "test_data/cbis_sample/test"
+        "default_image_path": "phase1data/train/",
+        "image_path": "phase1data/train/"
     },
     "inference": {
         "model_file": "args.model_file",
@@ -72,6 +73,7 @@
         "depth": 3,
         "width": 64,
         "max_samples": 10,
+        "phase": 1,
         "checkpoint": "model_weights/miriad.pth",
         "class_count": 3,
         "dummy_valid_list": [
@@ -103,8 +105,8 @@
             1024,
             1024
         ],
-        "default_image_path": "test_data/cbis_sample/test",
-        "image_path": "test_data/cbis_sample/test"
+        "default_image_path": "phase1data/train/",
+        "image_path": "phase1data/train/"
     },
     "export": {
         "checkpoint": "model_weights/miriad.pth",
@@ -119,6 +121,7 @@
         "alpha": 1.833,
         "beta": 1.044,
         "phi": -0.1,
+        "phase": 1,
         "class_count": 3
     }
 }
