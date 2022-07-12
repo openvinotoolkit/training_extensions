@@ -148,7 +148,7 @@ class BaseTask:
     def hyperparams(self):
         return self._hyperparams
 
-    def _initialize(self, dataset, output_model=None):
+    def _initialize(self, dataset=None, output_model=None):
         """ prepare configurations to run a task through MPA's stage
         """
         logger.info('initializing....')

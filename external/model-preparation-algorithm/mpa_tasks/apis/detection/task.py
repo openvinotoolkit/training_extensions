@@ -34,6 +34,7 @@ from ote_sdk.entities.model import (ModelEntity, ModelFormat,
                                     ModelOptimizationType, ModelPrecision)
 from ote_sdk.entities.model_template import TaskType
 from ote_sdk.entities.resultset import ResultSetEntity
+from ote_sdk.entities.result_media import ResultMediaEntity
 from ote_sdk.entities.scored_label import ScoredLabel
 from ote_sdk.entities.shapes.polygon import Point, Polygon
 from ote_sdk.entities.shapes.rectangle import Rectangle
@@ -87,13 +88,13 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         stage_module = 'DetectionInferrer'
         self._data_cfg = self._init_test_data_cfg(dataset)
         results = self._run_task(stage_module, mode='train', dataset=dataset, parameters=inference_parameters)
-        # TODO: InferenceProgressCallback register
+
         logger.debug(f'result of run_task {stage_module} module = {results}')
         output = results['outputs']
         predictions = output['detections']
-        # TODO: feature maps should be came from the inference results
-        featuremaps = [None for _ in range(len(predictions))]
-        prediction_results = zip(predictions, featuremaps)
+        featuremaps = output['feature_vectors']
+        saliency_maps = output['saliency_maps']
+        prediction_results = zip(predictions, featuremaps, saliency_maps)
         self._add_predictions_to_dataset(prediction_results, dataset, self.confidence_threshold)
         logger.info('Inference completed')
         return dataset
@@ -127,12 +128,12 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         output_model.optimization_type = ModelOptimizationType.MO
 
         stage_module = 'DetectionExporter'
-        results = self._run_task(stage_module, mode='train', precision=self._precision_from_config[0].name)
+        self._model_cfg = self._initialize()
+        results = self._run_task(stage_module, mode='train', precision=self._precision[0].name)
         results = results.get('outputs')
         logger.debug(f'results of run_task = {results}')
         if results is None:
             logger.error(f"error while exporting model {results.get('msg')}")
-            # output_model.model_status = ModelStatus.FAILED
         else:
             bin_file = results.get('bin')
             xml_file = results.get('xml')
@@ -145,9 +146,8 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
             output_model.set_data(
                 'confidence_threshold',
                 np.array([self.confidence_threshold], dtype=np.float32).tobytes())
-            output_model.precision = self._precision_from_config
+            output_model.precision = self._precision
             output_model.optimization_methods = self._optimization_methods
-            # output_model.model_status = ModelStatus.SUCCESS
             output_model.set_data("label_schema.json", label_schema_to_bytes(self._task_environment.label_schema))
         logger.info('Exporting completed')
 
@@ -210,7 +210,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
 
     def _add_predictions_to_dataset(self, prediction_results, dataset, confidence_threshold=0.0):
         """ Loop over dataset again to assign predictions. Convert from MMDetection format to OTE format. """
-        for dataset_item, (all_results, feature_vector) in zip(dataset, prediction_results):
+        for dataset_item, (all_results, feature_vector, saliency_map) in zip(dataset, prediction_results):
             width = dataset_item.width
             height = dataset_item.height
 
@@ -228,6 +228,14 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
             if feature_vector is not None:
                 active_score = TensorEntity(name="representation_vector", numpy=feature_vector)
                 dataset_item.append_metadata_item(active_score)
+
+            if saliency_map is not None:
+                width, height = dataset_item.width, dataset_item.height
+                saliency_map = cv2.resize(saliency_map, (width, height), interpolation=cv2.INTER_NEAREST)
+                saliency_map_media = ResultMediaEntity(name="saliency_map", type="Saliency map",
+                                                annotation_scene=dataset_item.annotation_scene, 
+                                                numpy=saliency_map, roi=dataset_item.roi)
+                dataset_item.append_metadata_item(saliency_map_media, model=self._task_environment.model)
 
     def _patch_data_pipeline(self):
         base_dir = os.path.abspath(os.path.dirname(self.template_file_path))
@@ -358,7 +366,7 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
         torch.save(modelinfo, buffer)
         output_model.set_data("weights.pth", buffer.getvalue())
         output_model.set_data("label_schema.json", label_schema_to_bytes(self._task_environment.label_schema))
-        output_model.precision = [ModelPrecision.FP32]
+        output_model.precision = self._precision
 
     def cancel_training(self):
         """
@@ -433,8 +441,9 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
         output = results['outputs']
         val_preds = output['detections']
         val_map = output['metric']
-        featuremaps = [None for _ in range(len(val_preds))]
-        val_preds = zip(val_preds, featuremaps)
+        featuremaps = output['feature_vectors']
+        saliency_maps = output['saliency_maps']
+        val_preds = zip(val_preds, featuremaps, saliency_maps)
         self._add_predictions_to_dataset(val_preds, preds_val_dataset, 0.0)
 
         result_set = ResultSetEntity(
