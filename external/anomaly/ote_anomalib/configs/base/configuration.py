@@ -46,12 +46,10 @@ class BaseAnomalyConfig(ConfigurableParameters):
     description = header
 
     @attrs
-    class DatasetParameters(ParameterGroup):
-        """
-        Parameters related to dataloader
-        """
+    class LearningParameters(ParameterGroup):
+        """Parameters that can be tuned using HPO."""
 
-        header = string_attribute("Dataset Parameters")
+        header = string_attribute("Learning Parameters")
         description = header
 
         train_batch_size = configurable_integer(
@@ -66,6 +64,21 @@ class BaseAnomalyConfig(ConfigurableParameters):
             "potentially causing out of memory errors, please update with caution.",
             affects_outcome_of=ModelLifecycle.TRAINING,
         )
+
+        backbone = selectable(
+            default_value=ModelBackbone.RESNET18,
+            header="Model Backbone",
+            description="Pre-trained backbone used for feature extraction",
+        )
+
+    @attrs
+    class DatasetParameters(ParameterGroup):
+        """
+        Parameters related to dataloader
+        """
+
+        header = string_attribute("Dataset Parameters")
+        description = header
 
         num_workers = configurable_integer(
             default_value=8,
@@ -129,22 +142,7 @@ class BaseAnomalyConfig(ConfigurableParameters):
             affects_outcome_of=ModelLifecycle.TRAINING,
         )
 
-    @attrs
-    class ModelParameters(ParameterGroup):
-        """
-        Parameter Group for tuning the model
-        """
-
-        header = string_attribute("Model Parameters")
-        description = header
-
-        backbone = selectable(
-            default_value=ModelBackbone.RESNET18,
-            header="Model Backbone",
-            description="Pre-trained backbone used for feature extraction",
-        )
-
-    model = add_parameter_group(ModelParameters)
+    learning_parameters = add_parameter_group(LearningParameters)
     dataset = add_parameter_group(DatasetParameters)
     pot_parameters = add_parameter_group(POTParameters)
     nncf_optimization = add_parameter_group(NNCFOptimization)

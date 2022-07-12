@@ -40,10 +40,8 @@ class STFPMAnomalyBaseConfig(BaseAnomalyConfig):
     description = header
 
     @attrs
-    class ModelParameters(BaseAnomalyConfig.ModelParameters):
-        """
-        Parameter Group for training model
-        """
+    class LearningParameters(BaseAnomalyConfig.LearningParameters):
+        """Parameters that can be tuned using HPO."""
 
         lr = configurable_float(
             default_value=0.4,
@@ -99,15 +97,6 @@ class STFPMAnomalyBaseConfig(BaseAnomalyConfig):
 
         early_stopping = add_parameter_group(EarlyStoppingParameters)
 
-    @attrs
-    class TrainerParameters(ParameterGroup):
-        """
-        Parameters related to PyTorch Lightning trainer
-        """
-
-        header = string_attribute("Trainer Parameters")
-        description = header
-
         max_epochs = configurable_integer(
             default_value=100,
             header="Max Epochs",
@@ -119,5 +108,4 @@ class STFPMAnomalyBaseConfig(BaseAnomalyConfig):
             affects_outcome_of=ModelLifecycle.TRAINING,
         )
 
-    trainer = add_parameter_group(TrainerParameters)
-    model = add_parameter_group(ModelParameters)
+    learning_parameters = add_parameter_group(LearningParameters)

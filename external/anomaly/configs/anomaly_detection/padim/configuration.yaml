@@ -23,6 +23,35 @@ dataset:
     value: 8
     visible_in_ui: true
     warning: null
+  type: PARAMETER_GROUP
+  visible_in_ui: true
+description: Configuration for Padim
+header: Configuration for Padim
+id: ""
+learning_parameters:
+  backbone:
+    affects_outcome_of: NONE
+    auto_hpo_state: not_possible
+    auto_hpo_value: null
+    default_value: resnet18
+    description: Pre-trained backbone used for feature extraction
+    editable: true
+    enum_name: ModelBackbone
+    header: Model Backbone
+    options:
+      RESNET18: resnet18
+      WIDE_RESNET_50: wide_resnet50_2
+    type: SELECTABLE
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: resnet18
+    visible_in_ui: true
+    warning: null
+  description: Learning Parameters
+  header: Learning Parameters
   train_batch_size:
     affects_outcome_of: TRAINING
     auto_hpo_state: not_possible
@@ -47,35 +76,6 @@ dataset:
     warning:
       Increasing this value may cause the system to use more memory than available,
       potentially causing out of memory errors, please update with caution.
-  type: PARAMETER_GROUP
-  visible_in_ui: true
-description: Configuration for Padim
-header: Configuration for Padim
-id: ""
-model:
-  backbone:
-    affects_outcome_of: NONE
-    auto_hpo_state: not_possible
-    auto_hpo_value: null
-    default_value: resnet18
-    description: Pre-trained backbone used for feature extraction
-    editable: true
-    enum_name: ModelBackbone
-    header: Model Backbone
-    options:
-      RESNET18: resnet18
-      WIDE_RESNET_50: wide_resnet50_2
-    type: SELECTABLE
-    ui_rules:
-      action: DISABLE_EDITING
-      operator: AND
-      rules: []
-      type: UI_RULES
-    value: resnet18
-    visible_in_ui: true
-    warning: null
-  description: Model Parameters
-  header: Model Parameters
   type: PARAMETER_GROUP
   visible_in_ui: true
 nncf_optimization:
