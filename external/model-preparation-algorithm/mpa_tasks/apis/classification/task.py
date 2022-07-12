@@ -269,6 +269,7 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
                 cfg.type = 'MPAMultilabelClsDataset'
             elif self._hierarchical:
                 cfg.type = 'MPAHierarchicalClsDataset'
+                cfg.hierarchical_info = self._hierarchical_info
                 if subset == 'train':
                     cfg.drop_last = True  # For stable hierarchical information indexing
             else:
@@ -284,9 +285,6 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
             cfg.ote_dataset = None
             cfg.labels = None
             cfg.empty_label = self._empty_label
-            cfg.hierarchical = self._hierarchical
-            cfg.multilabel = self._multilabel
-            cfg.hierarchical_info = self._hierarchical_info
             for pipeline_step in cfg.pipeline:
                 if subset == 'train' and pipeline_step.type == 'Collect':
                     pipeline_step = BaseTask._get_meta_keys(pipeline_step)
