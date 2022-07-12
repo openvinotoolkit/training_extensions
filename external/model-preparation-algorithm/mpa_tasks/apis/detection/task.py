@@ -5,7 +5,7 @@
 import io
 import os
 from collections import defaultdict
-from typing import Optional, Tuple, Iterable
+from typing import List, Optional, Tuple, Iterable
 
 import cv2
 import numpy as np
