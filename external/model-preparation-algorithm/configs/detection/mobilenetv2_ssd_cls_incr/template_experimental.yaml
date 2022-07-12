@@ -1,10 +1,10 @@
 # Description.
-model_template_id: ClassIncremental_Object_Detection_Gen3_ATSS
-name: ATSS-ClsIncr
+model_template_id: ClassIncremental_Object_Detection_Gen3_SSD
+name: SSD-ClsIncr
 task_type: DETECTION
 task_family: VISION
 instantiation: "CLASS"
-summary: Class-Incremental Object Detection for ATSS
+summary: Class-Incremental Object Detection for SSD
 application: ~
 
 # Algo backend.
@@ -28,9 +28,9 @@ hyper_parameters:
       learning_rate:
         default_value: 0.001
       learning_rate_warmup_iters:
-        default_value: 10
+        default_value: 200
       num_iters:
-        default_value: 100
+        default_value: 30
     algo_backend:
       train_type:
         default_value: Incremental
