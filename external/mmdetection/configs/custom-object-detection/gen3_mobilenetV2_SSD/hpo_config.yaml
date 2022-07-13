@@ -12,5 +12,5 @@ hp_space:
     param_type: qloguniform
     range:
       - 4
-      - 10
+      - 20
       - 2
