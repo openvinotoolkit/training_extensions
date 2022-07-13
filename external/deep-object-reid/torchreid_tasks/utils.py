@@ -128,9 +128,24 @@ class ClassificationDatasetAdapter(DatasetEntity):
             else: # load multihead
                 groups = annotation['hierarchy']
                 all_classes = []
+                def add_subtask_labels(group):
+                    if isinstance(group, dict) and 'subtask' in group:
+                        subtask = group['subtask']
+                        if isinstance(subtask, list):
+                            for task in subtask:
+                                for task_label in task['labels']:
+                                    all_classes.append(task_label)
+                        elif isinstance(subtask, dict):
+                            for task_label in subtask['labels']:
+                                all_classes.append(task_label)
+                        add_subtask_labels(subtask)
+                    elif isinstance(group, list):
+                        for task in group:
+                            add_subtask_labels(task)
                 for group in groups:
                     for label in group['labels']:
                         all_classes.append(label)
+                    add_subtask_labels(group)
                 annotation_type = ClassificationType.MULTIHEAD
 
             images_info = annotation['images']
