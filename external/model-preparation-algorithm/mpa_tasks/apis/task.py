@@ -159,6 +159,15 @@ class BaseTask:
 
         # prepare model config
         self._model_cfg = self._init_model_cfg()
+
+        # Remove FP16 config if running on CPU device and revert to FP32 
+        # https://github.com/pytorch/pytorch/issues/23377
+        if not torch.cuda.is_available() and 'fp16' in self._model_cfg:
+            logger.info(f'Revert FP16 to FP32 on CPU device')
+            if isinstance(self._model_cfg, Config):
+                del self._model_cfg._cfg_dict['fp16']
+            elif isinstance(self._model_cfg, ConfigDict):
+                del self._model_cfg['fp16']
         self._precision = self._precision_from_config
 
         # add Cancel tranining hook
