@@ -63,7 +63,7 @@ args = {
 root = '/tmp/ote_cli/'
 ote_dir = os.getcwd()
 
-templates = Registry('external/deep-object-reid').filter(task_type='CLASSIFICATION').templates
+templates = Registry('external/deep-object-reid', experimental=True).filter(task_type='CLASSIFICATION').templates
 templates_ids = [template.model_template_id for template in templates]
 
 

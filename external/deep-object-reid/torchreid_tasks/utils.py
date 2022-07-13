@@ -389,7 +389,7 @@ def reload_hyper_parameters(model_template: ModelTemplate):
     conf_yaml = osp.join(template_dir, conf_yaml)
     shutil.copy(conf_yaml, temp_folder)
     shutil.copy(template_file, temp_folder)
-    model_template.hyper_parameters.load_parameters(osp.join(temp_folder, 'template.yaml'))
+    model_template.hyper_parameters.load_parameters(osp.join(temp_folder, 'template_experimental.yaml'))
     assert model_template.hyper_parameters.data
 
 
