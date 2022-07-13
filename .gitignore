@@ -20,3 +20,4 @@ data/*
 
 *.tar.gz
 *.zip
+misc/pytorch_toolkit/miriad_compression_codes/model_weights/*
