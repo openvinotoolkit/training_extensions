@@ -121,16 +121,16 @@ class ClassificationDatasetAdapter(DatasetEntity):
         out_data = []
         with open(annot_path) as f:
             annotation = json.load(f)
-            if not 'label_groups' in annotation:
+            if not 'hierarchy' in annotation:
                 all_classes = sorted(annotation['classes'])
                 annotation_type = ClassificationType.MULTILABEL
                 groups = [[c] for c in all_classes]
             else: # load multihead
-                groups = annotation['label_groups']
+                groups = annotation['hierarchy']
                 all_classes = []
-                for g in groups:
-                    for c in g:
-                        all_classes.append(c)
+                for group in groups:
+                    for label in group['labels']:
+                        all_classes.append(label)
                 annotation_type = ClassificationType.MULTIHEAD
 
             images_info = annotation['images']
