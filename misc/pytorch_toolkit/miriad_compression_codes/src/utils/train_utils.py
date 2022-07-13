@@ -231,10 +231,8 @@ def train_model(config):
                                           pin_memory=True, shuffle=False)
 
     else:
-        # path_train_latent = config['default_image_path'] + "latent/"
-        # path_train_gdtruth = config['default_image_path'] + "gd_truth/"
-        path_train_latent = config['path_to_latent']
-        path_train_gdtruth = config['path_to_gdtruth']
+        path_train_latent = config['train_data'] + "latent/"
+        path_train_gdtruth = config['train_data'] + "gd_truth/"
 
         train_dataset = CustomDatasetPhase2(path_train_latent,
                                             path_train_gdtruth, transform_images=None,
@@ -245,10 +243,8 @@ def train_model(config):
                                            shuffle=True, collate_fn=my_collate)
 
         # Dataset & dataloader for inference
-        # path_test_latent = config['test_data'] + "latent/" 
-        # path_test_gdtruth = config['test_data'] + "gd_truth/"
-        path_test_latent = config['path_to_latent']
-        path_test_gdtruth = config['path_to_gdtruth']
+        path_test_latent = config['test_data'] + "latent/" 
+        path_test_gdtruth = config['test_data'] + "gd_truth/"
 
         test_dataset = CustomDatasetPhase2(path_test_latent,
                                            path_test_gdtruth, transform_images=None,
