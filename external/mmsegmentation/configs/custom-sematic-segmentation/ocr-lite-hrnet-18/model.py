@@ -10,7 +10,6 @@ ignore_keys = [r'^backbone\.increase_modules\.', r'^backbone\.increase_modules\.
 norm_cfg = dict(type='SyncBN', requires_grad=True)
 model = dict(
     type='EncoderDecoder',
-    num_stages=2,
     pretrained=None,
     backbone=dict(
         type='LiteHRNet',
@@ -80,7 +79,8 @@ model = dict(
                 loss_jitter_prob=0.01,
                 sampler=dict(type='MaxPoolingPixelSampler', ratio=0.25, p=1.7),
                 loss_weight=1.0),
-        ]),
+        ]
+    ),
     train_cfg=dict(
         mix_loss=dict(enable=False, weight=0.1)
     ),

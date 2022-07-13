@@ -80,7 +80,8 @@ model = dict(
                 loss_jitter_prob=0.01,
                 sampler=dict(type='MaxPoolingPixelSampler', ratio=0.25, p=1.7),
                 loss_weight=1.0),
-        ]), 
+        ]
+    ), 
     train_cfg=dict(
         mix_loss=dict(
             enable=False,

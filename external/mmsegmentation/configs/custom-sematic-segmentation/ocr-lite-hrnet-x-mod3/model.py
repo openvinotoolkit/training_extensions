@@ -94,7 +94,8 @@ model = dict(
                 focal_gamma=1.0,
                 loss_jitter_prob=0.01,
                 loss_weight=4.0),
-        ]),
+        ]
+    ),
     auxiliary_head=[
         dict(type='FCNHead',
              in_channels=[18, 60, 80, 160, 320],
