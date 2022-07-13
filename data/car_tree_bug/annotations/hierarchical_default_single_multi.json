@@ -1,0 +1,34 @@
+{"images": 
+    [["Slide10.PNG", ["male", "car", "horse"]],
+     ["Slide12.PNG", ["male", "car", "horse"]], 
+     ["Slide14.PNG", ["male", "car", "horse"]], 
+     ["Slide9.PNG", ["person", "car", "horse"]], 
+     ["Slide11.PNG", ["car"]], 
+     ["Slide17.PNG", ["horse"]], 
+     ["Slide7.PNG", ["female", "car"]], 
+     ["Slide6.PNG", ["horse", "car", "male"]], 
+     ["Slide4.PNG", ["person", "male"]], 
+     ["Slide20.PNG", ["horse"]], 
+     ["Slide5.PNG", ["person", "female"]], 
+     ["Slide1.PNG", ["female"]], 
+     ["Slide3.PNG", ["car", "female"]], 
+     ["Slide13.PNG", ["horse", "female"]], 
+     ["Slide2.PNG", ["person", "car"]], 
+     ["Slide8.PNG", ["person", "horse"]], 
+     ["Slide15.PNG", ["man", "female"]]], 
+ "hierarchy":
+            [
+                {
+                "parent": "self",
+                "group": "person_group",
+                "labels": ["male", "female"],
+                "task_type": "single-label"
+                },
+                {
+                "parent": "self",
+                "group": "objects",
+                "labels": ["person", "car", "horse"],
+                "task_type": "multi-label"
+                }
+            ]
+}

@@ -1,0 +1,61 @@
+{"images": 
+    [["Slide10.PNG", ["person_obj", "male", "car", "horse"]],
+     ["Slide12.PNG", ["objects", "male", "car", "horse"]], 
+     ["Slide14.PNG", ["male", "objects", "car", "horse"]], 
+     ["Slide9.PNG", ["person_obj", "car", "horse"]], 
+     ["Slide11.PNG", ["car"]], 
+     ["Slide17.PNG", ["horse"]], 
+     ["Slide7.PNG", ["female", "car"]], 
+     ["Slide6.PNG", ["horse", "car", "male"]], 
+     ["Slide4.PNG", ["person_obj", "male", "young_female"]], 
+     ["Slide20.PNG", ["horse"]], 
+     ["Slide5.PNG", ["person_obj", "female", "young_male"]], 
+     ["Slide1.PNG", ["female"]], 
+     ["Slide3.PNG", ["small_car", "female"]], 
+     ["Slide13.PNG", ["horse", "female"]], 
+     ["Slide2.PNG", ["person_obj", "car", "big_car"]], 
+     ["Slide8.PNG", ["person_obj", "horse"]], 
+     ["Slide15.PNG", ["person", "male", "old_male", "old_female", "female"]]], 
+ "hierarchy":
+            [
+                {
+                    "parent": "self",
+                    "group": "default_group",
+                    "labels": ["person", "objects"],
+                    "task_type": "multi-label",
+                    "subtask": [
+                      {
+                        "parent": "person",
+                        "group": "person_group",
+                        "labels": ["male", "female"],
+                        "task_type": "multi-label",
+                        "subtask": [
+                          {
+                            "parent": "person_group",
+                            "group": "male_group",
+                            "labels": ["young_male", "old_male"],
+                            "task_type": "single-label"
+                          },
+                          {
+                            "parent": "person_group",
+                            "group": "female_group",
+                            "labels": ["young_female", "old_female"],
+                            "task_type": "single-label"
+                          }]
+                      },
+                      {
+                        "parent": "objects",
+                        "group": "objects_group",
+                        "labels": ["person_obj", "car", "horse"],
+                        "task_type": "multi-label",
+                        "subtask": [
+                          {
+                            "parent": "car",
+                            "group": "car_group",
+                            "labels": ["small_car", "big_car"],
+                            "task_type": "single-label"
+                          }]
+                      }]
+                  }
+            ]
+}
