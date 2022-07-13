@@ -99,7 +99,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         is set to true, otherwise, `None` is returned.
 
         Args:
-            dataset (DatasetEntity): the valuation or test dataset to be inferred with
+            dataset (DatasetEntity): the validation or test dataset to be inferred with
             inference_parameters (Optional[InferenceParameters], optional): Option to run evaluation or not. 
                 If `InferenceParameters.is_evaluation=True` then metric is returned, otherwise, both metric and 
                 saliency maps are empty. Defaults to None.
@@ -122,19 +122,11 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         output = results['outputs']
         metric = output['metric']
         predictions = output['detections']
-<<<<<<< HEAD
         assert len(output['detections']) == len(output['feature_vectors']) == len(output['saliency_maps']), \
                 'Number of elements should be the same, however, number of outputs are ' \
                 f"{len(output['detections'])}, {len(output['feature_vectors'])}, and {len(output['saliency_maps'])}"
         prediction_results = zip(predictions, output['feature_vectors'], output['saliency_maps'])
         return prediction_results, metric
-=======
-        featuremaps = [None for _ in range(len(predictions))]
-        prediction_results = zip(predictions, featuremaps)
-        self._add_predictions_to_dataset(prediction_results, dataset, self.confidence_threshold)
-        logger.info('Inference completed')
-        return dataset
->>>>>>> develop
 
     def evaluate(self,
                  output_result_set: ResultSetEntity,
