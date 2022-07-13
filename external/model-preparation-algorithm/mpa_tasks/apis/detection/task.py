@@ -34,7 +34,6 @@ from ote_sdk.entities.model import (ModelEntity, ModelFormat,
                                     ModelOptimizationType)
 from ote_sdk.entities.model_template import TaskType
 from ote_sdk.entities.resultset import ResultSetEntity
-from ote_sdk.entities.result_media import ResultMediaEntity
 from ote_sdk.entities.scored_label import ScoredLabel
 from ote_sdk.entities.shapes.polygon import Point, Polygon
 from ote_sdk.entities.shapes.rectangle import Rectangle
@@ -88,13 +87,12 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         stage_module = 'DetectionInferrer'
         self._data_cfg = self._init_test_data_cfg(dataset)
         results = self._run_task(stage_module, mode='train', dataset=dataset, parameters=inference_parameters)
-
+        # TODO: InferenceProgressCallback register
         logger.debug(f'result of run_task {stage_module} module = {results}')
         output = results['outputs']
         predictions = output['detections']
-        featuremaps = output['feature_vectors']
-        saliency_maps = output['saliency_maps']
-        prediction_results = zip(predictions, featuremaps, saliency_maps)
+        featuremaps = [None for _ in range(len(predictions))]
+        prediction_results = zip(predictions, featuremaps)
         self._add_predictions_to_dataset(prediction_results, dataset, self.confidence_threshold)
         logger.info('Inference completed')
         return dataset
@@ -210,7 +208,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
 
     def _add_predictions_to_dataset(self, prediction_results, dataset, confidence_threshold=0.0):
         """ Loop over dataset again to assign predictions. Convert from MMDetection format to OTE format. """
-        for dataset_item, (all_results, feature_vector, saliency_map) in zip(dataset, prediction_results):
+        for dataset_item, (all_results, feature_vector) in zip(dataset, prediction_results):
             width = dataset_item.width
             height = dataset_item.height
 
@@ -228,14 +226,6 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
             if feature_vector is not None:
                 active_score = TensorEntity(name="representation_vector", numpy=feature_vector)
                 dataset_item.append_metadata_item(active_score)
-
-            if saliency_map is not None:
-                width, height = dataset_item.width, dataset_item.height
-                saliency_map = cv2.resize(saliency_map, (width, height), interpolation=cv2.INTER_NEAREST)
-                saliency_map_media = ResultMediaEntity(name="saliency_map", type="Saliency map",
-                                                annotation_scene=dataset_item.annotation_scene, 
-                                                numpy=saliency_map, roi=dataset_item.roi)
-                dataset_item.append_metadata_item(saliency_map_media, model=self._task_environment.model)
 
     def _patch_data_pipeline(self):
         base_dir = os.path.abspath(os.path.dirname(self.template_file_path))
@@ -377,8 +367,6 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
         """
         logger.info("Cancel training requested.")
         self._should_stop = True
-        # stop_training_filepath = os.path.join(self._training_work_dir, '.stop_training')
-        # open(stop_training_filepath, 'a').close()
         if self.cancel_interface is not None:
             self.cancel_interface.cancel()
         else:
@@ -441,9 +429,8 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
         output = results['outputs']
         val_preds = output['detections']
         val_map = output['metric']
-        featuremaps = output['feature_vectors']
-        saliency_maps = output['saliency_maps']
-        val_preds = zip(val_preds, featuremaps, saliency_maps)
+        featuremaps = [None for _ in range(len(val_preds))]
+        val_preds = zip(val_preds, featuremaps)
         self._add_predictions_to_dataset(val_preds, preds_val_dataset, 0.0)
 
         result_set = ResultSetEntity(
