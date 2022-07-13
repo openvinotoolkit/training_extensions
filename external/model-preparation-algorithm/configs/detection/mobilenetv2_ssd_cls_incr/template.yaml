@@ -1,19 +1,21 @@
 # Description.
-model_template_id: ClassIncremental_Object_Detection_Gen3_ATSS
-name: ATSS-ClsIncr
+model_template_id: Custom_Object_Detection_Gen3_SSD
+name: SSD
 task_type: DETECTION
 task_family: VISION
 instantiation: "CLASS"
-summary: Class-Incremental Object Detection for ATSS
+summary: Class-Incremental Object Detection for SSD
 application: ~
 
 # Algo backend.
-framework: MPA v1.1.0
+framework: OTEDetection v2.9.1
 
 # Task implementations.
 entrypoints:
   base: mpa_tasks.apis.detection.DetectionTrainTask
   openvino: detection_tasks.apis.detection.OpenVINODetectionTask
+  nncf: mpa_tasks.apis.detection.DetectionNNCFTask
+base_model_path: ../../../../mmdetection/configs/custom-object-detection/gen3_mobilenetV2_SSD/template_experimental.yaml
 
 # Capabilities.
 capabilities: []
@@ -28,9 +30,9 @@ hyper_parameters:
       learning_rate:
         default_value: 0.001
       learning_rate_warmup_iters:
-        default_value: 10
+        default_value: 200
       num_iters:
-        default_value: 100
+        default_value: 30
     algo_backend:
       train_type:
         default_value: Incremental

@@ -64,24 +64,24 @@ class ModelTemplate(unittest.TestCase):
 
     @e2e_pytest_api
     def test_reading_gen3_ssd(self):
-        template = parse_model_template(osp.join('configs', 'custom-object-detection', 'gen3_mobilenetV2_SSD', 'template.yaml'))
+        template = parse_model_template(osp.join('configs', 'custom-object-detection', 'gen3_mobilenetV2_SSD', 'template_experimental.yaml'))
         self.check_capabilities(template)
 
     @e2e_pytest_api
     def test_reading_gen3_atss(self):
-        template = parse_model_template(osp.join('configs', 'custom-object-detection', 'gen3_mobilenetV2_ATSS', 'template.yaml'))
+        template = parse_model_template(osp.join('configs', 'custom-object-detection', 'gen3_mobilenetV2_ATSS', 'template_experimental.yaml'))
         self.check_capabilities(template)
 
     @e2e_pytest_api
     def test_reading_gen3_vfnet(self):
-        template = parse_model_template(osp.join('configs', 'custom-object-detection', 'gen3_resnet50_VFNet', 'template_experimental.yaml'))
+        template = parse_model_template(osp.join('configs', 'custom-object-detection', 'gen3_resnet50_VFNet', 'template_depricated.yaml'))
         self.check_capabilities(template)
 
     @e2e_pytest_api
     def test_reading_yolox(self):
         template = parse_model_template(
             osp.join('configs', 'custom-object-detection', 'cspdarknet_YOLOX',
-                     'template.yaml'))
+                     'template_experimental.yaml'))
         self.check_capabilities(template)
 
 
@@ -95,7 +95,7 @@ def test_configuration_yaml():
 
 
 class Sample(unittest.TestCase):
-    template = osp.join(DEFAULT_TEMPLATE_DIR, 'template.yaml')
+    template = osp.join(DEFAULT_TEMPLATE_DIR, 'template_experimental.yaml')
 
     @e2e_pytest_api
     def test_sample_on_cpu(self):
@@ -520,7 +520,7 @@ class API(unittest.TestCase):
                 print(f'Performance of NNCF model: {nncf_performance.score.value:.4f}')
                 self.check_threshold(validation_performance, nncf_performance, nncf_perf_delta_tolerance,
                     'Too big performance difference after NNCF optimization.')
-                    
+
                 # Check whether optimize & export assigns correct model precision
                 nncf_task.export(ExportType.OPENVINO, nncf_model)
 

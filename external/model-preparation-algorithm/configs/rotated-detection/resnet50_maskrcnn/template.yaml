@@ -1,10 +1,10 @@
 # Description.
-model_template_id: Custom_Object_Detection_Gen3_VFNet
-name: VFNet
-task_type: DETECTION
+model_template_id: Custom_Rotated_Detection_via_Instance_Segmentation_MaskRCNN_ResNet50
+name: MaskRCNN-ResNet50
+task_type: ROTATED_DETECTION
 task_family: VISION
 instantiation: "CLASS"
-summary: Class-Incremental Object Detection for VFNet
+summary: Class-Incremental Rotated object detection for MaskRCNN-ResNet50
 application: ~
 
 # Algo backend.
@@ -14,6 +14,8 @@ framework: OTEDetection v2.9.1
 entrypoints:
   base: mpa_tasks.apis.detection.DetectionTrainTask
   openvino: detection_tasks.apis.detection.OpenVINODetectionTask
+  nncf: mpa_tasks.apis.detection.DetectionNNCFTask
+base_model_path: ../../../../mmdetection/configs/rotated_detection/resnet50_maskrcnn/template_experimental.yaml
 
 # Capabilities.
 capabilities: []
@@ -26,9 +28,9 @@ hyper_parameters:
       batch_size:
         default_value: 4
       learning_rate:
-        default_value: 0.001
+        default_value: 0.01
       learning_rate_warmup_iters:
-        default_value: 30
+        default_value: 100
       num_iters:
         default_value: 300
     algo_backend:
@@ -42,10 +44,5 @@ training_targets:
   - CPU
 
 # Stats.
-gigaflops: 457.4
-size: 126.0
-# # Inference options. Defined by OpenVINO capabilities, not Algo Backend or Platform.
-# inference_targets:
-#   - CPU
-#   - GPU
-#   - VPU
+gigaflops: 533.8
+size: 177.9
