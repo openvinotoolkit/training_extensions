@@ -35,7 +35,7 @@ def compare_ssim_batch(original, compressed, **kwargs):
     assert original.shape == compressed.shape, 'shapes should be same'
     assert len(original.shape) == 4  # Batch x Channel x Height x Width
     k = SSIM()
-    avg_ssim = SSIM.forward(k, input=torch.tensor(original, requires_grad=False),
-        target=torch.tensor(compressed, requires_grad=False))
+    avg_ssim = SSIM.forward(k, img1=torch.tensor(original, requires_grad=False),
+        img2=torch.tensor(compressed, requires_grad=False))
 
     return avg_ssim
