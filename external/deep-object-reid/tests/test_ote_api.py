@@ -48,7 +48,7 @@ DEFAULT_TEMPLATE_DIR = osp.join('configs', 'ote_custom_classification', 'efficie
 
 @e2e_pytest_api
 def test_reading_efficientnet_b0():
-    parse_model_template(osp.join('configs', 'ote_custom_classification', 'efficientnet_b0', 'template.yaml'))
+    parse_model_template(osp.join('configs', 'ote_custom_classification', 'efficientnet_b0', 'template_experimental.yaml'))
 
 
 @e2e_pytest_api
@@ -66,7 +66,7 @@ def test_configuration_yaml():
 
 
 def setup_configurable_parameters(template_dir, max_num_epochs=10):
-    model_template = parse_model_template(osp.join(template_dir, 'template.yaml'))
+    model_template = parse_model_template(osp.join(template_dir, 'template_experimental.yaml'))
     hyper_parameters = create(model_template.hyper_parameters.data)
     hyper_parameters.learning_parameters.max_num_epochs = max_num_epochs
     return hyper_parameters, model_template

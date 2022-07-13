@@ -43,6 +43,11 @@ from mpa.utils.config_utils import MPAConfig
 from mpa.utils.logger import get_logger
 from ote_sdk.entities.label import Domain
 
+from torchreid_tasks.nncf_task import OTEClassificationNNCFTask
+from ote_sdk.utils.argument_checks import check_input_parameters_type
+from ote_sdk.entities.model_template import parse_model_template
+
+
 logger = get_logger()
 
 TASK_CONFIG = ClassificationConfig
@@ -395,3 +400,22 @@ class ClassificationTrainTask(ClassificationInferenceTask):
             output.append(LineMetricsGroup(metrics=[metric_curve], visualization_info=visualization_info))
 
         return output, best_acc
+
+
+class ClassificationNNCFTask(OTEClassificationNNCFTask):
+
+    @check_input_parameters_type()
+    def __init__(self, task_environment: TaskEnvironment):
+        """"
+        Task for compressing classification models using NNCF.
+        """
+        curr_model_path = task_environment.model_template.model_template_path
+        base_model_path = os.path.join(
+            os.path.dirname(os.path.abspath(curr_model_path)),
+            task_environment.model_template.base_model_path
+        )
+        if os.path.isfile(base_model_path):
+            logger.info(f'Base model for NNCF: {base_model_path}')
+            # Redirect to base model
+            task_environment.model_template = parse_model_template(base_model_path)
+        super().__init__(task_environment)

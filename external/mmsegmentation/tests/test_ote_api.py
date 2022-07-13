@@ -131,7 +131,7 @@ class API(unittest.TestCase):
 
     @staticmethod
     def setup_configurable_parameters(template_dir, num_iters=10):
-        model_template = parse_model_template(osp.join(template_dir, 'template.yaml'))
+        model_template = parse_model_template(osp.join(template_dir, 'template_experimental.yaml'))
 
         hyper_parameters = create(model_template.hyper_parameters.data)
         hyper_parameters.learning_parameters.learning_rate_fixed_iters = 0
@@ -190,7 +190,7 @@ class API(unittest.TestCase):
         self.assertGreater(len(inference_progress_curve), 0)
         inference_progress_curve = np.asarray(inference_progress_curve)
         self.assertTrue(np.all(inference_progress_curve[1:] >= inference_progress_curve[:-1]))
-        
+
     @e2e_pytest_api
     def test_nncf_optimize_progress_tracking(self):
         pytest.xfail('NNCF is not supported yet')

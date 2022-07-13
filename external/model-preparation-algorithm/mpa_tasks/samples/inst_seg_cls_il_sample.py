@@ -38,7 +38,7 @@ def parse_args():
 colors = dict(red=(255, 0, 0), green=(0, 255, 0))
 
 
-def load_test_dataset(data_type):
+def load_test_dataset(data_type, task_type=Domain.INSTANCE_SEGMENTATION):
     from ote_sdk.entities.annotation import (Annotation, AnnotationSceneEntity,
                                              AnnotationSceneKind)
     from ote_sdk.entities.dataset_item import DatasetItemEntity
@@ -64,8 +64,8 @@ def load_test_dataset(data_type):
         return (image, gt)
 
     labels = [
-        LabelEntity(name='circle', domain=Domain.INSTANCE_SEGMENTATION, id=1),  # OLD class
-        LabelEntity(name='rect', domain=Domain.INSTANCE_SEGMENTATION, id=2),
+        LabelEntity(name='circle', domain=task_type, id=1),  # OLD class
+        LabelEntity(name='rect', domain=task_type, id=2),
     ]
 
     def get_image(type, subset, label_id):
@@ -181,22 +181,23 @@ def load_test_dataset(data_type):
     new = new_train + new_val
     if data_type == 'old':
         return DatasetEntity(old*5), [labels[0]]
-    if data_type == 'test':
+    elif data_type == 'test':
         return DatasetEntity(new_test*5), labels
     else:
         return DatasetEntity((old*5 + new*3)), labels
 
 
 def main(args):
+    logger.info('Load model template')
+    model_template = parse_model_template(args.template_file_path)
+    task_type = model_template.task_type.domain
+
     logger.info('Train initial model with OLD dataset')
-    dataset, labels_list = load_test_dataset('old')
+    dataset, labels_list = load_test_dataset('old', task_type)
     labels_schema = LabelSchemaEntity.from_labels(labels_list)
 
     logger.info(f'Train dataset: {len(dataset.get_subset(Subset.TRAINING))} items')
     logger.info(f'Validation dataset: {len(dataset.get_subset(Subset.VALIDATION))} items')
-
-    logger.info('Load model template')
-    model_template = parse_model_template(args.template_file_path)
 
     logger.info('Set hyperparameters')
     params = create(model_template.hyper_parameters.data)
@@ -226,7 +227,7 @@ def main(args):
     task.train(dataset, initial_model)
 
     logger.info('Class-incremental learning with OLD + NEW dataset')
-    dataset, labels_list = load_test_dataset('new')
+    dataset, labels_list = load_test_dataset('new', task_type)
     labels_schema = LabelSchemaEntity.from_labels(labels_list)
 
     logger.info(f'Train dataset: {len(dataset.get_subset(Subset.TRAINING))} items')
@@ -263,7 +264,7 @@ def main(args):
     task.train(dataset, output_model)
 
     logger.info('Get predictions on the test set')
-    testset, _ = load_test_dataset('test')
+    testset, _ = load_test_dataset('test', task_type)
     eval_dataset = testset.get_subset(Subset.TESTING)
     predicted_validation_dataset = task.infer(
         eval_dataset.with_empty_annotations(),

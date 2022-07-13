@@ -1,10 +1,10 @@
 # Description.
-model_template_id: ClassIncremental_Instance_Segmentation_MaskRCNN_EfficientNetB2B
-name: MaskRCNN-EfficientNetB2B-ClsIncr
-task_type: INSTANCE_SEGMENTATION
+model_template_id: Custom_Rotated_Detection_via_Instance_Segmentation_MaskRCNN_EfficientNetB2B
+name: MaskRCNN-EfficientNetB2B
+task_type: ROTATED_DETECTION
 task_family: VISION
 instantiation: "CLASS"
-summary: Class-Incremental Instance Segmentation for MaskRCNN-EfficientNetB2B
+summary: Class-Incremental Rotated object detection for MaskRCNN-EfficientNetB2B
 application: ~
 
 # Algo backend.
@@ -14,6 +14,8 @@ framework: OTEDetection v2.9.1
 entrypoints:
   base: mpa_tasks.apis.detection.DetectionTrainTask
   openvino: detection_tasks.apis.detection.OpenVINODetectionTask
+  nncf: mpa_tasks.apis.detection.DetectionNNCFTask
+base_model_path: ../../../../mmdetection/configs/rotated_detection/efficientnetb2b_maskrcnn/template_experimental.yaml
 
 # Capabilities.
 capabilities: []
