@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+from copy import copy
 from typing import Any, Dict, List, Sequence
 
 import numpy as np
@@ -192,7 +193,7 @@ class OTEDataset(CustomDataset):
         :param idx: int, Index of data.
         :return dict: Training data and annotation after pipeline with new keys introduced by pipeline.
         """
-        item = self.data_infos[idx]
+        item = copy(self.data_infos[idx])  # Copying dict(), not contents
         self.pre_pipeline(item)
         return self.pipeline(item)
 
@@ -203,7 +204,7 @@ class OTEDataset(CustomDataset):
         :param idx: int, Index of data.
         :return dict: Testing data after pipeline with new keys introduced by pipeline.
         """
-        item = self.data_infos[idx]
+        item = copy(self.data_infos[idx])  # Copying dict(), not contents
         self.pre_pipeline(item)
         return self.pipeline(item)
 
