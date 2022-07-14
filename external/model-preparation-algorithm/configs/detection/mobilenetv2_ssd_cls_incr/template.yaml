@@ -28,11 +28,11 @@ hyper_parameters:
       batch_size:
         default_value: 4
       learning_rate:
-        default_value: 0.001
+        default_value: 0.005
       learning_rate_warmup_iters:
-        default_value: 200
+        default_value: 10
       num_iters:
-        default_value: 30
+        default_value: 100
     algo_backend:
       train_type:
         default_value: Incremental
@@ -44,8 +44,8 @@ training_targets:
   - CPU
 
 # Stats.
-gigaflops: 20.6
-size: 9.1
+gigaflops: 9.4
+size: 7.6
 # # Inference options. Defined by OpenVINO capabilities, not Algo Backend or Platform.
 # inference_targets:
 #   - CPU
