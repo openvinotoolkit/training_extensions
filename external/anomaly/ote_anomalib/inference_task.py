@@ -25,7 +25,10 @@ from typing import Dict, List, Optional, Union
 
 import torch
 from anomalib.models import AnomalyModule, get_model
-from anomalib.utils.callbacks import MinMaxNormalizationCallback
+from anomalib.utils.callbacks import (
+    MetricsConfigurationCallback,
+    MinMaxNormalizationCallback,
+)
 from omegaconf import DictConfig, ListConfig
 from ote_anomalib.callbacks import AnomalyInferenceCallback, ProgressCallback
 from ote_anomalib.configs import get_anomalib_config
@@ -44,13 +47,11 @@ from ote_sdk.entities.model import (
 from ote_sdk.entities.model_template import TaskType
 from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.task_environment import TaskEnvironment
-from ote_sdk.entities.train_parameters import TrainParameters
 from ote_sdk.serialization.label_mapper import label_schema_to_bytes
 from ote_sdk.usecases.evaluation.metrics_helper import MetricsHelper
 from ote_sdk.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
 from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType, IExportTask
 from ote_sdk.usecases.tasks.interfaces.inference_interface import IInferenceTask
-from ote_sdk.usecases.tasks.interfaces.training_interface import ITrainingTask
 from ote_sdk.usecases.tasks.interfaces.unload_interface import IUnload
 from pytorch_lightning import Trainer
 
@@ -171,7 +172,14 @@ class AnomalyInferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload
         progress = ProgressCallback(parameters=inference_parameters)
         inference = AnomalyInferenceCallback(dataset, self.labels, self.task_type)
         normalize = MinMaxNormalizationCallback()
-        callbacks = [progress, normalize, inference]
+        metrics_configuration = MetricsConfigurationCallback(
+            config.metrics.threshold.adaptive,
+            config.metrics.threshold.image_default,
+            config.metrics.threshold.pixel_default,
+            config.metrics.image,
+            config.metrics.pixel,
+        )
+        callbacks = [progress, normalize, inference, metrics_configuration]
 
         self.trainer = Trainer(**config.trainer, logger=False, callbacks=callbacks)
         self.trainer.predict(model=self.model, datamodule=datamodule)
@@ -276,7 +284,7 @@ class AnomalyInferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload
         output_model.set_data("label_schema.json", label_schema_to_bytes(self.task_environment.label_schema))
         self._set_metadata(output_model)
 
-        f1_score = self.model.image_metrics.F1.compute().item()
+        f1_score = self.model.image_metrics.F1Score.compute().item()
         output_model.performance = Performance(score=ScoreMetric(name="F1 Score", value=f1_score))
         output_model.precision = self.precision
         output_model.optimization_methods = self.optimization_methods

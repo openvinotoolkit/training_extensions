@@ -20,10 +20,10 @@ from typing import Optional, Union
 
 from ote_sdk.entities.inference_parameters import InferenceParameters
 from ote_sdk.entities.train_parameters import TrainParameters, default_progress_callback
-from pytorch_lightning.callbacks.progress import ProgressBar
+from pytorch_lightning.callbacks.progress import TQDMProgressBar
 
 
-class ProgressCallback(ProgressBar):
+class ProgressCallback(TQDMProgressBar):
     """
     Modifies progress callback to show completion of the entire training step
     """
@@ -104,10 +104,10 @@ class ProgressCallback(ProgressBar):
             ) * 100
 
         elif stage == "predict":
-            self._progress = (self.predict_batch_idx / (self.total_predict_batches + 1e-10)) * 100
+            self._progress = (self.predict_batch_idx / (self.total_predict_batches_current_dataloader + 1e-10)) * 100
 
         elif stage == "test":
-            self._progress = (self.test_batch_idx / (self.total_test_batches + 1e-10)) * 100
+            self._progress = (self.test_batch_idx / (self.total_test_batches_current_dataloader + 1e-10)) * 100
         else:
             raise ValueError(f"Unknown stage {stage}. Available: train, predict and test")
 

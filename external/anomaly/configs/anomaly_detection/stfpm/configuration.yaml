@@ -58,13 +58,13 @@ learning_parameters:
       affects_outcome_of: NONE
       auto_hpo_state: not_possible
       auto_hpo_value: null
-      default_value: image_F1
+      default_value: image_F1Score
       description: The metric used to determine if the model should stop training
       editable: true
       enum_name: EarlyStoppingMetrics
       header: Early Stopping Metric
       options:
-        IMAGE_F1: image_F1
+        IMAGE_F1: image_F1Score
         IMAGE_ROC_AUC: image_AUROC
       type: SELECTABLE
       ui_rules:
@@ -72,7 +72,7 @@ learning_parameters:
         operator: AND
         rules: []
         type: UI_RULES
-      value: image_F1
+      value: image_F1Score
       visible_in_ui: true
       warning: null
     patience:

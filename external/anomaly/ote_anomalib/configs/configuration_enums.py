@@ -34,7 +34,7 @@ class EarlyStoppingMetrics(ConfigurableEnum):
     """
 
     IMAGE_ROC_AUC = "image_AUROC"
-    IMAGE_F1 = "image_F1"
+    IMAGE_F1 = "image_F1Score"
 
 
 class ModelName(ConfigurableEnum):

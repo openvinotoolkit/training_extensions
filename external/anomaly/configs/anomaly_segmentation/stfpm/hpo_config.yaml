@@ -1,5 +1,5 @@
 # default model.lr: 0.4, dataset.train_batch_size: 32
-metric: image_F1
+metric: image_F1Score
 mode: max
 search_algorithm: asha
 early_stop: None
