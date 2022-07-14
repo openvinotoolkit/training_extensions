@@ -92,7 +92,6 @@ class ClassificationDatasetAdapter(DatasetEntity):
             if v:
                 self.data_roots[k] = osp.abspath(v)
                 if self.ann_files[k] and '.json' in self.ann_files[k] and osp.isfile(self.ann_files[k]):
-                    self.data_roots[k] = osp.dirname(self.ann_files[k])
                     self.annotations[k], self.data_type = \
                         self._load_text_annotation(self.ann_files[k], self.data_roots[k])
                 else:
@@ -195,8 +194,14 @@ class ClassificationDatasetAdapter(DatasetEntity):
     def _label_name_to_project_label(self, label_name):
         return [label for label in self.project_labels if label.name == label_name][0]
 
+    def is_multiclass(self):
+        return self.data_type == ClassificationType.MULTICLASS
+
     def is_multilabel(self):
         return self.data_type == ClassificationType.MULTILABEL
+
+    def is_multihead(self):
+        return self.data_type == ClassificationType.MULTIHEAD
 
     def generate_label_schema(self):
         label_schema = LabelSchemaEntity()
@@ -369,7 +374,7 @@ def reload_hyper_parameters(model_template: ModelTemplate):
     conf_yaml = osp.join(template_dir, conf_yaml)
     shutil.copy(conf_yaml, temp_folder)
     shutil.copy(template_file, temp_folder)
-    model_template.hyper_parameters.load_parameters(osp.join(temp_folder, 'template.yaml'))
+    model_template.hyper_parameters.load_parameters(osp.join(temp_folder, 'template_experimental.yaml'))
     assert model_template.hyper_parameters.data
 
 
@@ -411,7 +416,10 @@ class TrainingProgressCallback(TimeMonitorCallback):
             score = logs.get(self.update_progress_callback.metric, None)
         else:
             score = logs
-        if score is not None:
+        if (
+            score is not None
+            and hasattr(self.update_progress_callback, "hp_config")
+        ):
             score = float(score)
             print(f'score = {score} at epoch {self.current_epoch} / {self._num_iters}')
             # as a trick, score (at least if it's accuracy not the loss) and iteration number
@@ -487,6 +495,7 @@ def get_actmap(features: Union[np.ndarray, Iterable, int, float],
     am = 255 * (am - np.min(am)) / (np.max(am) - np.min(am) + 1e-12)
     am = np.uint8(np.floor(am))
     am = cv.applyColorMap(am, cv.COLORMAP_JET)
+    am = cv.cvtColor(am, cv.COLOR_BGR2RGB)
     return am
 
 
@@ -540,7 +549,7 @@ def get_hierarchical_predictions(logits: np.ndarray, labels: List[LabelEntity],
                                  pos_thr: float = 0.5, activate: bool = True) -> List[ScoredLabel]:
     predicted_labels = []
     for i in range(multihead_class_info['num_multiclass_heads']):
-        logits_begin, logits_end = multihead_class_info['head_idx_to_logits_range'][str(i)]
+        logits_begin, logits_end = multihead_class_info['head_idx_to_logits_range'][i]
         head_logits = logits[logits_begin : logits_end]
         if activate:
             head_logits = softmax_numpy(head_logits)

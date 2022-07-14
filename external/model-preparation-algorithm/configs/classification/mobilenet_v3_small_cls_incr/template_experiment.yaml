@@ -1,19 +1,21 @@
 # Description.
-model_template_id: ClassIncremental_Image_Classification_EfficinetNet-B0
-name: EfficientNet-B0-ClsIncr
+model_template_id: Custom_Image_Classification_MobileNet-V3-small
+name: MobileNet-V3-small
 task_type: CLASSIFICATION
 task_family: VISION
 instantiation: "CLASS"
-summary: Class-Incremental Image Classification for EfficientNet-B0
+summary: Class-Incremental Image Classification for MobileNet-V3-small
 application: ~
 
 # Algo backend.
-framework: MPA v1.1.0
+framework: OTEClassification v1.2.3
 
 # Task implementations.
 entrypoints:
   base: mpa_tasks.apis.classification.ClassificationTrainTask
   openvino: torchreid_tasks.openvino_task.OpenVINOClassificationTask
+  nncf: mpa_tasks.apis.classification.ClassificationNNCFTask
+base_model_path: ../../../../deep-object-reid/configs/ote_custom_classification/mobilenet_v3_small/template_experimental.yaml
 
 # Capabilities.
 capabilities: []
@@ -28,7 +30,9 @@ hyper_parameters:
       num_workers:
         default_value: 4
       learning_rate:
-        default_value: 0.007
+        default_value: 0.016
+      learning_rate_warmup_iters:
+        default_value: 100
       num_iters:
         default_value: 20
     algo_backend:
@@ -42,5 +46,5 @@ training_targets:
   - CPU
 
 # Stats.
-gigaflops: 0.81
-size: 4.09
+gigaflops: 0.12
+size: 1.56
