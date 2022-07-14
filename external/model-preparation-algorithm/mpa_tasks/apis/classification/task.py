@@ -111,6 +111,7 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
             update_progress_callback = inference_parameters.update_progress
 
         self._add_predictions_to_dataset(prediction_results, dataset)
+        update_progress_callback(1.0)
         return dataset
 
     def evaluate(self,
