@@ -138,7 +138,7 @@ model = dict(
             weight=0.1
         ),
         loss_reweighting=dict(
-            weights={'decode_0.loss_seg': 0.9,
+            weights={'decode.loss_seg': 0.9,
                      'aux_0.loss_seg': 0.5},
             momentum=0.1
         ),
