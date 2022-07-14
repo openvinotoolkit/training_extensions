@@ -102,13 +102,14 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
             pos_thr = 0.5
 
             if self._multilabel:
+                if max(prediction_item) < pos_thr:
+                    logger.info('Confidence is smaller than pos_thr, empty_label will be appended to item_labels.')
+                    item_labels.append(ScoredLabel(self._empty_label, probability=1.))
+                    continue
                 for cls_idx, pred_item in enumerate(prediction_item):
                     if pred_item > pos_thr:
                         cls_label = ScoredLabel(self.labels[cls_idx], probability=float(pred_item))
                         item_labels.append(cls_label)
-                    else:
-                        logger.info('Confidence is smaller than pos_thr, empty_label will be appended to item_labels.')
-                        item_labels.append(ScoredLabel(self._empty_label, probability=1.))
 
             elif self._hierarchical:
                 for i in range(self._hierarchical_info['num_multiclass_heads']):
