@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 import datetime
-from copy import deepcopy
+from copy import copy
 from typing import List
 
 import numpy as np
@@ -566,7 +566,7 @@ class TestDatasetItemEntity:
         self.compare_denormalized_annotations(result_annotations, expected_annotations)
 
         # Check that get_annotations only returns the annotations whose center falls within the ROI
-        partial_box_dataset_item = deepcopy(full_box_roi_dataset_item)
+        partial_box_dataset_item = copy(full_box_roi_dataset_item)
         partial_box_dataset_item.roi = Annotation(
             shape=Rectangle(x1=0.0, y1=0.0, x2=0.4, y2=0.5), labels=[]
         )
@@ -882,49 +882,6 @@ class TestDatasetItemEntity:
         assert dataset_item == unequal_metadata_dataset_item
         # Checking value returned by __eq__ method for DatasetItemEntity object compared to different type object
         assert not dataset_item == str
-
-    @pytest.mark.priority_medium
-    @pytest.mark.unit
-    @pytest.mark.reqids(Requirements.REQ_1)
-    def test_dataset_item_deepcopy(self):
-        """
-        <b>Description:</b>
-        Check DatasetItemEntity class __deepcopy__ method
-
-        <b>Input data:</b>
-        DatasetItemEntity class objects with specified "media", "annotation_scene", "roi", "metadata" and "subset"
-        parameters
-
-        <b>Expected results:</b>
-        Test passes if DatasetItemEntity object created by __deepcopy__ method is equal to expected
-        """
-        dataset_item = DatasetItemParameters().dataset_item()
-        copy_dataset = deepcopy(dataset_item)
-        assert (
-            dataset_item._DatasetItemEntity__roi_lock
-            != copy_dataset._DatasetItemEntity__roi_lock
-        )
-        assert np.array_equal(dataset_item.media.numpy, copy_dataset.media.numpy)
-        assert (
-            dataset_item.annotation_scene.annotations
-            == copy_dataset.annotation_scene.annotations
-        )
-        assert (
-            dataset_item.annotation_scene.creation_date
-            == copy_dataset.annotation_scene.creation_date
-        )
-        assert (
-            dataset_item.annotation_scene.editor_name
-            == copy_dataset.annotation_scene.editor_name
-        )
-        assert dataset_item.annotation_scene.id_ == copy_dataset.annotation_scene.id_
-        assert dataset_item.annotation_scene.kind == copy_dataset.annotation_scene.kind
-        assert (
-            dataset_item.annotation_scene.shapes == copy_dataset.annotation_scene.shapes
-        )
-        assert dataset_item.roi == copy_dataset.roi
-        assert dataset_item.get_metadata() == copy_dataset.get_metadata()
-        assert dataset_item.subset == copy_dataset.subset
 
     @pytest.mark.priority_medium
     @pytest.mark.unit
