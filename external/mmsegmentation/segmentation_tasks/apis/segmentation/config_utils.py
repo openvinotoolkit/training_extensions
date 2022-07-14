@@ -154,32 +154,33 @@ def rescale_num_iterations(config: Union[Config, ConfigDict], schedule_scale: fl
     elif config.lr_config.policy == 'customcos':
         config.lr_config.periods = [int(schedule_scale * period) for period in config.lr_config.periods]
 
+    def _rescale_num_iters(head: dict, schedule_scale: float):
+        losses = head.loss_decode
+        if not isinstance(losses, (tuple, list)):
+            losses = [losses]
+
+        for loss in losses:
+            for target_attr in ['scale_cfg', 'conf_penalty_weight']:
+                if not hasattr(loss, target_attr):
+                    continue
+
+                if not hasattr(loss[target_attr], 'num_iters'):
+                    continue
+
+                loss[target_attr].num_iters = int(schedule_scale * loss[target_attr].num_iters)
+        head.loss_decode = losses
+
     # rescale number of iterations for
     for head_type in ['decode_head', 'auxiliary_head']:
         if not hasattr(config.model, head_type):
             continue
 
         heads = config.model[head_type]
-        if not isinstance(heads, (tuple, list)):
-            heads = [heads]
-
-        for head in heads:
-            losses = head.loss_decode
-            if not isinstance(losses, (tuple, list)):
-                losses = [losses]
-
-            for loss in losses:
-                for target_attr in ['scale_cfg', 'conf_penalty_weight']:
-                    if not hasattr(loss, target_attr):
-                        continue
-
-                    if not hasattr(loss[target_attr], 'num_iters'):
-                        continue
-
-                    loss[target_attr].num_iters = int(schedule_scale * loss[target_attr].num_iters)
-
-            head.loss_decode = losses
-
+        if isinstance(heads, (tuple, list)):
+            for head in heads:
+                _rescale_num_iters(head, schedule_scale)
+        elif isinstance(heads, dict):
+            _rescale_num_iters(heads, schedule_scale)
         config.model[head_type] = heads
 
 
@@ -351,14 +352,14 @@ def set_num_classes(config: Config, num_classes: int):
         if heads is None:
             continue
 
-        if not isinstance(heads, (tuple, list)):
-            heads = [heads]
+        if isinstance(heads, (tuple, list)):
+            for head in heads:
+                if hasattr(head, 'loss_target') and head.loss_target == 'gt_class_borders':
+                    continue
 
-        for head in heads:
-            if hasattr(head, 'loss_target') and head.loss_target == 'gt_class_borders':
-                continue
-
-            head.num_classes = num_classes
+                head.num_classes = num_classes
+        elif isinstance(heads, dict):
+            heads.num_classes = num_classes
 
 
 @check_input_parameters_type()
