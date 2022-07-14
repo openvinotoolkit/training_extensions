@@ -1,10 +1,10 @@
 # Description.
-model_template_id: ClassIncremental_Instance_Segmentation_MaskRCNN_ResNet50
-name: MaskRCNN-ResNet50-ClsIncr
-task_type: INSTANCE_SEGMENTATION
+model_template_id: Custom_Object_Detection_YOLOX
+name: YOLOX
+task_type: DETECTION
 task_family: VISION
 instantiation: "CLASS"
-summary: Class-Incremental Instance Segmentation for MaskRCNN-ResNet50
+summary: Class-Incremental Object Detection for YOLOX
 application: ~
 
 # Algo backend.
@@ -14,6 +14,8 @@ framework: OTEDetection v2.9.1
 entrypoints:
   base: mpa_tasks.apis.detection.DetectionTrainTask
   openvino: detection_tasks.apis.detection.OpenVINODetectionTask
+  nncf: mpa_tasks.apis.detection.DetectionNNCFTask
+base_model_path: ../../../../mmdetection/configs/custom-object-detection/cspdarknet_YOLOX/template_experimental.yaml
 
 # Capabilities.
 capabilities: []
@@ -26,11 +28,11 @@ hyper_parameters:
       batch_size:
         default_value: 4
       learning_rate:
-        default_value: 0.01
+        default_value: 0.0025
       learning_rate_warmup_iters:
-        default_value: 100
+        default_value: 10
       num_iters:
-        default_value: 300
+        default_value: 100
     algo_backend:
       train_type:
         default_value: Incremental
@@ -42,5 +44,10 @@ training_targets:
   - CPU
 
 # Stats.
-gigaflops: 533.8
-size: 177.9
+gigaflops: 6.5
+size: 20.4
+# # Inference options. Defined by OpenVINO capabilities, not Algo Backend or Platform.
+# inference_targets:
+#   - CPU
+#   - GPU
+#   - VPU

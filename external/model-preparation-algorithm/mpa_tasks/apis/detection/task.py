@@ -31,7 +31,7 @@ from ote_sdk.entities.metrics import (BarChartInfo, BarMetricsGroup,
                                       LineMetricsGroup, MetricsGroup,
                                       ScoreMetric, VisualizationType)
 from ote_sdk.entities.model import (ModelEntity, ModelFormat,
-                                    ModelOptimizationType, ModelPrecision)
+                                    ModelOptimizationType)
 from ote_sdk.entities.model_template import TaskType
 from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.scored_label import ScoredLabel
@@ -52,7 +52,9 @@ from ote_sdk.usecases.tasks.interfaces.inference_interface import \
 from ote_sdk.usecases.tasks.interfaces.training_interface import ITrainingTask
 from ote_sdk.usecases.tasks.interfaces.unload_interface import IUnload
 
-# from mmdet.apis import export_model
+from detection_tasks.apis.detection import OTEDetectionNNCFTask
+from ote_sdk.utils.argument_checks import check_input_parameters_type
+from ote_sdk.entities.model_template import parse_model_template
 
 
 logger = get_logger()
@@ -89,7 +91,6 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         logger.debug(f'result of run_task {stage_module} module = {results}')
         output = results['outputs']
         predictions = output['detections']
-        # TODO: feature maps should be came from the inference results
         featuremaps = [None for _ in range(len(predictions))]
         prediction_results = zip(predictions, featuremaps)
         self._add_predictions_to_dataset(prediction_results, dataset, self.confidence_threshold)
@@ -125,12 +126,12 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         output_model.optimization_type = ModelOptimizationType.MO
 
         stage_module = 'DetectionExporter'
-        results = self._run_task(stage_module, mode='train')
+        self._model_cfg = self._initialize()
+        results = self._run_task(stage_module, mode='train', precision=self._precision[0].name)
         results = results.get('outputs')
         logger.debug(f'results of run_task = {results}')
         if results is None:
             logger.error(f"error while exporting model {results.get('msg')}")
-            # output_model.model_status = ModelStatus.FAILED
         else:
             bin_file = results.get('bin')
             xml_file = results.get('xml')
@@ -145,7 +146,6 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
                 np.array([self.confidence_threshold], dtype=np.float32).tobytes())
             output_model.precision = self._precision
             output_model.optimization_methods = self._optimization_methods
-            # output_model.model_status = ModelStatus.SUCCESS
             output_model.set_data("label_schema.json", label_schema_to_bytes(self._task_environment.label_schema))
         logger.info('Exporting completed')
 
@@ -164,7 +164,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         logger.info('called _init_recipe()')
 
         recipe_root = os.path.join(MPAConstants.RECIPES_PATH, 'stages/detection')
-        if self._task_type.domain == Domain.INSTANCE_SEGMENTATION:
+        if self._task_type.domain in {Domain.INSTANCE_SEGMENTATION, Domain.ROTATED_DETECTION}:
             recipe_root = os.path.join(MPAConstants.RECIPES_PATH, 'stages/instance-segmentation')
 
         train_type = self._hyperparams.algo_backend.train_type
@@ -356,7 +356,7 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
         torch.save(modelinfo, buffer)
         output_model.set_data("weights.pth", buffer.getvalue())
         output_model.set_data("label_schema.json", label_schema_to_bytes(self._task_environment.label_schema))
-        output_model.precision = [ModelPrecision.FP32]
+        output_model.precision = self._precision
 
     def cancel_training(self):
         """
@@ -367,8 +367,6 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
         """
         logger.info("Cancel training requested.")
         self._should_stop = True
-        # stop_training_filepath = os.path.join(self._training_work_dir, '.stop_training')
-        # open(stop_training_filepath, 'a').close()
         if self.cancel_interface is not None:
             self.cancel_interface.cancel()
         else:
@@ -518,3 +516,22 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
         )
 
         return output
+
+
+class DetectionNNCFTask(OTEDetectionNNCFTask):
+
+    @check_input_parameters_type()
+    def __init__(self, task_environment: TaskEnvironment):
+        """"
+        Task for compressing detection models using NNCF.
+        """
+        curr_model_path = task_environment.model_template.model_template_path
+        base_model_path = os.path.join(
+            os.path.dirname(os.path.abspath(curr_model_path)),
+            task_environment.model_template.base_model_path
+        )
+        if os.path.isfile(base_model_path):
+            logger.info(f'Base model for NNCF: {base_model_path}')
+            # Redirect to base model
+            task_environment.model_template = parse_model_template(base_model_path)
+        super().__init__(task_environment)

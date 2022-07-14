@@ -23,6 +23,7 @@ import numpy as np
 import pytest
 from ote_anomalib.configs import get_anomalib_config
 from tools.sample import OteAnomalyTask
+
 from tests.helpers.config import get_config_and_task_name
 from tests.helpers.dummy_dataset import TestDataset
 
@@ -56,11 +57,11 @@ class TestAnomalyClassification:
         ote_config, task_name = get_config_and_task_name(f"{task_path}/configs/{template_path}/template.yaml")
 
         # change parameter value in OTE config
-        ote_config.dataset.train_batch_size = train_batch_size
+        ote_config.learning_parameters.train_batch_size = train_batch_size
         # convert OTE -> Anomalib
         anomalib_config = get_anomalib_config(task_name, ote_config)
         # check if default parameter was overwritten
-        assert anomalib_config.dataset.train_batch_size == train_batch_size
+        assert anomalib_config.learning_parameters.train_batch_size == train_batch_size
 
     @TestDataset(num_train=200, num_test=10, dataset_path="./datasets/MVTec", use_mvtec=False)
     def test_ote_train_export_and_optimize(

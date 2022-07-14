@@ -1,7 +1,6 @@
-metric: mDice
+metric: mAP
 search_algorithm: smbo
 early_stop: None
-max_iterations: 30
 hp_space:
   learning_parameters.learning_rate:
     param_type: quniform

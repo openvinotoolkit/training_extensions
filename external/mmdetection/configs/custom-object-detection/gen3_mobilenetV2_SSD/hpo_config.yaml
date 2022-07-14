@@ -1,9 +1,9 @@
 metric: mAP
-search_algorithm: smbo
+search_algorithm: asha
 early_stop: None
 hp_space:
   learning_parameters.learning_rate:
-    param_type: quniform
+    param_type: qloguniform
     range:
       - 0.001
       - 0.1
@@ -12,5 +12,5 @@ hp_space:
     param_type: qloguniform
     range:
       - 4
-      - 10
+      - 20
       - 2

@@ -18,7 +18,6 @@ from mpa.utils.config_utils import update_or_add_custom_hook
 from mpa.utils.logger import get_logger
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.model import ModelEntity, ModelPrecision
-from ote_sdk.entities.subset import Subset
 from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.serialization.label_mapper import LabelSchemaMapper
 
@@ -45,7 +44,6 @@ class BaseTask:
         # Set default model attributes.
         self._model_label_schema = []
         self._optimization_methods = []
-        self._precision = [ModelPrecision.FP32]
         self._model_ckpt = None
         if task_environment.model is not None:
             logger.info('loading the model from the task env.')
@@ -61,6 +59,7 @@ class BaseTask:
         self._recipe_cfg = None
         self._stage_module = None
         self._model_cfg = None
+        self._precision = None
         self._data_cfg = None
         self._mode = None
         self._time_monitor = None
@@ -70,6 +69,10 @@ class BaseTask:
         self.cancel_interface = None
         self.reserved_cancel = False
         self.on_hook_initialized = self.OnHookInitialized(self)
+
+    @property
+    def _precision_from_config(self):
+        return [ModelPrecision.FP16] if self._model_cfg.get('fp16', None) else [ModelPrecision.FP32]
 
     def _run_task(self, stage_module, mode=None, dataset=None, parameters=None, **kwargs):
         self._initialize(dataset)
@@ -145,7 +148,7 @@ class BaseTask:
     def hyperparams(self):
         return self._hyperparams
 
-    def _initialize(self, dataset, output_model=None):
+    def _initialize(self, dataset=None, output_model=None):
         """ prepare configurations to run a task through MPA's stage
         """
         logger.info('initializing....')
@@ -156,6 +159,16 @@ class BaseTask:
 
         # prepare model config
         self._model_cfg = self._init_model_cfg()
+
+        # Remove FP16 config if running on CPU device and revert to FP32 
+        # https://github.com/pytorch/pytorch/issues/23377
+        if not torch.cuda.is_available() and 'fp16' in self._model_cfg:
+            logger.info(f'Revert FP16 to FP32 on CPU device')
+            if isinstance(self._model_cfg, Config):
+                del self._model_cfg._cfg_dict['fp16']
+            elif isinstance(self._model_cfg, ConfigDict):
+                del self._model_cfg['fp16']
+        self._precision = self._precision_from_config
 
         # add Cancel tranining hook
         update_or_add_custom_hook(self._recipe_cfg, ConfigDict(
