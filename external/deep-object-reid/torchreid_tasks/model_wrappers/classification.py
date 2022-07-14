@@ -91,9 +91,8 @@ class OteClassification(Classification):
 
     @check_input_parameters_type()
     def postprocess_aux_outputs(self, outputs: Dict[str, np.ndarray], metadata: Dict[str, Any]):
-        features = preprocess_features_for_actmap(outputs['features'])
-        actmap = get_actmap(features[0], (metadata['original_shape'][1], metadata['original_shape'][0]))
-        repr_vector = outputs['vector']
+        actmap = get_actmap(outputs['saliency_map'][0], (metadata['original_shape'][1], metadata['original_shape'][0]))
+        repr_vector = outputs['feature_vector']
 
         logits = outputs[self.out_layer_name].squeeze()
 
@@ -108,23 +107,11 @@ class OteClassification(Classification):
 
 
 @check_input_parameters_type()
-def preprocess_features_for_actmap(features: Union[np.ndarray, Iterable, int, float]):
-    features = np.mean(features, axis=1)
-    b, h, w = features.shape
-    features = features.reshape(b, h * w)
-    features = np.exp(features)
-    features /= np.sum(features, axis=1, keepdims=True)
-    features = features.reshape(b, h, w)
-    return features
-
-
-@check_input_parameters_type()
 def get_actmap(features: Union[np.ndarray, Iterable, int, float],
                output_res: Union[tuple, list]):
     am = cv2.resize(features, output_res)
-    am = 255 * (am - np.min(am)) / (np.max(am) - np.min(am) + 1e-12)
-    am = np.uint8(np.floor(am))
     am = cv2.applyColorMap(am, cv2.COLORMAP_JET)
+    am = cv2.cvtColor(am, cv2.COLOR_BGR2RGB)
     return am
 
 
