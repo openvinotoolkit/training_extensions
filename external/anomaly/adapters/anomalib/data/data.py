@@ -20,9 +20,9 @@ from dataclasses import dataclass
 from typing import Dict, List, Optional, Union
 
 import numpy as np
+from adapters.anomalib.logging import get_logger
 from anomalib.pre_processing import PreProcessor
 from omegaconf import DictConfig, ListConfig
-from ote_anomalib.logging import get_logger
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.model_template import TaskType
 from ote_sdk.entities.shapes.polygon import Polygon

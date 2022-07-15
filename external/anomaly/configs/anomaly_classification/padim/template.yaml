@@ -12,9 +12,9 @@ framework: OTEAnomalyClassification v0.1.0
 
 # Task implementations.
 entrypoints:
-  base: ote_anomalib.AnomalyTrainingTask
-  openvino: ote_anomalib.OpenVINOAnomalyTask
-  nncf: ote_anomalib.AnomalyNNCFTask
+  base: tools.task.AnomalyTrainingTask
+  openvino: tools.task.OpenVINOAnomalyTask
+  nncf: tools.task.AnomalyNNCFTask
 
 # Hyper Parameters
 hyper_parameters:

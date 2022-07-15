@@ -16,8 +16,8 @@ Configurable parameters for Padim anomaly detection task
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+from adapters.anomalib.configs.padim import PadimAnomalyBaseConfig
 from attr import attrs
-from ote_anomalib.configs.padim import PadimAnomalyBaseConfig
 
 
 @attrs

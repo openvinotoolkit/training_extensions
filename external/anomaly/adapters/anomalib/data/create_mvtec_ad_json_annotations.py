@@ -37,7 +37,7 @@ Example:
     The following script will generate the classification, detection and segmentation
     JSON annotations to each category in ./data/anomaly/MVTec dataset.
 
-    >>> python external/anomaly/ote_anomalib/data/create_mvtec_ad_json_annotations.py \
+    >>> python external/anomaly/adapters.anomalib/data/create_mvtec_ad_json_annotations.py \
     ...     --data_path ./data/anomaly/MVTec/
 """
 

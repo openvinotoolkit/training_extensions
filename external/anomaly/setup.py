@@ -39,12 +39,10 @@ setup(
     version="ote-alpha",
     packages=find_packages(
         include=[
-            "ote_anomalib",
-            "ote_anomalib.*",
-            "anomaly_classification",
-            "anomaly_classification.*",
-            "anomaly_segmentation",
-            "anomaly_segmentation.*",
+            "adapters",
+            "adapters.*",
+            "tools",
+            "tools.*",
         ]
     ),
     url="",

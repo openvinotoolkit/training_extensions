@@ -16,8 +16,8 @@ Configurable parameters for STFPM anomaly classification task
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+from adapters.anomalib.configs.stfpm import STFPMAnomalyBaseConfig
 from attr import attrs
-from ote_anomalib.configs.stfpm import STFPMAnomalyBaseConfig
 
 
 @attrs

@@ -21,6 +21,9 @@ import re
 from typing import Dict, Optional
 
 import torch
+from adapters.anomalib.callbacks import ProgressCallback
+from adapters.anomalib.data import OTEAnomalyDataModule
+from adapters.anomalib.logging import get_logger
 from anomalib.models import AnomalyModule, get_model
 from anomalib.utils.callbacks import MinMaxNormalizationCallback
 from anomalib.utils.callbacks.nncf.callback import NNCFCallback
@@ -29,10 +32,6 @@ from anomalib.utils.callbacks.nncf.utils import (
     is_state_nncf,
     wrap_nncf_model,
 )
-from ote_anomalib import AnomalyInferenceTask
-from ote_anomalib.callbacks import ProgressCallback
-from ote_anomalib.data import OTEAnomalyDataModule
-from ote_anomalib.logging import get_logger
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.model import (
     ModelEntity,
@@ -48,6 +47,8 @@ from ote_sdk.usecases.tasks.interfaces.optimization_interface import (
     OptimizationType,
 )
 from pytorch_lightning import Trainer
+
+from .inference_task import AnomalyInferenceTask
 
 logger = get_logger(__name__)
 

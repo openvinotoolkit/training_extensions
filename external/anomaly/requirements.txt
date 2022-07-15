@@ -1,5 +1,11 @@
 anomalib==0.3.3
+onnx==1.10.1
 openmodelzoo-modelapi @ git+https://github.com/openvinotoolkit/open_model_zoo/@releases/2022/SCv1.1#egg=openmodelzoo-modelapi&subdirectory=demos/common/python
 openvino==2022.1.0
 openvino-dev==2022.1.0
-networkx<=2.8.1
+opencv-python>=4.5.3.56
+pytorch-lightning[extra]>=1.6.0
+torchmetrics>=0.9.0,<=0.9.1
+torchvision>=0.9.1,<=0.12.0
+torchtext>=0.9.1,<=0.12.0
+wandb==0.12.17

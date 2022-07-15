@@ -20,10 +20,10 @@ from typing import Any, List
 
 import numpy as np
 import pytorch_lightning as pl
+from adapters.anomalib.data import LabelNames
+from adapters.anomalib.logging import get_logger
 from anomalib.models import AnomalyModule
 from anomalib.post_processing import anomaly_map_to_color_map
-from ote_anomalib.data import LabelNames
-from ote_anomalib.logging import get_logger
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.label import LabelEntity
 from ote_sdk.entities.model_template import TaskType

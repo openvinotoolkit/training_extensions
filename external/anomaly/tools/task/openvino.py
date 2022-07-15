@@ -23,8 +23,11 @@ import tempfile
 from typing import Any, Dict, List, Optional
 from zipfile import ZipFile
 
+import adapters.anomalib.exportable_code
 import numpy as np
-import ote_anomalib.exportable_code
+from adapters.anomalib.configs import get_anomalib_config
+from adapters.anomalib.data import LabelNames
+from adapters.anomalib.logging import get_logger
 from addict import Dict as ADDict
 from anomalib.deploy import OpenVINOInferencer
 from anomalib.post_processing import anomaly_map_to_color_map
@@ -34,9 +37,6 @@ from compression.graph import load_model, save_model
 from compression.graph.model_utils import compress_model_weights, get_nodes_by_type
 from compression.pipeline.initializer import create_pipeline
 from omegaconf import OmegaConf
-from ote_anomalib.configs import get_anomalib_config
-from ote_anomalib.data import LabelNames
-from ote_anomalib.logging import get_logger
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.inference_parameters import (
     InferenceParameters,
@@ -422,7 +422,7 @@ class OpenVINOAnomalyTask(IInferenceTask, IEvaluationTask, IOptimizationTask, ID
             arch.writestr(os.path.join("model", "model.bin"), self.task_environment.model.get_data("openvino.bin"))
             arch.writestr(os.path.join("model", "config.json"), json.dumps(parameters, ensure_ascii=False, indent=4))
             # model_wrappers files
-            for root, _, files in os.walk(os.path.dirname(ote_anomalib.exportable_code.__file__)):
+            for root, _, files in os.walk(os.path.dirname(adapters.anomalib.exportable_code.__file__)):
                 for file in files:
                     file_path = os.path.join(root, file)
                     arch.write(

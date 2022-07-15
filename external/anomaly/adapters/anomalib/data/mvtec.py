@@ -36,8 +36,8 @@ from typing import List, Union
 
 import cv2
 import numpy as np
+from adapters.anomalib.data import LabelNames
 from anomalib.data.mvtec import make_mvtec_dataset
-from ote_anomalib.data import LabelNames
 from ote_sdk.entities.annotation import (
     Annotation,
     AnnotationSceneEntity,

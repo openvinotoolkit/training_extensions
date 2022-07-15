@@ -24,16 +24,16 @@ from glob import glob
 from typing import Dict, List, Optional, Union
 
 import torch
+from adapters.anomalib.callbacks import AnomalyInferenceCallback, ProgressCallback
+from adapters.anomalib.configs import get_anomalib_config
+from adapters.anomalib.data import OTEAnomalyDataModule
+from adapters.anomalib.logging import get_logger
 from anomalib.models import AnomalyModule, get_model
 from anomalib.utils.callbacks import (
     MetricsConfigurationCallback,
     MinMaxNormalizationCallback,
 )
 from omegaconf import DictConfig, ListConfig
-from ote_anomalib.callbacks import AnomalyInferenceCallback, ProgressCallback
-from ote_anomalib.configs import get_anomalib_config
-from ote_anomalib.data import OTEAnomalyDataModule
-from ote_anomalib.logging import get_logger
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.inference_parameters import InferenceParameters
 from ote_sdk.entities.metrics import Performance, ScoreMetric
