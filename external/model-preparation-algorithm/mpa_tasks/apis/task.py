@@ -226,6 +226,10 @@ class BaseTask:
             # set confidence_threshold as well
             self.confidence_threshold = model_data.get('confidence_threshold', self.confidence_threshold)
 
+            if model_data.get('anchors'):
+                anchors = model_data['anchors']
+                self.anchors = anchors
+
             return model_data['model']
         else:
             return None
