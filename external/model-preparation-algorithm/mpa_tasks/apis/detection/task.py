@@ -221,7 +221,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
     def _init_model_cfg(self):
         base_dir = os.path.abspath(os.path.dirname(self.template_file_path))
         model_cfg = MPAConfig.fromfile(os.path.join(base_dir, 'model.py'))
-        if hasattr(self, 'anchors'):
+        if self.anchors is not None:
             logger.info("Updating anchors")
             model_cfg.model.bbox_head.anchor_generator.heights = self.anchors['heights']
             model_cfg.model.bbox_head.anchor_generator.widths = self.anchors['widths']

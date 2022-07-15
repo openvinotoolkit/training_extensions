@@ -64,6 +64,7 @@ class BaseTask:
         self._mode = None
         self._time_monitor = None
         self._learning_curves = None
+        self.anchors = None
         self._is_training = False
         self._should_stop = False
         self.cancel_interface = None
