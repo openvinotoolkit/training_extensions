@@ -346,7 +346,7 @@ def parse_args() -> Namespace:
         "--model_template_path",
         default="./configs/anomaly_classification/padim/template.yaml",
     )
-    parser.add_argument("--dataset_path", default="/home/ashwin/anomalib/datasets/MVTec")
+    parser.add_argument("--dataset_path", default="./datasets/MVTec")
     parser.add_argument("--category", default="bottle")
     parser.add_argument("--train-ann-files", required=True)
     parser.add_argument("--val-ann-files", required=True)
