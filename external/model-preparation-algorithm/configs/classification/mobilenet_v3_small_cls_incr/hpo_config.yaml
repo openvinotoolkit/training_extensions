@@ -1,16 +1,16 @@
-metric: mAP
-search_algorithm: smbo
-early_stop: median_stop
+metric: accuracy
+search_algorithm: asha
+early_stop: None
 hp_space:
   learning_parameters.learning_rate:
-    param_type: quniform
+    param_type: qloguniform
     range:
-      - 0.005
-      - 0.029
-      - 0.001
+      - 0.0032
+      - 0.08
+      - 0.0001
   learning_parameters.batch_size:
     param_type: qloguniform
     range:
-      - 8
-      - 64
+      - 20
+      - 48
       - 2
