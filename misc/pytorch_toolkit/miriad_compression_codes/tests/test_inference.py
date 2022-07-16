@@ -3,10 +3,10 @@ import numpy as np
 import unittest
 import torch
 from torch.utils.data import DataLoader
-from utils import get_config
-from utils.dataloader import CustomDatasetPhase1, CustomDatasetPhase2
-from utils.downloader import download_data
-from utils.train_utils import validate_model_phase1, validate_model_phase2
+from src.utils.get_config import get_config
+from src.utils.dataloader import CustomDatasetPhase1, CustomDatasetPhase2
+from src.utils.downloader import download_data
+from src.utils.train_utils import validate_model_phase1, validate_model_phase2
 
 
 def create_inference_test_for_phase1():
@@ -15,11 +15,11 @@ def create_inference_test_for_phase1():
         def setUpClass(cls):
             cls.config = get_config(action='inference', phase=1)
 
-            if os.path.exists(val_data_pth):
+            if os.path.exists(cls.config['image_path']):
                 download_data()
                 # prepare_data()
 
-            x_tst = np.load(val_data_pth, allow_pickle=True)
+            x_tst = np.load(cls.config['image_path'], allow_pickle=True)
             tst_data = CustomDatasetPhase1()
             cls.tst_loader = DataLoader(
                 tst_data, batch_size=1, shuffle=False, num_workers=16)
@@ -81,11 +81,11 @@ def create_inference_test_for_phase2():
         def setUpClass(cls):
             cls.config = get_config(action='inference', phase=2)
 
-            if os.path.exists(val_data_pth):
+            if os.path.exists(cls.config['image_path']):
                 download_data()
                 # prepare_data()
 
-            x_tst = np.load(val_data_pth, allow_pickle=True)
+            x_tst = np.load(cls.config['image_path'], allow_pickle=True)
             tst_data = CustomDatasetPhase2()
             cls.tst_loader = DataLoader(
                 tst_data, batch_size=1, shuffle=False, num_workers=16)
