@@ -2,7 +2,7 @@ import torch
 import os
 import subprocess
 from .model import load_checkpoint
-from train_utils import load_model
+from .train_utils import load_model
 
 
 class Exporter:
@@ -23,7 +23,7 @@ class Exporter:
 
     def export_model_ir(self):
         input_model = os.path.join(
-        os.path.split(self.checkpoint)[0], self.config.get('model_name_onnx'))
+            os.path.split(self.checkpoint)[0], self.config.get('model_name_onnx'))
         input_shape = self.config.get('input_shape')
         output_dir = os.path.split(self.checkpoint)[0]
         export_command = f"""mo \
