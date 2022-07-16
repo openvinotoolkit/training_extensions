@@ -87,7 +87,7 @@ def reduce_tensor(x: Tensor, reduction='mean'):
 # Classes to re-use window
 
 class SSIM(torch.nn.Module):
-    def __init__(self, window_size=11, size_average=True, val_range=None):
+    def __init__(self, window_size=3, size_average=True, val_range=None):
         super(SSIM, self).__init__()
         self.window_size = window_size
         self.size_average = size_average
