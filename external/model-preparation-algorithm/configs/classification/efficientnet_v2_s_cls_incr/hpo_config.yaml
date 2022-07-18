@@ -1,4 +1,4 @@
-metric: accuracy
+metric: accuracy_top-1
 search_algorithm: asha
 hp_space:
   learning_parameters.learning_rate:

@@ -1,4 +1,4 @@
-metric: accuracy
+metric: accuracy_top-1
 search_algorithm: asha
 early_stop: None
 hp_space:
