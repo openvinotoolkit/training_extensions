@@ -393,8 +393,7 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
         }
         if hasattr(self._model_cfg.model, 'bbox_head') and hasattr(self._model_cfg.model.bbox_head, 'anchor_generator'):
             if getattr(self._model_cfg.model.bbox_head.anchor_generator, 'reclustering_anchors', False):
-                generator = self._model_cfg.model.bbox_head.anchor_generator
-                modelinfo['anchors'] = {'heights': generator.heights, 'widths': generator.widths}
+                self._update_anchors(modelinfo['anchors'], self._model_cfg.model.bbox_head.anchor_generator)
 
         torch.save(modelinfo, buffer)
         output_model.set_data("weights.pth", buffer.getvalue())
