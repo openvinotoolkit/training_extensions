@@ -75,6 +75,7 @@ repos:
         name: "mypy (external)"
         files: '^external/anomaly/.*\.py'
         args: ["--config-file=ote_sdk/.mypy.ini"]
+        exclude: "^external/anomaly/tests"
 
   - repo: local
     hooks:
