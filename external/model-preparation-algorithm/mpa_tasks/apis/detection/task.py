@@ -221,10 +221,8 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
     def _init_model_cfg(self):
         base_dir = os.path.abspath(os.path.dirname(self.template_file_path))
         model_cfg = MPAConfig.fromfile(os.path.join(base_dir, 'model.py'))
-        if self.anchors is not None:
-            logger.info("Updating anchors")
-            model_cfg.model.bbox_head.anchor_generator.heights = self.anchors['heights']
-            model_cfg.model.bbox_head.anchor_generator.widths = self.anchors['widths']
+        if len(self._anchors) != 0:
+            self._update_anchors(model_cfg.model.bbox_head.anchor_generator, self._anchors)
         return model_cfg
 
     def _init_test_data_cfg(self, dataset: DatasetEntity):
@@ -379,6 +377,12 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
                         shapes.append(Annotation(polygon, labels=labels, id=ID(f"{label_idx:08}")))
         return shapes
 
+    @staticmethod
+    def _update_anchors(origin, new):
+        logger.info("Updating anchors")
+        origin['heights'] = new['heights']
+        origin['widths'] = new['widths']
+
 
 class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
     def save_model(self, output_model: ModelEntity):
@@ -393,6 +397,7 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
         }
         if hasattr(self._model_cfg.model, 'bbox_head') and hasattr(self._model_cfg.model.bbox_head, 'anchor_generator'):
             if getattr(self._model_cfg.model.bbox_head.anchor_generator, 'reclustering_anchors', False):
+                modelinfo['anchors'] = {}
                 self._update_anchors(modelinfo['anchors'], self._model_cfg.model.bbox_head.anchor_generator)
 
         torch.save(modelinfo, buffer)
@@ -460,8 +465,7 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
         # Update anchors
         if hasattr(self._model_cfg.model, 'bbox_head') and hasattr(self._model_cfg.model.bbox_head, 'anchor_generator'):
             if getattr(self._model_cfg.model.bbox_head.anchor_generator, 'reclustering_anchors', False):
-                generator = self._model_cfg.model.bbox_head.anchor_generator
-                self.anchors = {'heights': generator.heights, 'widths': generator.widths}
+                self._update_anchors(self._anchors, self._model_cfg.model.bbox_head.anchor_generator)
 
         # get prediction on validation set
         val_dataset = dataset.get_subset(Subset.VALIDATION)
