@@ -274,7 +274,6 @@ def run_hpo_trainer(
     train_param = TrainParameters(
         False, HpoCallback(hp_config, hp_config["metric"], task), ModelSavedCallback()
     )
-    train_param.train_on_empty_model = None
 
     task.train(dataset=dataset, output_model=output_model, train_parameters=train_param)
 
@@ -531,21 +530,20 @@ class HpoManager:
             batch_size_name = "learning_parameters.batch_size"
         elif _is_anomaly_framework_task(task_type):
             batch_size_name = "learning_parameters.train_batch_size"
-        if batch_size_name is not None:
-            if batch_size_name in hpopt_cfg["hp_space"]:
-                batch_range = hpopt_cfg["hp_space"][batch_size_name]["range"]
-                if batch_range[1] > train_dataset_size:
-                    batch_range[1] = train_dataset_size
+        if batch_size_name in hpopt_cfg["hp_space"]:
+            batch_range = hpopt_cfg["hp_space"][batch_size_name]["range"]
+            if batch_range[1] > train_dataset_size:
+                batch_range[1] = train_dataset_size
 
-                # If trainset size is lower than min batch size range,
-                # fix batch size to trainset size
-                if batch_range[0] > batch_range[1]:
-                    print(
-                        "Train set size is lower than batch size range."
-                        "Batch size is fixed to train set size."
-                    )
-                    del hpopt_cfg["hp_space"][batch_size_name]
-                    self.fixed_hp[batch_size_name] = train_dataset_size
+            # If trainset size is lower than min batch size range,
+            # fix batch size to trainset size
+            if batch_range[0] > batch_range[1]:
+                print(
+                    "Train set size is lower than batch size range."
+                    "Batch size is fixed to train set size."
+                )
+                del hpopt_cfg["hp_space"][batch_size_name]
+                self.fixed_hp[batch_size_name] = train_dataset_size
 
         # prepare default hyper parameters
         default_hyper_parameters = {}
@@ -830,10 +828,10 @@ class HpoManager:
 
         task_type = environment.model_template.task_type
         params = environment.get_hyper_parameters()
-        if _is_cls_framework_task(task_type):
-            learning_parameters = params.learning_parameters
-            num_full_iterations = learning_parameters.max_num_epochs
-        elif _is_det_framework_task(task_type) or _is_seg_framework_task(task_type):
+        if (_is_cls_framework_task(task_type)
+            or _is_det_framework_task(task_type)
+            or _is_seg_framework_task(task_type)
+        ):
             learning_parameters = params.learning_parameters
             num_full_iterations = learning_parameters.num_iters
         elif _is_anomaly_framework_task(task_type):

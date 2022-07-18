@@ -71,7 +71,7 @@ class BaseTask:
         self.on_hook_initialized = self.OnHookInitialized(self)
 
         # to override configuration at runtime
-        self.override_configs = None
+        self.override_configs = {}
 
     @property
     def _precision_from_config(self):
