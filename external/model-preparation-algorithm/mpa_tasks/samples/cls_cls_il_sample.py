@@ -45,7 +45,6 @@ def load_test_dataset(data_type):
     from ote_sdk.entities.annotation import Annotation, AnnotationSceneEntity, AnnotationSceneKind
     from ote_sdk.entities.dataset_item import DatasetItemEntity
     from ote_sdk.entities.image import Image
-    from ote_sdk.entities.label import LabelEntity
     from ote_sdk.entities.scored_label import ScoredLabel
     from ote_sdk.entities.shapes.rectangle import Rectangle
     from ote_sdk.entities.subset import Subset
@@ -64,7 +63,7 @@ def load_test_dataset(data_type):
             if s == 'pieslice':
                 draw.pieslice(((h*0.1, w*0.5), (h*0.5, w*0.9)), start=50, end=250, fill=(0, 255, 0), outline=(0, 0, 0))
             if s == 'circle':
-                draw.ellipse((h*0.5, w*0.5, h*0.9, w*0.9), fill = 'blue', outline ='blue')
+                draw.ellipse((h*0.5, w*0.5, h*0.9, w*0.9), fill='blue', outline='blue')
             if s == 'text':
                 draw.text((0, 0), "Intel", fill='blue', align='center')
         return np.array(image), shape
@@ -78,7 +77,7 @@ def load_test_dataset(data_type):
         gen_image((32, 32), shape='pieslice+triangle'),
         gen_image((32, 32), shape='pieslice+rectangle+triangle'),  # for multilabel (new)
         gen_image((32, 32), shape='circle'),
-        gen_image((32, 32), shape='circle+text') # for hierarchical (new)
+        gen_image((32, 32), shape='circle+text')  # for hierarchical (new)
     ]
 
     labels = {'rectangle': LabelEntity(name='rectangle', domain=Domain.CLASSIFICATION, id=0),
@@ -135,7 +134,7 @@ def load_test_dataset(data_type):
         return old_train+old_val, new_train+new_val
 
     old, new = gen_old_new_dataset(args.multilabel, args.hierarchical)
-    
+
     if not args.hierarchical:
         labels = [labels['rectangle'], labels['triangle'], labels['pieslice']]
     else:

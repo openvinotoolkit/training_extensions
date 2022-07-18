@@ -24,7 +24,7 @@ class MPAClsDataset(BaseDataset):
         self.label_names = [label.name for label in self.labels]
         self.label_idx = {label.id: i for i, label in enumerate(labels)}
         self.empty_label = empty_label
-        
+
         self.CLASSES = list(label.name for label in labels)
         self.gt_labels = []
         pipeline = kwargs['pipeline']
@@ -280,7 +280,7 @@ class MPAHierarchicalClsDataset(MPAMultilabelClsDataset):
                 num_cls_heads = self.hierarchical_info['num_multiclass_heads']
 
                 class_indices = [0]*(self.hierarchical_info['num_multiclass_heads'] +
-                                        self.hierarchical_info['num_multilabel_classes'])
+                                     self.hierarchical_info['num_multilabel_classes'])
                 for j in range(num_cls_heads):
                     class_indices[j] = -1
                 for ote_lbl in item_labels:

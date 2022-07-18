@@ -171,6 +171,7 @@ def generate_label_schema(dataset, task_type):
             empty_group = LabelGroup(name="empty", labels=[emptylabel], group_type=LabelGroupType.EMPTY_LABEL)
             key = [i for i in dataset.annotations.keys()][0]
             hierarchy_info = dataset.annotations[key][2]
+            
             def add_subtask_labels(dataset, info):
                 group = info['group']
                 labels = info['labels']
