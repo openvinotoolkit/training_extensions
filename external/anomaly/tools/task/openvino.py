@@ -26,7 +26,6 @@ from zipfile import ZipFile
 import adapters.anomalib.exportable_code
 import numpy as np
 from adapters.anomalib.configs import get_anomalib_config
-from adapters.anomalib.data import LabelNames
 from adapters.anomalib.logging import get_logger
 from addict import Dict as ADDict
 from anomalib.deploy import OpenVINOInferencer
@@ -117,8 +116,8 @@ class OpenVINOAnomalyTask(IInferenceTask, IEvaluationTask, IOptimizationTask, ID
         self.inferencer = self.load_inferencer()
 
         labels = self.task_environment.get_labels()
-        self.normal_label = [label for label in labels if label.name == LabelNames.normal][0]
-        self.anomalous_label = [label for label in labels if label.name == LabelNames.anomalous][0]
+        self.normal_label = [label for label in labels if not label.is_anomalous][0]
+        self.anomalous_label = [label for label in labels if label.is_anomalous][0]
 
         template_file_path = task_environment.model_template.model_template_path
         self._base_dir = os.path.abspath(os.path.dirname(template_file_path))

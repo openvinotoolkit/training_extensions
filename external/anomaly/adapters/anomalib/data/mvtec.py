@@ -36,7 +36,6 @@ from typing import List, Union
 
 import cv2
 import numpy as np
-from adapters.anomalib.data import LabelNames
 from anomalib.data.mvtec import make_mvtec_dataset
 from ote_sdk.entities.annotation import (
     Annotation,
@@ -59,6 +58,7 @@ from pandas.core.frame import DataFrame
 
 class OteMvtecDataset:
     """Generate OTE MVTec Dataset from the anomaly detection datasets that follows the MVTec format.
+
     Args:
         path (Union[str, Path], optional): Path to the MVTec dataset category.
             Defaults to "./datasets/MVTec/bottle".
@@ -68,6 +68,7 @@ class OteMvtecDataset:
         seed (int, optional): Random seed to ensure reproducibility when splitting. Defaults to 0.
         create_validation_set (bool, optional): Create validation set from the test set by splitting
             it to half. Default to True.
+
     Examples:
         >>> dataset_generator = OteMvtecDataset()
         >>> dataset = dataset_generator.generate()
@@ -95,13 +96,11 @@ class OteMvtecDataset:
         elif self.task_type == TaskType.ANOMALY_SEGMENTATION:
             self.label_domain = Domain.ANOMALY_SEGMENTATION
 
-        self.normal_label = LabelEntity(
-            name=LabelNames.normal, domain=self.label_domain, id=ID(LabelNames.normal), color=Color(0, 255, 0)
-        )
+        self.normal_label = LabelEntity(name="Normal", domain=self.label_domain, id=ID(), color=Color(0, 255, 0))
         self.abnormal_label = LabelEntity(
-            name=LabelNames.anomalous,
+            name="Anomalous",
             domain=self.label_domain,
-            id=ID(LabelNames.anomalous),
+            id=ID(),
             is_anomalous=True,
             color=Color(255, 0, 0),
         )

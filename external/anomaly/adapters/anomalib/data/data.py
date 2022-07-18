@@ -16,7 +16,6 @@ Anomaly Dataset Utils
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from dataclasses import dataclass
 from typing import Dict, List, Optional, Union
 
 import numpy as np
@@ -37,17 +36,6 @@ from torch import Tensor
 from torch.utils.data import DataLoader, Dataset
 
 logger = get_logger(__name__)
-
-
-@dataclass
-class LabelNames:
-    """
-    Anomaly Class Label Names to match the naming
-    convention in the UI
-    """
-
-    normal = "Normal"
-    anomalous = "Anomalous"
 
 
 class OTEAnomalyDataset(Dataset):
@@ -167,14 +155,12 @@ class OTEAnomalyDataModule(LightningDataModule):
             self.predict_ote_dataset = self.dataset
 
     def summary(self):
-        """
-        Print size of the dataset, number of anomalous images and number of normal images.
-        """
+        """Print size of the dataset, number of anomalous images and number of normal images."""
         for subset in [Subset.TRAINING, Subset.VALIDATION, Subset.TESTING]:
             dataset = self.dataset.get_subset(subset)
             num_items = len(dataset)
-            num_normal = len([item for item in dataset if item.get_shapes_labels()[0].name == LabelNames.normal])
-            num_anomalous = len([item for item in dataset if item.get_shapes_labels()[0].name == LabelNames.anomalous])
+            num_normal = len([item for item in dataset if not item.get_shapes_labels()[0].is_anomalous])
+            num_anomalous = len([item for item in dataset if item.get_shapes_labels()[0].is_anomalous])
             logger.info(
                 "'%s' subset size: Total '%d' images. " "Normal: '%d', images. Anomalous: '%d' images",
                 subset,
