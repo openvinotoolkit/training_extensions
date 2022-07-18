@@ -64,7 +64,7 @@ class AnomalyTrainingTask(AnomalyInferenceTask, ITrainingTask):
         callbacks = [
             ProgressCallback(parameters=train_parameters),
             MinMaxNormalizationCallback(),
-            ScoreReportingCallback(parameters=train_parameters)
+            ScoreReportingCallback(parameters=train_parameters),
         ]
 
         self.trainer = Trainer(**config.trainer, logger=False, callbacks=callbacks)

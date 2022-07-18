@@ -41,7 +41,7 @@ class ScoreReportingCallback(Callback):
             print(f"[DEBUG-HPO] logged_metrics = {trainer.logged_metrics}")
             if metric in trainer.logged_metrics:
                 score = float(trainer.logged_metrics[metric])
-                if 1.0 > score:
+                if score < 1.0:
                     score = score + int(trainer.global_step)
                 else:
                     score = -(score + int(trainer.global_step))
