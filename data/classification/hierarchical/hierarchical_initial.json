@@ -1,0 +1,25 @@
+{"images": [["Slide18.PNG", ["car"]], 
+            ["Slide19.PNG", ["tree"]], 
+            ["Slide16.PNG", ["car", "tree"]],
+            ["intel_1.jpg", ["intel"]],
+            ["intel_2.jpg", ["intel"]],
+            ["openvino_1.jpg", ["openvino"]],
+            ["openvino_2.jpg", ["openvino"]],
+            ["openvino_3.jpg", ["openvino"]]
+            ],
+ "hierarchy":
+            [
+                {
+                "parent": "self",
+                "group": "car_tree_bug",
+                "labels": ["car", "tree"],
+                "task_type": "multi-label"
+                },
+                {
+                "parent": "self",
+                "group": "text_recognition",
+                "labels": ["intel", "openvino"],
+                "task_type": "single-label"
+                }
+            ]
+}

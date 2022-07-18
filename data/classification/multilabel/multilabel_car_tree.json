@@ -1,0 +1,6 @@
+{"images": [["Slide18.PNG", ["car"]],
+            ["Slide19.PNG", ["tree"]], 
+            ["Slide16.PNG", ["car", "tree"]]
+            ], 
+ "classes": ["car", "tree"]
+}

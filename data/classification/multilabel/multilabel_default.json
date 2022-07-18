@@ -1,0 +1,20 @@
+{"images": [["Slide10.PNG", ["tree", "car", "bug"]], 
+            ["Slide12.PNG", ["bug", "car", "tree"]], 
+            ["Slide14.PNG", ["tree", "bug", "car"]], 
+            ["Slide9.PNG", ["bug", "car", "tree"]], 
+            ["Slide11.PNG", ["car", "tree", "bug"]], 
+            ["Slide17.PNG", ["bug", "tree"]], 
+            ["Slide7.PNG", ["tree", "car", "bug"]], 
+            ["Slide6.PNG", ["car", "tree", "bug"]], 
+            ["Slide4.PNG", ["bug", "tree", "car"]], 
+            ["Slide20.PNG", ["bug"]], 
+            ["Slide5.PNG", ["bug", "tree", "car"]], 
+            ["Slide1.PNG", ["car", "bug", "tree"]], 
+            ["Slide3.PNG", ["car", "tree", "bug"]], 
+            ["Slide13.PNG", ["bug", "car", "tree"]], 
+            ["Slide2.PNG", ["bug", "car", "tree"]], 
+            ["Slide8.PNG", ["car", "tree", "bug"]], 
+            ["Slide15.PNG", ["bug", "car"]]
+            ], 
+"classes": ["car", "tree", "bug"]
+}
