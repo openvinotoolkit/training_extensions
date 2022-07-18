@@ -145,8 +145,7 @@ checkpoint_config = dict(
 evaluation = dict(
     by_epoch=True,
     interval=1,
-    metric='mDice',
-    show_log=True
+    metric='mDice'
 )
 
 # yapf:disable
