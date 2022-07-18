@@ -106,7 +106,7 @@ class ClassificationDatasetAdapter(DatasetEntity):
         for subset, subset_data in self.annotations.items():
             for data_info in subset_data[0]:
                 image = Image(file_path=data_info[0])
-                labels = [ScoredLabel(label=self._label_name_to_project_label(label_name),
+                labels = [ScoredLabel(label=self.label_name_to_project_label(label_name),
                                       probability=1.0) for label_name in data_info[1]]
                 shapes = [Annotation(Rectangle.generate_full_box(), labels)]
                 annotation_scene = AnnotationSceneEntity(kind=AnnotationSceneKind.ANNOTATION,
@@ -191,7 +191,7 @@ class ClassificationDatasetAdapter(DatasetEntity):
             self.labels = labels
         assert self.labels is not None
 
-    def _label_name_to_project_label(self, label_name):
+    def label_name_to_project_label(self, label_name):
         return [label for label in self.project_labels if label.name == label_name][0]
 
     def is_multiclass(self):
@@ -214,7 +214,7 @@ class ClassificationDatasetAdapter(DatasetEntity):
             for g in self.annotations[Subset.TRAINING][2]:
                 group_labels = []
                 for cls in g:
-                    group_labels.append(self._label_name_to_project_label(cls))
+                    group_labels.append(self.label_name_to_project_label(cls))
                 label_schema.add_group(LabelGroup(name=group_labels[0].name,
                                                   labels=group_labels, group_type=LabelGroupType.EXCLUSIVE))
             label_schema.add_group(empty_group)

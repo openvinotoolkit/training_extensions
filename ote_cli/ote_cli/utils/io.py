@@ -147,6 +147,7 @@ def read_label_schema(path):
 
 
 def generate_label_schema(dataset, task_type):
+    # pylint: disable=
     """
     Generates label schema depending on task type.
     """
@@ -156,19 +157,33 @@ def generate_label_schema(dataset, task_type):
         assert len(not_empty_labels) > 1
         label_schema = LabelSchemaEntity()
         if dataset.is_multiclass():
-            main_group = LabelGroup(name="labels", labels=dataset.project_labels, group_type=LabelGroupType.EXCLUSIVE)
+            main_group = LabelGroup(
+                name="labels",
+                labels=dataset.project_labels,
+                group_type=LabelGroupType.EXCLUSIVE,
+            )
             label_schema.add_group(main_group)
         elif dataset.is_multilabel() or dataset.is_multihead():
-            emptylabel = LabelEntity(name="Empty label", is_empty=True, domain=Domain.CLASSIFICATION)
-            empty_group = LabelGroup(name="empty", labels=[emptylabel], group_type=LabelGroupType.EMPTY_LABEL)
+            emptylabel = LabelEntity(
+                name="Empty label", is_empty=True, domain=Domain.CLASSIFICATION
+            )
+            empty_group = LabelGroup(
+                name="empty", labels=[emptylabel], group_type=LabelGroupType.EMPTY_LABEL
+            )
+            # pylint: disable=unnecessary-comprehension
             key = [i for i in dataset.annotations.keys()][0]
-            for g in dataset.annotations[key][2]:
+            for group in dataset.annotations[key][2]:
                 group_labels = []
-                for cls in g:
-                    group_labels.append(dataset._label_name_to_project_label(cls))
+                for label_name in group:
+                    group_labels.append(dataset.label_name_to_project_label(label_name))
                 labels = group_labels if dataset.is_multilabel() else group_labels[1:]
-                label_schema.add_group(LabelGroup(name=group_labels[0].name,
-                                                  labels=labels, group_type=LabelGroupType.EXCLUSIVE))
+                label_schema.add_group(
+                    LabelGroup(
+                        name=group_labels[0].name,
+                        labels=labels,
+                        group_type=LabelGroupType.EXCLUSIVE,
+                    )
+                )
             label_schema.add_group(empty_group)
             return label_schema
 
