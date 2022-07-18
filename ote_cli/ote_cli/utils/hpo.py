@@ -284,12 +284,13 @@ def run_hpo_trainer(
     best_model_weight = _get_best_model_weight_path(
         _get_hpo_dir(hp_config), str(hp_config["trial_id"]), task_type
     )
-    best_model_weight = osp.realpath(best_model_weight)
-    for dirpath, _, filenames in os.walk(_get_hpo_trial_workdir(hp_config)):
-        for filename in filenames:
-            full_name = osp.join(dirpath, filename)
-            if (not osp.islink(full_name)) and full_name != best_model_weight:
-                os.remove(full_name)
+    if best_model_weight is not None:
+        best_model_weight = osp.realpath(best_model_weight)
+        for dirpath, _, filenames in os.walk(_get_hpo_trial_workdir(hp_config)):
+            for filename in filenames:
+                full_name = osp.join(dirpath, filename)
+                if (not osp.islink(full_name)) and full_name != best_model_weight:
+                    os.remove(full_name)
 
 
 def exec_hpo_trainer(arg_file_name, alloc_gpus):
@@ -410,22 +411,18 @@ def _load_hpopt_config(file_path):
 
 def _get_best_model_weight_path(hpo_dir: str, trial_num: str, task_type: TaskType):
     """Return best model weight from HPO trial directory"""
-    if _is_cls_framework_task(task_type):
-        best_weight_path = osp.realpath(osp.join(hpo_dir, str(trial_num), "best.pth"))
-    elif _is_det_framework_task(task_type) or _is_seg_framework_task(task_type):
-        best_trial_path = osp.join(
-            hpo_dir,
-            trial_num,
-            "checkpoints_round_0",
-        )
-        for file_name in os.listdir(best_trial_path):
-            if "best" in file_name:
-                best_weight_path = osp.join(best_trial_path, file_name)
+    best_weight_path = None
+    if (_is_cls_framework_task(task_type)
+        or _is_det_framework_task(task_type)
+        or _is_seg_framework_task(task_type)
+    ):
+        best_arr = Path(osp.join(hpo_dir, str(trial_num))).glob("**/best*.pth")
+        for best_name_file in best_arr:
+            if not osp.islink(best_name_file):
+                best_weight_path = best_name_file
                 break
     elif _is_anomaly_framework_task(task_type):
         # TODO need to implement later
-        best_weight_path = ""
-    else:
         best_weight_path = ""
 
     return best_weight_path
@@ -452,6 +449,8 @@ class HpoCallback(UpdateProgressCallback):
 
     def __call__(self, progress: float, score: Optional[float] = None):
         if score is not None:
+            if self.metric == "accuracy_top-1":
+                score *= 0.01 # trainsform percentange to decimal on mmcls case
             current_iters = -1
             if score > 1.0:
                 current_iters = int(score)
