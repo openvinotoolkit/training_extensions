@@ -18,11 +18,8 @@ Configurable parameters for anomaly classification task
 
 from sys import maxsize
 
-from adapters.anomalib.configs.configuration_enums import (
-    ModelBackbone,
-    POTQuantizationPreset,
-)
 from attr import attrs
+from configs.utils.configuration_enums import ModelBackbone, POTQuantizationPreset
 from ote_sdk.configuration import ConfigurableParameters
 from ote_sdk.configuration.elements import (
     ParameterGroup,
