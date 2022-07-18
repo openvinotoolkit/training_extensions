@@ -24,7 +24,7 @@ from inspect import isclass
 from math import ceil
 from os import path as osp
 from pathlib import Path
-from typing import Callable, Optional
+from typing import Optional
 
 import torch
 import yaml
@@ -37,7 +37,7 @@ from ote_sdk.entities.train_parameters import TrainParameters, UpdateProgressCal
 
 from ote_cli.datasets import get_dataset_class
 from ote_cli.utils.importing import get_impl_class
-from ote_cli.utils.io import generate_label_schema, read_model, save_model_data
+from ote_cli.utils.io import generate_label_schema
 
 try:
     import hpopt
@@ -272,7 +272,9 @@ def run_hpo_trainer(
 
     # make callback to report score to hpopt every epoch
     train_param = TrainParameters(
-        False, HpoCallback(hp_config, hp_config["metric"], task), ModelSavedCallback()
+        False,
+        HpoCallback(hp_config, hp_config["metric"], task),
+        ModelSavedCallback(output_model),
     )
     train_param.train_on_empty_model = None
 
@@ -316,6 +318,7 @@ def exec_hpo_trainer(arg_file_name, alloc_gpus):
 def get_train_wrapper_task(impl_class, task_type):
     """get task wrapper for the HPO with given task type"""
 
+    # pylint: disable=attribute-defined-outside-init
     class HpoTrainTask(impl_class):
         """wrapper class for the HPO"""
 
@@ -335,19 +338,6 @@ def get_train_wrapper_task(impl_class, task_type):
 
         def prepare_hpo(self, hp_config):
             """update config of the each task framework for the HPO"""
-            # if _is_cls_framework_task(self._task_type):
-            #     # pylint: disable=attribute-defined-outside-init
-            #     self._scratch_space = _get_hpo_trial_workdir(hp_config)
-            #     self._cfg.data.save_dir = self._scratch_space
-            #     self._cfg.model.save_all_chkpts = True
-            # elif _is_det_framework_task(self._task_type) or _is_seg_framework_task(
-            #     self._task_type
-            # ):
-            #     self._config.work_dir = _get_hpo_trial_workdir(hp_config)
-            #     self._config.checkpoint_config["max_keep_ckpts"] = (
-            #         hp_config["iterations"] + 10
-            #     )
-            #     self._config.checkpoint_config["interval"] = 1
             if (
                 _is_cls_framework_task(self._task_type)
                 or _is_det_framework_task(self._task_type)
@@ -469,12 +459,14 @@ class HpoCallback(UpdateProgressCallback):
                 self.hpo_task.cancel_training()
 
 
-class ModelSavedCallback(Callable):
-    def __call__(self, path: str, event: str):
-        if event == "initialized":
-            print(
-                f"********** called model saved callback ({path}, {event}) **************"
-            )
+class ModelSavedCallback:
+    """save model callback"""
+
+    def __init__(self, output_model):
+        self.output_model = output_model
+
+    def __call__(self) -> None:
+        print(f"model saved {self.output_model}")
 
 
 class HpoManager:
@@ -594,27 +586,6 @@ class HpoManager:
             # Prevent each trials from being stopped during warmup stage
             batch_size = default_hyper_parameters.get(batch_size_name)
             if "min_iterations" not in hpopt_cfg and batch_size is not None:
-                # if _is_cls_framework_task(task_type):
-                #     with open(
-                #         osp.join(
-                #             osp.dirname(
-                #                 self.environment.model_template.model_template_path
-                #             ),
-                #             "model.yaml",
-                #         ),
-                #         "r",
-                #         encoding="utf-8",
-                #     ) as f:
-                #         model_yaml = yaml.safe_load(f)
-                #     if "warmup" in model_yaml["train"]:
-                #         hpopt_arguments["min_iterations"] = ceil(
-                #             model_yaml["train"]["warmup"]
-                #             * batch_size
-                #             / train_dataset_size
-                #         )
-                # elif _is_det_framework_task(task_type) or _is_seg_framework_task(
-                #     task_type
-                # ):
                 if (
                     _is_cls_framework_task(task_type)
                     or _is_det_framework_task(task_type)
@@ -762,14 +733,6 @@ class HpoManager:
         best_config = self.hpo.get_best_config()
         for key, val in self.fixed_hp.items():
             best_config[key] = val
-
-        # TODO: is it needed here?
-        # # finetune stage resumes hpo trial, so warmup isn't needed
-        # if task_type == TaskType.DETECTION:
-        #     best_config["learning_parameters.learning_rate_warmup_iters"] = 0
-        # if task_type == TaskType.SEGMENTATION:
-        #     best_config["learning_parameters.learning_rate_fixed_iters"] = 0
-        #     best_config["learning_parameters.learning_rate_warmup_iters"] = 0
 
         hyper_parameters = self.environment.get_hyper_parameters()
         HpoManager.set_hyperparameter(hyper_parameters, best_config)
