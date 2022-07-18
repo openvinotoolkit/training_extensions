@@ -269,7 +269,7 @@ class AnomalySegmentationTestTrainingAction(OTETestTrainingAction):
     def __init__(
         self,
         dataset: DatasetEntity,
-        labels_schema: LabelSchemaEntity(),
+        labels_schema: LabelSchemaEntity,
         template_path: str,
         patience: str,
         batch_size: str,

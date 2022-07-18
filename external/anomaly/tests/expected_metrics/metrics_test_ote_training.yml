@@ -128,7 +128,6 @@
     "base": "nncf_evaluation.metrics.accuracy.Dice Average"
     "max_diff": 0.01
 
-
 ? "ACTION-training_evaluation,model-ote_anomaly_segmentation_padim,dataset-mvtec_short_cable,patience-CONFIG,batch-CONFIG,usecase-reallife"
 : "metrics.accuracy.Dice Average":
     "target_value": 0.081
@@ -171,7 +170,6 @@
 : "metrics.accuracy.Dice Average":
     "base": "nncf_evaluation.metrics.accuracy.Dice Average"
     "max_diff": 0.01
-
 
 ? "ACTION-training_evaluation,model-ote_anomaly_segmentation_padim,dataset-mvtec_short_capsule,patience-CONFIG,batch-CONFIG,usecase-reallife"
 : "metrics.accuracy.Dice Average":
@@ -216,7 +214,6 @@
     "base": "nncf_evaluation.metrics.accuracy.Dice Average"
     "max_diff": 0.01
 
-
 ? "ACTION-training_evaluation,model-ote_anomaly_segmentation_padim,dataset-mvtec_short_carpet,patience-CONFIG,batch-CONFIG,usecase-reallife"
 : "metrics.accuracy.Dice Average":
     "target_value": 0.084
@@ -259,7 +256,6 @@
 : "metrics.accuracy.Dice Average":
     "base": "nncf_evaluation.metrics.accuracy.Dice Average"
     "max_diff": 0.01
-
 
 ? "ACTION-training_evaluation,model-ote_anomaly_segmentation_padim,dataset-mvtec_short_grid,patience-CONFIG,batch-CONFIG,usecase-reallife"
 : "metrics.accuracy.Dice Average":
@@ -347,7 +343,6 @@
     "base": "nncf_evaluation.metrics.accuracy.Dice Average"
     "max_diff": 0.01
 
-
 ? "ACTION-training_evaluation,model-ote_anomaly_segmentation_padim,dataset-mvtec_short_leather,patience-CONFIG,batch-CONFIG,usecase-reallife"
 : "metrics.accuracy.Dice Average":
     "target_value": 0.019
@@ -433,7 +428,6 @@
 : "metrics.accuracy.Dice Average":
     "base": "nncf_evaluation.metrics.accuracy.Dice Average"
     "max_diff": 0.01
-
 
 ? "ACTION-training_evaluation,model-ote_anomaly_segmentation_padim,dataset-mvtec_short_pill,patience-CONFIG,batch-CONFIG,usecase-reallife"
 : "metrics.accuracy.Dice Average":
@@ -692,7 +686,7 @@
 : "metrics.accuracy.Dice Average":
     "base": "nncf_evaluation.metrics.accuracy.Dice Average"
     "max_diff": 0.01
-    
+
 ? "ACTION-training_evaluation,model-ote_anomaly_segmentation_padim,dataset-mvtec_short_zipper,patience-CONFIG,batch-CONFIG,usecase-reallife"
 : "metrics.accuracy.Dice Average":
     "target_value": 0.104
