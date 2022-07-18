@@ -101,6 +101,9 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
             item_labels = []
             pos_thr = 0.5
 
+            if any(np.isnan(prediction_item)):
+                logger.info('Nan in prediction_item.')
+
             if self._multilabel:
                 if max(prediction_item) < pos_thr:
                     logger.info('Confidence is smaller than pos_thr, empty_label will be appended to item_labels.')
@@ -112,34 +115,31 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
                         item_labels.append(cls_label)
 
             elif self._hierarchical:
-                for i in range(self._hierarchical_info['num_multiclass_heads']):
-                    logits_begin, logits_end = self._hierarchical_info['head_idx_to_logits_range'][i]
+                for head_idx in range(self._hierarchical_info['num_multiclass_heads']):
+                    logits_begin, logits_end = self._hierarchical_info['head_idx_to_logits_range'][head_idx]
                     head_logits = prediction_item[logits_begin : logits_end]
-                    j = np.argmax(head_logits)  # Assume logits already passed softmax
-                    label_str = self._hierarchical_info['all_groups'][i][j]
+                    head_pred = np.argmax(head_logits)  # Assume logits already passed softmax
+                    label_str = self._hierarchical_info['all_groups'][head_idx][head_pred]
                     ote_label = next(x for x in self._labels if x.name == label_str)
-                    item_labels.append(ScoredLabel(label=ote_label, probability=float(head_logits[j])))
+                    item_labels.append(ScoredLabel(label=ote_label, probability=float(head_logits[head_pred])))
 
                 if self._hierarchical_info['num_multilabel_classes']:
                     logits_begin, logits_end = self._hierarchical_info['num_single_label_classes'], -1
                     head_logits = prediction_item[logits_begin : logits_end]
-                    for i in range(head_logits.shape[0]):
-                        if head_logits[i] > pos_thr:  # Assume logits already passed sigmoid
-                            label_str = self._hierarchical_info['all_groups'][self._hierarchical_info['num_multiclass_heads']+i][0]
+                    for logit_idx, logit in enumerate(head_logits):
+                        if logit > pos_thr:  # Assume logits already passed sigmoid
+                            label_str = self._hierarchical_info['all_groups'][self._hierarchical_info['num_multiclass_heads']+logit_idx][0]
                             ote_label = next(x for x in self._labels if x.name == label_str)
-                            item_labels.append(ScoredLabel(label=ote_label, probability=float(head_logits[i])))
+                            item_labels.append(ScoredLabel(label=ote_label, probability=float(logit)))
                 item_labels = self._task_environment.label_schema.resolve_labels_probabilistic(item_labels)
                 if not item_labels:
                     logger.info('item_labels is empty.')
                     item_labels.append(ScoredLabel(self._empty_label, probability=1.))
+
             else:
-                if any(np.isnan(prediction_item)):
-                    logger.info('Nan in prediction_item')
-                    continue
-                else:
-                    label_idx = prediction_item.argmax()
-                    cls_label = ScoredLabel(self._labels[label_idx], probability=float(prediction_item[label_idx]))
-                    item_labels.append(cls_label)
+                label_idx = prediction_item.argmax()
+                cls_label = ScoredLabel(self._labels[label_idx], probability=float(prediction_item[label_idx]))
+                item_labels.append(cls_label)
 
             dataset_item.append_labels(item_labels)
             update_progress_callback(int(i / dataset_size * 100))

@@ -287,11 +287,10 @@ class MPAHierarchicalClsDataset(MPAMultilabelClsDataset):
                     group_idx, in_group_idx = self.hierarchical_info['class_to_group_idx'][ote_lbl.name]
                     if group_idx < num_cls_heads:
                         class_indices[group_idx] = in_group_idx
+                    elif ote_lbl not in ignored_labels:
+                        class_indices[num_cls_heads + in_group_idx] = 1
                     else:
-                        if ote_lbl not in ignored_labels:
-                            class_indices[num_cls_heads + in_group_idx] = 1
-                        else:
-                            class_indices[num_cls_heads + in_group_idx] = -1
+                        class_indices[num_cls_heads + in_group_idx] = -1
             else:  # this supposed to happen only on inference stage or if we have a negative in multilabel data
                 class_indices = [-1]*(self.hierarchical_info['num_multiclass_heads'] +
                                       self.hierarchical_info['num_multilabel_classes'])
