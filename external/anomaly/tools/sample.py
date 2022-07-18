@@ -344,7 +344,7 @@ def parse_args() -> Namespace:
     )
     parser.add_argument(
         "--model_template_path",
-        default="./configs/anomaly_classification/padim/template.yaml",
+        default="./configs/templates/classification/padim/template.yaml",
     )
     parser.add_argument("--dataset_path", default="./datasets/MVTec")
     parser.add_argument("--category", default="bottle")

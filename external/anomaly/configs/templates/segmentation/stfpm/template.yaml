@@ -1,10 +1,10 @@
 # Description.
-model_template_id: ote_anomaly_detection_padim
-name: PADIM
-task_type: ANOMALY_DETECTION
+model_template_id: ote_anomaly_segmentation_stfpm
+name: STFPM
+task_type: ANOMALY_SEGMENTATION
 task_family: VISION
 instantiation: "CLASS"
-summary: This model is faster and in many cases more accurate, but it requires a fixed position of the objects within the image.
+summary: Use this model when the position of the objects in the image frame might differ between images.
 application: ~
 
 # Algo backend.
@@ -18,7 +18,13 @@ entrypoints:
 
 # Hyper Parameters
 hyper_parameters:
-  base_path: ./configuration.yaml
+  base_path: ../../../templates/common/stfpm/configuration.yaml
+  parameter_overrides:
+    learning_parameters:
+      train_batch_size:
+        auto_hpo_state: POSSIBLE
+      lr:
+        auto_hpo_state: POSSIBLE
 
 # Training resources.
 max_nodes: 1
@@ -27,5 +33,5 @@ training_targets:
   - CPU
 
 # Computational Complexity
-gigaflops: 3.9
-size: 168.4
+gigaflops: 5.6
+size: 21.1
