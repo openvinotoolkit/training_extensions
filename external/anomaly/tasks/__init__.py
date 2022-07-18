@@ -2,7 +2,7 @@
 Initialization of OTE Anomalib
 """
 
-# Copyright (C) 2021 Intel Corporation
+# Copyright (C) 2022 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,9 +16,9 @@ Initialization of OTE Anomalib
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .inference_task import AnomalyInferenceTask
-from .nncf_task import AnomalyNNCFTask
-from .openvino import OpenVINOAnomalyTask
-from .train_task import AnomalyTrainingTask
+from .inference_task import InferenceTask
+from .nncf_task import NNCFTask
+from .openvino import OpenVINOTask
+from .train_task import TrainingTask
 
-__all__ = ["AnomalyInferenceTask", "AnomalyTrainingTask", "AnomalyNNCFTask", "OpenVINOAnomalyTask"]
+__all__ = ["InferenceTask", "TrainingTask", "NNCFTask", "OpenVINOTask"]

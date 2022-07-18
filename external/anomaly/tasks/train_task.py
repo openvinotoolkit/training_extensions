@@ -28,12 +28,12 @@ from ote_sdk.entities.model import ModelEntity
 from ote_sdk.entities.train_parameters import TrainParameters
 from ote_sdk.usecases.tasks.interfaces.training_interface import ITrainingTask
 from pytorch_lightning import Trainer, seed_everything
-from tools.task import AnomalyInferenceTask
+from tasks import InferenceTask
 
 logger = get_logger(__name__)
 
 
-class AnomalyTrainingTask(AnomalyInferenceTask, ITrainingTask):
+class TrainingTask(InferenceTask, ITrainingTask):
     """Base Anomaly Task."""
 
     def train(
@@ -69,11 +69,11 @@ class AnomalyTrainingTask(AnomalyInferenceTask, ITrainingTask):
             MinMaxNormalizationCallback(),
             ScoreReportingCallback(parameters=train_parameters),
             MetricsConfigurationCallback(
-                config.metrics.threshold.adaptive,
-                config.metrics.threshold.image_default,
-                config.metrics.threshold.pixel_default,
-                config.metrics.image,
-                config.metrics.pixel,
+                adaptive_threshold=config.metrics.threshold.adaptive,
+                default_image_threshold=config.metrics.threshold.image_default,
+                default_pixel_threshold=config.metrics.threshold.pixel_default,
+                image_metric_names=config.metrics.image,
+                pixel_metric_names=config.metrics.pixel,
             ),
         ]
 

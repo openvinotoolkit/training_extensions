@@ -100,7 +100,7 @@ class OTEOpenVINOAnomalyDataloader(DataLoader):
         return len(self.dataset)
 
 
-class OpenVINOAnomalyTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeploymentTask):
+class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeploymentTask):
     """
     OpenVINO inference task
 

@@ -48,12 +48,12 @@ from ote_sdk.usecases.tasks.interfaces.optimization_interface import (
 )
 from pytorch_lightning import Trainer
 
-from .inference_task import AnomalyInferenceTask
+from .inference_task import InferenceTask
 
 logger = get_logger(__name__)
 
 
-class AnomalyNNCFTask(AnomalyInferenceTask, IOptimizationTask):
+class NNCFTask(InferenceTask, IOptimizationTask):
     """Base Anomaly Task."""
 
     def __init__(self, task_environment: TaskEnvironment) -> None:

@@ -59,7 +59,7 @@ logger = get_logger(__name__)
 
 
 # pylint: disable=too-many-instance-attributes
-class AnomalyInferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
+class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
     """Base Anomaly Task."""
 
     def __init__(self, task_environment: TaskEnvironment) -> None:
@@ -173,11 +173,11 @@ class AnomalyInferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload
         inference = AnomalyInferenceCallback(dataset, self.labels, self.task_type)
         normalize = MinMaxNormalizationCallback()
         metrics_configuration = MetricsConfigurationCallback(
-            config.metrics.threshold.adaptive,
-            config.metrics.threshold.image_default,
-            config.metrics.threshold.pixel_default,
-            config.metrics.image,
-            config.metrics.pixel,
+            adaptive_threshold=config.metrics.threshold.adaptive,
+            default_image_threshold=config.metrics.threshold.image_default,
+            default_pixel_threshold=config.metrics.threshold.pixel_default,
+            image_metric_names=config.metrics.image,
+            pixel_metric_names=config.metrics.pixel,
         )
         callbacks = [progress, normalize, inference, metrics_configuration]
 

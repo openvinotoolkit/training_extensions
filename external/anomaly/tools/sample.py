@@ -45,7 +45,7 @@ from ote_sdk.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
 from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType
 from ote_sdk.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from ote_sdk.usecases.tasks.interfaces.optimization_interface import OptimizationType
-from tools.task import AnomalyNNCFTask, OpenVINOAnomalyTask
+from tasks import NNCFTask, OpenVINOTask
 
 logger = get_logger(__name__)
 
@@ -115,8 +115,8 @@ class OteAnomalyTask:
         self.torch_task = self.create_task(task="base")
 
         self.trained_model: ModelEntity
-        self.openvino_task: OpenVINOAnomalyTask
-        self.nncf_task: AnomalyNNCFTask
+        self.openvino_task: OpenVINOTask
+        self.nncf_task: NNCFTask
         self.results = {"category": dataset_path}
         self.seed = seed
 
