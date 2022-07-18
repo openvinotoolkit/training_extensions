@@ -71,6 +71,9 @@ class BaseTask:
         self.reserved_cancel = False
         self.on_hook_initialized = self.OnHookInitialized(self)
 
+        # to override configuration at runtime
+        self.override_configs = None
+
     @property
     def _precision_from_config(self):
         return [ModelPrecision.FP16] if self._model_cfg.get('fp16', None) else [ModelPrecision.FP32]
@@ -157,6 +160,10 @@ class BaseTask:
         recipe_hparams = self._init_recipe_hparam()
         if len(recipe_hparams) > 0:
             self._recipe_cfg.merge_from_dict(recipe_hparams)
+        if len(self.override_configs) > 0:
+            logger.info(f"before override configs merging = {self._recipe_cfg}")
+            self._recipe_cfg.merge_from_dict(self.override_configs)
+            logger.info(f"after override configs merging = {self._recipe_cfg}")
 
         # prepare model config
         self._model_cfg = self._init_model_cfg()
@@ -275,3 +282,7 @@ class BaseTask:
 
         def __reduce__(self):
             return (self.__class__, (id(self.task_instance),))
+
+    def set_override_configurations(self, config):
+        logger.info(f"set override config to: {config}")
+        self.override_configs = config
