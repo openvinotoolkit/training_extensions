@@ -15,13 +15,13 @@ def create_export_test_for_phase1():
             cls.model_path = cls.config['checkpoint']
 
         def test_export_onnx(self):
-            self.exporter = Exporter(self.config, optimised=False)
+            self.exporter = Exporter(self.config, phase=1)
             self.exporter.export_model_onnx()
             self.assertTrue(os.path.join(os.path.split(self.model_path)[
                             0], self.config.get('model_name_onnx')))
 
         def test_export_ir(self):
-            self.exporter = Exporter(self.config, optimised=False)
+            self.exporter = Exporter(self.config, phase=1)
             model_dir = os.path.split(self.config['checkpoint'])[0]
             if not os.path.exists(os.path.join(model_dir, self.config.get('model_name_onnx'))):
                 self.exporter.export_model_onnx()
@@ -57,7 +57,7 @@ def create_export_test_for_phase2():
             self.config = get_config(action='export', phase=2)
             if not os.path.exists(self.config['checkpoint']):
                 download_checkpoint(phase=2)
-            self.exporter = Exporter(self.config, optimised=True)
+            self.exporter = Exporter(self.config, phase=2)
             self.exporter.export_model_onnx()
             checkpoint = os.path.split(self.config['checkpoint'])[0]
             self.assertTrue(os.path.join(
@@ -67,7 +67,7 @@ def create_export_test_for_phase2():
             self.config = get_config(action='export', phase=2)
             if not os.path.exists(self.config['checkpoint']):
                 download_checkpoint(phase=2)
-            self.exporter = Exporter(self.config, optimised=True)
+            self.exporter = Exporter(self.config, phase=2)
             self.model_path = os.path.split(self.config['checkpoint'])[0]
             if not os.path.exists(os.path.join(self.model_path, self.config.get('model_name_onnx'))):
                 self.exporter.export_model_onnx()
