@@ -49,14 +49,14 @@
             "Normal",
             "No Lung Opacity / Not Normal"
         ],
-        "checkpoint": "model_weights/miriad_eff.pth",
+        "checkpoint": "model_weights/checkpoint_stage2.pth",
         "device": "cuda",
         "max_epoch": 3,
         "alpha": 1.833,
         "beta": 1.044,
         "phi": -0.1,
         "n_digestunits": 3,
-        "savepath": "model_weights",
+        "savepath": "model_weights/",
         "default_image_path": "phase2data/train/",
         "image_path": "phase2data/train/",
         "path_to_latent": "phase2data/train/latent/",
@@ -77,7 +77,7 @@
         "width": 64,
         "max_samples": 10,
         "phase": 2,
-        "checkpoint": "model_weights/miriad_eff.pth",
+        "checkpoint": "model_weights/checkpoint_stage2.pth",
         "class_count": 3,
         "dummy_valid_list": [
             "0a5b4860-e6ab-4737-a389-9d0cf7300770.jpg",
@@ -117,7 +117,7 @@
         "path_to_gdtruth": "phase2data/test/gd_truth/"
     },
     "export": {
-        "checkpoint": "model_weights/miriad_eff.pth",
+        "checkpoint": "model_weights/checkpoint_stage2.pth",
         "input_shape": [
             1,
             3,
@@ -128,7 +128,7 @@
         "model_name": "miriad_eff",
         "alpha": 1.833,
         "beta": 1.044,
-        "phi": -0.1,
+        "phi": 1,
         "phase": 2,
         "class_count": 3
     }
