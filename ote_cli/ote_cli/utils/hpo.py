@@ -34,6 +34,7 @@ from ote_sdk.entities.model_template import TaskType
 from ote_sdk.entities.subset import Subset
 from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.entities.train_parameters import TrainParameters, UpdateProgressCallback
+from mmcv.utils import ConfigDict
 
 from ote_cli.datasets import get_dataset_class
 from ote_cli.utils.importing import get_impl_class
@@ -185,7 +186,7 @@ def run_hpo_trainer(
 
     # set epoch and warm-up stage depending on given epoch
     if _is_cls_framework_task(task_type):
-        hyper_parameters.learning_parameters.max_num_epochs = hp_config["iterations"]
+        hyper_parameters.learning_parameters.num_iters = hp_config["iterations"]
     elif _is_det_framework_task(task_type):
         if "bracket" not in hp_config:
             hyper_parameters.learning_parameters.learning_rate_warmup_iters = int(
@@ -246,12 +247,17 @@ def run_hpo_trainer(
         model_template=model_template,
     )
 
-    # # load fixed initial weight
-    # train_env.model = read_model(
-    #     train_env.get_model_configuration(),
-    #     osp.join(osp.dirname(hp_config["file_path"]), "weights.pth"),
-    #     None,
-    # )
+    # load fixed initial weight
+    save_initial_weight_flag = False
+    initial_weight_path = osp.join(_get_hpo_dir(hp_config), "weights.pth")
+    if osp.exists(initial_weight_path):
+        train_env.model = read_model(
+            train_env.get_model_configuration(),
+            osp.join(osp.dirname(hp_config["file_path"]), "weights.pth"),
+            None,
+        )
+    else:
+        save_initial_weight_flag = True
 
     train_env.model_template.hpo = {
         "hp_config": hp_config,
@@ -262,6 +268,8 @@ def run_hpo_trainer(
     hpo_impl_class = get_train_wrapper_task(task_class, task_type)
     task = hpo_impl_class(task_environment=train_env)
     task.prepare_hpo(hp_config)
+    if save_initial_weight_flag:
+        task.prepare_saving_initial_weight(_get_hpo_dir(hp_config))
 
     dataset = HpoDataset(dataset, hp_config)
 
@@ -278,6 +286,12 @@ def run_hpo_trainer(
     task.train(dataset=dataset, output_model=output_model, train_parameters=train_param)
 
     hpopt.finalize_trial(hp_config)
+
+    # align MPA checkpoint file to OTE weight file format
+    if save_initial_weight_flag:
+        initial_weight = torch.load(initial_weight_path, map_location="cpu")
+        initial_weight["model"] = initial_weight["state_dict"]
+        torch.save(initial_weight, initial_weight_path)
 
     # remove model weight except best model weight
     best_model_weight = _get_best_model_weight_path(
@@ -360,6 +374,27 @@ def get_train_wrapper_task(impl_class, task_type):
                 )
                 self.set_override_configurations(cfg)
                 self._output_path = _get_hpo_trial_workdir(hp_config)
+
+        def prepare_saving_initial_weight(self, save_path):
+            """add a hook which saves initial model weight before training"""
+            if (
+                _is_cls_framework_task(task_type)
+                or _is_det_framework_task(task_type)
+                or _is_seg_framework_task(task_type)
+            ):
+                cfg = { "custom_hooks" : [
+                    ConfigDict(
+                        type="SaveInitialWeightHook",
+                        save_path=save_path
+                    )]
+                }
+                self.set_override_configurations(cfg)
+            else:
+                raise RuntimeError(
+                    "If task is not classification, detection or segmentation,"
+                    "initial weight should be saved before HPO."
+                )
+
 
     return HpoTrainTask
 
@@ -448,8 +483,6 @@ class HpoCallback(UpdateProgressCallback):
 
     def __call__(self, progress: float, score: Optional[float] = None):
         if score is not None:
-            if self.metric == "accuracy_top-1":
-                score *= 0.01 # trainsform percentange to decimal on mmcls case
             current_iters = -1
             if score > 1.0:
                 current_iters = int(score)
@@ -489,17 +522,21 @@ class HpoManager:
         # But they are used in hpo and included to final hyper parameters as fixed.
         self.fixed_hp = {}
 
-        # if environment.model is None:
-        #     impl_class = get_impl_class(environment.model_template.entrypoints.base)
-        #     task = impl_class(task_environment=environment)
-        #     model = ModelEntity(
-        #         dataset,
-        #         environment.get_model_configuration(),
-        #     )
-        #     task.save_model(model)
-        #     save_model_data(model, self.work_dir)
-        # else:
-        #     save_model_data(environment.model, self.work_dir)
+        task_type = self.environment.model_template.task_type
+        if environment.model is None:
+            #  Fixed initial weight is saved during first trial,
+            #  if task is the one ofcalssification, detection and segmentation.
+            if _is_anomaly_framework_task(task_type):
+                impl_class = get_impl_class(environment.model_template.entrypoints.base)
+                task = impl_class(task_environment=environment)
+                model = ModelEntity(
+                    dataset,
+                    environment.get_model_configuration(),
+                )
+                task.save_model(model)
+                save_model_data(model, self.work_dir)
+        else:
+            save_model_data(environment.model, self.work_dir)
 
         hpopt_cfg = _load_hpopt_config(
             osp.join(
@@ -518,7 +555,6 @@ class HpoManager:
         train_dataset_size = len(dataset.get_subset(Subset.TRAINING))
         val_dataset_size = len(dataset.get_subset(Subset.VALIDATION))
 
-        task_type = self.environment.model_template.task_type
 
         # make batch size range lower than train set size
         env_hp = self.environment.get_hyper_parameters()
@@ -667,6 +703,8 @@ class HpoManager:
                     if user_input in ["y", "n"]:
                         if user_input == "y":
                             resume_flag = True
+                        else:
+                            shutil.rmtree(self.work_dir, ignore_errors=True)
                         break
 
                 retry_count += 1
