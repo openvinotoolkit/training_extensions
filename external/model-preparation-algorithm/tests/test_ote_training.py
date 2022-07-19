@@ -271,18 +271,18 @@ class SegmentationClsIncrTrainingTestParameters(
         test_bunches = [
             dict(
                 model_name=[
-                    "Custom_Semantic_Segmentation_Lite-HRNet-18-mod2",
-                    "Custom_Semantic_Segmentation_Lite-HRNet-s-mod2",
-                    "Custom_Semantic_Segmentation_Lite-HRNet-x-mod3",
+                    "Custom_Semantic_Segmentation_Lite-HRNet-18-mod2_OCR",
+                    "Custom_Semantic_Segmentation_Lite-HRNet-s-mod2_OCR",
+                    "Custom_Semantic_Segmentation_Lite-HRNet-x-mod3_OCR",
                 ],
                 dataset_name="voc_cls_incr",
                 usecase="precommit",
             ),
             dict(
                 model_name=[
-                    "Custom_Semantic_Segmentation_Lite-HRNet-18-mod2",
-                    "Custom_Semantic_Segmentation_Lite-HRNet-s-mod2",
-                    "Custom_Semantic_Segmentation_Lite-HRNet-x-mod3",
+                    "Custom_Semantic_Segmentation_Lite-HRNet-18-mod2_OCR",
+                    "Custom_Semantic_Segmentation_Lite-HRNet-s-mod2_OCR",
+                    "Custom_Semantic_Segmentation_Lite-HRNet-x-mod3_OCR",
                 ],
                 dataset_name="voc_cls_incr",
                 num_training_iters=KEEP_CONFIG_FIELD_VALUE,
