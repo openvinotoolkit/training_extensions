@@ -22,15 +22,19 @@ def get_efficient_net_parameters(iterate, phi):
     return alpha, beta
 
 
-def load_model(eff_flag=False, it_no=0, alpha=1, beta=1, depth=3, width=64, phase=1):
+def load_model(alpha=1, beta=1, eff_flag=False, it_no=0, depth=3, width=64, phase=1, phi=-0.1):
     if phase == 1:
         if eff_flag:
+            # if this doesn't work, try with iterate = 1
+            alpha, beta = get_efficient_net_parameters(iterate=1, phi=phi)
             model = AutoEncoder(
                 (alpha[it_no]*depth).astype(int), (beta[it_no]*width).astype(int))
         else:
             model = AutoEncoder(int(alpha*depth), int(beta*width))
     else:
         if eff_flag:
+            # if this doesn't work, try with iterate = 1
+            alpha, beta = get_efficient_net_parameters(iterate=1, phi=phi)
             model = Decoder((alpha[it_no]*depth).astype(int),
                             (beta[it_no]*width).astype(int))
         else:
@@ -243,7 +247,7 @@ def train_model(config):
                                            shuffle=True, collate_fn=my_collate)
 
         # Dataset & dataloader for inference
-        path_test_latent = config['test_data'] + "latent/" 
+        path_test_latent = config['test_data'] + "latent/"
         path_test_gdtruth = config['test_data'] + "gd_truth/"
 
         test_dataset = CustomDatasetPhase2(path_test_latent,
@@ -276,12 +280,12 @@ def train_model(config):
         schedular = torch.optim.lr_scheduler.StepLR(
             optimizer, step_size=10, gamma=0.75)  # schedular instance
         start_epoch = 0
-        model_file = '.'.join([config['model_file_name'], 'model'])
+        model_file = '.'.join([config['model_file_name'], 'pth'])
 
         if iterate == 1:
             start_epoch = 0
             # load model file (if present) and load the model,optimizer & schedular states
-            model_file = '.'.join([config['model_file_name'], 'model'])
+            model_file = '.'.join([config['model_file_name'], 'pth'])
             if os.path.exists(os.path.abspath(model_file)):
                 loaded_file = torch.load(os.path.abspath(model_file))
                 model.load_state_dict(loaded_file['model_state'])
