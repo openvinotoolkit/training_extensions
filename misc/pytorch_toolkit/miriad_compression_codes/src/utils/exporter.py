@@ -6,17 +6,19 @@ from .train_utils import load_model
 
 
 class Exporter:
-    def __init__(self, config, optimised):
+    def __init__(self, config, phase):
         self.config = config
         self.checkpoint = config.get('checkpoint')
 
-        if optimised:
+        if phase == 1:
             alpha = self.config['alpha'] ** self.config['phi']
             beta = self.config['beta'] ** self.config['phi']
             self.model = load_model(
-                eff_flag=True, it_no=0, alpha=alpha, beta=beta, depth=3, width=64, phase=1)
+                eff_flag=True, it_no=0, alpha=alpha, beta=beta,
+                depth=3, width=64, phase=1, phi=self.config['phi'])
         else:
-            self.model = load_model(eff_flag=False)
+            self.model = load_model(
+                eff_flag=False, phase=2, phi=self.config['phi'])
 
         self.model.eval()
         load_checkpoint(self.model, self.checkpoint)
