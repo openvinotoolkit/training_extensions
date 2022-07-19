@@ -433,6 +433,25 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
             )
         return False
 
+    def __deepcopy__(self, memo):
+        """
+        When we deepcopy this object, be sure not to deep copy the lock, as this is not possible,
+        make a new lock instead.
+        """
+        # Call ROI getter to ensure original object has an ROI.
+        _ = self.roi
+
+        clone = copy.copy(self)
+
+        for name, value in vars(self).items():
+            if "__roi_lock" in name:
+                setattr(clone, name, Lock())
+            elif "__annotation_scene" in name:
+                setattr(clone, name, copy.copy(value))
+            else:
+                setattr(clone, name, copy.deepcopy(value, memo))
+        return clone
+
     def append_metadata_item(
         self, data: IMetadata, model: Optional[ModelEntity] = None
     ):
