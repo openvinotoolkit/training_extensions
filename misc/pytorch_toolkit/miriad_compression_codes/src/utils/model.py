@@ -4,7 +4,7 @@ from torch import nn
 
 def load_checkpoint(model, checkpoint):
     if checkpoint is not None:
-        model_checkpoint = torch.load(checkpoint)
+        model_checkpoint = torch.load(checkpoint, map_location=torch.device('cpu'))
         model.load_state_dict(model_checkpoint['state_dict'])
     else:
         model.state_dict()
