@@ -33,12 +33,12 @@ from ote_cli.utils.tests import (
 
 # Pre-train w/ 'car', 'tree' classes
 args0 = {
-    '--train-ann-file': 'data/classification/multilabel/multilabel_car_tree.json',
-    '--train-data-roots': 'data/classification/images',
-    '--val-ann-file': 'data/classification/multilabel/multilabel_car_tree.json',
-    '--val-data-roots': 'data/classification/images',
-    '--test-ann-files': 'data/classification/multilabel/multilabel_car_tree.json',
-    '--test-data-roots': 'data/classification/images',
+    '--train-ann-file': 'data/car_tree_bug/annotations/multilabel_car_tree.json',
+    '--train-data-roots': 'data/car_tree_bug/images',
+    '--val-ann-file': 'data/car_tree_bug/annotations/multilabel_car_tree.json',
+    '--val-data-roots': 'data/car_tree_bug/images',
+    '--test-ann-files': 'data/car_tree_bug/annotations/multilabel_car_tree.json',
+    '--test-data-roots': 'data/car_tree_bug/images',
     '--input': 'data/car_tree_bug/images',
     'train_params': [
         'params',
@@ -51,12 +51,12 @@ args0 = {
 
 # Class-Incremental learning w/ 'car', 'tree', 'bug' classes
 args = {
-    '--train-ann-file': 'data/classification/multilabel/multilabel_default.json',
-    '--train-data-roots': 'data/classification/images',
-    '--val-ann-file': 'data/classification/multilabel/multilabel_default.json',
-    '--val-data-roots': 'data/classification/images',
-    '--test-ann-files': 'data/classification/multilabel/multilabel_default.json',
-    '--test-data-roots': 'data/classification/images',
+    '--train-ann-file': 'data/car_tree_bug/annotations/multilabel_default.json',
+    '--train-data-roots': 'data/car_tree_bug/images',
+    '--val-ann-file': 'data/car_tree_bug/annotations/multilabel_default.json',
+    '--val-data-roots': 'data/car_tree_bug/images',
+    '--test-ann-files': 'data/car_tree_bug/annotations/multilabel_default.json',
+    '--test-data-roots': 'data/car_tree_bug/images',
     '--input': 'data/car_tree_bug/images',
     'train_params': [
         'params',
