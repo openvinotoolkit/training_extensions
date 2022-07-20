@@ -287,11 +287,7 @@ def run_hpo_trainer(
     )
 
     # make callback to report score to hpopt every epoch
-    train_param = TrainParameters(
-        False,
-        HpoCallback(hp_config, hp_config["metric"], task),
-        ModelSavedCallback(output_model),
-    )
+    train_param = TrainParameters(False, HpoCallback(hp_config, hp_config["metric"], task))
 
     task.train(dataset=dataset, output_model=output_model, train_parameters=train_param)
 
@@ -486,16 +482,6 @@ class HpoCallback(UpdateProgressCallback):
                 == hpopt.Status.STOP
             ):
                 self.hpo_task.cancel_training()
-
-
-class ModelSavedCallback:
-    """save model callback"""
-
-    def __init__(self, output_model):
-        self.output_model = output_model
-
-    def __call__(self) -> None:
-        print(f"model saved {self.output_model}")
 
 
 class HpoManager:
