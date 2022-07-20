@@ -11,7 +11,7 @@ class Exporter:
         if phase==1:
             self.model = load_model(eff_flag=False, it_no=0, alpha=1, beta=1, depth=3, width=64, phase=1)
         else:
-            self.model = self.model = load_model(eff_flag=False, it_no=0, alpha=1, beta=1, depth=3, width=64, phase=2)
+            self.model = self.model = load_model(eff_flag=False, it_no=0, alpha=1, beta=1, depth=3, width=96, phase=2)
         self.model.eval()
 
     def export_model_ir(self):
