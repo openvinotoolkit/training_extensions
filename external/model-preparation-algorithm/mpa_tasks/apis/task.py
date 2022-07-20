@@ -45,6 +45,7 @@ class BaseTask:
         self._model_label_schema = []
         self._optimization_methods = []
         self._model_ckpt = None
+        self._anchors = {}
         if task_environment.model is not None:
             logger.info('loading the model from the task env.')
             state_dict = self._load_model_state_dict(self._task_environment.model)
@@ -232,6 +233,8 @@ class BaseTask:
 
             # set confidence_threshold as well
             self.confidence_threshold = model_data.get('confidence_threshold', self.confidence_threshold)
+            if model_data.get('anchors'):
+                self._anchors = model_data['anchors']
 
             return model_data['model']
         else:
@@ -280,6 +283,6 @@ class BaseTask:
         def __reduce__(self):
             return (self.__class__, (id(self.task_instance),))
 
-    def set_override_configurations(self, config):
-        logger.info(f"set override config to: {config}")
-        self.override_configs = config
+    def update_override_configurations(self, config):
+        logger.info(f"update override config with: {config}")
+        self.override_configs.update(config)

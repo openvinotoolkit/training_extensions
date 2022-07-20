@@ -5,7 +5,7 @@
 import io
 import os
 from collections import defaultdict
-from typing import List, Optional
+from typing import List, Optional, Tuple, Iterable
 
 import cv2
 import numpy as np
@@ -34,6 +34,7 @@ from ote_sdk.entities.model import (ModelEntity, ModelFormat,
                                     ModelOptimizationType)
 from ote_sdk.entities.model_template import TaskType
 from ote_sdk.entities.resultset import ResultSetEntity
+from ote_sdk.entities.result_media import ResultMediaEntity
 from ote_sdk.entities.scored_label import ScoredLabel
 from ote_sdk.entities.shapes.polygon import Point, Polygon
 from ote_sdk.entities.shapes.rectangle import Rectangle
@@ -84,18 +85,48 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
             self.confidence_threshold = self._hyperparams.postprocessing.confidence_threshold
         logger.info(f'Confidence threshold {self.confidence_threshold}')
 
-        stage_module = 'DetectionInferrer'
-        self._data_cfg = self._init_test_data_cfg(dataset)
-        results = self._run_task(stage_module, mode='train', dataset=dataset, parameters=inference_parameters)
-        # TODO: InferenceProgressCallback register
-        logger.debug(f'result of run_task {stage_module} module = {results}')
-        output = results['outputs']
-        predictions = output['detections']
-        featuremaps = [None for _ in range(len(predictions))]
-        prediction_results = zip(predictions, featuremaps)
+        prediction_results, _ = self._infer_detector(dataset, inference_parameters)
         self._add_predictions_to_dataset(prediction_results, dataset, self.confidence_threshold)
         logger.info('Inference completed')
         return dataset
+    
+    def _infer_detector(self, dataset: DatasetEntity, 
+                        inference_parameters: Optional[InferenceParameters] = None) -> Tuple[Iterable, float]:
+        """ Inference wrapper
+
+        This method triggers the inference and returns `prediction_results` zipped with prediction results, 
+        feature vectors, and saliency maps. `metric` is returned as a float value if InferenceParameters.is_evaluation 
+        is set to true, otherwise, `None` is returned.
+
+        Args:
+            dataset (DatasetEntity): the validation or test dataset to be inferred with
+            inference_parameters (Optional[InferenceParameters], optional): Option to run evaluation or not. 
+                If `InferenceParameters.is_evaluation=True` then metric is returned, otherwise, both metric and 
+                saliency maps are empty. Defaults to None.
+
+        Returns:
+            Tuple[Iterable, float]: Iterable prediction results for each sample and metric for on the given dataset
+        """
+        stage_module = 'DetectionInferrer'
+        self._data_cfg = self._init_test_data_cfg(dataset)
+        dump_features = True
+        dump_saliency_map = not inference_parameters.is_evaluation if inference_parameters else True
+        results = self._run_task(stage_module,
+                                mode='train',
+                                dataset=dataset,
+                                eval=inference_parameters.is_evaluation if inference_parameters else False,
+                                dump_features=dump_features,
+                                dump_saliency_map=dump_saliency_map)
+        # TODO: InferenceProgressCallback register
+        logger.debug(f'result of run_task {stage_module} module = {results}')
+        output = results['outputs']
+        metric = output['metric']
+        predictions = output['detections']
+        assert len(output['detections']) == len(output['feature_vectors']) == len(output['saliency_maps']), \
+                'Number of elements should be the same, however, number of outputs are ' \
+                f"{len(output['detections'])}, {len(output['feature_vectors'])}, and {len(output['saliency_maps'])}"
+        prediction_results = zip(predictions, output['feature_vectors'], output['saliency_maps'])
+        return prediction_results, metric
 
     def evaluate(self,
                  output_result_set: ResultSetEntity,
@@ -189,7 +220,10 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
 
     def _init_model_cfg(self):
         base_dir = os.path.abspath(os.path.dirname(self.template_file_path))
-        return MPAConfig.fromfile(os.path.join(base_dir, 'model.py'))
+        model_cfg = MPAConfig.fromfile(os.path.join(base_dir, 'model.py'))
+        if len(self._anchors) != 0:
+            self._update_anchors(model_cfg.model.bbox_head.anchor_generator, self._anchors)
+        return model_cfg
 
     def _init_test_data_cfg(self, dataset: DatasetEntity):
         data_cfg = ConfigDict(
@@ -208,7 +242,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
 
     def _add_predictions_to_dataset(self, prediction_results, dataset, confidence_threshold=0.0):
         """ Loop over dataset again to assign predictions. Convert from MMDetection format to OTE format. """
-        for dataset_item, (all_results, feature_vector) in zip(dataset, prediction_results):
+        for dataset_item, (all_results, feature_vector, saliency_map) in zip(dataset, prediction_results):
             width = dataset_item.width
             height = dataset_item.height
 
@@ -226,6 +260,14 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
             if feature_vector is not None:
                 active_score = TensorEntity(name="representation_vector", numpy=feature_vector)
                 dataset_item.append_metadata_item(active_score)
+            
+            if saliency_map is not None:
+                width, height = dataset_item.width, dataset_item.height
+                saliency_map = cv2.resize(saliency_map, (width, height), interpolation=cv2.INTER_NEAREST)
+                saliency_map_media = ResultMediaEntity(name="saliency_map", type="Saliency map",
+                                                annotation_scene=dataset_item.annotation_scene, 
+                                                numpy=saliency_map, roi=dataset_item.roi)
+                dataset_item.append_metadata_item(saliency_map_media, model=self._task_environment.model)
 
     def _patch_data_pipeline(self):
         base_dir = os.path.abspath(os.path.dirname(self.template_file_path))
@@ -335,6 +377,12 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
                         shapes.append(Annotation(polygon, labels=labels, id=ID(f"{label_idx:08}")))
         return shapes
 
+    @staticmethod
+    def _update_anchors(origin, new):
+        logger.info("Updating anchors")
+        origin['heights'] = new['heights']
+        origin['widths'] = new['widths']
+
 
 class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
     def save_model(self, output_model: ModelEntity):
@@ -347,11 +395,10 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
             'model': model_ckpt['state_dict'], 'config': hyperparams_str, 'labels': labels,
             'confidence_threshold': self.confidence_threshold, 'VERSION': 1
         }
-
-        # if hasattr(self._config.model, 'bbox_head') and hasattr(self._config.model.bbox_head, 'anchor_generator'):
-        #     if getattr(self._config.model.bbox_head.anchor_generator, 'reclustering_anchors', False):
-        #         generator = self._model.bbox_head.anchor_generator
-        #         modelinfo['anchors'] = {'heights': generator.heights, 'widths': generator.widths}
+        if hasattr(self._model_cfg.model, 'bbox_head') and hasattr(self._model_cfg.model.bbox_head, 'anchor_generator'):
+            if getattr(self._model_cfg.model.bbox_head.anchor_generator, 'reclustering_anchors', False):
+                modelinfo['anchors'] = {}
+                self._update_anchors(modelinfo['anchors'], self._model_cfg.model.bbox_head.anchor_generator)
 
         torch.save(modelinfo, buffer)
         output_model.set_data("weights.pth", buffer.getvalue())
@@ -415,22 +462,16 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
             # update checkpoint to the newly trained model
             self._model_ckpt = model_ckpt
 
+        # Update anchors
+        if hasattr(self._model_cfg.model, 'bbox_head') and hasattr(self._model_cfg.model.bbox_head, 'anchor_generator'):
+            if getattr(self._model_cfg.model.bbox_head.anchor_generator, 'reclustering_anchors', False):
+                self._update_anchors(self._anchors, self._model_cfg.model.bbox_head.anchor_generator)
+
         # get prediction on validation set
         val_dataset = dataset.get_subset(Subset.VALIDATION)
-        self._data_cfg = self._init_test_data_cfg(val_dataset)
-        results = self._run_task(
-            'DetectionInferrer',
-            mode='train',
-            dataset=val_dataset,
-            eval=True
-        )
+        val_preds, val_map = self._infer_detector(val_dataset, InferenceParameters(is_evaluation=True))
+
         preds_val_dataset = val_dataset.with_empty_annotations()
-        logger.debug(f'result of run_task {stage_module} module = {results}')
-        output = results['outputs']
-        val_preds = output['detections']
-        val_map = output['metric']
-        featuremaps = [None for _ in range(len(val_preds))]
-        val_preds = zip(val_preds, featuremaps)
         self._add_predictions_to_dataset(val_preds, preds_val_dataset, 0.0)
 
         result_set = ResultSetEntity(

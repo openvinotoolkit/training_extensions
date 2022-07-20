@@ -21,6 +21,7 @@ import numpy as np
 import os
 import ote_sdk.usecases.exportable_code.demo as demo
 import tempfile
+import warnings
 from addict import Dict as ADDict
 from compression.api import DataLoader
 from compression.engines.ie_engine import IEEngine
@@ -97,7 +98,12 @@ class BaseInferencerWithConverter(BaseInferencer):
         image, metadata = self.pre_process(image)
         raw_predictions = self.forward(image)
         predictions = self.post_process(raw_predictions, metadata)
-        features = [raw_predictions['feature_vector'], raw_predictions['saliency_map']]
+        if 'feature_vector' not in raw_predictions or 'saliency_map' not in raw_predictions:
+            warnings.warn('Could not find Feature Vector and Saliency Map in OpenVINO output. '
+                'Please rerun OpenVINO export or retrain the model.')
+            features = [None, None]
+        else:
+            features = [raw_predictions['feature_vector'], raw_predictions['saliency_map']]
         return predictions, features
 
     @check_input_parameters_type()
@@ -271,14 +277,14 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
             predicted_scene, features = self.inferencer.predict(dataset_item.numpy)
             dataset_item.append_annotations(predicted_scene.annotations)
             update_progress_callback(int(i / dataset_size * 100))
-            feature_vector = features[0]
-            representation_vector = TensorEntity(name="representation_vector", numpy=feature_vector.reshape(-1))
-            dataset_item.append_metadata_item(representation_vector, model=self.model)
+            feature_vector, saliency_map = features
+            if feature_vector is not None:
+                representation_vector = TensorEntity(name="representation_vector", numpy=feature_vector.reshape(-1))
+                dataset_item.append_metadata_item(representation_vector, model=self.model)
 
-            if add_saliency_map:
-                saliency_map = features[1][0]
+            if add_saliency_map and saliency_map is not None:
                 width, height = dataset_item.width, dataset_item.height
-                saliency_map = cv2.resize(saliency_map, (width, height), interpolation=cv2.INTER_NEAREST)
+                saliency_map = cv2.resize(saliency_map[0], (width, height), interpolation=cv2.INTER_NEAREST)
                 saliency_map_media = ResultMediaEntity(name="saliency_map", type="Saliency map",
                                                 annotation_scene=dataset_item.annotation_scene, 
                                                 numpy=saliency_map, roi=dataset_item.roi)
