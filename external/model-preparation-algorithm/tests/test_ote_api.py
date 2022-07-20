@@ -299,7 +299,7 @@ class TestMPADetAPI:
 
     @e2e_pytest_api
     def test_reading_detection_cls_incr_model_template(self):
-        detection_template = ["mobilenetv2_atss_cls_incr", "resnet50_vfnet_cls_incr"]
+        detection_template = ["mobilenetv2_atss_cls_incr"]
         for model_template in detection_template:
             parse_model_template(
                 osp.join("configs", "detection", model_template, "template.yaml")
