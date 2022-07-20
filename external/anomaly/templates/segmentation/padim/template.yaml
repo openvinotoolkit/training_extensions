@@ -18,7 +18,7 @@ entrypoints:
 
 # Hyper Parameters
 hyper_parameters:
-  base_path: ../../../templates/common/padim/configuration.yaml
+  base_path: ../../../configs/padim/configuration.yaml
 
 # Training resources.
 max_nodes: 1

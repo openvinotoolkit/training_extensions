@@ -37,7 +37,20 @@ def get_requirements() -> List[str]:
 setup(
     name="anomaly tasks",
     version="ote-alpha",
-    packages=find_packages(include=["adapters", "adapters.*", "tools", "tools.*", "tasks", "tasks.*"]),
+    packages=find_packages(
+        include=[
+            "adapters",
+            "adapters.*",
+            "tools",
+            "tools.*",
+            "tasks",
+            "tasks.*",
+            "configs",
+            "configs.*",
+            "templates",
+            "templates.*",
+        ]
+    ),
     url="",
     license="license='Apache License 2.0'",
     install_requires=get_requirements(),

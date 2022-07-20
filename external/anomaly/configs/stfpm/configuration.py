@@ -17,8 +17,8 @@ Configurable parameters for STFPM anomaly base task
 # and limitations under the License.
 
 from attr import attrs
-from configs.utils.base import BaseAnomalyConfig
-from configs.utils.configuration_enums import EarlyStoppingMetrics
+from configs.base import BaseAnomalyConfig
+from configs.base.configuration_enums import EarlyStoppingMetrics
 from ote_sdk.configuration.elements import (
     ParameterGroup,
     add_parameter_group,

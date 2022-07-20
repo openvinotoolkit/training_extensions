@@ -17,7 +17,7 @@ Configurable parameters for Padim anomaly task
 # and limitations under the License.
 
 from attr import attrs
-from configs.utils.base import BaseAnomalyConfig
+from configs.base import BaseAnomalyConfig
 from ote_sdk.configuration.elements import string_attribute
 
 
