@@ -420,8 +420,6 @@ class TrainingProgressCallback(TimeMonitorCallback):
             score is not None
             and hasattr(self.update_progress_callback, "hp_config")
         ):
-            if self.update_progress_callback.metric == "accuracy_top-1":
-                score *= 0.01 # trainsform percentange to decimal on mmcls case
             score = float(score)
             print(f'score = {score} at epoch {self.current_epoch} / {self._num_iters}')
             # as a trick, score (at least if it's accuracy not the loss) and iteration number
