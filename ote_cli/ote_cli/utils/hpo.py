@@ -438,14 +438,7 @@ def _load_hpopt_config(file_path):
 def _get_best_model_weight_path(hpo_dir: str, trial_num: str, task_type: TaskType):
     """Return best model weight from HPO trial directory"""
     best_weight_path = None
-<<<<<<< HEAD
-    if (_is_cls_framework_task(task_type)
-        or _is_det_framework_task(task_type)
-        or _is_seg_framework_task(task_type)
-    ):
-=======
     if _is_mpa_framework_task(task_type):
->>>>>>> 5dd1c47baf426b8b71db26ef61646f8289a637fa
         best_arr = Path(osp.join(hpo_dir, str(trial_num))).glob("**/best*.pth")
         for best_name_file in best_arr:
             if not osp.islink(best_name_file):
@@ -453,11 +446,7 @@ def _get_best_model_weight_path(hpo_dir: str, trial_num: str, task_type: TaskTyp
                 break
     elif _is_anomaly_framework_task(task_type):
         # TODO need to implement later
-<<<<<<< HEAD
-        best_weight_path = ""
-=======
         pass
->>>>>>> 5dd1c47baf426b8b71db26ef61646f8289a637fa
 
     return best_weight_path
 
@@ -483,8 +472,6 @@ class HpoCallback(UpdateProgressCallback):
 
     def __call__(self, progress: float, score: Optional[float] = None):
         if score is not None:
-            if self.metric == "accuracy_top-1":
-                score *= 0.01 # trainsform percentange to decimal on mmcls case
             current_iters = -1
             if score > 1.0:
                 current_iters = int(score)
@@ -832,14 +819,7 @@ class HpoManager:
 
         task_type = environment.model_template.task_type
         params = environment.get_hyper_parameters()
-<<<<<<< HEAD
-        if (_is_cls_framework_task(task_type)
-            or _is_det_framework_task(task_type)
-            or _is_seg_framework_task(task_type)
-        ):
-=======
         if _is_mpa_framework_task(task_type):
->>>>>>> 5dd1c47baf426b8b71db26ef61646f8289a637fa
             learning_parameters = params.learning_parameters
             num_full_iterations = learning_parameters.num_iters
         elif _is_anomaly_framework_task(task_type):
