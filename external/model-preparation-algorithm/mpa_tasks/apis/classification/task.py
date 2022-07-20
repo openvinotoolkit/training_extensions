@@ -8,6 +8,7 @@ from collections import defaultdict
 from typing import List, Optional
 
 import torch
+import numpy as np
 from mpa import MPAConstants
 
 from ote_sdk.configuration import cfg_helper
@@ -34,12 +35,14 @@ from ote_sdk.usecases.tasks.interfaces.unload_interface import IUnload
 from ote_sdk.entities.model import (ModelFormat, ModelOptimizationType)
 from ote_sdk.serialization.label_mapper import label_schema_to_bytes
 from ote_sdk.entities.scored_label import ScoredLabel
+from ote_sdk.utils.labels_utils import get_empty_label
 from torchreid_tasks.utils import TrainingProgressCallback
 from torchreid_tasks.utils import OTELoggerHook
-from torchreid_tasks.train_task import OTEClassificationTrainingTask
+from torchreid_tasks.utils import get_multihead_class_info as get_hierarchical_info
 from mpa_tasks.apis import BaseTask, TrainType
 from mpa_tasks.apis.classification import ClassificationConfig
 from mpa.utils.config_utils import MPAConfig
+from mpa.stage import Stage
 from mpa.utils.logger import get_logger
 from ote_sdk.entities.label import Domain
 
@@ -63,38 +66,24 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
             self._labels = task_environment.get_labels(include_empty=True)
         else:
             self._labels = task_environment.get_labels(include_empty=False)
+        self._empty_label = get_empty_label(task_environment.label_schema)
+        self._multilabel = False
+        self._hierarchical = False
+
         self._multilabel = len(task_environment.label_schema.get_groups(False)) > 1 and \
                            len(task_environment.label_schema.get_groups(False)) == \
                            len(task_environment.get_labels(include_empty=False))  # noqa:E127
 
-        self._hierarchical = False
+        self._hierarchical_info = None
         if not self._multilabel and len(task_environment.label_schema.get_groups(False)) > 1:
             self._hierarchical = True
-            torchreid_env = self.convert_to_torchreid_env(task_environment)
-            self.torchreid_train_task = OTEClassificationTrainingTask(torchreid_env)
-
-    @staticmethod
-    def convert_to_torchreid_env(task_env):
-        model_template = task_env.model_template
-        rename_dict = {'model-preparation-algorithm': 'deep-object-reid',
-                       'classification' : 'ote_custom_classification',
-                       '_cls_incr' : ''
-                       }
-
-        for key, val in rename_dict.items():
-            model_template.model_template_path = model_template.model_template_path.replace(key, val)
-        model_template.entrypoints.base = 'torchreid_tasks.train_task.OTEClassificationTrainingTask'
-        model_template.framework = 'OTEClassification v1.2.3'
-        return task_env
+            self._hierarchical_info = get_hierarchical_info(task_environment.label_schema)
 
     def infer(self,
               dataset: DatasetEntity,
               inference_parameters: Optional[InferenceParameters] = None
               ) -> DatasetEntity:
         logger.info('called infer()')
-        if self._hierarchical:
-            self = self.torchreid_train_task
-            return self.infer(dataset, inference_parameters)
         stage_module = 'ClsInferrer'
         self._data_cfg = self._init_test_data_cfg(dataset)
         dataset = dataset.with_empty_annotations()
@@ -109,19 +98,52 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
 
         dataset_size = len(dataset)
         for i, (dataset_item, prediction_item) in enumerate(zip(dataset, predictions)):
-            label = []
+            item_labels = []
+            pos_thr = 0.5
+
+            if any(np.isnan(prediction_item)):
+                logger.info('Nan in prediction_item.')
+
             if self._multilabel:
-                pos_thr = 0.5
+                if max(prediction_item) < pos_thr:
+                    logger.info('Confidence is smaller than pos_thr, empty_label will be appended to item_labels.')
+                    item_labels.append(ScoredLabel(self._empty_label, probability=1.))
+                    continue
                 for cls_idx, pred_item in enumerate(prediction_item):
                     if pred_item > pos_thr:
                         cls_label = ScoredLabel(self.labels[cls_idx], probability=float(pred_item))
-                        label.append(cls_label)
+                        item_labels.append(cls_label)
+
+            elif self._hierarchical:
+                for head_idx in range(self._hierarchical_info['num_multiclass_heads']):
+                    logits_begin, logits_end = self._hierarchical_info['head_idx_to_logits_range'][head_idx]
+                    head_logits = prediction_item[logits_begin : logits_end]
+                    head_pred = np.argmax(head_logits)  # Assume logits already passed softmax
+                    label_str = self._hierarchical_info['all_groups'][head_idx][head_pred]
+                    ote_label = next(x for x in self._labels if x.name == label_str)
+                    item_labels.append(ScoredLabel(label=ote_label, probability=float(head_logits[head_pred])))
+
+                if self._hierarchical_info['num_multilabel_classes']:
+                    logits_begin, logits_end = self._hierarchical_info['num_single_label_classes'], -1
+                    head_logits = prediction_item[logits_begin : logits_end]
+                    for logit_idx, logit in enumerate(head_logits):
+                        if logit > pos_thr:  # Assume logits already passed sigmoid
+                            label_str = self._hierarchical_info['all_groups'][self._hierarchical_info['num_multiclass_heads']+logit_idx][0]
+                            ote_label = next(x for x in self._labels if x.name == label_str)
+                            item_labels.append(ScoredLabel(label=ote_label, probability=float(logit)))
+                item_labels = self._task_environment.label_schema.resolve_labels_probabilistic(item_labels)
+                if not item_labels:
+                    logger.info('item_labels is empty.')
+                    item_labels.append(ScoredLabel(self._empty_label, probability=1.))
+
             else:
                 label_idx = prediction_item.argmax()
                 cls_label = ScoredLabel(self._labels[label_idx], probability=float(prediction_item[label_idx]))
-                label.append(cls_label)
-            dataset_item.append_labels(label)
+                item_labels.append(cls_label)
+
+            dataset_item.append_labels(item_labels)
             update_progress_callback(int(i / dataset_size * 100))
+
         return dataset
 
     def evaluate(self,
@@ -141,10 +163,6 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
                export_type: ExportType,
                output_model: ModelEntity):
         logger.info('Exporting the model')
-        if self._hierarchical:
-            self = self.torchreid_train_task
-            self.export(export_type, output_model)
-            return
         if export_type != ExportType.OPENVINO:
             raise RuntimeError(f'not supported export type {export_type}')
         output_model.model_format = ModelFormat.OPENVINO
@@ -206,10 +224,15 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         base_dir = os.path.abspath(os.path.dirname(self.template_file_path))
         if self._multilabel:
             cfg_path = os.path.join(base_dir, 'model_multilabel.py')
+        elif self._hierarchical:
+            cfg_path = os.path.join(base_dir, 'model_hierarchical.py')
         else:
             cfg_path = os.path.join(base_dir, 'model.py')
         cfg = MPAConfig.fromfile(cfg_path)
         cfg.model.multilabel = self._multilabel
+        cfg.model.hierarchical = self._hierarchical
+        if self._hierarchical:
+            cfg.model.head.hierarchical_info = self._hierarchical_info
         return cfg
 
     def _init_test_data_cfg(self, dataset: DatasetEntity):
@@ -250,11 +273,24 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
 
             if self._multilabel:
                 cfg.type = 'MPAMultilabelClsDataset'
+            elif self._hierarchical:
+                cfg.type = 'MPAHierarchicalClsDataset'
+                cfg.hierarchical_info = self._hierarchical_info
+                if subset == 'train':
+                    cfg.drop_last = True  # For stable hierarchical information indexing
             else:
                 cfg.type = 'MPAClsDataset'
+
+            # In train dataset, when sample size is smaller than batch size
+            if subset == 'train' and self._data_cfg:
+                train_data_cfg = Stage.get_train_data_cfg(self._data_cfg)
+                if (len(train_data_cfg.get('ote_dataset', [])) < self._recipe_cfg.data.get('samples_per_gpu', 2)):
+                    cfg.drop_last = False
+
             cfg.domain = domain
             cfg.ote_dataset = None
             cfg.labels = None
+            cfg.empty_label = self._empty_label
             for pipeline_step in cfg.pipeline:
                 if subset == 'train' and pipeline_step.type == 'Collect':
                     pipeline_step = BaseTask._get_meta_keys(pipeline_step)
@@ -264,6 +300,8 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         cfg = config.evaluation
         if self._multilabel:
             cfg.metric = ['accuracy-mlc', 'mAP', 'CP', 'OP', 'CR', 'OR', 'CF1', 'OF1']
+        elif self._hierarchical:
+            cfg.metric = ['MHAcc', 'avgClsAcc', 'mAP']
         else:
             cfg.metric = ['accuracy', 'class_accuracy']
 
@@ -302,10 +340,6 @@ class ClassificationTrainTask(ClassificationInferenceTask):
               output_model: ModelEntity,
               train_parameters: Optional[TrainParameters] = None):
         logger.info('train()')
-        if self._hierarchical:
-            self = self.torchreid_train_task
-            self.train(dataset, output_model, train_parameters)
-            return
         # Check for stop signal between pre-eval and training.
         # If training is cancelled at this point,
         if self._should_stop:
@@ -383,6 +417,8 @@ class ClassificationTrainTask(ClassificationInferenceTask):
 
         if self._multilabel:
             metric_key = 'val/accuracy-mlc'
+        elif self._hierarchical:
+            metric_key = 'val/MHAcc'
         else:
             metric_key = 'val/accuracy_top-1'
 
