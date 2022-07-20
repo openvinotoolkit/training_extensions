@@ -285,4 +285,5 @@ class BaseTask:
 
     def update_override_configurations(self, config):
         logger.info(f"update override config with: {config}")
+        config = ConfigDict(**config)
         self.override_configs.update(config)

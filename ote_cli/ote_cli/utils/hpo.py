@@ -28,7 +28,6 @@ from typing import Optional
 
 import torch
 import yaml
-from mmcv.utils import ConfigDict  # pylint: disable=import-error
 from ote_sdk.configuration.helper import create
 from ote_sdk.entities.model import ModelEntity
 from ote_sdk.entities.model_template import TaskType
@@ -378,7 +377,7 @@ def get_train_wrapper_task(impl_class, task_type):
             if _is_mpa_framework_task(task_type):
                 cfg = {
                     "custom_hooks": [
-                        ConfigDict(type="SaveInitialWeightHook", save_path=save_path)
+                        dict(type="SaveInitialWeightHook", save_path=save_path)
                     ]
                 }
                 self.update_override_configurations(cfg)
