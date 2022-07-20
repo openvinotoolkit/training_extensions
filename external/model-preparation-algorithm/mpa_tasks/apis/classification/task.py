@@ -4,30 +4,52 @@
 
 import io
 import os
+import time
 from collections import defaultdict
 from typing import List, Optional
 
 import torch
 import numpy as np
+from mmcv.utils import ConfigDict
 from mpa import MPAConstants
-
+from mpa.utils.config_utils import MPAConfig
+from mpa.utils.logger import get_logger
+from mpa_tasks.apis import BaseTask, TrainType
+from mpa_tasks.apis.classification import ClassificationConfig
 from ote_sdk.configuration import cfg_helper
 from ote_sdk.configuration.helper.utils import ids_to_strings
-
 from ote_sdk.entities.datasets import DatasetEntity
-from ote_sdk.entities.inference_parameters import InferenceParameters, default_progress_callback
-from ote_sdk.entities.train_parameters import default_progress_callback as train_default_progress_callback
-from ote_sdk.entities.model import ModelEntity, ModelPrecision  # ModelStatus
+from ote_sdk.entities.inference_parameters import (
+    InferenceParameters,
+    default_progress_callback,
+)
+from ote_sdk.entities.label import Domain
+from ote_sdk.entities.metrics import (
+    CurveMetric,
+    LineChartInfo,
+    LineMetricsGroup,
+    MetricsGroup,
+    Performance,
+    ScoreMetric,
+)
+from ote_sdk.entities.model import (  # ModelStatus
+    ModelEntity,
+    ModelFormat,
+    ModelOptimizationType,
+    ModelPrecision,
+)
+from ote_sdk.entities.model_template import parse_model_template
 from ote_sdk.entities.resultset import ResultSetEntity
-from mmcv.utils import ConfigDict
-
+from ote_sdk.entities.scored_label import ScoredLabel
 from ote_sdk.entities.subset import Subset
 from ote_sdk.entities.task_environment import TaskEnvironment
-from ote_sdk.entities.train_parameters import TrainParameters
-from ote_sdk.entities.metrics import (CurveMetric, LineChartInfo,
-                                      LineMetricsGroup, MetricsGroup,
-                                      Performance, ScoreMetric)
+from ote_sdk.entities.train_parameters import TrainParameters, UpdateProgressCallback
+from ote_sdk.entities.train_parameters import (
+    default_progress_callback as train_default_progress_callback,
+)
+from ote_sdk.serialization.label_mapper import label_schema_to_bytes
 from ote_sdk.usecases.evaluation.metrics_helper import MetricsHelper
+from ote_sdk.usecases.reporting.time_monitor_callback import TimeMonitorCallback
 from ote_sdk.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
 from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType, IExportTask
 from ote_sdk.usecases.tasks.interfaces.inference_interface import IInferenceTask
@@ -48,12 +70,44 @@ from ote_sdk.entities.label import Domain
 
 from torchreid_tasks.nncf_task import OTEClassificationNNCFTask
 from ote_sdk.utils.argument_checks import check_input_parameters_type
-from ote_sdk.entities.model_template import parse_model_template
+from torchreid_tasks.nncf_task import OTEClassificationNNCFTask
+from torchreid_tasks.train_task import OTEClassificationTrainingTask
 
+# from torchreid_tasks.utils import TrainingProgressCallback
+from torchreid_tasks.utils import OTELoggerHook
 
 logger = get_logger()
 
 TASK_CONFIG = ClassificationConfig
+
+
+class TrainingProgressCallback(TimeMonitorCallback):
+    def __init__(self, update_progress_callback: UpdateProgressCallback):
+        super().__init__(0, 0, 0, 0, update_progress_callback=update_progress_callback)
+
+    def on_train_batch_end(self, batch, logs=None):
+        super().on_train_batch_end(batch, logs)
+        self.update_progress_callback(self.get_progress())
+
+    def on_epoch_end(self, epoch, logs=None):
+        self.past_epoch_duration.append(time.time() - self.start_epoch_time)
+        self._calculate_average_epoch()
+        score = None
+        if hasattr(self.update_progress_callback, 'metric') and isinstance(logs, dict):
+            score = logs.get(self.update_progress_callback.metric, None)
+            logger.info(f"logged score for metric {self.update_progress_callback.metric} = {score}")
+            score = 0.01 * float(score) if score is not None else None
+            if score is not None:
+                iter_num = logs.get('current_iters', None)
+                if iter_num is not None:
+                    logger.info(f'score = {score} at epoch {epoch} / {int(iter_num)}')
+                    # as a trick, score (at least if it's accuracy not the loss) and iteration number
+                    # could be assembled just using summation and then disassembeled.
+                    if 1.0 > score:
+                        score = score + int(iter_num)
+                    else:
+                        score = -(score + int(iter_num))
+        self.update_progress_callback(self.get_progress(), score=score)
 
 
 class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask, IUnload):

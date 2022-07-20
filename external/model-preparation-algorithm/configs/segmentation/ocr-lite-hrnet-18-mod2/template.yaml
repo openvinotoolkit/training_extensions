@@ -30,6 +30,7 @@ hyper_parameters:
         default_value: 4
       learning_rate:
         default_value: 0.001
+        auto_hpo_state: POSSIBLE
       learning_rate_fixed_iters:
         default_value: 0
       learning_rate_warmup_iters:

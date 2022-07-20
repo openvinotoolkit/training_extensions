@@ -71,6 +71,9 @@ class BaseTask:
         self.reserved_cancel = False
         self.on_hook_initialized = self.OnHookInitialized(self)
 
+        # to override configuration at runtime
+        self.override_configs = {}
+
     @property
     def _precision_from_config(self):
         return [ModelPrecision.FP16] if self._model_cfg.get('fp16', None) else [ModelPrecision.FP32]
@@ -157,6 +160,10 @@ class BaseTask:
         recipe_hparams = self._init_recipe_hparam()
         if len(recipe_hparams) > 0:
             self._recipe_cfg.merge_from_dict(recipe_hparams)
+        if len(self.override_configs) > 0:
+            logger.info(f"before override configs merging = {self._recipe_cfg}")
+            self._recipe_cfg.merge_from_dict(self.override_configs)
+            logger.info(f"after override configs merging = {self._recipe_cfg}")
 
         # prepare model config
         self._model_cfg = self._init_model_cfg()
@@ -176,7 +183,7 @@ class BaseTask:
             type='CancelInterfaceHook', init_callback=self.on_hook_initialized))
         if self._time_monitor is not None:
             update_or_add_custom_hook(self._recipe_cfg, ConfigDict(
-                type='OTEProgressHook', time_monitor=self._time_monitor, verbose=True))
+                type='OTEProgressHook', time_monitor=self._time_monitor, verbose=True, priority=71))
         if self._learning_curves is not None:
             self._recipe_cfg.log_config.hooks.append(
                 {'type': 'OTELoggerHook', 'curves': self._learning_curves}
@@ -275,3 +282,7 @@ class BaseTask:
 
         def __reduce__(self):
             return (self.__class__, (id(self.task_instance),))
+
+    def update_override_configurations(self, config):
+        logger.info(f"update override config with: {config}")
+        self.override_configs.update(config)
