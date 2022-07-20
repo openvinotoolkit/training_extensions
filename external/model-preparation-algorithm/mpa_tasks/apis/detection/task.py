@@ -220,7 +220,10 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
 
     def _init_model_cfg(self):
         base_dir = os.path.abspath(os.path.dirname(self.template_file_path))
-        return MPAConfig.fromfile(os.path.join(base_dir, 'model.py'))
+        model_cfg = MPAConfig.fromfile(os.path.join(base_dir, 'model.py'))
+        if len(self._anchors) != 0:
+            self._update_anchors(model_cfg.model.bbox_head.anchor_generator, self._anchors)
+        return model_cfg
 
     def _init_test_data_cfg(self, dataset: DatasetEntity):
         data_cfg = ConfigDict(
@@ -374,6 +377,12 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
                         shapes.append(Annotation(polygon, labels=labels, id=ID(f"{label_idx:08}")))
         return shapes
 
+    @staticmethod
+    def _update_anchors(origin, new):
+        logger.info("Updating anchors")
+        origin['heights'] = new['heights']
+        origin['widths'] = new['widths']
+
 
 class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
     def save_model(self, output_model: ModelEntity):
@@ -386,11 +395,10 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
             'model': model_ckpt['state_dict'], 'config': hyperparams_str, 'labels': labels,
             'confidence_threshold': self.confidence_threshold, 'VERSION': 1
         }
-
-        # if hasattr(self._config.model, 'bbox_head') and hasattr(self._config.model.bbox_head, 'anchor_generator'):
-        #     if getattr(self._config.model.bbox_head.anchor_generator, 'reclustering_anchors', False):
-        #         generator = self._model.bbox_head.anchor_generator
-        #         modelinfo['anchors'] = {'heights': generator.heights, 'widths': generator.widths}
+        if hasattr(self._model_cfg.model, 'bbox_head') and hasattr(self._model_cfg.model.bbox_head, 'anchor_generator'):
+            if getattr(self._model_cfg.model.bbox_head.anchor_generator, 'reclustering_anchors', False):
+                modelinfo['anchors'] = {}
+                self._update_anchors(modelinfo['anchors'], self._model_cfg.model.bbox_head.anchor_generator)
 
         torch.save(modelinfo, buffer)
         output_model.set_data("weights.pth", buffer.getvalue())
@@ -453,6 +461,11 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
         else:
             # update checkpoint to the newly trained model
             self._model_ckpt = model_ckpt
+
+        # Update anchors
+        if hasattr(self._model_cfg.model, 'bbox_head') and hasattr(self._model_cfg.model.bbox_head, 'anchor_generator'):
+            if getattr(self._model_cfg.model.bbox_head.anchor_generator, 'reclustering_anchors', False):
+                self._update_anchors(self._anchors, self._model_cfg.model.bbox_head.anchor_generator)
 
         # get prediction on validation set
         val_dataset = dataset.get_subset(Subset.VALIDATION)

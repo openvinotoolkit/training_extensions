@@ -18,10 +18,13 @@ logger = get_logger()
 @DATASETS.register_module()
 class MPAClsDataset(BaseDataset):
 
-    def __init__(self, ote_dataset=None, labels=None, **kwargs):
+    def __init__(self, ote_dataset=None, labels=None, empty_label=None, **kwargs):
         self.ote_dataset = ote_dataset
         self.labels = labels
+        self.label_names = [label.name for label in self.labels]
         self.label_idx = {label.id: i for i, label in enumerate(labels)}
+        self.empty_label = empty_label
+
         self.CLASSES = list(label.name for label in labels)
         self.gt_labels = []
         pipeline = kwargs['pipeline']
@@ -49,10 +52,20 @@ class MPAClsDataset(BaseDataset):
         return get_cls_img_indices(self.labels, self.ote_dataset)
 
     def load_annotations(self):
-        for dataset_item in self.ote_dataset:
-            roi_label = dataset_item.get_roi_labels(self.labels)
-            label = [self.label_idx[lbl.id] for lbl in roi_label] if roi_label else [None]
-            self.gt_labels.append(label)
+        include_empty = self.empty_label in self.labels
+        for i, _ in enumerate(self.ote_dataset):
+            class_indices = []
+            item_labels = self.ote_dataset[i].get_roi_labels(self.labels, include_empty=include_empty)
+            ignored_labels = self.ote_dataset[i].ignored_labels
+            if item_labels:
+                for ote_lbl in item_labels:
+                    if ote_lbl not in ignored_labels:
+                        class_indices.append(self.label_names.index(ote_lbl.name))
+                    else:
+                        class_indices.append(-1)
+            else:  # this supposed to happen only on inference stage
+                class_indices.append(-1)
+            self.gt_labels.append(class_indices)
         self.gt_labels = np.array(self.gt_labels)
 
     def __getitem__(self, index):
@@ -144,12 +157,24 @@ class MPAMultilabelClsDataset(MPAClsDataset):
         return get_old_new_img_indices(self.labels, new_classes, self.ote_dataset)
 
     def load_annotations(self):
-        for dataset_item in self.ote_dataset:
-            label = np.zeros(len(self.labels))
-            roi_label = dataset_item.get_roi_labels(self.labels)
-            for lbl in roi_label:
-                label[self.label_idx[lbl.id]] = 1
-            self.gt_labels.append(label)
+        include_empty = self.empty_label in self.labels
+        for i, _ in enumerate(self.ote_dataset):
+            class_indices = []
+            item_labels = self.ote_dataset[i].get_roi_labels(self.labels, include_empty=include_empty)
+            ignored_labels = self.ote_dataset[i].ignored_labels
+            if item_labels:
+                for ote_lbl in item_labels:
+                    if ote_lbl not in ignored_labels:
+                        class_indices.append(self.label_names.index(ote_lbl.name))
+                    else:
+                        class_indices.append(-1)
+            else:  # this supposed to happen only on inference stage or if we have a negative in multilabel data
+                class_indices.append(-1)
+            onehot_indices = np.zeros(len(self.labels))
+            for idx in class_indices:
+                if idx != -1:  # TODO: handling ignored label?
+                    onehot_indices[idx] = 1
+            self.gt_labels.append(onehot_indices)
         self.gt_labels = np.array(self.gt_labels)
 
     def evaluate(self,
@@ -215,7 +240,6 @@ class MPAMultilabelClsDataset(MPAClsDataset):
                           for pred_labels in pred_label_idx]
                 matrix_data = sklearn_confusion_matrix(y_true, y_pred, labels=list(range(len([0, 1]))))
                 confusion_matrices.append(matrix_data)
-
             correct_per_label_group = [
                 np.trace(mat) for mat in confusion_matrices
             ]
@@ -236,5 +260,125 @@ class MPAMultilabelClsDataset(MPAClsDataset):
             for k, v in zip(performance_keys, performance_values):
                 if k in metrics:
                     eval_results[k] = v
+
+        return eval_results
+
+
+@DATASETS.register_module()
+class MPAHierarchicalClsDataset(MPAMultilabelClsDataset):
+    def __init__(self, **kwargs):
+        self.hierarchical_info = kwargs.pop('hierarchical_info', None)
+        super().__init__(**kwargs)
+
+    def load_annotations(self):
+        include_empty = self.empty_label in self.labels
+        for i, _ in enumerate(self.ote_dataset):
+            class_indices = []
+            item_labels = self.ote_dataset[i].get_roi_labels(self.labels, include_empty=include_empty)
+            ignored_labels = self.ote_dataset[i].ignored_labels
+            if item_labels:
+                num_cls_heads = self.hierarchical_info['num_multiclass_heads']
+
+                class_indices = [0]*(self.hierarchical_info['num_multiclass_heads'] +
+                                     self.hierarchical_info['num_multilabel_classes'])
+                for j in range(num_cls_heads):
+                    class_indices[j] = -1
+                for ote_lbl in item_labels:
+                    group_idx, in_group_idx = self.hierarchical_info['class_to_group_idx'][ote_lbl.name]
+                    if group_idx < num_cls_heads:
+                        class_indices[group_idx] = in_group_idx
+                    elif ote_lbl not in ignored_labels:
+                        class_indices[num_cls_heads + in_group_idx] = 1
+                    else:
+                        class_indices[num_cls_heads + in_group_idx] = -1
+            else:  # this supposed to happen only on inference stage or if we have a negative in multilabel data
+                class_indices = [-1]*(self.hierarchical_info['num_multiclass_heads'] +
+                                      self.hierarchical_info['num_multilabel_classes'])
+            self.gt_labels.append(class_indices)
+        self.gt_labels = np.array(self.gt_labels)
+
+    @staticmethod
+    def mean_top_k_accuracy(scores, labels, k=1):
+        idx = np.argsort(-scores, axis=-1)[:, :k]
+        labels = np.array(labels)
+        matches = np.any(idx == labels.reshape([-1, 1]), axis=-1)
+
+        classes = np.unique(labels)
+
+        accuracy_values = []
+        for class_id in classes:
+            mask = labels == class_id
+            num_valid = np.sum(mask)
+            if num_valid == 0:
+                continue
+
+            accuracy_values.append(np.sum(matches[mask]) / float(num_valid))
+
+        return np.mean(accuracy_values) * 100 if len(accuracy_values) > 0 else 1.0
+
+    def evaluate(self,
+                 results,
+                 metric='MHAcc',
+                 metric_options=None,
+                 indices=None,
+                 logger=None):
+        """Evaluate the dataset.
+        Args:
+            results (list): Testing results of the dataset.
+            metric (str | list[str]): Metrics to be evaluated.
+                Default value is 'mAP'. Options are 'mAP', 'CP', 'CR', 'CF1',
+                'OP', 'OR' and 'OF1'.
+            metric_options (dict, optional): Options for calculating metrics.
+                Allowed keys are 'k' and 'thr'. Defaults to None
+            logger (logging.Logger | str, optional): Logger used for printing
+                related information during evaluation. Defaults to None.
+        Returns:
+            dict: evaluation results
+        """
+        if metric_options is None or metric_options == {}:
+            metric_options = {'thr': 0.5}
+
+        if isinstance(metric, str):
+            metrics = [metric]
+        else:
+            metrics = metric
+
+        allowed_metrics = ['MHAcc', 'avgClsAcc', 'mAP']
+        eval_results = {}
+        results = np.vstack(results)
+        gt_labels = self.get_gt_labels()
+        if indices is not None:
+            gt_labels = gt_labels[indices]
+        num_imgs = len(results)
+        assert len(gt_labels) == num_imgs, 'dataset testing results should '\
+            'be of the same length as gt_labels.'
+
+        invalid_metrics = set(metrics) - set(allowed_metrics)
+        if len(invalid_metrics) != 0:
+            raise ValueError(f'metric {invalid_metrics} is not supported.')
+
+        total_acc = 0.
+        total_acc_sl = 0.
+        for i in range(self.hierarchical_info['num_multiclass_heads']):
+            multiclass_logit = results[:, self.hierarchical_info['head_idx_to_logits_range'][i][0]:
+                                          self.hierarchical_info['head_idx_to_logits_range'][i][1]]  # noqa: E127
+            multiclass_gt = gt_labels[:, i]
+            cls_acc = self.mean_top_k_accuracy(multiclass_logit, multiclass_gt, k=1)
+            total_acc += cls_acc
+            total_acc_sl += cls_acc
+
+        mAP_value = 0.
+        if self.hierarchical_info['num_multilabel_classes'] and 'mAP' in metrics:
+            multilabel_logits = results[:, self.hierarchical_info['num_single_label_classes']:]
+            multilabel_gt = gt_labels[:, self.hierarchical_info['num_multiclass_heads']:]
+            mAP_value = mAP(multilabel_logits, multilabel_gt)
+
+        total_acc += mAP_value
+        total_acc /= (self.hierarchical_info['num_multiclass_heads'] +
+                      int(self.hierarchical_info['num_multilabel_classes'] > 0))
+
+        eval_results['MHAcc'] = total_acc
+        eval_results['avgClsAcc'] = total_acc_sl / self.hierarchical_info['num_multiclass_heads']
+        eval_results['mAP'] = mAP_value
 
         return eval_results
