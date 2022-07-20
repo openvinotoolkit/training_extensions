@@ -144,7 +144,7 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
 
         results = self._run_task(stage_module, mode='train', dataset=dataset)
         logger.debug(f'result of run_task {stage_module} module = {results}')
-        predictions = results['outputs']
+        predictions = results['outputs']['eval_predictions']
 
         update_progress_callback = default_progress_callback
         if inference_parameters is not None:
