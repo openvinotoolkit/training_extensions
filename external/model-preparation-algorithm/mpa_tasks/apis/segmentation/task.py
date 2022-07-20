@@ -300,7 +300,7 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
 
 class SegmentationTrainTask(SegmentationInferenceTask, ITrainingTask):
     def save_model(self, output_model: ModelEntity):
-        logger.info('called save_model')
+        logger.info(f'called save_model: {self._model_ckpt}')
         buffer = io.BytesIO()
         hyperparams_str = ids_to_strings(cfg_helper.convert(self._hyperparams, dict, enum_to_str=True))
         labels = {label.name: label.color.rgb_tuple for label in self._labels}
