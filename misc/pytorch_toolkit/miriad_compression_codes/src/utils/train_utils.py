@@ -22,8 +22,9 @@ def get_efficient_net_parameters(iterate, phi):
     return alpha, beta
 
 
-def load_model(alpha=1, beta=1, eff_flag=False, it_no=0, depth=3, width=64, phase=1, phi=-0.1):
+def load_model(alpha=1, beta=1, eff_flag=False, it_no=0, depth=3, width=96, phase=1, phi=1):
     if phase == 1:
+        width = 64
         if eff_flag:
             # if this doesn't work, try with iterate = 1
             alpha, beta = get_efficient_net_parameters(iterate=1, phi=phi)
