@@ -40,7 +40,7 @@ def create_export_test_for_phase1():
             self.output_dir = os.path.split(self.model_path)[0]
             self.assertTrue(self.output_dir)
             self.assertTrue(self.model_path)
-            self.assertListEqual(self.input_shape, [1, 3, 1024, 1024])
+            self.assertListEqual(self.input_shape, [1, 1, 1024, 1024])
     return ExportTest
 
 
@@ -88,7 +88,7 @@ def create_export_test_for_phase2():
             self.output_dir = os.path.split(self.model_path)[0]
             self.assertTrue(self.output_dir)
             self.assertTrue(self.model_path)
-            self.assertListEqual(self.input_shape, [1, 3, 1024, 1024])
+            self.assertListEqual(self.input_shape, [1, 16, 3, 3])
     return ExportTestEff
 
 
