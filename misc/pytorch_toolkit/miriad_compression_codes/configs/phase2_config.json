@@ -10,7 +10,7 @@
         "model_file_name": "",
         "randomize_subset": "True",
         "depth": 3,
-        "width": 64,
+        "width": 96,
         "phase": 2,
         "efficient_net": "True",
         "iterate": 5,
@@ -49,12 +49,12 @@
             "Normal",
             "No Lung Opacity / Not Normal"
         ],
-        "checkpoint": "model_weights/checkpoint_stage2.pth",
+        "checkpoint": "model_weights/final_d_3.model",
         "device": "cuda",
         "max_epoch": 3,
-        "alpha": 1.833,
-        "beta": 1.044,
-        "phi": -0.1,
+        "alpha": 1,
+        "beta": 1,
+        "phi": 1,
         "n_digestunits": 3,
         "savepath": "model_weights/",
         "default_image_path": "phase2data/train/",
@@ -77,7 +77,7 @@
         "width": 64,
         "max_samples": 10,
         "phase": 2,
-        "checkpoint": "model_weights/checkpoint_stage2.pth",
+        "checkpoint": "model_weights/final_d_3.model",
         "class_count": 3,
         "dummy_valid_list": [
             "0a5b4860-e6ab-4737-a389-9d0cf7300770.jpg",
@@ -101,15 +101,15 @@
             "No Lung Opacity / Not Normal"
         ],
         "target_metric": 0.3,
-        "alpha": 1.833,
-        "beta": 1.044,
-        "phi": -0.1,
+        "alpha": 1,
+        "beta": 1,
+        "phi": 1,
         "model_name_onnx": "miriad.onnx",
         "input_shape": [
             1,
+            16,
             3,
-            1024,
-            1024
+            3
         ],
         "default_image_path": "phase2data/test/",
         "image_path": "phase2data/test/",
@@ -117,17 +117,17 @@
         "path_to_gdtruth": "phase2data/test/gd_truth/"
     },
     "export": {
-        "checkpoint": "model_weights/checkpoint_stage2.pth",
+        "checkpoint": "model_weights/final_d_3.model",
         "input_shape": [
             1,
+            16,
             3,
-            1024,
-            1024
+            3
         ],
         "model_name_onnx": "miriad_eff.onnx",
         "model_name": "miriad_eff",
-        "alpha": 1.833,
-        "beta": 1.044,
+        "alpha": 1,
+        "beta": 1,
         "phi": 1,
         "phase": 2,
         "class_count": 3
