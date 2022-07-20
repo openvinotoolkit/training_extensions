@@ -6,20 +6,20 @@ Every sub-project is fully indepedent from each other, and each of them has its 
 ## Anomaly Classification
 ID | Name | Complexity (GFlops) | Model size (MB) | Path
 ------- | ------- | ------- | ------- | -------
-ote_anomaly_classification_padim | PADIM | 3.9 | 168.4 | anomaly/configs/anomaly_classification/padim/template.yaml
-ote_anomaly_classification_stfpm | STFPM | 5.6 | 21.1 | anomaly/configs/anomaly_classification/stfpm/template.yaml
+ote_anomaly_classification_padim | PADIM | 3.9 | 168.4 | anomaly/templates/classification/padim/template.yaml
+ote_anomaly_classification_stfpm | STFPM | 5.6 | 21.1 | anomaly/templates/classification/stfpm/template.yaml
 
 ## Anomaly Detection
 ID | Name | Complexity (GFlops) | Model size (MB) | Path
 ------- | ------- | ------- | ------- | -------
-ote_anomaly_detection_padim | PADIM | 3.9 | 168.4 | anomaly/configs/anomaly_detection/padim/template.yaml
-ote_anomaly_detection_stfpm | STFPM | 5.6 | 21.1 | anomaly/configs/anomaly_detection/stfpm/template.yaml
+ote_anomaly_detection_padim | PADIM | 3.9 | 168.4 | anomaly/templates/detection/padim/template.yaml
+ote_anomaly_detection_stfpm | STFPM | 5.6 | 21.1 | anomaly/templates/detection/stfpm/template.yaml
 
 ## Anomaly Segmentation
 ID | Name | Complexity (GFlops) | Model size (MB) | Path
 ------- | ------- | ------- | ------- | -------
-ote_anomaly_segmentation_padim | PADIM | 3.9 | 168.4 | anomaly/configs/anomaly_segmentation/padim/template.yaml
-ote_anomaly_segmentation_stfpm | STFPM | 5.6 | 21.1 | anomaly/configs/anomaly_segmentation/stfpm/template.yaml
+ote_anomaly_segmentation_padim | PADIM | 3.9 | 168.4 | anomaly/templates/segmentation/padim/template.yaml
+ote_anomaly_segmentation_stfpm | STFPM | 5.6 | 21.1 | anomaly/templates/segmentation/stfpm/template.yaml
 
 ## Image Classification
 ID | Name | Complexity (GFlops) | Model size (MB) | Path
