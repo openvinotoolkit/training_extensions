@@ -5,7 +5,7 @@ from torch import nn
 def load_checkpoint(model, checkpoint):
     if checkpoint is not None:
         model_checkpoint = torch.load(checkpoint, map_location=torch.device('cpu'))
-        model.load_state_dict(model_checkpoint['state_dict'])
+        model.load_state_dict(model_checkpoint['model_state'])
     else:
         model.state_dict()
 
@@ -44,7 +44,7 @@ class Encoder(nn.Module):
 
 
 class Decoder(nn.Module):
-    def __init__(self, n_upconv=3, n_decowidth=64):
+    def __init__(self, n_upconv=3, n_decowidth=96):
         super().__init__()
 
         # a tunable number of DownConv blocks in the architecture
