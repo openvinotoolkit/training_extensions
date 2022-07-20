@@ -89,7 +89,7 @@ class TestMPAClsAPI:
             )
 
     @staticmethod
-    def generate_label_schema(not_empty_labels, multilabel=False):
+    def generate_label_schema(not_empty_labels, multilabel=False, hierarchical=False):
         assert len(not_empty_labels) > 1
 
         label_schema = LabelSchemaEntity()
@@ -109,6 +109,36 @@ class TestMPAClsAPI:
                     )
                 )
             label_schema.add_group(empty_group)
+        elif hierarchical:
+            single_label_classes = ["b", "g", "r"]
+            multi_label_classes = ["w", "p"]
+            emptylabel = LabelEntity(
+                name="Empty label", is_empty=True, domain=Domain.CLASSIFICATION
+            )
+            empty_group = LabelGroup(
+                name="empty", labels=[emptylabel], group_type=LabelGroupType.EMPTY_LABEL
+            )
+            single_labels = []
+            for label in not_empty_labels:
+                if label.name in multi_label_classes:
+                    label_schema.add_group(
+                        LabelGroup(
+                            name=label.name,
+                            labels=[label],
+                            group_type=LabelGroupType.EXCLUSIVE,
+                        )
+                    )
+                    if empty_group not in label_schema.get_groups(include_empty=True):
+                        label_schema.add_group(empty_group)
+                elif label.name in single_label_classes:
+                    single_labels.append(label)
+            if single_labels:
+                single_label_group = LabelGroup(
+                    name="labels",
+                    labels=single_labels,
+                    group_type=LabelGroupType.EXCLUSIVE,
+                )
+                label_schema.add_group(single_label_group)
         else:
             main_group = LabelGroup(
                 name="labels",
@@ -125,11 +155,16 @@ class TestMPAClsAPI:
         hyper_parameters.learning_parameters.num_iters = num_iters
         return hyper_parameters, model_template
 
-    def init_environment(self, params, model_template, multilabel, number_of_images=10):
+    def init_environment(self, params, model_template, multilabel, hierarchical, number_of_images=10):
         resolution = (224, 224)
-        colors = [(0, 255, 0), (0, 0, 255)]
-        cls_names = ["b", "g"]
-        texts = ["Blue", "Green"]
+        if hierarchical:
+            colors = [(0, 255, 0), (0, 0, 255), (255, 0, 0), (0, 0, 0), (230, 230, 250)]
+            cls_names = ["b", "g", "r", "w", "p"]
+            texts = ["Blue", "Green", "Red", "White", "Purple"]
+        else:
+            colors = [(0, 255, 0), (0, 0, 255)]
+            cls_names = ["b", "g"]
+            texts = ["Blue", "Green"]
         env_labels = [
             LabelEntity(
                 name=name, domain=Domain.CLASSIFICATION, is_empty=False, id=ID(i)
@@ -179,7 +214,7 @@ class TestMPAClsAPI:
 
         dataset = DatasetEntity(items)
         labels_schema = self.generate_label_schema(
-            dataset.get_labels(), multilabel=multilabel
+            dataset.get_labels(), multilabel=multilabel, hierarchical=hierarchical
         )
         environment = TaskEnvironment(
             model=None,
@@ -191,14 +226,14 @@ class TestMPAClsAPI:
 
     @e2e_pytest_api
     @pytest.mark.parametrize(
-        "multilabel", [(False), (True)], ids=["multiclass", "multilabel"]
+        "multilabel,hierarchical", [(False, False), (True, False), (False, True)], ids=["multiclass", "multilabel", "hierarchical"]
     )
-    def test_training_progress_tracking(self, multilabel):
+    def test_training_progress_tracking(self, multilabel, hierarchical):
         hyper_parameters, model_template = self.setup_configurable_parameters(
             DEFAULT_CLS_TEMPLATE_DIR, num_iters=5
         )
         task_environment, dataset = self.init_environment(
-            hyper_parameters, model_template, multilabel, 20
+            hyper_parameters, model_template, multilabel, hierarchical, 20
         )
         task = ClassificationTrainTask(task_environment=task_environment)
         print("Task initialized, model training starts.")
@@ -218,14 +253,14 @@ class TestMPAClsAPI:
 
     @e2e_pytest_api
     @pytest.mark.parametrize(
-        "multilabel", [(False), (True)], ids=["multiclass", "multilabel"]
+        "multilabel,hierarchical", [(False, False), (True, False), (False, True)], ids=["multiclass", "multilabel", "hierarchical"]
     )
-    def test_inference_progress_tracking(self, multilabel):
+    def test_inference_progress_tracking(self, multilabel, hierarchical):
         hyper_parameters, model_template = self.setup_configurable_parameters(
             DEFAULT_CLS_TEMPLATE_DIR, num_iters=5
         )
         task_environment, dataset = self.init_environment(
-            hyper_parameters, model_template, multilabel, 20
+            hyper_parameters, model_template, multilabel, hierarchical, 20
         )
         task = ClassificationInferenceTask(task_environment=task_environment)
         print("Task initialized, model inference starts.")
@@ -244,15 +279,15 @@ class TestMPAClsAPI:
 
     @e2e_pytest_api
     @pytest.mark.parametrize(
-        "multilabel", [(False), (True)], ids=["multiclass", "multilabel"]
+        "multilabel,hierarchical", [(False, False), (True, False), (False, True)], ids=["multiclass", "multilabel", "hierarchical"]
     )
-    def test_inference_task(self, multilabel):
+    def test_inference_task(self, multilabel, hierarchical):
         # Prepare pretrained weights
         hyper_parameters, model_template = self.setup_configurable_parameters(
             DEFAULT_CLS_TEMPLATE_DIR, num_iters=2
         )
         classification_environment, dataset = self.init_environment(
-            hyper_parameters, model_template, multilabel, 50
+            hyper_parameters, model_template, multilabel, hierarchical, 50
         )
         val_dataset = dataset.get_subset(Subset.VALIDATION)
 

@@ -359,7 +359,7 @@ class LabelSchemaEntity:
         if label_group.name in [group.name for group in self._groups]:
             raise LabelGroupExistsException(
                 f"group with '{label_group.name}' exists, "
-                f"use add_to_group_by_group_name instead"
+                f"use add_labels_to_group_by_group_name instead"
             )
         self.__append_group(label_group)
 

@@ -54,6 +54,7 @@ from torch.nn.modules import Module
 
 from torchreid.utils import set_model_attr, get_model_attr
 
+
 class ClassificationType(Enum):
     MULTICLASS = auto()
     MULTILABEL = auto()
@@ -121,16 +122,32 @@ class ClassificationDatasetAdapter(DatasetEntity):
         out_data = []
         with open(annot_path) as f:
             annotation = json.load(f)
-            if not 'label_groups' in annotation:
+            if 'hierarchy' not in annotation:
                 all_classes = sorted(annotation['classes'])
                 annotation_type = ClassificationType.MULTILABEL
                 groups = [[c] for c in all_classes]
-            else: # load multihead
-                groups = annotation['label_groups']
+            else:  # load multihead
                 all_classes = []
-                for g in groups:
-                    for c in g:
-                        all_classes.append(c)
+                groups = annotation['hierarchy']
+
+                def add_subtask_labels(group):
+                    if isinstance(group, dict) and 'subtask' in group:
+                        subtask = group['subtask']
+                        if isinstance(subtask, list):
+                            for task in subtask:
+                                for task_label in task['labels']:
+                                    all_classes.append(task_label)
+                        elif isinstance(subtask, dict):
+                            for task_label in subtask['labels']:
+                                all_classes.append(task_label)
+                        add_subtask_labels(subtask)
+                    elif isinstance(group, list):
+                        for task in group:
+                            add_subtask_labels(task)
+                for group in groups:
+                    for label in group['labels']:
+                        all_classes.append(label)
+                    add_subtask_labels(group)
                 annotation_type = ClassificationType.MULTIHEAD
 
             images_info = annotation['images']
@@ -258,7 +275,7 @@ def get_multihead_class_info(label_schema: LabelSchemaEntity):
         head_idx_to_logits_range[i] = (last_logits_pos, last_logits_pos + len(g))
         last_logits_pos += len(g)
         for j, c in enumerate(g):
-            class_to_idx[c] = (i, j) # group idx and idx inside group
+            class_to_idx[c] = (i, j)  # group idx and idx inside group
             num_single_label_classes += 1
 
     # other labels are in multilabel group
@@ -302,7 +319,7 @@ class OTEClassificationDataset:
             if item_labels:
                 if not self.hierarchical:
                     for ote_lbl in item_labels:
-                        if not ote_lbl in ignored_labels:
+                        if ote_lbl not in ignored_labels:
                             class_indices.append(self.label_names.index(ote_lbl.name))
                         else:
                             class_indices.append(-1)
@@ -318,12 +335,12 @@ class OTEClassificationDataset:
                         if group_idx < num_cls_heads:
                             class_indices[group_idx] = in_group_idx
                         else:
-                            if not ote_lbl in ignored_labels:
+                            if ote_lbl not in ignored_labels:
                                 class_indices[num_cls_heads + in_group_idx] = 1
                             else:
                                 class_indices[num_cls_heads + in_group_idx] = -1
 
-            else: # this supposed to happen only on inference stage or if we have a negative in multilabel data
+            else:  # this supposed to happen only on inference stage or if we have a negative in multilabel data
                 if self.mixed_cls_heads_info:
                     class_indices = [-1]*(self.mixed_cls_heads_info['num_multiclass_heads'] + \
                                           self.mixed_cls_heads_info['num_multilabel_classes'])
