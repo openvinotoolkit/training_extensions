@@ -1,5 +1,5 @@
 # Description.
-model_template_id: Custom_Instance_Segmentation_MaskRCNN_EfficientNetB2B
+model_template_id: Custom_Counting_Instance_Segmentation_MaskRCNN_ResNet50
 name: MaskRCNN-EfficientNetB2B
 task_type: INSTANCE_SEGMENTATION
 task_family: VISION
