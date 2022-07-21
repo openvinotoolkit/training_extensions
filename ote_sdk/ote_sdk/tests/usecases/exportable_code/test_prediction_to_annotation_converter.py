@@ -1065,13 +1065,13 @@ class TestSegmentationToAnnotation:
         converter = AnomalyClassificationToAnnotationConverter(
             label_schema=label_schema
         )
-        predictions = np.array([24.0])
+        predictions = np.array([0.7])
         # Checking attributes of "AnnotationSceneEntity" returned by "convert_to_annotation" for "metadata" with
         # specified "threshold" key
         metadata = {
             "non-required key": 1,
             "other non-required key": 2,
-            "threshold": 60,
+            "threshold": 0.8,
         }
         predictions_to_annotations = converter.convert_to_annotation(
             predictions=predictions, metadata=metadata
@@ -1081,7 +1081,7 @@ class TestSegmentationToAnnotation:
         )
         check_annotation(
             predictions_to_annotations.annotations[0],
-            expected_labels=[ScoredLabel(label=non_empty_labels[0], probability=24.0)],
+            expected_labels=[ScoredLabel(label=non_empty_labels[0], probability=0.7)],
         )
         # Checking attributes of "AnnotationSceneEntity" returned by "convert_to_annotation" for "metadata" without
         # specified "threshold" key
@@ -1094,5 +1094,5 @@ class TestSegmentationToAnnotation:
         )
         check_annotation(
             predictions_to_annotations.annotations[0],
-            expected_labels=[ScoredLabel(label=non_empty_labels[1], probability=24.0)],
+            expected_labels=[ScoredLabel(label=non_empty_labels[1], probability=0.7)],
         )

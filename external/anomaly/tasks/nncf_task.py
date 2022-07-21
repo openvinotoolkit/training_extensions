@@ -25,7 +25,10 @@ from adapters.anomalib.callbacks import ProgressCallback
 from adapters.anomalib.data import OTEAnomalyDataModule
 from adapters.anomalib.logging import get_logger
 from anomalib.models import AnomalyModule, get_model
-from anomalib.utils.callbacks import MinMaxNormalizationCallback
+from anomalib.utils.callbacks import (
+    MetricsConfigurationCallback,
+    MinMaxNormalizationCallback,
+)
 from anomalib.utils.callbacks.nncf.callback import NNCFCallback
 from anomalib.utils.callbacks.nncf.utils import (
     compose_nncf_config,
@@ -105,7 +108,10 @@ class NNCFTask(InferenceTask, IOptimizationTask):
             AnomalyModule: Anomalib
                 classification or segmentation model with/without weights.
         """
-        nncf_config_path = os.path.join(self.base_dir, "compression_config.json")
+        # replaces the templates dir with configs and removes task type
+        nncf_config_path = os.path.join(
+            self.base_dir.partition("templates")[0], "configs", self.base_dir.split("/")[-1], "compression_config.json"
+        )
 
         with open(nncf_config_path, encoding="utf8") as nncf_config_file:
             common_nncf_config = json.load(nncf_config_file)
@@ -174,12 +180,19 @@ class NNCFTask(InferenceTask, IOptimizationTask):
             raise RuntimeError("NNCF is the only supported optimization")
 
         datamodule = OTEAnomalyDataModule(config=self.config, dataset=dataset, task_type=self.task_type)
-
-        nncf_callback = NNCFCallback(nncf_config=self.optimization_config["nncf_config"])
+        nncf_callback = NNCFCallback(config=self.optimization_config["nncf_config"])
+        metrics_configuration_callback = MetricsConfigurationCallback(
+            adaptive_threshold=self.config.metrics.threshold.adaptive,
+            default_image_threshold=self.config.metrics.threshold.image_default,
+            default_pixel_threshold=self.config.metrics.threshold.pixel_default,
+            image_metric_names=self.config.metrics.image,
+            pixel_metric_names=self.config.metrics.pixel,
+        )
         callbacks = [
             ProgressCallback(parameters=optimization_parameters),
             MinMaxNormalizationCallback(),
             nncf_callback,
+            metrics_configuration_callback,
         ]
 
         self.trainer = Trainer(**self.config.trainer, logger=False, callbacks=callbacks)
