@@ -126,7 +126,10 @@ class TrainingProgressCallback(TimeMonitorCallback):
                     print(f'score = {score} at epoch {epoch} / {int(iter_num)}')
                     # as a trick, score (at least if it's accuracy not the loss) and iteration number
                     # could be assembled just using summation and then disassembeled.
-                    score = score + int(iter_num)
+                    if 1.0 > score:
+                        score = score + int(iter_num)
+                    else:
+                        score = -(score + int(iter_num))
         self.update_progress_callback(self.get_progress(), score=score)
 
 
