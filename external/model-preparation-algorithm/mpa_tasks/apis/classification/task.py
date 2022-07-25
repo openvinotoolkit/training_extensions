@@ -8,14 +8,16 @@ import time
 from collections import defaultdict
 from typing import List, Optional
 
-import torch
 import numpy as np
+import torch
 from mmcv.utils import ConfigDict
 from mpa import MPAConstants
+from mpa.stage import Stage
 from mpa.utils.config_utils import MPAConfig
 from mpa.utils.logger import get_logger
 from mpa_tasks.apis import BaseTask, TrainType
 from mpa_tasks.apis.classification import ClassificationConfig
+from mpa_tasks.utils.data_utils import get_actmap
 from ote_sdk.configuration import cfg_helper
 from ote_sdk.configuration.helper.utils import ids_to_strings
 from ote_sdk.entities.datasets import DatasetEntity
@@ -56,28 +58,13 @@ from ote_sdk.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
 from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType, IExportTask
 from ote_sdk.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from ote_sdk.usecases.tasks.interfaces.unload_interface import IUnload
-from ote_sdk.entities.model import (ModelFormat, ModelOptimizationType)
-from ote_sdk.serialization.label_mapper import label_schema_to_bytes
-from ote_sdk.entities.scored_label import ScoredLabel
-from ote_sdk.utils.labels_utils import get_empty_label
-from torchreid_tasks.utils import TrainingProgressCallback
-from torchreid_tasks.utils import OTELoggerHook
-from torchreid_tasks.utils import get_multihead_class_info as get_hierarchical_info
-from mpa_tasks.apis import BaseTask, TrainType
-from mpa_tasks.apis.classification import ClassificationConfig
-from mpa_tasks.utils.data_utils import get_actmap
-from mpa.utils.config_utils import MPAConfig
-from mpa.stage import Stage
-from mpa.utils.logger import get_logger
-from ote_sdk.entities.label import Domain
-
-from torchreid_tasks.nncf_task import OTEClassificationNNCFTask
 from ote_sdk.utils.argument_checks import check_input_parameters_type
+from ote_sdk.utils.labels_utils import get_empty_label
 from torchreid_tasks.nncf_task import OTEClassificationNNCFTask
-from torchreid_tasks.train_task import OTEClassificationTrainingTask
 
 # from torchreid_tasks.utils import TrainingProgressCallback
 from torchreid_tasks.utils import OTELoggerHook
+from torchreid_tasks.utils import get_multihead_class_info as get_hierarchical_info
 
 logger = get_logger()
 
@@ -146,13 +133,13 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         dataset = dataset.with_empty_annotations()
 
         dump_features = True
-        dump_saliency_map = not inference_parameters.is_evaluation if inference_parameters else True        
+        dump_saliency_map = not inference_parameters.is_evaluation if inference_parameters else True
         results = self._run_task(stage_module, mode='train', dataset=dataset, dump_features=dump_features,
-                                dump_saliency_map=dump_saliency_map)
+                                 dump_saliency_map=dump_saliency_map)
         logger.debug(f'result of run_task {stage_module} module = {results}')
         predictions = results['outputs']
-        prediction_results = zip(predictions['eval_predictions'], predictions['feature_vectors'], 
-                                  predictions['saliency_maps'])
+        prediction_results = zip(predictions['eval_predictions'], predictions['feature_vectors'],
+                                 predictions['saliency_maps'])
 
         update_progress_callback = default_progress_callback
         if inference_parameters is not None:
@@ -236,7 +223,8 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
                     head_logits = prediction_item[logits_begin : logits_end]
                     for logit_idx, logit in enumerate(head_logits):
                         if logit > pos_thr:  # Assume logits already passed sigmoid
-                            label_str = self._hierarchical_info['all_groups'][self._hierarchical_info['num_multiclass_heads']+logit_idx][0]
+                            label_str_idx = self._hierarchical_info['num_multiclass_heads'] + logit_idx
+                            label_str = self._hierarchical_info['all_groups'][label_str_idx][0]
                             ote_label = next(x for x in self._labels if x.name == label_str)
                             item_labels.append(ScoredLabel(label=ote_label, probability=float(logit)))
                 item_labels = self._task_environment.label_schema.resolve_labels_probabilistic(item_labels)
@@ -250,26 +238,28 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
                 item_labels.append(cls_label)
 
             dataset_item.append_labels(item_labels)
-            
+
             if feature_vector is not None:
                 active_score = TensorEntity(name="representation_vector", numpy=feature_vector)
                 dataset_item.append_metadata_item(active_score)
-            
+
             if saliency_map is not None:
-                saliency_map = get_actmap(saliency_map, (dataset_item.width, dataset_item.height) )
+                saliency_map = get_actmap(saliency_map, (dataset_item.width, dataset_item.height))
                 saliency_map_media = ResultMediaEntity(name="saliency_map", type="Saliency map",
-                                                annotation_scene=dataset_item.annotation_scene, 
-                                                numpy=saliency_map, roi=dataset_item.roi, 
-                                                label=item_labels[0].label)
+                                                       annotation_scene=dataset_item.annotation_scene,
+                                                       numpy=saliency_map, roi=dataset_item.roi,
+                                                       label=item_labels[0].label)
                 dataset_item.append_metadata_item(saliency_map_media, model=self._task_environment.model)
-            
+
             update_progress_callback(int(i / dataset_size * 100))
 
-
     def _init_recipe_hparam(self) -> dict:
+        warmup_iters = int(self._hyperparams.learning_parameters.learning_rate_warmup_iters)
+        lr_config = ConfigDict(warmup_iters=warmup_iters) if warmup_iters > 0 \
+            else ConfigDict(warmup_iters=warmup_iters, warmup=None)
         return ConfigDict(
             optimizer=ConfigDict(lr=self._hyperparams.learning_parameters.learning_rate),
-            lr_config=ConfigDict(warmup_iters=int(self._hyperparams.learning_parameters.learning_rate_warmup_iters)),
+            lr_config=lr_config,
             data=ConfigDict(
                 samples_per_gpu=int(self._hyperparams.learning_parameters.batch_size),
                 workers_per_gpu=int(self._hyperparams.learning_parameters.num_workers),
