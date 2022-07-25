@@ -93,7 +93,7 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         predictions = results['outputs']
         prediction_results = zip(predictions['eval_predictions'], predictions['feature_vectors'], 
                                   predictions['saliency_maps'])
-        self._add_predictions_to_dataset(prediction_results, dataset, save_mask_visualization=not is_evaluation)
+        self._add_predictions_to_dataset(prediction_results, dataset, dump_saliency_map=not is_evaluation)
         return dataset
 
     def evaluate(self,
@@ -206,7 +206,7 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         )
         return data_cfg
 
-    def _add_predictions_to_dataset(self, prediction_results, dataset, save_mask_visualization):
+    def _add_predictions_to_dataset(self, prediction_results, dataset, dump_saliency_map):
         """ Loop over dataset again to assign predictions. Convert from MMSegmentation format to OTE format. """
         
         for dataset_item, (prediction, feature_vector, saliency_map) in zip(dataset, prediction_results):
@@ -227,34 +227,12 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
                 active_score = TensorEntity(name="representation_vector", numpy=feature_vector)
                 dataset_item.append_metadata_item(active_score, model=self._task_environment.model)
 
-            if saliency_map is not None:
+            if dump_saliency_map and saliency_map is not None:
                 saliency_map = get_actmap(saliency_map, (dataset_item.width, dataset_item.height) )
                 saliency_map_media = ResultMediaEntity(name="saliency_map", type="Saliency map",
                                                 annotation_scene=dataset_item.annotation_scene, 
                                                 numpy=saliency_map, roi=dataset_item.roi)
                 dataset_item.append_metadata_item(saliency_map_media, model=self._task_environment.model)
-
-            if save_mask_visualization:
-                for label_index, label in self._label_dictionary.items():
-                    if label_index == 0:
-                        continue
-
-                    if len(soft_prediction.shape) == 3:
-                        current_label_soft_prediction = soft_prediction[:, :, label_index]
-                    else:
-                        current_label_soft_prediction = soft_prediction
-                    min_soft_score = np.min(current_label_soft_prediction)
-                    max_soft_score = np.max(current_label_soft_prediction)
-                    factor = 255.0 / (max_soft_score - min_soft_score + 1e-12)
-                    result_media_numpy = (factor * (current_label_soft_prediction - min_soft_score)).astype(np.uint8)
-
-                    result_media = ResultMediaEntity(name=f'{label.name}',
-                                                    type='Soft Prediction',
-                                                    label=label,
-                                                    annotation_scene=dataset_item.annotation_scene,
-                                                    roi=dataset_item.roi,
-                                                    numpy=result_media_numpy)
-                    dataset_item.append_metadata_item(result_media, model=self._task_environment.model)
 
     @staticmethod
     def _patch_datasets(config: MPAConfig, domain=Domain.SEGMENTATION):
