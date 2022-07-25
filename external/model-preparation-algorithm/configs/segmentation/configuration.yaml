@@ -24,12 +24,11 @@ learning_parameters:
     warning:
       Increasing this value may cause the system to use more memory than available,
       potentially causing out of memory errors, please update with caution.
+    auto_hpo_state: NOT_POSSIBLE
   description: Learning Parameters
   header: Learning Parameters
   learning_rate:
     affects_outcome_of: TRAINING
-    auto_hpo_state: POSSIBLE
-    auto_hpo_value: null
     default_value: 0.01
     description:
       Increasing this value will speed up training convergence but might
@@ -47,6 +46,7 @@ learning_parameters:
     value: 0.001
     visible_in_ui: true
     warning: null
+    auto_hpo_state: NOT_POSSIBLE
   learning_rate_fixed_iters:
     affects_outcome_of: TRAINING
     auto_hpo_state: not_possible
@@ -193,24 +193,20 @@ algo_backend:
   header: Algo backend parameters
   train_type:
     affects_outcome_of: NONE
-    default_value: SelfSupervised
+    default_value: Incremental
     description: Quantization preset that defines quantization scheme
     editable: True
     enum_name: TrainType
     header: train type
     options:
-      FineTune: "FineTune"
-      SemiSupervised: "SemiSupervised"
-      SelfSupervised: "SelfSupervised"
       Incremental: "Incremental"
-      Imbalanced: "Imbalanced"
     type: SELECTABLE
     ui_rules:
       action: DISABLE_EDITING
       operator: AND
       rules: []
       type: UI_RULES
-    value: SelfSupervised
+    value: Incremental
     visible_in_ui: True
     warning: null
   type: PARAMETER_GROUP

@@ -4,15 +4,15 @@ mode: max
 search_algorithm: asha
 early_stop: None
 hp_space:
-  model.lr:
+  learning_parameters.lr:
     param_type: qloguniform
     range:
-      - 0.04
+      - 0.2
       - 0.8
       - 0.01
-  dataset.train_batch_size:
+  learning_parameters.train_batch_size:
     param_type: qloguniform
     range:
-      - 16
-      - 64
+      - 24
+      - 48
       - 2

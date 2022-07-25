@@ -49,6 +49,10 @@ from ote_sdk.utils.segmentation_utils import (
     create_annotation_from_segmentation_map,
     create_hard_prediction_from_soft_prediction)
 
+from segmentation_tasks.apis.segmentation import OTESegmentationNNCFTask
+from ote_sdk.utils.argument_checks import check_input_parameters_type
+from ote_sdk.entities.model_template import parse_model_template
+
 
 logger = get_logger()
 
@@ -300,7 +304,7 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
 
 class SegmentationTrainTask(SegmentationInferenceTask, ITrainingTask):
     def save_model(self, output_model: ModelEntity):
-        logger.info('called save_model')
+        logger.info(f'called save_model: {self._model_ckpt}')
         buffer = io.BytesIO()
         hyperparams_str = ids_to_strings(cfg_helper.convert(self._hyperparams, dict, enum_to_str=True))
         labels = {label.name: label.color.rgb_tuple for label in self._labels}
@@ -430,3 +434,22 @@ class SegmentationTrainTask(SegmentationInferenceTask, ITrainingTask):
             visualization_info = LineChartInfo(name=key, x_axis_label="Epoch", y_axis_label=key)
             output.append(MetricsGroup(metrics=[metric_curve], visualization_info=visualization_info))
         return output, best_score
+
+
+class SegmentationNNCFTask(OTESegmentationNNCFTask):
+
+    @check_input_parameters_type()
+    def __init__(self, task_environment: TaskEnvironment):
+        """"
+        Task for compressing segmentation models using NNCF.
+        """
+        curr_model_path = task_environment.model_template.model_template_path
+        base_model_path = os.path.join(
+            os.path.dirname(os.path.abspath(curr_model_path)),
+            task_environment.model_template.base_model_path
+        )
+        if os.path.isfile(base_model_path):
+            logger.info(f'Base model for NNCF: {base_model_path}')
+            # Redirect to base model
+            task_environment.model_template = parse_model_template(base_model_path)
+        super().__init__(task_environment)

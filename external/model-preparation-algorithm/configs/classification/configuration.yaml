@@ -22,6 +22,7 @@ learning_parameters:
     warning:
       Increasing this value may cause the system to use more memory than available,
       potentially causing out of memory errors, please update with caution.
+    auto_hpo_state: NOT_POSSIBLE
   description: Learning Parameters
   header: Learning Parameters
   learning_rate:
@@ -42,6 +43,7 @@ learning_parameters:
       type: UI_RULES
     visible_in_ui: true
     warning: null
+    auto_hpo_state: NOT_POSSIBLE
   max_num_epochs:
     affects_outcome_of: TRAINING
     default_value: 200
@@ -129,20 +131,6 @@ learning_parameters:
       rules: []
       type: UI_RULES
     visible_in_ui: false
-    warning: null
-  enable_lr_finder:
-    affects_outcome_of: TRAINING
-    default_value: false
-    description: Learning rate parameter value will be ignored if enabled.
-    editable: true
-    header: Enable automatic learing rate estimation
-    type: BOOLEAN
-    ui_rules:
-      action: DISABLE_EDITING
-      operator: AND
-      rules: []
-      type: UI_RULES
-    visible_in_ui: true
     warning: null
   type: PARAMETER_GROUP
   visible_in_ui: true
@@ -250,17 +238,14 @@ algo_backend:
     enum_name: TrainType
     header: train type
     options:
-      SemiSupervised: "SemiSupervised"
-      SelfSupervised: "SelfSupervised"
       Incremental: "Incremental"
-      DynamicLabels: "DynamicLabels"
     type: SELECTABLE
     ui_rules:
       action: DISABLE_EDITING
       operator: AND
       rules: []
       type: UI_RULES
-    value: SelfSupervised
+    value: Incremental
     visible_in_ui: True
     warning: null
   type: PARAMETER_GROUP

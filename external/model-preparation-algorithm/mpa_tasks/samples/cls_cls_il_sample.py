@@ -11,7 +11,7 @@ from ote_sdk.configuration.helper import create
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.inference_parameters import InferenceParameters
 from ote_sdk.entities.label import Domain
-from ote_sdk.entities.label_schema import LabelGroup, LabelGroupType, LabelSchemaEntity
+from ote_sdk.entities.label_schema import LabelEntity, LabelGroup, LabelGroupType, LabelSchemaEntity
 from ote_sdk.entities.model import ModelEntity
 from ote_sdk.entities.model_template import parse_model_template
 from ote_sdk.entities.optimization_parameters import OptimizationParameters
@@ -37,6 +37,7 @@ parser = argparse.ArgumentParser(description='Sample showcasing the new API')
 parser.add_argument('template_file_path', help='path to template file')
 parser.add_argument('--export', action='store_true')
 parser.add_argument('--multilabel', action='store_true')
+parser.add_argument('--hierarchical', action='store_true')
 args = parser.parse_args()
 
 
@@ -44,7 +45,6 @@ def load_test_dataset(data_type):
     from ote_sdk.entities.annotation import Annotation, AnnotationSceneEntity, AnnotationSceneKind
     from ote_sdk.entities.dataset_item import DatasetItemEntity
     from ote_sdk.entities.image import Image
-    from ote_sdk.entities.label import LabelEntity
     from ote_sdk.entities.scored_label import ScoredLabel
     from ote_sdk.entities.shapes.rectangle import Rectangle
     from ote_sdk.entities.subset import Subset
@@ -58,26 +58,33 @@ def load_test_dataset(data_type):
         for s in shape:
             if s == 'rectangle':
                 draw.rectangle((h*0.1, w*0.1, h*0.4, w*0.4), fill=(0, 192, 192), outline=(0, 0, 0))
-            if s == 'polygon':
-                draw.polygon(((h*0.5, w*0.25), (h, w*0.25), (h*0.5, w*0.7)), fill=(255, 255, 0), outline=(0, 0, 0))
+            if s == 'triangle':
+                draw.polygon(((h*0.5, w*0.25), (h, w*0.25), (h*0.8, w*0.5)), fill=(255, 255, 0), outline=(0, 0, 0))
             if s == 'pieslice':
                 draw.pieslice(((h*0.1, w*0.5), (h*0.5, w*0.9)), start=50, end=250, fill=(0, 255, 0), outline=(0, 0, 0))
-
+            if s == 'circle':
+                draw.ellipse((h*0.5, w*0.5, h*0.9, w*0.9), fill='blue', outline='blue')
+            if s == 'text':
+                draw.text((0, 0), "Intel", fill='blue', align='center')
         return np.array(image), shape
 
     datas = [
         gen_image((32, 32), shape='rectangle'),
-        gen_image((32, 32), shape='polygon'),
-        gen_image((32, 32), shape='rectangle+polygon'),  # for multilabel (old)
+        gen_image((32, 32), shape='triangle'),
+        gen_image((32, 32), shape='rectangle+triangle'),  # for multilabel (old)
         gen_image((32, 32), shape='pieslice'),
         gen_image((32, 32), shape='pieslice+rectangle'),
-        gen_image((32, 32), shape='pieslice+polygon'),
-        gen_image((32, 32), shape='pieslice+rectangle+polygon')  # for multilabel (new)
+        gen_image((32, 32), shape='pieslice+triangle'),
+        gen_image((32, 32), shape='pieslice+rectangle+triangle'),  # for multilabel (new)
+        gen_image((32, 32), shape='circle'),
+        gen_image((32, 32), shape='circle+text')  # for hierarchical (new)
     ]
 
     labels = {'rectangle': LabelEntity(name='rectangle', domain=Domain.CLASSIFICATION, id=0),
-              'polygon': LabelEntity(name='polygon', domain=Domain.CLASSIFICATION, id=1),
-              'pieslice': LabelEntity(name='pieslice', domain=Domain.CLASSIFICATION, id=2)}
+              'triangle': LabelEntity(name='triangle', domain=Domain.CLASSIFICATION, id=1),
+              'pieslice': LabelEntity(name='pieslice', domain=Domain.CLASSIFICATION, id=2),
+              'circle' : LabelEntity(name='circle', domain=Domain.CLASSIFICATION, id=3),
+              'text' : LabelEntity(name='text', domain=Domain.CLASSIFICATION, id=4)}
 
     def get_image(i, subset, ignored_labels=None):
         image, shape = datas[i]
@@ -94,7 +101,7 @@ def load_test_dataset(data_type):
                                  ignored_labels=ignored_labels,
                                  )
 
-    def gen_old_new_dataset(multilabel=False):
+    def gen_old_new_dataset(multilabel=False, hierarchical=False):
         old_train, old_val, new_train, new_val = [], [], [], []
         old_repeat = 8
         new_repeat = 4
@@ -102,6 +109,10 @@ def load_test_dataset(data_type):
             old_img_idx = [0, 1, 2]
             new_img_idx = [0, 1, 2, 3, 4, 5, 6]
             ignored_labels = [labels['pieslice']]
+        elif hierarchical:
+            old_img_idx = [0, 1, 2, 3, 8]
+            new_img_idx = [0, 1, 2, 3, 8, -1]
+            ignored_labels = [labels['text']]
         else:
             old_img_idx = [0, 1]
             new_img_idx = [0, 1, 3]
@@ -114,14 +125,20 @@ def load_test_dataset(data_type):
             for idx in new_img_idx:
                 if multilabel:
                     new_train.append(get_image(idx, Subset.TRAINING, ignored_labels=ignored_labels))
+                elif hierarchical:
+                    new_train.append(get_image(idx, Subset.TRAINING, ignored_labels=ignored_labels))
                 else:
                     new_train.append(get_image(idx, Subset.TRAINING))
                 new_val.append(get_image(idx, Subset.VALIDATION))
 
         return old_train+old_val, new_train+new_val
 
-    old, new = gen_old_new_dataset(args.multilabel)
-    labels = [i for i in labels.values()]
+    old, new = gen_old_new_dataset(args.multilabel, args.hierarchical)
+
+    if not args.hierarchical:
+        labels = [labels['rectangle'], labels['triangle'], labels['pieslice']]
+    else:
+        labels = [i for i in labels.values()]
 
     if data_type == 'old':
         return DatasetEntity(old), labels[:-1]
@@ -129,11 +146,22 @@ def load_test_dataset(data_type):
         return DatasetEntity(old + new), labels
 
 
-def get_label_schema(labels, multilabel=False):
+def get_label_schema(labels, multilabel=False, hierarchical=False):
     label_schema = LabelSchemaEntity()
     if multilabel:
         for label in labels:
             label_schema.add_group(LabelGroup(name=label.name, labels=[label], group_type=LabelGroupType.EXCLUSIVE))
+    elif hierarchical:
+        single_label_classes = ['pieslice', 'circle']
+        multi_label_classes = ['rectangle', 'triangle', 'text']
+
+        single_labels = [label for label in labels if label.name in single_label_classes]
+        single_label_group = LabelGroup(name="labels", labels=single_labels, group_type=LabelGroupType.EXCLUSIVE)
+        label_schema.add_group(single_label_group)
+
+        for label in labels:
+            if label.name in multi_label_classes:
+                label_schema.add_group(LabelGroup(name=f'{label.name}____{label.name}_group', labels=[label], group_type=LabelGroupType.EXCLUSIVE))
     else:
         main_group = LabelGroup(name="labels", labels=labels, group_type=LabelGroupType.EXCLUSIVE)
         label_schema.add_group(main_group)
@@ -144,7 +172,7 @@ def get_label_schema(labels, multilabel=False):
 def main():
     logger.info('Train initial model with OLD dataset')
     dataset, labels_list = load_test_dataset('old')
-    labels_schema = get_label_schema(labels_list, multilabel=args.multilabel)
+    labels_schema = get_label_schema(labels_list, multilabel=args.multilabel, hierarchical=args.hierarchical)
 
     logger.info(f'Train dataset: {len(dataset.get_subset(Subset.TRAINING))} items')
     logger.info(f'Validation dataset: {len(dataset.get_subset(Subset.VALIDATION))} items')
@@ -181,7 +209,7 @@ def main():
 
     logger.info('Class-incremental learning with OLD + NEW dataset')
     dataset, labels_list = load_test_dataset('new')
-    labels_schema = get_label_schema(labels_list, multilabel=args.multilabel)
+    labels_schema = get_label_schema(labels_list, multilabel=args.multilabel, hierarchical=args.hierarchical)
 
     logger.info(f'Train dataset: {len(dataset.get_subset(Subset.TRAINING))} items')
     logger.info(f'Validation dataset: {len(dataset.get_subset(Subset.VALIDATION))} items')

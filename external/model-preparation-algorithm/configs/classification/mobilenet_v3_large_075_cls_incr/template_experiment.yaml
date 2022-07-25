@@ -1,19 +1,21 @@
 # Description.
-model_template_id: ClassIncremental_Image_Classification_MobileNet-V3-large-1x
-name: MobileNet-V3-large-1x-ClsIncr
+model_template_id: Custom_Image_Classification_MobileNet-V3-large-0.75x
+name: MobileNet-V3-large-0.75x
 task_type: CLASSIFICATION
 task_family: VISION
 instantiation: "CLASS"
-summary: Class-Incremental Image Classification for MobileNet-V3-large-1x
+summary: Class-Incremental Image Classification for MobileNet-V3-learge-0.75x
 application: ~
 
 # Algo backend.
-framework: MPA v1.1.0
+framework: OTEClassification v1.2.3
 
 # Task implementations.
 entrypoints:
   base: mpa_tasks.apis.classification.ClassificationTrainTask
   openvino: torchreid_tasks.openvino_task.OpenVINOClassificationTask
+  nncf: mpa_tasks.apis.classification.ClassificationNNCFTask
+base_model_path: ../../../../deep-object-reid/configs/ote_custom_classification/mobilenet_v3_large_075/template_experimental.yaml
 
 # Capabilities.
 capabilities: []
@@ -25,10 +27,12 @@ hyper_parameters:
     learning_parameters:
       batch_size:
         default_value: 32
+        auto_hpo_state: POSSIBLE
       num_workers:
         default_value: 4
       learning_rate:
         default_value: 0.016
+        auto_hpo_state: POSSIBLE
       learning_rate_warmup_iters:
         default_value: 100
       num_iters:
@@ -44,5 +48,5 @@ training_targets:
   - CPU
 
 # Stats.
-gigaflops: 0.44
-size: 4.29
+gigaflops: 0.32
+size: 2.76

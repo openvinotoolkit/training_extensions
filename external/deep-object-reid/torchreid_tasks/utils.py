@@ -54,6 +54,7 @@ from torch.nn.modules import Module
 
 from torchreid.utils import set_model_attr, get_model_attr
 
+
 class ClassificationType(Enum):
     MULTICLASS = auto()
     MULTILABEL = auto()
@@ -121,16 +122,32 @@ class ClassificationDatasetAdapter(DatasetEntity):
         out_data = []
         with open(annot_path) as f:
             annotation = json.load(f)
-            if not 'label_groups' in annotation:
+            if 'hierarchy' not in annotation:
                 all_classes = sorted(annotation['classes'])
                 annotation_type = ClassificationType.MULTILABEL
                 groups = [[c] for c in all_classes]
-            else: # load multihead
-                groups = annotation['label_groups']
+            else:  # load multihead
                 all_classes = []
-                for g in groups:
-                    for c in g:
-                        all_classes.append(c)
+                groups = annotation['hierarchy']
+
+                def add_subtask_labels(group):
+                    if isinstance(group, dict) and 'subtask' in group:
+                        subtask = group['subtask']
+                        if isinstance(subtask, list):
+                            for task in subtask:
+                                for task_label in task['labels']:
+                                    all_classes.append(task_label)
+                        elif isinstance(subtask, dict):
+                            for task_label in subtask['labels']:
+                                all_classes.append(task_label)
+                        add_subtask_labels(subtask)
+                    elif isinstance(group, list):
+                        for task in group:
+                            add_subtask_labels(task)
+                for group in groups:
+                    for label in group['labels']:
+                        all_classes.append(label)
+                    add_subtask_labels(group)
                 annotation_type = ClassificationType.MULTIHEAD
 
             images_info = annotation['images']
@@ -258,7 +275,7 @@ def get_multihead_class_info(label_schema: LabelSchemaEntity):
         head_idx_to_logits_range[i] = (last_logits_pos, last_logits_pos + len(g))
         last_logits_pos += len(g)
         for j, c in enumerate(g):
-            class_to_idx[c] = (i, j) # group idx and idx inside group
+            class_to_idx[c] = (i, j)  # group idx and idx inside group
             num_single_label_classes += 1
 
     # other labels are in multilabel group
@@ -302,7 +319,7 @@ class OTEClassificationDataset:
             if item_labels:
                 if not self.hierarchical:
                     for ote_lbl in item_labels:
-                        if not ote_lbl in ignored_labels:
+                        if ote_lbl not in ignored_labels:
                             class_indices.append(self.label_names.index(ote_lbl.name))
                         else:
                             class_indices.append(-1)
@@ -318,12 +335,12 @@ class OTEClassificationDataset:
                         if group_idx < num_cls_heads:
                             class_indices[group_idx] = in_group_idx
                         else:
-                            if not ote_lbl in ignored_labels:
+                            if ote_lbl not in ignored_labels:
                                 class_indices[num_cls_heads + in_group_idx] = 1
                             else:
                                 class_indices[num_cls_heads + in_group_idx] = -1
 
-            else: # this supposed to happen only on inference stage or if we have a negative in multilabel data
+            else:  # this supposed to happen only on inference stage or if we have a negative in multilabel data
                 if self.mixed_cls_heads_info:
                     class_indices = [-1]*(self.mixed_cls_heads_info['num_multiclass_heads'] + \
                                           self.mixed_cls_heads_info['num_multilabel_classes'])
@@ -374,7 +391,7 @@ def reload_hyper_parameters(model_template: ModelTemplate):
     conf_yaml = osp.join(template_dir, conf_yaml)
     shutil.copy(conf_yaml, temp_folder)
     shutil.copy(template_file, temp_folder)
-    model_template.hyper_parameters.load_parameters(osp.join(temp_folder, 'template.yaml'))
+    model_template.hyper_parameters.load_parameters(osp.join(temp_folder, 'template_experimental.yaml'))
     assert model_template.hyper_parameters.data
 
 
@@ -424,7 +441,10 @@ class TrainingProgressCallback(TimeMonitorCallback):
             print(f'score = {score} at epoch {self.current_epoch} / {self._num_iters}')
             # as a trick, score (at least if it's accuracy not the loss) and iteration number
             # could be assembled just using summation and then disassembeled.
-            score = score + int(self._num_iters)
+            if 1.0 > score:
+                score = score + int(self._num_iters)
+            else:
+                score = -(score + int(self._num_iters))
         self.update_progress_callback(self.get_progress(), score=score)
 
 
@@ -478,22 +498,9 @@ class OptimizationProgressCallback(TimeMonitorCallback):
 
 
 @check_input_parameters_type()
-def preprocess_features_for_actmap(features: Union[np.ndarray, Iterable, int, float]):
-    features = np.mean(features, axis=1)
-    b, h, w = features.shape
-    features = features.reshape(b, h * w)
-    features = np.exp(features)
-    features /= np.sum(features, axis=1, keepdims=True)
-    features = features.reshape(b, h, w)
-    return features
-
-
-@check_input_parameters_type()
 def get_actmap(features: Union[np.ndarray, Iterable, int, float],
                output_res: Union[tuple, list]):
     am = cv.resize(features, output_res)
-    am = 255 * (am - np.min(am)) / (np.max(am) - np.min(am) + 1e-12)
-    am = np.uint8(np.floor(am))
     am = cv.applyColorMap(am, cv.COLORMAP_JET)
     am = cv.cvtColor(am, cv.COLOR_BGR2RGB)
     return am

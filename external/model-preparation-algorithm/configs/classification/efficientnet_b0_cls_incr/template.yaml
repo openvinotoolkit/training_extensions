@@ -1,6 +1,6 @@
 # Description.
-model_template_id: ClassIncremental_Image_Classification_EfficinetNet-B0
-name: EfficientNet-B0-ClsIncr
+model_template_id: Custom_Image_Classification_EfficinetNet-B0
+name: EfficientNet-B0
 task_type: CLASSIFICATION
 task_family: VISION
 instantiation: "CLASS"
@@ -8,12 +8,14 @@ summary: Class-Incremental Image Classification for EfficientNet-B0
 application: ~
 
 # Algo backend.
-framework: MPA v1.1.0
+framework: OTEClassification v1.2.3
 
 # Task implementations.
 entrypoints:
   base: mpa_tasks.apis.classification.ClassificationTrainTask
   openvino: torchreid_tasks.openvino_task.OpenVINOClassificationTask
+  nncf: mpa_tasks.apis.classification.ClassificationNNCFTask
+base_model_path: ../../../../deep-object-reid/configs/ote_custom_classification/efficientnet_b0/template_experimental.yaml
 
 # Capabilities.
 capabilities: []
@@ -25,10 +27,12 @@ hyper_parameters:
     learning_parameters:
       batch_size:
         default_value: 32
+        auto_hpo_state: POSSIBLE
       num_workers:
         default_value: 4
       learning_rate:
         default_value: 0.007
+        auto_hpo_state: POSSIBLE
       num_iters:
         default_value: 20
     algo_backend:

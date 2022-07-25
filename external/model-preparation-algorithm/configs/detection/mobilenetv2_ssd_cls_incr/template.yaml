@@ -1,10 +1,10 @@
 # Description.
-model_template_id: ClassIncremental_Instance_Segmentation_MaskRCNN_ResNet50
-name: MaskRCNN-ResNet50-ClsIncr
-task_type: INSTANCE_SEGMENTATION
+model_template_id: Custom_Object_Detection_Gen3_SSD
+name: SSD
+task_type: DETECTION
 task_family: VISION
 instantiation: "CLASS"
-summary: Class-Incremental Instance Segmentation for MaskRCNN-ResNet50
+summary: Class-Incremental Object Detection for SSD
 application: ~
 
 # Algo backend.
@@ -14,6 +14,8 @@ framework: OTEDetection v2.9.1
 entrypoints:
   base: mpa_tasks.apis.detection.DetectionTrainTask
   openvino: detection_tasks.apis.detection.OpenVINODetectionTask
+  nncf: mpa_tasks.apis.detection.DetectionNNCFTask
+base_model_path: ../../../../mmdetection/configs/custom-object-detection/gen3_mobilenetV2_SSD/template_experimental.yaml
 
 # Capabilities.
 capabilities: []
@@ -25,12 +27,14 @@ hyper_parameters:
     learning_parameters:
       batch_size:
         default_value: 4
+        auto_hpo_state: POSSIBLE
       learning_rate:
-        default_value: 0.01
+        default_value: 0.005
+        auto_hpo_state: POSSIBLE
       learning_rate_warmup_iters:
-        default_value: 100
+        default_value: 10
       num_iters:
-        default_value: 300
+        default_value: 100
     algo_backend:
       train_type:
         default_value: Incremental
@@ -42,5 +46,10 @@ training_targets:
   - CPU
 
 # Stats.
-gigaflops: 533.8
-size: 177.9
+gigaflops: 9.4
+size: 7.6
+# # Inference options. Defined by OpenVINO capabilities, not Algo Backend or Platform.
+# inference_targets:
+#   - CPU
+#   - GPU
+#   - VPU

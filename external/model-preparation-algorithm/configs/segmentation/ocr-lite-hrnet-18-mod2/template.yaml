@@ -1,22 +1,25 @@
 # Description.
-model_template_id: ClassIncremental_Semantic_Segmentation_Lite-HRNet-18_OCR
-name: Lite-HRNet-18 OCR-ClsIncr
+model_template_id: Custom_Semantic_Segmentation_Lite-HRNet-18-mod2_OCR
+name: Lite-HRNet-18-mod2
 task_type: SEGMENTATION
 task_family: VISION
 instantiation: "CLASS"
-summary: Class-Incremental Semantic Segmentation for Lite-HRNet-18 OCR
+summary: Class-Incremental Semantic Segmentation with middle-sized architecture which based on the Lite-HRNet backbone for the balance between the fast inference and long training.
 application: ~
 
 # Algo backend.
-framework: MPA v1.1.0
+framework: OTESegmentation v0.14.0
 
 # Task implementations.
 entrypoints:
   base: mpa_tasks.apis.segmentation.SegmentationTrainTask
   openvino: segmentation_tasks.apis.segmentation.OpenVINOSegmentationTask
+  nncf: mpa_tasks.apis.segmentation.SegmentationNNCFTask
+base_model_path: ../../../../mmsegmentation/configs/custom-sematic-segmentation/ocr-lite-hrnet-18-mod2/template_experimental.yaml
 
 # Capabilities.
-capabilities: []
+capabilities:
+  - compute_representations
 
 # Hyperparameters.
 hyper_parameters:
@@ -27,12 +30,13 @@ hyper_parameters:
         default_value: 4
       learning_rate:
         default_value: 0.001
+        auto_hpo_state: POSSIBLE
       learning_rate_fixed_iters:
         default_value: 0
       learning_rate_warmup_iters:
-        default_value: 80
+        default_value: 100
       num_iters:
-        default_value: 180
+        default_value: 300
     algo_backend:
       train_type:
         default_value: Incremental
@@ -44,5 +48,5 @@ training_targets:
   - CPU
 
 # Stats.
-gigaflops: 3.45
-size: 4.5
+gigaflops: 3.63
+size: 4.8

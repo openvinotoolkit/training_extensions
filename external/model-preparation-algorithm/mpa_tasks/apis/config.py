@@ -144,7 +144,7 @@ class BaseConfig(ConfigurableParameters):
         )
 
     class BaseAlgoBackendParameters(ParameterGroup):
-        train_type = selectable(default_value=TrainType.SelfSupervised,
+        train_type = selectable(default_value=TrainType.Incremental,
                                 header='train type',
                                 description='training schema for the MPA task',
                                 editable=False,

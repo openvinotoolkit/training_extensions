@@ -3,20 +3,29 @@
 ## Prerequisites
 * Ubuntu 18.04 / 20.04
 * Python 3.8+
-* [CUDA Toolkit 11.1](https://developer.nvidia.com/cuda-11.1.1-download-archive) - for training on GPU
+* for training on GPU: [CUDA Toolkit 11.1](https://developer.nvidia.com/cuda-11.1.1-download-archive)
+   
+**Note:** If using CUDA, make sure you are using a proper driver version. To do so, use `ls -la /usr/local | grep cuda`. If necessary, [install CUDA 11.1](https://developer.nvidia.com/cuda-11.1.0-download-archive?target_os=Linux) and select it with `export CUDA_HOME=/usr/local/cuda-11.1`.
+
 
 ## Setup OpenVINO™ Training Extensions
 
-1. Clone repository in the working directory by running the following:
+1. Clone the training_extensions repository with the following commands:
     ```
     git clone https://github.com/openvinotoolkit/training_extensions.git
     cd training_extensions
+    git checkout develop origin/develop
     git submodule update --init --recursive
     ```
 
-2. Install prerequisites by running the following:
+2. Install prerequisites with:
    ```
    sudo apt-get install python3-pip python3-venv
+   ```
+
+   Although they are not required, You may also want to use Jupyter notebooks or OTE CLI tools: 
+   ```
+   pip3 install notebook; cd ote_cli/notebooks/; jupyter notebook
    ```
 
 3. Search for available scripts that create python virtual environments for different task types:
@@ -33,22 +42,21 @@
    Each line in the output gives an `init_venv.sh` script that creates a virtual environment
    for the corresponding task type.
 
-4. Let's choose a task type.
-   Let it be `external/mmdetection` for Object Detection task.
+4. Choose a task type, for example,`external/mmdetection` for Object Detection.
    ```bash
    TASK_ALGO_DIR=./external/mmdetection/
    ```
-   Note that we will not use the variable `TASK_ALGO_DIR` inside our scripts, we set it just to
-   simplify this guide.
+   Note that the variable `TASK_ALGO_DIR` is set in this example for simplicity and will not be used in scripts.
 
-5. Let's create, activate virtual environment for the chosen task, and install `ote_cli`.
-   Note that the virtual environment folder may be created in any place in your system,
-   but we will create it in the folder `./cur_task_venv` for convenience.
+5. Create and activate a virtual environment for the chosen task, then install the `ote_cli`.
+   Note that the virtual environment directory may be created anywhere on your system.
+   The `./cur_task_venv` is just an example used here for convenience.
    ```bash
    bash $TASK_ALGO_DIR/init_venv.sh ./cur_task_venv python3.8
    source ./cur_task_venv/bin/activate
    pip3 install -e ote_cli/ -c $TASK_ALGO_DIR/constraints.txt
    ```
+
    Note that `python3.8` is pointed as the second parameter of the script
    `init_venv.sh` -- it is the version of python that should be used. You can
    use any `python3.8+` version here if it is installed on your system.
@@ -57,19 +65,18 @@
    from the chosen task folder is used to avoid breaking constraints
    for the OTE task.
 
-6. As soon as `ote_cli` is installed in the virtual environment, you can use
-   `ote` command line interface described below to run
-   train/eval/export/other action for templates related to the chosen task type.
+6. When `ote_cli` is installed in the virtual environment, you can use the
+   `ote` command line interface to perform various actions for templates related to the chosen task type, such as running, training, evaluating, exporting, etc. 
 
 ## OTE CLI commands
 
-### ote find - search for model templates
-   Have a look at model templates available for this virtual environment:
+### ote find 
+   `ote find` lists model templates available for the given virtual environment.
    ```
    ote find --root $TASK_ALGO_DIR
    ```
 
-   Sample output (for mmdetection task chosen above):
+   Output for the mmdetection used in the above example looks as follows:
    ```
    - id: Custom_Object_Detection_Gen3_VFNet
      name: VFNet
@@ -85,20 +92,23 @@
      task_type: DETECTION
    - ...
    ```
-   Let's choose `./external/mmdetection/configs/ote/custom-object-detection/gen3_mobilenetV2_ATSS/template.yaml`
 
-### ote train - run training of a particular model template
-   This tool trains a model on a dataset and saves results as following artifacts:
+### ote train 
+   `ote train` trains a model (a particular model template) on a dataset and saves results in two files:
    * `weights.pth` - a model snapshot
    * `label_schema.json` - a label schema used in training, created from a dataset
 
-   These artifacts can be used by other `ote` commands: `ote export`, `ote eval`, `ote demo`.
-   Let's have a look at `ote train` help. These parameters are the same for all model templates.
+   These files can be used by other `ote` commands: `ote export`, `ote eval`, `ote demo`.
+
+  With the `--help` command, you can list additional information, such as its parameters common to all model templates and model-specific hyper parameters.
+
+#### common parameters 
+   command example:
    ```
    ote train ./external/mmdetection/configs/ote/custom-object-detection/gen3_mobilenetV2_ATSS/template.yaml --help
    ```
 
-   Sample output:
+   output example:
    ```
    usage: ote train [-h] --train-ann-files TRAIN_ANN_FILES --train-data-roots
                     TRAIN_DATA_ROOTS --val-ann-files VAL_ANN_FILES
@@ -130,12 +140,13 @@
                            Expected ratio of total time to run HPO to time taken for full fine-tuning.
    ```
 
-   Let's have a look at `ote train` hyper parameters help. These parameters are model template specific.
+#### model template-specific parameters 
+   command example:
    ```
    ote train ./external/mmdetection/configs/ote/custom-object-detection/gen3_mobilenetV2_ATSS/template.yaml params --help
    ```
 
-   Sample output:
+   output example:
    ```
    usage: ote train template params [-h]
                                     [--learning_parameters.batch_size BATCH_SIZE]
@@ -200,17 +211,29 @@
                            min_value: 0.0
    ```
 
-### ote optimize - run optimization of a particular model template
-   This tool optimizes a trained model using NNCF or POT depending on a model format:
+### ote optimize 
+   `ote optimize` optimizes a pre-trained model using NNCF or POT depending on the model format.
+   * NNCF optimization used for trained snapshots in a framework-specific format
+   * POT optimization used for models exported in the OpenVINO IR format
 
-   - NNCF optimization used for trained snapshots in framework specific format
-   - POT optimization used for exported model in IR format
+   For example:
+   Optimize a PyTorch model (.pth) with OpenVINO NNCF:
+   ```
+   ote optimize ./external/mmdetection/configs/ote/custom-object-detection/gen3_mobilenetV2_ATSS/template.yaml --load-weights weights.pth --save-model-to ./nncf_output --save-performance ./nncf_output/performance.json --train-ann-file ./data/car_tree_bug/annotations/instances_default.json --train-data-roots ./data/car_tree_bug/images --val-ann-file ./data/car_tree_bug/annotations/instances_default.json --val-data-roots ./data/car_tree_bug/images
+   ```
 
+   Optimize OpenVINO model (.bin or .xml) with OpenVINO POT:
+   ```
+   ote optimize ./external/mmdetection/configs/ote/custom-object-detection/gen3_mobilenetV2_ATSS/template.yaml --load-weights openvino.xml --save-model-to ./pot_output --save-performance ./pot_output/performance.json --train-ann-file ./data/car_tree_bug/annotations/instances_default.json --train-data-roots ./data/car_tree_bug/images --val-ann-file ./data/car_tree_bug/annotations/instances_default.json --val-data-roots ./data/car_tree_bug/images
+   ```
+
+   With the `--help` command, you can list additional information.
+   command example:
    ```
    ote optimize ./external/mmdetection/configs/ote/custom-object-detection/gen3_mobilenetV2_ATSS/template.yaml --help
    ```
 
-   Sample output:
+   Output example:
    ```
    usage: ote optimize [-h] --train-ann-files TRAIN_ANN_FILES --train-data-roots TRAIN_DATA_ROOTS --val-ann-files
                     VAL_ANN_FILES --val-data-roots VAL_DATA_ROOTS --load-weights LOAD_WEIGHTS --save-model-to
@@ -241,13 +264,16 @@
    ```
 
 
-### ote eval - run evaluation of a trained model on particular dataset
-   Let's have a look at `ote eval` help. These parameters are the same for all model templates.
+### ote eval
+   `ote eval` runs evaluation of a trained model on a particular dataset.
+
+   With the `--help` command, you can list additional information, such as its parameters common to all model templates:
+   command example:
    ```
    ote eval ./external/mmdetection/configs/ote/custom-object-detection/gen3_mobilenetV2_ATSS/template.yaml --help
    ```
 
-   Sample output:
+   output example:
    ```
    usage: ote eval [-h] --test-ann-files TEST_ANN_FILES --test-data-roots
                    TEST_DATA_ROOTS --load-weights LOAD_WEIGHTS
@@ -272,13 +298,16 @@
                            stored.
    ```
 
-### ote export - export a trained model to the OpenVINO format in order to efficiently run it on Intel hardware
-   Let's have a look at `ote export` help. These parameters are the same for all model templates.
+### ote export 
+   `ote export` exports a trained model to the OpenVINO format in order to efficiently run it on Intel hardware.
+   
+   With the `--help` command, you can list additional information, such as its parameters common to all model templates:
+   command example:
    ```
    ote export ./external/mmdetection/configs/ote/custom-object-detection/gen3_mobilenetV2_ATSS/template.yaml --help
    ```
 
-   Sample output:
+   output example:
    ```
    usage: ote export [-h] --load-weights LOAD_WEIGHTS --save-model-to
                      SAVE_MODEL_TO
@@ -294,13 +323,16 @@
      --save-model-to SAVE_MODEL_TO
                            Location where exported model will be stored.
    ```
-### ote demo - run model inference on images, videos, webcam in order to see how it works on user's data
-   Let's have a look at `ote demo` help. These parameters are the same for all model templates.
+### ote demo 
+   `ote demo` runs model inference on images, videos, or webcam streams in order to see how it works with user's data
+  
+   With the `--help` command, you can list additional information, such as its parameters common to all model templates:
+   command example:
    ```
    ote demo ./external/mmdetection/configs/ote/custom-object-detection/gen3_mobilenetV2_ATSS/template.yaml --help
    ```
 
-   Sample output:
+   output example:
    ```
    usage: ote demo [-h] -i INPUT --load-weights LOAD_WEIGHTS
                    [--fit-to-size FIT_TO_SIZE FIT_TO_SIZE] [--loop]
@@ -332,13 +364,16 @@
                            pre-processing and post-processing.
    ```
 
-### ote deploy - create openvino.zip with self-contained python package, demo application and exported model
-   Let's have a look at `ote deploy` help. These parameters are the same for all model templates.
+### ote deploy 
+   `ote deploy` creates openvino.zip with a self-contained python package, a demo application, and an exported model. 
+   
+   With the `--help` command, you can list additional information, such as its parameters common to all model templates:
+   command example:
    ```
    ote deploy ./external/mmdetection/configs/ote/custom-object-detection/gen3_mobilenetV2_ATSS/template.yaml --help
    ```
 
-   Sample output:
+   output example:
    ```
    usage: ote deploy [-h] --load-weights LOAD_WEIGHTS
                      [--save-model-to SAVE_MODEL_TO]
@@ -355,11 +390,6 @@
                            Location where openvino.zip will be stored.
    ```
 
-## OTE Jupyter Nootebooks
-One can use Jupyter notebooks or OTE CLI tools to start working with models:
-```
-pip3 install notebook; cd ote_cli/notebooks/; jupyter notebook
-```
 
 ---
 \* Other names and brands may be claimed as the property of others.
