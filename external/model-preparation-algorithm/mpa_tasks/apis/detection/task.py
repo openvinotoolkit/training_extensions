@@ -89,19 +89,19 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         self._add_predictions_to_dataset(prediction_results, dataset, self.confidence_threshold)
         logger.info('Inference completed')
         return dataset
-    
-    def _infer_detector(self, dataset: DatasetEntity, 
+
+    def _infer_detector(self, dataset: DatasetEntity,
                         inference_parameters: Optional[InferenceParameters] = None) -> Tuple[Iterable, float]:
         """ Inference wrapper
 
-        This method triggers the inference and returns `prediction_results` zipped with prediction results, 
-        feature vectors, and saliency maps. `metric` is returned as a float value if InferenceParameters.is_evaluation 
+        This method triggers the inference and returns `prediction_results` zipped with prediction results,
+        feature vectors, and saliency maps. `metric` is returned as a float value if InferenceParameters.is_evaluation
         is set to true, otherwise, `None` is returned.
 
         Args:
             dataset (DatasetEntity): the validation or test dataset to be inferred with
-            inference_parameters (Optional[InferenceParameters], optional): Option to run evaluation or not. 
-                If `InferenceParameters.is_evaluation=True` then metric is returned, otherwise, both metric and 
+            inference_parameters (Optional[InferenceParameters], optional): Option to run evaluation or not.
+                If `InferenceParameters.is_evaluation=True` then metric is returned, otherwise, both metric and
                 saliency maps are empty. Defaults to None.
 
         Returns:
@@ -112,19 +112,19 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         dump_features = True
         dump_saliency_map = not inference_parameters.is_evaluation if inference_parameters else True
         results = self._run_task(stage_module,
-                                mode='train',
-                                dataset=dataset,
-                                eval=inference_parameters.is_evaluation if inference_parameters else False,
-                                dump_features=dump_features,
-                                dump_saliency_map=dump_saliency_map)
+                                 mode='train',
+                                 dataset=dataset,
+                                 eval=inference_parameters.is_evaluation if inference_parameters else False,
+                                 dump_features=dump_features,
+                                 dump_saliency_map=dump_saliency_map)
         # TODO: InferenceProgressCallback register
         logger.debug(f'result of run_task {stage_module} module = {results}')
         output = results['outputs']
         metric = output['metric']
         predictions = output['detections']
         assert len(output['detections']) == len(output['feature_vectors']) == len(output['saliency_maps']), \
-                'Number of elements should be the same, however, number of outputs are ' \
-                f"{len(output['detections'])}, {len(output['feature_vectors'])}, and {len(output['saliency_maps'])}"
+               'Number of elements should be the same, however, number of outputs are ' \
+               f"{len(output['detections'])}, {len(output['feature_vectors'])}, and {len(output['saliency_maps'])}"
         prediction_results = zip(predictions, output['feature_vectors'], output['saliency_maps'])
         return prediction_results, metric
 
@@ -181,9 +181,12 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         logger.info('Exporting completed')
 
     def _init_recipe_hparam(self) -> dict:
+        warmup_iters = int(self._hyperparams.learning_parameters.learning_rate_warmup_iters)
+        lr_config = ConfigDict(warmup_iters=warmup_iters) if warmup_iters > 0 \
+            else ConfigDict(warmup_iters=warmup_iters, warmup=None)
         return ConfigDict(
             optimizer=ConfigDict(lr=self._hyperparams.learning_parameters.learning_rate),
-            lr_config=ConfigDict(warmup_iters=int(self._hyperparams.learning_parameters.learning_rate_warmup_iters)),
+            lr_config=lr_config,
             data=ConfigDict(
                 samples_per_gpu=int(self._hyperparams.learning_parameters.batch_size),
                 workers_per_gpu=int(self._hyperparams.learning_parameters.num_workers),
@@ -260,13 +263,13 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
             if feature_vector is not None:
                 active_score = TensorEntity(name="representation_vector", numpy=feature_vector)
                 dataset_item.append_metadata_item(active_score)
-            
+
             if saliency_map is not None:
                 width, height = dataset_item.width, dataset_item.height
                 saliency_map = cv2.resize(saliency_map, (width, height), interpolation=cv2.INTER_NEAREST)
                 saliency_map_media = ResultMediaEntity(name="saliency_map", type="Saliency map",
-                                                annotation_scene=dataset_item.annotation_scene, 
-                                                numpy=saliency_map, roi=dataset_item.roi)
+                                                       annotation_scene=dataset_item.annotation_scene,
+                                                       numpy=saliency_map, roi=dataset_item.roi)
                 dataset_item.append_metadata_item(saliency_map_media, model=self._task_environment.model)
 
     def _patch_data_pipeline(self):
