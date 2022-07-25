@@ -169,7 +169,7 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
                     head_logits = prediction_item[logits_begin : logits_end]
                     for logit_idx, logit in enumerate(head_logits):
                         if logit > pos_thr:  # Assume logits already passed sigmoid
-                            label_str_idx = self._hierarchical_info['num_multiclass_heads']+logit_idx
+                            label_str_idx = self._hierarchical_info['num_multiclass_heads'] + logit_idx
                             label_str = self._hierarchical_info['all_groups'][label_str_idx][0]
                             ote_label = next(x for x in self._labels if x.name == label_str)
                             item_labels.append(ScoredLabel(label=ote_label, probability=float(logit)))
