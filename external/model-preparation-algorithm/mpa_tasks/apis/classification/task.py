@@ -203,7 +203,7 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
                 if max(prediction_item) < pos_thr:
                     logger.info('Confidence is smaller than pos_thr, empty_label will be appended to item_labels.')
                     item_labels.append(ScoredLabel(self._empty_label, probability=1.))
-                    continue
+
                 for cls_idx, pred_item in enumerate(prediction_item):
                     if pred_item > pos_thr:
                         cls_label = ScoredLabel(self.labels[cls_idx], probability=float(pred_item))
