@@ -209,7 +209,7 @@ class OTEClassificationNNCFTask(OTEClassificationInferenceTask, IOptimizationTas
         datamanager = torchreid.data.ImageDataManager(**imagedata_kwargs(self._cfg))
 
         self._compression_ctrl, self._model, self._nncf_metainfo = \
-            wrap_nncf_model(self._model, self._cfg, datamanager_for_init=datamanager)
+            wrap_nncf_model(self._model, self._cfg, multihead_info=self._multihead_class_info, datamanager_for_init=datamanager)
 
         time_monitor.on_initialization_end()
 
