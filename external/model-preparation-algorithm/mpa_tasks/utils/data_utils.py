@@ -17,7 +17,8 @@ def get_cls_img_indices(labels, dataset):
     for i, item in enumerate(dataset):
         item_labels = item.annotation_scene.get_labels()
         for i_l in item_labels:
-            img_indices[i_l.name].append(i)
+            if i_l in labels:
+                img_indices[i_l.name].append(i)
 
     return img_indices
 
