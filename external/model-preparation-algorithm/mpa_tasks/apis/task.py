@@ -160,6 +160,10 @@ class BaseTask:
         recipe_hparams = self._init_recipe_hparam()
         if len(recipe_hparams) > 0:
             self._recipe_cfg.merge_from_dict(recipe_hparams)
+        if "custom_hooks" in self.override_configs:
+            override_custom_hooks = self.override_configs.pop("custom_hooks")
+            for override_custom_hook in override_custom_hooks:
+                update_or_add_custom_hook(self._recipe_cfg, ConfigDict(override_custom_hook))
         if len(self.override_configs) > 0:
             logger.info(f"before override configs merging = {self._recipe_cfg}")
             self._recipe_cfg.merge_from_dict(self.override_configs)
