@@ -284,6 +284,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         # Copied from ote/apis/detection/config_utils.py
         # Added 'unlabeled' data support
 
+        # TODO[EUGENE]: PATCH TILING DATASET
         def patch_color_conversion(pipeline):
             # Default data format for OTE is RGB, while mmdet uses BGR, so negate the color conversion flag.
             for pipeline_step in pipeline:
