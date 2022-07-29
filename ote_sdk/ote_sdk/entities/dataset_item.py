@@ -447,7 +447,7 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
             if "__roi_lock" in name:
                 setattr(clone, name, Lock())
             elif "__annotation_scene" in name:
-                setattr(clone, name, copy.copy(value))
+                pass  # Keep the same instance
             else:
                 setattr(clone, name, copy.deepcopy(value, memo))
         return clone
