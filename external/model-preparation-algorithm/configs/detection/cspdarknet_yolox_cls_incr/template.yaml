@@ -32,7 +32,7 @@ hyper_parameters:
         default_value: 0.0001
         auto_hpo_state: POSSIBLE
       learning_rate_warmup_iters:
-        default_value: 10
+        default_value: 3
       num_iters:
         default_value: 100
     algo_backend:
