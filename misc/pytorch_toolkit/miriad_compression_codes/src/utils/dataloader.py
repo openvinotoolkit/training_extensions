@@ -76,6 +76,19 @@ class CustomDatasetPhase2(data.Dataset):
         self.list_gdtruth = os.listdir(self.path_to_gdtruth)
         self.dataset = ["cbis", "luna"]
 
+        # This is the list of all samples
+        self.cropimages = self.list_latent
+
+        # choose random samples for one epoch
+        self.choose_random_subset()
+
+    def choose_random_subset(self, how_many=0):
+        # chooses 'how_many' number of samples and discard the rest
+        if how_many == 0:
+            self.cropsubset = self.cropimages
+        else:
+            self.cropsubset = random.sample(self.cropimages, how_many)
+
     def __len__(self):
         return len(self.list_latent)
 
@@ -89,7 +102,10 @@ class CustomDatasetPhase2(data.Dataset):
         file_name = self.list_latent[index].rsplit('.latent')[0].rsplit('_')
 
         file_join = '_'.join(file_name)
-
+        
+        mask = Image.open(os.path.join(
+                    self.path_to_gdtruth, self.list_gdtruth[0]))
+                    
         for i in range(len(self.list_gdtruth)):
             if(file_join == self.list_gdtruth[i]):
                 mask = Image.open(os.path.join(
