@@ -1,5 +1,5 @@
 # Description.
-model_template_id: Custom_Instance_Segmentation_MaskRCNN_ResNet50
+model_template_id: Custom_Counting_Instance_Segmentation_MaskRCNN_ResNet50
 name: MaskRCNN-ResNet50
 task_type: INSTANCE_SEGMENTATION
 task_family: VISION
@@ -27,8 +27,10 @@ hyper_parameters:
     learning_parameters:
       batch_size:
         default_value: 4
+        auto_hpo_state: POSSIBLE
       learning_rate:
         default_value: 0.001
+        auto_hpo_state: POSSIBLE
       learning_rate_warmup_iters:
         default_value: 100
       num_iters:

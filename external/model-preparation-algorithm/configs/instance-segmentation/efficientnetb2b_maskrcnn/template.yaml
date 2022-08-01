@@ -1,5 +1,5 @@
 # Description.
-model_template_id: Custom_Instance_Segmentation_MaskRCNN_EfficientNetB2B
+model_template_id: Custom_Counting_Instance_Segmentation_MaskRCNN_EfficientNetB2B
 name: MaskRCNN-EfficientNetB2B
 task_type: INSTANCE_SEGMENTATION
 task_family: VISION
@@ -27,8 +27,10 @@ hyper_parameters:
     learning_parameters:
       batch_size:
         default_value: 4
+        auto_hpo_state: POSSIBLE
       learning_rate:
         default_value: 0.015
+        auto_hpo_state: POSSIBLE
       learning_rate_warmup_iters:
         default_value: 200
       num_iters:

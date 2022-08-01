@@ -441,7 +441,10 @@ class TrainingProgressCallback(TimeMonitorCallback):
             print(f'score = {score} at epoch {self.current_epoch} / {self._num_iters}')
             # as a trick, score (at least if it's accuracy not the loss) and iteration number
             # could be assembled just using summation and then disassembeled.
-            score = score + int(self._num_iters)
+            if 1.0 > score:
+                score = score + int(self._num_iters)
+            else:
+                score = -(score + int(self._num_iters))
         self.update_progress_callback(self.get_progress(), score=score)
 
 
@@ -495,22 +498,9 @@ class OptimizationProgressCallback(TimeMonitorCallback):
 
 
 @check_input_parameters_type()
-def preprocess_features_for_actmap(features: Union[np.ndarray, Iterable, int, float]):
-    features = np.mean(features, axis=1)
-    b, h, w = features.shape
-    features = features.reshape(b, h * w)
-    features = np.exp(features)
-    features /= np.sum(features, axis=1, keepdims=True)
-    features = features.reshape(b, h, w)
-    return features
-
-
-@check_input_parameters_type()
 def get_actmap(features: Union[np.ndarray, Iterable, int, float],
                output_res: Union[tuple, list]):
     am = cv.resize(features, output_res)
-    am = 255 * (am - np.min(am)) / (np.max(am) - np.min(am) + 1e-12)
-    am = np.uint8(np.floor(am))
     am = cv.applyColorMap(am, cv.COLORMAP_JET)
     am = cv.cvtColor(am, cv.COLOR_BGR2RGB)
     return am
