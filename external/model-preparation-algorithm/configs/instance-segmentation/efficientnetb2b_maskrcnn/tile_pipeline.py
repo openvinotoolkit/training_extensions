@@ -57,7 +57,6 @@ val_dataset = dict(
     type='ImageTilingDataset',
     dataset=dict(
         type=__dataset_type,
-        test_mode=True,
         ann_file=__data_root + 'annotations/instances_val.json',
         img_prefix=__data_root + 'images/val',
         pipeline=[dict(type='LoadImageFromFile')]),
@@ -68,7 +67,6 @@ test_dataset = dict(
     type='ImageTilingDataset',
     dataset=dict(
         type=__dataset_type,
-        test_mode=True,
         ann_file=__data_root + 'annotations/instances_test.json',
         img_prefix=__data_root + 'images/test',
         pipeline=[dict(type='LoadImageFromFile')]),
