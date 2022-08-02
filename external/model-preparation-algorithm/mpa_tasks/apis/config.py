@@ -149,3 +149,72 @@ class BaseConfig(ConfigurableParameters):
                                 description='training schema for the MPA task',
                                 editable=False,
                                 visible_in_ui=True)
+
+    class BaseTilingParameters(ParameterGroup):
+        # enable_training_tiling = configurable_boolean(
+        #     default_value=False,
+        #     header="Enable tiling on training dataset",
+        #     description="Enable tiling on training dataset",
+        #     warning="",
+        #     affects_outcome_of=ModelLifecycle.TRAINING
+        # )
+
+        # enable_inference_tiling = configurable_boolean(
+        #     default_value=False,
+        #     header="Enable tiling on inference dataset",
+        #     description="Enable tiling on inference dataset",
+        #     warning="",
+        #     affects_outcome_of=ModelLifecycle.INFERENCE
+        # )
+
+        enable_tiling = configurable_boolean(
+            default_value=False,
+            header="Enable tiling",
+            description="Enable tiling",
+            warning="",
+            affects_outcome_of=ModelLifecycle.NONE
+        )
+
+        tile_size = configurable_integer(
+            header="Tile Dimension",
+            description="Tile Dimension",
+            default_value=400,
+            min_value=100,
+            max_value=maxsize,
+            affects_outcome_of=ModelLifecycle.NONE
+        )
+
+        tile_overlap = configurable_float(
+            header="Tile Overlap",
+            description="Tile Overlap",
+            default_value=0.2,
+            min_value=0.0,
+            max_value=1.0,
+            affects_outcome_of=ModelLifecycle.NONE
+        )
+
+        tile_iou_thres = configurable_float(
+            header="Tile IoU Threshold",
+            description="Tile IoU Threshold",
+            default_value=0.45,
+            min_value=0.0,
+            max_value=1.0,
+            affects_outcome_of=ModelLifecycle.NONE
+        )
+
+        tile_max_number = configurable_integer(
+            header="Max object per tile",
+            description="Max object per tile",
+            default_value=200,
+            min_value=0,
+            max_value=maxsize,
+            affects_outcome_of=ModelLifecycle.NONE
+        )
+
+        tile_filter_empty = configurable_boolean(
+            default_value=True,
+            header="Filter empty tile in training",
+            description="Filter empty tile in training",
+            warning="",
+            affects_outcome_of=ModelLifecycle.NONE
+        )

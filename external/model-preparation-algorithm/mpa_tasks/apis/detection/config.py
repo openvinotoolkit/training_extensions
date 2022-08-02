@@ -56,7 +56,12 @@ class DetectionConfig(BaseConfig):
         header = string_attribute('Parameters for the MPA algo-backend')
         description = header
 
-    # TODO[EUGENE]: ADD TILING RELATED PARAMETERS
+    @attrs
+    class __TilingParameter(BaseConfig.BaseTilingParameters):
+        header = string_attribute('Tiling Parameters')
+        description = header
+
+    tiling_parameters = add_parameter_group(__TilingParameter)
     learning_parameters = add_parameter_group(__LearningParameters)
     postprocessing = add_parameter_group(__Postprocessing)
     nncf_optimization = add_parameter_group(__NNCFOptimization)

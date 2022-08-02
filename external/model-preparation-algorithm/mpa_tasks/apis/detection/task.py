@@ -274,7 +274,11 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
 
     def _patch_data_pipeline(self):
         base_dir = os.path.abspath(os.path.dirname(self.template_file_path))
-        data_pipeline_path = os.path.join(base_dir, 'data_pipeline.py')
+        # TODO: CREATE NEW TILING DATA PIPELINE
+        if bool(self._hyperparams.tiling_parameters.enable_tiling):
+            data_pipeline_path = os.path.join(base_dir, "tile_pipeline.py")
+        else:
+            data_pipeline_path = os.path.join(base_dir, 'data_pipeline.py')
         if os.path.exists(data_pipeline_path):
             data_pipeline_cfg = MPAConfig.fromfile(data_pipeline_path)
             self._recipe_cfg.merge_from_dict(data_pipeline_cfg)
@@ -296,13 +300,18 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
                     pipeline_step.to_rgb = to_rgb
                 elif pipeline_step.type == 'MultiScaleFlipAug':
                     patch_color_conversion(pipeline_step.transforms)
-
+        # remove redundant parameters introduced in self._recipe_cfg.merge_from_dict
+        remove_from_config(config, 'ann_file')
+        remove_from_config(config, 'img_prefix')
         assert 'data' in config
         for subset in ('train', 'val', 'test', 'unlabeled'):
             cfg = config.data.get(subset, None)
             if not cfg:
                 continue
-            if cfg.type == 'RepeatDataset' or cfg.type == 'MultiImageMixDataset':
+            # remove redundant parameters introduced in self._recipe_cfg.merge_from_dict
+            remove_from_config(cfg, 'ann_file')
+            remove_from_config(cfg, 'img_prefix')
+            if cfg.type in ["RepeatDataset", "MultiImageMixDataset", "ImageTilingDataset"]:
                 cfg = cfg.dataset
             cfg.type = 'MPADetDataset'
             cfg.domain = domain
