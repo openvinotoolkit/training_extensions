@@ -155,24 +155,23 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
         # This always assumes that threshold is available in the task environment's model
         meta_data = self.get_meta_data()
         for idx, dataset_item in enumerate(dataset):
-            anomaly_map, pred_score = self.inferencer.predict(
-                dataset_item.numpy, superimpose=False, meta_data=meta_data
-            )
+            image_result = self.inferencer.predict(dataset_item.numpy, meta_data=meta_data)
+
             # TODO: inferencer should return predicted label and mask
-            pred_label = pred_score >= 0.5
-            pred_mask = (anomaly_map >= 0.5).astype(np.uint8)
-            probability = pred_score if pred_label else 1 - pred_score
+            pred_label = image_result.pred_score >= 0.5
+            pred_mask = (image_result.anomaly_map >= 0.5).astype(np.uint8)
+            probability = image_result.pred_score if pred_label else 1 - image_result.pred_score
             if self.task_type == TaskType.ANOMALY_CLASSIFICATION:
-                label = self.anomalous_label if pred_score >= 0.5 else self.normal_label
+                label = self.anomalous_label if image_result.pred_score >= 0.5 else self.normal_label
             elif self.task_type == TaskType.ANOMALY_SEGMENTATION:
                 annotations = create_annotation_from_segmentation_map(
-                    pred_mask, anomaly_map.squeeze(), {0: self.normal_label, 1: self.anomalous_label}
+                    pred_mask, image_result.anomaly_map.squeeze(), {0: self.normal_label, 1: self.anomalous_label}
                 )
                 dataset_item.append_annotations(annotations)
                 label = self.normal_label if len(annotations) == 0 else self.anomalous_label
             elif self.task_type == TaskType.ANOMALY_DETECTION:
                 annotations = create_detection_annotation_from_anomaly_heatmap(
-                    pred_mask, anomaly_map.squeeze(), {0: self.normal_label, 1: self.anomalous_label}
+                    pred_mask, image_result.anomaly_map.squeeze(), {0: self.normal_label, 1: self.anomalous_label}
                 )
                 dataset_item.append_annotations(annotations)
                 label = self.normal_label if len(annotations) == 0 else self.anomalous_label
@@ -180,7 +179,7 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
                 raise ValueError(f"Unknown task type: {self.task_type}")
 
             dataset_item.append_labels([ScoredLabel(label=label, probability=float(probability))])
-            anomaly_map = anomaly_map_to_color_map(anomaly_map, normalize=False)
+            anomaly_map = anomaly_map_to_color_map(image_result.anomaly_map, normalize=False)
             heatmap_media = ResultMediaEntity(
                 name="Anomaly Map",
                 type="anomaly_map",
@@ -192,7 +191,7 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
 
         return dataset
 
-    def get_meta_data(self):
+    def get_meta_data(self) -> Dict:
         """Get Meta Data."""
 
         image_threshold = np.frombuffer(self.task_environment.model.get_data("image_threshold"), dtype=np.float32)
@@ -329,7 +328,7 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
         if self.task_environment.model is None:
             raise Exception("task_environment.model is None. Cannot load weights.")
         return OpenVINOInferencer(
-            config=self.config,
+            config=OmegaConf.create(self.config.to_dict()),
             path=(
                 self.task_environment.model.get_data("openvino.xml"),
                 self.task_environment.model.get_data("openvino.bin"),
