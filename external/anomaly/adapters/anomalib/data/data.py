@@ -64,8 +64,14 @@ class OTEAnomalyDataset(Dataset):
         self.dataset = dataset
         self.task_type = task_type
 
+        # TODO: get rid of this
+        if config.model.name == "draem":
+            transform_config = "external/anomaly/configs/draem/transform_config.yaml"
+        else:
+            transform_config = config.transform if "transform" in config.keys() else None
+
         self.pre_processor = PreProcessor(
-            config=config.transform if "transform" in config.keys() else None,
+            config=transform_config,
             image_size=tuple(config.dataset.image_size),
             to_tensor=True,
         )
