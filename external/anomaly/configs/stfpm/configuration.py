@@ -18,7 +18,7 @@ Configurable parameters for STFPM anomaly base task
 
 from attr import attrs
 from configs.base import BaseAnomalyConfig
-from configs.base.configuration_enums import EarlyStoppingMetrics
+from configs.base.configuration_enums import EarlyStoppingMetrics, ModelBackbone
 from ote_sdk.configuration.elements import (
     ParameterGroup,
     add_parameter_group,
@@ -65,6 +65,12 @@ class STFPMAnomalyBaseConfig(BaseAnomalyConfig):
             min_value=1e-5,
             max_value=1,
             description="Decay for SGD optimizer",
+        )
+
+        backbone = selectable(
+            default_value=ModelBackbone.RESNET18,
+            header="Model Backbone",
+            description="Pre-trained backbone used for feature extraction",
         )
 
         @attrs
