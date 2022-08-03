@@ -161,11 +161,12 @@ def generate_label_schema(dataset, task_type):
             empty_group = LabelGroup(
                 name="empty", labels=[emptylabel], group_type=LabelGroupType.EMPTY_LABEL
             )
+            # pylint: disable=unnecessary-comprehension
             key = [i for i in dataset.annotations.keys()][0]
-            for g in dataset.annotations[key][2]:
+            for group in dataset.annotations[key][2]:
                 group_labels = []
-                for cls in g:
-                    group_labels.append(dataset._label_name_to_project_label(cls))
+                for label_name in group:
+                    group_labels.append(dataset.label_name_to_project_label(label_name))
                 labels = group_labels if dataset.is_multilabel() else group_labels[1:]
                 label_schema.add_group(
                     LabelGroup(
@@ -193,7 +194,7 @@ def generate_label_schema(dataset, task_type):
                     task_type == "single-label"
                 ):  # add one label group includes all labels
                     label_entity_list = [
-                        dataset._label_name_to_project_label(lbl) for lbl in labels
+                        dataset.label_name_to_project_label(lbl) for lbl in labels
                     ]
                     label_group = LabelGroup(
                         name=group,
@@ -203,9 +204,7 @@ def generate_label_schema(dataset, task_type):
                     label_schema.add_group(label_group)
                 elif task_type == "multi-label":  # add label group for each label
                     for label in labels:
-                        label_entity_list = [
-                            dataset._label_name_to_project_label(label)
-                        ]
+                        label_entity_list = [dataset.label_name_to_project_label(label)]
                         label_group = LabelGroup(
                             name=f"{group}____{label}",
                             labels=label_entity_list,
