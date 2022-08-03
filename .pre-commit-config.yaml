@@ -43,7 +43,6 @@ repos:
     rev: v2.7.1
     hooks:
       - id: prettier
-        types: [yaml]
         exclude: "external/deep-object-reid"
 
   - repo: https://github.com/pre-commit/mirrors-mypy
@@ -53,7 +52,6 @@ repos:
         alias: mypy_ote_sdk
         name: "mypy (ote_sdk)"
         files: '^ote_sdk/.*\.py'
-        args: ["--config-file=ote_sdk/.mypy.ini"]
         additional_dependencies:
           [
             numpy==1.19.5,
@@ -69,21 +67,22 @@ repos:
         alias: mypy_ote_cli
         name: "mypy (ote_cli)"
         files: '^ote_cli/.*\.py'
-        args: ["--config-file=ote_sdk/.mypy.ini"]
+        additional_dependencies: [types-PyYAML]
       - id: mypy
-        alias: mypy_rest
+        alias: mypy_external
         name: "mypy (external)"
         files: '^external/anomaly/.*\.py'
-        args: ["--config-file=ote_sdk/.mypy.ini"]
+        additional_dependencies: [attrs==21.2.*]
+        exclude: "^external/anomaly/tests"
 
-  - repo: https://github.com/PyCQA/pylint
-    rev: "v2.14.5"
-    hooks:
-      - id: pylint
-        name: "pylint"
-        files: '^(ote_sdk|ote_cli|external/anomaly)/.*\.py'
-        entry: pylint
-        language: system
-        types: [python]
-        args: ["--score=no", "--rcfile=.pylintrc"]
-        exclude: "tests"
+  # - repo: https://github.com/PyCQA/pylint
+  #   rev: "v2.14.5"
+  #   hooks:
+  #     - id: pylint
+  #       name: "pylint"
+  #       files: '^(ote_sdk|ote_cli|external/anomaly)/.*\.py'
+  #       entry: pylint
+  #       language: system
+  #       types: [python]
+  #       args: ["--score=no", "--rcfile=.pylintrc"]
+  #       exclude: "tests"

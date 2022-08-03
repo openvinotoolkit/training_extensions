@@ -1,10 +1,9 @@
 ---
 name: Question
 about: Ask any question about this repository
-title: ''
+title: ""
 labels: question
-assignees: ''
-
+assignees: ""
 ---
 
 <!--
