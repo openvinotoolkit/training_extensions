@@ -17,16 +17,15 @@ Configurable parameters for Draem anomaly task
 # and limitations under the License.
 
 from attr import attrs
-
 from configs.base import BaseAnomalyConfig
 from configs.base.configuration_enums import EarlyStoppingMetrics
 from ote_sdk.configuration.elements import (
     ParameterGroup,
     add_parameter_group,
+    configurable_float,
     configurable_integer,
     selectable,
     string_attribute,
-    configurable_float,
 )
 from ote_sdk.configuration.model_lifecycle import ModelLifecycle
 

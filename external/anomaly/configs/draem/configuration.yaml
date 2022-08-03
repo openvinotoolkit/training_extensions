@@ -6,7 +6,8 @@ dataset:
     auto_hpo_state: not_possible
     auto_hpo_value: null
     default_value: 8
-    description: Increasing this value might improve training speed however it might
+    description:
+      Increasing this value might improve training speed however it might
       cause out of memory errors. If the number of workers is set to zero, data loading
       will happen in the main training thread.
     editable: true
@@ -55,7 +56,8 @@ learning_parameters:
       auto_hpo_state: not_possible
       auto_hpo_value: null
       default_value: 10
-      description: Number of epochs to wait for an improvement in the monitored metric.
+      description:
+        Number of epochs to wait for an improvement in the monitored metric.
         If the metric has not improved for this many epochs, the training will stop
         and the best model will be returned.
       editable: true
@@ -69,7 +71,8 @@ learning_parameters:
         rules: []
         type: UI_RULES
       visible_in_ui: true
-      warning: Setting this value too low might lead to underfitting. Setting the
+      warning:
+        Setting this value too low might lead to underfitting. Setting the
         value too high will increase the training time and might lead to overfitting.
     type: PARAMETER_GROUP
     visible_in_ui: true
@@ -109,7 +112,8 @@ learning_parameters:
       rules: []
       type: UI_RULES
     visible_in_ui: true
-    warning: Training for very few epochs might lead to poor performance. If Early
+    warning:
+      Training for very few epochs might lead to poor performance. If Early
       Stopping is enabled then increasing the value of max epochs might not lead to
       desired result.
   train_batch_size:
@@ -117,7 +121,8 @@ learning_parameters:
     auto_hpo_state: not_possible
     auto_hpo_value: null
     default_value: 8
-    description: The number of training samples seen in each iteration of training.
+    description:
+      The number of training samples seen in each iteration of training.
       Increasing this value improves training time and may make the training more
       stable. A larger batch size has higher memory requirements.
     editable: true
@@ -131,7 +136,8 @@ learning_parameters:
       rules: []
       type: UI_RULES
     visible_in_ui: true
-    warning: Increasing this value may cause the system to use more memory than available,
+    warning:
+      Increasing this value may cause the system to use more memory than available,
       potentially causing out of memory errors, please update with caution.
   type: PARAMETER_GROUP
   visible_in_ui: true
