@@ -51,7 +51,7 @@ from ote_sdk.usecases.tasks.interfaces.optimization_interface import (
 )
 from pytorch_lightning import Trainer
 
-from .inference_task import InferenceTask
+from .inference import InferenceTask
 
 logger = get_logger(__name__)
 
