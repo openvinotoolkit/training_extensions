@@ -175,10 +175,10 @@ class OTEClassificationNNCFTask(OTEClassificationInferenceTask, IOptimizationTas
             raise RuntimeError('LR finder could not be used together with NNCF compression')
 
         aux_pretrained_dicts = self._load_aux_models_data(self._task_environment.model)
+        if len(aux_pretrained_dicts) == 0:
+            self._cfg.mutual_learning.aux_configs = []
+            logger.warning("WARNING: No pretrained weights are loaded for aux model.")
         num_aux_models = len(self._cfg.mutual_learning.aux_configs)
-        num_aux_pretrained_dicts = len(aux_pretrained_dicts)
-        if num_aux_models != num_aux_pretrained_dicts:
-            raise RuntimeError('The pretrained weights are not provided for all aux models.')
 
         if optimization_parameters is not None:
             update_progress_callback = optimization_parameters.update_progress
