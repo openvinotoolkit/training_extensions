@@ -57,11 +57,11 @@ class DetectionConfig(BaseConfig):
         description = header
 
     @attrs
-    class __TilingParameter(BaseConfig.BaseTilingParameters):
+    class __TilingParameters(BaseConfig.BaseTilingParameters):
         header = string_attribute('Tiling Parameters')
         description = header
 
-    tiling_parameters = add_parameter_group(__TilingParameter)
+    tiling_parameters = add_parameter_group(__TilingParameters)
     learning_parameters = add_parameter_group(__LearningParameters)
     postprocessing = add_parameter_group(__Postprocessing)
     nncf_optimization = add_parameter_group(__NNCFOptimization)

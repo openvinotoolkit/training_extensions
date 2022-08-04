@@ -1,16 +1,15 @@
-#!/bin/bash
-
 import argparse
-from xmlrpc.client import Boolean
 import numpy as np
 import json
 import os
-from collections import Counter
+
 
 DATA_DIR = '/home/yuchunli/git/training_extensions/vitens_dataset/Vitens-Legionella-coco'
 
+
 def parse_args():
-    parser = argparse.ArgumentParser(description='Script to build detection coco annotation files for class incremental learning')
+    parser = argparse.ArgumentParser(
+        description='Script to build detection coco annotation files for class incremental learning')
     parser.add_argument('--mode', type=str, help='train|val', default='train')
     parser.add_argument('--output', type=str, required=True, help='Path to destination to build')
     parser.add_argument('--seed', type=int, help='Seed value', default=1)
@@ -40,7 +39,8 @@ def prepare_vitens_data(
         print(f'>> Data {name}.json saved ({len(images)} images {len(annotations)} annotations)')
 
     np.random.seed(seed)
-    ANNODIR = os.path.join(DATA_DIR, 'annotations') # Get split data info (train | val)
+    # Get split data info (train | val)
+    ANNODIR = os.path.join(DATA_DIR, 'annotations')
     tmp_mode = mode
     if mode == 'test':
         tmp_mode = 'val'
@@ -72,10 +72,10 @@ def prepare_vitens_data(
 
 
 if __name__ == '__main__':
-    # args = parse_args()
-    # prepare_vitens_data(
-    #     output_dir=args.output,
-    #     seed=args.seed,
-    #     mode=args.mode,
-    #     num_of_subset=args.num_of_subset
-    # )
+    args = parse_args()
+    prepare_vitens_data(
+        output_dir=args.output,
+        seed=args.seed,
+        mode=args.mode,
+        num_of_subset=args.num_of_subset
+    )

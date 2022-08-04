@@ -280,7 +280,7 @@ nncf_optimization:
   type: PARAMETER_GROUP
   visible_in_ui: True
 
-tiling:
+tiling_parameters:
   header: Tiling
   description: Crop dataset to tiles
 
@@ -289,7 +289,7 @@ tiling:
     description: Enable tiling on training dataset
     default_value: false
     editable: true
-    affects_outcome_of: NONE
+    affects_outcome_of: TRAINING
     type: BOOLEAN
     ui_rules:
       action: DISABLE_EDITING
@@ -303,7 +303,7 @@ tiling:
   tile_size:
     header: Tile Dimension
     description: Tile Dimension
-    affects_outcome_of: NONE
+    affects_outcome_of: TRAINING
     default_value: 400
     min_value: 100
     max_value: 9223372036854775807
@@ -321,7 +321,7 @@ tiling:
   tile_overlap:
     header: Tile Overlap
     description: Tile Overlap
-    affects_outcome_of: NONE
+    affects_outcome_of: TRAINING
     default_value: 0.2
     min_value: 0.0
     max_value: 1.0
@@ -339,7 +339,7 @@ tiling:
   tile_iou_thres:
     header: Tile IoU Threshold
     description: Tile IoU Threshold
-    affects_outcome_of: NONE
+    affects_outcome_of: TRAINING
     default_value: 0.45
     min_value: 0.0
     max_value: 1.0
@@ -357,7 +357,7 @@ tiling:
   tile_max_number:
     header: Max object per tile
     description: Max object per tile
-    affects_outcome_of: NONE
+    affects_outcome_of: TRAINING
     default_value: 200
     min_value: 0
     max_value: 9223372036854775807
@@ -377,7 +377,7 @@ tiling:
     description: Filter empty tile in training
     default_value: true
     editable: true
-    affects_outcome_of: NONE
+    affects_outcome_of: TRAINING
     type: BOOLEAN
     ui_rules:
       action: DISABLE_EDITING

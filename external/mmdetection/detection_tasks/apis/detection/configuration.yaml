@@ -253,3 +253,114 @@ nncf_optimization:
     warning: null
   type: PARAMETER_GROUP
   visible_in_ui: false
+
+tiling_parameters:
+  header: Tiling
+  description: Crop dataset to tiles
+
+  enable_tiling:
+    header: Enable tiling on training dataset
+    description: Enable tiling on training dataset
+    default_value: false
+    editable: true
+    affects_outcome_of: TRAINING
+    type: BOOLEAN
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: true
+    visible_in_ui: true
+    warning: null
+  
+  tile_size:
+    header: Tile Dimension
+    description: Tile Dimension
+    affects_outcome_of: TRAINING
+    default_value: 400
+    min_value: 100
+    max_value: 9223372036854775807
+    type: INTEGER
+    editable: true
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: 400
+    visible_in_ui: true
+    warning: null
+
+  tile_overlap:
+    header: Tile Overlap
+    description: Tile Overlap
+    affects_outcome_of: TRAINING
+    default_value: 0.2
+    min_value: 0.0
+    max_value: 1.0
+    type: FLOAT
+    editable: true
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: 0.2
+    visible_in_ui: true
+    warning: null
+  
+  tile_iou_thres:
+    header: Tile IoU Threshold
+    description: Tile IoU Threshold
+    affects_outcome_of: TRAINING
+    default_value: 0.45
+    min_value: 0.0
+    max_value: 1.0
+    type: FLOAT
+    editable: true
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: 0.45
+    visible_in_ui: true
+    warning: null
+
+  tile_max_number:
+    header: Max object per tile
+    description: Max object per tile
+    affects_outcome_of: TRAINING
+    default_value: 200
+    min_value: 0
+    max_value: 9223372036854775807
+    type: INTEGER
+    editable: true
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: 200
+    visible_in_ui: true
+    warning: null
+
+  tile_filter_empty:
+    header: Filter empty tile in training
+    description: Filter empty tile in training
+    default_value: true
+    editable: true
+    affects_outcome_of: TRAINING
+    type: BOOLEAN
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: true
+    visible_in_ui: true
+    warning: null
+
+  type: PARAMETER_GROUP
+  visible_in_ui: true
