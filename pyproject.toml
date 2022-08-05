@@ -22,14 +22,8 @@ show_error_codes = true
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # PYLINT CONFIGURATION                                                        #
 [tool.pylint.master]
-fail-under = 10
 ignore = "CVS"
 ignore-patterns = "^.*test_.*.py"
-jobs = 0
-limit-inference-results = 100
-persistent = "yes"
-suggestion-mode = "yes"
-unsafe-load-any-extension = "no"
 
 [tool.pylint.messages_control]
 disable = [
@@ -48,7 +42,6 @@ disable = [
     "import-outside-toplevel",
     "arguments-differ",
 ]
-enable = "c-extension-no-member"
 
 [tool.pylint.typecheck]
 generated-members = ["numpy.*", "torch.*"]
