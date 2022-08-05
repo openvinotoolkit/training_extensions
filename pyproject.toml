@@ -55,20 +55,20 @@ output-format = "text"
 reports = "no"
 score = "yes"
 
-[tool.pylint.refactoring]
-max-nested-blocks = 5
-never-returning-functions = "sys.exit"
+# [tool.pylint.refactoring]
+# max-nested-blocks = 5
+# never-returning-functions = "sys.exit"
 
-[tool.pylint.logging]
-logging-format-style = "old"
-logging-modules = "logging"
+# [tool.pylint.logging]
+# logging-format-style = "old"
+# logging-modules = "logging"
 
-[tool.pylint.spelling]
-max-spelling-suggestions = 4
-spelling-store-unknown-words = "no"
+# [tool.pylint.spelling]
+# max-spelling-suggestions = 4
+# spelling-store-unknown-words = "no"
 
-[tool.pylint.miscellaneous]
-notes = ["FIXME", "XXX", "TODO"]
+# [tool.pylint.miscellaneous]
+# notes = ["FIXME", "XXX", "TODO"]
 
 [tool.pylint.typecheck]
 contextmanager-decorators = "contextlib.contextmanager"
@@ -98,13 +98,13 @@ ignored-modules = [
     "pandas",
 ]
 
-[tool.pylint.variables]
-allow-global-unused-variables = "yes"
-callbacks = ["cb_", "_cb"]
-dummy-variables-rgx = "_+$|(_[a-zA-Z0-9_]*[a-zA-Z0-9]+?$)|dummy|^ignored_|^unused_"
-ignored-argument-names = "_.*|^ignored_|^unused_"
-init-import = "no"
-redefining-builtins-modules = "six.moves,past.builtins,future.builtins,builtins,io"
+# [tool.pylint.variables]
+# allow-global-unused-variables = "yes"
+# callbacks = ["cb_", "_cb"]
+# dummy-variables-rgx = "_+$|(_[a-zA-Z0-9_]*[a-zA-Z0-9]+?$)|dummy|^ignored_|^unused_"
+# ignored-argument-names = "_.*|^ignored_|^unused_"
+# init-import = "no"
+# redefining-builtins-modules = "six.moves,past.builtins,future.builtins,builtins,io"
 
 [tool.pylint.format]
 ignore-long-lines = '^\s*(# )?<?https?://\S+>?$'
