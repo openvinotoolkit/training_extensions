@@ -122,14 +122,7 @@ ignore-imports = "no"
 min-similarity-lines = 4
 
 [tool.pylint.basic]
-argument-naming-style = "snake_case"
-attr-naming-style = "snake_case"
-bad-names = ["foo", "bar", "baz", "toto", "tutu", "tata"]
-class-attribute-naming-style = "any"
-class-naming-style = "PascalCase"
-const-naming-style = "UPPER_CASE"
 docstring-min-length = -1
-function-naming-style = "snake_case"
 good-names = [
     "i",
     "j",
@@ -152,44 +145,9 @@ good-names = [
     "p",
     "f",
 ]
-include-naming-hint = "no"
-inlinevar-naming-style = "any"
-method-naming-style = "snake_case"
-module-naming-style = "snake_case"
-no-docstring-rgx = "^_"
-property-classes = "abc.abstractproperty"
-variable-naming-style = "snake_case"
-
-
-[tool.pylint.string]
-check-quote-consistency = "no"
-check-str-concat-over-line-jumps = "no"
 
 [tool.pylint.imports]
-allow-wildcard-with-all = "no"
-analyse-fallback-blocks = "no"
-deprecated-modules = ["optparse", "tkinter.tix"]
 known-third-party = ["enchant", "ote_sdk"]
-
-[tool.pylint.classes]
-defining-attr-methods = ["__init__", "__new__", "setUp", "__post_init__"]
-exclude-protected = ["_asdict", "_fields", "_replace", "_source", "_make"]
-valid-classmethod-first-arg = "cls"
-valid-metaclass-classmethod-first-arg = "cls"
 
 [tool.pylint.design]
 max-args = 7
-max-attributes = 7
-max-bool-expr = 5
-max-branches = 12
-max-locals = 15
-max-parents = 7
-max-public-methods = 20
-max-returns = 6
-max-statements = 50
-min-public-methods = 2
-
-
-[tool.pylint.exceptions]
-overgeneral-exceptions = ["BaseException", "Exception"]
-extension-pkg-whitelist = "cv2"
