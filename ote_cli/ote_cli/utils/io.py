@@ -155,46 +155,81 @@ def generate_label_schema(dataset, task_type):
         assert len(not_empty_labels) > 1
         label_schema = LabelSchemaEntity()
         if dataset.is_multilabel():
-            emptylabel = LabelEntity(name="Empty label", is_empty=True, domain=Domain.CLASSIFICATION)
-            empty_group = LabelGroup(name="empty", labels=[emptylabel], group_type=LabelGroupType.EMPTY_LABEL)
+            emptylabel = LabelEntity(
+                name="Empty label", is_empty=True, domain=Domain.CLASSIFICATION
+            )
+            empty_group = LabelGroup(
+                name="empty", labels=[emptylabel], group_type=LabelGroupType.EMPTY_LABEL
+            )
+            # pylint: disable=unnecessary-comprehension
             key = [i for i in dataset.annotations.keys()][0]
-            for g in dataset.annotations[key][2]:
+            for group in dataset.annotations[key][2]:
                 group_labels = []
-                for cls in g:
-                    group_labels.append(dataset._label_name_to_project_label(cls))
+                for label_name in group:
+                    group_labels.append(dataset.label_name_to_project_label(label_name))
                 labels = group_labels if dataset.is_multilabel() else group_labels[1:]
-                label_schema.add_group(LabelGroup(name=group_labels[0].name,
-                                                  labels=labels, group_type=LabelGroupType.EXCLUSIVE))
+                label_schema.add_group(
+                    LabelGroup(
+                        name=group_labels[0].name,
+                        labels=labels,
+                        group_type=LabelGroupType.EXCLUSIVE,
+                    )
+                )
             label_schema.add_group(empty_group)
         elif dataset.is_multihead():
-            emptylabel = LabelEntity(name="Empty label", is_empty=True, domain=Domain.CLASSIFICATION)
-            empty_group = LabelGroup(name="empty", labels=[emptylabel], group_type=LabelGroupType.EMPTY_LABEL)
+            emptylabel = LabelEntity(
+                name="Empty label", is_empty=True, domain=Domain.CLASSIFICATION
+            )
+            empty_group = LabelGroup(
+                name="empty", labels=[emptylabel], group_type=LabelGroupType.EMPTY_LABEL
+            )
             key = [i for i in dataset.annotations.keys()][0]
             hierarchy_info = dataset.annotations[key][2]
-            
+
             def add_subtask_labels(dataset, info):
-                group = info['group']
-                labels = info['labels']
-                task_type = info['task_type']
-                if task_type == 'single-label':  # add one label group includes all labels
-                    label_entity_list = [dataset._label_name_to_project_label(lbl) for lbl in labels]
-                    label_group = LabelGroup(name=group, labels=label_entity_list, group_type=LabelGroupType.EXCLUSIVE)
+                group = info["group"]
+                labels = info["labels"]
+                task_type = info["task_type"]
+                if (
+                    task_type == "single-label"
+                ):  # add one label group includes all labels
+                    label_entity_list = [
+                        dataset.label_name_to_project_label(lbl) for lbl in labels
+                    ]
+                    label_group = LabelGroup(
+                        name=group,
+                        labels=label_entity_list,
+                        group_type=LabelGroupType.EXCLUSIVE,
+                    )
                     label_schema.add_group(label_group)
-                elif task_type == 'multi-label':  # add label group for each label
+                elif task_type == "multi-label":  # add label group for each label
                     for label in labels:
-                        label_entity_list = [dataset._label_name_to_project_label(label)]
-                        label_group = LabelGroup(name=f'{group}____{label}', labels=label_entity_list, group_type=LabelGroupType.EXCLUSIVE)
+                        label_entity_list = [dataset.label_name_to_project_label(label)]
+                        label_group = LabelGroup(
+                            name=f"{group}____{label}",
+                            labels=label_entity_list,
+                            group_type=LabelGroupType.EXCLUSIVE,
+                        )
                         label_schema.add_group(label_group)
-                if 'subtask' in info:
-                    subtask = info['subtask']
+                if "subtask" in info:
+                    subtask = info["subtask"]
                     for stask in subtask:  # if has several subtasks
                         add_subtask_labels(dataset, stask)
+
             for info in hierarchy_info:
-                if info['task_type'] == 'multi-label' and emptylabel not in label_schema.get_labels(include_empty=True):
+                if info[
+                    "task_type"
+                ] == "multi-label" and emptylabel not in label_schema.get_labels(
+                    include_empty=True
+                ):
                     label_schema.add_group(empty_group)
                 add_subtask_labels(dataset, info)
         else:
-            main_group = LabelGroup(name="labels", labels=dataset.project_labels, group_type=LabelGroupType.EXCLUSIVE)
+            main_group = LabelGroup(
+                name="labels",
+                labels=dataset.project_labels,
+                group_type=LabelGroupType.EXCLUSIVE,
+            )
             label_schema.add_group(main_group)
         return label_schema
 
