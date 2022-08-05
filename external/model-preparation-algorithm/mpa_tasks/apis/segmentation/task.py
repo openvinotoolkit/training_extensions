@@ -147,7 +147,7 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
             output_model.set_data("label_schema.json", label_schema_to_bytes(self._task_environment.label_schema))
         logger.info('Exporting completed')
 
-    def _init_recipe_hparam(self) -> dict:
+    def _replace_hparam(self) -> dict:
         warmup_iters = int(self._hyperparams.learning_parameters.learning_rate_warmup_iters)
         lr_config = ConfigDict(warmup_iters=warmup_iters) if warmup_iters > 0 \
             else ConfigDict(warmup_iters=warmup_iters, warmup=None)

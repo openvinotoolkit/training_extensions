@@ -157,7 +157,7 @@ class BaseTask:
         """
         logger.info('initializing....')
         self._init_recipe()
-        recipe_hparams = self._init_recipe_hparam()
+        recipe_hparams = self._replace_hparam()
         if len(recipe_hparams) > 0:
             self._recipe_cfg.merge_from_dict(recipe_hparams)
         if "custom_hooks" in self.override_configs:
@@ -223,7 +223,7 @@ class BaseTask:
         """
         return None
 
-    def _init_recipe_hparam(self) -> dict:
+    def _substitution_hparam(self) -> dict:
         """
         initialize recipe hyperparamter as dict.
         """

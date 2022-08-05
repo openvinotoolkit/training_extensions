@@ -253,7 +253,7 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
 
             update_progress_callback(int(i / dataset_size * 100))
 
-    def _init_recipe_hparam(self) -> dict:
+    def _replace_hparam(self) -> dict:
         warmup_iters = int(self._hyperparams.learning_parameters.learning_rate_warmup_iters)
         lr_config = ConfigDict(warmup_iters=warmup_iters) if warmup_iters > 0 \
             else ConfigDict(warmup_iters=warmup_iters, warmup=None)

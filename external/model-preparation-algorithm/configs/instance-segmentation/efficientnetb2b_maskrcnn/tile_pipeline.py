@@ -1,5 +1,8 @@
 dataset_type = 'CocoDataset'
 
+# TODO[EUGENE]: WHAT IMAGE SIZE SHOULD WE USE?
+img_size = (800, 800)
+
 tile_cfg = dict(
     tile_size=400,
     min_area_ratio=0.9,
@@ -12,7 +15,7 @@ img_norm_cfg = dict(
     mean=(103.53, 116.28, 123.675), std=(1.0, 1.0, 1.0), to_rgb=False)
 
 train_pipeline = [
-    dict(type='Resize', img_scale=(416, 416), keep_ratio=False),
+    dict(type='Resize', img_scale=img_size, keep_ratio=False),
     dict(type='RandomFlip', flip_ratio=0.5),
     dict(type='Normalize', **img_norm_cfg),
     dict(type='Pad', size_divisor=32),
@@ -23,7 +26,7 @@ train_pipeline = [
 test_pipeline = [
     dict(
         type='MultiScaleFlipAug',
-        img_scale=(416, 416),
+        img_scale=img_size,
         flip=False,
         transforms=[
             dict(type='Resize', keep_ratio=False),

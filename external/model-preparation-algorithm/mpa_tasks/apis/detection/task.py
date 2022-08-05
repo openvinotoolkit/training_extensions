@@ -180,7 +180,16 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
             output_model.set_data("label_schema.json", label_schema_to_bytes(self._task_environment.label_schema))
         logger.info('Exporting completed')
 
-    def _init_recipe_hparam(self) -> dict:
+    # TODO[EUGENE]: MAKE SURE TO CHECK PARENT CLASSES AND OTHER INHERITED TASKS
+    def _replace_hparam(self) -> dict:
+        """ Replace "some" mmdetection config parameters with TaskEnvironment hyperparameters. 
+
+        Hyper Parameters defined in TaskEnvironment will replace "specific" mmdetection config parameters.
+
+        Returns:
+            dict: _description_
+        """
+
         warmup_iters = int(self._hyperparams.learning_parameters.learning_rate_warmup_iters)
         lr_config = ConfigDict(warmup_iters=warmup_iters) if warmup_iters > 0 \
             else ConfigDict(warmup_iters=warmup_iters, warmup=None)
@@ -274,7 +283,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
 
     def _patch_data_pipeline(self):
         base_dir = os.path.abspath(os.path.dirname(self.template_file_path))
-        # TODO: CREATE NEW TILING DATA PIPELINE
+        # TODO[EUGENE]: CREATE NEW TILING DATA PIPELINE
         if bool(self._hyperparams.tiling_parameters.enable_tiling):
             data_pipeline_path = os.path.join(base_dir, "tile_pipeline.py")
         else:
