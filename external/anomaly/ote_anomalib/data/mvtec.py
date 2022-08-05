@@ -38,6 +38,8 @@ import cv2
 import numpy as np
 from anomalib.data.mvtec import make_mvtec_dataset
 from ote_anomalib.data import LabelNames
+from pandas.core.frame import DataFrame
+
 from ote_sdk.entities.annotation import (
     Annotation,
     AnnotationSceneEntity,
@@ -54,7 +56,6 @@ from ote_sdk.entities.scored_label import ScoredLabel
 from ote_sdk.entities.shapes.rectangle import Rectangle
 from ote_sdk.entities.subset import Subset
 from ote_sdk.utils.segmentation_utils import create_annotation_from_segmentation_map
-from pandas.core.frame import DataFrame
 
 
 class OteMvtecDataset:

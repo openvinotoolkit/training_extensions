@@ -1,20 +1,16 @@
 default_language_version:
   python: python3.8
+  node: system
 
 repos:
   - repo: https://github.com/PyCQA/isort
     rev: "5.10.1"
     hooks:
       - id: isort
-        alias: isort_ote_sdk
-        name: "isort (ote_sdk)"
-        args: ["--settings", "ote_sdk/.isort.cfg"]
-        files: '^ote_sdk/.*\.py'
-      - id: isort
-        alias: isort_rest
-        name: "isort (ote_cli|external)"
+        alias: isort_all
+        name: "isort (ote_cli|external|ote_sdk)"
         args: ["--settings", ".isort.cfg"]
-        files: '^(ote_cli|external/anomaly)/.*\.py'
+        files: '^(ote_cli|external/anomaly|ote_sdk)/.*\.py'
         exclude: "tests/"
 
   - repo: https://github.com/psf/black
@@ -49,9 +45,9 @@ repos:
     rev: "v0.971"
     hooks:
       - id: mypy
-        alias: mypy_ote_sdk
-        name: "mypy (ote_sdk)"
-        files: '^ote_sdk/.*\.py'
+        alias: mypy
+        name: "mypy"
+        files: '^(ote_sdk|ote_cli)/.*\.py'
         additional_dependencies:
           [
             numpy==1.19.5,
@@ -63,16 +59,6 @@ repos:
             types_futures,
             types-python-dateutil,
           ]
-      - id: mypy
-        alias: mypy_ote_cli
-        name: "mypy (ote_cli)"
-        files: '^ote_cli/.*\.py'
-        additional_dependencies: [types-PyYAML]
-      - id: mypy
-        alias: mypy_external
-        name: "mypy (external)"
-        files: '^external/anomaly/.*\.py'
-        additional_dependencies: [attrs==21.2.*]
         exclude: "^external/anomaly/tests"
 
   - repo: https://github.com/PyCQA/pylint

@@ -28,16 +28,16 @@ from typing import Optional
 
 import torch
 import yaml
+
+from ote_cli.datasets import get_dataset_class
+from ote_cli.utils.importing import get_impl_class
+from ote_cli.utils.io import generate_label_schema, read_model, save_model_data
 from ote_sdk.configuration.helper import create
 from ote_sdk.entities.model import ModelEntity
 from ote_sdk.entities.model_template import TaskType
 from ote_sdk.entities.subset import Subset
 from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.entities.train_parameters import TrainParameters, UpdateProgressCallback
-
-from ote_cli.datasets import get_dataset_class
-from ote_cli.utils.importing import get_impl_class
-from ote_cli.utils.io import generate_label_schema, read_model, save_model_data
 
 try:
     import hpopt

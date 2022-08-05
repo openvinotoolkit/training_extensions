@@ -20,6 +20,7 @@ from typing import Dict, List, Optional
 
 import pandas as pd
 from bson import ObjectId
+
 from ote_sdk.entities.annotation import (
     Annotation,
     AnnotationSceneEntity,

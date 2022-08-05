@@ -1,8 +1,7 @@
 """
-Setup configuration.
+Install OTE
 """
-
-# Copyright (C) 2021 Intel Corporation
+# Copyright (C) 2022 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,20 +15,31 @@ Setup configuration.
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import os
-
+from typing import List
 from setuptools import find_packages, setup
 
-with open(
-    os.path.join(os.path.dirname(__file__), "requirements.txt"), encoding="UTF-8"
-) as read_file:
-    requirements = [requirement.strip() for requirement in read_file]
+
+def get_requirements() -> List[str]:
+    """Read requirements.txt and return the requirements.
+    Returns:
+        List[str]: List of requirements.
+    """
+    requirements = []
+    with open("requirements/ote.txt", "r", encoding="utf8") as file:
+        for line in file.readlines():
+            requirements.append(line.strip())
+    return requirements
+
 
 setup(
-    name="ote_cli",
-    version="0.2",
-    packages=find_packages(exclude=("tools",)),
-    install_requires=requirements,
+    name="OTE",
+    version="2.0.0",
+    packages=find_packages(where="ote_sdk", include=["ote_sdk", "ote_sdk.*"])
+    + find_packages(where="ote_cli", include=["ote_cli", "ote_cli.*"], exclude=("tools",)),
+    package_dir={"ote_sdk": "ote_sdk/ote_sdk", "ote_cli": "ote_cli/ote_cli"},
+    url="https://github.com/openvinotoolkit/training_extensions",
+    license="license='Apache License 2.0'",
+    install_requires=get_requirements(),
     entry_points={
         "console_scripts": [
             "ote=ote_cli.tools.ote:main",
@@ -41,4 +51,6 @@ setup(
             "ote_optimize=ote_cli.tools.optimize:main",
         ]
     },
+    author="Intel",
+    description="OpenVINO Training Extensions",
 )

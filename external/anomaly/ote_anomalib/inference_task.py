@@ -31,6 +31,8 @@ from ote_anomalib.callbacks import AnomalyInferenceCallback, ProgressCallback
 from ote_anomalib.configs import get_anomalib_config
 from ote_anomalib.data import OTEAnomalyDataModule
 from ote_anomalib.logging import get_logger
+from pytorch_lightning import Trainer
+
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.inference_parameters import InferenceParameters
 from ote_sdk.entities.metrics import Performance, ScoreMetric
@@ -50,7 +52,6 @@ from ote_sdk.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
 from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType, IExportTask
 from ote_sdk.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from ote_sdk.usecases.tasks.interfaces.unload_interface import IUnload
-from pytorch_lightning import Trainer
 
 logger = get_logger(__name__)
 

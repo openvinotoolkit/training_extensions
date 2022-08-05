@@ -22,12 +22,6 @@ from collections import deque
 
 import cv2
 import numpy as np
-from ote_sdk.configuration.helper import create
-from ote_sdk.entities.annotation import AnnotationSceneEntity, AnnotationSceneKind
-from ote_sdk.entities.datasets import DatasetEntity, DatasetItemEntity
-from ote_sdk.entities.image import Image
-from ote_sdk.entities.inference_parameters import InferenceParameters
-from ote_sdk.entities.task_environment import TaskEnvironment
 
 from ote_cli.registry import find_and_parse_model_template
 from ote_cli.tools.utils.demo.images_capture import open_images_capture
@@ -39,6 +33,12 @@ from ote_cli.utils.parser import (
     add_hyper_parameters_sub_parser,
     gen_params_dict_from_args,
 )
+from ote_sdk.configuration.helper import create
+from ote_sdk.entities.annotation import AnnotationSceneEntity, AnnotationSceneKind
+from ote_sdk.entities.datasets import DatasetEntity, DatasetItemEntity
+from ote_sdk.entities.image import Image
+from ote_sdk.entities.inference_parameters import InferenceParameters
+from ote_sdk.entities.task_environment import TaskEnvironment
 
 ESC_BUTTON = 27
 

@@ -23,14 +23,13 @@ import struct
 import tempfile
 from zipfile import ZipFile
 
+from ote_cli.utils.nncf import is_checkpoint_nncf
 from ote_sdk.entities.label import Domain, LabelEntity
 from ote_sdk.entities.label_schema import LabelGroup, LabelGroupType, LabelSchemaEntity
 from ote_sdk.entities.model import ModelEntity, ModelOptimizationType
 from ote_sdk.entities.model_template import TaskType
 from ote_sdk.serialization.label_mapper import LabelSchemaMapper
 from ote_sdk.usecases.adapters.model_adapter import ModelAdapter
-
-from ote_cli.utils.nncf import is_checkpoint_nncf
 
 
 def save_model_data(model, folder):

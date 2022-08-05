@@ -31,6 +31,7 @@ from ote_anomalib.data.dataset import (
     AnomalySegmentationDataset,
 )
 from ote_anomalib.logging import get_logger
+
 from ote_sdk.configuration.helper import create as create_hyper_parameters
 from ote_sdk.entities.inference_parameters import InferenceParameters
 from ote_sdk.entities.label_schema import LabelSchemaEntity

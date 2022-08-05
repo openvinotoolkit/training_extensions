@@ -19,16 +19,6 @@ Model training tool.
 import argparse
 import os.path as osp
 
-from ote_sdk.configuration.helper import create
-from ote_sdk.entities.inference_parameters import InferenceParameters
-from ote_sdk.entities.model import ModelEntity
-from ote_sdk.entities.resultset import ResultSetEntity
-from ote_sdk.entities.subset import Subset
-from ote_sdk.entities.task_environment import TaskEnvironment
-from ote_sdk.entities.train_parameters import TrainParameters
-from ote_sdk.serialization.label_mapper import label_schema_to_bytes
-from ote_sdk.usecases.adapters.model_adapter import ModelAdapter
-
 from ote_cli.datasets import get_dataset_class
 from ote_cli.registry import find_and_parse_model_template
 from ote_cli.utils.config import override_parameters
@@ -44,6 +34,15 @@ from ote_cli.utils.parser import (
     add_hyper_parameters_sub_parser,
     gen_params_dict_from_args,
 )
+from ote_sdk.configuration.helper import create
+from ote_sdk.entities.inference_parameters import InferenceParameters
+from ote_sdk.entities.model import ModelEntity
+from ote_sdk.entities.resultset import ResultSetEntity
+from ote_sdk.entities.subset import Subset
+from ote_sdk.entities.task_environment import TaskEnvironment
+from ote_sdk.entities.train_parameters import TrainParameters
+from ote_sdk.serialization.label_mapper import label_schema_to_bytes
+from ote_sdk.usecases.adapters.model_adapter import ModelAdapter
 
 
 def parse_args():

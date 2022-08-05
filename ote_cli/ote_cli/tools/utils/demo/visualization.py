@@ -19,6 +19,7 @@ Visualisation module.
 
 import cv2
 import numpy as np
+
 from ote_sdk.entities.model_template import TaskType
 from ote_sdk.entities.shapes.polygon import Polygon
 

@@ -23,6 +23,7 @@ from ote_anomalib.configs.configuration_enums import (
     ModelBackbone,
     POTQuantizationPreset,
 )
+
 from ote_sdk.configuration import ConfigurableParameters
 from ote_sdk.configuration.elements import (
     ParameterGroup,

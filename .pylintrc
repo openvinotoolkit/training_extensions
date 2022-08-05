@@ -197,7 +197,7 @@ ignored-classes=optparse.Values,thread._local,_thread._local
 # (useful for modules/projects where namespaces are manipulated during runtime
 # and thus existing member attributes cannot be deduced by static analysis). It
 # supports qualified module names, as well as Unix pattern matching.
-ignored-modules=ote_sdk,mmseg,segmentation_tasks,mmdet,detection_tasks,torchreid,torchreid_tasks,cv2,anomalib,pytorch_lightning,torch,addict,compression,openvino,pandas
+ignored-modules=mmseg,segmentation_tasks,mmdet,detection_tasks,torchreid,torchreid_tasks,cv2,anomalib,pytorch_lightning,torch,addict,compression,openvino,pandas
 
 # Show a hint with possible names when a member name was not found. The aspect
 # of finding the hint is based on edit distance.
@@ -466,7 +466,7 @@ int-import-graph=
 known-standard-library=
 
 # Force import order to recognize a module as part of a third party library.
-known-third-party=enchant,ote_sdk
+known-third-party=enchant
 
 # Couples of modules and preferred modules, separated by a comma.
 preferred-modules=

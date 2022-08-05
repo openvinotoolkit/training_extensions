@@ -33,6 +33,8 @@ from ote_anomalib.callbacks import ProgressCallback
 from ote_anomalib.data import OTEAnomalyDataModule
 from ote_anomalib.inference_task import AnomalyInferenceTask
 from ote_anomalib.logging import get_logger
+from pytorch_lightning import Trainer
+
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.model import (
     ModelEntity,
@@ -47,7 +49,6 @@ from ote_sdk.usecases.tasks.interfaces.optimization_interface import (
     IOptimizationTask,
     OptimizationType,
 )
-from pytorch_lightning import Trainer
 
 logger = get_logger(__name__)
 
