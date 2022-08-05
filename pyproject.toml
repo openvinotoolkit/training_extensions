@@ -51,15 +51,7 @@ disable = [
 enable = "c-extension-no-member"
 
 [tool.pylint.typecheck]
-contextmanager-decorators = "contextlib.contextmanager"
 generated-members = ["numpy.*", "torch.*"]
-ignore-mixin-members = "yes"
-ignore-none = "yes"
-ignore-on-opaque-inference = "yes"
-ignored-classes = ["optparse.Values", "thread._local", "_thread._local"]
-missing-member-hint = "yes"
-missing-member-hint-distance = 1
-missing-member-max-choices = 1
 ignored-modules = [
     "ote_sdk",
     "mmseg",
@@ -79,22 +71,9 @@ ignored-modules = [
 ]
 
 [tool.pylint.format]
-ignore-long-lines = '^\s*(# )?<?https?://\S+>?$'
-indent-after-paren = 4
-indent-string = '    '
 max-line-length = 120
-max-module-lines = 1000
-single-line-class-stmt = "no"
-single-line-if-stmt = "no"
-
-[tool.pylint.similarities]
-ignore-comments = "yes"
-ignore-docstrings = "yes"
-ignore-imports = "no"
-min-similarity-lines = 4
 
 [tool.pylint.basic]
-docstring-min-length = -1
 good-names = [
     "i",
     "j",
@@ -113,7 +92,6 @@ good-names = [
     "type",
     "xs",
     "ys",
-    "i",
     "p",
     "f",
 ]
