@@ -15,7 +15,7 @@
                 },
                 {
                 "parent": "self",
-                "group": "menmade",
+                "group": "manmade",
                 "labels": ["car"],
                 "task_type": "multi-label"
                 }
