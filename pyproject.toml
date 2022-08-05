@@ -1,0 +1,195 @@
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# SETUP CONFIGURATION.                                                        #
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# ISORT CONFIGURATION.                                                        #
+[tool.isort]
+profile = "black"
+known_first_party = ["ote_cli", "ote_sdk"]
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# MYPY CONFIGURATION.                                                         #
+[tool.mypy]
+python_version = 3.8
+ignore_missing_imports = true
+show_error_codes = true
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# PYLINT CONFIGURATION                                                        #
+[tool.pylint.master]
+fail-under = 10
+ignore = "CVS"
+ignore-patterns = "^.*test_.*.py"
+jobs = 0
+limit-inference-results = 100
+persistent = "yes"
+suggestion-mode = "yes"
+unsafe-load-any-extension = "no"
+
+[tool.pylint.messages_control]
+disable = [
+    "logging-fstring-interpolation",
+    "too-few-public-methods",
+    "fixme",
+    "duplicate-code",
+    "raw-checker-failed",
+    "bad-inline-option",
+    "locally-disabled",
+    "file-ignored",
+    "suppressed-message",
+    "useless-suppression",
+    "deprecated-pragma",
+    "use-symbolic-message-instead",
+    "import-outside-toplevel",
+    "arguments-differ",
+]
+enable = "c-extension-no-member"
+
+[tool.pylint.reports]
+output-format = "text"
+reports = "no"
+score = "yes"
+
+[tool.pylint.refactoring]
+max-nested-blocks = 5
+never-returning-functions = "sys.exit"
+
+[tool.pylint.logging]
+logging-format-style = "old"
+logging-modules = "logging"
+
+[tool.pylint.spelling]
+max-spelling-suggestions = 4
+spelling-store-unknown-words = "no"
+
+[tool.pylint.miscellaneous]
+notes = ["FIXME", "XXX", "TODO"]
+
+[tool.pylint.typecheck]
+contextmanager-decorators = "contextlib.contextmanager"
+generated-members = ["numpy.*", "torch.*"]
+ignore-mixin-members = "yes"
+ignore-none = "yes"
+ignore-on-opaque-inference = "yes"
+ignored-classes = ["optparse.Values", "thread._local", "_thread._local"]
+missing-member-hint = "yes"
+missing-member-hint-distance = 1
+missing-member-max-choices = 1
+ignored-modules = [
+    "ote_sdk",
+    "mmseg",
+    "segmentation_tasks",
+    "mmdet",
+    "detection_tasks",
+    "torchreid",
+    "torchreid_tasks",
+    "cv2",
+    "anomalib",
+    "pytorch_lightning",
+    "torch",
+    "addict",
+    "compression",
+    "openvino",
+    "pandas",
+]
+
+[tool.pylint.variables]
+allow-global-unused-variables = "yes"
+callbacks = ["cb_", "_cb"]
+dummy-variables-rgx = "_+$|(_[a-zA-Z0-9_]*[a-zA-Z0-9]+?$)|dummy|^ignored_|^unused_"
+ignored-argument-names = "_.*|^ignored_|^unused_"
+init-import = "no"
+redefining-builtins-modules = "six.moves,past.builtins,future.builtins,builtins,io"
+
+[tool.pylint.format]
+ignore-long-lines = '^\s*(# )?<?https?://\S+>?$'
+indent-after-paren = 4
+indent-string = '    '
+max-line-length = 120
+max-module-lines = 1000
+single-line-class-stmt = "no"
+single-line-if-stmt = "no"
+
+[tool.pylint.similarities]
+ignore-comments = "yes"
+ignore-docstrings = "yes"
+ignore-imports = "no"
+min-similarity-lines = 4
+
+[tool.pylint.basic]
+argument-naming-style = "snake_case"
+attr-naming-style = "snake_case"
+bad-names = ["foo", "bar", "baz", "toto", "tutu", "tata"]
+class-attribute-naming-style = "any"
+class-naming-style = "PascalCase"
+const-naming-style = "UPPER_CASE"
+docstring-min-length = -1
+function-naming-style = "snake_case"
+good-names = [
+    "i",
+    "j",
+    "k",
+    "ex",
+    "Run",
+    "_",
+    "x1",
+    "x2",
+    "y1",
+    "y2",
+    "x",
+    "y",
+    "r",
+    "id",
+    "type",
+    "xs",
+    "ys",
+    "i",
+    "p",
+    "f",
+]
+include-naming-hint = "no"
+inlinevar-naming-style = "any"
+method-naming-style = "snake_case"
+module-naming-style = "snake_case"
+no-docstring-rgx = "^_"
+property-classes = "abc.abstractproperty"
+variable-naming-style = "snake_case"
+
+
+[tool.pylint.string]
+check-quote-consistency = "no"
+check-str-concat-over-line-jumps = "no"
+
+[tool.pylint.imports]
+allow-wildcard-with-all = "no"
+analyse-fallback-blocks = "no"
+deprecated-modules = ["optparse", "tkinter.tix"]
+known-third-party = ["enchant", "ote_sdk"]
+
+[tool.pylint.classes]
+defining-attr-methods = ["__init__", "__new__", "setUp", "__post_init__"]
+exclude-protected = ["_asdict", "_fields", "_replace", "_source", "_make"]
+valid-classmethod-first-arg = "cls"
+valid-metaclass-classmethod-first-arg = "cls"
+
+[tool.pylint.design]
+max-args = 7
+max-attributes = 7
+max-bool-expr = 5
+max-branches = 12
+max-locals = 15
+max-parents = 7
+max-public-methods = 20
+max-returns = 6
+max-statements = 50
+min-public-methods = 2
+
+
+[tool.pylint.exceptions]
+overgeneral-exceptions = ["BaseException", "Exception"]
+extension-pkg-whitelist = "cv2"
