@@ -18,7 +18,7 @@ from typing import Optional
 
 from adapters.anomalib.callbacks import ProgressCallback, ScoreReportingCallback
 from adapters.anomalib.data import OTEAnomalyDataModule
-from adapters.anomalib.logging import get_logger
+from adapters.anomalib.logger import get_logger
 from anomalib.utils.callbacks import (
     MetricsConfigurationCallback,
     MinMaxNormalizationCallback,
@@ -28,7 +28,8 @@ from ote_sdk.entities.model import ModelEntity
 from ote_sdk.entities.train_parameters import TrainParameters
 from ote_sdk.usecases.tasks.interfaces.training_interface import ITrainingTask
 from pytorch_lightning import Trainer, seed_everything
-from tasks import InferenceTask
+
+from .inference import InferenceTask
 
 logger = get_logger(__name__)
 

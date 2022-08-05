@@ -4,11 +4,11 @@ Exportable code is a .zip archive that contains simple demo to get and visualize
 
 ## Structure of generated zip:
 
-* model
+- model
   - `model.xml`
   - `model.bin`
   - `config.json`
-* python
+- python
   - model_wrappers (Optional)
     - `__init__.py`
     - model_wrappers required to run demo
@@ -20,12 +20,14 @@ Exportable code is a .zip archive that contains simple demo to get and visualize
 > **NOTE**: Zip archive contains model_wrappers when [ModelAPI](https://github.com/openvinotoolkit/open_model_zoo/tree/master/demos/common/python/openvino/model_zoo/model_api) has no appropriate standard model wrapper for the model.
 
 ## Prerequisites
-* [Python 3.8](https://www.python.org/downloads/)
-* [Git](https://git-scm.com/)
+
+- [Python 3.8](https://www.python.org/downloads/)
+- [Git](https://git-scm.com/)
 
 ## Install requirements to run demo
 
 1. Install [prerequisites](#prerequisites). You may also need to [install pip](https://pip.pypa.io/en/stable/installation/). For example, on Ubuntu execute the following command to get pip installed:
+
    ```
    sudo apt install python3-pip
    ```
@@ -33,6 +35,7 @@ Exportable code is a .zip archive that contains simple demo to get and visualize
 2. Create clean virtual environment:
 
    One of the possible ways for creating a virtual environment is to use `virtualenv`:
+
    ```
    python -m pip install virtualenv
    python -m virtualenv <directory_for_environment>
@@ -41,11 +44,13 @@ Exportable code is a .zip archive that contains simple demo to get and visualize
    Before starting to work inside virtual environment, it should be activated:
 
    On Linux and macOS:
+
    ```
    source <directory_for_environment>/bin/activate
    ```
 
    On Windows:
+
    ```
    .\<directory_for_environment>\Scripts\activate
    ```
@@ -55,9 +60,11 @@ Exportable code is a .zip archive that contains simple demo to get and visualize
    ```
    python -m pip install wheel
    ```
+
    > **NOTE**: On Linux and macOS, you may need to type `python3` instead of `python`.
 
 3. Install requirements in the environment:
+
    ```
    python -m pip install -r requirements.txt
    ```
@@ -65,11 +72,13 @@ Exportable code is a .zip archive that contains simple demo to get and visualize
 4. Add `model_wrappers` package to PYTHONPATH:
 
    On Linux and macOS:
+
    ```
    export PYTHONPATH=$PYTHONPATH:/path/to/model_wrappers
    ```
 
    On Windows:
+
    ```
    set PYTHONPATH=%PYTHONPATH%;/path/to/model_wrappers
    ```
@@ -115,6 +124,7 @@ You can press `Q` to stop inference during demo running.
 ## Troubleshooting
 
 1. If you have access to the Internet through the proxy server only, please use pip with proxy call as demonstrated by command below:
+
    ```
    python -m pip install --proxy http://<usr_name>:<password>@<proxyserver_name>:<port#> <pkg_name>
    ```

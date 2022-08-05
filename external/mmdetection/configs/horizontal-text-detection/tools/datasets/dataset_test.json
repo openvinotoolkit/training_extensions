@@ -1,5 +1,5 @@
 [
-     {
+  {
     "name": "ICDAR2013DatasetConverter",
     "kwargs": {
       "images_folder": "icdar2013/Challenge2_Test_Task12_Images",

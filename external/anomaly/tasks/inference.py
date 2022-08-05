@@ -25,9 +25,9 @@ from typing import Dict, List, Optional, Union
 
 import torch
 from adapters.anomalib.callbacks import AnomalyInferenceCallback, ProgressCallback
-from adapters.anomalib.configs import get_anomalib_config
+from adapters.anomalib.config import get_anomalib_config
 from adapters.anomalib.data import OTEAnomalyDataModule
-from adapters.anomalib.logging import get_logger
+from adapters.anomalib.logger import get_logger
 from anomalib.models import AnomalyModule, get_model
 from anomalib.utils.callbacks import (
     MetricsConfigurationCallback,

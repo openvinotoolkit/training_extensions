@@ -23,7 +23,7 @@ from typing import Dict, Optional
 import torch
 from adapters.anomalib.callbacks import ProgressCallback
 from adapters.anomalib.data import OTEAnomalyDataModule
-from adapters.anomalib.logging import get_logger
+from adapters.anomalib.logger import get_logger
 from anomalib.models import AnomalyModule, get_model
 from anomalib.utils.callbacks import (
     MetricsConfigurationCallback,

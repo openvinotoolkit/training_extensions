@@ -19,7 +19,7 @@ Anomaly Dataset Utils
 from typing import Dict, List, Optional, Union
 
 import numpy as np
-from adapters.anomalib.logging import get_logger
+from adapters.anomalib.logger import get_logger
 from anomalib.pre_processing import PreProcessor
 from omegaconf import DictConfig, ListConfig
 from ote_sdk.entities.datasets import DatasetEntity
@@ -162,7 +162,7 @@ class OTEAnomalyDataModule(LightningDataModule):
             num_normal = len([item for item in dataset if not item.get_shapes_labels()[0].is_anomalous])
             num_anomalous = len([item for item in dataset if item.get_shapes_labels()[0].is_anomalous])
             logger.info(
-                "'%s' subset size: Total '%d' images. " "Normal: '%d', images. Anomalous: '%d' images",
+                "'%s' subset size: Total '%d' images. Normal: '%d', images. Anomalous: '%d' images",
                 subset,
                 num_items,
                 num_normal,

@@ -20,7 +20,7 @@ from typing import Any, List
 
 import numpy as np
 import pytorch_lightning as pl
-from adapters.anomalib.logging import get_logger
+from adapters.anomalib.logger import get_logger
 from anomalib.models import AnomalyModule
 from anomalib.post_processing import anomaly_map_to_color_map
 from ote_sdk.entities.datasets import DatasetEntity

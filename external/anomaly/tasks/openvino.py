@@ -25,8 +25,8 @@ from zipfile import ZipFile
 
 import adapters.anomalib.exportable_code
 import numpy as np
-from adapters.anomalib.configs import get_anomalib_config
-from adapters.anomalib.logging import get_logger
+from adapters.anomalib.config import get_anomalib_config
+from adapters.anomalib.logger import get_logger
 from addict import Dict as ADDict
 from anomalib.deploy import OpenVINOInferencer
 from anomalib.post_processing import anomaly_map_to_color_map
