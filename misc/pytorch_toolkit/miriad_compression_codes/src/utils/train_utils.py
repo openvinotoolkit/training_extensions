@@ -1,12 +1,12 @@
-import os
-import torch
-import torchvision
+from sched import scheduler
+import torch, torchvision, os
+from torch.utils import data
 from torch.backends import cudnn
 import numpy as np
 from termcolor import colored
 import json
 import random
-from torch.utils import data
+from tqdm import tqdm as tq
 from .dataloader import CustomDatasetPhase1, CustomDatasetPhase2
 from .model import AutoEncoder, Decoder
 from .evaluators import compare_psnr_batch, compare_ssim_batch
@@ -20,7 +20,6 @@ def get_efficient_net_parameters(iterate, phi):
     beta = [np.sqrt(phi/i) for i in np.array(alpha)]
     beta = np.array(beta)
     return alpha, beta
-
 
 def load_model(alpha=1, beta=1, eff_flag=False, it_no=0, depth=3, width=96, phase=1, phi=1):
     if phase == 1:
@@ -44,67 +43,54 @@ def load_model(alpha=1, beta=1, eff_flag=False, it_no=0, depth=3, width=96, phas
     return model
 
 
-def my_collate(batch):
-    final_data_256 = []
-    final_target_256 = []
-    final_data_128 = []
-    final_target_128 = []
-    data = [torch.Tensor(item[0]) for item in batch]
-    target = [item[1] for item in batch]
-    for i in range(len(target)):
-        if target[i].shape[-1] == 256:
-            final_data_256.append(data[i])
-            final_target_256.append(target[i])
-        else:
-            final_data_128.append(data[i])
-            final_target_128.append(target[i])
+def train_model_phase1(config, train_dataloader, model, optimizer, msecrit, epoch, alpha, beta, it_no):
 
-    yield torch.stack(final_data_256), torch.stack(final_target_256)
-    yield torch.stack(final_data_128), torch.stack(final_target_128)
-
-
-def train_model_phase1(config, train_dataset, model,
-                       optimizer, msecrit, epoch,
-                       alpha, beta, it_no):
-
-    for idx, (images, labels) in enumerate(train_dataset):
+    for idx, (img256, img128) in enumerate(tq(train_dataloader)):
         # The data fetch loop
         if torch.cuda.is_available() and config['gpu']:
-            images, labels = images.cuda(), labels.cuda()
+            # images, labels = images.cuda(), labels.cuda()
+            img256, img128 = img256.cuda(),img128.cuda()
+            
         optimizer.zero_grad()  # zero out grads
+        output256 = model(img256) # forward pass
+        output128 = model(img128) # forward pass
 
-        output = model(images)
-        loss = msecrit(output, labels)
+        loss1 = msecrit(output256, img256)
+        loss2 = msecrit(output128, img128)
+        total_loss = loss1 + loss2
+        total_loss_r = total_loss.item()
+
+
         # compute the required metrics
-        ssim = compare_ssim_batch(
-            labels.detach().cpu().numpy(), output.detach().cpu().numpy())
-        psnr = compare_psnr_batch(
-            labels.detach().cpu().numpy(), output.detach().cpu().numpy())
-        psnr = 20.0 * np.log10(psnr)
+        ssim256 = compare_ssim_batch(img256.detach().cpu().numpy(), output256.detach().cpu().numpy())
+        psnr256 = compare_psnr_batch(img256.detach().cpu().numpy(), output256.detach().cpu().numpy())
+        psnr256 = 20.0 * np.log10(psnr256)
+
+        ssim128 = compare_ssim_batch(img128.detach().cpu().numpy(), output128.detach().cpu().numpy())
+        psnr128 = compare_psnr_batch(img128.detach().cpu().numpy(), output128.detach().cpu().numpy())
+        psnr128 = 20.0 * np.log10(psnr128)
 
         if config['efficient_net']:
             if idx % config['interval'] == 0:
                 print('{tag} {0:4d}/{1:4d}/{2:4d} -> Loss: {3:.8f}, \
                         pSNR: {4:.8f}dB, SSIM: {5:.8f}, alpha: {6: .8f}, \
                         beta: {7: .8f}'.format(idx, epoch, config['epochs'],
-                                               loss.item(
-                ), psnr, ssim, alpha[it_no], beta[it_no],
-                    tag=colored('[Training]', 'yellow')))
+                        loss2.item(), psnr128, ssim128, alpha[it_no], beta[it_no], tag=colored('[Training]', 'yellow')))
+			# 	print('{tag} {0:4d}/{1:4d}/{2:4d} -> Loss: {3:.8f}, pSNR: {4:.8f}dB, SSIM: {5:.8f}'.format(
+			# 		idx, epoch, args.epochs, loss1.item(), psnr256, ssim256, tag=colored('[Training]','red')))
         else:
             if idx % config['interval'] == 0:
                 print('{tag} {0:4d}/{1:4d}/{2:4d} -> Loss: {3:.8f}, \
                         pSNR: {4:.8f}dB, \
-                        SSIM: {5:.8f}'.format(idx, epoch, config['epochs'],
-                                              loss.item(), psnr, ssim,
-                                              tag=colored('[Training]', 'yellow')))
+                        SSIM: {5:.8f}'.format(idx, epoch, config['epochs'], 
+                        loss1.item(), psnr256, ssim256, tag=colored('[Training]', 'red')))
 
-        loss.backward()  # backward
+        total_loss.backward()  # backward
         optimizer.step()  # weight update
+    # schedular.step()
 
 
-def train_model_phase2(config, train_dataloader, model,
-                       optimizer, msecrit, epoch,
-                       alpha, beta, i):
+def train_model_phase2(config, train_dataloader, model, optimizer, msecrit, epoch, alpha, beta, i):
 
     for idx, (imageset1, imageset2) in enumerate(train_dataloader):
         loss1, loss2 = 0., 0.
@@ -167,6 +153,7 @@ def train_model_phase2(config, train_dataloader, model,
 
         loss.backward()  # backward
         optimizer.step()  # weight update
+    # schedular.step()
 
 
 def validate_model_phase1(config, test_dataloader, model, msecrit):
@@ -245,7 +232,7 @@ def train_model(config):
         train_dataloader = data.DataLoader(train_dataset,
                                            batch_size=config['batch_size'],
                                            num_workers=0, pin_memory=True,
-                                           shuffle=True, collate_fn=my_collate)
+                                           shuffle=True)
 
         # Dataset & dataloader for inference
         path_test_latent = config['test_data'] + "latent/"
@@ -278,8 +265,7 @@ def train_model(config):
             model = model.cuda()
         # usual optimizer instance
         optimizer = torch.optim.Adam(model.parameters())
-        schedular = torch.optim.lr_scheduler.StepLR(
-            optimizer, step_size=10, gamma=0.75)  # schedular instance
+        schedular = torch.optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.75)  # schedular instance
         start_epoch = 0
         model_file = '.'.join([config['model_file_name'], 'pth'])
 
@@ -294,8 +280,7 @@ def train_model(config):
                 schedular.load_state_dict(loaded_file['schedular_state'])
                 start_epoch = loaded_file['epoch'] + 1
 
-                print('{tag} resuming from saved model'.format(
-                    tag=colored('[Saving]', 'red')))
+                print('{tag} resuming from saved model'.format(tag=colored('[Saving]', 'red')))
                 del loaded_file
 
         # For logging purpose; read anch chk for val decr : val in 2nd row < 1st row
