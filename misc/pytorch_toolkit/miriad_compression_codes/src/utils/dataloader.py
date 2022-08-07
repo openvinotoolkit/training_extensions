@@ -7,27 +7,29 @@ import pandas as pd
 
 
 class CustomDatasetPhase1(data.Dataset):
-
-    def __init__(self, path_to_dataset,
-                 transform_images=None, transform_masks=None,
-                 images_path_rel='.', masks_path_rel='.',
-                 preserve_names=False):
-        self.path_to_dataset = os.path.abspath(path_to_dataset)  # root folder of the dataset
-        self.images_path_rel = images_path_rel  # relative path to images
-        # relative path to masks (same as images)
-        self.masks_path_rel = masks_path_rel
-        self.transform_images = transform_images  # transforms
-        self.transform_masks = transform_masks  # transforms
-        self.preserve_names = preserve_names  # not important, debugging stuff
+	
+    def __init__(self, path_to_dataset, files256=None,files128=None,split=None,
+				transform_images = None, transform_masks = None,
+				images_path_rel = '.', masks_path_rel = '.',
+				preserve_names = False):
+        self.path_to_dataset = os.path.abspath(path_to_dataset) # root folder of the CBIS-DDSM dataset
+        self.files256 = files256
+        self.files128 = files128
+        self.images_path_rel = images_path_rel # relative path to images
+        self.masks_path_rel = masks_path_rel # relative path to masks (same as images)
+        self.transform_images = transform_images # transforms
+        self.transform_masks = transform_masks # transforms
+        self.preserve_names = preserve_names # not important, debugging stuff
+        self.split = split
+        self.test_files = os.listdir(self.path_to_dataset)
 
         # This is the list of all samples
-        self.cropimages = os.listdir(os.path.join(
-            self.path_to_dataset, self.images_path_rel))
+        self.cropimages = os.listdir(os.path.join(self.path_to_dataset, self.images_path_rel))
 
         # choose random samples for one epoch
         self.choose_random_subset()
 
-    def choose_random_subset(self, how_many=0):
+    def choose_random_subset(self, how_many = 0):
         # chooses 'how_many' number of samples and discard the rest
         if how_many == 0:
             self.cropsubset = self.cropimages
@@ -35,31 +37,47 @@ class CustomDatasetPhase1(data.Dataset):
             self.cropsubset = random.sample(self.cropimages, how_many)
 
     def __len__(self):
-        return len(self.cropsubset)
+        if self.split == 'train':
+            return min(len(self.files256),len(self.files128))
+        else:
+            return len(os.listdir(self.path_to_dataset))
 
     def __getitem__(self, i):
+        # indexing function
 
         if not hasattr(self, 'cropsubset'):
-            # if not chosen a subset, randomly choose the default 'how_many'
+            # if not chosen a subset, randomly chose the default 'how_many'
             self.choose_random_subset()
 
-        image = Image.open(os.path.join(self.path_to_dataset,
-                           self.images_path_rel, self.cropsubset[i]))
-        mask = Image.open(os.path.join(self.path_to_dataset,
-                          self.masks_path_rel, self.cropsubset[i]))
+        # Read the images and masks (same as images)
+        # image = Image.open(os.path.join(self.path_to_dataset, self.images_path_rel, self.cropsubset[i]))
+        # mask = Image.open(os.path.join(self.path_to_dataset, self.masks_path_rel, self.cropsubset[i]))
+        if self.split == 'train':
+            fname256 = self.files256[i]
+            fname128 = []
+            image256 = Image.open(os.path.join(self.path_to_dataset, fname256))
+            image128 = Image.open(os.path.join(self.path_to_dataset, fname128))
+            # mask = Image.open(os.path.join(self.path_to_dataset, self.masks_path_rel, self.cropsubset[i]))
 
-        # usual transformation apply
-        if self.transform_images is not None:
-            image = self.transform_images(image)
-        if self.transform_masks is not None:
-            mask = self.transform_masks(mask)
+            # usual transformation apply
+            if self.transform_images is not None:
+                image256 = self.transform_images(image256)
+                image128 = self.transform_images(image128)
+            # if self.transform_masks is not None:
+            # 	mask = self.transform_masks(mask)
 
-        if self.preserve_names:
-            return image, mask, self.cropsubset[i]
+            # debugging stuff, not important
+            # if self.preserve_names:
+            # 	return image256, image128, self.cropsubset[i]
+            # else:
+            return image256, image128
         else:
-            return image, mask
-
-
+            image = Image.open(os.path.join(self.path_to_dataset,self.test_files[i]))
+            if self.transform_images is not None:
+                image = self.transform_images(image)
+            return image, self.test_files[i]
+    
+    
 class CustomDatasetPhase2(data.Dataset):
 
     def __init__(self, path_to_latent, path_to_gdtruth,

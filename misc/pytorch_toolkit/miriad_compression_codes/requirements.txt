@@ -13,4 +13,5 @@ matplotlib==3.5.2
 termcolor=1.1.0
 huffman
 gdown
+tqdm
 pytest
