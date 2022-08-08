@@ -91,6 +91,7 @@ class TestLabelEntityMapper:
             "domain": "DETECTION",
             "creation_date": DatetimeMapper.forward(cur_date),
             "is_empty": False,
+            "is_anomalous": False,
         }
 
         deserialized = LabelMapper.backward(serialized)
@@ -151,6 +152,7 @@ class TestLabelSchemaEntityMapper:
                     "domain": "CLASSIFICATION",
                     "creation_date": DatetimeMapper.forward(cur_date),
                     "is_empty": False,
+                    "is_anomalous": False,
                 },
                 "1": {
                     "_id": "1",
@@ -160,6 +162,7 @@ class TestLabelSchemaEntityMapper:
                     "domain": "CLASSIFICATION",
                     "creation_date": DatetimeMapper.forward(cur_date),
                     "is_empty": False,
+                    "is_anomalous": False,
                 },
                 "2": {
                     "_id": "2",
@@ -169,6 +172,7 @@ class TestLabelSchemaEntityMapper:
                     "domain": "CLASSIFICATION",
                     "creation_date": DatetimeMapper.forward(cur_date),
                     "is_empty": False,
+                    "is_anomalous": False,
                 },
             },
         }

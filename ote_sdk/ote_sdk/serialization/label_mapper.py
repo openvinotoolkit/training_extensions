@@ -67,6 +67,7 @@ class LabelMapper:
             "domain": str(instance.domain),
             "creation_date": DatetimeMapper.forward(instance.creation_date),
             "is_empty": instance.is_empty,
+            "is_anomalous": instance.is_anomalous,
         }
 
     @staticmethod
@@ -86,6 +87,7 @@ class LabelMapper:
             domain=label_domain,
             creation_date=DatetimeMapper.backward(instance["creation_date"]),
             is_empty=instance.get("is_empty", False),
+            is_anomalous=instance.get("is_anomalous", False),
         )
         return label
 

@@ -30,15 +30,15 @@ def get_dataset_class(task_type):
     """
 
     if task_type == TaskType.ANOMALY_CLASSIFICATION:
-        from ote_anomalib.data.dataset import AnomalyClassificationDataset
+        from adapters.anomalib.data.dataset import AnomalyClassificationDataset
 
         return AnomalyClassificationDataset
     if task_type == TaskType.ANOMALY_DETECTION:
-        from ote_anomalib.data.dataset import AnomalyDetectionDataset
+        from adapters.anomalib.data.dataset import AnomalyDetectionDataset
 
         return AnomalyDetectionDataset
     if task_type == TaskType.ANOMALY_SEGMENTATION:
-        from ote_anomalib.data.dataset import AnomalySegmentationDataset
+        from adapters.anomalib.data.dataset import AnomalySegmentationDataset
 
         return AnomalySegmentationDataset
     if task_type == TaskType.CLASSIFICATION:
