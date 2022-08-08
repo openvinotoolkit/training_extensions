@@ -336,29 +336,11 @@ tiling_parameters:
     visible_in_ui: true
     warning: null
 
-  tile_iou_thres:
-    header: Tile IoU Threshold
-    description: Tile IoU Threshold
-    affects_outcome_of: TRAINING
-    default_value: 0.45
-    min_value: 0.0
-    max_value: 1.0
-    type: FLOAT
-    editable: true
-    ui_rules:
-      action: DISABLE_EDITING
-      operator: AND
-      rules: []
-      type: UI_RULES
-    value: 0.45
-    visible_in_ui: true
-    warning: null
-
   tile_max_number:
-    header: Max object per tile
-    description: Max object per tile
+    header: Max object per image
+    description: Max object per image
     affects_outcome_of: TRAINING
-    default_value: 200
+    default_value: 1500
     min_value: 0
     max_value: 9223372036854775807
     type: INTEGER
@@ -368,14 +350,14 @@ tiling_parameters:
       operator: AND
       rules: []
       type: UI_RULES
-    value: 200
+    value: 1500
     visible_in_ui: true
     warning: null
 
-  tile_filter_empty:
-    header: Filter empty tile in training
-    description: Filter empty tile in training
-    default_value: true
+  enable_adaptive_params:
+    header: Enable adaptive tiling parameters
+    description: Config tiling parameters adaptively based on annotated dataset statistic
+    default_value: false
     editable: true
     affects_outcome_of: TRAINING
     type: BOOLEAN
@@ -385,6 +367,24 @@ tiling_parameters:
       rules: []
       type: UI_RULES
     value: true
+    visible_in_ui: true
+    warning: null
+
+  adaptive_object_tile_ratio:
+    header: Object Tile Ratio
+    description: Filter empty tile in training
+    affects_outcome_of: TRAINING
+    default_value: 0.01
+    min_value: 0.0
+    max_value: 1.0
+    type: FLOAT
+    editable: true
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: 0.01
     visible_in_ui: true
     warning: null
 

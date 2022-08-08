@@ -151,21 +151,6 @@ class BaseConfig(ConfigurableParameters):
                                 visible_in_ui=True)
 
     class BaseTilingParameters(ParameterGroup):
-        # enable_training_tiling = configurable_boolean(
-        #     default_value=False,
-        #     header="Enable tiling on training dataset",
-        #     description="Enable tiling on training dataset",
-        #     warning="",
-        #     affects_outcome_of=ModelLifecycle.TRAINING
-        # )
-
-        # enable_inference_tiling = configurable_boolean(
-        #     default_value=False,
-        #     header="Enable tiling on inference dataset",
-        #     description="Enable tiling on inference dataset",
-        #     warning="",
-        #     affects_outcome_of=ModelLifecycle.INFERENCE
-        # )
 
         enable_tiling = configurable_boolean(
             default_value=False,
@@ -193,28 +178,29 @@ class BaseConfig(ConfigurableParameters):
             affects_outcome_of=ModelLifecycle.NONE
         )
 
-        tile_iou_thres = configurable_float(
-            header="Tile IoU Threshold",
-            description="Tile IoU Threshold",
-            default_value=0.45,
-            min_value=0.0,
-            max_value=1.0,
-            affects_outcome_of=ModelLifecycle.NONE
-        )
-
         tile_max_number = configurable_integer(
-            header="Max object per tile",
-            description="Max object per tile",
-            default_value=200,
+            header="Max object per image",
+            description="Max object per image",
+            default_value=1500,
             min_value=0,
             max_value=maxsize,
             affects_outcome_of=ModelLifecycle.NONE
         )
 
-        tile_filter_empty = configurable_boolean(
+        enable_adaptive_params = configurable_boolean(
             default_value=True,
-            header="Filter empty tile in training",
-            description="Filter empty tile in training",
+            header="Enable adaptive tiling parameters",
+            description="Enable adaptive tiling parameters",
+            warning="",
+            affects_outcome_of=ModelLifecycle.NONE
+        )
+
+        adaptive_object_tile_ratio = configurable_float(
+            header="Object Tile Ratio",
+            description="Object Tile Ratio",
+            default_value=0.01,
+            min_value=0.0,
+            max_value=1.0,
             warning="",
             affects_outcome_of=ModelLifecycle.NONE
         )

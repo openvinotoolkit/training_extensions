@@ -157,7 +157,7 @@ class BaseTask:
         """
         logger.info('initializing....')
         self._init_recipe()
-        self._overwrite_parameters()
+        self._overwrite_parameters(dataset=dataset)
         if "custom_hooks" in self.override_configs:
             override_custom_hooks = self.override_configs.pop("custom_hooks")
             for override_custom_hook in override_custom_hooks:
@@ -221,7 +221,7 @@ class BaseTask:
         """
         return None
 
-    def _overwrite_parameters(self):
+    def _overwrite_parameters(self, *args, **kwargs):
         """ Overwrite mmX config parameters with TaskEnvironment hyperparameters. 
 
         Hyper Parameters defined in TaskEnvironment will overwrite the below mmX config parameters.

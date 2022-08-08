@@ -14,6 +14,7 @@ from mmcv.utils import ConfigDict
 from detection_tasks.apis.detection.config_utils import remove_from_config
 from detection_tasks.apis.detection.ote_utils import TrainingProgressCallback, InferenceProgressCallback
 from detection_tasks.extension.utils.hooks import OTELoggerHook
+from detection_tasks.extension.datasets import adaptive_tile_params
 from mpa_tasks.apis import BaseTask, TrainType
 from mpa_tasks.apis.detection import DetectionConfig
 from mpa import MPAConstants
@@ -180,24 +181,37 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
             output_model.set_data("label_schema.json", label_schema_to_bytes(self._task_environment.label_schema))
         logger.info('Exporting completed')
 
-    def _overwrite_parameters(self):
-        """ Overwrite config parameters with TaskEnvironment hyperparameters and tiling parameters. """
+    def _overwrite_parameters(self, *args, **kwrags):
+        """ Overwrite config parameters with TaskEnvironment hyperparameters and config tiling parameters. """
 
-        super()._overwrite_parameters()
+        super()._overwrite_parameters(*args, **kwrags)
         if bool(self._hyperparams.tiling_parameters.enable_tiling):
+            if bool(self._hyperparams.tiling_parameters.enable_adaptive_params):
+                adaptive_object_tile_ratio = float(self._hyperparams.tiling_parameters.adaptive_object_tile_ratio)
+                tile_cfg = adaptive_tile_params(kwrags['dataset'], adaptive_object_tile_ratio)
+                if tile_cfg.get('tile_size'):
+                    self._hyperparams.tiling_parameters.tile_size = tile_cfg.get('tile_size')
+                if tile_cfg.get('tile_overlap'):
+                    self._hyperparams.tiling_parameters.tile_overlap = tile_cfg.get('tile_overlap')
+                if tile_cfg.get('tile_max_number'):
+                    self._hyperparams.tiling_parameters.tile_max_number = tile_cfg.get('tile_max_number')
+
             tile_params = ConfigDict(
                 data=ConfigDict(
                     train=ConfigDict(
                         tile_size=int(self._hyperparams.tiling_parameters.tile_size),
-                        overlap_ratio=float(self._hyperparams.tiling_parameters.tile_overlap)
+                        overlap_ratio=float(self._hyperparams.tiling_parameters.tile_overlap),
+                        max_per_img=int(self._hyperparams.tiling_parameters.tile_max_number)
                     ),
                     val=ConfigDict(
                         tile_size=int(self._hyperparams.tiling_parameters.tile_size),
-                        overlap_ratio=float(self._hyperparams.tiling_parameters.tile_overlap)
+                        overlap_ratio=float(self._hyperparams.tiling_parameters.tile_overlap),
+                        max_per_img=int(self._hyperparams.tiling_parameters.tile_max_number)
                     ),
                     test=ConfigDict(
                         tile_size=int(self._hyperparams.tiling_parameters.tile_size),
-                        overlap_ratio=float(self._hyperparams.tiling_parameters.tile_overlap)
+                        overlap_ratio=float(self._hyperparams.tiling_parameters.tile_overlap),
+                        max_per_img=int(self._hyperparams.tiling_parameters.tile_max_number)
                     )
                 )
             )
@@ -296,7 +310,6 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         # Copied from ote/apis/detection/config_utils.py
         # Added 'unlabeled' data support
 
-        # TODO[EUGENE]: PATCH TILING DATASET
         def patch_color_conversion(pipeline):
             # Default data format for OTE is RGB, while mmdet uses BGR, so negate the color conversion flag.
             for pipeline_step in pipeline:
