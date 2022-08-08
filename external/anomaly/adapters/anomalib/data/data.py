@@ -64,7 +64,7 @@ class OTEAnomalyDataset(Dataset):
         self.dataset = dataset
         self.task_type = task_type
 
-        #TODO: distinguish between train and val config here
+        # TODO: distinguish between train and val config here
         self.pre_processor = PreProcessor(
             config=config.dataset.transform_config.train,
             image_size=tuple(config.dataset.image_size),
