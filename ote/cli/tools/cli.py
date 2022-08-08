@@ -19,13 +19,13 @@ OTE CLI entry point.
 import argparse
 import sys
 
-from .demo import main as ote_demo
-from .deploy import main as ote_deploy
-from .eval import main as ote_eval
-from .export import main as ote_export
-from .find import main as ote_find
-from .optimize import main as ote_optimize
-from .train import main as ote_train
+from ote.cli.tools.demo import main as ote_demo
+from ote.cli.tools.deploy import main as ote_deploy
+from ote.cli.tools.eval import main as ote_eval
+from ote.cli.tools.export import main as ote_export
+from ote.cli.tools.find import main as ote_find
+from ote.cli.tools.optimize import main as ote_optimize
+from ote.cli.tools.train import main as ote_train
 
 __all__ = [
     "ote_demo",
