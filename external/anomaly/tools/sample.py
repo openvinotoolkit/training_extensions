@@ -24,13 +24,12 @@ import shutil
 from argparse import Namespace
 from typing import Any, Dict, Optional, Type, Union
 
-from ote_anomalib import AnomalyNNCFTask, OpenVINOAnomalyTask
-from ote_anomalib.data.dataset import (
+from adapters.anomalib.data.dataset import (
     AnomalyClassificationDataset,
     AnomalyDetectionDataset,
     AnomalySegmentationDataset,
 )
-from ote_anomalib.logging import get_logger
+from adapters.anomalib.logger import get_logger
 from ote_sdk.configuration.helper import create as create_hyper_parameters
 from ote_sdk.entities.inference_parameters import InferenceParameters
 from ote_sdk.entities.label_schema import LabelSchemaEntity
@@ -46,6 +45,7 @@ from ote_sdk.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
 from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType
 from ote_sdk.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from ote_sdk.usecases.tasks.interfaces.optimization_interface import OptimizationType
+from tasks import NNCFTask, OpenVINOTask
 
 logger = get_logger(__name__)
 
@@ -115,8 +115,8 @@ class OteAnomalyTask:
         self.torch_task = self.create_task(task="base")
 
         self.trained_model: ModelEntity
-        self.openvino_task: OpenVINOAnomalyTask
-        self.nncf_task: AnomalyNNCFTask
+        self.openvino_task: OpenVINOTask
+        self.nncf_task: NNCFTask
         self.results = {"category": dataset_path}
         self.seed = seed
 
@@ -344,7 +344,7 @@ def parse_args() -> Namespace:
     )
     parser.add_argument(
         "--model_template_path",
-        default="./configs/anomaly_classification/padim/template.yaml",
+        default="./templates/classification/padim/template.yaml",
     )
     parser.add_argument("--dataset_path", default="./datasets/MVTec")
     parser.add_argument("--category", default="bottle")

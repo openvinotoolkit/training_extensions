@@ -1,5 +1,6 @@
 default_language_version:
   python: python3.8
+  node: 16.15.0
 
 repos:
   - repo: https://github.com/PyCQA/isort

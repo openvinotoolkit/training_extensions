@@ -18,7 +18,8 @@ entrypoints:
 base_model_path: ../../../../deep-object-reid/configs/ote_custom_classification/mobilenet_v3_large_075/template_experimental.yaml
 
 # Capabilities.
-capabilities: []
+capabilities:
+  - compute_representations
 
 # Hyperparameters.
 hyper_parameters:
