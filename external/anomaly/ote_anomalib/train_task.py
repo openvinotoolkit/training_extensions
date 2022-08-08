@@ -17,9 +17,9 @@
 from typing import Optional
 
 from anomalib.utils.callbacks import MinMaxNormalizationCallback
-from ote_anomalib import AnomalyInferenceTask
 from ote_anomalib.callbacks import ProgressCallback, ScoreReportingCallback
 from ote_anomalib.data import OTEAnomalyDataModule
+from ote_anomalib.inference_task import AnomalyInferenceTask
 from ote_anomalib.logging import get_logger
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.model import ModelEntity
@@ -64,7 +64,7 @@ class AnomalyTrainingTask(AnomalyInferenceTask, ITrainingTask):
         callbacks = [
             ProgressCallback(parameters=train_parameters),
             MinMaxNormalizationCallback(),
-            ScoreReportingCallback(parameters=train_parameters)
+            ScoreReportingCallback(parameters=train_parameters),
         ]
 
         self.trainer = Trainer(**config.trainer, logger=False, callbacks=callbacks)

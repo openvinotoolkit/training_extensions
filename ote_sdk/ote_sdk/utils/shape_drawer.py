@@ -654,9 +654,9 @@ class ShapeDrawer(DrawerEntity[AnnotationSceneEntity]):
             )
 
             # get top left corner of imaginary bbox around polygon
-            x_coord = min([point[0] for point in contours])
+            x_coord = min(point[0] for point in contours)
             y_coord = (
-                min([point[1] for point in contours])
+                min(point[1] for point in contours)
                 - self.label_offset_box_shape
                 - content_height
             )
@@ -673,7 +673,7 @@ class ShapeDrawer(DrawerEntity[AnnotationSceneEntity]):
                 # The polygon is too close to the top of the image.
                 # Draw the labels underneath the polygon instead.
                 y_coord = (
-                    max([point[1] for point in contours]) + self.label_offset_box_shape
+                    max(point[1] for point in contours) + self.label_offset_box_shape
                 )
                 flagpole_start_point = Coordinate(x_coord + 1, y_coord)
             else:

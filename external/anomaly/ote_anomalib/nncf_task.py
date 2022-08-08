@@ -29,9 +29,9 @@ from anomalib.utils.callbacks.nncf.utils import (
     is_state_nncf,
     wrap_nncf_model,
 )
-from ote_anomalib import AnomalyInferenceTask
 from ote_anomalib.callbacks import ProgressCallback
 from ote_anomalib.data import OTEAnomalyDataModule
+from ote_anomalib.inference_task import AnomalyInferenceTask
 from ote_anomalib.logging import get_logger
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.model import (

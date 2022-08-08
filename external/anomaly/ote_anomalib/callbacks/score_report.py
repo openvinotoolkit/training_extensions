@@ -31,7 +31,7 @@ class ScoreReportingCallback(Callback):
         else:
             self.score_reporting_callback = None
 
-    def on_validation_epoch_end(self, trainer, pl_module):
+    def on_validation_epoch_end(self, trainer, pl_module):  # pylint: disable=unused-argument
         """
         If score exists in trainer.logged_metrics, report the score.
         """
@@ -41,7 +41,7 @@ class ScoreReportingCallback(Callback):
             print(f"[DEBUG-HPO] logged_metrics = {trainer.logged_metrics}")
             if metric in trainer.logged_metrics:
                 score = float(trainer.logged_metrics[metric])
-                if 1.0 > score:
+                if score < 1.0:
                     score = score + int(trainer.global_step)
                 else:
                     score = -(score + int(trainer.global_step))

@@ -23,24 +23,21 @@ from ote_anomalib.data.mvtec import OteMvtecDataset
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.label_schema import LabelSchemaEntity
 from ote_sdk.entities.model_template import TaskType
-from ote_sdk.test_suite.training_tests_common import (
-    make_paths_be_abs,
-    ROOT_PATH_KEY,
+from ote_sdk.test_suite.training_tests_actions import (
+    BaseOTETestAction,
+    OTETestExportAction,
+    OTETestExportEvaluationAction,
+    OTETestNNCFAction,
+    OTETestNNCFEvaluationAction,
+    OTETestNNCFExportAction,
+    OTETestNNCFExportEvaluationAction,
+    OTETestNNCFGraphAction,
+    OTETestPotAction,
+    OTETestPotEvaluationAction,
+    OTETestTrainingAction,
+    OTETestTrainingEvaluationAction,
 )
-from ote_sdk.test_suite.training_tests_actions import (create_environment_and_task,
-                                                       OTETestTrainingAction,
-                                                       BaseOTETestAction,
-                                                       OTETestTrainingEvaluationAction,
-                                                       OTETestExportAction,
-                                                       OTETestExportEvaluationAction,
-                                                       OTETestPotAction,
-                                                       OTETestPotEvaluationAction,
-                                                       OTETestNNCFAction,
-                                                       OTETestNNCFEvaluationAction,
-                                                       OTETestNNCFExportAction,
-                                                       OTETestNNCFExportEvaluationAction,
-                                                       OTETestNNCFGraphAction)
-
+from ote_sdk.test_suite.training_tests_common import ROOT_PATH_KEY, make_paths_be_abs
 
 logger = logging.getLogger(__name__)
 
@@ -75,17 +72,18 @@ def _get_dataset_params_from_dataset_definitions(dataset_definitions, dataset_na
     return params
 
 
-def _create_anomaly_dataset_and_labels_schema(dataset_params: DatasetParameters, dataset_name: str, task_type: TaskType):
-    logger.debug(f'Path to dataset: {dataset_params.dataset_path}')
+def _create_anomaly_dataset_and_labels_schema(
+    dataset_params: DatasetParameters, dataset_name: str, task_type: TaskType
+):
+    logger.debug(f"Path to dataset: {dataset_params.dataset_path}")
     category_list = [f.path for f in os.scandir(dataset_params.dataset_path) if f.is_dir()]
     items = []
     if "short" in dataset_name:
-        logger.debug(f'Creating short dataset {dataset_name}')
-        items.extend(OteMvtecDataset(path=dataset_params.dataset_path, seed=0, task_type=task_type)
-                     .generate())
+        logger.debug(f"Creating short dataset {dataset_name}")
+        items.extend(OteMvtecDataset(path=dataset_params.dataset_path, seed=0, task_type=task_type).generate())
     else:
         for category in category_list:
-            logger.debug(f'Creating dataset for {category}')
+            logger.debug(f"Creating dataset for {category}")
             items.extend(OteMvtecDataset(path=category, seed=0, task_type=task_type).generate())
     dataset = DatasetEntity(items=items)
     labels = dataset.get_labels()
@@ -93,7 +91,9 @@ def _create_anomaly_dataset_and_labels_schema(dataset_params: DatasetParameters,
     return dataset, labels_schema
 
 
-def get_anomaly_domain_test_action_classes(anomaly_domain_test_train_action: OTETestTrainingAction) -> List[Type[BaseOTETestAction]]:
+def get_anomaly_domain_test_action_classes(
+    anomaly_domain_test_train_action: OTETestTrainingAction,
+) -> List[Type[BaseOTETestAction]]:
     return [
         anomaly_domain_test_train_action,
         OTETestTrainingEvaluationAction,
@@ -107,5 +107,3 @@ def get_anomaly_domain_test_action_classes(anomaly_domain_test_train_action: OTE
         OTETestNNCFExportEvaluationAction,
         OTETestNNCFGraphAction,
     ]
-
-
