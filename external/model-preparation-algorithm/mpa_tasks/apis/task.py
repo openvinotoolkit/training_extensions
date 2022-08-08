@@ -157,9 +157,7 @@ class BaseTask:
         """
         logger.info('initializing....')
         self._init_recipe()
-        recipe_hparams = self._replace_hparam()
-        if len(recipe_hparams) > 0:
-            self._recipe_cfg.merge_from_dict(recipe_hparams)
+        self._overwrite_parameters()
         if "custom_hooks" in self.override_configs:
             override_custom_hooks = self.override_configs.pop("custom_hooks")
             for override_custom_hook in override_custom_hooks:
@@ -172,10 +170,10 @@ class BaseTask:
         # prepare model config
         self._model_cfg = self._init_model_cfg()
 
-        # Remove FP16 config if running on CPU device and revert to FP32 
+        # Remove FP16 config if running on CPU device and revert to FP32
         # https://github.com/pytorch/pytorch/issues/23377
         if not torch.cuda.is_available() and 'fp16' in self._model_cfg:
-            logger.info(f'Revert FP16 to FP32 on CPU device')
+            logger.info('Revert FP16 to FP32 on CPU device')
             if isinstance(self._model_cfg, Config):
                 del self._model_cfg._cfg_dict['fp16']
             elif isinstance(self._model_cfg, ConfigDict):
@@ -223,11 +221,32 @@ class BaseTask:
         """
         return None
 
-    def _substitution_hparam(self) -> dict:
+    def _overwrite_parameters(self):
+        """ Overwrite mmX config parameters with TaskEnvironment hyperparameters. 
+
+        Hyper Parameters defined in TaskEnvironment will overwrite the below mmX config parameters.
+
+        * lr_config.warmup_iters <- learning_parameters.learning_rate_warmup_iters
+        * optimizer.lr <- learning_parameters.learning_rate
+        * data.samples_per_gpu <- learning_parameters.batch_size
+        * data.workers_per_gpu <- learning_parameters.num_workers
+        * runner.max_epochs <- learning_parameters.num_iters
         """
-        initialize recipe hyperparamter as dict.
-        """
-        return dict()
+
+        warmup_iters = int(self._hyperparams.learning_parameters.learning_rate_warmup_iters)
+        lr_config = ConfigDict(warmup_iters=warmup_iters) if warmup_iters > 0 \
+            else ConfigDict(warmup_iters=warmup_iters, warmup=None)
+        new_params = ConfigDict(
+            optimizer=ConfigDict(lr=self._hyperparams.learning_parameters.learning_rate),
+            lr_config=lr_config,
+            data=ConfigDict(
+                samples_per_gpu=int(self._hyperparams.learning_parameters.batch_size),
+                workers_per_gpu=int(self._hyperparams.learning_parameters.num_workers),
+            ),
+            runner=ConfigDict(max_epochs=int(self._hyperparams.learning_parameters.num_iters)),
+        )
+
+        self._recipe_cfg.merge_from_dict(new_params)
 
     def _load_model_state_dict(self, model: ModelEntity):
         if 'weights.pth' in model.model_adapters:

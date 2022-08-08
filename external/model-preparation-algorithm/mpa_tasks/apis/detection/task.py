@@ -180,28 +180,28 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
             output_model.set_data("label_schema.json", label_schema_to_bytes(self._task_environment.label_schema))
         logger.info('Exporting completed')
 
-    # TODO[EUGENE]: MAKE SURE TO CHECK PARENT CLASSES AND OTHER INHERITED TASKS
-    def _replace_hparam(self) -> dict:
-        """ Replace "some" mmdetection config parameters with TaskEnvironment hyperparameters. 
+    def _overwrite_parameters(self):
+        """ Overwrite config parameters with TaskEnvironment hyperparameters and tiling parameters. """
 
-        Hyper Parameters defined in TaskEnvironment will replace "specific" mmdetection config parameters.
-
-        Returns:
-            dict: _description_
-        """
-
-        warmup_iters = int(self._hyperparams.learning_parameters.learning_rate_warmup_iters)
-        lr_config = ConfigDict(warmup_iters=warmup_iters) if warmup_iters > 0 \
-            else ConfigDict(warmup_iters=warmup_iters, warmup=None)
-        return ConfigDict(
-            optimizer=ConfigDict(lr=self._hyperparams.learning_parameters.learning_rate),
-            lr_config=lr_config,
-            data=ConfigDict(
-                samples_per_gpu=int(self._hyperparams.learning_parameters.batch_size),
-                workers_per_gpu=int(self._hyperparams.learning_parameters.num_workers),
-            ),
-            runner=ConfigDict(max_epochs=int(self._hyperparams.learning_parameters.num_iters)),
-        )
+        super()._overwrite_parameters()
+        if bool(self._hyperparams.tiling_parameters.enable_tiling):
+            tile_params = ConfigDict(
+                data=ConfigDict(
+                    train=ConfigDict(
+                        tile_size=int(self._hyperparams.tiling_parameters.tile_size),
+                        overlap_ratio=float(self._hyperparams.tiling_parameters.tile_overlap)
+                    ),
+                    val=ConfigDict(
+                        tile_size=int(self._hyperparams.tiling_parameters.tile_size),
+                        overlap_ratio=float(self._hyperparams.tiling_parameters.tile_overlap)
+                    ),
+                    test=ConfigDict(
+                        tile_size=int(self._hyperparams.tiling_parameters.tile_size),
+                        overlap_ratio=float(self._hyperparams.tiling_parameters.tile_overlap)
+                    )
+                )
+            )
+            self._recipe_cfg.merge_from_dict(tile_params)
 
     def _init_recipe(self):
         logger.info('called _init_recipe()')
@@ -283,7 +283,6 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
 
     def _patch_data_pipeline(self):
         base_dir = os.path.abspath(os.path.dirname(self.template_file_path))
-        # TODO[EUGENE]: CREATE NEW TILING DATA PIPELINE
         if bool(self._hyperparams.tiling_parameters.enable_tiling):
             data_pipeline_path = os.path.join(base_dir, "tile_pipeline.py")
         else:

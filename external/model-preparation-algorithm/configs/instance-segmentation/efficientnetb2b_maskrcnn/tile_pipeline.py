@@ -1,14 +1,14 @@
 dataset_type = 'CocoDataset'
 
-# TODO[EUGENE]: WHAT IMAGE SIZE SHOULD WE USE?
-img_size = (800, 800)
+img_size = (1024, 1024)
 
+# TODO[EUGENE] ADD AUTO CONFIG
 tile_cfg = dict(
     tile_size=400,
     min_area_ratio=0.9,
     overlap_ratio=0.2,
     iou_threshold=0.45,
-    max_per_img=2000,
+    max_per_img=1500,
     filter_empty_gt=True)
 
 img_norm_cfg = dict(
@@ -62,6 +62,7 @@ val_dataset = dict(
         type=__dataset_type,
         ann_file=__data_root + 'annotations/instances_val.json',
         img_prefix=__data_root + 'images/val',
+        test_mode=True,
         pipeline=[dict(type='LoadImageFromFile')]),
     pipeline=test_pipeline,
     **tile_cfg)
@@ -72,6 +73,7 @@ test_dataset = dict(
         type=__dataset_type,
         ann_file=__data_root + 'annotations/instances_test.json',
         img_prefix=__data_root + 'images/test',
+        test_mode=True,
         pipeline=[dict(type='LoadImageFromFile')]),
     pipeline=test_pipeline,
     **tile_cfg)

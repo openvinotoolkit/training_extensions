@@ -273,7 +273,7 @@ tiling_parameters:
     value: true
     visible_in_ui: true
     warning: null
-  
+
   tile_size:
     header: Tile Dimension
     description: Tile Dimension
@@ -309,7 +309,7 @@ tiling_parameters:
     value: 0.2
     visible_in_ui: true
     warning: null
-  
+
   tile_iou_thres:
     header: Tile IoU Threshold
     description: Tile IoU Threshold
