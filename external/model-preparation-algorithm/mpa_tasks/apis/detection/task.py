@@ -262,7 +262,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
 
             if feature_vector is not None:
                 active_score = TensorEntity(name="representation_vector", numpy=feature_vector)
-                dataset_item.append_metadata_item(active_score)
+                dataset_item.append_metadata_item(active_score, model=self._task_environment.model)
 
             if saliency_map is not None:
                 width, height = dataset_item.width, dataset_item.height
