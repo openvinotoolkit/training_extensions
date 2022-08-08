@@ -59,7 +59,7 @@ def ote_templates_root_dir_fx():
 
     logger = logging.getLogger(__name__)
     root = osp.dirname(osp.dirname(osp.realpath(__file__)))
-    root = f"{root}/configs/"
+    root = f"{root}/templates/"
     logger.debug(f"overloaded ote_templates_root_dir_fx: return {root}")
     return root
 
