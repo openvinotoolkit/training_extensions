@@ -3,6 +3,7 @@
 ### 1. Download datasets
 
 Collect or download images with vehicles presented on them. One can download MS-COCO dataset and remain images with cars only.
+
 ```bash
 export DATA_DIR=${WORK_DIR}/data
 wget http://images.cocodataset.org/zips/val2017.zip -P ${DATA_DIR}/

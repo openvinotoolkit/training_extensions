@@ -18,7 +18,8 @@ entrypoints:
 base_model_path: ../../../../mmdetection/configs/custom-object-detection/cspdarknet_YOLOX/template_experimental.yaml
 
 # Capabilities.
-capabilities: []
+capabilities:
+  - compute_representations
 
 # Hyperparameters.
 hyper_parameters:
