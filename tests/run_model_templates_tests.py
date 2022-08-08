@@ -4,7 +4,7 @@ import os
 import sys
 from subprocess import run
 
-from ote_cli.utils.tests import collect_env_vars
+from ote.cli.utils.tests import collect_env_vars
 
 ALGO_ROOT_DIR = "external"
 ALGO_DIRS = [
@@ -14,7 +14,7 @@ ALGO_DIRS = [
 ]
 IMPORTANT_DIRS = [
     "data/",
-    "ote_cli/",
+    "otecli/",
     "ote_sdk/",
     "tests/",
 ]

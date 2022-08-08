@@ -9,8 +9,8 @@ from subprocess import run
 
 from ote_sdk.test_suite.e2e_test_system import e2e_pytest_component
 
-from ote_cli.registry import Registry
-from ote_cli.utils.tests import (
+from ote.cli.registry import Registry
+from ote.cli.utils.tests import (
     collect_env_vars,
     create_venv,
     get_some_vars,
@@ -68,7 +68,7 @@ args = {
     ]
 }
 
-root = '/tmp/ote_cli_det/'
+root = '/tmp/ote/cli_det/'
 ote_dir = os.getcwd()
 
 templates = Registry('external/model-preparation-algorithm').filter(task_type='DETECTION').templates

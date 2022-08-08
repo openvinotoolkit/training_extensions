@@ -132,7 +132,7 @@ MPA_DIR=`realpath submodule`
 echo "export MPA_DIR=${MPA_DIR}" >> ${venv_dir}/bin/activate
 
 # Install OTE CLI
-pip install -e ../../ote_cli || exit 1
+pip install -e ../../ote || exit 1
 
 # Build NNCF extensions
 echo "Build NNCF extensions ..."

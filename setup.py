@@ -4,9 +4,45 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+from importlib.util import module_from_spec, spec_from_file_location
+from pathlib import Path
 from typing import List
 
 from setuptools import find_packages, setup
+
+
+def load_module(name: str = "ote/__init__.py"):
+    """Load Python Module.
+
+    Args:
+        name (str, optional): Name of the module to load.
+            Defaults to "ote/__init__.py".
+    """
+    location = str(Path(__file__).parent / name)
+    spec = spec_from_file_location(name=name, location=location)
+    module = module_from_spec(spec)  # type: ignore
+    spec.loader.exec_module(module)  # type: ignore
+    return module
+
+
+def get_version() -> str:
+    """Get version from `ote.__init__`.
+
+    Version is stored in the main __init__ module in `ote`.
+    The varible storing the version is `__version__`. This function
+    reads `__init__` file, checks `__version__ variable and return
+    the value assigned to it.
+
+    Example:
+        >>> # Assume that __version__ = "0.2.6"
+        >>> get_version()
+        "0.2.6"
+
+    Returns:
+        str: `ote` version.
+    """
+    ote = load_module(name="ote/__init__.py")
+    return ote.__version__
 
 
 def get_required_packages(requirement_files: List[str]) -> List[str]:
@@ -42,18 +78,17 @@ REQUIRED_PACKAGES = get_required_packages(requirement_files=["cli"])
 setup(
     name="ote",
     version="0.2",
-    packages=find_packages(where="ote", exclude=("tools",)),
-    package_dir={"": "ote"},
+    packages=find_packages(exclude=("tests",)),
     install_requires=REQUIRED_PACKAGES,
     entry_points={
         "console_scripts": [
-            "ote=ote_cli.tools.ote:main",
-            "ote_demo=ote_cli.tools.demo:main",
-            "ote_eval=ote_cli.tools.eval:main",
-            "ote_export=ote_cli.tools.export:main",
-            "ote_find=ote_cli.tools.find:main",
-            "ote_train=ote_cli.tools.train:main",
-            "ote_optimize=ote_cli.tools.optimize:main",
+            "ote=ote.cli.tools.ote:main",
+            "ote_demo=ote.cli.tools.demo:main",
+            "ote_eval=ote.cli.tools.eval:main",
+            "ote_export=ote.cli.tools.export:main",
+            "ote_find=ote.cli.tools.find:main",
+            "ote_train=ote.cli.tools.train:main",
+            "ote_optimize=ote.cli.tools.optimize:main",
         ]
     },
 )

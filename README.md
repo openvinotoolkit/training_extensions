@@ -19,7 +19,7 @@ inference.
 ## Repository components
 
 - [OTE SDK](ote_sdk)
-- [OTE CLI](ote_cli)
+- [OTE CLI](ote/cli)
 - [OTE Algorithms](external)
 
 ## Quick start guide

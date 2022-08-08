@@ -30,7 +30,7 @@ from ote_sdk.entities.model_template import TaskType
 from ote_sdk.serialization.label_mapper import LabelSchemaMapper
 from ote_sdk.usecases.adapters.model_adapter import ModelAdapter
 
-from ote_cli.utils.nncf import is_checkpoint_nncf
+from ote.cli.utils.nncf import is_checkpoint_nncf
 
 
 def save_model_data(model, folder):

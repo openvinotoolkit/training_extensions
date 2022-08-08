@@ -17,7 +17,7 @@ import os
 from collections import defaultdict
 from subprocess import run  # nosec
 
-from ote_cli.registry import Registry
+from ote.cli.registry import Registry
 
 from ote_sdk.test_suite.e2e_test_system import e2e_pytest_component
 
@@ -53,21 +53,21 @@ class TestDocs:
             attributes = ["model_template_id", "name", "gigaflops", "size"]
             header = attributes + ["Path"]
             attributes_in_md = {"name": "Name", "model_template_id": "ID", "gigaflops": "Complexity (GFlops)", "size": "Model size (MB)", "Path": "Path"}
-            
+
             table = [" | ".join([attributes_in_md[x] for x in header])] + [" | ".join(["-------" for _ in header])]
-            
+
             for template in sorted(templates, key=lambda x: float(x.gigaflops)):
                 record = [str(getattr(template, attr)) for attr in attributes ]
                 record.append(os.path.relpath(template.model_template_path, './external'))
                 record = " | ".join(record)
                 table += [record]
             return "\n".join(table)
-        
+
         with open("external/README.md", encoding="UTF-8") as read_file:
             full_text = ''
             for line in read_file:
                 full_text += line
-        
+
         registry = Registry(".")
         templates_per_task_type = defaultdict(list)
         for template in sorted(registry.templates, key=lambda x:str(x.task_type)):

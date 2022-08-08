@@ -35,9 +35,9 @@ from ote_sdk.entities.subset import Subset
 from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.entities.train_parameters import TrainParameters, UpdateProgressCallback
 
-from ote_cli.datasets import get_dataset_class
-from ote_cli.utils.importing import get_impl_class
-from ote_cli.utils.io import generate_label_schema, read_model, save_model_data
+from ote.cli.datasets import get_dataset_class
+from ote.cli.utils.importing import get_impl_class
+from ote.cli.utils.io import generate_label_schema, read_model, save_model_data
 
 try:
     import hpopt
@@ -608,7 +608,7 @@ class HpoManager:
 
         HpoManager.remove_empty_keys(hpopt_arguments)
 
-        print(f"[OTE_CLI] [DEBUG-HPO] hpopt args for create hpopt = {hpopt_arguments}")
+        print(f"[OTE CLI] [DEBUG-HPO] hpopt args for create hpopt = {hpopt_arguments}")
 
         self.hpo = hpopt.create(**hpopt_arguments)
 

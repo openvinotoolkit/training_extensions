@@ -11,17 +11,17 @@ repos:
         files: '^ote_sdk/.*\.py'
       - id: isort
         alias: isort_rest
-        name: "isort (ote_cli|external)"
-        files: '^(ote_cli|external/anomaly)/.*\.py'
+        name: "isort (ote/cli|external)"
+        files: '^(ote/cli|external/anomaly)/.*\.py'
         exclude: "tests/"
 
   - repo: https://github.com/psf/black
     rev: 22.6.0
     hooks:
       - id: black
-        name: "black (ote_sdk|ote_cli)"
+        name: "black (ote_sdk|ote/cli)"
         args: [--line-length, "88"]
-        files: '^(ote_sdk|ote_cli)/.*\.py'
+        files: '^(ote_sdk|ote/cli)/.*\.py'
       - id: black
         name: "black (rest)"
         args: [--line-length, "120"]
@@ -32,7 +32,7 @@ repos:
     hooks:
       - id: flake8
         name: "flake8"
-        files: '^(ote_sdk|ote_cli|external/anomaly)/.*\.py'
+        files: '^(ote_sdk|ote/cli|external/anomaly)/.*\.py'
         args: ["--config", ".flake8", "--max-complexity", "20"]
         exclude: ".*/protobuf"
 
@@ -62,9 +62,9 @@ repos:
             types-python-dateutil,
           ]
       - id: mypy
-        alias: mypy_ote_cli
-        name: "mypy (ote_cli)"
-        files: '^ote_cli/.*\.py'
+        alias: mypy_ote/cli
+        name: "mypy (ote/cli)"
+        files: '^ote/cli/.*\.py'
         additional_dependencies: [types-PyYAML]
       - id: mypy
         alias: mypy_external
@@ -78,7 +78,7 @@ repos:
     hooks:
       - id: pylint
         name: "pylint"
-        files: '^(ote_sdk|ote_cli|external/anomaly)/.*\.py'
+        files: '^(ote_sdk|ote/cli|external/anomaly)/.*\.py'
         entry: pylint
         language: system
         types: [python]

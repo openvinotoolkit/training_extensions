@@ -28,7 +28,7 @@
    Although they are not required, You may also want to use Jupyter notebooks or OTE CLI tools:
 
    ```
-   pip3 install notebook; cd ote_cli/notebooks/; jupyter notebook
+   pip3 install notebook; cd notebooks/; jupyter notebook
    ```
 
 3. Search for available scripts that create python virtual environments for different task types:
@@ -56,25 +56,25 @@
 
    Note that the variable `TASK_ALGO_DIR` is set in this example for simplicity and will not be used in scripts.
 
-5. Create and activate a virtual environment for the chosen task, then install the `ote_cli`.
+5. Create and activate a virtual environment for the chosen task, then install the `ote`.
    Note that the virtual environment directory may be created anywhere on your system.
    The `./cur_task_venv` is just an example used here for convenience.
 
    ```bash
    bash $TASK_ALGO_DIR/init_venv.sh ./cur_task_venv python3.8
    source ./cur_task_venv/bin/activate
-   pip3 install -e ote_cli/ -c $TASK_ALGO_DIR/constraints.txt
+   pip3 install -e ote/ -c $TASK_ALGO_DIR/constraints.txt
    ```
 
    Note that `python3.8` is pointed as the second parameter of the script
    `init_venv.sh` -- it is the version of python that should be used. You can
    use any `python3.8+` version here if it is installed on your system.
 
-   Also note that during installation of `ote_cli` the constraint file
+   Also note that during installation of `ote` the constraint file
    from the chosen task folder is used to avoid breaking constraints
    for the OTE task.
 
-6. When `ote_cli` is installed in the virtual environment, you can use the
+6. When `ote` is installed in the virtual environment, you can use the
    `ote` command line interface to perform various actions for templates related to the chosen task type, such as running, training, evaluating, exporting, etc.
 
 ## OTE CLI commands

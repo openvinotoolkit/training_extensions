@@ -9,7 +9,7 @@ build-backend = "setuptools.build_meta"
 # ISORT CONFIGURATION.                                                        #
 [tool.isort]
 profile = "black"
-known_first_party = ["ote_cli", "ote_sdk"]
+known_first_party = ["ote", "ote_sdk"]
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #

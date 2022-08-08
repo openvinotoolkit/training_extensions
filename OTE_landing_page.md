@@ -27,7 +27,7 @@ If the results are unsatisfactory, add datasets and perform the same steps, star
 ## OTE Components
 
 - [OTE SDK](https://github.com/openvinotoolkit/training_extensions/tree/master/ote_sdk)
-- [OTE CLI](https://github.com/openvinotoolkit/training_extensions/tree/master/ote_cli)
+- [OTE CLI](https://github.com/openvinotoolkit/training_extensions/tree/master/ote/cli)
 - [OTE Algorithms](https://github.com/openvinotoolkit/training_extensions/tree/master/external)
 
 ## Get Started
@@ -70,17 +70,19 @@ If the results are unsatisfactory, add datasets and perform the same steps, star
    external/deep-object-reid/init_venv.sh
    ```
 
-4. Create, activate Object Detection virtual environment, and install `ote_cli`:
+4. Create, activate Object Detection virtual environment, and install `ote cli`:
+
    ```
    ./external/mmdetection/init_venv.sh det_venv
    source det_venv/bin/activate
-   pip3 install -e ote_cli/
+   pip3 install -e ote/
    ```
+
    To learn more about OTE CLI commands go to [GitHub](https://github.com/openvinotoolkit/training_extensions/blob/master/QUICK_START_GUIDE.md).
 
 ## Tutorials
 
-[Object Detection](https://github.com/openvinotoolkit/training_extensions/blob/master/ote_cli/notebooks/train.ipynb)
+[Object Detection](https://github.com/openvinotoolkit/training_extensions/blob/master/notebooks/train.ipynb)
 
 ## Contribution
 

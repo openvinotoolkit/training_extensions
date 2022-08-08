@@ -17,7 +17,7 @@
 import os
 
 import pytest
-from ote_cli.utils.tests import (
+from ote.cli.utils.tests import (
     create_venv,
     get_some_vars,
     nncf_eval_openvino_testing,
@@ -38,7 +38,7 @@ from ote_cli.utils.tests import (
 )
 from ote_sdk.test_suite.e2e_test_system import e2e_pytest_component
 
-from ote_cli.registry import Registry
+from ote.cli.registry import Registry
 
 args = {
     "--train-ann-file": "data/anomaly/detection/train.json",
@@ -51,7 +51,7 @@ args = {
     "train_params": [],
 }
 
-root = "/tmp/ote_cli/"
+root = "/tmp/ote/cli/"
 ote_dir = os.getcwd()
 
 templates = Registry("external").filter(task_type="ANOMALY_DETECTION").templates
