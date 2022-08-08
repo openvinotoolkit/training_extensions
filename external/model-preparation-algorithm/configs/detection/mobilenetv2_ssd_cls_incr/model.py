@@ -6,3 +6,4 @@ _base_ = [
 model = dict(
     backbone=dict(out_indices=(4, 5,))
 )
+fp16 = dict(loss_scale=512.)

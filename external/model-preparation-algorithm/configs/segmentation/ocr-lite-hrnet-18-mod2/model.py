@@ -3,3 +3,4 @@ _base_ = [
 ]
 
 load_from = 'https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/custom_semantic_segmentation/litehrnet18_imagenet1k_rsc.pth'
+optimizer_config = dict(type='Fp16OptimizerHook', loss_scale=512.)
