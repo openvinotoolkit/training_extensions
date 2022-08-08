@@ -36,6 +36,11 @@ def get_anomalib_config(task_name: str, ote_config: ConfigurableParameters) -> U
     """
     config_path = Path(anomalib.__file__).parent / "models" / task_name.lower() / "config.yaml"
     anomalib_config = get_configurable_parameters(model_name=task_name.lower(), config_path=config_path)
+    # TODO: get rid of this
+    if anomalib_config.model.name == "draem":
+        anomalib_config.dataset.transform_config = "external/anomaly/configs/draem/transform_config.yaml"
+    else:
+        anomalib_config.dataset.transform_config = None
     update_anomalib_config(anomalib_config, ote_config)
     return anomalib_config
 
