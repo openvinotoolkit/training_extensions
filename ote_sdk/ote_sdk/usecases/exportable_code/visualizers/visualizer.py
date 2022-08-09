@@ -37,9 +37,18 @@ class IVisualizer(metaclass=abc.ABCMeta):
         """
         raise NotImplementedError
 
+    @abc.abstractmethod
     def show(self, image: np.ndarray) -> None:
         """
         Show result image
+        """
+
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def is_quit(self) -> bool:
+        """
+        Check if user wishes to quit
         """
 
         raise NotImplementedError

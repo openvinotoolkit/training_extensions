@@ -14,7 +14,7 @@ from ote_sdk.usecases.exportable_code.demo.demo_package.utils import (
     create_output_converter,
 )
 from ote_sdk.usecases.exportable_code.streamer import get_streamer
-from ote_sdk.usecases.exportable_code.visualizers import Visualizer
+from ote_sdk.usecases.exportable_code.visualizers import IVisualizer
 
 
 class SyncExecutor:
@@ -26,7 +26,7 @@ class SyncExecutor:
         visualizer: visualizer of inference results
     """
 
-    def __init__(self, model: ModelContainer, visualizer: Visualizer) -> None:
+    def __init__(self, model: ModelContainer, visualizer: IVisualizer) -> None:
         self.model = model.core_model
         self.visualizer = visualizer
         self.converter = create_output_converter(model.task_type, model.labels)
