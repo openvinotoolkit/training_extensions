@@ -29,12 +29,12 @@ hyper_parameters:
         default_value: 4
         auto_hpo_state: POSSIBLE
       learning_rate:
-        default_value: 0.001
+        default_value: 0.01
         auto_hpo_state: POSSIBLE
       learning_rate_warmup_iters:
         default_value: 3
       num_iters:
-        default_value: 100
+        default_value: 200
     algo_backend:
       train_type:
         default_value: Incremental
