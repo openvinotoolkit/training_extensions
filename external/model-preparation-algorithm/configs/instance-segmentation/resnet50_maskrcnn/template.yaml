@@ -18,7 +18,8 @@ entrypoints:
 base_model_path: ../../../../mmdetection/configs/custom-counting-instance-seg/resnet50_maskrcnn/template_experimental.yaml
 
 # Capabilities.
-capabilities: []
+capabilities:
+  - compute_representations
 
 # Hyperparameters.
 hyper_parameters:

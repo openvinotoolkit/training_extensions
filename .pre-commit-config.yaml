@@ -3,7 +3,7 @@ default_language_version:
 
 repos:
   - repo: https://github.com/PyCQA/isort
-    rev: "5.9.2"
+    rev: "5.10.1"
     hooks:
       - id: isort
         alias: isort_ote_sdk
@@ -18,7 +18,7 @@ repos:
         exclude: "tests/"
 
   - repo: https://github.com/psf/black
-    rev: 22.3.0
+    rev: 22.6.0
     hooks:
       - id: black
         name: "black (ote_sdk|ote_cli)"
@@ -30,7 +30,7 @@ repos:
         files: '^external/anomaly/.*\.py'
 
   - repo: https://github.com/PyCQA/flake8
-    rev: "3.9.2"
+    rev: "5.0.3"
     hooks:
       - id: flake8
         name: "flake8"
@@ -40,20 +40,18 @@ repos:
 
   # yaml formatting
   - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: v2.3.0
+    rev: v2.7.1
     hooks:
       - id: prettier
-        types: [yaml]
         exclude: "external/deep-object-reid"
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: "v0.812"
+    rev: "v0.971"
     hooks:
       - id: mypy
         alias: mypy_ote_sdk
         name: "mypy (ote_sdk)"
         files: '^ote_sdk/.*\.py'
-        args: ["--config-file=ote_sdk/.mypy.ini"]
         additional_dependencies:
           [
             numpy==1.19.5,
@@ -69,14 +67,16 @@ repos:
         alias: mypy_ote_cli
         name: "mypy (ote_cli)"
         files: '^ote_cli/.*\.py'
-        args: ["--config-file=ote_sdk/.mypy.ini"]
+        additional_dependencies: [types-PyYAML]
       - id: mypy
-        alias: mypy_rest
+        alias: mypy_external
         name: "mypy (external)"
         files: '^external/anomaly/.*\.py'
-        args: ["--config-file=ote_sdk/.mypy.ini"]
+        additional_dependencies: [attrs==21.2.*]
+        exclude: "^external/anomaly/tests"
 
-  - repo: local
+  - repo: https://github.com/PyCQA/pylint
+    rev: "v2.14.5"
     hooks:
       - id: pylint
         name: "pylint"
