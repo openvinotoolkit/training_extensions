@@ -108,7 +108,7 @@ def main():
     inferencer = get_inferencer_class(args.inference_type, models)
 
     # create visualizer
-    visualizer = create_visualizer(models[-1].task_type)
+    visualizer = create_visualizer(models[-1].task_type, no_show=args.no_show)
 
     if len(models) == 1:
         models = models[0]

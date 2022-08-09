@@ -71,12 +71,14 @@ class Visualizer(IVisualizer):
         window_name: Optional[str] = None,
         show_count: bool = False,
         is_one_label: bool = False,
+        no_show: bool = False,
         delay: Optional[int] = None,
     ) -> None:
         self.window_name = "Window" if window_name is None else window_name
         self.shape_drawer = ShapeDrawer(show_count, is_one_label)
 
         self.delay = delay
+        self.no_show = no_show
         if delay is None:
             self.delay = 1
 
@@ -102,33 +104,14 @@ class Visualizer(IVisualizer):
         Show result image
         """
 
-        cv2.imshow(self.window_name, image)
+        if not self.no_show:
+            cv2.imshow(self.window_name, image)
 
     def is_quit(self) -> bool:
         """
         Check user wish to quit
         """
+        if self.no_show:
+            return False
+
         return ord("q") == cv2.waitKey(self.delay)
-
-
-class EmptyVisualizer(Visualizer):
-    """
-    Skips visualization step for test purposes.
-    """
-
-    def __init__(
-        self,
-        window_name: Optional[str] = None,
-    ) -> None:
-
-    def show(self, image: np.ndarray) -> None:
-        """
-        Skip showing step
-        """
-        pass
-
-    def is_quit(self) -> bool:
-        """
-        Skip checking step
-        """
-        return False
