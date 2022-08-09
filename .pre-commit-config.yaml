@@ -1,5 +1,6 @@
 default_language_version:
   python: python3.8
+  node: 16.15.0
 
 repos:
   - repo: https://github.com/PyCQA/isort
@@ -8,12 +9,10 @@ repos:
       - id: isort
         alias: isort_ote_sdk
         name: "isort (ote_sdk)"
-        args: ["--settings", "ote_sdk/.isort.cfg"]
         files: '^ote_sdk/.*\.py'
       - id: isort
         alias: isort_rest
         name: "isort (ote_cli|external)"
-        args: ["--settings", ".isort.cfg"]
         files: '^(ote_cli|external/anomaly)/.*\.py'
         exclude: "tests/"
 
@@ -84,5 +83,5 @@ repos:
         entry: pylint
         language: system
         types: [python]
-        args: ["--score=no", "--rcfile=.pylintrc"]
+        args: ["--score=no"]
         exclude: "tests"
