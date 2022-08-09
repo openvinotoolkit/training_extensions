@@ -35,7 +35,7 @@ learning_parameters:
       affects_outcome_of: NONE
       auto_hpo_state: not_possible
       auto_hpo_value: null
-      default_value: image_F1Score
+      default_value: image_AUROC
       description: The metric used to determine if the model should stop training
       editable: true
       enum_name: EarlyStoppingMetrics
@@ -55,7 +55,7 @@ learning_parameters:
       affects_outcome_of: TRAINING
       auto_hpo_state: not_possible
       auto_hpo_value: null
-      default_value: 10
+      default_value: 20
       description:
         Number of epochs to wait for an improvement in the monitored metric.
         If the metric has not improved for this many epochs, the training will stop
@@ -99,11 +99,11 @@ learning_parameters:
     affects_outcome_of: TRAINING
     auto_hpo_state: not_possible
     auto_hpo_value: null
-    default_value: 100
+    default_value: 700
     description: Maximum number of epochs to train the model for.
     editable: true
     header: Max Epochs
-    max_value: 500
+    max_value: 700
     min_value: 1
     type: INTEGER
     ui_rules:

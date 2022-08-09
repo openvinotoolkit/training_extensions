@@ -77,13 +77,13 @@ class DraemAnomalyBaseConfig(BaseAnomalyConfig):
             description = header
 
             metric = selectable(
-                default_value=EarlyStoppingMetrics.IMAGE_AUROC,
+                default_value=EarlyStoppingMetrics.IMAGE_ROC_AUC,
                 header="Early Stopping Metric",
                 description="The metric used to determine if the model should stop training",
             )
 
             patience = configurable_integer(
-                default_value=10,
+                default_value=20,
                 min_value=1,
                 max_value=100,
                 header="Early Stopping Patience",
@@ -98,10 +98,10 @@ class DraemAnomalyBaseConfig(BaseAnomalyConfig):
         early_stopping = add_parameter_group(EarlyStoppingParameters)
 
         max_epochs = configurable_integer(
-            default_value=100,
+            default_value=700,
             header="Max Epochs",
             min_value=1,
-            max_value=500,
+            max_value=700,
             description="Maximum number of epochs to train the model for.",
             warning="Training for very few epochs might lead to poor performance. If Early Stopping is enabled then "
             "increasing the value of max epochs might not lead to desired result.",
