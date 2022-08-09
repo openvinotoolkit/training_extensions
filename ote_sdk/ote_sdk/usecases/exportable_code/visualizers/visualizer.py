@@ -109,3 +109,26 @@ class Visualizer(IVisualizer):
         Check user wish to quit
         """
         return ord("q") == cv2.waitKey(self.delay)
+
+
+class EmptyVisualizer(Visualizer):
+    """
+    Skips visualization step for test purposes.
+    """
+
+    def __init__(
+        self,
+        window_name: Optional[str] = None,
+    ) -> None:
+
+    def show(self, image: np.ndarray) -> None:
+        """
+        Skip showing step
+        """
+        pass
+
+    def is_quit(self) -> bool:
+        """
+        Skip checking step
+        """
+        return False
