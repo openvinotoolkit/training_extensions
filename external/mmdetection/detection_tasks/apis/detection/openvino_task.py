@@ -100,10 +100,13 @@ class BaseInferencerWithConverter(BaseInferencer):
         predictions = self.post_process(raw_predictions, metadata)
         if 'feature_vector' not in raw_predictions or 'saliency_map' not in raw_predictions:
             warnings.warn('Could not find Feature Vector and Saliency Map in OpenVINO output. '
-                'Please rerun OpenVINO export or retrain the model.')
+                          'Please rerun OpenVINO export or retrain the model.')
             features = [None, None]
         else:
-            features = [raw_predictions['feature_vector'], raw_predictions['saliency_map']]
+            features = [
+                raw_predictions['feature_vector'].reshape(-1),
+                raw_predictions['saliency_map']
+            ]
         return predictions, features
 
     @check_input_parameters_type()
