@@ -55,7 +55,7 @@ from torchreid_tasks.monitors import DefaultMetricsMonitor, StopCallback
 from torchreid_tasks.parameters import OTEClassificationParameters
 from torchreid_tasks.utils import (active_score_from_probs, force_fp32, get_actmap, get_multiclass_predictions,
                                             get_multilabel_predictions, InferenceProgressCallback,
-                                            OTEClassificationDataset, sigmoid_numpy, softmax_numpy, 
+                                            OTEClassificationDataset, sigmoid_numpy, softmax_numpy,
                                             get_multihead_class_info, get_hierarchical_predictions)
 from torchreid.metrics.classification import score_extraction
 from torchreid.utils import load_pretrained_weights
@@ -257,7 +257,7 @@ class OTEClassificationInferenceTask(IInferenceTask, IEvaluationTask, IExportTas
             active_score_media = FloatMetadata(name="active_score", value=active_score,
                                                float_type=FloatType.ACTIVE_SCORE)
             dataset_item.append_metadata_item(active_score_media, model=self._task_environment.model)
-            feature_vec_media = TensorEntity(name="representation_vector", numpy=feature_vecs[i])
+            feature_vec_media = TensorEntity(name="representation_vector", numpy=feature_vecs[i].reshape(-1))
             dataset_item.append_metadata_item(feature_vec_media, model=self._task_environment.model)
 
             if dump_features:

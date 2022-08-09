@@ -240,7 +240,7 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
             dataset_item.append_labels(item_labels)
 
             if feature_vector is not None:
-                active_score = TensorEntity(name="representation_vector", numpy=feature_vector)
+                active_score = TensorEntity(name="representation_vector", numpy=feature_vector.reshape(-1))
                 dataset_item.append_metadata_item(active_score, model=self._task_environment.model)
 
             if saliency_map is not None:
