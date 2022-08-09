@@ -105,12 +105,11 @@ class OpenVINOSegmentationInferencer(BaseInferencer):
     @check_input_parameters_type()
     def post_process(self, prediction: Dict[str, np.ndarray], metadata: Dict[str, Any]) -> AnnotationSceneEntity:
         hard_prediction = self.model.postprocess(prediction, metadata)
-        soft_prediction = metadata['soft_predictions']
         feature_vector = metadata['feature_vector']
-
+        saliency_map = metadata['saliency_map']
         predicted_scene = self.converter.convert_to_annotation(hard_prediction, metadata)
 
-        return predicted_scene, soft_prediction, feature_vector
+        return predicted_scene, feature_vector, saliency_map
 
     @check_input_parameters_type()
     def forward(self, inputs: Dict[str, np.ndarray]) -> Dict[str, np.ndarray]:
@@ -165,38 +164,25 @@ class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask,
               inference_parameters: Optional[InferenceParameters] = None) -> DatasetEntity:
         if inference_parameters is not None:
             update_progress_callback = inference_parameters.update_progress
-            save_mask_visualization = not inference_parameters.is_evaluation
+            dump_saliency_map = not inference_parameters.is_evaluation
         else:
             update_progress_callback = default_progress_callback
-            save_mask_visualization = True
+            dump_saliency_map = True
 
         dataset_size = len(dataset)
         for i, dataset_item in enumerate(dataset, 1):
-            predicted_scene, soft_prediction, feature_vector = self.inferencer.predict(dataset_item.numpy)
+            predicted_scene, feature_vector, saliency_map = self.inferencer.predict(dataset_item.numpy)
             dataset_item.append_annotations(predicted_scene.annotations)
 
             if feature_vector is not None:
                 feature_vector_media = TensorEntity(name="representation_vector", numpy=feature_vector.reshape(-1))
                 dataset_item.append_metadata_item(feature_vector_media, model=self.model)
 
-            if save_mask_visualization:
-                for label_index, label in self._label_dictionary.items():
-                    if label_index == 0:
-                        continue
-
-                    if len(soft_prediction.shape) == 3:
-                        current_label_soft_prediction = soft_prediction[:, :, label_index]
-                    else:
-                        current_label_soft_prediction = soft_prediction
-
-                    class_act_map = get_activation_map(current_label_soft_prediction)
-                    result_media = ResultMediaEntity(name=f'{label.name}',
-                                                     type='Soft Prediction',
-                                                     label=label,
-                                                     annotation_scene=dataset_item.annotation_scene,
-                                                     roi=dataset_item.roi,
-                                                     numpy=class_act_map)
-                    dataset_item.append_metadata_item(result_media, model=self.model)
+            if dump_saliency_map and saliency_map is not None:
+                saliency_map_media = ResultMediaEntity(name="saliency_map", type="Saliency map",
+                                                annotation_scene=dataset_item.annotation_scene, 
+                                                numpy=saliency_map, roi=dataset_item.roi)
+                dataset_item.append_metadata_item(saliency_map_media, model=self.model)
 
             update_progress_callback(int(i / dataset_size * 100))
 

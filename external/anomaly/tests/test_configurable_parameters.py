@@ -20,7 +20,7 @@ import logging
 import os
 
 import pytest
-from adapters.anomalib.configs import get_anomalib_config
+from adapters.anomalib.config import get_anomalib_config
 from configs.anomaly_classification.padim import PadimAnomalyClassificationConfig
 from configs.anomaly_classification.stfpm import STFPMAnomalyClassificationConfig
 from ote_sdk.configuration.helper import convert, create

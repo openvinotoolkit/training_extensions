@@ -19,7 +19,7 @@ from pprint import pformat
 from typing import Any, Callable, Dict, List, Optional, Type
 
 import pytest
-from adapters.anomalib.logging import get_logger
+from adapters.anomalib.logger import get_logger
 from ote_sdk.configuration.helper import create as ote_sdk_configuration_helper_create
 from ote_sdk.entities.model import ModelEntity
 from ote_sdk.entities.model_template import TaskType, parse_model_template

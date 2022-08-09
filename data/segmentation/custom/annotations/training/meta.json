@@ -1,5 +1,3 @@
 {
-  "labels_map": [
-    {"name": "target", "id": 1}
-  ]
+  "labels_map": [{ "name": "target", "id": 1 }]
 }

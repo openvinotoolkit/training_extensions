@@ -287,7 +287,9 @@ def run_hpo_trainer(
     )
 
     # make callback to report score to hpopt every epoch
-    train_param = TrainParameters(False, HpoCallback(hp_config, hp_config["metric"], task))
+    train_param = TrainParameters(
+        False, HpoCallback(hp_config, hp_config["metric"], task)
+    )
 
     task.train(dataset=dataset, output_model=output_model, train_parameters=train_param)
 
@@ -475,6 +477,7 @@ class HpoCallback(UpdateProgressCallback):
                 current_iters = int(-1.0 * score - 1.0)
                 score = 1.0
             print(f"score = {score} at iteration {current_iters}")
+            # pylint: disable=unexpected-keyword-arg
             if (
                 hpopt.report(
                     config=self.hp_config, score=score, current_iters=current_iters
@@ -608,6 +611,7 @@ class HpoManager:
 
         print(f"[OTE_CLI] [DEBUG-HPO] hpopt args for create hpopt = {hpopt_arguments}")
 
+        # pylint: disable=unexpected-keyword-arg
         self.hpo = hpopt.create(**hpopt_arguments)
 
     def check_resumable(self):
@@ -783,6 +787,7 @@ class HpoManager:
         """Generate search space from user's input"""
         search_space = {}
         for key, val in hp_space_dict.items():
+            # pylint: disable=no-member
             search_space[key] = hpopt.SearchSpace(val["param_type"], val["range"])
         return search_space
 
