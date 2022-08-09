@@ -107,9 +107,11 @@ class TestVisualizer:
             expected_delay: int,
             expected_show_count: bool,
             expected_is_one_label: bool,
+            expected_no_show: bool
         ):
             assert actual_visualizer.window_name == expected_name
             assert actual_visualizer.delay == expected_delay
+            assert actual_visualizer.no_show == expected_no_show
             assert isinstance(actual_visualizer.shape_drawer, ShapeDrawer)
             assert actual_visualizer.shape_drawer.show_count == expected_show_count
             assert actual_visualizer.shape_drawer.is_one_label == expected_is_one_label
@@ -122,12 +124,14 @@ class TestVisualizer:
             expected_delay=1,
             expected_show_count=False,
             expected_is_one_label=False,
+            expected_no_show=False,
         )
         # Checking attributes of "Visualizer" initialized with specified optional parameters
         visualizer = Visualizer(
             window_name="Test Visualizer",
             show_count=True,
             is_one_label=True,
+            no_show=True,
             delay=5,
         )
         check_visualizer_attributes(
@@ -136,6 +140,7 @@ class TestVisualizer:
             expected_delay=5,
             expected_show_count=True,
             expected_is_one_label=True,
+            expected_no_show=True,
         )
 
     @pytest.mark.priority_medium
@@ -163,3 +168,25 @@ class TestVisualizer:
 
         actual_image = Visualizer().draw(image=image, annotation=annotation_scene)
         assert np.array_equal(actual_image, expected_image)
+
+
+    @pytest.mark.priority_medium
+    @pytest.mark.unit
+    @pytest.mark.reqids(Requirements.REQ_1)
+    def test_visualizer_no_show_mode(self):
+        """
+        <b>Description:</b>
+        Check "Visualizer" class "no_show" parameter
+
+        <b>Input data:</b>
+        "Visualizer" object with specified attributes
+
+        <b>Expected results:</b>
+        Test passes if no exception is occured
+        """
+        annotation_scene = self.annotation_scene()
+        image = self.image
+        visualizer = Visualizer(no_show=True)
+        visualizer.show(image)
+        visualizer.is_quit()
+
