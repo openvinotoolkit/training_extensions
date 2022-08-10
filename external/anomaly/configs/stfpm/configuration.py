@@ -1,6 +1,4 @@
-"""
-Configurable parameters for STFPM anomaly base task
-"""
+"""Configurable parameters for STFPM anomaly base task."""
 
 # Copyright (C) 2022 Intel Corporation
 #
@@ -32,9 +30,7 @@ from ote_sdk.configuration.model_lifecycle import ModelLifecycle
 
 @attrs
 class STFPMAnomalyBaseConfig(BaseAnomalyConfig):
-    """
-    Configurable parameters for STFPM anomaly base task.
-    """
+    """Configurable parameters for STFPM anomaly base task."""
 
     header = string_attribute("Configuration for STFPM")
     description = header
@@ -69,9 +65,7 @@ class STFPMAnomalyBaseConfig(BaseAnomalyConfig):
 
         @attrs
         class EarlyStoppingParameters(ParameterGroup):
-            """
-            Early stopping parameters
-            """
+            """Early stopping parameters."""
 
             header = string_attribute("Early Stopping Parameters")
             description = header

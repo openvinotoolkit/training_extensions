@@ -20,6 +20,7 @@ def get_logger(
     be directly returned. During initialization, a StreamHandler will always be
     added. If `log_file` is specified and the process rank is 0, a FileHandler
     will also be added.
+
     Args:
         name (str): Logger name.
         log_file (str | None): The log filename. If specified, a FileHandler
@@ -29,6 +30,7 @@ def get_logger(
             "Error" thus be silent most of the time.
         file_mode (str): The file mode used in opening log file.
             Defaults to 'w'.
+
     Returns:
         logging.Logger: The expected logger.
     """

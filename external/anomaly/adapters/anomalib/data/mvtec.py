@@ -108,10 +108,12 @@ class OteMvtecDataset:
 
     def get_samples(self) -> DataFrame:
         """Get MVTec samples.
+
         Get MVTec samples in a pandas DataFrame. Update the certain columns
         to match the OTE naming terminology. For example, column `split` is
         renamed to `subset`. Labels are also renamed by creating their
         corresponding OTE LabelEntities
+
         Returns:
             DataFrame: Final list of samples comprising all the required
                 information to create the OTE Dataset.
@@ -139,6 +141,7 @@ class OteMvtecDataset:
 
     def generate(self) -> DatasetEntity:
         """Generate OTE Anomaly Dataset.
+
         Returns:
             DatasetEntity: Output OTE Anomaly Dataset from an MVTec
         """

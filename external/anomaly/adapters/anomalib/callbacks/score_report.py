@@ -1,4 +1,4 @@
-"""Score reporting callback"""
+"""Score reporting callback."""
 
 # Copyright (C) 2020 Intel Corporation
 #
@@ -21,9 +21,7 @@ from pytorch_lightning import Callback
 
 
 class ScoreReportingCallback(Callback):
-    """
-    Callback for reporting score.
-    """
+    """Callback for reporting score."""
 
     def __init__(self, parameters: Optional[TrainParameters] = None) -> None:
         if parameters is not None:
@@ -32,9 +30,7 @@ class ScoreReportingCallback(Callback):
             self.score_reporting_callback = None
 
     def on_validation_epoch_end(self, trainer, pl_module):  # pylint: disable=unused-argument
-        """
-        If score exists in trainer.logged_metrics, report the score.
-        """
+        """If score exists in trainer.logged_metrics, report the score."""
         if self.score_reporting_callback is not None:
             score = None
             metric = getattr(self.score_reporting_callback, "metric", None)

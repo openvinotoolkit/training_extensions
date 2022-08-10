@@ -1,6 +1,4 @@
-"""
-Configurable parameters for Padim anomaly task
-"""
+"""Configurable parameters for Padim anomaly task."""
 
 # Copyright (C) 2021 Intel Corporation
 #
@@ -23,9 +21,7 @@ from ote_sdk.configuration.elements import string_attribute
 
 @attrs
 class PadimAnomalyBaseConfig(BaseAnomalyConfig):
-    """
-    Configurable parameters for PADIM anomaly classification task.
-    """
+    """Configurable parameters for PADIM anomaly classification task."""
 
     header = string_attribute("Configuration for Padim")
     description = header

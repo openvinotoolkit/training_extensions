@@ -1,6 +1,4 @@
-"""
-Progressbar Callback for OTE task
-"""
+"""Progressbar Callback for OTE task."""
 
 # Copyright (C) 2021 Intel Corporation
 #
@@ -24,8 +22,9 @@ from pytorch_lightning.callbacks.progress import TQDMProgressBar
 
 
 class ProgressCallback(TQDMProgressBar):
-    """
-    Modifies progress callback to show completion of the entire training step
+    """Progress Callback.
+
+    Modify progress callback to show completion of the entire training step.
     """
 
     def __init__(self, parameters: Optional[Union[TrainParameters, InferenceParameters]] = None) -> None:
@@ -40,47 +39,35 @@ class ProgressCallback(TQDMProgressBar):
             self.update_progress_callback = default_progress_callback
 
     def on_train_start(self, trainer, pl_module):
-        """
-        Store max epochs and current epoch from trainer
-        """
+        """Store max epochs and current epoch from trainer."""
         super().on_train_start(trainer, pl_module)
         self.current_epoch = trainer.current_epoch
         self.max_epochs = trainer.max_epochs
         self._reset_progress()
 
     def on_predict_start(self, trainer, pl_module):
-        """
-        Reset progress bar when prediction starts.
-        """
+        """Reset progress bar when prediction starts."""
         super().on_predict_start(trainer, pl_module)
         self._reset_progress()
 
     def on_test_start(self, trainer, pl_module):
-        """
-        Reset progress bar when testing starts.
-        """
+        """Reset progress bar when testing starts."""
         super().on_test_start(trainer, pl_module)
         self._reset_progress()
 
     def on_train_batch_end(self, trainer, pl_module, outputs, batch, batch_idx):
-        """
-        Adds training completion percentage to the progress bar
-        """
+        """Adds training completion percentage to the progress bar."""
         super().on_train_batch_end(trainer, pl_module, outputs, batch, batch_idx)
         self.current_epoch = trainer.current_epoch
         self._update_progress(stage="train")
 
     def on_predict_batch_end(self, trainer, pl_module, outputs, batch, batch_idx, dataloader_idx):
-        """
-        Adds prediction completion percentage to the progress bar
-        """
+        """Adds prediction completion percentage to the progress bar."""
         super().on_predict_batch_end(trainer, pl_module, outputs, batch, batch_idx, dataloader_idx)
         self._update_progress(stage="predict")
 
     def on_test_batch_end(self, trainer, pl_module, outputs, batch, batch_idx, dataloader_idx):
-        """
-        Adds testing completion percentage to the progress bar
-        """
+        """Adds testing completion percentage to the progress bar."""
         super().on_test_batch_end(trainer, pl_module, outputs, batch, batch_idx, dataloader_idx)
         self._update_progress(stage="test")
 
@@ -88,13 +75,11 @@ class ProgressCallback(TQDMProgressBar):
         self._progress = 0.0
 
     def _get_progress(self, stage: str = "train") -> float:
-        """
-        Get progress for train and test stages.
+        """Get progress for train and test stages.
 
         Args:
             stage (str, optional): Train or Test stages. Defaults to "train".
         """
-
         if stage == "train":
             # Progress is calculated on the upper bound (max epoch).
             # Early stopping might stop the training before the progress reaches 100%
