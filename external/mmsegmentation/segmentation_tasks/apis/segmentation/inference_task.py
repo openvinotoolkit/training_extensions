@@ -19,6 +19,7 @@ import os
 import shutil
 import tempfile
 import warnings
+from contextlib import nullcontext
 from typing import Optional
 
 import numpy as np
@@ -47,17 +48,14 @@ from ote_sdk.utils.argument_checks import (
     check_input_parameters_type,
 )
 
-
 from mmseg.apis import export_model
-from segmentation_tasks.apis.segmentation.config_utils import (patch_config,
-                                                           prepare_for_testing,
-                                                           set_hyperparams)
-from segmentation_tasks.apis.segmentation.configuration import OTESegmentationConfig
-from segmentation_tasks.apis.segmentation.ote_utils import InferenceProgressCallback, get_activation_map
+from mmseg.core.hooks.auxiliary_hooks import FeatureVectorHook, SaliencyMapHook
 from mmseg.datasets import build_dataloader, build_dataset
 from mmseg.models import build_segmentor
 from mmseg.parallel import MMDataCPU
-
+from segmentation_tasks.apis.segmentation.config_utils import (patch_config, prepare_for_testing, set_hyperparams)
+from segmentation_tasks.apis.segmentation.configuration import OTESegmentationConfig
+from segmentation_tasks.apis.segmentation.ote_utils import InferenceProgressCallback, get_activation_map
 
 logger = logging.getLogger(__name__)
 
@@ -198,46 +196,37 @@ class OTESegmentationInferenceTask(IInferenceTask, IExportTask, IEvaluationTask,
         pre_hook_handle = self._model.register_forward_pre_hook(pre_hook)
         hook_handle = self._model.register_forward_hook(hook)
 
-        self._infer_segmentor(self._model, self._config, dataset,
-                              save_mask_visualization=not is_evaluation)
-
+        prediction_results = self._infer_segmentor(self._model, self._config, dataset, dump_features=True,
+                                                   dump_saliency_map=not is_evaluation)
+        self._add_predictions_to_dataset(prediction_results, dataset)
         pre_hook_handle.remove()
         hook_handle.remove()
 
         return dataset
 
-    def _add_predictions_to_dataset_item(self, prediction, feature_vector, dataset_item, save_mask_visualization):
-        soft_prediction = np.transpose(prediction, axes=(1, 2, 0))
-        hard_prediction = create_hard_prediction_from_soft_prediction(
-            soft_prediction=soft_prediction,
-            soft_threshold=self._hyperparams.postprocessing.soft_threshold,
-            blur_strength=self._hyperparams.postprocessing.blur_strength,
-        )
-        annotations = create_annotation_from_segmentation_map(
-            hard_prediction=hard_prediction,
-            soft_prediction=soft_prediction,
-            label_map=self._label_dictionary,
-        )
-        dataset_item.append_annotations(annotations=annotations)
+    def _add_predictions_to_dataset(self, prediction_results, dataset):
+        for dataset_item, (prediction, feature_vector, saliency_map) in zip(dataset, prediction_results):
+            soft_prediction = np.transpose(prediction, axes=(1, 2, 0))
+            hard_prediction = create_hard_prediction_from_soft_prediction(
+                soft_prediction=soft_prediction,
+                soft_threshold=self._hyperparams.postprocessing.soft_threshold,
+                blur_strength=self._hyperparams.postprocessing.blur_strength,
+            )
+            annotations = create_annotation_from_segmentation_map(
+                hard_prediction=hard_prediction,
+                soft_prediction=soft_prediction,
+                label_map=self._label_dictionary,
+            )
+            dataset_item.append_annotations(annotations=annotations)
 
-        if feature_vector is not None:
-            active_score = TensorEntity(name="representation_vector", numpy=feature_vector.reshape(-1))
-            dataset_item.append_metadata_item(active_score, model=self._task_environment.model)
+            if feature_vector is not None:
+                active_score = TensorEntity(name="representation_vector", numpy=feature_vector.reshape(-1))
+                dataset_item.append_metadata_item(active_score, model=self._task_environment.model)
 
-        if save_mask_visualization:
-            for label_index, label in self._label_dictionary.items():
-                if label_index == 0:
-                    continue
-
-                if len(soft_prediction.shape) == 3:
-                    current_label_soft_prediction = soft_prediction[:, :, label_index]
-                else:
-                    current_label_soft_prediction = soft_prediction
-
-                class_act_map = get_activation_map(current_label_soft_prediction)
-                result_media = ResultMediaEntity(name=f'{label.name}',
-                                                 type='Soft Prediction',
-                                                 label=label,
+            if saliency_map is not None:
+                class_act_map = get_activation_map(saliency_map, (dataset_item.width, dataset_item.height))
+                result_media = ResultMediaEntity(name="saliency_map",
+                                                 type="Saliency map",
                                                  annotation_scene=dataset_item.annotation_scene,
                                                  roi=dataset_item.roi,
                                                  numpy=class_act_map)
@@ -245,7 +234,7 @@ class OTESegmentationInferenceTask(IInferenceTask, IExportTask, IEvaluationTask,
 
     def _infer_segmentor(self,
                          model: torch.nn.Module, config: Config, dataset: DatasetEntity,
-                         save_mask_visualization: bool = False) -> None:
+                         dump_features: bool = False, dump_saliency_map: bool = False) -> None:
         model.eval()
 
         test_config = prepare_for_testing(config, dataset)
@@ -259,18 +248,28 @@ class OTESegmentationInferenceTask(IInferenceTask, IExportTask, IEvaluationTask,
                                              dist=False,
                                              shuffle=False)
         if torch.cuda.is_available():
-            eval_model = MMDataParallel(model.cuda(test_config.gpu_ids[0]),
-                                        device_ids=test_config.gpu_ids)
+            model = MMDataParallel(model.cuda(test_config.gpu_ids[0]), device_ids=test_config.gpu_ids)
         else:
-            eval_model = MMDataCPU(model)
+            model = MMDataCPU(model)
+
+        eval_predictions = []
+        feature_vectors = []
+        saliency_maps = []
 
         # Use a single gpu for testing. Set in both mm_val_dataloader and eval_model
-        for data, dataset_item in zip(mm_val_dataloader, dataset):
-            with torch.no_grad():
-                result, repr_vector = eval_model(return_loss=False, output_logits=True, **data)
-            assert len(result) == 1
-
-            self._add_predictions_to_dataset_item(result[0], repr_vector, dataset_item, save_mask_visualization)
+        with FeatureVectorHook(model.module.backbone) if dump_features else nullcontext() as fhook:
+            with SaliencyMapHook(model.module.backbone) if dump_saliency_map else nullcontext() as shook:
+                for data in mm_val_dataloader:
+                    with torch.no_grad():
+                        result = model(return_loss=False, output_logits=True, **data)
+                    eval_predictions.extend(result)
+                feature_vectors = fhook.records if dump_features else [None] * len(dataset)
+                saliency_maps = shook.records if dump_saliency_map else [None] * len(dataset)
+        assert len(eval_predictions) == len(feature_vectors) == len(saliency_maps), \
+               'Number of elements should be the same, however, number of outputs are ' \
+               f"{len(eval_predictions)}, {len(feature_vectors)}, and {len(saliency_maps)}"
+        predictions = zip(eval_predictions, feature_vectors, saliency_maps)
+        return predictions
 
     @check_input_parameters_type()
     def evaluate(self, output_result_set: ResultSetEntity, evaluation_metric: Optional[str] = None):
