@@ -232,6 +232,13 @@ def run_hpo_trainer(
         else:
             hyper_parameters.learning_parameters.num_iters = hp_config["iterations"]
 
+    # add batch size value if batch size isn't in search space
+    if hp_config["batch_size_param_name"] not in hp_config["params"].keys():
+        attr = hyper_parameters
+        for val in hp_config["batch_size_param_name"].split('.'):
+            attr = getattr(attr, val)
+        hp_config["batch_size"] =  attr
+
     # set hyper-parameters and print them
     HpoManager.set_hyperparameter(hyper_parameters, hp_config["params"])
     print(f"hyper parameter of current trial : {hp_config['params']}")
