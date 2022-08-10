@@ -132,7 +132,7 @@ def get_hierarchical_predictions(logits: np.ndarray, multihead_class_info: dict,
                                  pos_thr: float = 0.5, activate: bool = True):
     predicted_labels = []
     for i in range(multihead_class_info['num_multiclass_heads']):
-        logits_begin, logits_end = multihead_class_info['head_idx_to_logits_range'][str(i)]
+        logits_begin, logits_end = multihead_class_info['head_idx_to_logits_range'][i]
         head_logits = logits[logits_begin : logits_end]
         if activate:
             head_logits = softmax_numpy(head_logits)
