@@ -131,7 +131,7 @@ learning_parameters:
     affects_outcome_of: NONE
     auto_hpo_state: not_possible
     auto_hpo_value: null
-    default_value: 4
+    default_value: 0
     description:
       Increasing this value might improve training speed however it might
       cause out of memory errors. If the number of workers is set to zero, data loading
@@ -146,7 +146,7 @@ learning_parameters:
       operator: AND
       rules: []
       type: UI_RULES
-    value: 4
+    value: 0
     visible_in_ui: true
     warning: null
   type: PARAMETER_GROUP

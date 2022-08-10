@@ -188,7 +188,7 @@ class LabelEntity:
     def __repr__(self):
         return (
             f"LabelEntity({self.id_}, name={self.name}, hotkey={self.hotkey}, "
-            f"domain={self.domain}, color={self.color})"
+            f"domain={self.domain}, color={self.color}, is_anomalous={self.is_anomalous})"
         )
 
     def __eq__(self, other):
