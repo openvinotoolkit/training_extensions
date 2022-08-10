@@ -16,7 +16,8 @@ entrypoints:
   openvino: detection_tasks.apis.detection.OpenVINODetectionTask
 
 # Capabilities.
-capabilities: []
+capabilities:
+  - compute_representations
 
 # Hyperparameters.
 hyper_parameters:

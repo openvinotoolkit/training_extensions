@@ -106,7 +106,6 @@ class TestToolsSegClsIncr:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_ote_deploy_openvino(self, template):
-        pytest.xfail("Known issue CVS-84981")
         ote_deploy_openvino_testing(template, root, ote_dir, args)
 
     @e2e_pytest_component

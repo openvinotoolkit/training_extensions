@@ -13,6 +13,7 @@
 # and limitations under the License.
 
 
+import cv2
 import importlib
 from typing import Iterable, Union
 import yaml
@@ -43,15 +44,11 @@ def get_task_class(path: str):
 
 
 @check_input_parameters_type()
-def get_activation_map(features: Union[np.ndarray, Iterable, int, float]):
-    min_soft_score = np.min(features)
-    max_soft_score = np.max(features)
-    factor = 255.0 / (max_soft_score - min_soft_score + 1e-12)
-
-    float_act_map = factor * (features - min_soft_score)
-    int_act_map = np.uint8(np.floor(float_act_map))
-
-    return int_act_map
+def get_activation_map(features: Union[np.ndarray, Iterable, int, float], output_res: Union[tuple, list]):
+    am = cv2.resize(features, output_res)
+    am = cv2.applyColorMap(am, cv2.COLORMAP_JET)
+    am = cv2.cvtColor(am, cv2.COLOR_BGR2RGB)
+    return am
 
 
 class TrainingProgressCallback(TimeMonitorCallback):
