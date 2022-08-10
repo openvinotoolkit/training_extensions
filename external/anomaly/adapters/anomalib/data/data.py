@@ -1,6 +1,4 @@
-"""
-Anomaly Dataset Utils
-"""
+"""Anomaly Dataset Utils."""
 
 # Copyright (C) 2021 Intel Corporation
 #
@@ -39,8 +37,8 @@ logger = get_logger(__name__)
 
 
 class OTEAnomalyDataset(Dataset):
-    """
-    Anomaly Dataset Adaptor
+    """Anomaly Dataset Adaptor.
+
     This class converts OTE Dataset into Anomalib dataset that
     is a sub-class of Vision Dataset.
 
@@ -71,9 +69,25 @@ class OTEAnomalyDataset(Dataset):
         )
 
     def __len__(self) -> int:
+        """Get size of the dataset.
+
+        Returns:
+            int: Size of the dataset.
+        """
         return len(self.dataset)
 
     def __getitem__(self, index: int) -> Dict[str, Union[int, Tensor]]:
+        """Get dataset item.
+
+        Args:
+            index (int): Index of the dataset sample.
+
+        Raises:
+            ValueError: When the task type is not supported.
+
+        Returns:
+            Dict[str, Union[int, Tensor]]: Dataset item.
+        """
         dataset_item = self.dataset[index]
         item: Dict[str, Union[int, Tensor]] = {}
         item = {"index": index}
@@ -98,8 +112,8 @@ class OTEAnomalyDataset(Dataset):
 
 
 class OTEAnomalyDataModule(LightningDataModule):
-    """
-    Anomaly DataModule
+    """Anomaly DataModule.
+
     This class converts OTE Dataset into Anomalib dataset and stores
     train/val/test dataloaders.
 
@@ -131,8 +145,7 @@ class OTEAnomalyDataModule(LightningDataModule):
         self.predict_ote_dataset: DatasetEntity
 
     def setup(self, stage: Optional[str] = None) -> None:
-        """
-        Setup Anomaly Data Module
+        """Setup Anomaly Data Module.
 
         Args:
             stage (Optional[str], optional): train/val/test stages.
@@ -172,8 +185,10 @@ class OTEAnomalyDataModule(LightningDataModule):
     def train_dataloader(
         self,
     ) -> Union[DataLoader, List[DataLoader], Dict[str, DataLoader]]:
-        """
-        Train Dataloader
+        """Train Dataloader.
+
+        Returns:
+            Union[DataLoader, List[DataLoader], Dict[str, DataLoader]]: Train dataloader.
         """
         dataset = OTEAnomalyDataset(self.config, self.train_ote_dataset, self.task_type)
         return DataLoader(
@@ -184,8 +199,10 @@ class OTEAnomalyDataModule(LightningDataModule):
         )
 
     def val_dataloader(self) -> Union[DataLoader, List[DataLoader]]:
-        """
-        Validation Dataloader
+        """Validation Dataloader.
+
+        Returns:
+            Union[DataLoader, List[DataLoader]]: Validation Dataloader.
         """
         global_dataset, local_dataset = split_local_global_dataset(self.val_ote_dataset)
         logger.info(f"Global annotations: {len(global_dataset)}")
@@ -204,8 +221,10 @@ class OTEAnomalyDataModule(LightningDataModule):
         )
 
     def test_dataloader(self) -> Union[DataLoader, List[DataLoader]]:
-        """
-        Test Dataloader
+        """Test Dataloader.
+
+        Returns:
+            Union[DataLoader, List[DataLoader]]: Test Dataloader.
         """
         dataset = OTEAnomalyDataset(self.config, self.test_ote_dataset, self.task_type)
         return DataLoader(
@@ -216,8 +235,10 @@ class OTEAnomalyDataModule(LightningDataModule):
         )
 
     def predict_dataloader(self) -> Union[DataLoader, List[DataLoader]]:
-        """
-        Predict Dataloader
+        """Predict Dataloader.
+
+        Returns:
+            Union[DataLoader, List[DataLoader]]: Predict Dataloader.
         """
         dataset = OTEAnomalyDataset(self.config, self.predict_ote_dataset, self.task_type)
         return DataLoader(
