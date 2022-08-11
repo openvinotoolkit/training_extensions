@@ -128,6 +128,7 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         output_model.optimization_type = ModelOptimizationType.MO
 
         stage_module = 'SegExporter'
+        self._initialize()
         results = self._run_task(stage_module, mode='train', precision=self._precision[0].name)
         results = results.get('outputs')
         logger.debug(f'results of run_task = {results}')
