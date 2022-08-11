@@ -79,7 +79,7 @@ class BaseTask:
         return [ModelPrecision.FP16] if self._model_cfg.get('fp16', None) else [ModelPrecision.FP32]
 
     def _run_task(self, stage_module, mode=None, dataset=None, parameters=None, **kwargs):
-        self._initialize(dataset)
+        self._initialize()
         # update model config -> model label schema
         data_classes = [label.name for label in self._labels]
         model_classes = [label.name for label in self._model_label_schema]
@@ -157,7 +157,7 @@ class BaseTask:
         """
         logger.info('initializing....')
         self._init_recipe()
-        self._overwrite_parameters(dataset=dataset)
+        self._overwrite_parameters()
         if "custom_hooks" in self.override_configs:
             override_custom_hooks = self.override_configs.pop("custom_hooks")
             for override_custom_hook in override_custom_hooks:
@@ -221,7 +221,7 @@ class BaseTask:
         """
         return None
 
-    def _overwrite_parameters(self, *args, **kwargs):
+    def _overwrite_parameters(self):
         """ Overwrite mmX config parameters with TaskEnvironment hyperparameters. 
 
         Hyper Parameters defined in TaskEnvironment will overwrite the below mmX config parameters.

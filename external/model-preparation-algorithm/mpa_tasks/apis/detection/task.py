@@ -9,6 +9,7 @@ from typing import List, Optional, Tuple, Iterable
 
 import cv2
 import numpy as np
+import pycocotools.mask as mask_util
 import torch
 from mmcv.utils import ConfigDict
 from detection_tasks.apis.detection.config_utils import remove_from_config
@@ -181,21 +182,10 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
             output_model.set_data("label_schema.json", label_schema_to_bytes(self._task_environment.label_schema))
         logger.info('Exporting completed')
 
-    def _overwrite_parameters(self, *args, **kwrags):
+    def _overwrite_parameters(self):
         """ Overwrite config parameters with TaskEnvironment hyperparameters and config tiling parameters. """
-
-        super()._overwrite_parameters(*args, **kwrags)
+        super()._overwrite_parameters()
         if bool(self._hyperparams.tiling_parameters.enable_tiling):
-            if bool(self._hyperparams.tiling_parameters.enable_adaptive_params):
-                adaptive_object_tile_ratio = float(self._hyperparams.tiling_parameters.adaptive_object_tile_ratio)
-                tile_cfg = adaptive_tile_params(kwrags['dataset'], adaptive_object_tile_ratio)
-                if tile_cfg.get('tile_size'):
-                    self._hyperparams.tiling_parameters.tile_size = tile_cfg.get('tile_size')
-                if tile_cfg.get('tile_overlap'):
-                    self._hyperparams.tiling_parameters.tile_overlap = tile_cfg.get('tile_overlap')
-                if tile_cfg.get('tile_max_number'):
-                    self._hyperparams.tiling_parameters.tile_max_number = tile_cfg.get('tile_max_number')
-
             tile_params = ConfigDict(
                 data=ConfigDict(
                     train=ConfigDict(
@@ -357,7 +347,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         cfg = config.evaluation
         # CocoDataset.evaluate -> CustomDataset.evaluate
         cfg.pop('classwise', None)
-        cfg.metric = 'mAP'
+        # cfg.metric = 'mAP'
         cfg.save_best = 'mAP'
         # EarlyStoppingHook
         for cfg in config.get('custom_hooks', []):
@@ -390,6 +380,8 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         shapes = []
         for label_idx, (boxes, masks) in enumerate(zip(*all_results)):
             for mask, probability in zip(masks, boxes[:, 4]):
+                if isinstance(mask, dict):
+                    mask = mask_util.decode(mask)
                 mask = mask.astype(np.uint8)
                 probability = float(probability)
                 contours, hierarchies = cv2.findContours(mask, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
@@ -477,6 +469,7 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
         stage_module = 'DetectionTrainer'
         self._data_cfg = self._init_train_data_cfg(dataset)
         self._is_training = True
+        self._config_tiling_parameters(dataset)
         results = self._run_task(stage_module, mode='train', dataset=dataset, parameters=train_parameters)
 
         # Check for stop signal when training has stopped. If should_stop is true, training was cancelled and no new
@@ -591,6 +584,23 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
         )
 
         return output
+
+    def _config_tiling_parameters(self, dataset):
+        # TODO[EUGENE]
+        """_summary_
+
+        Args:
+            dataset (_type_): _description_
+        """
+        if bool(self._hyperparams.tiling_parameters.enable_adaptive_params):
+            adaptive_object_tile_ratio = float(self._hyperparams.tiling_parameters.adaptive_object_tile_ratio)
+            tile_cfg = adaptive_tile_params(dataset, adaptive_object_tile_ratio)
+            if tile_cfg.get('tile_size'):
+                self._hyperparams.tiling_parameters.tile_size = tile_cfg.get('tile_size')
+            if tile_cfg.get('tile_overlap'):
+                self._hyperparams.tiling_parameters.tile_overlap = tile_cfg.get('tile_overlap')
+            if tile_cfg.get('tile_max_number'):
+                self._hyperparams.tiling_parameters.tile_max_number = tile_cfg.get('tile_max_number')
 
 
 class DetectionNNCFTask(OTEDetectionNNCFTask):
