@@ -210,7 +210,6 @@ class NNCFTask(InferenceTask, IOptimizationTask):
         Returns:
            Dict: Model info.
         """
-
         return {
             "compression_state": self.compression_ctrl.get_compression_state(),  # type: ignore
             "meta": {
@@ -223,7 +222,7 @@ class NNCFTask(InferenceTask, IOptimizationTask):
         }
 
     def _export_to_onnx(self, onnx_path: str):
-        """Export model to ONNX
+        """Export model to ONNX.
 
         Args:
              onnx_path (str): path to save ONNX file

@@ -1,6 +1,4 @@
-"""
-Base configurable parameter for anomaly tasks
-"""
+"""Base configurable parameter for anomaly tasks."""
 
 # Copyright (C) 2022 Intel Corporation
 #

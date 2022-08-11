@@ -1,6 +1,4 @@
-"""
-Collection of tools to run anomaly training extension.
-"""
+"""Collection of tools to run anomaly training extension."""
 
 # Copyright (C) 2022 Intel Corporation
 #

@@ -1,22 +1,14 @@
-"""Configurable parameters for STFPM anomaly base task."""
+"""
+Configurable parameters for Draem anomaly task
+"""
 
-# Copyright (C) 2022 Intel Corporation
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions
-# and limitations under the License.
+# Copyright (C) 2021-2022 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
 
 from attr import attrs
 from configs.base import BaseAnomalyConfig
-from configs.base.configuration_enums import EarlyStoppingMetrics, ModelBackbone
+from configs.base.configuration_enums import EarlyStoppingMetrics
 from ote_sdk.configuration.elements import (
     ParameterGroup,
     add_parameter_group,
@@ -29,61 +21,59 @@ from ote_sdk.configuration.model_lifecycle import ModelLifecycle
 
 
 @attrs
-class STFPMAnomalyBaseConfig(BaseAnomalyConfig):
-    """Configurable parameters for STFPM anomaly base task."""
+class DraemAnomalyBaseConfig(BaseAnomalyConfig):
+    """
+    Configurable parameters for DRAEM anomaly classification task.
+    """
 
-    header = string_attribute("Configuration for STFPM")
+    header = string_attribute("Configuration for Draem")
     description = header
 
     @attrs
     class LearningParameters(BaseAnomalyConfig.LearningParameters):
         """Parameters that can be tuned using HPO."""
 
+        header = string_attribute("Learning Parameters")
+        description = header
+
+        train_batch_size = configurable_integer(
+            default_value=8,
+            min_value=1,
+            max_value=512,
+            header="Batch size",
+            description="The number of training samples seen in each iteration of training. Increasing this value "
+            "improves training time and may make the training more stable. A larger batch size has higher "
+            "memory requirements.",
+            warning="Increasing this value may cause the system to use more memory than available, "
+            "potentially causing out of memory errors, please update with caution.",
+            affects_outcome_of=ModelLifecycle.TRAINING,
+        )
+
         lr = configurable_float(
-            default_value=0.4,
-            header="Learning Rate",
-            min_value=1e-3,
-            max_value=1,
-            description="Learning rate used for optimizing the Student network.",
-        )
-
-        momentum = configurable_float(
-            default_value=0.9,
-            header="Momentum",
-            min_value=0.1,
-            max_value=1.0,
-            description="Momentum used for SGD optimizer",
-        )
-
-        weight_decay = configurable_float(
             default_value=0.0001,
-            header="Weight Decay",
-            min_value=1e-5,
+            header="Learning Rate",
+            min_value=1e-4,
             max_value=1,
-            description="Decay for SGD optimizer",
-        )
-
-        backbone = selectable(
-            default_value=ModelBackbone.RESNET18,
-            header="Model Backbone",
-            description="Pre-trained backbone used for feature extraction",
+            description="Learning rate used for optimizing the network.",
         )
 
         @attrs
         class EarlyStoppingParameters(ParameterGroup):
-            """Early stopping parameters."""
+            """
+            Early stopping parameters
+            """
 
             header = string_attribute("Early Stopping Parameters")
             description = header
 
             metric = selectable(
-                default_value=EarlyStoppingMetrics.IMAGE_F1,
+                default_value=EarlyStoppingMetrics.IMAGE_ROC_AUC,
                 header="Early Stopping Metric",
                 description="The metric used to determine if the model should stop training",
             )
 
             patience = configurable_integer(
-                default_value=10,
+                default_value=20,
                 min_value=1,
                 max_value=100,
                 header="Early Stopping Patience",
@@ -98,10 +88,10 @@ class STFPMAnomalyBaseConfig(BaseAnomalyConfig):
         early_stopping = add_parameter_group(EarlyStoppingParameters)
 
         max_epochs = configurable_integer(
-            default_value=100,
+            default_value=700,
             header="Max Epochs",
             min_value=1,
-            max_value=500,
+            max_value=700,
             description="Maximum number of epochs to train the model for.",
             warning="Training for very few epochs might lead to poor performance. If Early Stopping is enabled then "
             "increasing the value of max epochs might not lead to desired result.",

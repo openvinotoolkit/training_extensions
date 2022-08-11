@@ -1,6 +1,4 @@
-"""
-Configurable parameter conversion between OTE and Anomalib.
-"""
+"""Configurable parameter conversion between OTE and Anomalib."""
 
 # Copyright (C) 2021 Intel Corporation
 #
@@ -26,22 +24,34 @@ from ote_sdk.configuration.configurable_parameters import ConfigurableParameters
 
 
 def get_anomalib_config(task_name: str, ote_config: ConfigurableParameters) -> Union[DictConfig, ListConfig]:
-    """
-    Create an anomalib config object that matches the values specified in the OTE config.
+    """Get anomalib configuration.
+
+    Create an anomalib config object that matches the values specified in the
+    OTE config.
 
     Args:
-        ote_config: ConfigurableParameters: OTE config object parsed from configuration.yaml file
+        ote_config: ConfigurableParameters: OTE config object parsed from
+            configuration.yaml file
+
     Returns:
-        Anomalib config object for the specified model type with overwritten default values.
+        Anomalib config object for the specified model type with overwritten
+        default values.
     """
     config_path = Path(anomalib.__file__).parent / "models" / task_name.lower() / "config.yaml"
     anomalib_config = get_configurable_parameters(model_name=task_name.lower(), config_path=config_path)
+    # TODO: remove this hard coding of the config location
+    if anomalib_config.model.name == "draem":
+        anomalib_config.dataset.transform_config.train = "external/anomaly/configs/draem/transform_config.yaml"
+        anomalib_config.dataset.transform_config.val = "external/anomaly/configs/draem/transform_config.yaml"
+    else:
+        anomalib_config.dataset.transform_config.train = None
+        anomalib_config.dataset.transform_config.val = None
     update_anomalib_config(anomalib_config, ote_config)
     return anomalib_config
 
 
 def _anomalib_config_mapper(anomalib_config: Union[DictConfig, ListConfig], ote_config: ConfigurableParameters):
-    """Returns mapping from learning parameters to anomalib parameters
+    """Return mapping from learning parameters to anomalib parameters.
 
     Args:
         anomalib_config: DictConfig: Anomalib config object
@@ -64,13 +74,16 @@ def _anomalib_config_mapper(anomalib_config: Union[DictConfig, ListConfig], ote_
 
 
 def update_anomalib_config(anomalib_config: Union[DictConfig, ListConfig], ote_config: ConfigurableParameters):
-    """
-    Overwrite the default parameter values in the anomalib config with the values specified in the OTE config. The
-    function is recursively called for each parameter group present in the OTE config.
+    """Update anomalib configuration.
+
+    Overwrite the default parameter values in the anomalib config with the
+    values specified in the OTE config. The function is recursively called for
+    each parameter group present in the OTE config.
 
     Args:
         anomalib_config: DictConfig: Anomalib config object
-        ote_config: ConfigurableParameters: OTE config object parsed from configuration.yaml file
+        ote_config: ConfigurableParameters: OTE config object parsed from
+            configuration.yaml file
     """
     for param in ote_config.parameters:
         assert param in anomalib_config.keys(), f"Parameter {param} not present in anomalib config."

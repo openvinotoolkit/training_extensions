@@ -85,3 +85,15 @@ repos:
         types: [python]
         args: ["--score=no"]
         exclude: "tests"
+
+  - repo: https://github.com/PyCQA/pydocstyle
+    rev: 6.1.1
+    hooks:
+      - id: pydocstyle
+        additional_dependencies: [toml]
+        name: pydocstyle
+        entry: pydocstyle
+        language: python
+        types: [python]
+        files: '^external/anomaly/.*\.py'
+        exclude: "external/anomaly/tests"

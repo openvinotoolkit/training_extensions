@@ -1,6 +1,4 @@
-"""
-Initialization of OTE Anomalib
-"""
+"""Initialization of OTE Anomalib."""
 
 # Copyright (C) 2022 Intel Corporation
 #

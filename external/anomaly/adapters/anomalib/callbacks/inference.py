@@ -1,6 +1,4 @@
-"""
-Inference Callbacks for OTE inference
-"""
+"""Inference Callbacks for OTE inference."""
 
 # Copyright (C) 2021 Intel Corporation
 #

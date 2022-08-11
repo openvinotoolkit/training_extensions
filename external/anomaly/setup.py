@@ -1,6 +1,4 @@
-"""
-Install anomalib wrapper for OTE
-"""
+"""Install anomalib wrapper for OTE."""
 
 # Copyright (C) 2021 Intel Corporation
 #

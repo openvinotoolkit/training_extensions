@@ -208,7 +208,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
             output_resultset.performance.dashboard_metrics.extend(accuracy.dashboard_metrics)
 
     def _export_to_onnx(self, onnx_path: str):
-        """Export model to ONNX
+        """Export model to ONNX.
 
         Args:
              onnx_path (str): path to save ONNX file
@@ -263,7 +263,6 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         Returns:
            Dict: Model info.
         """
-
         return {
             "model": self.model.state_dict(),
             "config": self.get_config(),
