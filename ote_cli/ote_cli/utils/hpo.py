@@ -232,7 +232,9 @@ def run_hpo_trainer(
         else:
             hyper_parameters.learning_parameters.num_iters = hp_config["iterations"]
 
-    # add batch size value if batch size isn't in search space
+    # current HPO requires batch_size information.
+    # so if batch_size is not in the HPO's target hyper parameters,
+    # need to set batch_size config from the instance of ConfigurableParameters
     if hp_config["batch_size_param_name"] not in hp_config["params"].keys():
         attr = hyper_parameters
         for val in hp_config["batch_size_param_name"].split('.'):
