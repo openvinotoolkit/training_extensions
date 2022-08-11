@@ -17,7 +17,7 @@
 from sys import maxsize
 
 from attr import attrs
-from configs.base.configuration_enums import ModelBackbone, POTQuantizationPreset
+from configs.base.configuration_enums import POTQuantizationPreset
 from ote_sdk.configuration import ConfigurableParameters
 from ote_sdk.configuration.elements import (
     ParameterGroup,
@@ -56,12 +56,6 @@ class BaseAnomalyConfig(ConfigurableParameters):
             warning="Increasing this value may cause the system to use more memory than available, "
             "potentially causing out of memory errors, please update with caution.",
             affects_outcome_of=ModelLifecycle.TRAINING,
-        )
-
-        backbone = selectable(
-            default_value=ModelBackbone.RESNET18,
-            header="Model Backbone",
-            description="Pre-trained backbone used for feature extraction",
         )
 
     @attrs
