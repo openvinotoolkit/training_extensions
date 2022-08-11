@@ -90,6 +90,6 @@ class BlurSegmentation(SegmentationModel):
                 outputs["saliency_map"][0],
                 (metadata["original_shape"][1], metadata["original_shape"][0]),
             )
-            metadata["feature_vector"] = outputs["feature_vector"] 
+            metadata["feature_vector"] = outputs["feature_vector"].reshape(-1)
 
         return hard_prediction

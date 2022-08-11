@@ -73,7 +73,7 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
               ) -> DatasetEntity:
         logger.info('infer()')
         dump_features = True
-        dump_saliency_map = not inference_parameters.is_evaluation if inference_parameters else True        
+        dump_saliency_map = not inference_parameters.is_evaluation if inference_parameters else True
 
         if inference_parameters is not None:
             update_progress_callback = inference_parameters.update_progress
@@ -87,11 +87,11 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         stage_module = 'SegInferrer'
         self._data_cfg = self._init_test_data_cfg(dataset)
         self._label_dictionary = dict(enumerate(self._labels, 1))
-        results = self._run_task(stage_module, mode='train', dataset=dataset, dump_features=dump_features, 
+        results = self._run_task(stage_module, mode='train', dataset=dataset, dump_features=dump_features,
                                   dump_saliency_map=dump_saliency_map)
         logger.debug(f'result of run_task {stage_module} module = {results}')
         predictions = results['outputs']
-        prediction_results = zip(predictions['eval_predictions'], predictions['feature_vectors'], 
+        prediction_results = zip(predictions['eval_predictions'], predictions['feature_vectors'],
                                   predictions['saliency_maps'])
         self._add_predictions_to_dataset(prediction_results, dataset, dump_saliency_map=not is_evaluation)
         return dataset
@@ -211,7 +211,7 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
 
     def _add_predictions_to_dataset(self, prediction_results, dataset, dump_saliency_map):
         """ Loop over dataset again to assign predictions. Convert from MMSegmentation format to OTE format. """
-        
+
         for dataset_item, (prediction, feature_vector, saliency_map) in zip(dataset, prediction_results):
             soft_prediction = np.transpose(prediction[0], axes=(1, 2, 0))
             hard_prediction = create_hard_prediction_from_soft_prediction(
@@ -227,13 +227,13 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
             dataset_item.append_annotations(annotations=annotations)
 
             if feature_vector is not None:
-                active_score = TensorEntity(name="representation_vector", numpy=feature_vector)
+                active_score = TensorEntity(name="representation_vector", numpy=feature_vector.reshape(-1))
                 dataset_item.append_metadata_item(active_score, model=self._task_environment.model)
 
             if dump_saliency_map and saliency_map is not None:
                 saliency_map = get_actmap(saliency_map, (dataset_item.width, dataset_item.height) )
                 saliency_map_media = ResultMediaEntity(name="saliency_map", type="Saliency map",
-                                                annotation_scene=dataset_item.annotation_scene, 
+                                                annotation_scene=dataset_item.annotation_scene,
                                                 numpy=saliency_map, roi=dataset_item.roi)
                 dataset_item.append_metadata_item(saliency_map_media, model=self._task_environment.model)
 
