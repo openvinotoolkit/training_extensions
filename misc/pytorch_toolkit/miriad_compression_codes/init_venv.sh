@@ -9,13 +9,13 @@ fi
 
 cd ${work_dir}
 
-if [[ -e venv ]]; then
+if [ -e venv ]; then
   echo
   echo "Virtualenv already exists. Use command to start working:"
   echo "$ . venv/bin/activate"
 fi
 
-virtualenv ${venv_dir} -p python3 --prompt="(compression)"
+virtualenv ${venv_dir} -p python3 --prompt="compression"
 
 . ${venv_dir}/bin/activate
 
