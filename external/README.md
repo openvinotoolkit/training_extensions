@@ -26,26 +26,26 @@ Every sub-project is fully indepedent from each other, and each of them has its 
 
 ## Image Classification
 
-| ID                                                             | Name                             | Complexity (GFlops) | Model size (MB) | Path                                                                                             |
-| -------------------------------------------------------------- | -------------------------------- | ------------------- | --------------- | ------------------------------------------------------------------------------------------------ |
-| ClassIncremental_Image_Classification_MobileNet-V3-small       | MobileNet-V3-small-ClsIncr       | 0.12                | 1.56            | model-preparation-algorithm/configs/classification/mobilenet_v3_small_cls_incr/template.yaml     |
-| ClassIncremental_Image_Classification_MobileNet-V3-large-0.75x | MobileNet-V3-large-0.75x-ClsIncr | 0.32                | 2.76            | model-preparation-algorithm/configs/classification/mobilenet_v3_large_075_cls_incr/template.yaml |
-| ClassIncremental_Image_Classification_MobileNet-V3-large-1x    | MobileNet-V3-large-1x-ClsIncr    | 0.44                | 4.29            | model-preparation-algorithm/configs/classification/mobilenet_v3_large_1_cls_incr/template.yaml   |
-| Custom_Image_Classification_MobileNet-V3-large-1x              | MobileNet-V3-large-1x            | 0.44                | 4.29            | deep-object-reid/configs/ote_custom_classification/mobilenet_v3_large_1/template.yaml            |
-| ClassIncremental_Image_Classification_EfficinetNet-B0          | EfficientNet-B0-ClsIncr          | 0.81                | 4.09            | model-preparation-algorithm/configs/classification/efficientnet_b0_cls_incr/template.yaml        |
-| Custom_Image_Classification_EfficinetNet-B0                    | EfficientNet-B0                  | 0.81                | 4.09            | deep-object-reid/configs/ote_custom_classification/efficientnet_b0/template.yaml                 |
-| ClassIncremental_Image_Classification_EfficinetNet-V2-S        | EfficientNet-V2-S-ClsIncr        | 5.76                | 20.23           | model-preparation-algorithm/configs/classification/efficientnet_v2_s_cls_incr/template.yaml      |
-| Custom_Image_Classification_EfficientNet-V2-S                  | EfficientNet-V2-S                | 5.76                | 20.23           | deep-object-reid/configs/ote_custom_classification/efficientnet_v2_s/template.yaml               |
+| ID                                                             | Name                             | Complexity (GFlops) | Model size (MB) | Path                                                                                               |
+| -------------------------------------------------------------- | -------------------------------- | ------------------- | --------------- | -------------------------------------------------------------------------------------------------- |
+| ClassIncremental_Image_Classification_MobileNet-V3-small       | MobileNet-V3-small-ClsIncr       | 0.12                | 1.56            | model-preparation-algorithm/configs/classification/mobilenet_v3_small_cls_incr/template.yaml       |
+| ClassIncremental_Image_Classification_MobileNet-V3-large-0.75x | MobileNet-V3-large-0.75x-ClsIncr | 0.32                | 2.76            | model-preparation-algorithm/configs/classification/mobilenet_v3_large_075_cls_incr/template.yaml   |
+| ClassIncremental_Image_Classification_MobileNet-V3-large-1x    | MobileNet-V3-large-1x-ClsIncr    | 0.44                | 4.29            | model-preparation-algorithm/configs/classification/mobilenet_v3_large_1_cls_incr/template.yaml     |
+| Custom_Image_Classification_MobileNet-V3-large-1x              | MobileNet-V3-large-1x            | 0.44                | 4.29            | deep-object-reid/configs/ote_custom_classification/mobilenet_v3_large_1/template_experimental.yaml |
+| ClassIncremental_Image_Classification_EfficinetNet-B0          | EfficientNet-B0-ClsIncr          | 0.81                | 4.09            | model-preparation-algorithm/configs/classification/efficientnet_b0_cls_incr/template.yaml          |
+| Custom_Image_Classification_EfficinetNet-B0                    | EfficientNet-B0                  | 0.81                | 4.09            | deep-object-reid/configs/ote_custom_classification/efficientnet_b0/template_experimental.yaml      |
+| ClassIncremental_Image_Classification_EfficinetNet-V2-S        | EfficientNet-V2-S-ClsIncr        | 5.76                | 20.23           | model-preparation-algorithm/configs/classification/efficientnet_v2_s_cls_incr/template.yaml        |
+| Custom_Image_Classification_EfficientNet-V2-S                  | EfficientNet-V2-S                | 5.76                | 20.23           | deep-object-reid/configs/ote_custom_classification/efficientnet_v2_s/template_experimental.yaml    |
 
 ## Object Detection
 
-| ID                                           | Name          | Complexity (GFlops) | Model size (MB) | Path                                                                                  |
-| -------------------------------------------- | ------------- | ------------------- | --------------- | ------------------------------------------------------------------------------------- |
-| Custom_Object_Detection_YOLOX                | YOLOX         | 6.5                 | 20.4            | mmdetection/configs/custom-object-detection/cspdarknet_YOLOX/template.yaml            |
-| Custom_Object_Detection_Gen3_SSD             | SSD           | 9.4                 | 7.6             | mmdetection/configs/custom-object-detection/gen3_mobilenetV2_SSD/template.yaml        |
-| ClassIncremental_Object_Detection_Gen3_ATSS  | ATSS-ClsIncr  | 20.6                | 9.1             | model-preparation-algorithm/configs/detection/mobilenetv2_atss_cls_incr/template.yaml |
-| Custom_Object_Detection_Gen3_ATSS            | ATSS          | 20.6                | 9.1             | mmdetection/configs/custom-object-detection/gen3_mobilenetV2_ATSS/template.yaml       |
-| ClassIncremental_Object_Detection_Gen3_VFNet | VFNet-ClsIncr | 457.4               | 126.0           | model-preparation-algorithm/configs/detection/resnet50_vfnet_cls_incr/template.yaml   |
+| ID                                           | Name          | Complexity (GFlops) | Model size (MB) | Path                                                                                         |
+| -------------------------------------------- | ------------- | ------------------- | --------------- | -------------------------------------------------------------------------------------------- |
+| Custom_Object_Detection_YOLOX                | YOLOX         | 6.5                 | 20.4            | mmdetection/configs/custom-object-detection/cspdarknet_YOLOX/template_experimental.yaml      |
+| Custom_Object_Detection_Gen3_SSD             | SSD           | 9.4                 | 7.6             | mmdetection/configs/custom-object-detection/gen3_mobilenetV2_SSD/template_experimental.yaml  |
+| ClassIncremental_Object_Detection_Gen3_ATSS  | ATSS-ClsIncr  | 20.6                | 9.1             | model-preparation-algorithm/configs/detection/mobilenetv2_atss_cls_incr/template.yaml        |
+| Custom_Object_Detection_Gen3_ATSS            | ATSS          | 20.6                | 9.1             | mmdetection/configs/custom-object-detection/gen3_mobilenetV2_ATSS/template_experimental.yaml |
+| ClassIncremental_Object_Detection_Gen3_VFNet | VFNet-ClsIncr | 457.4               | 126.0           | model-preparation-algorithm/configs/detection/resnet50_vfnet_cls_incr/template.yaml          |
 
 ## Object Counting
 
