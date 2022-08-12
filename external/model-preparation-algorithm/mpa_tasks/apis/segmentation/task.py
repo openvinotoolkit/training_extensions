@@ -128,7 +128,8 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         output_model.optimization_type = ModelOptimizationType.MO
 
         stage_module = 'SegExporter'
-        results = self._run_task(stage_module, mode='train')
+        self._initialize()
+        results = self._run_task(stage_module, mode='train', precision=self._precision[0].name)
         results = results.get('outputs')
         logger.debug(f'results of run_task = {results}')
         if results is None:
@@ -302,7 +303,7 @@ class SegmentationTrainTask(SegmentationInferenceTask, ITrainingTask):
         torch.save(modelinfo, buffer)
         output_model.set_data("weights.pth", buffer.getvalue())
         output_model.set_data("label_schema.json", label_schema_to_bytes(self._task_environment.label_schema))
-        output_model.precision = [ModelPrecision.FP32]
+        output_model.precision = self._precision
 
     def cancel_training(self):
         """

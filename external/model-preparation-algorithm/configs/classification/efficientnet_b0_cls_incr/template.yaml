@@ -27,7 +27,7 @@ hyper_parameters:
   parameter_overrides:
     learning_parameters:
       batch_size:
-        default_value: 32
+        default_value: 64
         auto_hpo_state: POSSIBLE
       num_workers:
         default_value: 4
