@@ -1,6 +1,4 @@
-"""
-OpenVINO Anomaly Task
-"""
+"""OpenVINO Anomaly Task."""
 
 # Copyright (C) 2021 Intel Corporation
 #
@@ -71,8 +69,7 @@ logger = get_logger(__name__)
 
 
 class OTEOpenVINOAnomalyDataloader(DataLoader):
-    """
-    Dataloader for loading OTE dataset into OTE OpenVINO Inferencer
+    """Dataloader for loading OTE dataset into OTE OpenVINO Inferencer.
 
     Args:
         dataset (DatasetEntity): OTE dataset entity
@@ -89,20 +86,32 @@ class OTEOpenVINOAnomalyDataloader(DataLoader):
         self.dataset = dataset
         self.inferencer = inferencer
 
-    def __getitem__(self, index):
+    def __getitem__(self, index: int):
+        """Get dataset item.
+
+        Args:
+            index (int): Index of the dataset sample.
+
+        Returns:
+            Dataset item.
+        """
         image = self.dataset[index].numpy
         annotation = self.dataset[index].annotation_scene
         inputs = self.inferencer.pre_process(image)
 
         return (index, annotation), inputs
 
-    def __len__(self):
+    def __len__(self) -> int:
+        """Get size of the dataset.
+
+        Returns:
+            int: Size of the dataset.
+        """
         return len(self.dataset)
 
 
 class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeploymentTask):
-    """
-    OpenVINO inference task
+    """OpenVINO inference task.
 
     Args:
         task_environment (TaskEnvironment): task environment of the trained anomaly model
@@ -123,8 +132,7 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
         self._base_dir = os.path.abspath(os.path.dirname(template_file_path))
 
     def get_config(self) -> ADDict:
-        """
-        Get Anomalib Config from task environment
+        """Get Anomalib Config from task environment.
 
         Returns:
             ADDict: Anomalib config
@@ -193,7 +201,6 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
 
     def get_meta_data(self) -> Dict:
         """Get Meta Data."""
-
         image_threshold = np.frombuffer(self.task_environment.model.get_data("image_threshold"), dtype=np.float32)
         pixel_threshold = np.frombuffer(self.task_environment.model.get_data("pixel_threshold"), dtype=np.float32)
         min_value = np.frombuffer(self.task_environment.model.get_data("min"), dtype=np.float32)
@@ -224,8 +231,7 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
         output_resultset.performance = metric.get_performance()
 
     def _get_optimization_algorithms_configs(self) -> List[ADDict]:
-        """Returns list of optimization algorithms configurations"""
-
+        """Returns list of optimization algorithms configurations."""
         hparams = self.task_environment.get_hyper_parameters()
 
         optimization_config_path = os.path.join(self._base_dir, "pot_optimization_config.json")
@@ -319,8 +325,7 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
         logger.info("POT optimization completed")
 
     def load_inferencer(self) -> OpenVINOInferencer:
-        """
-        Create the OpenVINO inferencer object
+        """Create the OpenVINO inferencer object.
 
         Returns:
             OpenVINOInferencer object
@@ -337,7 +342,7 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
 
     @staticmethod
     def __save_weights(path: str, data: bytes) -> None:
-        """Write data to file
+        """Write data to file.
 
         Args:
             path (str): Path of output file
@@ -348,8 +353,7 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
 
     @staticmethod
     def __load_weights(path: str, output_model: ModelEntity, key: str) -> None:
-        """
-        Load weights into output model
+        """Load weights into output model.
 
         Args:
             path (str): Path to weights

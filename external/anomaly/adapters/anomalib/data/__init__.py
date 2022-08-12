@@ -1,6 +1,4 @@
-"""
-Initialization of Anomaly Dataset Utils
-"""
+"""Initialization of Anomaly Dataset Utils."""
 
 # Copyright (C) 2021 Intel Corporation
 #

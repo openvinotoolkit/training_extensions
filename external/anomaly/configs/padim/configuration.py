@@ -1,6 +1,4 @@
-"""
-Configurable parameters for Padim anomaly task
-"""
+"""Configurable parameters for Padim anomaly task."""
 
 # Copyright (C) 2021 Intel Corporation
 #
@@ -18,14 +16,32 @@ Configurable parameters for Padim anomaly task
 
 from attr import attrs
 from configs.base import BaseAnomalyConfig
-from ote_sdk.configuration.elements import string_attribute
+from configs.base.configuration_enums import ModelBackbone
+from ote_sdk.configuration.elements import (
+    add_parameter_group,
+    selectable,
+    string_attribute,
+)
 
 
 @attrs
 class PadimAnomalyBaseConfig(BaseAnomalyConfig):
-    """
-    Configurable parameters for PADIM anomaly classification task.
-    """
+    """Configurable parameters for PADIM anomaly classification task."""
 
     header = string_attribute("Configuration for Padim")
     description = header
+
+    @attrs
+    class LearningParameters(BaseAnomalyConfig.LearningParameters):
+        """Parameters that can be tuned using HPO."""
+
+        header = string_attribute("Learning Parameters")
+        description = header
+
+        backbone = selectable(
+            default_value=ModelBackbone.RESNET18,
+            header="Model Backbone",
+            description="Pre-trained backbone used for feature extraction",
+        )
+
+    learning_parameters = add_parameter_group(LearningParameters)

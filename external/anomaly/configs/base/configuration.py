@@ -1,6 +1,4 @@
-"""
-Configurable parameters for anomaly classification task
-"""
+"""Configurable parameters for anomaly classification task."""
 
 # Copyright (C) 2021 Intel Corporation
 #
@@ -19,7 +17,7 @@ Configurable parameters for anomaly classification task
 from sys import maxsize
 
 from attr import attrs
-from configs.base.configuration_enums import ModelBackbone, POTQuantizationPreset
+from configs.base.configuration_enums import POTQuantizationPreset
 from ote_sdk.configuration import ConfigurableParameters
 from ote_sdk.configuration.elements import (
     ParameterGroup,
@@ -35,9 +33,7 @@ from ote_sdk.configuration.model_lifecycle import ModelLifecycle
 
 @attrs
 class BaseAnomalyConfig(ConfigurableParameters):
-    """
-    Base OTE configurable parameters for anomaly classification task.
-    """
+    """Base OTE configurable parameters for anomaly classification task."""
 
     header = string_attribute("Configuration for an anomaly classification task")
     description = header
@@ -62,17 +58,9 @@ class BaseAnomalyConfig(ConfigurableParameters):
             affects_outcome_of=ModelLifecycle.TRAINING,
         )
 
-        backbone = selectable(
-            default_value=ModelBackbone.RESNET18,
-            header="Model Backbone",
-            description="Pre-trained backbone used for feature extraction",
-        )
-
     @attrs
     class DatasetParameters(ParameterGroup):
-        """
-        Parameters related to dataloader
-        """
+        """Parameters related to dataloader."""
 
         header = string_attribute("Dataset Parameters")
         description = header
@@ -89,9 +77,7 @@ class BaseAnomalyConfig(ConfigurableParameters):
 
     @attrs
     class POTParameters(ParameterGroup):
-        """
-        Training parameters for post-training optimization
-        """
+        """Training parameters for post-training optimization."""
 
         header = string_attribute("POT Parameters")
         description = header
@@ -113,9 +99,7 @@ class BaseAnomalyConfig(ConfigurableParameters):
 
     @attrs
     class NNCFOptimization(ParameterGroup):
-        """
-        Parameters for NNCF optimization
-        """
+        """Parameters for NNCF optimization."""
 
         header = string_attribute("Optimization by NNCF")
         description = header

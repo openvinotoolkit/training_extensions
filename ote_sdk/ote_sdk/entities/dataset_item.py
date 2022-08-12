@@ -436,7 +436,9 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
     def __deepcopy__(self, memo):
         """
         When we deepcopy this object, be sure not to deep copy the lock, as this is not possible,
-        make a new lock instead.
+        make a new lock instead. In addition, we prevent deepcopy of AnnotationSceneEntity member
+        variable to avoid unintentional ID sharing among instances. Same instance reference is
+        copied to the output instead.
         """
         # Call ROI getter to ensure original object has an ROI.
         _ = self.roi
@@ -446,6 +448,8 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
         for name, value in vars(self).items():
             if "__roi_lock" in name:
                 setattr(clone, name, Lock())
+            elif "__annotation_scene" in name:
+                pass  # Keep the same instance
             else:
                 setattr(clone, name, copy.deepcopy(value, memo))
         return clone

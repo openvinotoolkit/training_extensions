@@ -92,7 +92,7 @@ class OteClassification(Classification):
     @check_input_parameters_type()
     def postprocess_aux_outputs(self, outputs: Dict[str, np.ndarray], metadata: Dict[str, Any]):
         actmap = get_actmap(outputs['saliency_map'][0], (metadata['original_shape'][1], metadata['original_shape'][0]))
-        repr_vector = outputs['feature_vector']
+        repr_vector = outputs['feature_vector'].reshape(-1)
 
         logits = outputs[self.out_layer_name].squeeze()
 

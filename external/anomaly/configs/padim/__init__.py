@@ -1,6 +1,4 @@
-"""
-Base configuration parameters for Padim
-"""
+"""Base configuration parameters for Padim."""
 
 # Copyright (C) 2022 Intel Corporation
 #

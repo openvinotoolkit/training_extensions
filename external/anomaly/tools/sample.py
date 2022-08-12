@@ -97,7 +97,6 @@ class OteAnomalyTask:
             >>> task.export()
             Performance(score: 0.9756097560975608, dashboard: (1 metric groups))
         """
-
         logger.info("Loading the model template.")
         self.model_template = parse_model_template(model_template_path)
 

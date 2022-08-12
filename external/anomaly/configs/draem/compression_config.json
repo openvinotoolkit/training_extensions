@@ -11,6 +11,9 @@
     }
   },
   "nncf_quantization": {
+    "model": {
+      "lr": 0.004
+    },
     "nncf_config": {
       "compression": [
         {
@@ -24,14 +27,7 @@
               "num_bn_adaptation_samples": 250
             }
           },
-          "ignored_scopes": [
-            "PadimModel/sqrt_0",
-            "PadimModel/interpolate_2",
-            "PadimModel/__truediv___0",
-            "PadimModel/__truediv___1",
-            "PadimModel/matmul_1",
-            "PadimModel/conv2d_0"
-          ]
+          "ignored_scopes": []
         }
       ]
     }
