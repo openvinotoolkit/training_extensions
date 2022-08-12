@@ -176,7 +176,7 @@ class BaseTask:
                 del self._model_cfg._cfg_dict['fp16']
             elif isinstance(self._model_cfg, ConfigDict):
                 del self._model_cfg['fp16']
-        self._precision = self._model_cfg.get('precision', [ModelPrecision.FP32])
+        self._precision = [ModelPrecision.FP32]
 
         # add Cancel tranining hook
         update_or_add_custom_hook(self._recipe_cfg, ConfigDict(
