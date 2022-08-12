@@ -131,6 +131,9 @@ def softmax_numpy(x: np.ndarray):
 def get_hierarchical_predictions(logits: np.ndarray, multihead_class_info: dict,
                                  pos_thr: float = 0.5, activate: bool = True):
     predicted_labels = []
+    logits_range_dict = multihead_class_info.get('head_idx_to_logits_range', False)
+    if logits_range_dict:  #  json allows only string key, revert to integer.
+        multihead_class_info['head_idx_to_logits_range'] = {int(k):v for k,v in logits_range_dict.items()}
     for i in range(multihead_class_info['num_multiclass_heads']):
         logits_begin, logits_end = multihead_class_info['head_idx_to_logits_range'][i]
         head_logits = logits[logits_begin : logits_end]
