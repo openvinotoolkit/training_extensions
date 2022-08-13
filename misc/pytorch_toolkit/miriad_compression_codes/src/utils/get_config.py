@@ -23,3 +23,4 @@ def get_config(action, phase, config_path=""):
             config = config_file[action]
 
     return config
+    
