@@ -12,7 +12,7 @@ class CustomDatasetPhase1(data.Dataset):
 				transform_images = None, transform_masks = None,
 				images_path_rel = '.', masks_path_rel = '.',
 				preserve_names = False):
-        self.path_to_dataset = os.path.abspath(path_to_dataset) # root folder of the CBIS-DDSM dataset
+        self.path_to_dataset = os.path.abspath(path_to_dataset)
         self.files256 = files256
         self.files128 = files128
         self.images_path_rel = images_path_rel # relative path to images
@@ -50,8 +50,7 @@ class CustomDatasetPhase1(data.Dataset):
             self.choose_random_subset()
 
         # Read the images and masks (same as images)
-        # image = Image.open(os.path.join(self.path_to_dataset, self.images_path_rel, self.cropsubset[i]))
-        # mask = Image.open(os.path.join(self.path_to_dataset, self.masks_path_rel, self.cropsubset[i]))
+
         if self.split == 'train':
             fname256 = self.files256[i]
             fname128 = []
@@ -63,13 +62,7 @@ class CustomDatasetPhase1(data.Dataset):
             if self.transform_images is not None:
                 image256 = self.transform_images(image256)
                 image128 = self.transform_images(image128)
-            # if self.transform_masks is not None:
-            # 	mask = self.transform_masks(mask)
 
-            # debugging stuff, not important
-            # if self.preserve_names:
-            # 	return image256, image128, self.cropsubset[i]
-            # else:
             return image256, image128
         else:
             image = Image.open(os.path.join(self.path_to_dataset,self.test_files[i]))
