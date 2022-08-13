@@ -33,4 +33,4 @@ def download_data(phase):
     data_url = config['test_data']['drive_url']
     data_path = config['test_data']['dest_path']
     download_and_extract(path=data_path, url=data_url,
-                         expath='test_data/rbis_ddsm_sample/')
+                         expath='test_data/miriad_sample/')
