@@ -72,8 +72,8 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
 
     def infer(self,
               dataset: DatasetEntity,
-              inference_parameters: Optional[InferenceParameters] = None
-              ) -> DatasetEntity:
+              inference_parameters: Optional[InferenceParameters] = None,
+              **kwargs) -> DatasetEntity:
         logger.info('infer()')
 
         update_progress_callback = default_progress_callback
@@ -87,13 +87,14 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
             self.confidence_threshold = self._hyperparams.postprocessing.confidence_threshold
         logger.info(f'Confidence threshold {self.confidence_threshold}')
 
-        prediction_results, _ = self._infer_detector(dataset, inference_parameters)
+        prediction_results, _ = self._infer_detector(dataset, inference_parameters, **kwargs)
         self._add_predictions_to_dataset(prediction_results, dataset, self.confidence_threshold)
         logger.info('Inference completed')
         return dataset
 
     def _infer_detector(self, dataset: DatasetEntity,
-                        inference_parameters: Optional[InferenceParameters] = None) -> Tuple[Iterable, float]:
+                        inference_parameters: Optional[InferenceParameters] = None,
+                        **kwargs) -> Tuple[Iterable, float]:
         """ Inference wrapper
 
         This method triggers the inference and returns `prediction_results` zipped with prediction results,
@@ -118,7 +119,8 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
                                  dataset=dataset,
                                  eval=inference_parameters.is_evaluation if inference_parameters else False,
                                  dump_features=dump_features,
-                                 dump_saliency_map=dump_saliency_map)
+                                 dump_saliency_map=dump_saliency_map,
+                                 **kwargs)
         # TODO: InferenceProgressCallback register
         logger.debug(f'result of run_task {stage_module} module = {results}')
         output = results['outputs']
@@ -414,6 +416,7 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
     def save_model(self, output_model: ModelEntity):
         logger.info('called save_model')
         buffer = io.BytesIO()
+        # TODO[EUGENE]: WHY NESTED PARAMETER ARE NOT PROPERLY SAVED?
         hyperparams_str = ids_to_strings(cfg_helper.convert(self._hyperparams, dict, enum_to_str=True))
         labels = {label.name: label.color.rgb_tuple for label in self._labels}
         model_ckpt = torch.load(self._model_ckpt)
@@ -421,6 +424,16 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
             'model': model_ckpt['state_dict'], 'config': hyperparams_str, 'labels': labels,
             'confidence_threshold': self.confidence_threshold, 'VERSION': 1
         }
+        if bool(self._hyperparams.tiling_parameters.enable_tiling):
+            modelinfo.update(
+                dict(tiling_parameters=dict(
+                        enable_tiling=bool(self._hyperparams.tiling_parameters.enable_tiling),
+                        tile_size=int(self._hyperparams.tiling_parameters.tile_size),
+                        tile_overlap=float(self._hyperparams.tiling_parameters.tile_overlap),
+                        tile_max_number=int(self._hyperparams.tiling_parameters.tile_max_number),
+                ))
+            )
+
         if hasattr(self._model_cfg.model, 'bbox_head') and hasattr(self._model_cfg.model.bbox_head, 'anchor_generator'):
             if getattr(self._model_cfg.model.bbox_head.anchor_generator, 'reclustering_anchors', False):
                 modelinfo['anchors'] = {}
