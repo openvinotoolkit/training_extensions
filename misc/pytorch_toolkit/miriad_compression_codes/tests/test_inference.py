@@ -139,3 +139,15 @@ def create_inference_test_for_phase2():
             self.assertLesser(loss, 0.1)
 
     return InferenceTest
+
+class TestTrainer(create_inference_test_for_phase1()):
+    'Test case for phase1'
+
+
+class TestTrainerEff(create_inference_test_for_phase2()):
+    'Test case for phase2'
+
+
+if __name__ == '__main__':
+
+    unittest.main()
