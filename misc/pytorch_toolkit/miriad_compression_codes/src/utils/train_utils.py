@@ -70,20 +70,20 @@ def train_model_phase1(config, train_dataloader, model, optimizer, msecrit, epoc
         psnr128 = compare_psnr_batch(img128.detach().cpu().numpy(), output128.detach().cpu().numpy())
         psnr128 = 20.0 * np.log10(psnr128)
 
-        if config['efficient_net']:
-            if idx % config['interval'] == 0:
-                print('{tag} {0:4d}/{1:4d}/{2:4d} -> Loss: {3:.8f}, \
-                        pSNR: {4:.8f}dB, SSIM: {5:.8f}, alpha: {6: .8f}, \
-                        beta: {7: .8f}'.format(idx, epoch, config['epochs'],
-                        loss2.item(), psnr128, ssim128, alpha[it_no], beta[it_no], tag=colored('[Training]', 'yellow')))
+        # if config['efficient_net']:
+        #     if idx % config['interval'] == 0:
+                # print('{tag} {0:4d}/{1:4d}/{2:4d} -> Loss: {3:.8f}, \
+                #         pSNR: {4:.8f}dB, SSIM: {5:.8f}, alpha: {6: .8f}, \
+                #         beta: {7: .8f}'.format(idx, epoch, config['epochs'],
+                #         loss2.item(), psnr128, ssim128, alpha[it_no], beta[it_no], tag=colored('[Training]', 'yellow')))
 			# 	print('{tag} {0:4d}/{1:4d}/{2:4d} -> Loss: {3:.8f}, pSNR: {4:.8f}dB, SSIM: {5:.8f}'.format(
 			# 		idx, epoch, args.epochs, loss1.item(), psnr256, ssim256, tag=colored('[Training]','red')))
-        else:
-            if idx % config['interval'] == 0:
-                print('{tag} {0:4d}/{1:4d}/{2:4d} -> Loss: {3:.8f}, \
-                        pSNR: {4:.8f}dB, \
-                        SSIM: {5:.8f}'.format(idx, epoch, config['epochs'], 
-                        loss1.item(), psnr256, ssim256, tag=colored('[Training]', 'red')))
+        # else:
+        #     if idx % config['interval'] == 0:
+        #         print('{tag} {0:4d}/{1:4d}/{2:4d} -> Loss: {3:.8f}, \
+        #                 pSNR: {4:.8f}dB, \
+        #                 SSIM: {5:.8f}'.format(idx, epoch, config['epochs'], 
+        #                 loss1.item(), psnr256, ssim256, tag=colored('[Training]', 'red')))
 
         total_loss.backward()  # backward
         optimizer.step()  # weight update
@@ -101,7 +101,8 @@ def train_model_phase2(config, train_dataloader, model, optimizer, msecrit, epoc
             data11 = imageset1[0][i]
             data12 = imageset1[1][i]
             images = data11
-            labels = torch.reshape(data12, (1, 1, 256, 256))
+            # labels = torch.reshape(data12, (1, 1, 256, 256))
+            labels = data12
             if torch.cuda.is_available() and config['gpu']:
                 images, labels = images.cuda(), labels.cuda()
             optimizer.zero_grad()  # zero out grads
@@ -117,7 +118,8 @@ def train_model_phase2(config, train_dataloader, model, optimizer, msecrit, epoc
             data21 = imageset2[0][j]
             data22 = imageset2[1][j]
             images = data21
-            labels = torch.reshape(data22, (1, 1, 128, 128))
+            # labels = torch.reshape(data22, (1, 1, 128, 128))
+            labels = data22
 
             if torch.cuda.is_available() and config['gpu']:
                 images, labels = images.cuda(), labels.cuda()
@@ -205,7 +207,13 @@ def train_model(config):
 
     if config['phase'] == 1:
         # Dataset & dataloader for training
+        files256 = os.listdir(config['train_data'])
+        files128 = os.listdir(config['train_data'])
+        
         train_dataset = CustomDatasetPhase1(config['train_data'],
+                                            files256 = files256,
+                                            files128=files128,
+                                            split="train",
                                             transform_images=images_transforms,
                                             transform_masks=labels_transforms)
         train_dataset.choose_random_subset(config['subset_size'])
