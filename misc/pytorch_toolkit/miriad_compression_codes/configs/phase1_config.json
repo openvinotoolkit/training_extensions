@@ -1,7 +1,7 @@
 {
     "train": {
-        "train_data": "phase1data/train/",
-        "test_data": "phase1data/test/",
+        "train_data": "test_data/phase1data/train/cbis_sample/train",
+        "test_data": "test_data/phase1data/train/cbis_sample/test",
         "batch_size": 10,
         "epochs": 5,
         "gpu": "True",
@@ -14,6 +14,7 @@
         "alpha": 1,
         "phi": 1,
         "phase": 1,
+        "class_count": 3,
         "efficient_net": "True",
         "iterate": 5,
         "lr": 1e-8,
@@ -22,8 +23,8 @@
         "max_epoch": 3,
         "n_digestunits": 3,
         "savepath": "model_weights/",
-        "default_image_path": "phase1data/train/",
-        "image_path": "phase1data/train/"
+        "default_image_path": "test_data/phase1data/train/cbis_sample/train/",
+        "image_path": "test_data/phase1data/train/cbis_sample/train/"
     },
     "inference": {
         "model_file": "args.model_file",
@@ -50,8 +51,8 @@
             1024,
             1024
         ],
-        "default_image_path": "phase1data/train/",
-        "image_path": "phase1data/train/"
+        "default_image_path": "test_data/phase1data/train/cbis_sample/test/",
+        "image_path": "test_data/phase1data/train/cbis_sample/test/"
     },
     "export": {
         "checkpoint": "model_weights/cbis_a1_b1.model",

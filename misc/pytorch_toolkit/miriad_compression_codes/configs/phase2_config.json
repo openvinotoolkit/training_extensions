@@ -1,7 +1,7 @@
 {
     "train": {
-        "train_data": "phase2data/train/",
-        "test_data": "phase2data/test/",
+        "train_data": "test_data/phase2data/train/p2_data/training/",
+        "test_data": "test_data/phase2data/train/p2_data/testing/",
         "batch_size": 10,
         "epochs": 5,
         "gpu": "True",
@@ -12,6 +12,7 @@
         "depth": 3,
         "width": 96,
         "phase": 2,
+        "class_count": 3,
         "efficient_net": "True",
         "iterate": 5,
         "lr": 1e-8,
@@ -23,10 +24,10 @@
         "phi": 1,
         "n_digestunits": 3,
         "savepath": "model_weights/",
-        "default_image_path": "phase2data/train/",
-        "image_path": "phase2data/train/",
-        "path_to_latent": "phase2data/train/latent/",
-        "path_to_gdtruth": "phase2data/train/gd_truth/"
+        "default_image_path": "test_data/phase2data/train/p2_data/training/",
+        "image_path": "test_data/phase2data/train/p2_data/training/",
+        "path_to_latent": "test_data/phase2data/train/p2_data/training/latent/",
+        "path_to_gdtruth": "test_data/phase2data/train/p2_data/training/gd_truth/"
     },
     "inference": {
         "model_file": "args.model_file",
@@ -55,10 +56,10 @@
             3,
             3
         ],
-        "default_image_path": "phase2data/test/",
-        "image_path": "phase2data/test/",
-        "path_to_latent": "phase2data/test/latent/",
-        "path_to_gdtruth": "phase2data/test/gd_truth/"
+        "default_image_path": "test_data/phase2data/train/p2_data/testing/",
+        "image_path": "test_data/phase2data/train/p2_data/testing/",
+        "path_to_latent": "test_data/phase2data/train/p2_data/testing/latent/",
+        "path_to_gdtruth": "test_data/phase2data/train/p2_data/testing/gd_truth/"
     },
     "export": {
         "checkpoint": "model_weights/final_d_3.model",
