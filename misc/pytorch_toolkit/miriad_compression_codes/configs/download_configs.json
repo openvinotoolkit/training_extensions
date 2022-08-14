@@ -1,13 +1,17 @@
 {
     "stage1": {
-        "url": "http://miriad.digital-health.one/models/bmi5/checkpoint_stage1.zip",
-        "dest_path": "model_weights/checkpoint_stage1.zip",
-        "drive_url": "https://drive.google.com/file/d/1g8onUzEjEUKwcWuzr85sAKN0DVthRXm5/view?usp=sharing"
+        "url": "",
+        "dest_path_data": "test_data/phase1data/train/cbis_sample.zip",
+        "drive_url_data": "https://drive.google.com/file/d/19QMJB7dUws7Roi5E3e0x5Pz7psoajq1J/view?usp=sharing",
+        "drive_url_model": "https://drive.google.com/file/d/1g8onUzEjEUKwcWuzr85sAKN0DVthRXm5/view?usp=sharing",
+        "dest_path_model": "model_weights/cbis_a1_b1.zip"
     },
     "stage2": {
-        "url": "http://miriad.digital-health.one/models/bmi5/checkpoint_stage2.zip",
-        "dest_path": "model_weights/checkpoint_stage2.zip",
-        "drive_url": "https://drive.google.com/file/d/1zYcfphP1rkWiAGlNiDNM1QWOY-3p7kpZ/view?usp=sharing"
+        "url": "",
+        "dest_path_data": "test_data/phase2data/train/p2_data.zip",
+        "drive_url_data": "https://drive.google.com/file/d/1PuBbZNN3kET2chxNYsn1VSOZUvDMecNV/view?usp=sharing",
+        "drive_url_model": "https://drive.google.com/file/d/1zYcfphP1rkWiAGlNiDNM1QWOY-3p7kpZ/view?usp=sharing",
+        "dest_path_model": "model_weights/final_d_3.zip"
     },
     "test_data": {
         "url": "http://miriad.digital-health.one/sample_data/bmi5/rbis_ddsm_sample.zip",
