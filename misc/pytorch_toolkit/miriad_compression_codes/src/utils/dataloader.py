@@ -53,7 +53,7 @@ class CustomDatasetPhase1(data.Dataset):
 
         if self.split == 'train':
             fname256 = self.files256[i]
-            fname128 = []
+            fname128 = self.files128[i]
             image256 = Image.open(os.path.join(self.path_to_dataset, fname256))
             image128 = Image.open(os.path.join(self.path_to_dataset, fname128))
             # mask = Image.open(os.path.join(self.path_to_dataset, self.masks_path_rel, self.cropsubset[i]))
@@ -64,6 +64,7 @@ class CustomDatasetPhase1(data.Dataset):
                 image128 = self.transform_images(image128)
 
             return image256, image128
+            
         else:
             image = Image.open(os.path.join(self.path_to_dataset,self.test_files[i]))
             if self.transform_images is not None:
@@ -77,7 +78,7 @@ class CustomDatasetPhase2(data.Dataset):
                  transform_images=None, transform_masks=None,
                  mod=0, preserve_name=False):
 
-        self.path_to_latent = path_to_latent  # root folder of the dataset
+        self.path_to_latent = path_to_latent 
         self.path_to_gdtruth = path_to_gdtruth
         self.transform_images = transform_images  # transforms
         self.transform_masks = transform_masks  # transforms
