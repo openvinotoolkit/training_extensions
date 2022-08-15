@@ -6,6 +6,7 @@ from torch.utils.data import DataLoader
 from src.utils.get_config import get_config
 from src.utils.dataloader import CustomDatasetPhase1, CustomDatasetPhase2
 from src.utils.downloader import download_data
+from src.utils.train_utils import load_model
 from src.utils.train_utils import validate_model_phase1, validate_model_phase2
 
 
@@ -15,24 +16,27 @@ def create_inference_test_for_phase1():
         def setUpClass(cls):
             cls.config = get_config(action='inference', phase=1)
 
-            if os.path.exists(cls.config['image_path']):
-                download_data()
+            if not os.path.exists(cls.config['image_path']):
+                download_data(phase=1)
                 # prepare_data()
 
-            x_tst = np.load(cls.config['image_path'], allow_pickle=True)
-            tst_data = CustomDatasetPhase1()
+            # x_tst = np.load(cls.config['image_path'], allow_pickle=True)
+            tst_data = CustomDatasetPhase1(cls.config['image_path'])
             cls.tst_loader = DataLoader(
                 tst_data, batch_size=1, shuffle=False, num_workers=16)
 
         def test_pytorch_inference(self):
+            # inference = CustomDatasetPhase1(
+            #     dataloader_test=self.tst_loader, checkpoint=self.config['checkpoint'],
+            #     device=self.device)
             inference = CustomDatasetPhase1(
-                dataloader_test=self.tst_loader, checkpoint=self.model_path,
-                device=self.device)
-            model = inference.load_model(run_type='pytorch')
+                path_to_dataset=self.config['image_path'])
+            # model = inference.load_model(run_type='pytorch')
+            model = load_model()
 
             # getting avg_loss, avg_ssim and avg_psnr
             loss, ssim, psnr = validate_model_phase1(
-                config=get_config(phase=1),
+                config=get_config(action='inference', phase=1),
                 test_dataloader=self.tst_loader,
                 model=model, msecrit=torch.nn.MSELoss()
             )
@@ -41,14 +45,17 @@ def create_inference_test_for_phase1():
             self.assertLesser(loss, 0.1)
 
         def test_onnx_inference(self):
+            # inference = CustomDatasetPhase1(
+            #     dataloader_test=self.tst_loader, checkpoint=self.config['checkpoint'],
+            #     device=self.device)
             inference = CustomDatasetPhase1(
-                dataloader_test=self.tst_loader, checkpoint=self.onnx_model_path,
-                device=self.device)
-            model = inference.load_model(run_type='onnx')
+                path_to_dataset=self.config['image_path'])
+            # model = inference.load_model(run_type='onnx')
+            model = load_model()
 
             # getting avg_loss, avg_ssim and avg_psnr
             loss, ssim, psnr = validate_model_phase1(
-                config=get_config(phase=1),
+                config=get_config(action='inference', phase=1),
                 test_dataloader=self.tst_loader,
                 model=model, msecrit=torch.nn.MSELoss()
             )
@@ -57,14 +64,17 @@ def create_inference_test_for_phase1():
             self.assertLesser(loss, 0.1)
 
         def test_ir_inference(self):
+            # inference = CustomDatasetPhase1(
+            #     dataloader_test=self.tst_loader, checkpoint=self.config['checkpoint'],
+            #     device=self.device)
             inference = CustomDatasetPhase1(
-                dataloader_test=self.tst_loader, checkpoint=self.onnx_model_path,
-                device='cpu')
-            model = inference.load_model(run_type='ir')
+                path_to_dataset=self.config['image_path'])
+            # model = inference.load_model(run_type='ir')
+            model = load_model()
 
             # getting avg_loss, avg_ssim and avg_psnr
             loss, ssim, psnr = validate_model_phase1(
-                config=get_config(phase=1),
+                config=get_config(action='inference', phase=1),
                 test_dataloader=self.tst_loader,
                 model=model, msecrit=torch.nn.MSELoss()
             )
@@ -81,24 +91,28 @@ def create_inference_test_for_phase2():
         def setUpClass(cls):
             cls.config = get_config(action='inference', phase=2)
 
-            if os.path.exists(cls.config['image_path']):
-                download_data()
+            if not os.path.exists(cls.config['image_path']):
+                download_data(phase=2)
                 # prepare_data()
 
-            x_tst = np.load(cls.config['image_path'], allow_pickle=True)
-            tst_data = CustomDatasetPhase2()
+            # x_tst = np.load(cls.config['image_path'], allow_pickle=True)
+            tst_data = CustomDatasetPhase2(path_to_latent=cls.config['path_to_latent'], path_to_gdtruth=cls.config['path_to_gdtruth'])
             cls.tst_loader = DataLoader(
                 tst_data, batch_size=1, shuffle=False, num_workers=16)
 
         def test_pytorch_inference(self):
+            # inference = CustomDatasetPhase2(
+            #     dataloader_test=self.tst_loader, checkpoint=self.config['checkpoint'],
+            #     device=self.device)
             inference = CustomDatasetPhase2(
-                dataloader_test=self.tst_loader, checkpoint=self.model_path,
-                device=self.device)
-            model = inference.load_model(run_type='pytorch')
+                path_to_latent=self.config['path_to_latent'], path_to_gdtruth=self.config['path_to_gdtruth']
+            )
+            # model = inference.load_model(run_type='pytorch')
+            model = load_model(phase=2)
 
             # getting avg_loss, avg_ssim and avg_psnr
             loss, ssim, psnr = validate_model_phase2(
-                config=get_config(phase=1),
+                config=get_config(action='inference', phase=2),
                 test_dataloader=self.tst_loader,
                 model=model, msecrit=torch.nn.MSELoss()
             )
@@ -107,14 +121,18 @@ def create_inference_test_for_phase2():
             self.assertLesser(loss, 0.1)
 
         def test_onnx_inference(self):
-            inference = CustomDatasetPhase1(
-                dataloader_test=self.tst_loader, checkpoint=self.onnx_model_path,
-                device=self.device)
-            model = inference.load_model(run_type='onnx')
+            # inference = CustomDatasetPhase2(
+            #     dataloader_test=self.tst_loader, checkpoint=self.config['checkpoint'],
+            #     device=self.device)
+            inference = CustomDatasetPhase2(
+                path_to_latent=self.config['path_to_latent'], path_to_gdtruth=self.config['path_to_gdtruth']
+            )
+            # model = inference.load_model(run_type='onnx')
+            model = load_model(phase=2)
 
             # getting avg_loss, avg_ssim and avg_psnr
             loss, ssim, psnr = validate_model_phase2(
-                config=get_config(phase=1),
+                config=get_config(action='inference', phase=2),
                 test_dataloader=self.tst_loader,
                 model=model, msecrit=torch.nn.MSELoss()
             )
@@ -123,14 +141,18 @@ def create_inference_test_for_phase2():
             self.assertLesser(loss, 0.1)
 
         def test_ir_inference(self):
-            inference = CustomDatasetPhase1(
-                dataloader_test=self.tst_loader, checkpoint=self.onnx_model_path,
-                device='cpu')
-            model = inference.load_model(run_type='ir')
+            # inference = CustomDatasetPhase2(
+            #     dataloader_test=self.tst_loader, checkpoint=self.config['checkpoint'],
+            #     device=self.device)
+            inference = CustomDatasetPhase2(
+                path_to_latent=self.config['path_to_latent'], path_to_gdtruth=self.config['path_to_gdtruth']
+            )
+            # model = inference.load_model(run_type='ir')
+            model = load_model(phase=2)
 
             # getting avg_loss, avg_ssim and avg_psnr
             loss, ssim, psnr = validate_model_phase2(
-                config=get_config(phase=1),
+                config=get_config(action='inference', phase=2),
                 test_dataloader=self.tst_loader,
                 model=model, msecrit=torch.nn.MSELoss()
             )
