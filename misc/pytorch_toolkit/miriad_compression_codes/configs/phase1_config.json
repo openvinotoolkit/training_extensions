@@ -28,7 +28,7 @@
     },
     "inference": {
         "model_file": "args.model_file",
-        "inferdata": "",
+        "inferdata": "test_data/phase1data/test/images",
         "bit_depth": 8,
         "gpu": "True",
         "with_aac": "True",
