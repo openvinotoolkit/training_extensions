@@ -2,6 +2,7 @@ import torch
 import torchvision
 import os
 from torch import nn
+import onnxruntime
 from model import AutoEncoder, Decoder
 from dataloader import CustomDatasetPhase1, CustomDatasetPhase2
 from torch.utils import data
@@ -11,6 +12,7 @@ from evaluators import compare_psnr_batch, compare_ssim_batch
 import pickle
 import argparse
 from PIL import Image
+from openvino.inference_engine import IECore
 from torch.backends import cudnn
 cudnn.benchmark = True
 
@@ -34,13 +36,35 @@ class Int2Float(nn.Module):
         x = x.type(torch.float32) / (2**self.bit_depth - 1)
         return x
 
-def inference_model(config):
-
+def load_inference_model(config, run_type):
     if config['phase'] == 1:
         model = AutoEncoder(config['depth'], config['width'])
     else:
         model =  Decoder(config['depth'], config['width'])
     
+    # load the given model
+    with open(os.path.abspath(config['model_file']), 'rb') as modelfile:
+        loaded_model_file = torch.load(modelfile)
+        model.load_state_dict(loaded_model_file['model_state'])
+        # model.load_state_dict(loaded_model_file['model_state'])
+
+    # return model
+    if run_type == 'pytorch':
+        pass
+    elif run_type == 'onnx':
+        model = onnxruntime.InferenceSession(config['checkpoint'])
+    else:
+        ie = IECore()
+        model_xml = os.path.splitext(config['checkpoint'])[0] + ".xml"
+        model_bin = os.path.splitext(model_xml)[0] + ".bin"
+        model_temp = ie.read_network(model_xml, model_bin)
+        model = ie.load_network(network=model_temp, device_name='CPU')
+
+    model.eval()
+    return model
+    
+def validate_model(model, config, run_type):
+
     if config['bit_depth'] == 16:
         float2int = Float2Int(12)
         int2float = Int2Float(12)
@@ -51,43 +75,36 @@ def inference_model(config):
     # GPU transfer
     if torch.cuda.is_available() and config['gpu']:
         model = model.cuda()
-        model  = model.cuda()
+        # model  = model.cuda()
         float2int, int2float = float2int.cuda(), int2float.cuda()
-    
-    # load the given model
-    with open(os.path.abspath(config['model_file']), 'rb') as modelfile:
-        loaded_model_file = torch.load(modelfile)
-        model.load_state_dict(loaded_model_file['model_state'])
-        model.load_state_dict(loaded_model_file['model_state'])
 
+    
     images_transforms = torchvision.transforms.Compose(
                                                 [torchvision.transforms.Grayscale(),
                                                 torchvision.transforms.ToTensor()])
     labels_transforms = torchvision.transforms.Compose(
                                                 [torchvision.transforms.Grayscale(),
                                                 torchvision.transforms.ToTensor()])
-    if not config['test_data_latentimage']:
+    if config['inference']['phase']==1:
         infer_dataset = CustomDatasetPhase1(config['inferdata'],
                                             transform_images=images_transforms,
                                             transform_masks=labels_transforms,
                                             preserve_names=True)
         infer_dataloader = data.DataLoader(infer_dataset, batch_size=1,
-                                        num_workers=16, pin_memory=True,
-                                        shuffle=False)
+                                           num_workers=16, pin_memory=True,
+                                           shuffle=False)
     else:
-        path_test_latent = config['inferdata']
-        path_test_gdtruth = config['inferdata']
-        infer_dataset = CustomDatasetPhase2(path_test_latent, path_test_gdtruth, transform_images=images_transforms, transform_masks=labels_transforms, preserve_name=True, mod =  0)
+        path_test_latent = config['path_to_latent']
+        path_test_gdtruth = config['path_to_gdtruth']
+        infer_dataset = CustomDatasetPhase2(path_to_latent=path_test_latent, path_to_gdtruth=path_test_gdtruth, transform_images=images_transforms, transform_masks=labels_transforms, preserve_name=True, mod =  0)
         infer_dataloader = data.DataLoader(infer_dataset, batch_size=1, num_workers=16, pin_memory=True, shuffle=False)
-
-    model.eval()
 
     with torch.no_grad():
 		# a global counter & accumulation variables
         n = 0
         all_bits, all_bpp, all_ssim, all_psnr = [], [], [], []
 
-        for idx, (image, _, name) in enumerate(infer_dataloader):
+        for idx, (image, name) in enumerate(infer_dataloader):
             if torch.cuda.is_available() and config['gpu']:
                 image = image.cuda()
             dtype1 = image.dtype
@@ -187,3 +204,5 @@ def inference_model(config):
 
             with open(json_fillpath, 'w') as json_file:
                 json.dump(json_content, json_file)
+
+    return np.mean(all_ssim), np.mean(all_psnr)
