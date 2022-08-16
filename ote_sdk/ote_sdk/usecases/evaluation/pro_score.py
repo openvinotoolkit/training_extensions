@@ -28,8 +28,9 @@ class PROScore(IPerformanceProvider):
     def __init__(self, resultset: ResultSetEntity):
         self.pro = self._compute_pro_averaged_over_regions(resultset)
 
+    @classmethod
     def _compute_pro_averaged_over_regions(
-        self, resultset: ResultSetEntity
+        cls, resultset: ResultSetEntity
     ) -> ScoreMetric:
         """Compute the PRO metrics averaged over all pixel regions in the dataset.
 
@@ -58,7 +59,7 @@ class PROScore(IPerformanceProvider):
             pred_mask = mask_from_dataset_item(pred_item, labels).squeeze()
             gt_mask = mask_from_dataset_item(gt_item, labels)
 
-            pro, n_regions = self.compute_pro(pred_mask, gt_mask)
+            pro, n_regions = cls.compute_pro(pred_mask, gt_mask)
             total_pro += pro * n_regions
             total_regions += n_regions
 
@@ -67,9 +68,8 @@ class PROScore(IPerformanceProvider):
 
         return ScoreMetric(value=pro_score, name="PRO Metric")
 
-    def compute_pro(
-        self, pred_mask: np.ndarray, gt_mask: np.ndarray
-    ) -> Tuple[float, int]:
+    @staticmethod
+    def compute_pro(pred_mask: np.ndarray, gt_mask: np.ndarray) -> Tuple[float, int]:
         """Compute the PRO score for a single image.
 
         Args:
@@ -77,7 +77,7 @@ class PROScore(IPerformanceProvider):
             gt_mask (np.ndarray): Ground truth mask for a single image.
         Returns:
             float: PRO score for the current image.
-            int: Number of regions in the image (needed for averaging across regions).
+            int: Number of regions in the image with the positive label (needed for averaging across regions).
         """
         _, gt_comps = cv2.connectedComponents(gt_mask)
         n_comps = len(np.unique(gt_comps))
