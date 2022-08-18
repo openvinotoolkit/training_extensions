@@ -26,7 +26,7 @@ from otx.api.entities.annotation import Annotation
 from otx.api.entities.image import Image
 from otx.api.entities.shapes.ellipse import Ellipse
 from otx.api.entities.shapes.rectangle import Rectangle
-from otx.api.tests.constants.otx.api_components import OtxSdkComponent
+from otx.api.tests.constants.components import OtxSdkComponent
 from otx.api.tests.constants.requirements import Requirements
 
 

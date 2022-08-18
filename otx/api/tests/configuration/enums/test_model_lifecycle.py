@@ -5,7 +5,7 @@
 import pytest
 
 from otx.api.configuration.enums.model_lifecycle import ModelLifecycle
-from otx.api.tests.constants.otx.api_components import OtxSdkComponent
+from otx.api.tests.constants.components import OtxSdkComponent
 from otx.api.tests.constants.requirements import Requirements
 
 

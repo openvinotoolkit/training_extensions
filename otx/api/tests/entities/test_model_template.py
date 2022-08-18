@@ -41,7 +41,7 @@ from otx.api.entities.model_template import (
     parse_model_template_from_dict,
     task_type_to_label_domain,
 )
-from otx.api.tests.constants.otx.api_components import OtxSdkComponent
+from otx.api.tests.constants.components import OtxSdkComponent
 from otx.api.tests.constants.requirements import Requirements
 
 

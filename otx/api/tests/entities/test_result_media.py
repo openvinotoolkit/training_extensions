@@ -18,7 +18,7 @@ from otx.api.entities.label import Domain, LabelEntity
 from otx.api.entities.result_media import ResultMediaEntity
 from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.shapes.rectangle import Rectangle
-from otx.api.tests.constants.otx.api_components import OtxSdkComponent
+from otx.api.tests.constants.components import OtxSdkComponent
 from otx.api.tests.constants.requirements import Requirements
 
 RANDOM_IMAGE = np.random.randint(low=0, high=255, size=(32, 64, 3))

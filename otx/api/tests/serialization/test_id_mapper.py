@@ -9,7 +9,7 @@ import pytest
 
 from otx.api.entities.id import ID
 from otx.api.serialization.id_mapper import IDMapper
-from otx.api.tests.constants.otx.api_components import OtxSdkComponent
+from otx.api.tests.constants.components import OtxSdkComponent
 from otx.api.tests.constants.requirements import Requirements
 
 

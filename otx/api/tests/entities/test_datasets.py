@@ -11,7 +11,7 @@ from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.datasets import DatasetEntity, DatasetPurpose
 from otx.api.entities.label import LabelEntity
 from otx.api.entities.subset import Subset
-from otx.api.tests.constants.otx.api_components import OtxSdkComponent
+from otx.api.tests.constants.components import OtxSdkComponent
 from otx.api.tests.constants.requirements import Requirements
 from otx.api.tests.entities.test_dataset_item import DatasetItemParameters
 

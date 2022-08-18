@@ -21,7 +21,7 @@ from otx.api.configuration.helper.config_element_mapping import (
     RuleElementMapping,
 )
 from otx.api.configuration.ui_rules.rules import Rule, UIRules
-from otx.api.tests.constants.otx.api_components import OtxSdkComponent
+from otx.api.tests.constants.components import OtxSdkComponent
 from otx.api.tests.constants.requirements import Requirements
 
 

@@ -25,7 +25,7 @@ from otx.api.configuration.elements.utils import (
 from otx.api.configuration.enums.config_element_type import ElementCategory
 from otx.api.entities.id import ID
 from otx.api.tests.configuration.dummy_config import SomeEnumSelectable
-from otx.api.tests.constants.otx.api_components import OtxSdkComponent
+from otx.api.tests.constants.components import OtxSdkComponent
 from otx.api.tests.constants.requirements import Requirements
 
 

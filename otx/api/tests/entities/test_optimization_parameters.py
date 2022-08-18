@@ -19,7 +19,7 @@ import dataclasses
 import pytest
 
 from otx.api.entities.optimization_parameters import OptimizationParameters
-from otx.api.tests.constants.otx.api_components import OtxSdkComponent
+from otx.api.tests.constants.components import OtxSdkComponent
 from otx.api.tests.constants.requirements import Requirements
 
 

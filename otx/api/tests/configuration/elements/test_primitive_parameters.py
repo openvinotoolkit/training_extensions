@@ -19,7 +19,7 @@ from otx.api.configuration.elements.primitive_parameters import (
 from otx.api.configuration.enums import AutoHPOState, ConfigElementType, ModelLifecycle
 from otx.api.configuration.ui_rules import NullUIRules, Rule, UIRules
 from otx.api.tests.configuration.dummy_config import SomeEnumSelectable
-from otx.api.tests.constants.otx.api_components import OtxSdkComponent
+from otx.api.tests.constants.components import OtxSdkComponent
 from otx.api.tests.constants.requirements import Requirements
 
 

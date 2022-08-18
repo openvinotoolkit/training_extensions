@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 
 from otx.api.entities.tensor import TensorEntity
-from otx.api.tests.constants.otx.api_components import OtxSdkComponent
+from otx.api.tests.constants.components import OtxSdkComponent
 from otx.api.tests.constants.requirements import Requirements
 
 RANDOM_NUMPY = np.random.randint(low=0, high=255, size=(16, 32, 3))

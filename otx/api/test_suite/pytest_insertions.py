@@ -30,8 +30,8 @@ def get_pytest_plugins_from_otx():
     """
     import otx.api.test_suite.fixtures  # noqa
 
-    pytest_plugins_from_otx.api = ["otx.api.test_suite.fixtures"]
-    pytest_plugins = list(_pytest_plugins_from_e2e) + pytest_plugins_from_otx.api
+    pytest_plugins_from_otx_api = ["otx.api.test_suite.fixtures"]
+    pytest_plugins = list(_pytest_plugins_from_e2e) +  pytest_plugins_from_otx_api
     return pytest_plugins
 
 

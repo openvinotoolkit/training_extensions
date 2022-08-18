@@ -4,7 +4,7 @@
 
 import pytest
 
-from otx.api.tests.constants.otx.api_components import OtxSdkComponent
+from otx.api.tests.constants.components import OtxSdkComponent
 from otx.api.tests.constants.requirements import Requirements
 from otx.api.usecases.adapters.model_adapter import (
     ExportableCodeAdapter,

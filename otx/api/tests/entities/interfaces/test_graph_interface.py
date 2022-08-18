@@ -6,7 +6,7 @@ from unittest.mock import patch
 import pytest
 
 from otx.api.entities.interfaces.graph_interface import IGraph
-from otx.api.tests.constants.otx.api_components import OtxSdkComponent
+from otx.api.tests.constants.components import OtxSdkComponent
 from otx.api.tests.constants.requirements import Requirements
 
 

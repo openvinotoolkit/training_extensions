@@ -8,7 +8,7 @@ from time import sleep
 
 import pytest
 
-from otx.api.tests.constants.otx.api_components import OtxSdkComponent
+from otx.api.tests.constants.components import OtxSdkComponent
 from otx.api.tests.constants.requirements import Requirements
 from otx.api.tests.test_helpers import (
     generate_random_image_folder,

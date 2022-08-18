@@ -21,7 +21,7 @@ from otx.api.entities.label_schema import (
     LabelTree,
     ScoredLabel,
 )
-from otx.api.tests.constants.otx.api_components import OtxSdkComponent
+from otx.api.tests.constants.components import OtxSdkComponent
 from otx.api.tests.constants.requirements import Requirements
 
 

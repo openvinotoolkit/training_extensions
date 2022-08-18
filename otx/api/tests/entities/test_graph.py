@@ -17,7 +17,7 @@ from networkx.classes.reportviews import (
 from networkx.exception import NetworkXError, NetworkXNotImplemented
 
 from otx.api.entities.graph import Graph, MultiDiGraph
-from otx.api.tests.constants.otx.api_components import OtxSdkComponent
+from otx.api.tests.constants.components import OtxSdkComponent
 from otx.api.tests.constants.requirements import Requirements
 
 

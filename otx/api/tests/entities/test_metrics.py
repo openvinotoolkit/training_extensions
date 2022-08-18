@@ -31,7 +31,7 @@ from otx.api.entities.metrics import (
     VisualizationInfo,
     VisualizationType,
 )
-from otx.api.tests.constants.otx.api_components import OtxSdkComponent
+from otx.api.tests.constants.components import OtxSdkComponent
 from otx.api.tests.constants.requirements import Requirements
 
 

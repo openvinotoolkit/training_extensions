@@ -6,7 +6,7 @@ import pytest
 
 from otx.api.configuration.enums.config_element_type import ConfigElementType
 from otx.api.configuration.enums.utils import get_enum_names
-from otx.api.tests.constants.otx.api_components import OtxSdkComponent
+from otx.api.tests.constants.components import OtxSdkComponent
 from otx.api.tests.constants.requirements import Requirements
 
 

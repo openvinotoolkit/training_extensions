@@ -19,7 +19,7 @@ import dataclasses
 import pytest
 
 from otx.api.entities.inference_parameters import InferenceParameters
-from otx.api.tests.constants.otx.api_components import OtxSdkComponent
+from otx.api.tests.constants.components import OtxSdkComponent
 from otx.api.tests.constants.requirements import Requirements
 
 

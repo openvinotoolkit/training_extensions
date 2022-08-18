@@ -27,7 +27,7 @@ from otx.api.serialization.label_mapper import (
     LabelSchemaMapper,
     label_schema_to_bytes,
 )
-from otx.api.tests.constants.otx.api_components import OtxSdkComponent
+from otx.api.tests.constants.components import OtxSdkComponent
 from otx.api.tests.constants.requirements import Requirements
 from otx.api.utils.time_utils import now
 

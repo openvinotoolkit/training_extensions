@@ -21,7 +21,7 @@ from otx.api.configuration.elements.metadata_keys import (
     allows_dictionary_values,
     allows_model_template_override,
 )
-from otx.api.tests.constants.otx.api_components import OtxSdkComponent
+from otx.api.tests.constants.components import OtxSdkComponent
 from otx.api.tests.constants.requirements import Requirements
 
 

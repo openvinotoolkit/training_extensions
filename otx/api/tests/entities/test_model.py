@@ -38,7 +38,7 @@ from otx.api.entities.model import (
 )
 from otx.api.entities.model_template import TargetDevice, parse_model_template
 from otx.api.entities.task_environment import TaskEnvironment
-from otx.api.tests.constants.otx.api_components import OtxSdkComponent
+from otx.api.tests.constants.components import OtxSdkComponent
 from otx.api.tests.constants.requirements import Requirements
 from otx.api.tests.test_helpers import generate_random_single_image
 from otx.api.usecases.adapters.model_adapter import ModelAdapter

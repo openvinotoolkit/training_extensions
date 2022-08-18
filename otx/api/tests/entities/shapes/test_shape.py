@@ -27,7 +27,7 @@ from otx.api.entities.shapes.shape import (
     ShapeEntity,
     ShapeType,
 )
-from otx.api.tests.constants.otx.api_components import OtxSdkComponent
+from otx.api.tests.constants.components import OtxSdkComponent
 from otx.api.tests.constants.requirements import Requirements
 
 
