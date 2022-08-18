@@ -19,8 +19,8 @@ Visualisation module.
 
 import cv2
 import numpy as np
-from ote_sdk.entities.model_template import TaskType
-from ote_sdk.entities.shapes.polygon import Polygon
+from otx.api.entities.model_template import TaskType
+from otx.api.entities.shapes.polygon import Polygon
 
 
 def put_text_on_rect_bg(frame, message, position, color=(255, 255, 0)):

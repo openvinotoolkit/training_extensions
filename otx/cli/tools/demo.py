@@ -22,20 +22,20 @@ from collections import deque
 
 import cv2
 import numpy as np
-from ote_sdk.configuration.helper import create
-from ote_sdk.entities.annotation import AnnotationSceneEntity, AnnotationSceneKind
-from ote_sdk.entities.datasets import DatasetEntity, DatasetItemEntity
-from ote_sdk.entities.image import Image
-from ote_sdk.entities.inference_parameters import InferenceParameters
-from ote_sdk.entities.task_environment import TaskEnvironment
+from otx.api.configuration.helper import create
+from otx.api.entities.annotation import AnnotationSceneEntity, AnnotationSceneKind
+from otx.api.entities.datasets import DatasetEntity, DatasetItemEntity
+from otx.api.entities.image import Image
+from otx.api.entities.inference_parameters import InferenceParameters
+from otx.api.entities.task_environment import TaskEnvironment
 
-from ote.cli.registry import find_and_parse_model_template
-from ote.cli.tools.utils.demo.images_capture import open_images_capture
-from ote.cli.tools.utils.demo.visualization import draw_predictions, put_text_on_rect_bg
-from ote.cli.utils.config import override_parameters
-from ote.cli.utils.importing import get_impl_class
-from ote.cli.utils.io import read_label_schema, read_model
-from ote.cli.utils.parser import (
+from otx.cli.registry import find_and_parse_model_template
+from otx.cli.tools.utils.demo.images_capture import open_images_capture
+from otx.cli.tools.utils.demo.visualization import draw_predictions, put_text_on_rect_bg
+from otx.cli.utils.config import override_parameters
+from otx.cli.utils.importing import get_impl_class
+from otx.cli.utils.io import read_label_schema, read_model
+from otx.cli.utils.parser import (
     add_hyper_parameters_sub_parser,
     gen_params_dict_from_args,
 )

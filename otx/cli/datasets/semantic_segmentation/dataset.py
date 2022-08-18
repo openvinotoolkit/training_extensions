@@ -16,8 +16,8 @@ Module contains SemanticSegmentationDataset
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from ote_sdk.entities.datasets import DatasetEntity
-from ote_sdk.entities.subset import Subset
+from otx.api.entities.datasets import DatasetEntity
+from otx.api.entities.subset import Subset
 from segmentation_tasks.extension.datasets import load_dataset_items
 
 

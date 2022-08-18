@@ -16,7 +16,7 @@ File system based datasets registry.
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from ote_sdk.entities.model_template import TaskType
+from otx.api.entities.model_template import TaskType
 
 
 # pylint: disable=too-many-return-statements

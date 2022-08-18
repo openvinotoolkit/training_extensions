@@ -19,13 +19,13 @@ Model deployment tool.
 import argparse
 import os
 
-from ote_sdk.configuration.helper import create
-from ote_sdk.entities.model import ModelEntity
-from ote_sdk.entities.task_environment import TaskEnvironment
+from otx.api.configuration.helper import create
+from otx.api.entities.model import ModelEntity
+from otx.api.entities.task_environment import TaskEnvironment
 
-from ote.cli.registry import find_and_parse_model_template
-from ote.cli.utils.importing import get_impl_class
-from ote.cli.utils.io import read_label_schema, read_model
+from otx.cli.registry import find_and_parse_model_template
+from otx.cli.utils.importing import get_impl_class
+from otx.cli.utils.io import read_label_schema, read_model
 
 
 def parse_args():

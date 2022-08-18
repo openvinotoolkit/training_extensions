@@ -28,16 +28,16 @@ from typing import Optional
 
 import torch
 import yaml
-from ote_sdk.configuration.helper import create
-from ote_sdk.entities.model import ModelEntity
-from ote_sdk.entities.model_template import TaskType
-from ote_sdk.entities.subset import Subset
-from ote_sdk.entities.task_environment import TaskEnvironment
-from ote_sdk.entities.train_parameters import TrainParameters, UpdateProgressCallback
+from otx.api.configuration.helper import create
+from otx.api.entities.model import ModelEntity
+from otx.api.entities.model_template import TaskType
+from otx.api.entities.subset import Subset
+from otx.api.entities.task_environment import TaskEnvironment
+from otx.api.entities.train_parameters import TrainParameters, UpdateProgressCallback
 
-from ote.cli.datasets import get_dataset_class
-from ote.cli.utils.importing import get_impl_class
-from ote.cli.utils.io import generate_label_schema, read_model, save_model_data
+from otx.cli.datasets import get_dataset_class
+from otx.cli.utils.importing import get_impl_class
+from otx.cli.utils.io import generate_label_schema, read_model, save_model_data
 
 try:
     import hpopt
@@ -618,7 +618,7 @@ class HpoManager:
 
         HpoManager.remove_empty_keys(hpopt_arguments)
 
-        print(f"[ote.cli] [DEBUG-HPO] hpopt args for create hpopt = {hpopt_arguments}")
+        print(f"[otx.cli] [DEBUG-HPO] hpopt args for create hpopt = {hpopt_arguments}")
 
         # pylint: disable=unexpected-keyword-arg
         self.hpo = hpopt.create(**hpopt_arguments)
@@ -921,27 +921,27 @@ class HpoUnpickler(pickle.Unpickler):
         "networkx.classes.multidigraph": {
             "MultiDiGraph",
         },
-        "ote_sdk.configuration.enums.config_element_type": {
+        "otx.api.configuration.enums.config_element_type": {
             "ConfigElementType",
         },
-        "ote_sdk.entities.label_schema": {
+        "otx.api.entities.label_schema": {
             "LabelTree",
             "LabelGroup",
             "LabelGroupType",
             "LabelSchemaEntity",
             "LabelGraph",
         },
-        "ote_sdk.entities.id": {
+        "otx.api.entities.id": {
             "ID",
         },
-        "ote_sdk.entities.label": {
+        "otx.api.entities.label": {
             "Domain",
             "LabelEntity",
         },
-        "ote_sdk.entities.color": {
+        "otx.api.entities.color": {
             "Color",
         },
-        "ote_sdk.entities.model_template": {
+        "otx.api.entities.model_template": {
             "ModelTemplate",
             "TaskFamily",
             "TaskType",

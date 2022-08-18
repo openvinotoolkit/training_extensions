@@ -18,7 +18,7 @@ Model templates searching tool.
 
 import argparse
 
-from ote.cli.registry import Registry
+from otx.cli.registry import Registry
 
 
 def parse_args():

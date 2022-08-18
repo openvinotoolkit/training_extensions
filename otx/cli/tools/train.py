@@ -19,28 +19,28 @@ Model training tool.
 import argparse
 import os.path as osp
 
-from ote_sdk.configuration.helper import create
-from ote_sdk.entities.inference_parameters import InferenceParameters
-from ote_sdk.entities.model import ModelEntity
-from ote_sdk.entities.resultset import ResultSetEntity
-from ote_sdk.entities.subset import Subset
-from ote_sdk.entities.task_environment import TaskEnvironment
-from ote_sdk.entities.train_parameters import TrainParameters
-from ote_sdk.serialization.label_mapper import label_schema_to_bytes
-from ote_sdk.usecases.adapters.model_adapter import ModelAdapter
+from otx.api.configuration.helper import create
+from otx.api.entities.inference_parameters import InferenceParameters
+from otx.api.entities.model import ModelEntity
+from otx.api.entities.resultset import ResultSetEntity
+from otx.api.entities.subset import Subset
+from otx.api.entities.task_environment import TaskEnvironment
+from otx.api.entities.train_parameters import TrainParameters
+from otx.api.serialization.label_mapper import label_schema_to_bytes
+from otx.api.usecases.adapters.model_adapter import ModelAdapter
 
-from ote.cli.datasets import get_dataset_class
-from ote.cli.registry import find_and_parse_model_template
-from ote.cli.utils.config import override_parameters
-from ote.cli.utils.hpo import run_hpo
-from ote.cli.utils.importing import get_impl_class
-from ote.cli.utils.io import (
+from otx.cli.datasets import get_dataset_class
+from otx.cli.registry import find_and_parse_model_template
+from otx.cli.utils.config import override_parameters
+from otx.cli.utils.hpo import run_hpo
+from otx.cli.utils.importing import get_impl_class
+from otx.cli.utils.io import (
     generate_label_schema,
     read_binary,
     read_label_schema,
     save_model_data,
 )
-from ote.cli.utils.parser import (
+from otx.cli.utils.parser import (
     add_hyper_parameters_sub_parser,
     gen_params_dict_from_args,
 )

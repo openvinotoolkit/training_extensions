@@ -83,7 +83,7 @@ def patch_demo_py(src_path, dst_path):
                 replaced = True
         assert replaced
         content = [
-            "from ote_sdk.usecases.exportable_code.visualizers import Visualizer\n",
+            "from otx.api.usecases.exportable_code.visualizers import Visualizer\n",
             "def show(self):\n",
             "    pass\n\n",
         ] + content
