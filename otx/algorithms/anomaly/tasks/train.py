@@ -16,9 +16,9 @@
 
 from typing import Optional
 
-from adapters.anomalib.callbacks import ProgressCallback, ScoreReportingCallback
-from adapters.anomalib.data import OTEAnomalyDataModule
-from adapters.anomalib.logger import get_logger
+from otx.algorithms.anomaly.adapters.anomalib.callbacks import ProgressCallback, ScoreReportingCallback
+from otx.algorithms.anomaly.adapters.anomalib.data import OTEAnomalyDataModule
+from otx.algorithms.anomaly.adapters.anomalib.logger import get_logger
 from anomalib.utils.callbacks import (
     MetricsConfigurationCallback,
     MinMaxNormalizationCallback,

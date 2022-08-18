@@ -24,10 +24,10 @@ from glob import glob
 from typing import Dict, List, Optional, Union
 
 import torch
-from adapters.anomalib.callbacks import AnomalyInferenceCallback, ProgressCallback
-from adapters.anomalib.config import get_anomalib_config
-from adapters.anomalib.data import OTEAnomalyDataModule
-from adapters.anomalib.logger import get_logger
+from otx.algorithms.anomaly.adapters.anomalib.callbacks import AnomalyInferenceCallback, ProgressCallback
+from otx.algorithms.anomaly.adapters.anomalib.config import get_anomalib_config
+from otx.algorithms.anomaly.adapters.anomalib.data import OTEAnomalyDataModule
+from otx.algorithms.anomaly.adapters.anomalib.logger import get_logger
 from anomalib.models import AnomalyModule, get_model
 from anomalib.utils.callbacks import (
     MetricsConfigurationCallback,

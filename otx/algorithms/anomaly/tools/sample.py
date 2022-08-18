@@ -24,12 +24,12 @@ import shutil
 from argparse import Namespace
 from typing import Any, Dict, Optional, Type, Union
 
-from adapters.anomalib.data.dataset import (
+from otx.algorithms.anomaly.adapters.anomalib.data.dataset import (
     AnomalyClassificationDataset,
     AnomalyDetectionDataset,
     AnomalySegmentationDataset,
 )
-from adapters.anomalib.logger import get_logger
+from otx.algorithms.anomaly.adapters.anomalib.logger import get_logger
 from otx.api.configuration.helper import create as create_hyper_parameters
 from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.label_schema import LabelSchemaEntity

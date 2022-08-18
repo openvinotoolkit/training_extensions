@@ -21,7 +21,7 @@ import tempfile
 
 import numpy as np
 import pytest
-from adapters.anomalib.config import get_anomalib_config
+from otx.algorithms.anomaly.adapters.anomalib.config import get_anomalib_config
 from tools.sample import OteAnomalyTask
 
 from tests.helpers.config import get_config_and_task_name

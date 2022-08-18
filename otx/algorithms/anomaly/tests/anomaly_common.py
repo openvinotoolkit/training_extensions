@@ -19,7 +19,7 @@ from collections import namedtuple
 from copy import deepcopy
 from typing import List, Type
 
-from adapters.anomalib.data.mvtec import OteMvtecDataset
+from otx.algorithms.anomaly.adapters.anomalib.data.mvtec import OteMvtecDataset
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label_schema import LabelSchemaEntity
 from otx.api.entities.model_template import TaskType

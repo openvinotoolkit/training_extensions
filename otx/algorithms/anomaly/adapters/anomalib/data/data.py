@@ -17,7 +17,7 @@
 from typing import Dict, List, Optional, Union
 
 import numpy as np
-from adapters.anomalib.logger import get_logger
+from otx.algorithms.anomaly.adapters.anomalib.logger import get_logger
 from anomalib.pre_processing import PreProcessor
 from omegaconf import DictConfig, ListConfig
 from otx.api.entities.datasets import DatasetEntity
