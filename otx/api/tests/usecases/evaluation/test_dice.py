@@ -32,13 +32,13 @@ from otx.api.entities.model import ModelConfiguration, ModelEntity
 from otx.api.entities.resultset import ResultSetEntity
 from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.shapes.rectangle import Rectangle
-from otx.api.tests.constants.otx.api_components import OteSdkComponent
+from otx.api.tests.constants.otx.api_components import OtxSdkComponent
 from otx.api.tests.constants.requirements import Requirements
 from otx.api.usecases.evaluation.averaging import MetricAverageMethod
 from otx.api.usecases.evaluation.dice import DiceAverage
 
 
-@pytest.mark.components(OteSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.otx.api)
 class TestDice:
     color = Color(0, 255, 0)
     creation_date = datetime.datetime(year=2022, month=1, day=10)

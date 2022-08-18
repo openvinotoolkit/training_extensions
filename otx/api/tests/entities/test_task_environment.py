@@ -23,7 +23,7 @@ from otx.api.entities.label import Domain, LabelEntity
 from otx.api.entities.label_schema import LabelSchemaEntity
 from otx.api.entities.model_template import parse_model_template
 from otx.api.entities.task_environment import TaskEnvironment
-from otx.api.tests.constants.otx.api_components import OteSdkComponent
+from otx.api.tests.constants.otx.api_components import OtxSdkComponent
 from otx.api.tests.constants.requirements import Requirements
 from otx.api.tests.test_helpers import ConfigExample
 
@@ -69,7 +69,7 @@ def environment():
     return environment
 
 
-@pytest.mark.components(OteSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.otx.api)
 class TestTaskEnvironment:
     @pytest.mark.priority_medium
     @pytest.mark.unit

@@ -19,11 +19,11 @@ from otx.api.configuration.elements.primitive_parameters import (
 from otx.api.configuration.enums import AutoHPOState, ConfigElementType, ModelLifecycle
 from otx.api.configuration.ui_rules import NullUIRules, Rule, UIRules
 from otx.api.tests.configuration.dummy_config import SomeEnumSelectable
-from otx.api.tests.constants.otx.api_components import OteSdkComponent
+from otx.api.tests.constants.otx.api_components import OtxSdkComponent
 from otx.api.tests.constants.requirements import Requirements
 
 
-@pytest.mark.components(OteSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.otx.api)
 class TestPrimitiveParameters:
     ui_rules = UIRules(rules=[Rule(parameter="rule parameter", value=1)])
 

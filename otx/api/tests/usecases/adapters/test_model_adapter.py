@@ -4,7 +4,7 @@
 
 import pytest
 
-from otx.api.tests.constants.otx.api_components import OteSdkComponent
+from otx.api.tests.constants.otx.api_components import OtxSdkComponent
 from otx.api.tests.constants.requirements import Requirements
 from otx.api.usecases.adapters.model_adapter import (
     ExportableCodeAdapter,
@@ -13,7 +13,7 @@ from otx.api.usecases.adapters.model_adapter import (
 )
 
 
-@pytest.mark.components(OteSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.otx.api)
 class TestIDataSource:
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -42,7 +42,7 @@ class TestDataSource(IDataSource):
         return self._data
 
 
-@pytest.mark.components(OteSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.otx.api)
 class TestModelAdapter:
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -131,7 +131,7 @@ class TestModelAdapter:
         assert model_adapter.from_file_storage
 
 
-@pytest.mark.components(OteSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.otx.api)
 class TestExportableCodeAdapter:
     @pytest.mark.priority_medium
     @pytest.mark.unit

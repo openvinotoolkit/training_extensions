@@ -17,12 +17,12 @@ import pytest
 from otx.api.entities.color import Color
 from otx.api.entities.id import ID
 from otx.api.entities.label import Domain, LabelEntity
-from otx.api.tests.constants.otx.api_components import OteSdkComponent
+from otx.api.tests.constants.otx.api_components import OtxSdkComponent
 from otx.api.tests.constants.requirements import Requirements
 from otx.api.utils.time_utils import now
 
 
-@pytest.mark.components(OteSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.otx.api)
 class TestDomain:
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -39,7 +39,7 @@ class TestDomain:
         assert len(domain) == 9
 
 
-@pytest.mark.components(OteSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.otx.api)
 class TestLabelEntity:
 
     creation_date = now()

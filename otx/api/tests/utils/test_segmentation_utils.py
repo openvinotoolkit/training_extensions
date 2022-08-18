@@ -20,7 +20,7 @@ from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.shapes.ellipse import Ellipse
 from otx.api.entities.shapes.polygon import Point, Polygon
 from otx.api.entities.shapes.rectangle import Rectangle
-from otx.api.tests.constants.otx.api_components import OteSdkComponent
+from otx.api.tests.constants.otx.api_components import OtxSdkComponent
 from otx.api.tests.constants.requirements import Requirements
 from otx.api.utils.segmentation_utils import (
     create_annotation_from_segmentation_map,
@@ -31,7 +31,7 @@ from otx.api.utils.segmentation_utils import (
 )
 
 
-@pytest.mark.components(OteSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.otx.api)
 class TestSegmentationUtils:
     @staticmethod
     def rectangle_label():

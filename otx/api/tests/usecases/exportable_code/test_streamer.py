@@ -8,7 +8,7 @@ from time import sleep
 
 import pytest
 
-from otx.api.tests.constants.otx.api_components import OteSdkComponent
+from otx.api.tests.constants.otx.api_components import OtxSdkComponent
 from otx.api.tests.constants.requirements import Requirements
 from otx.api.tests.test_helpers import (
     generate_random_image_folder,
@@ -27,7 +27,7 @@ from otx.api.usecases.exportable_code.streamer import (
 )
 
 
-@pytest.mark.components(OteSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.otx.api)
 class TestStreamer:
     @staticmethod
     def assert_streamer_element(streamer):

@@ -11,11 +11,11 @@ from otx.api.configuration.enums import AutoHPOState
 from otx.api.configuration.enums.config_element_type import ConfigElementType
 from otx.api.entities.id import ID
 from otx.api.tests.configuration.dummy_config import DatasetManagerConfig
-from otx.api.tests.constants.otx.api_components import OteSdkComponent
+from otx.api.tests.constants.otx.api_components import OtxSdkComponent
 from otx.api.tests.constants.requirements import Requirements
 
 
-@pytest.mark.components(OteSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.otx.api)
 class TestConfigurableParameters:
     @pytest.mark.priority_medium
     @pytest.mark.unit

@@ -1,18 +1,18 @@
-# OTE CLI
+# OTX CLI
 
-**O**penVINO **T**raining **E**xtensions **C**ommand **L**ine **I**nterface (OTE CLI), is the `ote` tool that contains set of commands needed to operate with deep learning models. Also there is an example how to work with deep learning models direclty from Python using OTE SDK Task interfaces.
+**O**penVINO **T**raining **E**xtensions **C**ommand **L**ine **I**nterface (OTX CLI), is the `otx` tool that contains set of commands needed to operate with deep learning models. Also there is an example how to work with deep learning models direclty from Python using OTX Task interfaces.
 
-## OTE CLI contents
+## OTX CLI contents
 
-### OTE Commands
+### OTX Commands
 
-- `ote find` - search for model templates.
-- `ote train` - run training of a particular model template.
-- `ote optimize` - run optimization of trained model.
-- `ote eval` - run evaluation of trained model on a particular dataset.
-- `ote export` - export trained model to the OpenVINO format in order to efficiently run it on Intel hardware.
-- `ote demo` - run model inference on images, videos, webcam in order to see how it works on user's data.
-- `ote deploy` - create openvino.zip with self-contained python package, demo application and exported model.
+- `otx find` - search for model templates.
+- `otx train` - run training of a particular model template.
+- `otx optimize` - run optimization of trained model.
+- `otx eval` - run evaluation of trained model on a particular dataset.
+- `otx export` - export trained model to the OpenVINO format in order to efficiently run it on Intel hardware.
+- `otx demo` - run model inference on images, videos, webcam in order to see how it works on user's data.
+- `otx deploy` - create openvino.zip with self-contained python package, demo application and exported model.
 
 ### Jupyter notebooks
 

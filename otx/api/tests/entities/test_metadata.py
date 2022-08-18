@@ -26,11 +26,11 @@ from otx.api.entities.metadata import (
     MetadataItemEntity,
 )
 from otx.api.entities.model import ModelEntity
-from otx.api.tests.constants.otx.api_components import OteSdkComponent
+from otx.api.tests.constants.otx.api_components import OtxSdkComponent
 from otx.api.tests.constants.requirements import Requirements
 
 
-@pytest.mark.components(OteSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.otx.api)
 class TestIMetadata:
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -62,7 +62,7 @@ class TestIMetadata:
         assert test_instance.name == "String"
 
 
-@pytest.mark.components(OteSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.otx.api)
 class TestFloatType:
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -136,7 +136,7 @@ class TestFloatType:
             str(test_instance(6))
 
 
-@pytest.mark.components(OteSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.otx.api)
 class TestMetadataItemEntity:
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -187,7 +187,7 @@ class TestMetadataItemEntity:
         assert re.match(repr_pattern, __repr)
 
 
-@pytest.mark.components(OteSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.otx.api)
 class TestFloatMetadata:
     @pytest.mark.priority_medium
     @pytest.mark.unit

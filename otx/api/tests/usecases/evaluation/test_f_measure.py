@@ -49,7 +49,7 @@ from otx.api.entities.resultset import ResultSetEntity
 from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.shapes.ellipse import Ellipse
 from otx.api.entities.shapes.rectangle import Rectangle
-from otx.api.tests.constants.otx.api_components import OteSdkComponent
+from otx.api.tests.constants.otx.api_components import OtxSdkComponent
 from otx.api.tests.constants.requirements import Requirements
 from otx.api.usecases.evaluation.f_measure import (
     FMeasure,
@@ -65,7 +65,7 @@ from otx.api.usecases.evaluation.f_measure import (
 )
 
 
-@pytest.mark.components(OteSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.otx.api)
 class TestFMeasureFunctions:
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -189,7 +189,7 @@ class TestFMeasureFunctions:
         assert get_n_false_negatives(iou_matrix, 0.09) == 2
 
 
-@pytest.mark.components(OteSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.otx.api)
 class TestMetrics:
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -215,7 +215,7 @@ class TestMetrics:
         assert metrics.recall == recall
 
 
-@pytest.mark.components(OteSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.otx.api)
 class TestResultCounters:
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -309,7 +309,7 @@ class TestResultCounters:
         check_calculated_f_measure(f_measure, 0.0, 1.0)
 
 
-@pytest.mark.components(OteSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.otx.api)
 class TestAggregatedResults:
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -360,7 +360,7 @@ class TestAggregatedResults:
         )
 
 
-@pytest.mark.components(OteSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.otx.api)
 class TestOverallResults:
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -395,7 +395,7 @@ class TestOverallResults:
         assert overall_results.best_f_measure == best_f_measure
 
 
-@pytest.mark.components(OteSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.otx.api)
 class TestFMeasureCalculator:
     @staticmethod
     def ground_truth_boxes_per_image():
@@ -1187,7 +1187,7 @@ class TestFMeasureCalculator:
         )
 
 
-@pytest.mark.components(OteSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.otx.api)
 class TestFMeasure:
     color = Color(0, 255, 0)
     creation_date = datetime.datetime(year=2021, month=12, day=23)

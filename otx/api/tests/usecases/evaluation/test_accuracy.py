@@ -34,7 +34,7 @@ from otx.api.entities.model import ModelConfiguration, ModelEntity
 from otx.api.entities.resultset import ResultSetEntity
 from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.shapes.rectangle import Rectangle
-from otx.api.tests.constants.otx.api_components import OteSdkComponent
+from otx.api.tests.constants.otx.api_components import OtxSdkComponent
 from otx.api.tests.constants.requirements import Requirements
 from otx.api.usecases.evaluation.accuracy import (
     Accuracy,
@@ -271,7 +271,7 @@ class CommonActions:
         assert np.array_equal(matrix.matrix_values, expected_matrix)
 
 
-@pytest.mark.components(OteSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.otx.api)
 class TestAccuracyFunctions:
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -481,7 +481,7 @@ class TestAccuracyFunctions:
             compute_unnormalized_confusion_matrices_from_resultset(result_set)
 
 
-@pytest.mark.components(OteSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.otx.api)
 class TestAccuracy:
     @pytest.mark.priority_medium
     @pytest.mark.unit

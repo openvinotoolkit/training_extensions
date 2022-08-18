@@ -17,11 +17,11 @@ from networkx.classes.reportviews import (
 from networkx.exception import NetworkXError, NetworkXNotImplemented
 
 from otx.api.entities.graph import Graph, MultiDiGraph
-from otx.api.tests.constants.otx.api_components import OteSdkComponent
+from otx.api.tests.constants.otx.api_components import OtxSdkComponent
 from otx.api.tests.constants.requirements import Requirements
 
 
-@pytest.mark.components(OteSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.otx.api)
 class TestGraph:
     @staticmethod
     def add_edges_to_graph(graph_to_add_edges: Graph, edges_parameters: list) -> None:
@@ -916,7 +916,7 @@ class TestGraph:
         assert directed_graph.descendants("D") == ["C", "A", "D"]
 
 
-@pytest.mark.components(OteSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.otx.api)
 class TestMultiDiGraph:
     @staticmethod
     def multi_di_graph():

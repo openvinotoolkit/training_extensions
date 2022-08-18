@@ -15,7 +15,7 @@ from .metadata_keys import ENUM_NAME, OPTIONS
 class ConfigurableEnum(Enum):
     """
     This class is used as the basis for defining `selectable` configurable parameters
-    in the OTE SDK. Enums reflecting `selectable` options should inherit from this
+    in the OTX API. Enums reflecting `selectable` options should inherit from this
     class.
     """
 

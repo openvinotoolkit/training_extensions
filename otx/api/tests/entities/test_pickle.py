@@ -9,11 +9,11 @@ import pytest
 from bson import ObjectId
 
 from otx.api.entities.id import ID
-from otx.api.tests.constants.otx.api_components import OteSdkComponent
+from otx.api.tests.constants.otx.api_components import OtxSdkComponent
 from otx.api.tests.constants.requirements import Requirements
 
 
-@pytest.mark.components(OteSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.otx.api)
 class TestPickle:
     @pytest.mark.priority_medium
     @pytest.mark.unit

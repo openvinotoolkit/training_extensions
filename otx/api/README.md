@@ -1,3 +1,3 @@
-# OTE SDK
+# OTX API
 
-The OTE SDK defines an interface which can be used by [OTE CLI](../cli) to access [OTE Algorithms](../algorithms).
+The OTX API defines an interface which can be used by [OTX CLI](../cli) to access [OTX Algorithms](../algorithms).

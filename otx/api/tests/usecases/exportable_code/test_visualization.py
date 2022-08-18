@@ -17,14 +17,14 @@ from otx.api.entities.label import Domain, LabelEntity
 from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.shapes.ellipse import Ellipse
 from otx.api.entities.shapes.rectangle import Rectangle
-from otx.api.tests.constants.otx.api_components import OteSdkComponent
+from otx.api.tests.constants.otx.api_components import OtxSdkComponent
 from otx.api.tests.constants.requirements import Requirements
 from otx.api.usecases.exportable_code.visualizers import Visualizer
 from otx.api.utils.shape_drawer import ShapeDrawer
 from otx.api.utils.time_utils import now
 
 
-@pytest.mark.components(OteSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.otx.api)
 class TestVisualizer:
     image = np.random.randint(low=0, high=255, size=(480, 640, 3)).astype(np.float32)
 

@@ -25,11 +25,11 @@ from otx.api.configuration.helper.create import (
 from otx.api.configuration.ui_rules.rules import NullUIRules, Rule, UIRules
 from otx.api.configuration.ui_rules.types import Action, Operator
 from otx.api.tests.configuration.dummy_config import SomeEnumSelectable
-from otx.api.tests.constants.otx.api_components import OteSdkComponent
+from otx.api.tests.constants.otx.api_components import OtxSdkComponent
 from otx.api.tests.constants.requirements import Requirements
 
 
-@pytest.mark.components(OteSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.otx.api)
 class TestCreateFunctions:
     @staticmethod
     def int_rule_dict():

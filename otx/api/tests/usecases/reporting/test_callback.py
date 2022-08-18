@@ -9,12 +9,12 @@ from otx.api.configuration.configurable_parameters import ConfigurableParameters
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label_schema import LabelGroup, LabelSchemaEntity
 from otx.api.entities.model import ModelConfiguration, ModelEntity
-from otx.api.tests.constants.otx.api_components import OteSdkComponent
+from otx.api.tests.constants.otx.api_components import OtxSdkComponent
 from otx.api.tests.constants.requirements import Requirements
 from otx.api.usecases.reporting.callback import Callback
 
 
-@pytest.mark.components(OteSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.otx.api)
 class TestCallback:
     @pytest.mark.priority_medium
     @pytest.mark.unit

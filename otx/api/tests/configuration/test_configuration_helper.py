@@ -14,11 +14,11 @@ from otx.api.tests.configuration.dummy_config import (
     DatasetManagerConfig,
     SomeEnumSelectable,
 )
-from otx.api.tests.constants.otx.api_components import OteSdkComponent
+from otx.api.tests.constants.otx.api_components import OtxSdkComponent
 from otx.api.tests.constants.requirements import Requirements
 
 
-@pytest.mark.components(OteSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.otx.api)
 class TestConfigurationHelper:
     @staticmethod
     def __get_path_to_file(filename: str):

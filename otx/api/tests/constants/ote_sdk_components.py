@@ -17,7 +17,7 @@ except ImportError:
         """
 
 
-class OteSdkComponent(MarkMeta):
+class OtxSdkComponent(MarkMeta):
     """
     OTX Component marker.
     """

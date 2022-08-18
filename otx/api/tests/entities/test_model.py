@@ -38,14 +38,14 @@ from otx.api.entities.model import (
 )
 from otx.api.entities.model_template import TargetDevice, parse_model_template
 from otx.api.entities.task_environment import TaskEnvironment
-from otx.api.tests.constants.otx.api_components import OteSdkComponent
+from otx.api.tests.constants.otx.api_components import OtxSdkComponent
 from otx.api.tests.constants.requirements import Requirements
 from otx.api.tests.test_helpers import generate_random_single_image
 from otx.api.usecases.adapters.model_adapter import ModelAdapter
 from otx.api.utils.time_utils import now
 
 
-@pytest.mark.components(OteSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.otx.api)
 class TestModelPrecision:
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -66,7 +66,7 @@ class TestModelPrecision:
         assert len(model_precision) == 4
 
 
-@pytest.mark.components(OteSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.otx.api)
 class TestModelFormat:
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -87,7 +87,7 @@ class TestModelFormat:
         assert len(model_format) == 3
 
 
-@pytest.mark.components(OteSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.otx.api)
 class TestModelOptimizationType:
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -108,7 +108,7 @@ class TestModelOptimizationType:
         assert len(model_optimization_type) == 4
 
 
-@pytest.mark.components(OteSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.otx.api)
 class TestOptimizationMethod:
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -129,7 +129,7 @@ class TestOptimizationMethod:
         assert len(optimization_method) == 2
 
 
-@pytest.mark.components(OteSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.otx.api)
 class TestModelConfiguration:
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -157,7 +157,7 @@ class TestModelConfiguration:
         assert model_configuration.get_label_schema() == label_schema
 
 
-@pytest.mark.components(OteSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.otx.api)
 class TestModelEntity:
     creation_date = now()
 

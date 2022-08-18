@@ -17,7 +17,7 @@ import pytest
 
 from otx.api.entities.label import Domain, LabelEntity
 from otx.api.entities.shapes.rectangle import Rectangle
-from otx.api.tests.constants.otx.api_components import OteSdkComponent
+from otx.api.tests.constants.otx.api_components import OtxSdkComponent
 from otx.api.tests.constants.requirements import Requirements
 from otx.api.usecases.evaluation.basic_operations import (
     divide_arrays_with_possible_zeros,
@@ -29,7 +29,7 @@ from otx.api.usecases.evaluation.basic_operations import (
 )
 
 
-@pytest.mark.components(OteSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.otx.api)
 class TestBasicOperationsFunctions:
     @pytest.mark.priority_medium
     @pytest.mark.unit

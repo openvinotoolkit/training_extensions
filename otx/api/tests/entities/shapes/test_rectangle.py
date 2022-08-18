@@ -26,12 +26,12 @@ from otx.api.entities.label import LabelEntity
 from otx.api.entities.scored_label import Domain, ScoredLabel
 from otx.api.entities.shapes.rectangle import Rectangle
 from otx.api.entities.shapes.shape import ShapeType
-from otx.api.tests.constants.otx.api_components import OteSdkComponent
+from otx.api.tests.constants.otx.api_components import OtxSdkComponent
 from otx.api.tests.constants.requirements import Requirements
 from otx.api.utils.time_utils import now
 
 
-@pytest.mark.components(OteSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.otx.api)
 class TestRectangle:
     modification_date = now()
 

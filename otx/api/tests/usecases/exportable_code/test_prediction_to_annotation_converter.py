@@ -19,7 +19,7 @@ from otx.api.entities.label_schema import LabelGroup, LabelSchemaEntity
 from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.shapes.polygon import Point, Polygon
 from otx.api.entities.shapes.rectangle import Rectangle
-from otx.api.tests.constants.otx.api_components import OteSdkComponent
+from otx.api.tests.constants.otx.api_components import OtxSdkComponent
 from otx.api.tests.constants.requirements import Requirements
 from otx.api.usecases.exportable_code.prediction_to_annotation_converter import (
     AnomalyClassificationToAnnotationConverter,
@@ -35,7 +35,7 @@ from otx.api.usecases.exportable_code.prediction_to_annotation_converter import 
 from otx.api.utils.time_utils import now
 
 
-@pytest.mark.components(OteSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.otx.api)
 class TestDetectionToAnnotationConverter:
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -171,7 +171,7 @@ class TestDetectionToAnnotationConverter:
             converter.convert_to_annotation(np.ndarray((3, 8)))
 
 
-@pytest.mark.components(OteSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.otx.api)
 class TestIPredictionToAnnotation:
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -202,7 +202,7 @@ class TestIPredictionToAnnotation:
             )
 
 
-@pytest.mark.components(OteSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.otx.api)
 class TestCreateConverter:
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -357,7 +357,7 @@ def check_annotation_scene(
     assert len(annotation_scene.annotations) == expected_length
 
 
-@pytest.mark.components(OteSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.otx.api)
 class TestDetectionBoxToAnnotation:
     color = Color(red=180, green=230, blue=30)
     creation_date = now()
@@ -506,7 +506,7 @@ class TestDetectionBoxToAnnotation:
         )
 
 
-@pytest.mark.components(OteSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.otx.api)
 class TestSegmentationToAnnotation:
     color = Color(red=180, green=230, blue=30)
     creation_date = now()
@@ -701,7 +701,7 @@ class TestSegmentationToAnnotation:
             ],
         )
 
-    @pytest.mark.components(OteSdkComponent.otx.api)
+    @pytest.mark.components(OtxSdkComponent.otx.api)
     class TestClassificationToAnnotation:
         @pytest.mark.priority_medium
         @pytest.mark.unit
@@ -928,7 +928,7 @@ class TestSegmentationToAnnotation:
                 expected_labels=[ScoredLabel(label=label_0_2, probability=0.9)],
             )
 
-    @pytest.mark.components(OteSdkComponent.otx.api)
+    @pytest.mark.components(OtxSdkComponent.otx.api)
     class TestAnomalyClassificationToAnnotation:
         @pytest.mark.priority_medium
         @pytest.mark.unit

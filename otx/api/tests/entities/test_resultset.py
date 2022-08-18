@@ -19,12 +19,12 @@ import pytest
 from otx.api.entities.id import ID
 from otx.api.entities.metrics import NullPerformance
 from otx.api.entities.resultset import ResultSetEntity, ResultsetPurpose
-from otx.api.tests.constants.otx.api_components import OteSdkComponent
+from otx.api.tests.constants.otx.api_components import OtxSdkComponent
 from otx.api.tests.constants.requirements import Requirements
 from otx.api.utils.time_utils import now
 
 
-@pytest.mark.components(OteSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.otx.api)
 class TestResultset:
     creation_date = now()
 

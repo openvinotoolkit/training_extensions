@@ -6,7 +6,7 @@
 The file contains fixtures that may be used in algo backend's
 reallife training tests.
 
-Note that the fixtures ote_templates_root_dir_fx and otx_test_domain_fx
+Note that the fixtures otx_templates_root_dir_fx and otx_test_domain_fx
 MUST be overriden in algo backend's conftest.py file.
 """
 

@@ -7,12 +7,12 @@ from time import time
 import pytest
 
 from otx.api.entities.train_parameters import default_progress_callback
-from otx.api.tests.constants.otx.api_components import OteSdkComponent
+from otx.api.tests.constants.otx.api_components import OtxSdkComponent
 from otx.api.tests.constants.requirements import Requirements
 from otx.api.usecases.reporting.time_monitor_callback import TimeMonitorCallback
 
 
-@pytest.mark.components(OteSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.otx.api)
 class TestTimeMonitorCallback:
     @staticmethod
     def time_monitor_callback():

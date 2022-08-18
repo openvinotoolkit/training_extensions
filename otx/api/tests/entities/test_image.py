@@ -26,11 +26,11 @@ from otx.api.entities.annotation import Annotation
 from otx.api.entities.image import Image
 from otx.api.entities.shapes.ellipse import Ellipse
 from otx.api.entities.shapes.rectangle import Rectangle
-from otx.api.tests.constants.otx.api_components import OteSdkComponent
+from otx.api.tests.constants.otx.api_components import OtxSdkComponent
 from otx.api.tests.constants.requirements import Requirements
 
 
-@pytest.mark.components(OteSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.otx.api)
 class TestImage:
     @pytest.mark.priority_medium
     @pytest.mark.unit
