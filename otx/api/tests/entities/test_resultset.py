@@ -24,7 +24,7 @@ from otx.api.tests.constants.requirements import Requirements
 from otx.api.utils.time_utils import now
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestResultset:
     creation_date = now()
 

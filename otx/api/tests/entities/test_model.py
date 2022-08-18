@@ -45,7 +45,7 @@ from otx.api.usecases.adapters.model_adapter import ModelAdapter
 from otx.api.utils.time_utils import now
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestModelPrecision:
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -66,7 +66,7 @@ class TestModelPrecision:
         assert len(model_precision) == 4
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestModelFormat:
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -87,7 +87,7 @@ class TestModelFormat:
         assert len(model_format) == 3
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestModelOptimizationType:
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -108,7 +108,7 @@ class TestModelOptimizationType:
         assert len(model_optimization_type) == 4
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestOptimizationMethod:
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -129,7 +129,7 @@ class TestOptimizationMethod:
         assert len(optimization_method) == 2
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestModelConfiguration:
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -157,7 +157,7 @@ class TestModelConfiguration:
         assert model_configuration.get_label_schema() == label_schema
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestModelEntity:
     creation_date = now()
 

@@ -12,7 +12,7 @@ from otx.api.tests.constants.requirements import Requirements
 from otx.api.usecases.reporting.time_monitor_callback import TimeMonitorCallback
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestTimeMonitorCallback:
     @staticmethod
     def time_monitor_callback():

@@ -105,7 +105,7 @@ class CommonMethods:
         assert model.size == expected_values.get("size", 0)
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestTargetDevice:
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -125,7 +125,7 @@ class TestTargetDevice:
         assert TargetDevice.VPU.value == 4
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestModelOptimizationMethod:
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -148,7 +148,7 @@ class TestModelOptimizationMethod:
         assert str(ModelOptimizationMethod.OPENVINO) == "OPENVINO"
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestDatasetRequirements:
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -170,7 +170,7 @@ class TestDatasetRequirements:
         assert test_dataset_requirements != other_test_dataset_requirements
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestExportableCodePaths:
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -197,7 +197,7 @@ class TestExportableCodePaths:
         assert exportable_code_paths != unequal_exportable_code_paths
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestTaskFamily:
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -222,7 +222,7 @@ class TestTaskFamily:
         assert str(TaskFamily.DATASET) == "DATASET"
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestTaskType:
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -314,7 +314,7 @@ class TestTaskType:
                 task_type_to_label_domain(not_mapped_task)
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestHyperParameterData:
     @staticmethod
     def get_path_to_file(filename: str) -> str:
@@ -613,7 +613,7 @@ class TestHyperParameterData:
         remove(model_template_path)
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestInstantiationType:
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -638,7 +638,7 @@ class TestInstantiationType:
         assert str(InstantiationType.GRPC) == "GRPC"
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestDependency:
     @staticmethod
     def dependency_parameters() -> dict:
@@ -713,7 +713,7 @@ class TestDependency:
                 )
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestEntryPoints:
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -769,7 +769,7 @@ class TestEntryPoints:
                 )
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestModelTemplate:
     @staticmethod
     def default_model_parameters() -> dict:
@@ -995,7 +995,7 @@ class TestModelTemplate:
             )
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestNullModelTemplate:
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -1021,7 +1021,7 @@ class TestNullModelTemplate:
         )
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestTaskTypesConstants:
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -1050,7 +1050,7 @@ class TestTaskTypesConstants:
         )
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestParseModelTemplate:
     @pytest.mark.priority_medium
     @pytest.mark.unit

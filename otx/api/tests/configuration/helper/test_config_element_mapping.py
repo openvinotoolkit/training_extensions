@@ -25,7 +25,7 @@ from otx.api.tests.constants.components import OtxSdkComponent
 from otx.api.tests.constants.requirements import Requirements
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestPrimitiveElementMapping:
     @staticmethod
     def check_primitive_element(
@@ -86,7 +86,7 @@ def check_mapping_element(mapping_element, expected_name, expected_value):
     assert str(mapping_element) == expected_name
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestGroupElementMapping:
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -113,7 +113,7 @@ class TestGroupElementMapping:
         )
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestRuleElementMapping:
     @pytest.mark.priority_medium
     @pytest.mark.unit

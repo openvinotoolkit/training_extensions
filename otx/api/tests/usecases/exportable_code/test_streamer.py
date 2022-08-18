@@ -27,7 +27,7 @@ from otx.api.usecases.exportable_code.streamer import (
 )
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestStreamer:
     @staticmethod
     def assert_streamer_element(streamer):

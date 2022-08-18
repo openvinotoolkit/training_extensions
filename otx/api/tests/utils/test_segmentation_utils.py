@@ -31,7 +31,7 @@ from otx.api.utils.segmentation_utils import (
 )
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestSegmentationUtils:
     @staticmethod
     def rectangle_label():

@@ -14,7 +14,7 @@ from otx.api.tests.constants.requirements import Requirements
 from otx.api.usecases.reporting.callback import Callback
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestCallback:
     @pytest.mark.priority_medium
     @pytest.mark.unit

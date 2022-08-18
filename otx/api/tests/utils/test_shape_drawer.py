@@ -73,7 +73,7 @@ class CommonMethods:
         return [ScoredLabel(classification_label), ScoredLabel(anomaly_detection_label)]
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestDrawerEntity:
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -95,7 +95,7 @@ class TestDrawerEntity:
             DrawerEntity().draw(RANDOM_IMAGE, entity, labels)
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestHelpers:
     @staticmethod
     def generate_expected_image_with_text(
@@ -712,7 +712,7 @@ class ShapeDrawerParams:
         )
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestShapeDrawer:
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -821,7 +821,7 @@ class TestShapeDrawer:
             assert np.array_equal(actual_image, expected_image)
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestTopLeftDrawer:
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -965,7 +965,7 @@ class TestTopLeftDrawer:
         )
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestRectangleDrawer:
     @staticmethod
     def draw_rectangle_labels(
@@ -1079,7 +1079,7 @@ class TestRectangleDrawer:
             )
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestEllipseDrawer:
     @staticmethod
     def draw_ellipse_labels(
@@ -1235,7 +1235,7 @@ class TestEllipseDrawer:
             )
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestPolygonDrawer:
     @staticmethod
     def draw_polygon_labels(

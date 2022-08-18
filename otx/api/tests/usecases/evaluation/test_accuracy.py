@@ -271,7 +271,7 @@ class CommonActions:
         assert np.array_equal(matrix.matrix_values, expected_matrix)
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestAccuracyFunctions:
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -481,7 +481,7 @@ class TestAccuracyFunctions:
             compute_unnormalized_confusion_matrices_from_resultset(result_set)
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestAccuracy:
     @pytest.mark.priority_medium
     @pytest.mark.unit

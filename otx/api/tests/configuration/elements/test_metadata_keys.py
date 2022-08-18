@@ -25,7 +25,7 @@ from otx.api.tests.constants.components import OtxSdkComponent
 from otx.api.tests.constants.requirements import Requirements
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestMetadataKeys:
     @pytest.mark.priority_medium
     @pytest.mark.unit

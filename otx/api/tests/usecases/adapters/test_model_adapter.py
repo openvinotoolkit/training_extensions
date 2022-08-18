@@ -13,7 +13,7 @@ from otx.api.usecases.adapters.model_adapter import (
 )
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestIDataSource:
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -42,7 +42,7 @@ class TestDataSource(IDataSource):
         return self._data
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestModelAdapter:
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -131,7 +131,7 @@ class TestModelAdapter:
         assert model_adapter.from_file_storage
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestExportableCodeAdapter:
     @pytest.mark.priority_medium
     @pytest.mark.unit

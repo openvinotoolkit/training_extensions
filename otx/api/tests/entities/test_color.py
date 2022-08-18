@@ -31,7 +31,7 @@ color_hex = f"{red_hex}{green_hex}{blue_hex}"
 color = Color.from_hex_str(color_hex)
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestColor:
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -66,7 +66,7 @@ class TestColor:
         assert color.hex_str == "#44362000"
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestColorEntity:
     @pytest.mark.priority_medium
     @pytest.mark.unit

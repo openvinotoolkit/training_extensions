@@ -35,7 +35,7 @@ from otx.api.tests.constants.requirements import Requirements
 from otx.api.utils.time_utils import now
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestAnnotation:
 
     rectangle = Rectangle(x1=0.5, x2=1.0, y1=0.0, y2=0.5)
@@ -287,7 +287,7 @@ class TestAnnotation:
         assert "name=car" not in str(annotation.get_labels())  # car_label is empty
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestAnnotationSceneKind:
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -319,7 +319,7 @@ class TestAnnotationSceneKind:
         assert str(annotation_scene_kind(5)) == "TASK_PREDICTION"
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestAnnotationSceneEntity:
 
     creation_date = now()
@@ -589,7 +589,7 @@ class TestAnnotationSceneEntity:
         assert annotation_scene_entity.get_label_ids() == {ID(), ID(123456789)}
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestNullAnnotationSceneEntity:
     @pytest.mark.priority_medium
     @pytest.mark.unit

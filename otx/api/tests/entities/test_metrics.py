@@ -35,7 +35,7 @@ from otx.api.tests.constants.components import OtxSdkComponent
 from otx.api.tests.constants.requirements import Requirements
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestMetrics:
     @staticmethod
     def mixed_conditions_duration_metric() -> DurationMetric:
@@ -214,7 +214,7 @@ class TestMetrics:
                 )
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestCountMetric:
     @staticmethod
     def count_metric() -> CountMetric:
@@ -241,7 +241,7 @@ class TestCountMetric:
             assert count_metric.type() == "count"
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestInfoMetric:
     @staticmethod
     def info_metric() -> InfoMetric:
@@ -269,7 +269,7 @@ class TestInfoMetric:
         assert info_metric.type() == "string"
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestDateMetric:
     @staticmethod
     def date_metric_no_date_specified() -> DateMetric:
@@ -311,7 +311,7 @@ class TestDateMetric:
         assert date_specified_metric.type() == "date"
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestScoreMetric:
     @staticmethod
     def score_metric() -> ScoreMetric:
@@ -364,7 +364,7 @@ class TestScoreMetric:
         assert repr(score_metric) == "ScoreMetric(name=`Test ScoreMetric`, score=`2.0`)"
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestCurveMetric:
     @staticmethod
     def ys() -> list:
@@ -423,7 +423,7 @@ class TestCurveMetric:
         )
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestNullMetric:
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -452,7 +452,7 @@ class TestNullMetric:
         assert null_metric != TestInfoMetric().info_metric()
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestVisualizationType:
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -474,7 +474,7 @@ class TestVisualizationType:
         assert VisualizationType.MATRIX.value == 4
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestColorPalette:
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -493,7 +493,7 @@ class TestColorPalette:
         assert ColorPalette.LABEL.value == 1
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestVisualizationInfo:
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -546,7 +546,7 @@ class TestVisualizationInfo:
             )
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestTextChartInfo:
     @staticmethod
     def text_chart_info():
@@ -574,7 +574,7 @@ class TestTextChartInfo:
         )
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestLineChartInfo:
     @staticmethod
     def default_parameters_line_chart_info():
@@ -637,7 +637,7 @@ class TestLineChartInfo:
         )
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestBarChartInfo:
     @staticmethod
     def default_parameters_bar_chart_info():
@@ -703,7 +703,7 @@ class TestBarChartInfo:
                 )
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestMatrixChartInfo:
     @staticmethod
     def default_values_matrix_chart_info():
@@ -770,7 +770,7 @@ class TestMatrixChartInfo:
             repr(default_parameters_matrix_chart_info)
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestMatrixMetricsGroup:
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -818,7 +818,7 @@ class TestMatrixMetricsGroup:
             MatrixMetricsGroup(metrics=matrix_metrics, visualization_info=None)
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestLineMetricsGroup:
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -861,7 +861,7 @@ class TestLineMetricsGroup:
             LineMetricsGroup(metrics=curve_metrics, visualization_info=None)
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestBarMetricsGroup:
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -904,7 +904,7 @@ class TestBarMetricsGroup:
             BarMetricsGroup(metrics=bar_metrics, visualization_info=None)
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestTextMetricsGroup:
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -955,7 +955,7 @@ class TestTextMetricsGroup:
             TextMetricsGroup(metrics=[score_metric], visualization_info=None)
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestPerformance:
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -1060,7 +1060,7 @@ class TestPerformance:
             Performance(count_metric)
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestNullPerformance:
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -1097,7 +1097,7 @@ class TestNullPerformance:
         assert null_performance != performance
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestMultiScorePerformance:
     @pytest.mark.priority_medium
     @pytest.mark.unit

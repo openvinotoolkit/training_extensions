@@ -29,7 +29,7 @@ from otx.api.tests.constants.components import OtxSdkComponent
 from otx.api.tests.constants.requirements import Requirements
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestUtilsFunctions:
     parameter_group = ParameterGroup(header="test header")
     attribute = fields(ConfigurableParameters)

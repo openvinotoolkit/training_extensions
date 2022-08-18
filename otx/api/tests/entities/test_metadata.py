@@ -30,7 +30,7 @@ from otx.api.tests.constants.components import OtxSdkComponent
 from otx.api.tests.constants.requirements import Requirements
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestIMetadata:
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -62,7 +62,7 @@ class TestIMetadata:
         assert test_instance.name == "String"
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestFloatType:
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -136,7 +136,7 @@ class TestFloatType:
             str(test_instance(6))
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestMetadataItemEntity:
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -187,7 +187,7 @@ class TestMetadataItemEntity:
         assert re.match(repr_pattern, __repr)
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestFloatMetadata:
     @pytest.mark.priority_medium
     @pytest.mark.unit

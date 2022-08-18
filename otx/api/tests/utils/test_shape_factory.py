@@ -15,7 +15,7 @@ from otx.api.tests.constants.requirements import Requirements
 from otx.api.utils.shape_factory import ShapeFactory
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestShapeFactory:
     @pytest.mark.priority_medium
     @pytest.mark.unit

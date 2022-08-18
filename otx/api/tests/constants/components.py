@@ -22,4 +22,4 @@ class OtxSdkComponent(MarkMeta):
     OTX Component marker.
     """
 
-    otx.api = "otx.api"
+    OTX_API = "otx.api"

@@ -29,7 +29,7 @@ from otx.api.usecases.tasks.interfaces.training_interface import ITrainingTask
 from otx.api.usecases.tasks.interfaces.unload_interface import IUnload
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestIEvaluationTask:
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -65,7 +65,7 @@ class TestIEvaluationTask:
             )
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestIInferenceTask:
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -93,7 +93,7 @@ class TestIInferenceTask:
             )
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestIRawInference:
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -117,7 +117,7 @@ class TestIRawInference:
             IRawInference().raw_infer(input_tensors={}, output_tensors={})
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestOptimizationType:
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -136,7 +136,7 @@ class TestOptimizationType:
         assert OptimizationType.NNCF.value == 2
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestIOptimizationTask:
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -172,7 +172,7 @@ class TestIOptimizationTask:
             )
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestITrainingTask:
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -213,7 +213,7 @@ class TestITrainingTask:
             i_training_task.cancel_training()
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestIUnload:
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -237,7 +237,7 @@ class TestIUnload:
             IUnload().unload()
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestExportType:
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -255,7 +255,7 @@ class TestExportType:
         assert ExportType.OPENVINO.value == 1
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestIExportTask:
     @pytest.mark.priority_medium
     @pytest.mark.unit

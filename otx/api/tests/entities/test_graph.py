@@ -21,7 +21,7 @@ from otx.api.tests.constants.components import OtxSdkComponent
 from otx.api.tests.constants.requirements import Requirements
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestGraph:
     @staticmethod
     def add_edges_to_graph(graph_to_add_edges: Graph, edges_parameters: list) -> None:
@@ -916,7 +916,7 @@ class TestGraph:
         assert directed_graph.descendants("D") == ["C", "A", "D"]
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestMultiDiGraph:
     @staticmethod
     def multi_di_graph():

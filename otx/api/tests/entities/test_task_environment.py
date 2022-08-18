@@ -69,7 +69,7 @@ def environment():
     return environment
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestTaskEnvironment:
     @pytest.mark.priority_medium
     @pytest.mark.unit

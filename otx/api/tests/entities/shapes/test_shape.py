@@ -31,7 +31,7 @@ from otx.api.tests.constants.components import OtxSdkComponent
 from otx.api.tests.constants.requirements import Requirements
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestShapeType:
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -50,7 +50,7 @@ class TestShapeType:
         assert ShapeType.POLYGON.value == 3
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestShapeEntity:
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -89,7 +89,7 @@ class TestShapeEntity:
                 ShapeEntity._as_shapely_polygon(shape)
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestShape:
     @staticmethod
     def fully_covering_rectangle() -> Rectangle:

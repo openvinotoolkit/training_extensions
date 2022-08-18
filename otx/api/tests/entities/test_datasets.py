@@ -16,7 +16,7 @@ from otx.api.tests.constants.requirements import Requirements
 from otx.api.tests.entities.test_dataset_item import DatasetItemParameters
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestDatasetPurpose:
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -45,7 +45,7 @@ class TestDatasetPurpose:
         assert str(DatasetPurpose.TASK_INFERENCE) == "TASK_INFERENCE"
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestDatasetEntity:
     @staticmethod
     def generate_random_image():

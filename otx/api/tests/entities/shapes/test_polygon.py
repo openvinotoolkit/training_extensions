@@ -23,7 +23,7 @@ from otx.api.tests.constants.requirements import Requirements
 from otx.api.utils.time_utils import now
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestPoint:
     def coordinates(self):
         return [0.5, 0.4]
@@ -118,7 +118,7 @@ class TestPoint:
         assert normalized.y == 0.5000000000000001
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestPolygon:
     modification_date = now()
 

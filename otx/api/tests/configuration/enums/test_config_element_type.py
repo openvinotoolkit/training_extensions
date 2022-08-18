@@ -12,7 +12,7 @@ from otx.api.tests.constants.components import OtxSdkComponent
 from otx.api.tests.constants.requirements import Requirements
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestElementCategory:
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -38,7 +38,7 @@ class TestElementCategory:
         assert str(ElementCategory.RULES) == "RULES"
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestConfigElementType:
     @pytest.mark.priority_medium
     @pytest.mark.unit

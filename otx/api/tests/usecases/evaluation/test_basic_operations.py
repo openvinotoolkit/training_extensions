@@ -29,7 +29,7 @@ from otx.api.usecases.evaluation.basic_operations import (
 )
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestBasicOperationsFunctions:
     @pytest.mark.priority_medium
     @pytest.mark.unit

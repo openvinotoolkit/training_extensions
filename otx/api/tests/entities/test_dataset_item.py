@@ -149,7 +149,7 @@ class DatasetItemParameters:
         )
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestDatasetItemEntity:
     @staticmethod
     def compare_denormalized_annotations(

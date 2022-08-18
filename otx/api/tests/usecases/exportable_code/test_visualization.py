@@ -24,7 +24,7 @@ from otx.api.utils.shape_drawer import ShapeDrawer
 from otx.api.utils.time_utils import now
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestVisualizer:
     image = np.random.randint(low=0, high=255, size=(480, 640, 3)).astype(np.float32)
 

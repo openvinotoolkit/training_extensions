@@ -25,7 +25,7 @@ from otx.api.tests.constants.components import OtxSdkComponent
 from otx.api.tests.constants.requirements import Requirements
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestLabelSchema:
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -369,7 +369,7 @@ class TestLabelSchema:
         assert new_schema != label_schema
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestLabelGroupType:
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -435,7 +435,7 @@ class Labels:
 labels = Labels()
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestLabelGroup:
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -616,7 +616,7 @@ class Edges:
 edges = Edges()
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestLabelGraph:
     @staticmethod
     def non_directed_label_graph() -> LabelGraph:
@@ -865,7 +865,7 @@ class TestLabelGraph:
         assert directed_graph != str
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestLabelTree:
     @staticmethod
     def label_tree_no_children() -> LabelTree:
@@ -1490,7 +1490,7 @@ class TestLabelTree:
         assert label_tree != str
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestLabelSchemaEntity:
     @staticmethod
     def label_groups() -> list:

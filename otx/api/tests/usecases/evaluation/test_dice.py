@@ -38,7 +38,7 @@ from otx.api.usecases.evaluation.averaging import MetricAverageMethod
 from otx.api.usecases.evaluation.dice import DiceAverage
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestDice:
     color = Color(0, 255, 0)
     creation_date = datetime.datetime(year=2022, month=1, day=10)

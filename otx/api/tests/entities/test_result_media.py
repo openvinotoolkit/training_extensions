@@ -24,7 +24,7 @@ from otx.api.tests.constants.requirements import Requirements
 RANDOM_IMAGE = np.random.randint(low=0, high=255, size=(32, 64, 3))
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestResultMediaEntity:
     @staticmethod
     def default_result_media_parameters() -> dict:

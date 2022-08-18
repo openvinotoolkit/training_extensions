@@ -12,7 +12,7 @@ from otx.api.tests.constants.requirements import Requirements
 RANDOM_NUMPY = np.random.randint(low=0, high=255, size=(16, 32, 3))
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestTensorEntity:
     @staticmethod
     def tensor_params():

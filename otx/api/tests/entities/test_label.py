@@ -22,7 +22,7 @@ from otx.api.tests.constants.requirements import Requirements
 from otx.api.utils.time_utils import now
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestDomain:
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -39,7 +39,7 @@ class TestDomain:
         assert len(domain) == 9
 
 
-@pytest.mark.components(OtxSdkComponent.otx.api)
+@pytest.mark.components(OtxSdkComponent.OTX_API)
 class TestLabelEntity:
 
     creation_date = now()
