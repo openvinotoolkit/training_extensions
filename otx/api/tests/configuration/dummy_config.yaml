@@ -1,0 +1,134 @@
+type: CONFIGURABLE_PARAMETERS
+description: Configurable parameters for the DatasetManager -- TEST ONLY
+header: Dataset Manager configuration -- TEST ONLY
+number_of_samples_for_auto_train:
+  type: INTEGER
+  default_value: 5
+  min_value: 1
+  max_value: 1000
+  header: Samples required for new training round
+label_constraints:
+  type: BOOLEAN
+  default_value: true
+  header: Apply label constraints
+nested_parameter_group:
+  type: PARAMETER_GROUP
+  header: Test group of parameter groups
+  subgroup_one:
+    type: PARAMETER_GROUP
+    header: Parameter group one
+    bogus_parameter_one:
+      type: FLOAT
+      default_value: 42.0
+      header: Bogus parameter to test nested parameter groups
+      ui_rules:
+        rules:
+          - parameter:
+              - nested_parameter_group
+              - show_subgroup_one
+            type: RULE
+            value: false
+        action: HIDE
+        type: UI_RULES
+    bogus_parameter_two:
+      type: FLOAT
+      default_value: 42.0
+      header: Bogus parameter to test nested parameter groups
+      ui_rules:
+        rules:
+          - parameter:
+              - nested_parameter_group
+              - show_subgroup_one
+            type: RULE
+            value: false
+        action: HIDE
+        type: UI_RULES
+  show_subgroup_one:
+    type: BOOLEAN
+    header: Show the parameters in subgroup one?
+    default_value: true
+  subgroup_two:
+    type: PARAMETER_GROUP
+    header: Parameter group two
+    bogus_parameter_four:
+      type: FLOAT
+      default_value: 42.0
+      header: Bogus parameter to test nested parameter groups
+    bogus_parameter_three:
+      type: FLOAT
+      default_value: 42.0
+      header: Bogus parameter to test nested parameter groups
+subset_parameters:
+  type: PARAMETER_GROUP
+  header: Subset parameters
+  description: Parameters for the different subsets
+  auto_subset_fractions:
+    default_value: true
+    description: Test
+    affects_outcome_of: TRAINING
+    header: Automatically determine subset proportions
+    type: BOOLEAN
+  test_proportion:
+    type: FLOAT
+    min_value: 0.0
+    max_value: 1.0
+    default_value: 0.15
+    header: Test set proportion
+    affects_outcome_of: TRAINING
+    ui_rules:
+      rules:
+        - parameter: auto_subset_fractions
+          type: RULE
+          value: false
+      action: SHOW
+      type: UI_RULES
+  train_proportion:
+    type: FLOAT
+    min_value: 0.0
+    max_value: 1.0
+    default_value: 0.75
+    header: Training set proportion
+    affects_outcome_of: TRAINING
+    ui_rules:
+      rules:
+        - parameter: auto_subset_fractions
+          type: RULE
+          value: false
+      action: SHOW
+      type: UI_RULES
+    auto_hpo_state: possible
+  validation_proportion:
+    type: FLOAT
+    min_value: 0.0
+    max_value: 1.0
+    default_value: 0.1
+    header: Validation set proportion
+    affects_outcome_of: TRAINING
+    ui_rules:
+      rules:
+        - parameter: auto_subset_fractions
+          type: RULE
+          value: false
+      action: SHOW
+      type: UI_RULES
+dummy_float_selectable:
+  default_value: 2.0
+  header: Test float selectable
+  options:
+    - 1.0
+    - 2.0
+    - 3.0
+    - 4.0
+  type: FLOAT_SELECTABLE
+  auto_hpo_state: possible
+dummy_selectable:
+  default_value: bogus
+  header: Test
+  enum_name: SomeEnumSelectable
+  affects_outcome_of: INFERENCE
+  options:
+    BOGUS_NAME: bogus
+    TEST_2: test_2_test
+    TEST_NAME1: test_name_1
+    OPTION_C: option_c
+  type: SELECTABLE

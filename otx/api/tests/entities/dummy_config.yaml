@@ -1,0 +1,148 @@
+description: Configuration for an object detection task -- TEST ONLY
+header: Configuration for an object detection task -- TEST ONLY
+learning_parameters:
+  batch_size:
+    affects_outcome_of: TRAINING
+    default_value: 5
+    description: Test description
+    editable: true
+    header: Batch size
+    max_value: 512
+    min_value: 1
+    type: INTEGER
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: 5
+    visible_in_ui: true
+    warning: Test warning
+  description: Learning Parameters
+  header: Learning Parameters
+  learning_rate:
+    affects_outcome_of: TRAINING
+    default_value: 0.01
+    description: Test learning_rate description
+    editable: true
+    header: Learning rate --TEST ONLY
+    max_value: 0.1
+    min_value: 1.0e-07
+    type: FLOAT
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: 0.01
+    visible_in_ui: true
+    warning: null
+  learning_rate_warmup_iters:
+    affects_outcome_of: TRAINING
+    default_value: 100
+    description: ""
+    editable: true
+    header: Test learning_rate_warmup_iters header
+    max_value: 10000
+    min_value: 0
+    type: INTEGER
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: 100
+    visible_in_ui: true
+    warning: null
+  num_checkpoints:
+    affects_outcome_of: NONE
+    default_value: 5
+    description: ""
+    editable: true
+    header: Test num_checkpoints header
+    max_value: 100
+    min_value: 1
+    type: INTEGER
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: 5
+    visible_in_ui: true
+    warning: null
+  num_iters:
+    affects_outcome_of: TRAINING
+    default_value: 1
+    description: Test num_iters description
+    editable: true
+    header: Test num_iters header
+    max_value: 100000
+    min_value: 1
+    type: INTEGER
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: 1
+    visible_in_ui: true
+    warning: null
+  num_workers:
+    affects_outcome_of: NONE
+    default_value: 0
+    description: Test num_workers description
+    editable: true
+    header: Test num_workers header
+    max_value: 8
+    min_value: 0
+    type: INTEGER
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: 0
+    visible_in_ui: true
+    warning: null
+  type: PARAMETER_GROUP
+  visible_in_ui: true
+postprocessing:
+  confidence_threshold:
+    affects_outcome_of: INFERENCE
+    default_value: 0.35
+    description: Test postprocessing confidence_threshold description
+    editable: true
+    header: Test postprocessing confidence_threshold header
+    max_value: 1
+    min_value: 0
+    type: FLOAT
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: 0.35
+    visible_in_ui: true
+    warning: null
+  description: Postprocessing
+  header: Postprocessing
+  result_based_confidence_threshold:
+    affects_outcome_of: INFERENCE
+    default_value: true
+    description: Test result_based_confidence_threshold description
+    editable: true
+    header: Test result_based_confidence_threshold header
+    type: BOOLEAN
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: true
+    visible_in_ui: true
+    warning: null
+  type: PARAMETER_GROUP
+  visible_in_ui: true
+type: CONFIGURABLE_PARAMETERS
+visible_in_ui: true
