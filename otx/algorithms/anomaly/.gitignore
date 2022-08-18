@@ -1,0 +1,16 @@
+# IDE
+.idea/
+.vscode/
+
+# Python
+__pycache__/
+
+# Models
+*.onnx
+
+# Tests
+datasets
+.coverage
+
+# Outputs
+results/
