@@ -18,6 +18,8 @@ Model training tool.
 
 import argparse
 import os.path as osp
+import shutil
+import glob
 
 from ote_sdk.configuration.helper import create
 from ote_sdk.entities.inference_parameters import InferenceParameters
@@ -175,6 +177,12 @@ def main():
     task.train(dataset, output_model, train_parameters=TrainParameters())
 
     save_model_data(output_model, args.save_model_to)
+
+    if len(glob.glob(task._output_path + '/**/*.json')):
+        log_json = glob.glob(task._output_path + '/**/*.json')[0]
+        log_txt = glob.glob(task._output_path + '/**/*.log')[0]
+        shutil.copy(log_json, args.save_model_to)
+        shutil.copy(log_txt, args.save_model_to)
 
     validation_dataset = dataset.get_subset(Subset.VALIDATION)
     predicted_validation_dataset = task.infer(

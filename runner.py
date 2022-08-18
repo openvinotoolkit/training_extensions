@@ -1,13 +1,11 @@
 import argparse
 import os
 import json
-from pyexpat import model
 import numpy as np
 from subprocess import run
 from ote_cli.utils.tests import collect_env_vars
 from omegaconf import OmegaConf
 from comet_ml import Experiment
-import torch
 
 
 def ote_train(kwargs, env_root):
