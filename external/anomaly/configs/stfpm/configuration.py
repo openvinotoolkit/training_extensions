@@ -1,6 +1,4 @@
-"""
-Configurable parameters for STFPM anomaly base task
-"""
+"""Configurable parameters for STFPM anomaly base task."""
 
 # Copyright (C) 2022 Intel Corporation
 #
@@ -18,7 +16,7 @@ Configurable parameters for STFPM anomaly base task
 
 from attr import attrs
 from configs.base import BaseAnomalyConfig
-from configs.base.configuration_enums import EarlyStoppingMetrics
+from configs.base.configuration_enums import EarlyStoppingMetrics, ModelBackbone
 from ote_sdk.configuration.elements import (
     ParameterGroup,
     add_parameter_group,
@@ -32,9 +30,7 @@ from ote_sdk.configuration.model_lifecycle import ModelLifecycle
 
 @attrs
 class STFPMAnomalyBaseConfig(BaseAnomalyConfig):
-    """
-    Configurable parameters for STFPM anomaly base task.
-    """
+    """Configurable parameters for STFPM anomaly base task."""
 
     header = string_attribute("Configuration for STFPM")
     description = header
@@ -67,11 +63,15 @@ class STFPMAnomalyBaseConfig(BaseAnomalyConfig):
             description="Decay for SGD optimizer",
         )
 
+        backbone = selectable(
+            default_value=ModelBackbone.RESNET18,
+            header="Model Backbone",
+            description="Pre-trained backbone used for feature extraction",
+        )
+
         @attrs
         class EarlyStoppingParameters(ParameterGroup):
-            """
-            Early stopping parameters
-            """
+            """Early stopping parameters."""
 
             header = string_attribute("Early Stopping Parameters")
             description = header

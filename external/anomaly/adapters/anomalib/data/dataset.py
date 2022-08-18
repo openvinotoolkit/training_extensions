@@ -45,7 +45,8 @@ class BaseAnomalyDataset(DatasetEntity, ABC):
         val_subset: Optional[Dict[str, str]] = None,
         test_subset: Optional[Dict[str, str]] = None,
     ):
-        """
+        """Base Anomaly Dataset.
+
         Args:
             train_subset (Optional[Dict[str, str]], optional): Path to annotation
                 and dataset used for training. Defaults to None.

@@ -12,15 +12,27 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+from typing import Any, Dict, Optional, Union, Iterable
+import warnings
+
 import cv2
 import numpy as np
-from typing import Any, Dict, Optional
 
 from openvino.model_zoo.model_api.models import SegmentationModel
 from openvino.model_zoo.model_api.models.types import NumericalValue
 from openvino.model_zoo.model_api.adapters.model_adapter import ModelAdapter
 from ote_sdk.utils.argument_checks import check_input_parameters_type
 from ote_sdk.utils.segmentation_utils import create_hard_prediction_from_soft_prediction
+
+
+@check_input_parameters_type()
+def get_actmap(
+    features: Union[np.ndarray, Iterable, int, float], output_res: Union[tuple, list]
+):
+    am = cv2.resize(features, output_res)
+    am = cv2.applyColorMap(am, cv2.COLORMAP_JET)
+    am = cv2.cvtColor(am, cv2.COLOR_BGR2RGB)
+    return am
 
 
 class BlurSegmentation(SegmentationModel):
@@ -60,7 +72,6 @@ class BlurSegmentation(SegmentationModel):
     def postprocess(self, outputs: Dict[str, np.ndarray], metadata: Dict[str, Any]):
         predictions = outputs[self.output_blob_name].squeeze()
         soft_prediction = np.transpose(predictions, axes=(1, 2, 0))
-        feature_vector = outputs.get('repr_vector', None)  # Optional output
 
         hard_prediction = create_hard_prediction_from_soft_prediction(
             soft_prediction=soft_prediction,
@@ -68,9 +79,17 @@ class BlurSegmentation(SegmentationModel):
             blur_strength=self.blur_strength
         )
         hard_prediction = cv2.resize(hard_prediction, metadata['original_shape'][1::-1], 0, 0, interpolation=cv2.INTER_NEAREST)
-        soft_prediction = cv2.resize(soft_prediction, metadata['original_shape'][1::-1], 0, 0, interpolation=cv2.INTER_NEAREST)
-
-        metadata['soft_predictions'] = soft_prediction
-        metadata['feature_vector'] = feature_vector
+        
+        if 'feature_vector' not in outputs or 'saliency_map' not in outputs:
+            warnings.warn('Could not find Feature Vector and Saliency Map in OpenVINO output. '
+                'Please rerun OpenVINO export or retrain the model.')
+            metadata["saliency_map"] = None
+            metadata["feature_vector"] = None
+        else:
+            metadata["saliency_map"] = get_actmap(
+                outputs["saliency_map"][0],
+                (metadata["original_shape"][1], metadata["original_shape"][0]),
+            )
+            metadata["feature_vector"] = outputs["feature_vector"].reshape(-1)
 
         return hard_prediction

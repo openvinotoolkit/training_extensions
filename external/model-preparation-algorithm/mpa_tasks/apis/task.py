@@ -74,10 +74,6 @@ class BaseTask:
         # to override configuration at runtime
         self.override_configs = {}
 
-    @property
-    def _precision_from_config(self):
-        return [ModelPrecision.FP16] if self._model_cfg.get('fp16', None) else [ModelPrecision.FP32]
-
     def _run_task(self, stage_module, mode=None, dataset=None, parameters=None, **kwargs):
         self._initialize()
         # update model config -> model label schema
@@ -178,7 +174,7 @@ class BaseTask:
                 del self._model_cfg._cfg_dict['fp16']
             elif isinstance(self._model_cfg, ConfigDict):
                 del self._model_cfg['fp16']
-        self._precision = self._precision_from_config
+        self._precision = [ModelPrecision.FP32]
 
         # add Cancel tranining hook
         update_or_add_custom_hook(self._recipe_cfg, ConfigDict(
@@ -267,7 +263,7 @@ class BaseTask:
                     self._hyperparams.tiling_parameters.tile_overlap = tiling_parameters['tile_overlap']
                     self._hyperparams.tiling_parameters.tile_max_number = tiling_parameters['tile_max_number']
 
-            return model_data['model']
+            return model_data.get('model', model_data.get('state_dict', None))
         else:
             return None
 

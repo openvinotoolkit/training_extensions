@@ -171,7 +171,8 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         output_model.optimization_type = ModelOptimizationType.MO
 
         stage_module = 'ClsExporter'
-        results = self._run_task(stage_module, mode='train')
+        self._initialize()
+        results = self._run_task(stage_module, mode='train', precision=self._precision[0].name)
         logger.debug(f'results of run_task = {results}')
         results = results.get('outputs')
         logger.debug(f'results of run_task = {results}')
@@ -186,6 +187,7 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
                 output_model.set_data('openvino.bin', f.read())
             with open(xml_file, "rb") as f:
                 output_model.set_data('openvino.xml', f.read())
+        output_model.precision = self._precision
         output_model.set_data("label_schema.json", label_schema_to_bytes(self._task_environment.label_schema))
         logger.info('Exporting completed')
 
@@ -240,8 +242,8 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
             dataset_item.append_labels(item_labels)
 
             if feature_vector is not None:
-                active_score = TensorEntity(name="representation_vector", numpy=feature_vector)
-                dataset_item.append_metadata_item(active_score)
+                active_score = TensorEntity(name="representation_vector", numpy=feature_vector.reshape(-1))
+                dataset_item.append_metadata_item(active_score, model=self._task_environment.model)
 
             if saliency_map is not None:
                 saliency_map = get_actmap(saliency_map, (dataset_item.width, dataset_item.height))
@@ -373,7 +375,7 @@ class ClassificationTrainTask(ClassificationInferenceTask):
         torch.save(modelinfo, buffer)
         output_model.set_data("weights.pth", buffer.getvalue())
         output_model.set_data("label_schema.json", label_schema_to_bytes(self._task_environment.label_schema))
-        output_model.precision = [ModelPrecision.FP32]
+        output_model.precision = self._precision
 
     def cancel_training(self):
         """

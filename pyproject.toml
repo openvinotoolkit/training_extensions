@@ -1,0 +1,114 @@
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# SETUP CONFIGURATION.                                                        #
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# ISORT CONFIGURATION.                                                        #
+[tool.isort]
+profile = "black"
+known_first_party = ["ote_cli", "ote_sdk"]
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# MYPY CONFIGURATION.                                                         #
+[tool.mypy]
+python_version = 3.8
+ignore_missing_imports = true
+show_error_codes = true
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# PYLINT CONFIGURATION                                                        #
+[tool.pylint.master]
+ignore = "CVS"
+ignore-patterns = "^.*test_.*.py"
+
+[tool.pylint.messages_control]
+disable = [
+    "logging-fstring-interpolation",
+    "too-few-public-methods",
+    "fixme",
+    "duplicate-code",
+    "raw-checker-failed",
+    "bad-inline-option",
+    "locally-disabled",
+    "file-ignored",
+    "suppressed-message",
+    "useless-suppression",
+    "deprecated-pragma",
+    "use-symbolic-message-instead",
+    "import-outside-toplevel",
+    "arguments-differ",
+]
+
+[tool.pylint.typecheck]
+generated-members = ["numpy.*", "torch.*"]
+ignored-modules = [
+    "ote_sdk",
+    "mmseg",
+    "segmentation_tasks",
+    "mmdet",
+    "detection_tasks",
+    "torchreid",
+    "torchreid_tasks",
+    "cv2",
+    "anomalib",
+    "pytorch_lightning",
+    "torch",
+    "addict",
+    "compression",
+    "openvino",
+    "pandas",
+]
+
+[tool.pylint.format]
+max-line-length = 120
+
+[tool.pylint.basic]
+good-names = [
+    "i",
+    "j",
+    "k",
+    "ex",
+    "Run",
+    "_",
+    "x1",
+    "x2",
+    "y1",
+    "y2",
+    "x",
+    "y",
+    "r",
+    "id",
+    "type",
+    "xs",
+    "ys",
+    "p",
+    "f",
+]
+
+[tool.pylint.imports]
+known-third-party = ["enchant", "ote_sdk"]
+
+[tool.pylint.design]
+max-args = 7
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# PYDOCSTYLE CONFIGURATION                                                    #
+[tool.pydocstyle]
+inherit = false
+ignore = [
+    "D107", # Missing docstring in __init__
+    "D202", # No blank lines allowed after function docstring
+    "D203", # 1 blank line required before class docstring
+    "D213", # Multi-line docstring summary should start at the second line
+    "D401", # First line should be in imperative mood; try rephrasing
+    "D404", # First word of the docstring should not be This
+    "D406", # Section name should end with a newline
+    "D407", # Missing dashed underline after section
+    "D413", # Missing blank line after last section
+]

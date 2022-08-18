@@ -1,5 +1,7 @@
-"""
-Enums needed to define the options of selectable parameters in the configurable parameter classes
+"""Configuration Enums.
+
+Enums needed to define the options of selectable parameters in the configurable
+parameter classes.
 """
 
 # Copyright (C) 2021 Intel Corporation
@@ -20,8 +22,9 @@ from ote_sdk.configuration import ConfigurableEnum
 
 
 class POTQuantizationPreset(ConfigurableEnum):
-    """
-    This Enum represents the quantization preset for post training optimization
+    """POT Quantization Preset Enum.
+
+    This Enum represents the quantization preset for post training optimization.
     """
 
     PERFORMANCE = "Performance"
@@ -29,8 +32,10 @@ class POTQuantizationPreset(ConfigurableEnum):
 
 
 class EarlyStoppingMetrics(ConfigurableEnum):
-    """
-    This enum represents the different metrics that can be used for early stopping
+    """Early Stopping Metric Enum.
+
+    This enum represents the different metrics that can be used for early
+    stopping.
     """
 
     IMAGE_ROC_AUC = "image_AUROC"
@@ -38,8 +43,10 @@ class EarlyStoppingMetrics(ConfigurableEnum):
 
 
 class ModelName(ConfigurableEnum):
-    """
-    This enum represents the different model architectures for anomaly classification
+    """Model Name Enum.
+
+    This enum represents the different model architectures for anomaly
+    classification.
     """
 
     STFPM = "stfpm"
@@ -47,8 +54,10 @@ class ModelName(ConfigurableEnum):
 
 
 class ModelBackbone(ConfigurableEnum):
-    """
-    This enum represents the common backbones that can be used with Padim and STFPM
+    """Model Backbone Enum.
+
+    This enum represents the common backbones that can be used with Padim and
+    STFPM.
     """
 
     RESNET18 = "resnet18"

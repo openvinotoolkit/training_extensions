@@ -1,6 +1,4 @@
-"""
-Base configuration parameters for STFPM
-"""
+"""Base configuration parameters for STFPM."""
 
 # Copyright (C) 2022 Intel Corporation
 #

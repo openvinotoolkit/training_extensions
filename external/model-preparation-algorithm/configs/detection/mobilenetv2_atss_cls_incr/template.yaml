@@ -27,15 +27,15 @@ hyper_parameters:
   parameter_overrides:
     learning_parameters:
       batch_size:
-        default_value: 4
+        default_value: 8
         auto_hpo_state: POSSIBLE
       learning_rate:
-        default_value: 0.001
+        default_value: 0.004
         auto_hpo_state: POSSIBLE
       learning_rate_warmup_iters:
-        default_value: 10
+        default_value: 3
       num_iters:
-        default_value: 100
+        default_value: 200
     algo_backend:
       train_type:
         default_value: Incremental
