@@ -216,9 +216,10 @@ def get_requirements(requirement_files: Union[str, List[str]]) -> List[str]:
     Returns:
         List[str]: List of required packages
     """
+    if isinstance(requirement_files, str):
+        requirement_files = [requirement_files]
 
     requirements: List[str] = []
-
     for requirement_file in requirement_files:
         with open(f"requirements/{requirement_file}.txt", "r", encoding="utf8") as file:
             for line in file:

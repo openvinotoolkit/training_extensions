@@ -25,13 +25,13 @@ from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.subset import Subset
 from ote_sdk.entities.task_environment import TaskEnvironment
 
-from ote_cli.datasets import get_dataset_class
-from ote_cli.registry import find_and_parse_model_template
-from ote_cli.utils.config import override_parameters
-from ote_cli.utils.importing import get_impl_class
-from ote_cli.utils.io import generate_label_schema, read_label_schema, read_model
-from ote_cli.utils.nncf import is_checkpoint_nncf
-from ote_cli.utils.parser import (
+from ote.cli.datasets import get_dataset_class
+from ote.cli.registry import find_and_parse_model_template
+from ote.cli.utils.config import override_parameters
+from ote.cli.utils.importing import get_impl_class
+from ote.cli.utils.io import generate_label_schema, read_label_schema, read_model
+from ote.cli.utils.nncf import is_checkpoint_nncf
+from ote.cli.utils.parser import (
     add_hyper_parameters_sub_parser,
     gen_params_dict_from_args,
 )
