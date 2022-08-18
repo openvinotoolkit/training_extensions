@@ -1,4 +1,4 @@
-"""Tests for anomaly classification with OTE CLI"""
+"""Tests for anomaly classification with OTX CLI"""
 
 # Copyright (C) 2021 Intel Corporation
 #
@@ -19,23 +19,23 @@ import os
 import pytest
 from otx.api.test_suite.e2e_test_system import e2e_pytest_component
 
-from ote_cli.registry import Registry
-from ote_cli.utils.tests import (
+from otx_cli.registry import Registry
+from otx_cli.utils.tests import (
     create_venv,
     get_some_vars,
     nncf_eval_openvino_testing,
     nncf_eval_testing,
     nncf_export_testing,
     nncf_optimize_testing,
-    ote_demo_deployment_testing,
-    ote_demo_openvino_testing,
-    ote_demo_testing,
-    ote_deploy_openvino_testing,
-    ote_eval_deployment_testing,
-    ote_eval_openvino_testing,
-    ote_eval_testing,
-    ote_export_testing,
-    ote_train_testing,
+    otx_demo_deployment_testing,
+    otx_demo_openvino_testing,
+    otx_demo_testing,
+    otx_deploy_openvino_testing,
+    otx_eval_deployment_testing,
+    otx_eval_openvino_testing,
+    otx_eval_testing,
+    otx_export_testing,
+    otx_train_testing,
     pot_eval_testing,
     pot_optimize_testing,
 )
@@ -51,8 +51,8 @@ args = {
     "train_params": [],
 }
 
-root = "/tmp/ote_cli/"
-ote_dir = os.getcwd()
+root = "/tmp/otx_cli/"
+otx_dir = os.getcwd()
 
 templates = Registry("external").filter(task_type="ANOMALY_CLASSIFICATION").templates
 templates_ids = [template.model_template_id for template in templates]
@@ -66,48 +66,48 @@ class TestToolsAnomalyClassification:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_ote_train(self, template):
-        ote_train_testing(template, root, ote_dir, args)
+    def test_otx_train(self, template):
+        otx_train_testing(template, root, otx_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_ote_export(self, template):
-        ote_export_testing(template, root)
+    def test_otx_export(self, template):
+        otx_export_testing(template, root)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_ote_eval(self, template):
-        ote_eval_testing(template, root, ote_dir, args)
+    def test_otx_eval(self, template):
+        otx_eval_testing(template, root, otx_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_ote_eval_openvino(self, template):
-        ote_eval_openvino_testing(template, root, ote_dir, args, threshold=0.0)
+    def test_otx_eval_openvino(self, template):
+        otx_eval_openvino_testing(template, root, otx_dir, args, threshold=0.0)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_ote_demo(self, template):
-        ote_demo_testing(template, root, ote_dir, args)
+    def test_otx_demo(self, template):
+        otx_demo_testing(template, root, otx_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_ote_demo_openvino(self, template):
-        ote_demo_openvino_testing(template, root, ote_dir, args)
+    def test_otx_demo_openvino(self, template):
+        otx_demo_openvino_testing(template, root, otx_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_ote_deploy_openvino(self, template):
-        ote_deploy_openvino_testing(template, root, ote_dir, args)
+    def test_otx_deploy_openvino(self, template):
+        otx_deploy_openvino_testing(template, root, otx_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_ote_eval_deployment(self, template):
-        ote_eval_deployment_testing(template, root, ote_dir, args, threshold=0.0)
+    def test_otx_eval_deployment(self, template):
+        otx_eval_deployment_testing(template, root, otx_dir, args, threshold=0.0)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_ote_demo_deployment(self, template):
-        ote_demo_deployment_testing(template, root, ote_dir, args)
+    def test_otx_demo_deployment(self, template):
+        otx_demo_deployment_testing(template, root, otx_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
@@ -115,7 +115,7 @@ class TestToolsAnomalyClassification:
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
 
-        nncf_optimize_testing(template, root, ote_dir, args)
+        nncf_optimize_testing(template, root, otx_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
@@ -133,7 +133,7 @@ class TestToolsAnomalyClassification:
             pytest.skip("nncf entrypoint is none")
 
         # TODO(AlexanderDokuchaev): return threshold=0.0001 after fix loading NNCF model
-        nncf_eval_testing(template, root, ote_dir, args, threshold=0.3)
+        nncf_eval_testing(template, root, otx_dir, args, threshold=0.3)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
@@ -141,14 +141,14 @@ class TestToolsAnomalyClassification:
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
 
-        nncf_eval_openvino_testing(template, root, ote_dir, args)
+        nncf_eval_openvino_testing(template, root, otx_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_pot_optimize(self, template):
-        pot_optimize_testing(template, root, ote_dir, args)
+        pot_optimize_testing(template, root, otx_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_pot_eval(self, template):
-        pot_eval_testing(template, root, ote_dir, args)
+        pot_eval_testing(template, root, otx_dir, args)

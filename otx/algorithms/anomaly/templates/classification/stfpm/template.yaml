@@ -1,5 +1,5 @@
 # Description.
-model_template_id: ote_anomaly_classification_stfpm
+model_template_id: otx_anomaly_classification_stfpm
 name: STFPM
 task_type: ANOMALY_CLASSIFICATION
 task_family: VISION
@@ -8,7 +8,7 @@ summary: Use this model when the position of the objects in the image frame migh
 application: ~
 
 # Algo backend.
-framework: OTEAnomalyClassification v0.1.0
+framework: OTXAnomalyClassification v0.1.0
 
 # Task implementations.
 entrypoints:

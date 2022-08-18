@@ -20,18 +20,18 @@ from typing import Any, Callable, Dict, List, Optional, Type
 
 import pytest
 from otx.algorithms.anomaly.adapters.anomalib.logger import get_logger
-from otx.api.configuration.helper import create as ote_sdk_configuration_helper_create
+from otx.api.configuration.helper import create as otx_sdk_configuration_helper_create
 from otx.api.entities.model import ModelEntity
 from otx.api.entities.model_template import TaskType, parse_model_template
 from otx.api.entities.subset import Subset
 from otx.api.entities.train_parameters import TrainParameters
 from otx.api.test_suite.e2e_test_system import DataCollector, e2e_pytest_performance
 from otx.api.test_suite.training_test_case import (
-    OTETestCaseInterface,
-    generate_ote_integration_test_case_class,
+    OTXTestCaseInterface,
+    generate_otx_integration_test_case_class,
 )
 from otx.api.test_suite.training_tests_actions import (
-    OTETestTrainingAction,
+    OTXTestTrainingAction,
     create_environment_and_task,
 )
 from otx.api.test_suite.training_tests_common import (
@@ -42,9 +42,9 @@ from otx.api.test_suite.training_tests_common import (
     performance_to_score_name_value,
 )
 from otx.api.test_suite.training_tests_helper import (
-    DefaultOTETestCreationParametersInterface,
-    OTETestHelper,
-    OTETrainingTestInterface,
+    DefaultOTXTestCreationParametersInterface,
+    OTXTestHelper,
+    OTXTrainingTestInterface,
 )
 
 from tests.anomaly_common import (
@@ -57,13 +57,13 @@ logger = get_logger(__name__)
 
 
 @pytest.fixture
-def ote_test_domain_fx():
+def otx_test_domain_fx():
     return "custom-anomaly-classification"
 
 
-class AnomalyClassificationTrainingTestParameters(DefaultOTETestCreationParametersInterface):
-    def test_case_class(self) -> Type[OTETestCaseInterface]:
-        return generate_ote_integration_test_case_class(
+class AnomalyClassificationTrainingTestParameters(DefaultOTXTestCreationParametersInterface):
+    def test_case_class(self) -> Type[OTXTestCaseInterface]:
+        return generate_otx_integration_test_case_class(
             get_anomaly_domain_test_action_classes(AnomalyDetectionTestTrainingAction)
         )
 
@@ -71,16 +71,16 @@ class AnomalyClassificationTrainingTestParameters(DefaultOTETestCreationParamete
         test_bunches = [
             dict(
                 model_name=[
-                    "ote_anomaly_classification_padim",
-                    "ote_anomaly_classification_stfpm",
+                    "otx_anomaly_classification_padim",
+                    "otx_anomaly_classification_stfpm",
                 ],
                 dataset_name="mvtec_short",
                 usecase="precommit",
             ),
             dict(
                 model_name=[
-                    "ote_anomaly_classification_padim",
-                    "ote_anomaly_classification_stfpm",
+                    "otx_anomaly_classification_padim",
+                    "otx_anomaly_classification_stfpm",
                 ],
                 dataset_name="mvtec",
                 patience=KEEP_CONFIG_FIELD_VALUE,
@@ -120,10 +120,10 @@ class AnomalyClassificationTrainingTestParameters(DefaultOTETestCreationParamete
         return deepcopy(DEFAULT_TEST_PARAMETERS)
 
 
-# TODO:pfinashx: This function copies with minor change OTETestTrainingAction
+# TODO:pfinashx: This function copies with minor change OTXTestTrainingAction
 #             from otx.api.test_suite.
 #             Try to avoid copying of code.
-class AnomalyDetectionTestTrainingAction(OTETestTrainingAction):
+class AnomalyDetectionTestTrainingAction(OTXTestTrainingAction):
     _name = "training"
 
     def __init__(self, dataset, labels_schema, template_path, patience, batch_size):
@@ -139,7 +139,7 @@ class AnomalyDetectionTestTrainingAction(OTETestTrainingAction):
             raise RuntimeError("Cannot get training performance")
         return performance_to_score_name_value(training_performance)
 
-    def _run_ote_training(self, data_collector):
+    def _run_otx_training(self, data_collector):
         logger.debug(f"self.template_path = {self.template_path}")
 
         print(f"train dataset: {len(self.dataset.get_subset(Subset.TRAINING))} items")
@@ -149,7 +149,7 @@ class AnomalyDetectionTestTrainingAction(OTETestTrainingAction):
         self.model_template = parse_model_template(self.template_path)
 
         logger.debug("Set hyperparameters")
-        params = ote_sdk_configuration_helper_create(self.model_template.hyper_parameters.data)
+        params = otx_sdk_configuration_helper_create(self.model_template.hyper_parameters.data)
         if hasattr(params, "learning_parameters") and hasattr(params.learning_parameters, "early_stopping"):
             if self.num_training_iters != KEEP_CONFIG_FIELD_VALUE:
                 params.learning_parameters.early_stopping.patience = int(self.num_training_iters)
@@ -195,7 +195,7 @@ class AnomalyDetectionTestTrainingAction(OTETestTrainingAction):
         data_collector.log_final_metric("metric_value", score_value)
 
     def __call__(self, data_collector: DataCollector, results_prev_stages: OrderedDict):
-        self._run_ote_training(data_collector)
+        self._run_otx_training(data_collector)
         results = {
             "model_template": self.model_template,
             "task": self.task,
@@ -206,13 +206,13 @@ class AnomalyDetectionTestTrainingAction(OTETestTrainingAction):
         return results
 
 
-class TestOTEReallifeAnomalyClassification(OTETrainingTestInterface):
+class TestOTXReallifeAnomalyClassification(OTXTrainingTestInterface):
     """
     The main class of running test in this file.
     """
 
     PERFORMANCE_RESULTS = None  # it is required for e2e system
-    helper = OTETestHelper(AnomalyClassificationTrainingTestParameters())
+    helper = OTXTestHelper(AnomalyClassificationTrainingTestParameters())
 
     @classmethod
     def get_list_of_tests(cls, usecase: Optional[str] = None):
@@ -224,7 +224,7 @@ class TestOTEReallifeAnomalyClassification(OTETrainingTestInterface):
 
     @pytest.fixture
     def params_factories_for_test_actions_fx(
-        self, current_test_parameters_fx, dataset_definitions_fx, ote_current_reference_dir_fx, template_paths_fx
+        self, current_test_parameters_fx, dataset_definitions_fx, otx_current_reference_dir_fx, template_paths_fx
     ) -> Dict[str, Callable[[], Dict]]:
         logger.debug("params_factories_for_test_actions_fx: begin")
 
@@ -286,7 +286,7 @@ class TestOTEReallifeAnomalyClassification(OTETrainingTestInterface):
                 "dataset": dataset,
                 "labels_schema": labels_schema,
                 "template_path": template_path,
-                "reference_dir": ote_current_reference_dir_fx,
+                "reference_dir": otx_current_reference_dir_fx,
                 "fn_get_compressed_model": None,  # NNCF not yet implemented in Anomaly
             }
 
@@ -300,8 +300,8 @@ class TestOTEReallifeAnomalyClassification(OTETrainingTestInterface):
     @pytest.fixture
     def test_case_fx(self, current_test_parameters_fx, params_factories_for_test_actions_fx):
         """
-        This fixture returns the test case class OTEIntegrationTestCase that should be used for the current test.
-        Note that the cache from the test helper allows to store the instance of the class
+        This fixture returns the test case class OTXIntegrationTestCase that should be used for the current test.
+        Notx that the cache from the test helper allows to store the instance of the class
         between the tests.
         If the main parameters used for this test are the same as the main parameters used for the previous test,
         the instance of the test case class will be kept and re-used. It is helpful for tests that can
@@ -322,7 +322,7 @@ class TestOTEReallifeAnomalyClassification(OTETrainingTestInterface):
         setup["scenario"] = "api"  # TODO(lbeynens): get from a fixture!
         setup["test"] = request.node.name
         setup["subject"] = "custom-anomaly-classification"
-        setup["project"] = "ote"
+        setup["project"] = "otx"
         if "test_parameters" in setup:
             assert isinstance(setup["test_parameters"], dict)
             if "dataset_name" not in setup:
@@ -334,7 +334,7 @@ class TestOTEReallifeAnomalyClassification(OTETrainingTestInterface):
             if "usecase" not in setup:
                 setup["usecase"] = setup["test_parameters"].get("usecase")
         logger.info(f"creating DataCollector: setup=\n{pformat(setup, width=140)}")
-        data_collector = DataCollector(name="TestOTEIntegration", setup=setup)
+        data_collector = DataCollector(name="TestOTXIntegration", setup=setup)
         with data_collector:
             logger.info("data_collector is created")
             yield data_collector

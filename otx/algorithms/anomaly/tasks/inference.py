@@ -26,7 +26,7 @@ from typing import Dict, List, Optional, Union
 import torch
 from otx.algorithms.anomaly.adapters.anomalib.callbacks import AnomalyInferenceCallback, ProgressCallback
 from otx.algorithms.anomaly.adapters.anomalib.config import get_anomalib_config
-from otx.algorithms.anomaly.adapters.anomalib.data import OTEAnomalyDataModule
+from otx.algorithms.anomaly.adapters.anomalib.data import OTXAnomalyDataModule
 from otx.algorithms.anomaly.adapters.anomalib.logger import get_logger
 from anomalib.models import AnomalyModule, get_model
 from anomalib.utils.callbacks import (
@@ -66,7 +66,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         """Train, Infer, Export, Optimize and Deploy an Anomaly Classification Task.
 
         Args:
-            task_environment (TaskEnvironment): OTE Task environment.
+            task_environment (TaskEnvironment): OTX Task environment.
         """
         torch.backends.cudnn.enabled = True
         logger.info("Initializing the task environment.")
@@ -79,7 +79,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         self.base_dir = os.path.abspath(os.path.dirname(template_file_path))
 
         # Hyperparameters.
-        self.project_path: str = tempfile.mkdtemp(prefix="ote-anomalib")
+        self.project_path: str = tempfile.mkdtemp(prefix="otx-anomalib")
         self.config = self.get_config()
 
         # Set default model attributes.
@@ -87,7 +87,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         self.precision = [ModelPrecision.FP32]
         self.optimization_type = ModelOptimizationType.MO
 
-        self.model = self.load_model(ote_model=task_environment.model)
+        self.model = self.load_model(otx_model=task_environment.model)
 
         self.trainer: Trainer
 
@@ -98,22 +98,22 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
             Union[DictConfig, ListConfig]: Anomalib config.
         """
         self.hyper_parameters = self.task_environment.get_hyper_parameters()
-        config = get_anomalib_config(task_name=self.model_name, ote_config=self.hyper_parameters)
+        config = get_anomalib_config(task_name=self.model_name, otx_config=self.hyper_parameters)
         config.project.path = self.project_path
 
         config.dataset.task = "classification"
 
         return config
 
-    def load_model(self, ote_model: Optional[ModelEntity]) -> AnomalyModule:
-        """Create and Load Anomalib Module from OTE Model.
+    def load_model(self, otx_model: Optional[ModelEntity]) -> AnomalyModule:
+        """Create and Load Anomalib Module from OTX Model.
 
-        This method checks if the task environment has a saved OTE Model,
-        and creates one. If the OTE model already exists, it returns the
+        This method checks if the task environment has a saved OTX Model,
+        and creates one. If the OTX model already exists, it returns the
         the model with the saved weights.
 
         Args:
-            ote_model (Optional[ModelEntity]): OTE Model from the
+            otx_model (Optional[ModelEntity]): OTX Model from the
                 task environment.
 
         Returns:
@@ -121,13 +121,13 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
                 classification or segmentation model with/without weights.
         """
         model = get_model(config=self.config)
-        if ote_model is None:
+        if otx_model is None:
             logger.info(
                 "No trained model in project yet. Created new model with '%s'",
                 self.model_name,
             )
         else:
-            buffer = io.BytesIO(ote_model.get_data("weights.pth"))
+            buffer = io.BytesIO(otx_model.get_data("weights.pth"))
             model_data = torch.load(buffer, map_location=torch.device("cpu"))
 
             try:
@@ -164,7 +164,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         """
         logger.info("Performing inference on the validation set using the base torch model.")
         config = self.get_config()
-        datamodule = OTEAnomalyDataModule(config=config, dataset=dataset, task_type=self.task_type)
+        datamodule = OTXAnomalyDataModule(config=config, dataset=dataset, task_type=self.task_type)
 
         logger.info("Inference Configs '%s'", config)
 

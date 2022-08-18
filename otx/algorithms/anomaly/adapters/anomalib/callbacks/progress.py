@@ -1,4 +1,4 @@
-"""Progressbar Callback for OTE task."""
+"""Progressbar Callback for OTX task."""
 
 # Copyright (C) 2021 Intel Corporation
 #

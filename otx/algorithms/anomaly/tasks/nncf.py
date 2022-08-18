@@ -22,7 +22,7 @@ from typing import Dict, Optional
 
 import torch
 from otx.algorithms.anomaly.adapters.anomalib.callbacks import ProgressCallback
-from otx.algorithms.anomaly.adapters.anomalib.data import OTEAnomalyDataModule
+from otx.algorithms.anomaly.adapters.anomalib.data import OTXAnomalyDataModule
 from otx.algorithms.anomaly.adapters.anomalib.logger import get_logger
 from anomalib.models import AnomalyModule, get_model
 from anomalib.utils.callbacks import (
@@ -63,7 +63,7 @@ class NNCFTask(InferenceTask, IOptimizationTask):
         """Task for compressing models using NNCF.
 
         Args:
-            task_environment (TaskEnvironment): OTE Task environment.
+            task_environment (TaskEnvironment): OTX Task environment.
         """
         self.compression_ctrl = None
         self.nncf_preset = "nncf_quantization"
@@ -93,15 +93,15 @@ class NNCFTask(InferenceTask, IOptimizationTask):
             return
         raise RuntimeError("Not selected optimization algorithm")
 
-    def load_model(self, ote_model: Optional[ModelEntity]) -> AnomalyModule:
-        """Create and Load Anomalib Module from OTE Model.
+    def load_model(self, otx_model: Optional[ModelEntity]) -> AnomalyModule:
+        """Create and Load Anomalib Module from OTX Model.
 
-        This method checks if the task environment has a saved OTE Model,
-        and creates one. If the OTE model already exists, it returns the
+        This method checks if the task environment has a saved OTX Model,
+        and creates one. If the OTX model already exists, it returns the
         the model with the saved weights.
 
         Args:
-            ote_model (Optional[ModelEntity]): OTE Model from the
+            otx_model (Optional[ModelEntity]): OTX Model from the
                 task environment.
 
         Returns:
@@ -120,10 +120,10 @@ class NNCFTask(InferenceTask, IOptimizationTask):
         self.optimization_config = compose_nncf_config(common_nncf_config, [self.nncf_preset])
         self.config.merge_with(self.optimization_config)
         model = get_model(config=self.config)
-        if ote_model is None:
+        if otx_model is None:
             raise ValueError("No trained model in project. NNCF require pretrained weights to compress the model")
 
-        buffer = io.BytesIO(ote_model.get_data("weights.pth"))  # type: ignore
+        buffer = io.BytesIO(otx_model.get_data("weights.pth"))  # type: ignore
         model_data = torch.load(buffer, map_location=torch.device("cpu"))
 
         if is_state_nncf(model_data):
@@ -179,7 +179,7 @@ class NNCFTask(InferenceTask, IOptimizationTask):
         if optimization_type is not OptimizationType.NNCF:
             raise RuntimeError("NNCF is the only supported optimization")
 
-        datamodule = OTEAnomalyDataModule(config=self.config, dataset=dataset, task_type=self.task_type)
+        datamodule = OTXAnomalyDataModule(config=self.config, dataset=dataset, task_type=self.task_type)
         nncf_callback = NNCFCallback(config=self.optimization_config["nncf_config"])
         metrics_configuration_callback = MetricsConfigurationCallback(
             adaptive_threshold=self.config.metrics.threshold.adaptive,

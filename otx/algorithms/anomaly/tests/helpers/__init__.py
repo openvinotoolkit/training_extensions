@@ -1,5 +1,5 @@
 """
-Initialization of OTE Anomalib Test Helpers
+Initialization of OTX Anomalib Test Helpers
 """
 
 # Copyright (C) 2021 Intel Corporation

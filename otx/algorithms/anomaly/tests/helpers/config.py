@@ -1,5 +1,5 @@
 """
-Config Helpers for OTE Training
+Config Helpers for OTX Training
 """
 
 # Copyright (C) 2021 Intel Corporation

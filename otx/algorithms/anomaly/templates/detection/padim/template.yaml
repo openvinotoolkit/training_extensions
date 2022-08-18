@@ -1,5 +1,5 @@
 # Description.
-model_template_id: ote_anomaly_detection_padim
+model_template_id: otx_anomaly_detection_padim
 name: PADIM
 task_type: ANOMALY_DETECTION
 task_family: VISION
@@ -8,7 +8,7 @@ summary: This model is faster and in many cases more accurate, but it requires a
 application: ~
 
 # Algo backend.
-framework: OTEAnomalyClassification v0.1.0 # TODO: update after the name has been changed on the platform side
+framework: OTXAnomalyClassification v0.1.0 # TODO: update after the name has been changed on the platform side
 
 # Task implementations.
 entrypoints:

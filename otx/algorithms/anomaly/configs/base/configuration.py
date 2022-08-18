@@ -33,7 +33,7 @@ from otx.api.configuration.model_lifecycle import ModelLifecycle
 
 @attrs
 class BaseAnomalyConfig(ConfigurableParameters):
-    """Base OTE configurable parameters for anomaly classification task."""
+    """Base OTX configurable parameters for anomaly classification task."""
 
     header = string_attribute("Configuration for an anomaly classification task")
     description = header

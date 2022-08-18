@@ -1,4 +1,4 @@
-"""OTE MVTec Dataset facilitate OTE Anomaly Training.
+"""OTX MVTec Dataset facilitate OTX Anomaly Training.
 
 License:
     MVTec AD dataset is released under the Creative Commons
@@ -56,8 +56,8 @@ from otx.api.utils.segmentation_utils import create_annotation_from_segmentation
 from pandas.core.frame import DataFrame
 
 
-class OteMvtecDataset:
-    """Generate OTE MVTec Dataset from the anomaly detection datasets that follows the MVTec format.
+class OtxMvtecDataset:
+    """Generate OTX MVTec Dataset from the anomaly detection datasets that follows the MVTec format.
 
     Args:
         path (Union[str, Path], optional): Path to the MVTec dataset category.
@@ -70,7 +70,7 @@ class OteMvtecDataset:
             it to half. Default to True.
 
     Examples:
-        >>> dataset_generator = OteMvtecDataset()
+        >>> dataset_generator = OtxMvtecDataset()
         >>> dataset = dataset_generator.generate()
         >>> dataset[0].media.numpy.shape
         (900, 900, 3)
@@ -110,13 +110,13 @@ class OteMvtecDataset:
         """Get MVTec samples.
 
         Get MVTec samples in a pandas DataFrame. Update the certain columns
-        to match the OTE naming terminology. For example, column `split` is
+        to match the OTX naming terminology. For example, column `split` is
         renamed to `subset`. Labels are also renamed by creating their
-        corresponding OTE LabelEntities
+        corresponding OTX LabelEntities
 
         Returns:
             DataFrame: Final list of samples comprising all the required
-                information to create the OTE Dataset.
+                information to create the OTX Dataset.
         """
         samples = make_mvtec_dataset(
             path=self.path,
@@ -125,13 +125,13 @@ class OteMvtecDataset:
             create_validation_set=self.create_validation_set,
         )
 
-        # Set the OTE SDK Splits
+        # Set the OTX SDK Splits
         samples = samples.rename(columns={"split": "subset"})
         samples.loc[samples.subset == "train", "subset"] = Subset.TRAINING
         samples.loc[samples.subset == "val", "subset"] = Subset.VALIDATION
         samples.loc[samples.subset == "test", "subset"] = Subset.TESTING
 
-        # Create and Set the OTE Labels
+        # Create and Set the OTX Labels
         samples.loc[samples.label != "good", "label"] = self.abnormal_label
         samples.loc[samples.label == "good", "label"] = self.normal_label
 
@@ -140,10 +140,10 @@ class OteMvtecDataset:
         return samples
 
     def generate(self) -> DatasetEntity:
-        """Generate OTE Anomaly Dataset.
+        """Generate OTX Anomaly Dataset.
 
         Returns:
-            DatasetEntity: Output OTE Anomaly Dataset from an MVTec
+            DatasetEntity: Output OTX Anomaly Dataset from an MVTec
         """
         samples = self.get_samples()
         dataset_items: List[DatasetItemEntity] = []

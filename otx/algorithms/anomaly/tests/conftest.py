@@ -26,25 +26,25 @@ except ImportError:
     pass
 import pytest
 from otx.api.test_suite.pytest_insertions import (
-    get_pytest_plugins_from_ote,
-    ote_conftest_insertion,
-    ote_pytest_generate_tests_insertion,
-    ote_pytest_addoption_insertion,
+    get_pytest_plugins_from_otx,
+    otx_conftest_insertion,
+    otx_pytest_generate_tests_insertion,
+    otx_pytest_addoption_insertion,
 )
 from otx.api.test_suite.training_tests_common import REALLIFE_USECASE_CONSTANT
 
-pytest_plugins = get_pytest_plugins_from_ote()
+pytest_plugins = get_pytest_plugins_from_otx()
 
-ote_conftest_insertion(default_repository_name="ote/training_extensions/external/anomaly")
-
-
-@pytest.fixture
-def ote_test_domain_fx():
-    raise NotImplementedError("Please, implement the fixture ote_test_domain_fx in your test file")
+otx_conftest_insertion(default_repository_name="otx/training_extensions/external/anomaly")
 
 
 @pytest.fixture
-def ote_test_scenario_fx(current_test_parameters_fx):
+def otx_test_domain_fx():
+    raise NotImplementedError("Please, implement the fixture otx_test_domain_fx in your test file")
+
+
+@pytest.fixture
+def otx_test_scenario_fx(current_test_parameters_fx):
     assert isinstance(current_test_parameters_fx, dict)
     if current_test_parameters_fx.get("usecase") == REALLIFE_USECASE_CONSTANT:
         return "performance"
@@ -53,33 +53,33 @@ def ote_test_scenario_fx(current_test_parameters_fx):
 
 
 @pytest.fixture(scope="session")
-def ote_templates_root_dir_fx():
+def otx_templates_root_dir_fx():
     import os.path as osp
     import logging
 
     logger = logging.getLogger(__name__)
     root = osp.dirname(osp.dirname(osp.realpath(__file__)))
     root = f"{root}/templates/"
-    logger.debug(f"overloaded ote_templates_root_dir_fx: return {root}")
+    logger.debug(f"overloaded otx_templates_root_dir_fx: return {root}")
     return root
 
 
 @pytest.fixture(scope="session")
-def ote_reference_root_dir_fx():
+def otx_reference_root_dir_fx():
     import os.path as osp
     import logging
 
     logger = logging.getLogger(__name__)
     root = osp.dirname(osp.dirname(osp.realpath(__file__)))
     root = f"{root}/tests/reference/"
-    logger.debug(f"overloaded ote_reference_root_dir_fx: return {root}")
+    logger.debug(f"overloaded otx_reference_root_dir_fx: return {root}")
     return root
 
 
 # pytest magic
 def pytest_generate_tests(metafunc):
-    ote_pytest_generate_tests_insertion(metafunc)
+    otx_pytest_generate_tests_insertion(metafunc)
 
 
 def pytest_addoption(parser):
-    ote_pytest_addoption_insertion(parser)
+    otx_pytest_addoption_insertion(parser)

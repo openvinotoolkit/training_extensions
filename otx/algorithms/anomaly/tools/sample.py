@@ -1,6 +1,6 @@
 """`sample.py`.
 
-This is a sample python script showing how to train an end-to-end OTE Anomaly Classification Task.
+This is a sample python script showing how to train an end-to-end OTX Anomaly Classification Task.
 """
 
 # Copyright (C) 2021 Intel Corporation
@@ -51,8 +51,8 @@ logger = get_logger(__name__)
 
 
 # pylint: disable=too-many-instance-attributes
-class OteAnomalyTask:
-    """OTE Anomaly Classification Task."""
+class OtxAnomalyTask:
+    """OTX Anomaly Classification Task."""
 
     def __init__(
         self,
@@ -63,7 +63,7 @@ class OteAnomalyTask:
         model_template_path: str,
         seed: Optional[int] = None,
     ) -> None:
-        """Initialize OteAnomalyTask.
+        """Initialize OtxAnomalyTask.
 
         Args:
             dataset_path (str): Path to the MVTec dataset.
@@ -77,13 +77,13 @@ class OteAnomalyTask:
         Example:
             >>> import os
             >>> os.getcwd()
-            '~/ote/external/anomaly'
+            '~/otx/external/anomaly'
 
             If MVTec dataset is placed under the above directory, then we could run,
 
             >>> model_template_path = "./configs/anomaly_classification/padim/template.yaml"
             >>> dataset_path = "./datasets/MVTec"
-            >>> task = OteAnomalyTask(
+            >>> task = OtxAnomalyTask(
             ...     dataset_path=dataset_path,
             ...     train_subset={"ann_file": train.json, "data_root": dataset_path},
             ...     val_subset={"ann_file": val.json, "data_root": dataset_path},
@@ -339,7 +339,7 @@ def parse_args() -> Namespace:
 
     """
     parser = argparse.ArgumentParser(
-        description="Sample showcasing how to run Anomaly Classification Task using OTE SDK"
+        description="Sample showcasing how to run Anomaly Classification Task using OTX SDK"
     )
     parser.add_argument(
         "--model_template_path",
@@ -364,7 +364,7 @@ def main() -> None:
     val_subset = {"ann_file": args.val_ann_files, "data_root": path}
     test_subset = {"ann_file": args.test_ann_files, "data_root": path}
 
-    task = OteAnomalyTask(
+    task = OtxAnomalyTask(
         dataset_path=path,
         train_subset=train_subset,
         val_subset=val_subset,

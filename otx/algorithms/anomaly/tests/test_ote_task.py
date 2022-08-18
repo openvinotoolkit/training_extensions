@@ -22,7 +22,7 @@ import tempfile
 import numpy as np
 import pytest
 from otx.algorithms.anomaly.adapters.anomalib.config import get_anomalib_config
-from tools.sample import OteAnomalyTask
+from tools.sample import OtxAnomalyTask
 
 from tests.helpers.config import get_config_and_task_name
 from tests.helpers.dummy_dataset import TestDataset
@@ -44,27 +44,27 @@ class TestAnomalyClassification:
     Anomaly Classification Task Tests.
     """
 
-    _trainer: OteAnomalyTask
+    _trainer: OtxAnomalyTask
 
     @staticmethod
-    def test_ote_config(task_path, template_path):
+    def test_otx_config(task_path, template_path):
         """
-        Test generation of OTE config object from model template and conversion to Anomalib format. Also checks if
+        Test generation of OTX config object from model template and conversion to Anomalib format. Also checks if
         default values are overwritten in Anomalib config.
         """
         train_batch_size = 16
 
-        ote_config, task_name = get_config_and_task_name(f"{task_path}/configs/{template_path}/template.yaml")
+        otx_config, task_name = get_config_and_task_name(f"{task_path}/configs/{template_path}/template.yaml")
 
-        # change parameter value in OTE config
-        ote_config.learning_parameters.train_batch_size = train_batch_size
-        # convert OTE -> Anomalib
-        anomalib_config = get_anomalib_config(task_name, ote_config)
+        # change parameter value in OTX config
+        otx_config.learning_parameters.train_batch_size = train_batch_size
+        # convert OTX -> Anomalib
+        anomalib_config = get_anomalib_config(task_name, otx_config)
         # check if default parameter was overwritten
         assert anomalib_config.learning_parameters.train_batch_size == train_batch_size
 
     @TestDataset(num_train=200, num_test=10, dataset_path="./datasets/MVTec", use_mvtec=False)
-    def test_ote_train_export_and_optimize(
+    def test_otx_train_export_and_optimize(
         self,
         task_path,
         template_path,
@@ -76,7 +76,7 @@ class TestAnomalyClassification:
         """
         # Train the model
         dataset_path = os.path.join(dataset_path, category)
-        self._trainer = OteAnomalyTask(
+        self._trainer = OtxAnomalyTask(
             dataset_path=dataset_path,
             model_template_path=f"{task_path}/configs/{template_path}/template.yaml",
             seed=0,
@@ -118,7 +118,7 @@ class TestAnomalyClassification:
         )
 
     @TestDataset(num_train=200, num_test=10, dataset_path="./datasets/MVTec", use_mvtec=False)
-    def test_ote_deploy(
+    def test_otx_deploy(
         self,
         task_path,
         template_path,
@@ -129,7 +129,7 @@ class TestAnomalyClassification:
         E2E Test generation of exportable code.
         """
         dataset_path = os.path.join(dataset_path, category)
-        self._trainer = OteAnomalyTask(
+        self._trainer = OtxAnomalyTask(
             model_template_path=f"{task_path}/configs/{template_path}/template.yaml",
             dataset_path=dataset_path,
             seed=0,

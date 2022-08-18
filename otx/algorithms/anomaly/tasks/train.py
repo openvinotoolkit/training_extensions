@@ -17,7 +17,7 @@
 from typing import Optional
 
 from otx.algorithms.anomaly.adapters.anomalib.callbacks import ProgressCallback, ScoreReportingCallback
-from otx.algorithms.anomaly.adapters.anomalib.data import OTEAnomalyDataModule
+from otx.algorithms.anomaly.adapters.anomalib.data import OTXAnomalyDataModule
 from otx.algorithms.anomaly.adapters.anomalib.logger import get_logger
 from anomalib.utils.callbacks import (
     MetricsConfigurationCallback,
@@ -64,7 +64,7 @@ class TrainingTask(InferenceTask, ITrainingTask):
 
         logger.info("Training Configs '%s'", config)
 
-        datamodule = OTEAnomalyDataModule(config=config, dataset=dataset, task_type=self.task_type)
+        datamodule = OTXAnomalyDataModule(config=config, dataset=dataset, task_type=self.task_type)
         callbacks = [
             ProgressCallback(parameters=train_parameters),
             MinMaxNormalizationCallback(),

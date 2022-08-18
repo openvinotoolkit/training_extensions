@@ -1,4 +1,4 @@
-"""Inference Callbacks for OTE inference."""
+"""Inference Callbacks for OTX inference."""
 
 # Copyright (C) 2021 Intel Corporation
 #
@@ -34,10 +34,10 @@ logger = get_logger(__name__)
 
 
 class AnomalyInferenceCallback(Callback):
-    """Callback that updates the OTE dataset during inference."""
+    """Callback that updates the OTX dataset during inference."""
 
-    def __init__(self, ote_dataset: DatasetEntity, labels: List[LabelEntity], task_type: TaskType):
-        self.ote_dataset = ote_dataset
+    def __init__(self, otx_dataset: DatasetEntity, labels: List[LabelEntity], task_type: TaskType):
+        self.otx_dataset = otx_dataset
         self.normal_label = [label for label in labels if not label.is_anomalous][0]
         self.anomalous_label = [label for label in labels if label.is_anomalous][0]
         self.task_type = task_type
@@ -53,7 +53,7 @@ class AnomalyInferenceCallback(Callback):
 
         # Loop over dataset again to assign predictions
         for dataset_item, pred_score, pred_label, anomaly_map, pred_mask in zip(
-            self.ote_dataset, pred_scores, pred_labels, anomaly_maps, pred_masks
+            self.otx_dataset, pred_scores, pred_labels, anomaly_maps, pred_masks
         ):
             probability = pred_score if pred_label else 1 - pred_score
             if self.task_type == TaskType.ANOMALY_CLASSIFICATION:

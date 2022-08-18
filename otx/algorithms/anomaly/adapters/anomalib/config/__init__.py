@@ -1,4 +1,4 @@
-"""Initialization of Configurable parameter conversion between OTE and Anomalib."""
+"""Initialization of Configurable parameter conversion between OTX and Anomalib."""
 
 # Copyright (C) 2021 Intel Corporation
 #

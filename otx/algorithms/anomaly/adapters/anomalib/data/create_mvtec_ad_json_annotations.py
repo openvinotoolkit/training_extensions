@@ -2,10 +2,10 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-"""Create MVTec AD (CC BY-NC-SA 4.0) JSON Annotations for OTE CLI.
+"""Create MVTec AD (CC BY-NC-SA 4.0) JSON Annotations for OTX CLI.
 
 Description:
-    This script converts MVTec AD dataset masks to OTE CLI annotation format for
+    This script converts MVTec AD dataset masks to OTX CLI annotation format for
         classification, detection and segmentation tasks.
 
 License:
@@ -257,7 +257,7 @@ def get_args() -> Namespace:
     """
     parser = ArgumentParser()
     parser.add_argument("--data_path", type=str, default="./data/anomaly/MVTec/", help="Path to Mvtec AD dataset.")
-    parser.add_argument("--annotation_path", type=str, required=False, help="Path to create OTE CLI annotations.")
+    parser.add_argument("--annotation_path", type=str, required=False, help="Path to create OTX CLI annotations.")
     return parser.parse_args()
 
 

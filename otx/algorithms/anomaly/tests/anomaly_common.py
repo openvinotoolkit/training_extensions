@@ -19,23 +19,23 @@ from collections import namedtuple
 from copy import deepcopy
 from typing import List, Type
 
-from otx.algorithms.anomaly.adapters.anomalib.data.mvtec import OteMvtecDataset
+from otx.algorithms.anomaly.adapters.anomalib.data.mvtec import OtxMvtecDataset
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label_schema import LabelSchemaEntity
 from otx.api.entities.model_template import TaskType
 from otx.api.test_suite.training_tests_actions import (
-    BaseOTETestAction,
-    OTETestExportAction,
-    OTETestExportEvaluationAction,
-    OTETestNNCFAction,
-    OTETestNNCFEvaluationAction,
-    OTETestNNCFExportAction,
-    OTETestNNCFExportEvaluationAction,
-    OTETestNNCFGraphAction,
-    OTETestPotAction,
-    OTETestPotEvaluationAction,
-    OTETestTrainingAction,
-    OTETestTrainingEvaluationAction,
+    BaseOTXTestAction,
+    OTXTestExportAction,
+    OTXTestExportEvaluationAction,
+    OTXTestNNCFAction,
+    OTXTestNNCFEvaluationAction,
+    OTXTestNNCFExportAction,
+    OTXTestNNCFExportEvaluationAction,
+    OTXTestNNCFGraphAction,
+    OTXTestPotAction,
+    OTXTestPotEvaluationAction,
+    OTXTestTrainingAction,
+    OTXTestTrainingEvaluationAction,
 )
 from otx.api.test_suite.training_tests_common import ROOT_PATH_KEY, make_paths_be_abs
 
@@ -80,11 +80,11 @@ def _create_anomaly_dataset_and_labels_schema(
     items = []
     if "short" in dataset_name:
         logger.debug(f"Creating short dataset {dataset_name}")
-        items.extend(OteMvtecDataset(path=dataset_params.dataset_path, seed=0, task_type=task_type).generate())
+        items.extend(OtxMvtecDataset(path=dataset_params.dataset_path, seed=0, task_type=task_type).generate())
     else:
         for category in category_list:
             logger.debug(f"Creating dataset for {category}")
-            items.extend(OteMvtecDataset(path=category, seed=0, task_type=task_type).generate())
+            items.extend(OtxMvtecDataset(path=category, seed=0, task_type=task_type).generate())
     dataset = DatasetEntity(items=items)
     labels = dataset.get_labels()
     labels_schema = LabelSchemaEntity.from_labels(labels)
@@ -92,18 +92,18 @@ def _create_anomaly_dataset_and_labels_schema(
 
 
 def get_anomaly_domain_test_action_classes(
-    anomaly_domain_test_train_action: OTETestTrainingAction,
-) -> List[Type[BaseOTETestAction]]:
+    anomaly_domain_test_train_action: OTXTestTrainingAction,
+) -> List[Type[BaseOTXTestAction]]:
     return [
         anomaly_domain_test_train_action,
-        OTETestTrainingEvaluationAction,
-        OTETestExportAction,
-        OTETestExportEvaluationAction,
-        OTETestPotAction,
-        OTETestPotEvaluationAction,
-        OTETestNNCFAction,
-        OTETestNNCFEvaluationAction,
-        OTETestNNCFExportAction,
-        OTETestNNCFExportEvaluationAction,
-        OTETestNNCFGraphAction,
+        OTXTestTrainingEvaluationAction,
+        OTXTestExportAction,
+        OTXTestExportEvaluationAction,
+        OTXTestPotAction,
+        OTXTestPotEvaluationAction,
+        OTXTestNNCFAction,
+        OTXTestNNCFEvaluationAction,
+        OTXTestNNCFExportAction,
+        OTXTestNNCFExportEvaluationAction,
+        OTXTestNNCFGraphAction,
     ]

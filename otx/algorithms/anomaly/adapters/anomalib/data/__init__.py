@@ -14,6 +14,6 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .data import OTEAnomalyDataModule
+from .data import OTXAnomalyDataModule
 
-__all__ = ["OTEAnomalyDataModule"]
+__all__ = ["OTXAnomalyDataModule"]

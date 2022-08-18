@@ -36,21 +36,21 @@ from torch.utils.data import DataLoader, Dataset
 logger = get_logger(__name__)
 
 
-class OTEAnomalyDataset(Dataset):
+class OTXAnomalyDataset(Dataset):
     """Anomaly Dataset Adaptor.
 
-    This class converts OTE Dataset into Anomalib dataset that
+    This class converts OTX Dataset into Anomalib dataset that
     is a sub-class of Vision Dataset.
 
     Args:
         config (Union[DictConfig, ListConfig]): Anomalib config
-        dataset (DatasetEntity): [description]: OTE SDK Dataset
+        dataset (DatasetEntity): [description]: OTX SDK Dataset
 
     Example:
-        >>> from tests.helpers.dataset import OTEAnomalyDatasetGenerator
-        >>> from ote.utils.data import AnomalyDataset
+        >>> from tests.helpers.dataset import OTXAnomalyDatasetGenerator
+        >>> from otx.utils.data import AnomalyDataset
 
-        >>> dataset_generator = OTEAnomalyDatasetGenerator()
+        >>> dataset_generator = OTXAnomalyDatasetGenerator()
         >>> dataset = dataset_generator.generate()
         >>> anomaly_dataset = AnomalyDataset(config=config, dataset=dataset)
         >>> anomaly_dataset[0]["image"].shape
@@ -112,23 +112,23 @@ class OTEAnomalyDataset(Dataset):
         return item
 
 
-class OTEAnomalyDataModule(LightningDataModule):
+class OTXAnomalyDataModule(LightningDataModule):
     """Anomaly DataModule.
 
-    This class converts OTE Dataset into Anomalib dataset and stores
+    This class converts OTX Dataset into Anomalib dataset and stores
     train/val/test dataloaders.
 
     Args:
         config (Union[DictConfig, ListConfig]): Anomalib config
-        dataset (DatasetEntity): OTE SDK Dataset
+        dataset (DatasetEntity): OTX SDK Dataset
 
     Example:
-        >>> from tests.helpers.dataset import OTEAnomalyDatasetGenerator
-        >>> from ote.utils.data import AnomalyDataModule
+        >>> from tests.helpers.dataset import OTXAnomalyDatasetGenerator
+        >>> from otx.utils.data import AnomalyDataModule
 
-        >>> dataset_generator = OTEAnomalyDatasetGenerator()
+        >>> dataset_generator = OTXAnomalyDatasetGenerator()
         >>> dataset = dataset_generator.generate()
-        >>> data_module = OTEAnomalyDataModule(config=config, dataset=dataset)
+        >>> data_module = OTXAnomalyDataModule(config=config, dataset=dataset)
         >>> i, data = next(enumerate(data_module.train_dataloader()))
         >>> data["image"].shape
         torch.Size([32, 3, 256, 256])
@@ -140,10 +140,10 @@ class OTEAnomalyDataModule(LightningDataModule):
         self.dataset = dataset
         self.task_type = task_type
 
-        self.train_ote_dataset: DatasetEntity
-        self.val_ote_dataset: DatasetEntity
-        self.test_ote_dataset: DatasetEntity
-        self.predict_ote_dataset: DatasetEntity
+        self.train_otx_dataset: DatasetEntity
+        self.val_otx_dataset: DatasetEntity
+        self.test_otx_dataset: DatasetEntity
+        self.predict_otx_dataset: DatasetEntity
 
     def setup(self, stage: Optional[str] = None) -> None:
         """Setup Anomaly Data Module.
@@ -156,17 +156,17 @@ class OTEAnomalyDataModule(LightningDataModule):
             self.summary()
 
         if stage == "fit" or stage is None:
-            self.train_ote_dataset = self.dataset.get_subset(Subset.TRAINING)
-            self.val_ote_dataset = self.dataset.get_subset(Subset.VALIDATION)
+            self.train_otx_dataset = self.dataset.get_subset(Subset.TRAINING)
+            self.val_otx_dataset = self.dataset.get_subset(Subset.VALIDATION)
 
         if stage == "validate":
-            self.val_ote_dataset = self.dataset.get_subset(Subset.VALIDATION)
+            self.val_otx_dataset = self.dataset.get_subset(Subset.VALIDATION)
 
         if stage == "test" or stage is None:
-            self.test_ote_dataset = self.dataset.get_subset(Subset.TESTING)
+            self.test_otx_dataset = self.dataset.get_subset(Subset.TESTING)
 
         if stage == "predict":
-            self.predict_ote_dataset = self.dataset
+            self.predict_otx_dataset = self.dataset
 
     def summary(self):
         """Print size of the dataset, number of anomalous images and number of normal images."""
@@ -191,7 +191,7 @@ class OTEAnomalyDataModule(LightningDataModule):
         Returns:
             Union[DataLoader, List[DataLoader], Dict[str, DataLoader]]: Train dataloader.
         """
-        dataset = OTEAnomalyDataset(self.config, self.train_ote_dataset, self.task_type)
+        dataset = OTXAnomalyDataset(self.config, self.train_otx_dataset, self.task_type)
         return DataLoader(
             dataset,
             shuffle=False,
@@ -205,15 +205,15 @@ class OTEAnomalyDataModule(LightningDataModule):
         Returns:
             Union[DataLoader, List[DataLoader]]: Validation Dataloader.
         """
-        global_dataset, local_dataset = split_local_global_dataset(self.val_ote_dataset)
+        global_dataset, local_dataset = split_local_global_dataset(self.val_otx_dataset)
         logger.info(f"Global annotations: {len(global_dataset)}")
         logger.info(f"Local annotations: {len(local_dataset)}")
         if contains_anomalous_images(local_dataset):
             logger.info("Dataset contains polygon annotations. Passing masks to anomalib.")
-            dataset = OTEAnomalyDataset(self.config, local_dataset, self.task_type)
+            dataset = OTXAnomalyDataset(self.config, local_dataset, self.task_type)
         else:
             logger.info("Dataset does not contain polygon annotations. Not passing masks to anomalib.")
-            dataset = OTEAnomalyDataset(self.config, global_dataset, TaskType.ANOMALY_CLASSIFICATION)
+            dataset = OTXAnomalyDataset(self.config, global_dataset, TaskType.ANOMALY_CLASSIFICATION)
         return DataLoader(
             dataset,
             shuffle=False,
@@ -227,7 +227,7 @@ class OTEAnomalyDataModule(LightningDataModule):
         Returns:
             Union[DataLoader, List[DataLoader]]: Test Dataloader.
         """
-        dataset = OTEAnomalyDataset(self.config, self.test_ote_dataset, self.task_type)
+        dataset = OTXAnomalyDataset(self.config, self.test_otx_dataset, self.task_type)
         return DataLoader(
             dataset,
             shuffle=False,
@@ -241,7 +241,7 @@ class OTEAnomalyDataModule(LightningDataModule):
         Returns:
             Union[DataLoader, List[DataLoader]]: Predict Dataloader.
         """
-        dataset = OTEAnomalyDataset(self.config, self.predict_ote_dataset, self.task_type)
+        dataset = OTXAnomalyDataset(self.config, self.predict_otx_dataset, self.task_type)
         return DataLoader(
             dataset,
             shuffle=False,
