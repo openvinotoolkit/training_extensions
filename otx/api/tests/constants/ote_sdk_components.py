@@ -1,5 +1,5 @@
 """
-OTE SDK components markers.
+OTX components markers.
 """
 
 # Copyright (C) 2021-2022 Intel Corporation
@@ -19,7 +19,7 @@ except ImportError:
 
 class OteSdkComponent(MarkMeta):
     """
-    OTE SDK Component marker.
+    OTX Component marker.
     """
 
     otx.api = "otx.api"

@@ -5,7 +5,7 @@
 
 """
 This module contains the definition for the `validate` function within the configuration helper. This function can be
-used to validate the values of a OTE configuration object, checking that each of the parameter values in the
+used to validate the values of a OTX configuration object, checking that each of the parameter values in the
 configuration are within their allowed bounds or options.
 """
 

@@ -5,7 +5,7 @@
 
 """
 This module contains the definition for the `create` function within the configuration helper. This function can be
-used to create a OTE configuration object from a dictionary or yaml representation.
+used to create a OTX configuration object from a dictionary or yaml representation.
 """
 
 from __future__ import annotations

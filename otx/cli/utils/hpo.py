@@ -304,7 +304,7 @@ def run_hpo_trainer(
 
     hpopt.finalize_trial(hp_config)
 
-    # align MPA checkpoint file to OTE weight file format
+    # align MPA checkpoint file to OTX weight file format
     if save_initial_weight_flag:
         initial_weight = torch.load(initial_weight_path, map_location="cpu")
         initial_weight["model"] = initial_weight["state_dict"]

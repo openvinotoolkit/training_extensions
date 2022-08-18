@@ -13,7 +13,7 @@ from otx.api.entities.metadata import IMetadata
 
 class TensorEntity(IMetadata):
     """
-    Represents a metadata of tensor type in OTE.
+    Represents a metadata of tensor type in OTX.
 
     :param name: name of metadata
     :param numpy: the numpy data of the tensor

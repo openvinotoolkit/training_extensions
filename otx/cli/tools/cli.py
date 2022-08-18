@@ -1,5 +1,5 @@
 """
-OTE CLI entry point.
+OTX CLI entry point.
 """
 
 # Copyright (C) 2021 Intel Corporation
@@ -19,22 +19,22 @@ OTE CLI entry point.
 import argparse
 import sys
 
-from .demo import main as ote_demo
-from .deploy import main as ote_deploy
-from .eval import main as ote_eval
-from .export import main as ote_export
-from .find import main as ote_find
-from .optimize import main as ote_optimize
-from .train import main as ote_train
+from .demo import main as otx_demo
+from .deploy import main as otx_deploy
+from .eval import main as otx_eval
+from .export import main as otx_export
+from .find import main as otx_find
+from .optimize import main as otx_optimize
+from .train import main as otx_train
 
 __all__ = [
-    "ote_demo",
-    "ote_deploy",
-    "ote_eval",
-    "ote_export",
-    "ote_find",
-    "ote_train",
-    "ote_optimize",
+    "otx_demo",
+    "otx_deploy",
+    "otx_eval",
+    "otx_export",
+    "otx_find",
+    "otx_train",
+    "otx_optimize",
 ]
 
 
@@ -51,7 +51,7 @@ def parse_args():
 
 def main():
     """
-    This function is a single entry point for all OTE CLI related operations:
+    This function is a single entry point for all OTX CLI related operations:
       - demo
       - deploy
       - eval
@@ -62,9 +62,9 @@ def main():
     """
 
     name = parse_args().operation
-    sys.argv[0] = f"ote {name}"
+    sys.argv[0] = f"otx {name}"
     del sys.argv[1]
-    globals()[f"ote_{name}"]()
+    globals()[f"otx_{name}"]()
 
 
 if __name__ == "__main__":

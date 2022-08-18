@@ -6,7 +6,7 @@
 
 from typing import List, Optional, Type, TypeVar
 
-from otx.api.configuration import ConfigurableParameters, ote_config_helper
+from otx.api.configuration import ConfigurableParameters, otx_config_helper
 from otx.api.entities.label import LabelEntity
 from otx.api.entities.label_schema import LabelSchemaEntity
 from otx.api.entities.model import ModelConfiguration, ModelEntity
@@ -88,7 +88,7 @@ class TaskEnvironment:
         # Otherwise, update the base config according to what is stored in the repo.
         base_config = instance_of(header=self.__hyper_parameters.header)
 
-        ote_config_helper.substitute_values(
+        otx_config_helper.substitute_values(
             base_config, value_input=self.__hyper_parameters, allow_missing_values=True
         )
 

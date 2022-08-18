@@ -91,26 +91,26 @@ def patch_demo_py(src_path, dst_path):
             write_file.write("".join(content))
 
 
-def ote_train_testing(template, root, ote_dir, args):
+def otx_train_testing(template, root, otx_dir, args):
     work_dir, template_work_dir, _ = get_some_vars(template, root)
     command_line = [
-        "ote",
+        "otx",
         "train",
         template.model_template_path,
         "--train-ann-file",
-        f'{os.path.join(ote_dir, args["--train-ann-file"])}',
+        f'{os.path.join(otx_dir, args["--train-ann-file"])}',
         "--train-data-roots",
-        f'{os.path.join(ote_dir, args["--train-data-roots"])}',
+        f'{os.path.join(otx_dir, args["--train-data-roots"])}',
         "--val-ann-file",
-        f'{os.path.join(ote_dir, args["--val-ann-file"])}',
+        f'{os.path.join(otx_dir, args["--val-ann-file"])}',
         "--val-data-roots",
-        f'{os.path.join(ote_dir, args["--val-data-roots"])}',
+        f'{os.path.join(otx_dir, args["--val-data-roots"])}',
         "--save-model-to",
         f"{template_work_dir}/trained_{template.model_template_id}",
     ]
     if "--load-weights" in args:
         command_line.extend(
-            ["--load-weights", f'{os.path.join(ote_dir, args["--load-weights"])}']
+            ["--load-weights", f'{os.path.join(otx_dir, args["--load-weights"])}']
         )
     command_line.extend(args["train_params"])
     assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
@@ -122,22 +122,22 @@ def ote_train_testing(template, root, ote_dir, args):
     )
 
 
-def ote_hpo_testing(template, root, ote_dir, args):
+def otx_hpo_testing(template, root, otx_dir, args):
     work_dir, template_work_dir, _ = get_some_vars(template, root)
     if os.path.exists(f"{template_work_dir}/hpo"):
         shutil.rmtree(f"{template_work_dir}/hpo")
     command_line = [
-        "ote",
+        "otx",
         "train",
         template.model_template_path,
         "--train-ann-file",
-        f'{os.path.join(ote_dir, args["--train-ann-file"])}',
+        f'{os.path.join(otx_dir, args["--train-ann-file"])}',
         "--train-data-roots",
-        f'{os.path.join(ote_dir, args["--train-data-roots"])}',
+        f'{os.path.join(otx_dir, args["--train-data-roots"])}',
         "--val-ann-file",
-        f'{os.path.join(ote_dir, args["--val-ann-file"])}',
+        f'{os.path.join(otx_dir, args["--val-ann-file"])}',
         "--val-data-roots",
-        f'{os.path.join(ote_dir, args["--val-data-roots"])}',
+        f'{os.path.join(otx_dir, args["--val-data-roots"])}',
         "--save-model-to",
         f"{template_work_dir}/hpo_trained_{template.model_template_id}",
         "--enable-hpo",
@@ -157,10 +157,10 @@ def ote_hpo_testing(template, root, ote_dir, args):
     )
 
 
-def ote_export_testing(template, root):
+def otx_export_testing(template, root):
     work_dir, template_work_dir, _ = get_some_vars(template, root)
     command_line = [
-        "ote",
+        "otx",
         "export",
         template.model_template_path,
         "--load-weights",
@@ -180,16 +180,16 @@ def ote_export_testing(template, root):
     )
 
 
-def ote_eval_testing(template, root, ote_dir, args):
+def otx_eval_testing(template, root, otx_dir, args):
     work_dir, template_work_dir, _ = get_some_vars(template, root)
     command_line = [
-        "ote",
+        "otx",
         "eval",
         template.model_template_path,
         "--test-ann-file",
-        f'{os.path.join(ote_dir, args["--test-ann-files"])}',
+        f'{os.path.join(otx_dir, args["--test-ann-files"])}',
         "--test-data-roots",
-        f'{os.path.join(ote_dir, args["--test-data-roots"])}',
+        f'{os.path.join(otx_dir, args["--test-data-roots"])}',
         "--load-weights",
         f"{template_work_dir}/trained_{template.model_template_id}/weights.pth",
         "--save-performance",
@@ -201,16 +201,16 @@ def ote_eval_testing(template, root, ote_dir, args):
     )
 
 
-def ote_eval_openvino_testing(template, root, ote_dir, args, threshold):
+def otx_eval_openvino_testing(template, root, otx_dir, args, threshold):
     work_dir, template_work_dir, _ = get_some_vars(template, root)
     command_line = [
-        "ote",
+        "otx",
         "eval",
         template.model_template_path,
         "--test-ann-file",
-        f'{os.path.join(ote_dir, args["--test-ann-files"])}',
+        f'{os.path.join(otx_dir, args["--test-ann-files"])}',
         "--test-data-roots",
-        f'{os.path.join(ote_dir, args["--test-data-roots"])}',
+        f'{os.path.join(otx_dir, args["--test-data-roots"])}',
         "--load-weights",
         f"{template_work_dir}/exported_{template.model_template_id}/openvino.xml",
         "--save-performance",
@@ -237,43 +237,43 @@ def ote_eval_openvino_testing(template, root, ote_dir, args, threshold):
         ), f"{trained_performance[k]=}, {exported_performance[k]=}"
 
 
-def ote_demo_testing(template, root, ote_dir, args):
+def otx_demo_testing(template, root, otx_dir, args):
     work_dir, template_work_dir, _ = get_some_vars(template, root)
     command_line = [
-        "ote",
+        "otx",
         "demo",
         template.model_template_path,
         "--load-weights",
         f"{template_work_dir}/trained_{template.model_template_id}/weights.pth",
         "--input",
-        os.path.join(ote_dir, args["--input"]),
+        os.path.join(otx_dir, args["--input"]),
         "--delay",
         "-1",
     ]
     assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
 
 
-def ote_demo_openvino_testing(template, root, ote_dir, args):
+def otx_demo_openvino_testing(template, root, otx_dir, args):
     work_dir, template_work_dir, _ = get_some_vars(template, root)
     command_line = [
-        "ote",
+        "otx",
         "demo",
         template.model_template_path,
         "--load-weights",
         f"{template_work_dir}/exported_{template.model_template_id}/openvino.xml",
         "--input",
-        os.path.join(ote_dir, args["--input"]),
+        os.path.join(otx_dir, args["--input"]),
         "--delay",
         "-1",
     ]
     assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
 
 
-def ote_deploy_openvino_testing(template, root, ote_dir, args):
+def otx_deploy_openvino_testing(template, root, otx_dir, args):
     work_dir, template_work_dir, _ = get_some_vars(template, root)
     deployment_dir = f"{template_work_dir}/deployed_{template.model_template_id}"
     command_line = [
-        "ote",
+        "otx",
         "deploy",
         template.model_template_path,
         "--load-weights",
@@ -337,7 +337,7 @@ def ote_deploy_openvino_testing(template, root, ote_dir, args):
                 "-m",
                 "../model",
                 "-i",
-                os.path.join(ote_dir, args["--input"]),
+                os.path.join(otx_dir, args["--input"]),
             ],
             cwd=os.path.join(deployment_dir, "python"),
             env=collect_env_vars(os.path.join(deployment_dir, "python")),
@@ -346,16 +346,16 @@ def ote_deploy_openvino_testing(template, root, ote_dir, args):
     )
 
 
-def ote_eval_deployment_testing(template, root, ote_dir, args, threshold):
+def otx_eval_deployment_testing(template, root, otx_dir, args, threshold):
     work_dir, template_work_dir, _ = get_some_vars(template, root)
     command_line = [
-        "ote",
+        "otx",
         "eval",
         template.model_template_path,
         "--test-ann-file",
-        f'{os.path.join(ote_dir, args["--test-ann-files"])}',
+        f'{os.path.join(otx_dir, args["--test-ann-files"])}',
         "--test-data-roots",
-        f'{os.path.join(ote_dir, args["--test-data-roots"])}',
+        f'{os.path.join(otx_dir, args["--test-data-roots"])}',
         "--load-weights",
         f"{template_work_dir}/deployed_{template.model_template_id}/openvino.zip",
         "--save-performance",
@@ -382,36 +382,36 @@ def ote_eval_deployment_testing(template, root, ote_dir, args, threshold):
         ), f"{exported_performance[k]=}, {deployed_performance[k]=}"
 
 
-def ote_demo_deployment_testing(template, root, ote_dir, args):
+def otx_demo_deployment_testing(template, root, otx_dir, args):
     work_dir, template_work_dir, _ = get_some_vars(template, root)
     command_line = [
-        "ote",
+        "otx",
         "demo",
         template.model_template_path,
         "--load-weights",
         f"{template_work_dir}/deployed_{template.model_template_id}/openvino.zip",
         "--input",
-        os.path.join(ote_dir, args["--input"]),
+        os.path.join(otx_dir, args["--input"]),
         "--delay",
         "-1",
     ]
     assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
 
 
-def pot_optimize_testing(template, root, ote_dir, args):
+def pot_optimize_testing(template, root, otx_dir, args):
     work_dir, template_work_dir, _ = get_some_vars(template, root)
     command_line = [
-        "ote",
+        "otx",
         "optimize",
         template.model_template_path,
         "--train-ann-file",
-        f'{os.path.join(ote_dir, args["--train-ann-file"])}',
+        f'{os.path.join(otx_dir, args["--train-ann-file"])}',
         "--train-data-roots",
-        f'{os.path.join(ote_dir, args["--train-data-roots"])}',
+        f'{os.path.join(otx_dir, args["--train-data-roots"])}',
         "--val-ann-file",
-        f'{os.path.join(ote_dir, args["--val-ann-file"])}',
+        f'{os.path.join(otx_dir, args["--val-ann-file"])}',
         "--val-data-roots",
-        f'{os.path.join(ote_dir, args["--val-data-roots"])}',
+        f'{os.path.join(otx_dir, args["--val-data-roots"])}',
         "--load-weights",
         f"{template_work_dir}/exported_{template.model_template_id}/openvino.xml",
         "--save-model-to",
@@ -429,16 +429,16 @@ def pot_optimize_testing(template, root, ote_dir, args):
     )
 
 
-def pot_eval_testing(template, root, ote_dir, args):
+def pot_eval_testing(template, root, otx_dir, args):
     work_dir, template_work_dir, _ = get_some_vars(template, root)
     command_line = [
-        "ote",
+        "otx",
         "eval",
         template.model_template_path,
         "--test-ann-file",
-        f'{os.path.join(ote_dir, args["--test-ann-files"])}',
+        f'{os.path.join(otx_dir, args["--test-ann-files"])}',
         "--test-data-roots",
-        f'{os.path.join(ote_dir, args["--test-data-roots"])}',
+        f'{os.path.join(otx_dir, args["--test-data-roots"])}',
         "--load-weights",
         f"{template_work_dir}/pot_{template.model_template_id}/openvino.xml",
         "--save-performance",
@@ -450,20 +450,20 @@ def pot_eval_testing(template, root, ote_dir, args):
     )
 
 
-def nncf_optimize_testing(template, root, ote_dir, args):
+def nncf_optimize_testing(template, root, otx_dir, args):
     work_dir, template_work_dir, _ = get_some_vars(template, root)
     command_line = [
-        "ote",
+        "otx",
         "optimize",
         template.model_template_path,
         "--train-ann-file",
-        f'{os.path.join(ote_dir, args["--train-ann-file"])}',
+        f'{os.path.join(otx_dir, args["--train-ann-file"])}',
         "--train-data-roots",
-        f'{os.path.join(ote_dir, args["--train-data-roots"])}',
+        f'{os.path.join(otx_dir, args["--train-data-roots"])}',
         "--val-ann-file",
-        f'{os.path.join(ote_dir, args["--val-ann-file"])}',
+        f'{os.path.join(otx_dir, args["--val-ann-file"])}',
         "--val-data-roots",
-        f'{os.path.join(ote_dir, args["--val-data-roots"])}',
+        f'{os.path.join(otx_dir, args["--val-data-roots"])}',
         "--load-weights",
         f"{template_work_dir}/trained_{template.model_template_id}/weights.pth",
         "--save-model-to",
@@ -484,7 +484,7 @@ def nncf_optimize_testing(template, root, ote_dir, args):
 def nncf_export_testing(template, root):
     work_dir, template_work_dir, _ = get_some_vars(template, root)
     command_line = [
-        "ote",
+        "otx",
         "export",
         template.model_template_path,
         "--load-weights",
@@ -513,16 +513,16 @@ def nncf_export_testing(template, root):
     ), f"{compressed_bin_size=}, {original_bin_size=}"
 
 
-def nncf_eval_testing(template, root, ote_dir, args, threshold):
+def nncf_eval_testing(template, root, otx_dir, args, threshold):
     work_dir, template_work_dir, _ = get_some_vars(template, root)
     command_line = [
-        "ote",
+        "otx",
         "eval",
         template.model_template_path,
         "--test-ann-file",
-        f'{os.path.join(ote_dir, args["--test-ann-files"])}',
+        f'{os.path.join(otx_dir, args["--test-ann-files"])}',
         "--test-data-roots",
-        f'{os.path.join(ote_dir, args["--test-data-roots"])}',
+        f'{os.path.join(otx_dir, args["--test-data-roots"])}',
         "--load-weights",
         f"{template_work_dir}/nncf_{template.model_template_id}/weights.pth",
         "--save-performance",
@@ -549,16 +549,16 @@ def nncf_eval_testing(template, root, ote_dir, args, threshold):
         ), f"{trained_performance[k]=}, {evaluated_performance[k]=}"
 
 
-def nncf_eval_openvino_testing(template, root, ote_dir, args):
+def nncf_eval_openvino_testing(template, root, otx_dir, args):
     work_dir, template_work_dir, _ = get_some_vars(template, root)
     command_line = [
-        "ote",
+        "otx",
         "eval",
         template.model_template_path,
         "--test-ann-file",
-        f'{os.path.join(ote_dir, args["--test-ann-files"])}',
+        f'{os.path.join(otx_dir, args["--test-ann-files"])}',
         "--test-data-roots",
-        f'{os.path.join(ote_dir, args["--test-data-roots"])}',
+        f'{os.path.join(otx_dir, args["--test-data-roots"])}',
         "--load-weights",
         f"{template_work_dir}/exported_nncf_{template.model_template_id}/openvino.xml",
         "--save-performance",

@@ -17,7 +17,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from otx.api.configuration import ConfigurableParameters, ote_config_helper
+from otx.api.configuration import ConfigurableParameters, otx_config_helper
 from otx.api.entities.id import ID
 from otx.api.entities.label import Domain, LabelEntity
 from otx.api.entities.label_schema import LabelSchemaEntity
@@ -58,7 +58,7 @@ def environment():
     dummy_template = __get_path_to_file("./dummy_template.yaml")
     model_template = parse_model_template(dummy_template)
     hyper_parameters = model_template.hyper_parameters.data
-    params = ote_config_helper.create(hyper_parameters)
+    params = otx_config_helper.create(hyper_parameters)
     labels_schema = LabelSchemaEntity.from_labels(labels_list)
     environment = TaskEnvironment(
         model=None,

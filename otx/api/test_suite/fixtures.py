@@ -6,7 +6,7 @@
 The file contains fixtures that may be used in algo backend's
 reallife training tests.
 
-Note that the fixtures ote_templates_root_dir_fx and ote_test_domain_fx
+Note that the fixtures ote_templates_root_dir_fx and otx_test_domain_fx
 MUST be overriden in algo backend's conftest.py file.
 """
 
@@ -35,39 +35,39 @@ logger = get_logger()
 
 
 @pytest.fixture(scope="session")
-def ote_templates_root_dir_fx():
+def otx_templates_root_dir_fx():
     """
     The fixture returns an absolute path to the folder where (in the subfolders)
-    the reallife training tests will look OTE template files (the files 'template.yaml').
+    the reallife training tests will look OTX template files (the files 'template.yaml').
 
     The fixture MUST be overriden in algo backend's conftest.py file.
     """
     raise NotImplementedError(
-        "The fixture ote_templates_root_dir_fx should be overriden in algo backend"
+        "The fixture otx_templates_root_dir_fx should be overriden in algo backend"
     )
 
 
 @pytest.fixture
-def ote_reference_root_dir_fx():
+def otx_reference_root_dir_fx():
     """
     The fixture returns an absolute path to the folder where reference files
-    for OTE models are stored.
+    for OTX models are stored.
     """
     raise NotImplementedError(
-        "The fixture ote_reference_root_dir_fx should be overriden in algo backend"
+        "The fixture otx_reference_root_dir_fx should be overriden in algo backend"
     )
 
 
 @pytest.fixture
-def ote_current_reference_dir_fx(ote_reference_root_dir_fx, current_test_parameters_fx):
+def otx_current_reference_dir_fx(otx_reference_root_dir_fx, current_test_parameters_fx):
     """
     The fixture returns an absolute path to the folder where reference files
     for the current model are stored.
     """
-    if ote_reference_root_dir_fx is None:
+    if otx_reference_root_dir_fx is None:
         return None
     path = os.path.join(
-        ote_reference_root_dir_fx, current_test_parameters_fx["model_name"]
+        otx_reference_root_dir_fx, current_test_parameters_fx["model_name"]
     )
     if not os.path.isdir(path):
         return None
@@ -75,7 +75,7 @@ def ote_current_reference_dir_fx(ote_reference_root_dir_fx, current_test_paramet
 
 
 @pytest.fixture
-def ote_test_domain_fx():
+def otx_test_domain_fx():
     """
     The fixture returns a string that will be used as the 'subject' field in the
     e2e test system dashboard.
@@ -85,12 +85,12 @@ def ote_test_domain_fx():
     The fixture MUST be overriden in algo backend's conftest.py file.
     """
     raise NotImplementedError(
-        "The fixture ote_test_domain_fx should be overriden in algo backend"
+        "The fixture otx_test_domain_fx should be overriden in algo backend"
     )
 
 
 @pytest.fixture
-def ote_test_scenario_fx():
+def otx_test_scenario_fx():
     """
     The fixture returns a string that will be used as the 'scenario' field in the
     e2e test system dashboard.
@@ -151,17 +151,17 @@ def dataset_definitions_fx(request):
 
 
 @pytest.fixture(scope="session")
-def template_paths_fx(ote_templates_root_dir_fx):
+def template_paths_fx(otx_templates_root_dir_fx):
     """
     Return mapping model names to template paths, received from globbing the
-    folder pointed by the fixture ote_templates_root_dir_fx.
+    folder pointed by the fixture otx_templates_root_dir_fx.
     Note that the function searches files with name `template.yaml`, and for each such file
     the model name is the name of the parent folder of the file.
     """
-    root = ote_templates_root_dir_fx
+    root = otx_templates_root_dir_fx
     assert osp.isabs(
         root
-    ), f"Error: ote_templates_root_dir_fx is not an absolute path: {root}"
+    ), f"Error: otx_templates_root_dir_fx is not an absolute path: {root}"
     template_glob = glob.glob(f"{root}/**/template*.yaml", recursive=True)
     data = {}
     for cur_path in template_glob:
@@ -184,7 +184,7 @@ def expected_metrics_all_tests_fx(request):
     Return expected metrics for reallife tests read from a YAML file passed as the parameter --expected-metrics-file.
     Note that the structure of expected metrics should be a dict that maps tests to the expected metric numbers.
     The keys of the dict are the parameters' part of the test id-s -- see the function
-    OTETestHelper._generate_test_id, also see the fixture current_test_parameters_string_fx below.
+    OTXTestHelper._generate_test_id, also see the fixture current_test_parameters_string_fx below.
 
     The value for each key is a structure that stores a requirement on some metric.
     The requirement can be either a target value (probably, with max size of quality drop)
@@ -374,7 +374,7 @@ def cur_test_expected_metrics_callback_fx(
 
 @pytest.fixture
 def data_collector_fx(
-    request, ote_test_scenario_fx, ote_test_domain_fx
+    request, otx_test_scenario_fx, otx_test_domain_fx
 ) -> DataCollector:
     """
     The fixture returns the DataCollector instance that may be used to pass
@@ -392,10 +392,10 @@ def data_collector_fx(
     setup["test_type"] = os.environ.get(
         "TT_TEST_TYPE", "no-test-type"
     )  # TODO: get from e2e test type
-    setup["scenario"] = ote_test_scenario_fx
+    setup["scenario"] = otx_test_scenario_fx
     setup["test"] = request.node.name
-    setup["subject"] = ote_test_domain_fx
-    setup["project"] = "ote"
+    setup["subject"] = otx_test_domain_fx
+    setup["project"] = "otx"
     if "test_parameters" in setup:
         assert isinstance(setup["test_parameters"], dict)
         if "dataset_name" not in setup:
@@ -407,7 +407,7 @@ def data_collector_fx(
         if "usecase" not in setup:
             setup["usecase"] = setup["test_parameters"].get("usecase")
     logger.info(f"creating DataCollector: setup=\n{pformat(setup, width=140)}")
-    data_collector = DataCollector(name="TestOTEIntegration", setup=setup)
+    data_collector = DataCollector(name="TestOTXIntegration", setup=setup)
     with data_collector:
         logger.info("data_collector is created")
         yield data_collector

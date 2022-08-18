@@ -11,7 +11,7 @@ import pytest
 
 from .e2e_test_system import DataCollector
 from .logging import get_logger
-from .training_tests_actions import BaseOTETestAction
+from .training_tests_actions import BaseOTXTestAction
 from .training_tests_common import REALLIFE_USECASE_CONSTANT
 
 logger = get_logger()
@@ -311,15 +311,15 @@ class Validator:
             pytest.fail(f"Validation failed:\n{fail_reasons_str}")
 
 
-class OTETestStagesStorageInterface(ABC):
+class OTXTestStagesStorageInterface(ABC):
     @abstractmethod
-    def get_stage(self, name: str) -> "OTETestStage":
+    def get_stage(self, name: str) -> "OTXTestStage":
         raise NotImplementedError("The method get_stage is not implemented")
 
 
-class OTETestStage:
+class OTXTestStage:
     """
-    OTETestStage -- auxiliary class that
+    OTXTestStage -- auxiliary class that
     1. Allows to set up dependency between test stages: before the main action of a test stage is run, all the actions
        for the stages that are pointed in 'depends' list are called beforehand;
     2. Runs for each test stage its main action only once: the main action is run inside try-except clause, and
@@ -330,15 +330,15 @@ class OTETestStage:
     """
 
     def __init__(
-        self, action: BaseOTETestAction, stages_storage: OTETestStagesStorageInterface
+        self, action: BaseOTXTestAction, stages_storage: OTXTestStagesStorageInterface
     ):
         self.was_processed = False
         self.stored_exception: Optional[Exception] = None
         self.action = action
         self.stages_storage = stages_storage
         self.stage_results: Dict[str, Any] = {}
-        assert isinstance(self.stages_storage, OTETestStagesStorageInterface)
-        assert isinstance(self.action, BaseOTETestAction)
+        assert isinstance(self.stages_storage, OTXTestStagesStorageInterface)
+        assert isinstance(self.action, BaseOTXTestAction)
 
     def __str__(self):
         return (
@@ -366,7 +366,7 @@ class OTETestStage:
             logger.debug(f'get_depends_stages: get stage with name "{stage_name}"')
             cur_stage = self.stages_storage.get_stage(stage_name)
             assert isinstance(
-                cur_stage, OTETestStage
+                cur_stage, OTXTestStage
             ), f'Wrong stage for stage_name="{stage_name}"'
             assert (
                 cur_stage.name == stage_name
@@ -446,7 +446,7 @@ class OTETestStage:
         if self.name in test_results_storage:
             raise RuntimeError(
                 f'Error: For test stage "{self.name}": '
-                f"another OTETestStage with name {self.name} has been run already"
+                f"another OTXTestStage with name {self.name} has been run already"
             )
 
         try:

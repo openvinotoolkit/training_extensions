@@ -1,5 +1,5 @@
 """
-This is a legacy file that serves to maintain compatibility with the OTE detection
+This is a legacy file that serves to maintain compatibility with the OTX detection
 framework. It links to the model_lifecycle enum under 'enums'
 
 # TODO: Remove once https://jira.devtools.intel.com/browse/CVS-67869 is done

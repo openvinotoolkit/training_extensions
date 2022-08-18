@@ -5,7 +5,7 @@
 
 """
 This module contains Enums representing different types of configuration elements used to construct or interact with
-OTE configuration objects.
+OTX configuration objects.
 """
 
 from __future__ import annotations
@@ -15,7 +15,7 @@ from enum import Enum, auto
 
 class ElementCategory(Enum):
     """
-    This Enum represents the categories of configuration elements that are known in OTE.
+    This Enum represents the categories of configuration elements that are known in OTX.
     """
 
     PRIMITIVES = auto()

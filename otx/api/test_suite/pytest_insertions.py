@@ -23,7 +23,7 @@ except ImportError:
     _pytest_plugins_from_e2e = []
 
 
-def get_pytest_plugins_from_ote():
+def get_pytest_plugins_from_otx():
     """
     The function generates pytest_plugins variable that should be used
     in an algo backend' conftest.py file.
@@ -35,7 +35,7 @@ def get_pytest_plugins_from_ote():
     return pytest_plugins
 
 
-def ote_pytest_addoption_insertion(parser):
+def otx_pytest_addoption_insertion(parser):
     """
     The function should be called in the standard pytest hook pytest_addoption
     to add the options required for reallife training tests.
@@ -53,7 +53,7 @@ def ote_pytest_addoption_insertion(parser):
         "--test-usecase",
         action="store",
         default=None,
-        help="Optional. If the parameter is set, it filters test_ote_training tests by usecase field.",
+        help="Optional. If the parameter is set, it filters test_otx_training tests by usecase field.",
     )
     parser.addoption(
         "--expected-metrics-file",
@@ -84,21 +84,21 @@ def ote_pytest_addoption_insertion(parser):
     )
 
 
-def ote_pytest_generate_tests_insertion(metafunc):
+def otx_pytest_generate_tests_insertion(metafunc):
     """
     The function should be called in the standard pytest hook pytest_generate_tests
     in algo backend's conftest.py file to generate parameters of reallife training tests.
     """
     from .logging import get_logger
-    from .training_tests_helper import OTETrainingTestInterface
+    from .training_tests_helper import OTXTrainingTestInterface
 
     logger = get_logger()
     if metafunc.cls is None:
         return False
-    if not issubclass(metafunc.cls, OTETrainingTestInterface):
+    if not issubclass(metafunc.cls, OTXTrainingTestInterface):
         return False
 
-    logger.debug(f"ote_pytest_generate_tests_insertion: begin handling {metafunc.cls}")
+    logger.debug(f"otx_pytest_generate_tests_insertion: begin handling {metafunc.cls}")
 
     # It allows to filter by usecase
     usecase = metafunc.config.getoption("--test-usecase")
@@ -113,11 +113,11 @@ def ote_pytest_generate_tests_insertion(metafunc):
     assert all(isinstance(v, str) for v in ids)
 
     metafunc.parametrize(argnames, argvalues, ids=ids, scope="class")
-    logger.debug(f"ote_pytest_generate_tests_insertion: end handling {metafunc.cls}")
+    logger.debug(f"otx_pytest_generate_tests_insertion: end handling {metafunc.cls}")
     return True
 
 
-def ote_conftest_insertion(*, default_repository_name=""):
+def otx_conftest_insertion(*, default_repository_name=""):
     """
     The function should be called in an algo backend's conftest.py file
     to set default repository name in e2e- test system.

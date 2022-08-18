@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 from omegaconf import OmegaConf
 
-from otx.api.configuration import ote_config_helper
+from otx.api.configuration import otx_config_helper
 from otx.api.configuration.elements import metadata_keys
 from otx.api.configuration.enums import AutoHPOState, ModelLifecycle
 from otx.api.tests.configuration.dummy_config import (
@@ -56,17 +56,17 @@ class TestConfigurationHelper:
         )
 
         # Convert config to dictionary and to yaml string
-        cfg = ote_config_helper.convert(config, dict)
-        cfg_yaml = ote_config_helper.convert(config, str)
+        cfg = otx_config_helper.convert(config, dict)
+        cfg_yaml = otx_config_helper.convert(config, str)
 
         # Reconstruct the config from dictionary and from yaml string
-        reconstructed_config = ote_config_helper.create(cfg)
-        reconstructed_config_from_yaml = ote_config_helper.create(cfg_yaml)
+        reconstructed_config = otx_config_helper.create(cfg)
+        reconstructed_config_from_yaml = otx_config_helper.create(cfg_yaml)
 
         # Compare the config dictionaries. Order of some parameters may change in the conversion, so dictionary
         # comparison will work while comparing objects or yaml strings directly likely does not result in equality.
-        assert cfg == ote_config_helper.convert(reconstructed_config, dict)
-        assert cfg == ote_config_helper.convert(reconstructed_config_from_yaml, dict)
+        assert cfg == otx_config_helper.convert(reconstructed_config, dict)
+        assert cfg == otx_config_helper.convert(reconstructed_config_from_yaml, dict)
 
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -112,12 +112,12 @@ class TestConfigurationHelper:
 
         # Act
         # Convert config to dictionary and to yaml string
-        cfg = ote_config_helper.convert(config, dict)
-        cfg_yaml = ote_config_helper.convert(config, str)
+        cfg = otx_config_helper.convert(config, dict)
+        cfg_yaml = otx_config_helper.convert(config, str)
 
         # Reconstruct the config from dictionary and from yaml string
-        reconstructed_config = ote_config_helper.create(cfg)
-        reconstructed_config_from_yaml = ote_config_helper.create(cfg_yaml)
+        reconstructed_config = otx_config_helper.create(cfg)
+        reconstructed_config_from_yaml = otx_config_helper.create(cfg_yaml)
 
         # Assert
         assert old_state != new_state
@@ -136,8 +136,8 @@ class TestConfigurationHelper:
             == new_state
         )
         # Compare the config dictionaries
-        assert cfg == ote_config_helper.convert(reconstructed_config, dict)
-        assert cfg == ote_config_helper.convert(reconstructed_config_from_yaml, dict)
+        assert cfg == otx_config_helper.convert(reconstructed_config, dict)
+        assert cfg == otx_config_helper.convert(reconstructed_config_from_yaml, dict)
 
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -167,14 +167,14 @@ class TestConfigurationHelper:
             header="Dataset Manager configuration -- TEST ONLY",
         )
 
-        cfg_from_yaml = ote_config_helper.create(
+        cfg_from_yaml = otx_config_helper.create(
             self.__get_path_to_file("./dummy_config.yaml")
         )
 
         # Compare the config dictionaries. Order of some parameters may change in the conversion, so dictionary
         # comparison will work while comparing objects or yaml strings directly likely does not result in equality.
-        cfg_dict = ote_config_helper.convert(config, dict)
-        cfg_from_yaml_dict = ote_config_helper.convert(cfg_from_yaml, dict)
+        cfg_dict = otx_config_helper.convert(config, dict)
+        cfg_from_yaml_dict = otx_config_helper.convert(cfg_from_yaml, dict)
 
         # Check the parameter groups individually, to narrow down any errors more easily
         cfg_subset_parameters = cfg_dict.pop("subset_parameters")
@@ -217,7 +217,7 @@ class TestConfigurationHelper:
         # input validation upon config creation.
         broken_config_path = self.__get_path_to_file("dummy_broken_config.yaml")
         with pytest.raises(ValueError) as error:
-            config = ote_config_helper.create(broken_config_path)
+            config = otx_config_helper.create(broken_config_path)
 
         assert "Invalid value set for epochs: -5 is out of bounds." == str(error.value)
 
@@ -225,7 +225,7 @@ class TestConfigurationHelper:
         # value. Config should now be created correctly. Finally, assert that the value for epochs has been corrected
         dict_config = OmegaConf.load(broken_config_path)
         dict_config.learning_parameters.epochs.value = 10
-        config = ote_config_helper.create(dict_config)
+        config = otx_config_helper.create(dict_config)
         assert config.learning_parameters.epochs == 10
 
     @pytest.mark.priority_medium
@@ -262,7 +262,7 @@ class TestConfigurationHelper:
         )
 
         # Assert that config passes validation initially
-        assert ote_config_helper.validate(config)
+        assert otx_config_helper.validate(config)
 
         # Set invalid test_proportion, and assert that this raises an error upon validation
         with pytest.raises(ValueError):
@@ -270,7 +270,7 @@ class TestConfigurationHelper:
 
         # Assert that validation passes again after restoring a value that is within the bounds
         config.subset_parameters.test_proportion = 0.25
-        assert ote_config_helper.validate(config)
+        assert otx_config_helper.validate(config)
 
         # Set value that is not one of the options for dummy_selectable, assert that this raises a ValueError
         with pytest.raises(ValueError):
@@ -278,7 +278,7 @@ class TestConfigurationHelper:
 
         # Assert that validation passes again after restoring to a value that is in the options list
         config.dummy_selectable = "option_c"
-        assert ote_config_helper.validate(config)
+        assert otx_config_helper.validate(config)
 
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -308,7 +308,7 @@ class TestConfigurationHelper:
         9. Check that the parameter values have been changed correctly in the config
         """
         # Initialize the config from yaml
-        config = ote_config_helper.create(self.__get_path_to_file("dummy_config.yaml"))
+        config = otx_config_helper.create(self.__get_path_to_file("dummy_config.yaml"))
 
         # Assert that the values are set according to what is specified in the yaml
         assert config.subset_parameters.test_proportion == 0.15
@@ -320,7 +320,7 @@ class TestConfigurationHelper:
         config_dict.number_of_samples_for_auto_train.value = 50
 
         # Substitute values from this dict
-        ote_config_helper.substitute_values(config, value_input=config_dict)
+        otx_config_helper.substitute_values(config, value_input=config_dict)
 
         # Assert that the values are changed in the config, according to what was substituted above
         assert config.subset_parameters.test_proportion == 0.05
@@ -329,8 +329,8 @@ class TestConfigurationHelper:
         # Convert config_dict to actual config object, and then use that as input for the value substitution
         config_dict.subset_parameters.test_proportion.value = 0.80
         config_dict.number_of_samples_for_auto_train.value = 500
-        reconstructed_config = ote_config_helper.create(config_dict)
-        ote_config_helper.substitute_values(config, value_input=reconstructed_config)
+        reconstructed_config = otx_config_helper.create(config_dict)
+        otx_config_helper.substitute_values(config, value_input=reconstructed_config)
 
         # Assert that the values are changed in the config, according to what was substituted above
         assert config.subset_parameters.test_proportion == 0.80
@@ -363,7 +363,7 @@ class TestConfigurationHelper:
             model lifecycle did not change
         """
         # Initialize the config from yaml
-        config = ote_config_helper.create(self.__get_path_to_file("dummy_config.yaml"))
+        config = otx_config_helper.create(self.__get_path_to_file("dummy_config.yaml"))
 
         # Assert that the values are set according to what is specified in the yaml
         assert config.subset_parameters.test_proportion == 0.15
@@ -385,14 +385,14 @@ class TestConfigurationHelper:
         )
 
         # Load the config again from the yaml and change some of the values
-        config_2 = ote_config_helper.create(
+        config_2 = otx_config_helper.create(
             self.__get_path_to_file("dummy_config.yaml")
         )
         config_2.subset_parameters.test_proportion = 0.05
         config_2.dummy_float_selectable = 4.0
         config_2.dummy_selectable = SomeEnumSelectable.TEST_NAME1
 
-        ote_config_helper.substitute_values_for_lifecycle(
+        otx_config_helper.substitute_values_for_lifecycle(
             config, config_2, model_lifecycle=ModelLifecycle.INFERENCE
         )
 
@@ -427,7 +427,7 @@ class TestConfigurationHelper:
             model lifecycle did not change
         """
         # Initialize the config from yaml
-        config = ote_config_helper.create(self.__get_path_to_file("dummy_config.yaml"))
+        config = otx_config_helper.create(self.__get_path_to_file("dummy_config.yaml"))
 
         # Assert that the values are set according to what is specified in the yaml
         assert config.subset_parameters.test_proportion == 0.15
@@ -449,14 +449,14 @@ class TestConfigurationHelper:
         )
 
         # Load the config again from the yaml and change some of the values
-        config_2 = ote_config_helper.create(
+        config_2 = otx_config_helper.create(
             self.__get_path_to_file("dummy_config.yaml")
         )
         config_2.subset_parameters.test_proportion = 0.05
         config_2.dummy_float_selectable = 4.0
         config_2.dummy_selectable = SomeEnumSelectable.TEST_NAME1
 
-        ote_config_helper.substitute_values_for_lifecycle(
+        otx_config_helper.substitute_values_for_lifecycle(
             config,
             config_2,
             model_lifecycle=[ModelLifecycle.INFERENCE, ModelLifecycle.NONE],
@@ -494,7 +494,7 @@ class TestConfigurationHelper:
         config.subset_parameters.test_proportion = 0.3
         config.dummy_selectable = SomeEnumSelectable.OPTION_C
 
-        config_dict = ote_config_helper.convert(config, target=dict, values_only=True)
+        config_dict = otx_config_helper.convert(config, target=dict, values_only=True)
 
         assert config_dict["subset_parameters"]["test_proportion"] == 0.3
         assert config_dict["dummy_selectable"] == SomeEnumSelectable.OPTION_C

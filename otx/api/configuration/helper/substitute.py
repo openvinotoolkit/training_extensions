@@ -6,7 +6,7 @@
 """
 This module contains the definition for the `substitute_values` and
 `substitute_values_for_lifecycle` functions within the configuration helper. These
-functions can be used to update values or ids in a OTE configuration object,
+functions can be used to update values or ids in a OTX configuration object,
 according to a value dictionary or configuration object
 """
 

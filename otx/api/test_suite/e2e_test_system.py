@@ -46,11 +46,11 @@ def _generate_e2e_pytest_decorators():
         # Dummy requirement
         REQ_DUMMY = "Dummy requirement"
 
-    class OTEComponent(MarkMeta):
-        OTE = "ote"
+    class OTXComponent(MarkMeta):
+        OTX = "otx"
 
     def _e2e_pytest_api(func):
-        @pytest.mark.components(OTEComponent.OTE)
+        @pytest.mark.components(OTXComponent.OTX)
         @pytest.mark.priority_medium
         @pytest.mark.reqids(Requirements.REQ_DUMMY)
         @pytest.mark.api_other
@@ -61,7 +61,7 @@ def _generate_e2e_pytest_decorators():
         return wrapper
 
     def _e2e_pytest_performance(func):
-        @pytest.mark.components(OTEComponent.OTE)
+        @pytest.mark.components(OTXComponent.OTX)
         @pytest.mark.priority_medium
         @pytest.mark.reqids(Requirements.REQ_DUMMY)
         @pytest.mark.api_performance
@@ -72,7 +72,7 @@ def _generate_e2e_pytest_decorators():
         return wrapper
 
     def _e2e_pytest_component(func):
-        @pytest.mark.components(OTEComponent.OTE)
+        @pytest.mark.components(OTXComponent.OTX)
         @pytest.mark.priority_medium
         @pytest.mark.reqids(Requirements.REQ_DUMMY)
         @pytest.mark.component
@@ -83,7 +83,7 @@ def _generate_e2e_pytest_decorators():
         return wrapper
 
     def _e2e_pytest_unit(func):
-        @pytest.mark.components(OTEComponent.OTE)
+        @pytest.mark.components(OTXComponent.OTX)
         @pytest.mark.priority_medium
         @pytest.mark.reqids(Requirements.REQ_DUMMY)
         @pytest.mark.unit

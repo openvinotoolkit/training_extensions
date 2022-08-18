@@ -5,7 +5,7 @@
 
 """
 This module contains the configuration helper functions, which can be used to create, convert or interact with
-OTE configuration objects or dictionaries, yaml strings or yaml files representing those objects
+OTX configuration objects or dictionaries, yaml strings or yaml files representing those objects
 """
 
 from .convert import convert

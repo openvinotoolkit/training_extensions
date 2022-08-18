@@ -4,7 +4,7 @@
 
 
 """
-This module contains all elements needed to construct a OTE configuration object
+This module contains all elements needed to construct a OTX configuration object
 """
 
 

@@ -5,7 +5,7 @@
 
 """
 This module contains the definition for the `convert` function within the configuration helper. This function can be
-used to convert a OTE configuration object to a dictionary or yaml representation.
+used to convert a OTX configuration object to a dictionary or yaml representation.
 """
 from enum import Enum
 from typing import Type, TypeVar

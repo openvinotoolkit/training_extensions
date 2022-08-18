@@ -83,7 +83,7 @@ class DetectionToAnnotationConverter(IPredictionToAnnotationConverter):
         annotation_scene = AnnotationSceneEntity(
             id=ID(),
             kind=AnnotationSceneKind.PREDICTION,
-            editor="ote",
+            editor="otx",
             creation_date=now(),
             annotations=annotations,
         )
@@ -92,7 +92,7 @@ class DetectionToAnnotationConverter(IPredictionToAnnotationConverter):
 
     def __convert_to_annotations(self, predictions: np.ndarray) -> List[Annotation]:
         """
-        Converts a list of Detections to OTE SDK Annotation objects
+        Converts a list of Detections to OTX Annotation objects
 
         :param predictions: A list of predictions with shape [num_prediction, 6] or
                             [num_predictions, 7]
@@ -330,11 +330,11 @@ class AnomalyDetectionToAnnotationConverter(IPredictionToAnnotationConverter):
     def convert_to_annotation(
         self, predictions: np.ndarray, metadata: Dict[str, Any]
     ) -> AnnotationSceneEntity:
-        """Convert predictions to OTE Annotation Scene using the metadata.
+        """Convert predictions to OTX Annotation Scene using the metadata.
 
         :param predictions: Raw predictions from the model.
         :param metadata: Variable containing metadata information.
-        :return: OTE annotation scene entity object.
+        :return: OTX annotation scene entity object.
         """
         pred_mask = predictions >= 0.5
         mask = pred_mask.squeeze().astype(np.uint8)

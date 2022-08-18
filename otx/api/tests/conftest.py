@@ -6,10 +6,10 @@ from otx.api.tests.fixtures.general import (  # noqa #pylint: disable=unused-imp
     label_schema_example,
 )
 
-pytest_plugins = get_pytest_plugins_from_ote()  # noqa: F405
+pytest_plugins = get_pytest_plugins_from_otx()  # noqa: F405
 
-ote_conftest_insertion(default_repository_name="ote/training_extensions/")  # noqa: F405
+otx_conftest_insertion(default_repository_name="otx/training_extensions/")  # noqa: F405
 
 
 def pytest_addoption(parser):
-    ote_pytest_addoption_insertion(parser)  # noqa: F405
+    otx_pytest_addoption_insertion(parser)  # noqa: F405

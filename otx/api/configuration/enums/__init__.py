@@ -1,5 +1,5 @@
 """
-This module contains Enums used in the configurable parameters within the OTE
+This module contains Enums used in the configurable parameters within the OTX
 """
 
 # Copyright (C) 2021-2022 Intel Corporation

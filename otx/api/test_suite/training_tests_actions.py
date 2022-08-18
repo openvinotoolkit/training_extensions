@@ -37,7 +37,7 @@ from .training_tests_common import (
 logger = get_logger()
 
 
-class BaseOTETestAction(ABC):
+class BaseOTXTestAction(ABC):
     _name: Optional[str] = None
     _with_validation = False
     _depends_stages_names: List[str] = []
@@ -103,7 +103,7 @@ def create_environment_and_task(
     return environment, task
 
 
-class OTETestTrainingAction(BaseOTETestAction):
+class OTXTestTrainingAction(BaseOTXTestAction):
     _name = "training"
 
     def __init__(
@@ -128,7 +128,7 @@ class OTETestTrainingAction(BaseOTETestAction):
             raise RuntimeError("Cannot get training performance")
         return performance_to_score_name_value(training_performance)
 
-    def _run_ote_training(self, data_collector):
+    def _run_otx_training(self, data_collector):
         logger.debug(f"self.template_path = {self.template_path}")
 
         print(f"train dataset: {len(self.dataset.get_subset(Subset.TRAINING))} items")
@@ -218,7 +218,7 @@ class OTETestTrainingAction(BaseOTETestAction):
         data_collector.log_final_metric("metric_value", score_value)
 
     def __call__(self, data_collector: DataCollector, results_prev_stages: OrderedDict):
-        self._run_ote_training(data_collector)
+        self._run_otx_training(data_collector)
         results = {
             "model_template": self.model_template,
             "task": self.task,
@@ -251,7 +251,7 @@ def run_evaluation(dataset, task, model):
     return score_name, score_value
 
 
-class OTETestTrainingEvaluationAction(BaseOTETestAction):
+class OTXTestTrainingEvaluationAction(BaseOTXTestAction):
     _name = "training_evaluation"
     _with_validation = True
     _depends_stages_names = ["training"]
@@ -259,7 +259,7 @@ class OTETestTrainingEvaluationAction(BaseOTETestAction):
     def __init__(self, subset=Subset.TESTING):
         self.subset = subset
 
-    def _run_ote_evaluation(self, data_collector, dataset, task, trained_model):
+    def _run_otx_evaluation(self, data_collector, dataset, task, trained_model):
         logger.info("Begin evaluation of trained model")
         validation_dataset = dataset.get_subset(self.subset)
         score_name, score_value = run_evaluation(
@@ -281,7 +281,7 @@ class OTETestTrainingEvaluationAction(BaseOTETestAction):
             "trained_model": results_prev_stages["training"]["output_model"],
         }
 
-        score_name, score_value = self._run_ote_evaluation(data_collector, **kwargs)
+        score_name, score_value = self._run_otx_evaluation(data_collector, **kwargs)
         results = {"metrics": {"accuracy": {score_name: score_value}}}
         return results
 
@@ -319,11 +319,11 @@ def run_export(environment, dataset, task, action_name, expected_optimization_ty
     return environment_for_export, exported_model
 
 
-class OTETestExportAction(BaseOTETestAction):
+class OTXTestExportAction(BaseOTXTestAction):
     _name = "export"
     _depends_stages_names = ["training"]
 
-    def _run_ote_export(self, data_collector, environment, dataset, task):
+    def _run_otx_export(self, data_collector, environment, dataset, task):
         self.environment_for_export, self.exported_model = run_export(
             environment,
             dataset,
@@ -341,7 +341,7 @@ class OTETestExportAction(BaseOTETestAction):
             "task": results_prev_stages["training"]["task"],
         }
 
-        self._run_ote_export(data_collector, **kwargs)
+        self._run_otx_export(data_collector, **kwargs)
         results = {
             "environment": self.environment_for_export,
             "exported_model": self.exported_model,
@@ -357,7 +357,7 @@ def create_openvino_task(model_template, environment):
     return openvino_task
 
 
-class OTETestExportEvaluationAction(BaseOTETestAction):
+class OTXTestExportEvaluationAction(BaseOTXTestAction):
     _name = "export_evaluation"
     _with_validation = True
     _depends_stages_names = ["training", "export", "training_evaluation"]
@@ -365,7 +365,7 @@ class OTETestExportEvaluationAction(BaseOTETestAction):
     def __init__(self, subset=Subset.TESTING):
         self.subset = subset
 
-    def _run_ote_export_evaluation(
+    def _run_otx_export_evaluation(
         self,
         data_collector,
         model_template,
@@ -396,21 +396,21 @@ class OTETestExportEvaluationAction(BaseOTETestAction):
             "exported_model": results_prev_stages["export"]["exported_model"],
         }
 
-        score_name, score_value = self._run_ote_export_evaluation(
+        score_name, score_value = self._run_otx_export_evaluation(
             data_collector, **kwargs
         )
         results = {"metrics": {"accuracy": {score_name: score_value}}}
         return results
 
 
-class OTETestPotAction(BaseOTETestAction):
+class OTXTestPotAction(BaseOTXTestAction):
     _name = "pot"
     _depends_stages_names = ["export"]
 
     def __init__(self, pot_subset=Subset.TRAINING):
         self.pot_subset = pot_subset
 
-    def _run_ote_pot(
+    def _run_otx_pot(
         self, data_collector, model_template, dataset, environment_for_export
     ):
         logger.debug("Creating environment and task for POT optimization")
@@ -452,7 +452,7 @@ class OTETestPotAction(BaseOTETestAction):
             "environment_for_export": results_prev_stages["export"]["environment"],
         }
 
-        self._run_ote_pot(data_collector, **kwargs)
+        self._run_otx_pot(data_collector, **kwargs)
         results = {
             "openvino_task_pot": self.openvino_task_pot,
             "optimized_model_pot": self.optimized_model_pot,
@@ -460,7 +460,7 @@ class OTETestPotAction(BaseOTETestAction):
         return results
 
 
-class OTETestPotEvaluationAction(BaseOTETestAction):
+class OTXTestPotEvaluationAction(BaseOTXTestAction):
     _name = "pot_evaluation"
     _with_validation = True
     _depends_stages_names = ["training", "pot", "export_evaluation"]
@@ -468,7 +468,7 @@ class OTETestPotEvaluationAction(BaseOTETestAction):
     def __init__(self, subset=Subset.TESTING):
         self.subset = subset
 
-    def _run_ote_pot_evaluation(
+    def _run_otx_pot_evaluation(
         self, data_collector, dataset, openvino_task_pot, optimized_model_pot
     ):
         logger.info("Begin evaluation of pot model")
@@ -490,16 +490,16 @@ class OTETestPotEvaluationAction(BaseOTETestAction):
             "optimized_model_pot": results_prev_stages["pot"]["optimized_model_pot"],
         }
 
-        score_name, score_value = self._run_ote_pot_evaluation(data_collector, **kwargs)
+        score_name, score_value = self._run_otx_pot_evaluation(data_collector, **kwargs)
         results = {"metrics": {"accuracy": {score_name: score_value}}}
         return results
 
 
-class OTETestNNCFAction(BaseOTETestAction):
+class OTXTestNNCFAction(BaseOTXTestAction):
     _name = "nncf"
     _depends_stages_names = ["training"]
 
-    def _run_ote_nncf(
+    def _run_otx_nncf(
         self, data_collector, model_template, dataset, trained_model, environment
     ):
         logger.debug("Get predictions on the validation set for exported model")
@@ -552,7 +552,7 @@ class OTETestNNCFAction(BaseOTETestAction):
             "environment": results_prev_stages["training"]["environment"],
         }
 
-        self._run_ote_nncf(data_collector, **kwargs)
+        self._run_otx_nncf(data_collector, **kwargs)
         results = {
             "nncf_task": self.nncf_task,
             "nncf_model": self.nncf_model,
@@ -590,7 +590,7 @@ def check_nncf_model_graph(model, path_to_dot):
     )
 
 
-class OTETestNNCFGraphAction(BaseOTETestAction):
+class OTXTestNNCFGraphAction(BaseOTXTestAction):
     _name = "nncf_graph"
 
     def __init__(
@@ -607,7 +607,7 @@ class OTETestNNCFGraphAction(BaseOTETestAction):
         self.reference_dir = reference_dir
         self.fn_get_compressed_model = fn_get_compressed_model
 
-    def _run_ote_nncf_graph(self, data_collector):
+    def _run_otx_nncf_graph(self, data_collector):
         # pylint:disable=protected-access
         logger.debug("Load model template")
         model_template = parse_model_template(self.template_path)
@@ -664,11 +664,11 @@ class OTETestNNCFGraphAction(BaseOTETestAction):
 
     def __call__(self, data_collector: DataCollector, results_prev_stages: OrderedDict):
         self._check_result_prev_stages(results_prev_stages, self.depends_stages_names)
-        self._run_ote_nncf_graph(data_collector)
+        self._run_otx_nncf_graph(data_collector)
         return {}
 
 
-class OTETestNNCFEvaluationAction(BaseOTETestAction):
+class OTXTestNNCFEvaluationAction(BaseOTXTestAction):
     _name = "nncf_evaluation"
     _with_validation = True
     _depends_stages_names = ["training", "nncf", "training_evaluation"]
@@ -676,7 +676,7 @@ class OTETestNNCFEvaluationAction(BaseOTETestAction):
     def __init__(self, subset=Subset.TESTING):
         self.subset = subset
 
-    def _run_ote_nncf_evaluation(self, data_collector, dataset, nncf_task, nncf_model):
+    def _run_otx_nncf_evaluation(self, data_collector, dataset, nncf_task, nncf_model):
         logger.info("Begin evaluation of nncf model")
         validation_dataset = dataset.get_subset(self.subset)
         score_name, score_value = run_evaluation(
@@ -696,21 +696,21 @@ class OTETestNNCFEvaluationAction(BaseOTETestAction):
             "nncf_model": results_prev_stages["nncf"]["nncf_model"],
         }
 
-        score_name, score_value = self._run_ote_nncf_evaluation(
+        score_name, score_value = self._run_otx_nncf_evaluation(
             data_collector, **kwargs
         )
         results = {"metrics": {"accuracy": {score_name: score_value}}}
         return results
 
 
-class OTETestNNCFExportAction(BaseOTETestAction):
+class OTXTestNNCFExportAction(BaseOTXTestAction):
     _name = "nncf_export"
     _depends_stages_names = ["training", "nncf"]
 
     def __init__(self, subset=Subset.VALIDATION):
         self.subset = subset
 
-    def _run_ote_nncf_export(
+    def _run_otx_nncf_export(
         self, data_collector, nncf_environment, dataset, nncf_task
     ):
         logger.info("Begin export of nncf model")
@@ -732,7 +732,7 @@ class OTETestNNCFExportAction(BaseOTETestAction):
             "nncf_task": results_prev_stages["nncf"]["nncf_task"],
         }
 
-        self._run_ote_nncf_export(data_collector, **kwargs)
+        self._run_otx_nncf_export(data_collector, **kwargs)
         results = {
             "environment": self.environment_nncf_export,
             "exported_model": self.nncf_exported_model,
@@ -740,7 +740,7 @@ class OTETestNNCFExportAction(BaseOTETestAction):
         return results
 
 
-class OTETestNNCFExportEvaluationAction(BaseOTETestAction):
+class OTXTestNNCFExportEvaluationAction(BaseOTXTestAction):
     _name = "nncf_export_evaluation"
     _with_validation = True
     _depends_stages_names = ["training", "nncf_export", "nncf_evaluation"]
@@ -748,7 +748,7 @@ class OTETestNNCFExportEvaluationAction(BaseOTETestAction):
     def __init__(self, subset=Subset.TESTING):
         self.subset = subset
 
-    def _run_ote_nncf_export_evaluation(
+    def _run_otx_nncf_export_evaluation(
         self,
         data_collector,
         model_template,
@@ -781,24 +781,24 @@ class OTETestNNCFExportEvaluationAction(BaseOTETestAction):
             "nncf_exported_model": results_prev_stages["nncf_export"]["exported_model"],
         }
 
-        score_name, score_value = self._run_ote_nncf_export_evaluation(
+        score_name, score_value = self._run_otx_nncf_export_evaluation(
             data_collector, **kwargs
         )
         results = {"metrics": {"accuracy": {score_name: score_value}}}
         return results
 
 
-def get_default_test_action_classes() -> List[Type[BaseOTETestAction]]:
+def get_default_test_action_classes() -> List[Type[BaseOTXTestAction]]:
     return [
-        OTETestTrainingAction,
-        OTETestTrainingEvaluationAction,
-        OTETestExportAction,
-        OTETestExportEvaluationAction,
-        OTETestPotAction,
-        OTETestPotEvaluationAction,
-        OTETestNNCFAction,
-        OTETestNNCFEvaluationAction,
-        OTETestNNCFExportAction,
-        OTETestNNCFExportEvaluationAction,
-        OTETestNNCFGraphAction,
+        OTXTestTrainingAction,
+        OTXTestTrainingEvaluationAction,
+        OTXTestExportAction,
+        OTXTestExportEvaluationAction,
+        OTXTestPotAction,
+        OTXTestPotEvaluationAction,
+        OTXTestNNCFAction,
+        OTXTestNNCFEvaluationAction,
+        OTXTestNNCFExportAction,
+        OTXTestNNCFExportEvaluationAction,
+        OTXTestNNCFGraphAction,
     ]

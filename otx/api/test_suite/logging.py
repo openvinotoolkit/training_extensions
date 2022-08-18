@@ -3,7 +3,7 @@
 #
 
 """
-The module with common logger for all OTE training tests.
+The module with common logger for all OTX training tests.
 """
 
 import logging
@@ -11,7 +11,7 @@ import logging
 
 def get_logger():
     """
-    The function returns the common logger for all OTE
+    The function returns the common logger for all OTX
     training tests.
     """
     logger_name = ".".join(__name__.split(".")[:-1])
@@ -21,7 +21,7 @@ def get_logger():
 def set_log_level(level, recursive=False):
     """
     The function sets log level for the common logger for all
-    OTE training tests.
+    OTX training tests.
     The parameter `level` may be either int code or string
     (e.g. 'DEBUG')
     """

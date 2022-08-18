@@ -1,5 +1,5 @@
 """
-This module contains the base class to define ConfigurableParameters within OTE
+This module contains the base class to define ConfigurableParameters within OTX
 """
 # Copyright (C) 2021-2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0

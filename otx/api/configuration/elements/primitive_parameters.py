@@ -365,7 +365,7 @@ def selectable(
     Constructs a selectable attribute from a pre-defined Enum, with the appropriate metadata. The list of options for
     display in the UI is inferred from the type of the ConfigurableEnum instance passed in as default_value.
 
-    :param default_value: OTEConfigurationEnum instance to use as default for the parameter
+    :param default_value: OTXConfigurationEnum instance to use as default for the parameter
     :param header: User friendly name for the parameter, which will be shown in the UI
     :param description: A user friendly description of what this parameter does, what does it represent and what are
         the effects of changing it?
