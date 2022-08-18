@@ -1,3 +1,4 @@
+# work_dir: /home/yuchunli/git/training_extensions/logs/vitens_tiling_exp_mae%
 work_dir: /home/yuchunli/git/training_extensions/logs/vitens_tiling_exp
 env_root: /home/yuchunli/git/training_extensions/external/model-preparation-algorithm
 
@@ -17,7 +18,7 @@ datasets:
     images_train_dir: train
     images_val_dir: val
     images_test_dir: test
-    num_samples: [12, 24 ,36]
+    num_samples: [12, 24, 36]
 
   Vitens-Coliform-coco:
     img_root: /home/yuchunli/_DATASET/Vitens-Coliform-coco/images
@@ -28,10 +29,10 @@ datasets:
     images_train_dir: train
     images_val_dir: val
     images_test_dir: test
-    num_samples: [12, 24 ,36]
+    num_samples: [12, 24, 36]
 
   Vitens-Enterococci-coco:
-    img_root: /home/yuchunli/_DATASET/Vitens-Enterococci-coco/images 
+    img_root: /home/yuchunli/_DATASET/Vitens-Enterococci-coco/images
     anno_root: /home/yuchunli/_DATASET/vitens_dataset_harim/Vitens-Enterococci-coco/annotations
     annotations_train: instances_train.json
     annotations_val: instances_val.json
@@ -39,7 +40,7 @@ datasets:
     images_train_dir: train
     images_val_dir: val
     images_test_dir: test
-    num_samples: [12, 24 ,36]
+    num_samples: [12, 24, 36]
 
   Vitens-Legionella-coco:
     img_root: /home/yuchunli/_DATASET/Vitens-Legionella-coco/images
@@ -50,4 +51,4 @@ datasets:
     images_train_dir: train
     images_val_dir: val
     images_test_dir: test
-    num_samples: [12, 24 ,32]
+    num_samples: [12, 24, 32]
