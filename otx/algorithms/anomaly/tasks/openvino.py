@@ -21,10 +21,7 @@ import tempfile
 from typing import Any, Dict, List, Optional
 from zipfile import ZipFile
 
-import adapters.anomalib.exportable_code
 import numpy as np
-from otx.algorithms.anomaly.adapters.anomalib.config import get_anomalib_config
-from otx.algorithms.anomaly.adapters.anomalib.logger import get_logger
 from addict import Dict as ADDict
 from anomalib.deploy import OpenVINOInferencer
 from anomalib.post_processing import anomaly_map_to_color_map
@@ -34,6 +31,10 @@ from compression.graph import load_model, save_model
 from compression.graph.model_utils import compress_model_weights, get_nodes_by_type
 from compression.pipeline.initializer import create_pipeline
 from omegaconf import OmegaConf
+
+import otx.algorithms.anomaly.adapters.anomalib.exportable_code
+from otx.algorithms.anomaly.adapters.anomalib.config import get_anomalib_config
+from otx.algorithms.anomaly.adapters.anomalib.logger import get_logger
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.inference_parameters import (
     InferenceParameters,
@@ -424,7 +425,9 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
             arch.writestr(os.path.join("model", "model.bin"), self.task_environment.model.get_data("openvino.bin"))
             arch.writestr(os.path.join("model", "config.json"), json.dumps(parameters, ensure_ascii=False, indent=4))
             # model_wrappers files
-            for root, _, files in os.walk(os.path.dirname(adapters.anomalib.exportable_code.__file__)):
+            for root, _, files in os.walk(
+                os.path.dirname(otx.algorithms.anomaly.adapters.anomalib.exportable_code.__file__)
+            ):
                 for file in files:
                     file_path = os.path.join(root, file)
                     arch.write(
