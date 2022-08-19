@@ -32,10 +32,10 @@ hyper_parameters:
       num_workers:
         default_value: 0
       learning_rate:
-        default_value: 0.025
+        default_value: 0.007
         auto_hpo_state: POSSIBLE
       num_iters:
-        default_value: 90
+        default_value: 20
     algo_backend:
       train_type:
         default_value: Incremental
