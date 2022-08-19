@@ -184,7 +184,7 @@ class OpenVINOClassificationTask(IDeploymentTask, IInferenceTask, IEvaluationTas
         dataset_size = len(dataset)
         for i, dataset_item in enumerate(dataset, 1):
             predicted_scene, actmap, repr_vector, act_score = self.inferencer.predict(dataset_item.numpy)
-            dataset_item.append_labels(predicted_scene.annotations[0].get_labels())
+            dataset_item.append_annotations(predicted_scene.annotations)
             active_score_media = FloatMetadata(name="active_score", value=act_score,
                                                float_type=FloatType.ACTIVE_SCORE)
             dataset_item.append_metadata_item(active_score_media, model=self.model)
