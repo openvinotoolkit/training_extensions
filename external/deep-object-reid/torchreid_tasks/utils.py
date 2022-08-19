@@ -107,7 +107,7 @@ class ClassificationDatasetAdapter(DatasetEntity):
         for subset, subset_data in self.annotations.items():
             for data_info in subset_data[0]:
                 image = Image(file_path=data_info[0])
-                labels = [ScoredLabel(label=self._label_name_to_project_label(label_name),
+                labels = [ScoredLabel(label=self.label_name_to_project_label(label_name),
                                       probability=1.0) for label_name in data_info[1]]
                 shapes = [Annotation(Rectangle.generate_full_box(), labels)]
                 annotation_scene = AnnotationSceneEntity(kind=AnnotationSceneKind.ANNOTATION,
@@ -124,7 +124,7 @@ class ClassificationDatasetAdapter(DatasetEntity):
             annotation = json.load(f)
             if 'hierarchy' not in annotation:
                 all_classes = sorted(annotation['classes'])
-                annotation_type = None
+                annotation_type = ClassificationType.MULTILABEL
                 groups = [[c] for c in all_classes]
             else:  # load multihead
                 all_classes = []
@@ -159,12 +159,7 @@ class ClassificationDatasetAdapter(DatasetEntity):
                 assert full_image_path
                 if not labels_idx:
                     img_wo_objects += 1
-                out_data.append((full_image_path, tuple(labels_idx), 0, 0, '', -1, -1))
-                if len(labels_idx) > 1 and annotation_type is None:
-                    annotation_type = ClassificationType.MULTILABEL
-            if annotation_type is None:
-                annotation_type = ClassificationType.MULTICLASS
-                groups = [all_classes]
+                out_data.append((full_image_path, tuple(labels_idx)))
             if img_wo_objects:
                 print(f'WARNING: there are {img_wo_objects} images without labels and will be treated as negatives')
         return (out_data, all_classes, groups), annotation_type
@@ -213,7 +208,7 @@ class ClassificationDatasetAdapter(DatasetEntity):
             self.labels = labels
         assert self.labels is not None
 
-    def _label_name_to_project_label(self, label_name):
+    def label_name_to_project_label(self, label_name):
         return [label for label in self.project_labels if label.name == label_name][0]
 
     def is_multiclass(self):
@@ -236,7 +231,7 @@ class ClassificationDatasetAdapter(DatasetEntity):
             for g in self.annotations[Subset.TRAINING][2]:
                 group_labels = []
                 for cls in g:
-                    group_labels.append(self._label_name_to_project_label(cls))
+                    group_labels.append(self.label_name_to_project_label(cls))
                 label_schema.add_group(LabelGroup(name=group_labels[0].name,
                                                   labels=group_labels, group_type=LabelGroupType.EXCLUSIVE))
             label_schema.add_group(empty_group)
