@@ -13,7 +13,7 @@ from typing import List, Optional, Type
 
 import pytest
 
-from otx.api.configuration.helper import create as otx.api_configuration_helper_create
+from otx.api.configuration.helper import create as otx_api_configuration_helper_create
 from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.model import ModelEntity, ModelFormat, ModelOptimizationType
 from otx.api.entities.model_template import parse_model_template
@@ -141,7 +141,7 @@ class OTXTestTrainingAction(BaseOTXTestAction):
         self.model_template = parse_model_template(self.template_path)
 
         logger.debug("Set hyperparameters")
-        params = otx.api_configuration_helper_create(
+        params = otx_api_configuration_helper_create(
             self.model_template.hyper_parameters.data
         )
         if self.num_training_iters != KEEP_CONFIG_FIELD_VALUE:
@@ -622,7 +622,7 @@ class OTXTestNNCFGraphAction(BaseOTXTestAction):
         if not os.path.exists(self.reference_dir):
             pytest.skip("Reference directory does not exist")
 
-        params = otx.api_configuration_helper_create(
+        params = otx_api_configuration_helper_create(
             model_template.hyper_parameters.data
         )
         environment, task = create_environment_and_task(

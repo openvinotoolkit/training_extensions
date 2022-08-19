@@ -15,6 +15,7 @@
 import json
 import os
 import shutil
+from pathlib import Path
 from subprocess import run  # nosec
 
 import pytest
@@ -25,10 +26,21 @@ def get_template_rel_dir(template):
 
 
 def get_some_vars(template, root):
-    template_dir = get_template_rel_dir(template)
-    algo_backend_dir = "/".join(template_dir.split("/")[:2])
-    work_dir = os.path.join(root, os.path.basename(algo_backend_dir))
+
+    # Get the type of the algorithm.
+    # The location of the template files are as follows:
+    # ~/training_extensions/otx/algorithms/<algorithm>/**/template.yaml
+    # To get the ``algorithm``, index of the "algorithms" can be
+    # searched, where ``algorithm`` comes next.
+    template_path_parts = template.model_template_path.split(os.sep)
+    idx = template_path_parts.index("algorithms")
+    algorithm = template_path_parts[idx+1]
+
+    algo_backend_dir = f"otx/algorithms/{algorithm}"
+    work_dir = os.path.join(root, f"otx/algorithms/{algorithm}")
+    template_dir = os.path.dirname(os.path.relpath(template.model_template_path, start=algo_backend_dir))
     template_work_dir = os.path.join(work_dir, template_dir)
+
     os.makedirs(template_work_dir, exist_ok=True)
     return work_dir, template_work_dir, algo_backend_dir
 

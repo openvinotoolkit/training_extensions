@@ -17,10 +17,10 @@
 import os
 
 import pytest
-from otx.api.test_suite.e2e_test_system import e2e_pytest_component
 
-from otx_cli.registry import Registry
-from otx_cli.utils.tests import (
+from otx.api.test_suite.e2e_test_system import e2e_pytest_component
+from otx.cli.registry import Registry
+from otx.cli.utils.tests import (
     create_venv,
     get_some_vars,
     nncf_eval_openvino_testing,
@@ -51,10 +51,10 @@ args = {
     "train_params": [],
 }
 
-root = "/tmp/otx_cli/"
+root = "/tmp/training_extensions/"
 otx_dir = os.getcwd()
 
-templates = Registry("external").filter(task_type="ANOMALY_CLASSIFICATION").templates
+templates = Registry("otx/algorithms").filter(task_type="ANOMALY_CLASSIFICATION").templates
 templates_ids = [template.model_template_id for template in templates]
 
 

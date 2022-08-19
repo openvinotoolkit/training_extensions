@@ -17,7 +17,7 @@
 import os
 
 import pytest
-from otx_cli.utils.tests import (
+from otx.cli.utils.tests import (
     create_venv,
     get_some_vars,
     nncf_eval_openvino_testing,
@@ -38,7 +38,7 @@ from otx_cli.utils.tests import (
 )
 from otx.api.test_suite.e2e_test_system import e2e_pytest_component
 
-from otx_cli.registry import Registry
+from otx.cli.registry import Registry
 
 args = {
     "--train-ann-file": "data/anomaly/detection/train.json",
@@ -51,10 +51,10 @@ args = {
     "train_params": [],
 }
 
-root = "/tmp/otx_cli/"
+root = "/tmp/otx/cli/"
 otx_dir = os.getcwd()
 
-templates = Registry("external").filter(task_type="ANOMALY_DETECTION").templates
+templates = Registry("otx/algorithms").filter(task_type="ANOMALY_DETECTION").templates
 templates_ids = [template.model_template_id for template in templates]
 
 
