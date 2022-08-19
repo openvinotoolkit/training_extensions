@@ -1,15 +1,15 @@
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-
+import torch
 import numpy as np
 from sklearn.metrics import confusion_matrix as sklearn_confusion_matrix
 from mmcv.utils.registry import build_from_cfg
-from mmcls.core import average_performance, mAP
+from mmcls.core import average_performance, average_precision, mAP
 from mmcls.datasets.builder import DATASETS, PIPELINES
 from mmcls.datasets.pipelines import Compose
 from mmcls.datasets.base_dataset import BaseDataset
-from mpa_tasks.utils.data_utils import get_cls_img_indices, get_old_new_img_indices
+from mpa_tasks.utils.data_utils import get_cls_img_indices, get_old_new_img_indices, convert_to_mmcls_multilabel_dataset
 from mpa.utils.logger import get_logger
 
 logger = get_logger()
@@ -153,29 +153,42 @@ class MPAClsDataset(BaseDataset):
 
 @DATASETS.register_module()
 class MPAMultilabelClsDataset(MPAClsDataset):
+    @staticmethod
+    def class_AP(pred, target):
+        """Calculate the average precision per class.
+
+        Args:
+            pred (torch.Tensor | np.ndarray): The model prediction with shape
+                (N, C), where C is the number of classes.
+            target (torch.Tensor | np.ndarray): The target of each prediction with
+                shape (N, C), where C is the number of classes. 1 stands for
+                positive examples, 0 stands for negative examples and -1 stands for
+                difficult examples.
+
+        Returns:
+            List[float]: A single list which inclues AP values per class.
+        """
+        if isinstance(pred, torch.Tensor) and isinstance(target, torch.Tensor):
+            pred = pred.detach().cpu().numpy()
+            target = target.detach().cpu().numpy()
+        elif not (isinstance(pred, np.ndarray) and isinstance(target, np.ndarray)):
+            raise TypeError('pred and target should both be torch.Tensor or'
+                            'np.ndarray')
+
+        assert pred.shape == \
+            target.shape, 'pred and target should be in the same shape.'
+        num_classes = pred.shape[1]
+        ap = np.zeros(num_classes)
+        for k in range(num_classes):
+            ap[k] = average_precision(pred[:, k], target[:, k])
+        return ap * 100.0
+
     def get_indices(self, new_classes):
         return get_old_new_img_indices(self.labels, new_classes, self.ote_dataset)
 
     def load_annotations(self):
         include_empty = self.empty_label in self.labels
-        for i, _ in enumerate(self.ote_dataset):
-            class_indices = []
-            item_labels = self.ote_dataset[i].get_roi_labels(self.labels, include_empty=include_empty)
-            ignored_labels = self.ote_dataset[i].ignored_labels
-            if item_labels:
-                for ote_lbl in item_labels:
-                    if ote_lbl not in ignored_labels:
-                        class_indices.append(self.label_names.index(ote_lbl.name))
-                    else:
-                        class_indices.append(-1)
-            else:  # this supposed to happen only on inference stage or if we have a negative in multilabel data
-                class_indices.append(-1)
-            onehot_indices = np.zeros(len(self.labels))
-            for idx in class_indices:
-                if idx != -1:  # TODO: handling ignored label?
-                    onehot_indices[idx] = 1
-            self.gt_labels.append(onehot_indices)
-        self.gt_labels = np.array(self.gt_labels)
+        self.gt_labels, _ = convert_to_mmcls_multilabel_dataset(self.ote_dataset, self.labels, include_empty=include_empty)
 
     def evaluate(self,
                  results,
@@ -203,7 +216,7 @@ class MPAMultilabelClsDataset(MPAClsDataset):
             metrics = [metric]
         else:
             metrics = metric
-        allowed_metrics = ['accuracy-mlc', 'mAP', 'CP', 'CR', 'CF1', 'OP', 'OR', 'OF1']
+        allowed_metrics = ['accuracy-mlc', 'mAP', 'class_AP', 'CP', 'CR', 'CF1', 'OP', 'OR', 'OF1']
         eval_results = {}
         results = np.vstack(results)
         gt_labels = self.get_gt_labels()
@@ -253,6 +266,11 @@ class MPAMultilabelClsDataset(MPAClsDataset):
         if 'mAP' in metrics:
             mAP_value = mAP(results, gt_labels)
             eval_results['mAP'] = mAP_value
+
+        if 'class_AP' in metrics:
+            class_AP_value = self.class_AP(results, gt_labels)
+            eval_results.update({f'{c}_AP': a for c, a in zip(self.CLASSES, class_AP_value)})
+
         if len(set(metrics) - {'mAP'}) != 0:
             performance_keys = ['CP', 'CR', 'CF1', 'OP', 'OR', 'OF1']
             performance_values = average_performance(results, gt_labels,
