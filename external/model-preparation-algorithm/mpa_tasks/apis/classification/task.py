@@ -300,6 +300,16 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         else:
             cfg_path = os.path.join(base_dir, 'model.py')
         cfg = MPAConfig.fromfile(cfg_path)
+
+        # To initialize different HP for multi-label classification / Support HP change via CLI & UI
+        if self._multilabel:
+            template = MPAConfig.fromfile(self.template_file_path)
+            template_params = template.hyper_parameters.parameter_overrides.learning_parameters
+            if template_params.learning_rate.default_value != self._hyperparams.learning_parameters.learning_rate:
+                cfg.pop('optimizer', False)
+            if template_params.num_iters.default_value != self._hyperparams.learning_parameters.num_iters:
+                cfg.pop('runner', False)
+
         cfg.model.multilabel = self._multilabel
         cfg.model.hierarchical = self._hierarchical
         if self._hierarchical:
