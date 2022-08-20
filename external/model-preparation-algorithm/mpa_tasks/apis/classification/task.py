@@ -318,7 +318,7 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
                 cfg.pop('optimizer', False)
             if template_params.num_iters.default_value != self._hyperparams.learning_parameters.num_iters:
                 cfg.pop('runner', False)
-            if template_params.learning_rate_warmup_iters != self._hyperparams.learning_parameters.learning_rate_warmup_iters:
+            if template_params.learning_rate_warmup_iters.default_value != self._hyperparams.learning_parameters.learning_rate_warmup_iters:
                 cfg.pop('lr_config', False)
 
         cfg.model.multilabel = self._multilabel
