@@ -1,7 +1,6 @@
 import os
 import numpy as np
 import unittest
-import torch
 import torchvision
 from src.utils.inference_utils import load_inference_model, validate_model
 from torch.utils.data import DataLoader

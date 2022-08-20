@@ -3,12 +3,12 @@ import torchvision
 import os
 from torch import nn
 import onnxruntime
-from model import AutoEncoder, Decoder
-from dataloader import CustomDatasetPhase1, CustomDatasetPhase2
+from .model import AutoEncoder, Decoder
+from .dataloader import CustomDatasetPhase1, CustomDatasetPhase2
 from torch.utils import data
 import numpy as np
 import huffman
-from evaluators import compare_psnr_batch, compare_ssim_batch
+from .evaluators import compare_psnr_batch, compare_ssim_batch
 import pickle
 import argparse
 from PIL import Image

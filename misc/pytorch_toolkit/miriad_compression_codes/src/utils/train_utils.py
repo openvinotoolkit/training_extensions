@@ -70,21 +70,6 @@ def train_model_phase1(config, train_dataloader, model, optimizer, msecrit, epoc
         psnr128 = compare_psnr_batch(img128.detach().cpu().numpy(), output128.detach().cpu().numpy())
         psnr128 = 20.0 * np.log10(psnr128)
 
-        # if config['efficient_net']:
-        #     if idx % config['interval'] == 0:
-                # print('{tag} {0:4d}/{1:4d}/{2:4d} -> Loss: {3:.8f}, \
-                #         pSNR: {4:.8f}dB, SSIM: {5:.8f}, alpha: {6: .8f}, \
-                #         beta: {7: .8f}'.format(idx, epoch, config['epochs'],
-                #         loss2.item(), psnr128, ssim128, alpha[it_no], beta[it_no], tag=colored('[Training]', 'yellow')))
-			# 	print('{tag} {0:4d}/{1:4d}/{2:4d} -> Loss: {3:.8f}, pSNR: {4:.8f}dB, SSIM: {5:.8f}'.format(
-			# 		idx, epoch, args.epochs, loss1.item(), psnr256, ssim256, tag=colored('[Training]','red')))
-        # else:
-        #     if idx % config['interval'] == 0:
-        #         print('{tag} {0:4d}/{1:4d}/{2:4d} -> Loss: {3:.8f}, \
-        #                 pSNR: {4:.8f}dB, \
-        #                 SSIM: {5:.8f}'.format(idx, epoch, config['epochs'], 
-        #                 loss1.item(), psnr256, ssim256, tag=colored('[Training]', 'red')))
-
         total_loss.backward()  # backward
         optimizer.step()  # weight update
     # schedular.step()
