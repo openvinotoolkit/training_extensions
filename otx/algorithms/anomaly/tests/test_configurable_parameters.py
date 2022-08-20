@@ -20,11 +20,15 @@ import logging
 import os
 
 import pytest
-from otx.algorithms.anomaly.adapters.anomalib.config import get_anomalib_config
-from configs.anomaly_classification.padim import PadimAnomalyClassificationConfig
-from configs.anomaly_classification.stfpm import STFPMAnomalyClassificationConfig
-from otx.api.configuration.helper import convert, create
 
+from otx.algorithms.anomaly.adapters.anomalib.config import get_anomalib_config
+from otx.algorithms.anomaly.configs.anomaly_classification.padim import (
+    PadimAnomalyClassificationConfig,
+)
+from otx.algorithms.anomaly.configs.anomaly_classification.stfpm import (
+    STFPMAnomalyClassificationConfig,
+)
+from otx.api.configuration.helper import convert, create
 from tests.helpers.config import get_config_and_task_name
 
 logger = logging.getLogger(__name__)
