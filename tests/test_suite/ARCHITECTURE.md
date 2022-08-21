@@ -169,11 +169,11 @@ It means that the action class `OTXTestTrainingEvaluationAction` that makes eval
 training in its method `__call__` can use
 
 ```python
-        kwargs = {
-            "dataset": results_prev_stages["training"]["dataset"],
-            "task": results_prev_stages["training"]["task"],
-            "trained_model": results_prev_stages["training"]["output_model"],
-        }
+kwargs = {
+    "dataset": results_prev_stages["training"]["dataset"],
+    "task": results_prev_stages["training"]["task"],
+    "trained_model": results_prev_stages["training"]["output_model"],
+}
 ```
 
 ### III.2 When implementation of own test action class is required
