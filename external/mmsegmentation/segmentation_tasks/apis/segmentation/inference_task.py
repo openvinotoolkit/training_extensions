@@ -27,22 +27,12 @@ import torch
 from mmcv.parallel import MMDataParallel
 from mmcv.runner import load_checkpoint, load_state_dict
 from mmcv.utils import Config
-from mmseg.apis import export_model
-from mmseg.core.hooks.auxiliary_hooks import FeatureVectorHook, SaliencyMapHook
-from mmseg.datasets import build_dataloader, build_dataset
-from mmseg.models import build_segmentor
-from mmseg.parallel import MMDataCPU
+from ote_sdk.utils.segmentation_utils import (create_hard_prediction_from_soft_prediction,
+                                              create_annotation_from_segmentation_map)
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.inference_parameters import InferenceParameters
-from ote_sdk.entities.inference_parameters import (
-    default_progress_callback as default_infer_progress_callback,
-)
-from ote_sdk.entities.model import (
-    ModelEntity,
-    ModelFormat,
-    ModelOptimizationType,
-    ModelPrecision,
-)
+from ote_sdk.entities.inference_parameters import default_progress_callback as default_infer_progress_callback
+from ote_sdk.entities.model import ModelEntity, ModelFormat, ModelOptimizationType, ModelPrecision
 from ote_sdk.entities.result_media import ResultMediaEntity
 from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.task_environment import TaskEnvironment
@@ -57,20 +47,15 @@ from ote_sdk.utils.argument_checks import (
     DatasetParamTypeCheck,
     check_input_parameters_type,
 )
-from ote_sdk.utils.segmentation_utils import (
-    create_annotation_from_segmentation_map,
-    create_hard_prediction_from_soft_prediction,
-)
-from segmentation_tasks.apis.segmentation.config_utils import (
-    patch_config,
-    prepare_for_testing,
-    set_hyperparams,
-)
+
+from mmseg.apis import export_model
+from mmseg.core.hooks.auxiliary_hooks import FeatureVectorHook, SaliencyMapHook
+from mmseg.datasets import build_dataloader, build_dataset
+from mmseg.models import build_segmentor
+from mmseg.parallel import MMDataCPU
+from segmentation_tasks.apis.segmentation.config_utils import (patch_config, prepare_for_testing, set_hyperparams)
 from segmentation_tasks.apis.segmentation.configuration import OTESegmentationConfig
-from segmentation_tasks.apis.segmentation.ote_utils import (
-    InferenceProgressCallback,
-    get_activation_map,
-)
+from segmentation_tasks.apis.segmentation.ote_utils import InferenceProgressCallback, get_activation_map
 
 logger = logging.getLogger(__name__)
 

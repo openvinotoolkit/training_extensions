@@ -3,15 +3,16 @@
 #
 
 from attr import attrs
+
+from ote_sdk.configuration.elements import (add_parameter_group,
+                                            ParameterGroup,
+                                            # configurable_boolean,
+                                            configurable_float,
+                                            configurable_integer,
+                                            selectable,
+                                            string_attribute)
+
 from mpa_tasks.apis import BaseConfig, LearningRateSchedule
-from ote_sdk.configuration.elements import (  # configurable_boolean,
-    ParameterGroup,
-    add_parameter_group,
-    configurable_float,
-    configurable_integer,
-    selectable,
-    string_attribute,
-)
 from ote_sdk.configuration.model_lifecycle import ModelLifecycle
 from segmentation_tasks.apis.segmentation.configuration_enums import Models
 

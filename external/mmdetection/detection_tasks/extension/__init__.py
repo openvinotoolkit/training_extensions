@@ -13,14 +13,5 @@
 # and limitations under the License.
 
 from .datasets import OTEDataset, get_annotation_mmdet_format
-from .utils import (
-    CancelTrainingHook,
-    EarlyStoppingHook,
-    EpochRunnerWithCancel,
-    FixedMomentumUpdaterHook,
-    LoadAnnotationFromOTEDataset,
-    LoadImageFromOTEDataset,
-    OTELoggerHook,
-    OTEProgressHook,
-    ReduceLROnPlateauLrUpdaterHook,
-)
+from .utils import (CancelTrainingHook, FixedMomentumUpdaterHook, LoadImageFromOTEDataset, EpochRunnerWithCancel,
+    LoadAnnotationFromOTEDataset, OTELoggerHook, OTEProgressHook, EarlyStoppingHook, ReduceLROnPlateauLrUpdaterHook)

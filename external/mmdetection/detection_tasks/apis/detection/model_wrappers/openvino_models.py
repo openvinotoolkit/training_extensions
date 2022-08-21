@@ -15,7 +15,6 @@ limitations under the License.
 """
 
 from typing import Dict
-
 import numpy as np
 
 try:

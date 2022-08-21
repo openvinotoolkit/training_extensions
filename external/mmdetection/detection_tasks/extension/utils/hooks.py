@@ -15,17 +15,19 @@
 import logging
 import math
 import os
-from collections import defaultdict
 from math import inf, isnan
+from collections import defaultdict
 from typing import Any, Dict, Optional
 
+from mmcv.runner.hooks import HOOKS, Hook, LoggerHook, LrUpdaterHook
 from mmcv.runner import BaseRunner, EpochBasedRunner
 from mmcv.runner.dist_utils import master_only
-from mmcv.runner.hooks import HOOKS, Hook, LoggerHook, LrUpdaterHook
 from mmcv.utils import print_log
-from mmdet.utils.logger import get_root_logger
+
 from ote_sdk.usecases.reporting.time_monitor_callback import TimeMonitorCallback
 from ote_sdk.utils.argument_checks import check_input_parameters_type
+from mmdet.utils.logger import get_root_logger
+
 
 logger = get_root_logger()
 

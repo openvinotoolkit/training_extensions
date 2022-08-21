@@ -8,6 +8,7 @@ from os import remove
 import mmcv
 import numpy as np
 import pytest
+
 from ote_sdk.entities.annotation import (
     Annotation,
     AnnotationSceneEntity,
@@ -24,16 +25,16 @@ from ote_sdk.tests.parameters_validation.validation_helper import (
     check_value_error_exception_raised,
 )
 from segmentation_tasks.extension.datasets.mmdataset import (
-    OTEDataset,
     abs_path_if_valid,
-    add_labels,
-    check_labels,
-    create_annotation_from_hard_seg_map,
+    OTEDataset,
     get_annotation_mmseg_format,
     get_classes_from_annotation,
+    create_annotation_from_hard_seg_map,
+    load_labels_from_annotation,
+    add_labels,
+    check_labels,
     get_extended_label_names,
     load_dataset_items,
-    load_labels_from_annotation,
 )
 
 

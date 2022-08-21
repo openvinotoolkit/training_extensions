@@ -28,13 +28,13 @@ from typing import Optional
 
 import torch
 import yaml
-
 from otx.api.configuration.helper import create
 from otx.api.entities.model import ModelEntity
 from otx.api.entities.model_template import TaskType
 from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.entities.train_parameters import TrainParameters, UpdateProgressCallback
+
 from otx.cli.datasets import get_dataset_class
 from otx.cli.utils.importing import get_impl_class
 from otx.cli.utils.io import generate_label_schema, read_model, save_model_data

@@ -14,9 +14,10 @@
 
 try:
     import e2e.fixtures
-    from e2e import config  # noqa
+
     from e2e.conftest_utils import *  # noqa
     from e2e.conftest_utils import pytest_addoption as _e2e_pytest_addoption  # noqa
+    from e2e import config  # noqa
     from e2e.utils import get_plugins_from_packages
 
     pytest_plugins = get_plugins_from_packages([e2e])
@@ -24,12 +25,11 @@ except ImportError:
     _e2e_pytest_addoption = None
     pass
 import pytest
-
 from otx.api.test_suite.pytest_insertions import (
     get_pytest_plugins_from_otx,
     otx_conftest_insertion,
-    otx_pytest_addoption_insertion,
     otx_pytest_generate_tests_insertion,
+    otx_pytest_addoption_insertion,
 )
 from otx.api.test_suite.training_tests_common import REALLIFE_USECASE_CONSTANT
 
@@ -54,8 +54,8 @@ def otx_test_scenario_fx(current_test_parameters_fx):
 
 @pytest.fixture(scope="session")
 def otx_templates_root_dir_fx():
-    import logging
     import os.path as osp
+    import logging
 
     logger = logging.getLogger(__name__)
     root = osp.dirname(osp.dirname(osp.realpath(__file__)))
@@ -66,8 +66,8 @@ def otx_templates_root_dir_fx():
 
 @pytest.fixture(scope="session")
 def otx_reference_root_dir_fx():
-    import logging
     import os.path as osp
+    import logging
 
     logger = logging.getLogger(__name__)
     root = osp.dirname(osp.dirname(osp.realpath(__file__)))

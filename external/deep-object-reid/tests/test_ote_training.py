@@ -15,52 +15,50 @@
 import logging
 import os
 import os.path as osp
-from collections import OrderedDict, namedtuple
+from collections import (namedtuple,
+                        OrderedDict)
 from copy import deepcopy
 from pprint import pformat
 from typing import Any, Callable, Dict, List, Optional, Type
 
 import pytest
-from ote_sdk.configuration.helper import create as ote_sdk_configuration_helper_create
-from ote_sdk.entities.model import ModelEntity, ModelFormat, ModelOptimizationType
-from ote_sdk.entities.model_template import parse_model_template
 from ote_sdk.entities.subset import Subset
-from ote_sdk.test_suite.e2e_test_system import DataCollector, e2e_pytest_performance
-from ote_sdk.test_suite.training_test_case import (
-    OTETestCaseInterface,
-    generate_ote_integration_test_case_class,
-)
-from ote_sdk.test_suite.training_tests_actions import (
-    BaseOTETestAction,
-    OTETestExportAction,
-    OTETestExportEvaluationAction,
-    OTETestNNCFAction,
-    OTETestNNCFEvaluationAction,
-    OTETestNNCFExportAction,
-    OTETestNNCFExportEvaluationAction,
-    OTETestNNCFGraphAction,
-    OTETestPotAction,
-    OTETestPotEvaluationAction,
-    OTETestTrainingAction,
-    OTETestTrainingEvaluationAction,
-    create_environment_and_task,
-    is_nncf_enabled,
-)
-from ote_sdk.test_suite.training_tests_common import (
-    KEEP_CONFIG_FIELD_VALUE,
-    REALLIFE_USECASE_CONSTANT,
-    ROOT_PATH_KEY,
-    make_path_be_abs,
-    make_paths_be_abs,
-)
-from ote_sdk.test_suite.training_tests_helper import (
-    DefaultOTETestCreationParametersInterface,
-    OTETestHelper,
-    OTETrainingTestInterface,
-)
+from ote_sdk.entities.model_template import parse_model_template
+from ote_sdk.entities.model import ModelEntity, ModelFormat, ModelOptimizationType
+from ote_sdk.configuration.helper import create as ote_sdk_configuration_helper_create
 from ote_sdk.usecases.tasks.interfaces.optimization_interface import OptimizationType
 from ote_sdk.utils.importing import get_impl_class
-from torchreid_tasks.utils import ClassificationDatasetAdapter, generate_label_schema
+
+
+from torchreid_tasks.utils import (ClassificationDatasetAdapter,
+                                            generate_label_schema)
+
+from ote_sdk.test_suite.training_test_case import (OTETestCaseInterface,
+                                                   generate_ote_integration_test_case_class)
+from ote_sdk.test_suite.e2e_test_system import DataCollector, e2e_pytest_performance
+from ote_sdk.test_suite.training_tests_common import (make_path_be_abs,
+                                                      make_paths_be_abs,
+                                                      KEEP_CONFIG_FIELD_VALUE,
+                                                      REALLIFE_USECASE_CONSTANT,
+                                                      ROOT_PATH_KEY)
+from ote_sdk.test_suite.training_tests_helper import (OTETestHelper,
+                                                      DefaultOTETestCreationParametersInterface,
+                                                      OTETrainingTestInterface)
+from ote_sdk.test_suite.training_tests_actions import (OTETestTrainingAction,
+                                                       is_nncf_enabled,
+                                                       BaseOTETestAction,
+                                                       OTETestTrainingEvaluationAction,
+                                                       OTETestExportAction,
+                                                       OTETestExportEvaluationAction,
+                                                       OTETestPotAction,
+                                                       OTETestPotEvaluationAction,
+                                                       OTETestNNCFAction,
+                                                       OTETestNNCFEvaluationAction,
+                                                       OTETestNNCFExportAction,
+                                                       OTETestNNCFExportEvaluationAction,
+                                                       OTETestNNCFGraphAction,
+                                                       create_environment_and_task)
+
 
 logger = logging.getLogger(__name__)
 

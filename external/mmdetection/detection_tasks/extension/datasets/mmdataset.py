@@ -16,10 +16,6 @@ from copy import copy
 from typing import Any, Dict, List, Sequence
 
 import numpy as np
-from mmdet.core import PolygonMasks
-from mmdet.datasets.builder import DATASETS
-from mmdet.datasets.custom import CustomDataset
-from mmdet.datasets.pipelines import Compose
 from ote_sdk.entities.dataset_item import DatasetItemEntity
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.label import Domain, LabelEntity
@@ -28,6 +24,11 @@ from ote_sdk.utils.argument_checks import (
     check_input_parameters_type,
 )
 from ote_sdk.utils.shape_factory import ShapeFactory
+
+from mmdet.core import PolygonMasks
+from mmdet.datasets.builder import DATASETS
+from mmdet.datasets.custom import CustomDataset
+from mmdet.datasets.pipelines import Compose
 
 
 @check_input_parameters_type()

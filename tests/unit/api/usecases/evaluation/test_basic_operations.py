@@ -17,6 +17,8 @@ import pytest
 
 from otx.api.entities.label import Domain, LabelEntity
 from otx.api.entities.shapes.rectangle import Rectangle
+from tests.unit.api.constants.components import OtxSdkComponent
+from tests.unit.api.constants.requirements import Requirements
 from otx.api.usecases.evaluation.basic_operations import (
     divide_arrays_with_possible_zeros,
     get_intersections_and_cardinalities,
@@ -25,8 +27,6 @@ from otx.api.usecases.evaluation.basic_operations import (
     precision_per_class,
     recall_per_class,
 )
-from tests.unit.api.constants.components import OtxSdkComponent
-from tests.unit.api.constants.requirements import Requirements
 
 
 @pytest.mark.components(OtxSdkComponent.OTX_API)

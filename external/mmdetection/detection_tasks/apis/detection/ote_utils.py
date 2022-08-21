@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+import time
 import colorsys
 import importlib
 import random
-import time
 from typing import Callable, Optional, Sequence, Union
 
 import numpy as np
@@ -26,7 +26,10 @@ from ote_sdk.entities.label import Domain, LabelEntity
 from ote_sdk.entities.label_schema import LabelGroup, LabelGroupType, LabelSchemaEntity
 from ote_sdk.entities.train_parameters import UpdateProgressCallback
 from ote_sdk.usecases.reporting.time_monitor_callback import TimeMonitorCallback
-from ote_sdk.utils.argument_checks import YamlFilePathCheck, check_input_parameters_type
+from ote_sdk.utils.argument_checks import (
+    YamlFilePathCheck,
+    check_input_parameters_type,
+)
 
 
 class ColorPalette:

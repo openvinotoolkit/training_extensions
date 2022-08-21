@@ -12,11 +12,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .data_utils import (
-    format_list_to_str,
-    get_anchor_boxes,
-    get_sizes_from_dataset_entity,
-)
+from .data_utils import get_anchor_boxes, get_sizes_from_dataset_entity, format_list_to_str
 from .mmdataset import OTEDataset, get_annotation_mmdet_format
 
 __all__ = [OTEDataset, get_annotation_mmdet_format, get_anchor_boxes, get_sizes_from_dataset_entity, format_list_to_str]

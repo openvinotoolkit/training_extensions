@@ -20,7 +20,7 @@ import time
 from ote_sdk.configuration.helper import create
 from ote_sdk.entities.datasets import Subset
 from ote_sdk.entities.inference_parameters import InferenceParameters
-from ote_sdk.entities.model import ModelEntity, ModelOptimizationType, ModelPrecision
+from ote_sdk.entities.model import ModelEntity, ModelPrecision, ModelOptimizationType
 from ote_sdk.entities.model_template import parse_model_template
 from ote_sdk.entities.optimization_parameters import OptimizationParameters
 from ote_sdk.entities.resultset import ResultSetEntity
@@ -28,9 +28,10 @@ from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.usecases.adapters.model_adapter import ModelAdapter
 from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType
 from ote_sdk.usecases.tasks.interfaces.optimization_interface import OptimizationType
-from torchreid.integration.nncf.compression import is_nncf_checkpoint
-from torchreid_tasks.utils import ClassificationDatasetAdapter, get_task_class
 
+from torchreid.integration.nncf.compression import is_nncf_checkpoint
+from torchreid_tasks.utils import (ClassificationDatasetAdapter,
+                                   get_task_class)
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Sample showcasing the new API')

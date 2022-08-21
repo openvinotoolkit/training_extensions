@@ -3,6 +3,7 @@
 #
 
 import pytest
+
 from ote_sdk.test_suite.e2e_test_system import e2e_pytest_unit
 from segmentation_tasks.apis.segmentation.ote_utils import (
     get_activation_map,

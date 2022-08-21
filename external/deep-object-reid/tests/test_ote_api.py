@@ -22,27 +22,26 @@ import cv2 as cv
 import numpy as np
 import pytest
 from e2e_test_system import e2e_pytest_api
-from ote_sdk.configuration.helper import convert, create
-from ote_sdk.entities.annotation import (
-    Annotation,
-    AnnotationSceneEntity,
-    AnnotationSceneKind,
-)
+
+from ote_sdk.entities.annotation import Annotation, AnnotationSceneEntity, AnnotationSceneKind
+from ote_sdk.entities.datasets import Subset, DatasetEntity
 from ote_sdk.entities.dataset_item import DatasetItemEntity
-from ote_sdk.entities.datasets import DatasetEntity, Subset
 from ote_sdk.entities.id import ID
 from ote_sdk.entities.image import Image
 from ote_sdk.entities.inference_parameters import InferenceParameters
-from ote_sdk.entities.label import Domain, LabelEntity
+from ote_sdk.entities.label import LabelEntity, Domain
 from ote_sdk.entities.model import ModelEntity
 from ote_sdk.entities.model_template import parse_model_template
-from ote_sdk.entities.scored_label import ScoredLabel
 from ote_sdk.entities.shapes.rectangle import Rectangle
+from ote_sdk.entities.scored_label import ScoredLabel
 from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.entities.train_parameters import TrainParameters
+from ote_sdk.configuration.helper import convert, create
+
 from torchreid_tasks.parameters import OTEClassificationParameters
 from torchreid_tasks.train_task import OTEClassificationTrainingTask
 from torchreid_tasks.utils import generate_label_schema
+
 
 DEFAULT_TEMPLATE_DIR = osp.join('configs', 'ote_custom_classification', 'efficientnet_b0')
 

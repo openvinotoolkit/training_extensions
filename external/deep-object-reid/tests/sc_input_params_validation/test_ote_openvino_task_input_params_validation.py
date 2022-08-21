@@ -14,10 +14,11 @@ from ote_sdk.tests.parameters_validation.validation_helper import (
     check_value_error_exception_raised,
 )
 from ote_sdk.usecases.tasks.interfaces.optimization_interface import OptimizationType
+
 from torchreid_tasks.openvino_task import (
     OpenVINOClassificationInferencer,
-    OpenVINOClassificationTask,
     OTEOpenVinoDataLoader,
+    OpenVINOClassificationTask,
 )
 from torchreid_tasks.parameters import OTEClassificationParameters
 

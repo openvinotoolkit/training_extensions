@@ -17,9 +17,9 @@ import pytest
 from otx.api.entities.color import Color
 from otx.api.entities.id import ID
 from otx.api.entities.label import Domain, LabelEntity
-from otx.api.utils.time_utils import now
 from tests.unit.api.constants.components import OtxSdkComponent
 from tests.unit.api.constants.requirements import Requirements
+from otx.api.utils.time_utils import now
 
 
 @pytest.mark.components(OtxSdkComponent.OTX_API)

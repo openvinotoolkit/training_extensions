@@ -24,6 +24,7 @@ from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.resultset import ResultSetEntity
 from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
+
 from otx.cli.datasets import get_dataset_class
 from otx.cli.registry import find_and_parse_model_template
 from otx.cli.utils.config import override_parameters

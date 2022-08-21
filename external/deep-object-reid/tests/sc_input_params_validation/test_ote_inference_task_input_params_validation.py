@@ -10,6 +10,7 @@ from ote_sdk.tests.parameters_validation.validation_helper import (
     check_value_error_exception_raised,
 )
 from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType
+
 from torchreid_tasks.inference_task import OTEClassificationInferenceTask
 
 

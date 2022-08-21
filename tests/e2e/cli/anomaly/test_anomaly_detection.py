@@ -17,9 +17,6 @@
 import os
 
 import pytest
-
-from otx.api.test_suite.e2e_test_system import e2e_pytest_component
-from otx.cli.registry import Registry
 from otx.cli.utils.tests import (
     create_venv,
     get_some_vars,
@@ -39,6 +36,9 @@ from otx.cli.utils.tests import (
     pot_eval_testing,
     pot_optimize_testing,
 )
+from otx.api.test_suite.e2e_test_system import e2e_pytest_component
+
+from otx.cli.registry import Registry
 
 args = {
     "--train-ann-file": "data/anomaly/detection/train.json",

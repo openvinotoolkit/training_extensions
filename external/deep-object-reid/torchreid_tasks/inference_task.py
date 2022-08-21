@@ -21,19 +21,16 @@ import tempfile
 from typing import Dict, Optional
 
 import torch
+
 import torchreid
 from ote_sdk.configuration import cfg_helper
 from ote_sdk.configuration.helper.utils import ids_to_strings
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.inference_parameters import InferenceParameters
 from ote_sdk.entities.metadata import FloatMetadata, FloatType
-from ote_sdk.entities.model import (
-    ModelEntity,
-    ModelFormat,
-    ModelOptimizationType,
-    ModelPrecision,
-    OptimizationMethod,
-)
+from ote_sdk.entities.model import (ModelEntity, ModelFormat, ModelOptimizationType,
+                                    ModelPrecision)
+from ote_sdk.entities.model import OptimizationMethod
 from ote_sdk.entities.result_media import ResultMediaEntity
 from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.scored_label import ScoredLabel
@@ -51,30 +48,17 @@ from ote_sdk.utils.argument_checks import (
     check_input_parameters_type,
 )
 from ote_sdk.utils.labels_utils import get_empty_label
-from scripts.default_config import (
-    get_default_config,
-    imagedata_kwargs,
-    merge_from_files_with_base,
-    model_kwargs,
-)
+from scripts.default_config import (get_default_config, imagedata_kwargs,
+                                    merge_from_files_with_base, model_kwargs)
 from torchreid.apis.export import export_ir, export_onnx
-from torchreid.metrics.classification import score_extraction
-from torchreid.utils import load_pretrained_weights
 from torchreid_tasks.monitors import DefaultMetricsMonitor, StopCallback
 from torchreid_tasks.parameters import OTEClassificationParameters
-from torchreid_tasks.utils import (
-    InferenceProgressCallback,
-    OTEClassificationDataset,
-    active_score_from_probs,
-    force_fp32,
-    get_actmap,
-    get_hierarchical_predictions,
-    get_multiclass_predictions,
-    get_multihead_class_info,
-    get_multilabel_predictions,
-    sigmoid_numpy,
-    softmax_numpy,
-)
+from torchreid_tasks.utils import (active_score_from_probs, force_fp32, get_actmap, get_multiclass_predictions,
+                                            get_multilabel_predictions, InferenceProgressCallback,
+                                            OTEClassificationDataset, sigmoid_numpy, softmax_numpy,
+                                            get_multihead_class_info, get_hierarchical_predictions)
+from torchreid.metrics.classification import score_extraction
+from torchreid.utils import load_pretrained_weights
 
 logger = logging.getLogger(__name__)
 

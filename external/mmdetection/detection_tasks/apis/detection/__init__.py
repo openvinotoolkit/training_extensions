@@ -13,15 +13,9 @@
 # and limitations under the License.
 
 
-from .config_utils import (
-    config_from_string,
-    config_to_string,
-    patch_config,
-    prepare_for_testing,
-    prepare_for_training,
-    save_config_to_file,
-    set_hyperparams,
-)
+from .config_utils import (config_from_string, config_to_string, patch_config,
+                           prepare_for_testing, prepare_for_training,
+                           save_config_to_file, set_hyperparams)
 from .configuration import OTEDetectionConfig
 from .inference_task import OTEDetectionInferenceTask
 from .nncf_task import OTEDetectionNNCFTask

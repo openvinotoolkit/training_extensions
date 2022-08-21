@@ -16,45 +16,31 @@ import logging
 import math
 import os
 import re
-import shutil
 from copy import deepcopy
 from typing import List, Optional
+import shutil
 
 import torchreid
 from ote_sdk.entities.datasets import DatasetEntity
-from ote_sdk.entities.metrics import (
-    CurveMetric,
-    LineChartInfo,
-    LineMetricsGroup,
-    MetricsGroup,
-    Performance,
-    ScoreMetric,
-)
+from ote_sdk.entities.metrics import (CurveMetric, LineChartInfo, LineMetricsGroup,
+                                      MetricsGroup, Performance, ScoreMetric)
 from ote_sdk.entities.model import ModelEntity
 from ote_sdk.entities.subset import Subset
 from ote_sdk.entities.task_environment import TaskEnvironment
-from ote_sdk.entities.train_parameters import TrainParameters, default_progress_callback
+from ote_sdk.entities.train_parameters import default_progress_callback, TrainParameters
 from ote_sdk.usecases.tasks.interfaces.training_interface import ITrainingTask
+from scripts.default_config import imagedata_kwargs, lr_scheduler_kwargs, optimizer_kwargs
+from torchreid.apis.training import run_lr_finder, run_training
+from torchreid_tasks.inference_task import OTEClassificationInferenceTask
+from torchreid_tasks.monitors import DefaultMetricsMonitor
+from torchreid_tasks.utils import (OTEClassificationDataset, TrainingProgressCallback)
+from torchreid.ops import DataParallel
+from torchreid.utils import (load_pretrained_weights, set_random_seed,
+                             check_isfile, resume_from_checkpoint)
 from ote_sdk.utils.argument_checks import (
     DatasetParamTypeCheck,
     check_input_parameters_type,
 )
-from scripts.default_config import (
-    imagedata_kwargs,
-    lr_scheduler_kwargs,
-    optimizer_kwargs,
-)
-from torchreid.apis.training import run_lr_finder, run_training
-from torchreid.ops import DataParallel
-from torchreid.utils import (
-    check_isfile,
-    load_pretrained_weights,
-    resume_from_checkpoint,
-    set_random_seed,
-)
-from torchreid_tasks.inference_task import OTEClassificationInferenceTask
-from torchreid_tasks.monitors import DefaultMetricsMonitor
-from torchreid_tasks.utils import OTEClassificationDataset, TrainingProgressCallback
 
 logger = logging.getLogger(__name__)
 

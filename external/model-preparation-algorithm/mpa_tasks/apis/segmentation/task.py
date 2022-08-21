@@ -10,37 +10,26 @@ from typing import List, Optional
 import numpy as np
 import torch
 from mmcv.utils import ConfigDict
+from segmentation_tasks.apis.segmentation.config_utils import remove_from_config
+from segmentation_tasks.apis.segmentation.ote_utils import TrainingProgressCallback, InferenceProgressCallback
+from segmentation_tasks.extension.utils.hooks import OTELoggerHook
 from mpa import MPAConstants
-from mpa.utils.config_utils import MPAConfig
-from mpa.utils.logger import get_logger
 from mpa_tasks.apis import BaseTask, TrainType
 from mpa_tasks.apis.segmentation import SegmentationConfig
 from mpa_tasks.utils.data_utils import get_actmap
+from mpa.utils.config_utils import MPAConfig
+from mpa.utils.logger import get_logger
 from ote_sdk.configuration import cfg_helper
 from ote_sdk.configuration.helper.utils import ids_to_strings
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.inference_parameters import InferenceParameters
-from ote_sdk.entities.inference_parameters import (
-    default_progress_callback as default_infer_progress_callback,
-)
+from ote_sdk.entities.inference_parameters import default_progress_callback as default_infer_progress_callback
 from ote_sdk.entities.label import Domain
-from ote_sdk.entities.metrics import (
-    CurveMetric,
-    InfoMetric,
-    LineChartInfo,
-    MetricsGroup,
-    Performance,
-    ScoreMetric,
-    VisualizationInfo,
-    VisualizationType,
-)
-from ote_sdk.entities.model import (
-    ModelEntity,
-    ModelFormat,
-    ModelOptimizationType,
-    ModelPrecision,
-)
-from ote_sdk.entities.model_template import parse_model_template
+from ote_sdk.entities.metrics import (CurveMetric, InfoMetric, LineChartInfo,
+                                      MetricsGroup, Performance, ScoreMetric,
+                                      VisualizationInfo, VisualizationType)
+from ote_sdk.entities.model import (ModelEntity, ModelFormat,
+                                    ModelOptimizationType, ModelPrecision)
 from ote_sdk.entities.result_media import ResultMediaEntity
 from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.subset import Subset
@@ -49,23 +38,22 @@ from ote_sdk.entities.tensor import TensorEntity
 from ote_sdk.entities.train_parameters import TrainParameters, default_progress_callback
 from ote_sdk.serialization.label_mapper import label_schema_to_bytes
 from ote_sdk.usecases.evaluation.metrics_helper import MetricsHelper
-from ote_sdk.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
-from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType, IExportTask
-from ote_sdk.usecases.tasks.interfaces.inference_interface import IInferenceTask
+from ote_sdk.usecases.tasks.interfaces.evaluate_interface import \
+    IEvaluationTask
+from ote_sdk.usecases.tasks.interfaces.export_interface import (ExportType,
+                                                                IExportTask)
+from ote_sdk.usecases.tasks.interfaces.inference_interface import \
+    IInferenceTask
 from ote_sdk.usecases.tasks.interfaces.training_interface import ITrainingTask
 from ote_sdk.usecases.tasks.interfaces.unload_interface import IUnload
-from ote_sdk.utils.argument_checks import check_input_parameters_type
 from ote_sdk.utils.segmentation_utils import (
     create_annotation_from_segmentation_map,
-    create_hard_prediction_from_soft_prediction,
-)
+    create_hard_prediction_from_soft_prediction)
+
 from segmentation_tasks.apis.segmentation import OTESegmentationNNCFTask
-from segmentation_tasks.apis.segmentation.config_utils import remove_from_config
-from segmentation_tasks.apis.segmentation.ote_utils import (
-    InferenceProgressCallback,
-    TrainingProgressCallback,
-)
-from segmentation_tasks.extension.utils.hooks import OTELoggerHook
+from ote_sdk.utils.argument_checks import check_input_parameters_type
+from ote_sdk.entities.model_template import parse_model_template
+
 
 logger = get_logger()
 

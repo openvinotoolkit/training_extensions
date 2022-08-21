@@ -18,19 +18,13 @@ from typing import Any, Dict, List, Optional, Sequence
 
 import cv2
 import numpy as np
-from mmseg.datasets.builder import DATASETS
-from mmseg.datasets.custom import CustomDataset
-from mmseg.datasets.pipelines import Compose
-from ote_sdk.entities.annotation import (
-    Annotation,
-    AnnotationSceneEntity,
-    AnnotationSceneKind,
-)
+from ote_sdk.utils.segmentation_utils import mask_from_dataset_item
+from ote_sdk.entities.annotation import Annotation, AnnotationSceneEntity, AnnotationSceneKind
 from ote_sdk.entities.dataset_item import DatasetItemEntity
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.id import ID
 from ote_sdk.entities.image import Image
-from ote_sdk.entities.label import Domain, LabelEntity
+from ote_sdk.entities.label import LabelEntity, Domain
 from ote_sdk.entities.scored_label import ScoredLabel
 from ote_sdk.entities.shapes.polygon import Point, Polygon
 from ote_sdk.entities.subset import Subset
@@ -41,7 +35,10 @@ from ote_sdk.utils.argument_checks import (
     OptionalDirectoryPathCheck,
     check_input_parameters_type,
 )
-from ote_sdk.utils.segmentation_utils import mask_from_dataset_item
+
+from mmseg.datasets.builder import DATASETS
+from mmseg.datasets.custom import CustomDataset
+from mmseg.datasets.pipelines import Compose
 
 
 @check_input_parameters_type()

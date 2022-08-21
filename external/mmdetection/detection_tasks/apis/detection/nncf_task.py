@@ -19,27 +19,7 @@ from collections import defaultdict
 from typing import Optional
 
 import torch
-from detection_tasks.apis.detection.config_utils import (
-    prepare_for_training,
-    remove_from_config,
-)
-from detection_tasks.apis.detection.configuration import OTEDetectionConfig
-from detection_tasks.apis.detection.inference_task import OTEDetectionInferenceTask
-from detection_tasks.apis.detection.ote_utils import OptimizationProgressCallback
-from detection_tasks.extension.utils.hooks import OTELoggerHook
 from mmcv.runner import load_state_dict
-from mmdet.apis import train_detector
-from mmdet.apis.fake_input import get_fake_input
-from mmdet.apis.train import build_val_dataloader
-from mmdet.datasets import build_dataloader, build_dataset
-from mmdet.integration.nncf import (
-    check_nncf_is_enabled,
-    is_accuracy_aware_training_set,
-    is_state_nncf,
-    wrap_nncf_model,
-)
-from mmdet.integration.nncf.config import compose_nncf_config
-from mmdet.utils.logger import get_root_logger
 from ote_sdk.configuration import cfg_helper
 from ote_sdk.configuration.helper.utils import ids_to_strings
 from ote_sdk.entities.datasets import DatasetEntity
@@ -50,22 +30,34 @@ from ote_sdk.entities.model import (
     ModelPrecision,
     OptimizationMethod,
 )
-from ote_sdk.entities.optimization_parameters import (
-    OptimizationParameters,
-    default_progress_callback,
-)
+from ote_sdk.entities.optimization_parameters import default_progress_callback, OptimizationParameters
 from ote_sdk.entities.subset import Subset
 from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.serialization.label_mapper import label_schema_to_bytes
 from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType
-from ote_sdk.usecases.tasks.interfaces.optimization_interface import (
-    IOptimizationTask,
-    OptimizationType,
-)
+from ote_sdk.usecases.tasks.interfaces.optimization_interface import IOptimizationTask
+from ote_sdk.usecases.tasks.interfaces.optimization_interface import OptimizationType
 from ote_sdk.utils.argument_checks import (
     DatasetParamTypeCheck,
     check_input_parameters_type,
 )
+
+from mmdet.apis import train_detector
+from mmdet.apis.fake_input import get_fake_input
+from detection_tasks.apis.detection.config_utils import prepare_for_training, remove_from_config
+from detection_tasks.apis.detection.configuration import OTEDetectionConfig
+from detection_tasks.apis.detection.inference_task import OTEDetectionInferenceTask
+from detection_tasks.apis.detection.ote_utils import OptimizationProgressCallback
+from detection_tasks.extension.utils.hooks import OTELoggerHook
+from mmdet.apis.train import build_val_dataloader
+from mmdet.datasets import build_dataloader, build_dataset
+from mmdet.integration.nncf import check_nncf_is_enabled
+from mmdet.integration.nncf import is_state_nncf
+from mmdet.integration.nncf import wrap_nncf_model
+from mmdet.integration.nncf import is_accuracy_aware_training_set
+from mmdet.integration.nncf.config import compose_nncf_config
+from mmdet.utils.logger import get_root_logger
+
 
 logger = get_root_logger()
 

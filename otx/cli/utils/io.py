@@ -29,6 +29,7 @@ from otx.api.entities.model import ModelEntity, ModelOptimizationType
 from otx.api.entities.model_template import TaskType
 from otx.api.serialization.label_mapper import LabelSchemaMapper
 from otx.api.usecases.adapters.model_adapter import ModelAdapter
+
 from otx.cli.utils.nncf import is_checkpoint_nncf
 
 

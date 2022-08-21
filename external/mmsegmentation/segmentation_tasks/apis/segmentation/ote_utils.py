@@ -13,16 +13,20 @@
 # and limitations under the License.
 
 
-import importlib
-import time
-from typing import Iterable, Union
-
 import cv2
-import numpy as np
+import importlib
+from typing import Iterable, Union
 import yaml
+import time
+
+import numpy as np
+
 from ote_sdk.entities.train_parameters import UpdateProgressCallback
 from ote_sdk.usecases.reporting.time_monitor_callback import TimeMonitorCallback
-from ote_sdk.utils.argument_checks import YamlFilePathCheck, check_input_parameters_type
+from ote_sdk.utils.argument_checks import (
+    YamlFilePathCheck,
+    check_input_parameters_type,
+)
 
 
 @check_input_parameters_type({"path": YamlFilePathCheck})

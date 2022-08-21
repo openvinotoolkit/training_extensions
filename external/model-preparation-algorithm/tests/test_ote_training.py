@@ -11,39 +11,42 @@ from pprint import pformat
 from typing import Any, Callable, Dict, List, Optional, Type
 
 import pytest
-from detection_tasks.extension.datasets.data_utils import load_dataset_items_coco_format
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.label import Domain
 from ote_sdk.entities.label_schema import LabelSchemaEntity
 from ote_sdk.entities.subset import Subset
+
+from torchreid_tasks.utils import ClassificationDatasetAdapter
+from detection_tasks.extension.datasets.data_utils import load_dataset_items_coco_format
+from segmentation_tasks.extension.datasets.mmdataset import load_dataset_items
+
 from ote_sdk.test_suite.e2e_test_system import DataCollector, e2e_pytest_performance
 from ote_sdk.test_suite.training_test_case import (
     OTETestCaseInterface,
     generate_ote_integration_test_case_class,
 )
+from ote_sdk.test_suite.training_tests_common import (
+    make_path_be_abs,
+    make_paths_be_abs,
+    KEEP_CONFIG_FIELD_VALUE,
+    REALLIFE_USECASE_CONSTANT,
+    ROOT_PATH_KEY,
+)
+from ote_sdk.test_suite.training_tests_helper import (
+    OTETestHelper,
+    DefaultOTETestCreationParametersInterface,
+    OTETrainingTestInterface,
+)
 from ote_sdk.test_suite.training_tests_actions import (
+    OTETestTrainingAction,
     BaseOTETestAction,
+    OTETestTrainingEvaluationAction,
     OTETestExportAction,
     OTETestExportEvaluationAction,
     OTETestPotAction,
     OTETestPotEvaluationAction,
-    OTETestTrainingAction,
-    OTETestTrainingEvaluationAction,
 )
-from ote_sdk.test_suite.training_tests_common import (
-    KEEP_CONFIG_FIELD_VALUE,
-    REALLIFE_USECASE_CONSTANT,
-    ROOT_PATH_KEY,
-    make_path_be_abs,
-    make_paths_be_abs,
-)
-from ote_sdk.test_suite.training_tests_helper import (
-    DefaultOTETestCreationParametersInterface,
-    OTETestHelper,
-    OTETrainingTestInterface,
-)
-from segmentation_tasks.extension.datasets.mmdataset import load_dataset_items
-from torchreid_tasks.utils import ClassificationDatasetAdapter
+
 
 logger = logging.getLogger(__name__)
 

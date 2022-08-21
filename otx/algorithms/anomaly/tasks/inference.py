@@ -24,21 +24,16 @@ from glob import glob
 from typing import Dict, List, Optional, Union
 
 import torch
+from otx.algorithms.anomaly.adapters.anomalib.callbacks import AnomalyInferenceCallback, ProgressCallback
+from otx.algorithms.anomaly.adapters.anomalib.config import get_anomalib_config
+from otx.algorithms.anomaly.adapters.anomalib.data import OTXAnomalyDataModule
+from otx.algorithms.anomaly.adapters.anomalib.logger import get_logger
 from anomalib.models import AnomalyModule, get_model
 from anomalib.utils.callbacks import (
     MetricsConfigurationCallback,
     MinMaxNormalizationCallback,
 )
 from omegaconf import DictConfig, ListConfig
-from pytorch_lightning import Trainer
-
-from otx.algorithms.anomaly.adapters.anomalib.callbacks import (
-    AnomalyInferenceCallback,
-    ProgressCallback,
-)
-from otx.algorithms.anomaly.adapters.anomalib.config import get_anomalib_config
-from otx.algorithms.anomaly.adapters.anomalib.data import OTXAnomalyDataModule
-from otx.algorithms.anomaly.adapters.anomalib.logger import get_logger
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.metrics import Performance, ScoreMetric
@@ -58,6 +53,7 @@ from otx.api.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType, IExportTask
 from otx.api.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from otx.api.usecases.tasks.interfaces.unload_interface import IUnload
+from pytorch_lightning import Trainer
 
 logger = get_logger(__name__)
 

@@ -20,24 +20,23 @@ from pprint import pformat
 from typing import Any, Callable, Dict, List, Optional, Type
 
 import pytest
-from detection_tasks.extension.datasets.data_utils import load_dataset_items_coco_format
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.label import Domain
 from ote_sdk.entities.label_schema import LabelSchemaEntity
 from ote_sdk.entities.subset import Subset
+
+from detection_tasks.extension.datasets.data_utils import load_dataset_items_coco_format
+
 from ote_sdk.test_suite.e2e_test_system import DataCollector, e2e_pytest_performance
-from ote_sdk.test_suite.training_tests_common import (
-    KEEP_CONFIG_FIELD_VALUE,
-    REALLIFE_USECASE_CONSTANT,
-    ROOT_PATH_KEY,
-    make_path_be_abs,
-    make_paths_be_abs,
-)
-from ote_sdk.test_suite.training_tests_helper import (
-    DefaultOTETestCreationParametersInterface,
-    OTETestHelper,
-    OTETrainingTestInterface,
-)
+from ote_sdk.test_suite.training_tests_common import (make_path_be_abs,
+                                                      make_paths_be_abs,
+                                                      KEEP_CONFIG_FIELD_VALUE,
+                                                      REALLIFE_USECASE_CONSTANT,
+                                                      ROOT_PATH_KEY)
+from ote_sdk.test_suite.training_tests_helper import (OTETestHelper,
+                                                      DefaultOTETestCreationParametersInterface,
+                                                      OTETrainingTestInterface)
+
 
 logger = logging.getLogger(__name__)
 
@@ -164,8 +163,8 @@ def get_dummy_compressed_model(task):
     Return compressed model without initialization
     """
     # pylint:disable=protected-access
-    from mmdet.apis.fake_input import get_fake_input
     from mmdet.integration.nncf import wrap_nncf_model
+    from mmdet.apis.fake_input import get_fake_input
 
     # Disable quantaizers initialization
     for compression in task._config.nncf_config['compression']:

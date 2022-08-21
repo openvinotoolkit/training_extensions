@@ -1,8 +1,9 @@
 try:
     import e2e.fixtures
-    from e2e import config  # noqa
-    from e2e.conftest_utils import *  # noqa
-    from e2e.conftest_utils import pytest_addoption as _e2e_pytest_addoption  # noqa
+
+    from e2e.conftest_utils import * # noqa
+    from e2e.conftest_utils import pytest_addoption as _e2e_pytest_addoption # noqa
+    from e2e import config # noqa
     from e2e.utils import get_plugins_from_packages
     pytest_plugins = get_plugins_from_packages([e2e])
 except ImportError:
@@ -31,8 +32,8 @@ def ote_test_scenario_fx(current_test_parameters_fx):
 
 @pytest.fixture(scope='session')
 def ote_templates_root_dir_fx():
-    import logging
     import os.path as osp
+    import logging
     logger = logging.getLogger(__name__)
     root = osp.dirname(osp.dirname(osp.realpath(__file__)))
     root = f'{root}/configs/ote_custom_classification/'
@@ -41,8 +42,8 @@ def ote_templates_root_dir_fx():
 
 @pytest.fixture(scope='session')
 def ote_reference_root_dir_fx():
-    import logging
     import os.path as osp
+    import logging
     logger = logging.getLogger(__name__)
     root = osp.dirname(osp.dirname(osp.realpath(__file__)))
     root = f'{root}/tests/reference/'

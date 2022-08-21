@@ -2,8 +2,8 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from detection_tasks.extension.datasets import OTEDataset
 from mmdet.datasets.builder import DATASETS
+from detection_tasks.extension.datasets import OTEDataset
 from mpa.utils.logger import get_logger
 from mpa_tasks.utils.data_utils import get_old_new_img_indices
 

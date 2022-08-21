@@ -17,13 +17,9 @@
 from typing import Dict, List, Optional, Union
 
 import numpy as np
+from otx.algorithms.anomaly.adapters.anomalib.logger import get_logger
 from anomalib.pre_processing import PreProcessor
 from omegaconf import DictConfig, ListConfig
-from pytorch_lightning.core.datamodule import LightningDataModule
-from torch import Tensor
-from torch.utils.data import DataLoader, Dataset
-
-from otx.algorithms.anomaly.adapters.anomalib.logger import get_logger
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.model_template import TaskType
 from otx.api.entities.shapes.polygon import Polygon
@@ -33,6 +29,9 @@ from otx.api.utils.dataset_utils import (
     split_local_global_dataset,
 )
 from otx.api.utils.segmentation_utils import mask_from_dataset_item
+from pytorch_lightning.core.datamodule import LightningDataModule
+from torch import Tensor
+from torch.utils.data import DataLoader, Dataset
 
 logger = get_logger(__name__)
 

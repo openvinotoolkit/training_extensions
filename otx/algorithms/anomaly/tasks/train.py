@@ -16,22 +16,18 @@
 
 from typing import Optional
 
+from otx.algorithms.anomaly.adapters.anomalib.callbacks import ProgressCallback, ScoreReportingCallback
+from otx.algorithms.anomaly.adapters.anomalib.data import OTXAnomalyDataModule
+from otx.algorithms.anomaly.adapters.anomalib.logger import get_logger
 from anomalib.utils.callbacks import (
     MetricsConfigurationCallback,
     MinMaxNormalizationCallback,
 )
-from pytorch_lightning import Trainer, seed_everything
-
-from otx.algorithms.anomaly.adapters.anomalib.callbacks import (
-    ProgressCallback,
-    ScoreReportingCallback,
-)
-from otx.algorithms.anomaly.adapters.anomalib.data import OTXAnomalyDataModule
-from otx.algorithms.anomaly.adapters.anomalib.logger import get_logger
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.model import ModelEntity
 from otx.api.entities.train_parameters import TrainParameters
 from otx.api.usecases.tasks.interfaces.training_interface import ITrainingTask
+from pytorch_lightning import Trainer, seed_everything
 
 from .inference import InferenceTask
 

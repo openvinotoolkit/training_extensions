@@ -22,13 +22,13 @@ from collections import deque
 
 import cv2
 import numpy as np
-
 from otx.api.configuration.helper import create
 from otx.api.entities.annotation import AnnotationSceneEntity, AnnotationSceneKind
 from otx.api.entities.datasets import DatasetEntity, DatasetItemEntity
 from otx.api.entities.image import Image
 from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.task_environment import TaskEnvironment
+
 from otx.cli.registry import find_and_parse_model_template
 from otx.cli.tools.utils.demo.images_capture import open_images_capture
 from otx.cli.tools.utils.demo.visualization import draw_predictions, put_text_on_rect_bg

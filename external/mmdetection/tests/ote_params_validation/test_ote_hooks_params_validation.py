@@ -12,8 +12,8 @@ from detection_tasks.extension.utils.hooks import (
     FixedMomentumUpdaterHook,
     OTELoggerHook,
     OTEProgressHook,
-    ReduceLROnPlateauLrUpdaterHook,
     StopLossNanTrainingHook,
+    ReduceLROnPlateauLrUpdaterHook,
 )
 from mmcv.runner import EpochBasedRunner
 from ote_sdk.test_suite.e2e_test_system import e2e_pytest_unit

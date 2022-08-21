@@ -13,19 +13,20 @@
 # and limitations under the License.
 
 import itertools
+import unittest
+
 import json
+import mmcv
 import os
 import os.path as osp
-import unittest
-from subprocess import run  # nosec
-
-import mmcv
 import torch
 from mmcv.parallel import MMDataParallel
+from ote_sdk.test_suite.e2e_test_system import e2e_pytest_api
+from subprocess import run  # nosec
+
 from mmdet.apis import init_detector, single_gpu_test
 from mmdet.datasets import build_dataloader, build_dataset
 from mmdet.parallel import MMDataCPU
-from ote_sdk.test_suite.e2e_test_system import e2e_pytest_api
 
 MODEL_CONFIGS = [
     'configs/custom-object-detection/gen3_resnet50_VFNet/model.py',

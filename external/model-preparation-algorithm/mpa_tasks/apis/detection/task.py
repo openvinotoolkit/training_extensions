@@ -5,24 +5,20 @@
 import io
 import os
 from collections import defaultdict
-from typing import Iterable, List, Optional, Tuple
+from typing import List, Optional, Tuple, Iterable
 
 import cv2
 import numpy as np
 import torch
-from detection_tasks.apis.detection import OTEDetectionNNCFTask
-from detection_tasks.apis.detection.config_utils import remove_from_config
-from detection_tasks.apis.detection.ote_utils import (
-    InferenceProgressCallback,
-    TrainingProgressCallback,
-)
-from detection_tasks.extension.utils.hooks import OTELoggerHook
 from mmcv.utils import ConfigDict
+from detection_tasks.apis.detection.config_utils import remove_from_config
+from detection_tasks.apis.detection.ote_utils import TrainingProgressCallback, InferenceProgressCallback
+from detection_tasks.extension.utils.hooks import OTELoggerHook
+from mpa_tasks.apis import BaseTask, TrainType
+from mpa_tasks.apis.detection import DetectionConfig
 from mpa import MPAConstants
 from mpa.utils.config_utils import MPAConfig
 from mpa.utils.logger import get_logger
-from mpa_tasks.apis import BaseTask, TrainType
-from mpa_tasks.apis.detection import DetectionConfig
 from ote_sdk.configuration import cfg_helper
 from ote_sdk.configuration.helper.utils import ids_to_strings
 from ote_sdk.entities.annotation import Annotation
@@ -30,20 +26,15 @@ from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.id import ID
 from ote_sdk.entities.inference_parameters import InferenceParameters
 from ote_sdk.entities.label import Domain
-from ote_sdk.entities.metrics import (
-    BarChartInfo,
-    BarMetricsGroup,
-    CurveMetric,
-    LineChartInfo,
-    LineMetricsGroup,
-    MetricsGroup,
-    ScoreMetric,
-    VisualizationType,
-)
-from ote_sdk.entities.model import ModelEntity, ModelFormat, ModelOptimizationType
-from ote_sdk.entities.model_template import TaskType, parse_model_template
-from ote_sdk.entities.result_media import ResultMediaEntity
+from ote_sdk.entities.metrics import (BarChartInfo, BarMetricsGroup,
+                                      CurveMetric, LineChartInfo,
+                                      LineMetricsGroup, MetricsGroup,
+                                      ScoreMetric, VisualizationType)
+from ote_sdk.entities.model import (ModelEntity, ModelFormat,
+                                    ModelOptimizationType)
+from ote_sdk.entities.model_template import TaskType
 from ote_sdk.entities.resultset import ResultSetEntity
+from ote_sdk.entities.result_media import ResultMediaEntity
 from ote_sdk.entities.scored_label import ScoredLabel
 from ote_sdk.entities.shapes.polygon import Point, Polygon
 from ote_sdk.entities.shapes.rectangle import Rectangle
@@ -53,12 +44,19 @@ from ote_sdk.entities.tensor import TensorEntity
 from ote_sdk.entities.train_parameters import TrainParameters, default_progress_callback
 from ote_sdk.serialization.label_mapper import label_schema_to_bytes
 from ote_sdk.usecases.evaluation.metrics_helper import MetricsHelper
-from ote_sdk.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
-from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType, IExportTask
-from ote_sdk.usecases.tasks.interfaces.inference_interface import IInferenceTask
+from ote_sdk.usecases.tasks.interfaces.evaluate_interface import \
+    IEvaluationTask
+from ote_sdk.usecases.tasks.interfaces.export_interface import (ExportType,
+                                                                IExportTask)
+from ote_sdk.usecases.tasks.interfaces.inference_interface import \
+    IInferenceTask
 from ote_sdk.usecases.tasks.interfaces.training_interface import ITrainingTask
 from ote_sdk.usecases.tasks.interfaces.unload_interface import IUnload
+
+from detection_tasks.apis.detection import OTEDetectionNNCFTask
 from ote_sdk.utils.argument_checks import check_input_parameters_type
+from ote_sdk.entities.model_template import parse_model_template
+
 
 logger = get_logger()
 

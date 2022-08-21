@@ -7,22 +7,23 @@ import sys
 
 import cv2
 import numpy as np
-from detection_tasks.apis.detection.ote_utils import get_task_class
 from mmcv.utils import get_logger
+from detection_tasks.apis.detection.ote_utils import get_task_class
 from ote_sdk.configuration.helper import create
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.inference_parameters import InferenceParameters
 from ote_sdk.entities.label import Domain
 from ote_sdk.entities.label_schema import LabelSchemaEntity
+from ote_sdk.entities.shapes.polygon import Polygon, Point
 from ote_sdk.entities.model import ModelEntity
 from ote_sdk.entities.model_template import parse_model_template
 from ote_sdk.entities.optimization_parameters import OptimizationParameters
 from ote_sdk.entities.resultset import ResultSetEntity
-from ote_sdk.entities.shapes.polygon import Point, Polygon
 from ote_sdk.entities.subset import Subset
 from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType
-from ote_sdk.usecases.tasks.interfaces.optimization_interface import OptimizationType
+from ote_sdk.usecases.tasks.interfaces.optimization_interface import \
+    OptimizationType
 
 logger = get_logger(name='sample')
 
@@ -38,11 +39,8 @@ colors = dict(red=(255, 0, 0), green=(0, 255, 0))
 
 
 def load_test_dataset(data_type, task_type=Domain.INSTANCE_SEGMENTATION):
-    from ote_sdk.entities.annotation import (
-        Annotation,
-        AnnotationSceneEntity,
-        AnnotationSceneKind,
-    )
+    from ote_sdk.entities.annotation import (Annotation, AnnotationSceneEntity,
+                                             AnnotationSceneKind)
     from ote_sdk.entities.dataset_item import DatasetItemEntity
     from ote_sdk.entities.image import Image
     from ote_sdk.entities.label import LabelEntity

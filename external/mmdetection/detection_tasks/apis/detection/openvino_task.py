@@ -12,35 +12,27 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+import attr
 import copy
+import cv2
 import io
 import json
+import numpy as np
 import os
+import ote_sdk.usecases.exportable_code.demo as demo
 import tempfile
 import warnings
-from shutil import copyfile, copytree
-from typing import Any, Dict, List, Optional, Tuple, Union
-from zipfile import ZipFile
-
-import attr
-import cv2
-import numpy as np
-import ote_sdk.usecases.exportable_code.demo as demo
 from addict import Dict as ADDict
 from compression.api import DataLoader
 from compression.engines.ie_engine import IEEngine
 from compression.graph import load_model, save_model
 from compression.graph.model_utils import compress_model_weights, get_nodes_by_type
 from compression.pipeline.initializer import create_pipeline
-from mmdet.utils.logger import get_root_logger
 from openvino.model_zoo.model_api.adapters import OpenvinoAdapter, create_core
 from openvino.model_zoo.model_api.models import Model
 from ote_sdk.entities.annotation import AnnotationSceneEntity
 from ote_sdk.entities.datasets import DatasetEntity
-from ote_sdk.entities.inference_parameters import (
-    InferenceParameters,
-    default_progress_callback,
-)
+from ote_sdk.entities.inference_parameters import InferenceParameters, default_progress_callback
 from ote_sdk.entities.label_schema import LabelSchemaEntity
 from ote_sdk.entities.model import (
     ModelEntity,
@@ -67,17 +59,18 @@ from ote_sdk.usecases.exportable_code.prediction_to_annotation_converter import 
 from ote_sdk.usecases.tasks.interfaces.deployment_interface import IDeploymentTask
 from ote_sdk.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
 from ote_sdk.usecases.tasks.interfaces.inference_interface import IInferenceTask
-from ote_sdk.usecases.tasks.interfaces.optimization_interface import (
-    IOptimizationTask,
-    OptimizationType,
-)
+from ote_sdk.usecases.tasks.interfaces.optimization_interface import IOptimizationTask, OptimizationType
 from ote_sdk.utils.argument_checks import (
     DatasetParamTypeCheck,
     check_input_parameters_type,
 )
+from shutil import copyfile, copytree
+from typing import Any, Dict, List, Optional, Tuple, Union
+from zipfile import ZipFile
 
-from . import model_wrappers
+from mmdet.utils.logger import get_root_logger
 from .configuration import OTEDetectionConfig
+from . import model_wrappers
 
 logger = get_root_logger()
 

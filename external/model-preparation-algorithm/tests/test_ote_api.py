@@ -9,10 +9,9 @@ import time
 import warnings
 from concurrent.futures import ThreadPoolExecutor
 from typing import Optional
-
+import pytest
 import cv2 as cv
 import numpy as np
-import pytest
 from bson import ObjectId
 from detection_tasks.apis.detection.ote_utils import generate_label_schema
 from mpa_tasks.apis import BaseTask

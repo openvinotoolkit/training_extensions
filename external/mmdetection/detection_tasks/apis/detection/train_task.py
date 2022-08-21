@@ -21,30 +21,11 @@ from typing import List, Optional
 
 import numpy as np
 import torch
-from detection_tasks.apis.detection.config_utils import (
-    cluster_anchors,
-    prepare_for_training,
-    set_hyperparams,
-)
-from detection_tasks.apis.detection.inference_task import OTEDetectionInferenceTask
-from detection_tasks.apis.detection.ote_utils import TrainingProgressCallback
-from detection_tasks.extension.utils.hooks import OTELoggerHook
-from mmdet.apis import train_detector
-from mmdet.datasets import build_dataset
-from mmdet.utils.logger import get_root_logger
 from ote_sdk.configuration import cfg_helper
 from ote_sdk.configuration.helper.utils import ids_to_strings
 from ote_sdk.entities.datasets import DatasetEntity
-from ote_sdk.entities.metrics import (
-    BarChartInfo,
-    BarMetricsGroup,
-    CurveMetric,
-    LineChartInfo,
-    LineMetricsGroup,
-    MetricsGroup,
-    ScoreMetric,
-    VisualizationType,
-)
+from ote_sdk.entities.metrics import (BarChartInfo, BarMetricsGroup, CurveMetric, LineChartInfo, LineMetricsGroup, MetricsGroup,
+                                      ScoreMetric, VisualizationType)
 from ote_sdk.entities.model import ModelEntity, ModelPrecision
 from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.subset import Subset
@@ -56,6 +37,14 @@ from ote_sdk.utils.argument_checks import (
     DatasetParamTypeCheck,
     check_input_parameters_type,
 )
+
+from mmdet.apis import train_detector
+from detection_tasks.apis.detection.config_utils import cluster_anchors, prepare_for_training, set_hyperparams
+from detection_tasks.apis.detection.inference_task import OTEDetectionInferenceTask
+from detection_tasks.apis.detection.ote_utils import TrainingProgressCallback
+from detection_tasks.extension.utils.hooks import OTELoggerHook
+from mmdet.datasets import build_dataset
+from mmdet.utils.logger import get_root_logger
 
 logger = get_root_logger()
 

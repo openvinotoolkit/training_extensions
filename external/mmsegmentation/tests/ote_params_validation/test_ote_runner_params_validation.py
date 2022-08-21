@@ -7,16 +7,17 @@ from logging import Logger
 import pytest
 import torch.nn as nn
 from mmcv.runner import IterLoader
+from torch.utils.data.dataloader import DataLoader
+
 from ote_sdk.test_suite.e2e_test_system import e2e_pytest_unit
 from ote_sdk.tests.parameters_validation.validation_helper import (
     check_value_error_exception_raised,
-    load_test_dataset,
+    load_test_dataset
 )
 from segmentation_tasks.extension.utils.runner import (
     EpochRunnerWithCancel,
     IterBasedRunnerWithCancel,
 )
-from torch.utils.data.dataloader import DataLoader
 
 
 class TestRunnersInputParamsValidation:

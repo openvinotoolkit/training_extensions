@@ -3,6 +3,7 @@
 #
 
 import pytest
+
 from detection_tasks.apis.detection.nncf_task import OTEDetectionNNCFTask
 from ote_sdk.configuration.configurable_parameters import ConfigurableParameters
 from ote_sdk.entities.datasets import DatasetEntity

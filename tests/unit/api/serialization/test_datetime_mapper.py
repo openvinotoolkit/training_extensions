@@ -8,9 +8,9 @@ from datetime import datetime
 import pytest
 
 from otx.api.serialization.datetime_mapper import DatetimeMapper
-from otx.api.utils.time_utils import now
 from tests.unit.api.constants.components import OtxSdkComponent
 from tests.unit.api.constants.requirements import Requirements
+from otx.api.utils.time_utils import now
 
 
 @pytest.mark.components(OtxSdkComponent.OTX_API)

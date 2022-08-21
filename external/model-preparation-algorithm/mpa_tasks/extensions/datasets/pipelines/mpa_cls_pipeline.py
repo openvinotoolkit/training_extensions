@@ -2,11 +2,10 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import copy
-from typing import Any, Dict, Optional
-
-import numpy as np
 from mmcls.datasets import PIPELINES
+import copy
+import numpy as np
+from typing import Dict, Any, Optional
 from ote_sdk.utils.argument_checks import check_input_parameters_type
 
 

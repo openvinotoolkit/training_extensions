@@ -20,7 +20,6 @@ from pprint import pformat
 from typing import Any, Callable, Dict, List, Optional, Type
 
 import pytest
-
 from otx.api.configuration.helper import create as otx_sdk_configuration_helper_create
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label_schema import LabelSchemaEntity
@@ -49,6 +48,7 @@ from otx.api.test_suite.training_tests_helper import (
     OTXTestHelper,
     OTXTrainingTestInterface,
 )
+
 from tests.anomaly_common import (
     _create_anomaly_dataset_and_labels_schema,
     _get_dataset_params_from_dataset_definitions,

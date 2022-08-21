@@ -3,8 +3,7 @@
 #
 
 import os.path as osp
-
-from setuptools import find_packages, setup
+from setuptools import setup, find_packages
 
 repo_root = osp.dirname(osp.realpath(__file__))
 

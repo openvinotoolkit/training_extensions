@@ -12,24 +12,22 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+from attr import attrs
 from sys import maxsize
 
-from attr import attrs
+from ote_sdk.configuration.elements import (ParameterGroup,
+                                            add_parameter_group,
+                                            boolean_attribute,
+                                            configurable_boolean,
+                                            configurable_float,
+                                            configurable_integer,
+                                            selectable,
+                                            string_attribute,
+                                            )
 from ote_sdk.configuration.configurable_parameters import ConfigurableParameters
-from ote_sdk.configuration.elements import (
-    ParameterGroup,
-    add_parameter_group,
-    boolean_attribute,
-    configurable_boolean,
-    configurable_float,
-    configurable_integer,
-    selectable,
-    string_attribute,
-)
-from ote_sdk.configuration.enums import AutoHPOState, ModelLifecycle
+from ote_sdk.configuration.enums import ModelLifecycle, AutoHPOState
 
 from .parameters_enums import POTQuantizationPreset
-
 
 @attrs
 class OTEClassificationParameters(ConfigurableParameters):

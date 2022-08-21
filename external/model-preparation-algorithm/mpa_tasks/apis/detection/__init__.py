@@ -2,10 +2,10 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import mpa.det
+from .config import DetectionConfig
+from .task import DetectionInferenceTask, DetectionTrainTask, DetectionNNCFTask
 
 # Load relevant extensions to registry
 import mpa_tasks.extensions.datasets.mpa_det_dataset
 
-from .config import DetectionConfig
-from .task import DetectionInferenceTask, DetectionNNCFTask, DetectionTrainTask
+import mpa.det

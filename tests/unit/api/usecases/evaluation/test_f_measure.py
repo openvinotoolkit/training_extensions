@@ -49,6 +49,8 @@ from otx.api.entities.resultset import ResultSetEntity
 from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.shapes.ellipse import Ellipse
 from otx.api.entities.shapes.rectangle import Rectangle
+from tests.unit.api.constants.components import OtxSdkComponent
+from tests.unit.api.constants.requirements import Requirements
 from otx.api.usecases.evaluation.f_measure import (
     FMeasure,
     _AggregatedResults,
@@ -61,8 +63,6 @@ from otx.api.usecases.evaluation.f_measure import (
     get_n_false_negatives,
     intersection_box,
 )
-from tests.unit.api.constants.components import OtxSdkComponent
-from tests.unit.api.constants.requirements import Requirements
 
 
 @pytest.mark.components(OtxSdkComponent.OTX_API)

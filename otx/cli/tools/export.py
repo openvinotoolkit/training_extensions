@@ -24,6 +24,7 @@ from otx.api.entities.model import ModelEntity, ModelOptimizationType
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.usecases.adapters.model_adapter import ModelAdapter
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType
+
 from otx.cli.registry import find_and_parse_model_template
 from otx.cli.utils.importing import get_impl_class
 from otx.cli.utils.io import read_binary, read_label_schema, save_model_data

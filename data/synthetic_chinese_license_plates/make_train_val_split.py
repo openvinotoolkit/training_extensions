@@ -2,9 +2,9 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import argparse
 import os
-from random import seed, shuffle
+from random import shuffle, seed
+import argparse
 
 SEED = 33
 
