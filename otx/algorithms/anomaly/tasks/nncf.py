@@ -21,9 +21,6 @@ import re
 from typing import Dict, Optional
 
 import torch
-from otx.algorithms.anomaly.adapters.anomalib.callbacks import ProgressCallback
-from otx.algorithms.anomaly.adapters.anomalib.data import OTXAnomalyDataModule
-from otx.algorithms.anomaly.adapters.anomalib.logger import get_logger
 from anomalib.models import AnomalyModule, get_model
 from anomalib.utils.callbacks import (
     MetricsConfigurationCallback,
@@ -35,6 +32,11 @@ from anomalib.utils.callbacks.nncf.utils import (
     is_state_nncf,
     wrap_nncf_model,
 )
+from pytorch_lightning import Trainer
+
+from otx.algorithms.anomaly.adapters.anomalib.callbacks import ProgressCallback
+from otx.algorithms.anomaly.adapters.anomalib.data import OTXAnomalyDataModule
+from otx.algorithms.anomaly.adapters.anomalib.logger import get_logger
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.model import (
     ModelEntity,
@@ -49,7 +51,6 @@ from otx.api.usecases.tasks.interfaces.optimization_interface import (
     IOptimizationTask,
     OptimizationType,
 )
-from pytorch_lightning import Trainer
 
 from .inference import InferenceTask
 

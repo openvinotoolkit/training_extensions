@@ -17,25 +17,22 @@
 import os
 
 import pytest
-
 from ote_sdk.test_suite.e2e_test_system import e2e_pytest_component
 
 from ote_cli.registry import Registry
-
 from ote_cli.utils.tests import (
     create_venv,
     get_some_vars,
     ote_demo_deployment_testing,
-    ote_demo_testing,
     ote_demo_openvino_testing,
+    ote_demo_testing,
     ote_deploy_openvino_testing,
     ote_eval_deployment_testing,
     ote_eval_openvino_testing,
     ote_eval_testing,
-    ote_train_testing,
     ote_export_testing,
+    ote_train_testing,
 )
-
 
 args = {
     '--train-ann-file': 'data/car_tree_bug/annotations/instances_default.json',

@@ -14,7 +14,7 @@ from detection_tasks.extension.utils.runner import (
 from ote_sdk.test_suite.e2e_test_system import e2e_pytest_unit
 from ote_sdk.tests.parameters_validation.validation_helper import (
     check_value_error_exception_raised,
-    load_test_dataset
+    load_test_dataset,
 )
 from torch.utils.data.dataloader import DataLoader
 

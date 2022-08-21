@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import numpy as np
-from typing import Dict, Any
+from typing import Any, Dict
 
+import numpy as np
+from mmseg.datasets.builder import PIPELINES
 from ote_sdk.utils.argument_checks import check_input_parameters_type
 
-from mmseg.datasets.builder import PIPELINES
 from ..datasets import get_annotation_mmseg_format
 
 

@@ -16,6 +16,7 @@ import argparse
 import sys
 
 import numpy as np
+from detection_tasks.apis.detection.ote_utils import get_task_class
 from mmcv.utils import get_logger
 from ote_sdk.configuration.helper import create
 from ote_sdk.entities.datasets import DatasetEntity
@@ -32,9 +33,6 @@ from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType
 from ote_sdk.usecases.tasks.interfaces.optimization_interface import OptimizationType
 
-from detection_tasks.apis.detection.ote_utils import get_task_class
-
-
 logger = get_logger(name='sample')
 
 
@@ -46,7 +44,11 @@ def parse_args():
 
 
 def load_test_dataset():
-    from ote_sdk.entities.annotation import Annotation, AnnotationSceneEntity, AnnotationSceneKind
+    from ote_sdk.entities.annotation import (
+        Annotation,
+        AnnotationSceneEntity,
+        AnnotationSceneKind,
+    )
     from ote_sdk.entities.dataset_item import DatasetItemEntity
     from ote_sdk.entities.image import Image
     from ote_sdk.entities.label import LabelEntity

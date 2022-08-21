@@ -13,13 +13,23 @@
 # and limitations under the License.
 
 import io
+import json
 import logging
 import os
-import json
 from collections import defaultdict
 from typing import Optional
 
 import torch
+from mmseg.apis import train_segmentor
+from mmseg.apis.train import build_val_dataloader
+from mmseg.datasets import build_dataloader, build_dataset
+from mmseg.integration.nncf import (
+    check_nncf_is_enabled,
+    is_accuracy_aware_training_set,
+    is_state_nncf,
+    wrap_nncf_model,
+)
+from mmseg.integration.nncf.config import compose_nncf_config
 from ote_sdk.configuration import cfg_helper
 from ote_sdk.configuration.helper.utils import ids_to_strings
 from ote_sdk.entities.datasets import DatasetEntity
@@ -27,35 +37,28 @@ from ote_sdk.entities.model import (
     ModelEntity,
     ModelFormat,
     ModelOptimizationType,
-    OptimizationMethod,
     ModelPrecision,
+    OptimizationMethod,
 )
 from ote_sdk.entities.optimization_parameters import default_progress_callback
 from ote_sdk.entities.subset import Subset
 from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.serialization.label_mapper import label_schema_to_bytes
 from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType
-from ote_sdk.usecases.tasks.interfaces.optimization_interface import IOptimizationTask
-from ote_sdk.usecases.tasks.interfaces.optimization_interface import OptimizationParameters
-from ote_sdk.usecases.tasks.interfaces.optimization_interface import OptimizationType
+from ote_sdk.usecases.tasks.interfaces.optimization_interface import (
+    IOptimizationTask,
+    OptimizationParameters,
+    OptimizationType,
+)
 from ote_sdk.utils.argument_checks import (
     DatasetParamTypeCheck,
     check_input_parameters_type,
 )
-
-from mmseg.apis import train_segmentor
 from segmentation_tasks.apis.segmentation import OTESegmentationInferenceTask
 from segmentation_tasks.apis.segmentation.config_utils import prepare_for_training
 from segmentation_tasks.apis.segmentation.configuration import OTESegmentationConfig
 from segmentation_tasks.apis.segmentation.ote_utils import OptimizationProgressCallback
 from segmentation_tasks.extension.utils.hooks import OTELoggerHook
-from mmseg.apis.train import build_val_dataloader
-from mmseg.datasets import build_dataloader, build_dataset
-from mmseg.integration.nncf import check_nncf_is_enabled
-from mmseg.integration.nncf import is_accuracy_aware_training_set
-from mmseg.integration.nncf import is_state_nncf
-from mmseg.integration.nncf import wrap_nncf_model
-from mmseg.integration.nncf.config import compose_nncf_config
 
 logger = logging.getLogger(__name__)
 

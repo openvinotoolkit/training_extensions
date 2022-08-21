@@ -3,16 +3,12 @@
 #
 
 from attr import attrs
-
-from ote_sdk.configuration.elements import (add_parameter_group,
-                                            # ParameterGroup,
-                                            # configurable_boolean,
-                                            # configurable_float,
-                                            # configurable_integer,
-                                            selectable,
-                                            string_attribute)
-
 from mpa_tasks.apis import BaseConfig, LearningRateSchedule
+from ote_sdk.configuration.elements import (  # ParameterGroup,; configurable_boolean,; configurable_float,; configurable_integer,
+    add_parameter_group,
+    selectable,
+    string_attribute,
+)
 
 
 @attrs

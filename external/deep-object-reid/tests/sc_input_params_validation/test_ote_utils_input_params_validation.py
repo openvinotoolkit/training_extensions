@@ -1,6 +1,7 @@
 import numpy as np
 import pytest
-from ote_sdk.entities.label import LabelEntity, Domain
+from helpers import load_test_dataset
+from ote_sdk.entities.label import Domain, LabelEntity
 from ote_sdk.entities.label_schema import LabelSchemaEntity
 from ote_sdk.test_suite.e2e_test_system import e2e_pytest_unit
 from ote_sdk.tests.parameters_validation.validation_helper import (
@@ -8,24 +9,22 @@ from ote_sdk.tests.parameters_validation.validation_helper import (
 )
 from torchreid_tasks.utils import (
     ClassificationDatasetAdapter,
-    active_score_from_probs,
     OTEClassificationDataset,
+    active_score_from_probs,
+    force_fp32,
     generate_label_schema,
     get_actmap,
+    get_hierarchical_predictions,
     get_multiclass_predictions,
+    get_multihead_class_info,
+    get_multilabel_predictions,
     get_task_class,
-    reload_hyper_parameters,
     preprocess_features_for_actmap,
+    reload_hyper_parameters,
     set_values_as_default,
     sigmoid_numpy,
     softmax_numpy,
-    get_multilabel_predictions,
-    force_fp32,
-    get_multihead_class_info,
-    get_hierarchical_predictions,
 )
-
-from helpers import load_test_dataset
 
 
 class TestClassificationDatasetAdapterInputParamsValidation:

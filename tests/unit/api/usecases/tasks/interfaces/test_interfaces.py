@@ -13,8 +13,6 @@ from otx.api.entities.model import ModelConfiguration, ModelEntity
 from otx.api.entities.optimization_parameters import OptimizationParameters
 from otx.api.entities.resultset import ResultSetEntity
 from otx.api.entities.train_parameters import TrainParameters
-from tests.unit.api.constants.components import OtxSdkComponent
-from tests.unit.api.constants.requirements import Requirements
 from otx.api.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType, IExportTask
 from otx.api.usecases.tasks.interfaces.inference_interface import (
@@ -27,6 +25,8 @@ from otx.api.usecases.tasks.interfaces.optimization_interface import (
 )
 from otx.api.usecases.tasks.interfaces.training_interface import ITrainingTask
 from otx.api.usecases.tasks.interfaces.unload_interface import IUnload
+from tests.unit.api.constants.components import OtxSdkComponent
+from tests.unit.api.constants.requirements import Requirements
 
 
 @pytest.mark.components(OtxSdkComponent.OTX_API)

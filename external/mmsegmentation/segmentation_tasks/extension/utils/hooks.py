@@ -18,13 +18,11 @@ import os
 from collections import defaultdict
 from typing import Any, Dict, Optional
 
-from mmcv.runner.hooks import HOOKS, Hook, LoggerHook
 from mmcv.runner import BaseRunner, EpochBasedRunner
 from mmcv.runner.dist_utils import master_only
-
-from ote_sdk.utils.argument_checks import check_input_parameters_type
+from mmcv.runner.hooks import HOOKS, Hook, LoggerHook
 from ote_sdk.usecases.reporting.time_monitor_callback import TimeMonitorCallback
-
+from ote_sdk.utils.argument_checks import check_input_parameters_type
 
 logger = logging.getLogger(__name__)
 

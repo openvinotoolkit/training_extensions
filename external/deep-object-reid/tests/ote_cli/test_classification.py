@@ -15,33 +15,32 @@
 # and limitations under the License.
 
 import os
-import pytest
 
+import pytest
 from ote_sdk.test_suite.e2e_test_system import e2e_pytest_component
 
 from ote_cli.registry import Registry
 from ote_cli.utils.tests import (
     create_venv,
     get_some_vars,
+    nncf_eval_openvino_testing,
+    nncf_eval_testing,
+    nncf_export_testing,
+    nncf_optimize_testing,
     ote_demo_deployment_testing,
-    ote_demo_testing,
     ote_demo_openvino_testing,
+    ote_demo_testing,
     ote_deploy_openvino_testing,
     ote_eval_deployment_testing,
     ote_eval_openvino_testing,
     ote_eval_testing,
+    ote_export_testing,
     ote_hpo_testing,
     ote_train_testing,
-    ote_export_testing,
-    pot_optimize_testing,
     pot_eval_testing,
-    nncf_optimize_testing,
-    nncf_export_testing,
-    nncf_eval_testing,
-    nncf_eval_openvino_testing,
+    pot_optimize_testing,
     xfail_templates,
 )
-
 
 args = {
     '--train-ann-file': '',

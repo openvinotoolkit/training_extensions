@@ -13,7 +13,6 @@ from ote_sdk.tests.parameters_validation.validation_helper import (
 )
 from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType
 from ote_sdk.usecases.tasks.interfaces.optimization_interface import OptimizationType
-
 from torchreid_tasks.nncf_task import OTEClassificationNNCFTask
 
 

@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+from typing import Any, Dict, Iterable, Union
+
 import cv2
 import numpy as np
-from typing import Any, Dict, Iterable, Union
 from ote_sdk.utils.argument_checks import check_input_parameters_type
-
 
 try:
     from openvino.model_zoo.model_api.models.classification import Classification

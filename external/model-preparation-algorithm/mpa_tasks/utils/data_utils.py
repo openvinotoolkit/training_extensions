@@ -2,11 +2,10 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from typing import Union, Iterable
+from typing import Iterable, Union
 
 import cv2
 import numpy as np
-
 from mpa.utils.logger import get_logger
 
 logger = get_logger()

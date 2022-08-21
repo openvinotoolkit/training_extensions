@@ -32,10 +32,10 @@ from otx.api.entities.model import ModelConfiguration, ModelEntity
 from otx.api.entities.resultset import ResultSetEntity
 from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.shapes.rectangle import Rectangle
-from tests.unit.api.constants.components import OtxSdkComponent
-from tests.unit.api.constants.requirements import Requirements
 from otx.api.usecases.evaluation.averaging import MetricAverageMethod
 from otx.api.usecases.evaluation.dice import DiceAverage
+from tests.unit.api.constants.components import OtxSdkComponent
+from tests.unit.api.constants.requirements import Requirements
 
 
 @pytest.mark.components(OtxSdkComponent.OTX_API)

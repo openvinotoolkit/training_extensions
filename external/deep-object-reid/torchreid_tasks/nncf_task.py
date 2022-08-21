@@ -15,36 +15,52 @@
 import io
 import logging
 import math
-from typing import Dict
-from typing import Optional
-
 import os
-import torch
+from typing import Dict, Optional
 
+import torch
 import torchreid
 from ote_sdk.entities.datasets import DatasetEntity
-from ote_sdk.entities.model import (ModelEntity, ModelFormat, ModelOptimizationType, ModelPrecision,
-                                    OptimizationMethod)
+from ote_sdk.entities.model import (
+    ModelEntity,
+    ModelFormat,
+    ModelOptimizationType,
+    ModelPrecision,
+    OptimizationMethod,
+)
 from ote_sdk.entities.optimization_parameters import OptimizationParameters
 from ote_sdk.entities.subset import Subset
 from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.entities.train_parameters import default_progress_callback
 from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType
-from ote_sdk.usecases.tasks.interfaces.optimization_interface import IOptimizationTask, OptimizationType
+from ote_sdk.usecases.tasks.interfaces.optimization_interface import (
+    IOptimizationTask,
+    OptimizationType,
+)
 from ote_sdk.utils.argument_checks import (
     DatasetParamTypeCheck,
     check_input_parameters_type,
 )
-from scripts.default_config import imagedata_kwargs, lr_scheduler_kwargs, optimizer_kwargs
+from scripts.default_config import (
+    imagedata_kwargs,
+    lr_scheduler_kwargs,
+    optimizer_kwargs,
+)
 from torchreid.apis.training import run_training
-from torchreid.integration.nncf.compression import check_nncf_is_enabled, is_nncf_state, wrap_nncf_model
-from torchreid.integration.nncf.compression_script_utils import (calculate_lr_for_nncf_training,
-                                                                 patch_config)
+from torchreid.integration.nncf.compression import (
+    check_nncf_is_enabled,
+    is_nncf_state,
+    wrap_nncf_model,
+)
+from torchreid.integration.nncf.compression_script_utils import (
+    calculate_lr_for_nncf_training,
+    patch_config,
+)
+from torchreid.ops import DataParallel
+from torchreid.utils import set_model_attr, set_random_seed
 from torchreid_tasks.inference_task import OTEClassificationInferenceTask
 from torchreid_tasks.monitors import DefaultMetricsMonitor
-from torchreid_tasks.utils import OTEClassificationDataset, OptimizationProgressCallback
-from torchreid.ops import DataParallel
-from torchreid.utils import set_random_seed, set_model_attr
+from torchreid_tasks.utils import OptimizationProgressCallback, OTEClassificationDataset
 
 logger = logging.getLogger(__name__)
 

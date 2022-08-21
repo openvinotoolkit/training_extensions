@@ -14,7 +14,6 @@
 
 
 import pytest
-
 from ote_sdk.test_suite.pytest_insertions import *
 from ote_sdk.test_suite.training_tests_common import REALLIFE_USECASE_CONSTANT
 
@@ -36,8 +35,8 @@ def ote_test_scenario_fx(current_test_parameters_fx):
 
 @pytest.fixture(scope='session')
 def ote_templates_root_dir_fx():
-    import os.path as osp
     import logging
+    import os.path as osp
     logger = logging.getLogger(__name__)
     root = osp.dirname(osp.dirname(osp.realpath(__file__)))
     root = f'{root}/configs/'
@@ -46,8 +45,8 @@ def ote_templates_root_dir_fx():
 
 @pytest.fixture(scope='session')
 def ote_reference_root_dir_fx():
-    import os.path as osp
     import logging
+    import os.path as osp
     logger = logging.getLogger(__name__)
     root = osp.dirname(osp.dirname(osp.realpath(__file__)))
     root = f'{root}/tests/reference/'

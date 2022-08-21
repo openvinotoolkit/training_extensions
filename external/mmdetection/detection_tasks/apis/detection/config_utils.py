@@ -21,20 +21,22 @@ from collections import defaultdict
 from typing import List, Optional, Union
 
 import torch
+from detection_tasks.extension.datasets.data_utils import (
+    format_list_to_str,
+    get_anchor_boxes,
+    get_sizes_from_dataset_entity,
+)
 from mmcv import Config, ConfigDict
+from mmdet.models.detectors import BaseDetector
+from mmdet.utils.logger import get_root_logger
 from ote_sdk.entities.datasets import DatasetEntity
-from ote_sdk.entities.label import LabelEntity, Domain
+from ote_sdk.entities.label import Domain, LabelEntity
 from ote_sdk.usecases.reporting.time_monitor_callback import TimeMonitorCallback
 from ote_sdk.utils.argument_checks import (
     DatasetParamTypeCheck,
     DirectoryPathCheck,
-    check_input_parameters_type
+    check_input_parameters_type,
 )
-
-from detection_tasks.extension.datasets.data_utils import get_anchor_boxes, \
-    get_sizes_from_dataset_entity, format_list_to_str
-from mmdet.models.detectors import BaseDetector
-from mmdet.utils.logger import get_root_logger
 
 from .configuration import OTEDetectionConfig
 

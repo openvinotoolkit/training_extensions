@@ -34,7 +34,6 @@ from ote_sdk.utils.argument_checks import (
 
 from .configuration import OTESegmentationConfig
 
-
 logger = logging.getLogger(__name__)
 
 

@@ -8,6 +8,7 @@ import os
 import shutil
 import tempfile
 from typing import Union
+
 import numpy as np
 import torch
 from mmcv.utils.config import Config, ConfigDict
@@ -20,7 +21,6 @@ from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.model import ModelEntity, ModelPrecision
 from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.serialization.label_mapper import LabelSchemaMapper
-
 
 logger = get_logger()
 DEFAULT_META_KEYS = (

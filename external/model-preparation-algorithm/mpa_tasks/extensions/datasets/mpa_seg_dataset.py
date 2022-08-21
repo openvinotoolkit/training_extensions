@@ -3,9 +3,9 @@
 #
 
 from mmseg.datasets.builder import DATASETS
-from segmentation_tasks.extension.datasets import OTEDataset
 from mpa.utils.logger import get_logger
 from mpa_tasks.utils.data_utils import get_old_new_img_indices
+from segmentation_tasks.extension.datasets import OTEDataset
 
 logger = get_logger()
 

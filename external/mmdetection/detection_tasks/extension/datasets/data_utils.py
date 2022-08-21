@@ -6,27 +6,31 @@ import os.path as osp
 from typing import Any, Dict, List, Optional, Sequence
 
 import numpy as np
-from ote_sdk.entities.annotation import Annotation, AnnotationSceneEntity, AnnotationSceneKind
+from mmdet.core import BitmapMasks, PolygonMasks
+from ote_sdk.entities.annotation import (
+    Annotation,
+    AnnotationSceneEntity,
+    AnnotationSceneKind,
+)
 from ote_sdk.entities.dataset_item import DatasetItemEntity
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.id import ID
 from ote_sdk.entities.image import Image
 from ote_sdk.entities.label import Domain, LabelEntity
 from ote_sdk.entities.scored_label import ScoredLabel
-from ote_sdk.entities.shapes.polygon import Polygon, Point
+from ote_sdk.entities.shapes.polygon import Point, Polygon
 from ote_sdk.entities.shapes.rectangle import Rectangle
 from ote_sdk.entities.subset import Subset
 from ote_sdk.utils.argument_checks import (
     DatasetParamTypeCheck,
     DirectoryPathCheck,
-    OptionalDirectoryPathCheck,
     JsonFilePathCheck,
+    OptionalDirectoryPathCheck,
     check_input_parameters_type,
 )
 from ote_sdk.utils.shape_factory import ShapeFactory
 from pycocotools.coco import COCO
 
-from mmdet.core import BitmapMasks, PolygonMasks
 
 @check_input_parameters_type({"path": JsonFilePathCheck})
 def get_classes_from_annotation(path):

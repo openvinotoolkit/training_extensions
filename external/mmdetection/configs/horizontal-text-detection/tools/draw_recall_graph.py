@@ -18,13 +18,14 @@
     visualize the detections straight away."""
 
 import argparse
-from os.path import exists
 import subprocess  # nosec
+from os.path import exists
 
 import mmcv
-
-from mmdet.datasets import build_dataset # pylint: disable=import-error
-from mmdet.core.evaluation.text_evaluation import text_eval # pylint: disable=import-error
+from mmdet.core.evaluation.text_evaluation import (
+    text_eval,  # pylint: disable=import-error
+)
+from mmdet.datasets import build_dataset  # pylint: disable=import-error
 
 
 def parse_args():

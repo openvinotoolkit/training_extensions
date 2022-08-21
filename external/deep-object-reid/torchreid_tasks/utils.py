@@ -14,8 +14,6 @@
 
 # pylint: disable=too-many-nested-blocks
 
-from contextlib import contextmanager
-from enum import Enum, auto
 import importlib
 import json
 import math
@@ -23,22 +21,25 @@ import os
 import shutil
 import tempfile
 import time
-from os import path as osp
+from contextlib import contextmanager
+from enum import Enum, auto
 from operator import itemgetter
+from os import path as osp
 from typing import Iterable, List, Union
 
 import cv2 as cv
 import numpy as np
-
-from ote_sdk.entities.annotation import (Annotation, AnnotationSceneEntity,
-                                         AnnotationSceneKind)
+from ote_sdk.entities.annotation import (
+    Annotation,
+    AnnotationSceneEntity,
+    AnnotationSceneKind,
+)
 from ote_sdk.entities.dataset_item import DatasetItemEntity
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.id import ID
 from ote_sdk.entities.image import Image
 from ote_sdk.entities.label import Domain, LabelEntity
-from ote_sdk.entities.label_schema import (LabelGroup, LabelGroupType,
-                                           LabelSchemaEntity)
+from ote_sdk.entities.label_schema import LabelGroup, LabelGroupType, LabelSchemaEntity
 from ote_sdk.entities.model_template import ModelTemplate
 from ote_sdk.entities.scored_label import ScoredLabel
 from ote_sdk.entities.shapes.rectangle import Rectangle
@@ -51,8 +52,7 @@ from ote_sdk.utils.argument_checks import (
     check_input_parameters_type,
 )
 from torch.nn.modules import Module
-
-from torchreid.utils import set_model_attr, get_model_attr
+from torchreid.utils import get_model_attr, set_model_attr
 
 
 class ClassificationType(Enum):
@@ -583,10 +583,13 @@ def get_hierarchical_predictions(logits: np.ndarray, labels: List[LabelEntity],
 # Temp copy from detection_tasks
 # TODO: refactoring to somewhere
 from typing import Any, Dict, Optional
-from mmcv.runner.hooks import HOOKS, Hook, LoggerHook
+
 from mmcv.runner import BaseRunner, EpochBasedRunner
 from mmcv.runner.dist_utils import master_only
+from mmcv.runner.hooks import HOOKS, Hook, LoggerHook
 from ote_sdk.utils.argument_checks import check_input_parameters_type
+
+
 @HOOKS.register_module()
 class OTELoggerHook(LoggerHook):
 

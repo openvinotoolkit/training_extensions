@@ -20,28 +20,30 @@ from typing import Optional
 
 import numpy as np
 import pytest
-from ote_sdk.test_suite.e2e_test_system import e2e_pytest_api
 from ote_sdk.configuration.helper import create
-from ote_sdk.entities.annotation import Annotation, AnnotationSceneEntity, AnnotationSceneKind
+from ote_sdk.entities.annotation import (
+    Annotation,
+    AnnotationSceneEntity,
+    AnnotationSceneKind,
+)
+from ote_sdk.entities.color import Color
 from ote_sdk.entities.dataset_item import DatasetItemEntity
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.image import Image
 from ote_sdk.entities.inference_parameters import InferenceParameters
-from ote_sdk.entities.color import Color
 from ote_sdk.entities.label import LabelEntity
 from ote_sdk.entities.label_schema import LabelGroup, LabelGroupType, LabelSchemaEntity
 from ote_sdk.entities.model import ModelEntity
 from ote_sdk.entities.model_template import parse_model_template
 from ote_sdk.entities.shapes.ellipse import Ellipse
-from ote_sdk.entities.shapes.polygon import Polygon, Point
+from ote_sdk.entities.shapes.polygon import Point, Polygon
 from ote_sdk.entities.shapes.rectangle import Rectangle
 from ote_sdk.entities.subset import Subset
 from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.entities.train_parameters import TrainParameters
+from ote_sdk.test_suite.e2e_test_system import e2e_pytest_api
 from ote_sdk.tests.test_helpers import generate_random_annotated_image
-
 from segmentation_tasks.apis.segmentation import OTESegmentationTrainingTask
-
 
 DEFAULT_TEMPLATE_DIR = osp.join('configs', 'custom-sematic-segmentation', 'ocr-lite-hrnet-18-mod2')
 

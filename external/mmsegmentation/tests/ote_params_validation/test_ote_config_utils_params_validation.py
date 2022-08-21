@@ -6,7 +6,6 @@ from collections import defaultdict
 
 import pytest
 from mmcv import Config
-
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.label import Domain, LabelEntity
 from ote_sdk.test_suite.e2e_test_system import e2e_pytest_unit
@@ -19,19 +18,19 @@ from segmentation_tasks.apis.segmentation.config_utils import (
     config_to_string,
     is_epoch_based_runner,
     patch_adaptive_repeat_dataset,
+    patch_color_conversion,
     patch_config,
     patch_datasets,
     prepare_for_testing,
     prepare_for_training,
     prepare_work_dir,
     remove_from_config,
+    rescale_num_iterations,
     save_config_to_file,
     set_data_classes,
-    set_hyperparams,
-    rescale_num_iterations,
     set_distributed_mode,
+    set_hyperparams,
     set_num_classes,
-    patch_color_conversion,
 )
 from segmentation_tasks.apis.segmentation.configuration import OTESegmentationConfig
 

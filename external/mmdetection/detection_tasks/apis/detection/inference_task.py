@@ -25,43 +25,55 @@ from typing import List, Optional, Tuple
 import cv2
 import numpy as np
 import torch
+from detection_tasks.apis.detection.config_utils import (
+    patch_config,
+    prepare_for_testing,
+    set_hyperparams,
+)
+from detection_tasks.apis.detection.configuration import OTEDetectionConfig
+from detection_tasks.apis.detection.ote_utils import InferenceProgressCallback
 from mmcv.parallel import MMDataParallel
 from mmcv.runner import load_checkpoint, load_state_dict
 from mmcv.utils import Config
+from mmdet.apis import export_model
+from mmdet.datasets import build_dataloader, build_dataset
+from mmdet.models import build_detector
+from mmdet.parallel import MMDataCPU
+from mmdet.utils.collect_env import collect_env
+from mmdet.utils.deployment import get_feature_vector, get_saliency_map
+from mmdet.utils.logger import get_root_logger
 from ote_sdk.entities.annotation import Annotation
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.id import ID
-from ote_sdk.entities.inference_parameters import InferenceParameters, default_progress_callback
-from ote_sdk.entities.model import ModelEntity, ModelFormat, ModelOptimizationType, ModelPrecision, OptimizationMethod
+from ote_sdk.entities.inference_parameters import (
+    InferenceParameters,
+    default_progress_callback,
+)
+from ote_sdk.entities.model import (
+    ModelEntity,
+    ModelFormat,
+    ModelOptimizationType,
+    ModelPrecision,
+    OptimizationMethod,
+)
 from ote_sdk.entities.model_template import TaskType, task_type_to_label_domain
-from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.result_media import ResultMediaEntity
+from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.scored_label import ScoredLabel
 from ote_sdk.entities.shapes.polygon import Point, Polygon
 from ote_sdk.entities.shapes.rectangle import Rectangle
 from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.entities.tensor import TensorEntity
+from ote_sdk.serialization.label_mapper import label_schema_to_bytes
 from ote_sdk.usecases.evaluation.metrics_helper import MetricsHelper
 from ote_sdk.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
 from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType, IExportTask
 from ote_sdk.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from ote_sdk.usecases.tasks.interfaces.unload_interface import IUnload
-from ote_sdk.serialization.label_mapper import label_schema_to_bytes
 from ote_sdk.utils.argument_checks import (
     DatasetParamTypeCheck,
     check_input_parameters_type,
 )
-
-from mmdet.apis import export_model
-from detection_tasks.apis.detection.config_utils import patch_config, prepare_for_testing, set_hyperparams
-from detection_tasks.apis.detection.configuration import OTEDetectionConfig
-from detection_tasks.apis.detection.ote_utils import InferenceProgressCallback
-from mmdet.datasets import build_dataloader, build_dataset
-from mmdet.models import build_detector
-from mmdet.parallel import MMDataCPU
-from mmdet.utils.collect_env import collect_env
-from mmdet.utils.deployment import get_saliency_map, get_feature_vector
-from mmdet.utils.logger import get_root_logger
 
 logger = get_root_logger()
 

@@ -13,14 +13,12 @@
 # and limitations under the License.
 
 import copy
+from typing import Any, Dict, Optional
 
-from typing import Dict, Any, Optional
 import numpy as np
-
+from mmdet.datasets.builder import PIPELINES
 from ote_sdk.entities.label import Domain
 from ote_sdk.utils.argument_checks import check_input_parameters_type
-
-from mmdet.datasets.builder import PIPELINES
 
 from ..datasets import get_annotation_mmdet_format
 

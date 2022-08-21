@@ -16,7 +16,6 @@ import os.path as osp
 
 from ote_sdk.configuration.helper import convert, create
 from ote_sdk.test_suite.e2e_test_system import e2e_pytest_api
-
 from segmentation_tasks.apis.segmentation.configuration import OTESegmentationConfig
 
 

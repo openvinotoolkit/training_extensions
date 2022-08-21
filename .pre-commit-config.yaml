@@ -7,93 +7,96 @@ repos:
     rev: "5.10.1"
     hooks:
       - id: isort
-        alias: isort_ote_sdk
-        name: "isort (ote_sdk)"
-        files: '^ote_sdk/.*\.py'
-      - id: isort
-        alias: isort_rest
-        name: "isort (ote_cli|external)"
-        files: '^(ote_cli|external/anomaly)/.*\.py'
-        exclude: "tests/"
+        alias: isort - otx
+        name: "isort - otx"
+  #     - id: isort
+  #       alias: isort_ote_sdk
+  #       name: "isort (ote_sdk)"
+  #       files: '^ote_sdk/.*\.py'
+  #     - id: isort
+  #       alias: isort_rest
+  #       name: "isort (ote_cli|external)"
+  #       files: '^(ote_cli|external/anomaly)/.*\.py'
+  #       exclude: "tests/"
 
-  - repo: https://github.com/psf/black
-    rev: 22.6.0
-    hooks:
-      - id: black
-        name: "black (ote_sdk|ote_cli)"
-        args: [--line-length, "88"]
-        files: '^(ote_sdk|ote_cli)/.*\.py'
-      - id: black
-        name: "black (rest)"
-        args: [--line-length, "120"]
-        files: '^external/anomaly/.*\.py'
+  # - repo: https://github.com/psf/black
+  #   rev: 22.6.0
+  #   hooks:
+  #     - id: black
+  #       name: "black (ote_sdk|ote_cli)"
+  #       args: [--line-length, "88"]
+  #       files: '^(ote_sdk|ote_cli)/.*\.py'
+  #     - id: black
+  #       name: "black (rest)"
+  #       args: [--line-length, "120"]
+  #       files: '^external/anomaly/.*\.py'
 
-  - repo: https://github.com/PyCQA/flake8
-    rev: "5.0.3"
-    hooks:
-      - id: flake8
-        name: "flake8"
-        files: '^(ote_sdk|ote_cli|external/anomaly)/.*\.py'
-        args: ["--config", ".flake8", "--max-complexity", "20"]
-        exclude: ".*/protobuf"
+  # - repo: https://github.com/PyCQA/flake8
+  #   rev: "5.0.3"
+  #   hooks:
+  #     - id: flake8
+  #       name: "flake8"
+  #       files: '^(ote_sdk|ote_cli|external/anomaly)/.*\.py'
+  #       args: ["--config", ".flake8", "--max-complexity", "20"]
+  #       exclude: ".*/protobuf"
 
-  # yaml formatting
-  - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: v2.7.1
-    hooks:
-      - id: prettier
-        exclude: "external/deep-object-reid"
+  # # yaml formatting
+  # - repo: https://github.com/pre-commit/mirrors-prettier
+  #   rev: v2.7.1
+  #   hooks:
+  #     - id: prettier
+  #       exclude: "external/deep-object-reid"
 
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: "v0.971"
-    hooks:
-      - id: mypy
-        alias: mypy_ote_sdk
-        name: "mypy (ote_sdk)"
-        files: '^ote_sdk/.*\.py'
-        additional_dependencies:
-          [
-            numpy==1.19.5,
-            types-PyYAML,
-            attrs==21.2.*,
-            types-requests,
-            types-Deprecated,
-            types-docutils,
-            types_futures,
-            types-python-dateutil,
-          ]
-      - id: mypy
-        alias: mypy_ote_cli
-        name: "mypy (ote_cli)"
-        files: '^ote_cli/.*\.py'
-        additional_dependencies: [types-PyYAML]
-      - id: mypy
-        alias: mypy_external
-        name: "mypy (external)"
-        files: '^external/anomaly/.*\.py'
-        additional_dependencies: [attrs==21.2.*]
-        exclude: "^external/anomaly/tests"
+  # - repo: https://github.com/pre-commit/mirrors-mypy
+  #   rev: "v0.971"
+  #   hooks:
+  #     - id: mypy
+  #       alias: mypy_ote_sdk
+  #       name: "mypy (ote_sdk)"
+  #       files: '^ote_sdk/.*\.py'
+  #       additional_dependencies:
+  #         [
+  #           numpy==1.19.5,
+  #           types-PyYAML,
+  #           attrs==21.2.*,
+  #           types-requests,
+  #           types-Deprecated,
+  #           types-docutils,
+  #           types_futures,
+  #           types-python-dateutil,
+  #         ]
+  #     - id: mypy
+  #       alias: mypy_ote_cli
+  #       name: "mypy (ote_cli)"
+  #       files: '^ote_cli/.*\.py'
+  #       additional_dependencies: [types-PyYAML]
+  #     - id: mypy
+  #       alias: mypy_external
+  #       name: "mypy (external)"
+  #       files: '^external/anomaly/.*\.py'
+  #       additional_dependencies: [attrs==21.2.*]
+  #       exclude: "^external/anomaly/tests"
 
-  - repo: https://github.com/PyCQA/pylint
-    rev: "v2.14.5"
-    hooks:
-      - id: pylint
-        name: "pylint"
-        files: '^(ote_sdk|ote_cli|external/anomaly)/.*\.py'
-        entry: pylint
-        language: system
-        types: [python]
-        args: ["--score=no"]
-        exclude: "tests"
+  # - repo: https://github.com/PyCQA/pylint
+  #   rev: "v2.14.5"
+  #   hooks:
+  #     - id: pylint
+  #       name: "pylint"
+  #       files: '^(ote_sdk|ote_cli|external/anomaly)/.*\.py'
+  #       entry: pylint
+  #       language: system
+  #       types: [python]
+  #       args: ["--score=no"]
+  #       exclude: "tests"
 
-  - repo: https://github.com/PyCQA/pydocstyle
-    rev: 6.1.1
-    hooks:
-      - id: pydocstyle
-        additional_dependencies: [toml]
-        name: pydocstyle
-        entry: pydocstyle
-        language: python
-        types: [python]
-        files: '^external/anomaly/.*\.py'
-        exclude: "external/anomaly/tests"
+  # - repo: https://github.com/PyCQA/pydocstyle
+  #   rev: 6.1.1
+  #   hooks:
+  #     - id: pydocstyle
+  #       additional_dependencies: [toml]
+  #       name: pydocstyle
+  #       entry: pydocstyle
+  #       language: python
+  #       types: [python]
+  #       files: '^external/anomaly/.*\.py'
+  #       exclude: "external/anomaly/tests"

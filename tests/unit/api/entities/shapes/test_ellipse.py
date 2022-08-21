@@ -17,9 +17,9 @@ from shapely.geometry.polygon import Polygon
 
 from otx.api.entities.shapes.ellipse import Ellipse
 from otx.api.entities.shapes.rectangle import Rectangle
+from otx.api.utils.time_utils import now
 from tests.unit.api.constants.components import OtxSdkComponent
 from tests.unit.api.constants.requirements import Requirements
-from otx.api.utils.time_utils import now
 
 
 @pytest.mark.components(OtxSdkComponent.OTX_API)

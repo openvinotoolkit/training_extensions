@@ -14,6 +14,7 @@
 
 from ote_sdk.configuration import ConfigurableEnum
 
+
 class POTQuantizationPreset(ConfigurableEnum):
     """
     This Enum represents the quantization preset for post training optimization

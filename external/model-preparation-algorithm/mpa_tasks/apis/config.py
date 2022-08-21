@@ -4,13 +4,14 @@
 
 from sys import maxsize
 
-from ote_sdk.configuration.elements import (ParameterGroup,
-                                            selectable,
-                                            configurable_boolean,
-                                            configurable_float,
-                                            configurable_integer)
-from ote_sdk.configuration import ConfigurableParameters
-from ote_sdk.configuration import ConfigurableEnum
+from ote_sdk.configuration import ConfigurableEnum, ConfigurableParameters
+from ote_sdk.configuration.elements import (
+    ParameterGroup,
+    configurable_boolean,
+    configurable_float,
+    configurable_integer,
+    selectable,
+)
 from ote_sdk.configuration.model_lifecycle import ModelLifecycle
 
 

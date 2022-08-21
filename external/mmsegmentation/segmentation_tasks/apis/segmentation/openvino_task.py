@@ -12,60 +12,65 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import attr
-import logging
 import io
 import json
+import logging
 import os
 import tempfile
-from addict import Dict as ADDict
-from typing import Any, Dict, Tuple, Optional, Union
+from typing import Any, Dict, Optional, Tuple, Union
 from zipfile import ZipFile
 
+import attr
 import numpy as np
-
-from ote_sdk.entities.datasets import DatasetEntity
+from addict import Dict as ADDict
+from compression.api import DataLoader
+from compression.engines.ie_engine import IEEngine
+from compression.graph import load_model, save_model
+from compression.graph.model_utils import compress_model_weights, get_nodes_by_type
+from compression.pipeline.initializer import create_pipeline
+from openvino.model_zoo.model_api.adapters import OpenvinoAdapter, create_core
+from openvino.model_zoo.model_api.models import Model
 from ote_sdk.entities.annotation import AnnotationSceneEntity
-from ote_sdk.entities.inference_parameters import InferenceParameters, default_progress_callback
+from ote_sdk.entities.datasets import DatasetEntity
+from ote_sdk.entities.inference_parameters import (
+    InferenceParameters,
+    default_progress_callback,
+)
 from ote_sdk.entities.label_schema import LabelSchemaEntity
 from ote_sdk.entities.model import (
     ModelEntity,
     ModelFormat,
     ModelOptimizationType,
     ModelPrecision,
-    OptimizationMethod
+    OptimizationMethod,
 )
 from ote_sdk.entities.optimization_parameters import OptimizationParameters
-from ote_sdk.entities.tensor import TensorEntity
-from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.result_media import ResultMediaEntity
+from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.task_environment import TaskEnvironment
+from ote_sdk.entities.tensor import TensorEntity
+from ote_sdk.serialization.label_mapper import LabelSchemaMapper, label_schema_to_bytes
 from ote_sdk.usecases.evaluation.metrics_helper import MetricsHelper
-from ote_sdk.usecases.exportable_code.inference import BaseInferencer
-from ote_sdk.usecases.exportable_code.prediction_to_annotation_converter import SegmentationToAnnotationConverter
 from ote_sdk.usecases.exportable_code import demo
+from ote_sdk.usecases.exportable_code.inference import BaseInferencer
+from ote_sdk.usecases.exportable_code.prediction_to_annotation_converter import (
+    SegmentationToAnnotationConverter,
+)
 from ote_sdk.usecases.tasks.interfaces.deployment_interface import IDeploymentTask
 from ote_sdk.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
 from ote_sdk.usecases.tasks.interfaces.inference_interface import IInferenceTask
-from ote_sdk.usecases.tasks.interfaces.optimization_interface import IOptimizationTask, OptimizationType
+from ote_sdk.usecases.tasks.interfaces.optimization_interface import (
+    IOptimizationTask,
+    OptimizationType,
+)
 from ote_sdk.utils.argument_checks import (
     DatasetParamTypeCheck,
     check_input_parameters_type,
 )
 
-from compression.api import DataLoader
-from compression.engines.ie_engine import IEEngine
-from compression.graph import load_model, save_model
-from compression.graph.model_utils import compress_model_weights, get_nodes_by_type
-from compression.pipeline.initializer import create_pipeline
-from ote_sdk.serialization.label_mapper import LabelSchemaMapper, label_schema_to_bytes
-
-from .configuration import OTESegmentationConfig
-from openvino.model_zoo.model_api.models import Model
-from openvino.model_zoo.model_api.adapters import create_core, OpenvinoAdapter
-from .ote_utils import get_activation_map
 from . import model_wrappers
-
+from .configuration import OTESegmentationConfig
+from .ote_utils import get_activation_map
 
 logger = logging.getLogger(__name__)
 

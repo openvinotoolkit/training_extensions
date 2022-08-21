@@ -12,10 +12,12 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .mmdataset import (load_dataset_items,
-                        create_annotation_from_hard_seg_map,
-                        OTEDataset,
-                        get_annotation_mmseg_format)
+from .mmdataset import (
+    OTEDataset,
+    create_annotation_from_hard_seg_map,
+    get_annotation_mmseg_format,
+    load_dataset_items,
+)
 
 __all__ = [
     'load_dataset_items',

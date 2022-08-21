@@ -12,14 +12,15 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import pytest
 import os
 from collections import defaultdict
 from subprocess import run  # nosec
 
+import pytest
+from ote_sdk.test_suite.e2e_test_system import e2e_pytest_component
+
 from ote_cli.registry import Registry
 
-from ote_sdk.test_suite.e2e_test_system import e2e_pytest_component
 
 class TestDocs:
     @e2e_pytest_component

@@ -13,9 +13,9 @@
 # and limitations under the License.
 
 import functools
-import pytest
 import traceback
 
+import pytest
 
 
 def _generate_e2e_pytest_decorators():
