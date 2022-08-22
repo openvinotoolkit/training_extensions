@@ -127,5 +127,5 @@ def convert(
     elif target == DictConfig:
         result = OmegaConf.create(config_dict)
     else:
-        raise ValueError("Unsupported conversion target! Supported target types are " "[str, dict, DictConfig]")
+        raise ValueError("Unsupported conversion target! Supported target types are [str, dict, DictConfig]")
     return result

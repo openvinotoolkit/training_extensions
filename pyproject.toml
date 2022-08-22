@@ -47,6 +47,7 @@ disable = [
 [tool.pylint.typecheck]
 generated-members = ["numpy.*", "torch.*"]
 ignored-modules = [
+    "otx",
     "ote_sdk",
     "mmseg",
     "segmentation_tasks",
@@ -91,7 +92,7 @@ good-names = [
 ]
 
 [tool.pylint.imports]
-known-third-party = ["enchant", "ote_sdk"]
+known-third-party = ["enchant", "ote_sdk", "otx"]
 
 [tool.pylint.design]
 max-args = 7

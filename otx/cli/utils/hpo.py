@@ -514,7 +514,7 @@ class HpoManager:
             # If trainset size is lower than min batch size range,
             # fix batch size to trainset size
             if batch_range[0] > batch_range[1]:
-                print("Train set size is lower than batch size range." "Batch size is fixed to train set size.")
+                print("Train set size is lower than batch size range. Batch size is fixed to train set size.")
                 del hpopt_cfg["hp_space"][batch_size_name]
                 self.fixed_hp[batch_size_name] = train_dataset_size
 
@@ -593,9 +593,7 @@ class HpoManager:
                 if hpo_previous_status == hpopt.Status.PARTIALRESULT:
                     user_input = input("Do you want to resume HPO? [\033[1mY\033[0m/n]: ")
                 else:
-                    user_input = input(
-                        "Do you want to reuse previously found " "hyper-parameters? [\033[1mY\033[0m/n]: "
-                    )
+                    user_input = input("Do you want to reuse previously found hyper-parameters? [\033[1mY\033[0m/n]: ")
 
                 input_len = len(user_input)
 
@@ -615,7 +613,7 @@ class HpoManager:
 
                 retry_count += 1
                 if retry_count >= 5:
-                    print("Your inputs are invalid. " "The whole program is terminating...")
+                    print("Your inputs are invalid. The whole program is terminating...")
                     sys.exit()
 
                 print("You should type 'y' or 'n'. Nothing means 'y'.")
