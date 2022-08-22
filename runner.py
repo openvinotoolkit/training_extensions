@@ -8,7 +8,7 @@ from omegaconf import OmegaConf
 from comet_ml import Experiment
 
 
-def ote_train(kwargs, env_root):
+def ote_train(kwargs, env_root, cuda):
     command_line = [
         "ote",
         "train",
@@ -28,12 +28,14 @@ def ote_train(kwargs, env_root):
         for param in kwargs["params"]:
             command_line.extend(param.split())
     print(command_line)
-    assert run(command_line, env=collect_env_vars(env_root)).returncode == 0
+    envs = collect_env_vars(env_root)
+    envs.update(dict(CUDA_VISIBLE_DEVICES=cuda))
+    assert run(command_line, env=envs).returncode == 0
     assert os.path.exists(f'{kwargs["save_model_dir"]}/weights.pth')
     assert os.path.exists(f'{kwargs["save_model_dir"]}/label_schema.json')
 
 
-def ote_eval(model_template_path, test_ann_file, test_data_roots, save_performance, weight_path, env_root):
+def ote_eval(model_template_path, test_ann_file, test_data_roots, save_performance, weight_path, env_root, cuda):
     command_line = [
         "ote",
         "eval",
@@ -44,7 +46,9 @@ def ote_eval(model_template_path, test_ann_file, test_data_roots, save_performan
         "--save-performance", save_performance
     ]
     print(command_line)
-    assert run(command_line, env=collect_env_vars(env_root)).returncode == 0
+    envs = collect_env_vars(env_root)
+    envs.update(dict(CUDA_VISIBLE_DEVICES=cuda))
+    assert run(command_line, env=envs).returncode == 0
     assert os.path.exists(save_performance)
 
 
@@ -68,6 +72,7 @@ def collect_stat(json_path):
         metric_dict = json.load(f)
     return metric_dict
 
+
 def main(args):
     if args.key:
         experiment = Experiment(api_key=args.key, project_name=f"Vitens Tiling")
@@ -88,12 +93,11 @@ def main(args):
                 if args.collect:
                     if os.path.exists(os.path.join(kwargs['save_model_dir'])):
                         test_metric = collect_stat(os.path.join(kwargs['save_model_dir'], 'test_performance.json'))
-                        test_f1_metric = collect_stat(
-                            os.path.join(kwargs['save_model_dir'], 'test_performance.json.f1.json'))
+                        # test_f1_metric = collect_stat(os.path.join(kwargs['save_model_dir'], 'test_performance.json.f1.json'))
 
                         if num_sample not in metrics[dataset_name]:
                             metrics[dataset_name][num_sample] = []
-                        metrics[dataset_name][num_sample].append(test_metric['mae%'])
+                        metrics[dataset_name][num_sample].append(test_metric['mae'])
                         # metrics[dataset_name][num_sample].append(round(test_f1_metric['f-measure'], 3))
                 else:
                     if not args.skip_train:
@@ -101,7 +105,7 @@ def main(args):
                         if os.path.exists(train_dict['save_model_dir']):
                             print(f"Skip {dataset_name}-Seed:{seed}-N:{num_sample}")
                             continue
-                        ote_train(kwargs, config.env_root)
+                        ote_train(kwargs, config.env_root, cuda=args.cuda)
                     # eval validation
                     if os.path.exists(os.path.join(kwargs['save_model_dir'], 'weights.pth')):
                         ote_eval(
@@ -110,7 +114,8 @@ def main(args):
                             test_data_roots=os.path.join(dataset_cfg.img_root, dataset_cfg.images_val_dir),
                             save_performance=os.path.join(kwargs['save_model_dir'], 'val_performance.json'),
                             weight_path=os.path.join(kwargs['save_model_dir'], 'weights.pth'),
-                            env_root=config.env_root
+                            env_root=config.env_root,
+                            cuda=args.cuda
                         )
                         # eval test
                         ote_eval(
@@ -119,7 +124,8 @@ def main(args):
                             test_data_roots=os.path.join(dataset_cfg.img_root, dataset_cfg.images_test_dir),
                             save_performance=os.path.join(kwargs['save_model_dir'], 'test_performance.json'),
                             weight_path=os.path.join(kwargs['save_model_dir'], 'weights.pth'),
-                            env_root=config.env_root
+                            env_root=config.env_root,
+                            cuda=args.cuda
                         )
 
     for dataset_name, num_samples in metrics.items():
@@ -134,6 +140,7 @@ def parse_args():
     parser.add_argument('--collect', help="Collect experiment results without training", action='store_true')
     parser.add_argument('--skip-train', help="Skip Training", action='store_true')
     parser.add_argument('--key', default="")
+    parser.add_argument('--cuda', help="CUDA GPU Index")
     return parser.parse_args()
 
 
