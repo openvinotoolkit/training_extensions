@@ -53,20 +53,7 @@ class MPAClsDataset(BaseDataset):
 
     def load_annotations(self):
         include_empty = self.empty_label in self.labels
-        for i, _ in enumerate(self.ote_dataset):
-            class_indices = []
-            item_labels = self.ote_dataset[i].get_roi_labels(self.labels, include_empty=include_empty)
-            ignored_labels = self.ote_dataset[i].ignored_labels
-            if item_labels:
-                for ote_lbl in item_labels:
-                    if ote_lbl not in ignored_labels:
-                        class_indices.append(self.label_names.index(ote_lbl.name))
-                    else:
-                        class_indices.append(-1)
-            else:  # this supposed to happen only on inference stage
-                class_indices.append(-1)
-            self.gt_labels.append(class_indices)
-        self.gt_labels = np.array(self.gt_labels)
+        self.gt_labels, _ = convert_to_mmcls_dataset(self.ote_dataset, self.labels, include_empty=include_empty)
 
     def __getitem__(self, index):
         dataset = self.ote_dataset

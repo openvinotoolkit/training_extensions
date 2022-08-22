@@ -65,7 +65,7 @@ def convert_to_mmcls_dataset(gt_dataset: DatasetEntity, labels: list, include_em
                     class_indices.append(-1)
         else:  # this supposed to happen only on inference stage or if we have a negative in multilabel data
             class_indices.append(-1)
-        if multiclass is True:
+        if multilabel is True:
             gt_label = convert_to_one_hot_indice(labels, class_indices)
         else:
             gt_label = class_indices
