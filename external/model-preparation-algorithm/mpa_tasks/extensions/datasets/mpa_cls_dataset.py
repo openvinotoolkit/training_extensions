@@ -144,7 +144,6 @@ class MPAClsDataset(BaseDataset):
     def class_accuracy(results, gt_labels):
         accracies = []
         num_classes = results.shape[1]
-        print(num_classes)
         pred_label = results.argsort(axis=1)[:, -1:][:, ::-1]
         for i in range(num_classes):
             cls_pred = pred_label == i
