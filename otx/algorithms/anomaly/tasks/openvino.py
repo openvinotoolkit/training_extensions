@@ -35,6 +35,8 @@ from omegaconf import OmegaConf
 import otx.algorithms.anomaly.adapters.anomalib.exportable_code
 from otx.algorithms.anomaly.adapters.anomalib.config import get_anomalib_config
 from otx.algorithms.anomaly.adapters.anomalib.logger import get_logger
+from otx.algorithms.anomaly.configs.base.configuration import BaseAnomalyConfig
+from otx.api.configuration.configurable_parameters import ConfigurableParameters
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.inference_parameters import (
     InferenceParameters,
@@ -55,6 +57,9 @@ from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.serialization.label_mapper import LabelSchemaMapper, label_schema_to_bytes
 from otx.api.usecases.evaluation.metrics_helper import MetricsHelper
+from otx.api.usecases.evaluation.performance_provider_interface import (
+    IPerformanceProvider,
+)
 from otx.api.usecases.exportable_code import demo
 from otx.api.usecases.tasks.interfaces.deployment_interface import IDeploymentTask
 from otx.api.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
@@ -139,7 +144,7 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
             ADDict: Anomalib config
         """
         task_name = self.task_environment.model_template.name
-        otx_config = self.task_environment.get_hyper_parameters()
+        otx_config: ConfigurableParameters = self.task_environment.get_hyper_parameters()
         config = get_anomalib_config(task_name=task_name, otx_config=otx_config)
         return ADDict(OmegaConf.to_container(config))
 
@@ -202,16 +207,22 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
 
     def get_meta_data(self) -> Dict:
         """Get Meta Data."""
-        image_threshold = np.frombuffer(self.task_environment.model.get_data("image_threshold"), dtype=np.float32)
-        pixel_threshold = np.frombuffer(self.task_environment.model.get_data("pixel_threshold"), dtype=np.float32)
-        min_value = np.frombuffer(self.task_environment.model.get_data("min"), dtype=np.float32)
-        max_value = np.frombuffer(self.task_environment.model.get_data("max"), dtype=np.float32)
-        meta_data = dict(
-            image_threshold=image_threshold,
-            pixel_threshold=pixel_threshold,
-            min=min_value,
-            max=max_value,
-        )
+        meta_data = {}
+        if self.task_environment.model is not None:
+            model: ModelEntity = self.task_environment.model
+            image_threshold = np.frombuffer(model.get_data("image_threshold"), dtype=np.float32)
+            pixel_threshold = np.frombuffer(model.get_data("pixel_threshold"), dtype=np.float32)
+            min_value = np.frombuffer(model.get_data("min"), dtype=np.float32)
+            max_value = np.frombuffer(model.get_data("max"), dtype=np.float32)
+            meta_data = {
+                "image_threshold": image_threshold,
+                "pixel_threshold": pixel_threshold,
+                "min": min_value,
+                "max": max_value,
+            }
+        else:
+            raise ValueError("Cannot access meta-data. self.task_environment.model is empty.")
+
         return meta_data
 
     def evaluate(self, output_resultset: ResultSetEntity, evaluation_metric: Optional[str] = None):
@@ -221,6 +232,7 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
             output_resultset (ResultSetEntity): Result set storing ground truth and predicted dataset.
             evaluation_metric (Optional[str], optional): Evaluation metric. Defaults to None.
         """
+        metric: IPerformanceProvider
         if self.task_type == TaskType.ANOMALY_CLASSIFICATION:
             metric = MetricsHelper.compute_f_measure(output_resultset)
         elif self.task_type == TaskType.ANOMALY_DETECTION:
@@ -233,7 +245,7 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
 
     def _get_optimization_algorithms_configs(self) -> List[ADDict]:
         """Returns list of optimization algorithms configurations."""
-        hparams = self.task_environment.get_hyper_parameters()
+        hparams: BaseAnomalyConfig = self.task_environment.get_hyper_parameters()
 
         optimization_config_path = os.path.join(self._base_dir, "pot_optimization_config.json")
         if os.path.exists(optimization_config_path):
@@ -279,8 +291,11 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
             xml_path = os.path.join(tempdir, "model.xml")
             bin_path = os.path.join(tempdir, "model.bin")
 
-            self.__save_weights(xml_path, self.task_environment.model.get_data("openvino.xml"))
-            self.__save_weights(bin_path, self.task_environment.model.get_data("openvino.bin"))
+            if self.task_environment.model is not None:
+                self.__save_weights(xml_path, self.task_environment.model.get_data("openvino.xml"))
+                self.__save_weights(bin_path, self.task_environment.model.get_data("openvino.bin"))
+            else:
+                raise ValueError("Cannot save the weights. self.task_environment.model is None.")
 
             model_config = {
                 "model_name": "openvino_model",

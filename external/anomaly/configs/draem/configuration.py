@@ -1,6 +1,4 @@
-"""
-Configurable parameters for Draem anomaly task
-"""
+"""Configurable parameters for Draem anomaly task."""
 
 # Copyright (C) 2021-2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
@@ -22,9 +20,7 @@ from ote_sdk.configuration.model_lifecycle import ModelLifecycle
 
 @attrs
 class DraemAnomalyBaseConfig(BaseAnomalyConfig):
-    """
-    Configurable parameters for DRAEM anomaly classification task.
-    """
+    """Configurable parameters for DRAEM anomaly classification task."""
 
     header = string_attribute("Configuration for Draem")
     description = header
@@ -59,9 +55,7 @@ class DraemAnomalyBaseConfig(BaseAnomalyConfig):
 
         @attrs
         class EarlyStoppingParameters(ParameterGroup):
-            """
-            Early stopping parameters
-            """
+            """Early stopping parameters."""
 
             header = string_attribute("Early Stopping Parameters")
             description = header

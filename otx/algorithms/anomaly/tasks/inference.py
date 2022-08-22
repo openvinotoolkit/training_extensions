@@ -39,6 +39,7 @@ from otx.algorithms.anomaly.adapters.anomalib.callbacks import (
 from otx.algorithms.anomaly.adapters.anomalib.config import get_anomalib_config
 from otx.algorithms.anomaly.adapters.anomalib.data import OTXAnomalyDataModule
 from otx.algorithms.anomaly.adapters.anomalib.logger import get_logger
+from otx.algorithms.anomaly.configs.base.configuration import BaseAnomalyConfig
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.metrics import Performance, ScoreMetric
@@ -54,6 +55,9 @@ from otx.api.entities.resultset import ResultSetEntity
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.serialization.label_mapper import label_schema_to_bytes
 from otx.api.usecases.evaluation.metrics_helper import MetricsHelper
+from otx.api.usecases.evaluation.performance_provider_interface import (
+    IPerformanceProvider,
+)
 from otx.api.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType, IExportTask
 from otx.api.usecases.tasks.interfaces.inference_interface import IInferenceTask
@@ -101,7 +105,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         Returns:
             Union[DictConfig, ListConfig]: Anomalib config.
         """
-        self.hyper_parameters = self.task_environment.get_hyper_parameters()
+        self.hyper_parameters: BaseAnomalyConfig = self.task_environment.get_hyper_parameters()
         config = get_anomalib_config(task_name=self.model_name, otx_config=self.hyper_parameters)
         config.project.path = self.project_path
 
@@ -197,6 +201,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
             evaluation_metric (Optional[str], optional): Evaluation metric. Defaults to None. Instead,
                 metric is chosen depending on the task type.
         """
+        metric: IPerformanceProvider
         if self.task_type == TaskType.ANOMALY_CLASSIFICATION:
             metric = MetricsHelper.compute_f_measure(output_resultset)
         elif self.task_type == TaskType.ANOMALY_DETECTION:

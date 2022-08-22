@@ -18,17 +18,16 @@ from typing import Optional
 
 from pytorch_lightning import Callback
 
-from otx.api.entities.train_parameters import TrainParameters
+from otx.api.entities.train_parameters import TrainParameters, UpdateProgressCallback
 
 
 class ScoreReportingCallback(Callback):
     """Callback for reporting score."""
 
     def __init__(self, parameters: Optional[TrainParameters] = None) -> None:
+        self.score_reporting_callback: Optional[UpdateProgressCallback] = None
         if parameters is not None:
             self.score_reporting_callback = parameters.update_progress
-        else:
-            self.score_reporting_callback = None
 
     def on_validation_epoch_end(self, trainer, pl_module):  # pylint: disable=unused-argument
         """If score exists in trainer.logged_metrics, report the score."""

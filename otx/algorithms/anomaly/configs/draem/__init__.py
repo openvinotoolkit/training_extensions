@@ -1,6 +1,4 @@
-"""
-Base configuration parameters for Draem
-"""
+"""Base configuration parameters for Draem."""
 
 # Copyright (C) 2021-2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
