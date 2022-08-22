@@ -9,7 +9,7 @@ from mmcls.core import average_performance, average_precision, mAP
 from mmcls.datasets.builder import DATASETS, PIPELINES
 from mmcls.datasets.pipelines import Compose
 from mmcls.datasets.base_dataset import BaseDataset
-from mpa_tasks.utils.data_utils import get_cls_img_indices, get_old_new_img_indices, convert_to_mmcls_multilabel_dataset
+from mpa_tasks.utils.data_utils import get_cls_img_indices, get_old_new_img_indices, convert_to_mmcls_dataset
 from mpa.utils.logger import get_logger
 
 logger = get_logger()
@@ -139,11 +139,14 @@ class MPAClsDataset(BaseDataset):
             eval_results.update({'mean accuracy': np.mean(accuracies)})
 
         return eval_results
-
-    def class_accuracy(self, results, gt_labels):
+    
+    @staticmethod
+    def class_accuracy(results, gt_labels):
         accracies = []
+        num_classes = results.shape[1]
+        print(num_classes)
         pred_label = results.argsort(axis=1)[:, -1:][:, ::-1]
-        for i in range(self.num_classes):
+        for i in range(num_classes):
             cls_pred = pred_label == i
             cls_pred = cls_pred[gt_labels == i]
             cls_acc = np.sum(cls_pred) / len(cls_pred)
@@ -188,7 +191,7 @@ class MPAMultilabelClsDataset(MPAClsDataset):
 
     def load_annotations(self):
         include_empty = self.empty_label in self.labels
-        self.gt_labels, _ = convert_to_mmcls_multilabel_dataset(self.ote_dataset, self.labels, include_empty=include_empty)
+        self.gt_labels, _ = convert_to_mmcls_dataset(self.ote_dataset, self.labels, include_empty=include_empty, multiclass=True)
 
     def evaluate(self,
                  results,

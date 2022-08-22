@@ -43,8 +43,14 @@ def get_actmap(saliency_map: Union[np.ndarray, Iterable, int, float],
     saliency_map = cv2.cvtColor(saliency_map, cv2.COLOR_BGR2RGB)
     return saliency_map
 
+def convert_to_one_hot_indice(labels, class_indices):
+    onehot_indices = np.zeros(len(labels))
+    for idx in class_indices:
+        if idx != -1:  # TODO: handling ignored label?
+            onehot_indices[idx] = 1
+    return onehot_indices
 
-def convert_to_mmcls_multilabel_dataset(gt_dataset: DatasetEntity, labels: list, include_empty=False):
+def convert_to_mmcls_dataset(gt_dataset: DatasetEntity, labels: list, include_empty=False, multiclass=False):
     gt_labels = []
     label_names = [label.name for label in labels]
     for gt_item in gt_dataset:
@@ -59,10 +65,10 @@ def convert_to_mmcls_multilabel_dataset(gt_dataset: DatasetEntity, labels: list,
                     class_indices.append(-1)
         else:  # this supposed to happen only on inference stage or if we have a negative in multilabel data
             class_indices.append(-1)
-        onehot_indices = np.zeros(len(labels))
-        for idx in class_indices:
-            if idx != -1:  # TODO: handling ignored label?
-                onehot_indices[idx] = 1
-        gt_labels.append(onehot_indices)
+        if multiclass is True:
+            gt_label = convert_to_one_hot_indice(labels, class_indices)
+        else:
+            gt_label = class_indices
+        gt_labels.append(gt_label)
     gt_labels = np.array(gt_labels)
     return gt_labels, label_names

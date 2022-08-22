@@ -17,8 +17,8 @@ from mpa.utils.config_utils import MPAConfig
 from mpa.utils.logger import get_logger
 from mpa_tasks.apis import BaseTask, TrainType
 from mpa_tasks.apis.classification import ClassificationConfig
-from mpa_tasks.extensions.datasets.mpa_cls_dataset import MPAMultilabelClsDataset
-from mpa_tasks.utils.data_utils import get_actmap, convert_to_mmcls_multilabel_dataset
+from mpa_tasks.extensions.datasets.mpa_cls_dataset import MPAMultilabelClsDataset, MPAClsDataset
+from mpa_tasks.utils.data_utils import get_actmap, convert_to_mmcls_dataset
 from ote_sdk.configuration import cfg_helper
 from ote_sdk.configuration.helper.utils import ids_to_strings
 from ote_sdk.entities.datasets import DatasetEntity
@@ -157,11 +157,18 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         metric = MetricsHelper.compute_accuracy(output_result_set)
         if self._multilabel:
             gt_dataset = output_result_set.ground_truth_dataset
-            gt_labels, label_names = convert_to_mmcls_multilabel_dataset(gt_dataset, self.labels)
+            gt_labels, label_names = convert_to_mmcls_dataset(gt_dataset, self.labels, multiclass=True)
             class_AP_values = MPAMultilabelClsDataset.class_AP(self.prediction_logits, gt_labels)
             logger.info(f"mAP after evaluation: {class_AP_values.mean():.4f}")
             for name, value in zip(label_names, class_AP_values):
                 logger.info(f"{name}_AP after evlauation: {value:.4f}")
+        else:
+            gt_dataset = output_result_set.ground_truth_dataset
+            gt_labels, label_names = convert_to_mmcls_dataset(gt_dataset, self.labels)
+            class_acc_values = np.array(MPAClsDataset.class_accuracy(self.prediction_logits, gt_labels))
+            logger.info(f"Acc after evaluation: {class_acc_values.mean():.4f}")
+            for name, value in zip(label_names, class_acc_values):
+                logger.info(f"{name}_accuracy after evlauation: {value:.4f}")
         logger.info(f"Accuracy after evaluation: {metric.accuracy.value}")
         output_result_set.performance = metric.get_performance()
         logger.info('Evaluation completed')
