@@ -20,9 +20,7 @@ from otx.api.entities.shapes.rectangle import Rectangle
 from otx.api.entities.subset import Subset
 
 
-def check_value_error_exception_raised(
-    correct_parameters: dict, unexpected_values: list, class_or_function
-) -> None:
+def check_value_error_exception_raised(correct_parameters: dict, unexpected_values: list, class_or_function) -> None:
     """
     Function checks that ValueError exception is raised when unexpected type values are specified as parameters for
     methods or functions
@@ -40,9 +38,9 @@ def load_test_dataset():
     def gen_image(resolution, x1, y1, x2, y2):
         width, height = resolution
         image = np.full([height, width, 3], fill_value=255, dtype=np.uint8)
-        image[
-            int(y1 * height) : int(y2 * height), int(x1 * width) : int(x2 * width), :
-        ] = np.array([0, 128, 128], dtype=np.uint8)[None, None, :]
+        image[int(y1 * height) : int(y2 * height), int(x1 * width) : int(x2 * width), :] = np.array(
+            [0, 128, 128], dtype=np.uint8
+        )[None, None, :]
         return image, Rectangle(x1=x1, y1=y1, x2=x2, y2=y2)
 
     images = [

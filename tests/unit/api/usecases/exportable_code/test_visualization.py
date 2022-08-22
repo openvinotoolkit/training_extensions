@@ -157,9 +157,7 @@ class TestVisualizer:
         expected_image = image.copy()
         expected_image = cv2.cvtColor(expected_image, cv2.COLOR_RGB2BGR)
         shape_drawer = ShapeDrawer(show_count=False, is_one_label=False)
-        expected_image = shape_drawer.draw(
-            image=expected_image, entity=annotation_scene, labels=[]
-        )
+        expected_image = shape_drawer.draw(image=expected_image, entity=annotation_scene, labels=[])
 
         actual_image = Visualizer().draw(image=image, annotation=annotation_scene)
         assert np.array_equal(actual_image, expected_image)

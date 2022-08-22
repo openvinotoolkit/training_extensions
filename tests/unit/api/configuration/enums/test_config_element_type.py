@@ -84,16 +84,10 @@ class TestConfigElementType:
         assert ConfigElementType.PARAMETER_GROUP.value == 5
         assert str(ConfigElementType.PARAMETER_GROUP) == "PARAMETER_GROUP"
         # Checking "CONFIGURABLE_PARAMETERS" element
-        assert (
-            ConfigElementType.CONFIGURABLE_PARAMETERS.category == ElementCategory.GROUPS
-        )
-        assert (
-            ConfigElementType.CONFIGURABLE_PARAMETERS.name == "CONFIGURABLE_PARAMETERS"
-        )
+        assert ConfigElementType.CONFIGURABLE_PARAMETERS.category == ElementCategory.GROUPS
+        assert ConfigElementType.CONFIGURABLE_PARAMETERS.name == "CONFIGURABLE_PARAMETERS"
         assert ConfigElementType.CONFIGURABLE_PARAMETERS.value == 6
-        assert (
-            str(ConfigElementType.CONFIGURABLE_PARAMETERS) == "CONFIGURABLE_PARAMETERS"
-        )
+        assert str(ConfigElementType.CONFIGURABLE_PARAMETERS) == "CONFIGURABLE_PARAMETERS"
         # Checking "RULE" element
         assert ConfigElementType.RULE.category == ElementCategory.RULES
         assert ConfigElementType.RULE.name == "RULE"

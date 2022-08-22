@@ -296,9 +296,7 @@ class TestCreateFunctions:
         ]
         for ui_exposure_settings in [params, DictConfig(content=dict(params))]:
             self.check_ui_rules(
-                ui_rules=construct_ui_rules_from_dict(
-                    ui_exposure_settings=ui_exposure_settings
-                ),
+                ui_rules=construct_ui_rules_from_dict(ui_exposure_settings=ui_exposure_settings),
                 expected_rules=expected_rules,
             )
         # Checking UIRules returned by "construct_ui_rules_from_dict" when several "RULE" and "UI_RULE" are specified in
@@ -341,9 +339,7 @@ class TestCreateFunctions:
         ]
         for ui_exposure_settings in [params, DictConfig(content=dict(params))]:
             self.check_ui_rules(
-                ui_rules=construct_ui_rules_from_dict(
-                    ui_exposure_settings=ui_exposure_settings
-                ),
+                ui_rules=construct_ui_rules_from_dict(ui_exposure_settings=ui_exposure_settings),
                 expected_rules=expected_rules,
             )
         # Checking that NullUIRules returned by "construct_ui_rules_from_dict" when None is specified as
@@ -352,9 +348,7 @@ class TestCreateFunctions:
         # Checking that NullUIRules returned by "construct_ui_rules_from_dict" when empty list is specified in "rules"
         # key of "ui_exposure_settings"
         params = {"rules": [], "type": "UI_RULES"}
-        assert (
-            construct_ui_rules_from_dict(ui_exposure_settings=params) == NullUIRules()
-        )
+        assert construct_ui_rules_from_dict(ui_exposure_settings=params) == NullUIRules()
         # Checking that ValueError exception is raised when one of objects specified in "rules" key of
         # "ui_exposure_settings" has unexpected "TYPE"
         invalid_rule = {
@@ -396,9 +390,7 @@ class TestCreateFunctions:
             "default_value": SomeEnumSelectable.TEST_NAME1,
         }
         for parameter_dict in [params, DictConfig(content=dict(params))]:
-            configurable_enum = create_default_configurable_enum_from_dict(
-                parameter_dict=parameter_dict
-            )
+            configurable_enum = create_default_configurable_enum_from_dict(parameter_dict=parameter_dict)
             assert isinstance(configurable_enum, dict)
             assert len(configurable_enum) == 1
             default_value = configurable_enum.get("default_value")
@@ -413,9 +405,7 @@ class TestCreateFunctions:
             "default_value": 2,
         }
         for parameter_dict in [params, DictConfig(content=dict(params))]:
-            configurable_enum = create_default_configurable_enum_from_dict(
-                parameter_dict=parameter_dict
-            )
+            configurable_enum = create_default_configurable_enum_from_dict(parameter_dict=parameter_dict)
             assert isinstance(configurable_enum, dict)
             assert len(configurable_enum) == 1
             default_value = configurable_enum.get("default_value")
@@ -432,9 +422,7 @@ class TestCreateFunctions:
         # Checking that TypeError exception is raised when DictConfig with "content" equal to None is specified as
         # "default_value" key value of "parameter_dict"
         with pytest.raises(TypeError):
-            create_default_configurable_enum_from_dict(
-                parameter_dict=DictConfig(content=None)
-            )
+            create_default_configurable_enum_from_dict(parameter_dict=DictConfig(content=None))
 
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -474,9 +462,7 @@ class TestCreateFunctions:
             # Checking "make_arguments" key
             assert len(arguments_and_values_dict.get("make_arguments")) == 2
             # Checking non-Selectable argument
-            argument = arguments_and_values_dict.get("make_arguments").get(
-                "non_selectable"
-            )
+            argument = arguments_and_values_dict.get("make_arguments").get("non_selectable")
             assert isinstance(argument, _make._CountingAttr)
             assert argument.type == int
             metadata = argument.metadata
@@ -485,9 +471,7 @@ class TestCreateFunctions:
             assert metadata.get("header") == "non selectable parameter header"
             assert metadata.get("affects_outcome_of") == ModelLifecycle.NONE
             assert metadata.get("type") == ConfigElementType.INTEGER
-            assert metadata.get("ui_rules") == construct_ui_rules_from_dict(
-                dict(self.int_ui_rules_params())
-            )
+            assert metadata.get("ui_rules") == construct_ui_rules_from_dict(dict(self.int_ui_rules_params()))
             # Checking Selectable argument
             argument = arguments_and_values_dict.get("make_arguments").get("selectable")
             assert isinstance(argument, _make._CountingAttr)
@@ -502,9 +486,7 @@ class TestCreateFunctions:
             assert metadata.get("type") == ConfigElementType.SELECTABLE
             assert metadata.get("ui_rules") == NullUIRules()
             # Checking "call_arguments" key
-            assert arguments_and_values_dict.get("call_arguments") == {
-                "non_dict_key": 6
-            }
+            assert arguments_and_values_dict.get("call_arguments") == {"non_dict_key": 6}
             # Checking "values" key
             assert len(arguments_and_values_dict.get("values")) == 2
             assert arguments_and_values_dict.get("values").get("selectable") == 1
@@ -516,9 +498,7 @@ class TestCreateFunctions:
             "selectable": selectable_dict,
         }
         with pytest.raises(ValueError):
-            gather_parameter_arguments_and_values_from_dict(
-                config_dict_section=config_dict_section
-            )
+            gather_parameter_arguments_and_values_from_dict(config_dict_section=config_dict_section)
 
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -579,9 +559,7 @@ class TestCreateFunctions:
         """
         parameters = self.nested_config_dict_section()
         for config_dict_section in parameters, DictConfig(content=dict(parameters)):
-            nested_parameter_group = create_nested_parameter_group(
-                config_dict_section=config_dict_section
-            )
+            nested_parameter_group = create_nested_parameter_group(config_dict_section=config_dict_section)
             self.check_parameter_group(
                 parameter_group=nested_parameter_group,  # type: ignore
                 expected_type=ParameterGroup,

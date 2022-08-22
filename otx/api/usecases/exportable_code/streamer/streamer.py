@@ -105,9 +105,7 @@ class ThreadedStreamer(BaseStreamer):
 
     def __iter__(self) -> Iterator[np.ndarray]:
         buffer: multiprocessing.Queue = multiprocessing.Queue(maxsize=self.buffer_size)
-        process = multiprocessing.Process(
-            target=_process_run, args=(self.streamer, buffer)
-        )
+        process = multiprocessing.Process(target=_process_run, args=(self.streamer, buffer))
         # Make thread a daemon so that it will exit when the main program exits as well
         process.daemon = True
         process.start()

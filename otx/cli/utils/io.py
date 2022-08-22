@@ -110,9 +110,7 @@ def read_model(model_configuration, path, train_dataset):
 
             for key in model_adapter_keys:
                 if key in model_parameters:
-                    model_adapters[key] = ModelAdapter(
-                        struct.pack("f", model_parameters[key])
-                    )
+                    model_adapters[key] = ModelAdapter(struct.pack("f", model_parameters[key]))
     else:
         raise ValueError(f"Unknown file type: {path}")
 
@@ -132,16 +130,12 @@ def read_label_schema(path):
     """
 
     if any(path.endswith(extension) for extension in (".xml", ".bin", ".pth")):
-        with open(
-            os.path.join(os.path.dirname(path), "label_schema.json"), encoding="UTF-8"
-        ) as read_file:
+        with open(os.path.join(os.path.dirname(path), "label_schema.json"), encoding="UTF-8") as read_file:
             serialized_label_schema = json.load(read_file)
     elif path.endswith(".zip"):
         with ZipFile(path) as read_zip_file:
             with read_zip_file.open(os.path.join("model", "config.json")) as read_file:
-                serialized_label_schema = json.load(read_file)["model_parameters"][
-                    "labels"
-                ]
+                serialized_label_schema = json.load(read_file)["model_parameters"]["labels"]
     return LabelSchemaMapper().backward(serialized_label_schema)
 
 
@@ -154,12 +148,8 @@ def generate_label_schema(dataset, task_type):
         assert len(not_empty_labels) > 1
         label_schema = LabelSchemaEntity()
         if dataset.is_multilabel():
-            emptylabel = LabelEntity(
-                name="Empty label", is_empty=True, domain=Domain.CLASSIFICATION
-            )
-            empty_group = LabelGroup(
-                name="empty", labels=[emptylabel], group_type=LabelGroupType.EMPTY_LABEL
-            )
+            emptylabel = LabelEntity(name="Empty label", is_empty=True, domain=Domain.CLASSIFICATION)
+            empty_group = LabelGroup(name="empty", labels=[emptylabel], group_type=LabelGroupType.EMPTY_LABEL)
             # pylint: disable=unnecessary-comprehension
             key = [i for i in dataset.annotations.keys()][0]
             for group in dataset.annotations[key][2]:
@@ -176,12 +166,8 @@ def generate_label_schema(dataset, task_type):
                 )
             label_schema.add_group(empty_group)
         elif dataset.is_multihead():
-            emptylabel = LabelEntity(
-                name="Empty label", is_empty=True, domain=Domain.CLASSIFICATION
-            )
-            empty_group = LabelGroup(
-                name="empty", labels=[emptylabel], group_type=LabelGroupType.EMPTY_LABEL
-            )
+            emptylabel = LabelEntity(name="Empty label", is_empty=True, domain=Domain.CLASSIFICATION)
+            empty_group = LabelGroup(name="empty", labels=[emptylabel], group_type=LabelGroupType.EMPTY_LABEL)
             key = [i for i in dataset.annotations.keys()][0]
             hierarchy_info = dataset.annotations[key][2]
 
@@ -189,12 +175,8 @@ def generate_label_schema(dataset, task_type):
                 group = info["group"]
                 labels = info["labels"]
                 task_type = info["task_type"]
-                if (
-                    task_type == "single-label"
-                ):  # add one label group includes all labels
-                    label_entity_list = [
-                        dataset.label_name_to_project_label(lbl) for lbl in labels
-                    ]
+                if task_type == "single-label":  # add one label group includes all labels
+                    label_entity_list = [dataset.label_name_to_project_label(lbl) for lbl in labels]
                     label_group = LabelGroup(
                         name=group,
                         labels=label_entity_list,
@@ -216,11 +198,7 @@ def generate_label_schema(dataset, task_type):
                         add_subtask_labels(dataset, stask)
 
             for info in hierarchy_info:
-                if info[
-                    "task_type"
-                ] == "multi-label" and emptylabel not in label_schema.get_labels(
-                    include_empty=True
-                ):
+                if info["task_type"] == "multi-label" and emptylabel not in label_schema.get_labels(include_empty=True):
                     label_schema.add_group(empty_group)
                 add_subtask_labels(dataset, info)
         else:

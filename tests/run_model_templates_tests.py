@@ -8,9 +8,7 @@ from ote_cli.utils.tests import collect_env_vars
 
 ALGO_ROOT_DIR = "external"
 ALGO_DIRS = [
-    os.path.join(ALGO_ROOT_DIR, d)
-    for d in os.listdir(ALGO_ROOT_DIR)
-    if os.path.isdir(os.path.join(ALGO_ROOT_DIR, d))
+    os.path.join(ALGO_ROOT_DIR, d) for d in os.listdir(ALGO_ROOT_DIR) if os.path.isdir(os.path.join(ALGO_ROOT_DIR, d))
 ]
 IMPORTANT_DIRS = [
     "data/",

@@ -38,12 +38,8 @@ class TestScoredLabel:
         <b>Expected results:</b>
         Test passes if the results match
         """
-        car = LabelEntity(
-            id=ID(123456789), name="car", domain=Domain.DETECTION, is_empty=False
-        )
-        person = LabelEntity(
-            id=ID(987654321), name="person", domain=Domain.DETECTION, is_empty=False
-        )
+        car = LabelEntity(id=ID(123456789), name="car", domain=Domain.DETECTION, is_empty=False)
+        person = LabelEntity(id=ID(987654321), name="person", domain=Domain.DETECTION, is_empty=False)
         car_label = ScoredLabel(car)
         person_label = ScoredLabel(person)
 

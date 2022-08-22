@@ -107,25 +107,19 @@ class TestUtilsFunctions:
         # Checking ConfigurableEnum element returned by "_convert_enum_selectable_value" when string is specified as
         # "value"
         assert (
-            _convert_enum_selectable_value(
-                value="test_2_test", enum_class=SomeEnumSelectable
-            )
+            _convert_enum_selectable_value(value="test_2_test", enum_class=SomeEnumSelectable)
             == SomeEnumSelectable.TEST_2
         )
         # Checking ConfigurableEnum element returned by "_convert_enum_selectable_value" when ConfigurableEnum element
         # is specified as "value"
         assert (
-            _convert_enum_selectable_value(
-                value=SomeEnumSelectable.OPTION_C, enum_class=SomeEnumSelectable
-            )
+            _convert_enum_selectable_value(value=SomeEnumSelectable.OPTION_C, enum_class=SomeEnumSelectable)
             == SomeEnumSelectable.OPTION_C
         )
         # Checking that ValueError exception is raised by "_convert_enum_selectable_value" when unexpected string is
         # specified as "value"
         with pytest.raises(ValueError):
-            _convert_enum_selectable_value(
-                value="some string", enum_class=SomeEnumSelectable
-            )
+            _convert_enum_selectable_value(value="some string", enum_class=SomeEnumSelectable)
 
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -141,9 +135,7 @@ class TestUtilsFunctions:
         <b>Expected results:</b>
         Test passes if function returned by "construct_attr_enum_selectable_converter" function is equal to expected
         """
-        converter = construct_attr_enum_selectable_converter(
-            default_value=SomeEnumSelectable.TEST_NAME1
-        )
+        converter = construct_attr_enum_selectable_converter(default_value=SomeEnumSelectable.TEST_NAME1)
         assert isinstance(converter, FunctionType)
         assert converter(SomeEnumSelectable.BOGUS_NAME) == SomeEnumSelectable.BOGUS_NAME
         assert converter("test_2_test") == SomeEnumSelectable.TEST_2
@@ -163,9 +155,7 @@ class TestUtilsFunctions:
         <b>Expected results:</b>
         Test passes if function returned by "construct_attr_enum_selectable_onsetattr" function is equal to expected
         """
-        on_set_attr = construct_attr_enum_selectable_onsetattr(
-            default_value=SomeEnumSelectable.TEST_2
-        )
+        on_set_attr = construct_attr_enum_selectable_onsetattr(default_value=SomeEnumSelectable.TEST_2)
         assert isinstance(on_set_attr, FunctionType)
         assert (
             on_set_attr(
@@ -176,9 +166,7 @@ class TestUtilsFunctions:
             == SomeEnumSelectable.TEST_2
         )
         assert (
-            on_set_attr(
-                self.parameter_group, SomeEnumSelectable.OPTION_C.value, "option_c"
-            )
+            on_set_attr(self.parameter_group, SomeEnumSelectable.OPTION_C.value, "option_c")
             == SomeEnumSelectable.OPTION_C
         )
 
@@ -212,9 +200,7 @@ class TestUtilsFunctions:
         # values out of specified bounds
         for out_of_bounds_value in [0, 5]:
             with pytest.raises(ValueError):
-                attr_value_validator(
-                    self.parameter_group, self.attribute.id, out_of_bounds_value
-                )
+                attr_value_validator(self.parameter_group, self.attribute.id, out_of_bounds_value)
 
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -236,22 +222,16 @@ class TestUtilsFunctions:
         2. Check that ValueError exception is raised by validator returned by "construct_attr_selectable_validator"
         function for values not included in "options" list
         """
-        attr_selectable_validator = construct_attr_selectable_validator(
-            options=["str_option", 2]
-        )
+        attr_selectable_validator = construct_attr_selectable_validator(options=["str_option", 2])
         # Checking that ValueError exception is not raised by validator returned by
         # "construct_attr_selectable_validator" for values included in "options"
         for value_within in ["str_option", 2]:
-            attr_selectable_validator(
-                self.parameter_group, self.attribute.id, value_within
-            )
+            attr_selectable_validator(self.parameter_group, self.attribute.id, value_within)
         # Checking that ValueError exception is raised by validator returned by "construct_attr_selectable_validator"
         # for values not included in "options"
         for out_of_bounds_value in ["other_str_option", 3]:
             with pytest.raises(ValueError):
-                attr_selectable_validator(
-                    self.parameter_group, self.attribute.id, out_of_bounds_value
-                )
+                attr_selectable_validator(self.parameter_group, self.attribute.id, out_of_bounds_value)
 
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -303,14 +283,10 @@ class TestUtilsFunctions:
         3. Check that "attr_strict_int_validator" function raises TypeError exception for string "value" parameter
         """
         # Checking that "attr_strict_int_validator" not raises TypeError exception for int "value"
-        attr_strict_int_validator(
-            instance=self.parameter_group, attribute=self.attribute.id, value=1
-        )
+        attr_strict_int_validator(instance=self.parameter_group, attribute=self.attribute.id, value=1)
         # Checking that "attr_strict_int_validator" raises TypeError exception for bool "value"
         with pytest.raises(TypeError):
-            attr_strict_int_validator(
-                instance=self.parameter_group, attribute=self.attribute.id, value=True
-            )
+            attr_strict_int_validator(instance=self.parameter_group, attribute=self.attribute.id, value=True)
         # Checking that "attr_strict_int_validator" raises TypeError exception for string "value"
         with pytest.raises(TypeError):
             attr_strict_int_validator(
@@ -373,10 +349,7 @@ class TestUtilsFunctions:
         """
         # Checking value returned by "attr_strict_float_on_setattr" for float "value"
         assert (
-            attr_strict_float_on_setattr(
-                instance=self.parameter_group, attribute=self.attribute.id, value=10.7
-            )
-            == 10.7
+            attr_strict_float_on_setattr(instance=self.parameter_group, attribute=self.attribute.id, value=10.7) == 10.7
         )
         # Checking value returned by "attr_strict_float_on_setattr" for int "value"
         converted_value = attr_strict_float_on_setattr(
@@ -386,9 +359,7 @@ class TestUtilsFunctions:
         assert converted_value == float(2)
         # Checking that "attr_strict_float_on_setattr" raises TypeError exception for bool "value"
         with pytest.raises(TypeError):
-            attr_strict_float_on_setattr(
-                instance=self.parameter_group, attribute=self.attribute.id, value=True
-            )
+            attr_strict_float_on_setattr(instance=self.parameter_group, attribute=self.attribute.id, value=True)
         # Checking that "attr_strict_float_on_setattr" raises TypeError exception for str "value"
         with pytest.raises(TypeError):
             attr_strict_float_on_setattr(

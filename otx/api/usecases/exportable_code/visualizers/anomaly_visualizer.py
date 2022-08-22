@@ -49,9 +49,7 @@ class AnomalyVisualizer(Visualizer):
         Create heat mask from saliency map
         :param mask: saliency map
         """
-        heat_mask = cv2.normalize(
-            mask, None, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX
-        ).astype(np.uint8)
+        heat_mask = cv2.normalize(mask, None, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX).astype(np.uint8)
         return cv2.applyColorMap(heat_mask.astype(np.uint8), cv2.COLORMAP_JET)
 
     # pylint:disable=signature-differs

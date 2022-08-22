@@ -39,25 +39,19 @@ from tests.unit.api.constants.requirements import Requirements
 class TestMetrics:
     @staticmethod
     def mixed_conditions_duration_metric() -> DurationMetric:
-        return DurationMetric(
-            name="Mixed conditions metric", hour=0, minute=1, second=2.1
-        )
+        return DurationMetric(name="Mixed conditions metric", hour=0, minute=1, second=2.1)
 
     @staticmethod
     def matrix_data():
         return np.array([[0, 1, 1], [0, 1, 1], [1, 0, 0]])
 
     def normalized_matrix_metric(self) -> MatrixMetric:
-        return MatrixMetric(
-            name="test matrix", matrix_values=self.matrix_data(), normalize=True
-        )
+        return MatrixMetric(name="test matrix", matrix_values=self.matrix_data(), normalize=True)
 
     @staticmethod
     def normalized_matrix_zero_sum() -> MatrixMetric:
         matrix_data_with_zero_sum = np.array([[0, 0, 0], [0, 1, 1], [1, 0, 0]])
-        return MatrixMetric(
-            name="test matrix", matrix_values=matrix_data_with_zero_sum, normalize=True
-        )
+        return MatrixMetric(name="test matrix", matrix_values=matrix_data_with_zero_sum, normalize=True)
 
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -82,34 +76,23 @@ class TestMetrics:
         minute = 1
         second = 15.5
         seconds = (hour * 3600) + (minute * 60) + second
-        duration_metric = DurationMetric.from_seconds(
-            name="Training duration", seconds=seconds
-        )
+        duration_metric = DurationMetric.from_seconds(name="Training duration", seconds=seconds)
         assert duration_metric.hour == hour
         assert duration_metric.minute == minute
         assert duration_metric.second == second
         assert duration_metric.type() == "duration"
         print(duration_metric.get_duration_string())
         # Checking get_duration_string method for 0 specified as DurationMetric parameters
-        zero_duration_metric = DurationMetric(
-            name="Zero Duration Metric", hour=0, minute=0, second=0.0
-        )
+        zero_duration_metric = DurationMetric(name="Zero Duration Metric", hour=0, minute=0, second=0.0)
         assert zero_duration_metric.get_duration_string() == ""
         # Checking get_duration_string method for 1 specified as DurationMetric parameters
-        one_duration_metric = DurationMetric(
-            name="One Duration Metric", hour=1, minute=1, second=1.0
-        )
-        assert (
-            one_duration_metric.get_duration_string() == "1 hour 1 minute 1.00 second"
-        )
+        one_duration_metric = DurationMetric(name="One Duration Metric", hour=1, minute=1, second=1.0)
+        assert one_duration_metric.get_duration_string() == "1 hour 1 minute 1.00 second"
         # Checking get_duration_string method for value>1 specified as DurationMetric parameters
         more_than_one_duration_metric = DurationMetric(
             name="More than one duration metric", hour=2, minute=3, second=1.1
         )
-        assert (
-            more_than_one_duration_metric.get_duration_string()
-            == "2 hours 3 minutes 1.10 seconds"
-        )
+        assert more_than_one_duration_metric.get_duration_string() == "2 hours 3 minutes 1.10 seconds"
         # Checking get_duration_string method for 0, 1, ">1" values specified as DurationMetric parameters
         mixed_conditions_metric = self.mixed_conditions_duration_metric()
         assert mixed_conditions_metric.get_duration_string() == "1 minute 2.10 seconds"
@@ -140,21 +123,15 @@ class TestMetrics:
         """
         matrix_metric = self.normalized_matrix_metric()
 
-        required_normalised_matrix_data = np.array(
-            [[0, 0.5, 0.5], [0, 0.5, 0.5], [1, 0, 0]]
-        )
-        assert np.array_equal(
-            required_normalised_matrix_data, matrix_metric.matrix_values
-        )
+        required_normalised_matrix_data = np.array([[0, 0.5, 0.5], [0, 0.5, 0.5], [1, 0, 0]])
+        assert np.array_equal(required_normalised_matrix_data, matrix_metric.matrix_values)
         assert repr(matrix_metric) == (
             "MatrixMetric(name=`test matrix`, matrix_values=(3x3) matrix, row labels=None, column labels=None)"
         )
 
         with warnings.catch_warnings():
             # there is a matrix with zero sum in row, so we expect 0/0 division.
-            warnings.filterwarnings(
-                "ignore", "invalid value encountered in true_divide"
-            )
+            warnings.filterwarnings("ignore", "invalid value encountered in true_divide")
             matrix_data_with_zero_sum = np.array([[0, 0, 0], [0, 1, 1], [1, 0, 0]])
             matrix_metric_with_zero_sum = MatrixMetric(
                 name="test matrix",
@@ -162,9 +139,7 @@ class TestMetrics:
                 normalize=True,
             )
 
-        required_normalised_matrix_data_with_zero_sum = np.array(
-            [[0, 0, 0], [0, 0.5, 0.5], [1, 0, 0]]
-        )
+        required_normalised_matrix_data_with_zero_sum = np.array([[0, 0, 0], [0, 0.5, 0.5], [1, 0, 0]])
         assert np.array_equal(
             required_normalised_matrix_data_with_zero_sum,
             matrix_metric_with_zero_sum.matrix_values,
@@ -180,9 +155,7 @@ class TestMetrics:
             column_labels=column_labels,
         )
         assert matrix_metric_with_labels.name == matrix_metric_with_labels_name
-        assert np.array_equal(
-            self.matrix_data(), matrix_metric_with_labels.matrix_values
-        )
+        assert np.array_equal(self.matrix_data(), matrix_metric_with_labels.matrix_values)
         assert matrix_metric_with_labels.row_labels == row_labels
         assert matrix_metric_with_labels.column_labels == column_labels
         assert matrix_metric_with_labels.type() == "matrix"
@@ -245,9 +218,7 @@ class TestCountMetric:
 class TestInfoMetric:
     @staticmethod
     def info_metric() -> InfoMetric:
-        return InfoMetric(
-            name="Test InfoMetric", value="This Metric is prepared for test purposes"
-        )
+        return InfoMetric(name="Test InfoMetric", value="This Metric is prepared for test purposes")
 
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -300,12 +271,8 @@ class TestDateMetric:
         assert date_not_specified_metric.type() == "date"
         # Check for DateMetric with specified date parameter
         date_specified_metric_name = "DateMetric with specified date"
-        date_expected = datetime.datetime(
-            year=2020, month=11, day=29, hour=13, minute=25, second=10, microsecond=3
-        )
-        date_specified_metric = DateMetric(
-            name=date_specified_metric_name, date=date_expected
-        )
+        date_expected = datetime.datetime(year=2020, month=11, day=29, hour=13, minute=25, second=10, microsecond=3)
+        date_specified_metric = DateMetric(name=date_specified_metric_name, date=date_expected)
         assert date_specified_metric.name == date_specified_metric_name
         assert date_specified_metric.date == date_expected
         assert date_specified_metric.type() == "date"
@@ -351,9 +318,7 @@ class TestScoreMetric:
         # Checking __eq__ method for equal ScoreMetric objects
         assert score_metric == equal_score_metric
         # Checking __eq__ method for ScoreMetric objects with unequal names
-        different_name_score_metric = ScoreMetric(
-            name="Other name ScoreMetric", value=2.0
-        )
+        different_name_score_metric = ScoreMetric(name="Other name ScoreMetric", value=2.0)
         assert score_metric != different_name_score_metric
         # Checking __eq__ method for ScoreMetric objects with unequal values
         different_value_score_metric = ScoreMetric(name="Test ScoreMetric", value=3.4)
@@ -413,14 +378,9 @@ class TestCurveMetric:
         assert x_not_specified_curve_metric.type() == "curve"
         # Checking ValueError exception raised when len(ys) != len(xs)
         with pytest.raises(ValueError):
-            CurveMetric(
-                name="Negative CurveMetric Scenario", ys=[0.0, 0.1], xs=[1, 2, 3]
-            )
+            CurveMetric(name="Negative CurveMetric Scenario", ys=[0.0, 0.1], xs=[1, 2, 3])
         # Checking __repr__ method
-        assert (
-            repr(curve_metric)
-            == "CurveMetric(name=`Test CurveMetric`, ys=(5 values), xs=(5 values))"
-        )
+        assert repr(curve_metric) == "CurveMetric(name=`Test CurveMetric`, ys=(5 values), xs=(5 values))"
 
 
 @pytest.mark.components(OtxSdkComponent.OTX_API)
@@ -569,9 +529,7 @@ class TestTextChartInfo:
         text_chart_info = self.text_chart_info()
         assert text_chart_info.name == "Test TextChartInfo"
         assert text_chart_info.type == VisualizationType.TEXT
-        assert repr(text_chart_info) == (
-            "TextChartInfo(name='Test TextChartInfo, " "'type='VisualizationType.TEXT')"
-        )
+        assert repr(text_chart_info) == ("TextChartInfo(name='Test TextChartInfo, " "'type='VisualizationType.TEXT')")
 
 
 @pytest.mark.components(OtxSdkComponent.OTX_API)
@@ -623,10 +581,7 @@ class TestLineChartInfo:
         )
         # Scenario for default parameters
         default_values_line_chart_info = self.default_parameters_line_chart_info()
-        assert (
-            default_values_line_chart_info.name
-            == "Test default parameters LineChartInfo"
-        )
+        assert default_values_line_chart_info.name == "Test default parameters LineChartInfo"
         assert default_values_line_chart_info.x_axis_label == ""
         assert default_values_line_chart_info.y_axis_label == ""
         assert default_values_line_chart_info.palette == ColorPalette.DEFAULT
@@ -676,20 +631,14 @@ class TestBarChartInfo:
             assert bar_chart_info.name == bar_chart_info_name
             assert bar_chart_info.palette == ColorPalette.LABEL
             assert bar_chart_info.type == visualisation_type
-            assert repr(bar_chart_info) == (
-                f"BarChartInfo(name='Test BarChartInfo', "
-                f"type='{visualisation_type}')"
-            )
+            assert repr(bar_chart_info) == (f"BarChartInfo(name='Test BarChartInfo', " f"type='{visualisation_type}')")
         # Scenario for default parameters
         default_values_bar_chart_info = self.default_parameters_bar_chart_info()
-        assert (
-            default_values_bar_chart_info.name == "BarChartInfo with default parameters"
-        )
+        assert default_values_bar_chart_info.name == "BarChartInfo with default parameters"
         assert default_values_bar_chart_info.palette == ColorPalette.DEFAULT
         assert default_values_bar_chart_info.type == VisualizationType.BAR
         assert repr(default_values_bar_chart_info) == (
-            "BarChartInfo(name='BarChartInfo with default parameters', "
-            "type='VisualizationType.BAR')"
+            "BarChartInfo(name='BarChartInfo with default parameters', " "type='VisualizationType.BAR')"
         )
         # Check ValueError exception raised when visualization_type not equal to BAR or RADIAL_BAR
         for visualisation_type in [
@@ -698,9 +647,7 @@ class TestBarChartInfo:
             VisualizationType.MATRIX,
         ]:
             with pytest.raises(ValueError):
-                BarChartInfo(
-                    name=bar_chart_info_name, visualization_type=visualisation_type
-                )
+                BarChartInfo(name=bar_chart_info_name, visualization_type=visualisation_type)
 
 
 @pytest.mark.components(OtxSdkComponent.OTX_API)
@@ -754,10 +701,7 @@ class TestMatrixChartInfo:
         )
         # Check for default parameters
         default_parameters_matrix_chart_info = self.default_values_matrix_chart_info()
-        assert (
-            default_parameters_matrix_chart_info.name
-            == "Test MatrixCharInfo with default parameters"
-        )
+        assert default_parameters_matrix_chart_info.name == "Test MatrixCharInfo with default parameters"
         assert default_parameters_matrix_chart_info.palette == ColorPalette.DEFAULT
         assert default_parameters_matrix_chart_info.type == VisualizationType.MATRIX
         with pytest.raises(AttributeError):
@@ -794,25 +738,19 @@ class TestMatrixMetricsGroup:
         # Positive scenario for MatrixMetricsGroup object with specified parameters
         with warnings.catch_warnings():
             # there is a matrix with zero sum in row, so we expect 0/0 division.
-            warnings.filterwarnings(
-                "ignore", "invalid value encountered in true_divide"
-            )
+            warnings.filterwarnings("ignore", "invalid value encountered in true_divide")
             matrix_metrics = [
                 TestMetrics().normalized_matrix_metric(),
                 TestMetrics().normalized_matrix_zero_sum(),
             ]
         matrix_chart_info = TestMatrixChartInfo.default_values_matrix_chart_info()
-        matrix_metrics_group = MatrixMetricsGroup(
-            metrics=matrix_metrics, visualization_info=matrix_chart_info
-        )
+        matrix_metrics_group = MatrixMetricsGroup(metrics=matrix_metrics, visualization_info=matrix_chart_info)
         assert matrix_metrics_group.metrics == matrix_metrics
         assert matrix_metrics_group.visualization_info == matrix_chart_info
         # Negative scenarios for MatrixMetricsGroup object with metrics parameter equal to None or []
         for incorrect_metrics in [None, []]:
             with pytest.raises(ValueError):
-                MatrixMetricsGroup(
-                    metrics=incorrect_metrics, visualization_info=matrix_chart_info
-                )
+                MatrixMetricsGroup(metrics=incorrect_metrics, visualization_info=matrix_chart_info)
         # Negative scenario for MatrixMetricsGroup object with visualization_info parameter equal to None
         with pytest.raises(ValueError):
             MatrixMetricsGroup(metrics=matrix_metrics, visualization_info=None)
@@ -845,17 +783,13 @@ class TestLineMetricsGroup:
             TestCurveMetric().x_not_specified_curve_metric(),
         )
         line_chart_info = TestLineChartInfo().default_parameters_line_chart_info()
-        line_metrics_group = LineMetricsGroup(
-            metrics=curve_metrics, visualization_info=line_chart_info
-        )
+        line_metrics_group = LineMetricsGroup(metrics=curve_metrics, visualization_info=line_chart_info)
         assert line_metrics_group.metrics == curve_metrics
         assert line_metrics_group.visualization_info == line_chart_info
         # Negative scenarios for LineMetricsGroup object with metrics parameter equal to None or []
         for incorrect_metrics in [None, ()]:
             with pytest.raises(ValueError):
-                LineMetricsGroup(
-                    metrics=incorrect_metrics, visualization_info=line_chart_info
-                )
+                LineMetricsGroup(metrics=incorrect_metrics, visualization_info=line_chart_info)
         # Negative scenario for LineMetricsGroup object with visualization_info parameter equal to None
         with pytest.raises(ValueError):
             LineMetricsGroup(metrics=curve_metrics, visualization_info=None)
@@ -888,17 +822,13 @@ class TestBarMetricsGroup:
             TestCountMetric().count_metric(),
         ]
         bar_chart_info = TestBarChartInfo().default_parameters_bar_chart_info()
-        bar_metrics_group = BarMetricsGroup(
-            metrics=bar_metrics, visualization_info=bar_chart_info
-        )
+        bar_metrics_group = BarMetricsGroup(metrics=bar_metrics, visualization_info=bar_chart_info)
         assert bar_metrics_group.metrics == bar_metrics
         assert bar_metrics_group.visualization_info == bar_chart_info
         # Negative scenarios for BarMetricsGroup object with metrics parameter equal to None or []
         for incorrect_metrics in [None, []]:
             with pytest.raises(ValueError):
-                BarMetricsGroup(
-                    metrics=incorrect_metrics, visualization_info=bar_chart_info
-                )
+                BarMetricsGroup(metrics=incorrect_metrics, visualization_info=bar_chart_info)
         # Negative scenario for BarMetricsGroup object with visualization_info parameter equal to None
         with pytest.raises(ValueError):
             BarMetricsGroup(metrics=bar_metrics, visualization_info=None)
@@ -937,16 +867,12 @@ class TestTextMetricsGroup:
             TestDateMetric().date_metric_no_date_specified(),
             TestMetrics().mixed_conditions_duration_metric(),
         ]:
-            text_metric_group = TextMetricsGroup(
-                metrics=[metric], visualization_info=text_chart_info
-            )
+            text_metric_group = TextMetricsGroup(metrics=[metric], visualization_info=text_chart_info)
             assert text_metric_group.metrics == [metric]
             assert text_metric_group.visualization_info == text_chart_info
         # Negative scenarios for TextMetricsGroup object with metrics parameter length equal to 2
         with pytest.raises(ValueError):
-            TextMetricsGroup(
-                metrics=(score_metric, count_metric), visualization_info=text_chart_info
-            )
+            TextMetricsGroup(metrics=(score_metric, count_metric), visualization_info=text_chart_info)
         # Negative scenarios for TextMetricsGroup object with metrics parameter equal ()
         with pytest.raises(ValueError):
             TextMetricsGroup(metrics=(), visualization_info=text_chart_info)
@@ -991,38 +917,28 @@ class TestPerformance:
         # Preparing dashboard metrics list
         with warnings.catch_warnings():
             # there is a matrix with zero sum in row, so we expect 0/0 division.
-            warnings.filterwarnings(
-                "ignore", "invalid value encountered in true_divide"
-            )
+            warnings.filterwarnings("ignore", "invalid value encountered in true_divide")
             matrix_metrics = [
                 TestMetrics().normalized_matrix_metric(),
                 TestMetrics().normalized_matrix_zero_sum(),
             ]
         matrix_chart_info = TestMatrixChartInfo.default_values_matrix_chart_info()
-        matrix_metrics_group = MatrixMetricsGroup(
-            metrics=matrix_metrics, visualization_info=matrix_chart_info
-        )
+        matrix_metrics_group = MatrixMetricsGroup(metrics=matrix_metrics, visualization_info=matrix_chart_info)
         curve_metrics = (
             TestCurveMetric().curve_metric(),
             TestCurveMetric().x_not_specified_curve_metric(),
         )
         line_chart_info = TestLineChartInfo().default_parameters_line_chart_info()
-        line_metrics_group = LineMetricsGroup(
-            metrics=curve_metrics, visualization_info=line_chart_info
-        )
+        line_metrics_group = LineMetricsGroup(metrics=curve_metrics, visualization_info=line_chart_info)
         bar_metrics = [
             TestScoreMetric().score_metric(),
             TestCountMetric().count_metric(),
         ]
         bar_chart_info = TestBarChartInfo().default_parameters_bar_chart_info()
-        bar_metrics_group = BarMetricsGroup(
-            metrics=bar_metrics, visualization_info=bar_chart_info
-        )
+        bar_metrics_group = BarMetricsGroup(metrics=bar_metrics, visualization_info=bar_chart_info)
         text_score_metric = TestScoreMetric().score_metric()
         text_chart_info = TestTextChartInfo().text_chart_info()
-        text_metric_group = TextMetricsGroup(
-            metrics=[text_score_metric], visualization_info=text_chart_info
-        )
+        text_metric_group = TextMetricsGroup(metrics=[text_score_metric], visualization_info=text_chart_info)
         dashboard_metrics = [
             matrix_metrics_group,
             line_metrics_group,
@@ -1030,30 +946,20 @@ class TestPerformance:
             text_metric_group,
         ]
         # Checking Performance attributes
-        specified_parameters_performance = Performance(
-            score=score_metric, dashboard_metrics=dashboard_metrics
-        )
+        specified_parameters_performance = Performance(score=score_metric, dashboard_metrics=dashboard_metrics)
         assert specified_parameters_performance.score == score_metric
         assert specified_parameters_performance.dashboard_metrics == dashboard_metrics
         # Checking __eq__ method
         equal_default_parameters_performance = Performance(score_metric)
         assert default_parameters_performance == equal_default_parameters_performance
-        different_metrics_performance = Performance(
-            score_metric, [matrix_metrics_group]
-        )
+        different_metrics_performance = Performance(score_metric, [matrix_metrics_group])
         assert default_parameters_performance == different_metrics_performance
         unequal_score_metric = ScoreMetric(name="Unequal ScoreMetric", value=1.0)
         assert default_parameters_performance != Performance(unequal_score_metric)
         assert default_parameters_performance != str
         # Checking __repr__ method
-        assert (
-            repr(default_parameters_performance)
-            == "Performance(score: 2.0, dashboard: (0 metric groups))"
-        )
-        assert (
-            repr(specified_parameters_performance)
-            == "Performance(score: 2.0, dashboard: (4 metric groups))"
-        )
+        assert repr(default_parameters_performance) == "Performance(score: 2.0, dashboard: (0 metric groups))"
+        assert repr(specified_parameters_performance) == "Performance(score: 2.0, dashboard: (4 metric groups))"
         # Checking ValueError exception raised when score parameter not ScoreMetric class
         count_metric = TestCountMetric().count_metric()
         with pytest.raises(ValueError):
@@ -1126,9 +1032,7 @@ class TestMultiScorePerformance:
         # Positive scenario for Performance object with default parameters
         primary_score = TestScoreMetric().score_metric()
         additional_score = TestScoreMetric().score_metric()
-        default_parameters_performance = MultiScorePerformance(
-            primary_score, [additional_score]
-        )
+        default_parameters_performance = MultiScorePerformance(primary_score, [additional_score])
         assert default_parameters_performance.score == primary_score
         assert default_parameters_performance.primary_score == primary_score
         assert default_parameters_performance.additional_scores == [additional_score]
@@ -1140,17 +1044,13 @@ class TestMultiScorePerformance:
         assert only_primary_performance.additional_scores == []
         assert only_primary_performance.dashboard_metrics == []
         # Positive scenario for Performance object with only additional metric
-        only_additional_performance = MultiScorePerformance(
-            additional_scores=[additional_score]
-        )
+        only_additional_performance = MultiScorePerformance(additional_scores=[additional_score])
         assert only_additional_performance.score == additional_score
         assert only_additional_performance.primary_score is None
         assert only_additional_performance.additional_scores == [additional_score]
         assert only_additional_performance.dashboard_metrics == []
         # Checking __eq__ method
-        equal_default_parameters_performance = MultiScorePerformance(
-            primary_score, [additional_score]
-        )
+        equal_default_parameters_performance = MultiScorePerformance(primary_score, [additional_score])
         assert default_parameters_performance == equal_default_parameters_performance
         assert default_parameters_performance != only_primary_performance
         # Checking __repr__ method

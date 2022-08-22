@@ -63,15 +63,11 @@ class LabelSchemaExample:
         self.vegetative = self.new_label_by_name("vegetative")
 
     def new_label_by_name(self, name: str, is_empty: bool = False) -> LabelEntity:
-        label = LabelEntity(
-            name=name, color=Color.random(), domain=self.label_domain, is_empty=is_empty
-        )
+        label = LabelEntity(name=name, color=Color.random(), domain=self.label_domain, is_empty=is_empty)
         label.id_ = generate_unique_id()
         return label
 
-    def add_hierarchy(
-        self, label_schema: LabelSchemaEntity
-    ) -> Tuple[LabelEntity, LabelEntity, LabelEntity]:
+    def add_hierarchy(self, label_schema: LabelSchemaEntity) -> Tuple[LabelEntity, LabelEntity, LabelEntity]:
         """Adds children to flowering, no_plant and vegetative"""
         label_schema.add_group(
             LabelGroup(
@@ -96,9 +92,7 @@ class LabelSchemaExample:
         assert label_schema.get_parent(self.no_plant) is None
 
         few_leaves = self.new_label_by_name("few_leaves")
-        label_schema.add_group(
-            LabelGroup("leaf_state", [few_leaves], LabelGroupType.EXCLUSIVE)
-        )
+        label_schema.add_group(LabelGroup("leaf_state", [few_leaves], LabelGroupType.EXCLUSIVE))
         label_schema.add_child(self.vegetative, few_leaves)
         return few_leaves, flower_fully_visible, flower_partial_visible
 
@@ -137,9 +131,7 @@ def generate_random_annotated_image(
     sc_labels = []
     # Sporadically, it might happen there is no shape in the image, especially on low-res images.
     # It'll retry max 5 times until we see a shape, and otherwise raise a runtime error
-    if (
-        shape == "ellipse"
-    ):  # ellipse shape is not available in random_shapes function. use circle instead
+    if shape == "ellipse":  # ellipse shape is not available in random_shapes function. use circle instead
         shape = "circle"
     for _ in range(5):
         rand_image, sc_labels = random_shapes(
@@ -158,9 +150,7 @@ def generate_random_annotated_image(
             break
 
     if image1 is None:
-        raise RuntimeError(
-            "Was not able to generate a random image that contains any shapes"
-        )
+        raise RuntimeError("Was not able to generate a random image that contains any shapes")
 
     annotations: List[Annotation] = []
     for sc_label in sc_labels:
@@ -239,9 +229,7 @@ def generate_random_annotated_image(
 
 
 @contextlib.contextmanager
-def generate_random_image_folder(
-    width: int = 480, height: int = 360, number_of_images: int = 10
-) -> Iterator[str]:
+def generate_random_image_folder(width: int = 480, height: int = 360, number_of_images: int = 10) -> Iterator[str]:
     """
     Generates a folder with random images, cleans up automatically if used in a `with` statement
 
@@ -312,9 +300,7 @@ def generate_random_single_image(width: int = 480, height: int = 360) -> Iterato
 
 
 @contextlib.contextmanager
-def generate_random_single_video(
-    width: int = 480, height: int = 360, number_of_frames: int = 150
-) -> Iterator[str]:
+def generate_random_single_video(width: int = 480, height: int = 360, number_of_frames: int = 150) -> Iterator[str]:
     """
     Generates a random video, cleans up automatically if used in a `with` statement
     :param width: Width of the video. Defaults to 480.

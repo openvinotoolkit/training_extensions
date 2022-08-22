@@ -206,15 +206,11 @@ class TestDatasetEntity:
         """
         # Checking value returned by "__repr__" method for DatasetEntity with default optional parameters
         default_parameters_dataset = DatasetEntity()
-        assert (
-            repr(default_parameters_dataset)
-            == "DatasetEntity(items=[], purpose=INFERENCE)"
-        )
+        assert repr(default_parameters_dataset) == "DatasetEntity(items=[], purpose=INFERENCE)"
         # Checking value returned by "__repr__" method for DatasetEntity with specified optional parameters
         optional_parameters_dataset = self.dataset()
         assert (
-            repr(optional_parameters_dataset)
-            == f"DatasetEntity(items={optional_parameters_dataset._items}, "
+            repr(optional_parameters_dataset) == f"DatasetEntity(items={optional_parameters_dataset._items}, "
             f"purpose=TEMPORARY_DATASET)"
         )
 
@@ -238,16 +234,10 @@ class TestDatasetEntity:
         """
         # Checking value returned by "__str__" method for DatasetEntity with default optional parameters
         default_parameters_dataset = DatasetEntity()
-        assert (
-            str(default_parameters_dataset)
-            == "DatasetEntity(size=0, purpose=INFERENCE)"
-        )
+        assert str(default_parameters_dataset) == "DatasetEntity(size=0, purpose=INFERENCE)"
         # Checking value returned by "__str__" method for DatasetEntity with specified optional parameters
         optional_parameters_dataset = self.dataset()
-        assert (
-            str(optional_parameters_dataset)
-            == "DatasetEntity(size=3, purpose=TEMPORARY_DATASET)"
-        )
+        assert str(optional_parameters_dataset) == "DatasetEntity(size=3, purpose=TEMPORARY_DATASET)"
 
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -442,9 +432,7 @@ class TestDatasetEntity:
         2. Check DatasetEntity object returned by "with_empty_annotations" with specified "annotation_kind" parameter
         """
 
-        def check_empty_annotations_dataset(
-            actual_dataset, expected_dataset, expected_kind
-        ):
+        def check_empty_annotations_dataset(actual_dataset, expected_dataset, expected_kind):
             expected_items = expected_dataset._items
             actual_items = actual_dataset._items
             assert actual_dataset.purpose is expected_dataset.purpose
@@ -463,9 +451,7 @@ class TestDatasetEntity:
         # Checking DatasetEntity object returned by "with_empty_annotations" with non-specified "annotation_kind"
         # parameter
         empty_annotations_dataset = dataset.with_empty_annotations()
-        check_empty_annotations_dataset(
-            empty_annotations_dataset, dataset, AnnotationSceneKind.PREDICTION
-        )
+        check_empty_annotations_dataset(empty_annotations_dataset, dataset, AnnotationSceneKind.PREDICTION)
         # Checking DatasetEntity object returned by "with_empty_annotations" with specified "annotation_kind" parameter
         kind = AnnotationSceneKind.ANNOTATION
         empty_annotations_dataset = dataset.with_empty_annotations(kind)

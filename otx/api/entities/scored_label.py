@@ -47,9 +47,7 @@ class ScoredLabel:
         label_source: Optional[LabelSource] = None,
     ):
         if math.isnan(probability) or (not 0 <= probability <= 1.0):
-            raise ValueError(
-                f"Probability should be in range [0, 1], {probability} is given"
-            )
+            raise ValueError(f"Probability should be in range [0, 1], {probability} is given")
 
         self.label = label
         self.probability = probability

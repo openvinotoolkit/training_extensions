@@ -206,9 +206,7 @@ class TestLabelGroupMapper:
             )
             for i, name in enumerate(names)
         ]
-        label_group = LabelGroup(
-            name="Test LabelGroup", labels=labels, group_type=LabelGroupType.EMPTY_LABEL
-        )
+        label_group = LabelGroup(name="Test LabelGroup", labels=labels, group_type=LabelGroupType.EMPTY_LABEL)
         serialized = LabelGroupMapper.forward(label_group)
         assert serialized == {
             "_id": label_group.id_,
@@ -218,9 +216,7 @@ class TestLabelGroupMapper:
         }
         all_labels = {ID(str(i)): labels[i] for i in range(3)}
 
-        deserialized = LabelGroupMapper.backward(
-            instance=serialized, all_labels=all_labels
-        )
+        deserialized = LabelGroupMapper.backward(instance=serialized, all_labels=all_labels)
         assert deserialized == label_group
 
 
@@ -229,15 +225,9 @@ class TestLabelGraphMapper:
     label_0 = LabelEntity(name="label_0", domain=Domain.SEGMENTATION, id=ID("0"))
     label_0_1 = LabelEntity(name="label_0_1", domain=Domain.SEGMENTATION, id=ID("0_1"))
     label_0_2 = LabelEntity(name="label_0_2", domain=Domain.SEGMENTATION, id=ID("0_2"))
-    label_0_1_1 = LabelEntity(
-        name="label_0_1_1", domain=Domain.SEGMENTATION, id=ID("0_1_1")
-    )
-    label_0_1_2 = LabelEntity(
-        name="label_0_1_2", domain=Domain.SEGMENTATION, id=ID("0_1_2")
-    )
-    label_0_2_1 = LabelEntity(
-        name="label_0_2_1", domain=Domain.SEGMENTATION, id=ID("0_2_1")
-    )
+    label_0_1_1 = LabelEntity(name="label_0_1_1", domain=Domain.SEGMENTATION, id=ID("0_1_1"))
+    label_0_1_2 = LabelEntity(name="label_0_1_2", domain=Domain.SEGMENTATION, id=ID("0_1_2"))
+    label_0_2_1 = LabelEntity(name="label_0_2_1", domain=Domain.SEGMENTATION, id=ID("0_2_1"))
 
     @pytest.mark.priority_medium
     @pytest.mark.unit

@@ -45,9 +45,7 @@ def create_detection_annotation_from_anomaly_heatmap(
 
         # cv2.connectedComponentsWithStats returns num_labels, labels, coordinates
         # and centroids. This script only needs the coordinates.
-        _, connected_components, coordinates, _ = cv2.connectedComponentsWithStats(
-            hard_prediction
-        )
+        _, connected_components, coordinates, _ = cv2.connectedComponentsWithStats(hard_prediction)
 
         for i, coordinate in enumerate(coordinates):
             # First row of the coordinates is always backround,
@@ -77,7 +75,5 @@ def create_detection_annotation_from_anomaly_heatmap(
                 x2=(comp_x + comp_w) / image_w,
                 y2=(comp_y + comp_h) / image_h,
             )
-            annotations.append(
-                Annotation(shape=shape, labels=[ScoredLabel(label, float(probability))])
-            )
+            annotations.append(Annotation(shape=shape, labels=[ScoredLabel(label, float(probability))]))
     return annotations

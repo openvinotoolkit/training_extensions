@@ -63,9 +63,7 @@ def main():
 
     # Get class for Task.
     is_nncf = is_checkpoint_nncf(args.load_weights)
-    task_class = get_impl_class(
-        template.entrypoints.nncf if is_nncf else template.entrypoints.base
-    )
+    task_class = get_impl_class(template.entrypoints.nncf if is_nncf else template.entrypoints.base)
 
     # Get hyper parameters schema.
     hyper_parameters = create(template.hyper_parameters.data)
@@ -83,9 +81,7 @@ def main():
         configuration=environment.get_model_configuration(),
         model_adapters=model_adapters,
         train_dataset=None,
-        optimization_type=ModelOptimizationType.NNCF
-        if is_nncf
-        else ModelOptimizationType.NONE,
+        optimization_type=ModelOptimizationType.NNCF if is_nncf else ModelOptimizationType.NONE,
     )
     environment.model = model
 

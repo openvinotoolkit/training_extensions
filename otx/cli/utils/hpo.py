@@ -70,11 +70,7 @@ def _check_hpo_enabled_task(task_type: TaskType):
 
 def _is_mpa_framework_task(task_type: TaskType):
     """Check whether mpa framework task"""
-    return (
-        _is_cls_framework_task(task_type)
-        or _is_det_framework_task(task_type)
-        or _is_seg_framework_task(task_type)
-    )
+    return _is_cls_framework_task(task_type) or _is_det_framework_task(task_type) or _is_seg_framework_task(task_type)
 
 
 def _is_cls_framework_task(task_type: TaskType):
@@ -124,19 +120,11 @@ def run_hpo(args, environment, dataset, task_type):
         "val_data_root": args.val_data_roots,
     }
 
-    hpo_save_path = os.path.abspath(
-        os.path.join(os.path.dirname(args.save_model_to), "hpo")
-    )
-    hpo = HpoManager(
-        environment, dataset, dataset_paths, args.hpo_time_ratio, hpo_save_path
-    )
-    print(
-        f"{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())} [HPO] started hyper-parameter optimization"
-    )
+    hpo_save_path = os.path.abspath(os.path.join(os.path.dirname(args.save_model_to), "hpo"))
+    hpo = HpoManager(environment, dataset, dataset_paths, args.hpo_time_ratio, hpo_save_path)
+    print(f"{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())} [HPO] started hyper-parameter optimization")
     hyper_parameters, hpo_weight_path = hpo.run()
-    print(
-        f"{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())} [HPO] completed hyper-parameter optimization"
-    )
+    print(f"{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())} [HPO] completed hyper-parameter optimization")
 
     environment.set_hyper_parameters(hyper_parameters)
 
@@ -153,9 +141,7 @@ def run_hpo(args, environment, dataset, task_type):
     )
 
     if hpopt_cfg.get("resume", False):
-        task.set_resume_path_to_config(
-            hpo_weight_path
-        )  # prepare finetune stage to resume
+        task.set_resume_path_to_config(hpo_weight_path)  # prepare finetune stage to resume
 
     if args.load_weights:
         environment.model.configuration.configurable_parameters = hyper_parameters
@@ -211,9 +197,7 @@ def run_hpo_trainer(
                 hyper_parameters.learning_parameters.num_iters,
             ]
 
-            eph_comp = list(
-                map(lambda x: x * hp_config["iterations"] / sum(eph_comp), eph_comp)
-            )
+            eph_comp = list(map(lambda x: x * hp_config["iterations"] / sum(eph_comp), eph_comp))
 
             for val in sorted(
                 list(range(len(eph_comp))),
@@ -222,12 +206,8 @@ def run_hpo_trainer(
             )[: hp_config["iterations"] - sum(map(int, eph_comp))]:
                 eph_comp[val] += 1
 
-            hyper_parameters.learning_parameters.learning_rate_fixed_iters = int(
-                eph_comp[0]
-            )
-            hyper_parameters.learning_parameters.learning_rate_warmup_iters = int(
-                eph_comp[1]
-            )
+            hyper_parameters.learning_parameters.learning_rate_fixed_iters = int(eph_comp[0])
+            hyper_parameters.learning_parameters.learning_rate_warmup_iters = int(eph_comp[1])
             hyper_parameters.learning_parameters.num_iters = int(eph_comp[2])
         else:
             hyper_parameters.learning_parameters.num_iters = hp_config["iterations"]
@@ -237,9 +217,9 @@ def run_hpo_trainer(
     # need to set batch_size config from the instance of ConfigurableParameters
     if hp_config["batch_size_param_name"] not in hp_config["params"].keys():
         attr = hyper_parameters
-        for val in hp_config["batch_size_param_name"].split('.'):
+        for val in hp_config["batch_size_param_name"].split("."):
             attr = getattr(attr, val)
-        hp_config["batch_size"] =  attr
+        hp_config["batch_size"] = attr
 
     # set hyper-parameters and print them
     HpoManager.set_hyperparameter(hyper_parameters, hp_config["params"])
@@ -296,9 +276,7 @@ def run_hpo_trainer(
     )
 
     # make callback to report score to hpopt every epoch
-    train_param = TrainParameters(
-        False, HpoCallback(hp_config, hp_config["metric"], task)
-    )
+    train_param = TrainParameters(False, HpoCallback(hp_config, hp_config["metric"], task))
 
     task.train(dataset=dataset, output_model=output_model, train_parameters=train_param)
 
@@ -311,9 +289,7 @@ def run_hpo_trainer(
         torch.save(initial_weight, initial_weight_path)
 
     # remove model weight except best model weight
-    best_model_weight = _get_best_model_weight_path(
-        _get_hpo_dir(hp_config), str(hp_config["trial_id"]), task_type
-    )
+    best_model_weight = _get_best_model_weight_path(_get_hpo_dir(hp_config), str(hp_config["trial_id"]), task_type)
     if best_model_weight is not None:
         best_model_weight = osp.realpath(best_model_weight)
         for dirpath, _, filenames in os.walk(_get_hpo_trial_workdir(hp_config)):
@@ -331,9 +307,7 @@ def exec_hpo_trainer(arg_file_name, alloc_gpus):
     hpo_env = os.environ.copy()
     if torch.cuda.device_count() > 0:
         hpo_env["CUDA_VISIBLE_DEVICES"] = gpu_ids
-    hpo_env["PYTHONPATH"] = f"{osp.dirname(__file__)}/../../:" + hpo_env.get(
-        "PYTHONPATH", ""
-    )
+    hpo_env["PYTHONPATH"] = f"{osp.dirname(__file__)}/../../:" + hpo_env.get("PYTHONPATH", "")
 
     subprocess.run(
         ["python3", trainer_file_name, arg_file_name],
@@ -369,24 +343,14 @@ def get_train_wrapper_task(impl_class, task_type):
         def prepare_hpo(self, hp_config):
             """update config of the each task framework for the HPO"""
             if _is_mpa_framework_task(self._task_type):
-                cfg = dict(
-                    checkpoint_config=dict(
-                        max_keep_ckpts=(hp_config["iterations"] + 10), interval=1
-                    )
-                )
+                cfg = dict(checkpoint_config=dict(max_keep_ckpts=(hp_config["iterations"] + 10), interval=1))
                 self.update_override_configurations(cfg)
-                self._output_path = _get_hpo_trial_workdir(  # pylint: disable=attribute-defined-outside-init
-                    hp_config
-                )
+                self._output_path = _get_hpo_trial_workdir(hp_config)  # pylint: disable=attribute-defined-outside-init
 
         def prepare_saving_initial_weight(self, save_path):
             """add a hook which saves initial model weight before training"""
             if _is_mpa_framework_task(task_type):
-                cfg = {
-                    "custom_hooks": [
-                        dict(type="SaveInitialWeightHook", save_path=save_path)
-                    ]
-                }
+                cfg = {"custom_hooks": [dict(type="SaveInitialWeightHook", save_path=save_path)]}
                 self.update_override_configurations(cfg)
             else:
                 raise RuntimeError(
@@ -487,21 +451,14 @@ class HpoCallback(UpdateProgressCallback):
                 score = 1.0
             print(f"score = {score} at iteration {current_iters}")
             # pylint: disable=unexpected-keyword-arg
-            if (
-                hpopt.report(
-                    config=self.hp_config, score=score, current_iters=current_iters
-                )
-                == hpopt.Status.STOP
-            ):
+            if hpopt.report(config=self.hp_config, score=score, current_iters=current_iters) == hpopt.Status.STOP:
                 self.hpo_task.cancel_training()
 
 
 class HpoManager:
     """Manage overall HPO process"""
 
-    def __init__(
-        self, environment, dataset, dataset_paths, expected_time_ratio, hpo_save_path
-    ):
+    def __init__(self, environment, dataset, dataset_paths, expected_time_ratio, hpo_save_path):
         self.environment = environment
         self.dataset_paths = dataset_paths
         self.work_dir = hpo_save_path
@@ -557,10 +514,7 @@ class HpoManager:
             # If trainset size is lower than min batch size range,
             # fix batch size to trainset size
             if batch_range[0] > batch_range[1]:
-                print(
-                    "Train set size is lower than batch size range."
-                    "Batch size is fixed to train set size."
-                )
+                print("Train set size is lower than batch size range." "Batch size is fixed to train set size.")
                 del hpopt_cfg["hp_space"][batch_size_name]
                 self.fixed_hp[batch_size_name] = train_dataset_size
 
@@ -587,8 +541,7 @@ class HpoManager:
             num_full_iterations=HpoManager.get_num_full_iterations(self.environment),
             full_dataset_size=train_dataset_size,
             expected_time_ratio=expected_time_ratio,
-            non_pure_train_ratio=val_dataset_size
-            / (train_dataset_size + val_dataset_size),
+            non_pure_train_ratio=val_dataset_size / (train_dataset_size + val_dataset_size),
             batch_size_name=batch_size_name,
             default_hyper_parameters=default_hyper_parameters,
             metric=self.metric,
@@ -603,17 +556,14 @@ class HpoManager:
             hpopt_arguments["reduction_factor"] = hpopt_cfg.get("reduction_factor")
             hpopt_arguments["min_iterations"] = hpopt_cfg.get("min_iterations")
             hpopt_arguments["num_trials"] = hpopt_cfg.get("num_trials")
-            hpopt_arguments["num_workers"] = (
-                num_available_gpus // self.num_gpus_per_trial
-            )
+            hpopt_arguments["num_workers"] = num_available_gpus // self.num_gpus_per_trial
 
             # Prevent each trials from being stopped during warmup stage
             batch_size = default_hyper_parameters.get(batch_size_name)
             if "min_iterations" not in hpopt_cfg and batch_size is not None:
                 if _is_mpa_framework_task(task_type):
                     hpopt_arguments["min_iterations"] = ceil(
-                        env_hp.learning_parameters.learning_rate_warmup_iters
-                        / ceil(train_dataset_size / batch_size)
+                        env_hp.learning_parameters.learning_rate_warmup_iters / ceil(train_dataset_size / batch_size)
                     )
 
         HpoManager.remove_empty_keys(hpopt_arguments)
@@ -641,13 +591,10 @@ class HpoManager:
 
             while True:
                 if hpo_previous_status == hpopt.Status.PARTIALRESULT:
-                    user_input = input(
-                        "Do you want to resume HPO? [\033[1mY\033[0m/n]: "
-                    )
+                    user_input = input("Do you want to resume HPO? [\033[1mY\033[0m/n]: ")
                 else:
                     user_input = input(
-                        "Do you want to reuse previously found "
-                        "hyper-parameters? [\033[1mY\033[0m/n]: "
+                        "Do you want to reuse previously found " "hyper-parameters? [\033[1mY\033[0m/n]: "
                     )
 
                 input_len = len(user_input)
@@ -668,10 +615,7 @@ class HpoManager:
 
                 retry_count += 1
                 if retry_count >= 5:
-                    print(
-                        "Your inputs are invalid. "
-                        "The whole program is terminating..."
-                    )
+                    print("Your inputs are invalid. " "The whole program is terminating...")
                     sys.exit()
 
                 print("You should type 'y' or 'n'. Nothing means 'y'.")
@@ -723,17 +667,13 @@ class HpoManager:
 
                 _kwargs = {
                     "hp_config": hp_config,
-                    "hyper_parameters": _convert_parameter_group_to_dict(
-                        self.environment.get_hyper_parameters()
-                    ),
+                    "hyper_parameters": _convert_parameter_group_to_dict(self.environment.get_hyper_parameters()),
                     "model_template": self.environment.model_template,
                     "dataset_paths": self.dataset_paths,
                     "task_type": task_type,
                 }
 
-                pickle_path = HpoManager.safe_pickle_dump(
-                    hpo_work_dir, f"hpo_trial_{hp_config['trial_id']}", _kwargs
-                )
+                pickle_path = HpoManager.safe_pickle_dump(hpo_work_dir, f"hpo_trial_{hp_config['trial_id']}", _kwargs)
 
                 alloc_gpus = self.__alloc_gpus(gpu_alloc_list)
 
@@ -886,9 +826,7 @@ class HpoDataset:
         if subset != Subset.TRAINING or self.subset_ratio > 0.99:
             return dataset
 
-        indices = torch.randperm(
-            len(dataset), generator=torch.Generator().manual_seed(42)
-        )
+        indices = torch.randperm(len(dataset), generator=torch.Generator().manual_seed(42))
         indices = indices.tolist()  # type: ignore
         indices = indices[: int(len(dataset) * self.subset_ratio)]
 
@@ -956,10 +894,7 @@ class HpoUnpickler(pickle.Unpickler):
 
     def find_class(self, module_name, class_name):
         # Only allow safe classes from builtins.
-        if (
-            module_name in ["builtins", "__builtin__"]
-            and class_name in self.__safe_builtins
-        ):
+        if module_name in ["builtins", "__builtin__"] and class_name in self.__safe_builtins:
             return getattr(builtins, class_name)
         if module_name == "collections" and class_name in self.__safe_collections:
             return getattr(collections, class_name)
@@ -969,9 +904,7 @@ class HpoUnpickler(pickle.Unpickler):
                 return getattr(module, class_name)
 
         # Forbid everything else.
-        raise pickle.UnpicklingError(
-            f"global '{module_name}.{class_name}' is forbidden"
-        )
+        raise pickle.UnpicklingError(f"global '{module_name}.{class_name}' is forbidden")
 
 
 def main():

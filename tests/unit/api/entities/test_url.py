@@ -31,9 +31,7 @@ class TestURL:
         3. Check path of URL
         """
         test_url = URL("binaryrepo:/images/file_%20_whatever.jpg")
-        test_url2 = URL(
-            "binaryrepo://intel.com/images/file_%20_whatever.jpg?blaat=none"
-        )
+        test_url2 = URL("binaryrepo://intel.com/images/file_%20_whatever.jpg?blaat=none")
 
         assert test_url.scheme == "binaryrepo"
         assert test_url2.scheme == "binaryrepo"
@@ -157,15 +155,9 @@ class TestURL:
             "https://www.some_host.com/images/file_%20_whatever.png"
         )
         # Checking value returned by __str__ for URL initialized with non-empty "scheme" and empty "host"
-        assert (
-            str(URL("binaryrepo:/images/file_%20_whatever.jpg"))
-            == "binaryrepo:/images/file_%20_whatever.jpg"
-        )
+        assert str(URL("binaryrepo:/images/file_%20_whatever.jpg")) == "binaryrepo:/images/file_%20_whatever.jpg"
         # Checking value returned by __str__ for URL initialized with non-empty "host" and empty "scheme"
-        assert (
-            str(URL("//www.some_host.com/images/file_%20_whatever.jpg"))
-            == "/images/file_%20_whatever.jpg"
-        )
+        assert str(URL("//www.some_host.com/images/file_%20_whatever.jpg")) == "/images/file_%20_whatever.jpg"
 
     @pytest.mark.priority_medium
     @pytest.mark.unit

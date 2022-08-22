@@ -78,9 +78,7 @@ class CommonActions:
         )
 
     def human_1_dataset_item(self) -> DatasetItemEntity:
-        human_1_roi = Annotation(
-            shape=Rectangle.generate_full_box(), labels=[ScoredLabel(self.human())]
-        )
+        human_1_roi = Annotation(shape=Rectangle.generate_full_box(), labels=[ScoredLabel(self.human())])
         human_1_annotation = Annotation(
             shape=Rectangle(x1=0.3, y1=0, x2=0.4, y2=0.2),
             labels=[ScoredLabel(self.human())],
@@ -94,9 +92,7 @@ class CommonActions:
         return human_1_dataset_item
 
     def human_2_dataset_item(self) -> DatasetItemEntity:
-        human_2_roi = Annotation(
-            shape=Rectangle.generate_full_box(), labels=[ScoredLabel(self.human())]
-        )
+        human_2_roi = Annotation(shape=Rectangle.generate_full_box(), labels=[ScoredLabel(self.human())])
         human_2_annotation = Annotation(
             shape=Rectangle(x1=0.6, y1=0, x2=0.7, y2=0.3),
             labels=[ScoredLabel(self.human())],
@@ -110,9 +106,7 @@ class CommonActions:
         return human_2_dataset_item
 
     def human_3_dataset_item(self) -> DatasetItemEntity:
-        human_3_roi = Annotation(
-            shape=Rectangle.generate_full_box(), labels=[ScoredLabel(self.human())]
-        )
+        human_3_roi = Annotation(shape=Rectangle.generate_full_box(), labels=[ScoredLabel(self.human())])
         human_3_annotation = Annotation(
             shape=Rectangle(x1=0.7, y1=0, x2=0.8, y2=0.3),
             labels=[ScoredLabel(self.human())],
@@ -126,9 +120,7 @@ class CommonActions:
         return human_3_dataset_item
 
     def result_set(self) -> ResultSetEntity:
-        configurable_params = ConfigurableParameters(
-            header="Test model configurable params"
-        )
+        configurable_params = ConfigurableParameters(header="Test model configurable params")
         labels_group = LabelGroup(
             name="model_labels_group",
             labels=[self.car(), self.human(), self.dog()],
@@ -141,9 +133,7 @@ class CommonActions:
             configurable_params,
             LabelSchemaEntity(label_groups=[labels_group, other_label_group]),
         )
-        model = ModelEntity(
-            train_dataset=DatasetEntity(), configuration=model_configuration
-        )
+        model = ModelEntity(train_dataset=DatasetEntity(), configuration=model_configuration)
 
         car_1_roi = Annotation(
             shape=Rectangle.generate_full_box(),
@@ -156,13 +146,9 @@ class CommonActions:
         car_1_annotation_scene = AnnotationSceneEntity(
             annotations=[car_1_annotation], kind=AnnotationSceneKind.ANNOTATION
         )
-        car_1_dataset_item = DatasetItemEntity(
-            media=self.image, annotation_scene=car_1_annotation_scene, roi=car_1_roi
-        )
+        car_1_dataset_item = DatasetItemEntity(media=self.image, annotation_scene=car_1_annotation_scene, roi=car_1_roi)
 
-        car_2_roi = Annotation(
-            shape=Rectangle.generate_full_box(), labels=[ScoredLabel(self.car())]
-        )
+        car_2_roi = Annotation(shape=Rectangle.generate_full_box(), labels=[ScoredLabel(self.car())])
         car_2_annotation = Annotation(
             shape=Rectangle(x1=0.8, y1=0, x2=1.0, y2=0.2),
             labels=[ScoredLabel(self.car())],
@@ -170,13 +156,9 @@ class CommonActions:
         car_2_annotation_scene = AnnotationSceneEntity(
             annotations=[car_2_annotation], kind=AnnotationSceneKind.ANNOTATION
         )
-        car_2_dataset_item = DatasetItemEntity(
-            media=self.image, annotation_scene=car_2_annotation_scene, roi=car_2_roi
-        )
+        car_2_dataset_item = DatasetItemEntity(media=self.image, annotation_scene=car_2_annotation_scene, roi=car_2_roi)
 
-        dog_1_roi = Annotation(
-            shape=Rectangle.generate_full_box(), labels=[ScoredLabel(self.dog())]
-        )
+        dog_1_roi = Annotation(shape=Rectangle.generate_full_box(), labels=[ScoredLabel(self.dog())])
         dog_1_annotation = Annotation(
             shape=Rectangle(x1=0.5, y1=0, x2=0.6, y2=0.1),
             labels=[ScoredLabel(self.dog())],
@@ -184,13 +166,9 @@ class CommonActions:
         dog_1_annotation_scene = AnnotationSceneEntity(
             annotations=[dog_1_annotation], kind=AnnotationSceneKind.ANNOTATION
         )
-        dog_1_dataset_item = DatasetItemEntity(
-            media=self.image, annotation_scene=dog_1_annotation_scene, roi=dog_1_roi
-        )
+        dog_1_dataset_item = DatasetItemEntity(media=self.image, annotation_scene=dog_1_annotation_scene, roi=dog_1_roi)
 
-        dog_2_roi = Annotation(
-            shape=Rectangle.generate_full_box(), labels=[ScoredLabel(self.dog())]
-        )
+        dog_2_roi = Annotation(shape=Rectangle.generate_full_box(), labels=[ScoredLabel(self.dog())])
         dog_2_annotation = Annotation(
             shape=Rectangle(x1=0.7, y1=0, x2=0.8, y2=0.3),
             labels=[ScoredLabel(self.dog())],
@@ -198,9 +176,7 @@ class CommonActions:
         dog_2_annotation_scene = AnnotationSceneEntity(
             annotations=[dog_2_annotation], kind=AnnotationSceneKind.ANNOTATION
         )
-        dog_2_dataset_item = DatasetItemEntity(
-            media=self.image, annotation_scene=dog_2_annotation_scene, roi=dog_2_roi
-        )
+        dog_2_dataset_item = DatasetItemEntity(media=self.image, annotation_scene=dog_2_annotation_scene, roi=dog_2_roi)
 
         ground_truth_dataset = DatasetEntity(
             [
@@ -230,19 +206,13 @@ class CommonActions:
         return result_set
 
     def single_label_result_set(self) -> ResultSetEntity:
-        configurable_params = ConfigurableParameters(
-            header="Test model configurable params"
-        )
+        configurable_params = ConfigurableParameters(header="Test model configurable params")
         labels_group = LabelGroup(
             name="single_class_model_labels_group",
             labels=[self.human()],
         )
-        model_configuration = ModelConfiguration(
-            configurable_params, LabelSchemaEntity(label_groups=[labels_group])
-        )
-        model = ModelEntity(
-            train_dataset=DatasetEntity(), configuration=model_configuration
-        )
+        model_configuration = ModelConfiguration(configurable_params, LabelSchemaEntity(label_groups=[labels_group]))
+        model = ModelEntity(train_dataset=DatasetEntity(), configuration=model_configuration)
 
         ground_truth_dataset = DatasetEntity(
             [
@@ -251,9 +221,7 @@ class CommonActions:
                 self.human_3_dataset_item(),
             ]
         )
-        prediction_dataset = DatasetEntity(
-            [self.human_1_dataset_item(), self.human_2_dataset_item()]
-        )
+        prediction_dataset = DatasetEntity([self.human_1_dataset_item(), self.human_2_dataset_item()])
         result_set = ResultSetEntity(
             model=model,
             ground_truth_dataset=ground_truth_dataset,
@@ -262,9 +230,7 @@ class CommonActions:
         return result_set
 
     @staticmethod
-    def check_confusion_matrix(
-        matrix, expected_name, expected_labels, expected_matrix
-    ) -> None:
+    def check_confusion_matrix(matrix, expected_name, expected_labels, expected_matrix) -> None:
         assert matrix.name == expected_name
         assert matrix.row_labels == matrix.column_labels
         assert matrix.row_labels == expected_labels
@@ -307,9 +273,7 @@ class TestAccuracyFunctions:
         matrix_values = np.array([[0, 0.5, 0.5], [0, 0.5, 0.5], [1, 0, 0]])
         # Checking "BarMetricsGroup" object returned by "precision_metrics_group" for "confusion_matrix" with default
         # "row_labels"
-        confusion_matrix = MatrixMetric(
-            name="no_row_labels MatrixMetric", matrix_values=matrix_values
-        )
+        confusion_matrix = MatrixMetric(name="no_row_labels MatrixMetric", matrix_values=matrix_values)
         check_precision_metrics_group(
             matrix_for_precision=confusion_matrix,
             expected_metrics=[
@@ -373,9 +337,7 @@ class TestAccuracyFunctions:
         matrix_values = np.array([[0, 0.8, 0.4], [0, 0.8, 0.2], [0.4, 0.2, 0]])
         # Checking "BarMetricsGroup" returned by "recall_metrics_group" when "confusion_matrix" initialized with
         # default "row_labels"
-        confusion_matrix = MatrixMetric(
-            name="no_row_labels MatrixMetric", matrix_values=matrix_values
-        )
+        confusion_matrix = MatrixMetric(name="no_row_labels MatrixMetric", matrix_values=matrix_values)
 
         check_recall_metrics_group(
             matrix_for_recall=confusion_matrix,
@@ -434,9 +396,7 @@ class TestAccuracyFunctions:
         # Checking list returned by "compute_unnormalized_confusion_matrices_from_resultset" for model with multiple
         # labels in LabelGroup
         result_set = CommonActions().result_set()
-        confusion_matrices = compute_unnormalized_confusion_matrices_from_resultset(
-            result_set
-        )
+        confusion_matrices = compute_unnormalized_confusion_matrices_from_resultset(result_set)
         assert len(confusion_matrices) == 2
         # Checking first confusion matrix
         confusion_matrix = confusion_matrices[0]
@@ -457,9 +417,7 @@ class TestAccuracyFunctions:
         # Checking list returned by "compute_unnormalized_confusion_matrices_from_resultset" function for model with
         # single label specified in LabelGroup
         result_set = CommonActions().single_label_result_set()
-        confusion_matrices = compute_unnormalized_confusion_matrices_from_resultset(
-            result_set
-        )
+        confusion_matrices = compute_unnormalized_confusion_matrices_from_resultset(result_set)
         assert len(confusion_matrices) == 1
         confusion_matrix = confusion_matrices[0]
         CommonActions.check_confusion_matrix(
@@ -534,9 +492,7 @@ class TestAccuracy:
         # Checking attributes of "Accuracy" object initialized with specified optional parameters
         accuracy = Accuracy(resultset=result_set, average=MetricAverageMethod.MACRO)
         # Checking "accuracy" attribute
-        assert accuracy.accuracy == ScoreMetric(
-            name="Accuracy", value=0.7916666666666667
-        )
+        assert accuracy.accuracy == ScoreMetric(name="Accuracy", value=0.7916666666666667)
         # Checking "unnormalized_matrices" attribute
         actual_unnormalized_matrices = accuracy._unnormalized_matrices
         check_confusion_matrices(actual_unnormalized_matrices)
@@ -556,9 +512,7 @@ class TestAccuracy:
         Test passes if "Performance" object returned by "get_performance" method is equal to expected
         """
 
-        def check_precision_recall_metrics(
-            precision_metric, recall_metric, expected_precision, expected_recall
-        ):
+        def check_precision_recall_metrics(precision_metric, recall_metric, expected_precision, expected_recall):
             # Checking Precision per class metric
             assert isinstance(precision_metric, BarMetricsGroup)
             assert precision_metric.metrics == expected_precision
@@ -584,9 +538,7 @@ class TestAccuracy:
             matrix=actual_matrix_metric,
             expected_name="model_labels_group",
             expected_labels=["car", "dog", "human"],
-            expected_matrix=np.array(
-                [[1, 0, 0], [0, 1, 0], [0, 0.33333334, 0.6666667]], dtype=np.float32
-            ),
+            expected_matrix=np.array([[1, 0, 0], [0, 1, 0], [0, 0.33333334, 0.6666667]], dtype=np.float32),
         )
         # Checking second MatrixMetric object
         actual_matrix_metric = actual_performance.dashboard_metrics[0].metrics[1]
@@ -594,9 +546,7 @@ class TestAccuracy:
             matrix=actual_matrix_metric,
             expected_name="other_model_labels_group",
             expected_labels=["dog", "human"],
-            expected_matrix=np.array(
-                [[1, 0], [0.33333334, 0.6666667]], dtype=np.float32
-            ),
+            expected_matrix=np.array([[1, 0], [0.33333334, 0.6666667]], dtype=np.float32),
         )
         # Checking Precision and Recall BarMetricsGroup for first label_group
         precision_per_class_metric = actual_performance.dashboard_metrics[1]
@@ -659,15 +609,11 @@ class TestAccuracy:
         )
         expected_accuracy = np.float64(0.8)
         assert (
-            accuracy._compute_accuracy(
-                average=MetricAverageMethod.MICRO, confusion_matrices=[confusion_matrix]
-            )
+            accuracy._compute_accuracy(average=MetricAverageMethod.MICRO, confusion_matrices=[confusion_matrix])
             == expected_accuracy
         )
         assert (
-            accuracy._compute_accuracy(
-                average=MetricAverageMethod.MACRO, confusion_matrices=[confusion_matrix]
-            )
+            accuracy._compute_accuracy(average=MetricAverageMethod.MACRO, confusion_matrices=[confusion_matrix])
             == expected_accuracy
         )
         # Checking value returned by "_compute_accuracy" for several confusion matrices specified as
@@ -686,11 +632,7 @@ class TestAccuracy:
         ) == np.float64(0.8375)
         # Checking "ValueError" exception is raised when empty list is specified as "confusion_matrices"
         with pytest.raises(ValueError):
-            accuracy._compute_accuracy(
-                average=MetricAverageMethod.MACRO, confusion_matrices=[]
-            )
+            accuracy._compute_accuracy(average=MetricAverageMethod.MACRO, confusion_matrices=[])
         # Checking "RuntimeError" exception is raised when unexpected method is specified as "average"
         with pytest.raises(RuntimeError):
-            accuracy._compute_accuracy(
-                average="unknown average", confusion_matrices=[confusion_matrix]
-            )
+            accuracy._compute_accuracy(average="unknown average", confusion_matrices=[confusion_matrix])

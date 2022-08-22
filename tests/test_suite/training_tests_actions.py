@@ -69,8 +69,7 @@ class BaseOTXTestAction(ABC):
         for stage_name in list_required_stages:
             if not results_prev_stages or stage_name not in results_prev_stages:
                 raise RuntimeError(
-                    f"The action {self.name} requires results of the stage {stage_name}, "
-                    f"but they are absent"
+                    f"The action {self.name} requires results of the stage {stage_name}, " f"but they are absent"
                 )
 
     @abstractmethod
@@ -78,9 +77,7 @@ class BaseOTXTestAction(ABC):
         raise NotImplementedError("The main action method is not implemented")
 
 
-def create_environment_and_task(
-    params, labels_schema, model_template, dataset=None, model_adapters=None
-):
+def create_environment_and_task(params, labels_schema, model_template, dataset=None, model_adapters=None):
 
     environment = TaskEnvironment(
         model=None,
@@ -132,41 +129,24 @@ class OTXTestTrainingAction(BaseOTXTestAction):
         logger.debug(f"self.template_path = {self.template_path}")
 
         print(f"train dataset: {len(self.dataset.get_subset(Subset.TRAINING))} items")
-        print(
-            f"validation dataset: "
-            f"{len(self.dataset.get_subset(Subset.VALIDATION))} items"
-        )
+        print(f"validation dataset: " f"{len(self.dataset.get_subset(Subset.VALIDATION))} items")
 
         logger.debug("Load model template")
         self.model_template = parse_model_template(self.template_path)
 
         logger.debug("Set hyperparameters")
-        params = otx_api_configuration_helper_create(
-            self.model_template.hyper_parameters.data
-        )
+        params = otx_api_configuration_helper_create(self.model_template.hyper_parameters.data)
         if self.num_training_iters != KEEP_CONFIG_FIELD_VALUE:
             params.learning_parameters.num_iters = int(self.num_training_iters)
-            logger.debug(
-                f"Set params.learning_parameters.num_iters="
-                f"{params.learning_parameters.num_iters}"
-            )
+            logger.debug(f"Set params.learning_parameters.num_iters=" f"{params.learning_parameters.num_iters}")
         else:
-            logger.debug(
-                f"Keep params.learning_parameters.num_iters="
-                f"{params.learning_parameters.num_iters}"
-            )
+            logger.debug(f"Keep params.learning_parameters.num_iters=" f"{params.learning_parameters.num_iters}")
 
         if self.batch_size != KEEP_CONFIG_FIELD_VALUE:
             params.learning_parameters.batch_size = int(self.batch_size)
-            logger.debug(
-                f"Set params.learning_parameters.batch_size="
-                f"{params.learning_parameters.batch_size}"
-            )
+            logger.debug(f"Set params.learning_parameters.batch_size=" f"{params.learning_parameters.batch_size}")
         else:
-            logger.debug(
-                f"Keep params.learning_parameters.batch_size="
-                f"{params.learning_parameters.batch_size}"
-            )
+            logger.debug(f"Keep params.learning_parameters.batch_size=" f"{params.learning_parameters.batch_size}")
 
         model_adapters = None
         if self.checkpoint is not None:
@@ -174,20 +154,12 @@ class OTXTestTrainingAction(BaseOTXTestAction):
             model_adapters = {
                 "weights.pth": ModelAdapter(open(self.checkpoint, "rb").read()),
             }
-            label_schema_path = osp.join(
-                osp.dirname(self.checkpoint), "label_schema.json"
-            )
+            label_schema_path = osp.join(osp.dirname(self.checkpoint), "label_schema.json")
             if osp.exists(label_schema_path):
                 with open(label_schema_path, encoding="UTF-8") as read_file:
-                    serialized_label_schema = LabelSchemaMapper.backward(
-                        json.load(read_file)
-                    )
+                    serialized_label_schema = LabelSchemaMapper.backward(json.load(read_file))
                 model_adapters.update(
-                    {
-                        "label_schema.json": ModelAdapter(
-                            label_schema_to_bytes(serialized_label_schema)
-                        )
-                    }
+                    {"label_schema.json": ModelAdapter(label_schema_to_bytes(serialized_label_schema))}
                 )
 
         self.environment, self.task = create_environment_and_task(
@@ -235,9 +207,7 @@ def is_nncf_enabled():
 
 def run_evaluation(dataset, task, model):
     logger.debug("Evaluation: Get predictions on the dataset")
-    predicted_dataset = task.infer(
-        dataset.with_empty_annotations(), InferenceParameters(is_evaluation=True)
-    )
+    predicted_dataset = task.infer(dataset.with_empty_annotations(), InferenceParameters(is_evaluation=True))
     resultset = ResultSetEntity(
         model=model,
         ground_truth_dataset=dataset,
@@ -262,14 +232,10 @@ class OTXTestTrainingEvaluationAction(BaseOTXTestAction):
     def _run_otx_evaluation(self, data_collector, dataset, task, trained_model):
         logger.info("Begin evaluation of trained model")
         validation_dataset = dataset.get_subset(self.subset)
-        score_name, score_value = run_evaluation(
-            validation_dataset, task, trained_model
-        )
+        score_name, score_value = run_evaluation(validation_dataset, task, trained_model)
         data_collector.log_final_metric("metric_name", self.name + "/" + score_name)
         data_collector.log_final_metric("metric_value", score_value)
-        logger.info(
-            f"End evaluation of trained model, results: {score_name}: {score_value}"
-        )
+        logger.info(f"End evaluation of trained model, results: {score_name}: {score_value}")
         return score_name, score_value
 
     def __call__(self, data_collector: DataCollector, results_prev_stages: OrderedDict):
@@ -287,9 +253,7 @@ class OTXTestTrainingEvaluationAction(BaseOTXTestAction):
 
 
 def run_export(environment, dataset, task, action_name, expected_optimization_type):
-    logger.debug(
-        f'For action "{action_name}": Copy environment for evaluation exported model'
-    )
+    logger.debug(f'For action "{action_name}": Copy environment for evaluation exported model')
 
     environment_for_export = deepcopy(environment)
 
@@ -312,9 +276,7 @@ def run_export(environment, dataset, task, action_name, expected_optimization_ty
         exported_model.optimization_type == expected_optimization_type
     ), f"In action '{action_name}': Wrong optimization type"
 
-    logger.debug(
-        f'For action "{action_name}": Set exported model into environment for export'
-    )
+    logger.debug(f'For action "{action_name}": Set exported model into environment for export')
     environment_for_export.model = exported_model
     return environment_for_export, exported_model
 
@@ -374,13 +336,9 @@ class OTXTestExportEvaluationAction(BaseOTXTestAction):
         exported_model,
     ):
         logger.info("Begin evaluation of exported model")
-        self.openvino_task = create_openvino_task(
-            model_template, environment_for_export
-        )
+        self.openvino_task = create_openvino_task(model_template, environment_for_export)
         validation_dataset = dataset.get_subset(self.subset)
-        score_name, score_value = run_evaluation(
-            validation_dataset, self.openvino_task, exported_model
-        )
+        score_name, score_value = run_evaluation(validation_dataset, self.openvino_task, exported_model)
         data_collector.log_final_metric("metric_name", self.name + "/" + score_name)
         data_collector.log_final_metric("metric_value", score_value)
         logger.info("End evaluation of exported model")
@@ -396,9 +354,7 @@ class OTXTestExportEvaluationAction(BaseOTXTestAction):
             "exported_model": results_prev_stages["export"]["exported_model"],
         }
 
-        score_name, score_value = self._run_otx_export_evaluation(
-            data_collector, **kwargs
-        )
+        score_name, score_value = self._run_otx_export_evaluation(data_collector, **kwargs)
         results = {"metrics": {"accuracy": {score_name: score_value}}}
         return results
 
@@ -410,14 +366,10 @@ class OTXTestPotAction(BaseOTXTestAction):
     def __init__(self, pot_subset=Subset.TRAINING):
         self.pot_subset = pot_subset
 
-    def _run_otx_pot(
-        self, data_collector, model_template, dataset, environment_for_export
-    ):
+    def _run_otx_pot(self, data_collector, model_template, dataset, environment_for_export):
         logger.debug("Creating environment and task for POT optimization")
         self.environment_for_pot = deepcopy(environment_for_export)
-        self.openvino_task_pot = create_openvino_task(
-            model_template, environment_for_export
-        )
+        self.openvino_task_pot = create_openvino_task(model_template, environment_for_export)
 
         self.optimized_model_pot = ModelEntity(
             dataset,
@@ -435,12 +387,8 @@ class OTXTestPotAction(BaseOTXTestAction):
         except Exception as ex:
             raise RuntimeError("POT optimization failed") from ex
 
-        assert (
-            self.optimized_model_pot.model_format == ModelFormat.OPENVINO
-        ), "Wrong model format after pot"
-        assert (
-            self.optimized_model_pot.optimization_type == ModelOptimizationType.POT
-        ), "Wrong optimization type"
+        assert self.optimized_model_pot.model_format == ModelFormat.OPENVINO, "Wrong model format after pot"
+        assert self.optimized_model_pot.optimization_type == ModelOptimizationType.POT, "Wrong optimization type"
         logger.info("POT optimization is finished")
 
     def __call__(self, data_collector: DataCollector, results_prev_stages: OrderedDict):
@@ -468,14 +416,10 @@ class OTXTestPotEvaluationAction(BaseOTXTestAction):
     def __init__(self, subset=Subset.TESTING):
         self.subset = subset
 
-    def _run_otx_pot_evaluation(
-        self, data_collector, dataset, openvino_task_pot, optimized_model_pot
-    ):
+    def _run_otx_pot_evaluation(self, data_collector, dataset, openvino_task_pot, optimized_model_pot):
         logger.info("Begin evaluation of pot model")
         validation_dataset_pot = dataset.get_subset(self.subset)
-        score_name, score_value = run_evaluation(
-            validation_dataset_pot, openvino_task_pot, optimized_model_pot
-        )
+        score_name, score_value = run_evaluation(validation_dataset_pot, openvino_task_pot, optimized_model_pot)
         data_collector.log_final_metric("metric_name", self.name + "/" + score_name)
         data_collector.log_final_metric("metric_value", score_value)
         logger.info("End evaluation of pot model")
@@ -499,9 +443,7 @@ class OTXTestNNCFAction(BaseOTXTestAction):
     _name = "nncf"
     _depends_stages_names = ["training"]
 
-    def _run_otx_nncf(
-        self, data_collector, model_template, dataset, trained_model, environment
-    ):
+    def _run_otx_nncf(self, data_collector, model_template, dataset, trained_model, environment):
         logger.debug("Get predictions on the validation set for exported model")
         self.environment_for_nncf = deepcopy(environment)
 
@@ -527,18 +469,12 @@ class OTXTestNNCFAction(BaseOTXTestAction):
 
         logger.info("Run NNCF optimization")
         try:
-            self.nncf_task.optimize(
-                OptimizationType.NNCF, dataset, self.nncf_model, None
-            )
+            self.nncf_task.optimize(OptimizationType.NNCF, dataset, self.nncf_model, None)
         except Exception as ex:
             raise RuntimeError("NNCF optimization failed") from ex
 
-        assert (
-            self.nncf_model.optimization_type == ModelOptimizationType.NNCF
-        ), "Wrong optimization type"
-        assert (
-            self.nncf_model.model_format == ModelFormat.BASE_FRAMEWORK
-        ), "Wrong model format"
+        assert self.nncf_model.optimization_type == ModelOptimizationType.NNCF, "Wrong optimization type"
+        assert self.nncf_model.model_format == ModelFormat.BASE_FRAMEWORK, "Wrong model format"
 
         logger.info("NNCF optimization is finished")
 
@@ -584,10 +520,7 @@ def check_nncf_model_graph(model, path_to_dot):
             logger.info("ATTR: {} : {} != {}".format(k, attrs, load_attrs))
             return False
 
-    return (
-        load_graph.nodes.keys() == nx_graph.nodes.keys()
-        and nx.DiGraph(load_graph).edges == nx_graph.edges
-    )
+    return load_graph.nodes.keys() == nx_graph.nodes.keys() and nx.DiGraph(load_graph).edges == nx_graph.edges
 
 
 class OTXTestNNCFGraphAction(BaseOTXTestAction):
@@ -622,12 +555,8 @@ class OTXTestNNCFGraphAction(BaseOTXTestAction):
         if not os.path.exists(self.reference_dir):
             pytest.skip("Reference directory does not exist")
 
-        params = otx_api_configuration_helper_create(
-            model_template.hyper_parameters.data
-        )
-        environment, task = create_environment_and_task(
-            params, self.labels_schema, model_template
-        )
+        params = otx_api_configuration_helper_create(model_template.hyper_parameters.data)
+        environment, task = create_environment_and_task(params, self.labels_schema, model_template)
         output_model = ModelEntity(
             self.dataset,
             environment.get_model_configuration(),
@@ -650,17 +579,13 @@ class OTXTestNNCFGraphAction(BaseOTXTestAction):
         nncf_task_cls = get_impl_class(nncf_task_class_impl_path)
         nncf_task = nncf_task_cls(task_environment=environment_for_nncf)
 
-        path_to_ref_dot = os.path.join(
-            self.reference_dir, "nncf", f"{nncf_task._nncf_preset}.dot"
-        )
+        path_to_ref_dot = os.path.join(self.reference_dir, "nncf", f"{nncf_task._nncf_preset}.dot")
         if not os.path.exists(path_to_ref_dot):
             pytest.skip("Reference file does not exist: {}".format(path_to_ref_dot))
 
         compressed_model = self.fn_get_compressed_model(nncf_task)
 
-        assert check_nncf_model_graph(
-            compressed_model, path_to_ref_dot
-        ), "Compressed model differs from the reference"
+        assert check_nncf_model_graph(compressed_model, path_to_ref_dot), "Compressed model differs from the reference"
 
     def __call__(self, data_collector: DataCollector, results_prev_stages: OrderedDict):
         self._check_result_prev_stages(results_prev_stages, self.depends_stages_names)
@@ -679,9 +604,7 @@ class OTXTestNNCFEvaluationAction(BaseOTXTestAction):
     def _run_otx_nncf_evaluation(self, data_collector, dataset, nncf_task, nncf_model):
         logger.info("Begin evaluation of nncf model")
         validation_dataset = dataset.get_subset(self.subset)
-        score_name, score_value = run_evaluation(
-            validation_dataset, nncf_task, nncf_model
-        )
+        score_name, score_value = run_evaluation(validation_dataset, nncf_task, nncf_model)
         data_collector.log_final_metric("metric_name", self.name + "/" + score_name)
         data_collector.log_final_metric("metric_value", score_value)
         logger.info("End evaluation of nncf model")
@@ -696,9 +619,7 @@ class OTXTestNNCFEvaluationAction(BaseOTXTestAction):
             "nncf_model": results_prev_stages["nncf"]["nncf_model"],
         }
 
-        score_name, score_value = self._run_otx_nncf_evaluation(
-            data_collector, **kwargs
-        )
+        score_name, score_value = self._run_otx_nncf_evaluation(data_collector, **kwargs)
         results = {"metrics": {"accuracy": {score_name: score_value}}}
         return results
 
@@ -710,9 +631,7 @@ class OTXTestNNCFExportAction(BaseOTXTestAction):
     def __init__(self, subset=Subset.VALIDATION):
         self.subset = subset
 
-    def _run_otx_nncf_export(
-        self, data_collector, nncf_environment, dataset, nncf_task
-    ):
+    def _run_otx_nncf_export(self, data_collector, nncf_environment, dataset, nncf_task):
         logger.info("Begin export of nncf model")
         self.environment_nncf_export, self.nncf_exported_model = run_export(
             nncf_environment,
@@ -757,13 +676,9 @@ class OTXTestNNCFExportEvaluationAction(BaseOTXTestAction):
         nncf_exported_model,
     ):
         logger.info("Begin evaluation of NNCF exported model")
-        self.openvino_task = create_openvino_task(
-            model_template, nncf_environment_for_export
-        )
+        self.openvino_task = create_openvino_task(model_template, nncf_environment_for_export)
         validation_dataset = dataset.get_subset(self.subset)
-        score_name, score_value = run_evaluation(
-            validation_dataset, self.openvino_task, nncf_exported_model
-        )
+        score_name, score_value = run_evaluation(validation_dataset, self.openvino_task, nncf_exported_model)
         data_collector.log_final_metric("metric_name", self.name + "/" + score_name)
         data_collector.log_final_metric("metric_value", score_value)
         logger.info("End evaluation of NNCF exported model")
@@ -775,15 +690,11 @@ class OTXTestNNCFExportEvaluationAction(BaseOTXTestAction):
         kwargs = {
             "model_template": results_prev_stages["training"]["model_template"],
             "dataset": results_prev_stages["training"]["dataset"],
-            "nncf_environment_for_export": results_prev_stages["nncf_export"][
-                "environment"
-            ],
+            "nncf_environment_for_export": results_prev_stages["nncf_export"]["environment"],
             "nncf_exported_model": results_prev_stages["nncf_export"]["exported_model"],
         }
 
-        score_name, score_value = self._run_otx_nncf_export_evaluation(
-            data_collector, **kwargs
-        )
+        score_name, score_value = self._run_otx_nncf_export_evaluation(data_collector, **kwargs)
         results = {"metrics": {"accuracy": {score_name: score_value}}}
         return results
 

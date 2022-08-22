@@ -41,10 +41,7 @@ class TestConfigurableParameters:
         ):
             assert configurable_parameters.header == expected_header
             assert configurable_parameters.description == expected_description
-            assert (
-                configurable_parameters.type
-                == ConfigElementType.CONFIGURABLE_PARAMETERS
-            )
+            assert configurable_parameters.type == ConfigElementType.CONFIGURABLE_PARAMETERS
             assert configurable_parameters.groups == []
             assert configurable_parameters.id == expected_id
             assert configurable_parameters.visible_in_ui == expected_visible_in_ui
@@ -197,24 +194,18 @@ class TestConfigurableParameters:
 
         # Act
         config.update_auto_hpo_states()
-        auto_hpo_state_1 = config.get_metadata(test_parameter_1)[
-            metadata_keys.AUTO_HPO_STATE
-        ]
-        auto_hpo_state_2 = config.subset_parameters.get_metadata(test_parameter_2)[
-            metadata_keys.AUTO_HPO_STATE
-        ]
+        auto_hpo_state_1 = config.get_metadata(test_parameter_1)[metadata_keys.AUTO_HPO_STATE]
+        auto_hpo_state_2 = config.subset_parameters.get_metadata(test_parameter_2)[metadata_keys.AUTO_HPO_STATE]
 
         # Simulate override
         config.dummy_float_selectable = auto_hpo_result_float - 1
         config.subset_parameters.train_proportion = auto_hpo_result_train_prop - 0.001
 
         config.update_auto_hpo_states()
-        auto_hpo_state_override_1 = config.get_metadata(test_parameter_1)[
+        auto_hpo_state_override_1 = config.get_metadata(test_parameter_1)[metadata_keys.AUTO_HPO_STATE]
+        auto_hpo_state_override_2 = config.subset_parameters.get_metadata(test_parameter_2)[
             metadata_keys.AUTO_HPO_STATE
         ]
-        auto_hpo_state_override_2 = config.subset_parameters.get_metadata(
-            test_parameter_2
-        )[metadata_keys.AUTO_HPO_STATE]
 
         # Assert
         assert all([success_1, success_2])

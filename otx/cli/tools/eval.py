@@ -83,13 +83,10 @@ def check_label_schemas(label_schema_a, label_schema_b):
     If it is False that it raises RuntimeError.
     """
 
-    for model_label, snapshot_label in zip(
-        label_schema_a.get_labels(False), label_schema_b.get_labels(False)
-    ):
+    for model_label, snapshot_label in zip(label_schema_a.get_labels(False), label_schema_b.get_labels(False)):
         if model_label.name != snapshot_label.name:
             raise RuntimeError(
-                "Labels schemas from model and dataset are different: "
-                f"\n{label_schema_a} \n\tvs\n{label_schema_b}"
+                "Labels schemas from model and dataset are different: " f"\n{label_schema_a} \n\tvs\n{label_schema_b}"
             )
 
 
@@ -120,9 +117,7 @@ def main():
 
     dataset_class = get_dataset_class(template.task_type)
 
-    dataset = dataset_class(
-        test_subset={"ann_file": args.test_ann_files, "data_root": args.test_data_roots}
-    )
+    dataset = dataset_class(test_subset={"ann_file": args.test_ann_files, "data_root": args.test_data_roots})
 
     dataset_label_schema = generate_label_schema(dataset, template.task_type)
     check_label_schemas(read_label_schema(args.load_weights), dataset_label_schema)
@@ -134,9 +129,7 @@ def main():
         model_template=template,
     )
 
-    environment.model = read_model(
-        environment.get_model_configuration(), args.load_weights, None
-    )
+    environment.model = read_model(environment.get_model_configuration(), args.load_weights, None)
 
     task = task_class(task_environment=environment)
 

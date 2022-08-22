@@ -62,9 +62,7 @@ def main():
     assert hyper_parameters
 
     # Get classes for Task, ConfigurableParameters and Dataset.
-    if not args.load_weights.endswith(".bin") and not args.load_weights.endswith(
-        ".xml"
-    ):
+    if not args.load_weights.endswith(".bin") and not args.load_weights.endswith(".xml"):
         raise RuntimeError("Only OpenVINO-exported models are supported.")
 
     task_class = get_impl_class(template.entrypoints.openvino)
@@ -75,9 +73,7 @@ def main():
         label_schema=read_label_schema(args.load_weights),
         model_template=template,
     )
-    environment.model = read_model(
-        environment.get_model_configuration(), args.load_weights, None
-    )
+    environment.model = read_model(environment.get_model_configuration(), args.load_weights, None)
 
     task = task_class(task_environment=environment)
 

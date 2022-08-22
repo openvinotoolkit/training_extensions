@@ -102,16 +102,10 @@ class LabelGroup:
     def __eq__(self, other: object):
         if not isinstance(other, LabelGroup):
             return False
-        return self.id_ == other.id_ and (
-            set(self.labels) == set(other.labels)
-            and self.group_type == other.group_type
-        )
+        return self.id_ == other.id_ and (set(self.labels) == set(other.labels) and self.group_type == other.group_type)
 
     def __repr__(self) -> str:
-        return (
-            f"LabelGroup(id={self.id_}, name={self.name}, group_type={self.group_type},"
-            f" labels={self.labels})"
-        )
+        return f"LabelGroup(id={self.id_}, name={self.name}, group_type={self.group_type}," f" labels={self.labels})"
 
 
 class LabelGraph(Graph):
@@ -213,9 +207,7 @@ class LabelTree(MultiDiGraph):
         if self.__topological_order_cache is None:
             # TODO: It seems that we are storing the edges the wrong way around.
             #       To work around this issue, we have to reverse the sorted list.
-            self.__topological_order_cache = list(
-                reversed(list(self.topological_sort()))
-            )
+            self.__topological_order_cache = list(reversed(list(self.topological_sort())))
 
         return self.__topological_order_cache
 
@@ -258,11 +250,7 @@ class LabelTree(MultiDiGraph):
         if parent is None:
             siblings = []
         else:
-            siblings = [
-                u
-                for u, v in self._graph.in_edges(parent)  # pylint: disable=no-member
-                if u != label
-            ]
+            siblings = [u for u, v in self._graph.in_edges(parent) if u != label]  # pylint: disable=no-member
         return siblings
 
     def get_ancestors(self, label: LabelEntity) -> List[LabelEntity]:
@@ -325,12 +313,7 @@ class LabelSchemaEntity:
         :param include_empty: flag determining whether to include empty labels
         :return: list of all labels in the label schema
         """
-        labels = {
-            label
-            for group in self._groups
-            for label in group.labels
-            if include_empty or not label.is_empty
-        }
+        labels = {label for group in self._groups for label in group.labels if include_empty or not label.is_empty}
         return sorted(list(labels), key=lambda x: x.id_)
 
     def get_groups(self, include_empty: bool = False) -> List[LabelGroup]:
@@ -343,11 +326,7 @@ class LabelSchemaEntity:
         if include_empty:
             return self._groups
 
-        return [
-            group
-            for group in self._groups
-            if group.group_type != LabelGroupType.EMPTY_LABEL
-        ]
+        return [group for group in self._groups if group.group_type != LabelGroupType.EMPTY_LABEL]
 
     def add_group(self, label_group: LabelGroup):
         """
@@ -358,8 +337,7 @@ class LabelSchemaEntity:
         """
         if label_group.name in [group.name for group in self._groups]:
             raise LabelGroupExistsException(
-                f"group with '{label_group.name}' exists, "
-                f"use add_labels_to_group_by_group_name instead"
+                f"group with '{label_group.name}' exists, " f"use add_labels_to_group_by_group_name instead"
             )
         self.__append_group(label_group)
 
@@ -386,10 +364,7 @@ class LabelSchemaEntity:
         :param include_empty: Include empty label id or not
         """
         label_ids = {
-            label.id_
-            for group in self._groups
-            for label in group.labels
-            if include_empty or not label.is_empty
+            label.id_ for group in self._groups for label in group.labels if include_empty or not label.is_empty
         }
         return sorted(list(label_ids))
 
@@ -409,15 +384,9 @@ class LabelSchemaEntity:
         Returns exclusive groups in the LabelSchema
         """
 
-        return [
-            group
-            for group in self._groups
-            if group.group_type == LabelGroupType.EXCLUSIVE
-        ]
+        return [group for group in self._groups if group.group_type == LabelGroupType.EXCLUSIVE]
 
-    def add_labels_to_group_by_group_name(
-        self, group_name: str, labels: Sequence[LabelEntity]
-    ):
+    def add_labels_to_group_by_group_name(self, group_name: str, labels: Sequence[LabelEntity]):
         """
         Adds `labels` to group named `group_name`
 
@@ -431,9 +400,7 @@ class LabelSchemaEntity:
         if group is not None:
             group.labels.extend(labels)
         else:
-            raise LabelGroupDoesNotExistException(
-                f"group with name '{group_name}' does not exist, cannot add"
-            )
+            raise LabelGroupDoesNotExistException(f"group with name '{group_name}' does not exist, cannot add")
 
     def __append_group(self, label_group: LabelGroup):
         """
@@ -460,11 +427,7 @@ class LabelSchemaEntity:
         containing_group = self.get_group_containing_label(label)
         if containing_group is None:
             return []
-        return [
-            label_iter
-            for label_iter in containing_group.labels
-            if not label_iter == label
-        ]
+        return [label_iter for label_iter in containing_group.labels if not label_iter == label]
 
     def get_descendants(self, parent: LabelEntity) -> List[LabelEntity]:
         """Returns descendants (children and children of children, etc.) of `parent`"""
@@ -499,9 +462,7 @@ class LabelSchemaEntity:
             exclusive_labels = self.__get_exclusivity_recursion(label=label)
         return exclusive_labels
 
-    def __get_exclusivity_recursion(
-        self, label: LabelEntity, add_empty: bool = True
-    ) -> List[LabelEntity]:
+    def __get_exclusivity_recursion(self, label: LabelEntity, add_empty: bool = True) -> List[LabelEntity]:
         """
         Recursively computes all labels exclusive to a non-empty label. A label is exclusive with:
         - All labels in the same group
@@ -542,9 +503,7 @@ class LabelSchemaEntity:
             output = list(set(output + exclusive_empty_labels))
         return output
 
-    def __get_exclusivity_for_empty_label(
-        self, label: LabelEntity
-    ) -> List[LabelEntity]:
+    def __get_exclusivity_for_empty_label(self, label: LabelEntity) -> List[LabelEntity]:
         """
         Get the labels exclusive to an empty label. For an empty label, all labels are exclusive to it except it's
         ancestors.
@@ -553,11 +512,7 @@ class LabelSchemaEntity:
         :return: List of Labels exclusive to the Label
         """
         ancestors = self.get_ancestors(label)
-        return [
-            label
-            for label in self.get_labels(include_empty=True)
-            if label not in ancestors
-        ]
+        return [label for label in self.get_labels(include_empty=True) if label not in ancestors]
 
     @staticmethod
     def __get_label(label) -> LabelEntity:
@@ -581,9 +536,9 @@ class LabelSchemaEntity:
 
     def __eq__(self, other) -> bool:
         if isinstance(other, LabelSchemaEntity):
-            return self.label_tree == other.label_tree and self.get_groups(
+            return self.label_tree == other.label_tree and self.get_groups(include_empty=True) == other.get_groups(
                 include_empty=True
-            ) == other.get_groups(include_empty=True)
+            )
         return False
 
     @classmethod
@@ -622,13 +577,8 @@ class LabelSchemaEntity:
                                 but are outside `selected_labels` are set to a default probability of 1.0
         """
         input_domains = set(lbl.domain for lbl in scored_labels)
-        label_to_probability = {
-            scored_label.get_label(): scored_label.probability
-            for scored_label in scored_labels
-        }
-        resolved_labels = self.__resolve_labels_probabilistic(
-            label_to_probability, selected_labels
-        )
+        label_to_probability = {scored_label.get_label(): scored_label.probability for scored_label in scored_labels}
+        resolved_labels = self.__resolve_labels_probabilistic(label_to_probability, selected_labels)
         output_domains = set(lbl.domain for lbl in resolved_labels)
         if input_domains != output_domains:
             logger.error(
@@ -659,9 +609,7 @@ class LabelSchemaEntity:
         # add (potentially) missing ancestors labels for children with probability 0
         # this is needed so that suppression of children of non-max exclusive labels works when the exclusive
         # group has only one member
-        label_to_probability = self.__add_missing_ancestors(
-            label_to_probability, selected_labels
-        )
+        label_to_probability = self.__add_missing_ancestors(label_to_probability, selected_labels)
 
         hard_classification = self.__resolve_exclusive_labels(label_to_probability)
 
@@ -683,9 +631,7 @@ class LabelSchemaEntity:
                 )
         return result
 
-    def __suppress_descendant_output(
-        self, hard_classification: Dict[LabelEntity, float]
-    ) -> Dict[LabelEntity, float]:
+    def __suppress_descendant_output(self, hard_classification: Dict[LabelEntity, float]) -> Dict[LabelEntity, float]:
         """
         Suppresses outputs in `label_to_probability` (sets probability to 0.0) for descendants of parents that have
         0 probability in `hard_classification`
@@ -715,18 +661,14 @@ class LabelSchemaEntity:
 
         return hard_classification
 
-    def __resolve_exclusive_labels(
-        self, label_to_probability: Dict[LabelEntity, float]
-    ) -> Dict[LabelEntity, float]:
+    def __resolve_exclusive_labels(self, label_to_probability: Dict[LabelEntity, float]) -> Dict[LabelEntity, float]:
         """
         For labels in `label_to_probability` sets labels that are most likely (maximum probability) in their exclusive
         group to 1.0 and other (non-max) labels to probability 0.
         """
         hard_classification: Dict[LabelEntity, float] = {}
         top_level_labels_in_label_schema = [
-            label_
-            for label_ in self.label_tree.get_labels_in_topological_order()
-            if self.get_parent(label_) is None
+            label_ for label_ in self.label_tree.get_labels_in_topological_order() if self.get_parent(label_) is None
         ]
 
         for label, probability in label_to_probability.items():
@@ -734,17 +676,9 @@ class LabelSchemaEntity:
                 label_parent = self.get_parent(label)
                 if label_parent is None:
                     # The label itself is a top-level label
-                    exclusive_neighbours = [
-                        label_
-                        for label_ in top_level_labels_in_label_schema
-                        if label_ != label
-                    ]
+                    exclusive_neighbours = [label_ for label_ in top_level_labels_in_label_schema if label_ != label]
                 else:
-                    exclusive_neighbours = [
-                        label_
-                        for label_ in self.get_children(label_parent)
-                        if label_ != label
-                    ]
+                    exclusive_neighbours = [label_ for label_ in self.get_children(label_parent) if label_ != label]
 
                 probabilities = [probability]
                 neighbours_ = [label]
@@ -757,9 +691,7 @@ class LabelSchemaEntity:
                         hard_classification[neighbor] = float(max_index == idx)
                 else:
                     # single node group, interpret as multilabel node
-                    hard_classification[label] = float(
-                        label_to_probability[label] > 0.0
-                    )
+                    hard_classification[label] = float(label_to_probability[label] > 0.0)
         return hard_classification
 
     def __add_missing_ancestors(

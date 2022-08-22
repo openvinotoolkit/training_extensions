@@ -68,15 +68,11 @@ class Rectangle(Shape):
         self.y2 = y2
         if self.width <= 0 or self.height <= 0:
             raise ValueError(
-                f"Invalid rectangle with coordinates: x1={self.x1}, y1={self.y1}, "
-                f"x2={self.x2}, y2={self.y2}"
+                f"Invalid rectangle with coordinates: x1={self.x1}, y1={self.y1}, " f"x2={self.x2}, y2={self.y2}"
             )
 
     def __repr__(self):
-        return (
-            f"Rectangle(x={self.x1}, y={self.y1}, width={self.width}, "
-            f"height={self.height})"
-        )
+        return f"Rectangle(x={self.x1}, y={self.y1}, width={self.width}, " f"height={self.height})"
 
     def __eq__(self, other):
         if isinstance(other, Rectangle):
@@ -101,9 +97,7 @@ class Rectangle(Shape):
         x2 = min(max(0.0, self.x2), 1.0)
         y2 = min(max(0.0, self.y2), 1.0)
 
-        return Rectangle(
-            x1=x1, y1=y1, x2=x2, y2=y2, modification_date=self.modification_date
-        )
+        return Rectangle(x1=x1, y1=y1, x2=x2, y2=y2, modification_date=self.modification_date)
 
     def normalize_wrt_roi_shape(self, roi_shape: "Rectangle") -> "Rectangle":
         """

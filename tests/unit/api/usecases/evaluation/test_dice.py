@@ -72,14 +72,10 @@ class TestDice:
         creation_date=creation_date,
         id=ID("cat_label"),
     )
-    configurable_params = ConfigurableParameters(
-        header="Test model configurable params"
-    )
+    configurable_params = ConfigurableParameters(header="Test model configurable params")
 
     def human_1_ground_truth(self) -> DatasetItemEntity:
-        human_roi = Annotation(
-            shape=self.full_box_roi, labels=[ScoredLabel(self.human_label)]
-        )
+        human_roi = Annotation(shape=self.full_box_roi, labels=[ScoredLabel(self.human_label)])
         human_annotation = Annotation(
             shape=Rectangle(x1=0.4, y1=0, x2=0.5, y2=0.2),
             labels=[ScoredLabel(self.human_label)],
@@ -87,15 +83,11 @@ class TestDice:
         human_annotation_scene = AnnotationSceneEntity(
             annotations=[human_annotation], kind=AnnotationSceneKind.ANNOTATION
         )
-        human_dataset_item = DatasetItemEntity(
-            media=self.image, annotation_scene=human_annotation_scene, roi=human_roi
-        )
+        human_dataset_item = DatasetItemEntity(media=self.image, annotation_scene=human_annotation_scene, roi=human_roi)
         return human_dataset_item
 
     def human_2_ground_truth(self) -> DatasetItemEntity:
-        human_roi = Annotation(
-            shape=self.full_box_roi, labels=[ScoredLabel(self.human_label)]
-        )
+        human_roi = Annotation(shape=self.full_box_roi, labels=[ScoredLabel(self.human_label)])
         human_annotation = Annotation(
             shape=Rectangle(x1=0.6, y1=0, x2=0.7, y2=0.2),
             labels=[ScoredLabel(self.human_label)],
@@ -103,31 +95,21 @@ class TestDice:
         human_annotation_scene = AnnotationSceneEntity(
             annotations=[human_annotation], kind=AnnotationSceneKind.ANNOTATION
         )
-        human_dataset_item = DatasetItemEntity(
-            media=self.image, annotation_scene=human_annotation_scene, roi=human_roi
-        )
+        human_dataset_item = DatasetItemEntity(media=self.image, annotation_scene=human_annotation_scene, roi=human_roi)
         return human_dataset_item
 
     def dog_ground_truth(self) -> DatasetItemEntity:
-        dog_roi = Annotation(
-            shape=self.full_box_roi, labels=[ScoredLabel(self.dog_label)]
-        )
+        dog_roi = Annotation(shape=self.full_box_roi, labels=[ScoredLabel(self.dog_label)])
         dog_annotation = Annotation(
             shape=Rectangle(x1=0.8, y1=0, x2=0.9, y2=0.1),
             labels=[ScoredLabel(self.dog_label)],
         )
-        dog_annotation_scene = AnnotationSceneEntity(
-            annotations=[dog_annotation], kind=AnnotationSceneKind.ANNOTATION
-        )
-        dog_dataset_item = DatasetItemEntity(
-            media=self.image, annotation_scene=dog_annotation_scene, roi=dog_roi
-        )
+        dog_annotation_scene = AnnotationSceneEntity(annotations=[dog_annotation], kind=AnnotationSceneKind.ANNOTATION)
+        dog_dataset_item = DatasetItemEntity(media=self.image, annotation_scene=dog_annotation_scene, roi=dog_roi)
         return dog_dataset_item
 
     def human_1_predicted(self) -> DatasetItemEntity:
-        human_roi = Annotation(
-            shape=self.full_box_roi, labels=[ScoredLabel(self.human_label)]
-        )
+        human_roi = Annotation(shape=self.full_box_roi, labels=[ScoredLabel(self.human_label)])
         human_annotation = Annotation(
             shape=Rectangle(x1=0.4, y1=0, x2=0.5, y2=0.4),
             labels=[ScoredLabel(self.human_label)],
@@ -135,15 +117,11 @@ class TestDice:
         human_annotation_scene = AnnotationSceneEntity(
             annotations=[human_annotation], kind=AnnotationSceneKind.ANNOTATION
         )
-        human_dataset_item = DatasetItemEntity(
-            media=self.image, annotation_scene=human_annotation_scene, roi=human_roi
-        )
+        human_dataset_item = DatasetItemEntity(media=self.image, annotation_scene=human_annotation_scene, roi=human_roi)
         return human_dataset_item
 
     def human_2_predicted(self) -> DatasetItemEntity:
-        human_roi = Annotation(
-            shape=self.full_box_roi, labels=[ScoredLabel(self.human_label)]
-        )
+        human_roi = Annotation(shape=self.full_box_roi, labels=[ScoredLabel(self.human_label)])
         human_annotation = Annotation(
             shape=Rectangle(x1=0.6, y1=0, x2=0.7, y2=0.2),
             labels=[ScoredLabel(self.human_label)],
@@ -151,25 +129,17 @@ class TestDice:
         human_annotation_scene = AnnotationSceneEntity(
             annotations=[human_annotation], kind=AnnotationSceneKind.ANNOTATION
         )
-        human_dataset_item = DatasetItemEntity(
-            media=self.image, annotation_scene=human_annotation_scene, roi=human_roi
-        )
+        human_dataset_item = DatasetItemEntity(media=self.image, annotation_scene=human_annotation_scene, roi=human_roi)
         return human_dataset_item
 
     def cat_predicted(self) -> DatasetItemEntity:
-        cat_roi = Annotation(
-            shape=self.full_box_roi, labels=[ScoredLabel(self.cat_label)]
-        )
+        cat_roi = Annotation(shape=self.full_box_roi, labels=[ScoredLabel(self.cat_label)])
         cat_annotation = Annotation(
             shape=Rectangle(x1=0.9, y1=0, x2=1.0, y2=0.1),
             labels=[ScoredLabel(self.cat_label)],
         )
-        cat_annotation_scene = AnnotationSceneEntity(
-            annotations=[cat_annotation], kind=AnnotationSceneKind.ANNOTATION
-        )
-        cat_dataset_item = DatasetItemEntity(
-            media=self.image, annotation_scene=cat_annotation_scene, roi=cat_roi
-        )
+        cat_annotation_scene = AnnotationSceneEntity(annotations=[cat_annotation], kind=AnnotationSceneKind.ANNOTATION)
+        cat_dataset_item = DatasetItemEntity(media=self.image, annotation_scene=cat_annotation_scene, roi=cat_roi)
         return cat_dataset_item
 
     def car_dataset_item(self) -> DatasetItemEntity:
@@ -181,12 +151,8 @@ class TestDice:
             shape=Rectangle(x1=0.1, y1=0, x2=0.3, y2=0.2),
             labels=[ScoredLabel(self.car_label)],
         )
-        car_annotation_scene = AnnotationSceneEntity(
-            annotations=[car_annotation], kind=AnnotationSceneKind.ANNOTATION
-        )
-        car_dataset_item = DatasetItemEntity(
-            media=self.image, annotation_scene=car_annotation_scene, roi=car_roi
-        )
+        car_annotation_scene = AnnotationSceneEntity(annotations=[car_annotation], kind=AnnotationSceneKind.ANNOTATION)
+        car_dataset_item = DatasetItemEntity(media=self.image, annotation_scene=car_annotation_scene, roi=car_roi)
         return car_dataset_item
 
     def model(self) -> ModelEntity:
@@ -198,9 +164,7 @@ class TestDice:
             configurable_parameters=self.configurable_params,
             label_schema=LabelSchemaEntity(label_groups=[labels_group]),
         )
-        model = ModelEntity(
-            train_dataset=DatasetEntity(), configuration=model_configuration
-        )
+        model = ModelEntity(train_dataset=DatasetEntity(), configuration=model_configuration)
         return model
 
     @staticmethod
@@ -318,9 +282,7 @@ class TestDice:
         # "ground_truth_dataset" and "prediction_dataset"
         result_set = ResultSetEntity(
             model=model,
-            ground_truth_dataset=DatasetEntity(
-                [car_dataset_item, human_1_ground_truth]
-            ),
+            ground_truth_dataset=DatasetEntity([car_dataset_item, human_1_ground_truth]),
             prediction_dataset=DatasetEntity([car_dataset_item]),
         )
         with pytest.raises(ValueError):
@@ -360,9 +322,7 @@ class TestDice:
             configurable_parameters=configurable_params,
             label_schema=LabelSchemaEntity(label_groups=[labels_group]),
         )
-        model = ModelEntity(
-            train_dataset=DatasetEntity(), configuration=model_configuration
-        )
+        model = ModelEntity(train_dataset=DatasetEntity(), configuration=model_configuration)
         ground_truth_dataset = DatasetEntity(
             [
                 car_dataset_item,
@@ -427,12 +387,8 @@ class TestDice:
         # Checking "Performance" returned by "get_performance" for "DiceAverage" with length of "dice_per_label" equal
         # to 0
         labels_group = LabelGroup(name="model_labels_group", labels=[self.car_label])
-        model_configuration = ModelConfiguration(
-            configurable_params, LabelSchemaEntity(label_groups=[labels_group])
-        )
-        model = ModelEntity(
-            train_dataset=DatasetEntity(), configuration=model_configuration
-        )
+        model_configuration = ModelConfiguration(configurable_params, LabelSchemaEntity(label_groups=[labels_group]))
+        model = ModelEntity(train_dataset=DatasetEntity(), configuration=model_configuration)
         ground_truth_dataset = DatasetEntity([human_1_ground_truth])
         predicted_dataset = DatasetEntity([human_1_predicted])
         result_set = ResultSetEntity(

@@ -42,9 +42,7 @@ def otx_templates_root_dir_fx():
 
     The fixture MUST be overriden in algo backend's conftest.py file.
     """
-    raise NotImplementedError(
-        "The fixture otx_templates_root_dir_fx should be overriden in algo backend"
-    )
+    raise NotImplementedError("The fixture otx_templates_root_dir_fx should be overriden in algo backend")
 
 
 @pytest.fixture
@@ -53,9 +51,7 @@ def otx_reference_root_dir_fx():
     The fixture returns an absolute path to the folder where reference files
     for OTX models are stored.
     """
-    raise NotImplementedError(
-        "The fixture otx_reference_root_dir_fx should be overriden in algo backend"
-    )
+    raise NotImplementedError("The fixture otx_reference_root_dir_fx should be overriden in algo backend")
 
 
 @pytest.fixture
@@ -66,9 +62,7 @@ def otx_current_reference_dir_fx(otx_reference_root_dir_fx, current_test_paramet
     """
     if otx_reference_root_dir_fx is None:
         return None
-    path = os.path.join(
-        otx_reference_root_dir_fx, current_test_parameters_fx["model_name"]
-    )
+    path = os.path.join(otx_reference_root_dir_fx, current_test_parameters_fx["model_name"])
     if not os.path.isdir(path):
         return None
     return path
@@ -84,9 +78,7 @@ def otx_test_domain_fx():
 
     The fixture MUST be overriden in algo backend's conftest.py file.
     """
-    raise NotImplementedError(
-        "The fixture otx_test_domain_fx should be overriden in algo backend"
-    )
+    raise NotImplementedError("The fixture otx_test_domain_fx should be overriden in algo backend")
 
 
 @pytest.fixture
@@ -159,18 +151,14 @@ def template_paths_fx(otx_templates_root_dir_fx):
     the model name is the name of the parent folder of the file.
     """
     root = otx_templates_root_dir_fx
-    assert osp.isabs(
-        root
-    ), f"Error: otx_templates_root_dir_fx is not an absolute path: {root}"
+    assert osp.isabs(root), f"Error: otx_templates_root_dir_fx is not an absolute path: {root}"
     template_glob = glob.glob(f"{root}/**/template*.yaml", recursive=True)
     data = {}
     for cur_path in template_glob:
         assert osp.isabs(cur_path), f"Error: not absolute path {cur_path}"
         name = parse_model_template(cur_path).model_template_id
         if name in data:
-            raise RuntimeError(
-                f"Duplication of names in {root} folder: {data[name]} and {cur_path}"
-            )
+            raise RuntimeError(f"Duplication of names in {root} folder: {data[name]} and {cur_path}")
         assert name != ROOT_PATH_KEY, f"Wrong model name {name}"
         data[name] = cur_path
     data[ROOT_PATH_KEY] = ""
@@ -212,9 +200,7 @@ def expected_metrics_all_tests_fx(request):
         return None
     with open(path, encoding="utf-8") as f:
         expected_metrics_all_tests = yaml.safe_load(f)
-    assert isinstance(
-        expected_metrics_all_tests, dict
-    ), f"Wrong metrics file {path}: {expected_metrics_all_tests}"
+    assert isinstance(expected_metrics_all_tests, dict), f"Wrong metrics file {path}: {expected_metrics_all_tests}"
     return expected_metrics_all_tests
 
 
@@ -262,8 +248,7 @@ def current_test_parameters_fx(request, force_logging_fx):
     """
     cur_test_params = deepcopy(request.node.callspec.params)
     assert "test_parameters" in cur_test_params, (
-        f"The test {request.node.name} should be parametrized "
-        f"by parameter 'test_parameters'"
+        f"The test {request.node.name} should be parametrized " f"by parameter 'test_parameters'"
     )
     return cur_test_params["test_parameters"]
 
@@ -373,9 +358,7 @@ def cur_test_expected_metrics_callback_fx(
 
 
 @pytest.fixture
-def data_collector_fx(
-    request, otx_test_scenario_fx, otx_test_domain_fx
-) -> DataCollector:
+def data_collector_fx(request, otx_test_scenario_fx, otx_test_domain_fx) -> DataCollector:
     """
     The fixture returns the DataCollector instance that may be used to pass
     the values (metrics, intermediate results, etc) to the e2e test system dashboard.
@@ -389,9 +372,7 @@ def data_collector_fx(
     """
     setup = deepcopy(request.node.callspec.params)
     setup["environment_name"] = os.environ.get("TT_ENVIRONMENT_NAME", "no-env")
-    setup["test_type"] = os.environ.get(
-        "TT_TEST_TYPE", "no-test-type"
-    )  # TODO: get from e2e test type
+    setup["test_type"] = os.environ.get("TT_TEST_TYPE", "no-test-type")  # TODO: get from e2e test type
     setup["scenario"] = otx_test_scenario_fx
     setup["test"] = request.node.name
     setup["subject"] = otx_test_domain_fx

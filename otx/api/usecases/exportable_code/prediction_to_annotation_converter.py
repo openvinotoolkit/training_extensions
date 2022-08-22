@@ -36,9 +36,7 @@ class IPredictionToAnnotationConverter(metaclass=abc.ABCMeta):
     """
 
     @abc.abstractmethod
-    def convert_to_annotation(
-        self, predictions: Any, metadata: Dict
-    ) -> AnnotationSceneEntity:
+    def convert_to_annotation(self, predictions: Any, metadata: Dict) -> AnnotationSceneEntity:
         """
         Convert raw predictions to AnnotationScene format.
 
@@ -57,9 +55,7 @@ class DetectionToAnnotationConverter(IPredictionToAnnotationConverter):
     def __init__(self, labels: List[LabelEntity]):
         self.label_map = dict(enumerate(labels))
 
-    def convert_to_annotation(
-        self, predictions: np.ndarray, metadata: Optional[Dict] = None
-    ) -> AnnotationSceneEntity:
+    def convert_to_annotation(self, predictions: np.ndarray, metadata: Optional[Dict] = None) -> AnnotationSceneEntity:
         """
         Converts a set of predictions into an AnnotationScene object
 
@@ -105,8 +101,7 @@ class DetectionToAnnotationConverter(IPredictionToAnnotationConverter):
         annotations = []
         if predictions.shape[1:] < (6,) or predictions.shape[1:] > (7,):
             raise ValueError(
-                f"Shape of prediction is not expected, expected (n, 7) or (n, 6) "
-                f"got {predictions.shape}"
+                f"Shape of prediction is not expected, expected (n, 7) or (n, 6) " f"got {predictions.shape}"
             )
 
         for prediction in predictions:
@@ -121,9 +116,7 @@ class DetectionToAnnotationConverter(IPredictionToAnnotationConverter):
             scored_label = ScoredLabel(self.label_map[label], confidence)
             annotations.append(
                 Annotation(
-                    Rectangle(
-                        prediction[2], prediction[3], prediction[4], prediction[5]
-                    ),
+                    Rectangle(prediction[2], prediction[3], prediction[4], prediction[5]),
                     labels=[scored_label],
                 )
             )
@@ -201,9 +194,7 @@ class SegmentationToAnnotationConverter(IPredictionToAnnotationConverter):
         labels = label_schema.get_labels(include_empty=False)
         self.label_map = dict(enumerate(labels, 1))
 
-    def convert_to_annotation(
-        self, predictions: np.ndarray, metadata: Dict[str, Any]
-    ) -> AnnotationSceneEntity:
+    def convert_to_annotation(self, predictions: np.ndarray, metadata: Dict[str, Any]) -> AnnotationSceneEntity:
         soft_predictions = metadata.get("soft_predictions", np.ones(predictions.shape))
         annotations = create_annotation_from_segmentation_map(
             hard_prediction=predictions,
@@ -211,9 +202,7 @@ class SegmentationToAnnotationConverter(IPredictionToAnnotationConverter):
             label_map=self.label_map,
         )
 
-        return AnnotationSceneEntity(
-            kind=AnnotationSceneKind.PREDICTION, annotations=annotations
-        )
+        return AnnotationSceneEntity(kind=AnnotationSceneKind.PREDICTION, annotations=annotations)
 
 
 class ClassificationToAnnotationConverter(IPredictionToAnnotationConverter):
@@ -227,9 +216,9 @@ class ClassificationToAnnotationConverter(IPredictionToAnnotationConverter):
         else:
             self.labels = label_schema.get_labels(include_empty=False)
         self.empty_label = get_empty_label(label_schema)
-        multilabel = len(label_schema.get_groups(False)) > 1 and len(
-            label_schema.get_groups(False)
-        ) == len(label_schema.get_labels(include_empty=False))
+        multilabel = len(label_schema.get_groups(False)) > 1 and len(label_schema.get_groups(False)) == len(
+            label_schema.get_labels(include_empty=False)
+        )
         self.hierarchical = not multilabel and len(label_schema.get_groups(False)) > 1
 
         self.label_schema = label_schema
@@ -247,9 +236,7 @@ class ClassificationToAnnotationConverter(IPredictionToAnnotationConverter):
             labels = [ScoredLabel(self.empty_label, probability=1.0)]
 
         annotations = [Annotation(Rectangle.generate_full_box(), labels=labels)]
-        return AnnotationSceneEntity(
-            kind=AnnotationSceneKind.PREDICTION, annotations=annotations
-        )
+        return AnnotationSceneEntity(kind=AnnotationSceneKind.PREDICTION, annotations=annotations)
 
 
 class AnomalyClassificationToAnnotationConverter(IPredictionToAnnotationConverter):
@@ -262,9 +249,7 @@ class AnomalyClassificationToAnnotationConverter(IPredictionToAnnotationConverte
         self.normal_label = [label for label in labels if not label.is_anomalous][0]
         self.anomalous_label = [label for label in labels if label.is_anomalous][0]
 
-    def convert_to_annotation(
-        self, predictions: np.ndarray, metadata: Dict[str, Any]
-    ) -> AnnotationSceneEntity:
+    def convert_to_annotation(self, predictions: np.ndarray, metadata: Dict[str, Any]) -> AnnotationSceneEntity:
         pred_label = predictions >= metadata.get("threshold", 0.5)
 
         label = self.anomalous_label if pred_label else self.normal_label
@@ -276,9 +261,7 @@ class AnomalyClassificationToAnnotationConverter(IPredictionToAnnotationConverte
                 labels=[ScoredLabel(label=label, probability=float(probability))],
             )
         ]
-        return AnnotationSceneEntity(
-            kind=AnnotationSceneKind.PREDICTION, annotations=annotations
-        )
+        return AnnotationSceneEntity(kind=AnnotationSceneKind.PREDICTION, annotations=annotations)
 
 
 class AnomalySegmentationToAnnotationConverter(IPredictionToAnnotationConverter):
@@ -292,15 +275,11 @@ class AnomalySegmentationToAnnotationConverter(IPredictionToAnnotationConverter)
         self.anomalous_label = [label for label in labels if label.is_anomalous][0]
         self.label_map = {0: self.normal_label, 1: self.anomalous_label}
 
-    def convert_to_annotation(
-        self, predictions: np.ndarray, metadata: Dict[str, Any]
-    ) -> AnnotationSceneEntity:
+    def convert_to_annotation(self, predictions: np.ndarray, metadata: Dict[str, Any]) -> AnnotationSceneEntity:
 
         pred_mask = predictions >= 0.5
         mask = pred_mask.squeeze().astype(np.uint8)
-        annotations = create_annotation_from_segmentation_map(
-            mask, predictions, self.label_map
-        )
+        annotations = create_annotation_from_segmentation_map(mask, predictions, self.label_map)
         if len(annotations) == 0:
             # TODO: add confidence to this label
             annotations = [
@@ -309,9 +288,7 @@ class AnomalySegmentationToAnnotationConverter(IPredictionToAnnotationConverter)
                     labels=[ScoredLabel(label=self.normal_label, probability=1.0)],
                 )
             ]
-        return AnnotationSceneEntity(
-            kind=AnnotationSceneKind.PREDICTION, annotations=annotations
-        )
+        return AnnotationSceneEntity(kind=AnnotationSceneKind.PREDICTION, annotations=annotations)
 
 
 class AnomalyDetectionToAnnotationConverter(IPredictionToAnnotationConverter):
@@ -327,9 +304,7 @@ class AnomalyDetectionToAnnotationConverter(IPredictionToAnnotationConverter):
         self.anomalous_label = [label for label in labels if label.is_anomalous][0]
         self.label_map = {0: self.normal_label, 1: self.anomalous_label}
 
-    def convert_to_annotation(
-        self, predictions: np.ndarray, metadata: Dict[str, Any]
-    ) -> AnnotationSceneEntity:
+    def convert_to_annotation(self, predictions: np.ndarray, metadata: Dict[str, Any]) -> AnnotationSceneEntity:
         """Convert predictions to OTX Annotation Scene using the metadata.
 
         :param predictions: Raw predictions from the model.
@@ -338,9 +313,7 @@ class AnomalyDetectionToAnnotationConverter(IPredictionToAnnotationConverter):
         """
         pred_mask = predictions >= 0.5
         mask = pred_mask.squeeze().astype(np.uint8)
-        annotations = create_detection_annotation_from_anomaly_heatmap(
-            mask, predictions, self.label_map
-        )
+        annotations = create_detection_annotation_from_anomaly_heatmap(mask, predictions, self.label_map)
         if len(annotations) == 0:
             # TODO: add confidence to this label
             annotations = [
@@ -349,9 +322,7 @@ class AnomalyDetectionToAnnotationConverter(IPredictionToAnnotationConverter):
                     labels=[ScoredLabel(label=self.normal_label, probability=1.0)],
                 )
             ]
-        return AnnotationSceneEntity(
-            kind=AnnotationSceneKind.PREDICTION, annotations=annotations
-        )
+        return AnnotationSceneEntity(kind=AnnotationSceneKind.PREDICTION, annotations=annotations)
 
 
 class MaskToAnnotationConverter(IPredictionToAnnotationConverter):
@@ -362,15 +333,11 @@ class MaskToAnnotationConverter(IPredictionToAnnotationConverter):
     def __init__(self, labels: LabelSchemaEntity):
         self.labels = labels.get_labels(include_empty=False)
 
-    def convert_to_annotation(
-        self, predictions: tuple, metadata: Dict[str, Any]
-    ) -> AnnotationSceneEntity:
+    def convert_to_annotation(self, predictions: tuple, metadata: Dict[str, Any]) -> AnnotationSceneEntity:
         annotations = []
         for score, class_idx, _, mask in zip(*predictions):
             mask = mask.astype(np.uint8)
-            contours, hierarchies = cv2.findContours(
-                mask, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE
-            )
+            contours, hierarchies = cv2.findContours(mask, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
             if hierarchies is None:
                 continue
             for contour, hierarchy in zip(contours, hierarchies[0]):
@@ -391,11 +358,7 @@ class MaskToAnnotationConverter(IPredictionToAnnotationConverter):
                     annotations.append(
                         Annotation(
                             polygon,
-                            labels=[
-                                ScoredLabel(
-                                    self.labels[int(class_idx) - 1], float(score)
-                                )
-                            ],
+                            labels=[ScoredLabel(self.labels[int(class_idx) - 1], float(score))],
                         )
                     )
         annotation_scene = AnnotationSceneEntity(
@@ -413,15 +376,11 @@ class RotatedRectToAnnotationConverter(IPredictionToAnnotationConverter):
     def __init__(self, labels: LabelSchemaEntity):
         self.labels = labels.get_labels(include_empty=False)
 
-    def convert_to_annotation(
-        self, predictions: tuple, metadata: Dict[str, Any]
-    ) -> AnnotationSceneEntity:
+    def convert_to_annotation(self, predictions: tuple, metadata: Dict[str, Any]) -> AnnotationSceneEntity:
         annotations = []
         for score, class_idx, _, mask in zip(*predictions):
             mask = mask.astype(np.uint8)
-            contours, hierarchies = cv2.findContours(
-                mask, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE
-            )
+            contours, hierarchies = cv2.findContours(mask, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
             if hierarchies is None:
                 continue
             for contour, hierarchy in zip(contours, hierarchies[0]):
@@ -441,11 +400,7 @@ class RotatedRectToAnnotationConverter(IPredictionToAnnotationConverter):
                     annotations.append(
                         Annotation(
                             polygon,
-                            labels=[
-                                ScoredLabel(
-                                    self.labels[int(class_idx) - 1], float(score)
-                                )
-                            ],
+                            labels=[ScoredLabel(self.labels[int(class_idx) - 1], float(score))],
                         )
                     )
         annotation_scene = AnnotationSceneEntity(

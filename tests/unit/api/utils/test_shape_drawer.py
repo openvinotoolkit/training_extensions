@@ -26,9 +26,7 @@ from otx.api.utils.shape_drawer import DrawerEntity, Helpers, ShapeDrawer
 from tests.unit.api.constants.components import OtxSdkComponent
 from tests.unit.api.constants.requirements import Requirements
 
-RANDOM_IMAGE = (np.random.randint(low=0, high=255, size=(1024, 1280, 3))).astype(
-    "uint8"
-)
+RANDOM_IMAGE = (np.random.randint(low=0, high=255, size=(1024, 1280, 3))).astype("uint8")
 
 
 class CommonMethods:
@@ -129,10 +127,7 @@ class TestHelpers:
             text=text,
             org=(
                 helpers.cursor_pos.x + helpers.content_padding,
-                helpers.cursor_pos.y
-                + expected_height
-                - helpers.content_padding
-                - expected_baseline,
+                helpers.cursor_pos.y + expected_height - helpers.content_padding - expected_baseline,
             ),
             fontFace=cv2.FONT_HERSHEY_SIMPLEX,
             fontScale=text_scale,
@@ -155,9 +150,7 @@ class TestHelpers:
         expected_text_scale = helpers.generate_text_scale(expected_image)
         expected_thickness = int(expected_text_scale / 2)
         for label in labels:
-            label_text = helpers.generate_text_for_label(
-                label, show_labels, show_confidence
-            )
+            label_text = helpers.generate_text_for_label(label, show_labels, show_confidence)
             label_color = label.color.bgr_tuple
             label_size = cv2.getTextSize(
                 label_text,
@@ -169,9 +162,7 @@ class TestHelpers:
             label_text_width = label_size[0][0]
             label_text_height = label_size[0][1]
             label_width = label_text_width + 2 * helpers.content_padding
-            label_height = (
-                label_text_height + label_baseline + 2 * helpers.content_padding
-            )
+            label_height = label_text_height + label_baseline + 2 * helpers.content_padding
             expected_image = self.generate_expected_image_with_text(
                 expected_image,
                 label_text,
@@ -251,9 +242,9 @@ class TestHelpers:
         ) -> np.ndarray:
             new_image = raw_image.copy()
             cropped_rectangle = new_image[start_y:end_y, start_x:end_x]
-            cropped_rectangle[:] = (new_alpha * np.array(new_color))[
-                np.newaxis, np.newaxis
-            ] + (1 - new_alpha) * cropped_rectangle
+            cropped_rectangle[:] = (new_alpha * np.array(new_color))[np.newaxis, np.newaxis] + (
+                1 - new_alpha
+            ) * cropped_rectangle
             return new_image
 
         helpers = Helpers()
@@ -262,9 +253,7 @@ class TestHelpers:
         x1, y1, x2, y2 = 200, 100, 1100, 700
         color = (100, 50, 200)
         alpha = 0.8
-        expected_image = generate_image_with_rectangle(
-            image, x1, y1, x2 + 1, y2 + 1, color, alpha
-        )
+        expected_image = generate_image_with_rectangle(image, x1, y1, x2 + 1, y2 + 1, color, alpha)
         helpers.draw_transparent_rectangle(image, x1, y1, x2, y2, color, alpha)
         assert np.array_equal(image, expected_image)
         # Checking array returned by "draw_transparent_rectangle" method for rectangle equal to image shape
@@ -272,9 +261,7 @@ class TestHelpers:
         x1, y1, x2, y2 = 0, 0, 1280, 1024
         color = (200, 80, 160)
         alpha = 0.4
-        expected_image = generate_image_with_rectangle(
-            image, x1, y1, x2 - 1, y2 - 1, color, alpha
-        )
+        expected_image = generate_image_with_rectangle(image, x1, y1, x2 - 1, y2 - 1, color, alpha)
         helpers.draw_transparent_rectangle(image, x1, y1, x2, y2, color, alpha)
         assert np.array_equal(image, expected_image)
         # Checking array returned by "draw_transparent_rectangle" method for rectangle of out-of-bounds image
@@ -346,26 +333,14 @@ class TestHelpers:
         helpers = Helpers()
         # Checking value returned by "generate_text_for_label" for LabelEntity object specified as "label" parameter
         labels = CommonMethods.labels()
-        assert (
-            helpers.generate_text_for_label(labels[0], True, True)
-            == "Label for Detection"
-        )
-        assert (
-            helpers.generate_text_for_label(labels[0], True, False)
-            == "Label for Detection"
-        )
+        assert helpers.generate_text_for_label(labels[0], True, True) == "Label for Detection"
+        assert helpers.generate_text_for_label(labels[0], True, False) == "Label for Detection"
         assert helpers.generate_text_for_label(labels[1], False, True) == ""
         assert helpers.generate_text_for_label(labels[1], False, False) == ""
         # Checking value returned by "generate_text_for_label" for ScoredLabel object specified as "label" parameter
         scored_labels = CommonMethods.scored_labels()
-        assert (
-            helpers.generate_text_for_label(scored_labels[0], True, True)
-            == "Label for Classification 0%"
-        )
-        assert (
-            helpers.generate_text_for_label(scored_labels[0], True, False)
-            == "Label for Classification"
-        )
+        assert helpers.generate_text_for_label(scored_labels[0], True, True) == "Label for Classification 0%"
+        assert helpers.generate_text_for_label(scored_labels[0], True, False) == "Label for Classification"
         assert helpers.generate_text_for_label(scored_labels[1], False, True) == "0%"
         assert helpers.generate_text_for_label(scored_labels[1], False, False) == ""
 
@@ -386,25 +361,19 @@ class TestHelpers:
         text = "Text to add"
         text_scale = 1.1
         thickness = 2
-        expected_label_size = cv2.getTextSize(
-            text, cv2.FONT_HERSHEY_SIMPLEX, fontScale=text_scale, thickness=thickness
-        )
+        expected_label_size = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, fontScale=text_scale, thickness=thickness)
         expected_baseline = expected_label_size[1]
         expected_text_width = expected_label_size[0][0]
         expected_text_height = expected_label_size[0][1]
         expected_width = expected_text_width + 2 * 3  # text_width + 2*padding
         expected_content_width = expected_width + 2  # expected_width + margin
-        expected_height = (
-            expected_text_height + expected_baseline + 2 * 3
-        )  # text_height + baseline + 2*padding
+        expected_height = expected_text_height + expected_baseline + 2 * 3  # text_height + baseline + 2*padding
         for text_color, expected_text_color in [
             ((150, 40, 100), (255, 255, 255)),  # black text
             ((240, 250, 255), (0, 0, 0)),  # white text
         ]:
             helpers = Helpers()
-            draw_command = helpers.generate_draw_command_for_text(
-                text, text_scale, thickness, text_color
-            )
+            draw_command = helpers.generate_draw_command_for_text(text, text_scale, thickness, text_color)
             assert draw_command[1] == expected_content_width
             assert draw_command[2] == expected_height
             image = RANDOM_IMAGE.copy()
@@ -446,11 +415,7 @@ class TestHelpers:
         labels = CommonMethods.labels() + CommonMethods.scored_labels()
         for show_labels in [True, False]:
             for show_confidence in [True, False]:
-                (
-                    expected_image,
-                    expected_width,
-                    expected_height,
-                ) = self.generate_image_for_labels(
+                (expected_image, expected_width, expected_height,) = self.generate_image_for_labels(
                     expected_image=expected_image,
                     labels=labels,
                     show_labels=show_labels,
@@ -496,25 +461,19 @@ class TestHelpers:
         start_point = Coordinate(1.0, 1.0)
         end_point = Coordinate(1279, 1023)
         actual_image = helpers.draw_flagpole(image, start_point, end_point)
-        expected_image = cv2.line(
-            expected_image, (1, 1), (1279, 1023), color=[0, 0, 0], thickness=2
-        )
+        expected_image = cv2.line(expected_image, (1, 1), (1279, 1023), color=[0, 0, 0], thickness=2)
         assert np.array_equal(actual_image, expected_image)
         # Checking array returned by "draw_flagpole" for "coordinates" parameter that match image borders
         start_point = Coordinate(0.0, 1024.0)
         end_point = Coordinate(1280.0, 0.0)
         actual_image = helpers.draw_flagpole(image, start_point, end_point)
-        expected_image = cv2.line(
-            expected_image, (0, 1024), (1280, 0), color=[0, 0, 0], thickness=2
-        )
+        expected_image = cv2.line(expected_image, (0, 1024), (1280, 0), color=[0, 0, 0], thickness=2)
         assert np.array_equal(actual_image, expected_image)
         # Checking array returned by "draw_flagpole" for "coordinates" parameter that out of image borders
         start_point = Coordinate(0.0, 0.0)
         end_point = Coordinate(1281, 1025)
         actual_image = helpers.draw_flagpole(image, start_point, end_point)
-        expected_image = cv2.line(
-            expected_image, (0, 0), (1281, 1025), color=[0, 0, 0], thickness=2
-        )
+        expected_image = cv2.line(expected_image, (0, 0), (1281, 1025), color=[0, 0, 0], thickness=2)
         assert np.array_equal(actual_image, expected_image)
 
     @pytest.mark.priority_medium
@@ -790,9 +749,7 @@ class TestShapeDrawer:
             expected_image = image.copy()
             shape_drawer = ShapeDrawer(show_count, is_one_label)
             if not shape_drawer.is_one_label:
-                expected_image = shape_drawer.top_left_drawer.draw(
-                    expected_image, full_rectangle_annotation, labels=[]
-                )
+                expected_image = shape_drawer.top_left_drawer.draw(expected_image, full_rectangle_annotation, labels=[])
             expected_image = shape_drawer.shape_drawers[0].draw(
                 expected_image,
                 rectangle_annotation.shape,
@@ -809,13 +766,9 @@ class TestShapeDrawer:
                 ellipse_annotation.get_labels(),
             )
             if is_one_label:
-                expected_image = shape_drawer.top_left_drawer.draw_labels(
-                    expected_image, annotation_scene.get_labels()
-                )
+                expected_image = shape_drawer.top_left_drawer.draw_labels(expected_image, annotation_scene.get_labels())
             if show_count:
-                expected_image = shape_drawer.top_left_drawer.draw_annotation_count(
-                    expected_image, 3
-                )
+                expected_image = shape_drawer.top_left_drawer.draw_annotation_count(expected_image, 3)
             shape_drawer.top_left_drawer.set_cursor_pos()
             actual_image = shape_drawer.draw(image, annotation_scene, [])
             assert np.array_equal(actual_image, expected_image)
@@ -873,21 +826,14 @@ class TestTopLeftDrawer:
         3. Check array returned by "draw_labels" method for ShapeDrawer with "show_count" parameter is "False" and
         "is_one_label" is "False"
         """
-        labels = (
-            ShapeDrawerParams.rectangle_labels()
-            + ShapeDrawerParams().polygon_scored_labels()
-        )
+        labels = ShapeDrawerParams.rectangle_labels() + ShapeDrawerParams().polygon_scored_labels()
         for show_count, is_one_label in [(False, True), (True, True), (False, False)]:
             image = RANDOM_IMAGE.copy()
             expected_image = image.copy()
             shape_drawer = ShapeDrawer(show_count=show_count, is_one_label=is_one_label)
-            expected_shape_drawer = ShapeDrawer(
-                show_count=show_count, is_one_label=is_one_label
-            )
+            expected_shape_drawer = ShapeDrawer(show_count=show_count, is_one_label=is_one_label)
             show_confidence = (
-                shape_drawer.top_left_drawer.show_confidence
-                if not shape_drawer.top_left_drawer.is_one_label
-                else False
+                shape_drawer.top_left_drawer.show_confidence if not shape_drawer.top_left_drawer.is_one_label else False
             )
             expected_image = TestHelpers().generate_image_for_labels(
                 expected_image,
@@ -899,10 +845,7 @@ class TestTopLeftDrawer:
             expected_shape_drawer.top_left_drawer.newline()
             actual_image = shape_drawer.top_left_drawer.draw_labels(image, labels)
             assert np.array_equal(actual_image, expected_image)
-            assert (
-                shape_drawer.top_left_drawer.cursor_pos
-                == expected_shape_drawer.top_left_drawer.cursor_pos
-            )
+            assert shape_drawer.top_left_drawer.cursor_pos == expected_shape_drawer.top_left_drawer.cursor_pos
 
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -923,11 +866,9 @@ class TestTopLeftDrawer:
         expected_image = image.copy()
         shape_drawer = ShapeDrawer(True, True)
         expected_shape_drawer = ShapeDrawer(True, True)
-        draw_command = (
-            expected_shape_drawer.top_left_drawer.generate_draw_command_for_labels(
-                annotation.get_labels(), expected_image, True, True
-            )[0]
-        )
+        draw_command = expected_shape_drawer.top_left_drawer.generate_draw_command_for_labels(
+            annotation.get_labels(), expected_image, True, True
+        )[0]
         expected_image = draw_command(expected_image)
         actual_image = shape_drawer.top_left_drawer.draw(image, annotation, [])
         assert np.array_equal(actual_image, expected_image)
@@ -950,19 +891,14 @@ class TestTopLeftDrawer:
         expected_image = image.copy()
         shape_drawer = ShapeDrawer(True, True)
         expected_shape_drawer = ShapeDrawer(True, True)
-        draw_command = (
-            expected_shape_drawer.top_left_drawer.generate_draw_command_for_text(
-                "Count: 4", 1.0, 1, (255, 255, 0)
-            )[0]
-        )
+        draw_command = expected_shape_drawer.top_left_drawer.generate_draw_command_for_text(
+            "Count: 4", 1.0, 1, (255, 255, 0)
+        )[0]
         expected_image = draw_command(expected_image)
         expected_shape_drawer.top_left_drawer.newline()
         actual_image = shape_drawer.top_left_drawer.draw_annotation_count(image, 4)
         assert np.array_equal(actual_image, expected_image)
-        assert (
-            shape_drawer.top_left_drawer.cursor_pos
-            == expected_shape_drawer.top_left_drawer.cursor_pos
-        )
+        assert shape_drawer.top_left_drawer.cursor_pos == expected_shape_drawer.top_left_drawer.cursor_pos
 
 
 @pytest.mark.components(OtxSdkComponent.OTX_API)
@@ -979,20 +915,14 @@ class TestRectangleDrawer:
         image_copy = image.copy()
         rectangle_drawer = shape_drawer.shape_drawers[0]
         base_color = labels[0].color.bgr_tuple
-        x1, y1 = int(rectangle.x1 * image_copy.shape[1]), int(
-            rectangle.y1 * image_copy.shape[0]
-        )
-        x2, y2 = int(rectangle.x2 * image_copy.shape[1]), int(
-            rectangle.y2 * image_copy.shape[0]
-        )
+        x1, y1 = int(rectangle.x1 * image_copy.shape[1]), int(rectangle.y1 * image_copy.shape[0])
+        x2, y2 = int(rectangle.x2 * image_copy.shape[1]), int(rectangle.y2 * image_copy.shape[0])
         # Drawing rectangle
         image_copy = rectangle_drawer.draw_transparent_rectangle(
             image_copy, x1, y1, x2, y2, base_color, rectangle_drawer.alpha_shape
         )
         # Drawing rectangle frame
-        image_copy = cv2.rectangle(
-            img=image_copy, pt1=(x1, y1), pt2=(x2, y2), color=base_color, thickness=2
-        )
+        image_copy = cv2.rectangle(img=image_copy, pt1=(x1, y1), pt2=(x2, y2), color=base_color, thickness=2)
         # Generating draw command to add labels to image
         draw_command, _, _ = rectangle_drawer.generate_draw_command_for_labels(
             labels,
@@ -1073,10 +1003,7 @@ class TestRectangleDrawer:
             )
             actual_image = shape_drawer.shape_drawers[0].draw(image, rectangle, labels)
             assert np.array_equal(actual_image, expected_image)
-            assert (
-                shape_drawer.top_left_drawer.cursor_pos
-                == expected_shape_drawer.top_left_drawer.cursor_pos
-            )
+            assert shape_drawer.top_left_drawer.cursor_pos == expected_shape_drawer.top_left_drawer.cursor_pos
 
 
 @pytest.mark.components(OtxSdkComponent.OTX_API)
@@ -1147,9 +1074,7 @@ class TestEllipseDrawer:
         # Getting top-left corner of box around Ellipse
         ellipse_shape_drawer.set_cursor_pos(cursor_position)
         image_copy = draw_command(result_with_border)
-        image_copy = ellipse_shape_drawer.draw_flagpole(
-            image_copy, flagpole_start, flagpole_end
-        )
+        image_copy = ellipse_shape_drawer.draw_flagpole(image_copy, flagpole_start, flagpole_end)
         return image_copy
 
     @pytest.mark.priority_medium
@@ -1229,10 +1154,7 @@ class TestEllipseDrawer:
             )
             actual_image = shape_drawer.shape_drawers[2].draw(image, ellipse, labels)
             assert np.array_equal(actual_image, expected_image)
-            assert (
-                shape_drawer.top_left_drawer.cursor_pos
-                == expected_shape_drawer.top_left_drawer.cursor_pos
-            )
+            assert shape_drawer.top_left_drawer.cursor_pos == expected_shape_drawer.top_left_drawer.cursor_pos
 
 
 @pytest.mark.components(OtxSdkComponent.OTX_API)
@@ -1253,10 +1175,7 @@ class TestPolygonDrawer:
         # Draw Polygon on the image
         alpha = polygon_drawer.alpha_shape
         contours = np.array(
-            [
-                [point.x * image_copy.shape[1], point.y * image_copy.shape[0]]
-                for point in polygon.points
-            ],
+            [[point.x * image_copy.shape[1], point.y * image_copy.shape[0]] for point in polygon.points],
             dtype=np.int32,
         )
         overlay = cv2.drawContours(
@@ -1266,9 +1185,7 @@ class TestPolygonDrawer:
             color=base_color,
             thickness=cv2.FILLED,
         )
-        result_without_border = cv2.addWeighted(
-            overlay, alpha, image_copy, 1 - alpha, 0
-        )
+        result_without_border = cv2.addWeighted(overlay, alpha, image_copy, 1 - alpha, 0)
         result_with_border = cv2.drawContours(
             image=result_without_border,
             contours=[contours],
@@ -1287,9 +1204,7 @@ class TestPolygonDrawer:
         # Getting top-left corner of box around Polygon
         polygon_drawer.set_cursor_pos(cursor_position)
         image_copy = draw_command(result_with_border)
-        image_copy = polygon_drawer.draw_flagpole(
-            image_copy, flagpole_start, flagpole_end
-        )
+        image_copy = polygon_drawer.draw_flagpole(image_copy, flagpole_start, flagpole_end)
         return image_copy
 
     @pytest.mark.priority_medium
@@ -1397,7 +1312,4 @@ class TestPolygonDrawer:
             )
             actual_image = shape_drawer.shape_drawers[1].draw(image, polygon, labels)
             assert np.array_equal(actual_image, expected_image)
-            assert (
-                shape_drawer.top_left_drawer.cursor_pos
-                == expected_shape_drawer.top_left_drawer.cursor_pos
-            )
+            assert shape_drawer.top_left_drawer.cursor_pos == expected_shape_drawer.top_left_drawer.cursor_pos

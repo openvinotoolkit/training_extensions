@@ -39,9 +39,7 @@ class TestID:
         oid_representation = ObjectId(expected_oid)
         oid_representation_id = ID(oid_representation)
         assert oid_representation_id.representation == "61a8b869fb7665916a39eb95"
-        assert (
-            repr(oid_representation_id.representation) == "ID(61a8b869fb7665916a39eb95)"
-        )
+        assert repr(oid_representation_id.representation) == "ID(61a8b869fb7665916a39eb95)"
         # Scenario for ID object with str-type representation parameter
         str_representation = " String-type representation ID_1 "
         str_representation_id = ID(str_representation)

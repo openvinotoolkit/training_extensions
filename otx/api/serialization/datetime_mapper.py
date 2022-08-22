@@ -27,9 +27,7 @@ class DatetimeMapper:
         """Deserializes datetime from str or create new one if it is None"""
 
         if isinstance(instance, str):
-            modification_date = datetime.datetime.strptime(
-                instance, "%Y-%m-%dT%H:%M:%S.%f"
-            )
+            modification_date = datetime.datetime.strptime(instance, "%Y-%m-%dT%H:%M:%S.%f")
             return modification_date.replace(tzinfo=datetime.timezone.utc)
 
         return now()

@@ -127,9 +127,7 @@ class DefaultOTXTestCreationParametersInterface(OTXTestCreationParametersInterfa
     """
 
     def test_case_class(self) -> Type[OTXTestCaseInterface]:
-        return generate_otx_integration_test_case_class(
-            get_default_test_action_classes()
-        )
+        return generate_otx_integration_test_case_class(get_default_test_action_classes())
 
     def short_test_parameters_names_for_generating_id(self) -> OrderedDict:
         DEFAULT_SHORT_TEST_PARAMETERS_NAMES_FOR_GENERATING_ID = OrderedDict(
@@ -195,8 +193,7 @@ class OTXTestHelper:
             res = self._cache_parameters == params
             res_str = "==" if res else "!="
             logger.debug(
-                f"cache.has_same_params: "
-                f"cache_parameters={self._cache_parameters} {res_str} {params}, res={res}"
+                f"cache.has_same_params: " f"cache_parameters={self._cache_parameters} {res_str} {params}, res={res}"
             )
             return res
 
@@ -212,16 +209,12 @@ class OTXTestHelper:
         self.test_parameters_defining_test_case_behavior = (
             test_creation_parameters.test_parameters_defining_test_case_behavior()
         )
-        self.default_test_parameters = (
-            test_creation_parameters.default_test_parameters()
-        )
+        self.default_test_parameters = test_creation_parameters.default_test_parameters()
 
         self._cache = OTXTestHelper._Cache()
 
         assert issubclass(self.test_case_class, OTXTestCaseInterface)
-        assert isinstance(
-            self.short_test_parameters_names_for_generating_id, OrderedDict
-        )
+        assert isinstance(self.short_test_parameters_names_for_generating_id, OrderedDict)
         assert all(
             isinstance(k, str) and isinstance(v, str)
             for k, v in self.short_test_parameters_names_for_generating_id.items()
@@ -232,9 +225,7 @@ class OTXTestHelper:
         assert "usecase" in self.short_test_parameters_names_for_generating_id
 
         assert isinstance(self.test_parameters_defining_test_case_behavior, list)
-        assert all(
-            isinstance(s, str) for s in self.test_parameters_defining_test_case_behavior
-        )
+        assert all(isinstance(s, str) for s in self.test_parameters_defining_test_case_behavior)
 
         assert isinstance(self.default_test_parameters, dict)
         assert all(isinstance(k, str) for k in self.default_test_parameters.keys())
@@ -254,8 +245,7 @@ class OTXTestHelper:
         for par_name, short_par_name in param_name_to_short_name.items():
             if par_name not in test_parameters:
                 raise ValueError(
-                    f"Test parameters do not contain key '{par_name}', "
-                    f"test_parameters={pformat(test_parameters)}"
+                    f"Test parameters do not contain key '{par_name}', " f"test_parameters={pformat(test_parameters)}"
                 )
             id_parts.append(f"{short_par_name}-{test_parameters[par_name]}")
 
@@ -327,19 +317,12 @@ class OTXTestHelper:
         (note that params_factories_for_test_actions are factories, not structs, to
         create the parameters only when this is required)
         """
-        params_defining_cache = {
-            k: test_parameters[k]
-            for k in self.test_parameters_defining_test_case_behavior
-        }
+        params_defining_cache = {k: test_parameters[k] for k in self.test_parameters_defining_test_case_behavior}
         if not self._cache.has_same_params(params_defining_cache):
             logger.info("OTXTestHelper: parameters were changed -- updating cache")
-            logger.info(
-                f"OTXTestHelper: before creating test case (class {self.test_case_class})"
-            )
+            logger.info(f"OTXTestHelper: before creating test case (class {self.test_case_class})")
             test_case = self.test_case_class(params_factories_for_test_actions)
-            logger.info(
-                f"OTXTestHelper: after creating test case (class {self.test_case_class})"
-            )
+            logger.info(f"OTXTestHelper: after creating test case (class {self.test_case_class})")
             self._cache.set(params_defining_cache, test_case)
         else:
             logger.info("OTXTestHelper: parameters were not changed -- cache is kept")

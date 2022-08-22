@@ -27,9 +27,7 @@ def parse_args():
     """
 
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--root", help="A root dir where templates should be searched.", default="."
-    )
+    parser.add_argument("--root", help="A root dir where templates should be searched.", default=".")
     parser.add_argument("--task_type")
     parser.add_argument("--experimental", action="store_true")
 

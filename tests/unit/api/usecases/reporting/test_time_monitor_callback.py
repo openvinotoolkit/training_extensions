@@ -62,33 +62,20 @@ class TestTimeMonitorCallback:
             assert actual_time_monitor_callback.train_steps == 4
             assert actual_time_monitor_callback.val_steps == 5
             assert actual_time_monitor_callback.test_steps == 6
-            assert (
-                actual_time_monitor_callback.steps_per_epoch
-                == 9  # train_steps + val_steps
-            )
-            assert (
-                actual_time_monitor_callback.total_steps
-                == 33  # steps_per_epoch * total_epochs + num_test_steps
-            )
+            assert actual_time_monitor_callback.steps_per_epoch == 9  # train_steps + val_steps
+            assert actual_time_monitor_callback.total_steps == 33  # steps_per_epoch * total_epochs + num_test_steps
             assert actual_time_monitor_callback.current_step == 0
             assert actual_time_monitor_callback.current_epoch == 0
-            assert (
-                actual_time_monitor_callback.start_step_time  # calculated using time.time() method
-            )
+            assert actual_time_monitor_callback.start_step_time  # calculated using time.time() method
             assert actual_time_monitor_callback.past_step_duration == []
             assert actual_time_monitor_callback.average_step == 0
             assert actual_time_monitor_callback.step_history == expected_step_history
-            assert (
-                actual_time_monitor_callback.start_epoch_time  # calculated using time.time() method
-            )
+            assert actual_time_monitor_callback.start_epoch_time  # calculated using time.time() method
             assert actual_time_monitor_callback.past_epoch_duration == []
             assert actual_time_monitor_callback.average_epoch == 0
             assert actual_time_monitor_callback.epoch_history == expected_epoch_history
             assert not actual_time_monitor_callback.is_training
-            assert (
-                actual_time_monitor_callback.update_progress_callback
-                == expected_update_progress_callback
-            )
+            assert actual_time_monitor_callback.update_progress_callback == expected_update_progress_callback
 
         # Checking attributes of "TimeMonitorCallback" initialized with default optional parameters
         num_epoch = 3
@@ -147,18 +134,14 @@ class TestTimeMonitorCallback:
         time_monitor_callback = self.time_monitor_callback()
         start_step_time_before = time() - 1
         time_monitor_callback.start_step_time = start_step_time_before
-        time_monitor_callback.on_train_batch_begin(
-            batch=1, logs="on_train_batch_begin logs"
-        )
+        time_monitor_callback.on_train_batch_begin(batch=1, logs="on_train_batch_begin logs")
         self.check_current_step_start_step_time_attributes(
             callback=time_monitor_callback,
             expected_step=1,
             expected_step_time_before=start_step_time_before,
         )
         time_monitor_callback.start_step_time = start_step_time_before
-        time_monitor_callback.on_train_batch_begin(
-            batch=2, logs="on_train_batch_begin logs"
-        )
+        time_monitor_callback.on_train_batch_begin(batch=2, logs="on_train_batch_begin logs")
         self.check_current_step_start_step_time_attributes(
             callback=time_monitor_callback,
             expected_step=2,
@@ -193,9 +176,7 @@ class TestTimeMonitorCallback:
         time_monitor_callback = self.time_monitor_callback()
         time_monitor_callback.past_step_duration = [10.0, 12.0]
         time_monitor_callback.step_history = 2
-        time_monitor_callback.on_train_batch_end(
-            batch=1, logs="on_train_batch_end logs"
-        )
+        time_monitor_callback.on_train_batch_end(batch=1, logs="on_train_batch_end logs")
         assert len(time_monitor_callback.past_step_duration) == 2
         assert round(time_monitor_callback.average_step, 4) == 6.0
         # Checking "past_step_duration" and "average_step" after "on_train_batch_end" for "TimeMonitorCallback" with
@@ -203,9 +184,7 @@ class TestTimeMonitorCallback:
         time_monitor_callback = self.time_monitor_callback()
         time_monitor_callback.past_step_duration = [10, 14]
         time_monitor_callback.step_history = 4
-        time_monitor_callback.on_train_batch_end(
-            batch=2, logs="on_train_batch_end logs"
-        )
+        time_monitor_callback.on_train_batch_end(batch=2, logs="on_train_batch_end logs")
         assert len(time_monitor_callback.past_step_duration) == 3
         assert round(time_monitor_callback.average_step, 4) == 8.0
 
@@ -266,19 +245,11 @@ class TestTimeMonitorCallback:
         time_monitor_callback = self.time_monitor_callback()
         start_step_time_before = time() - 1
         time_monitor_callback.start_step_time = start_step_time_before
-        time_monitor_callback.on_test_batch_begin(
-            batch=1, logs="on_test_batch_begin logs"
-        )
-        self.check_current_step_start_step_time_attributes(
-            time_monitor_callback, 1, start_step_time_before
-        )
+        time_monitor_callback.on_test_batch_begin(batch=1, logs="on_test_batch_begin logs")
+        self.check_current_step_start_step_time_attributes(time_monitor_callback, 1, start_step_time_before)
         time_monitor_callback.start_step_time = start_step_time_before
-        time_monitor_callback.on_test_batch_begin(
-            batch=2, logs="on_test_batch_begin logs"
-        )
-        self.check_current_step_start_step_time_attributes(
-            time_monitor_callback, 2, start_step_time_before
-        )
+        time_monitor_callback.on_test_batch_begin(batch=2, logs="on_test_batch_begin logs")
+        self.check_current_step_start_step_time_attributes(time_monitor_callback, 2, start_step_time_before)
 
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -380,9 +351,7 @@ class TestTimeMonitorCallback:
         # Checking "current_step", "current_epoch" and "is_training" after "on_train_end" for "TimeMonitorCallback" with
         # "is_training": "True"
         time_monitor_callback = self.time_monitor_callback()
-        time_monitor_callback.on_train_begin(  # setting "is_training" to "True"
-            "on_train_begin logs"
-        )
+        time_monitor_callback.on_train_begin("on_train_begin logs")  # setting "is_training" to "True"
         time_monitor_callback.on_train_end("on_train_end logs")
         check_attributes_after_on_train_end(time_monitor_callback)
         # Checking "current_step", "current_epoch" and "is_training" after "on_train_end" for "TimeMonitorCallback" with
@@ -477,6 +446,4 @@ class TestTimeMonitorCallback:
         # Checking value returned by "get_progress" for "TimeMonitorCallback" with "current_step" not equal to 0
         time_monitor_callback.current_step = 16
         time_monitor_callback.total_steps = 64
-        assert (
-            time_monitor_callback.get_progress() == 25.0
-        )  # (current_step / total_steps)*100
+        assert time_monitor_callback.get_progress() == 25.0  # (current_step / total_steps)*100

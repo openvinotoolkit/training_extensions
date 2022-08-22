@@ -172,9 +172,7 @@ class TestMetadataItemEntity:
         test_data0 = test_data1 = i_metadata.name
         i_metadata.name = "i_metadata"
         test_data2 = i_metadata.name
-        test_model0 = test_model1 = ModelEntity(
-            train_dataset="default_dataset", configuration="default_config"
-        )
+        test_model0 = test_model1 = ModelEntity(train_dataset="default_dataset", configuration="default_config")
         test_instance0 = MetadataItemEntity(test_data0, test_model0)
         test_instance1 = MetadataItemEntity(test_data1, test_model1)
         test_instance2 = MetadataItemEntity(test_data2, test_model1)

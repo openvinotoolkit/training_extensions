@@ -57,9 +57,7 @@ class TestGraph:
     @staticmethod
     def check_graph_non_list_attributes(expected_attributes_dicts: list) -> None:
         for expected_attribute_dict in expected_attributes_dicts:
-            assert expected_attribute_dict.get(
-                "attribute"
-            ) == expected_attribute_dict.get("expected_value")
+            assert expected_attribute_dict.get("attribute") == expected_attribute_dict.get("expected_value")
 
     @staticmethod
     def check_graph_list_attributes(actual_expected_attributes_dict: list) -> None:

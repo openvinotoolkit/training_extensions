@@ -48,36 +48,24 @@ class TestUtilsFunctions:
         # Checking list returned by "_search_in_config_dict_inner" with default values of optional parameters
         config_dict = {"key_1": 2, "key_2": 4, "key_3": 8}
         # Checking search of existing key
-        assert _search_in_config_dict_inner(
-            config_dict=config_dict, key_to_search="key_2"
-        ) == [(4, [])]
+        assert _search_in_config_dict_inner(config_dict=config_dict, key_to_search="key_2") == [(4, [])]
         # Checking search of non-existing key
-        assert (
-            _search_in_config_dict_inner(config_dict=config_dict, key_to_search="key_4")
-            == []
-        )
+        assert _search_in_config_dict_inner(config_dict=config_dict, key_to_search="key_4") == []
 
         # Checking list returned by "_search_in_config_dict_inner" with specified "prior_keys"
         prior_keys = ["prior_key_1", "prior_key_2"]
         # Checking search of existing key
-        assert _search_in_config_dict_inner(
-            config_dict=config_dict, key_to_search="key_2", prior_keys=prior_keys
-        ) == [(4, prior_keys)]
+        assert _search_in_config_dict_inner(config_dict=config_dict, key_to_search="key_2", prior_keys=prior_keys) == [
+            (4, prior_keys)
+        ]
         # Checking search of non-existing key
-        assert (
-            _search_in_config_dict_inner(
-                config_dict=config_dict, key_to_search="key_4", prior_keys=prior_keys
-            )
-            == []
-        )
+        assert _search_in_config_dict_inner(config_dict=config_dict, key_to_search="key_4", prior_keys=prior_keys) == []
         # Checking list returned by "_search_in_config_dict_inner" with specified "results"
         # Checking search of existing key
         results = [(4, ["result_key", "other_result_key"])]
         expected_results = [(4, ["result_key", "other_result_key"]), (2, [])]
         assert (
-            _search_in_config_dict_inner(
-                config_dict=config_dict, key_to_search="key_1", results=results
-            )
+            _search_in_config_dict_inner(config_dict=config_dict, key_to_search="key_1", results=results)
             == expected_results
         )
         assert results == expected_results
@@ -85,9 +73,7 @@ class TestUtilsFunctions:
         results = [(4, ["result_key", "other_result_key"])]
         expected_results = list(results)
         assert (
-            _search_in_config_dict_inner(
-                config_dict=config_dict, key_to_search="key_4", results=results
-            )
+            _search_in_config_dict_inner(config_dict=config_dict, key_to_search="key_4", results=results)
             == expected_results
         )
         assert results == expected_results
@@ -211,9 +197,7 @@ class TestUtilsFunctions:
         path_to_config = str(Path(__file__).parent / Path(r"../dummy_config.yaml"))
         with open(path_to_config, "r", encoding="UTF-8") as file:
             expected_path_to_config_dict = yaml.safe_load(file)
-        string_config = (
-            "{'str_key_1': 2, 'str_key_2': 4, 'str_key_3': 8, 'type': PARAMETER_GROUP}"
-        )
+        string_config = "{'str_key_1': 2, 'str_key_2': 4, 'str_key_3': 8, 'type': PARAMETER_GROUP}"
         expected_string_config_dict = {
             "str_key_1": 2,
             "str_key_2": 4,
@@ -253,10 +237,7 @@ class TestUtilsFunctions:
             (dict_config, expected_dict_config),
             (dict_config_instance, expected_dict_config_instance_dict),
         ]:
-            assert (
-                input_to_config_dict(input_config=input_config, check_config_type=True)
-                == expected_dict
-            )
+            assert input_to_config_dict(input_config=input_config, check_config_type=True) == expected_dict
         # Checking dictionary returned by "input_to_config_dict" when "check_config_type" is "False" and "type" key
         # is not specified in "input_config"
         string_config = "{'str_key_1': 2, 'str_key_2': 4, 'str_key_3': 8}"
@@ -282,10 +263,7 @@ class TestUtilsFunctions:
             (dict_config, expected_dict_config),
             (dict_config_instance, expected_dict_config_instance_dict),
         ]:
-            assert (
-                input_to_config_dict(input_config=input_config, check_config_type=False)
-                == expected_dict
-            )
+            assert input_to_config_dict(input_config=input_config, check_config_type=False) == expected_dict
         # Checking that ValueError exception is raised when type of "input_config" is not equal to string, DictConfig or
         # dictionary
         with pytest.raises(ValueError):
@@ -304,9 +282,7 @@ class TestUtilsFunctions:
         for none_type_input_config in [
             "{'key_1': 2, 'key_2': 4, 'key_3': 8, 'type': unexpected_type}",
             {"key_1": 2, "key_2": 4, "key_3": 8, "type": "unexpected_type"},
-            DictConfig(
-                content={"key_1": 2, "key_2": 4, "key_3": 8, "type": "unexpected_type"}
-            ),
+            DictConfig(content={"key_1": 2, "key_2": 4, "key_3": 8, "type": "unexpected_type"}),
         ]:
             with pytest.raises(ValueError):
                 input_to_config_dict(input_config=none_type_input_config)
@@ -338,15 +314,9 @@ class TestUtilsFunctions:
             SECOND = "second element"
 
         # Checking value returned by "deserialize_enum_value" when Enum class element is specified as "value"
-        assert (
-            deserialize_enum_value(value=ValidationEnum.FIRST, enum_type=ValidationEnum)
-            == ValidationEnum.FIRST
-        )
+        assert deserialize_enum_value(value=ValidationEnum.FIRST, enum_type=ValidationEnum) == ValidationEnum.FIRST
         # Checking value returned by "deserialize_enum_value" when string is specified as "value"
-        assert (
-            deserialize_enum_value(value="SECOND", enum_type=ValidationEnum)
-            == ValidationEnum.SECOND
-        )
+        assert deserialize_enum_value(value="SECOND", enum_type=ValidationEnum) == ValidationEnum.SECOND
         with pytest.raises(KeyError):
             deserialize_enum_value(value="THIRD", enum_type=ValidationEnum)
         # Checking that ValueError exception is raised when type of "value" for "deserialize_enum_value" is not equal to

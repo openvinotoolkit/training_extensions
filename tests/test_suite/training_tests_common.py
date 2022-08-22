@@ -29,30 +29,20 @@ ROOT_PATH_KEY = "_root_path"
 
 
 def make_path_be_abs(some_val, root_path):
-    assert isinstance(
-        some_val, str
-    ), f"Wrong type of value: {some_val}, type={type(some_val)}"
+    assert isinstance(some_val, str), f"Wrong type of value: {some_val}, type={type(some_val)}"
 
-    assert isinstance(
-        root_path, str
-    ), f"Wrong type of root_path: {root_path}, type={type(root_path)}"
+    assert isinstance(root_path, str), f"Wrong type of root_path: {root_path}, type={type(root_path)}"
 
     # Note that os.path.join(a, b) == b if b is an absolute path
     return osp.join(root_path, some_val)
 
 
 def make_paths_be_abs(some_dict, root_path):
-    assert isinstance(
-        some_dict, dict
-    ), f"Wrong type of value: {some_dict}, type={type(some_dict)}"
+    assert isinstance(some_dict, dict), f"Wrong type of value: {some_dict}, type={type(some_dict)}"
 
-    assert isinstance(
-        root_path, str
-    ), f"Wrong type of root_path: {root_path}, type={type(root_path)}"
+    assert isinstance(root_path, str), f"Wrong type of root_path: {root_path}, type={type(root_path)}"
 
-    assert all(
-        isinstance(v, str) for v in some_dict.values()
-    ), f"Wrong input dict {some_dict}"
+    assert all(isinstance(v, str) for v in some_dict.values()), f"Wrong input dict {some_dict}"
 
     for k in list(some_dict.keys()):
         # Note that os.path.join(a, b) == b if b is an absolute path
@@ -69,7 +59,5 @@ def performance_to_score_name_value(perf: Union[Performance, None]):
     assert isinstance(perf, Performance)
     score = perf.score
     assert isinstance(score, ScoreMetric)
-    assert (
-        isinstance(score.name, str) and score.name
-    ), f'Wrong score name "{score.name}"'
+    assert isinstance(score.name, str) and score.name, f'Wrong score name "{score.name}"'
     return score.name, score.value

@@ -145,9 +145,7 @@ class TestPrimitiveParameters:
         # Checking _CountingAttr object returned by "configurable_integer" for default values of optional parameters
         default_value = 100
         header = "configurable_integer header"
-        actual_integer = configurable_integer(
-            default_value=default_value, header=header
-        )
+        actual_integer = configurable_integer(default_value=default_value, header=header)
         check_configurable_integer(integer_instance=actual_integer)  # type: ignore
         # Checking _CountingAttr object returned by "configurable_integer" for specified values of optional parameters
         min_value = 10
@@ -339,18 +337,14 @@ class TestPrimitiveParameters:
             assert isinstance(boolean_instance, _make._CountingAttr)
             assert boolean_instance._default
             assert boolean_instance.type == bool
-            assert isinstance(
-                boolean_instance._validator, validators._InstanceOfValidator  # type: ignore
-            )
+            assert isinstance(boolean_instance._validator, validators._InstanceOfValidator)  # type: ignore
             assert boolean_instance._validator.type == bool
             assert boolean_instance.metadata == expected_metadata
 
         # Checking _CountingAttr object returned by "configurable_boolean" for default values of optional parameters
         default_value = True
         header = "configurable_boolean header"
-        actual_boolean = configurable_boolean(
-            default_value=default_value, header=header
-        )
+        actual_boolean = configurable_boolean(default_value=default_value, header=header)
         check_configurable_boolean(boolean_instance=actual_boolean)  # type: ignore
         # Checking _CountingAttr object returned by "configurable_boolean" for specified values of optional parameters
         description = "configurable_boolean description"
@@ -441,9 +435,7 @@ class TestPrimitiveParameters:
         default_value = 0.1
         header = "float_selectable header"
         options = [0.2, 1.4, 2.8]
-        actual_float_selectable = float_selectable(
-            default_value=default_value, options=options, header=header
-        )
+        actual_float_selectable = float_selectable(default_value=default_value, options=options, header=header)
         check_float_selectable(float_selectable_instance=actual_float_selectable)  # type: ignore
         # Checking _CountingAttr object returned by "float_selectable" for specified values of optional parameters
         description = "float_selectable description"

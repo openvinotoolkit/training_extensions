@@ -150,9 +150,7 @@ class TestModelConfiguration:
         """
         parameters = ConfigurableParameters(header="Test header")
         label_schema = LabelSchemaEntity()
-        model_configuration = ModelConfiguration(
-            configurable_parameters=parameters, label_schema=label_schema
-        )
+        model_configuration = ModelConfiguration(configurable_parameters=parameters, label_schema=label_schema)
         assert model_configuration.configurable_parameters == parameters
         assert model_configuration.get_label_schema() == label_schema
 
@@ -164,9 +162,7 @@ class TestModelEntity:
     def generate_random_image(self):
         with generate_random_single_image() as path:
             image = Image(file_path=path)
-            return DatasetItemEntity(
-                media=image, annotation_scene=NullAnnotationSceneEntity()
-            )
+            return DatasetItemEntity(media=image, annotation_scene=NullAnnotationSceneEntity())
 
     def dataset(self):
         return DatasetEntity(items=[self.generate_random_image()])
@@ -174,16 +170,12 @@ class TestModelEntity:
     def configuration(self):
         parameters = ConfigurableParameters(header="Test header")
         label_schema = LabelSchemaEntity()
-        return ModelConfiguration(
-            configurable_parameters=parameters, label_schema=label_schema
-        )
+        return ModelConfiguration(configurable_parameters=parameters, label_schema=label_schema)
 
     def other_configuration(self):
         parameters = ConfigurableParameters(header="Other test header")
         label_schema = LabelSchemaEntity()
-        return ModelConfiguration(
-            configurable_parameters=parameters, label_schema=label_schema
-        )
+        return ModelConfiguration(configurable_parameters=parameters, label_schema=label_schema)
 
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -200,9 +192,7 @@ class TestModelEntity:
         1. Check default values in the ModelEntity
         """
 
-        model_entity = ModelEntity(
-            train_dataset=self.dataset(), configuration=self.configuration()
-        )
+        model_entity = ModelEntity(train_dataset=self.dataset(), configuration=self.configuration())
 
         assert model_entity.id_ == ID()
         assert type(model_entity.configuration) == ModelConfiguration
@@ -279,9 +269,7 @@ class TestModelEntity:
         dataset = DatasetEntity(items=[item])
         score_metric = ScoreMetric(name="Model accuracy", value=0.5)
 
-        model_entity = ModelEntity(
-            train_dataset=self.dataset(), configuration=self.configuration()
-        )
+        model_entity = ModelEntity(train_dataset=self.dataset(), configuration=self.configuration())
 
         set_params = {
             "configuration": environment.get_model_configuration(),
@@ -403,15 +391,9 @@ class TestModelEntity:
         Test passes if ModelEntity equal ModelEntity and not equal another type
         """
         dataset = self.dataset()
-        other_model_entity = ModelEntity(
-            train_dataset=dataset, configuration=self.configuration()
-        )
-        model_entity = ModelEntity(
-            train_dataset=dataset, configuration=self.configuration()
-        )
-        third_model_entity = ModelEntity(
-            train_dataset=self.dataset(), configuration=self.other_configuration()
-        )
+        other_model_entity = ModelEntity(train_dataset=dataset, configuration=self.configuration())
+        model_entity = ModelEntity(train_dataset=dataset, configuration=self.configuration())
+        third_model_entity = ModelEntity(train_dataset=self.dataset(), configuration=self.other_configuration())
         assert model_entity.__eq__("") is False
         assert model_entity == other_model_entity
         assert model_entity != third_model_entity

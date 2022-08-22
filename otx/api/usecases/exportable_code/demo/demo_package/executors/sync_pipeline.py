@@ -44,9 +44,7 @@ class ChainExecutor:
         self.visualizer = visualizer
         self.converters = []
         for model in self.models:
-            self.converters.append(
-                create_output_converter(model.task_type, model.labels)
-            )
+            self.converters.append(create_output_converter(model.task_type, model.labels))
 
     # pylint: disable=too-many-locals
     def single_run(self, input_image: np.ndarray) -> AnnotationSceneEntity:
@@ -59,13 +57,9 @@ class ChainExecutor:
             new_objects = []
             for item, parent_annotation in current_objects:
                 predictions, frame_meta = model.core_model(item)
-                annotation_scene = self.converters[index].convert_to_annotation(
-                    predictions, frame_meta
-                )
+                annotation_scene = self.converters[index].convert_to_annotation(predictions, frame_meta)
                 for annotation in annotation_scene.annotations:
-                    new_item, item_annotation = self.crop(
-                        item, parent_annotation, annotation
-                    )
+                    new_item, item_annotation = self.crop(item, parent_annotation, annotation)
                     new_objects.append((new_item, item_annotation))
                     if model.task_type.is_global:
                         for label in item_annotation.get_labels():
@@ -82,9 +76,7 @@ class ChainExecutor:
         """
         Crop operation between chain stages
         """
-        new_item = ShapeFactory.shape_as_rectangle(
-            item_annotation.shape
-        ).crop_numpy_array(item)
+        new_item = ShapeFactory.shape_as_rectangle(item_annotation.shape).crop_numpy_array(item)
         item_annotation.shape = item_annotation.shape.normalize_wrt_roi_shape(
             ShapeFactory.shape_as_rectangle(parent_annotation.shape)
         )

@@ -36,14 +36,9 @@ def get_fully_annotated_idx(dataset: DatasetEntity) -> List[int]:
     local_idx = []
     for idx, gt_item in enumerate(dataset):
         local_annotations = [
-            annotation
-            for annotation in gt_item.get_annotations()
-            if not Rectangle.is_full_box(annotation.shape)
+            annotation for annotation in gt_item.get_annotations() if not Rectangle.is_full_box(annotation.shape)
         ]
-        if (
-            not any(label.is_anomalous for label in gt_item.get_shapes_labels())
-            or len(local_annotations) > 0
-        ):
+        if not any(label.is_anomalous for label in gt_item.get_shapes_labels()) or len(local_annotations) > 0:
             local_idx.append(idx)
     return local_idx
 
@@ -69,9 +64,7 @@ def get_local_subset(
         item = dataset[idx]
 
         local_annotations = [
-            annotation
-            for annotation in item.get_annotations()
-            if not Rectangle.is_full_box(annotation.shape)
+            annotation for annotation in item.get_annotations() if not Rectangle.is_full_box(annotation.shape)
         ]
         # annotations with the normal label are considered local
         if include_normal:
@@ -79,9 +72,7 @@ def get_local_subset(
                 [
                     annotation
                     for annotation in item.get_annotations()
-                    if not any(
-                        label.label.is_anomalous for label in annotation.get_labels()
-                    )
+                    if not any(label.label.is_anomalous for label in annotation.get_labels())
                 ]
             )
         local_items.append(
@@ -110,16 +101,12 @@ def get_global_subset(dataset: DatasetEntity) -> DatasetEntity:
     global_items = []
     for item in dataset:
         global_annotations = [
-            annotation
-            for annotation in item.get_annotations()
-            if Rectangle.is_full_box(annotation.shape)
+            annotation for annotation in item.get_annotations() if Rectangle.is_full_box(annotation.shape)
         ]
         global_items.append(
             DatasetItemEntity(
                 media=item.media,
-                annotation_scene=AnnotationSceneEntity(
-                    global_annotations, kind=item.annotation_scene.kind
-                ),
+                annotation_scene=AnnotationSceneEntity(global_annotations, kind=item.annotation_scene.kind),
                 metadata=item.get_metadata(),
                 subset=item.subset,
                 roi=item.roi,
@@ -152,14 +139,10 @@ def split_local_global_resultset(
     :param resultset: Input result set
     :return: Globally annotated result set, locally annotated result set
     """
-    global_gt_dataset, local_gt_dataset = split_local_global_dataset(
-        resultset.ground_truth_dataset
-    )
+    global_gt_dataset, local_gt_dataset = split_local_global_dataset(resultset.ground_truth_dataset)
     local_idx = get_fully_annotated_idx(resultset.ground_truth_dataset)
     global_pred_dataset = get_global_subset(resultset.prediction_dataset)
-    local_pred_dataset = get_local_subset(
-        resultset.prediction_dataset, local_idx, include_normal=False
-    )
+    local_pred_dataset = get_local_subset(resultset.prediction_dataset, local_idx, include_normal=False)
 
     global_resultset = ResultSetEntity(
         model=resultset.model,

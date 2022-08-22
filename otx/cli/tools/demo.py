@@ -78,12 +78,8 @@ def parse_args():
         "Fits displayed images to window with specified Width and Height. "
         "This options applies to result visualisation only.",
     )
-    parser.add_argument(
-        "--loop", action="store_true", help="Enable reading the input in a loop."
-    )
-    parser.add_argument(
-        "--delay", type=int, default=3, help="Frame visualization time in ms."
-    )
+    parser.add_argument("--loop", action="store_true", help="Enable reading the input in a loop.")
+    parser.add_argument("--delay", type=int, default=3, help="Frame visualization time in ms.")
     parser.add_argument(
         "--display-perf",
         action="store_true",
@@ -102,9 +98,7 @@ def get_predictions(task, frame):
     Returns list of predictions made by task on frame and time spent on doing prediction.
     """
 
-    empty_annotation = AnnotationSceneEntity(
-        annotations=[], kind=AnnotationSceneKind.PREDICTION
-    )
+    empty_annotation = AnnotationSceneEntity(annotations=[], kind=AnnotationSceneKind.PREDICTION)
 
     item = DatasetItemEntity(
         media=Image(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)),
@@ -152,9 +146,7 @@ def main():
         model_template=template,
     )
 
-    environment.model = read_model(
-        environment.get_model_configuration(), args.load_weights, None
-    )
+    environment.model = read_model(environment.get_model_configuration(), args.load_weights, None)
 
     task = task_class(task_environment=environment)
 
@@ -171,9 +163,7 @@ def main():
         elapsed_times.append(elapsed_time)
         elapsed_time = np.mean(elapsed_times)
 
-        frame = draw_predictions(
-            template.task_type, predictions, frame, args.fit_to_size
-        )
+        frame = draw_predictions(template.task_type, predictions, frame, args.fit_to_size)
         if args.display_perf:
             put_text_on_rect_bg(
                 frame,

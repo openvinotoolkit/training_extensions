@@ -43,15 +43,11 @@ class TestSegmentationUtils:
 
     @staticmethod
     def ellipse_label():
-        return LabelEntity(
-            name="Ellipse label", domain=Domain.SEGMENTATION, id=ID("3_ellipse_label")
-        )
+        return LabelEntity(name="Ellipse label", domain=Domain.SEGMENTATION, id=ID("3_ellipse_label"))
 
     @staticmethod
     def polygon_label():
-        return LabelEntity(
-            name="Polygon label", domain=Domain.SEGMENTATION, id=ID("6_polygon_label")
-        )
+        return LabelEntity(name="Polygon label", domain=Domain.SEGMENTATION, id=ID("6_polygon_label"))
 
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -114,9 +110,7 @@ class TestSegmentationUtils:
             shape=polygon_shape,
             labels=[ScoredLabel(polygon_label), ScoredLabel(empty_polygon_label)],
         )
-        no_labels_annotation = Annotation(
-            shape=Rectangle(x1=0.1, y1=0.8, x2=0.2, y2=0.9), labels=[]
-        )
+        no_labels_annotation = Annotation(shape=Rectangle(x1=0.1, y1=0.8, x2=0.2, y2=0.9), labels=[])
         annotations = [
             rectangle_annotation,
             ellipse_annotation,
@@ -145,9 +139,7 @@ class TestSegmentationUtils:
             [0, 0, 0, 0, 0, 1, 1, 1, 1, 1],
         ]
         expected_mask = np.expand_dims(expected_array, axis=2)
-        mask = mask_from_annotation(
-            annotations=annotations, labels=labels, width=10, height=10
-        )
+        mask = mask_from_annotation(annotations=annotations, labels=labels, width=10, height=10)
         assert np.array_equal(mask, expected_mask)
 
     @pytest.mark.priority_medium
@@ -185,9 +177,7 @@ class TestSegmentationUtils:
                 Point(x=0.4, y=0.1),
             ]
         )
-        polygon_annotation = Annotation(
-            shape=polygon_shape, labels=[ScoredLabel(polygon_label)]
-        )
+        polygon_annotation = Annotation(shape=polygon_shape, labels=[ScoredLabel(polygon_label)])
         image = Image(np.random.randint(low=0, high=255, size=(480, 640, 3)))
         annotation_scene = AnnotationSceneEntity(
             annotations=[rectangle_annotation, ellipse_annotation, polygon_annotation],
@@ -349,9 +339,7 @@ class TestSegmentationUtils:
             (0.6, 0.5),
             (0.6, 0.4),
         ]
-        assert get_subcontours(contour) == [
-            [(0.4, 0.4), (0.5, 0.4), (0.5, 0.5), (0.6, 0.5), (0.6, 0.4)]
-        ]
+        assert get_subcontours(contour) == [[(0.4, 0.4), (0.5, 0.4), (0.5, 0.5), (0.6, 0.5), (0.6, 0.4)]]
         # Checking "get_subcontours" for Contour with no intersections
         contour = [(0.1, 0.2), (0.1, 0.2), (0.1, 0.2), (0.1, 0.2)]
         assert get_subcontours(contour) == []
@@ -447,9 +435,7 @@ class TestSegmentationUtils:
                 ([0.0, 1.0, 0.0], [0.1, 0.9, 0.1], [0.1, 0.1, 0.9], [0.2, 0.2, 0.8]),
             ]
         )
-        hard_prediction = np.array(
-            [(0, 0, 2, 2), (1, 1, 2, 2), (1, 1, 2, 2), (1, 1, 2, 2)]
-        )
+        hard_prediction = np.array([(0, 0, 2, 2), (1, 1, 2, 2), (1, 1, 2, 2), (1, 1, 2, 2)])
         labels = {0: "false_label", 1: "class_1", 2: "class_2"}
         annotations = create_annotation_from_segmentation_map(
             hard_prediction=hard_prediction,

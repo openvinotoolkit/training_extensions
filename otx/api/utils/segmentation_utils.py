@@ -23,9 +23,7 @@ from otx.api.entities.shapes.polygon import Point, Polygon
 from otx.api.utils.shape_factory import ShapeFactory
 
 
-def mask_from_dataset_item(
-    dataset_item: DatasetItemEntity, labels: List[LabelEntity]
-) -> np.ndarray:
+def mask_from_dataset_item(dataset_item: DatasetItemEntity, labels: List[LabelEntity]) -> np.ndarray:
     """
     Creates a mask from dataset item. The mask will be two dimensional,
     and the value of each pixel matches the class index with offset 1. The background
@@ -74,9 +72,7 @@ def mask_from_annotation(
         if not isinstance(shape, Polygon):
             shape = ShapeFactory.shape_as_polygon(annotation.shape)
         known_labels = [
-            label
-            for label in annotation.get_labels()
-            if isinstance(label, ScoredLabel) and label.get_label() in labels
+            label for label in annotation.get_labels() if isinstance(label, ScoredLabel) and label.get_label() in labels
         ]
         if len(known_labels) == 0:
             # Skip unknown shapes
@@ -89,9 +85,7 @@ def mask_from_annotation(
         for point in shape.points:
             contour.append([int(point.x * width), int(point.y * height)])
 
-        mask = cv2.drawContours(
-            mask, np.asarray([contour]), 0, (class_idx, class_idx, class_idx), -1
-        )
+        mask = cv2.drawContours(mask, np.asarray([contour]), 0, (class_idx, class_idx, class_idx), -1)
 
     mask = np.expand_dims(mask, axis=2)
 
@@ -126,8 +120,7 @@ def create_hard_prediction_from_soft_prediction(
         hard_prediction = soft_prediction_blurred > soft_threshold
     else:
         raise ValueError(
-            f"Invalid prediction input of shape {soft_prediction.shape}. "
-            f"Expected either a 2D or 3D array."
+            f"Invalid prediction input of shape {soft_prediction.shape}. " f"Expected either a 2D or 3D array."
         )
     return hard_prediction
 
@@ -147,9 +140,7 @@ def get_subcontours(contour: Contour) -> List[Contour]:
         For each consecutive pair of equivalent rows in the input matrix
         returns their indices.
         """
-        _, inverse, count = np.unique(
-            points, axis=0, return_inverse=True, return_counts=True
-        )
+        _, inverse, count = np.unique(points, axis=0, return_inverse=True, return_counts=True)
         duplicates = np.where(count > 1)[0]
         indices = []
         for x in duplicates:
@@ -217,9 +208,7 @@ def create_annotation_from_segmentation_map(
 
         # Contour retrieval mode CCOMP (Connected components) creates a two-level
         # hierarchy of contours
-        contours, hierarchies = cv2.findContours(
-            label_index_map, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_NONE
-        )
+        contours, hierarchies = cv2.findContours(label_index_map, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_NONE)
 
         if hierarchies is not None:
             for contour, hierarchy in zip(contours, hierarchies[0]):
@@ -243,9 +232,7 @@ def create_annotation_from_segmentation_map(
                         probability = cv2.mean(current_label_soft_prediction, mask)[0]
 
                         # convert the list of points to a closed polygon
-                        points = [
-                            Point(x=x / width, y=y / height) for x, y in subcontour
-                        ]
+                        points = [Point(x=x / width, y=y / height) for x, y in subcontour]
                         polygon = Polygon(points=points)
 
                         if polygon.get_area() > 0:

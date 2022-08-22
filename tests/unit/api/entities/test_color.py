@@ -51,10 +51,7 @@ class TestColor:
         assert color.rgb_tuple == (red, green, blue)
         assert color.bgr_tuple == (blue, green, red)
         assert color != ColorEntity
-        assert (
-            repr(color)
-            == f"Color(red={red}, green={green}, blue={blue}, alpha={alpha})"
-        )
+        assert repr(color) == f"Color(red={red}, green={green}, blue={blue}, alpha={alpha})"
         assert color.red == red
         assert color.green == green
         assert color.blue == blue

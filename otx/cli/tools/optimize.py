@@ -108,9 +108,7 @@ def main():
         is_pot = True
 
     if not is_pot and template.entrypoints.nncf is None:
-        raise RuntimeError(
-            f"Optimization by NNCF is not available for template {args.template}"
-        )
+        raise RuntimeError(f"Optimization by NNCF is not available for template {args.template}")
 
     # Get new values from user's input.
     updated_hyper_parameters = gen_params_dict_from_args(args)
@@ -120,9 +118,7 @@ def main():
     hyper_parameters = create(hyper_parameters)
 
     # Get classes for Task, ConfigurableParameters and Dataset.
-    task_class = get_impl_class(
-        template.entrypoints.openvino if is_pot else template.entrypoints.nncf
-    )
+    task_class = get_impl_class(template.entrypoints.openvino if is_pot else template.entrypoints.nncf)
     dataset_class = get_dataset_class(template.task_type)
 
     # Create instances of Task, ConfigurableParameters and Dataset.
@@ -141,9 +137,7 @@ def main():
         model_template=template,
     )
 
-    environment.model = read_model(
-        environment.get_model_configuration(), args.load_weights, None
-    )
+    environment.model = read_model(environment.get_model_configuration(), args.load_weights, None)
 
     task = task_class(task_environment=environment)
 

@@ -120,15 +120,9 @@ class ModelEntity:
         performance = NullPerformance() if performance is None else performance
         creation_date = now() if creation_date is None else creation_date
 
-        optimization_methods = (
-            [] if optimization_methods is None else optimization_methods
-        )
-        optimization_objectives = (
-            {} if optimization_objectives is None else optimization_objectives
-        )
-        performance_improvement = (
-            {} if performance_improvement is None else performance_improvement
-        )
+        optimization_methods = [] if optimization_methods is None else optimization_methods
+        optimization_objectives = {} if optimization_objectives is None else optimization_objectives
+        performance_improvement = {} if performance_improvement is None else performance_improvement
 
         tags = [] if tags is None else tags
         precision = [ModelPrecision.FP32] if precision is None else precision

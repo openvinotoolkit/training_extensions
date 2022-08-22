@@ -33,7 +33,7 @@ def get_some_vars(template, root):
     # searched, where ``algorithm`` comes next.
     template_path_parts = template.model_template_path.split(os.sep)
     idx = template_path_parts.index("algorithms")
-    algorithm = template_path_parts[idx+1]
+    algorithm = template_path_parts[idx + 1]
 
     algo_backend_dir = f"otx/algorithms/{algorithm}"
     work_dir = os.path.join(root, f"otx/algorithms/{algorithm}")
@@ -48,12 +48,7 @@ def create_venv(algo_backend_dir, work_dir):
     venv_dir = f"{work_dir}/venv"
     if not os.path.exists(venv_dir):
         assert run([f"./{algo_backend_dir}/init_venv.sh", venv_dir]).returncode == 0
-        assert (
-            run(
-                [f"{work_dir}/venv/bin/python", "-m", "pip", "install", "-e", "otx"]
-            ).returncode
-            == 0
-        )
+        assert run([f"{work_dir}/venv/bin/python", "-m", "pip", "install", "-e", "otx"]).returncode == 0
 
 
 def extract_export_vars(path):
@@ -120,17 +115,11 @@ def otx_train_testing(template, root, otx_dir, args):
         f"{template_work_dir}/trained_{template.model_template_id}",
     ]
     if "--load-weights" in args:
-        command_line.extend(
-            ["--load-weights", f'{os.path.join(otx_dir, args["--load-weights"])}']
-        )
+        command_line.extend(["--load-weights", f'{os.path.join(otx_dir, args["--load-weights"])}'])
     command_line.extend(args["train_params"])
     assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
-    assert os.path.exists(
-        f"{template_work_dir}/trained_{template.model_template_id}/weights.pth"
-    )
-    assert os.path.exists(
-        f"{template_work_dir}/trained_{template.model_template_id}/label_schema.json"
-    )
+    assert os.path.exists(f"{template_work_dir}/trained_{template.model_template_id}/weights.pth")
+    assert os.path.exists(f"{template_work_dir}/trained_{template.model_template_id}/label_schema.json")
 
 
 def otx_hpo_testing(template, root, otx_dir, args):
@@ -160,12 +149,8 @@ def otx_hpo_testing(template, root, otx_dir, args):
     assert os.path.exists(f"{template_work_dir}/hpo/hpopt_status.json")
     with open(f"{template_work_dir}/hpo/hpopt_status.json", "r") as f:
         assert json.load(f).get("best_config_id", None) is not None
-    assert os.path.exists(
-        f"{template_work_dir}/hpo_trained_{template.model_template_id}/weights.pth"
-    )
-    assert os.path.exists(
-        f"{template_work_dir}/hpo_trained_{template.model_template_id}/label_schema.json"
-    )
+    assert os.path.exists(f"{template_work_dir}/hpo_trained_{template.model_template_id}/weights.pth")
+    assert os.path.exists(f"{template_work_dir}/hpo_trained_{template.model_template_id}/label_schema.json")
 
 
 def otx_export_testing(template, root):
@@ -180,15 +165,9 @@ def otx_export_testing(template, root):
         f"{template_work_dir}/exported_{template.model_template_id}",
     ]
     assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
-    assert os.path.exists(
-        f"{template_work_dir}/exported_{template.model_template_id}/openvino.xml"
-    )
-    assert os.path.exists(
-        f"{template_work_dir}/exported_{template.model_template_id}/openvino.bin"
-    )
-    assert os.path.exists(
-        f"{template_work_dir}/exported_{template.model_template_id}/label_schema.json"
-    )
+    assert os.path.exists(f"{template_work_dir}/exported_{template.model_template_id}/openvino.xml")
+    assert os.path.exists(f"{template_work_dir}/exported_{template.model_template_id}/openvino.bin")
+    assert os.path.exists(f"{template_work_dir}/exported_{template.model_template_id}/label_schema.json")
 
 
 def otx_eval_testing(template, root, otx_dir, args):
@@ -207,9 +186,7 @@ def otx_eval_testing(template, root, otx_dir, args):
         f"{template_work_dir}/trained_{template.model_template_id}/performance.json",
     ]
     assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
-    assert os.path.exists(
-        f"{template_work_dir}/trained_{template.model_template_id}/performance.json"
-    )
+    assert os.path.exists(f"{template_work_dir}/trained_{template.model_template_id}/performance.json")
 
 
 def otx_eval_openvino_testing(template, root, otx_dir, args, threshold):
@@ -228,23 +205,15 @@ def otx_eval_openvino_testing(template, root, otx_dir, args, threshold):
         f"{template_work_dir}/exported_{template.model_template_id}/performance.json",
     ]
     assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
-    assert os.path.exists(
-        f"{template_work_dir}/exported_{template.model_template_id}/performance.json"
-    )
-    with open(
-        f"{template_work_dir}/trained_{template.model_template_id}/performance.json"
-    ) as read_file:
+    assert os.path.exists(f"{template_work_dir}/exported_{template.model_template_id}/performance.json")
+    with open(f"{template_work_dir}/trained_{template.model_template_id}/performance.json") as read_file:
         trained_performance = json.load(read_file)
-    with open(
-        f"{template_work_dir}/exported_{template.model_template_id}/performance.json"
-    ) as read_file:
+    with open(f"{template_work_dir}/exported_{template.model_template_id}/performance.json") as read_file:
         exported_performance = json.load(read_file)
 
     for k in trained_performance.keys():
         assert (
-            abs(trained_performance[k] - exported_performance[k])
-            / (trained_performance[k] + 1e-10)
-            <= threshold
+            abs(trained_performance[k] - exported_performance[k]) / (trained_performance[k] + 1e-10) <= threshold
         ), f"{trained_performance[k]=}, {exported_performance[k]=}"
 
 
@@ -373,23 +342,15 @@ def otx_eval_deployment_testing(template, root, otx_dir, args, threshold):
         f"{template_work_dir}/deployed_{template.model_template_id}/performance.json",
     ]
     assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
-    assert os.path.exists(
-        f"{template_work_dir}/deployed_{template.model_template_id}/performance.json"
-    )
-    with open(
-        f"{template_work_dir}/exported_{template.model_template_id}/performance.json"
-    ) as read_file:
+    assert os.path.exists(f"{template_work_dir}/deployed_{template.model_template_id}/performance.json")
+    with open(f"{template_work_dir}/exported_{template.model_template_id}/performance.json") as read_file:
         exported_performance = json.load(read_file)
-    with open(
-        f"{template_work_dir}/deployed_{template.model_template_id}/performance.json"
-    ) as read_file:
+    with open(f"{template_work_dir}/deployed_{template.model_template_id}/performance.json") as read_file:
         deployed_performance = json.load(read_file)
 
     for k in exported_performance.keys():
         assert (
-            abs(exported_performance[k] - deployed_performance[k])
-            / (exported_performance[k] + 1e-10)
-            <= threshold
+            abs(exported_performance[k] - deployed_performance[k]) / (exported_performance[k] + 1e-10) <= threshold
         ), f"{exported_performance[k]=}, {deployed_performance[k]=}"
 
 
@@ -429,15 +390,9 @@ def pot_optimize_testing(template, root, otx_dir, args):
         f"{template_work_dir}/pot_{template.model_template_id}",
     ]
     assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
-    assert os.path.exists(
-        f"{template_work_dir}/pot_{template.model_template_id}/openvino.xml"
-    )
-    assert os.path.exists(
-        f"{template_work_dir}/pot_{template.model_template_id}/openvino.bin"
-    )
-    assert os.path.exists(
-        f"{template_work_dir}/pot_{template.model_template_id}/label_schema.json"
-    )
+    assert os.path.exists(f"{template_work_dir}/pot_{template.model_template_id}/openvino.xml")
+    assert os.path.exists(f"{template_work_dir}/pot_{template.model_template_id}/openvino.bin")
+    assert os.path.exists(f"{template_work_dir}/pot_{template.model_template_id}/label_schema.json")
 
 
 def pot_eval_testing(template, root, otx_dir, args):
@@ -456,9 +411,7 @@ def pot_eval_testing(template, root, otx_dir, args):
         f"{template_work_dir}/pot_{template.model_template_id}/performance.json",
     ]
     assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
-    assert os.path.exists(
-        f"{template_work_dir}/pot_{template.model_template_id}/performance.json"
-    )
+    assert os.path.exists(f"{template_work_dir}/pot_{template.model_template_id}/performance.json")
 
 
 def nncf_optimize_testing(template, root, otx_dir, args):
@@ -484,12 +437,8 @@ def nncf_optimize_testing(template, root, otx_dir, args):
     ]
     command_line.extend(args["train_params"])
     assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
-    assert os.path.exists(
-        f"{template_work_dir}/nncf_{template.model_template_id}/weights.pth"
-    )
-    assert os.path.exists(
-        f"{template_work_dir}/nncf_{template.model_template_id}/label_schema.json"
-    )
+    assert os.path.exists(f"{template_work_dir}/nncf_{template.model_template_id}/weights.pth")
+    assert os.path.exists(f"{template_work_dir}/nncf_{template.model_template_id}/label_schema.json")
 
 
 def nncf_export_testing(template, root):
@@ -504,24 +453,14 @@ def nncf_export_testing(template, root):
         f"{template_work_dir}/exported_nncf_{template.model_template_id}",
     ]
     assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
-    assert os.path.exists(
-        f"{template_work_dir}/exported_nncf_{template.model_template_id}/openvino.xml"
-    )
-    assert os.path.exists(
-        f"{template_work_dir}/exported_nncf_{template.model_template_id}/openvino.bin"
-    )
-    assert os.path.exists(
-        f"{template_work_dir}/exported_nncf_{template.model_template_id}/label_schema.json"
-    )
-    original_bin_size = os.path.getsize(
-        f"{template_work_dir}/exported_{template.model_template_id}/openvino.bin"
-    )
+    assert os.path.exists(f"{template_work_dir}/exported_nncf_{template.model_template_id}/openvino.xml")
+    assert os.path.exists(f"{template_work_dir}/exported_nncf_{template.model_template_id}/openvino.bin")
+    assert os.path.exists(f"{template_work_dir}/exported_nncf_{template.model_template_id}/label_schema.json")
+    original_bin_size = os.path.getsize(f"{template_work_dir}/exported_{template.model_template_id}/openvino.bin")
     compressed_bin_size = os.path.getsize(
         f"{template_work_dir}/exported_nncf_{template.model_template_id}/openvino.bin"
     )
-    assert (
-        compressed_bin_size < original_bin_size
-    ), f"{compressed_bin_size=}, {original_bin_size=}"
+    assert compressed_bin_size < original_bin_size, f"{compressed_bin_size=}, {original_bin_size=}"
 
 
 def nncf_eval_testing(template, root, otx_dir, args, threshold):
@@ -540,23 +479,15 @@ def nncf_eval_testing(template, root, otx_dir, args, threshold):
         f"{template_work_dir}/nncf_{template.model_template_id}/performance.json",
     ]
     assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
-    assert os.path.exists(
-        f"{template_work_dir}/nncf_{template.model_template_id}/performance.json"
-    )
-    with open(
-        f"{template_work_dir}/nncf_{template.model_template_id}/train_performance.json"
-    ) as read_file:
+    assert os.path.exists(f"{template_work_dir}/nncf_{template.model_template_id}/performance.json")
+    with open(f"{template_work_dir}/nncf_{template.model_template_id}/train_performance.json") as read_file:
         trained_performance = json.load(read_file)
-    with open(
-        f"{template_work_dir}/nncf_{template.model_template_id}/performance.json"
-    ) as read_file:
+    with open(f"{template_work_dir}/nncf_{template.model_template_id}/performance.json") as read_file:
         evaluated_performance = json.load(read_file)
 
     for k in trained_performance.keys():
         assert (
-            abs(trained_performance[k] - evaluated_performance[k])
-            / (trained_performance[k] + 1e-10)
-            <= threshold
+            abs(trained_performance[k] - evaluated_performance[k]) / (trained_performance[k] + 1e-10) <= threshold
         ), f"{trained_performance[k]=}, {evaluated_performance[k]=}"
 
 
@@ -576,25 +507,19 @@ def nncf_eval_openvino_testing(template, root, otx_dir, args):
         f"{template_work_dir}/exported_nncf_{template.model_template_id}/performance.json",
     ]
     assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
-    assert os.path.exists(
-        f"{template_work_dir}/exported_nncf_{template.model_template_id}/performance.json"
-    )
+    assert os.path.exists(f"{template_work_dir}/exported_nncf_{template.model_template_id}/performance.json")
 
 
 def xfail_templates(templates, xfail_template_ids_reasons):
     xfailed_templates = []
     for template in templates:
         reasons = [
-            reason
-            for template_id, reason in xfail_template_ids_reasons
-            if template_id == template.model_template_id
+            reason for template_id, reason in xfail_template_ids_reasons if template_id == template.model_template_id
         ]
         if len(reasons) == 0:
             xfailed_templates.append(template)
         elif len(reasons) == 1:
-            xfailed_templates.append(
-                pytest.param(template, marks=pytest.mark.xfail(reason=reasons[0]))
-            )
+            xfailed_templates.append(pytest.param(template, marks=pytest.mark.xfail(reason=reasons[0])))
         else:
             raise RuntimeError(
                 "More than one reason for template. If you have more than one Jira tickets, list them in one reason."

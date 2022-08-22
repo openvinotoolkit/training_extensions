@@ -51,9 +51,7 @@ class ParameterGroup:
         """
         groups: List[str] = []
         parameters: List[str] = []
-        self.__metadata_overrides: Dict[  # pylint:disable=attribute-defined-outside-init
-            str, Any
-        ] = {}
+        self.__metadata_overrides: Dict[str, Any] = {}  # pylint:disable=attribute-defined-outside-init
 
         for attribute_or_method_name in dir(self):
             # Go over all attributes and methods of the class instance

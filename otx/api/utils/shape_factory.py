@@ -90,9 +90,7 @@ class ShapeFactory:
             y1 = shape.min_y
             y2 = shape.max_y
         else:
-            raise NotImplementedError(
-                f"Conversion of a {type(shape)} to a rectangle is not implemented yet: {shape}"
-            )
+            raise NotImplementedError(f"Conversion of a {type(shape)} to a rectangle is not implemented yet: {shape}")
 
         new_shape = Rectangle(x1=x1, y1=y1, x2=x2, y2=y2)
         return new_shape
@@ -124,10 +122,7 @@ class ShapeFactory:
             points = [Point(x=point[0], y=point[1]) for point in coordinates]
             new_shape = Polygon(points=points)
         else:
-            raise NotImplementedError(
-                f"Conversion of a {type(shape)} to a polygon is not implemented yet: "
-                f"{shape}"
-            )
+            raise NotImplementedError(f"Conversion of a {type(shape)} to a polygon is not implemented yet: " f"{shape}")
         return new_shape
 
     @staticmethod
@@ -152,15 +147,11 @@ class ShapeFactory:
             y1 = shape.min_y
             y2 = shape.max_y
         else:
-            raise NotImplementedError(
-                f"Conversion of a {type(shape)} to an ellipse is not implemented yet: {shape}"
-            )
+            raise NotImplementedError(f"Conversion of a {type(shape)} to an ellipse is not implemented yet: {shape}")
         return Ellipse(x1=x1, y1=y1, x2=x2, y2=y2)
 
     @staticmethod
-    def shape_produces_valid_crop(
-        shape: ShapeEntity, media_width: int, media_height: int
-    ) -> bool:
+    def shape_produces_valid_crop(shape: ShapeEntity, media_width: int, media_height: int) -> bool:
         """
         Checks if the shape produces a valid crop based on the image width and height,
         regardless of the contents of the

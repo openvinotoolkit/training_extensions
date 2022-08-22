@@ -134,8 +134,7 @@ class Shape(ShapeEntity):
             return polygon_roi.intersects(polygon_shape)
         except (PredicateError, TopologicalError) as exception:
             raise GeometryException(
-                f"The intersection between the shapes {self} and {other} could not be computed: "
-                f"{exception}."
+                f"The intersection between the shapes {self} and {other} could not be computed: " f"{exception}."
             ) from exception
 
     # pylint: disable=protected-access

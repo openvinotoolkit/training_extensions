@@ -239,13 +239,8 @@ class TestShape:
         1. Check that __repr__ method returns expected value
         2. Check that __hash__ method returns expected value
         """
-        test_rectangle = Rectangle(
-            0.0, 0.0, 1.0, 1.0, modification_date=datetime(year=2021, month=11, day=23)
-        )
-        assert (
-            Shape.__repr__(test_rectangle)
-            == "Shape with modification date:('2021-11-23 00:00:00')"
-        )
+        test_rectangle = Rectangle(0.0, 0.0, 1.0, 1.0, modification_date=datetime(year=2021, month=11, day=23))
+        assert Shape.__repr__(test_rectangle) == "Shape with modification date:('2021-11-23 00:00:00')"
         assert Shape.__hash__(test_rectangle) == hash(str(test_rectangle))
 
     @pytest.mark.priority_medium
@@ -277,9 +272,7 @@ class TestShape:
                 assert full_element.intersects(inscribed)
                 assert inscribed.intersects(full_element)
         # Check when Shapes intersect in several points
-        for shape, other_shape in list(
-            itertools.combinations(inscribed_shapes_list, 2)
-        ):
+        for shape, other_shape in list(itertools.combinations(inscribed_shapes_list, 2)):
             assert shape.intersects(other_shape)
             assert other_shape.intersects(shape)
         # Check when Shapes intersect by one side
@@ -299,9 +292,7 @@ class TestShape:
         with pytest.raises(GeometryException):
             with warnings.catch_warnings():
                 warnings.filterwarnings("ignore", "Polygon coordinates")
-                self.base_self_intersect_polygon().intersects(
-                    self.other_self_intersect_polygon()
-                )
+                self.base_self_intersect_polygon().intersects(self.other_self_intersect_polygon())
 
     @pytest.mark.priority_medium
     @pytest.mark.unit

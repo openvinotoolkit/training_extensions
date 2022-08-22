@@ -35,9 +35,7 @@ class TestTrainParameters:
         default_values_train_parameters = TrainParameters()
         assert not default_values_train_parameters.resume
         # Expected that update_progress equal to function for default parameters TrainParameters object
-        assert (
-            default_values_train_parameters.update_progress == default_progress_callback
-        )
+        assert default_values_train_parameters.update_progress == default_progress_callback
         # Expected that save_model is equal to function for default parameters TrainParameters object
         assert default_values_train_parameters.save_model == default_save_model_callback
         # Checking attributes of TrainParameters object initiated with specified

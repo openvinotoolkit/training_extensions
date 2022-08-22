@@ -142,10 +142,7 @@ class TestAnnotation:
         points = [point1, point2, point3]
         third_annotation = Annotation(shape=Polygon(points=points), labels=self.labels)
 
-        assert (
-            repr(annotation)
-            == "Annotation(shape=Ellipse(x1=0.5, y1=0.1, x2=0.8, y2=0.3), labels=[], id=123456789)"
-        )
+        assert repr(annotation) == "Annotation(shape=Ellipse(x1=0.5, y1=0.1, x2=0.8, y2=0.3), labels=[], id=123456789)"
         assert annotation == other_annotation
         assert annotation != third_annotation
         assert annotation != str
@@ -171,33 +168,18 @@ class TestAnnotation:
         """
         annotation = Annotation(shape=self.rectangle, labels=self.labels2)
 
-        assert (
-            "[ScoredLabel(987654321, name=person, probability=0.0, domain=DETECTION,"
-            in str(annotation.get_labels())
-        )
-        assert "color=Color(red=11, green=18, blue=38, alpha=200), hotkey=" in str(
+        assert "[ScoredLabel(987654321, name=person, probability=0.0, domain=DETECTION," in str(annotation.get_labels())
+        assert "color=Color(red=11, green=18, blue=38, alpha=200), hotkey=" in str(annotation.get_labels())
+        assert ", label_source=LabelSource(user_id='', model_id=ID(), model_storage_id=ID()))]" in str(
             annotation.get_labels()
         )
-        assert (
-            ", label_source=LabelSource(user_id='', model_id=ID(), model_storage_id=ID()))]"
-            in str(annotation.get_labels())
-        )
 
-        assert "[ScoredLabel(123456789, name=car" in str(
+        assert "[ScoredLabel(123456789, name=car" in str(annotation.get_labels(include_empty=True))
+        assert ", probability=0.0, domain=DETECTION," in str(annotation.get_labels(include_empty=True))
+        assert "color=Color(red=16, green=15," in str(annotation.get_labels(include_empty=True))
+        assert "blue=56, alpha=255), hotkey=," in str(annotation.get_labels(include_empty=True))
+        assert "label_source=LabelSource(user_id='', model_id=ID(), model_storage_id=ID()))," in str(
             annotation.get_labels(include_empty=True)
-        )
-        assert ", probability=0.0, domain=DETECTION," in str(
-            annotation.get_labels(include_empty=True)
-        )
-        assert "color=Color(red=16, green=15," in str(
-            annotation.get_labels(include_empty=True)
-        )
-        assert "blue=56, alpha=255), hotkey=," in str(
-            annotation.get_labels(include_empty=True)
-        )
-        assert (
-            "label_source=LabelSource(user_id='', model_id=ID(), model_storage_id=ID())),"
-            in str(annotation.get_labels(include_empty=True))
         )
 
     @pytest.mark.priority_medium
@@ -336,9 +318,7 @@ class TestAnnotationSceneEntity:
 
     annotations = [annotation, annotation2]
 
-    annotation_scene_entity = AnnotationSceneEntity(
-        annotations=annotations, kind=AnnotationSceneKind.ANNOTATION
-    )
+    annotation_scene_entity = AnnotationSceneEntity(annotations=annotations, kind=AnnotationSceneKind.ANNOTATION)
 
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -470,9 +450,7 @@ class TestAnnotationSceneEntity:
 
         annotation = Annotation(shape=self.rectangle, labels=labels2)
         annotations = [annotation]
-        annotation_scene_entity2 = AnnotationSceneEntity(
-            annotations=annotations, kind=AnnotationSceneKind.ANNOTATION
-        )
+        annotation_scene_entity2 = AnnotationSceneEntity(annotations=annotations, kind=AnnotationSceneKind.ANNOTATION)
 
         assert annotation_scene_entity.contains_any(labels=labels) is False
         assert annotation_scene_entity2.contains_any(labels=labels2) is True

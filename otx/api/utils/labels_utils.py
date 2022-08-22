@@ -17,8 +17,7 @@ def get_empty_label(label_schema: LabelSchemaEntity) -> Optional[LabelEntity]:
     Get first empty label from label_schema
     """
     empty_candidates = list(
-        set(label_schema.get_labels(include_empty=True))
-        - set(label_schema.get_labels(include_empty=False))
+        set(label_schema.get_labels(include_empty=True)) - set(label_schema.get_labels(include_empty=False))
     )
     if empty_candidates:
         return empty_candidates[0]

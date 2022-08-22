@@ -120,21 +120,12 @@ class TestFMeasureFunctions:
         """
         # Checking value returned by "bounding_box_intersection_over_union" when "x_right" coordinate of
         # intersection box more than "x_left"
-        assert (
-            bounding_box_intersection_over_union(box1=[2, 2, 5, 6], box2=[7, 4, 4, 8])
-            == 0.0
-        )
+        assert bounding_box_intersection_over_union(box1=[2, 2, 5, 6], box2=[7, 4, 4, 8]) == 0.0
         # Checking value returned by "bounding_box_intersection_over_union" when "y_bottom" coordinate of
         # intersection box more than "y_top"
-        assert (
-            bounding_box_intersection_over_union(box1=[2, 8, 6, 1], box2=[1, 7, 5, 2])
-            == 0.0
-        )
+        assert bounding_box_intersection_over_union(box1=[2, 8, 6, 1], box2=[1, 7, 5, 2]) == 0.0
         # Checking value returned by "bounding_box_intersection_over_union" when boxes intersect in two points
-        assert (
-            bounding_box_intersection_over_union(box1=[1, 3, 3, 7], box2=[2, 4, 5, 5])
-            == 0.1
-        )
+        assert bounding_box_intersection_over_union(box1=[1, 3, 3, 7], box2=[2, 4, 5, 5]) == 0.1
 
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -179,9 +170,7 @@ class TestFMeasureFunctions:
         2. Check value returned by "get_n_false_negatives" function when several elements in a column are more than
         "iou_threshold" parameter
         """
-        iou_matrix = np.array(
-            [[0.0, 0.25, 0.0, 0.09], [0.0, 0.0, 0.0, 0.0], [0.0, 0.1, 0.0, 0.08]]
-        )
+        iou_matrix = np.array([[0.0, 0.25, 0.0, 0.09], [0.0, 0.0, 0.0, 0.0], [0.0, 0.1, 0.0, 0.08]])
         # Checking value returned by "get_n_false_negatives" when max element in a row is less than "iou_threshold"
         assert get_n_false_negatives(iou_matrix, 0.11) == 2
         # Checking value returned by "get_n_false_negatives" when several elements in a column are more than
@@ -235,9 +224,7 @@ class TestResultCounters:
         n_false_negatives = 2
         n_true = 9
         n_predicted = 9
-        result_counters = _ResultCounters(
-            n_false_negatives=n_false_negatives, n_true=n_true, n_predicted=n_predicted
-        )
+        result_counters = _ResultCounters(n_false_negatives=n_false_negatives, n_true=n_true, n_predicted=n_predicted)
         assert result_counters.n_false_negatives == n_false_negatives
         assert result_counters.n_true == n_true
         assert result_counters.n_predicted == n_predicted
@@ -288,9 +275,7 @@ class TestResultCounters:
         f_measure = result_counters.calculate_f_measure()
         check_calculated_f_measure(f_measure, precision, recall)
         # Checking value returned by "calculate_f_measure" when "n_true" is less than "n_false_negatives"
-        result_counters = _ResultCounters(
-            n_false_negatives=16, n_true=8, n_predicted=16
-        )
+        result_counters = _ResultCounters(n_false_negatives=16, n_true=8, n_predicted=16)
         f_measure = result_counters.calculate_f_measure()
         precision = (8 - 16) / 16  # (n_true-n_false_negatives)/n_predicted
         recall = (8 - 16) / 8  # (n_true-n_false_negatives)/n_true
@@ -333,9 +318,7 @@ class TestAggregatedResults:
         3. Check attributes of "_AggregatedResults" object initialized with "classes" attribute equal to empty list
         """
 
-        def check_aggregate_results_attributes(
-            aggregate_results, expected_classes_curve
-        ):
+        def check_aggregate_results_attributes(aggregate_results, expected_classes_curve):
             assert aggregate_results.f_measure_curve == expected_classes_curve
             assert aggregate_results.precision_curve == expected_classes_curve
             assert aggregate_results.recall_curve == expected_classes_curve
@@ -355,9 +338,7 @@ class TestAggregatedResults:
             expected_classes_curve={"class_1": []},
         )
         # Checking attributes of "_AggregatedResults" object initialized with "classes" equal to empty list
-        check_aggregate_results_attributes(
-            aggregate_results=_AggregatedResults([]), expected_classes_curve={}
-        )
+        check_aggregate_results_attributes(aggregate_results=_AggregatedResults([]), expected_classes_curve={})
 
 
 @pytest.mark.components(OtxSdkComponent.OTX_API)
@@ -377,9 +358,7 @@ class TestOverallResults:
         <b>Expected results:</b>
         Test passes if attributes of initialized "_OverallResults" class object are equal to expected
         """
-        per_confidence = _AggregatedResults(
-            ["confidence_class_1", "confidence_class_2"]
-        )
+        per_confidence = _AggregatedResults(["confidence_class_1", "confidence_class_2"])
         per_nms = _AggregatedResults(["nms_class_1", "nms_class_2"])
         best_f_measure_per_class = {"class_1": 0.6, "class_2": 0.8}
         best_f_measure = 0.8
@@ -457,14 +436,8 @@ class TestFMeasureCalculator:
             ground_truth_boxes_per_image=ground_truth_boxes_per_image,
             prediction_boxes_per_image=prediction_boxes_per_image,
         )
-        assert (
-            f_measure_calculator.ground_truth_boxes_per_image
-            == ground_truth_boxes_per_image
-        )
-        assert (
-            f_measure_calculator.prediction_boxes_per_image
-            == prediction_boxes_per_image
-        )
+        assert f_measure_calculator.ground_truth_boxes_per_image == ground_truth_boxes_per_image
+        assert f_measure_calculator.prediction_boxes_per_image == prediction_boxes_per_image
         assert f_measure_calculator.confidence_range == [0.025, 1.0, 0.025]
         assert f_measure_calculator.nms_range == [0.1, 1, 0.05]
         assert f_measure_calculator.default_confidence_threshold == 0.35
@@ -780,20 +753,14 @@ class TestFMeasureCalculator:
             # Checking _ResultCounters object
             result_counters = actual_f_measure_for_class[1]
             assert isinstance(result_counters, _ResultCounters)
-            assert result_counters.n_false_negatives == expected_values_dict.get(
-                "n_false_negatives"
-            )
-            assert result_counters.n_predicted == expected_values_dict.get(
-                "n_predicted"
-            )
+            assert result_counters.n_false_negatives == expected_values_dict.get("n_false_negatives")
+            assert result_counters.n_predicted == expected_values_dict.get("n_predicted")
             assert result_counters.n_true == expected_values_dict.get("n_true")
 
         f_measure_calculator = self.f_measure_calculator()
         # Checking tuple returned by "get_f_measure_for_class" method for class included in _FMeasureCalculator object
         check_get_f_measure(
-            actual_f_measure_for_class=f_measure_calculator.get_f_measure_for_class(
-                "class_1", 0.75, 0.9
-            ),
+            actual_f_measure_for_class=f_measure_calculator.get_f_measure_for_class("class_1", 0.75, 0.9),
             expected_values_dict={
                 "f_measure": 0.3999999999999999,
                 "precision": 0.5,
@@ -806,9 +773,7 @@ class TestFMeasureCalculator:
         # Checking tuple returned by "get_f_measure_for_class" method for non-included class in
         # _FMeasureCalculator object
         check_get_f_measure(
-            actual_f_measure_for_class=f_measure_calculator.get_f_measure_for_class(
-                "class_6", 0.75, 0.9
-            ),
+            actual_f_measure_for_class=f_measure_calculator.get_f_measure_for_class("class_6", 0.75, 0.9),
             expected_values_dict={
                 "f_measure": 0.0,
                 "precision": 1.0,
@@ -822,9 +787,7 @@ class TestFMeasureCalculator:
         # of ground_truth_boxes_per_image
         f_measure_calculator.ground_truth_boxes_per_image = []
         check_get_f_measure(
-            actual_f_measure_for_class=f_measure_calculator.get_f_measure_for_class(
-                "class_1", 0.75, 0.9
-            ),
+            actual_f_measure_for_class=f_measure_calculator.get_f_measure_for_class("class_1", 0.75, 0.9),
             expected_values_dict={
                 "f_measure": 0.0,
                 "precision": 0.0,
@@ -864,31 +827,19 @@ class TestFMeasureCalculator:
         f_measure_calculator = self.f_measure_calculator()
         # Checking dictionary returned by "evaluate_classes" when one class is specified as "classes" parameter
         evaluate_classes = f_measure_calculator.evaluate_classes(["class_1"], 0.87, 0.8)
-        expected_class_1 = f_measure_calculator.get_f_measure_for_class(
-            "class_1", 0.87, 0.8
-        )[0]
+        expected_class_1 = f_measure_calculator.get_f_measure_for_class("class_1", 0.87, 0.8)[0]
         compare_metrics(evaluate_classes.get("class_1"), expected_class_1)
         compare_metrics(evaluate_classes.get("All Classes"), expected_class_1)
         # Checking dictionary returned by "evaluate_classes" when several classes specified as "classes" parameter
-        evaluate_classes = f_measure_calculator.evaluate_classes(
-            ["class_1", "class_2"], 0.87, 0.8
-        )
-        expected_class_1 = f_measure_calculator.get_f_measure_for_class(
-            "class_1", 0.87, 0.8
-        )[0]
-        expected_class_2 = f_measure_calculator.get_f_measure_for_class(
-            "class_2", 0.87, 0.8
-        )[0]
-        expected_all_classes = _ResultCounters(
-            n_false_negatives=4, n_predicted=6, n_true=5
-        ).calculate_f_measure()
+        evaluate_classes = f_measure_calculator.evaluate_classes(["class_1", "class_2"], 0.87, 0.8)
+        expected_class_1 = f_measure_calculator.get_f_measure_for_class("class_1", 0.87, 0.8)[0]
+        expected_class_2 = f_measure_calculator.get_f_measure_for_class("class_2", 0.87, 0.8)[0]
+        expected_all_classes = _ResultCounters(n_false_negatives=4, n_predicted=6, n_true=5).calculate_f_measure()
         compare_metrics(evaluate_classes.get("class_1"), expected_class_1)
         compare_metrics(evaluate_classes.get("class_2"), expected_class_2)
         compare_metrics(evaluate_classes.get("All Classes"), expected_all_classes)
         # Checking dictionary returned by "evaluate_classes" when "All classes" is specified in "classes" parameter
-        evaluate_classes = f_measure_calculator.evaluate_classes(
-            ["class_1", "All Classes"], 0.87, 0.8
-        )
+        evaluate_classes = f_measure_calculator.evaluate_classes(["class_1", "All Classes"], 0.87, 0.8)
         compare_metrics(evaluate_classes.get("class_1"), expected_class_1)
         compare_metrics(evaluate_classes.get("All Classes"), expected_class_1)
 
@@ -942,24 +893,13 @@ class TestFMeasureCalculator:
                     confidence_threshold=calculator.default_confidence_threshold,
                 )
                 all_classes_f_measure = result_point["All Classes"].f_measure
-                exp_results_per_nms.all_classes_f_measure_curve.append(
-                    all_classes_f_measure
-                )
+                exp_results_per_nms.all_classes_f_measure_curve.append(all_classes_f_measure)
 
                 for class_name in ["class_1", "class_2"]:
-                    exp_results_per_nms.f_measure_curve[class_name].append(
-                        result_point[class_name].f_measure
-                    )
-                    exp_results_per_nms.precision_curve[class_name].append(
-                        result_point[class_name].precision
-                    )
-                    exp_results_per_nms.recall_curve[class_name].append(
-                        result_point[class_name].recall
-                    )
-            assert (
-                actual_results.all_classes_f_measure_curve
-                == exp_results_per_nms.all_classes_f_measure_curve
-            )
+                    exp_results_per_nms.f_measure_curve[class_name].append(result_point[class_name].f_measure)
+                    exp_results_per_nms.precision_curve[class_name].append(result_point[class_name].precision)
+                    exp_results_per_nms.recall_curve[class_name].append(result_point[class_name].recall)
+            assert actual_results.all_classes_f_measure_curve == exp_results_per_nms.all_classes_f_measure_curve
             assert actual_results.f_measure_curve == exp_results_per_nms.f_measure_curve
             assert actual_results.precision_curve == exp_results_per_nms.precision_curve
             assert actual_results.recall_curve == exp_results_per_nms.recall_curve
@@ -1029,20 +969,12 @@ class TestFMeasureCalculator:
                 confidence_threshold=confidence_threshold,
             )
             all_classes_f_measure = result_point["All Classes"].f_measure
-            expected_results_per_confidence.all_classes_f_measure_curve.append(
-                all_classes_f_measure
-            )
+            expected_results_per_confidence.all_classes_f_measure_curve.append(all_classes_f_measure)
 
             for class_name in ["class_1", "class_2"]:
-                expected_results_per_confidence.f_measure_curve[class_name].append(
-                    result_point[class_name].f_measure
-                )
-                expected_results_per_confidence.precision_curve[class_name].append(
-                    result_point[class_name].precision
-                )
-                expected_results_per_confidence.recall_curve[class_name].append(
-                    result_point[class_name].recall
-                )
+                expected_results_per_confidence.f_measure_curve[class_name].append(result_point[class_name].f_measure)
+                expected_results_per_confidence.precision_curve[class_name].append(result_point[class_name].precision)
+                expected_results_per_confidence.recall_curve[class_name].append(result_point[class_name].recall)
 
         actual_results_per_confidence = f_measure_calculator.get_results_per_confidence(
             classes=["class_1", "class_2"],
@@ -1052,14 +984,8 @@ class TestFMeasureCalculator:
         assert actual_results_per_confidence.all_classes_f_measure_curve == (
             expected_results_per_confidence.all_classes_f_measure_curve
         )
-        assert (
-            actual_results_per_confidence.f_measure_curve
-            == expected_results_per_confidence.f_measure_curve
-        )
-        assert (
-            actual_results_per_confidence.recall_curve
-            == expected_results_per_confidence.recall_curve
-        )
+        assert actual_results_per_confidence.f_measure_curve == expected_results_per_confidence.f_measure_curve
+        assert actual_results_per_confidence.recall_curve == expected_results_per_confidence.recall_curve
         assert actual_results_per_confidence.best_f_measure == 0.5454545454545453
         assert actual_results_per_confidence.best_threshold == 0.6
         # Check "_AggregatedResults" object returned by "get_results_per_confidence" when All Classes f-measure is less
@@ -1115,9 +1041,7 @@ class TestFMeasureCalculator:
             )
             best_f_measure = results_per_confidence.best_f_measure
             for class_name in ["class_1", "class_3"]:
-                best_f_measure_per_class[class_name] = max(
-                    results_per_confidence.f_measure_curve[class_name]
-                )
+                best_f_measure_per_class[class_name] = max(results_per_confidence.f_measure_curve[class_name])
             results_per_nms = None
             if result_based_nms_threshold:
                 results_per_nms = calculator.get_results_per_nms(
@@ -1128,9 +1052,7 @@ class TestFMeasureCalculator:
                 )
 
                 for class_name in ["class_1", "class_3"]:
-                    best_f_measure_per_class[class_name] = max(
-                        results_per_nms.f_measure_curve[class_name]
-                    )
+                    best_f_measure_per_class[class_name] = max(results_per_nms.f_measure_curve[class_name])
             expected_evaluate_detection = _OverallResults(
                 results_per_confidence,
                 results_per_nms,
@@ -1138,14 +1060,8 @@ class TestFMeasureCalculator:
                 best_f_measure,
             )
             assert isinstance(evaluate_detection, _OverallResults)
-            assert (
-                evaluate_detection.best_f_measure
-                == expected_evaluate_detection.best_f_measure
-            )
-            assert (
-                evaluate_detection.best_f_measure_per_class
-                == expected_evaluate_detection.best_f_measure_per_class
-            )
+            assert evaluate_detection.best_f_measure == expected_evaluate_detection.best_f_measure
+            assert evaluate_detection.best_f_measure_per_class == expected_evaluate_detection.best_f_measure_per_class
             assert evaluate_detection.per_confidence.all_classes_f_measure_curve == (
                 expected_evaluate_detection.per_confidence.all_classes_f_measure_curve
             )
@@ -1167,17 +1083,13 @@ class TestFMeasureCalculator:
 
         f_measure_calculator = self.f_measure_calculator()
         # Checking "_OverallResults" object returned by "evaluate_detections" with default optional parameters
-        actual_evaluate_detection = f_measure_calculator.evaluate_detections(
-            ["class_1", "class_3"]
-        )
+        actual_evaluate_detection = f_measure_calculator.evaluate_detections(["class_1", "class_3"])
         check_evaluate_detections(
             calculator=f_measure_calculator,
             evaluate_detection=actual_evaluate_detection,
         )
         # Checking "_OverallResults" object returned by "evaluate_detections" with specified optional parameters
-        actual_evaluate_detection = f_measure_calculator.evaluate_detections(
-            ["class_1", "class_3"], 0.79, True, True
-        )
+        actual_evaluate_detection = f_measure_calculator.evaluate_detections(["class_1", "class_3"], 0.79, True, True)
         check_evaluate_detections(
             calculator=f_measure_calculator,
             evaluate_detection=actual_evaluate_detection,
@@ -1219,21 +1131,15 @@ class TestFMeasure:
         return [class_1_label, class_2_label, class_3_label]
 
     def model(self):
-        configurable_params = ConfigurableParameters(
-            header="Test model configurable params"
-        )
+        configurable_params = ConfigurableParameters(header="Test model configurable params")
 
-        model_label_group = LabelGroup(
-            name="model_labels", labels=self.model_labels(), id=ID("model_label")
-        )
+        model_label_group = LabelGroup(name="model_labels", labels=self.model_labels(), id=ID("model_label"))
 
         model_configuration = ModelConfiguration(
             configurable_params, LabelSchemaEntity(label_groups=[model_label_group])
         )
 
-        model = ModelEntity(
-            train_dataset=DatasetEntity(), configuration=model_configuration
-        )
+        model = ModelEntity(train_dataset=DatasetEntity(), configuration=model_configuration)
         return model
 
     def roi(self):
@@ -1563,14 +1469,10 @@ class TestFMeasure:
         return DatasetEntity([self.image_1_ground_boxes(), self.image_2_ground_boxes()])
 
     def prediction_dataset(self):
-        return DatasetEntity(
-            [self.image_1_prediction_boxes(), self.image_2_prediction_boxes()]
-        )
+        return DatasetEntity([self.image_1_prediction_boxes(), self.image_2_prediction_boxes()])
 
     def incorrect_prediction_dataset(self):
-        return DatasetEntity(
-            [self.image_2_prediction_boxes(), self.image_2_prediction_boxes()]
-        )
+        return DatasetEntity([self.image_2_prediction_boxes(), self.image_2_prediction_boxes()])
 
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -1636,11 +1538,7 @@ class TestFMeasure:
             labels[1]: ScoreMetric(name="class_2", value=0.6666666666666665),
             labels[2]: ScoreMetric(name="class_3", value=0.6666666666666665),
         }
-        label_schema_labels = (
-            result_set.model.configuration.get_label_schema().get_labels(
-                include_empty=False
-            )
-        )
+        label_schema_labels = result_set.model.configuration.get_label_schema().get_labels(include_empty=False)
         classes = [label.name for label in label_schema_labels]
         boxes_pair = _FMeasureCalculator(
             f_measure._FMeasure__get_boxes_from_dataset_as_list(ground_dataset, labels),  # type: ignore[attr-defined]
@@ -1658,18 +1556,9 @@ class TestFMeasure:
             xs=list(np.arange(*boxes_pair.confidence_range)),
             ys=result.per_confidence.all_classes_f_measure_curve,
         )
-        assert (
-            f_measure.f_measure_per_confidence.name
-            == expected_f_measure_per_confidence.name
-        )
-        assert (
-            f_measure.f_measure_per_confidence.xs
-            == expected_f_measure_per_confidence.xs
-        )
-        assert (
-            f_measure.f_measure_per_confidence.ys
-            == expected_f_measure_per_confidence.ys
-        )
+        assert f_measure.f_measure_per_confidence.name == expected_f_measure_per_confidence.name
+        assert f_measure.f_measure_per_confidence.xs == expected_f_measure_per_confidence.xs
+        assert f_measure.f_measure_per_confidence.ys == expected_f_measure_per_confidence.ys
         expected_f_measure_per_nms = CurveMetric(
             name="f-measure per nms",
             xs=list(np.arange(*boxes_pair.nms_range)),
@@ -1729,31 +1618,14 @@ class TestFMeasure:
                 actual_metric_group = performance.dashboard_metrics[metric_group_index]
                 if isinstance(expected_metric_group, BarMetricsGroup):
                     assert actual_metric_group.metrics == expected_metric_group.metrics
-                    assert isinstance(
-                        actual_metric_group.visualization_info, BarChartInfo
-                    )
-                    assert (
-                        actual_metric_group.visualization_info.name
-                        == "F-measure per label"
-                    )
-                    assert (
-                        actual_metric_group.visualization_info.palette
-                        == ColorPalette.LABEL
-                    )
-                    assert (
-                        actual_metric_group.visualization_info.type
-                        == VisualizationType.RADIAL_BAR
-                    )
+                    assert isinstance(actual_metric_group.visualization_info, BarChartInfo)
+                    assert actual_metric_group.visualization_info.name == "F-measure per label"
+                    assert actual_metric_group.visualization_info.palette == ColorPalette.LABEL
+                    assert actual_metric_group.visualization_info.type == VisualizationType.RADIAL_BAR
                 if isinstance(expected_metric_group, LineMetricsGroup):
                     assert actual_metric_group.metrics == expected_metric_group.metrics
-                    assert (
-                        actual_metric_group.visualization_info.name
-                        == expected_metric_group.visualization_info.name
-                    )
-                    assert (
-                        actual_metric_group.visualization_info.palette
-                        == ColorPalette.DEFAULT
-                    )
+                    assert actual_metric_group.visualization_info.name == expected_metric_group.visualization_info.name
+                    assert actual_metric_group.visualization_info.palette == ColorPalette.DEFAULT
                     assert (
                         actual_metric_group.visualization_info.x_axis_label
                         == expected_metric_group.visualization_info.x_axis_label
@@ -1764,18 +1636,9 @@ class TestFMeasure:
                     )
                 if isinstance(expected_metric_group, TextMetricsGroup):
                     assert actual_metric_group.metrics == expected_metric_group.metrics
-                    assert (
-                        actual_metric_group.visualization_info.name
-                        == expected_metric_group.visualization_info.name
-                    )
-                    assert (
-                        actual_metric_group.visualization_info.palette
-                        == ColorPalette.DEFAULT
-                    )
-                    assert (
-                        actual_metric_group.visualization_info.type
-                        == VisualizationType.TEXT
-                    )
+                    assert actual_metric_group.visualization_info.name == expected_metric_group.visualization_info.name
+                    assert actual_metric_group.visualization_info.palette == ColorPalette.DEFAULT
+                    assert actual_metric_group.visualization_info.type == VisualizationType.TEXT
 
         def generate_expected_default_dashboard_metric_groups(
             actual_f_measure: FMeasure,
@@ -1797,9 +1660,7 @@ class TestFMeasure:
             return [
                 generate_expected_default_dashboard_metric_groups(actual_f_measure)[0],
                 LineMetricsGroup(
-                    metrics=[
-                        cast(CurveMetric, actual_f_measure.f_measure_per_confidence)
-                    ],
+                    metrics=[cast(CurveMetric, actual_f_measure.f_measure_per_confidence)],
                     visualization_info=LineChartInfo(
                         name="F-measure per confidence",
                         x_axis_label="Confidence threshold",
@@ -1807,12 +1668,8 @@ class TestFMeasure:
                     ),
                 ),
                 TextMetricsGroup(
-                    metrics=[
-                        cast(ScoreMetric, actual_f_measure.best_confidence_threshold)
-                    ],
-                    visualization_info=TextChartInfo(
-                        name="Optimal confidence threshold"
-                    ),
+                    metrics=[cast(ScoreMetric, actual_f_measure.best_confidence_threshold)],
+                    visualization_info=TextChartInfo(name="Optimal confidence threshold"),
                 ),
                 LineMetricsGroup(
                     metrics=[cast(CurveMetric, actual_f_measure.f_measure_per_nms)],
@@ -1838,9 +1695,7 @@ class TestFMeasure:
         # Checking "Performance" object returned by "get_performance" for "FMeasure" object initialized with default
         # optional parameters
         f_measure = FMeasure(result_set)
-        expected_dashboard_metric_groups = (
-            generate_expected_default_dashboard_metric_groups(f_measure)
-        )
+        expected_dashboard_metric_groups = generate_expected_default_dashboard_metric_groups(f_measure)
         actual_performance = f_measure.get_performance()
         check_performance(
             performance=actual_performance,
@@ -1855,9 +1710,7 @@ class TestFMeasure:
             prediction_dataset=incorrect_prediction_dataset,
         )
         f_measure = FMeasure(incorrect_result_set)
-        expected_dashboard_metric_groups = (
-            generate_expected_default_dashboard_metric_groups(f_measure)
-        )
+        expected_dashboard_metric_groups = generate_expected_default_dashboard_metric_groups(f_measure)
         actual_performance = f_measure.get_performance()
         check_performance(
             performance=actual_performance,
@@ -1871,9 +1724,7 @@ class TestFMeasure:
             vary_nms_threshold=True,
             cross_class_nms=True,
         )
-        expected_dashboard_metric_groups = (
-            generate_expected_optional_dashboard_metric_groups(f_measure)
-        )
+        expected_dashboard_metric_groups = generate_expected_optional_dashboard_metric_groups(f_measure)
         actual_performance = f_measure.get_performance()
         check_performance(
             performance=actual_performance,
@@ -1887,9 +1738,7 @@ class TestFMeasure:
             vary_nms_threshold=True,
             cross_class_nms=True,
         )
-        expected_dashboard_metric_groups = (
-            generate_expected_optional_dashboard_metric_groups(f_measure)
-        )
+        expected_dashboard_metric_groups = generate_expected_optional_dashboard_metric_groups(f_measure)
         actual_performance = f_measure.get_performance()
         check_performance(
             performance=actual_performance,

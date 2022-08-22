@@ -235,23 +235,17 @@ class TestCreateConverter:
         # specified as "converter_type"
         labels = [
             LabelEntity(name="Detection label", domain=Domain.DETECTION, id=ID("1")),
-            LabelEntity(
-                name="Other Detection label", domain=Domain.DETECTION, id=ID("2")
-            ),
+            LabelEntity(name="Other Detection label", domain=Domain.DETECTION, id=ID("2")),
         ]
         label_group = LabelGroup(name="Detection labels group", labels=labels)
         label_schema = LabelSchemaEntity(label_groups=[label_group])
-        converter = create_converter(
-            converter_type=Domain.DETECTION, labels=label_schema
-        )
+        converter = create_converter(converter_type=Domain.DETECTION, labels=label_schema)
         assert isinstance(converter, DetectionBoxToAnnotationConverter)
         assert converter.labels == labels
         # Checking "SegmentationToAnnotationConverter" returned by "create_converter" function when "SEGMENTATION"is
         # specified as "converter_type"
         labels = [
-            LabelEntity(
-                name="Segmentation label", domain=Domain.SEGMENTATION, id=ID("1")
-            ),
+            LabelEntity(name="Segmentation label", domain=Domain.SEGMENTATION, id=ID("1")),
             LabelEntity(
                 name="Other Segmentation label",
                 domain=Domain.SEGMENTATION,
@@ -260,9 +254,7 @@ class TestCreateConverter:
         ]
         label_group = LabelGroup(name="Segmentation labels group", labels=labels)
         label_schema = LabelSchemaEntity(label_groups=[label_group])
-        converter = create_converter(
-            converter_type=Domain.SEGMENTATION, labels=label_schema
-        )
+        converter = create_converter(converter_type=Domain.SEGMENTATION, labels=label_schema)
         assert isinstance(converter, SegmentationToAnnotationConverter)
         assert converter.label_map == {1: labels[0], 2: labels[1]}
         # Checking "ClassificationToAnnotationConverter" returned by "create_converter" function when
@@ -281,17 +273,13 @@ class TestCreateConverter:
         ]
         label_group = LabelGroup(name="Classification labels group", labels=labels)
         label_schema = LabelSchemaEntity(label_groups=[label_group])
-        converter = create_converter(
-            converter_type=Domain.CLASSIFICATION, labels=label_schema
-        )
+        converter = create_converter(converter_type=Domain.CLASSIFICATION, labels=label_schema)
         assert isinstance(converter, ClassificationToAnnotationConverter)
         assert converter.labels == labels
         # Checking that "AnomalyClassificationToAnnotationConverter" returned by "create_converter" function when
         # "ANOMALY_CLASSIFICATION" is specified as "converter_type"
         labels = [
-            LabelEntity(
-                name="Normal", domain=Domain.ANOMALY_CLASSIFICATION, id=ID("1")
-            ),
+            LabelEntity(name="Normal", domain=Domain.ANOMALY_CLASSIFICATION, id=ID("1")),
             LabelEntity(
                 name="Anomalous",
                 domain=Domain.ANOMALY_CLASSIFICATION,
@@ -299,13 +287,9 @@ class TestCreateConverter:
                 is_anomalous=True,
             ),
         ]
-        label_group = LabelGroup(
-            name="Anomaly classification labels group", labels=labels
-        )
+        label_group = LabelGroup(name="Anomaly classification labels group", labels=labels)
         label_schema = LabelSchemaEntity(label_groups=[label_group])
-        converter = create_converter(
-            converter_type=Domain.ANOMALY_CLASSIFICATION, labels=label_schema
-        )
+        converter = create_converter(converter_type=Domain.ANOMALY_CLASSIFICATION, labels=label_schema)
         assert isinstance(converter, AnomalyClassificationToAnnotationConverter)
         assert converter.normal_label == labels[0]
         assert converter.anomalous_label == labels[1]
@@ -322,9 +306,7 @@ class TestCreateConverter:
         ]
         label_group = LabelGroup(name="Anomaly detection labels group", labels=labels)
         label_schema = LabelSchemaEntity(label_groups=[label_group])
-        converter = create_converter(
-            converter_type=Domain.ANOMALY_DETECTION, labels=label_schema
-        )
+        converter = create_converter(converter_type=Domain.ANOMALY_DETECTION, labels=label_schema)
         assert isinstance(converter, AnomalyDetectionToAnnotationConverter)
         assert converter.normal_label == labels[0]
         assert converter.anomalous_label == labels[1]
@@ -341,17 +323,13 @@ class TestCreateConverter:
         ]
         label_group = LabelGroup(name="Anomaly detection labels group", labels=labels)
         label_schema = LabelSchemaEntity(label_groups=[label_group])
-        converter = create_converter(
-            converter_type=Domain.ANOMALY_SEGMENTATION, labels=label_schema
-        )
+        converter = create_converter(converter_type=Domain.ANOMALY_SEGMENTATION, labels=label_schema)
         assert isinstance(converter, AnomalySegmentationToAnnotationConverter)
         assert converter.normal_label == labels[0]
         assert converter.anomalous_label == labels[1]
 
 
-def check_annotation_scene(
-    annotation_scene: AnnotationSceneEntity, expected_length: int
-):
+def check_annotation_scene(annotation_scene: AnnotationSceneEntity, expected_length: int):
     assert isinstance(annotation_scene, AnnotationSceneEntity)
     assert annotation_scene.kind == AnnotationSceneKind.PREDICTION
     assert len(annotation_scene.annotations) == expected_length
@@ -425,9 +403,7 @@ class TestDetectionBoxToAnnotation:
         converter = DetectionBoxToAnnotationConverter(labels=label_schema)
         assert converter.labels == []
         # Checking "labels" of "DetectionBoxToAnnotationConverter" initialized with non-empty and empty labels list
-        label_group = LabelGroup(
-            name="Detection labels group", labels=non_empty_labels + empty_labels
-        )
+        label_group = LabelGroup(name="Detection labels group", labels=non_empty_labels + empty_labels)
         label_schema = LabelSchemaEntity(label_groups=[label_group])
         converter = DetectionBoxToAnnotationConverter(labels=label_schema)
         assert converter.labels == non_empty_labels
@@ -480,12 +456,8 @@ class TestDetectionBoxToAnnotation:
         box_1 = Detection(xmin=2, ymin=2, xmax=4, ymax=6, score=0.8, id=0)
         box_2 = Detection(xmin=6, ymin=4, xmax=10, ymax=9, score=0.9, id=1)
         predictions = [box_1, box_2]
-        predictions_to_annotations = converter.convert_to_annotation(
-            predictions=predictions, metadata=metadata
-        )
-        check_annotation_scene(
-            annotation_scene=predictions_to_annotations, expected_length=2
-        )
+        predictions_to_annotations = converter.convert_to_annotation(predictions=predictions, metadata=metadata)
+        check_annotation_scene(annotation_scene=predictions_to_annotations, expected_length=2)
         check_annotation(
             actual_annotation=predictions_to_annotations.annotations[0],
             expected_label=labels[0],
@@ -551,9 +523,7 @@ class TestSegmentationToAnnotation:
         """
         # Checking "label_map" of "SegmentationToAnnotationConverter" initialized with non-empty labels list
         non_empty_labels = self.labels
-        label_group = LabelGroup(
-            name="Segmentation labels group", labels=non_empty_labels
-        )
+        label_group = LabelGroup(name="Segmentation labels group", labels=non_empty_labels)
         label_schema = LabelSchemaEntity(label_groups=[label_group])
         converter = SegmentationToAnnotationConverter(label_schema=label_schema)
         expected_non_empty_labels_map = {
@@ -581,9 +551,7 @@ class TestSegmentationToAnnotation:
         converter = SegmentationToAnnotationConverter(label_schema=label_schema)
         assert converter.label_map == {}
         # Checking "label_map" of "SegmentationToAnnotationConverter" initialized with non-empty and empty labels list
-        label_group = LabelGroup(
-            name="Segmentation labels group", labels=non_empty_labels + empty_labels
-        )
+        label_group = LabelGroup(name="Segmentation labels group", labels=non_empty_labels + empty_labels)
         label_schema = LabelSchemaEntity(label_groups=[label_group])
         converter = SegmentationToAnnotationConverter(label_schema=label_schema)
         assert converter.label_map == expected_non_empty_labels_map
@@ -617,9 +585,7 @@ class TestSegmentationToAnnotation:
             assert len(annotation_labels) == 1
             assert isinstance(annotation_labels[0], ScoredLabel)
             assert annotation_labels[0].label == expected_label
-            assert annotation_labels[0].probability == pytest.approx(
-                expected_probability
-            )
+            assert annotation_labels[0].probability == pytest.approx(expected_probability)
             # Checking Annotation Shape
             assert isinstance(actual_annotation.shape, Polygon)
             assert actual_annotation.shape.points == expected_points
@@ -656,9 +622,7 @@ class TestSegmentationToAnnotation:
                 ),
             ]
         )
-        hard_predictions = np.array(
-            [(0, 0, 2, 2), (1, 1, 2, 2), (1, 1, 2, 2), (1, 1, 2, 2)]
-        )
+        hard_predictions = np.array([(0, 0, 2, 2), (1, 1, 2, 2), (1, 1, 2, 2), (1, 1, 2, 2)])
 
         metadata = {
             "non-required key": 1,
@@ -666,12 +630,8 @@ class TestSegmentationToAnnotation:
             "soft_predictions": soft_predictions,
         }
 
-        predictions_to_annotations = converter.convert_to_annotation(
-            predictions=hard_predictions, metadata=metadata
-        )
-        check_annotation_scene(
-            annotation_scene=predictions_to_annotations, expected_length=2
-        )
+        predictions_to_annotations = converter.convert_to_annotation(predictions=hard_predictions, metadata=metadata)
+        check_annotation_scene(annotation_scene=predictions_to_annotations, expected_length=2)
         check_annotation(
             actual_annotation=predictions_to_annotations.annotations[0],
             expected_label=labels[0],
@@ -728,18 +688,10 @@ class TestSegmentationToAnnotation:
             4. Check attributes of "ClassificationToAnnotationConverter" object initialized with two label groups
             with several labels in each
             """
-            label_0 = LabelEntity(
-                name="label_0", domain=Domain.CLASSIFICATION, id=ID("0")
-            )
-            label_0_1 = LabelEntity(
-                name="label_0_1", domain=Domain.CLASSIFICATION, id=ID("0_1")
-            )
-            label_0_2 = LabelEntity(
-                name="label_0_2", domain=Domain.CLASSIFICATION, id=ID("0_2")
-            )
-            label_0_1_1 = LabelEntity(
-                name="label_0_1_1", domain=Domain.CLASSIFICATION, id=ID("0_1_1")
-            )
+            label_0 = LabelEntity(name="label_0", domain=Domain.CLASSIFICATION, id=ID("0"))
+            label_0_1 = LabelEntity(name="label_0_1", domain=Domain.CLASSIFICATION, id=ID("0_1"))
+            label_0_2 = LabelEntity(name="label_0_2", domain=Domain.CLASSIFICATION, id=ID("0_2"))
+            label_0_1_1 = LabelEntity(name="label_0_1_1", domain=Domain.CLASSIFICATION, id=ID("0_1_1"))
 
             non_empty_labels = [label_0, label_0_1, label_0_1_1, label_0_2]
             empty_labels = [
@@ -764,9 +716,7 @@ class TestSegmentationToAnnotation:
             assert not converter.hierarchical
             # Checking attributes of "ClassificationToAnnotationConverter" initialized with one label group with
             # non-empty labels list length equal to 1
-            label_group = LabelGroup(
-                name="Classification labels group", labels=[label_0] + empty_labels
-            )
+            label_group = LabelGroup(name="Classification labels group", labels=[label_0] + empty_labels)
             label_schema = LabelSchemaEntity(label_groups=[label_group])
             converter = ClassificationToAnnotationConverter(label_schema=label_schema)
             assert converter.labels == [label_0] + empty_labels
@@ -775,15 +725,9 @@ class TestSegmentationToAnnotation:
             assert not converter.hierarchical
             # Checking attributes of "ClassificationToAnnotationConverter" initialized with two label groups with
             # one label in each
-            label_group = LabelGroup(
-                name="Classification labels group", labels=[label_0_1]
-            )
-            other_label_group = LabelGroup(
-                name="Other Classification labels group", labels=[label_0_2]
-            )
-            label_schema = LabelSchemaEntity(
-                label_groups=[label_group, other_label_group]
-            )
+            label_group = LabelGroup(name="Classification labels group", labels=[label_0_1])
+            other_label_group = LabelGroup(name="Other Classification labels group", labels=[label_0_2])
+            label_schema = LabelSchemaEntity(label_groups=[label_group, other_label_group])
             converter = ClassificationToAnnotationConverter(label_schema=label_schema)
             assert converter.labels == [label_0_1, label_0_2]
             assert not converter.empty_label
@@ -793,20 +737,14 @@ class TestSegmentationToAnnotation:
             # several labels in each
             other_non_empty_labels = [
                 LabelEntity(name="label", domain=Domain.CLASSIFICATION, id=ID("3")),
-                LabelEntity(
-                    name="other label", domain=Domain.CLASSIFICATION, id=ID("4")
-                ),
+                LabelEntity(name="other label", domain=Domain.CLASSIFICATION, id=ID("4")),
             ]
-            label_group = LabelGroup(
-                name="Classification labels group", labels=non_empty_labels
-            )
+            label_group = LabelGroup(name="Classification labels group", labels=non_empty_labels)
             other_label_group = LabelGroup(
                 name="Other Classification labels group",
                 labels=other_non_empty_labels,
             )
-            label_schema = LabelSchemaEntity(
-                label_groups=[label_group, other_label_group]
-            )
+            label_schema = LabelSchemaEntity(label_groups=[label_group, other_label_group])
             converter = ClassificationToAnnotationConverter(label_schema=label_schema)
             assert converter.labels == non_empty_labels + other_non_empty_labels
             assert not converter.empty_label
@@ -839,24 +777,14 @@ class TestSegmentationToAnnotation:
 
             def check_annotation(actual_annotation: Annotation, expected_labels: list):
                 assert isinstance(actual_annotation, Annotation)
-                assert (
-                    actual_annotation.get_labels(include_empty=True) == expected_labels
-                )
+                assert actual_annotation.get_labels(include_empty=True) == expected_labels
                 assert isinstance(actual_annotation.shape, Rectangle)
                 assert Rectangle.is_full_box(rectangle=actual_annotation.shape)
 
-            label_0 = LabelEntity(
-                name="label_0", domain=Domain.CLASSIFICATION, id=ID("0")
-            )
-            label_0_1 = LabelEntity(
-                name="label_0_1", domain=Domain.CLASSIFICATION, id=ID("0_1")
-            )
-            label_0_2 = LabelEntity(
-                name="label_0_2", domain=Domain.CLASSIFICATION, id=ID("0_2")
-            )
-            label_0_1_1 = LabelEntity(
-                name="label_0_1_1", domain=Domain.CLASSIFICATION, id=ID("0_1_1")
-            )
+            label_0 = LabelEntity(name="label_0", domain=Domain.CLASSIFICATION, id=ID("0"))
+            label_0_1 = LabelEntity(name="label_0_1", domain=Domain.CLASSIFICATION, id=ID("0_1"))
+            label_0_2 = LabelEntity(name="label_0_2", domain=Domain.CLASSIFICATION, id=ID("0_2"))
+            label_0_1_1 = LabelEntity(name="label_0_1_1", domain=Domain.CLASSIFICATION, id=ID("0_1_1"))
             non_empty_labels = [label_0, label_0_1, label_0_1_1, label_0_2]
             empty_labels = [
                 LabelEntity(
@@ -879,9 +807,7 @@ class TestSegmentationToAnnotation:
             converter = ClassificationToAnnotationConverter(label_schema=label_schema)
             predictions = [(0, 0.9), (1, 0.8), (2, 0.94), (3, 0.86)]
             predictions_to_annotations = converter.convert_to_annotation(predictions)
-            check_annotation_scene(
-                annotation_scene=predictions_to_annotations, expected_length=1
-            )
+            check_annotation_scene(annotation_scene=predictions_to_annotations, expected_length=1)
             check_annotation(
                 actual_annotation=predictions_to_annotations.annotations[0],
                 expected_labels=[
@@ -896,33 +822,25 @@ class TestSegmentationToAnnotation:
             converter = ClassificationToAnnotationConverter(label_schema=label_schema)
             predictions = []
             predictions_to_annotations = converter.convert_to_annotation(predictions)
-            check_annotation_scene(
-                annotation_scene=predictions_to_annotations, expected_length=1
-            )
+            check_annotation_scene(annotation_scene=predictions_to_annotations, expected_length=1)
             check_annotation(
                 actual_annotation=predictions_to_annotations.annotations[0],
                 expected_labels=[ScoredLabel(label=empty_labels[0], probability=1.0)],
             )
             # Checking attributes of "AnnotationSceneEntity" returned by "convert_to_annotation" for
             # "ClassificationToAnnotationConverter" initialized with several LabelGroups
-            label_group = LabelGroup(
-                name="Classification labels group", labels=[label_0_1_1]
-            )
+            label_group = LabelGroup(name="Classification labels group", labels=[label_0_1_1])
             other_label_group = LabelGroup(
                 name="Other Classification labels group",
                 labels=[label_0_1, label_0_2],
             )
-            label_schema = LabelSchemaEntity(
-                label_groups=[label_group, other_label_group]
-            )
+            label_schema = LabelSchemaEntity(label_groups=[label_group, other_label_group])
 
             label_schema.add_child(parent=label_0_1, child=label_0_1_1)
             converter = ClassificationToAnnotationConverter(label_schema=label_schema)
             predictions = [(2, 0.9), (1, 0.8)]
             predictions_to_annotations = converter.convert_to_annotation(predictions)
-            check_annotation_scene(
-                annotation_scene=predictions_to_annotations, expected_length=1
-            )
+            check_annotation_scene(annotation_scene=predictions_to_annotations, expected_length=1)
             check_annotation(
                 predictions_to_annotations.annotations[0],
                 expected_labels=[ScoredLabel(label=label_0_2, probability=0.9)],
@@ -971,13 +889,9 @@ class TestSegmentationToAnnotation:
                     is_anomalous=True,
                 ),
             ]
-            label_group = LabelGroup(
-                name="Classification labels group", labels=non_empty_labels
-            )
+            label_group = LabelGroup(name="Classification labels group", labels=non_empty_labels)
             label_schema = LabelSchemaEntity(label_groups=[label_group])
-            converter = AnomalyClassificationToAnnotationConverter(
-                label_schema=label_schema
-            )
+            converter = AnomalyClassificationToAnnotationConverter(label_schema=label_schema)
             assert converter.normal_label == non_empty_labels[0]
             assert converter.anomalous_label == non_empty_labels[2]
             # Checking attributes of "AnomalyClassificationToAnnotationConverter" initialized with non-empty and
@@ -1013,9 +927,7 @@ class TestSegmentationToAnnotation:
                 labels=non_empty_labels + empty_labels,
             )
             label_schema = LabelSchemaEntity(label_groups=[label_group])
-            converter = AnomalyClassificationToAnnotationConverter(
-                label_schema=label_schema
-            )
+            converter = AnomalyClassificationToAnnotationConverter(label_schema=label_schema)
             assert converter.normal_label == non_empty_labels[0]
             assert converter.anomalous_label == non_empty_labels[2]
 
@@ -1058,13 +970,9 @@ class TestSegmentationToAnnotation:
                 is_anomalous=True,
             ),
         ]
-        label_group = LabelGroup(
-            name="Anomaly classification labels group", labels=non_empty_labels
-        )
+        label_group = LabelGroup(name="Anomaly classification labels group", labels=non_empty_labels)
         label_schema = LabelSchemaEntity(label_groups=[label_group])
-        converter = AnomalyClassificationToAnnotationConverter(
-            label_schema=label_schema
-        )
+        converter = AnomalyClassificationToAnnotationConverter(label_schema=label_schema)
         predictions = np.array([0.7])
         # Checking attributes of "AnnotationSceneEntity" returned by "convert_to_annotation" for "metadata" with
         # specified "threshold" key
@@ -1073,12 +981,8 @@ class TestSegmentationToAnnotation:
             "other non-required key": 2,
             "threshold": 0.8,
         }
-        predictions_to_annotations = converter.convert_to_annotation(
-            predictions=predictions, metadata=metadata
-        )
-        check_annotation_scene(
-            annotation_scene=predictions_to_annotations, expected_length=1
-        )
+        predictions_to_annotations = converter.convert_to_annotation(predictions=predictions, metadata=metadata)
+        check_annotation_scene(annotation_scene=predictions_to_annotations, expected_length=1)
         check_annotation(
             predictions_to_annotations.annotations[0],
             expected_labels=[ScoredLabel(label=non_empty_labels[0], probability=0.7)],
@@ -1086,12 +990,8 @@ class TestSegmentationToAnnotation:
         # Checking attributes of "AnnotationSceneEntity" returned by "convert_to_annotation" for "metadata" without
         # specified "threshold" key
         metadata = {"non-required key": 1, "other non-required key": 2}
-        predictions_to_annotations = converter.convert_to_annotation(
-            predictions=predictions, metadata=metadata
-        )
-        check_annotation_scene(
-            annotation_scene=predictions_to_annotations, expected_length=1
-        )
+        predictions_to_annotations = converter.convert_to_annotation(predictions=predictions, metadata=metadata)
+        check_annotation_scene(annotation_scene=predictions_to_annotations, expected_length=1)
         check_annotation(
             predictions_to_annotations.annotations[0],
             expected_labels=[ScoredLabel(label=non_empty_labels[1], probability=0.7)],

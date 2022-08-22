@@ -42,9 +42,7 @@ class OTXTestCaseInterface(OTXTestStagesStorageInterface):
     @classmethod
     @abstractmethod
     def get_list_of_test_stages(cls):
-        raise NotImplementedError(
-            "The method get_list_of_test_stages is not implemented"
-        )
+        raise NotImplementedError("The method get_list_of_test_stages is not implemented")
 
     @abstractmethod
     def run_stage(
@@ -65,9 +63,7 @@ def generate_otx_integration_test_case_class(
     classes_names = [action_cls._name for action_cls in test_actions_classes]
     name_dups = _get_duplications(classes_names)
     if name_dups:
-        raise ValueError(
-            f"Wrong input: there are duplications in names of actions; duplications = {name_dups}"
-        )
+        raise ValueError(f"Wrong input: there are duplications in names of actions; duplications = {name_dups}")
 
     class _OTXIntegrationTestCase(OTXTestCaseInterface):
         _TEST_STAGES = [action_cls._name for action_cls in test_actions_classes]
@@ -76,9 +72,7 @@ def generate_otx_integration_test_case_class(
         def get_list_of_test_stages(cls):
             return deepcopy(cls._TEST_STAGES)
 
-        def __init__(
-            self, params_factories_for_test_actions: Dict[str, Callable[[], Dict]]
-        ):
+        def __init__(self, params_factories_for_test_actions: Dict[str, Callable[[], Dict]]):
             logger.debug("initialization of test case: begin")
             self._stages = OrderedDict()
             for action_cls in test_actions_classes:
@@ -93,14 +87,9 @@ def generate_otx_integration_test_case_class(
                 else:
                     cur_params = {}
 
-                assert isinstance(
-                    cur_params, dict
-                ), f"Wrong params received from factory: {cur_params}"
+                assert isinstance(cur_params, dict), f"Wrong params received from factory: {cur_params}"
                 short_params_str = _str_dict_with_shortened_vals(cur_params)
-                logger.info(
-                    f"initialization of test case: add action '{cur_name}' "
-                    f"with params={short_params_str}"
-                )
+                logger.info(f"initialization of test case: add action '{cur_name}' " f"with params={short_params_str}")
 
                 cur_action = action_cls(**cur_params)
 
@@ -126,8 +115,6 @@ def generate_otx_integration_test_case_class(
         ):
             assert stage_name in self._TEST_STAGES, f"Wrong stage_name {stage_name}"
             validator = Validator(cur_test_expected_metrics_callback)
-            self._stages[stage_name].run_once(
-                data_collector, self.test_results_storage, validator
-            )
+            self._stages[stage_name].run_once(data_collector, self.test_results_storage, validator)
 
     return _OTXIntegrationTestCase

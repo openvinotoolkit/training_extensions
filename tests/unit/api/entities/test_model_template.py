@@ -54,9 +54,7 @@ class CommonMethods:
             model_data = yaml.safe_load(model_to_copy)
             override_parameters = model_data["hyper_parameters"]["parameter_overrides"]
         model_data["hyper_parameters"].pop("parameter_overrides")
-        new_config_path = TestHyperParameterData.get_path_to_file(
-            r"./no_overrides_template.yaml"
-        )
+        new_config_path = TestHyperParameterData.get_path_to_file(r"./no_overrides_template.yaml")
         if save_file:
             with open(new_config_path, "w+") as new_config:
                 new_config.write(yaml.dump(model_data))
@@ -84,9 +82,7 @@ class CommonMethods:
         assert model.dataset_requirements == expected_values.get(
             "dataset_requirements", DatasetRequirements(classes=None)
         )
-        assert model.model_optimization_methods == expected_values.get(
-            "model_optimization_methods", []
-        )
+        assert model.model_optimization_methods == expected_values.get("model_optimization_methods", [])
         assert model.hyper_parameters == expected_values.get(
             "hyper_parameters",
             HyperParameterData(base_path=None, parameter_overrides={}),
@@ -98,9 +94,7 @@ class CommonMethods:
         assert model.exportable_code_paths == expected_values.get(
             "exportable_code_paths", ExportableCodePaths(default=None, openvino=None)
         )
-        assert model.task_type_sort_priority == expected_values.get(
-            "task_type_sort_priority", -1
-        )
+        assert model.task_type_sort_priority == expected_values.get("task_type_sort_priority", -1)
         assert model.gigaflops == expected_values.get("gigaflops", 0)
         assert model.size == expected_values.get("size", 0)
 
@@ -182,15 +176,9 @@ class TestExportableCodePaths:
         <b>Expected results:</b>
         Test passes if default, openvino attributes of ExportableCodePaths dataclass return expected values
         """
-        exportable_code_paths = ExportableCodePaths(
-            "default code path", "openvino code path"
-        )
-        equal_exportable_code_paths = ExportableCodePaths(
-            "default code path", "openvino code path"
-        )
-        unequal_exportable_code_paths = ExportableCodePaths(
-            "other default code path", "openvino code path"
-        )
+        exportable_code_paths = ExportableCodePaths("default code path", "openvino code path")
+        equal_exportable_code_paths = ExportableCodePaths("default code path", "openvino code path")
+        unequal_exportable_code_paths = ExportableCodePaths("other default code path", "openvino code path")
         assert exportable_code_paths.default == "default code path"
         assert exportable_code_paths.openvino == "openvino code path"
         assert exportable_code_paths == equal_exportable_code_paths
@@ -281,27 +269,13 @@ class TestTaskType:
         1. Check positive scenario with existing TaskType element
         2. Check ValueError exception raised when requests non-existing TaskType element
         """
-        assert (
-            task_type_to_label_domain(TaskType.CLASSIFICATION) == Domain.CLASSIFICATION
-        )
+        assert task_type_to_label_domain(TaskType.CLASSIFICATION) == Domain.CLASSIFICATION
         assert task_type_to_label_domain(TaskType.DETECTION) == Domain.DETECTION
         assert task_type_to_label_domain(TaskType.SEGMENTATION) == Domain.SEGMENTATION
-        assert (
-            task_type_to_label_domain(TaskType.INSTANCE_SEGMENTATION)
-            == Domain.INSTANCE_SEGMENTATION
-        )
-        assert (
-            task_type_to_label_domain(TaskType.ANOMALY_CLASSIFICATION)
-            == Domain.ANOMALY_CLASSIFICATION
-        )
-        assert (
-            task_type_to_label_domain(TaskType.ANOMALY_DETECTION)
-            == Domain.ANOMALY_DETECTION
-        )
-        assert (
-            task_type_to_label_domain(TaskType.ANOMALY_SEGMENTATION)
-            == Domain.ANOMALY_SEGMENTATION
-        )
+        assert task_type_to_label_domain(TaskType.INSTANCE_SEGMENTATION) == Domain.INSTANCE_SEGMENTATION
+        assert task_type_to_label_domain(TaskType.ANOMALY_CLASSIFICATION) == Domain.ANOMALY_CLASSIFICATION
+        assert task_type_to_label_domain(TaskType.ANOMALY_DETECTION) == Domain.ANOMALY_DETECTION
+        assert task_type_to_label_domain(TaskType.ANOMALY_SEGMENTATION) == Domain.ANOMALY_SEGMENTATION
         for not_mapped_task in [
             TaskType.NULL,
             TaskType.DATASET,
@@ -458,9 +432,7 @@ class TestHyperParameterData:
         assert has_overrides_hyper_parameter_data.has_overrides
         has_overrides_hyper_parameter_data.load_parameters(self.model_template_path())
         assert has_overrides_hyper_parameter_data.has_overrides
-        no_overrides_hyper_parameter_data = HyperParameterData(
-            base_path=self.config_path()
-        )
+        no_overrides_hyper_parameter_data = HyperParameterData(base_path=self.config_path())
         assert not no_overrides_hyper_parameter_data.has_overrides
         no_overrides_hyper_parameter_data.load_parameters(model_template_path)
         assert not no_overrides_hyper_parameter_data.has_overrides
@@ -538,40 +510,23 @@ class TestHyperParameterData:
         postprocessing_data = hyper_parameter_data.data.get("postprocessing")
         assert learning_parameters_data.get("batch_size").get("default_value") == 10
         assert learning_parameters_data.get("learning_rate").get("default_value") == 0.5
-        assert (
-            learning_parameters_data.get("learning_rate_warmup_iters").get("min_value")
-            == 10
-        )
+        assert learning_parameters_data.get("learning_rate_warmup_iters").get("min_value") == 10
         assert learning_parameters_data.get("num_checkpoints").get("max_value") == 95
         assert learning_parameters_data.get("num_iters").get("min_value") == 2
-        assert (
-            learning_parameters_data.get("num_workers").get("description")
-            == "New workers description"
-        )
-        assert (
-            postprocessing_data.get("confidence_threshold").get("default_value") == 0.4
-        )
-        assert (
-            postprocessing_data.get("result_based_confidence_threshold").get("header")
-            == "New header"
-        )
+        assert learning_parameters_data.get("num_workers").get("description") == "New workers description"
+        assert postprocessing_data.get("confidence_threshold").get("default_value") == 0.4
+        assert postprocessing_data.get("result_based_confidence_threshold").get("header") == "New header"
         # negative scenario with key not specified in config.yaml file
         unexpected_key_dict = {
             "learning_parameters": {"batch_size": {"default_value": 10}},
             "unexpected_key": {"parameter1": 1},
         }
-        hyper_parameter_data = HyperParameterData(
-            base_path=self.config_path(), parameter_overrides=unexpected_key_dict
-        )
+        hyper_parameter_data = HyperParameterData(base_path=self.config_path(), parameter_overrides=unexpected_key_dict)
         with pytest.raises(ValueError):
             hyper_parameter_data.load_parameters(self.model_template_path())
         # negative scenario with "value" key not allowed to override
-        restricted_key_dict = {
-            "learning_parameters": {"batch_size": {"default_value": 10, "value": 1}}
-        }
-        hyper_parameter_data = HyperParameterData(
-            base_path=self.config_path(), parameter_overrides=restricted_key_dict
-        )
+        restricted_key_dict = {"learning_parameters": {"batch_size": {"default_value": 10, "value": 1}}}
+        hyper_parameter_data = HyperParameterData(base_path=self.config_path(), parameter_overrides=restricted_key_dict)
         with pytest.raises(KeyError):
             hyper_parameter_data.load_parameters(self.model_template_path())
 
@@ -683,9 +638,7 @@ class TestDependency:
         assert dependency.destination == expected_destination
         assert dependency.size == self.dependency_parameters().get("size")
         assert dependency.sha256 == self.dependency_parameters().get("sha256")
-        default_attributes_dependency = Dependency(
-            source=expected_source, destination=expected_destination
-        )
+        default_attributes_dependency = Dependency(source=expected_source, destination=expected_destination)
         assert default_attributes_dependency.source == expected_source
         assert default_attributes_dependency.destination == expected_destination
         assert not default_attributes_dependency.size
@@ -708,8 +661,7 @@ class TestDependency:
                     unequal_params_dict[key] = unequal_dependency_parameters.get(key)
                 unequal_dependency = Dependency(**unequal_params_dict)
                 assert dependency != unequal_dependency, (
-                    "Failed to check that Dependency instances with different "
-                    f"{parameters} are unequal"
+                    "Failed to check that Dependency instances with different " f"{parameters} are unequal"
                 )
 
 
@@ -764,8 +716,7 @@ class TestEntryPoints:
                     unequal_params_dict[key] = unequal_entrypoints_parameters.get(key)
                 unequal_entry_points = EntryPoints(**unequal_params_dict)
                 assert entry_points != unequal_entry_points, (
-                    "Failed to check that EntryPoints instances with "
-                    f"different {parameters} are unequal"
+                    "Failed to check that EntryPoints instances with " f"different {parameters} are unequal"
                 )
 
 
@@ -785,9 +736,7 @@ class TestModelTemplate:
     def optional_model_parameters(self):
         model_template = CommonMethods.cut_parameter_overrides_from_model_template()
         model_template_path = model_template.get("new_config_path")
-        hyper_parameter_data = HyperParameterData(
-            base_path=TestHyperParameterData().config_path()
-        )
+        hyper_parameter_data = HyperParameterData(base_path=TestHyperParameterData().config_path())
         hyper_parameter_data.load_parameters(model_template_path)
         optional_parameters = dict(self.default_model_parameters())
         optional_parameters["model_template_path"] = model_template_path
@@ -850,14 +799,10 @@ class TestModelTemplate:
         """
         # Checks for object with default values
         default_model_template = ModelTemplate(**self.default_model_parameters())
-        CommonMethods.check_model_attributes(
-            default_model_template, self.default_model_parameters()
-        )
+        CommonMethods.check_model_attributes(default_model_template, self.default_model_parameters())
         # Checks for object with specified values
         optional_parameters_model = ModelTemplate(**self.optional_model_parameters())
-        CommonMethods.check_model_attributes(
-            optional_parameters_model, self.optional_model_parameters()
-        )
+        CommonMethods.check_model_attributes(optional_parameters_model, self.optional_model_parameters())
         assert default_model_template != optional_parameters_model
         remove(optional_parameters_model.model_template_path)
 
@@ -930,9 +875,7 @@ class TestModelTemplate:
             "compute_uncertainty_score",
             "not test parameter",
         ]
-        score_true_presentations_false_model = ModelTemplate(
-            **score_true_presentations_false_parameters
-        )
+        score_true_presentations_false_model = ModelTemplate(**score_true_presentations_false_parameters)
         assert score_true_presentations_false_model.computes_uncertainty_score()
         assert not score_true_presentations_false_model.computes_representations()
         # Check for computes_uncertainty_score is False and computes_representations is True
@@ -941,15 +884,11 @@ class TestModelTemplate:
             "compute_representations",
             "not test parameter",
         ]
-        score_true_presentations_false_model = ModelTemplate(
-            **score_true_presentations_false_parameters
-        )
+        score_true_presentations_false_model = ModelTemplate(**score_true_presentations_false_parameters)
         assert not score_true_presentations_false_model.computes_uncertainty_score()
         assert score_true_presentations_false_model.computes_representations()
         # Check for computes_uncertainty_score and computes_representations methods return False
-        no_score_representations_model = ModelTemplate(
-            **self.default_model_parameters()
-        )
+        no_score_representations_model = ModelTemplate(**self.default_model_parameters())
         assert not no_score_representations_model.computes_uncertainty_score()
         assert not no_score_representations_model.computes_representations()
         remove(score_representations_model.model_template_path)
@@ -1016,9 +955,7 @@ class TestNullModelTemplate:
             "task_type": TaskType.NULL,
             "instantiation": InstantiationType.NONE,
         }
-        CommonMethods.check_model_attributes(
-            null_model_template, expected_null_model_parameters
-        )
+        CommonMethods.check_model_attributes(null_model_template, expected_null_model_parameters)
 
 
 @pytest.mark.components(OtxSdkComponent.OTX_API)
@@ -1066,13 +1003,9 @@ class TestParseModelTemplate:
         model_template_path = TestHyperParameterData().model_template_path()
         with open(model_template_path) as model_template_file:
             model_template_content = yaml.safe_load(model_template_file)
-            model_template_content["model_template_id"] = model_template_content[
-                "name"
-            ].replace(" ", "_")
+            model_template_content["model_template_id"] = model_template_content["name"].replace(" ", "_")
             model_template_content["model_template_path"] = model_template_path
-        parsed_model_template = _parse_model_template_from_omegaconf(
-            model_template_content
-        )
+        parsed_model_template = _parse_model_template_from_omegaconf(model_template_content)
         assert isinstance(parsed_model_template, ModelTemplate)
         # Forming expected hyper parameter data dictionary from config.yaml and overridden parameters from
         # model_template,yaml
@@ -1089,9 +1022,7 @@ class TestParseModelTemplate:
         )
         expected_hyper_parameters.load_parameters(model_template_path)
         expected_parsed_model_parameters = {
-            "entrypoints": EntryPoints(
-                base="base entrypoints", openvino=None, nncf=None
-            ),
+            "entrypoints": EntryPoints(base="base entrypoints", openvino=None, nncf=None),
             "framework": "Test framework",
             "hyper_parameters": expected_hyper_parameters,
             "inference_targets": [
@@ -1108,9 +1039,7 @@ class TestParseModelTemplate:
             "task_type": TaskType.DETECTION,
             "training_targets": [TargetDevice.GPU, TargetDevice.CPU],
         }
-        CommonMethods.check_model_attributes(
-            parsed_model_template, expected_parsed_model_parameters
-        )
+        CommonMethods.check_model_attributes(parsed_model_template, expected_parsed_model_parameters)
 
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -1132,15 +1061,10 @@ class TestParseModelTemplate:
         # Check for template file with not specified model_template_id
         model_template_path = TestHyperParameterData().model_template_path()
         not_specified_id_template = parse_model_template(model_template_path)
-        assert (
-            not_specified_id_template.model_template_id
-            == "Custom_Object_Detection_--_TEST_ONLY"
-        )
+        assert not_specified_id_template.model_template_id == "Custom_Object_Detection_--_TEST_ONLY"
         assert not_specified_id_template.model_template_path == model_template_path
         # Check for template file with specified model_template_id
-        id_specified_model_path = TestHyperParameterData.get_path_to_file(
-            r"./id_specified_template.yaml"
-        )
+        id_specified_model_path = TestHyperParameterData.get_path_to_file(r"./id_specified_template.yaml")
         model_id = "Parsed_Model_ID_1"
         with open(model_template_path) as model_template_file:
             id_specified_template_content = yaml.safe_load(model_template_file)
@@ -1152,9 +1076,7 @@ class TestParseModelTemplate:
         assert id_specified_template.model_template_path == id_specified_model_path
         remove(id_specified_model_path)
         # Check ValueError exception raised if model template is list-type
-        incorrect_model_template_path = TestHyperParameterData.get_path_to_file(
-            r"./incorrect_model_template.yaml"
-        )
+        incorrect_model_template_path = TestHyperParameterData.get_path_to_file(r"./incorrect_model_template.yaml")
         with open(incorrect_model_template_path, "w+") as incorrect_yaml_file:
             incorrect_yaml_file.write("[]")
         with pytest.raises(ValueError):
@@ -1193,9 +1115,7 @@ class TestParseModelTemplate:
             "summary": "Fast and lightweight object detector.",
             "application": None,
             "framework": "Test framework",
-            "entrypoints": EntryPoints(
-                base="base interface", openvino="OpenVINO interface"
-            ),
+            "entrypoints": EntryPoints(base="base interface", openvino="OpenVINO interface"),
             "hyper_parameters": hyper_parameters,
             "max_nodes": 1,
             "training_targets": [TargetDevice.GPU, TargetDevice.CPU],
@@ -1205,10 +1125,6 @@ class TestParseModelTemplate:
                 TargetDevice.VPU,
             ],
         }
-        model_template_from_dictionary = parse_model_template_from_dict(
-            template_dictionary
-        )
-        CommonMethods.check_model_attributes(
-            model_template_from_dictionary, template_dictionary
-        )
+        model_template_from_dictionary = parse_model_template_from_dict(template_dictionary)
+        CommonMethods.check_model_attributes(model_template_from_dictionary, template_dictionary)
         remove(model_template_path)

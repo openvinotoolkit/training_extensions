@@ -24,14 +24,10 @@ def get_value_from_dict_by_dot_separated_address(struct, address):
             return cur_struct
         assert isinstance(cur_struct, dict)
         if addr[0] not in cur_struct:
-            raise ValueError(
-                f"Cannot find address {address} in struct {struct}: {addr[0]} is absent in {cur_struct}"
-            )
+            raise ValueError(f"Cannot find address {address} in struct {struct}: {addr[0]} is absent in {cur_struct}")
         return _get(cur_struct[addr[0]], addr[1:])
 
-    assert isinstance(
-        address, str
-    ), f"The parameter address should be string, address={address}"
+    assert isinstance(address, str), f"The parameter address should be string, address={address}"
     return _get(struct, address.split("."))
 
 
@@ -41,18 +37,14 @@ class Validator:
     compares it with the expected metrics.
     """
 
-    def __init__(
-        self, cur_test_expected_metrics_callback: Optional[Callable[[], Dict]]
-    ):
+    def __init__(self, cur_test_expected_metrics_callback: Optional[Callable[[], Dict]]):
         self.cur_test_expected_metrics_callback = cur_test_expected_metrics_callback
 
     # TODO(lbeynens): add a method to extract dependency info from expected metrics
     #                 to add the stages we depend on to the dependency list.
 
     @staticmethod
-    def _get_min_max_value_from_expected_metrics(
-        cur_metric_requirements: Dict, test_results_storage: Dict
-    ):
+    def _get_min_max_value_from_expected_metrics(cur_metric_requirements: Dict, test_results_storage: Dict):
         """
         The method gets requirement for some metric and convert it to the triplet
         (target_value, min_value, max_value).
@@ -98,10 +90,7 @@ class Validator:
                 f"cur_metric_requirements={pformat(cur_metric_requirements)}"
             )
 
-        if ("max_diff" in keys) and (
-            "max_diff_if_less_threshold" in keys
-            or "max_diff_if_greater_threshold" in keys
-        ):
+        if ("max_diff" in keys) and ("max_diff_if_less_threshold" in keys or "max_diff_if_greater_threshold" in keys):
             raise ValueError(
                 f'Wrong cur_metric_requirements: either "max_diff" or one/two of '
                 f'"max_diff_if_less_threshold" and "max_diff_if_greater_threshold" should be '
@@ -113,30 +102,20 @@ class Validator:
             target_value = float(cur_metric_requirements["target_value"])
         elif "base" in cur_metric_requirements:
             base_metric_address = cur_metric_requirements["base"]
-            target_value = get_value_from_dict_by_dot_separated_address(
-                test_results_storage, base_metric_address
-            )
+            target_value = get_value_from_dict_by_dot_separated_address(test_results_storage, base_metric_address)
             target_value = float(target_value)
         else:
-            raise RuntimeError(
-                f"ERROR: Wrong parsing of metric requirements {cur_metric_requirements}"
-            )
+            raise RuntimeError(f"ERROR: Wrong parsing of metric requirements {cur_metric_requirements}")
 
         if "max_diff" in cur_metric_requirements:
             max_diff = cur_metric_requirements["max_diff"]
             max_diff = float(max_diff)
             if not max_diff >= 0:
-                raise ValueError(
-                    f"Wrong max_diff {max_diff} -- it should be a non-negative number"
-                )
+                raise ValueError(f"Wrong max_diff {max_diff} -- it should be a non-negative number")
             return (target_value, target_value - max_diff, target_value + max_diff)
 
-        max_diff_if_less_threshold = cur_metric_requirements.get(
-            "max_diff_if_less_threshold"
-        )
-        max_diff_if_greater_threshold = cur_metric_requirements.get(
-            "max_diff_if_greater_threshold"
-        )
+        max_diff_if_less_threshold = cur_metric_requirements.get("max_diff_if_less_threshold")
+        max_diff_if_greater_threshold = cur_metric_requirements.get("max_diff_if_greater_threshold")
         if max_diff_if_less_threshold is None and max_diff_if_greater_threshold is None:
             raise ValueError(
                 f"Wrong cur_metric_requirements: all of max_diff, max_diff_if_less_threshold, and "
@@ -262,9 +241,7 @@ class Validator:
         assert isinstance(
             cur_test_expected_metrics, dict
         ), f"Wrong current test expected metric: {cur_test_expected_metrics}"
-        logger.debug(
-            f"Validation: received cur_test_expected_metrics={pformat(cur_test_expected_metrics)}"
-        )
+        logger.debug(f"Validation: received cur_test_expected_metrics={pformat(cur_test_expected_metrics)}")
         is_passed = True
         fail_reasons = []
         for k, v in cur_test_expected_metrics.items():
@@ -273,14 +250,10 @@ class Validator:
             cur_metric_requirements = v
             logger.info(f"Validation: begin check {cur_res_addr}")
             try:
-                current_metric = get_value_from_dict_by_dot_separated_address(
-                    current_result, cur_res_addr
-                )
+                current_metric = get_value_from_dict_by_dot_separated_address(current_result, cur_res_addr)
                 current_metric = float(current_metric)
             except (ValueError, TypeError) as e:
-                raise ValueError(
-                    f"Cannot get metric {cur_res_addr} from the current result {current_result}"
-                ) from e
+                raise ValueError(f"Cannot get metric {cur_res_addr} from the current result {current_result}") from e
 
             logger.debug(f"current_metric = {current_metric}")
             try:
@@ -288,13 +261,9 @@ class Validator:
                     target_value,
                     min_value,
                     max_value,
-                ) = self._get_min_max_value_from_expected_metrics(
-                    cur_metric_requirements, test_results_storage
-                )
+                ) = self._get_min_max_value_from_expected_metrics(cur_metric_requirements, test_results_storage)
             except (ValueError, TypeError) as e:
-                raise ValueError(
-                    f"Error when parsing expected metrics for the metric {cur_res_addr}"
-                ) from e
+                raise ValueError(f"Error when parsing expected metrics for the metric {cur_res_addr}") from e
 
             cur_is_passed, cur_fail_reason = self._compare(
                 current_metric, cur_res_addr, target_value, min_value, max_value
@@ -329,9 +298,7 @@ class OTXTestStage:
             time the stage is called the exception is re-raised.
     """
 
-    def __init__(
-        self, action: BaseOTXTestAction, stages_storage: OTXTestStagesStorageInterface
-    ):
+    def __init__(self, action: BaseOTXTestAction, stages_storage: OTXTestStagesStorageInterface):
         self.was_processed = False
         self.stored_exception: Optional[Exception] = None
         self.action = action
@@ -365,9 +332,7 @@ class OTXTestStage:
         for stage_name in depends_stages_names:
             logger.debug(f'get_depends_stages: get stage with name "{stage_name}"')
             cur_stage = self.stages_storage.get_stage(stage_name)
-            assert isinstance(
-                cur_stage, OTXTestStage
-            ), f'Wrong stage for stage_name="{stage_name}"'
+            assert isinstance(cur_stage, OTXTestStage), f'Wrong stage for stage_name="{stage_name}"'
             assert (
                 cur_stage.name == stage_name
             ), f'For stage_name="{stage_name}" got the stage with name="{cur_stage.name}"'
@@ -385,14 +350,11 @@ class OTXTestStage:
             return
 
         logger.warning(
-            f"In stage {self.name}: found that previous call of the stage "
-            "caused exception -- re-raising it"
+            f"In stage {self.name}: found that previous call of the stage " "caused exception -- re-raising it"
         )
         raise self.stored_exception
 
-    def _run_validation(
-        self, test_results_storage: Dict, validator: Optional[Validator]
-    ):
+    def _run_validation(self, test_results_storage: Dict, validator: Optional[Validator]):
         if not self.action.with_validation:
             return
         if validator is None:
@@ -412,9 +374,7 @@ class OTXTestStage:
     ):
         logger.info(f'Begin stage "{self.name}"')
         assert isinstance(test_results_storage, OrderedDict)
-        logger.debug(
-            f'For test stage "{self.name}": test_results_storage.keys = {list(test_results_storage.keys())}'
-        )
+        logger.debug(f'For test stage "{self.name}": test_results_storage.keys = {list(test_results_storage.keys())}')
 
         for dep_stage in self.get_depends_stages():
             # Processing all dependency stages of the current test.
@@ -422,13 +382,9 @@ class OTXTestStage:
             # * the stages may run their own dependency stages -- they will compose so called "dependency chain"
             # * the dependency stages are run with `validator = None`
             #   to avoid validation of stages that are run from the dependency chain.
-            logger.debug(
-                f'For test stage "{self.name}": Before running dep. stage "{dep_stage.name}"'
-            )
+            logger.debug(f'For test stage "{self.name}": Before running dep. stage "{dep_stage.name}"')
             dep_stage.run_once(data_collector, test_results_storage, validator=None)
-            logger.debug(
-                f'For test stage "{self.name}": After running dep. stage "{dep_stage.name}"'
-            )
+            logger.debug(f'For test stage "{self.name}": After running dep. stage "{dep_stage.name}"')
 
         if self.was_processed:
             self._reraise_stage_exception_if_was_failed()
@@ -451,9 +407,7 @@ class OTXTestStage:
 
         try:
             logger.info(f'For test stage "{self.name}": Before running main action')
-            self.stage_results = self.action(
-                data_collector=data_collector, results_prev_stages=test_results_storage
-            )
+            self.stage_results = self.action(data_collector=data_collector, results_prev_stages=test_results_storage)
             logger.info(f'For test stage "{self.name}": After running main action')
             self.was_processed = True
             test_results_storage[self.name] = self.stage_results

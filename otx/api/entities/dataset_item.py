@@ -92,9 +92,7 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
         roi: Optional[Annotation] = None,
         metadata: Optional[List[MetadataItemEntity]] = None,
         subset: Subset = Subset.NONE,
-        ignored_labels: Optional[
-            Union[List[LabelEntity], Tuple[LabelEntity, ...], Set[LabelEntity]]
-        ] = None,
+        ignored_labels: Optional[Union[List[LabelEntity], Tuple[LabelEntity, ...], Set[LabelEntity]]] = None,
     ):
         self.__media: IMedia2DEntity = media
         self.__annotation_scene: AnnotationSceneEntity = annotation_scene
@@ -114,9 +112,7 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
         if metadata is not None:
             self.__metadata = metadata
 
-        self.__ignored_labels: Set[LabelEntity] = (
-            set() if ignored_labels is None else set(ignored_labels)
-        )
+        self.__ignored_labels: Set[LabelEntity] = set() if ignored_labels is None else set(ignored_labels)
 
     def set_metadata(self, metadata: List[MetadataItemEntity]):
         """
@@ -138,9 +134,7 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
         return self.__ignored_labels
 
     @ignored_labels.setter
-    def ignored_labels(
-        self, value: Union[List[LabelEntity], Tuple[LabelEntity, ...], Set[LabelEntity]]
-    ):
+    def ignored_labels(self, value: Union[List[LabelEntity], Tuple[LabelEntity, ...], Set[LabelEntity]]):
         self.__ignored_labels = set(value)
 
     def __repr__(self):
@@ -274,31 +268,21 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
             # Todo: improve speed. This is O(n) for n shapes.
             roi_as_box = ShapeFactory.shape_as_rectangle(self.roi.shape)
 
-            labels_set = (
-                {label.name for label in labels} if labels is not None else set()
-            )
+            labels_set = {label.name for label in labels} if labels is not None else set()
 
             for annotation in self.annotation_scene.annotations:
-                if not is_full_box and not self.roi.shape.contains_center(
-                    annotation.shape
-                ):
+                if not is_full_box and not self.roi.shape.contains_center(annotation.shape):
                     continue
 
                 shape_labels = annotation.get_labels(include_empty)
 
                 check_labels = False
                 if not include_ignored:
-                    shape_labels = [
-                        label
-                        for label in shape_labels
-                        if label.label not in self.ignored_labels
-                    ]
+                    shape_labels = [label for label in shape_labels if label.label not in self.ignored_labels]
                     check_labels = True
 
                 if labels is not None:
-                    shape_labels = [
-                        label for label in shape_labels if label.name in labels_set
-                    ]
+                    shape_labels = [label for label in shape_labels if label.name in labels_set]
                     check_labels = True
 
                 if check_labels and len(shape_labels) == 0:
@@ -382,14 +366,8 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
         :param include_ignored: if True, includes the labels in ignored_labels
         :return: a list of labels from the shapes within the roi of this dataset item
         """
-        annotations = self.get_annotations(
-            labels=labels, include_empty=include_empty, include_ignored=include_ignored
-        )
-        scored_label_set = set(
-            itertools.chain(
-                *[annotation.get_labels(include_empty) for annotation in annotations]
-            )
-        )
+        annotations = self.get_annotations(labels=labels, include_empty=include_empty, include_ignored=include_ignored)
+        scored_label_set = set(itertools.chain(*[annotation.get_labels(include_empty) for annotation in annotations]))
         label_set = {scored_label.get_label() for scored_label in scored_label_set}
         if not include_ignored:
             label_set -= self.ignored_labels
@@ -454,9 +432,7 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
                 setattr(clone, name, copy.deepcopy(value, memo))
         return clone
 
-    def append_metadata_item(
-        self, data: IMetadata, model: Optional[ModelEntity] = None
-    ):
+    def append_metadata_item(self, data: IMetadata, model: Optional[ModelEntity] = None):
         """
         Appends metadata produced by some model to the dataset item.
 
@@ -485,9 +461,7 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
         """
         self.__metadata.append(MetadataItemEntity(data=data, model=model))
 
-    def get_metadata_by_name_and_model(
-        self, name: str, model: Optional[ModelEntity]
-    ) -> Sequence[MetadataItemEntity]:
+    def get_metadata_by_name_and_model(self, name: str, model: Optional[ModelEntity]) -> Sequence[MetadataItemEntity]:
         """
         Returns a metadata item with `name` and generated by `model`.
 
@@ -495,8 +469,4 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
         :param model: the model which was used to generate the metadata.
         :return:
         """
-        return [
-            meta
-            for meta in self.get_metadata()
-            if meta.data.name == name and meta.model == model
-        ]
+        return [meta for meta in self.get_metadata() if meta.data.name == name and meta.model == model]

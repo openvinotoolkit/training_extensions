@@ -67,9 +67,7 @@ class TestRectangle:
             "y1": 0.1,
             "x2": 0.3,
             "y2": 0.4,
-            "modification_date": datetime(
-                year=2020, month=1, day=1, hour=9, minute=30, second=15, microsecond=2
-            ),
+            "modification_date": datetime(year=2020, month=1, day=1, hour=9, minute=30, second=15, microsecond=2),
         }
 
     def vertical_rectangle(self) -> Rectangle:
@@ -198,10 +196,7 @@ class TestRectangle:
         1. Check message printed by __repr__ method
         """
         rectangle = self.horizontal_rectangle()
-        assert (
-            repr(rectangle)
-            == "Rectangle(x=0.1, y=0.0, width=0.30000000000000004, height=0.2)"
-        )
+        assert repr(rectangle) == "Rectangle(x=0.1, y=0.0, width=0.30000000000000004, height=0.2)"
 
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -247,9 +242,7 @@ class TestRectangle:
             "y1": 0.09,
             "x2": 0.29,
             "y2": 0.39,
-            "modification_date": datetime(
-                year=2019, month=2, day=3, hour=7, minute=15, second=10, microsecond=1
-            ),
+            "modification_date": datetime(year=2019, month=2, day=3, hour=7, minute=15, second=10, microsecond=1),
         }
         for scenario in parameter_combinations:
             for rectangle_parameters in scenario:
@@ -258,8 +251,7 @@ class TestRectangle:
                     unequal_rectangle_params_dict[key] = unequal_values_dict.get(key)
                 unequal_rectangle = Rectangle(**unequal_rectangle_params_dict)
                 assert rectangle != unequal_rectangle, (
-                    "Failed to check that Rectangle instances with different "
-                    f"{rectangle_parameters} are unequal"
+                    "Failed to check that Rectangle instances with different " f"{rectangle_parameters} are unequal"
                 )
 
     @pytest.mark.priority_medium
@@ -527,9 +519,7 @@ class TestRectangle:
         3. Check crop_numpy_array method for Rectangle with parameters more than 1
         """
         image_height = image_width = 128
-        numpy_image_array = np.random.uniform(
-            low=0.0, high=255.0, size=(image_height, image_width, 3)
-        )
+        numpy_image_array = np.random.uniform(low=0.0, high=255.0, size=(image_height, image_width, 3))
         scenarios = [
             {
                 "input_params": {"x1": -0.2, "x2": -0.1, "y1": -0.3, "y2": -0.2},

@@ -22,8 +22,7 @@ setup(
     name=packages[0],
     version="0.0",
     author="Intel® Corporation",
-    license="Copyright (c) 2021-2022 Intel Corporation. "
-    "SPDX-License-Identifier: Apache-2.0",
+    license="Copyright (c) 2021-2022 Intel Corporation. " "SPDX-License-Identifier: Apache-2.0",
     description="Demo based on ModelAPI classes",
     packages=packages,
     package_dir=package_dir,

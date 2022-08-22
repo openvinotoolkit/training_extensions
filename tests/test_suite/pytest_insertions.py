@@ -31,7 +31,7 @@ def get_pytest_plugins_from_otx():
     import otx.api.test_suite.fixtures  # noqa
 
     pytest_plugins_from_otx_api = ["otx.api.test_suite.fixtures"]
-    pytest_plugins = list(_pytest_plugins_from_e2e) +  pytest_plugins_from_otx_api
+    pytest_plugins = list(_pytest_plugins_from_e2e) + pytest_plugins_from_otx_api
     return pytest_plugins
 
 
@@ -71,8 +71,7 @@ def otx_pytest_addoption_insertion(parser):
         "--force-log-level-recursive",
         action="store",
         default=None,
-        help="Optional. If the parameter is set, the logger in each test and its parents "
-        "are forced to this level.",
+        help="Optional. If the parameter is set, the logger in each test and its parents " "are forced to this level.",
     )
 
     # TODO(lbeynens): remove it after update CI
@@ -127,8 +126,6 @@ def otx_conftest_insertion(*, default_repository_name=""):
 
         from e2e import config as config_e2e
 
-        config_e2e.repository_name = os.environ.get(
-            "TT_REPOSITORY_NAME", default_repository_name
-        )
+        config_e2e.repository_name = os.environ.get("TT_REPOSITORY_NAME", default_repository_name)
     except ImportError:
         pass

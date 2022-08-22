@@ -82,8 +82,7 @@ def get_inferencer_class(type_inference, models):
     if len(models) > 1:
         type_inference = "chain"
         print(
-            "You started the task chain pipeline with the provided models "
-            "in the order in which they were specified"
+            "You started the task chain pipeline with the provided models " "in the order in which they were specified"
         )
     return EXECUTORS[type_inference]
 

@@ -49,15 +49,9 @@ class TestBasicOperationsFunctions:
         other_equal_array = np.array([(2, 1, 1, 0), (1, 0, 2, 0), (2, 1, 0, 1)])
         unequal_reference_array = np.array([(1, 2, 3), (3, 0, 1), (1, 1, 0)])
         unequal_predictions_array = np.array([(0, 2, 3), (3, 0, 2), (1, 0, 1)])
-        label_for_first_intersection = LabelEntity(
-            name="label_for_intersection_1", domain=Domain.DETECTION
-        )
-        label_for_second_intersection = LabelEntity(
-            name="label_for_intersection_2", domain=Domain.DETECTION
-        )
-        label_for_third_intersection = LabelEntity(
-            name="label_for_intersection_3", domain=Domain.DETECTION
-        )
+        label_for_first_intersection = LabelEntity(name="label_for_intersection_1", domain=Domain.DETECTION)
+        label_for_second_intersection = LabelEntity(name="label_for_intersection_2", domain=Domain.DETECTION)
+        label_for_third_intersection = LabelEntity(name="label_for_intersection_3", domain=Domain.DETECTION)
         non_assigned_label = LabelEntity(name="non_assigned", domain=Domain.DETECTION)
         labels = [
             label_for_first_intersection,
@@ -185,9 +179,7 @@ class TestBasicOperationsFunctions:
         matrix = np.array([(0.5, 1.0, 1.0), (1.0, 0.5, 0.5), (0.5, 1.0, 1.0)])
         assert np.array_equal(precision_per_class(matrix), np.array([0.25, 0.2, 0.4]))
         # Checking array returned by "precision_per_class" for non-square matrix
-        matrix = np.array(
-            [(0.6, 0.3, 0.6), (0.3, 0.6, 0.3), (0.6, 0.8, 0.3), (0.9, 0.3, 0.6)]
-        )
+        matrix = np.array([(0.6, 0.3, 0.6), (0.3, 0.6, 0.3), (0.6, 0.8, 0.3), (0.9, 0.3, 0.6)])
         assert np.array_equal(precision_per_class(matrix), np.array([0.25, 0.3]))
 
     @pytest.mark.priority_medium

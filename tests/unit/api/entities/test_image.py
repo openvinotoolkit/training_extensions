@@ -97,14 +97,8 @@ class TestImage:
         fp_instance = Image(file_path=image_path)
         assert isinstance(fp_instance, Image)
 
-        assert (
-            str(data_instance)
-            == f"Image(with data, width={test_width}, height={test_height})"
-        )
-        assert (
-            str(fp_instance)
-            == f"Image({image_path}, width={test_width}, height={test_height})"
-        )
+        assert str(data_instance) == f"Image(with data, width={test_width}, height={test_height})"
+        assert str(fp_instance) == f"Image({image_path}, width={test_width}, height={test_height})"
 
         assert np.array_equal(data_instance.numpy, data0)
         height, width, depth = fp_instance.numpy.shape

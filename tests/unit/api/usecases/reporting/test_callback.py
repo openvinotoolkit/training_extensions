@@ -40,16 +40,10 @@ class TestCallback:
         callback.set_params(params)
         assert callback.params == params
         # Checking "model" of "Callback" after "set_model"
-        configurable_params = ConfigurableParameters(
-            header="Test model configurable params"
-        )
+        configurable_params = ConfigurableParameters(header="Test model configurable params")
         labels_group = LabelGroup(name="model_group", labels=[])
-        model_configuration = ModelConfiguration(
-            configurable_params, LabelSchemaEntity(label_groups=[labels_group])
-        )
-        model = ModelEntity(
-            train_dataset=DatasetEntity(), configuration=model_configuration
-        )
+        model_configuration = ModelConfiguration(configurable_params, LabelSchemaEntity(label_groups=[labels_group]))
+        model = ModelEntity(train_dataset=DatasetEntity(), configuration=model_configuration)
         callback.set_model(model)
         assert callback.model == model
 

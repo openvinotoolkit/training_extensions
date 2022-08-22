@@ -119,9 +119,7 @@ class TestStreamer:
         1. Create VideoStreamer
         2. Request frames from streamer
         """
-        with generate_random_single_video(
-            height=360, width=480, number_of_frames=100
-        ) as path:
+        with generate_random_single_video(height=360, width=480, number_of_frames=100) as path:
             streamer = VideoStreamer(path, loop=True)
 
             for index, frame in enumerate(streamer):

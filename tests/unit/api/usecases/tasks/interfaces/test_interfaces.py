@@ -88,9 +88,7 @@ class TestIInferenceTask:
         dataset = DatasetEntity()
         inference_parameters = InferenceParameters()
         with pytest.raises(NotImplementedError):
-            IInferenceTask().infer(
-                dataset=dataset, inference_parameters=inference_parameters
-            )
+            IInferenceTask().infer(dataset=dataset, inference_parameters=inference_parameters)
 
 
 @pytest.mark.components(OtxSdkComponent.OTX_API)
@@ -282,6 +280,4 @@ class TestIExportTask:
         )
         model_entity = ModelEntity(configuration=configuration, train_dataset=dataset)
         with pytest.raises(NotImplementedError):
-            IExportTask().export(
-                export_type=ExportType.OPENVINO, output_model=model_entity
-            )
+            IExportTask().export(export_type=ExportType.OPENVINO, output_model=model_entity)

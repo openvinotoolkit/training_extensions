@@ -43,9 +43,7 @@ class ColorMapper:
     def backward(instance: dict) -> Color:
         """Deserializes from dict."""
 
-        return Color(
-            instance["red"], instance["green"], instance["blue"], instance["alpha"]
-        )
+        return Color(instance["red"], instance["green"], instance["blue"], instance["alpha"])
 
 
 class LabelMapper:
@@ -116,10 +114,7 @@ class LabelGroupMapper:
             id=IDMapper().backward(instance["_id"]),
             name=instance["name"],
             group_type=LabelGroupType[instance["relation_type"]],
-            labels=[
-                all_labels[IDMapper().backward(label_id)]
-                for label_id in instance["label_ids"]
-            ],
+            labels=[all_labels[IDMapper().backward(label_id)] for label_id in instance["label_ids"]],
         )
 
 
@@ -136,16 +131,11 @@ class LabelGraphMapper:
             "type": instance.type,
             "directed": instance.directed,
             "nodes": [IDMapper().forward(label.id_) for label in instance.nodes],
-            "edges": [
-                (IDMapper().forward(edge[0].id_), IDMapper().forward(edge[1].id_))
-                for edge in instance.edges
-            ],
+            "edges": [(IDMapper().forward(edge[0].id_), IDMapper().forward(edge[1].id_)) for edge in instance.edges],
         }
 
     @staticmethod
-    def backward(
-        instance: dict, all_labels: Dict[ID, LabelEntity]
-    ) -> Union[LabelTree, LabelGraph]:
+    def backward(instance: dict, all_labels: Dict[ID, LabelEntity]) -> Union[LabelTree, LabelGraph]:
         """Deserializes from dict."""
 
         output: Union[LabelTree, LabelGraph]
@@ -158,10 +148,7 @@ class LabelGraphMapper:
         else:
             raise ValueError(f"Unsupported type `{instance_type}` for label graph")
 
-        label_map = {
-            label_id: all_labels.get(IDMapper().backward(label_id))
-            for label_id in instance["nodes"]
-        }
+        label_map = {label_id: all_labels.get(IDMapper().backward(label_id)) for label_id in instance["nodes"]}
         for label in label_map.values():
             output.add_node(label)
         for edge in instance["edges"]:
@@ -181,17 +168,13 @@ class LabelSchemaMapper:
     ) -> dict:
         """Serializes to dict."""
 
-        label_groups = [
-            LabelGroupMapper().forward(group)
-            for group in instance.get_groups(include_empty=True)
-        ]
+        label_groups = [LabelGroupMapper().forward(group) for group in instance.get_groups(include_empty=True)]
 
         return {
             "label_tree": LabelGraphMapper().forward(instance.label_tree),
             "label_groups": label_groups,
             "all_labels": {
-                IDMapper().forward(label.id_): LabelMapper().forward(label)
-                for label in instance.get_labels(True)
+                IDMapper().forward(label.id_): LabelMapper().forward(label) for label in instance.get_labels(True)
             },
         }
 
@@ -200,14 +183,12 @@ class LabelSchemaMapper:
         """Deserializes from dict."""
 
         all_labels = {
-            IDMapper().backward(id): LabelMapper().backward(label)
-            for id, label in instance["all_labels"].items()
+            IDMapper().backward(id): LabelMapper().backward(label) for id, label in instance["all_labels"].items()
         }
 
         label_tree = LabelGraphMapper().backward(instance["label_tree"], all_labels)
         label_groups = [
-            LabelGroupMapper().backward(label_group, all_labels)
-            for label_group in instance["label_groups"]
+            LabelGroupMapper().backward(label_group, all_labels) for label_group in instance["label_groups"]
         ]
         output = LabelSchemaEntity(
             label_tree=cast(LabelTree, label_tree),

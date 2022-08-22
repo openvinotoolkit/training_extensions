@@ -82,9 +82,7 @@ class TestResultMediaEntity:
         return ResultMediaEntity(**self.optional_result_media_parameters())
 
     @staticmethod
-    def check_result_media_attributes(
-        result_media: ResultMediaEntity, expected_values: dict
-    ):
+    def check_result_media_attributes(result_media: ResultMediaEntity, expected_values: dict):
         assert result_media.name == expected_values.get("name")
         assert result_media.type == expected_values.get("type")
         assert result_media.annotation_scene == expected_values.get("annotation_scene")
@@ -239,9 +237,7 @@ class TestResultMediaEntity:
             assert result_media == equal_result_media
         # Comparing ResultMediaEntity objects with unequal "annotation_scene" and "roi" parameters, expected inequality
         unequal_values = {
-            "annotation_scene": AnnotationSceneEntity(
-                annotations=[], kind=AnnotationSceneKind.NONE
-            ),
+            "annotation_scene": AnnotationSceneEntity(annotations=[], kind=AnnotationSceneKind.NONE),
             "roi": Rectangle.generate_full_box(),
         }
         for key in unequal_values:

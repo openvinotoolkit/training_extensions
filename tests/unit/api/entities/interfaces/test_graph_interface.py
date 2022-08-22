@@ -15,9 +15,7 @@ class TestIGraph:
     @pytest.mark.priority_medium
     @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
-    @patch(
-        "otx.api.entities.interfaces.graph_interface.IGraph.__abstractmethods__", set()
-    )
+    @patch("otx.api.entities.interfaces.graph_interface.IGraph.__abstractmethods__", set())
     def test_i_graph(self):
         """
         <b>Description:</b>

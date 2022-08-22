@@ -51,8 +51,7 @@ class TaskEnvironment:
             return (
                 self.model == other.model
                 and self.label_schema == other.label_schema
-                and self.get_hyper_parameters(instance_of=None)
-                == other.get_hyper_parameters(instance_of=None)
+                and self.get_hyper_parameters(instance_of=None) == other.get_hyper_parameters(instance_of=None)
             )
         return False
 
@@ -64,9 +63,7 @@ class TaskEnvironment:
         """
         return self.label_schema.get_labels(include_empty)
 
-    def get_hyper_parameters(
-        self, instance_of: Optional[Type[TypeVariable]] = None
-    ) -> TypeVariable:
+    def get_hyper_parameters(self, instance_of: Optional[Type[TypeVariable]] = None) -> TypeVariable:
         """
         Returns Configuration for the task, de-serialized as type specified in `instance_of`
 
@@ -88,9 +85,7 @@ class TaskEnvironment:
         # Otherwise, update the base config according to what is stored in the repo.
         base_config = instance_of(header=self.__hyper_parameters.header)
 
-        otx_config_helper.substitute_values(
-            base_config, value_input=self.__hyper_parameters, allow_missing_values=True
-        )
+        otx_config_helper.substitute_values(base_config, value_input=self.__hyper_parameters, allow_missing_values=True)
 
         return base_config
 
@@ -105,9 +100,7 @@ class TaskEnvironment:
         :param hyper_parameters: ConfigurableParameters entity to assign to task
         """
         if not isinstance(hyper_parameters, ConfigurableParameters):
-            raise ValueError(
-                f"Unable to set hyper parameters, invalid input: {hyper_parameters}"
-            )
+            raise ValueError(f"Unable to set hyper parameters, invalid input: {hyper_parameters}")
         self.__hyper_parameters = hyper_parameters
 
     def get_model_configuration(self) -> ModelConfiguration:
