@@ -1,8 +1,11 @@
 # Copyright (C) 2021-2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-from otx.api.test_suite.pytest_insertions import *  # noqa #pylint: disable=unused-import
-from tests.unit.api.fixtures.general import label_schema_example
+from tests.test_suite.pytest_insertions import (
+    get_pytest_plugins_from_otx,
+    otx_conftest_insertion,
+    otx_pytest_addoption_insertion,
+)
 
 pytest_plugins = get_pytest_plugins_from_otx()  # noqa: F405
 

@@ -84,7 +84,7 @@ def construct_attr_enum_selectable_converter(
 
 def construct_attr_enum_selectable_onsetattr(
     default_value: ConfigurableEnumTypeVar,
-) -> Callable[[ParameterGroup, Attribute, Union[str, ConfigurableEnumTypeVar]], ConfigurableEnumTypeVar,]:
+) -> Callable[[ParameterGroup, Attribute, Union[str, ConfigurableEnumTypeVar]], ConfigurableEnumTypeVar]:
     """
     This function converts an input value to the correct instance of the ConfigurableEnum. It is used when
     setting a value for a selectable parameter.

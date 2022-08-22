@@ -58,7 +58,7 @@ def test(run_algo_tests):
     command = ["pytest", os.path.join("tests", "ote_cli", "misc"), "-v"]
     try:
         res = run(command, env=collect_env_vars(wd), check=True).returncode == 0
-    except:
+    except:  # noqa: E722
         res = False
     passed["misc"] = res
     success *= res
@@ -67,7 +67,7 @@ def test(run_algo_tests):
             command = ["pytest", os.path.join(algo_dir, "tests", "ote_cli"), "-v", "-rxXs", "--durations=10"]
             try:
                 res = run(command, env=collect_env_vars(wd), check=True).returncode == 0
-            except:
+            except:  # noqa: E722
                 res = False
             passed[algo_dir] = res
             success *= res

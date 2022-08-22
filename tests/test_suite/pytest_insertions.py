@@ -28,9 +28,9 @@ def get_pytest_plugins_from_otx():
     The function generates pytest_plugins variable that should be used
     in an algo backend' conftest.py file.
     """
-    import otx.api.test_suite.fixtures  # noqa
+    import tests.test_suite.fixtures  # noqa
 
-    pytest_plugins_from_otx_api = ["otx.api.test_suite.fixtures"]
+    pytest_plugins_from_otx_api = ["tests.test_suite.fixtures"]
     pytest_plugins = list(_pytest_plugins_from_e2e) + pytest_plugins_from_otx_api
     return pytest_plugins
 

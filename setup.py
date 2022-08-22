@@ -180,7 +180,7 @@ def update_torch_requirement(requirement: Requirement) -> str:
     # ``specs`` contains operators and versions as follows:
     # [('<=', '1.9.1+cu111'), ('>=', '1.8.1+cu111')]
     # These are to be concatenated again for the updated version.
-    specs = [spec[0]+spec[1] for spec in requirement.specs]
+    specs = [spec[0] + spec[1] for spec in requirement.specs]
     updated_requirement: str
 
     if specs:
