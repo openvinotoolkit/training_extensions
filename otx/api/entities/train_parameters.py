@@ -4,7 +4,7 @@
 #
 
 from dataclasses import dataclass
-from typing import Callable, Optional, Protocol
+from typing import Any, Callable, Optional, Protocol
 
 
 class UpdateProgressCallback(Protocol):
@@ -14,7 +14,7 @@ class UpdateProgressCallback(Protocol):
     `score: Optional[float] = None`
     """
 
-    def __call__(self, progress: float, score: Optional[float] = None):
+    def __call__(self, progress: int, score: Optional[float] = None):
         """
         Callback to provide updates about the progress of a task.
         It is recommended to call this function at least once per epoch.
@@ -56,5 +56,5 @@ class TrainParameters:
     """
 
     resume: bool = False
-    update_progress: UpdateProgressCallback = default_progress_callback
+    update_progress: Callable[[int, Optional[float]], Any] = default_progress_callback
     save_model: Callable[[], None] = default_save_model_callback
