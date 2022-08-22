@@ -237,9 +237,9 @@ def run_hpo_trainer(
     # need to set batch_size config from the instance of ConfigurableParameters
     if hp_config["batch_size_param_name"] not in hp_config["params"].keys():
         attr = hyper_parameters
-        for val in hp_config["batch_size_param_name"].split('.'):
+        for val in hp_config["batch_size_param_name"].split("."):
             attr = getattr(attr, val)
-        hp_config["batch_size"] =  attr
+        hp_config["batch_size"] = attr
 
     # set hyper-parameters and print them
     HpoManager.set_hyperparameter(hyper_parameters, hp_config["params"])

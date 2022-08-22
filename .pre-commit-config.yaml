@@ -28,7 +28,6 @@ repos:
     rev: 22.6.0
     hooks:
       - id: black
-        name: "black - otx"
         args: [--line-length, "120"]
         files: '^(otx|tests)/.*\.py'
         exclude: "tests/ote_cli"
@@ -48,14 +47,11 @@ repos:
     rev: "5.0.3"
     hooks:
       - id: flake8
-        name: flake8 - otx
         args:
-          [
-            "--max-line-length=120",
-            "--max-complexity=20",
-            "--exclude=.venv",
-            "--ignore=E203,W503",
-          ]
+          - "--max-line-length=120"
+          - "--max-complexity=20"
+          - "--exclude=.venv"
+          - "--ignore=E203,W503"
         exclude: "data|external|ote_cli|ote_sdk|tests/ote_cli|.*/protobuf"
 
       # NOTE: ote-sdk and ote-cli will be deprecated. The following config
