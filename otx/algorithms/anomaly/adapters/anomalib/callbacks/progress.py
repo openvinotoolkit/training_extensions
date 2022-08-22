@@ -16,9 +16,10 @@
 
 from typing import Optional, Union
 
+from pytorch_lightning.callbacks.progress import TQDMProgressBar
+
 from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.train_parameters import TrainParameters, default_progress_callback
-from pytorch_lightning.callbacks.progress import TQDMProgressBar
 
 
 class ProgressCallback(TQDMProgressBar):

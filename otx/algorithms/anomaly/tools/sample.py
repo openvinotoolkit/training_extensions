@@ -24,6 +24,8 @@ import shutil
 from argparse import Namespace
 from typing import Any, Dict, Optional, Type, Union
 
+from tasks import NNCFTask, OpenVINOTask
+
 from otx.algorithms.anomaly.adapters.anomalib.data.dataset import (
     AnomalyClassificationDataset,
     AnomalyDetectionDataset,
@@ -45,7 +47,6 @@ from otx.api.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType
 from otx.api.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from otx.api.usecases.tasks.interfaces.optimization_interface import OptimizationType
-from tasks import NNCFTask, OpenVINOTask
 
 logger = get_logger(__name__)
 

@@ -19,8 +19,6 @@ from otx.api.entities.label_schema import LabelGroup, LabelSchemaEntity
 from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.shapes.polygon import Point, Polygon
 from otx.api.entities.shapes.rectangle import Rectangle
-from tests.unit.api.constants.components import OtxSdkComponent
-from tests.unit.api.constants.requirements import Requirements
 from otx.api.usecases.exportable_code.prediction_to_annotation_converter import (
     AnomalyClassificationToAnnotationConverter,
     AnomalyDetectionToAnnotationConverter,
@@ -33,6 +31,8 @@ from otx.api.usecases.exportable_code.prediction_to_annotation_converter import 
     create_converter,
 )
 from otx.api.utils.time_utils import now
+from tests.unit.api.constants.components import OtxSdkComponent
+from tests.unit.api.constants.requirements import Requirements
 
 
 @pytest.mark.components(OtxSdkComponent.OTX_API)

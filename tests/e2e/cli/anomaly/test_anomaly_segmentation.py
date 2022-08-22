@@ -15,31 +15,30 @@
 # and limitations under the License.
 
 import os
+
 import pytest
 
 from otx.api.test_suite.e2e_test_system import e2e_pytest_component
-
 from otx.cli.registry import Registry
 from otx.cli.utils.tests import (
     create_venv,
     get_some_vars,
+    nncf_eval_openvino_testing,
+    nncf_eval_testing,
+    nncf_export_testing,
+    nncf_optimize_testing,
     otx_demo_deployment_testing,
-    otx_demo_testing,
     otx_demo_openvino_testing,
+    otx_demo_testing,
     otx_deploy_openvino_testing,
     otx_eval_deployment_testing,
     otx_eval_openvino_testing,
     otx_eval_testing,
-    otx_train_testing,
     otx_export_testing,
-    pot_optimize_testing,
+    otx_train_testing,
     pot_eval_testing,
-    nncf_optimize_testing,
-    nncf_export_testing,
-    nncf_eval_testing,
-    nncf_eval_openvino_testing,
+    pot_optimize_testing,
 )
-
 
 args = {
     "--train-ann-file": "data/anomaly/segmentation/train.json",

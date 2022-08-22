@@ -7,6 +7,11 @@ repos:
     rev: "5.10.1"
     hooks:
       - id: isort
+        alias: isort - otx
+        name: isort - otx
+        files: '^(otx|tests)/.*\.py'
+        exclude: "tests/ote_cli"
+      - id: isort
         alias: isort_ote_sdk
         name: "isort (ote_sdk)"
         files: '^ote_sdk/.*\.py'

@@ -21,6 +21,7 @@ import glob
 import os
 
 import yaml
+
 from otx.api.entities.model_template import parse_model_template
 
 

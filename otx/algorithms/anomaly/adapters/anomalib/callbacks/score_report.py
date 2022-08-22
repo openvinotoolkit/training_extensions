@@ -16,8 +16,9 @@
 
 from typing import Optional
 
-from otx.api.entities.train_parameters import TrainParameters
 from pytorch_lightning import Callback
+
+from otx.api.entities.train_parameters import TrainParameters
 
 
 class ScoreReportingCallback(Callback):

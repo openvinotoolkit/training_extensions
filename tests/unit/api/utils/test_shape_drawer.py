@@ -22,9 +22,9 @@ from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.shapes.ellipse import Ellipse
 from otx.api.entities.shapes.polygon import Point, Polygon
 from otx.api.entities.shapes.rectangle import Rectangle
+from otx.api.utils.shape_drawer import DrawerEntity, Helpers, ShapeDrawer
 from tests.unit.api.constants.components import OtxSdkComponent
 from tests.unit.api.constants.requirements import Requirements
-from otx.api.utils.shape_drawer import DrawerEntity, Helpers, ShapeDrawer
 
 RANDOM_IMAGE = (np.random.randint(low=0, high=255, size=(1024, 1280, 3))).astype(
     "uint8"

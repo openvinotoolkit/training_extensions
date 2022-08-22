@@ -9,9 +9,9 @@ from otx.api.configuration.configurable_parameters import ConfigurableParameters
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label_schema import LabelGroup, LabelSchemaEntity
 from otx.api.entities.model import ModelConfiguration, ModelEntity
+from otx.api.usecases.reporting.callback import Callback
 from tests.unit.api.constants.components import OtxSdkComponent
 from tests.unit.api.constants.requirements import Requirements
-from otx.api.usecases.reporting.callback import Callback
 
 
 @pytest.mark.components(OtxSdkComponent.OTX_API)

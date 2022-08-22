@@ -18,6 +18,7 @@ from sys import maxsize
 
 from attr import attrs
 from configs.base.configuration_enums import POTQuantizationPreset
+
 from otx.api.configuration import ConfigurableParameters
 from otx.api.configuration.elements import (
     ParameterGroup,

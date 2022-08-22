@@ -4,13 +4,13 @@
 
 import pytest
 
-from tests.unit.api.constants.components import OtxSdkComponent
-from tests.unit.api.constants.requirements import Requirements
 from otx.api.usecases.adapters.model_adapter import (
     ExportableCodeAdapter,
     IDataSource,
     ModelAdapter,
 )
+from tests.unit.api.constants.components import OtxSdkComponent
+from tests.unit.api.constants.requirements import Requirements
 
 
 @pytest.mark.components(OtxSdkComponent.OTX_API)
