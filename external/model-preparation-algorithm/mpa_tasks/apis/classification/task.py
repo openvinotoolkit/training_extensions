@@ -155,16 +155,14 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
                  evaluation_metric: Optional[str] = None):
         logger.info('called evaluate()')
         metric = MetricsHelper.compute_accuracy(output_result_set)
+        gt_dataset = output_result_set.ground_truth_dataset
+        gt_labels, label_names = convert_to_mmcls_dataset(gt_dataset, self.labels, multilabel=self._multilabel)
         if self._multilabel:
-            gt_dataset = output_result_set.ground_truth_dataset
-            gt_labels, label_names = convert_to_mmcls_dataset(gt_dataset, self.labels, multiclass=True)
             class_AP_values = MPAMultilabelClsDataset.class_AP(self.prediction_logits, gt_labels)
             logger.info(f"mAP after evaluation: {class_AP_values.mean():.4f}")
             for name, value in zip(label_names, class_AP_values):
                 logger.info(f"{name}_AP after evlauation: {value:.4f}")
         else:
-            gt_dataset = output_result_set.ground_truth_dataset
-            gt_labels, label_names = convert_to_mmcls_dataset(gt_dataset, self.labels)
             class_acc_values = np.array(MPAClsDataset.class_accuracy(self.prediction_logits, gt_labels))
             logger.info(f"Acc after evaluation: {class_acc_values.mean():.4f}")
             for name, value in zip(label_names, class_acc_values):

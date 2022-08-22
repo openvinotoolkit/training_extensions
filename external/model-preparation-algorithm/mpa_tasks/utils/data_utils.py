@@ -50,7 +50,7 @@ def convert_to_one_hot_indice(labels, class_indices):
             onehot_indices[idx] = 1
     return onehot_indices
 
-def convert_to_mmcls_dataset(gt_dataset: DatasetEntity, labels: list, include_empty=False, multiclass=False):
+def convert_to_mmcls_dataset(gt_dataset: DatasetEntity, labels: list, include_empty=False, multilabel=False):
     gt_labels = []
     label_names = [label.name for label in labels]
     for gt_item in gt_dataset:

@@ -190,7 +190,7 @@ class MPAMultilabelClsDataset(MPAClsDataset):
 
     def load_annotations(self):
         include_empty = self.empty_label in self.labels
-        self.gt_labels, _ = convert_to_mmcls_dataset(self.ote_dataset, self.labels, include_empty=include_empty, multiclass=True)
+        self.gt_labels, _ = convert_to_mmcls_dataset(self.ote_dataset, self.labels, include_empty=include_empty, multilabel=True)
 
     def evaluate(self,
                  results,
