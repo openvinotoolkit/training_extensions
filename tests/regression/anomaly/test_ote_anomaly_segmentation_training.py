@@ -28,7 +28,7 @@ from otx.api.entities.model import ModelEntity
 from otx.api.entities.model_template import TaskType, parse_model_template
 from otx.api.entities.subset import Subset
 from otx.api.entities.train_parameters import TrainParameters
-from tests.anomaly_common import (
+from tests.regression.anomaly.anomaly_common import (
     _create_anomaly_dataset_and_labels_schema,
     _get_dataset_params_from_dataset_definitions,
     get_anomaly_domain_test_action_classes,

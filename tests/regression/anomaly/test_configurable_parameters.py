@@ -22,12 +22,8 @@ import os
 import pytest
 
 from otx.algorithms.anomaly.adapters.anomalib.config import get_anomalib_config
-from otx.algorithms.anomaly.configs.anomaly_classification.padim import (
-    PadimAnomalyClassificationConfig,
-)
-from otx.algorithms.anomaly.configs.anomaly_classification.stfpm import (
-    STFPMAnomalyClassificationConfig,
-)
+from otx.algorithms.anomaly.configs.padim import PadimAnomalyBaseConfig
+from otx.algorithms.anomaly.configs.stfpm import STFPMAnomalyBaseConfig
 from otx.api.configuration.helper import convert, create
 from tests.helpers.config import get_config_and_task_name
 
@@ -36,7 +32,7 @@ logger = logging.getLogger(__name__)
 
 @pytest.mark.parametrize(
     ["model_name", "configurable_parameters"],
-    [("padim", PadimAnomalyClassificationConfig), ("stfpm", STFPMAnomalyClassificationConfig)],
+    [("padim", PadimAnomalyBaseConfig), ("stfpm", STFPMAnomalyBaseConfig)],
 )
 def test_configuration_yaml(configurable_parameters, model_name):
     # assert that we can parse the template.yaml
