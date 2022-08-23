@@ -6,12 +6,13 @@
 
 
 from dataclasses import dataclass
-from typing import Callable
+from typing import Any, Callable, Optional
 
 
-def default_progress_callback(_: int):
+# pylint: disable=unused-argument
+def default_progress_callback(progress: int, score: Optional[float] = None):
     """
-    Default progress callback. It is a placeholder (does nothing) and is used in empty InferenceParameters.
+    This is the default progress callback for OptimizationParameters.
     """
 
 
@@ -27,4 +28,4 @@ class InferenceParameters:
     """
 
     is_evaluation: bool = False
-    update_progress: Callable[[int], None] = default_progress_callback
+    update_progress: Callable[[int, Optional[float]], Any] = default_progress_callback

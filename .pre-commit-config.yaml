@@ -33,11 +33,11 @@ repos:
       # NOTE: ote-sdk and ote-cli will be deprecated. The following config
       # is to be removed.
       - id: black
-        name: "black (ote_sdk|ote_cli)"
+        name: "black - legacy (ote_sdk|ote_cli)"
         args: [--line-length, "88"]
         files: '^(ote_sdk|ote_cli)/.*\.py'
       - id: black
-        name: "black (rest)"
+        name: "black - legacy (rest)"
         args: [--line-length, "120"]
         files: '^external/anomaly/.*\.py'
 
@@ -55,7 +55,7 @@ repos:
       # NOTE: ote-sdk and ote-cli will be deprecated. The following config
       # is to be removed.
       - id: flake8
-        name: "flake8"
+        name: "flake8 - legacy "
         files: '^(ote_sdk|ote_cli|external/anomaly)/.*\.py'
         args: ["--config", ".flake8", "--max-complexity", "20"]
         exclude: ".*/protobuf"
@@ -82,9 +82,12 @@ repos:
           - types_futures
           - types-python-dateutil
         exclude: "^otx/algorithms/anomaly/tests"
+
+      # NOTE: ote-sdk and ote-cli will be deprecated. The following config
+      # is to be removed.
       - id: mypy
         alias: mypy_ote_sdk
-        name: "mypy (ote_sdk)"
+        name: "mypy - legacy (ote_sdk)"
         files: '^ote_sdk/.*\.py'
         additional_dependencies:
           [
@@ -99,12 +102,12 @@ repos:
           ]
       - id: mypy
         alias: mypy_ote_cli
-        name: "mypy (ote_cli)"
+        name: "mypy - legacy (ote_cli)"
         files: '^ote_cli/.*\.py'
         additional_dependencies: [types-PyYAML]
       - id: mypy
         alias: mypy_external
-        name: "mypy (external)"
+        name: "mypy - legacy (external)"
         files: '^external/anomaly/.*\.py'
         additional_dependencies: [attrs==21.2.*]
         exclude: "^external/anomaly/tests"
@@ -120,6 +123,9 @@ repos:
         language: system
         types: [python]
         args: ["--score=no"]
+
+      # NOTE: ote-sdk and ote-cli will be deprecated. The following config
+      # is to be removed.
       - id: pylint
         name: "pylint - legacy"
         files: '^(ote_sdk|ote_cli|external/anomaly)/.*\.py'

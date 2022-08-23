@@ -23,7 +23,7 @@ from otx.algorithms.anomaly.adapters.anomalib.data.mvtec import OtxMvtecDataset
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label_schema import LabelSchemaEntity
 from otx.api.entities.model_template import TaskType
-from otx.api.test_suite.training_tests_actions import (
+from tests.test_suite.training_tests_actions import (
     BaseOTXTestAction,
     OTXTestExportAction,
     OTXTestExportEvaluationAction,
@@ -37,7 +37,7 @@ from otx.api.test_suite.training_tests_actions import (
     OTXTestTrainingAction,
     OTXTestTrainingEvaluationAction,
 )
-from otx.api.test_suite.training_tests_common import ROOT_PATH_KEY, make_paths_be_abs
+from tests.test_suite.training_tests_common import ROOT_PATH_KEY, make_paths_be_abs
 
 logger = logging.getLogger(__name__)
 

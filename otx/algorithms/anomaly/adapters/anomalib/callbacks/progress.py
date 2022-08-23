@@ -101,4 +101,4 @@ class ProgressCallback(TQDMProgressBar):
 
     def _update_progress(self, stage: str):
         progress = self._get_progress(stage)
-        self.update_progress_callback(int(progress))
+        self.update_progress_callback(int(progress), None)

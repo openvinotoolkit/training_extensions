@@ -164,7 +164,7 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
         logger.info("Start OpenVINO inference.")
         update_progress_callback = default_progress_callback
         if inference_parameters is not None:
-            update_progress_callback = inference_parameters.update_progress
+            update_progress_callback = inference_parameters.update_progress  # type: ignore
 
         # This always assumes that threshold is available in the task environment's model
         meta_data = self.get_meta_data()
