@@ -25,13 +25,13 @@ except ImportError:
     pass
 import pytest
 
-from otx.api.test_suite.pytest_insertions import (
+from tests.test_suite.pytest_insertions import (
     get_pytest_plugins_from_otx,
     otx_conftest_insertion,
     otx_pytest_addoption_insertion,
     otx_pytest_generate_tests_insertion,
 )
-from otx.api.test_suite.training_tests_common import REALLIFE_USECASE_CONSTANT
+from tests.test_suite.training_tests_common import REALLIFE_USECASE_CONSTANT
 
 pytest_plugins = get_pytest_plugins_from_otx()
 

@@ -1,4 +1,4 @@
-# Copyright (C) 2022 Intel Corporation
+# Copyright (C) 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import logging
 import os
 from collections import OrderedDict
 from copy import deepcopy
@@ -21,211 +20,69 @@ from typing import Any, Callable, Dict, List, Optional, Type
 
 import pytest
 
+from otx.algorithms.anomaly.adapters.anomalib.logger import get_logger
 from otx.api.configuration.helper import create as otx_sdk_configuration_helper_create
-from otx.api.entities.datasets import DatasetEntity
-from otx.api.entities.label_schema import LabelSchemaEntity
 from otx.api.entities.model import ModelEntity
 from otx.api.entities.model_template import TaskType, parse_model_template
 from otx.api.entities.subset import Subset
 from otx.api.entities.train_parameters import TrainParameters
-from otx.api.test_suite.e2e_test_system import DataCollector, e2e_pytest_performance
-from otx.api.test_suite.training_test_case import (
+from tests.anomaly_common import (
+    _create_anomaly_dataset_and_labels_schema,
+    _get_dataset_params_from_dataset_definitions,
+    get_anomaly_domain_test_action_classes,
+)
+from tests.test_suite.e2e_test_system import DataCollector, e2e_pytest_performance
+from tests.test_suite.training_test_case import (
     OTXTestCaseInterface,
     generate_otx_integration_test_case_class,
 )
-from otx.api.test_suite.training_tests_actions import (
+from tests.test_suite.training_tests_actions import (
     OTXTestTrainingAction,
     create_environment_and_task,
 )
-from otx.api.test_suite.training_tests_common import (
+from tests.test_suite.training_tests_common import (
     KEEP_CONFIG_FIELD_VALUE,
     REALLIFE_USECASE_CONSTANT,
     ROOT_PATH_KEY,
     make_path_be_abs,
     performance_to_score_name_value,
 )
-from otx.api.test_suite.training_tests_helper import (
+from tests.test_suite.training_tests_helper import (
     DefaultOTXTestCreationParametersInterface,
     OTXTestHelper,
     OTXTrainingTestInterface,
 )
-from tests.anomaly_common import (
-    _create_anomaly_dataset_and_labels_schema,
-    _get_dataset_params_from_dataset_definitions,
-    get_anomaly_domain_test_action_classes,
-)
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 @pytest.fixture
 def otx_test_domain_fx():
-    return "custom-anomaly-segmentation"
+    return "custom-anomaly-classification"
 
 
-class AnomalySegmentationTrainingTestParameters(DefaultOTXTestCreationParametersInterface):
+class AnomalyClassificationTrainingTestParameters(DefaultOTXTestCreationParametersInterface):
     def test_case_class(self) -> Type[OTXTestCaseInterface]:
         return generate_otx_integration_test_case_class(
-            get_anomaly_domain_test_action_classes(AnomalySegmentationTestTrainingAction)
+            get_anomaly_domain_test_action_classes(AnomalyDetectionTestTrainingAction)
         )
 
     def test_bunches(self) -> List[Dict[str, Any]]:
-        # Extend with other datasets
         test_bunches = [
             dict(
                 model_name=[
-                    "otx_anomaly_segmentation_padim",
-                    "otx_anomaly_segmentation_stfpm",
+                    "otx_anomaly_classification_padim",
+                    "otx_anomaly_classification_stfpm",
                 ],
-                dataset_name="mvtec_short_bottle",
+                dataset_name="mvtec_short",
                 usecase="precommit",
             ),
             dict(
                 model_name=[
-                    "otx_anomaly_segmentation_padim",
-                    "otx_anomaly_segmentation_stfpm",
+                    "otx_anomaly_classification_padim",
+                    "otx_anomaly_classification_stfpm",
                 ],
-                dataset_name="mvtec_short_bottle",
-                patience=KEEP_CONFIG_FIELD_VALUE,
-                batch_size=KEEP_CONFIG_FIELD_VALUE,
-                usecase=REALLIFE_USECASE_CONSTANT,
-            ),
-            dict(
-                model_name=[
-                    "otx_anomaly_segmentation_padim",
-                    "otx_anomaly_segmentation_stfpm",
-                ],
-                dataset_name="mvtec_short_cable",
-                patience=KEEP_CONFIG_FIELD_VALUE,
-                batch_size=KEEP_CONFIG_FIELD_VALUE,
-                usecase=REALLIFE_USECASE_CONSTANT,
-            ),
-            dict(
-                model_name=[
-                    "otx_anomaly_segmentation_padim",
-                    "otx_anomaly_segmentation_stfpm",
-                ],
-                dataset_name="mvtec_short_capsule",
-                patience=KEEP_CONFIG_FIELD_VALUE,
-                batch_size=KEEP_CONFIG_FIELD_VALUE,
-                usecase=REALLIFE_USECASE_CONSTANT,
-            ),
-            dict(
-                model_name=[
-                    "otx_anomaly_segmentation_padim",
-                    "otx_anomaly_segmentation_stfpm",
-                ],
-                dataset_name="mvtec_short_carpet",
-                patience=KEEP_CONFIG_FIELD_VALUE,
-                batch_size=KEEP_CONFIG_FIELD_VALUE,
-                usecase=REALLIFE_USECASE_CONSTANT,
-            ),
-            dict(
-                model_name=[
-                    "otx_anomaly_segmentation_padim",
-                    "otx_anomaly_segmentation_stfpm",
-                ],
-                dataset_name="mvtec_short_grid",
-                patience=KEEP_CONFIG_FIELD_VALUE,
-                batch_size=KEEP_CONFIG_FIELD_VALUE,
-                usecase=REALLIFE_USECASE_CONSTANT,
-            ),
-            dict(
-                model_name=[
-                    "otx_anomaly_segmentation_padim",
-                    "otx_anomaly_segmentation_stfpm",
-                ],
-                dataset_name="mvtec_short_hazelnut",
-                patience=KEEP_CONFIG_FIELD_VALUE,
-                batch_size=KEEP_CONFIG_FIELD_VALUE,
-                usecase=REALLIFE_USECASE_CONSTANT,
-            ),
-            dict(
-                model_name=[
-                    "otx_anomaly_segmentation_padim",
-                    "otx_anomaly_segmentation_stfpm",
-                ],
-                dataset_name="mvtec_short_leather",
-                patience=KEEP_CONFIG_FIELD_VALUE,
-                batch_size=KEEP_CONFIG_FIELD_VALUE,
-                usecase=REALLIFE_USECASE_CONSTANT,
-            ),
-            dict(
-                model_name=[
-                    "otx_anomaly_segmentation_padim",
-                    "otx_anomaly_segmentation_stfpm",
-                ],
-                dataset_name="mvtec_short_metal_nut",
-                patience=KEEP_CONFIG_FIELD_VALUE,
-                batch_size=KEEP_CONFIG_FIELD_VALUE,
-                usecase=REALLIFE_USECASE_CONSTANT,
-            ),
-            dict(
-                model_name=[
-                    "otx_anomaly_segmentation_padim",
-                    "otx_anomaly_segmentation_stfpm",
-                ],
-                dataset_name="mvtec_short_pill",
-                patience=KEEP_CONFIG_FIELD_VALUE,
-                batch_size=KEEP_CONFIG_FIELD_VALUE,
-                usecase=REALLIFE_USECASE_CONSTANT,
-            ),
-            dict(
-                model_name=[
-                    "otx_anomaly_segmentation_padim",
-                    "otx_anomaly_segmentation_stfpm",
-                ],
-                dataset_name="mvtec_short_screw",
-                patience=KEEP_CONFIG_FIELD_VALUE,
-                batch_size=KEEP_CONFIG_FIELD_VALUE,
-                usecase=REALLIFE_USECASE_CONSTANT,
-            ),
-            dict(
-                model_name=[
-                    "otx_anomaly_segmentation_padim",
-                    "otx_anomaly_segmentation_stfpm",
-                ],
-                dataset_name="mvtec_short_tile",
-                patience=KEEP_CONFIG_FIELD_VALUE,
-                batch_size=KEEP_CONFIG_FIELD_VALUE,
-                usecase=REALLIFE_USECASE_CONSTANT,
-            ),
-            dict(
-                model_name=[
-                    "otx_anomaly_segmentation_padim",
-                    "otx_anomaly_segmentation_stfpm",
-                ],
-                dataset_name="mvtec_short_toothbrush",
-                patience=KEEP_CONFIG_FIELD_VALUE,
-                batch_size=KEEP_CONFIG_FIELD_VALUE,
-                usecase=REALLIFE_USECASE_CONSTANT,
-            ),
-            dict(
-                model_name=[
-                    "otx_anomaly_segmentation_padim",
-                    "otx_anomaly_segmentation_stfpm",
-                ],
-                dataset_name="mvtec_short_transistor",
-                patience=KEEP_CONFIG_FIELD_VALUE,
-                batch_size=KEEP_CONFIG_FIELD_VALUE,
-                usecase=REALLIFE_USECASE_CONSTANT,
-            ),
-            dict(
-                model_name=[
-                    "otx_anomaly_segmentation_padim",
-                    "otx_anomaly_segmentation_stfpm",
-                ],
-                dataset_name="mvtec_short_wood",
-                patience=KEEP_CONFIG_FIELD_VALUE,
-                batch_size=KEEP_CONFIG_FIELD_VALUE,
-                usecase=REALLIFE_USECASE_CONSTANT,
-            ),
-            dict(
-                model_name=[
-                    "otx_anomaly_segmentation_padim",
-                    "otx_anomaly_segmentation_stfpm",
-                ],
-                dataset_name="mvtec_short_zipper",
+                dataset_name="mvtec",
                 patience=KEEP_CONFIG_FIELD_VALUE,
                 batch_size=KEEP_CONFIG_FIELD_VALUE,
                 usecase=REALLIFE_USECASE_CONSTANT,
@@ -263,17 +120,13 @@ class AnomalySegmentationTrainingTestParameters(DefaultOTXTestCreationParameters
         return deepcopy(DEFAULT_TEST_PARAMETERS)
 
 
-class AnomalySegmentationTestTrainingAction(OTXTestTrainingAction):
+# TODO:pfinashx: This function copies with minor change OTXTestTrainingAction
+#             from tests.test_suite.
+#             Try to avoid copying of code.
+class AnomalyDetectionTestTrainingAction(OTXTestTrainingAction):
     _name = "training"
 
-    def __init__(
-        self,
-        dataset: DatasetEntity,
-        labels_schema: LabelSchemaEntity(),
-        template_path: str,
-        patience: str,
-        batch_size: str,
-    ):
+    def __init__(self, dataset, labels_schema, template_path, patience, batch_size):
         self.dataset = dataset
         self.labels_schema = labels_schema
         self.template_path = template_path
@@ -286,7 +139,7 @@ class AnomalySegmentationTestTrainingAction(OTXTestTrainingAction):
             raise RuntimeError("Cannot get training performance")
         return performance_to_score_name_value(training_performance)
 
-    def _run_otx_training(self, data_collector: DataCollector):
+    def _run_otx_training(self, data_collector):
         logger.debug(f"self.template_path = {self.template_path}")
 
         print(f"train dataset: {len(self.dataset.get_subset(Subset.TRAINING))} items")
@@ -297,7 +150,7 @@ class AnomalySegmentationTestTrainingAction(OTXTestTrainingAction):
 
         logger.debug("Set hyperparameters")
         params = otx_sdk_configuration_helper_create(self.model_template.hyper_parameters.data)
-        if hasattr(params, "model") and hasattr(params.learning_parameters, "early_stopping"):
+        if hasattr(params, "learning_parameters") and hasattr(params.learning_parameters, "early_stopping"):
             if self.num_training_iters != KEEP_CONFIG_FIELD_VALUE:
                 params.learning_parameters.early_stopping.patience = int(self.num_training_iters)
                 logger.debug(
@@ -331,7 +184,8 @@ class AnomalySegmentationTestTrainingAction(OTXTestTrainingAction):
         self.copy_hyperparams = deepcopy(self.task.task_environment.get_hyper_parameters())
 
         try:
-            self.task.train(self.dataset, self.output_model, TrainParameters)
+            # fix seed so that result is repeatable
+            self.task.train(self.dataset, self.output_model, TrainParameters, seed=42)
         except Exception as ex:
             raise RuntimeError("Training failed") from ex
 
@@ -352,13 +206,13 @@ class AnomalySegmentationTestTrainingAction(OTXTestTrainingAction):
         return results
 
 
-class TestOTXReallifeAnomalySegmentation(OTXTrainingTestInterface):
+class TestOTXReallifeAnomalyClassification(OTXTrainingTestInterface):
     """
     The main class of running test in this file.
     """
 
     PERFORMANCE_RESULTS = None  # it is required for e2e system
-    helper = OTXTestHelper(AnomalySegmentationTrainingTestParameters())
+    helper = OTXTestHelper(AnomalyClassificationTrainingTestParameters())
 
     @classmethod
     def get_list_of_tests(cls, usecase: Optional[str] = None):
@@ -395,7 +249,7 @@ class TestOTXReallifeAnomalySegmentation(OTXTrainingTestInterface):
             template_path = make_path_be_abs(template_paths[model_name], template_paths[ROOT_PATH_KEY])
             logger.debug("training params factory: Before creating dataset and labels_schema")
             dataset, labels_schema = _create_anomaly_dataset_and_labels_schema(
-                dataset_params, dataset_name, TaskType.ANOMALY_SEGMENTATION
+                dataset_params, dataset_name, TaskType.ANOMALY_CLASSIFICATION
             )
             logger.debug("training params factory: After creating dataset and labels_schema")
             return {
@@ -406,7 +260,7 @@ class TestOTXReallifeAnomalySegmentation(OTXTrainingTestInterface):
                 "batch_size": batch_size,
             }
 
-        def _nncf_graph_params_factory() -> Dict[str, Callable[[], Dict]]:
+        def _nncf_graph_params_factory() -> Dict:
             if dataset_definitions is None:
                 pytest.skip('The parameter "--dataset-definitions" is not set')
 
@@ -424,7 +278,7 @@ class TestOTXReallifeAnomalySegmentation(OTXTrainingTestInterface):
 
             logger.debug("training params factory: Before creating dataset and labels_schema")
             dataset, labels_schema = _create_anomaly_dataset_and_labels_schema(
-                dataset_params, dataset_name, TaskType.ANOMALY_SEGMENTATION
+                dataset_params, dataset_name, TaskType.ANOMALY_CLASSIFICATION
             )
             logger.debug("training params factory: After creating dataset and labels_schema")
 
@@ -447,7 +301,7 @@ class TestOTXReallifeAnomalySegmentation(OTXTrainingTestInterface):
     def test_case_fx(self, current_test_parameters_fx, params_factories_for_test_actions_fx):
         """
         This fixture returns the test case class OTXIntegrationTestCase that should be used for the current test.
-        Note that the cache from the test helper allows to store the instance of the class
+        Notx that the cache from the test helper allows to store the instance of the class
         between the tests.
         If the main parameters used for this test are the same as the main parameters used for the previous test,
         the instance of the test case class will be kept and re-used. It is helpful for tests that can
@@ -459,6 +313,7 @@ class TestOTXReallifeAnomalySegmentation(OTXTrainingTestInterface):
         test_case = type(self).helper.get_test_case(current_test_parameters_fx, params_factories_for_test_actions_fx)
         return test_case
 
+    # TODO(lbeynens): move to common fixtures
     @pytest.fixture
     def data_collector_fx(self, request) -> DataCollector:
         setup = deepcopy(request.node.callspec.params)
@@ -466,7 +321,7 @@ class TestOTXReallifeAnomalySegmentation(OTXTrainingTestInterface):
         setup["test_type"] = os.environ.get("TT_TEST_TYPE", "no-test-type")  # TODO: get from e2e test type
         setup["scenario"] = "api"  # TODO(lbeynens): get from a fixture!
         setup["test"] = request.node.name
-        setup["subject"] = "custom-anomaly-segmentation"
+        setup["subject"] = "custom-anomaly-classification"
         setup["project"] = "otx"
         if "test_parameters" in setup:
             assert isinstance(setup["test_parameters"], dict)
