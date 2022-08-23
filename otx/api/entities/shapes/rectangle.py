@@ -99,24 +99,30 @@ class Rectangle(Shape):
 
         return Rectangle(x1=x1, y1=y1, x2=x2, y2=y2, modification_date=self.modification_date)
 
-    def normalize_wrt_roi_shape(self, roi_shape: "Rectangle") -> "Rectangle":
-        """
-        Transforms from the `roi` coordinate system to the normalized coordinate system.
+    def normalize_wrt_roi_shape(self, roi_shape: ShapeEntity) -> "Rectangle":
+        """Transforms from the `roi` coordinate system to the normalized coordinate system.
 
-        :example: Assume we have rectangle `b1` which lives in the top-right quarter of
-        a 2D space. The 2D space where `b1` lives in is an `roi` living in the top-left
-        quarter of the normalized coordinate space. This function returns rectangle
-        `b1` expressed in the normalized coordinate space.
+        Example:
+            Assume we have rectangle `b1` which lives in the top-right quarter of
+            a 2D space. The 2D space where `b1` lives in is an `roi` living in the top-left
+            quarter of the normalized coordinate space. This function returns rectangle
+            `b1` expressed in the normalized coordinate space.
 
-            >>> from otx.api.entities.annotation import Annotation
-            >>> b1 = Rectangle(x1=0.5, x2=1.0, y1=0.0, y2=0.5)
-            >>> roi = Rectangle(x1=0.0, x2=0.5, y1=0.0, y2=0.5)
-            >>> normalized = b1.normalize_wrt_roi_shape(roi_shape)
-            >>> normalized
-            Box(, x=0.25, y=0.0, width=0.25, height=0.25)
+                >>> from otx.api.entities.annotation import Annotation
+                >>> b1 = Rectangle(x1=0.5, x2=1.0, y1=0.0, y2=0.5)
+                >>> roi = Rectangle(x1=0.0, x2=0.5, y1=0.0, y2=0.5)
+                >>> normalized = b1.normalize_wrt_roi_shape(roi_shape)
+                >>> normalized
+                Box(, x=0.25, y=0.0, width=0.25, height=0.25)
 
-        :param roi_shape: Region of Interest
-        :return: New polygon in the image coordinate system
+        Args:
+            roi_shape (ShapeEntity): Region of Interest.
+
+        Raises:
+            ValueError: If the `roi_shape` is not a `Rectangle`.
+
+        Returns:
+            New polygon in the image coordinate system
         """
         if not isinstance(roi_shape, Rectangle):
             raise ValueError("roi_shape has to be a Rectangle.")

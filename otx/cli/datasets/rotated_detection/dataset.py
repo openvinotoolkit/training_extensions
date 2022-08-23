@@ -1,6 +1,4 @@
-"""
-Module contains ObjectDetectionDataset
-"""
+"""Module contains ObjectDetectionDataset."""
 
 # Copyright (C) 2021 Intel Corporation
 #
@@ -24,7 +22,13 @@ from otx.api.entities.subset import Subset
 
 
 class RotatedDetectionDataset(DatasetEntity):
-    """Class for working with file-system based Instance Segmentation dataset."""
+    """Class for working with file-system based Instance Segmentation dataset.
+
+    Args:
+        train_subset (dict): A dictionary with keys "ann_file" and "data_root".
+        val_subset (dict): A dictionary with keys "ann_file" and "data_root".
+        test_subset (dict): A dictionary with keys "ann_file" and "data_root".
+    """
 
     def __init__(
         self,

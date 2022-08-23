@@ -58,10 +58,8 @@ class Annotation(metaclass=abc.ABCMeta):
         self.__id_ = value
 
     @property
-    def shape(self):
-        """
-        Returns the shape that is in the annotation
-        """
+    def shape(self) -> ShapeEntity:
+        """Returns the shape that is in the annotation."""
         return self.__shape
 
     @shape.setter
@@ -69,36 +67,40 @@ class Annotation(metaclass=abc.ABCMeta):
         self.__shape = value
 
     def get_labels(self, include_empty: bool = False) -> List[ScoredLabel]:
-        """
-        Get scored labels that are assigned to this annotation
+        """Get scored labels that are assigned to this annotation.
 
-        :param include_empty: set to True to include empty label (if exists) in the output.
-        :return: List of labels in annotation
+        Args:
+            include_empty (bool): set to True to include empty label (if exists) in the output. Defaults to False.
+
+        Returns:
+            List of labels in annotation
         """
         return [label for label in self.__labels if include_empty or (not label.is_empty)]
 
     def get_label_ids(self, include_empty: bool = False) -> Set[ID]:
-        """
-        Get a set of ID's of labels that are assigned to this annotation
+        """Get a set of ID's of labels that are assigned to this annotation.
 
-        :param include_empty: set to True to include empty label (if exists) in the output.
-        :return: Set of label id's in annotation
+        Args:
+            include_empty (bool): set to True to include empty label (if exists) in the output. Defaults to False.
+
+        Returns:
+            Set of label id's in annotation
         """
         return {label.id_ for label in self.__labels if include_empty or (not label.is_empty)}
 
     def append_label(self, label: ScoredLabel) -> None:
-        """
-        Appends the scored label to the annotation.
+        """Appends the scored label to the annotation.
 
-        :param label: the scored label to be appended to the annotation
+        Args:
+            label (ScoredLabel): the scored label to be appended to the annotation
         """
         self.__labels.append(label)
 
     def set_labels(self, labels: List[ScoredLabel]) -> None:
-        """
-        Sets the labels of the annotation to be the input of the function.
+        """Sets the labels of the annotation to be the input of the function.
 
-        :param labels: the scored labels to be set as annotation labels
+        Args:
+            labels (List[ScoredLabel]): the scored labels to be set as annotation labels
         """
         self.__labels = labels
 
@@ -111,7 +113,7 @@ class Annotation(metaclass=abc.ABCMeta):
 
 
 class AnnotationSceneKind(Enum):
-    """AnnotationSceneKinds for an Annotation object"""
+    """AnnotationSceneKinds for an Annotation object."""
 
     #:  NONE represents NULLAnnotationScene's (See :class:`NullAnnotationScene`)
     NONE = 0
@@ -138,18 +140,21 @@ class AnnotationSceneEntity(metaclass=abc.ABCMeta):
     This class represents a user annotation or a result (prediction).
     It serves as a collection of shapes, with a relation to the media entity.
 
-    :example: Creating an annotation:
+    Example:
+        Creating an annotation:
 
-    >>> from otx.api.entities.annotation import Annotation, AnnotationSceneEntity, AnnotationSceneKind
-    >>> from otx.api.entities.shapes.rectangle import Rectangle
-    >>> box = Rectangle(x1=0.0, y1=0.0, x2=0.5, y2=0.5)  # Box covering top-left quart of image
-    >>> AnnotationSceneEntity(annotations=[Annotation(shape=box, labels=[])], kind=AnnotationSceneKind.ANNOTATION)
+        >>> from otx.api.entities.annotation import Annotation, AnnotationSceneEntity, AnnotationSceneKind
+        >>> from otx.api.entities.shapes.rectangle import Rectangle
+        >>> box = Rectangle(x1=0.0, y1=0.0, x2=0.5, y2=0.5)  # Box covering top-left quart of image
+        >>> AnnotationSceneEntity(annotations=[Annotation(shape=box, labels=[])], kind=AnnotationSceneKind.ANNOTATION)
 
-    :param annotations: List of Annotations.
-    :param kind: Kind of annotation scene `AnnotationSceneKind`. E.g. `AnnotationSceneKind.ANNOTATION`.
-    :param editor: The user that made this annotation scene object
-    :param creation_date: Creation date of annotation scene entity.
-    :param id: ID of AnnotationSceneEntity.
+    Args:
+        annotations (List[Annotation]): List of annotations in the scene
+        kind (AnnotationSceneKind): Kind of the annotation scene. E.g. `AnnotationSceneKind.ANNOTATION`.
+        editor (str): The user that made this annotation scene object.
+        creation_date (Optional[datetime.datetime]): Creation date of annotation scene entity. If None, current time is
+            used. Defaults to None.
+        id (Optional[ID]): ID of AnnotationSceneEntity. If None a new `ID` is created. Defaults to None.
     """
 
     # pylint: disable=too-many-arguments, redefined-builtin

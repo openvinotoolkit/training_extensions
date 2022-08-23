@@ -138,5 +138,5 @@ repos:
         entry: pydocstyle
         language: python
         types: [python]
-        files: '^(otx/algorithms/anomaly|external/anomaly).*\.py'
+        files: '^otx/.*\.py'
         exclude: "otx/algorithms/anomaly/tests|external/anomaly/tests"

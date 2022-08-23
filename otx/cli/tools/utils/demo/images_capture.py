@@ -27,9 +27,7 @@ import cv2
 
 
 class InvalidInput(Exception):
-    """
-    Ivalid input exception.
-    """
+    """Exception for wrong input format."""
 
     def __init__(self, message):
         super().__init__()
@@ -37,9 +35,7 @@ class InvalidInput(Exception):
 
 
 class OpenError(Exception):
-    """
-    Open error exception.
-    """
+    """Exception for error opening reader."""
 
     def __init__(self, message):
         super().__init__()
@@ -47,12 +43,10 @@ class OpenError(Exception):
 
 
 class ImagesCapture:
-    """
-    Images capturing base class.
-    """
+    """Images capturing base class."""
 
     def read(self):
-        """Returns caputured image."""
+        """Returns captured image."""
         raise NotImplementedError
 
     def fps(self):

@@ -19,9 +19,7 @@ import numpy as np
 
 
 class InvalidInput(Exception):
-    """
-    Exception for wrong input format
-    """
+    """Exception for wrong input format."""
 
     def __init__(self, message: str) -> None:
         super().__init__(message)
@@ -29,9 +27,7 @@ class InvalidInput(Exception):
 
 
 class OpenError(Exception):
-    """
-    Exception for open reader
-    """
+    """Exception for error opening reader."""
 
     def __init__(self, message: str) -> None:
         super().__init__(message)
@@ -39,9 +35,7 @@ class OpenError(Exception):
 
 
 class MediaType(Enum):
-    """
-    This Enum represents the types of input
-    """
+    """This Enum represents the types of input."""
 
     IMAGE = 1
     DIR = 2
@@ -50,52 +44,51 @@ class MediaType(Enum):
 
 
 class BaseStreamer(metaclass=abc.ABCMeta):
-    """
-    Base Streamer interface to implement Image, Video and Camera streamers.
-    """
+    """Base Streamer interface to implement Image, Video and Camera streamers."""
 
     @abc.abstractmethod
     def __iter__(self) -> Iterator[np.ndarray]:
-        """
-        Iterate through the streamer object that is a Python Generator object.
-        :return: Yield the image or video frame.
+        """Iterate through the streamer object that is a Python Generator object.
+
+        Returns:
+            np.ndarray: Yield the image or video frame.
         """
         raise NotImplementedError
 
     @abc.abstractmethod
     def get_type(self) -> MediaType:
-        """
-        Get type of streamer
+        """Get type of streamer.
+
+        Returns:
+            MediaType: type of streamer.
         """
         raise NotImplementedError
 
 
 def _process_run(streamer: BaseStreamer, buffer: multiprocessing.Queue) -> None:
-    """
-    Private function that is run by the thread.
+    """Private function that is run by the thread.
 
     Waits for the buffer to gain space for timeout seconds while it is full.
     If no space was available within this time the function will exit
 
-    :param streamer: The streamer to retrieve frames from
-    :param buffer: The buffer to place the retrieved frames in
+    streamer (BaseStreamer): The streamer to retrieve frames from
+    buffer (multiprocessing.Queue): The buffer to place the retrieved frames in
     """
     for frame in streamer:
         buffer.put(frame)
 
 
 class ThreadedStreamer(BaseStreamer):
-    """
-    Runs a BaseStreamer on a seperate thread.
+    """Runs a BaseStreamer on a separate thread.
 
-    :param streamer: The streamer to run on a thread
-    :param buffer_size: Number of frame to buffer internally
+    streamer (BaseStreamer): The streamer to run on a thread
+    buffer_size (int): Number of frame to buffer internally. Defaults to 2.
 
-    :example:
+    Example:
 
         >>> streamer = VideoStreamer(path="../demo.mp4")
         >>> threaded_streamer = ThreadedStreamer(streamer)
-        ... for frame in threaded_streamer:
+        >>> for frame in threaded_streamer:
         ...    pass
     """
 
@@ -104,6 +97,11 @@ class ThreadedStreamer(BaseStreamer):
         self.streamer = streamer
 
     def __iter__(self) -> Iterator[np.ndarray]:
+        """Get frames from streamer and yield them.
+
+        Yields:
+            Iterator[np.ndarray]: Yield the image or video frame.
+        """
         buffer: multiprocessing.Queue = multiprocessing.Queue(maxsize=self.buffer_size)
         process = multiprocessing.Process(target=_process_run, args=(self.streamer, buffer))
         # Make thread a daemon so that it will exit when the main program exits as well
@@ -126,8 +124,10 @@ class ThreadedStreamer(BaseStreamer):
                 process.kill()
 
     def get_type(self) -> MediaType:
-        """
-        Get type of internal streamer
+        """Get type of internal streamer.
+
+        Returns:
+            MediaType: type of internal streamer.
         """
         return self.streamer.get_type()
 
@@ -291,11 +291,15 @@ def get_streamer(
     loop: bool = False,
     threaded: bool = False,
 ) -> BaseStreamer:
-    """
-    Get streamer object based on the file path or camera device index provided.
-    :param input_stream: Path to file or directory or index for camera.
-    :param loop: Enable reading the input in a loop.
-    :param threaded: Threaded streaming option
+    """Get streamer object based on the file path or camera device index provided.
+
+    Args:
+        input_stream (Union[int, str]): Path to file or directory or index for camera.
+        loop (bool): Enable reading the input in a loop. Defaults to False.
+        threaded (bool): Run streaming on a separate thread. Threaded streaming option. Defaults to False.
+
+    Returns:
+        BaseStreamer: Streamer object.
     """
     # errors: Dict = {InvalidInput: [], OpenError: []}
     errors = []

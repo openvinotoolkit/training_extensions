@@ -19,9 +19,7 @@ import numpy as np
 
 
 class InvalidInput(Exception):
-    """
-    Exception for wrong input format
-    """
+    """Exception for wrong input format."""
 
     def __init__(self, message: str) -> None:
         super().__init__(message)
@@ -29,9 +27,7 @@ class InvalidInput(Exception):
 
 
 class OpenError(Exception):
-    """
-    Exception for open reader
-    """
+    """Exception for error opening reader."""
 
     def __init__(self, message: str) -> None:
         super().__init__(message)
