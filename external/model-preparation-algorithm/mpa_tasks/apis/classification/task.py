@@ -17,8 +17,7 @@ from mpa.utils.config_utils import MPAConfig
 from mpa.utils.logger import get_logger
 from mpa_tasks.apis import BaseTask, TrainType
 from mpa_tasks.apis.classification import ClassificationConfig
-from mpa_tasks.extensions.datasets.mpa_cls_dataset import MPAMultilabelClsDataset
-from mpa_tasks.utils.data_utils import get_actmap, convert_to_mmcls_multilabel_dataset
+from mpa_tasks.utils.data_utils import get_actmap
 from ote_sdk.configuration import cfg_helper
 from ote_sdk.configuration.helper.utils import ids_to_strings
 from ote_sdk.entities.datasets import DatasetEntity
@@ -139,8 +138,7 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
                                  dump_saliency_map=dump_saliency_map)
         logger.debug(f'result of run_task {stage_module} module = {results}')
         predictions = results['outputs']
-        self.prediction_logits = np.array(predictions['eval_predictions'])
-        prediction_results = zip(self.prediction_logits, predictions['feature_vectors'],
+        prediction_results = zip(predictions['eval_predictions'], predictions['feature_vectors'],
                                  predictions['saliency_maps'])
 
         update_progress_callback = default_progress_callback
@@ -155,13 +153,6 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
                  evaluation_metric: Optional[str] = None):
         logger.info('called evaluate()')
         metric = MetricsHelper.compute_accuracy(output_result_set)
-        if self._multilabel:
-            gt_dataset = output_result_set.ground_truth_dataset
-            gt_labels, label_names = convert_to_mmcls_multilabel_dataset(gt_dataset, self.labels)
-            class_AP_values = MPAMultilabelClsDataset.class_AP(self.prediction_logits, gt_labels)
-            logger.info(f"mAP after evaluation: {class_AP_values.mean():.4f}")
-            for name, value in zip(label_names, class_AP_values):
-                logger.info(f"{name} AP after evaluation: {value:.4f}")
         logger.info(f"Accuracy after evaluation: {metric.accuracy.value}")
         output_result_set.performance = metric.get_performance()
         logger.info('Evaluation completed')
@@ -314,12 +305,8 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         if self._multilabel:
             template = MPAConfig.fromfile(self.template_file_path)
             template_params = template.hyper_parameters.parameter_overrides.learning_parameters
-            if template_params.learning_rate.default_value != self._hyperparams.learning_parameters.learning_rate:
-                cfg.pop('optimizer', False)
             if template_params.num_iters.default_value != self._hyperparams.learning_parameters.num_iters:
                 cfg.pop('runner', False)
-            if template_params.learning_rate_warmup_iters.default_value != self._hyperparams.learning_parameters.learning_rate_warmup_iters:
-                cfg.pop('lr_config', False)
 
         cfg.model.multilabel = self._multilabel
         cfg.model.hierarchical = self._hierarchical
@@ -391,7 +378,7 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
     def _patch_evaluation(self, config: MPAConfig):
         cfg = config.evaluation
         if self._multilabel:
-            cfg.metric = ['accuracy-mlc', 'mAP', 'class_AP', 'CP', 'OP', 'CR', 'OR', 'CF1', 'OF1']
+            cfg.metric = ['accuracy-mlc', 'mAP', 'CP', 'OP', 'CR', 'OR', 'CF1', 'OF1']
         elif self._hierarchical:
             cfg.metric = ['MHAcc', 'avgClsAcc', 'mAP']
         else:
