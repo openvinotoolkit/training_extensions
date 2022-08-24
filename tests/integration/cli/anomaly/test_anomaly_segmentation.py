@@ -18,7 +18,6 @@ import os
 
 import pytest
 
-from otx.api.test_suite.e2e_test_system import e2e_pytest_component
 from otx.cli.registry import Registry
 from otx.cli.utils.tests import (
     create_venv,
@@ -39,6 +38,7 @@ from otx.cli.utils.tests import (
     pot_eval_testing,
     pot_optimize_testing,
 )
+from tests.test_suite.e2e_test_system import e2e_pytest_component
 
 args = {
     "--train-ann-file": "data/anomaly/segmentation/train.json",
