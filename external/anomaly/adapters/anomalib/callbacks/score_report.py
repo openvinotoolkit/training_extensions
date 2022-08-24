@@ -17,13 +17,14 @@
 from typing import Optional
 
 from ote_sdk.entities.train_parameters import TrainParameters
-from pytorch_lightning import Callback
+from pytorch_lightning.callbacks.progress import TQDMProgressBar
 
 
-class ScoreReportingCallback(Callback):
+class ScoreReportingCallback(TQDMProgressBar):
     """Callback for reporting score."""
 
     def __init__(self, parameters: Optional[TrainParameters] = None) -> None:
+        super().__init__()
         if parameters is not None:
             self.score_reporting_callback = parameters.update_progress
         else:
@@ -41,4 +42,10 @@ class ScoreReportingCallback(Callback):
                     score = score + int(trainer.global_step)
                 else:
                     score = -(score + int(trainer.global_step))
-            self.score_reporting_callback(progress=0, score=score)
+
+            # Always assumes that hpo validation step is called during training.
+            training_progress = (
+                (self.train_batch_idx + trainer.current_epoch * self.total_train_batches)
+                / (self.total_train_batches * trainer.max_epochs)
+            ) * 100
+            self.score_reporting_callback(int(training_progress), score)  # pylint: disable=not-callable
