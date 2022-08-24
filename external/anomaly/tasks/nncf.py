@@ -109,8 +109,9 @@ class NNCFTask(InferenceTask, IOptimizationTask):
                 classification or segmentation model with/without weights.
         """
         # replaces the templates dir with configs and removes task type
+        anomaly_dir = self.base_dir.partition("/templates/")[0]
         nncf_config_path = os.path.join(
-            self.base_dir.partition("templates")[0], "configs", self.base_dir.split("/")[-1], "compression_config.json"
+            anomaly_dir, "configs", self.base_dir.split("/")[-1], "compression_config.json"
         )
 
         with open(nncf_config_path, encoding="utf8") as nncf_config_file:
