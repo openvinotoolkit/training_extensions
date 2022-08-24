@@ -202,8 +202,6 @@ class ClassificationClsIncrTrainingTestParameters(
                     "Custom_Image_Classification_EfficinetNet-B0",
                     "Custom_Image_Classification_EfficinetNet-V2-S",
                     "Custom_Image_Classification_MobileNet-V3-large-1x",
-                    "Custom_Image_Classification_MobileNet-V3-large-0.75x",
-                    "Custom_Image_Classification_MobileNet-V3-small",
                 ],
                 dataset_name=["cifar10_cls_incr"],
                 usecase="precommit",
@@ -213,8 +211,6 @@ class ClassificationClsIncrTrainingTestParameters(
                     "Custom_Image_Classification_EfficinetNet-B0",
                     "Custom_Image_Classification_EfficinetNet-V2-S",
                     "Custom_Image_Classification_MobileNet-V3-large-1x",
-                    "Custom_Image_Classification_MobileNet-V3-large-0.75x",
-                    "Custom_Image_Classification_MobileNet-V3-small",
                 ],
                 dataset_name=["cifar10_cls_incr"],
                 num_training_iters=KEEP_CONFIG_FIELD_VALUE,
@@ -242,7 +238,6 @@ class DetectionClsIncrTrainingTestParameters(DefaultOTETestCreationParametersInt
             dict(
                 model_name=[
                     "Custom_Object_Detection_Gen3_ATSS",
-                    "Custom_Object_Detection_Gen3_VFNet",
                 ],
                 dataset_name="coco_cls_incr",
                 usecase="precommit",
@@ -250,7 +245,6 @@ class DetectionClsIncrTrainingTestParameters(DefaultOTETestCreationParametersInt
             dict(
                 model_name=[
                     "Custom_Object_Detection_Gen3_ATSS",
-                    "Custom_Object_Detection_Gen3_VFNet",
                 ],
                 dataset_name="coco_cls_incr",
                 num_training_iters=KEEP_CONFIG_FIELD_VALUE,
