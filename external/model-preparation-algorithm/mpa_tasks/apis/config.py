@@ -1,7 +1,7 @@
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-
+from attr import attrs
 from sys import maxsize
 
 from ote_sdk.configuration.elements import (ParameterGroup,
@@ -31,7 +31,9 @@ class LearningRateSchedule(ConfigurableEnum):
     CUSTOM = 'custom'
 
 
+@attrs
 class BaseConfig(ConfigurableParameters):
+    @attrs
     class BaseLearningParameters(ParameterGroup):
         batch_size = configurable_integer(
             default_value=5,
@@ -93,6 +95,7 @@ class BaseConfig(ConfigurableParameters):
             affects_outcome_of=ModelLifecycle.NONE
         )
 
+    @attrs
     class BasePostprocessing(ParameterGroup):
         result_based_confidence_threshold = configurable_boolean(
             default_value=True,
@@ -110,6 +113,7 @@ class BaseConfig(ConfigurableParameters):
             affects_outcome_of=ModelLifecycle.INFERENCE
         )
 
+    @attrs
     class BaseNNCFOptimization(ParameterGroup):
         enable_quantization = configurable_boolean(
             default_value=True,
@@ -134,6 +138,7 @@ class BaseConfig(ConfigurableParameters):
             affects_outcome_of=ModelLifecycle.TRAINING
         )
 
+    @attrs
     class BasePOTParameter(ParameterGroup):
         stat_subset_size = configurable_integer(
             header="Number of data samples",
@@ -143,6 +148,7 @@ class BaseConfig(ConfigurableParameters):
             max_value=maxsize
         )
 
+    @attrs
     class BaseAlgoBackendParameters(ParameterGroup):
         train_type = selectable(default_value=TrainType.Incremental,
                                 header='train type',
@@ -150,6 +156,7 @@ class BaseConfig(ConfigurableParameters):
                                 editable=False,
                                 visible_in_ui=True)
 
+    @attrs
     class BaseTilingParameters(ParameterGroup):
 
         enable_tiling = configurable_boolean(

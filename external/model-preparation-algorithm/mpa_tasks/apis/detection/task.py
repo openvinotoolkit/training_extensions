@@ -22,7 +22,7 @@ from mpa import MPAConstants
 from mpa.utils.config_utils import MPAConfig
 from mpa.utils.logger import get_logger
 from ote_sdk.configuration import cfg_helper
-from ote_sdk.configuration.helper.utils import ids_to_strings
+from ote_sdk.configuration.helper.utils import ids_to_strings, config_to_bytes
 from ote_sdk.entities.annotation import Annotation
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.id import ID
@@ -182,6 +182,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
             output_model.precision = self._precision
             output_model.optimization_methods = self._optimization_methods
             output_model.set_data("label_schema.json", label_schema_to_bytes(self._task_environment.label_schema))
+            output_model.set_data("configurable_params.json", config_to_bytes(self._hyperparams))
         logger.info('Exporting completed')
 
     def _overwrite_parameters(self):
@@ -416,7 +417,6 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
     def save_model(self, output_model: ModelEntity):
         logger.info('called save_model')
         buffer = io.BytesIO()
-        # TODO[EUGENE]: WHY NESTED PARAMETER ARE NOT PROPERLY SAVED?
         hyperparams_str = ids_to_strings(cfg_helper.convert(self._hyperparams, dict, enum_to_str=True))
         labels = {label.name: label.color.rgb_tuple for label in self._labels}
         model_ckpt = torch.load(self._model_ckpt)
@@ -424,15 +424,6 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
             'model': model_ckpt['state_dict'], 'config': hyperparams_str, 'labels': labels,
             'confidence_threshold': self.confidence_threshold, 'VERSION': 1
         }
-        if bool(self._hyperparams.tiling_parameters.enable_tiling):
-            modelinfo.update(
-                dict(tiling_parameters=dict(
-                        enable_tiling=bool(self._hyperparams.tiling_parameters.enable_tiling),
-                        tile_size=int(self._hyperparams.tiling_parameters.tile_size),
-                        tile_overlap=float(self._hyperparams.tiling_parameters.tile_overlap),
-                        tile_max_number=int(self._hyperparams.tiling_parameters.tile_max_number),
-                ))
-            )
 
         if hasattr(self._model_cfg.model, 'bbox_head') and hasattr(self._model_cfg.model.bbox_head, 'anchor_generator'):
             if getattr(self._model_cfg.model.bbox_head.anchor_generator, 'reclustering_anchors', False):

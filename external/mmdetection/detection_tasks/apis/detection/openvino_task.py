@@ -270,6 +270,7 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
     @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def infer(self, dataset: DatasetEntity, inference_parameters: Optional[InferenceParameters] = None) -> DatasetEntity:
         logger.info('Start OpenVINO inference')
+        # TODO[EUGENE]: Make dataset to tiles (according to tile parameters) -> Merge tiles -> dataset item
         update_progress_callback = default_progress_callback
         add_saliency_map = True
         if inference_parameters is not None:

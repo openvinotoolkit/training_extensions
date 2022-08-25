@@ -251,17 +251,17 @@ class BaseTask:
             model_data = torch.load(buffer, map_location=torch.device('cpu'))
 
             # set confidence_threshold as well
-            # TODO[EUGENE]: LOAD TILING PARAMETERS FROM SAVED MODEL
             self.confidence_threshold = model_data.get('confidence_threshold', self.confidence_threshold)
             if model_data.get('anchors'):
                 self._anchors = model_data['anchors']
-            if model_data.get('tiling_parameters'):
-                tiling_parameters = model_data['tiling_parameters']
-                if tiling_parameters['enable_tiling']:
-                    self._hyperparams.tiling_parameters.enable_tiling = tiling_parameters['enable_tiling']
-                    self._hyperparams.tiling_parameters.tile_size = tiling_parameters['tile_size']
-                    self._hyperparams.tiling_parameters.tile_overlap = tiling_parameters['tile_overlap']
-                    self._hyperparams.tiling_parameters.tile_max_number = tiling_parameters['tile_max_number']
+
+            saved_config = model_data.get('config')
+            tiling_parameters = saved_config.get('tiling_parameters')
+            if tiling_parameters and tiling_parameters['enable_tiling']:
+                self._hyperparams.tiling_parameters.enable_tiling = tiling_parameters['enable_tiling']['value']
+                self._hyperparams.tiling_parameters.tile_size = tiling_parameters['tile_size']['value']
+                self._hyperparams.tiling_parameters.tile_overlap = tiling_parameters['tile_overlap']['value']
+                self._hyperparams.tiling_parameters.tile_max_number = tiling_parameters['tile_max_number']['value']
 
             return model_data.get('model', model_data.get('state_dict', None))
         else:
