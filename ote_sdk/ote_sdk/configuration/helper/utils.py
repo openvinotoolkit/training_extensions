@@ -24,7 +24,6 @@ from .config_element_mapping import (
     PrimitiveElementMapping,
     RuleElementMapping,
 )
-
 from .convert import convert
 
 

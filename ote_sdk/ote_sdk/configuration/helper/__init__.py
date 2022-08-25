@@ -10,8 +10,8 @@ OTE configuration objects or dictionaries, yaml strings or yaml files representi
 
 from .convert import convert
 from .create import create
-from .utils import config_to_bytes
 from .substitute import substitute_values, substitute_values_for_lifecycle
+from .utils import config_to_bytes
 from .validate import validate
 
 __all__ = [
