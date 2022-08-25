@@ -60,7 +60,7 @@ class BaseTask:
         self._recipe_cfg = None
         self._stage_module = None
         self._model_cfg = None
-        self._precision = None
+        self._precision = [ModelPrecision.FP32]
         self._data_cfg = None
         self._mode = None
         self._time_monitor = None
