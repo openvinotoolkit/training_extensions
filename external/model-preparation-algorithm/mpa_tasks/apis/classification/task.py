@@ -301,8 +301,8 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
             cfg_path = os.path.join(base_dir, 'model.py')
         cfg = MPAConfig.fromfile(cfg_path)
 
-        # To initialize different HP for multi-label classification / Support HP change via CLI & UI
-        if self._multilabel:
+        # To initialize different HP according to task / Support HP change via CLI & UI
+        if not self._multilabel:
             template = MPAConfig.fromfile(self.template_file_path)
             template_params = template.hyper_parameters.parameter_overrides.learning_parameters
             incoming_params = self._hyperparams.learning_parameters
