@@ -204,7 +204,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         train_type = self._hyperparams.algo_backend.train_type
         logger.info(f'train type = {train_type}')
 
-        recipe = os.path.join(recipe_root, 'unbiased_teacher.py')
+        recipe = os.path.join(recipe_root, 'imbalance.py')
         if train_type == TrainType.SemiSupervised:
             recipe = os.path.join(recipe_root, 'unbiased_teacher.py')
         elif train_type == TrainType.SelfSupervised:
@@ -213,7 +213,9 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         elif train_type == TrainType.Incremental:
             recipe = os.path.join(recipe_root, 'imbalance.py')
         else:
-            raise NotImplementedError(f'train type {train_type} is not implemented yet.')
+            # raise NotImplementedError(f'train type {train_type} is not implemented yet.')
+            # FIXME: Temporary remedy for CVS-88098
+            logger.warning(f'train type {train_type} is not implemented yet.')
 
         self._recipe_cfg = MPAConfig.fromfile(recipe)
         self._patch_data_pipeline()

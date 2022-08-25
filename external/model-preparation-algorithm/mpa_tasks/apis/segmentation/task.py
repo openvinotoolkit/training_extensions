@@ -179,7 +179,9 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         elif train_type == TrainType.Incremental:
             recipe = os.path.join(recipe_root, 'class_incr.py')
         else:
-            raise NotImplementedError(f'train type {train_type} is not implemented yet.')
+            # raise NotImplementedError(f'train type {train_type} is not implemented yet.')
+            # FIXME: Temporary remedy for CVS-88098
+            logger.warning(f'train type {train_type} is not implemented yet.')
 
         self._recipe_cfg = MPAConfig.fromfile(recipe)
         self._patch_datasets(self._recipe_cfg)  # for OTE compatibility
