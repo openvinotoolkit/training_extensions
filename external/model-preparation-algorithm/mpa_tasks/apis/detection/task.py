@@ -157,8 +157,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         output_model.optimization_type = ModelOptimizationType.MO
 
         stage_module = 'DetectionExporter'
-        self._model_cfg = self._initialize()
-        results = self._run_task(stage_module, mode='train', precision=self._precision[0].name)
+        results = self._run_task(stage_module, mode='train', precision='FP32')
         results = results.get('outputs')
         logger.debug(f'results of run_task = {results}')
         if results is None:
