@@ -161,7 +161,7 @@ class BaseTask:
         # Put early stop hook
         if self._recipe_cfg.early_stop is True:
             patience = self._recipe_cfg.patience
-            metric = self._recipe_cfg.evaluation.metric
+            metric = self._recipe_cfg.evaluation.early_stop_metric
             
             hook_type=[]
             custom_hooks = self.override_configs.get('custom_hooks', None)

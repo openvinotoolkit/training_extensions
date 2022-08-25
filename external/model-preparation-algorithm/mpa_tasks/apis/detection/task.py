@@ -329,9 +329,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         cfg.metric = 'mAP'
         cfg.save_best = 'mAP'
         # EarlyStoppingHook
-        for cfg in config.get('custom_hooks', []):
-            if 'EarlyStoppingHook' in cfg.type:
-                cfg.metric = 'mAP'
+        cfg.early_stop_metric = 'mAP'
 
     def _det_add_predictions_to_dataset(self, all_results, width, height, confidence_threshold):
         shapes = []

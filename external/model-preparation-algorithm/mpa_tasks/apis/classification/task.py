@@ -371,10 +371,13 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         cfg = config.evaluation
         if self._multilabel:
             cfg.metric = ['accuracy-mlc', 'mAP', 'CP', 'OP', 'CR', 'OR', 'CF1', 'OF1']
+            cfg.early_stop_metric = 'mAP'
         elif self._hierarchical:
             cfg.metric = ['MHAcc', 'avgClsAcc', 'mAP']
+            cfg.early_stop_metric = 'mAP'
         else:
             cfg.metric = ['accuracy', 'class_accuracy']
+            cfg.early_stop_metric = 'accuracy'
 
 
 class ClassificationTrainTask(ClassificationInferenceTask):
