@@ -130,7 +130,24 @@ learning_parameters:
       operator: AND
       rules: []
       type: UI_RULES
-    visible_in_ui: false
+    visible_in_ui: true
+    warning: null
+  patience:
+    affects_outcome_of: TRAINING
+    default_value: 10
+    description: "Number of epochs with no improvement after which the training will be reducedwhen enabled early stopping"
+    editable: true
+    header: Number of iterations for learning rate warmup
+    max_value: 50
+    min_value: 0
+    type: INTEGER
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: 10
+    visible_in_ui: true
     warning: null
   type: PARAMETER_GROUP
   visible_in_ui: true

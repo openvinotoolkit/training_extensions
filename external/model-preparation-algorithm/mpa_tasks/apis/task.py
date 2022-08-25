@@ -3,6 +3,7 @@
 #
 
 import abc
+from collections import defaultdict
 import io
 import os
 import shutil
@@ -156,6 +157,31 @@ class BaseTask:
         recipe_hparams = self._init_recipe_hparam()
         if len(recipe_hparams) > 0:
             self._recipe_cfg.merge_from_dict(recipe_hparams)
+
+        # Put early stop hook
+        if self._recipe_cfg.early_stop is True:
+            patience = self._recipe_cfg.patience
+            metric = self._recipe_cfg.evaluation.metric
+            
+            hook_type=[]
+            custom_hooks = self.override_configs.get('custom_hooks', None)
+            if custom_hooks is not None:
+                hook_type = [hook.type for hook in custom_hooks]
+            
+            if custom_hooks is None or ('EarlyStoppingHook' or 'LazyEarlyStoppingHook' not in hook_type):
+                early_stop_hook = dict(
+                                        type='LazyEarlyStoppingHook',
+                                        start=3,
+                                        patience=patience,
+                                        metric=metric,
+                                        priority=75,
+                                    )
+                custom_hooks.append(early_stop_hook)
+            else:
+                for hook in custom_hooks:
+                    if hook.type in ['EarlyStoppingHook','LazyEarlyStoppingHook']:
+                        hook.patience = patience
+        
         if "custom_hooks" in self.override_configs:
             override_custom_hooks = self.override_configs.pop("custom_hooks")
             for override_custom_hook in override_custom_hooks:

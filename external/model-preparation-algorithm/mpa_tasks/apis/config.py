@@ -73,6 +73,24 @@ class BaseConfig(ConfigurableParameters):
             affects_outcome_of=ModelLifecycle.TRAINING
         )
 
+        enable_early_stopping = configurable_boolean(
+            default_value=True,
+            header="Enable adaptive early stopping of the training",
+            description="Adaptive early exit from training when accuracy isn't \
+                         changed or decreased for several epochs.",
+            affects_outcome_of=ModelLifecycle.TRAINING
+        )
+        
+        patience = configurable_boolean(
+            default_value=5,
+            min_value=0,
+            max_value=50,
+            header="Patience for adaptive early stopping of the training",
+            description="Number of epochs with no improvement after which the training will be reduced \
+                         when enabled early stopping",
+            affects_outcome_of=ModelLifecycle.TRAINING
+        )
+
         num_workers = configurable_integer(
             default_value=0,
             min_value=0,
