@@ -103,6 +103,9 @@ Options:
   -it {sync,async}, --inference_type {sync,async}
                         Optional. Type of inference for single model
   -l, --loop            Optional. Enable reading the input in a loop.
+  --no_show
+                        Optional. If this flag is specified, the demo
+                        won't show the inference results on UI.
 ```
 
 As a model, you can use path to model directory from generated zip. So you can use the following command to do inference with a pre-trained model:
@@ -110,7 +113,7 @@ As a model, you can use path to model directory from generated zip. So you can u
 ```
 python3 demo.py \
   -i <path_to_video>/inputVideo.mp4 \
-  -m <path_to_model>
+  -m <path_to_model_directory>
 ```
 
 You can press `Q` to stop inference during demo running.

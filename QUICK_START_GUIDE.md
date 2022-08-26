@@ -15,7 +15,7 @@
    ```
    git clone https://github.com/openvinotoolkit/training_extensions.git
    cd training_extensions
-   git checkout develop origin/develop
+   git checkout develop
    git submodule update --init --recursive
    ```
 

@@ -22,7 +22,7 @@ from ote_sdk.usecases.exportable_code.demo.demo_package.utils import (
     create_output_converter,
 )
 from ote_sdk.usecases.exportable_code.streamer import get_streamer
-from ote_sdk.usecases.exportable_code.visualizers import Visualizer
+from ote_sdk.usecases.exportable_code.visualizers import IVisualizer
 from ote_sdk.utils.shape_factory import ShapeFactory
 
 
@@ -38,7 +38,7 @@ class ChainExecutor:
     def __init__(
         self,
         models: List[ModelContainer],
-        visualizer: Visualizer,
+        visualizer: IVisualizer,
     ) -> None:
         self.models = models
         self.visualizer = visualizer
