@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from attr import attrs
+import attr
 from sys import maxsize
 
 from ote_sdk.configuration.elements import (ParameterGroup,
