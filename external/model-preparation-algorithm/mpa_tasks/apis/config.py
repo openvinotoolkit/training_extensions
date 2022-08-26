@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+from attr import attrs
 from sys import maxsize
 
 from ote_sdk.configuration.elements import (ParameterGroup,
@@ -31,7 +32,9 @@ class LearningRateSchedule(ConfigurableEnum):
     CUSTOM = 'custom'
 
 
+@attr
 class BaseConfig(ConfigurableParameters):
+    @attr
     class BaseLearningParameters(ParameterGroup):
         batch_size = configurable_integer(
             default_value=5,
@@ -93,6 +96,7 @@ class BaseConfig(ConfigurableParameters):
             affects_outcome_of=ModelLifecycle.NONE
         )
 
+    @attr
     class BasePostprocessing(ParameterGroup):
         result_based_confidence_threshold = configurable_boolean(
             default_value=True,
@@ -110,6 +114,7 @@ class BaseConfig(ConfigurableParameters):
             affects_outcome_of=ModelLifecycle.INFERENCE
         )
 
+    @attr
     class BaseNNCFOptimization(ParameterGroup):
         enable_quantization = configurable_boolean(
             default_value=True,
@@ -134,6 +139,7 @@ class BaseConfig(ConfigurableParameters):
             affects_outcome_of=ModelLifecycle.TRAINING
         )
 
+    @attr
     class BasePOTParameter(ParameterGroup):
         stat_subset_size = configurable_integer(
             header="Number of data samples",
@@ -143,6 +149,7 @@ class BaseConfig(ConfigurableParameters):
             max_value=maxsize
         )
 
+    @attr
     class BaseAlgoBackendParameters(ParameterGroup):
         train_type = selectable(default_value=TrainType.Incremental,
                                 header='train type',
