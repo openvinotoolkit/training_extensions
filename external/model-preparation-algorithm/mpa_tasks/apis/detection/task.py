@@ -590,7 +590,7 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
         return output
 
     def _config_tiling_parameters(self, dataset):
-        # TODO[EUGENE]
+        # TODO[EUGENE]: ADD Description
         """_summary_
 
         Args:
