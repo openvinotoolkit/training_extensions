@@ -94,23 +94,23 @@ def test_configuration_yaml():
     assert configuration_yaml_converted == configuration_yaml_loaded
 
 
-class Sample(unittest.TestCase):
-    template = osp.join(DEFAULT_TEMPLATE_DIR, 'template_experimental.yaml')
+# class Sample(unittest.TestCase):
+#     template = osp.join(DEFAULT_TEMPLATE_DIR, 'template_experimental.yaml')
 
-    @e2e_pytest_api
-    def test_sample_on_cpu(self):
-        output = run('export CUDA_VISIBLE_DEVICES=;'
-                     'python detection_tasks/sample/sample.py '
-                     f'--export {self.template}',
-                     shell=True, check=True)
-        assert output.returncode == 0
+#     @e2e_pytest_api
+#     def test_sample_on_cpu(self):
+#         output = run('export CUDA_VISIBLE_DEVICES=;'
+#                      'python detection_tasks/sample/sample.py '
+#                      f'--export {self.template}',
+#                      shell=True, check=True)
+#         assert output.returncode == 0
 
-    @e2e_pytest_api
-    def test_sample_on_gpu(self):
-        output = run('python detection_tasks/sample/sample.py '
-                     f'--export {self.template}',
-                     shell=True, check=True)
-        assert output.returncode == 0
+#     @e2e_pytest_api
+#     def test_sample_on_gpu(self):
+#         output = run('python detection_tasks/sample/sample.py '
+#                      f'--export {self.template}',
+#                      shell=True, check=True)
+#         assert output.returncode == 0
 
 
 class API(unittest.TestCase):
