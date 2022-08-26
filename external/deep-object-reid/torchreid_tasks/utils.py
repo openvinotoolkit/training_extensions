@@ -498,15 +498,6 @@ class OptimizationProgressCallback(TimeMonitorCallback):
 
 
 @check_input_parameters_type()
-def get_actmap(features: Union[np.ndarray, Iterable, int, float],
-               output_res: Union[tuple, list]):
-    am = cv.resize(features, output_res)
-    am = cv.applyColorMap(am, cv.COLORMAP_JET)
-    am = cv.cvtColor(am, cv.COLOR_BGR2RGB)
-    return am
-
-
-@check_input_parameters_type()
 def active_score_from_probs(predictions: Union[np.ndarray, Iterable, int, float]):
     top_idxs = np.argpartition(predictions, -2)[-2:]
     top_probs = predictions[top_idxs]
