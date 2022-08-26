@@ -31,7 +31,7 @@ from ote_sdk.entities.metrics import (BarChartInfo, BarMetricsGroup,
                                       LineMetricsGroup, MetricsGroup,
                                       ScoreMetric, VisualizationType)
 from ote_sdk.entities.model import (ModelEntity, ModelFormat,
-                                    ModelOptimizationType)
+                                    ModelPrecision, ModelOptimizationType)
 from ote_sdk.entities.model_template import TaskType
 from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.result_media import ResultMediaEntity
@@ -56,7 +56,6 @@ from ote_sdk.usecases.tasks.interfaces.unload_interface import IUnload
 from detection_tasks.apis.detection import OTEDetectionNNCFTask
 from ote_sdk.utils.argument_checks import check_input_parameters_type
 from ote_sdk.entities.model_template import parse_model_template
-
 
 logger = get_logger()
 
@@ -157,8 +156,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         output_model.optimization_type = ModelOptimizationType.MO
 
         stage_module = 'DetectionExporter'
-        self._model_cfg = self._initialize()
-        results = self._run_task(stage_module, mode='train', precision=self._precision[0].name)
+        results = self._run_task(stage_module, mode='train', precision='FP32', export=True)
         results = results.get('outputs')
         logger.debug(f'results of run_task = {results}')
         if results is None:
@@ -175,7 +173,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
             output_model.set_data(
                 'confidence_threshold',
                 np.array([self.confidence_threshold], dtype=np.float32).tobytes())
-            output_model.precision = self._precision
+            output_model.precision = [ModelPrecision.FP32]
             output_model.optimization_methods = self._optimization_methods
             output_model.set_data("label_schema.json", label_schema_to_bytes(self._task_environment.label_schema))
         logger.info('Exporting completed')
@@ -204,7 +202,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         train_type = self._hyperparams.algo_backend.train_type
         logger.info(f'train type = {train_type}')
 
-        recipe = os.path.join(recipe_root, 'unbiased_teacher.py')
+        recipe = os.path.join(recipe_root, 'imbalance.py')
         if train_type == TrainType.SemiSupervised:
             recipe = os.path.join(recipe_root, 'unbiased_teacher.py')
         elif train_type == TrainType.SelfSupervised:
@@ -213,7 +211,9 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         elif train_type == TrainType.Incremental:
             recipe = os.path.join(recipe_root, 'imbalance.py')
         else:
-            raise NotImplementedError(f'train type {train_type} is not implemented yet.')
+            # raise NotImplementedError(f'train type {train_type} is not implemented yet.')
+            # FIXME: Temporary remedy for CVS-88098
+            logger.warning(f'train type {train_type} is not implemented yet.')
 
         self._recipe_cfg = MPAConfig.fromfile(recipe)
         self._patch_data_pipeline()
