@@ -18,7 +18,7 @@ entrypoints:
 
 # Hyper Parameters
 hyper_parameters:
-  base_path: ../../../configs/stfpm/configuration.yaml
+  base_path: ./configuration.yaml
   parameter_overrides:
     learning_parameters:
       train_batch_size:

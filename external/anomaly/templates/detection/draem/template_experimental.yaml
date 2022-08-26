@@ -18,7 +18,7 @@ entrypoints:
 
 # Hyper Parameters
 hyper_parameters:
-  base_path: ../../../configs/draem/configuration.yaml
+  base_path: ./configuration.yaml
 
 # Training resources.
 max_nodes: 1
