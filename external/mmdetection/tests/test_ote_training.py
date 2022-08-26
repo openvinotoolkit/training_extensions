@@ -102,16 +102,16 @@ class ObjectDetectionTrainingTestParameters(DefaultOTETestCreationParametersInte
         test_bunches = [
                 dict(
                     model_name=[
-                    #    'Custom_Object_Detection_Gen3_ATSS',
-                    #    'Custom_Object_Detection_Gen3_SSD',
+                        'Custom_Object_Detection_Gen3_ATSS',
+                        'Custom_Object_Detection_Gen3_SSD',
                     ],
                     dataset_name='dataset1_tiled_shortened_500_A',
                     usecase='precommit',
                 ),
                 dict(
                     model_name=[
-                    #    'Custom_Object_Detection_Gen3_ATSS',
-                    #    'Custom_Object_Detection_Gen3_SSD',
+                        'Custom_Object_Detection_Gen3_ATSS',
+                        'Custom_Object_Detection_Gen3_SSD',
                     ],
                     dataset_name=[
                         'bbcd',
@@ -137,16 +137,16 @@ class InstanceSegmentationTrainingTestParameters(DefaultOTETestCreationParameter
         test_bunches = [
                 dict(
                     model_name=[
-                        # 'Custom_Counting_Instance_Segmentation_MaskRCNN_ResNet50',
-                        # 'Custom_Counting_Instance_Segmentation_MaskRCNN_EfficientNetB2B',
+                        'Custom_Counting_Instance_Segmentation_MaskRCNN_ResNet50',
+                        'Custom_Counting_Instance_Segmentation_MaskRCNN_EfficientNetB2B',
                     ],
                     dataset_name='aeromonas_short',
                     usecase='precommit',
                 ),
                 dict(
                     model_name=[
-                        # 'Custom_Counting_Instance_Segmentation_MaskRCNN_ResNet50',
-                        # 'Custom_Counting_Instance_Segmentation_MaskRCNN_EfficientNetB2B',
+                        'Custom_Counting_Instance_Segmentation_MaskRCNN_ResNet50',
+                        'Custom_Counting_Instance_Segmentation_MaskRCNN_EfficientNetB2B',
                     ],
                     dataset_name='aeromonas',
                     num_training_iters=KEEP_CONFIG_FIELD_VALUE,
