@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import attrs
+from attr import attrs
 from sys import maxsize
 
 from ote_sdk.configuration.elements import (ParameterGroup,
@@ -34,6 +34,7 @@ class LearningRateSchedule(ConfigurableEnum):
 
 @attrs
 class BaseConfig(ConfigurableParameters):
+
     @attrs
     class BaseLearningParameters(ParameterGroup):
         batch_size = configurable_integer(
