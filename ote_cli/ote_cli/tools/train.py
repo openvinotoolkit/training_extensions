@@ -89,6 +89,11 @@ def parse_args():
         help="Load only weights from previously saved checkpoint",
     )
     parser.add_argument(
+        "--resume-from",
+        required=False,
+        help="Resume training from previously saved checkpoint"
+    )
+    parser.add_argument(
         "--save-model-to",
         required="True",
         help="Location where trained model will be stored.",
@@ -143,16 +148,33 @@ def main():
         label_schema=generate_label_schema(dataset, template.task_type),
         model_template=template,
     )
+    
+    if args.load_weights or args.resume_from:
+        resume = False
+        if not args.load_weights and args.resume_from:
+            resume = True
+        elif args.load_weights and args.resume_from:
+            user_input = input("Do you want to resume training? [\033[1mY\033[0m/n]: ")
+            if len(user_input) < 1:
+                # It means that an user accepted the default choice.
+                resume = True
 
-    if args.load_weights:
+            if len(user_input) == 1:
+                user_input = user_input.lower()
+                if user_input in ["y", "n"]:
+                    if user_input == "y":
+                        resume = True
+        
+        ckpt_path = args.resume_from if resume else args.load_weights
         model_adapters = {
-            "weights.pth": ModelAdapter(read_binary(args.load_weights)),
+            "weights.pth": ModelAdapter(read_binary(ckpt_path)),
+            "resume": True if resume else False
         }
-        if osp.exists(osp.join(osp.dirname(args.load_weights), "label_schema.json")):
+        if osp.exists(osp.join(osp.dirname(ckpt_path), "label_schema.json")):
             model_adapters.update(
                 {
                     "label_schema.json": ModelAdapter(
-                        label_schema_to_bytes(read_label_schema(args.load_weights))
+                        label_schema_to_bytes(read_label_schema(ckpt_path))
                     )
                 }
             )

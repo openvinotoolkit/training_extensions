@@ -74,7 +74,7 @@ class BaseTask:
         # to override configuration at runtime
         self.override_configs = {}
 
-    def _run_task(self, stage_module, mode=None, dataset=None, parameters=None, **kwargs):
+    def _run_task(self, stage_module, mode=None, dataset=None, parameters=None, resume=False, **kwargs):
         self._initialize(dataset)
         # update model config -> model label schema
         data_classes = [label.name for label in self._labels]
@@ -95,7 +95,7 @@ class BaseTask:
         if mode is not None:
             self._mode = mode
 
-        common_cfg = ConfigDict(dict(output_path=self._output_path))
+        common_cfg = ConfigDict(dict(output_path=self._output_path, resume=resume))
 
         # build workflow using recipe configuration
         workflow = build(self._recipe_cfg, self._mode, stage_type=stage_module, common_cfg=common_cfg)

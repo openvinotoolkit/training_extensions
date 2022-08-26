@@ -393,7 +393,7 @@ class ClassificationTrainTask(ClassificationInferenceTask):
         hyperparams_str = ids_to_strings(cfg_helper.convert(self._hyperparams, dict, enum_to_str=True))
         labels = {label.name: label.color.rgb_tuple for label in self._labels}
         model_ckpt = torch.load(self._model_ckpt)
-        modelinfo = {'model': model_ckpt['state_dict'], 'config': hyperparams_str, 'labels': labels, 'VERSION': 1}
+        modelinfo = {'model': model_ckpt, 'config': hyperparams_str, 'labels': labels, 'VERSION': 1}
 
         torch.save(modelinfo, buffer)
         output_model.set_data("weights.pth", buffer.getvalue())
@@ -436,9 +436,10 @@ class ClassificationTrainTask(ClassificationInferenceTask):
         self._learning_curves = defaultdict(OTELoggerHook.Curve)
 
         stage_module = 'ClsTrainer'
+        resume = self._task_environment.model.model_adapters.get('resume', False)
         self._data_cfg = self._init_train_data_cfg(dataset)
         self._is_training = True
-        results = self._run_task(stage_module, mode='train', dataset=dataset, parameters=train_parameters)
+        results = self._run_task(stage_module, mode='train', dataset=dataset, parameters=train_parameters, resume=resume)
 
         # Check for stop signal between pre-eval and training.
         # If training is cancelled at this point,
