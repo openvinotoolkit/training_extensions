@@ -56,6 +56,7 @@ from mmdet.integration.nncf.utils import is_nncf_enabled
 
 DEFAULT_TEMPLATE_DIR = osp.join('configs', 'custom-object-detection', 'gen3_mobilenetV2_ATSS')
 
+@pytest.mark.skip(reason="This test case will be deprecated soon")
 class ModelTemplate(unittest.TestCase):
     def check_capabilities(self, template):
         self.assertTrue(template.computes_representations())
@@ -86,6 +87,7 @@ class ModelTemplate(unittest.TestCase):
 
 
 @e2e_pytest_api
+@pytest.mark.skip(reason="This test case will be deprecated soon")
 def test_configuration_yaml():
     configuration = OTEDetectionConfig()
     configuration_yaml_str = convert(configuration, str)
@@ -94,25 +96,27 @@ def test_configuration_yaml():
     assert configuration_yaml_converted == configuration_yaml_loaded
 
 
-# class Sample(unittest.TestCase):
-#     template = osp.join(DEFAULT_TEMPLATE_DIR, 'template_experimental.yaml')
+@pytest.mark.skip(reason="This test case will be deprecated soon")
+class Sample(unittest.TestCase):
+    template = osp.join(DEFAULT_TEMPLATE_DIR, 'template_experimental.yaml')
 
-#     @e2e_pytest_api
-#     def test_sample_on_cpu(self):
-#         output = run('export CUDA_VISIBLE_DEVICES=;'
-#                      'python detection_tasks/sample/sample.py '
-#                      f'--export {self.template}',
-#                      shell=True, check=True)
-#         assert output.returncode == 0
+    @e2e_pytest_api
+    def test_sample_on_cpu(self):
+        output = run('export CUDA_VISIBLE_DEVICES=;'
+                     'python detection_tasks/sample/sample.py '
+                     f'--export {self.template}',
+                     shell=True, check=True)
+        assert output.returncode == 0
 
-#     @e2e_pytest_api
-#     def test_sample_on_gpu(self):
-#         output = run('python detection_tasks/sample/sample.py '
-#                      f'--export {self.template}',
-#                      shell=True, check=True)
-#         assert output.returncode == 0
+    @e2e_pytest_api
+    def test_sample_on_gpu(self):
+        output = run('python detection_tasks/sample/sample.py '
+                     f'--export {self.template}',
+                     shell=True, check=True)
+        assert output.returncode == 0
 
 
+@pytest.mark.skip(reason="This test case will be deprecated soon")
 class API(unittest.TestCase):
     """
     Collection of tests for OTE API and OTE Model Templates
@@ -531,33 +535,33 @@ class API(unittest.TestCase):
             else:
                 print('Skipped test of OTEDetectionNNCFTask. Required NNCF module.')
 
-    # @e2e_pytest_api
-    # def test_training_gen3_ssd(self):
-    #     self.end_to_end(osp.join('configs', 'custom-object-detection', 'gen3_mobilenetV2_SSD'))
+    @e2e_pytest_api
+    def test_training_gen3_ssd(self):
+        self.end_to_end(osp.join('configs', 'custom-object-detection', 'gen3_mobilenetV2_SSD'))
 
-    # @e2e_pytest_api
-    # def test_training_gen3_atss(self):
-    #     self.end_to_end(osp.join('configs', 'custom-object-detection', 'gen3_mobilenetV2_ATSS'))
+    @e2e_pytest_api
+    def test_training_gen3_atss(self):
+        self.end_to_end(osp.join('configs', 'custom-object-detection', 'gen3_mobilenetV2_ATSS'))
 
-    # @e2e_pytest_api
-    # def test_training_gen3_vfnet(self):
-    #     self.end_to_end(osp.join('configs', 'custom-object-detection', 'gen3_resnet50_VFNet'),
-    #         export_perf_delta_tolerance=0.01)
+    @e2e_pytest_api
+    def test_training_gen3_vfnet(self):
+        self.end_to_end(osp.join('configs', 'custom-object-detection', 'gen3_resnet50_VFNet'),
+            export_perf_delta_tolerance=0.01)
 
-    # @e2e_pytest_api
-    # def test_training_yolox(self):
-    #     self.end_to_end(
-    #         osp.join('configs', 'custom-object-detection', 'cspdarknet_YOLOX'))
+    @e2e_pytest_api
+    def test_training_yolox(self):
+        self.end_to_end(
+            osp.join('configs', 'custom-object-detection', 'cspdarknet_YOLOX'))
 
-    # @e2e_pytest_api
-    # def test_training_maskrcnn_resnet50(self):
-    #     self.end_to_end(osp.join('configs',
-    #                     'custom-counting-instance-seg', 'resnet50_maskrcnn'),
-    #                     task_type=TaskType.INSTANCE_SEGMENTATION)
+    @e2e_pytest_api
+    def test_training_maskrcnn_resnet50(self):
+        self.end_to_end(osp.join('configs',
+                        'custom-counting-instance-seg', 'resnet50_maskrcnn'),
+                        task_type=TaskType.INSTANCE_SEGMENTATION)
 
-    # @e2e_pytest_api
-    # @pytest.mark.xfail(reason='CVS-83116')
-    # def test_training_maskrcnn_efficientnetb2b(self):
-    #     self.end_to_end(osp.join('configs',
-    #                     'custom-counting-instance-seg', 'efficientnetb2b_maskrcnn'),
-    #                     task_type=TaskType.INSTANCE_SEGMENTATION)
+    @e2e_pytest_api
+    @pytest.mark.xfail(reason='CVS-83116')
+    def test_training_maskrcnn_efficientnetb2b(self):
+        self.end_to_end(osp.join('configs',
+                        'custom-counting-instance-seg', 'efficientnetb2b_maskrcnn'),
+                        task_type=TaskType.INSTANCE_SEGMENTATION)

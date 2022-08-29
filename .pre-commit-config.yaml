@@ -13,7 +13,7 @@ repos:
       - id: isort
         alias: isort_rest
         name: "isort (ote_cli|external)"
-        files: '^(ote_cli|external/anomaly)/.*\.py'
+        files: '^(ote_cli|external/anomaly|external/model-preparation-algorithm)/.*\.py'
         exclude: "tests/"
 
   - repo: https://github.com/psf/black
@@ -33,7 +33,7 @@ repos:
     hooks:
       - id: flake8
         name: "flake8"
-        files: '^(ote_sdk|ote_cli|external/anomaly)/.*\.py'
+        files: '^(ote_sdk|ote_cli|external/anomaly|external/model-preparation-algorithm)/.*\.py'
         args: ["--config", ".flake8", "--max-complexity", "20"]
         exclude: ".*/protobuf"
 
@@ -79,7 +79,7 @@ repos:
     hooks:
       - id: pylint
         name: "pylint"
-        files: '^(ote_sdk|ote_cli|external/anomaly)/.*\.py'
+        files: '^(ote_sdk|ote_cli|external/anomaly|external/model-preparation-algorithm)/.*\.py'
         entry: pylint
         language: system
         types: [python]
