@@ -81,7 +81,7 @@ class BaseConfig(ConfigurableParameters):
             affects_outcome_of=ModelLifecycle.TRAINING
         )
         
-        patience = configurable_boolean(
+        patience = configurable_integer(
             default_value=5,
             min_value=0,
             max_value=50,

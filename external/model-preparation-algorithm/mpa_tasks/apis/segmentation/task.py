@@ -156,6 +156,8 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         return ConfigDict(
             optimizer=ConfigDict(lr=self._hyperparams.learning_parameters.learning_rate),
             lr_config=lr_config,
+            early_stop=self._hyperparams.learning_parameters.enable_early_stopping,
+            patience=int(self._hyperparams.learning_parameters.patience),
             data=ConfigDict(
                 samples_per_gpu=int(self._hyperparams.learning_parameters.batch_size),
                 workers_per_gpu=int(self._hyperparams.learning_parameters.num_workers),
@@ -286,7 +288,7 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         cfg.save_best = 'mDice'
         cfg.rule = 'greater'
         # EarlyStoppingHook
-        cfg.early_stop_metric = 'mDice'
+        config.early_stop_metric = 'mDice'
 
 class SegmentationTrainTask(SegmentationInferenceTask, ITrainingTask):
     def save_model(self, output_model: ModelEntity):

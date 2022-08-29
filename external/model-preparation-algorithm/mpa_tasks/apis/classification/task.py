@@ -262,6 +262,8 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         return ConfigDict(
             optimizer=ConfigDict(lr=self._hyperparams.learning_parameters.learning_rate),
             lr_config=lr_config,
+            early_stop=self._hyperparams.learning_parameters.enable_early_stopping,
+            patience=int(self._hyperparams.learning_parameters.patience),
             data=ConfigDict(
                 samples_per_gpu=int(self._hyperparams.learning_parameters.batch_size),
                 workers_per_gpu=int(self._hyperparams.learning_parameters.num_workers),
@@ -371,13 +373,13 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         cfg = config.evaluation
         if self._multilabel:
             cfg.metric = ['accuracy-mlc', 'mAP', 'CP', 'OP', 'CR', 'OR', 'CF1', 'OF1']
-            cfg.early_stop_metric = 'mAP'
+            config.early_stop_metric = 'mAP'
         elif self._hierarchical:
             cfg.metric = ['MHAcc', 'avgClsAcc', 'mAP']
-            cfg.early_stop_metric = 'mAP'
+            config.early_stop_metric = 'mAP'
         else:
             cfg.metric = ['accuracy', 'class_accuracy']
-            cfg.early_stop_metric = 'accuracy'
+            config.early_stop_metric = 'accuracy'
 
 
 class ClassificationTrainTask(ClassificationInferenceTask):

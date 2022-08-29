@@ -73,7 +73,7 @@ class BaseTask:
         self.on_hook_initialized = self.OnHookInitialized(self)
 
         # to override configuration at runtime
-        self.override_configs = {}
+        self.override_configs = defaultdict(list)
 
     def _run_task(self, stage_module, mode=None, dataset=None, parameters=None, **kwargs):
         self._initialize(dataset)
@@ -161,27 +161,28 @@ class BaseTask:
         # Put early stop hook
         if self._recipe_cfg.early_stop is True:
             patience = self._recipe_cfg.patience
-            metric = self._recipe_cfg.evaluation.early_stop_metric
+            metric = self._recipe_cfg.early_stop_metric
             
-            hook_type=[]
-            custom_hooks = self.override_configs.get('custom_hooks', None)
-            if custom_hooks is not None:
-                hook_type = [hook.type for hook in custom_hooks]
+            custom_hooks = self._recipe_cfg.get('custom_hooks',[])
+            early_stop_hook = dict(
+                        type='LazyEarlyStoppingHook',
+                        start=3,
+                        patience=patience,
+                        interval=1,
+                        metric=metric,
+                        priority=75,
+                    )
+
+            for hook in custom_hooks:
+                if hook.type in ['EarlyStoppingHook','LazyEarlyStoppingHook']:
+                    early_stop_hook = hook
+                    break
             
-            if custom_hooks is None or ('EarlyStoppingHook' or 'LazyEarlyStoppingHook' not in hook_type):
-                early_stop_hook = dict(
-                                        type='LazyEarlyStoppingHook',
-                                        start=3,
-                                        patience=patience,
-                                        metric=metric,
-                                        priority=75,
-                                    )
-                custom_hooks.append(early_stop_hook)
-            else:
-                for hook in custom_hooks:
-                    if hook.type in ['EarlyStoppingHook','LazyEarlyStoppingHook']:
-                        hook.patience = patience
-        
+            early_stop_hook['patience']=patience
+            early_stop_hook['metric']=metric
+
+            self.update_override_configurations({"custom_hooks" : [early_stop_hook]})
+
         if "custom_hooks" in self.override_configs:
             override_custom_hooks = self.override_configs.pop("custom_hooks")
             for override_custom_hook in override_custom_hooks:
