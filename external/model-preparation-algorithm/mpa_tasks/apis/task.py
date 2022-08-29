@@ -168,6 +168,7 @@ class BaseTask:
                         type='LazyEarlyStoppingHook',
                         start=3,
                         patience=patience,
+                        iteration_patience=0,
                         interval=1,
                         metric=metric,
                         priority=75,
