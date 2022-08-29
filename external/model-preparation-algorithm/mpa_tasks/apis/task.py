@@ -76,7 +76,9 @@ class BaseTask:
         self.override_configs = defaultdict(list)
 
     def _run_task(self, stage_module, mode=None, dataset=None, parameters=None, **kwargs):
-        self._initialize(dataset)
+        # FIXME: Temporary remedy for CVS-88098
+        export = kwargs.get('export', False)
+        self._initialize(dataset, export=export)
         # update model config -> model label schema
         data_classes = [label.name for label in self._labels]
         model_classes = [label.name for label in self._model_label_schema]
@@ -149,15 +151,17 @@ class BaseTask:
     def hyperparams(self):
         return self._hyperparams
 
-    def _initialize(self, dataset=None, output_model=None):
+    def _initialize(self, dataset=None, output_model=None, export=False):
         """ prepare configurations to run a task through MPA's stage
         """
         logger.info('initializing....')
         self._init_recipe()
-        recipe_hparams = self._init_recipe_hparam()
-        if len(recipe_hparams) > 0:
-            self._recipe_cfg.merge_from_dict(recipe_hparams)
-
+        
+        if not export:
+            recipe_hparams = self._init_recipe_hparam()
+            if len(recipe_hparams) > 0:
+                self._recipe_cfg.merge_from_dict(recipe_hparams)
+        
         # Put early stop hook
         if self._recipe_cfg.early_stop is True:
             patience = self._recipe_cfg.patience

@@ -128,8 +128,7 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         output_model.optimization_type = ModelOptimizationType.MO
 
         stage_module = 'SegExporter'
-        self._initialize()
-        results = self._run_task(stage_module, mode='train', precision=self._precision[0].name)
+        results = self._run_task(stage_module, mode='train', precision='FP32', export=True)
         results = results.get('outputs')
         logger.debug(f'results of run_task = {results}')
         if results is None:
@@ -144,7 +143,7 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
                 output_model.set_data('openvino.bin', f.read())
             with open(xml_file, "rb") as f:
                 output_model.set_data('openvino.xml', f.read())
-            output_model.precision = self._precision
+            output_model.precision = [ModelPrecision.FP32]
             output_model.optimization_methods = self._optimization_methods
             output_model.set_data("label_schema.json", label_schema_to_bytes(self._task_environment.label_schema))
         logger.info('Exporting completed')
@@ -181,7 +180,9 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         elif train_type == TrainType.Incremental:
             recipe = os.path.join(recipe_root, 'class_incr.py')
         else:
-            raise NotImplementedError(f'train type {train_type} is not implemented yet.')
+            # raise NotImplementedError(f'train type {train_type} is not implemented yet.')
+            # FIXME: Temporary remedy for CVS-88098
+            logger.warning(f'train type {train_type} is not implemented yet.')
 
         self._recipe_cfg = MPAConfig.fromfile(recipe)
         self._patch_datasets(self._recipe_cfg)  # for OTE compatibility
