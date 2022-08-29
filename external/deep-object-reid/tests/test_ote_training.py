@@ -130,16 +130,16 @@ class ClassificationTrainingTestParameters(DefaultOTETestCreationParametersInter
         test_bunches = [
                 dict(
                     model_name=[
-                    #    'Custom_Image_Classification_EfficientNet-V2-S',
-                    #    'Custom_Image_Classification_MobileNet-V3-large-1x',
+                        'Custom_Image_Classification_EfficientNet-V2-S',
+                        'Custom_Image_Classification_MobileNet-V3-large-1x',
                     ],
                     dataset_name=['lg_chem_short','mlc_voc_short'],
                     usecase='precommit',
                 ),
                 dict(
                     model_name=[
-                    #    'Custom_Image_Classification_EfficientNet-V2-S',
-                    #    'Custom_Image_Classification_MobileNet-V3-large-1x',
+                        'Custom_Image_Classification_EfficientNet-V2-S',
+                        'Custom_Image_Classification_MobileNet-V3-large-1x',
                     ],
                     dataset_name=['lg_chem','cifar100','mlc_voc'],
                     max_num_epochs=KEEP_CONFIG_FIELD_VALUE,
