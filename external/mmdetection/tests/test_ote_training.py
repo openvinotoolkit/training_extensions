@@ -336,6 +336,7 @@ class TestOTEReallifeObjectDetection(OTETrainingTestInterface):
         return test_case
 
     @e2e_pytest_performance
+    @pytest.mark.skip(reason="This test case will be deprecated soon")
     def test(self,
              test_parameters,
              test_case_fx, data_collector_fx,
@@ -377,6 +378,7 @@ class TestInstanceSegmentation(OTETrainingTestInterface):
         return test_case
 
     @e2e_pytest_performance
+    @pytest.mark.skip(reason="This test case will be deprecated soon")
     def test(self,
              test_parameters,
              test_case_fx, data_collector_fx,
