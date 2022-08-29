@@ -135,10 +135,10 @@ learning_parameters:
     warning: null
   patience:
     affects_outcome_of: TRAINING
-    default_value: 5
-    description: "Number of epochs with no improvement after which the training will be reducedwhen enabled early stopping"
+    default_value: 10
+    description: Number of epochs without improvement before the system will automatically stop training.
     editable: true
-    header: Number of iterations for learning rate warmup
+    header: Early stopping patience
     max_value: 50
     min_value: 0
     type: INTEGER
@@ -147,7 +147,7 @@ learning_parameters:
       operator: AND
       rules: []
       type: UI_RULES
-    value: 5
+    value: 10
     visible_in_ui: true
     warning: null
   type: PARAMETER_GROUP
