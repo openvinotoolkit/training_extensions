@@ -156,12 +156,12 @@ class BaseTask:
         """
         logger.info('initializing....')
         self._init_recipe()
-        
+
         if not export:
             recipe_hparams = self._init_recipe_hparam()
             if len(recipe_hparams) > 0:
                 self._recipe_cfg.merge_from_dict(recipe_hparams)
-        
+
         # Put early stop hook
         if self._recipe_cfg.early_stop is True:
             patience = self._recipe_cfg.patience
