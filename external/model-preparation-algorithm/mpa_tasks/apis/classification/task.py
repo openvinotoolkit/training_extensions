@@ -39,10 +39,12 @@ from ote_sdk.entities.model import (  # ModelStatus
     ModelOptimizationType,
     ModelPrecision,
 )
+from ote_sdk.entities.annotation import Annotation
 from ote_sdk.entities.model_template import parse_model_template
 from ote_sdk.entities.result_media import ResultMediaEntity
 from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.scored_label import ScoredLabel
+from ote_sdk.entities.shapes.rectangle import Rectangle
 from ote_sdk.entities.subset import Subset
 from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.entities.tensor import TensorEntity
@@ -238,7 +240,7 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
                 cls_label = ScoredLabel(self._labels[label_idx], probability=float(prediction_item[label_idx]))
                 item_labels.append(cls_label)
 
-            dataset_item.append_labels(item_labels)
+            dataset_item.append_annotations([Annotation(Rectangle.generate_full_box(), labels=item_labels)])
 
             if feature_vector is not None:
                 active_score = TensorEntity(name="representation_vector", numpy=feature_vector.reshape(-1))
