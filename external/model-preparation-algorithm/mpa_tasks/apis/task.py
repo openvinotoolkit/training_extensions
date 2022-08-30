@@ -162,31 +162,31 @@ class BaseTask:
             if len(recipe_hparams) > 0:
                 self._recipe_cfg.merge_from_dict(recipe_hparams)
 
-        # Put early stop hook
-        if self._recipe_cfg.early_stop is True:
-            patience = self._recipe_cfg.patience
-            metric = self._recipe_cfg.early_stop_metric
-            
-            custom_hooks = self._recipe_cfg.get('custom_hooks',[])
-            early_stop_hook = dict(
-                        type='LazyEarlyStoppingHook',
-                        start=3,
-                        patience=patience,
-                        iteration_patience=0,
-                        interval=1,
-                        metric=metric,
-                        priority=75,
-                    )
+            # Put early stop hook
+            if self._recipe_cfg.early_stop is True:
+                patience = self._recipe_cfg.patience
+                metric = self._recipe_cfg.early_stop_metric
+                
+                custom_hooks = self._recipe_cfg.get('custom_hooks',[])
+                early_stop_hook = dict(
+                            type='LazyEarlyStoppingHook',
+                            start=3,
+                            patience=patience,
+                            iteration_patience=0,
+                            interval=1,
+                            metric=metric,
+                            priority=75,
+                        )
 
-            for hook in custom_hooks:
-                if hook.type in ['EarlyStoppingHook','LazyEarlyStoppingHook']:
-                    early_stop_hook = hook
-                    break
-            
-            early_stop_hook['patience']=patience
-            early_stop_hook['metric']=metric
+                for hook in custom_hooks:
+                    if hook.type in ['EarlyStoppingHook','LazyEarlyStoppingHook']:
+                        early_stop_hook = hook
+                        break
+                
+                early_stop_hook['patience'] = patience
+                early_stop_hook['metric'] = metric
 
-            self.update_override_configurations({"custom_hooks" : [early_stop_hook]})
+                self.update_override_configurations({"custom_hooks" : [early_stop_hook]})
 
         if "custom_hooks" in self.override_configs:
             override_custom_hooks = self.override_configs.pop("custom_hooks")

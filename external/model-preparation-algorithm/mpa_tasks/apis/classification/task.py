@@ -304,14 +304,6 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
             cfg_path = os.path.join(base_dir, 'model.py')
         cfg = MPAConfig.fromfile(cfg_path)
 
-        # To initialize different HP according to task / Support HP change via CLI & UI
-        if not self._multilabel:
-            template = MPAConfig.fromfile(self.template_file_path)
-            template_params = template.hyper_parameters.parameter_overrides.learning_parameters
-            incoming_params = self._hyperparams.learning_parameters
-            if cfg.get('runner', False) and (template_params.num_iters.default_value != incoming_params.num_iters):
-                cfg.runner.max_epochs = incoming_params.num_iters
-
         cfg.model.multilabel = self._multilabel
         cfg.model.hierarchical = self._hierarchical
         if self._hierarchical:
