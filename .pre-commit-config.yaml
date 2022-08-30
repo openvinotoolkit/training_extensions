@@ -79,7 +79,7 @@ repos:
     hooks:
       - id: pylint
         name: "pylint"
-        files: '^(ote_sdk|ote_cli|external/anomaly|external/model-preparation-algorithm)/.*\.py'
+        files: '^(ote_sdk|ote_cli|external/anomaly)/.*\.py'
         entry: pylint
         language: system
         types: [python]
