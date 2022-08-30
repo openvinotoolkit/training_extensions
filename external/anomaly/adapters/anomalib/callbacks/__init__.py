@@ -16,6 +16,5 @@
 
 from .inference import AnomalyInferenceCallback
 from .progress import ProgressCallback
-from .score_report import ScoreReportingCallback
 
-__all__ = ["AnomalyInferenceCallback", "ProgressCallback", "ScoreReportingCallback"]
+__all__ = ["AnomalyInferenceCallback", "ProgressCallback"]
