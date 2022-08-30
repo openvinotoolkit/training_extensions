@@ -18,7 +18,7 @@ import ctypes
 import io
 import os
 import shutil
-import subprocess  # nosec
+import subprocess
 import tempfile
 from glob import glob
 from typing import Dict, List, Optional, Union
@@ -242,8 +242,8 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         logger.info("Exporting the OpenVINO model.")
         onnx_path = os.path.join(self.config.project.path, "onnx_model.onnx")
         self._export_to_onnx(onnx_path)
-        optimize_command = "mo --input_model " + onnx_path + " --output_dir " + self.config.project.path
-        subprocess.call(optimize_command, shell=True)
+        optimize_command = ["mo", "--input_model", onnx_path, "--output_dir", self.config.project.path]
+        subprocess.run(optimize_command, check=True)
         bin_file = glob(os.path.join(self.config.project.path, "*.bin"))[0]
         xml_file = glob(os.path.join(self.config.project.path, "*.xml"))[0]
         with open(bin_file, "rb") as file:
