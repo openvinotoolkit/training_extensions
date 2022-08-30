@@ -26,7 +26,7 @@ from ote_sdk.test_suite.training_tests_helper import (
     OTETrainingTestInterface,
 )
 
-from helpers import (
+from test_helpers import (
     get_test_action_classes,
     create_segmentation_dataset_and_labels_schema,
     get_dataset_params_from_dataset_definitions,

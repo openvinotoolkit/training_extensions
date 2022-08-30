@@ -36,7 +36,7 @@ from ote_sdk.tests.test_helpers import generate_random_annotated_image
 from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType
 from ote_sdk.utils.shape_factory import ShapeFactory
 
-from helpers import eval
+from api_helpers import eval
 
 
 DEFAULT_DET_TEMPLATE_DIR = osp.join("configs", "detection", "mobilenetv2_atss_cls_incr")

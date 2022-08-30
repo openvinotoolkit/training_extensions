@@ -37,7 +37,7 @@ from ote_sdk.entities.train_parameters import TrainParameters
 from ote_sdk.test_suite.e2e_test_system import e2e_pytest_api
 from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType
 
-from helpers import eval
+from api_helpers import eval
 
 
 DEFAULT_CLS_TEMPLATE_DIR = osp.join(
