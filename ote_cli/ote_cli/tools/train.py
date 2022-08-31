@@ -89,7 +89,7 @@ def parse_args():
         help="Load only weights from previously saved checkpoint",
     )
     parser.add_argument(
-        "--resume-from",
+        "--resume",
         required=False,
         help="Resume training from previously saved checkpoint"
     )
@@ -149,35 +149,21 @@ def main():
         model_template=template,
     )
     
-    if args.load_weights or args.resume_from:
-        resume = False
-        if not args.load_weights and args.resume_from:
-            resume = True
-        elif args.load_weights and args.resume_from:
-            user_input = input("Do you want to resume training? [\033[1mY\033[0m/n]: ")
-            if len(user_input) < 1:
-                # It means that an user accepted the default choice.
-                resume = True
-
-            if len(user_input) == 1:
-                user_input = user_input.lower()
-                if user_input in ["y", "n"]:
-                    if user_input == "y":
-                        resume = True
-        
-        ckpt_path = args.resume_from if resume else args.load_weights
+    if args.load_weights:
         model_adapters = {
-            "weights.pth": ModelAdapter(read_binary(ckpt_path)),
-            "resume": True if resume else False
+            "weights.pth": ModelAdapter(read_binary(args.load_weights)),
         }
-        if osp.exists(osp.join(osp.dirname(ckpt_path), "label_schema.json")):
+        if osp.exists(osp.join(osp.dirname(args.load_weights), "label_schema.json")):
             model_adapters.update(
                 {
                     "label_schema.json": ModelAdapter(
-                        label_schema_to_bytes(read_label_schema(ckpt_path))
+                        label_schema_to_bytes(read_label_schema(args.load_weights))
                     )
                 }
             )
+        if args.resume:
+            model_adapters.update({"resume": True})
+
         environment.model = ModelEntity(
             train_dataset=dataset,
             configuration=environment.get_model_configuration(),

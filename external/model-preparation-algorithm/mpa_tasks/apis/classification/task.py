@@ -436,10 +436,10 @@ class ClassificationTrainTask(ClassificationInferenceTask):
         self._learning_curves = defaultdict(OTELoggerHook.Curve)
 
         stage_module = 'ClsTrainer'
-        resume = self._task_environment.model.model_adapters.get('resume', False)
+
         self._data_cfg = self._init_train_data_cfg(dataset)
         self._is_training = True
-        results = self._run_task(stage_module, mode='train', dataset=dataset, parameters=train_parameters, resume=resume)
+        results = self._run_task(stage_module, mode='train', dataset=dataset, parameters=train_parameters, resume=self._resume)
 
         # Check for stop signal between pre-eval and training.
         # If training is cancelled at this point,

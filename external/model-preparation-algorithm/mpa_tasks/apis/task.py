@@ -45,6 +45,7 @@ class BaseTask:
         self._model_label_schema = []
         self._optimization_methods = []
         self._model_ckpt = None
+        self._resume = False
         self._anchors = {}
         if task_environment.model is not None:
             logger.info('loading the model from the task env.')
@@ -55,6 +56,7 @@ class BaseTask:
                     os.remove(self._model_ckpt)
                 torch.save(state_dict, self._model_ckpt)
                 self._model_label_schema = self._load_model_label_schema(self._task_environment.model)
+                self._resume = self._load_resume_info(self._task_environment.model)
 
         # property below will be initialized by initialize()
         self._recipe_cfg = None
@@ -249,6 +251,9 @@ class BaseTask:
             return model_label_schema.get_labels(include_empty=False)
         else:
             return self._labels
+
+    def _load_resume_info(self, model: ModelEntity):
+        return True if "resume" in model.model_adapters else False
 
     @staticmethod
     def _get_meta_keys(pipeline_step):
