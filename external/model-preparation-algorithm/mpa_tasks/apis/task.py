@@ -190,11 +190,13 @@ class BaseTask:
             else:
                 custom_hooks = self._recipe_cfg.get('custom_hooks',[])
                 if len(custom_hooks) > 0:
+                    idx_early_stop = None
                     for i, hook in enumerate(custom_hooks):
                         if hook.type in ['EarlyStoppingHook','LazyEarlyStoppingHook']:
                             idx_early_stop = i
                             break
-                    del custom_hooks[idx_early_stop]
+                    if idx_early_stop is not None:
+                        del custom_hooks[idx_early_stop]
 
         if "custom_hooks" in self.override_configs:
             override_custom_hooks = self.override_configs.pop("custom_hooks")
