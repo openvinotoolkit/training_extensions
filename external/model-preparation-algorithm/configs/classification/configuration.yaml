@@ -123,7 +123,7 @@ learning_parameters:
     default_value: true
     description: Adaptive early exit from training when accuracy isn't changed or decreased for several epochs.
     editable: true
-    header: Enable adaptive early stopping of the training
+    header: Enable early stopping of the training
     type: BOOLEAN
     ui_rules:
       action: DISABLE_EDITING
@@ -148,7 +148,6 @@ learning_parameters:
       type: UI_RULES
     value: 10
     visible_in_ui: true
-    warning: null
   type: PARAMETER_GROUP
   visible_in_ui: true
 pot_parameters:

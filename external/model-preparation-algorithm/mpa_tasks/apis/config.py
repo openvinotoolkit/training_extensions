@@ -91,7 +91,7 @@ class BaseConfig(ConfigurableParameters):
             max_value=50,
             header="Early stopping patience",
             description="Number of epochs without improvement before the system will automatically stop training.",
-            warning="Early stopping patience is applied exclusively when adaptive early stopping is enabled.",
+            warning="Early stopping patience is applied exclusively when early stopping is enabled.",
             affects_outcome_of=ModelLifecycle.TRAINING
         )
 
