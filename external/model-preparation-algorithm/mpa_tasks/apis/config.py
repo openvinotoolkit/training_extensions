@@ -79,7 +79,7 @@ class BaseConfig(ConfigurableParameters):
 
         enable_early_stopping = configurable_boolean(
             default_value=True,
-            header="Enable adaptive early stopping of the training",
+            header="Enable early stopping of the training",
             description="Adaptive early exit from training when accuracy isn't \
                          changed or decreased for several epochs.",
             affects_outcome_of=ModelLifecycle.TRAINING
