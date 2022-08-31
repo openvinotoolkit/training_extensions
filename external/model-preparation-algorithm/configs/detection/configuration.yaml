@@ -149,6 +149,7 @@ learning_parameters:
       type: UI_RULES
     value: 10
     visible_in_ui: true
+    warning: Early stopping patience is applied exclusively when early stopping is enabled.
   type: PARAMETER_GROUP
   visible_in_ui: true
 postprocessing:
