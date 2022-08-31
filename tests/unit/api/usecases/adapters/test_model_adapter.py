@@ -33,7 +33,7 @@ class TestIDataSource:
             IDataSource().data()
 
 
-class TestDataSource(IDataSource):
+class DummyDataSource(IDataSource):
     def __init__(self, data: str):
         self._data = data
 
@@ -66,7 +66,7 @@ class TestModelAdapter:
         """
         # Checking properties of "ModelAdapter" initialized with IDataSource "data_source"
         data = "some data"
-        data_source = TestDataSource(data=data)
+        data_source = DummyDataSource(data=data)
         model_adapter = ModelAdapter(data_source=data_source)
         assert model_adapter.data_source == data_source
         assert model_adapter.from_file_storage
@@ -104,10 +104,10 @@ class TestModelAdapter:
         3. Check properties of ModelAdapter object after manual setting "data_source" property to other bytes object
         4. Check properties of ModelAdapter object after manual setting "data_source" property to IDataSource object
         """
-        model_adapter = ModelAdapter(data_source=TestDataSource(data="some data"))
+        model_adapter = ModelAdapter(data_source=DummyDataSource(data="some data"))
         # Checking properties of ModelAdapter after manual setting "data_source" to other IDataSource
         other_data = "other data"
-        other_data_source = TestDataSource(data=other_data)
+        other_data_source = DummyDataSource(data=other_data)
         model_adapter.data_source = other_data_source
         assert model_adapter.data_source == other_data_source
         assert model_adapter.data == other_data
@@ -155,7 +155,7 @@ class TestExportableCodeAdapter:
         """
         # Checking properties of "ExportableCodeAdapter" initialized with IDataSource "data_source"
         data = "some_data"
-        data_source = TestDataSource(data=data)
+        data_source = DummyDataSource(data=data)
         exportable_code_adapter = ExportableCodeAdapter(data_source=data_source)
         assert exportable_code_adapter.data_source == data_source
         assert exportable_code_adapter.from_file_storage
