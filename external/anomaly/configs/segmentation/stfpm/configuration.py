@@ -15,7 +15,7 @@
 # and limitations under the License.
 
 from attr import attrs
-from configs.stfpm import STFPMAnomalyBaseConfig
+from configs.base import STFPMAnomalyBaseConfig
 
 
 @attrs

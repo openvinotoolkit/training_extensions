@@ -15,7 +15,7 @@
 # and limitations under the License.
 
 from attr import attrs
-from configs.padim import PadimAnomalyBaseConfig
+from configs.base import PadimAnomalyBaseConfig
 
 
 @attrs

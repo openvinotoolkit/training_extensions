@@ -15,7 +15,7 @@
 # and limitations under the License.
 
 from attr import attrs
-from configs.draem import DraemAnomalyBaseConfig
+from configs.base import DraemAnomalyBaseConfig
 
 
 @attrs

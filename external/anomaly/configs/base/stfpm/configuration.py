@@ -15,7 +15,7 @@
 # and limitations under the License.
 
 from attr import attrs
-from configs.base import BaseAnomalyConfig
+from configs.base.configuration import BaseAnomalyConfig
 from configs.base.configuration_enums import EarlyStoppingMetrics, ModelBackbone
 from ote_sdk.configuration.elements import (
     ParameterGroup,
