@@ -60,6 +60,12 @@ def build_argparser():
         default=False,
         action="store_true",
     )
+    args.add_argument(
+        "--no_show",
+        help="Optional. Disables showing inference results on UI.",
+        default=False,
+        action="store_true",
+    )
 
     return parser
 
@@ -91,14 +97,14 @@ def main():
     inferencer = get_inferencer_class(args.inference_type, models)
 
     # create visualizer
-    visualizer = create_visualizer(models[-1].task_type)
+    visualizer = create_visualizer(models[-1].task_type, no_show=args.no_show)
 
     if len(models) == 1:
         models = models[0]
 
     # create inferencer and run
     demo = inferencer(models, visualizer)
-    demo.run(args.input, args.loop)
+    demo.run(args.input, args.loop and not args.no_show)
 
 
 if __name__ == "__main__":

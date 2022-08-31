@@ -233,6 +233,7 @@ def get_requirements(requirement_files: Union[str, List[str]]) -> List[str]:
 REQUIRED_PACKAGES = get_requirements(requirement_files=["base", "dev", "openvino"])
 EXTRAS_REQUIRE = {
     "anomaly": get_requirements(requirement_files="anomaly"),
+    "full": get_requirements(requirement_files=["anomaly"]),
 }
 
 

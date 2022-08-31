@@ -29,15 +29,17 @@ class AnomalyVisualizer(Visualizer):
         window_name: Optional[str] = None,
         show_count: bool = False,
         is_one_label: bool = False,
+        no_show: bool = False,
         delay: Optional[int] = None,
     ) -> None:
-        super().__init__(window_name, show_count, is_one_label, delay)
-        cv2.namedWindow(
-            self.window_name,
-            cv2.WINDOW_NORMAL | cv2.WINDOW_KEEPRATIO | cv2.WINDOW_GUI_EXPANDED,
-        )
-        self.trackbar_name = "Opacity"
-        cv2.createTrackbar(self.trackbar_name, self.window_name, 0, 100, lambda x: x)
+        super().__init__(window_name, show_count, is_one_label, no_show, delay)
+        if not no_show:
+            cv2.namedWindow(
+                self.window_name,
+                cv2.WINDOW_NORMAL | cv2.WINDOW_KEEPRATIO | cv2.WINDOW_GUI_EXPANDED,
+            )
+            self.trackbar_name = "Opacity"
+            cv2.createTrackbar(self.trackbar_name, self.window_name, 0, 100, lambda x: x)
 
     @staticmethod
     def to_heat_mask(mask: np.ndarray) -> np.ndarray:

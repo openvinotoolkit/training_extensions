@@ -36,8 +36,15 @@ class IVisualizer(metaclass=abc.ABCMeta):
         """
         raise NotImplementedError
 
+    @abc.abstractmethod
     def show(self, image: np.ndarray) -> None:
         """Show result image."""
+
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def is_quit(self) -> bool:
+        """Check if user wishes to quit."""
 
         raise NotImplementedError
 
@@ -57,12 +64,14 @@ class Visualizer(IVisualizer):
         window_name: Optional[str] = None,
         show_count: bool = False,
         is_one_label: bool = False,
+        no_show: bool = False,
         delay: Optional[int] = None,
     ) -> None:
         self.window_name = "Window" if window_name is None else window_name
         self.shape_drawer = ShapeDrawer(show_count, is_one_label)
 
         self.delay = delay
+        self.no_show = no_show
         if delay is None:
             self.delay = 1
 
@@ -93,8 +102,12 @@ class Visualizer(IVisualizer):
             image (np.ndarray): Image to be shown.
         """
 
-        cv2.imshow(self.window_name, image)
+        if not self.no_show:
+            cv2.imshow(self.window_name, image)
 
     def is_quit(self) -> bool:
         """Check user wish to quit."""
+        if self.no_show:
+            return False
+
         return ord("q") == cv2.waitKey(self.delay)

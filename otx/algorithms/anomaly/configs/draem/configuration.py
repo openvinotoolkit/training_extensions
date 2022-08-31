@@ -6,8 +6,8 @@
 
 from attr import attrs
 from configs.base import BaseAnomalyConfig
-from configs.base.configuration_enums import EarlyStoppingMetrics
 
+from otx.algorithms.anomaly.configs.base.configuration_enums import EarlyStoppingMetrics
 from otx.api.configuration.elements import (
     ParameterGroup,
     add_parameter_group,

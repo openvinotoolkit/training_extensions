@@ -152,8 +152,9 @@ def split_local_global_resultset(
     :param resultset: Input result set
     :return: Globally annotated result set, locally annotated result set
     """
-    global_gt_dataset, local_gt_dataset = split_local_global_dataset(
-        resultset.ground_truth_dataset
+    global_gt_dataset = get_global_subset(resultset.ground_truth_dataset)
+    local_gt_dataset = get_local_subset(
+        resultset.ground_truth_dataset, include_normal=False
     )
     local_idx = get_fully_annotated_idx(resultset.ground_truth_dataset)
     global_pred_dataset = get_global_subset(resultset.prediction_dataset)

@@ -4,6 +4,6 @@
 #
 
 from .anomaly_visualizer import AnomalyVisualizer
-from .visualizer import Visualizer
+from .visualizer import IVisualizer, Visualizer
 
-__all__ = ["AnomalyVisualizer", "Visualizer"]
+__all__ = ["AnomalyVisualizer", "IVisualizer", "Visualizer"]
