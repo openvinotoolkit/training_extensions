@@ -147,6 +147,37 @@ learning_parameters:
     value: 0
     visible_in_ui: true
     warning: null
+  enable_early_stopping:
+    affects_outcome_of: TRAINING
+    default_value: true
+    description: Adaptive early exit from training when accuracy isn't changed or decreased for several epochs.
+    editable: true
+    header: Enable adaptive early stopping of the training
+    type: BOOLEAN
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    visible_in_ui: true
+    warning: null
+  patience:
+    affects_outcome_of: TRAINING
+    default_value: 8
+    description: Number of epochs without improvement before the system will automatically stop training.
+    editable: true
+    header: Early stopping patience
+    max_value: 50
+    min_value: 0
+    type: INTEGER
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: 8
+    visible_in_ui: true
+    warning: null
   type: PARAMETER_GROUP
   visible_in_ui: true
 postprocessing:
@@ -184,37 +215,6 @@ postprocessing:
       rules: []
       type: UI_RULES
     value: true
-    visible_in_ui: true
-    warning: null
-  enable_early_stopping:
-    affects_outcome_of: TRAINING
-    default_value: true
-    description: Adaptive early exit from training when accuracy isn't changed or decreased for several epochs.
-    editable: true
-    header: Enable adaptive early stopping of the training
-    type: BOOLEAN
-    ui_rules:
-      action: DISABLE_EDITING
-      operator: AND
-      rules: []
-      type: UI_RULES
-    visible_in_ui: true
-    warning: null
-  patience:
-    affects_outcome_of: TRAINING
-    default_value: 8
-    description: Number of epochs without improvement before the system will automatically stop training.
-    editable: true
-    header: Early stopping patience
-    max_value: 50
-    min_value: 0
-    type: INTEGER
-    ui_rules:
-      action: DISABLE_EDITING
-      operator: AND
-      rules: []
-      type: UI_RULES
-    value: 8
     visible_in_ui: true
     warning: null
   type: PARAMETER_GROUP

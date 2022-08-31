@@ -187,6 +187,14 @@ class BaseTask:
                 early_stop_hook['metric'] = metric
 
                 self.update_override_configurations({"custom_hooks" : [early_stop_hook]})
+            else:
+                custom_hooks = self._recipe_cfg.get('custom_hooks',[])
+                if len(custom_hooks) > 0:
+                    for i, hook in enumerate(custom_hooks):
+                        if hook.type in ['EarlyStoppingHook','LazyEarlyStoppingHook']:
+                            idx_early_stop = i
+                            break
+                    del custom_hooks[idx_early_stop]
 
         if "custom_hooks" in self.override_configs:
             override_custom_hooks = self.override_configs.pop("custom_hooks")
