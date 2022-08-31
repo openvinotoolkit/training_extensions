@@ -226,10 +226,7 @@ class OTESegmentationInferenceTask(IInferenceTask, IExportTask, IEvaluationTask,
                 for label_index, label in self._label_dictionary.items():
                     if label_index == 0:
                         continue
-                    if len(soft_prediction.shape) == 3:
-                        current_label_soft_prediction = soft_prediction[:, :, label_index]
-                    else:
-                        current_label_soft_prediction = soft_prediction
+                    current_label_soft_prediction = soft_prediction[:, :, label_index]
 
                     class_act_map = get_activation_map(current_label_soft_prediction)
                     result_media = ResultMediaEntity(name='Soft Prediction',
