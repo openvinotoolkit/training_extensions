@@ -1,5 +1,4 @@
-"""
-Evaluation metrics
+"""Evaluation metrics.
 
 .. automodule:: otx.api.usecases.evaluation.accuracy
    :members:

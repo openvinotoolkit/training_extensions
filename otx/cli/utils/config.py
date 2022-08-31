@@ -1,6 +1,4 @@
-"""
-Utils for working with Configurable parameters
-"""
+"""Utils for working with Configurable parameters."""
 
 # Copyright (C) 2021 Intel Corporation
 #
@@ -18,9 +16,7 @@ Utils for working with Configurable parameters
 
 
 def override_parameters(overrides, parameters):
-    """
-    Overrides parameters values by overrides.
-    """
+    """Overrides parameters values by overrides."""
 
     allowed_keys = {"default_value", "value"}
     for k, val in overrides.items():

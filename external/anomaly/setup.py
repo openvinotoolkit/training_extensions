@@ -45,8 +45,6 @@ setup(
             "tasks.*",
             "configs",
             "configs.*",
-            "templates",
-            "templates.*",
         ]
     ),
     url="",

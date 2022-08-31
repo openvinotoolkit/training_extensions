@@ -1,6 +1,4 @@
-"""
-Async executor based on ModelAPI
-"""
+"""Async executor based on ModelAPI."""
 # Copyright (C) 2021-2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -21,8 +19,7 @@ from otx.api.usecases.exportable_code.visualizers import Visualizer
 
 
 class AsyncExecutor:
-    """
-    Async inferencer
+    """Async inferencer.
 
     Args:
         model: model for inference
@@ -36,9 +33,7 @@ class AsyncExecutor:
         self.async_pipeline = AsyncPipeline(self.model)
 
     def run(self, input_stream: Union[int, str], loop: bool = False) -> None:
-        """
-        Async inference for input stream (image, video stream, camera)
-        """
+        """Async inference for input stream (image, video stream, camera)."""
         streamer = get_streamer(input_stream, loop)
         next_frame_id = 0
         next_frame_id_to_show = 0
@@ -64,9 +59,7 @@ class AsyncExecutor:
             self.visualizer.show(output)
 
     def render_result(self, results: Tuple[Any, dict]) -> np.ndarray:
-        """
-        Render for results of inference
-        """
+        """Render for results of inference."""
         predictions, frame_meta = results
         annotation_scene = self.converter.convert_to_annotation(predictions, frame_meta)
         current_frame = frame_meta["frame"]

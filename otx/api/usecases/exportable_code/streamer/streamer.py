@@ -1,6 +1,4 @@
-"""
-Streamer for reading input
-"""
+"""Streamer for reading input."""
 
 # Copyright (C) 2021-2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
@@ -85,7 +83,6 @@ class ThreadedStreamer(BaseStreamer):
     buffer_size (int): Number of frame to buffer internally. Defaults to 2.
 
     Example:
-
         >>> streamer = VideoStreamer(path="../demo.mp4")
         >>> threaded_streamer = ThreadedStreamer(streamer)
         >>> for frame in threaded_streamer:
@@ -133,12 +130,12 @@ class ThreadedStreamer(BaseStreamer):
 
 
 class VideoStreamer(BaseStreamer):
-    """
-    Video Streamer
-    :param path: Path to the video file.
+    """Video Streamer.
 
-    :example:
+    Args:
+        path: Path to the video file.
 
+    Example:
         >>> streamer = VideoStreamer(path="../demo.mp4")
         ... for frame in streamer:
         ...    pass
@@ -153,6 +150,10 @@ class VideoStreamer(BaseStreamer):
             raise InvalidInput(f"Can't open the video from {input_path}")
 
     def __iter__(self) -> Iterator[np.ndarray]:
+        """Iterates over frames of the video.
+
+        If self.loop is set to True, the video will loop infinitely.
+        """
         while True:
             status, image = self.cap.read()
             if status:
@@ -164,16 +165,17 @@ class VideoStreamer(BaseStreamer):
                     break
 
     def get_type(self) -> MediaType:
+        """Returns the type of media."""
         return MediaType.VIDEO
 
 
 class CameraStreamer(BaseStreamer):
-    """
-    Stream video frames from camera
-    :param camera_device: Camera device index e.g, 0, 1
+    """Stream video frames from camera.
 
-    :example:
+    Args:
+        camera_device (int): Camera device index e.g, 0, 1
 
+    Example:
         >>> streamer = CameraStreamer(camera_device=0)
         ... for frame in streamer:
         ...     cv2.imshow("Window", frame)
@@ -189,10 +191,13 @@ class CameraStreamer(BaseStreamer):
             raise InvalidInput(f"Can't find the camera {camera_device}") from error
 
     def __iter__(self) -> Iterator[np.ndarray]:
-        """
-        Read video and yield the frame.
-        :param stream: Video stream captured via OpenCV's VideoCapture
-        :return: Individual frame
+        """Read video and yield the frame.
+
+        Args:
+            stream: Video stream captured via OpenCV's VideoCapture
+
+        Returns:
+            Individual frame
         """
         while True:
             frame_available, frame = self.stream.read()
@@ -204,16 +209,18 @@ class CameraStreamer(BaseStreamer):
         self.stream.release()
 
     def get_type(self) -> MediaType:
+        """Returns the type of media."""
         return MediaType.CAMERA
 
 
 class ImageStreamer(BaseStreamer):
-    """
-    Stream from image file.
-    :param path: Path to an image.
+    """Stream from image file.
 
-    :example:
+    Args:
+        input_path (str): Path to an image.
+        loop (bool): Whether to loop through the image or not. Defaults to False.
 
+    Example:
         >>> streamer = ImageStreamer(path="../images")
         ... for frame in streamer:
         ...     cv2.imshow("Window", frame)
@@ -231,6 +238,7 @@ class ImageStreamer(BaseStreamer):
         self.image = cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
 
     def __iter__(self) -> Iterator[np.ndarray]:
+        """If loop is True, yield the image again and again."""
         if not self.loop:
             yield self.image
         else:
@@ -238,16 +246,17 @@ class ImageStreamer(BaseStreamer):
                 yield self.image
 
     def get_type(self) -> MediaType:
+        """Returns the type of the streamer."""
         return MediaType.IMAGE
 
 
 class DirStreamer(BaseStreamer):
-    """
-    Stream from directory of images.
-    :param path: Path to directory.
+    """Stream from directory of images.
 
-    :example:
+    Args:
+        path: Path to directory.
 
+    Example:
         >>> streamer = DirStreamer(path="../images")
         ... for frame in streamer:
         ...     cv2.imshow("Window", frame)
@@ -272,6 +281,10 @@ class DirStreamer(BaseStreamer):
         raise OpenError(f"Can't read the first image from {input_path}")
 
     def __iter__(self) -> Iterator[np.ndarray]:
+        """Iterates over the images in a directory.
+
+        If self.loop is True, it reiterates again from the first image in the directory.
+        """
         while self.file_id < len(self.names):
             filename = os.path.join(self.dir, self.names[self.file_id])
             image = cv2.imread(str(filename), cv2.IMREAD_COLOR)
@@ -283,6 +296,7 @@ class DirStreamer(BaseStreamer):
                 yield cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
     def get_type(self) -> MediaType:
+        """Returns the type of the streamer."""
         return MediaType.DIR
 
 

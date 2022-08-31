@@ -1,6 +1,4 @@
-"""
-Model templates searching tool.
-"""
+"""Model templates searching tool."""
 
 # Copyright (C) 2021 Intel Corporation
 #
@@ -22,9 +20,7 @@ from otx.cli.registry import Registry
 
 
 def parse_args():
-    """
-    Parses command line arguments.
-    """
+    """Parses command line arguments."""
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--root", help="A root dir where templates should be searched.", default=".")
@@ -35,9 +31,7 @@ def parse_args():
 
 
 def main():
-    """
-    Main function for model templates searching.
-    """
+    """Main function for model templates searching."""
 
     args = parse_args()
 

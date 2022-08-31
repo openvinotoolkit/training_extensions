@@ -1,12 +1,12 @@
+"""This module contains the definition for the `convert` function within the configuration helper.
+
+This function can be used to convert a OTX configuration object to a dictionary or yaml representation.
+"""
 # Copyright (C) 2021-2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 
 
-"""
-This module contains the definition for the `convert` function within the configuration helper. This function can be
-used to convert a OTX configuration object to a dictionary or yaml representation.
-"""
 from enum import Enum
 from typing import Type, TypeVar
 
@@ -24,9 +24,13 @@ ConvertTypeVar = TypeVar("ConvertTypeVar", str, DictConfig, dict)
 
 
 def serialize_metadata(metadata_dict: dict, enum_to_str: bool = True) -> dict:
-    """
-    This function converts Enums in the metadata_dict to their string representation. It is used when converting
-    between yaml and python object representation of the configuration.
+    """This function converts Enums in the metadata_dict to their string representation.
+
+    It is used when converting between yaml and python object representation of the configuration.
+
+    Args:
+        metadata_dict (dict): Dictionary containing the metadata to convert
+        enum_to_str (bool): True to convert enums to their string representation, False to leave them as Enums
     """
     for key, value in metadata_dict.items():
         if isinstance(value, Enum):
@@ -42,18 +46,19 @@ def parameter_group_to_dict(
     enum_to_str: bool = False,
     values_only: bool = False,
 ) -> dict:
-    """
-    Converts an instance of a `ParameterGroup` configuration element to its dictionary
-    representation.
+    """Converts an instance of a `ParameterGroup` configuration element to its dictionary representation.
 
-    :param parameter_group: ParameterGroup to convert to dictionary representation
-    :param enum_to_str: Set to True to convert any Enum fields in the configuration to
-        their string representation.
-    :param values_only: True to keep only the parameter values, and remove all meta
-        data from the output dictionary
-    :return: Nested dictionary with keys and values corresponding to the configuration
-        defined in the instance of `ParameterGroup` for which the `to_dict` method was
-        called.
+    Args:
+        parameter_group (ParameterGroup): ParameterGroup to convert to dictionary representation
+        enum_to_str (bool): Set to True to convert any Enum fields in the configuration to
+            their string representation.
+        values_only (bool): True to keep only the parameter values, and remove all meta
+            data from the output dictionary
+
+    Returns:
+        dict: Nested dictionary with keys and values corresponding to the configuration
+            defined in the instance of `ParameterGroup` for which the `to_dict` method was
+            called.
     """
     parameter_group.update_auto_hpo_states()
     attribute_names = [attribute.name for attribute in parameter_group.__attrs_attrs__]  # type: ignore
@@ -94,22 +99,25 @@ def convert(
     id_to_str: bool = False,
     values_only: bool = False,
 ) -> ConvertTypeVar:
-    """
-    Convert a configuration object to either a yaml string, a dictionary or an
-    OmegaConf DictConfig object.
+    """Convert a configuration object to either a yaml string, a dictionary or an OmegaConf DictConfig object.
 
-    :param config: ConfigurableParameters object to convert
-    :param target: target type to convert to. Options are [str, dict, DictConfig]
-    :param enum_to_str: Boolean specifying whether to convert enums within the config
+    Args:
+        config (ConfigurableParameters): ConfigurableParameters object to convert
+        target (Type[ConvertTypeVar]): target type to convert to. Options are [str, dict, DictConfig]
+        enum_to_str (bool) : Boolean specifying whether to convert enums within the config
                         to their string representation. For conversion to yaml, enums
                         are automatically converted and this option is disregarded.
-    :param id_to_str: True to convert the id of the configurable parameters to a string
-        representation, False to leave it as an ID object
-    :param values_only: True to keep only the parameter values, and remove all meta
-        data from the target output
-    :raises: ValueError if an unsupported conversion target is supplied
-    :return: Result of the conversion, the configuration specified in `config` in the
-        representation specified in `target`
+        id_to_str (bool): True to convert the id of the configurable parameters to a string
+            representation, False to leave it as an ID object
+        values_only (bool): True to keep only the parameter values, and remove all meta
+            data from the target output
+
+    Raises:
+        ValueError: if an unsupported conversion target is supplied
+
+    Returns:
+        ConvertTypeVar: Result of the conversion, the configuration specified in `config` in the
+            representation specified in `target`
     """
     if target == str:
         enum_to_str = True
@@ -128,4 +136,4 @@ def convert(
         result = OmegaConf.create(config_dict)
     else:
         raise ValueError("Unsupported conversion target! Supported target types are [str, dict, DictConfig]")
-    return result
+    return result  # type: ignore

@@ -1,5 +1,4 @@
-"""
-Training reporting.
+"""Training reporting.
 
 .. automodule:: otx.api.usecases.reporting.callback
    :members:

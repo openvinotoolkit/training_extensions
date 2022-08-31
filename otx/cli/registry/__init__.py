@@ -1,6 +1,4 @@
-"""
-Model templates registry.
-"""
+"""Model templates registry."""
 
 # Copyright (C) 2021 Intel Corporation
 #

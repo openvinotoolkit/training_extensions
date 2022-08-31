@@ -1,6 +1,4 @@
-"""
-Visualizer for results of prediction
-"""
+"""Visualizer for results of prediction."""
 
 # Copyright (C) 2021-2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
@@ -17,9 +15,7 @@ from otx.api.utils.shape_drawer import ShapeDrawer
 
 
 class IVisualizer(metaclass=abc.ABCMeta):
-    """
-    Interface for converter
-    """
+    """Interface for converter."""
 
     @abc.abstractmethod
     def draw(
@@ -28,29 +24,28 @@ class IVisualizer(metaclass=abc.ABCMeta):
         annotation: AnnotationSceneEntity,
         meta: dict,
     ) -> np.ndarray:
-        """
-        Draw annotations on the image
-        :param image: Input image
-        :param annotation: Annotations to be drawn on the input image
-        :param metadata: Metadata is needed to render
-        :return: Output image with annotations.
+        """Draw annotations on the image.
+
+        Args:
+            image: Input image
+            annotation: Annotations to be drawn on the input image
+            metadata: Metadata is needed to render
+
+        Returns:
+            Output image with annotations.
         """
         raise NotImplementedError
 
     def show(self, image: np.ndarray) -> None:
-        """
-        Show result image
-        """
+        """Show result image."""
 
         raise NotImplementedError
 
 
 class Visualizer(IVisualizer):
-    """
-    Visualize the predicted output by drawing the annotations on the input image.
+    """Visualize the predicted output by drawing the annotations on the input image.
 
-    :example:
-
+    Example:
         >>> predictions = inference_model.predict(frame)
         >>> annotation = prediction_converter.convert_to_annotation(predictions)
         >>> output = visualizer.draw(frame, annotation.shape, annotation.get_labels())
@@ -77,11 +72,14 @@ class Visualizer(IVisualizer):
         annotation: AnnotationSceneEntity,
         meta: Optional[dict] = None,
     ) -> np.ndarray:
-        """
-        Draw annotations on the image
-        :param image: Input image
-        :param annotation: Annotations to be drawn on the input image
-        :return: Output image with annotations.
+        """Draw annotations on the image.
+
+        Args:
+            image: Input image
+            annotation: Annotations to be drawn on the input image
+
+        Returns:
+            Output image with annotations.
         """
 
         image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
@@ -89,14 +87,14 @@ class Visualizer(IVisualizer):
         return self.shape_drawer.draw(image, annotation, labels=[])
 
     def show(self, image: np.ndarray) -> None:
-        """
-        Show result image
+        """Show result image.
+
+        Args:
+            image (np.ndarray): Image to be shown.
         """
 
         cv2.imshow(self.window_name, image)
 
     def is_quit(self) -> bool:
-        """
-        Check user wish to quit
-        """
+        """Check user wish to quit."""
         return ord("q") == cv2.waitKey(self.delay)

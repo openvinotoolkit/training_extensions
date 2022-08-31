@@ -1,6 +1,4 @@
-"""
-Utils for dynamically importing stuff
-"""
+"""Utils for dynamically importing stuff."""
 
 # Copyright (C) 2021 Intel Corporation
 #

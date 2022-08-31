@@ -1,8 +1,8 @@
+"""This module define the color entity."""
 # Copyright (C) 2021-2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 
-"""This module define the color entity."""
 
 import abc
 import random
@@ -10,7 +10,7 @@ from typing import Tuple
 
 
 class ColorEntity(metaclass=abc.ABCMeta):
-    """This class represents an abstract Color, some functions are still abstract"""
+    """This class represents an abstract Color, some functions are still abstract."""
 
     def __init__(self, red: int, green: int, blue: int, alpha: int):
         self.__red = red
@@ -20,7 +20,7 @@ class ColorEntity(metaclass=abc.ABCMeta):
 
     @property
     def red(self) -> int:
-        """Returns the red color value for the ColorEntity object"""
+        """Returns the red color value for the ColorEntity object."""
         return self.__red
 
     @red.setter
@@ -29,7 +29,7 @@ class ColorEntity(metaclass=abc.ABCMeta):
 
     @property
     def green(self) -> int:
-        """Returns the green color value for the ColorEntity object"""
+        """Returns the green color value for the ColorEntity object."""
         return self.__green
 
     @green.setter
@@ -38,7 +38,7 @@ class ColorEntity(metaclass=abc.ABCMeta):
 
     @property
     def blue(self) -> int:
-        """Returns the blue color value for the ColorEntity object"""
+        """Returns the blue color value for the ColorEntity object."""
         return self.__blue
 
     @blue.setter
@@ -47,7 +47,7 @@ class ColorEntity(metaclass=abc.ABCMeta):
 
     @property
     def alpha(self) -> int:
-        """Returns the alpha value for the ColorEntity object"""
+        """Returns the alpha value for the ColorEntity object."""
         return self.__alpha
 
     @alpha.setter
@@ -57,39 +57,38 @@ class ColorEntity(metaclass=abc.ABCMeta):
     @property
     @abc.abstractmethod
     def hex_str(self) -> str:
-        """
-        Returns the color in a Hex representation
-        """
+        """Returns the color in a Hex representation."""
         raise NotImplementedError
 
     @classmethod
     @abc.abstractmethod
     def from_hex_str(cls, string: str):
-        """
-        Converts a hex string to a color
-        :param string (str): The hex string
+        """Converts a hex string to a color.
+
+        Args:
+            string (str): The hex string
         """
         raise NotImplementedError
 
     @classmethod
     @abc.abstractmethod
     def random(cls):
-        """
-        Generates a random Color
-        """
+        """Generates a random Color."""
         raise NotImplementedError
 
 
 class Color(ColorEntity):
-    """Represents an RGBA color"""
+    """Represents an RGBA color."""
 
     def __init__(self, red: int, green: int, blue: int, alpha: int = 255):
         super().__init__(red=red, green=green, blue=blue, alpha=alpha)
 
     def __repr__(self):
+        """Returns string representation of the color."""
         return f"Color(red={self.red}, green={self.green}, blue={self.blue}, alpha={self.alpha})"
 
     def __eq__(self, other):
+        """Returns True if both colors are equal."""
         if isinstance(other, Color):
             return (
                 self.red == other.red
@@ -101,31 +100,33 @@ class Color(ColorEntity):
 
     @property
     def hex_str(self) -> str:
-        """
-        Returns the color in a Hex representation
-        """
+        """Returns the color in a Hex representation."""
         return f"#{self.red:02x}{self.green:02x}{self.blue:02x}{self.alpha:02x}"
 
     @classmethod
-    def from_hex_str(cls, string: str):
-        """
-        Creates Color() instance given a hex string.
+    def from_hex_str(cls, string: str) -> "Color":
+        """Creates Color() instance given a hex string.
+
         Supports 6 character hex string (RGB), or 8 character hex string (RGBA).
         The string might optionally start with a number sign (#).
 
-        :example: Creating color object:
+        Example:
+            Creating color object:
 
-        >>> Color.from_hex_str("#ff0000")
-        Color(red=255, green=0, blue=0, alpha=255)
+            >>> Color.from_hex_str("#ff0000")
+            Color(red=255, green=0, blue=0, alpha=255)
 
-        >>> Color.from_hex_str("0000ff")
-        Color(red=0, green=0, blue=255, alpha=255)
+            >>> Color.from_hex_str("0000ff")
+            Color(red=0, green=0, blue=255, alpha=255)
 
-        >>> Color.from_hex_str("#96Ff00C8")
-        Color(red=150, green=255, blue=0, alpha=200)
+            >>> Color.from_hex_str("#96Ff00C8")
+            Color(red=150, green=255, blue=0, alpha=200)
 
-        :param string: Hex string
-        :return: Color instance
+        Args:
+            string (str): Hex string
+
+        Returns:
+            Color instance
         """
         string = string.lstrip("#").lower()
         if len(string) < 8:
@@ -135,10 +136,11 @@ class Color(ColorEntity):
         return cls(red=red, green=green, blue=blue, alpha=alpha)
 
     @classmethod
-    def random(cls):
-        """
-        Generate random Color() instance
-        :return: Color instance with random color
+    def random(cls) -> "Color":
+        """Generate random Color() instance.
+
+        Returns:
+            Color instance with random color
         """
         # This random is not used for security/cryptographic purposes, so we can ignore this possible security risk
         red, green, blue = (
@@ -150,18 +152,18 @@ class Color(ColorEntity):
 
     @property
     def rgb_tuple(self) -> Tuple[int, int, int]:
-        """
-        Retrieves the Color as a RGB tuple
+        """Retrieves the Color as a RGB tuple.
 
-        :return: Tuple[int, int, int]
+        Returns:
+            Tuple[int, int, int]
         """
         return self.red, self.green, self.blue
 
     @property
     def bgr_tuple(self) -> Tuple[int, int, int]:
-        """
-        Retrieves the Color as a BGR tuple
+        """Retrieves the Color as a BGR tuple.
 
-        :return: Tuple[int, int, int]
+        Returns:
+            Tuple[int, int, int]
         """
         return self.blue, self.green, self.red

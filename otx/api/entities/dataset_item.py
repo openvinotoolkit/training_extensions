@@ -1,4 +1,4 @@
-"""This module implements the dataset item entity"""
+"""This module implements the dataset item entity."""
 
 # Copyright (C) 2021-2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
@@ -27,9 +27,10 @@ logger = logging.getLogger(__name__)
 
 
 class DatasetItemEntity(metaclass=abc.ABCMeta):
-    """
-    DatasetItemEntity represents an item in the DatasetEntity. It holds a media item, annotation and an ROI.
-    The ROI determines the region of interest for the dataset item, and is described by a shape entity.
+    """DatasetItemEntity represents an item in the DatasetEntity.
+
+    It holds a media item, annotation and an ROI. The ROI determines the region of interest for the dataset item, and
+    is described by a shape entity.
 
     The fundamental properties of a dataset item are:
 
@@ -74,14 +75,16 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
 
     >>> dataset_item.append_labels(labels=[...])
 
-    :param media: Media item
-    :param annotation_scene: Annotation scene
-    :param roi: Region Of Interest
-    :param metadata: Metadata attached to dataset item
-    :param subset: `Subset` for item. E.g. `Subset.VALIDATION`
-    :param ignored_labels: Collection of labels that should be ignored in this dataset item.
-        For instance, in a training scenario, this parameter is used to ignore certain labels within the
-        existing annotations because their status becomes uncertain following a label schema change.
+    Args:
+        media (IMedia2DEntity): Media item
+        annotation_scene (AnnotationSceneEntity): Annotation scene
+        roi (Optional[Annotation]): Region Of Interest
+        metadata (Optional[List[MetadataItemEntity]]): Metadata attached to dataset item
+        subset (Subset): `Subset` for item. E.g. `Subset.VALIDATION`
+        ignored_labels (Optional[Union[List[LabelEntity], Tuple[LabelEntity, ...], Set[LabelEntity]]]): Collection of
+            labels that should be ignored in this dataset item. For instance, in a training scenario, this parameter is
+            used to ignore certain labels within the existing annotations because their status becomes uncertain
+            following a label schema change.
     """
 
     # pylint: disable=too-many-arguments
@@ -115,22 +118,16 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
         self.__ignored_labels: Set[LabelEntity] = set() if ignored_labels is None else set(ignored_labels)
 
     def set_metadata(self, metadata: List[MetadataItemEntity]):
-        """
-        Sets the metadata
-        """
+        """Sets the metadata."""
         self.__metadata = metadata
 
     def get_metadata(self) -> List[MetadataItemEntity]:
-        """
-        Returns the metadata
-        """
+        """Returns the metadata."""
         return self.__metadata
 
     @property
     def ignored_labels(self) -> Set[LabelEntity]:
-        """
-        Get the IDs of the labels to ignore in this dataset item
-        """
+        """Get the IDs of the labels to ignore in this dataset item."""
         return self.__ignored_labels
 
     @ignored_labels.setter
@@ -138,6 +135,7 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
         self.__ignored_labels = set(value)
 
     def __repr__(self):
+        """String representation of the dataset item."""
         return (
             f"{self.__class__.__name__}("
             f"media={self.media}, "
@@ -164,9 +162,7 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
 
     @property
     def subset(self) -> Subset:
-        """
-        Returns the subset that the IDatasetItem belongs to. e.g. Subset.TRAINING.
-        """
+        """Returns the subset that the IDatasetItem belongs to. e.g. Subset.TRAINING."""
         return self.__subset
 
     @subset.setter
@@ -179,14 +175,16 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
         return self.__media
 
     def roi_numpy(self, roi: Optional[Annotation] = None) -> np.ndarray:
-        """
-        Gives the numpy data for the media, given an ROI.
+        """Gives the numpy data for the media, given an ROI.
+
         This function allows to take a crop of any arbitrary region of the media in the Dataset entity.
         If the ROI is not given, the ROI assigned to the DatasetItem will be used as default.
 
-        :param roi: Shape entity. The shape will be converted if needed, to extract the ROI numpy.
+        Args:
+            roi (Optional[Annotation]): Shape entity. The shape will be converted if needed, to extract the ROI numpy.
 
-        :return: Numpy array with media data
+        Returns:
+            np.ndarray: Numpy array with media data
         """
         if roi is None:
             roi = self.roi
@@ -198,18 +196,16 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
 
     @property
     def numpy(self) -> np.ndarray:
-        """
-        Returns the numpy data for the media, taking ROI into account.
+        """Returns the numpy data for the media, taking ROI into account.
 
-        :return: Numpy array. RGB array of shape (Height, Width, Channels)
+        Returns:
+            np.ndarrray: Numpy array. RGB array of shape (Height, Width, Channels)
         """
         return self.roi_numpy()
 
     @property
     def width(self) -> int:
-        """
-        The width of the dataset item, taking into account the ROI.
-        """
+        """The width of the dataset item, taking into account the ROI."""
         roi_shape_as_box = ShapeFactory.shape_as_rectangle(self.roi.shape)
         roi_shape_as_box = roi_shape_as_box.clip_to_visible_region()
         width = self.media.width
@@ -222,9 +218,7 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
 
     @property
     def height(self) -> int:
-        """
-        The height of the dataset item, taking into account the ROI.
-        """
+        """The height of the dataset item, taking into account the ROI."""
         roi_shape_as_box = ShapeFactory.shape_as_rectangle(self.roi.shape)
         roi_shape_as_box = roi_shape_as_box.clip_to_visible_region()
         height = self.media.height
@@ -250,14 +244,18 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
         include_empty: bool = False,
         include_ignored: bool = False,
     ) -> List[Annotation]:
-        """
-        Returns a list of annotations that exist in the dataset item (wrt. ROI). This is done by checking that the
-        center of the annotation is located in the ROI.
+        """Returns a list of annotations that exist in the dataset item (wrt. ROI).
 
-        :param labels: Subset of input labels to filter with; if ``None``, all the shapes within the ROI are returned
-        :param include_empty: if True, returns both empty and non-empty labels
-        :param include_ignored: if True, includes the labels in ignored_labels
-        :return: The intersection of the input label set and those present within the ROI
+        This is done by checking that the center of the annotation is located in the ROI.
+
+        Args:
+            labels (Optional[LabelEntity]): Subset of input labels to filter with; if ``None``, all the shapes within
+                the ROI are returned.
+            include_empty (bool): if True, returns both empty and non-empty labels
+            include_ignored (bool): if True, includes the labels in ignored_labels
+
+        Returns:
+            List[Annotation]: The intersection of the input label set and those present within the ROI
         """
         is_full_box = Rectangle.is_full_box(self.roi.shape)
         annotations = []
@@ -300,9 +298,7 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
         return annotations
 
     def append_annotations(self, annotations: Sequence[Annotation]):
-        """
-        Adds a list of shapes to the annotation
-        """
+        """Adds a list of shapes to the annotation."""
         roi_as_box = ShapeFactory.shape_as_rectangle(self.roi.shape)
 
         validated_annotations = [
@@ -335,13 +331,16 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
         include_empty: bool = False,
         include_ignored: bool = False,
     ) -> List[LabelEntity]:
-        """
-        Return the subset of the input labels which exist in the dataset item (wrt. ROI).
+        """Return the subset of the input labels which exist in the dataset item (wrt. ROI).
 
-        :param labels: Subset of input labels to filter with; if ``None``, all the labels within the ROI are returned
-        :param include_empty: if True, returns both empty and non-empty labels
-        :param include_ignored: if True, includes the labels in ignored_labels
-        :return: The intersection of the input label set and those present within the ROI
+        Args:
+            labels (Optional[List[LabelEntity]]): Subset of input labels to filter with; if ``None``, all the labels
+                within the ROI are returned.
+            include_empty (bool): if True, returns both empty and non-empty labels
+            include_ignored (bool): if True, includes the labels in ignored_labels
+
+        Return:
+            List[LabelEntity]: The intersection of the input label set and those present within the ROI.
         """
         filtered_labels = set()
         for label in self.roi.get_labels(include_empty):
@@ -357,14 +356,19 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
         include_empty: bool = False,
         include_ignored: bool = False,
     ) -> List[LabelEntity]:
-        """
-        Get the labels of the shapes present in this dataset item. if a label list is supplied, only labels present
-        within that list are returned. if include_empty is True, present empty labels are returned as well.
+        """Get the labels of the shapes present in this dataset item.
 
-        :param labels: if supplied only labels present in this list are returned
-        :param include_empty: if True, returns both empty and non-empty labels
-        :param include_ignored: if True, includes the labels in ignored_labels
-        :return: a list of labels from the shapes within the roi of this dataset item
+        if a label list is supplied, only labels present within that list are returned. if include_empty is True,
+        present empty labels are returned as well.
+
+        Args:
+            labels (Optional[List[LabelEntity]]): if supplied only labels present in this list are returned.
+                Defaults to None.
+            include_empty (bool): if True, returns both empty and non-empty labels. Defaults to False.
+            include_ignored (bool): if True, includes the labels in ignored_labels. Defaults to False.
+
+        Returns:
+            List[LabelEntity]: a list of labels from the shapes within the roi of this dataset item
         """
         annotations = self.get_annotations(labels=labels, include_empty=include_empty, include_ignored=include_ignored)
         scored_label_set = set(itertools.chain(*[annotation.get_labels(include_empty) for annotation in annotations]))
@@ -376,10 +380,10 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
         return [label for label in label_set if label in labels]
 
     def append_labels(self, labels: List[ScoredLabel]):
-        """
-        Appends labels to the DatasetItem and adds it to the the annotation label as well if it's not yet there
+        """Appends labels to the DatasetItem and adds it to the the annotation label as well if it's not yet there.
 
-        :param labels: list of labels to be appended
+        Args:
+            labels (List[ScoredLabel]): list of labels to be appended.
         """
         if len(labels) == 0:
             return
@@ -401,6 +405,14 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
                 roi_annotation.append_label(label)
 
     def __eq__(self, other):
+        """Compares if two DatasetItems are equal.
+
+        Args:
+            other ("DatasetItems"): other DatasetItem to compare with.
+
+        Returns:
+            bool: True if equal, False otherwise.
+        """
         if isinstance(other, DatasetItemEntity):
             return (
                 self.media == other.media
@@ -412,7 +424,8 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
         return False
 
     def __deepcopy__(self, memo):
-        """
+        """Avoids copying the lock and unintentional ID sharing among AnnotationSceneEntity instances.
+
         When we deepcopy this object, be sure not to deep copy the lock, as this is not possible,
         make a new lock instead. In addition, we prevent deepcopy of AnnotationSceneEntity member
         variable to avoid unintentional ID sharing among instances. Same instance reference is
@@ -433,8 +446,7 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
         return clone
 
     def append_metadata_item(self, data: IMetadata, model: Optional[ModelEntity] = None):
-        """
-        Appends metadata produced by some model to the dataset item.
+        """Appends metadata produced by some model to the dataset item.
 
         .. rubric:: Adding visualization heatmap (ResultMediaEntity) to DatasetItemEntity
 
@@ -456,17 +468,20 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
         >>> tensor = TensorEntity(name="representation_vector", numpy=data)
         >>> dataset_item.append_metadata_item(data=tensor, model=model)
 
-        :param data: any object of a class inherited from IMetadata. (e.g., FloatMetadata, Tensor)
-        :param model: model that was used to generated metadata
+        Args:
+            data (IMetadata): any object of a class inherited from IMetadata. (e.g., FloatMetadata, Tensor)
+            model (Optional[ModelEntity]): model that was used to generated metadata
         """
         self.__metadata.append(MetadataItemEntity(data=data, model=model))
 
     def get_metadata_by_name_and_model(self, name: str, model: Optional[ModelEntity]) -> Sequence[MetadataItemEntity]:
-        """
-        Returns a metadata item with `name` and generated by `model`.
+        """Returns a metadata item with `name` and generated by `model`.
 
-        :param name: the name of the metadata
-        :param model: the model which was used to generate the metadata.
-        :return:
+        Args:
+            name (str): the name of the metadata
+            model (Optional[ModelEntity]): the model which was used to generate the metadata.
+
+        Returns:
+            Sequence[MetadataItemEntity]: a list of metadata items with `name` and generated by `model`.
         """
         return [meta for meta in self.get_metadata() if meta.data.name == name and meta.model == model]

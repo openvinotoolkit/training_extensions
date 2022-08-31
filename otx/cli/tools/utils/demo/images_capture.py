@@ -1,6 +1,4 @@
-"""
-Images capturing module.
-"""
+"""Images capturing module."""
 
 # Copyright (C) 2021 Intel Corporation
 #
@@ -59,9 +57,7 @@ class ImagesCapture:
 
 
 class ImreadWrapper(ImagesCapture):
-    """
-    Class for reading an image from file.
-    """
+    """Class for reading an image from file."""
 
     def __init__(self, source, loop):
         self.loop = loop
@@ -73,6 +69,7 @@ class ImreadWrapper(ImagesCapture):
         self.can_read = True
 
     def read(self):
+        """Returns captured image."""
         if self.loop:
             return copy.deepcopy(self.image)
         if self.can_read:
@@ -81,16 +78,16 @@ class ImreadWrapper(ImagesCapture):
         return None
 
     def fps(self):
+        """Returns a frequency of getting images from source."""
         return 1.0
 
     def get_type(self):
+        """Returns type of image capture."""
         return "IMAGE"
 
 
 class DirReader(ImagesCapture):
-    """
-    Class for reading images from directory.
-    """
+    """Class for reading images from directory."""
 
     def __init__(self, source, loop):
         self.loop = loop
@@ -109,6 +106,7 @@ class DirReader(ImagesCapture):
         raise OpenError(f"Can't read the first image from {source}")
 
     def read(self):
+        """Returns captured image."""
         while self.file_id < len(self.names):
             filename = os.path.join(self.dir, self.names[self.file_id])
             image = cv2.imread(filename, cv2.IMREAD_COLOR)
@@ -126,16 +124,16 @@ class DirReader(ImagesCapture):
         return None
 
     def fps(self):
+        """Returns a frequency of getting images from source."""
         return 1.0
 
     def get_type(self):
+        """Returns type of image capture."""
         return "DIR"
 
 
 class VideoCapWrapper(ImagesCapture):
-    """
-    Class for capturing images from video.
-    """
+    """Class for capturing images from video."""
 
     def __init__(self, source, loop):
         self.loop = loop
@@ -145,6 +143,7 @@ class VideoCapWrapper(ImagesCapture):
             raise InvalidInput(f"Can't open the video from {source}")
 
     def read(self):
+        """Returns captured image."""
         status, image = self.cap.read()
         if not status:
             if not self.loop:
@@ -156,16 +155,16 @@ class VideoCapWrapper(ImagesCapture):
         return image
 
     def fps(self):
+        """Returns a frequency of getting images from source."""
         return self.cap.get(cv2.CAP_PROP_FPS)
 
     def get_type(self):
+        """Returns type of image capture."""
         return "VIDEO"
 
 
 class CameraCapWrapper(ImagesCapture):
-    """
-    Class for capturing images from camera.
-    """
+    """Class for capturing images from camera."""
 
     def __init__(self, source, camera_resolution):
         self.cap = cv2.VideoCapture()
@@ -183,15 +182,18 @@ class CameraCapWrapper(ImagesCapture):
             raise InvalidInput(f"Can't find the camera {source}") from ex
 
     def read(self):
+        """Returns captured image."""
         status, image = self.cap.read()
         if not status:
             return None
         return image
 
     def fps(self):
+        """Returns a frequency of getting images from source."""
         return self.cap.get(cv2.CAP_PROP_FPS)
 
     def get_type(self):
+        """Returns type of image capture."""
         return "CAMERA"
 
 

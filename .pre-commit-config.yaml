@@ -145,4 +145,4 @@ repos:
         language: python
         types: [python]
         files: '^otx/.*\.py'
-        exclude: "otx/algorithms/anomaly/tests|external/anomaly/tests"
+        exclude: "otx/algorithms/anomaly/tests|external/anomaly/tests|otx/cli/utils/tests.py"

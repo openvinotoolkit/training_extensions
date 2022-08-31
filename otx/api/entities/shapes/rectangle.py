@@ -1,4 +1,4 @@
-"""This module implements the Rectangle shape entity"""
+"""This module implements the Rectangle shape entity."""
 # Copyright (C) 2021-2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -21,8 +21,7 @@ from otx.api.utils.time_utils import now
 
 
 class Rectangle(Shape):
-    """
-    Rectangle represents a rectangular shape.
+    """Rectangle represents a rectangular shape.
 
     Rectangle are used to annotate detection and classification tasks. In the
     classification case, the rectangle is a full rectangle spanning the whole related
@@ -31,11 +30,12 @@ class Rectangle(Shape):
     - x1 and y1 represent the top-left coordinate of the rectangle
     - x2 and y2 representing the bottom-right coordinate of the rectangle
 
-    :param x1: see above
-    :param y1: see above
-    :param x2: see above
-    :param y2: see above
-    :param modification_date: last modified date
+    Args:
+        x1 (float): x-coordinate of the top-left corner of the rectangle
+        y1 (float): y-coordinate of the top-left corner of the rectangle
+        x2 (float): x-coordinate of the bottom-right corner of the rectangle
+        y2 (float): y-coordinate of the bottom-right corner of the rectangle
+        modification_date (datetime.datetime): Date of the last modification of the rectangle
     """
 
     # pylint: disable=too-many-arguments; Requires refactor
@@ -72,9 +72,11 @@ class Rectangle(Shape):
             )
 
     def __repr__(self):
+        """String representation of the rectangle."""
         return f"Rectangle(x={self.x1}, y={self.y1}, width={self.width}, " f"height={self.height})"
 
-    def __eq__(self, other):
+    def __eq__(self, other: object):
+        """Returns True if `other` is a `Rectangle` with the same coordinates."""
         if isinstance(other, Rectangle):
             return (
                 self.x1 == other.x1
@@ -86,11 +88,14 @@ class Rectangle(Shape):
         return False
 
     def __hash__(self):
+        """Returns hash of the rectangle."""
         return hash(str(self))
 
     def clip_to_visible_region(self) -> "Rectangle":
-        """
-        Clip the rectangle to the [0, 1] visible region of an image.
+        """Clip the rectangle to the [0, 1] visible region of an image.
+
+        Returns:
+            Rectangle: Clipped rectangle.
         """
         x1 = min(max(0.0, self.x1), 1.0)
         y1 = min(max(0.0, self.y1), 1.0)
@@ -137,29 +142,35 @@ class Rectangle(Shape):
             modification_date=self.modification_date,
         )
 
-    def denormalize_wrt_roi_shape(self, roi_shape: "Rectangle") -> "Rectangle":
-        """
-        Transforming shape from the normalized coordinate system to the `roi` coordinate
-         system.
+    def denormalize_wrt_roi_shape(self, roi_shape: ShapeEntity) -> "Rectangle":
+        """Transforming shape from the normalized coordinate system to the `roi` coordinate system.
 
-        :example: Assume we have rectangle `b1` which lives in the top-right quarter of
-        the normalized coordinate space. The `roi` is a rectangle living in the half
-        right of the normalized coordinate space. This function returns rectangle
-        `b1` expressed in the coordinate space of `roi`. (should return top-half)
-        Box denormalized to a rectangle as ROI
+        Example:
 
-            >>> from otx.api.entities.annotation import Annotation
-            >>> b1 = Rectangle(x1=0.5, x2=1.0, y1=0.0, y2=0.5)
-            # the top-right
-            >>> roi = Annotation(Rectangle(x1=0.5, x2=1.0, y1=0.0, y2=1.0))
-            # the half-right
-            >>> normalized = b1.denormalize_wrt_roi_shape(roi_shape)
-            # should return top half
-            >>> normalized
-            Box(, x=0.0, y=0.0, width=1.0, height=0.5)
+            Assume we have rectangle `b1` which lives in the top-right quarter of
+            the normalized coordinate space. The `roi` is a rectangle living in the half
+            right of the normalized coordinate space. This function returns rectangle
+            `b1` expressed in the coordinate space of `roi`. (should return top-half)
+            Box denormalized to a rectangle as ROI
 
-        :param roi_shape: Region of Interest
-        :return: New polygon in the ROI coordinate system
+                >>> from otx.api.entities.annotation import Annotation
+                >>> b1 = Rectangle(x1=0.5, x2=1.0, y1=0.0, y2=0.5)
+                # the top-right
+                >>> roi = Annotation(Rectangle(x1=0.5, x2=1.0, y1=0.0, y2=1.0))
+                # the half-right
+                >>> normalized = b1.denormalize_wrt_roi_shape(roi_shape)
+                # should return top half
+                >>> normalized
+                Box(, x=0.0, y=0.0, width=1.0, height=0.5)
+
+        Args:
+            roi_shape (ShapeEntity): Region of Interest
+
+        Raises:
+            ValueError: If the `roi_shape` is not a `Rectangle`.
+
+        Returns:
+            Rectangle: New polygon in the ROI coordinate system
         """
         if not isinstance(roi_shape, Rectangle):
             raise ValueError("roi_shape has to be a Rectangle.")
@@ -191,36 +202,36 @@ class Rectangle(Shape):
 
     @classmethod
     def generate_full_box(cls) -> "Rectangle":
-        """
-        Returns a rectangle that fully encapsulates the normalized coordinate space
+        """Returns a rectangle that fully encapsulates the normalized coordinate space.
 
-        :example:
+        Example:
+            >>> Rectangle.generate_full_box()
+            Box(, x=0.0, y=0.0, width=1.0, height=1.0)
 
-        >>> Rectangle.generate_full_box()
-        Box(, x=0.0, y=0.0, width=1.0, height=1.0)
-
-        :return: a rectangle that fully encapsulates the normalized coordinate space,
+        Returns:
+            Rectangle: A rectangle that fully encapsulates the normalized coordinate space.
         """
         return cls(x1=0.0, y1=0.0, x2=1.0, y2=1.0)
 
     @staticmethod
     def is_full_box(rectangle: ShapeEntity) -> bool:
-        """
-        Returns true if rectangle is a full box (occupying the full normalized
-        coordinate space).
+        """Returns true if rectangle is a full box (occupying the full normalized coordinate space).
 
-        :example:
+        Example:
 
-        >>> b1 = Rectangle(x1=0.5, x2=1.0, y1=0.0, y2=1.0)
-        >>> Rectangle.is_full_box(b1)
-        False
+            >>> b1 = Rectangle(x1=0.5, x2=1.0, y1=0.0, y2=1.0)
+            >>> Rectangle.is_full_box(b1)
+            False
 
-        >>> b2 = Rectangle(x1=0.0, x2=1.0, y1=0.0, y2=1.0)
-        >>> Rectangle.is_full_box(b2)
-        True
+            >>> b2 = Rectangle(x1=0.0, x2=1.0, y1=0.0, y2=1.0)
+            >>> Rectangle.is_full_box(b2)
+            True
 
-        :param rectangle: rectangle to evaluate
-        :return: true if it fully encapsulate normalized coordinate space.
+        Args:
+            rectangle (ShapeEntity): rectangle to evaluate
+
+        Returns:
+            bool: true if it fully encapsulate normalized coordinate space.
         """
         if (
             isinstance(rectangle, Rectangle)
@@ -233,12 +244,13 @@ class Rectangle(Shape):
         return False
 
     def crop_numpy_array(self, data: np.ndarray) -> np.ndarray:
-        """
-        Crop the given Numpy array to the region of interest represented by this
-        rectangle.
+        """Crop the given Numpy array to the region of interest represented by this rectangle.
 
-        :param data: Image to crop
-        :return: Cropped image
+        Args:
+            data (np.ndarray): Image to crop.
+
+        Returns:
+            np.ndarray: Cropped image.
         """
 
         # We clip negative values to zero since Numpy uses negative values
@@ -255,64 +267,64 @@ class Rectangle(Shape):
 
     @property
     def width(self) -> float:
-        """
-        Returns the width of the rectangle. (x-axis)
+        """Returns the width of the rectangle (x-axis).
 
-        :example:
+        Example:
 
-        >>> b1 = Rectangle(x1=0.5, x2=1.0, y1=0.0, y2=0.5)
-        >>> b1.width
-        0.5
+            >>> b1 = Rectangle(x1=0.5, x2=1.0, y1=0.0, y2=0.5)
+            >>> b1.width
+            0.5
 
-        :return: the width of the rectangle. (x-axis)
+        Returns:
+            float: the width of the rectangle. (x-axis)
         """
         return self.x2 - self.x1
 
     @property
     def height(self) -> float:
-        """
-        Returns the height of the rectangle. (y-axis)
+        """Returns the height of the rectangle (y-axis).
 
-        :example:
+        Example:
 
-        >>> b1 = Rectangle(x1=0.5, x2=1.0, y1=0.0, y2=0.5)
-        >>> b1.height
-        0.5
+            >>> b1 = Rectangle(x1=0.5, x2=1.0, y1=0.0, y2=0.5)
+            >>> b1.height
+            0.5
 
-        :return: the height of the rectangle. (y-axis)
+        Returns:
+            float: the height of the rectangle. (y-axis)
         """
         return self.y2 - self.y1
 
     @property
     def diagonal(self) -> float:
-        """
-        Returns the diagonal size/hypotenuse  of the rectangle. (x-axis)
+        """Returns the diagonal size/hypotenuse  of the rectangle (x-axis).
 
-        :example:
+        Example:
 
-        >>> b1 = Rectangle(x1=0.0, x2=0.3, y1=0.0, y2=0.4)
-        >>> b1.diagonal
-        0.5
+            >>> b1 = Rectangle(x1=0.0, x2=0.3, y1=0.0, y2=0.4)
+            >>> b1.diagonal
+            0.5
 
-        :return: the width of the rectangle. (x-axis)
+        Returns:
+            float: the width of the rectangle. (x-axis)
         """
         return math.hypot(self.width, self.height)
 
     def get_area(self) -> float:
-        """
-        Computes the approximate area of the shape. Area is a value between 0 and 1,
-        calculated as (x2-x1) * (y2-y1)
+        """Computes the approximate area of the shape.
+
+        Area is a value between 0 and 1, calculated as (x2-x1) * (y2-y1)
 
         NOTE: This method should not be relied on for exact area computation. The area
         is approximate, because shapes are continuous, but pixels are discrete.
 
-        :example:
-
+        Example:
             >>> Rectangle(0, 0, 1, 1).get_area()
             1.0
             >>> Rectangle(0.5, 0.5, 1.0, 1.0).get_area()
             0.25
 
-        :return: area of the shape
+        Returns:
+            float: Approximate area of the shape.
         """
         return (self.x2 - self.x1) * (self.y2 - self.y1)

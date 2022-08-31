@@ -1,6 +1,4 @@
-"""
-Visualizer for results of anomaly task prediction
-"""
+"""Visualizer for results of anomaly task prediction."""
 
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
@@ -17,11 +15,9 @@ from .visualizer import Visualizer
 
 
 class AnomalyVisualizer(Visualizer):
-    """
-    Visualize the predicted output by drawing the annotations on the input image.
+    """Visualize the predicted output by drawing the annotations on the input image.
 
-    :example:
-
+    Example:
         >>> predictions = inference_model.predict(frame)
         >>> annotation = prediction_converter.convert_to_annotation(predictions)
         >>> output = visualizer.draw(frame, annotation.shape, annotation.get_labels())
@@ -45,9 +41,10 @@ class AnomalyVisualizer(Visualizer):
 
     @staticmethod
     def to_heat_mask(mask: np.ndarray) -> np.ndarray:
-        """
-        Create heat mask from saliency map
-        :param mask: saliency map
+        """Create heat mask from saliency map.
+
+        Args:
+            mask: saliency map
         """
         heat_mask = cv2.normalize(mask, None, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX).astype(np.uint8)
         return cv2.applyColorMap(heat_mask.astype(np.uint8), cv2.COLORMAP_JET)
@@ -56,12 +53,15 @@ class AnomalyVisualizer(Visualizer):
     def draw(  # type: ignore[override]
         self, image: np.ndarray, annotation: AnnotationSceneEntity, meta: dict
     ) -> np.ndarray:
-        """
-        Draw annotations on the image
-        :param image: Input image
-        :param annotation: Annotations to be drawn on the input image
-        :param metadata: Metadata with saliency map
-        :return: Output image with annotations.
+        """Draw annotations on the image.
+
+        Args:
+            image: Input image
+            annotation: Annotations to be drawn on the input image
+            metadata: Metadata with saliency map
+
+        Returns:
+            Output image with annotations.
         """
 
         heat_mask = self.to_heat_mask(1 - meta["anomaly_map"])

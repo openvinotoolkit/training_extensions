@@ -1,6 +1,4 @@
-"""
-This module implements time related utility functions
-"""
+"""This module implements time related utility functions."""
 
 # Copyright (C) 2021-2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
@@ -14,13 +12,13 @@ from typing import Optional
 
 
 def now() -> datetime.datetime:
-    """
-    Return the current UTC creation_date and time up to a millisecond accuracy.
+    """Return the current UTC creation_date and time up to a millisecond accuracy.
 
     This function is preferable over the Python datetime.datetime.now() function
     because it uses the same accuracy (milliseconds) as MongoDB rather than microsecond accuracy.
 
-    :return: Date and time up to a millisecond precision.
+    Returns:
+        Date and time up to a millisecond precision.
     """
     date = datetime.datetime.now(datetime.timezone.utc)
     return date.replace(microsecond=(date.microsecond // 1000) * 1000)
@@ -28,12 +26,15 @@ def now() -> datetime.datetime:
 
 # Debug tools
 def timeit(func):
-    """
-    This function can be used as a decorator as @timeit.
+    """This function can be used as a decorator as @timeit.
+
     It will print out how long the function took to execute.
 
-    :param func: The decorated function
-    :return: The wrapped function
+    Args:
+        func: The decorated function
+
+    Returns:
+        The wrapped function
     """
 
     @functools.wraps(func)
@@ -48,18 +49,22 @@ def timeit(func):
 
 
 class TimeEstimator:
-    """
-    The time estimator, as the name already suggests is able to estimate the remaining time given the progress,
-    and the progress changes. The estimator starts estimation at a starting progress that is not necessarily 0.
-    This choice is motivated by the fact that the first percent of progress often takes a much longer time
-    than the following percents.
+    """The time estimator.
 
-    :param smoothing_factor: Smoothing factor for the exponentially weighted moving average.
-        There's a great explanation at https://www.wallstreetmojo.com/ewma/
-    :param inflation_factor: The factor by which the initial total time estimation is inflated to ensure decreasing
-    time estimation
-    :param update_window: Last update happened at progress1, next update will happen at (progress1 + update window)
-    :param starting_progress: The progress at which the time_remaining estimation starts
+    Estimate the remaining time given the progress, and the progress changes. The estimator starts estimation at a
+    starting progress that is not necessarily 0. This choice is motivated by the fact that the first percent of
+    progress often takes a much longer time than the following percents.
+
+    Args:
+        smoothing_factor (float): Smoothing factor for the exponentially
+            weighted moving average. There's a great explanation at
+            https://www.wallstreetmojo.com/ewma/
+        inflation_factor (float): The factor by which the initial total time
+            estimation is inflated to ensure decreasing
+        update_window (float): Last update happened at progress1, next update
+            will happen at (progress1 + update window)
+        starting_progress (float): The progress at which the time_remaining
+            estimation starts time estimation
     """
 
     # pylint: disable=too-many-instance-attributes
@@ -82,11 +87,13 @@ class TimeEstimator:
         self.update_window = update_window
 
     def time_remaining_from_progress(self, progress: float) -> float:
-        """
-        Updates the current progress, and returns the estimated remaining time in seconds (float).
+        """Updates the current progress, and returns the estimated remaining time in seconds (float).
 
-        :param progress: The new progress (floating point percentage, 0.0 - 100.0)
-        :return: The expected remaining time in seconds (float)
+        Args:
+            progress (float): The new progress (floating point percentage, 0.0 - 100.0)
+
+        Returns:
+            The expected remaining time in seconds (float)
         """
         estimation = -1.0
         if progress is not None and progress > 0:
@@ -95,10 +102,10 @@ class TimeEstimator:
         return estimation
 
     def get_time_remaining(self):
-        """
-        if the new estimation is higher than the previous one by up to 2 seconds, return old estimation
+        """If the new estimation is higher than the previous one by up to 2 seconds, return old estimation.
 
-        :return: Estimated remaining time in seconds (float)
+        Returns:
+            Estimated remaining time in seconds (float)
         """
         new_estimation = self.estimated_end_time - time.time() if self.estimated_end_time is not None else -1.0
         if self.estimated_remaining_time is None or not 0.0 < new_estimation - self.estimated_remaining_time < 2.0:
@@ -106,11 +113,13 @@ class TimeEstimator:
         return self.estimated_remaining_time
 
     def update(self, progress: float):
-        """
-        Update the estimator with a new progress (floating point percentage, between 0.0 - 100.0)
+        """Update the estimator with a new progress (floating point percentage, between 0.0 - 100.0).
 
-        :param progress: Progress of the process
-        :return: None
+        Args:
+            progress (float): Progress of the process
+
+        Returns:
+            None
         """
         if progress >= self.first_update_progress and self.last_update_progress is None:
             self.first_update_progress = progress

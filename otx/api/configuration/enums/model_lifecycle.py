@@ -1,4 +1,4 @@
-""" This module contains the ModelLifecycle Enum """
+"""This module contains the ModelLifecycle Enum."""
 
 
 # Copyright (C) 2021-2022 Intel Corporation
@@ -9,8 +9,9 @@ from enum import Enum, auto
 
 
 class ModelLifecycle(Enum):
-    """
-    This Enum represents the different stages in the ModelLifecycle. It is used by configuration parameters to indicate
+    """This Enum represents the different stages in the ModelLifecycle.
+
+    It is used by configuration parameters to indicate
     in which stage of the model lifecycle the parameter takes effect. Selecting a stage early in the lifecycle implies
     that all downstream stages are affected as well (e.g. if this is set to `ModelLifecycle.TRAINING`, it is assumed
     that inference and testing are also impacted).
@@ -39,7 +40,5 @@ class ModelLifecycle(Enum):
     TESTING = auto()
 
     def __str__(self):
-        """
-        Retrieves the string representation of an instance of the Enum
-        """
+        """Retrieves the string representation of an instance of the Enum."""
         return self.name

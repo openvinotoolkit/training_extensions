@@ -1,4 +1,4 @@
-""" This module contains the implementation of Accuracy performance provider. """
+"""This module contains the implementation of Accuracy performance provider."""
 
 # Copyright (C) 2021-2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
@@ -41,16 +41,16 @@ logger = logging.getLogger(__name__)
 
 
 class Accuracy(IPerformanceProvider):
-    """
-    This class is responsible for providing Accuracy measures; mainly for Classification problems.
+    """This class is responsible for providing Accuracy measures; mainly for Classification problems.
+
     The calculation both supports multi label and binary label predictions.
 
     Accuracy is the proportion of the predicted correct labels, to the total number (predicted and actual)
     labels for that instance. Overall accuracy is the average across all instances.
-    :param resultset: ResultSet that score will be computed for
-    :param average: The averaging method, either MICRO or MACRO
-        MICRO: compute average over all predictions in all label groups
-        MACRO: compute accuracy per label group, return the average of the per-label-group accuracy scores
+        resultset (ResultSetEntity): ResultSet that score will be computed for
+        average (MetricAverageMethod): The averaging method, either MICRO or MACRO
+            MICRO: compute average over all predictions in all label groups
+            MACRO: compute accuracy per label group, return the average of the per-label-group accuracy scores
     """
 
     def __init__(
@@ -68,12 +68,11 @@ class Accuracy(IPerformanceProvider):
 
     @property
     def accuracy(self) -> ScoreMetric:
-        """
-        Returns the accuracy as ScoreMetric
-        """
+        """Returns the accuracy as ScoreMetric."""
         return self._accuracy
 
     def get_performance(self) -> Performance:
+        """Returns the performance with accuracy and confusion metrics."""
         confusion_matrix_dashboard_metrics: List[MetricsGroup] = []
 
         # Use normalized matrix for UI
@@ -99,16 +98,20 @@ class Accuracy(IPerformanceProvider):
 
     @staticmethod
     def _compute_accuracy(average: MetricAverageMethod, confusion_matrices: List[MatrixMetric]) -> float:
-        """
-        Compute accuracy using the confusion matrices
+        """Compute accuracy using the confusion matrices.
 
-        :param average: The averaging method, either MICRO or MACRO
-            MICRO: compute average over all predictions in all label groups
-            MACRO: compute accuracy per label group, return the average of the per-label-group accuracy scores
-        :param confusion_matrices: the confusion matrices to compute accuracy from. MUST be unnormalized
-        :return the accuracy score for the provided confusion matrix
-        :raises: ValueError, when the ground truth dataset does not contain annotations
-        :raises: RuntimeError, when the averaging methods is not known
+        Args:
+            average (MatricAverageMethod): The averaging method, either MICRO or MACRO
+                MICRO: compute average over all predictions in all label groups
+                MACRO: compute accuracy per label group, return the average of the per-label-group accuracy scores
+            confusion_matrices (List[MatrixMetric]): the confusion matrices to compute accuracy from.
+                MUST be unnormalized.
+
+        Raises
+            ValueError: when the ground truth dataset does not contain annotations
+            RuntimeError: when the averaging methods is not known
+        Returns:
+            float: the accuracy score for the provided confusion matrix
         """
         # count correct predictions and total annotations
         correct_per_label_group = [np.trace(mat.matrix_values) for mat in confusion_matrices]
@@ -128,11 +131,13 @@ class Accuracy(IPerformanceProvider):
 
 
 def precision_metrics_group(confusion_matrix: MatrixMetric) -> MetricsGroup:
-    """
-    Computes the precision per class based on a confusion matrix and returns them as ScoreMetrics in a MetricsGroup
+    """Computes the precision per class based on a confusion matrix and returns them as ScoreMetrics in a MetricsGroup.
 
-    :param confusion_matrix: matrix to compute the precision per class for
-    :return: a BarMetricsGroup with the per class precision.
+    Args:
+        confusion_matrix: matrix to compute the precision per class for
+
+    Returns:
+        a BarMetricsGroup with the per class precision.
     """
     labels = confusion_matrix.row_labels
     if labels is None:
@@ -158,11 +163,13 @@ def precision_metrics_group(confusion_matrix: MatrixMetric) -> MetricsGroup:
 
 
 def recall_metrics_group(confusion_matrix: MatrixMetric) -> MetricsGroup:
-    """
-    Computes the recall per class based on a confusion matrix and returns them as ScoreMetrics in a MetricsGroup
+    """Computes the recall per class based on a confusion matrix and returns them as ScoreMetrics in a MetricsGroup.
 
-    :param confusion_matrix: matrix to compute the recall per class for
-    :return: a BarMetricsGroup with the per class recall
+    Args:
+        confusion_matrix: matrix to compute the recall per class for
+
+    Returns:
+        a BarMetricsGroup with the per class recall
     """
     labels = confusion_matrix.row_labels
     if labels is None:
@@ -190,12 +197,14 @@ def recall_metrics_group(confusion_matrix: MatrixMetric) -> MetricsGroup:
 def __get_gt_and_predicted_label_indices_from_resultset(
     resultset: ResultSetEntity,
 ) -> Tuple[List[Set[int]], List[Set[int]]]:
-    """
-    Returns the label indices lists for ground truth and prediction datasets in a tuple
+    """Returns the label indices lists for ground truth and prediction datasets in a tuple.
 
-    :param resultset:
-    :return: a tuple containing two lists.
-        The first list contains the ground truth label indices, and the second contains the prediction label indices.
+    Args:
+        resultset
+
+    Returns:
+        a tuple containing two lists. The first list contains the ground truth label indices, and the second contains
+        the prediction label indices.
     """
     true_label_idx = []
     predicted_label_idx = []
@@ -222,13 +231,16 @@ def __compute_unnormalized_confusion_matrices_for_label_group(
     label_group: LabelGroup,
     task_labels: List[LabelEntity],
 ) -> MatrixMetric:
-    """
-    Returns matrix metric for a certain label group
+    """Returns matrix metric for a certain label group.
 
-    :param true_label_idx:
-    :param predicted_label_idx:
-    :param label_group:
-    :param task_labels:
+    Args:
+        true_label_idx (List[Set[int]]): list of sets of label indices for the ground truth dataset
+        predicted_label_idx (List[Set[int]]): list of sets of label indices for the prediction dataset
+        label_group (LabelGroup): label group to compute the confusion matrix for
+        task_labels (List[LabelEntity]): list of labels for the task
+
+    Returns:
+        MatrixMetric: confusion matrix for the label group
     """
     map_task_labels_idx_to_group_idx = {
         task_labels.index(label): i_group for i_group, label in enumerate(label_group.labels)
@@ -292,12 +304,13 @@ def __compute_unnormalized_confusion_matrices_for_label_group(
 def compute_unnormalized_confusion_matrices_from_resultset(
     resultset: ResultSetEntity,
 ) -> List[MatrixMetric]:
-    """
-    Computes an (unnormalized) confusion matrix for every label group in the resultset
+    """Computes an (unnormalized) confusion matrix for every label group in the resultset.
 
-    :param resultset: the input resultset
-    :return: the computed unnormalized confusion matrices
-    :raises: ValueError, when either the predicted or ground truth dataset is empty
+    Args:
+        resultset: the input resultset
+
+    Returns:
+        the computed unnormalized confusion matrices
     """
 
     if len(resultset.ground_truth_dataset) == 0 or len(resultset.prediction_dataset) == 0:

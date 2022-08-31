@@ -1,6 +1,4 @@
-"""
-Model exporting tool.
-"""
+"""Model exporting tool."""
 
 # Copyright (C) 2021 Intel Corporation
 #
@@ -31,9 +29,7 @@ from otx.cli.utils.nncf import is_checkpoint_nncf
 
 
 def parse_args():
-    """
-    Parses command line arguments.
-    """
+    """Parses command line arguments."""
 
     parser = argparse.ArgumentParser()
     parser.add_argument("template")
@@ -52,9 +48,7 @@ def parse_args():
 
 
 def main():
-    """
-    Main function that is used for model exporting.
-    """
+    """Main function that is used for model exporting."""
 
     args = parse_args()
 

@@ -1,5 +1,4 @@
-"""
-Entities containing shapes
+"""Entities containing shapes.
 
 .. automodule:: otx.api.entities.shapes.rectangle
    :members:

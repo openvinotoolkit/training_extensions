@@ -1,6 +1,4 @@
-"""
-Interface for inferencer
-"""
+"""Interface for inferencer."""
 
 # Copyright (C) 2021-2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
@@ -34,23 +32,25 @@ logger = logging.getLogger(__name__)
 
 
 class IInferencer(metaclass=abc.ABCMeta):
-    """
-    Base interface class for the inference task. This class could be used by
-        both the analyse method in the task, and the exportable code inference.
+    """Base interface class for the inference task.
+
+    This class could be used by both the analyse method in the task, and the exportable code inference.
 
     """
 
     @abc.abstractmethod
     def pre_process(self, image: np.ndarray) -> Tuple[Any, Any]:
-        """
-        This method should pre-process the input image, and return the processed output
-        and if required a Tuple with metadata that is required for post_process to work.
+        """Pre-process input image and return the pre-processed image with meta-data if required.
+
+        This method should pre-process the input image, and return the processed output and if required a Tuple with
+        metadata that is required for post_process to work.
         """
         raise NotImplementedError
 
     @abc.abstractmethod
     def forward(self, image: Any) -> Any:
-        """
+        """Forward the input image to the model and return the output.
+
         NOTE: The input is typed as Any at the moment, mainly because it could be numpy
             array,torch Tensor or tf Tensor. In the future, it could be an idea to be
             more specific.
@@ -59,29 +59,28 @@ class IInferencer(metaclass=abc.ABCMeta):
         to the model, and return the predictions in a dictionary format.
 
         For instance, for a segmentation task, the predictions could be {"mask": mask}.
-
         """
         raise NotImplementedError
 
     @abc.abstractmethod
     def post_process(self, prediction: Any, metadata: Any) -> AnnotationSceneEntity:
-        """
-        This method should include the post-processing methods that are applied to the
-        raw predictions from the self.forward() stage.
+        """Post-process the raw predictions, and return the AnnotationSceneEntity.
+
+        This method should include the post-processing methods that are applied to the raw predictions from the
+        self.forward() stage.
         """
         raise NotImplementedError
 
     @abc.abstractmethod
     def predict(self, image: np.ndarray) -> AnnotationSceneEntity:
-        """
-        This method performs a prediction
-        """
+        """This method performs a prediction."""
         raise NotImplementedError
 
 
 class BaseInferencer(IInferencer, abc.ABC):
-    """
-    Base class for standard inference. The user needs to implement the following:
+    """Base class for standard inference.
+
+    The user needs to implement the following:
         + `load_model`
         + `pre_process`
         + `forward`
@@ -89,10 +88,13 @@ class BaseInferencer(IInferencer, abc.ABC):
     """
 
     def predict(self, image: np.ndarray) -> AnnotationSceneEntity:
-        """
-        Perform a prediction for a given input image.
-        :param image: Input image
-        :return: Output predictions
+        """Perform a prediction for a given input image.
+
+        Args:
+            image: Input image
+
+        Returns:
+            Output predictions
         """
         image, metadata = self.pre_process(image)
         predictions = self.forward(image)
@@ -102,21 +104,25 @@ class BaseInferencer(IInferencer, abc.ABC):
 
 
 class BaseOpenVINOInferencer(BaseInferencer, abc.ABC):
-    """
-    Base class for OpenVINO inference. can handle the basic flow of reading and
-    loading a model. If the network needs to be reshaped, override the load_model
-    function.
+    """Base class for OpenVINO inference.
+
+    Can handle the basic flow of reading and loading a model. If the network needs to be reshaped,
+    override the load_model function.
     One would need to implement the following methods to use this as OpenVINO
     Inferencer
         + `pre_process`
         + `forward`
         + `post_process`
-    :param weight_path: Path to the weight file
-    :param device: Device to use for inference. Check available devices with
-                   IECore().available_devices.
-    :param num_requests: Number of simultaneous requests that can be issued to the
-                         model, has no effect on synchronous execution.
-    :raises ValueError: Raised if the device is not available.
+
+    Args:
+        weight_path: Path to the weight file
+        device: Device to use for inference. Check available devices
+            with IECore().available_devices.
+        num_requests: Number of simultaneous requests that can be issued
+            to the model, has no effect on synchronous execution.
+
+    Raises:
+        ValueError: Raised if the device is not available.
     """
 
     def __init__(
@@ -148,12 +154,13 @@ class BaseOpenVINOInferencer(BaseInferencer, abc.ABC):
         model_file: Union[Path, str, bytes],
         weights_file: Union[Path, str, bytes, None] = None,
     ):
-        """
-        Reads an OpenVINO model and saves its input and output keys to a list
+        """Reads an OpenVINO model and saves its input and output keys to a list.
 
-        :param weights: A .xml, .bin or .onnx file to be loaded. if a .xml or .bin is
-                        provided a file of the same name with the other extension is
-                        also expected
+        Args:
+            model_file: Path to the model file or bytes with data from OpenVINO's .xml file.
+            weights: A .xml, .bin or .onnx file to be loaded. if a .xml
+                or .bin is provided a file of the same name with the
+                other extension is also expected
 
         Raises:
             ValueError: Raised if a weights file that is not compatible with OpenVINO
@@ -175,14 +182,15 @@ class BaseOpenVINOInferencer(BaseInferencer, abc.ABC):
         self.output_keys = list(self.net.outputs.keys())
 
     def load_model(self, model_file: Union[str, bytes], weights_file: Union[str, bytes, None]):
-        """
-        Loads an OpenVINO or ONNX model, overwrite this function if you need to reshape
-        the network.Or retrieve additional information from the network after loading
-        it.
+        """Loads an OpenVINO or ONNX model, overwrite this function if you need to reshape the network.
 
-        :param weights: A .xml, .bin or .onnx file to be loaded. if a .xml or .bin is
-                        provided a file of the same name with the other extension is
-                        also expected
+        Or retrieve additional information from the network after loading it.
+
+        Args:
+            model_file (Union[str, bytes]): Path to the model file or bytes with data from OpenVINO's .xml file.
+            weights_file (weights_file: Union[str, bytes, None]): A .xml, .bin or .onnx file to be loaded. if a .xml
+                or .bin is provided a file of the same name with the
+                other extension is also expected
         """
         if self.net is None:
             self.read_model(model_file, weights_file)
@@ -193,9 +201,18 @@ class BaseOpenVINOInferencer(BaseInferencer, abc.ABC):
 
 
 class AsyncOpenVINOTask:
-    """
-    This class runs asynchronous inference on a BaseOpenVinoInferencer.
+    """This class runs asynchronous inference on a BaseOpenVinoInferencer.
+
     Using a BaseStreamer as input
+
+    Args:
+        streamer: A streamer that provides input for the inferencer
+        inferencer: The inferencer to use to generate predictions
+        drop_output: Set to a number to limit the amount of results
+            stored at a time. If inference is completed but there is
+            no room for the output. The output will be dropped.Set
+            to 0 to disable, Set to None to automatically determine
+            a good value
     """
 
     def __init__(
@@ -204,14 +221,6 @@ class AsyncOpenVINOTask:
         inferencer: BaseOpenVINOInferencer,
         drop_output: Optional[int] = None,
     ):
-        """
-        :param streamer: A streamer that provides input for the inferencer
-        :param inferencer: The inferencer to use to generate predictions
-        :param drop_output: Set to a number to limit the amount of results stored at a
-                            time. If inference is completed but there is no room for the
-                            output. The output will be dropped.Set to 0 to disable,
-                            Set to None to automatically determine a good value
-        """
         self.streamer: BaseStreamer = streamer
         self.inferencer: BaseOpenVINOInferencer = inferencer
 
@@ -223,17 +232,17 @@ class AsyncOpenVINOTask:
         self.drop_output = drop_output
 
     def __iter__(self) -> Iterator[Tuple[np.ndarray, List[np.ndarray]]]:
-        """
-        Starts the asynchronous inference loop.
+        """Starts the asynchronous inference loop.
 
-        :example:
-        >>> streamer = VideoStreamer("../demo.mp4")
-        >>> inferencer = ExampleOpenVINOInferencer(weights="model.bin", num_requests=4)
-        >>> async_task = AsyncOpenVINOTask(streamer, inferencer)
-        >>> for image, predictions in async_task:
-        ...    # Do something with predictions
+        Example:
+            >>> streamer = VideoStreamer("../demo.mp4")
+            >>> inferencer = ExampleOpenVINOInferencer(weights="model.bin", num_requests=4)
+            >>> async_task = AsyncOpenVINOTask(streamer, inferencer)
+            >>> for image, predictions in async_task:
+            ...    # Do something with predictions
 
-        :yields: A Tuple with the used image and a list of predictions
+        Yields:
+            Iterator[Tuple[np.ndarray, List[np.ndarray]]]: A Tuple with the used image and a list of predictions
         """
         manager = multiprocessing.Manager()
         completed_requests = manager.Queue(maxsize=self.drop_output)
@@ -263,36 +272,36 @@ class AsyncOpenVINOTask:
             pass
 
     def __idle_request_available(self) -> bool:
-        """
-        Returns True if one idle request is available
+        """Returns True if one idle request is available.
 
-        :returns bool:
+        Returns:
+            bool: True if one idle request is available
         """
         return self.inferencer.model.get_idle_request_id() >= 0
 
     def __wait_for_request(self, num_requests: Optional[int] = None, timeout: Optional[int] = None) -> bool:
-        """
-        Wait for num_requests to become available.
+        """Wait for num_requests to become available.
 
-        :param num_requests: Number of requests that should be available for the
-                             function to return False. If set to None waits for all
-                             requests to finish. Defaults to None.
-        :param timeout: Amount of milliseconds to wait before function returns
-                             regardless of available requests.
-                             Set to None to wait regardless of the time. Defaults to
-                             None.
+        Args:
+            num_requests: Number of requests that should be available
+                for the function to return False. If set to None waits
+                for all requests to finish. Defaults to None.
+            timeout: Amount of milliseconds to wait before function
+                returns regardless of available requests. Set to None to
+                wait regardless of the time. Defaults to None.
 
-        :returns: bool -- Returns True if no requests are available,
-                          False if num_requests are available
+        Returns:
+            bool -- Returns True if no requests are available, False if
+            num_requests are available
         """
         return self.inferencer.model.wait(num_requests=num_requests, timeout=timeout) == RESULT_NOT_READY
 
     def __make_request(self, image: np.ndarray, completed_requests: queue.Queue):
-        """
-        Makes an asynchronous request
+        """Makes an asynchronous request.
 
-        :param image: Image to run inference on.
-        :param completed_requests: Queue where results should be placed.
+        Args:
+            image: Image to run inference on.
+            completed_requests: Queue where results should be placed.
 
         Raises:
             RuntimeError: Raised if no idle requests are available
@@ -314,14 +323,14 @@ def _async_callback(
     status,
     callback_args: Tuple[AsyncOpenVINOTask, InferRequest, np.ndarray, Any, multiprocessing.Queue],
 ):
-    """
-    Callback for Async Infer. Adds the used image and output Dictionary to the
-    completed_requests Queue.
+    """Callback for Async Infer.
 
-    :param status: OpenVINO status code
-    :param callback_args: AsyncOpenVINOTask object, the Inference Request, the image
-                          used, Queue to put the output in.
+    Adds the used image and output Dictionary to the completed_requests Queue.
 
+    Args:
+        status: OpenVINO status code
+        callback_args: AsyncOpenVINOTask object, the Inference Request,
+            the image used, Queue to put the output in.
     """
     self, request, image, metadata, completed_requests = callback_args
     try:

@@ -1,4 +1,4 @@
-"""This file defines the ModelConfiguration, ModelEntity and Model classes"""
+"""This file defines the ModelConfiguration, ModelEntity and Model classes."""
 
 # Copyright (C) 2021-2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
@@ -26,7 +26,7 @@ if TYPE_CHECKING:
 
 
 class ModelPrecision(IntEnum):
-    """Represents the ModelPrecision of a Model"""
+    """Represents the ModelPrecision of a Model."""
 
     INT4 = auto()
     INT8 = auto()
@@ -35,13 +35,15 @@ class ModelPrecision(IntEnum):
 
 
 class ModelConfiguration:
-    """
-    This class represents the task configuration which was used to generate a specific model.
+    """This class represents the task configuration which was used to generate a specific model.
 
     Those are the parameters that a task may need in order to use the model.
 
-    :param configurable_parameters: Task configurable parameters used to generate the model
-    :param label_schema: Label schema inside the project used to generate the model
+    Args:
+        configurable_parameters: Task configurable parameters used to
+            generate the model
+        label_schema: Label schema inside the project used to generate
+            the model
     """
 
     configurable_parameters: ConfigurableParameters
@@ -55,12 +57,12 @@ class ModelConfiguration:
         self.__label_schema = label_schema
 
     def get_label_schema(self) -> LabelSchemaEntity:
-        """Get the LabelSchema"""
+        """Get the LabelSchema."""
         return self.__label_schema
 
 
 class ModelFormat(IntEnum):
-    """Indicate the format of the model"""
+    """Indicate the format of the model."""
 
     OPENVINO = auto()
     BASE_FRAMEWORK = auto()
@@ -68,7 +70,7 @@ class ModelFormat(IntEnum):
 
 
 class ModelOptimizationType(IntEnum):
-    """Represents optimization type that is used to optimize the model"""
+    """Represents optimization type that is used to optimize the model."""
 
     NONE = auto()
     MO = auto()
@@ -77,7 +79,7 @@ class ModelOptimizationType(IntEnum):
 
 
 class OptimizationMethod(IntEnum):
-    """Represents optimization method that is used to optimize the model"""
+    """Represents optimization method that is used to optimize the model."""
 
     FILTER_PRUNING = auto()
     QUANTIZATION = auto()
@@ -85,7 +87,7 @@ class OptimizationMethod(IntEnum):
 
 # pylint: disable=too-many-instance-attributes, too-many-public-methods
 class ModelEntity:
-    """Represents the Entity of a Model"""
+    """Represents the Entity of a Model."""
 
     # TODO: add tags and allow filtering on those in modelrepo
     # pylint: disable=too-many-arguments,too-many-locals; Requires refactor
@@ -157,7 +159,7 @@ class ModelEntity:
 
     @property
     def id_(self) -> ID:
-        """Gets or sets the id of a Model"""
+        """Gets or sets the id of a Model."""
         return self.__id_
 
     @id_.setter
@@ -166,17 +168,17 @@ class ModelEntity:
 
     @property
     def id(self) -> ID:
-        """DEPRECATED"""
+        """DEPRECATED."""
         return self.__id_
 
     @id.setter
     def id(self, value: ID):
-        """DEPRECATED"""
+        """DEPRECATED."""
         self.__id_ = value
 
     @property
     def configuration(self) -> ModelConfiguration:
-        """Gets or sets the configuration of the Model"""
+        """Gets or sets the configuration of the Model."""
         return self.__configuration
 
     @configuration.setter
@@ -185,7 +187,7 @@ class ModelEntity:
 
     @property
     def creation_date(self) -> datetime.datetime:
-        """Gets or sets the creation_date of the Model"""
+        """Gets or sets the creation_date of the Model."""
         return self.__creation_date
 
     @creation_date.setter
@@ -194,7 +196,7 @@ class ModelEntity:
 
     @property
     def train_dataset(self) -> "DatasetEntity":
-        """Gets or sets the current Training Dataset"""
+        """Gets or sets the current Training Dataset."""
         return self.__train_dataset
 
     @train_dataset.setter
@@ -203,9 +205,10 @@ class ModelEntity:
 
     @property
     def previous_trained_revision(self) -> Union[None, "ModelEntity"]:
-        """
-        Gets or sets the previous model
-        Returns None if no previous_trained_revision has been created
+        """Gets or sets the previous model.
+
+        Returns:
+            None if no previous_trained_revision has been created
         """
         return self.__previous_trained_revision
 
@@ -215,9 +218,7 @@ class ModelEntity:
 
     @property
     def previous_revision(self) -> Union[None, "ModelEntity"]:
-        """
-        Gets or sets the previous model
-        """
+        """Gets or sets the previous model."""
         return self.__previous_revision
 
     @previous_revision.setter
@@ -226,7 +227,7 @@ class ModelEntity:
 
     @property
     def version(self) -> int:
-        """Gets or sets the version"""
+        """Gets or sets the version."""
         return self.__version
 
     @version.setter
@@ -235,7 +236,7 @@ class ModelEntity:
 
     @property
     def tags(self) -> List[str]:
-        """Gets or sets the tags of the Model"""
+        """Gets or sets the tags of the Model."""
         return self.__tags
 
     @tags.setter
@@ -244,7 +245,7 @@ class ModelEntity:
 
     @property
     def model_format(self) -> ModelFormat:
-        """Gets the model format"""
+        """Gets the model format."""
         return self.__model_format
 
     @model_format.setter
@@ -253,7 +254,7 @@ class ModelEntity:
 
     @property
     def performance(self) -> Performance:
-        """Gets or sets the current Performance of the Model"""
+        """Gets or sets the current Performance of the Model."""
         return self.__performance
 
     @performance.setter
@@ -262,7 +263,7 @@ class ModelEntity:
 
     @property
     def training_duration(self) -> float:
-        """Gets or sets the current training duration"""
+        """Gets or sets the current training duration."""
         return self.__training_duration
 
     @training_duration.setter
@@ -271,8 +272,8 @@ class ModelEntity:
 
     @property
     def precision(self) -> List[ModelPrecision]:
-        """
-        Get or set the precision for the model.
+        """Get or set the precision for the model.
+
         This has effect on accuracy, latency and throughput of the model.
         """
         return self.__precision
@@ -283,8 +284,8 @@ class ModelEntity:
 
     @property
     def latency(self) -> int:
-        """
-        Get or set the latency of the model.
+        """Get or set the latency of the model.
+
         Unit is milliseconds (ms)
         """
         return self.__latency
@@ -295,8 +296,8 @@ class ModelEntity:
 
     @property
     def fps_throughput(self) -> int:
-        """
-        Get or set the throughput of the model
+        """Get or set the throughput of the model.
+
         Unit is frames per second (fps)
         """
         return self.__fps_throughput
@@ -307,9 +308,7 @@ class ModelEntity:
 
     @property
     def target_device(self) -> TargetDevice:
-        """
-        Get or set the device on which the model will be deployed
-        """
+        """Get or set the device on which the model will be deployed."""
         return self.__target_device
 
     @target_device.setter
@@ -318,9 +317,7 @@ class ModelEntity:
 
     @property
     def target_device_type(self) -> Optional[str]:
-        """
-        Get or set the type of the target device used by the model
-        """
+        """Get or set the type of the target device used by the model."""
         return self.__target_device_type
 
     @target_device_type.setter
@@ -329,9 +326,7 @@ class ModelEntity:
 
     @property
     def optimization_methods(self) -> Optional[List[OptimizationMethod]]:
-        """
-        Get or set the optimization methods used on the model
-        """
+        """Get or set the optimization methods used on the model."""
         return self.__optimization_methods
 
     @optimization_methods.setter
@@ -340,9 +335,7 @@ class ModelEntity:
 
     @property
     def optimization_type(self) -> ModelOptimizationType:
-        """
-        Get or set the optimization type used for the model
-        """
+        """Get or set the optimization type used for the model."""
         return self.__optimization_type
 
     @optimization_type.setter
@@ -351,9 +344,7 @@ class ModelEntity:
 
     @property
     def optimization_objectives(self) -> Optional[Dict[str, str]]:
-        """
-        Get or set the optimization level of the model
-        """
+        """Get or set the optimization level of the model."""
         return self.__optimization_objectives
 
     @optimization_objectives.setter
@@ -362,9 +353,7 @@ class ModelEntity:
 
     @property
     def performance_improvement(self) -> Optional[Dict[str, float]]:
-        """
-        Get or set the performance improvement of the model
-        """
+        """Get or set the performance improvement of the model."""
         return self.__performance_improvement
 
     @performance_improvement.setter
@@ -373,9 +362,7 @@ class ModelEntity:
 
     @property
     def model_size_reduction(self) -> float:
-        """
-        Get or set the reduction in model size by optimizing
-        """
+        """Get or set the reduction in model size by optimizing."""
         return self.__model_size_reduction
 
     @model_size_reduction.setter
@@ -384,50 +371,48 @@ class ModelEntity:
 
     @property
     def exportable_code(self) -> Optional[bytes]:
-        """
-        Get the exportable_code from the exportable code adapter
-        """
+        """Get the exportable_code from the exportable code adapter."""
         if self.__exportable_code_adapter is not None:
             return self.__exportable_code_adapter.data
         return None
 
     @exportable_code.setter
     def exportable_code(self, data: Union[bytes, IDataSource]):
-        """
-        Set the exportable code using the exportable code adapter
-        """
+        """Set the exportable code using the exportable code adapter."""
         self.__exportable_code_adapter = ExportableCodeAdapter(data_source=data)
 
     @property
     def exportable_code_adapter(self) -> Optional[ExportableCodeAdapter]:
-        """
-        Returns the exportable code adapter
-        """
+        """Returns the exportable code adapter."""
         return self.__exportable_code_adapter
 
     def get_data(self, key: str) -> bytes:
-        """
-        Fetches byte data for a certain model.
-        :param key: key to fetch data for
-        :return:
+        """Fetches byte data for a certain model.
+
+        Args:
+            key: key to fetch data for
+
+        Returns:
+            bytes: data for the key.
         """
         return self.__model_adapters[key].data
 
     def set_data(self, key: str, data: Union[bytes, IDataSource], skip_deletion=False):
-        """
-        Sets the data for a specified key, either from a binary blob or from a data source. If the key already exists
-        it appends existing data url to a list of urls that will be removed upon saving the model. Skip deletion
-        parameter should only be true if replacing bytes data with a file.
+        """Sets the data for a specified key, either from a binary blob or from a data source.
+
+        If the key already exists it appends existing data url to a list of urls that will be removed upon saving the
+        model. Skip deletion parameter should only be true if replacing bytes data with a file.
         """
         if not skip_deletion:
             self.delete_data(key)
         self.__model_adapters[key] = ModelAdapter(data)
 
     def delete_data(self, key: str):
-        """
-        This function is used to delete data sources that are on the filesystem. If the key exists the model adapter
-        will be appended to a list of model adapter that will be removed once the model is saved by the repo. Note that
-        an optimized model must contain at least 1 DataSource otherwise you are left with an invalid optimized model.
+        """This function is used to delete data sources that are on the filesystem.
+
+        If the key exists the model adapter will be appended to a list of model adapter that will be removed once the
+        model is saved by the repo. Note that an optimized model must contain at least 1 DataSource otherwise you are
+        left with an invalid optimized model.
         """
         if key in self.__model_adapters:
             self.model_adapters_to_delete.append(self.__model_adapters[key])
@@ -435,16 +420,14 @@ class ModelEntity:
 
     @property
     def model_adapters(self) -> Dict[str, ModelAdapter]:
-        """
-        Returns the dictionary of model adapters for each data key.
-        """
+        """Returns the dictionary of model adapters for each data key."""
         return self.__model_adapters
 
     @property
     def weight_paths(self) -> Dict[str, URL]:
-        """
-        Returns the the path to URLs for each data key. Note that this function will raise an error if
-        the model was not saved to a database.
+        """Returns the the path to URLs for each data key.
+
+        Note that this function will raise an error if the model was not saved to a database.
         """
         return {
             key: model_adapter.data_source.binary_url
@@ -453,14 +436,20 @@ class ModelEntity:
         }
 
     def is_optimized(self) -> bool:
-        """
-        Returns a boolean indicating if the model has been optimized or not
-        """
+        """Returns a boolean indicating if the model has been optimized or not."""
         if self.optimization_type == ModelOptimizationType.NONE:
             return False
         return True
 
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
+        """Compares if both the ModelEntities use the same dataset and have the same performance.
+
+        Args:
+            other (ModelEntity): ModelEntity to compare with.
+
+        Returns:
+            bool: True if the two ModelEntities are equal, False otherwise.
+        """
         if isinstance(other, ModelEntity):
             return (
                 self.id_ == other.id_

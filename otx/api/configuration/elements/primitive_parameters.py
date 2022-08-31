@@ -1,12 +1,12 @@
-# Copyright (C) 2021-2022 Intel Corporation
+"""This module contains constructor functions for the primitive configurable parameter types.
+
+The available parameter types are: `configurable_integer`, `configurable_float`, `configurable_boolean`,
+`string_selectable` and `float_selectable`.
+"""
+# Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 
-
-"""
-This module contains constructor functions for the primitive configurable parameter types. The available parameter types
-are: `configurable_integer`, `configurable_float`, `configurable_boolean`, `string_selectable` and `float_selectable`
-"""
 
 from typing import List, Optional, TypeVar, Union
 
@@ -60,9 +60,7 @@ def set_common_metadata(
     auto_hpo_state: AutoHPOState,
     auto_hpo_value: Optional[Union[int, float, str, bool, ConfigurableEnum]],
 ) -> dict:
-    """
-    Function to construct the dictionary of metadata that is common for all parameter types
-    """
+    """Function to construct the dictionary of metadata that is common for all parameter types."""
     metadata = {
         DEFAULT_VALUE: default_value,
         DESCRIPTION: description,
@@ -93,33 +91,50 @@ def configurable_integer(
     auto_hpo_state: AutoHPOState = AutoHPOState.NOT_POSSIBLE,
     auto_hpo_value: Optional[int] = None,
 ) -> int:
-    """
-    Constructs a configurable integer attribute, with the appropriate metadata.
+    """Constructs a configurable integer attribute, with the appropriate metadata.
 
-    :param default_value: integer to use as default for the parameter
-    :param header: User friendly name for the parameter, which will be shown in the UI
-    :param min_value: lower bound of the range of values this parameter can take. Defaults to 0
-    :param max_value: upper bound of the range of values this parameter can take Defaults to 255
-    :param description: A user friendly description of what this parameter does, what does it represent and what are
-        the effects of changing it?
-    :param warning: An optional warning message to caution users when changing this parameter. This message will be
-        displayed in the UI. For example, for the parameter batch_size: `Increasing batch size increases GPU memory
-        demands and may result in out of memory errors. Please update batch size with caution.`
-    :param editable: Set to False to prevent the parameter from being edited in the UI. It can still be edited through
-        the REST API or the SDK. Defaults to True
-    :param visible_in_ui: Set to False to hide the parameter from the UI and the REST API. It will still be visible
-        through the SDK. Defaults to True
-    :param affects_outcome_of: Describes the stage of the ModelLifecycle in which this parameter modifies the outcome.
-        See the documentation for the ModelLifecycle Enum for further details
-    :param ui_rules: Set of rules to control UI behavior for this parameter. For example, the parameter can be shown or
-        hidden from the UI based on the value of other parameters in the configuration. Have a look at the UIRules
-        class for more details. Defaults to NullUIRules.
-    :param auto_hpo_state: This flag reflects whether the parameter can be (or has
-        been) optimized through automatic hyper parameter tuning (auto-HPO)
-    :param auto_hpo_value: If auto-HPO has been executed for this parameter, this field
-        will hold the optimized value for the configurable integer
+    Args:
+        default_value: integer to use as default for the parameter
+        header: User friendly name for the parameter, which will be
+            shown in the UI
+        min_value: lower bound of the range of values this parameter can
+            take. Defaults to 0
+        max_value: upper bound of the range of values this parameter can
+            take Defaults to 255
+        description: A user friendly description of what this parameter
+            does, what does it represent and what are the effects of
+            changing it?
+        warning: An optional warning message to caution users when
+            changing this parameter. This message will be displayed in
+            the UI. For example, for the parameter batch_size:
+            `Increasing batch size increases GPU memory demands and may
+            result in out of memory errors. Please update batch size
+            with caution.`
+        editable: Set to False to prevent the parameter from being
+            edited in the UI. It can still be edited through the REST
+            API or the SDK. Defaults to True
+        visible_in_ui: Set to False to hide the parameter from the UI
+            and the REST API. It will still be visible through the SDK.
+            Defaults to True
+        affects_outcome_of: Describes the stage of the ModelLifecycle in
+            which this parameter modifies the outcome. See the
+            documentation for the ModelLifecycle Enum for further
+            details
+        ui_rules: Set of rules to control UI behavior for this
+            parameter. For example, the parameter can be shown or hidden
+            from the UI based on the value of other parameters in the
+            configuration. Have a look at the UIRules class for more
+            details. Defaults to NullUIRules.
+        auto_hpo_state: This flag reflects whether the parameter can be
+            (or has been) optimized through automatic hyper parameter
+            tuning (auto-HPO)
+        auto_hpo_value: If auto-HPO has been executed for this
+            parameter, this field will hold the optimized value for the
+            configurable integer
 
-    :return: attrs Attribute of type `int`, with its metadata set according to the inputs
+    Returns:
+        attrs Attribute of type `int`, with its metadata set according
+        to the inputs
     """
     metadata = set_common_metadata(
         default_value=default_value,
@@ -162,33 +177,50 @@ def configurable_float(
     auto_hpo_state: AutoHPOState = AutoHPOState.NOT_POSSIBLE,
     auto_hpo_value: Optional[float] = None,
 ) -> float:
-    """
-    Constructs a configurable float attribute, with the appropriate metadata.
+    """Constructs a configurable float attribute, with the appropriate metadata.
 
-    :param default_value: float to use as default for the parameter
-    :param header: User friendly name for the parameter, which will be shown in the UI
-    :param min_value: lower bound of the range of values this parameter can take. Defaults to 0.0
-    :param max_value: upper bound of the range of values this parameter can take Defaults to 255.0
-    :param description: A user friendly description of what this parameter does, what does it represent and what are
-        the effects of changing it?
-    :param warning: An optional warning message to caution users when changing this parameter. This message will be
-        displayed in the UI. For example, for the parameter batch_size: `Increasing batch size increases GPU memory
-        demands and may result in out of memory errors. Please update batch size with caution.`
-    :param editable: Set to False to prevent the parameter from being edited in the UI. It can still be edited through
-        the REST API or the SDK. Defaults to True
-    :param visible_in_ui: Set to False to hide the parameter from the UI and the REST API. It will still be visible
-        through the SDK. Defaults to True
-    :param affects_outcome_of: Describes the stage of the ModelLifecycle in which this parameter modifies the outcome.
-        See the documentation for the ModelLifecycle Enum for further details
-    :param ui_rules: Set of rules to control UI behavior for this parameter. For example, the parameter can be shown or
-        hidden from the UI based on the value of other parameters in the configuration. Have a look at the UIRules
-        class for more details. Defaults to NullUIRules.
-    :param auto_hpo_state: This flag reflects whether the parameter can be (or has
-        been) optimized through automatic hyper parameter tuning (auto-HPO)
-    :param auto_hpo_value: If auto-HPO has been executed for this parameter, this field
-        will hold the optimized value for the configurable float
+    Args:
+        default_value: float to use as default for the parameter
+        header: User friendly name for the parameter, which will be
+            shown in the UI
+        min_value: lower bound of the range of values this parameter can
+            take. Defaults to 0.0
+        max_value: upper bound of the range of values this parameter can
+            take Defaults to 255.0
+        description: A user friendly description of what this parameter
+            does, what does it represent and what are the effects of
+            changing it?
+        warning: An optional warning message to caution users when
+            changing this parameter. This message will be displayed in
+            the UI. For example, for the parameter batch_size:
+            `Increasing batch size increases GPU memory demands and may
+            result in out of memory errors. Please update batch size
+            with caution.`
+        editable: Set to False to prevent the parameter from being
+            edited in the UI. It can still be edited through the REST
+            API or the SDK. Defaults to True
+        visible_in_ui: Set to False to hide the parameter from the UI
+            and the REST API. It will still be visible through the SDK.
+            Defaults to True
+        affects_outcome_of: Describes the stage of the ModelLifecycle in
+            which this parameter modifies the outcome. See the
+            documentation for the ModelLifecycle Enum for further
+            details
+        ui_rules: Set of rules to control UI behavior for this
+            parameter. For example, the parameter can be shown or hidden
+            from the UI based on the value of other parameters in the
+            configuration. Have a look at the UIRules class for more
+            details. Defaults to NullUIRules.
+        auto_hpo_state: This flag reflects whether the parameter can be
+            (or has been) optimized through automatic hyper parameter
+            tuning (auto-HPO)
+        auto_hpo_value: If auto-HPO has been executed for this
+            parameter, this field will hold the optimized value for the
+            configurable float
 
-    :return: attrs Attribute of type `float`, with its metadata set according to the inputs
+    Returns:
+        attrs Attribute of type `float`, with its metadata set according
+        to the inputs
     """
     metadata = set_common_metadata(
         default_value=default_value,
@@ -230,32 +262,46 @@ def configurable_boolean(
     auto_hpo_state: AutoHPOState = AutoHPOState.NOT_POSSIBLE,
     auto_hpo_value: Optional[bool] = None,
 ) -> bool:
-    """
-    Constructs a configurable boolean attribute, with the appropriate metadata.
+    """Constructs a configurable boolean attribute, with the appropriate metadata.
 
-    :param default_value: boolean to use as default for the parameter
-    :param header: User friendly name for the parameter, which will be shown in the UI
-    :param description: A user friendly description of what this parameter does, what does it represent and what are
-        the effects of changing it?
-    :param warning: An optional warning message to caution users when changing this parameter. This message will be
-        displayed in the UI. For example, for the parameter batch_size: `Increasing batch size increases GPU memory
-        demands and may result in out of memory errors. Please update batch size with caution.`
-    :param editable: Set to False to prevent the parameter from being edited in the UI. It can still be edited through
-        the REST API or the SDK. Defaults to True
-    :param visible_in_ui: Set to False to hide the parameter from the UI and the REST API. It will still be visible
-        through the SDK. Defaults to True
-    :param affects_outcome_of: Describes the stage of the ModelLifecycle in which this parameter modifies the outcome.
-        See the documentation for the ModelLifecycle Enum for further details
-    :param ui_rules: Set of rules to control UI behavior for this parameter. For example, the parameter can be shown or
-        hidden from the UI based on the value of other parameters in the configuration. Have a look at the UIRules
-        class for more details. Defaults to NullUIRules.
-    :param auto_hpo_state: This flag reflects whether the parameter can be (or has
-        been) optimized through automatic hyper parameter tuning (auto-HPO)
-    :param auto_hpo_value: If auto-HPO has been executed for this parameter, this field
-        will hold the optimized value for the configurable boolean
+    Args:
+        default_value: boolean to use as default for the parameter
+        header: User friendly name for the parameter, which will be
+            shown in the UI
+        description: A user friendly description of what this parameter
+            does, what does it represent and what are the effects of
+            changing it?
+        warning: An optional warning message to caution users when
+            changing this parameter. This message will be displayed in
+            the UI. For example, for the parameter batch_size:
+            `Increasing batch size increases GPU memory demands and may
+            result in out of memory errors. Please update batch size
+            with caution.`
+        editable: Set to False to prevent the parameter from being
+            edited in the UI. It can still be edited through the REST
+            API or the SDK. Defaults to True
+        visible_in_ui: Set to False to hide the parameter from the UI
+            and the REST API. It will still be visible through the SDK.
+            Defaults to True
+        affects_outcome_of: Describes the stage of the ModelLifecycle in
+            which this parameter modifies the outcome. See the
+            documentation for the ModelLifecycle Enum for further
+            details
+        ui_rules: Set of rules to control UI behavior for this
+            parameter. For example, the parameter can be shown or hidden
+            from the UI based on the value of other parameters in the
+            configuration. Have a look at the UIRules class for more
+            details. Defaults to NullUIRules.
+        auto_hpo_state: This flag reflects whether the parameter can be
+            (or has been) optimized through automatic hyper parameter
+            tuning (auto-HPO)
+        auto_hpo_value: If auto-HPO has been executed for this
+            parameter, this field will hold the optimized value for the
+            configurable boolean
 
-    :return: attrs Attribute of type `bool`, with its metadata set according to the
-        inputs
+    Returns:
+        attrs Attribute of type `bool`, with its metadata set according
+        to the inputs
     """
     metadata = set_common_metadata(
         default_value=default_value,
@@ -294,32 +340,48 @@ def float_selectable(
     auto_hpo_state: AutoHPOState = AutoHPOState.NOT_POSSIBLE,
     auto_hpo_value: Optional[float] = None,
 ) -> float:
-    """
-    Constructs a configurable float selectable attribute, with the appropriate metadata.
+    """Constructs a configurable float selectable attribute, with the appropriate metadata.
 
-    :param default_value: float to use as default for the parameter
-    :param header: User friendly name for the parameter, which will be shown in the UI
-    :param options: list of float options representing the values that this parameter can take
-    :param description: A user friendly description of what this parameter does, what does it represent and what are
-        the effects of changing it?
-    :param warning: An optional warning message to caution users when changing this parameter. This message will be
-        displayed in the UI. For example, for the parameter batch_size: `Increasing batch size increases GPU memory
-        demands and may result in out of memory errors. Please update batch size with caution.`
-    :param editable: Set to False to prevent the parameter from being edited in the UI. It can still be edited through
-        the REST API or the SDK. Defaults to True
-    :param visible_in_ui: Set to False to hide the parameter from the UI and the REST API. It will still be visible
-        through the SDK. Defaults to True
-    :param affects_outcome_of: Describes the stage of the ModelLifecycle in which this parameter modifies the outcome.
-        See the documentation for the ModelLifecycle Enum for further details
-    :param ui_rules: Set of rules to control UI behavior for this parameter. For example, the parameter can be shown or
-        hidden from the UI based on the value of other parameters in the configuration. Have a look at the UIRules
-        class for more details. Defaults to NullUIRules.
-    :param auto_hpo_state: This flag reflects whether the parameter can be (or has
-        been) optimized through automatic hyper parameter tuning (auto-HPO)
-    :param auto_hpo_value: If auto-HPO has been executed for this parameter, this field
-        will hold the optimized value for the float selectable
+    Args:
+        default_value: float to use as default for the parameter
+        header: User friendly name for the parameter, which will be
+            shown in the UI
+        options: list of float options representing the values that this
+            parameter can take
+        description: A user friendly description of what this parameter
+            does, what does it represent and what are the effects of
+            changing it?
+        warning: An optional warning message to caution users when
+            changing this parameter. This message will be displayed in
+            the UI. For example, for the parameter batch_size:
+            `Increasing batch size increases GPU memory demands and may
+            result in out of memory errors. Please update batch size
+            with caution.`
+        editable: Set to False to prevent the parameter from being
+            edited in the UI. It can still be edited through the REST
+            API or the SDK. Defaults to True
+        visible_in_ui: Set to False to hide the parameter from the UI
+            and the REST API. It will still be visible through the SDK.
+            Defaults to True
+        affects_outcome_of: Describes the stage of the ModelLifecycle in
+            which this parameter modifies the outcome. See the
+            documentation for the ModelLifecycle Enum for further
+            details
+        ui_rules: Set of rules to control UI behavior for this
+            parameter. For example, the parameter can be shown or hidden
+            from the UI based on the value of other parameters in the
+            configuration. Have a look at the UIRules class for more
+            details. Defaults to NullUIRules.
+        auto_hpo_state: This flag reflects whether the parameter can be
+            (or has been) optimized through automatic hyper parameter
+            tuning (auto-HPO)
+        auto_hpo_value: If auto-HPO has been executed for this
+            parameter, this field will hold the optimized value for the
+            float selectable
 
-    :return: attrs Attribute of type `float`, with its metadata set according to the inputs
+    Returns:
+        attrs Attribute of type `float`, with its metadata set according
+        to the inputs
     """
     metadata = set_common_metadata(
         default_value=default_value,
@@ -361,33 +423,50 @@ def selectable(
     auto_hpo_state: AutoHPOState = AutoHPOState.NOT_POSSIBLE,
     auto_hpo_value: Optional[str] = None,
 ) -> _ConfigurableEnum:
-    """
-    Constructs a selectable attribute from a pre-defined Enum, with the appropriate metadata. The list of options for
-    display in the UI is inferred from the type of the ConfigurableEnum instance passed in as default_value.
+    """Constructs a selectable attribute from a pre-defined Enum, with the appropriate metadata.
 
-    :param default_value: OTXConfigurationEnum instance to use as default for the parameter
-    :param header: User friendly name for the parameter, which will be shown in the UI
-    :param description: A user friendly description of what this parameter does, what does it represent and what are
-        the effects of changing it?
-    :param warning: An optional warning message to caution users when changing this parameter. This message will be
-        displayed in the UI. For example, for the parameter batch_size: `Increasing batch size increases GPU memory
-        demands and may result in out of memory errors. Please update batch size with caution.`
-    :param editable: Set to False to prevent the parameter from being edited in the UI. It can still be edited through
-        the REST API or the SDK. Defaults to True
-    :param visible_in_ui: Set to False to hide the parameter from the UI and the REST API. It will still be visible
-        through the SDK. Defaults to True
-    :param affects_outcome_of: Describes the stage of the ModelLifecycle in which this parameter modifies the outcome.
-        See the documentation for the ModelLifecycle Enum for further details
-    :param ui_rules: Set of rules to control UI behavior for this parameter. For example, the parameter can be shown or
-        hidden from the UI based on the value of other parameters in the configuration. Have a look at the UIRules
-        class for more details. Defaults to NullUIRules.
-    :param auto_hpo_state: This flag reflects whether the parameter can be (or has
-        been) optimized through automatic hyper parameter tuning (auto-HPO)
-    :param auto_hpo_value: If auto-HPO has been executed for this parameter, this field
-        will hold the optimized value for the string selectable
+    The list of options for display in the UI is inferred from the type of the ConfigurableEnum instance passed in
+    as default_value.
 
-    :return: attrs Attribute, with its type matching the type of `default_value`, and
-        its metadata set according to the inputs
+    Args:
+        default_value: OTXConfigurationEnum instance to use as default
+            for the parameter
+        header: User friendly name for the parameter, which will be
+            shown in the UI
+        description: A user friendly description of what this parameter
+            does, what does it represent and what are the effects of
+            changing it?
+        warning: An optional warning message to caution users when
+            changing this parameter. This message will be displayed in
+            the UI. For example, for the parameter batch_size:
+            `Increasing batch size increases GPU memory demands and may
+            result in out of memory errors. Please update batch size
+            with caution.`
+        editable: Set to False to prevent the parameter from being
+            edited in the UI. It can still be edited through the REST
+            API or the SDK. Defaults to True
+        visible_in_ui: Set to False to hide the parameter from the UI
+            and the REST API. It will still be visible through the SDK.
+            Defaults to True
+        affects_outcome_of: Describes the stage of the ModelLifecycle in
+            which this parameter modifies the outcome. See the
+            documentation for the ModelLifecycle Enum for further
+            details
+        ui_rules: Set of rules to control UI behavior for this
+            parameter. For example, the parameter can be shown or hidden
+            from the UI based on the value of other parameters in the
+            configuration. Have a look at the UIRules class for more
+            details. Defaults to NullUIRules.
+        auto_hpo_state: This flag reflects whether the parameter can be
+            (or has been) optimized through automatic hyper parameter
+            tuning (auto-HPO)
+        auto_hpo_value: If auto-HPO has been executed for this
+            parameter, this field will hold the optimized value for the
+            string selectable
+
+    Returns:
+        attrs Attribute, with its type matching the type of
+        `default_value`, and its metadata set according to the inputs
     """
     metadata = set_common_metadata(
         default_value=default_value,
@@ -422,21 +501,30 @@ def selectable(
 
 
 def string_attribute(value: str) -> str:
-    """
-    Wrapper for attr.ib that can be used to overwrite simple string attributes in a class or parameter group definition.
+    """String attribute.
 
-    :param value: string to be added as attribute
-    :return: attr.ib string attribute with its default value set to value
+    Wrapper for attr.ib that can be used to overwrite simple string attributes in a class or parameter group
+    definition.
+
+    Args:
+        value: string to be added as attribute
+
+    Returns:
+        attr.ib string attribute with its default value set to value
     """
     return attr.ib(default=value, type=str, kw_only=True)
 
 
 def boolean_attribute(value: bool) -> bool:
-    """
+    """Boolean attribute wrapper.
+
     Wrapper for attr.ib that can be used to overwrite simple boolean attributes in a class or parameter group
     definition.
 
-    :param value: boolean to be added as attribute
-    :return: attr.ib boolean attribute with its default value set to value
+    Args:
+        value: boolean to be added as attribute
+
+    Returns:
+        attr.ib boolean attribute with its default value set to value
     """
     return attr.ib(default=value, type=bool, kw_only=True)

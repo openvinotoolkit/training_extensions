@@ -1,4 +1,4 @@
-"""This module implements the Tensor entity"""
+"""This module implements the Tensor entity."""
 
 # Copyright (C) 2021-2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
@@ -12,11 +12,11 @@ from otx.api.entities.metadata import IMetadata
 
 
 class TensorEntity(IMetadata):
-    """
-    Represents a metadata of tensor type in OTX.
+    """Represents a metadata of tensor type in OTX.
 
-    :param name: name of metadata
-    :param numpy: the numpy data of the tensor
+    Args:
+        name: name of metadata
+        numpy: the numpy data of the tensor
     """
 
     def __init__(self, name: str, numpy: np.ndarray):
@@ -38,12 +38,15 @@ class TensorEntity(IMetadata):
         return self._numpy.shape
 
     def __eq__(self, other):
+        """Returns True if the tensors are equal."""
         if isinstance(other, TensorEntity):
             return np.array_equal(self.numpy, other.numpy)
         return False
 
     def __str__(self):
+        """Returns the string representation of the tensor."""
         return f"{self.__class__.__name__}(name={self.name}, shape={self.shape})"
 
     def __repr__(self):
+        """Returns the representation of the tensor."""
         return f"{self.__class__.__name__}(name={self.name}, numpy={self.numpy})"

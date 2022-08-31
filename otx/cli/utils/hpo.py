@@ -1,14 +1,9 @@
-"""
-Utils for HPO with hpopt
-"""
+"""Utils for HPO with hpopt."""
 
 # Copyright (C) 2021-2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 
-# pylint: disable=too-many-locals, too-many-instance-attributes, too-many-branches, too-many-statements
-# disbled some pylint refactor related categories
-# TODO: refactor code to resolve these things
 import builtins
 import collections
 import importlib
@@ -19,21 +14,28 @@ import shutil
 import subprocess  # nosec
 import sys
 import time
+
+# pylint: disable=too-many-locals, too-many-instance-attributes, too-many-branches, too-many-statements
+# disbled some pylint refactor related categories
+# TODO: refactor code to resolve these things
+from argparse import Namespace
 from enum import Enum
 from inspect import isclass
 from math import ceil
 from os import path as osp
 from pathlib import Path
-from typing import Optional
+from typing import Dict, Optional
 
 import torch
 import yaml
 
+from otx.api.configuration.configurable_parameters import ConfigurableParameters
 from otx.api.configuration.helper import create
+from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.model import ModelEntity
 from otx.api.entities.model_template import TaskType
 from otx.api.entities.subset import Subset
-from otx.api.entities.task_environment import TaskEnvironment
+from otx.api.entities.task_environment import TaskEnvironment, TypeVariable
 from otx.api.entities.train_parameters import TrainParameters, UpdateProgressCallback
 from otx.cli.datasets import get_dataset_class
 from otx.cli.utils.importing import get_impl_class
@@ -46,8 +48,8 @@ except ImportError:
     hpopt = None
 
 
-def check_hpopt_available():
-    """Check whether hpopt is avaiable"""
+def check_hpopt_available() -> bool:
+    """Check whether hpopt is avaiable."""
 
     if hpopt is None:
         return False
@@ -55,7 +57,7 @@ def check_hpopt_available():
 
 
 def _check_hpo_enabled_task(task_type: TaskType):
-    """Check whether HPO available task"""
+    """Check whether HPO available task."""
     return task_type in [
         TaskType.CLASSIFICATION,
         TaskType.DETECTION,
@@ -69,17 +71,17 @@ def _check_hpo_enabled_task(task_type: TaskType):
 
 
 def _is_mpa_framework_task(task_type: TaskType):
-    """Check whether mpa framework task"""
+    """Check whether mpa framework task."""
     return _is_cls_framework_task(task_type) or _is_det_framework_task(task_type) or _is_seg_framework_task(task_type)
 
 
 def _is_cls_framework_task(task_type: TaskType):
-    """Check whether classification framework task"""
+    """Check whether classification framework task."""
     return task_type == TaskType.CLASSIFICATION
 
 
 def _is_det_framework_task(task_type: TaskType):
-    """Check whether detection framework task"""
+    """Check whether detection framework task."""
     return task_type in [
         TaskType.DETECTION,
         TaskType.INSTANCE_SEGMENTATION,
@@ -88,12 +90,12 @@ def _is_det_framework_task(task_type: TaskType):
 
 
 def _is_seg_framework_task(task_type: TaskType):
-    """Check whether segmentation framework task"""
+    """Check whether segmentation framework task."""
     return task_type == TaskType.SEGMENTATION
 
 
 def _is_anomaly_framework_task(task_type: TaskType):
-    """Check whether anomaly framework task"""
+    """Check whether anomaly framework task."""
     return task_type in [
         TaskType.ANOMALY_CLASSIFICATION,
         TaskType.ANOMALY_DETECTION,
@@ -101,8 +103,8 @@ def _is_anomaly_framework_task(task_type: TaskType):
     ]
 
 
-def run_hpo(args, environment, dataset, task_type):
-    """Update the environment with better hyper-parameters found by HPO"""
+def run_hpo(args: Namespace, environment: TaskEnvironment, dataset: DatasetEntity, task_type: TaskType):
+    """Update the environment with better hyper-parameters found by HPO."""
     if not check_hpopt_available():
         return None
 
@@ -128,6 +130,9 @@ def run_hpo(args, environment, dataset, task_type):
 
     environment.set_hyper_parameters(hyper_parameters)
 
+    assert (
+        environment.model_template.entrypoints is not None and environment.model_template.entrypoints.base is not None
+    )
     task_class = get_impl_class(environment.model_template.entrypoints.base)
     task_class = get_train_wrapper_task(task_class, task_type)
 
@@ -144,13 +149,14 @@ def run_hpo(args, environment, dataset, task_type):
         task.set_resume_path_to_config(hpo_weight_path)  # prepare finetune stage to resume
 
     if args.load_weights:
+        assert environment.model is not None
         environment.model.configuration.configurable_parameters = hyper_parameters
 
     return task
 
 
 def get_cuda_device_list():
-    """Retuns the list of avaiable cuda devices"""
+    """Returns the list of avaiable cuda devices."""
     if torch.cuda.is_available():
         hpo_env = os.environ.copy()
         cuda_visible_devices = hpo_env.get("CUDA_VISIBLE_DEVICES", None)
@@ -166,10 +172,10 @@ def run_hpo_trainer(
     hp_config,
     hyper_parameters,
     model_template,
-    dataset_paths,
-    task_type,
+    dataset_paths: Dict[str, str],
+    task_type: TaskType,
 ):
-    """Run each training of each trial with given hyper parameters"""
+    """Run each training of each trial with given hyper parameters."""
     if dataset_paths is None:
         raise ValueError("Dataset is not defined.")
 
@@ -218,7 +224,8 @@ def run_hpo_trainer(
     if hp_config["batch_size_param_name"] not in hp_config["params"].keys():
         attr = hyper_parameters
         for val in hp_config["batch_size_param_name"].split("."):
-            attr = getattr(attr, val)
+            # TODO explicitly check for typing
+            attr = getattr(attr, val)  # type: ignore[call-overload]
         hp_config["batch_size"] = attr
 
     # set hyper-parameters and print them
@@ -226,12 +233,13 @@ def run_hpo_trainer(
     print(f"hyper parameter of current trial : {hp_config['params']}")
 
     dataset_class = get_dataset_class(task_type)
+    # TODO remove None from dataset_paths
     dataset = dataset_class(
-        train_subset={
+        train_subset={  # type: ignore
             "ann_file": dataset_paths.get("train_ann_file", None),
             "data_root": dataset_paths.get("train_data_root", None),
         },
-        val_subset={
+        val_subset={  # type: ignore
             "ann_file": dataset_paths.get("val_ann_file", None),
             "data_root": dataset_paths.get("val_data_root", None),
         },
@@ -251,7 +259,8 @@ def run_hpo_trainer(
         train_env.model = read_model(
             train_env.get_model_configuration(),
             osp.join(osp.dirname(hp_config["file_path"]), "weights.pth"),
-            None,
+            # TODO replace None in read_model.
+            None,  # type: ignore[arg-type]
         )
     else:
         save_initial_weight_flag = True
@@ -261,6 +270,7 @@ def run_hpo_trainer(
         "metric": hp_config["metric"],
     }
 
+    assert train_env.model_template.entrypoints is not None and train_env.model_template.entrypoints.base is not None
     task_class = get_impl_class(train_env.model_template.entrypoints.base)
     hpo_impl_class = get_train_wrapper_task(task_class, task_type)
     task = hpo_impl_class(task_environment=train_env)
@@ -300,7 +310,7 @@ def run_hpo_trainer(
 
 
 def exec_hpo_trainer(arg_file_name, alloc_gpus):
-    """Execute new process to train model for ASHA's trial"""
+    """Execute new process to train model for ASHA's trial."""
 
     gpu_ids = ",".join(str(val) for val in alloc_gpus)
     trainer_file_name = osp.abspath(__file__)
@@ -319,11 +329,11 @@ def exec_hpo_trainer(arg_file_name, alloc_gpus):
 
 
 def get_train_wrapper_task(impl_class, task_type):
-    """get task wrapper for the HPO with given task type"""
+    """Get task wrapper for the HPO with given task type."""
 
     # pylint: disable=attribute-defined-outside-init
     class HpoTrainTask(impl_class):
-        """wrapper class for the HPO"""
+        """wrapper class for the HPO."""
 
         def __init__(self, task_environment):
             super().__init__(task_environment)
@@ -331,7 +341,7 @@ def get_train_wrapper_task(impl_class, task_type):
 
         # TODO: need to check things below whether works on MPA tasks
         def set_resume_path_to_config(self, resume_path):
-            """set path for the resume to the config of the each task framework"""
+            """Set path for the resume to the config of the each task framework."""
             if _is_cls_framework_task(self._task_type):
                 self._cfg.model.resume = resume_path
                 self._cfg.test.save_initial_metric = True
@@ -341,14 +351,14 @@ def get_train_wrapper_task(impl_class, task_type):
                 self._config.resume_from = resume_path
 
         def prepare_hpo(self, hp_config):
-            """update config of the each task framework for the HPO"""
+            """Update config of the each task framework for the HPO."""
             if _is_mpa_framework_task(self._task_type):
                 cfg = dict(checkpoint_config=dict(max_keep_ckpts=(hp_config["iterations"] + 10), interval=1))
                 self.update_override_configurations(cfg)
                 self._output_path = _get_hpo_trial_workdir(hp_config)  # pylint: disable=attribute-defined-outside-init
 
         def prepare_saving_initial_weight(self, save_path):
-            """add a hook which saves initial model weight before training"""
+            """Add a hook which saves initial model weight before training."""
             if _is_mpa_framework_task(task_type):
                 cfg = {"custom_hooks": [dict(type="SaveInitialWeightHook", save_path=save_path)]}
                 self.update_override_configurations(cfg)
@@ -361,7 +371,7 @@ def get_train_wrapper_task(impl_class, task_type):
     return HpoTrainTask
 
 
-def _convert_parameter_group_to_dict(parameter_group):
+def _convert_parameter_group_to_dict(parameter_group: TypeVariable):
     groups = getattr(parameter_group, "groups", None)
     parameters = getattr(parameter_group, "parameters", None)
 
@@ -381,11 +391,8 @@ def _convert_parameter_group_to_dict(parameter_group):
     return ret
 
 
-def _set_dict_to_parameter_group(origin_hp, hp_config):
-    """
-    Set given hyper parameter to hyper parameter in environment
-    aligning with "ConfigurableParameters".
-    """
+def _set_dict_to_parameter_group(origin_hp: ConfigurableParameters, hp_config: Dict):
+    """Set given hyper parameter to hyper parameter in environment aligning with "ConfigurableParameters"."""
     for key, val in hp_config.items():
         if not isinstance(val, dict):
             setattr(origin_hp, key, val)
@@ -393,8 +400,8 @@ def _set_dict_to_parameter_group(origin_hp, hp_config):
             _set_dict_to_parameter_group(getattr(origin_hp, key), val)
 
 
-def _load_hpopt_config(file_path):
-    """load HPOpt config file"""
+def _load_hpopt_config(file_path: str):
+    """Load HPOpt config file."""
     try:
         with open(file_path, "r", encoding="utf-8") as f:
             hpopt_cfg = yaml.safe_load(f)
@@ -406,7 +413,7 @@ def _load_hpopt_config(file_path):
 
 
 def _get_best_model_weight_path(hpo_dir: str, trial_num: str, task_type: TaskType):
-    """Return best model weight from HPO trial directory"""
+    """Return best model weight from HPO trial directory."""
     best_weight_path = None
     if _is_mpa_framework_task(task_type):
         best_arr = Path(osp.join(hpo_dir, str(trial_num))).glob("**/best*.pth")
@@ -422,17 +429,17 @@ def _get_best_model_weight_path(hpo_dir: str, trial_num: str, task_type: TaskTyp
 
 
 def _get_hpo_dir(hp_config):
-    """Return HPO work directory path from hp_config"""
+    """Return HPO work directory path from hp_config."""
     return osp.dirname(hp_config["file_path"])
 
 
 def _get_hpo_trial_workdir(hp_config):
-    """Return HPO trial work directory path from hp_config"""
+    """Return HPO trial work directory path from hp_config."""
     return osp.join(_get_hpo_dir(hp_config), str(hp_config["trial_id"]))
 
 
 class HpoCallback(UpdateProgressCallback):
-    """Callback class to report score to hpopt"""
+    """Callback class to report score to hpopt."""
 
     def __init__(self, hp_config, metric, hpo_task):
         super().__init__()
@@ -441,6 +448,12 @@ class HpoCallback(UpdateProgressCallback):
         self.hpo_task = hpo_task
 
     def __call__(self, progress: float, score: Optional[float] = None):
+        """Reports score to hpopt when called.
+
+        Args:
+            progress (float): (Unused) This is an artifact of using ProgressCallback for HPOCallback.
+            score (Optional[float], optional): Score to report. Defaults to None.
+        """
         if score is not None:
             current_iters = -1
             if score > 1.0:
@@ -456,7 +469,7 @@ class HpoCallback(UpdateProgressCallback):
 
 
 class HpoManager:
-    """Manage overall HPO process"""
+    """Manage overall HPO process."""
 
     def __init__(self, environment, dataset, dataset_paths, expected_time_ratio, hpo_save_path):
         self.environment = environment
@@ -574,8 +587,8 @@ class HpoManager:
         self.hpo = hpopt.create(**hpopt_arguments)
 
     def check_resumable(self):
-        """
-        Check if HPO could be resumed from the previous result.
+        """Check if HPO could be resumed from the previous result.
+
         If previous results are found, ask the user if resume or start from scratch.
         """
         resume_flag = False
@@ -620,7 +633,7 @@ class HpoManager:
         return resume_flag
 
     def run(self):
-        """Execute HPO according to configuration"""
+        """Execute HPO according to configuration."""
         task_type = self.environment.model_template.task_type
         proc_list = []
         gpu_alloc_list = []
@@ -731,7 +744,7 @@ class HpoManager:
 
     @staticmethod
     def generate_hpo_search_space(hp_space_dict):
-        """Generate search space from user's input"""
+        """Generate search space from user's input."""
         search_space = {}
         for key, val in hp_space_dict.items():
             # pylint: disable=no-member
@@ -740,7 +753,7 @@ class HpoManager:
 
     @staticmethod
     def remove_empty_keys(arg_dict):
-        """Remove keys with null values in the arg_dict dictionary"""
+        """Remove keys with null values in the arg_dict dictionary."""
         del_candidate = []
         for key, val in arg_dict.items():
             if val is None:
@@ -751,7 +764,7 @@ class HpoManager:
 
     @staticmethod
     def get_num_full_iterations(environment):
-        """Get the number of full iterations for the specified environment"""
+        """Get the number of full iterations for the specified environment."""
         num_full_iterations = 0
 
         task_type = environment.model_template.task_type
@@ -767,7 +780,7 @@ class HpoManager:
 
     @staticmethod
     def safe_pickle_dump(dir_path, file_name, data):
-        """Dump a pickle file with minimal file permission"""
+        """Dump a pickle file with minimal file permission."""
         pickle_path = osp.join(dir_path, f"{file_name}.pickle")
 
         oldmask = os.umask(0o077)
@@ -779,10 +792,7 @@ class HpoManager:
 
     @staticmethod
     def set_hyperparameter(origin_hp, hp_config):
-        """
-        Set given hyper parameter to hyper parameter in environment
-        aligning with "ConfigurableParameters".
-        """
+        """Set given hyper parameter to hyper parameter in environment aligning with "ConfigurableParameters"."""
 
         for param_key, param_val in hp_config.items():
             param_key = param_key.split(".")
@@ -794,31 +804,32 @@ class HpoManager:
 
 
 class HpoDataset:
-    """
-    Wrapper class for DatasetEntity of dataset.
+    """Wrapper class for DatasetEntity of dataset.
+
     It's used to make subset during HPO.
     """
 
-    def __init__(self, fullset, config=None, indices=None):
+    def __init__(self, fullset: DatasetEntity, config=None, indices=None):
         self.fullset = fullset
         self.indices = indices
         self.subset_ratio = 1 if config is None else config["subset_ratio"]
 
     def __len__(self) -> int:
+        """Gets size of dataset."""
         return len(self.indices)
 
     def __getitem__(self, indx) -> dict:
+        """Get item from dataset."""
         return self.fullset[self.indices[indx]]
 
     def __getattr__(self, name):
+        """Get attribute from fullset."""
         if name == "__setstate__":
             raise AttributeError(name)
         return getattr(self.fullset, name)
 
     def get_subset(self, subset: Subset):
-        """
-        Get subset according to subset_ratio if trainin dataset is requeseted.
-        """
+        """Get subset according to subset_ratio if training dataset is requested."""
 
         dataset = self.fullset.get_subset(subset)
         if subset != Subset.TRAINING or self.subset_ratio > 0.99:
@@ -832,7 +843,7 @@ class HpoDataset:
 
 
 class HpoUnpickler(pickle.Unpickler):
-    """Safe unpickler for HPO"""
+    """Safe unpickler for HPO."""
 
     __safe_builtins = {
         "range",
@@ -891,6 +902,7 @@ class HpoUnpickler(pickle.Unpickler):
     }
 
     def find_class(self, module_name, class_name):
+        """Find class in module_name."""
         # Only allow safe classes from builtins.
         if module_name in ["builtins", "__builtin__"] and class_name in self.__safe_builtins:
             return getattr(builtins, class_name)
@@ -906,7 +918,7 @@ class HpoUnpickler(pickle.Unpickler):
 
 
 def main():
-    """Run run_hpo_trainer with a pickle file"""
+    """Run run_hpo_trainer with a pickle file."""
     hp_config = None
     sys.path[0] = ""  # to prevent importing nncf from this directory
 

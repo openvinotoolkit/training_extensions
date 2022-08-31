@@ -1,6 +1,4 @@
-"""
-Demo based on ModelAPI
-"""
+"""Demo based on ModelAPI."""
 # Copyright (C) 2021-2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -20,9 +18,7 @@ from otx.api.usecases.exportable_code.demo.demo_package import (
 
 
 def build_argparser():
-    """
-    Parses command line arguments.
-    """
+    """Parses command line arguments."""
     parser = ArgumentParser(add_help=False)
     args = parser.add_argument_group("Options")
     args.add_argument(

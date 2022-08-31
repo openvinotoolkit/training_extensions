@@ -57,7 +57,6 @@ class ResultMediaEntity(IMetadata):
                 numpy=image_array
             )
 
-
     Args:
         name (str): Name.
         type (str): The type of data (e.g. Attention map). This type is descriptive.

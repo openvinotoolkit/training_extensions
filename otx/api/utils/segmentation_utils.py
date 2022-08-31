@@ -1,6 +1,4 @@
-"""
-This module implements segmentation related utilities
-"""
+"""This module implements segmentation related utilities."""
 
 # Copyright (C) 2021-2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
@@ -24,17 +22,19 @@ from otx.api.utils.shape_factory import ShapeFactory
 
 
 def mask_from_dataset_item(dataset_item: DatasetItemEntity, labels: List[LabelEntity]) -> np.ndarray:
-    """
-    Creates a mask from dataset item. The mask will be two dimensional,
-    and the value of each pixel matches the class index with offset 1. The background
+    """Creates a mask from dataset item.
+
+    The mask will be two dimensional, and the value of each pixel matches the class index with offset 1. The background
     class index is zero. labels[0] matches pixel value 1, etc. The class index is
-    determined based on the order of :param labels:
+    determined based on the order of 'labels'.
 
-    :param dataset_item: Item to make mask for
-    :param labels: The labels to use for creating the mask. The order of the labels
-                   determines the class index.
+    Args:
+        dataset_item: Item to make mask for
+        labels: The labels to use for creating the mask. The order of
+            the labels determines the class index.
 
-    :return: Numpy array of mask
+    Returns:
+        Numpy array of mask
     """
     # todo: cache this so that it does not have to be redone for all the same media
     mask = mask_from_annotation(
@@ -50,19 +50,21 @@ def mask_from_dataset_item(dataset_item: DatasetItemEntity, labels: List[LabelEn
 def mask_from_annotation(
     annotations: List[Annotation], labels: List[LabelEntity], width: int, height: int
 ) -> np.ndarray:
-    """
-    Generate a segmentation mask of a numpy image, and a list of shapes.
-    The mask is will be two dimensional    and the value of each pixel matches the class
-    index with offset 1. The background class index is zero.  labels[0] matches pixel
-    value 1, etc. The class index is determined based on the order of :param labels:
+    """Generate a segmentation mask of a numpy image, and a list of shapes.
 
-    :param annotations: List of annotations to plot in mask
-    :param labels: List of labels. The index position of the label determines the class
-                   number in the segmentation mask.
-    :param width: Width of the mask
-    :param height: Height of the mask
+    The mask is will be two dimensional and the value of each pixel matches the class
+    index with offset 1. The background class index is zero. labels[0] matches pixel
+    value 1, etc. The class index is determined based on the order of `labels`:
 
-    :return: 2d numpy array of mask
+    Args:
+        annotations: List of annotations to plot in mask
+        labels: List of labels. The index position of the label
+            determines the class number in the segmentation mask.
+        width: Width of the mask
+        height: Height of the mask
+
+    Returns:
+        2d numpy array of mask
     """
 
     labels = sorted(labels)  # type: ignore
@@ -95,19 +97,21 @@ def mask_from_annotation(
 def create_hard_prediction_from_soft_prediction(
     soft_prediction: np.ndarray, soft_threshold: float, blur_strength: int = 5
 ) -> np.ndarray:
-    """
-    Creates a hard prediction containing the final label index per pixel
+    """Creates a hard prediction containing the final label index per pixel.
 
-    :param soft_prediction: Output from segmentation network. Assumes floating point
-                            values, between 0.0 and 1.0. Can be a 2d-array of shape
-                            (height, width) or per-class segmentation logits of shape
-                            (height, width, num_classes)
-    :param soft_threshold: minimum class confidence for each pixel.
-                            The higher the value, the more strict the segmentation is
-                            (usually set to 0.5)
-    :param blur_strength: The higher the value, the smoother the segmentation output
-                            will be, but less accurate
-    :return: Numpy array of the hard prediction
+    Args:
+        soft_prediction: Output from segmentation network. Assumes
+            floating point values, between 0.0 and 1.0. Can be a
+            2d-array of shape (height, width) or per-class segmentation
+            logits of shape (height, width, num_classes)
+        soft_threshold: minimum class confidence for each pixel. The
+            higher the value, the more strict the segmentation is
+            (usually set to 0.5)
+        blur_strength: The higher the value, the smoother the
+            segmentation output will be, but less accurate
+
+    Returns:
+        Numpy array of the hard prediction
     """
     soft_prediction_blurred = cv2.blur(soft_prediction, (blur_strength, blur_strength))
     if len(soft_prediction.shape) == 3:
@@ -129,17 +133,12 @@ Contour = List[Tuple[float, float]]
 
 
 def get_subcontours(contour: Contour) -> List[Contour]:
-    """
-    Splits contour into subcontours that do not have self intersections.
-    """
+    """Splits contour into subcontours that do not have self intersections."""
 
     ContourInternal = List[Optional[Tuple[float, float]]]
 
     def find_loops(points: ContourInternal) -> List[Sequence[int]]:
-        """
-        For each consecutive pair of equivalent rows in the input matrix
-        returns their indices.
-        """
+        """For each consecutive pair of equivalent rows in the input matrix returns their indices."""
         _, inverse, count = np.unique(points, axis=0, return_inverse=True, return_counts=True)
         duplicates = np.where(count > 1)[0]
         indices = []
@@ -171,20 +170,25 @@ def get_subcontours(contour: Contour) -> List[Contour]:
 def create_annotation_from_segmentation_map(
     hard_prediction: np.ndarray, soft_prediction: np.ndarray, label_map: dict
 ) -> List[Annotation]:
-    """
-    Creates polygons from the soft predictions.
+    """Creates polygons from the soft predictions.
+
     Background label will be ignored and not be converted to polygons.
 
-    :param hard_prediction: hard prediction containing the final label index per pixel.
-        See function `create_hard_prediction_from_soft_prediction`.
-    :param soft_prediction: soft prediction with shape H x W x N_labels,
-        where soft_prediction[:, :, 0] is the soft prediction for background.
-        If soft_prediction is of H x W shape, it is assumed that this soft prediction
-        will be applied for all labels.
-    :param label_map: dictionary mapping labels to an index.
-        It is assumed that the first item in the dictionary corresponds to the
-        background label and will therefore be ignored.
-    :return: List of shapes
+    Args:
+        hard_prediction: hard prediction containing the final label
+            index per pixel. See function
+            `create_hard_prediction_from_soft_prediction`.
+        soft_prediction: soft prediction with shape H x W x N_labels,
+            where soft_prediction[:, :, 0] is the soft prediction for
+            background. If soft_prediction is of H x W shape, it is
+            assumed that this soft prediction will be applied for all
+            labels.
+        label_map: dictionary mapping labels to an index. It is assumed
+            that the first item in the dictionary corresponds to the
+            background label and will therefore be ignored.
+
+    Returns:
+        List of shapes
     """
     # pylint: disable=too-many-locals
     height, width = hard_prediction.shape[:2]

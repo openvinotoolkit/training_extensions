@@ -6,7 +6,7 @@
 
 
 import logging
-from typing import Dict, List, Optional, Sequence, Tuple, Union
+from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 
@@ -39,32 +39,32 @@ ALL_CLASSES_NAME = "All Classes"
 
 
 def intersection_box(
-    box1: Tuple[int, int, int, int, str, float], box2: Tuple[int, int, int, int, str, float]
-) -> List[int]:
+    box1: Tuple[float, float, float, float, str, float], box2: Tuple[float, float, float, float, str, float]
+) -> Tuple[float, float, float, float]:
     """Calculate the intersection box of two bounding boxes.
 
     Args:
-        box1 (Tuple[int, int, int, int, str, float]): (x1, y1, x2, y2, class, score)
-        box2 (Tuple[int, int, int, int, str, float]): (x1, y1, x2, y2, class, score)
+        box1 (Tuple[float, float, float, float, str, float]): (x1, y1, x2, y2, class, score)
+        box2 (Tuple[float, float, float, float, str, float]): (x1, y1, x2, y2, class, score)
 
     Returns:
-        List[int]: (x_left, x_right, y_bottom, y_top)
+        Tuple[float, float, float, float]: (x_left, x_right, y_bottom, y_top)
     """
     x_left = max(box1[0], box2[0])
     y_top = max(box1[1], box2[1])
     x_right = min(box1[2], box2[2])
     y_bottom = min(box1[3], box2[3])
-    return [x_left, x_right, y_bottom, y_top]
+    return (x_left, x_right, y_bottom, y_top)
 
 
 def bounding_box_intersection_over_union(
-    box1: Tuple[int, int, int, int, str, float], box2: Tuple[int, int, int, int, str, float]
+    box1: Tuple[float, float, float, float, str, float], box2: Tuple[float, float, float, float, str, float]
 ) -> float:
     """Calculate the Intersection over Union (IoU) of two bounding boxes.
 
     Args:
-        box1 (Tuple[int, int, int, int, str, float]): (x1, y1, x2, y2, class, score)
-        box2 (Tuple[int, int, int, int, str, float]): (x1, y1, x2, y2, class, score)
+        box1 (Tuple[float, float, float, float, str, float]): (x1, y1, x2, y2, class, score)
+        box2 (Tuple[float, float, float, float, str, float]): (x1, y1, x2, y2, class, score)
 
     Raises:
         ValueError: In case the IoU is outside of [0.0, 1.0]
@@ -92,7 +92,8 @@ def bounding_box_intersection_over_union(
 
 
 def get_iou_matrix(
-    ground_truth: List[Tuple[int, int, int, int, str, float]], predicted: List[Tuple[int, int, int, int, str, float]]
+    ground_truth: List[Tuple[float, float, float, float, str, float]],
+    predicted: List[Tuple[float, float, float, float, str, float]],
 ) -> np.ndarray:
     """Constructs an iou matrix of shape [num_ground_truth_boxes, num_predicted_boxes].
 
@@ -100,12 +101,12 @@ def get_iou_matrix(
     An iou matrix corresponds to a single image
 
     Args:
-        ground_truth (List[Tuple[int, int, int, int, str, float]]): List of ground truth boxes.
+        ground_truth (List[Tuple[float, float, float, float, str, float]]): List of ground truth boxes.
             Each box is a list of (x,y) coordinates and a label.
             a box: [x1: float, y1, x2, y2, class: str, score: float]
             boxes_per_image: [box1, box2, …]
             boxes1: [boxes_per_image_1, boxes_per_image_2, boxes_per_image_3, …]
-        predicted (List[Tuple[int, int, int, int, str, float]]): List of predicted boxes.
+        predicted (List[Tuple[float, float, float, float, str, float]]): List of predicted boxes.
             Each box is a list of (x,y) coordinates and a label.
             a box: [x1: float, y1, x2, y2, class: str, score: float]
             boxes_per_image: [box1, box2, …]
@@ -121,8 +122,7 @@ def get_iou_matrix(
 
 
 def get_n_false_negatives(iou_matrix: np.ndarray, iou_threshold: float) -> int:
-    """
-    Get the number of false negatives inside the IoU matrix for a given threshold.
+    """Get the number of false negatives inside the IoU matrix for a given threshold.
 
     The first loop accounts for all the ground truth boxes which do not have a high enough iou with any predicted
     box (they go undetected)
@@ -198,14 +198,15 @@ class _ResultCounters:
 
 
 class _AggregatedResults:
-    """This class collects the aggregated results for F-measure, it contains:
+    """This class collects the aggregated results for F-measure.
 
-    - f_measure_curve
-    - precision_curve
-    - recall_curve
-    - all_classes_f_measure_curve
-    - best_f_measure
-    - best_threshold
+    The result contains:
+        - f_measure_curve
+        - precision_curve
+        - recall_curve
+        - all_classes_f_measure_curve
+        - best_f_measure
+        - best_threshold
 
     Args:
         classes (List[str]): List of classes.
@@ -222,7 +223,6 @@ class _AggregatedResults:
 
 class _OverallResults:
     """This class collects the overall results that is computed by the F-measure performance provider.
-
 
     Args:
         per_confidence (_AggregatedResults): _AggregatedResults object for each confidence level.
@@ -248,11 +248,11 @@ class _FMeasureCalculator:
     """This class contains the functions to calculate FMeasure.
 
     Args:
-        ground_truth_boxes_per_image (List[List[Tuple[int, int, int, int, str, float]]]):
+        ground_truth_boxes_per_image (List[List[Tuple[float, float, float, float, str, float]]]):
                 a box: [x1: float, y1, x2, y2, class: str, score: float]
                 boxes_per_image: [box1, box2, …]
                 ground_truth_boxes_per_image: [boxes_per_image_1, boxes_per_image_2, boxes_per_image_3, …]
-        prediction_boxes_per_image (List[List[Tuple[int, int, int, int, str, float]]]):
+        prediction_boxes_per_image (List[List[Tuple[float, float, float, float, str, float]]]):
                 a box: [x1: float, y1, x2, y2, class: str, score: float]
                 boxes_per_image: [box1, box2, …]
                 predicted_boxes_per_image: [boxes_per_image_1, boxes_per_image_2, boxes_per_image_3, …]
@@ -260,8 +260,8 @@ class _FMeasureCalculator:
 
     def __init__(
         self,
-        ground_truth_boxes_per_image: List[List[Tuple[int, int, int, int, str, float]]],
-        prediction_boxes_per_image: List[List[Tuple[int, int, int, int, str, float]]],
+        ground_truth_boxes_per_image: List[List[Tuple[float, float, float, float, str, float]]],
+        prediction_boxes_per_image: List[List[Tuple[float, float, float, float, str, float]]],
     ):
         self.ground_truth_boxes_per_image = ground_truth_boxes_per_image
         self.prediction_boxes_per_image = prediction_boxes_per_image
@@ -494,18 +494,26 @@ class _FMeasureCalculator:
         return results
 
     @staticmethod
-    def __get_critical_nms(boxes_per_image: List, cross_class_nms: bool = False) -> List:
-        """
+    def __get_critical_nms(
+        boxes_per_image: List[List[Tuple[float, float, float, float, str, float]]], cross_class_nms: bool = False
+    ) -> List[List[float]]:
+        """Return list of critical NMS values for each box in each image.
+
         Maps each predicted box to the highest nms-threshold which would suppress that box, aka the smallest
-        nms_threshold before the box disappears
+        nms_threshold before the box disappears.
         Having these values allows us to later filter by nms-threshold in O(n) rather than O(n**2)
         Highest losing iou, holds the value of the highest iou that a box has with any
-        other box of the same class and
-        higher confidence score
-        :param boxes_per_image: shape List[List[[Tuple[float, str]]]:
-            a box: [x1: float, y1, x2, y2, class: str, score: float]
-            boxes_per_image: [box1, box2, …]
-        :return:
+        other box of the same class and higher confidence score.
+
+        Args:
+            boxes_per_image (List[List[Tuple[float, float, float, float, str, float]]]): List of predicted boxes per
+                image.
+                a box: [x1: float, y1, x2, y2, class: str, score: float]
+                boxes_per_image: [box1, box2, …]
+            cross_class_nms (bool): Whether to use cross class NMS.
+
+        Returns:
+            List[List[float]]: List of critical NMS values for each box in each image.
         """
         critical_nms_per_image = []
         for boxes in boxes_per_image:
@@ -516,7 +524,8 @@ class _FMeasureCalculator:
                     iou = bounding_box_intersection_over_union(box1, box2)
                     if (
                         (cross_class_nms or box1[FMeasure.box_class_index] == box2[FMeasure.box_class_index])
-                        and box1[FMeasure.box_score_index] < box2[FMeasure.box_score_index]
+                        # TODO boxes Tuple should be refactored to dataclass.
+                        and box1[FMeasure.box_score_index] < box2[FMeasure.box_score_index]  # type: ignore[operator]
                         and iou > highest_losing_iou
                     ):
                         highest_losing_iou = iou
@@ -525,16 +534,22 @@ class _FMeasureCalculator:
         return critical_nms_per_image
 
     @staticmethod
-    def __filter_nms(boxes_per_image: List, critical_nms: List, nms_threshold: float) -> List:
-        """
-        Filters out predicted boxes whose critical nms is higher than the given nms_threshold
+    def __filter_nms(
+        boxes_per_image: List[List[Tuple[float, float, float, float, str, float]]],
+        critical_nms: List[List[float]],
+        nms_threshold: float,
+    ) -> List[List[Tuple[float, float, float, float, str, float]]]:
+        """Filters out predicted boxes whose critical nms is higher than the given nms_threshold.
 
-        :param boxes_per_image: shape List[List[[Tuple[float, str]]]:
-            a box: [x1: float, y1, x2, y2, class: str, score: float]
-            boxes_per_image: [box1, box2, …]
-        :param critical_nms:
-        :param nms_threshold:
-        :return:
+        Args:
+            boxes_per_image (List[List[Tuple[float, float, float, float, str, float]]]): List of boxes per image.
+                a box: [x1: float, y1, x2, y2, class: str, score: float]
+                boxes_per_image: [box1, box2, …]
+            critical_nms (List[List[float]]): List of list of critical nms for each box in each image
+            nms_threshold (float): NMS threshold used for filtering
+
+        Returns:
+            List[List[Tuple[float, float, float, float, str, float]]]: List of list of filtered boxes in each image
         """
         new_boxes_per_image = []
         for boxes, boxes_nms in zip(boxes_per_image, critical_nms):
@@ -546,33 +561,43 @@ class _FMeasureCalculator:
         return new_boxes_per_image
 
     @staticmethod
-    def __filter_class(boxes_per_image: List, class_name: str) -> List:
-        """
-        Filters boxes to only keep members of one class
+    def __filter_class(
+        boxes_per_image: List[List[Tuple[float, float, float, float, str, float]]], class_name: str
+    ) -> List[List[Tuple[float, float, float, float, str, float]]]:
+        """Filters boxes to only keep members of one class.
 
-        :param boxes_per_image:
-        :param class_name:
-        :return:
+        Args:
+            boxes_per_image (List[List[Tuple[float, float, float, float, str, float]]]): a list of lists of boxes
+            class_name (str): Name of the class for which the boxes are filtered
+
+        Returns:
+            List[List[Tuple[float, float, float, float, str, float]]]: a list of lists of boxes
         """
         filtered_boxes_per_image = []
         for boxes in boxes_per_image:
             filtered_boxes = []
             for box in boxes:
-                if box[FMeasure.box_class_index].lower() == class_name.lower():
+                # TODO boxes Tuple should be refactored to dataclass. This way we can access box.class
+                if box[FMeasure.box_class_index].lower() == class_name.lower():  # type: ignore[union-attr]
                     filtered_boxes.append(box)
             filtered_boxes_per_image.append(filtered_boxes)
         return filtered_boxes_per_image
 
     @staticmethod
-    def __filter_confidence(boxes_per_image: List, confidence_threshold: float) -> List:
-        """
-        Filters boxes to only keep ones with higher confidence than a given confidence threshold
+    def __filter_confidence(
+        boxes_per_image: List[List[Tuple[float, float, float, float, str, float]]], confidence_threshold: float
+    ) -> List[List[Tuple[float, float, float, float, str, float]]]:
+        """Filters boxes to only keep ones with higher confidence than a given confidence threshold.
 
-        :param boxes_per_image: shape List[List[[Tuple[float, str]]]:
+        Args:
+            boxes_per_image (List[List[Tuple[float, float, float, float, str, float]]]):
                 a box: [x1: float, y1, x2, y2, class: str, score: float]
                 boxes_per_image: [box1, box2, …]
-        :param confidence_threshold:
-        :return:
+            confidence_threshold (float): Confidence threshold
+
+        Returns:
+            List[List[Tuple[float, float, float, float, str, float]]]: Boxes with higher confidence than the given
+                threshold.
         """
         filtered_boxes_per_image = []
         for boxes in boxes_per_image:
@@ -584,12 +609,16 @@ class _FMeasureCalculator:
         return filtered_boxes_per_image
 
     def get_counters(self, iou_threshold: float) -> _ResultCounters:
-        """
+        """Return counts of true positives, false positives and false negatives for a given iou threshold.
+
         For each image (the loop), compute the number of false negatives, the number of predicted boxes, and the number
         of ground truth boxes, then add each value to its corresponding counter
 
-        :param iou_threshold: IoU threshold
-        :return: Structure containing the number of false negatives, true positives and predictions.
+        Args:
+            iou_threshold (float): IoU threshold
+
+        Returns:
+            _ResultCounters: Structure containing the number of false negatives, true positives and predictions.
         """
         n_false_negatives = 0
         n_true = 0
@@ -609,8 +638,7 @@ class _FMeasureCalculator:
 
 
 class FMeasure(IPerformanceProvider):
-    """
-    Computes the f-measure (also known as F1-score) for a resultset.
+    """Computes the f-measure (also known as F1-score) for a resultset.
 
     The f-measure is typically used in detection (localization) tasks to obtain a single number that balances precision
     and recall.
@@ -623,14 +651,17 @@ class FMeasure(IPerformanceProvider):
     IoU > threshold are reduced to one. This threshold can be determined automatically by setting `vary_nms_threshold`
     to True.
 
-    :param resultset: ResultSet entity used for calculating the F-Measure
-    :param vary_confidence_threshold: if True the maximal F-measure is determined by optimizing for different
-        confidence threshold values
-    :param vary_nms_threshold: if True the maximal F-measure is determined  by optimizing for different NMS threshold
-        values
-    :param cross_class_nms: Whether non-max suppression should be applied cross-class. If True this will eliminate
-        boxes with sufficient overlap even if they are from different classes.
-    :raises: ValueError, if prediction dataset and ground truth dataset are empty
+    Args:
+        resultset (ResultSetEntity) :ResultSet entity used for calculating the F-Measure
+        vary_confidence_threshold (bool): if True the maximal F-measure is determined by optimizing for different
+            confidence threshold values Defaults to False.
+        vary_nms_threshold (bool): if True the maximal F-measure is determined by optimizing for different NMS threshold
+            values. Defaults to False.
+        cross_class_nms (bool): Whether non-max suppression should be applied cross-class. If True this will eliminate
+            boxes with sufficient overlap even if they are from different classes. Defaults to False.
+
+    Raises:
+        ValueError: if prediction dataset and ground truth dataset are empty
     """
 
     def __init__(
@@ -698,50 +729,43 @@ class FMeasure(IPerformanceProvider):
 
     @property
     def f_measure(self) -> ScoreMetric:
-        """
-        Returns the f-measure as ScoreMetric
-        """
+        """Returns the f-measure as ScoreMetric."""
         return self._f_measure
 
     @property
     def f_measure_per_label(self) -> Dict[LabelEntity, ScoreMetric]:
-        """
-        Returns the f-measure per label as dictionary (Label -> ScoreMetric)
-        """
+        """Returns the f-measure per label as dictionary (Label -> ScoreMetric)."""
         return self._f_measure_per_label
 
     @property
     def f_measure_per_confidence(self) -> Optional[CurveMetric]:
-        """
-        Returns the curve for f-measure per confidence as CurveMetric if exists.
-        """
+        """Returns the curve for f-measure per confidence as CurveMetric if exists."""
         return self._f_measure_per_confidence
 
     @property
     def best_confidence_threshold(self) -> Optional[ScoreMetric]:
-        """
-        Returns best confidence threshold as ScoreMetric if exists.
-        """
+        """Returns best confidence threshold as ScoreMetric if exists."""
         return self._best_confidence_threshold
 
     @property
     def f_measure_per_nms(self) -> Optional[CurveMetric]:
-        """
-        Returns the curve for f-measure per nms threshold as CurveMetric if exists.
-        """
+        """Returns the curve for f-measure per nms threshold as CurveMetric if exists."""
         return self._f_measure_per_nms
 
     @property
     def best_nms_threshold(self) -> Optional[ScoreMetric]:
-        """
-        Returns the best NMS threshold as ScoreMetric if exists.
-        """
+        """Returns the best NMS threshold as ScoreMetric if exists."""
         return self._best_nms_threshold
 
     def get_performance(self) -> Performance:
+        """Returns the performance which consists of the F-Measure score and the dashboard metrics.
+
+        Returns:
+            Performance: Performance object containing the F-Measure score and the dashboard metrics.
+        """
         score = self.f_measure
-        dashboard_metrics: Sequence[MetricsGroup]
-        dashboard_metrics = [
+        dashboard_metrics: List[MetricsGroup] = []
+        dashboard_metrics.append(
             BarMetricsGroup(
                 metrics=list(self.f_measure_per_label.values()),
                 visualization_info=BarChartInfo(
@@ -750,7 +774,7 @@ class FMeasure(IPerformanceProvider):
                     visualization_type=VisualizationType.RADIAL_BAR,
                 ),
             )
-        ]
+        )
         if self.f_measure_per_confidence is not None:
             dashboard_metrics.append(
                 LineMetricsGroup(
@@ -799,7 +823,7 @@ class FMeasure(IPerformanceProvider):
     @staticmethod
     def __get_boxes_from_dataset_as_list(
         dataset: DatasetEntity, labels: List[LabelEntity]
-    ) -> List[List[Tuple[int, int, int, int, str, float]]]:
+    ) -> List[List[Tuple[float, float, float, float, str, float]]]:
         """Return list of boxes from dataset.
 
         Explanation of output shape:
@@ -812,13 +836,13 @@ class FMeasure(IPerformanceProvider):
             labels (List[LabelEntity]): Labels to get boxes for.
 
         Returns:
-            List[List[Tuple[int, int, int, int, str, float]]]: List of boxes for each image in the dataset.
+            List[List[Tuple[float, float, float, float, str, float]]]: List of boxes for each image in the dataset.
         """
         boxes_per_image = []
         converted_types_to_box = set()
         label_names = {label.name for label in labels}
         for item in dataset:
-            boxes: List[List[Union[float, str]]] = []
+            boxes: List[Tuple[float, float, float, float, str, float]] = []
             roi_as_box = Annotation(ShapeFactory.shape_as_rectangle(item.roi.shape), labels=[])
             for annotation in item.annotation_scene.annotations:
                 shape_as_box = ShapeFactory.shape_as_rectangle(annotation.shape)
@@ -826,7 +850,7 @@ class FMeasure(IPerformanceProvider):
                 n_boxes_before = len(boxes)
                 boxes.extend(
                     [
-                        [box.x1, box.y1, box.x2, box.y2, label.name, label.probability]
+                        (box.x1, box.y1, box.x2, box.y2, label.name, label.probability)
                         for label in annotation.get_labels()
                         if label.name in label_names
                     ]

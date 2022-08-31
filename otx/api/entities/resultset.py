@@ -1,4 +1,4 @@
-"""This module implements the ResultSet entity"""
+"""This module implements the ResultSet entity."""
 
 # Copyright (C) 2021-2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
@@ -18,8 +18,7 @@ from otx.api.utils.time_utils import now
 
 
 class ResultsetPurpose(Enum):
-    """
-    This defines the purpose of the resultset.
+    """This defines the purpose of the resultset.
 
     EVALUATION denotes resultsets generated at Evaluation stage on validation subset.
 
@@ -34,36 +33,43 @@ class ResultsetPurpose(Enum):
     PREEVALUATION = 2
 
     def __repr__(self):
+        """Returns ResultsetPurpose as a string."""
         return str(self.name)
 
     def __str__(self):
-        """
-        Returns a user friendly representation of the ResultSetPurpose, that can be
-        used for instance in a progress reporting message.
+        """Returns a user friendly representation of the ResultSetPurpose.
+
+        This that can be used for instance in a progress reporting message.
         """
         user_friendly_names = {0: "Validation", 1: "Test", 2: "Pre-validation"}
         return user_friendly_names[self.value]
 
 
 class ResultSetEntity(metaclass=abc.ABCMeta):
-    """
-    ResultsetEntity is a class aggregating:
+    """ResultsetEntity.
 
-    - the dataset containing ground truth (based on user annotations)
-    - the dataset containing predictions for the above ground truth dataset
+    It aggregates:
+        - the dataset containing ground truth (based on user annotations)
+        - the dataset containing predictions for the above ground truth dataset
 
     In addition, it links to the model which computed the predictions, as well as the performance of this model on the
     ground truth dataset.
 
-    :param model: the model using which the prediction_dataset has been generated
-    :param ground_truth_dataset: the dataset containing ground truth annotation
-    :param prediction_dataset: the dataset containing prediction
-    :param purpose: see :class:`ResultsetPurpose`
-    :param performance: the performance of the model on the ground truth dataset
-    :param creation_date: the date time which the resultset is created. Set to None to set this to
+    Args:
+        model: the model using which the prediction_dataset has been
+            generated
+        ground_truth_dataset: the dataset containing ground truth
+            annotation
+        prediction_dataset: the dataset containing prediction
+        purpose: see :class:`ResultsetPurpose`
+        performance: the performance of the model on the ground truth
+            dataset
+        creation_date: the date time which the resultset is created. Set
+            to None to set this to
+        id: the id of the resultset. Set to ID() so that a new unique ID
+            will be assigned upon saving. If the argument is None, it
+            will be set to ID()
     datetime.now(datetime.timezone.utc)
-    :param id: the id of the resultset. Set to ID() so that a new unique ID will be assigned upon saving.
-        If the argument is None, it will be set to ID()
     """
 
     # pylint: disable=redefined-builtin, too-many-arguments; Requires refactor
@@ -90,7 +96,7 @@ class ResultSetEntity(metaclass=abc.ABCMeta):
 
     @property
     def id_(self) -> ID:
-        """Returns the id of the ResultSet"""
+        """Returns the id of the ResultSet."""
         return self.__id_
 
     @id_.setter
@@ -99,17 +105,17 @@ class ResultSetEntity(metaclass=abc.ABCMeta):
 
     @property
     def id(self) -> ID:
-        """DEPRECATED"""
+        """DEPRECATED."""
         return self.__id_
 
     @id.setter
     def id(self, value: ID):
-        """DEPRECATED"""
+        """DEPRECATED."""
         self.__id_ = value
 
     @property
     def model(self) -> ModelEntity:
-        """Returns the model that is used for the ResultSet"""
+        """Returns the model that is used for the ResultSet."""
         return self.__model
 
     @model.setter
@@ -118,7 +124,7 @@ class ResultSetEntity(metaclass=abc.ABCMeta):
 
     @property
     def prediction_dataset(self) -> DatasetEntity:
-        """Returns the prediction dataset that is used in the ResultSet"""
+        """Returns the prediction dataset that is used in the ResultSet."""
         return self.__prediction_dataset
 
     @prediction_dataset.setter
@@ -127,7 +133,7 @@ class ResultSetEntity(metaclass=abc.ABCMeta):
 
     @property
     def ground_truth_dataset(self) -> DatasetEntity:
-        """Returns the ground truth dataset that is used in the ResultSet"""
+        """Returns the ground truth dataset that is used in the ResultSet."""
         return self.__ground_truth_dataset
 
     @ground_truth_dataset.setter
@@ -136,7 +142,7 @@ class ResultSetEntity(metaclass=abc.ABCMeta):
 
     @property
     def performance(self) -> Performance:
-        """Returns the performance of the model on the ground truth dataset"""
+        """Returns the performance of the model on the ground truth dataset."""
         return self.__performance
 
     @performance.setter
@@ -145,9 +151,7 @@ class ResultSetEntity(metaclass=abc.ABCMeta):
 
     @property
     def purpose(self) -> ResultsetPurpose:
-        """
-        Returns the purpose of the ResultSet, for example ResultSetPurpose.EVALUATION
-        """
+        """Returns the purpose of the ResultSet, for example ResultSetPurpose.EVALUATION."""
         return self.__purpose
 
     @purpose.setter
@@ -156,7 +160,7 @@ class ResultSetEntity(metaclass=abc.ABCMeta):
 
     @property
     def creation_date(self) -> datetime.datetime:
-        """ "Returns the creation date of the ResultSet"""
+        """Returns the creation date of the ResultSet."""
         return self.__creation_date
 
     @creation_date.setter
@@ -164,14 +168,11 @@ class ResultSetEntity(metaclass=abc.ABCMeta):
         self.__creation_date = value
 
     def has_score_metric(self) -> bool:
-        """
-        Returns True if the resultset contains non-null performance and score value.
-
-        :return: True if the resultset contains non-null performance and score value.
-        """
+        """Returns True if the resultset contains non-null performance and score value."""
         return not isinstance(self.performance, NullPerformance)
 
     def __repr__(self):
+        """String representation of the resultset."""
         return (
             f"{type(self).__name__}("
             f"model={self.model}, "
