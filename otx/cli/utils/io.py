@@ -1,6 +1,4 @@
-"""
-Utils for dynamically importing stuff
-"""
+"""Utils for model io operations."""
 
 # Copyright (C) 2021 Intel Corporation
 #
@@ -23,18 +21,26 @@ import struct
 import tempfile
 from zipfile import ZipFile
 
+from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label import Domain, LabelEntity
 from otx.api.entities.label_schema import LabelGroup, LabelGroupType, LabelSchemaEntity
-from otx.api.entities.model import ModelEntity, ModelOptimizationType
+from otx.api.entities.model import (
+    ModelConfiguration,
+    ModelEntity,
+    ModelOptimizationType,
+)
 from otx.api.entities.model_template import TaskType
 from otx.api.serialization.label_mapper import LabelSchemaMapper
 from otx.api.usecases.adapters.model_adapter import ModelAdapter
 from otx.cli.utils.nncf import is_checkpoint_nncf
 
 
-def save_model_data(model, folder):
-    """
-    Saves model data to folder. Folder is created if it does not exist.
+def save_model_data(model: ModelEntity, folder: str) -> None:
+    """Saves model data to folder. Folder is created if it does not exist.
+
+    Args:
+        model (ModelEntity): The model to save.
+        folder (str): Path to output folder.
     """
 
     os.makedirs(folder, exist_ok=True)
@@ -43,21 +49,30 @@ def save_model_data(model, folder):
             write_file.write(model_adapter.data)
 
 
-def read_binary(path):
-    """
-    Loads binary data stored at path.
+def read_binary(path: str) -> bytes:
+    """Loads binary data stored at path.
 
-        Args:
-            path: A path where to load data from.
+    Args:
+        path (str): A path where to load data from.
+
+    Returns:
+        bytes: Binary data.
     """
 
     with open(path, "rb") as read_file:
         return read_file.read()
 
 
-def read_model(model_configuration, path, train_dataset):
-    """
-    Creates ModelEntity based on model_configuration and data stored at path.
+def read_model(model_configuration: ModelConfiguration, path: str, train_dataset: DatasetEntity) -> ModelEntity:
+    """Creates ModelEntity based on model_configuration and data stored at path.
+
+    Args:
+        model_configuration (ModelConfiguration): ModelConfiguration object.
+        path (str): Path to the model data.
+        train_dataset (DatasetEntity): DatasetEntity object.
+
+    Returns:
+        ModelEntity: ModelEntity object.
     """
     optimization_type = ModelOptimizationType.NONE
 
@@ -124,9 +139,14 @@ def read_model(model_configuration, path, train_dataset):
     return model
 
 
-def read_label_schema(path):
-    """
-    Reads serialized LabelSchema and returns deserialized LabelSchema.
+def read_label_schema(path: str) -> LabelSchemaEntity:
+    """Reads serialized LabelSchema and returns deserialized LabelSchema.
+
+    Args:
+        path (str): Path to model. It assmues that the `label_schema.json` is at the same location as the model.
+
+    Returns:
+        LabelSchemaEntity: Desetialized LabelSchemaEntity.
     """
 
     if any(path.endswith(extension) for extension in (".xml", ".bin", ".pth")):
@@ -139,24 +159,32 @@ def read_label_schema(path):
     return LabelSchemaMapper().backward(serialized_label_schema)
 
 
-def generate_label_schema(dataset, task_type):
-    """
-    Generates label schema depending on task type.
+def generate_label_schema(dataset: DatasetEntity, task_type: TaskType) -> LabelSchemaEntity:
+    """Generates label schema depending on task type.
+
+    Args:
+        dataset (DatasetEntity): Task specific dataset.
+        task_type (TaskType): Task type used to call dataset specific functions and update label schema.
+
+    Returns:
+        LabelSchemaEntity: Label schema for the task.
     """
     if task_type == TaskType.CLASSIFICATION:
         not_empty_labels = dataset.get_labels()
         assert len(not_empty_labels) > 1
         label_schema = LabelSchemaEntity()
-        if dataset.is_multilabel():
+        # TODO dataset specific functions live in external. Ideally these should be refactored to be part of OTX
+        # TODO /contd adapters and type checked here.
+        if dataset.is_multilabel():  # type: ignore[attr-defined]
             emptylabel = LabelEntity(name="Empty label", is_empty=True, domain=Domain.CLASSIFICATION)
             empty_group = LabelGroup(name="empty", labels=[emptylabel], group_type=LabelGroupType.EMPTY_LABEL)
             # pylint: disable=unnecessary-comprehension
-            key = [i for i in dataset.annotations.keys()][0]
-            for group in dataset.annotations[key][2]:
+            key = [i for i in dataset.annotations.keys()][0]  # type: ignore[attr-defined]
+            for group in dataset.annotations[key][2]:  # type: ignore[attr-defined]
                 group_labels = []
                 for label_name in group:
-                    group_labels.append(dataset.label_name_to_project_label(label_name))
-                labels = group_labels if dataset.is_multilabel() else group_labels[1:]
+                    group_labels.append(dataset.label_name_to_project_label(label_name))  # type: ignore[attr-defined]
+                labels = group_labels if dataset.is_multilabel() else group_labels[1:]  # type: ignore[attr-defined]
                 label_schema.add_group(
                     LabelGroup(
                         name=group_labels[0].name,
@@ -165,11 +193,12 @@ def generate_label_schema(dataset, task_type):
                     )
                 )
             label_schema.add_group(empty_group)
-        elif dataset.is_multihead():
+        # TODO same as above. Refactor to support type checking
+        elif dataset.is_multihead():  # type: ignore[attr-defined]
             emptylabel = LabelEntity(name="Empty label", is_empty=True, domain=Domain.CLASSIFICATION)
             empty_group = LabelGroup(name="empty", labels=[emptylabel], group_type=LabelGroupType.EMPTY_LABEL)
-            key = [i for i in dataset.annotations.keys()][0]
-            hierarchy_info = dataset.annotations[key][2]
+            key = [i for i in dataset.annotations.keys()][0]  # type: ignore[attr-defined]
+            hierarchy_info = dataset.annotations[key][2]  # type: ignore[attr-defined]
 
             def add_subtask_labels(dataset, info):
                 group = info["group"]
@@ -204,7 +233,7 @@ def generate_label_schema(dataset, task_type):
         else:
             main_group = LabelGroup(
                 name="labels",
-                labels=dataset.project_labels,
+                labels=dataset.project_labels,  # type: ignore[attr-defined]
                 group_type=LabelGroupType.EXCLUSIVE,
             )
             label_schema.add_group(main_group)

@@ -18,8 +18,12 @@ from otx.api.utils.time_utils import now
 
 
 class Annotation(metaclass=abc.ABCMeta):
-    """
-    Base class for annotation objects.
+    """Base class for annotation objects.
+
+    Args:
+        shape (ShapeEntity): the shape of the annotation
+        labels (List[ScoredLabel]): the labels of the annotation
+        id (Optional[ID]): the id of the annotation
     """
 
     # pylint: disable=redefined-builtin;
@@ -29,6 +33,7 @@ class Annotation(metaclass=abc.ABCMeta):
         self.__labels = labels
 
     def __repr__(self):
+        """String representation of the annotation."""
         return (
             f"{self.__class__.__name__}("
             f"shape={self.shape}, "
@@ -38,9 +43,7 @@ class Annotation(metaclass=abc.ABCMeta):
 
     @property
     def id_(self):
-        """
-        Returns the id for the annotation
-        """
+        """Returns the id for the annotation."""
         return self.__id_
 
     @id_.setter
@@ -49,19 +52,17 @@ class Annotation(metaclass=abc.ABCMeta):
 
     @property
     def id(self):
-        """DEPRECATED"""
+        """DEPRECATED."""
         return self.__id_
 
     @id.setter
     def id(self, value):
-        """DEPRECATED"""
+        """DEPRECATED."""
         self.__id_ = value
 
     @property
-    def shape(self):
-        """
-        Returns the shape that is in the annotation
-        """
+    def shape(self) -> ShapeEntity:
+        """Returns the shape that is in the annotation."""
         return self.__shape
 
     @shape.setter
@@ -69,40 +70,52 @@ class Annotation(metaclass=abc.ABCMeta):
         self.__shape = value
 
     def get_labels(self, include_empty: bool = False) -> List[ScoredLabel]:
-        """
-        Get scored labels that are assigned to this annotation
+        """Get scored labels that are assigned to this annotation.
 
-        :param include_empty: set to True to include empty label (if exists) in the output.
-        :return: List of labels in annotation
+        Args:
+            include_empty (bool): set to True to include empty label (if exists) in the output. Defaults to False.
+
+        Returns:
+            List of labels in annotation
         """
         return [label for label in self.__labels if include_empty or (not label.is_empty)]
 
     def get_label_ids(self, include_empty: bool = False) -> Set[ID]:
-        """
-        Get a set of ID's of labels that are assigned to this annotation
+        """Get a set of ID's of labels that are assigned to this annotation.
 
-        :param include_empty: set to True to include empty label (if exists) in the output.
-        :return: Set of label id's in annotation
+        Args:
+            include_empty (bool): set to True to include empty label (if exists) in the output. Defaults to False.
+
+        Returns:
+            Set of label id's in annotation
         """
         return {label.id_ for label in self.__labels if include_empty or (not label.is_empty)}
 
     def append_label(self, label: ScoredLabel) -> None:
-        """
-        Appends the scored label to the annotation.
+        """Appends the scored label to the annotation.
 
-        :param label: the scored label to be appended to the annotation
+        Args:
+            label (ScoredLabel): the scored label to be appended to the annotation
         """
         self.__labels.append(label)
 
     def set_labels(self, labels: List[ScoredLabel]) -> None:
-        """
-        Sets the labels of the annotation to be the input of the function.
+        """Sets the labels of the annotation to be the input of the function.
 
-        :param labels: the scored labels to be set as annotation labels
+        Args:
+            labels (List[ScoredLabel]): the scored labels to be set as annotation labels
         """
         self.__labels = labels
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
+        """Checks if the two annotations are equal.
+
+        Args:
+            other (Annotation): Annotation to compare with.
+
+        Returns:
+            bool: True if the two annotations are equal, False otherwise.
+        """
         if isinstance(other, Annotation):
             return (
                 self.id_ == other.id_ and self.get_labels(True) == other.get_labels(True) and self.shape == other.shape
@@ -111,7 +124,7 @@ class Annotation(metaclass=abc.ABCMeta):
 
 
 class AnnotationSceneKind(Enum):
-    """AnnotationSceneKinds for an Annotation object"""
+    """AnnotationSceneKinds for an Annotation object."""
 
     #:  NONE represents NULLAnnotationScene's (See :class:`NullAnnotationScene`)
     NONE = 0
@@ -130,26 +143,30 @@ class AnnotationSceneKind(Enum):
     TASK_PREDICTION = 5
 
     def __str__(self):
+        """String representation of the AnnotationSceneKind."""
         return str(self.name)
 
 
 class AnnotationSceneEntity(metaclass=abc.ABCMeta):
-    """
-    This class represents a user annotation or a result (prediction).
+    """This class represents a user annotation or a result (prediction).
+
     It serves as a collection of shapes, with a relation to the media entity.
 
-    :example: Creating an annotation:
+    Example:
+        Creating an annotation:
 
-    >>> from otx.api.entities.annotation import Annotation, AnnotationSceneEntity, AnnotationSceneKind
-    >>> from otx.api.entities.shapes.rectangle import Rectangle
-    >>> box = Rectangle(x1=0.0, y1=0.0, x2=0.5, y2=0.5)  # Box covering top-left quart of image
-    >>> AnnotationSceneEntity(annotations=[Annotation(shape=box, labels=[])], kind=AnnotationSceneKind.ANNOTATION)
+        >>> from otx.api.entities.annotation import Annotation, AnnotationSceneEntity, AnnotationSceneKind
+        >>> from otx.api.entities.shapes.rectangle import Rectangle
+        >>> box = Rectangle(x1=0.0, y1=0.0, x2=0.5, y2=0.5)  # Box covering top-left quart of image
+        >>> AnnotationSceneEntity(annotations=[Annotation(shape=box, labels=[])], kind=AnnotationSceneKind.ANNOTATION)
 
-    :param annotations: List of Annotations.
-    :param kind: Kind of annotation scene `AnnotationSceneKind`. E.g. `AnnotationSceneKind.ANNOTATION`.
-    :param editor: The user that made this annotation scene object
-    :param creation_date: Creation date of annotation scene entity.
-    :param id: ID of AnnotationSceneEntity.
+    Args:
+        annotations (List[Annotation]): List of annotations in the scene
+        kind (AnnotationSceneKind): Kind of the annotation scene. E.g. `AnnotationSceneKind.ANNOTATION`.
+        editor (str): The user that made this annotation scene object.
+        creation_date (Optional[datetime.datetime]): Creation date of annotation scene entity. If None, current time is
+            used. Defaults to None.
+        id (Optional[ID]): ID of AnnotationSceneEntity. If None a new `ID` is created. Defaults to None.
     """
 
     # pylint: disable=too-many-arguments, redefined-builtin
@@ -168,6 +185,7 @@ class AnnotationSceneEntity(metaclass=abc.ABCMeta):
         self.__id_ = ID() if id is None else id
 
     def __repr__(self):
+        """String representation of the annotation scene."""
         return (
             f"{self.__class__.__name__}("
             f"annotations={self.annotations}, "
@@ -179,9 +197,7 @@ class AnnotationSceneEntity(metaclass=abc.ABCMeta):
 
     @property
     def id_(self) -> ID:
-        """
-        Returns the ID of the AnnotationSceneEntity.
-        """
+        """Returns the ID of the AnnotationSceneEntity."""
         return self.__id_
 
     @id_.setter
@@ -190,19 +206,17 @@ class AnnotationSceneEntity(metaclass=abc.ABCMeta):
 
     @property
     def id(self):
-        """DEPRECATED"""
+        """DEPRECATED."""
         return self.__id_
 
     @id.setter
     def id(self, value):
-        """DEPRECATED"""
+        """DEPRECATED."""
         self.__id_ = value
 
     @property
     def kind(self) -> AnnotationSceneKind:
-        """
-        Returns the AnnotationSceneKind of the AnnotationSceneEntity.
-        """
+        """Returns the AnnotationSceneKind of the AnnotationSceneEntity."""
         return self.__kind
 
     @kind.setter
@@ -211,9 +225,7 @@ class AnnotationSceneEntity(metaclass=abc.ABCMeta):
 
     @property
     def editor_name(self) -> str:
-        """
-        Returns the editor's name that made the AnnotationSceneEntity object.
-        """
+        """Returns the editor's name that made the AnnotationSceneEntity object."""
         return self.__editor
 
     @editor_name.setter
@@ -222,9 +234,7 @@ class AnnotationSceneEntity(metaclass=abc.ABCMeta):
 
     @property
     def creation_date(self) -> datetime.datetime:
-        """
-        Returns the creation date of the AnnotationSceneEntity object.
-        """
+        """Returns the creation date of the AnnotationSceneEntity object."""
         return self.__creation_date
 
     @creation_date.setter
@@ -233,9 +243,7 @@ class AnnotationSceneEntity(metaclass=abc.ABCMeta):
 
     @property
     def annotations(self) -> List[Annotation]:
-        """
-        Return the Annotations that are present in the AnnotationSceneEntity.
-        """
+        """Return the Annotations that are present in the AnnotationSceneEntity."""
         return self.__annotations
 
     @annotations.setter
@@ -244,41 +252,37 @@ class AnnotationSceneEntity(metaclass=abc.ABCMeta):
 
     @property
     def shapes(self) -> List[ShapeEntity]:
-        """
-        Returns all shapes that are inside the annotations of the AnnotationSceneEntity.
-        """
+        """Returns all shapes that are inside the annotations of the AnnotationSceneEntity."""
         return [annotation.shape for annotation in self.annotations]
 
     def contains_any(self, labels: List[LabelEntity]) -> bool:
-        """
-        Checks whether the annotation contains any labels in the input parameter.
+        """Checks whether the annotation contains any labels in the input parameter.
 
-        :param labels: list or set of labels to compare to.
+        Args:
+            labels (List[LabelEntity]): List of labels to compare to.
 
-        :return: True if there is any intersection between self.get_labels(include_empty=True) with labels.
+        Returns:
+            bool: True if there is any intersection between self.get_labels(include_empty=True) with labels.
         """
         label_names = {label.name for label in labels}
         return len({label.name for label in self.get_labels(include_empty=True)}.intersection(label_names)) != 0
 
     def append_annotation(self, annotation: Annotation) -> None:
-        """
-        Appends the passed annotation to the list of annotations present in the AnnotationSceneEntity object.
-        """
+        """Appends the passed annotation to the list of annotations present in the AnnotationSceneEntity object."""
         self.annotations.append(annotation)
 
     def append_annotations(self, annotations: List[Annotation]) -> None:
-        """
-        Adds a list of annotations to the annotation scene.
-        """
+        """Adds a list of annotations to the annotation scene."""
         self.annotations.extend(annotations)
 
     def get_labels(self, include_empty: bool = False) -> List[LabelEntity]:
-        """
-        Returns a list of unique labels which appear in this annotation scene.
+        """Returns a list of unique labels which appear in this annotation scene.
 
-        :param include_empty: set to True to include empty label (if exists) in the
-                              output.
-        :return: a list of labels which appear in this annotation.
+        Args:
+            include_empty (bool): Set to True to include empty label (if exists) in the output. Defaults to False.
+
+        Returns:
+            List[LabelEntity]: a list of labels which appear in this annotation.
         """
 
         labels: Dict[str, LabelEntity] = {}
@@ -290,12 +294,13 @@ class AnnotationSceneEntity(metaclass=abc.ABCMeta):
         return list(labels.values())
 
     def get_label_ids(self, include_empty: bool = False) -> Set[ID]:
-        """
-        Returns a set of the ID's of unique labels which appear in this annotation scene.
+        """Returns a set of the ID's of unique labels which appear in this annotation scene.
 
-        :param include_empty: set to True to include empty label (if exists) in the
-                              output.
-        :return: a list of labels which appear in this annotation.
+        Args:
+            include_empty (bool): Set to True to include empty label (if exists) in the output. Defaults to False.
+
+        Returns:
+            Set[ID]: a set of the ID's of labels which appear in this annotation.
         """
 
         output: Set[ID] = set()
@@ -305,7 +310,7 @@ class AnnotationSceneEntity(metaclass=abc.ABCMeta):
 
 
 class NullAnnotationSceneEntity(AnnotationSceneEntity):
-    """Represents 'AnnotationSceneEntity not found'"""
+    """Represents 'AnnotationSceneEntity not found."""
 
     def __init__(self) -> None:
         super().__init__(
@@ -317,4 +322,5 @@ class NullAnnotationSceneEntity(AnnotationSceneEntity):
         )
 
     def __repr__(self):
+        """String representation NullAnnotationSceneEntity."""
         return "NullAnnotationSceneEntity()"

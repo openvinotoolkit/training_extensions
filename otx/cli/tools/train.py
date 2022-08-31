@@ -1,6 +1,4 @@
-"""
-Model training tool.
-"""
+"""Model training tool."""
 
 # Copyright (C) 2021 Intel Corporation
 #
@@ -46,8 +44,8 @@ from otx.cli.utils.parser import (
 
 
 def parse_args():
-    """
-    Parses command line arguments.
+    """Parses command line arguments.
+
     It dynamically generates help for hyper-parameters which are specific to particular model template.
     """
 
@@ -110,9 +108,7 @@ def parse_args():
 
 
 def main():
-    """
-    Main function that is used for model training.
-    """
+    """Main function that is used for model training."""
 
     # Dynamically create an argument parser based on override parameters.
     args, template, hyper_parameters = parse_args()

@@ -1,6 +1,4 @@
-"""
-Utils for parsing command line arguments.
-"""
+"""Utils for parsing command line arguments."""
 
 # Copyright (C) 2021 Intel Corporation
 #
@@ -20,9 +18,7 @@ import argparse
 
 
 def gen_param_help(hyper_parameters):
-    """
-    Generates help for hyper parameters section.
-    """
+    """Generates help for hyper parameters section."""
 
     type_map = {"FLOAT": float, "INTEGER": int, "BOOLEAN": bool}
 
@@ -60,9 +56,7 @@ def gen_param_help(hyper_parameters):
 
 
 def gen_params_dict_from_args(args):
-    """
-    Generates hyper parameters dict from parsed command line arguments.
-    """
+    """Generates hyper parameters dict from parsed command line arguments."""
 
     params_dict = {}
     for param_name in dir(args):
@@ -81,18 +75,14 @@ def gen_params_dict_from_args(args):
 
 
 class ShortDefaultsHelpFormatter(argparse.RawTextHelpFormatter):
-    """
-    Text Help Formatter that shortens
-    """
+    """Text Help Formatter that shortens."""
 
     def _get_default_metavar_for_optional(self, action):
         return action.dest.split(".")[-1].upper()
 
 
 def add_hyper_parameters_sub_parser(parser, config, modes=None):
-    """
-    Adds hyper parameters sub parser.
-    """
+    """Adds hyper parameters sub parser."""
 
     default_modes = ("TRAINING", "INFERENCE")
     if modes is None:

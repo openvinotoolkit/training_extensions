@@ -1,4 +1,4 @@
-"""This module implements the Polygon Shape entity"""
+"""This module implements the Polygon Shape entity."""
 
 # Copyright (C) 2021-2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
@@ -20,8 +20,10 @@ from otx.api.utils.time_utils import now
 
 
 class Point:
-    """This class defines a Point with an X and Y coordinate. Multiple points can be used to
-    represent a Polygon"""
+    """This class defines a Point with an X and Y coordinate.
+
+    Multiple points can be used to represent a Polygon
+    """
 
     __slots__ = ["x", "y"]
 
@@ -30,23 +32,26 @@ class Point:
         self.y = y
 
     def __repr__(self):
+        """String representation of the point."""
         return f"Point({self.x}, {self.y})"
 
     def __eq__(self, other):
+        """Checks if two points have the same x and y coordinates."""
         if isinstance(other, Point):
             return self.x == other.x and self.y == other.y
         return False
 
     def normalize_wrt_roi(self, roi_shape: Rectangle) -> "Point":
-        """
-        The inverse of denormalize_wrt_roi_shape.
+        """The inverse of denormalize_wrt_roi_shape.
+
         Transforming Polygon from the `roi` coordinate system to the normalized coordinate system.
         This is used when the tasks want to save the analysis results.
 
         For example in Detection -> Segmentation pipeline, the analysis results of segmentation
         needs to be normalized to the roi (bounding boxes) coming from the detection.
 
-        :param roi_shape:
+        Args:
+            roi_shape (Point): the shape of the roi
         """
         roi_shape = roi_shape.clip_to_visible_region()
         width = roi_shape.width
@@ -56,13 +61,14 @@ class Point:
         return Point(x=self.x * width + x1, y=self.y * height + y1)
 
     def denormalize_wrt_roi_shape(self, roi_shape: Rectangle) -> "Point":
-        """
-        The inverse of normalize_wrt_roi_shape.
+        """The inverse of normalize_wrt_roi_shape.
+
         Transforming Polygon from the normalized coordinate system to the `roi` coordinate system.
         This is used to pull ground truth during training process of the tasks.
         Examples given in the Shape implementations.
 
-        :param roi_shape:
+        Args:
+            roi_shape (Rectangle): the shape of the roi
         """
         roi_shape = roi_shape.clip_to_visible_region()
 
@@ -73,13 +79,13 @@ class Point:
 
 
 class Polygon(Shape):
-    """
-    Represents a polygon formed by a list of coordinates.
+    """Represents a polygon formed by a list of coordinates.
 
     NB Freehand drawings are also stored as polygons.
 
-    :param points: list of Point's forming the polygon
-    :param modification_date: last modified date
+    Args:
+        points: list of Point's forming the polygon
+        modification_date: last modified date
     """
 
     # pylint: disable=too-many-arguments; Requires refactor
@@ -115,25 +121,29 @@ class Polygon(Shape):
             )
 
     def __repr__(self):
+        """String representation of the polygon."""
         return (
             f"Polygon(len(points)={len(self.points)},"
             f" min_x={self.min_x}, max_x={self.max_x}, min_y={self.min_y}, max_y={self.max_y})"
         )
 
     def __eq__(self, other):
+        """Compares if the polygon has the same points and modification date."""
         if isinstance(other, Polygon):
             return self.points == other.points and self.modification_date == other.modification_date
         return False
 
     def __hash__(self):
+        """Returns hash of the Polygon object."""
         return hash(str(self))
 
     def normalize_wrt_roi_shape(self, roi_shape: Rectangle) -> "Polygon":
-        """
-        Transforms from the `roi` coordinate system to the normalized coordinate system.
+        """Transforms from the `roi` coordinate system to the normalized coordinate system.
+
         This function is the inverse of ``denormalize_wrt_roi_shape``.
 
-        :example: Assume we have Polygon `p1` which lives in the top-right quarter of a 2D space.
+        Example:
+            Assume we have Polygon `p1` which lives in the top-right quarter of a 2D space.
             The 2D space where `p1` lives in is an `roi` living in the top-left quarter of the normalized coordinate
             space. This function returns Polygon `p1` expressed in the normalized coordinate space.
 
@@ -145,8 +155,11 @@ class Polygon(Shape):
             >>> normalized
             Polygon(, len(points)=3)
 
-        :param roi_shape: Region of Interest
-        :return: New polygon in the image coordinate system
+        Args:
+            roi_shape: Region of Interest
+
+        Returns:
+            New polygon in the image coordinate system
         """
         if not isinstance(roi_shape, Rectangle):
             raise ValueError("roi_shape has to be a Rectangle.")
@@ -157,11 +170,12 @@ class Polygon(Shape):
         return Polygon(points=points)
 
     def denormalize_wrt_roi_shape(self, roi_shape: Rectangle) -> "Polygon":
-        """
-        Transforming shape from the normalized coordinate system to the `roi` coordinate system.
+        """Transforming shape from the normalized coordinate system to the `roi` coordinate system.
+
         This function is the inverse of ``normalize_wrt_roi_shape``
 
-        :example: Assume we have Polygon `p1` which lives in the top-right quarter of the normalized coordinate space.
+        Example:
+            Assume we have Polygon `p1` which lives in the top-right quarter of the normalized coordinate space.
             The `roi` is a rectangle living in the half right of the normalized coordinate space.
             This function returns Polygon `p1` expressed in the coordinate space of `roi`. (should return top-half)
 
@@ -175,8 +189,11 @@ class Polygon(Shape):
             >>> normalized
             Polygon(, len(points)=3)
 
-        :param roi_shape: Region of Interest
-        :return: New polygon in the ROI coordinate system
+        Args:
+            roi_shape: Region of Interest
+
+        Returns:
+            New polygon in the ROI coordinate system
         """
         if not isinstance(roi_shape, Rectangle):
             raise ValueError("roi_shape has to be a Rectangle.")
@@ -187,24 +204,24 @@ class Polygon(Shape):
         return Polygon(points=points)
 
     def _as_shapely_polygon(self) -> shapely_polygon:
-        """
-        Returns the Polygon object as a shapely polygon which is used for calculating intersection between shapes.
-        """
+        """Returns the Polygon object as a shapely polygon which is used for calculating intersection between shapes."""
         return shapely_polygon([(point.x, point.y) for point in self.points])
 
     def get_area(self) -> float:
-        """
-        Returns the approximate area of the shape. Area is a value between 0 and 1, computed by converting the Polygon
-        to a shapely polygon and reading the `.area` property.
+        """Returns the approximate area of the shape.
+
+        Area is a value between 0 and 1, computed by converting the Polygon to a shapely polygon and reading the
+        `.area` property.
 
         NOTE: This method should not be relied on for exact area computation. The area is approximate, because shapes
         are continuous, but pixels are discrete.
 
-        :example:
+        Example:
 
             >>> Polygon(points=[Point(x=0.0, y=0.5), Point(x=0.5, y=0.5), Point(x=0.75, y=0.75)]).get_area()
             0.0625
 
-        :return: area of the shape
+        Returns:
+            area of the shape
         """
         return self._as_shapely_polygon().area

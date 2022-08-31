@@ -1,12 +1,9 @@
+"""ParameterGroup is the main class responsible for grouping configurable parameters together."""
 # Copyright (C) 2021-2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 
 
-"""
-This module contains the definition of a ParameterGroup, which is the main class responsible for grouping configurable
-parameters together.
-"""
 from enum import Enum
 from typing import Any, Dict, List, Type, TypeVar, Union
 
@@ -22,16 +19,20 @@ from otx.api.configuration.enums.config_element_type import (
 
 @attr.s(auto_attribs=True, order=False, eq=False)
 class ParameterGroup:
-    """
-    A group of configuration elements. Parameters living within the parameter group are typed attrs Attributes. The
-    schema for each parameter is defined in its metadata, which can be retrieved using the `get_metadata` method from
-    the parent ParameterGroup instance.
+    """A group of configuration elements.
 
-    :var header: User friendly name for the parameter group, that will be displayed in the UI
-    :var description: User friendly string describing what the parameter group represents, that will be displayed in
-        the UI.
-    :var visible_in_ui: Boolean that controls whether or not this parameter group will be exposed through the REST API
-        and shown in the UI. Set to False to hide this group. Defaults to True
+    Parameters living within the parameter group are typed attrs Attributes. The schema for each parameter is defined
+    in its metadata, which can be retrieved using the `get_metadata` method from the parent ParameterGroup instance.
+
+    Attributes:
+        header (str): User friendly name for the parameter group, that will be
+            displayed in the UI
+        description (str): User friendly string describing what the parameter
+            group represents, that will be displayed in the UI.
+        visible_in_ui (bool): Boolean that controls whether or not this
+            parameter group will be exposed through the REST API and
+            shown in the UI. Set to False to hide this group. Defaults
+            to True
     """
 
     header: str = attr.ib()
@@ -45,9 +46,10 @@ class ParameterGroup:
     )
 
     def __attrs_post_init__(self):
-        """
+        """Update parameter and group after __init__.
+
         This method is called after the __init__ method to update the parameter and group fields of the ParameterGroup
-        instance
+        instance.
         """
         groups: List[str] = []
         parameters: List[str] = []
@@ -77,13 +79,17 @@ class ParameterGroup:
         self.parameters = parameters  # pylint:disable=attribute-defined-outside-init
 
     def get_metadata(self, parameter_name: str) -> dict:
-        """
-        Retrieve the metadata for a particular parameter from the group.
+        """Retrieve the metadata for a particular parameter from the group.
 
-        :param parameter_name: name of the parameter for which to get the metadata
-        :return: dictionary containing the metadata for the requested parameter.
-            Returns an empty dict if no metadata was found for the parameter, or if
-            the parameter was not found in the group.
+        Args:
+            parameter_name (str): name of the parameter for which to get the
+                metadata
+
+        Returns:
+            dict: dictionary containing the metadata for the requested
+                parameter. Returns an empty dict if no metadata was found
+                for the parameter, or if the parameter was not found in the
+                group.
         """
         parameter = getattr(attr.fields(type(self)), parameter_name, None)
         if parameter is not None:
@@ -102,16 +108,19 @@ class ParameterGroup:
         metadata_key: str,
         value: Union[int, float, str, bool, Enum],
     ) -> bool:
-        """
-        Sets the value of a specific metadata item `metadata_key` for the parameter
-        named `parameter_name`.
+        """Sets the value of a specific metadata item `metadata_key` for the parameter named `parameter_name`.
 
-        :param parameter_name: name of the parameter for which to get the metadata item
-        :param metadata_key: name of the metadata value to set
-        :param value: New value to assign to the metadata item accessed by
-            `metadata_key`. The type of `value` has to exactly match the type of the
-            current value of the metadata item
-        :return: True if the metadata item was successfully updated, False otherwise
+        Args:
+            parameter_name (str): name of the parameter for which to get the
+                metadata item
+            metadata_key (str): name of the metadata value to set
+            value (Union[int, float, str, bool, Enum]): New value to assign to the metadata item accessed by
+                `metadata_key`. The type of `value` has to exactly match
+                the type of the current value of the metadata item
+
+        Returns:
+            True if the metadata item was successfully updated, False
+            otherwise
         """
         parameter = getattr(attr.fields(type(self)), parameter_name, None)
         if parameter is None:
@@ -132,7 +141,8 @@ class ParameterGroup:
         return True
 
     def update_auto_hpo_states(self):
-        """
+        """Update hpo state based on teh value of parameters.
+
         Updates the `auto_hpo_state` metadata field for all parameters in the parameter
         group, based on the values of the parameters and the values of their
         `auto_hpo_value` metadata fields.
@@ -158,7 +168,8 @@ class ParameterGroup:
             group.update_auto_hpo_states()
 
     def __eq__(self, other):
-        """
+        """Comparison with support for dynamically generated ParameterGroups.
+
         Override default implementation of __eq__ to enable comparison of
         ParameterGroups generated dynamically via the config helper.
         """
@@ -172,7 +183,5 @@ _ParameterGroup = TypeVar("_ParameterGroup", bound=ParameterGroup)
 
 
 def add_parameter_group(group: Type[_ParameterGroup]) -> _ParameterGroup:
-    """
-    Wrapper to attr.ib to add nested parameter groups to a configuration.
-    """
+    """Wrapper to attr.ib to add nested parameter groups to a configuration."""
     return attr.ib(factory=group, type=group)

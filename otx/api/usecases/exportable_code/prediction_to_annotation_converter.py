@@ -1,6 +1,4 @@
-"""
-Converters for output of inferencers
-"""
+"""Converters for output of inferencers."""
 
 # Copyright (C) 2021-2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
@@ -31,48 +29,51 @@ from otx.api.utils.time_utils import now
 
 
 class IPredictionToAnnotationConverter(metaclass=abc.ABCMeta):
-    """
-    Interface for converter
-    """
+    """Interface for converter."""
 
     @abc.abstractmethod
     def convert_to_annotation(self, predictions: Any, metadata: Dict) -> AnnotationSceneEntity:
-        """
-        Convert raw predictions to AnnotationScene format.
+        """Convert raw predictions to AnnotationScene format.
 
-        :param predictions: Raw predictions from the model
-        :return: annotation object containing the shapes
-                 obtained from the raw predictions.
+        Args:
+            predictions (Any): raw predictions from inferencer
+            metadata (Dict): metadata from inferencer
+
+        Returns:
+            AnnotationSceneEntity: annotation object containing the shapes obtained from the raw predictions.
         """
         raise NotImplementedError
 
 
 class DetectionToAnnotationConverter(IPredictionToAnnotationConverter):
-    """
-    Converts Object Detections to Annotations
+    """Converts Object Detections to Annotations.
+
+    Args:
+        labels (List[LabelEntity]): list of labels
     """
 
     def __init__(self, labels: List[LabelEntity]):
         self.label_map = dict(enumerate(labels))
 
     def convert_to_annotation(self, predictions: np.ndarray, metadata: Optional[Dict] = None) -> AnnotationSceneEntity:
-        """
-        Converts a set of predictions into an AnnotationScene object
+        """Converts a set of predictions into an AnnotationScene object.
 
-        :param predictions: Prediction with shape [num_predictions, 6] or
+        Args:
+            predictions (np.ndarray): Prediction with shape [num_predictions, 6] or
                             [num_predictions, 7]
-        Supported detection formats are
+                Supported detection formats are
 
-        * [label, confidence, x1, y1, x2, y2]
-        * [_, label, confidence, x1, y1, x2, y2]
+                * [label, confidence, x1, y1, x2, y2]
+                * [_, label, confidence, x1, y1, x2, y2]
 
-        .. note::
-           `label` can be any integer that can be mapped to `self.labels`
-           `confidence` should be a value between 0 and 1
-           `x1`, `x2`, `y1` and `y2` are expected to be normalized.
+                .. note::
+                `label` can be any integer that can be mapped to `self.labels`
+                `confidence` should be a value between 0 and 1
+                `x1`, `x2`, `y1` and `y2` are expected to be normalized.
+            metadata (Optional[Dict]): (Unused)
 
-        :returns AnnotationScene: AnnotationScene Object containing the boxes
-                                  obtained from the prediction
+        Returns:
+            AnnotationScene: AnnotationScene Object containing the boxes obtained from the prediction.
         """
         annotations = self.__convert_to_annotations(predictions)
         # media_identifier = ImageIdentifier(image_id=ID())
@@ -87,15 +88,17 @@ class DetectionToAnnotationConverter(IPredictionToAnnotationConverter):
         return annotation_scene
 
     def __convert_to_annotations(self, predictions: np.ndarray) -> List[Annotation]:
-        """
-        Converts a list of Detections to OTX Annotation objects
+        """Converts a list of Detections to OTX Annotation objects.
 
-        :param predictions: A list of predictions with shape [num_prediction, 6] or
+        Args:
+            predictions (np.ndarray): A list of predictions with shape [num_prediction, 6] or
                             [num_predictions, 7]
 
-        :returns: A list of Annotation objects with Rectangle shapes
+        Returns:
+            List[Annotation]: A list of Annotation objects with Rectangle shapes
 
-        :raises ValueError: This error is raised if the shape of prediction is not
+        Raises:
+            ValueError: This error is raised if the shape of prediction is not
                             (n, 7) or (n, 6)
         """
         annotations = []
@@ -128,8 +131,11 @@ def create_converter(
     converter_type: Domain,
     labels: LabelSchemaEntity,
 ) -> IPredictionToAnnotationConverter:
-    """
-    Simple factory for converters based on type of tasks
+    """Simple factory for converters based on type of tasks.
+
+    Args:
+        converter_type (Domain): type of converter
+        labels (LabelSchemaEntity): label schema entity
     """
 
     converter: IPredictionToAnnotationConverter
@@ -156,8 +162,10 @@ def create_converter(
 
 
 class DetectionBoxToAnnotationConverter(IPredictionToAnnotationConverter):
-    """
-    Converts DetectionBox Predictions ModelAPI to Annotations
+    """Converts DetectionBox Predictions ModelAPI to Annotations.
+
+    Args:
+        labels (LabelSchemaEntity): Label Schema containing the label info of the task
     """
 
     def __init__(self, labels: LabelSchemaEntity):
@@ -166,6 +174,15 @@ class DetectionBoxToAnnotationConverter(IPredictionToAnnotationConverter):
     def convert_to_annotation(
         self, predictions: List[utils.Detection], metadata: Dict[str, Any]
     ) -> AnnotationSceneEntity:
+        """Convert predictions to OTX Annotation Scene using the metadata.
+
+        Args:
+            predictions (tuple): Raw predictions from the model.
+            metadata (Dict[str, Any]): Variable containing metadata information.
+
+        Returns:
+            AnnotationSceneEntity: OTX annotation scene entity object.
+        """
         annotations = []
         image_size = metadata["original_shape"][1::-1]
         for box in predictions:
@@ -186,8 +203,10 @@ class DetectionBoxToAnnotationConverter(IPredictionToAnnotationConverter):
 
 
 class SegmentationToAnnotationConverter(IPredictionToAnnotationConverter):
-    """
-    Converts Segmentation Predictions ModelAPI to Annotations
+    """Converts Segmentation Predictions ModelAPI to Annotations.
+
+    Args:
+        labels (LabelSchemaEntity): Label Schema containing the label info of the task
     """
 
     def __init__(self, label_schema: LabelSchemaEntity):
@@ -195,6 +214,15 @@ class SegmentationToAnnotationConverter(IPredictionToAnnotationConverter):
         self.label_map = dict(enumerate(labels, 1))
 
     def convert_to_annotation(self, predictions: np.ndarray, metadata: Dict[str, Any]) -> AnnotationSceneEntity:
+        """Convert predictions to OTX Annotation Scene using the metadata.
+
+        Args:
+            predictions (tuple): Raw predictions from the model.
+            metadata (Dict[str, Any]): Variable containing metadata information.
+
+        Returns:
+            AnnotationSceneEntity: OTX annotation scene entity object.
+        """
         soft_predictions = metadata.get("soft_predictions", np.ones(predictions.shape))
         annotations = create_annotation_from_segmentation_map(
             hard_prediction=predictions,
@@ -206,8 +234,10 @@ class SegmentationToAnnotationConverter(IPredictionToAnnotationConverter):
 
 
 class ClassificationToAnnotationConverter(IPredictionToAnnotationConverter):
-    """
-    Converts Classification Predictions ModelAPI to Annotations
+    """Converts Classification Predictions ModelAPI to Annotations.
+
+    Args:
+        labels (LabelSchemaEntity): Label Schema containing the label info of the task
     """
 
     def __init__(self, label_schema: LabelSchemaEntity):
@@ -226,6 +256,15 @@ class ClassificationToAnnotationConverter(IPredictionToAnnotationConverter):
     def convert_to_annotation(
         self, predictions: List[Tuple[int, float]], metadata: Optional[Dict] = None
     ) -> AnnotationSceneEntity:
+        """Convert predictions to OTX Annotation Scene using the metadata.
+
+        Args:
+            predictions (tuple): Raw predictions from the model.
+            metadata (Dict[str, Any]): Variable containing metadata information.
+
+        Returns:
+            AnnotationSceneEntity: OTX annotation scene entity object.
+        """
         labels = []
         for index, score in predictions:
             labels.append(ScoredLabel(self.labels[index], float(score)))
@@ -240,8 +279,10 @@ class ClassificationToAnnotationConverter(IPredictionToAnnotationConverter):
 
 
 class AnomalyClassificationToAnnotationConverter(IPredictionToAnnotationConverter):
-    """
-    Converts AnomalyClassification Predictions ModelAPI to Annotations
+    """Converts AnomalyClassification Predictions ModelAPI to Annotations.
+
+    Args:
+        labels (LabelSchemaEntity): Label Schema containing the label info of the task
     """
 
     def __init__(self, label_schema: LabelSchemaEntity):
@@ -250,6 +291,15 @@ class AnomalyClassificationToAnnotationConverter(IPredictionToAnnotationConverte
         self.anomalous_label = [label for label in labels if label.is_anomalous][0]
 
     def convert_to_annotation(self, predictions: np.ndarray, metadata: Dict[str, Any]) -> AnnotationSceneEntity:
+        """Convert predictions to OTX Annotation Scene using the metadata.
+
+        Args:
+            predictions (tuple): Raw predictions from the model.
+            metadata (Dict[str, Any]): Variable containing metadata information.
+
+        Returns:
+            AnnotationSceneEntity: OTX annotation scene entity object.
+        """
         pred_label = predictions >= metadata.get("threshold", 0.5)
 
         label = self.anomalous_label if pred_label else self.normal_label
@@ -265,8 +315,10 @@ class AnomalyClassificationToAnnotationConverter(IPredictionToAnnotationConverte
 
 
 class AnomalySegmentationToAnnotationConverter(IPredictionToAnnotationConverter):
-    """
-    Converts AnomalyClassification Predictions ModelAPI to Annotations
+    """Converts AnomalyClassification Predictions ModelAPI to Annotations.
+
+    Args:
+        labels (LabelSchemaEntity): Label Schema containing the label info of the task
     """
 
     def __init__(self, label_schema: LabelSchemaEntity):
@@ -276,7 +328,15 @@ class AnomalySegmentationToAnnotationConverter(IPredictionToAnnotationConverter)
         self.label_map = {0: self.normal_label, 1: self.anomalous_label}
 
     def convert_to_annotation(self, predictions: np.ndarray, metadata: Dict[str, Any]) -> AnnotationSceneEntity:
+        """Convert predictions to OTX Annotation Scene using the metadata.
 
+        Args:
+            predictions (tuple): Raw predictions from the model.
+            metadata (Dict[str, Any]): Variable containing metadata information.
+
+        Returns:
+            AnnotationSceneEntity: OTX annotation scene entity object.
+        """
         pred_mask = predictions >= 0.5
         mask = pred_mask.squeeze().astype(np.uint8)
         annotations = create_annotation_from_segmentation_map(mask, predictions, self.label_map)
@@ -292,13 +352,14 @@ class AnomalySegmentationToAnnotationConverter(IPredictionToAnnotationConverter)
 
 
 class AnomalyDetectionToAnnotationConverter(IPredictionToAnnotationConverter):
-    """Converts Anomaly Detection Predictions ModelAPI to Annotations."""
+    """Converts Anomaly Detection Predictions ModelAPI to Annotations.
+
+    Args:
+        labels (LabelSchemaEntity): Label Schema containing the label info of the task
+    """
 
     def __init__(self, label_schema: LabelSchemaEntity):
-        """Initialize AnomalyDetectionToAnnotationConverter.
-
-        :param label_schema: Label Schema containing the label info of the task
-        """
+        """Initialize AnomalyDetectionToAnnotationConverter."""
         labels = label_schema.get_labels(include_empty=False)
         self.normal_label = [label for label in labels if not label.is_anomalous][0]
         self.anomalous_label = [label for label in labels if label.is_anomalous][0]
@@ -307,9 +368,12 @@ class AnomalyDetectionToAnnotationConverter(IPredictionToAnnotationConverter):
     def convert_to_annotation(self, predictions: np.ndarray, metadata: Dict[str, Any]) -> AnnotationSceneEntity:
         """Convert predictions to OTX Annotation Scene using the metadata.
 
-        :param predictions: Raw predictions from the model.
-        :param metadata: Variable containing metadata information.
-        :return: OTX annotation scene entity object.
+        Args:
+            predictions (tuple): Raw predictions from the model.
+            metadata (Dict[str, Any]): Variable containing metadata information.
+
+        Returns:
+            AnnotationSceneEntity: OTX annotation scene entity object.
         """
         pred_mask = predictions >= 0.5
         mask = pred_mask.squeeze().astype(np.uint8)
@@ -326,14 +390,21 @@ class AnomalyDetectionToAnnotationConverter(IPredictionToAnnotationConverter):
 
 
 class MaskToAnnotationConverter(IPredictionToAnnotationConverter):
-    """
-    Converts DetectionBox Predictions ModelAPI to Annotations
-    """
+    """Converts DetectionBox Predictions ModelAPI to Annotations."""
 
     def __init__(self, labels: LabelSchemaEntity):
         self.labels = labels.get_labels(include_empty=False)
 
     def convert_to_annotation(self, predictions: tuple, metadata: Dict[str, Any]) -> AnnotationSceneEntity:
+        """Convert predictions to OTX Annotation Scene using the metadata.
+
+        Args:
+            predictions (tuple): Raw predictions from the model.
+            metadata (Dict[str, Any]): Variable containing metadata information.
+
+        Returns:
+            AnnotationSceneEntity: OTX annotation scene entity object.
+        """
         annotations = []
         for score, class_idx, _, mask in zip(*predictions):
             mask = mask.astype(np.uint8)
@@ -369,14 +440,25 @@ class MaskToAnnotationConverter(IPredictionToAnnotationConverter):
 
 
 class RotatedRectToAnnotationConverter(IPredictionToAnnotationConverter):
-    """
-    Converts Rotated Rect (mask) Predictions ModelAPI to Annotations
+    """Converts Rotated Rect (mask) Predictions ModelAPI to Annotations.
+
+    Args:
+        labels (LabelSchemaEntity): Label Schema containing the label info of the task
     """
 
     def __init__(self, labels: LabelSchemaEntity):
         self.labels = labels.get_labels(include_empty=False)
 
     def convert_to_annotation(self, predictions: tuple, metadata: Dict[str, Any]) -> AnnotationSceneEntity:
+        """Convert predictions to OTX Annotation Scene using the metadata.
+
+        Args:
+            predictions (tuple): Raw predictions from the model.
+            metadata (Dict[str, Any]): Variable containing metadata information.
+
+        Returns:
+            AnnotationSceneEntity: OTX annotation scene entity object.
+        """
         annotations = []
         for score, class_idx, _, mask in zip(*predictions):
             mask = mask.astype(np.uint8)

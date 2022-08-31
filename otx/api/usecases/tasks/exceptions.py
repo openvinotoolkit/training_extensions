@@ -1,4 +1,4 @@
-"""This module contains the exceptions for the tasks. """
+"""This module contains the exceptions for the tasks."""
 
 
 # Copyright (C) 2021-2022 Intel Corporation

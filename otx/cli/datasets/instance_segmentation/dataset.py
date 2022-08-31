@@ -1,6 +1,4 @@
-"""
-Module contains ObjectDetectionDataset
-"""
+"""Module contains ObjectDetectionDataset."""
 
 # Copyright (C) 2021 Intel Corporation
 #

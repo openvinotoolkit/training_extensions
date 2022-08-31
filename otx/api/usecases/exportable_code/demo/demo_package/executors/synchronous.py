@@ -1,6 +1,4 @@
-"""
-Sync Executor based on ModelAPI
-"""
+"""Synchronous Executor based on ModelAPI."""
 # Copyright (C) 2021-2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -18,12 +16,11 @@ from otx.api.usecases.exportable_code.visualizers import Visualizer
 
 
 class SyncExecutor:
-    """
-    Synd executor for model inference
+    """Synchronous executor for model inference.
 
     Args:
-        model: model for inference
-        visualizer: visualizer of inference results
+        model (ModelContainer): model for inference
+        visualizer (Visualizer): visualizer of inference results. Defaults to None.
     """
 
     def __init__(self, model: ModelContainer, visualizer: Visualizer) -> None:
@@ -32,9 +29,7 @@ class SyncExecutor:
         self.converter = create_output_converter(model.task_type, model.labels)
 
     def run(self, input_stream: Union[int, str], loop: bool = False) -> None:
-        """
-        Run demo using input stream (image, video stream, camera)
-        """
+        """Run demo using input stream (image, video stream, camera)."""
         streamer = get_streamer(input_stream, loop)
 
         for frame in streamer:

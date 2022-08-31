@@ -16,14 +16,14 @@ from otx.api.entities.shapes.rectangle import Rectangle
 
 
 class Image(IMedia2DEntity):
-    """
-    Represents a 2D image.
+    """Represents a 2D image.
 
     The image must be instantiated with either a NumPy array containing the image data
     or a path to an image file.
 
-    :param data: NumPy data.
-    :param file_path: Path to image file.
+    Args:
+        data (Optional[np.ndarray]): NumPy data.
+        file_path (Optional[str]): Path to image file.
     """
 
     # pylint: disable=too-many-arguments, redefined-builtin
@@ -40,6 +40,7 @@ class Image(IMedia2DEntity):
         self.__width: Optional[int] = None
 
     def __str__(self):
+        """String representation of the image. Returns the image format, name and dimensions."""
         return (
             f"{self.__class__.__name__}"
             f"({self.__file_path if self.__data is None else 'with data'}, "
@@ -47,10 +48,10 @@ class Image(IMedia2DEntity):
         )
 
     def __get_size(self) -> Tuple[int, int]:
-        """
-        Returns image size.
+        """Returns image size.
 
-        :return: Image size as a (height, width) tuple.
+        Returns:
+            Tuple[int, int]: Image size as a (height, width) tuple.
         """
         if self.__data is not None:
             return self.__data.shape[0], self.__data.shape[1]
@@ -60,10 +61,12 @@ class Image(IMedia2DEntity):
 
     @property
     def numpy(self) -> np.ndarray:
-        """
-        NumPy representation of the image.
+        """Numpy representation of the image.
 
         For color images the dimensions are (height, width, color) with RGB color channel order.
+
+        Returns:
+            np.ndarray: NumPy representation of the image.
         """
         if self.__data is None:
             return cv2.cvtColor(cv2.imread(self.__file_path), cv2.COLOR_BGR2RGB)
@@ -76,11 +79,14 @@ class Image(IMedia2DEntity):
         self.__height, self.__width = self.__get_size()
 
     def roi_numpy(self, roi: Optional[Annotation] = None) -> np.ndarray:
-        """
-        Obtains the numpy representation of the image for a selection region of interest (roi).
+        """Obtains the numpy representation of the image for a selection region of interest (roi).
 
-        :param roi: The region of interest can be Rectangle in the relative coordinate system of the full-annotation.
-        :return: Selected region as numpy array.
+        Args:
+            roi (Optional[Annotaiton]): The region of interest can be Rectangle in the relative
+                coordinate system of the full-annotation.
+
+        Returns:
+            np.ndarray: Selected region as numpy array.
         """
         data = self.numpy
         if roi is None:
@@ -99,18 +105,14 @@ class Image(IMedia2DEntity):
 
     @property
     def height(self) -> int:
-        """
-        Returns the height of the image.
-        """
+        """Returns the height of the image."""
         if self.__height is None:
             self.__height, self.__width = self.__get_size()
         return self.__height
 
     @property
     def width(self) -> int:
-        """
-        Returns the width of the image.
-        """
+        """Returns the width of the image."""
         if self.__width is None:
             self.__height, self.__width = self.__get_size()
         return self.__width

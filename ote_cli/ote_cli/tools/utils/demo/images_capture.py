@@ -19,6 +19,7 @@ Images capturing module.
 import copy
 import os
 import sys
+from abc import ABC, abstractmethod
 
 import cv2
 
@@ -27,9 +28,7 @@ import cv2
 
 
 class InvalidInput(Exception):
-    """
-    Ivalid input exception.
-    """
+    """Exception for wrong input format."""
 
     def __init__(self, message):
         super().__init__()
@@ -37,39 +36,38 @@ class InvalidInput(Exception):
 
 
 class OpenError(Exception):
-    """
-    Open error exception.
-    """
+    """Exception for error opening reader."""
 
     def __init__(self, message):
         super().__init__()
         self.message = message
 
 
-class ImagesCapture:
+class ImagesCapture(ABC):
     """
     Images capturing base class.
     """
 
+    @abstractmethod
     def read(self):
         """Returns caputured image."""
         raise NotImplementedError
 
-    def fps(self):
+    @abstractmethod
+    def fps(self) -> float:
         """Returns a frequency of getting images from source."""
         raise NotImplementedError
 
-    def get_type(self):
+    @abstractmethod
+    def get_type(self) -> str:
         """Returns type of image capture."""
         raise NotImplementedError
 
 
 class ImreadWrapper(ImagesCapture):
-    """
-    Class for reading an image from file.
-    """
+    """Class for reading an image from file."""
 
-    def __init__(self, source, loop):
+    def __init__(self, source, loop: bool):
         self.loop = loop
         if not os.path.isfile(source):
             raise InvalidInput(f"Can't find the image by {source}")
@@ -86,10 +84,10 @@ class ImreadWrapper(ImagesCapture):
             return copy.deepcopy(self.image)
         return None
 
-    def fps(self):
+    def fps(self) -> float:
         return 1.0
 
-    def get_type(self):
+    def get_type(self) -> str:
         return "IMAGE"
 
 

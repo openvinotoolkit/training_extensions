@@ -1,6 +1,4 @@
-"""
-Streamer for reading input
-"""
+"""Streamer for reading input."""
 
 # Copyright (C) 2021-2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
@@ -19,9 +17,7 @@ import numpy as np
 
 
 class InvalidInput(Exception):
-    """
-    Exception for wrong input format
-    """
+    """Exception for wrong input format."""
 
     def __init__(self, message: str) -> None:
         super().__init__(message)
@@ -29,9 +25,7 @@ class InvalidInput(Exception):
 
 
 class OpenError(Exception):
-    """
-    Exception for open reader
-    """
+    """Exception for error opening reader."""
 
     def __init__(self, message: str) -> None:
         super().__init__(message)
@@ -39,9 +33,7 @@ class OpenError(Exception):
 
 
 class MediaType(Enum):
-    """
-    This Enum represents the types of input
-    """
+    """This Enum represents the types of input."""
 
     IMAGE = 1
     DIR = 2
@@ -50,52 +42,50 @@ class MediaType(Enum):
 
 
 class BaseStreamer(metaclass=abc.ABCMeta):
-    """
-    Base Streamer interface to implement Image, Video and Camera streamers.
-    """
+    """Base Streamer interface to implement Image, Video and Camera streamers."""
 
     @abc.abstractmethod
     def __iter__(self) -> Iterator[np.ndarray]:
-        """
-        Iterate through the streamer object that is a Python Generator object.
-        :return: Yield the image or video frame.
+        """Iterate through the streamer object that is a Python Generator object.
+
+        Returns:
+            np.ndarray: Yield the image or video frame.
         """
         raise NotImplementedError
 
     @abc.abstractmethod
     def get_type(self) -> MediaType:
-        """
-        Get type of streamer
+        """Get type of streamer.
+
+        Returns:
+            MediaType: type of streamer.
         """
         raise NotImplementedError
 
 
 def _process_run(streamer: BaseStreamer, buffer: multiprocessing.Queue) -> None:
-    """
-    Private function that is run by the thread.
+    """Private function that is run by the thread.
 
     Waits for the buffer to gain space for timeout seconds while it is full.
     If no space was available within this time the function will exit
 
-    :param streamer: The streamer to retrieve frames from
-    :param buffer: The buffer to place the retrieved frames in
+    streamer (BaseStreamer): The streamer to retrieve frames from
+    buffer (multiprocessing.Queue): The buffer to place the retrieved frames in
     """
     for frame in streamer:
         buffer.put(frame)
 
 
 class ThreadedStreamer(BaseStreamer):
-    """
-    Runs a BaseStreamer on a seperate thread.
+    """Runs a BaseStreamer on a separate thread.
 
-    :param streamer: The streamer to run on a thread
-    :param buffer_size: Number of frame to buffer internally
+    streamer (BaseStreamer): The streamer to run on a thread
+    buffer_size (int): Number of frame to buffer internally. Defaults to 2.
 
-    :example:
-
+    Example:
         >>> streamer = VideoStreamer(path="../demo.mp4")
         >>> threaded_streamer = ThreadedStreamer(streamer)
-        ... for frame in threaded_streamer:
+        >>> for frame in threaded_streamer:
         ...    pass
     """
 
@@ -104,6 +94,11 @@ class ThreadedStreamer(BaseStreamer):
         self.streamer = streamer
 
     def __iter__(self) -> Iterator[np.ndarray]:
+        """Get frames from streamer and yield them.
+
+        Yields:
+            Iterator[np.ndarray]: Yield the image or video frame.
+        """
         buffer: multiprocessing.Queue = multiprocessing.Queue(maxsize=self.buffer_size)
         process = multiprocessing.Process(target=_process_run, args=(self.streamer, buffer))
         # Make thread a daemon so that it will exit when the main program exits as well
@@ -126,19 +121,21 @@ class ThreadedStreamer(BaseStreamer):
                 process.kill()
 
     def get_type(self) -> MediaType:
-        """
-        Get type of internal streamer
+        """Get type of internal streamer.
+
+        Returns:
+            MediaType: type of internal streamer.
         """
         return self.streamer.get_type()
 
 
 class VideoStreamer(BaseStreamer):
-    """
-    Video Streamer
-    :param path: Path to the video file.
+    """Video Streamer.
 
-    :example:
+    Args:
+        path: Path to the video file.
 
+    Example:
         >>> streamer = VideoStreamer(path="../demo.mp4")
         ... for frame in streamer:
         ...    pass
@@ -153,6 +150,10 @@ class VideoStreamer(BaseStreamer):
             raise InvalidInput(f"Can't open the video from {input_path}")
 
     def __iter__(self) -> Iterator[np.ndarray]:
+        """Iterates over frames of the video.
+
+        If self.loop is set to True, the video will loop infinitely.
+        """
         while True:
             status, image = self.cap.read()
             if status:
@@ -164,16 +165,17 @@ class VideoStreamer(BaseStreamer):
                     break
 
     def get_type(self) -> MediaType:
+        """Returns the type of media."""
         return MediaType.VIDEO
 
 
 class CameraStreamer(BaseStreamer):
-    """
-    Stream video frames from camera
-    :param camera_device: Camera device index e.g, 0, 1
+    """Stream video frames from camera.
 
-    :example:
+    Args:
+        camera_device (int): Camera device index e.g, 0, 1
 
+    Example:
         >>> streamer = CameraStreamer(camera_device=0)
         ... for frame in streamer:
         ...     cv2.imshow("Window", frame)
@@ -189,10 +191,13 @@ class CameraStreamer(BaseStreamer):
             raise InvalidInput(f"Can't find the camera {camera_device}") from error
 
     def __iter__(self) -> Iterator[np.ndarray]:
-        """
-        Read video and yield the frame.
-        :param stream: Video stream captured via OpenCV's VideoCapture
-        :return: Individual frame
+        """Read video and yield the frame.
+
+        Args:
+            stream: Video stream captured via OpenCV's VideoCapture
+
+        Returns:
+            Individual frame
         """
         while True:
             frame_available, frame = self.stream.read()
@@ -204,16 +209,18 @@ class CameraStreamer(BaseStreamer):
         self.stream.release()
 
     def get_type(self) -> MediaType:
+        """Returns the type of media."""
         return MediaType.CAMERA
 
 
 class ImageStreamer(BaseStreamer):
-    """
-    Stream from image file.
-    :param path: Path to an image.
+    """Stream from image file.
 
-    :example:
+    Args:
+        input_path (str): Path to an image.
+        loop (bool): Whether to loop through the image or not. Defaults to False.
 
+    Example:
         >>> streamer = ImageStreamer(path="../images")
         ... for frame in streamer:
         ...     cv2.imshow("Window", frame)
@@ -231,6 +238,7 @@ class ImageStreamer(BaseStreamer):
         self.image = cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
 
     def __iter__(self) -> Iterator[np.ndarray]:
+        """If loop is True, yield the image again and again."""
         if not self.loop:
             yield self.image
         else:
@@ -238,16 +246,17 @@ class ImageStreamer(BaseStreamer):
                 yield self.image
 
     def get_type(self) -> MediaType:
+        """Returns the type of the streamer."""
         return MediaType.IMAGE
 
 
 class DirStreamer(BaseStreamer):
-    """
-    Stream from directory of images.
-    :param path: Path to directory.
+    """Stream from directory of images.
 
-    :example:
+    Args:
+        path: Path to directory.
 
+    Example:
         >>> streamer = DirStreamer(path="../images")
         ... for frame in streamer:
         ...     cv2.imshow("Window", frame)
@@ -272,6 +281,10 @@ class DirStreamer(BaseStreamer):
         raise OpenError(f"Can't read the first image from {input_path}")
 
     def __iter__(self) -> Iterator[np.ndarray]:
+        """Iterates over the images in a directory.
+
+        If self.loop is True, it reiterates again from the first image in the directory.
+        """
         while self.file_id < len(self.names):
             filename = os.path.join(self.dir, self.names[self.file_id])
             image = cv2.imread(str(filename), cv2.IMREAD_COLOR)
@@ -283,6 +296,7 @@ class DirStreamer(BaseStreamer):
                 yield cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
     def get_type(self) -> MediaType:
+        """Returns the type of the streamer."""
         return MediaType.DIR
 
 
@@ -291,11 +305,15 @@ def get_streamer(
     loop: bool = False,
     threaded: bool = False,
 ) -> BaseStreamer:
-    """
-    Get streamer object based on the file path or camera device index provided.
-    :param input_stream: Path to file or directory or index for camera.
-    :param loop: Enable reading the input in a loop.
-    :param threaded: Threaded streaming option
+    """Get streamer object based on the file path or camera device index provided.
+
+    Args:
+        input_stream (Union[int, str]): Path to file or directory or index for camera.
+        loop (bool): Enable reading the input in a loop. Defaults to False.
+        threaded (bool): Run streaming on a separate thread. Threaded streaming option. Defaults to False.
+
+    Returns:
+        BaseStreamer: Streamer object.
     """
     # errors: Dict = {InvalidInput: [], OpenError: []}
     errors = []

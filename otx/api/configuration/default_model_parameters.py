@@ -1,9 +1,7 @@
+"""This module contains a default set of configurable parameters for a model."""
 # Copyright (C) 2021-2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-"""
-This module contains a default set of configurable parameters for a model
-"""
 
 from attr import attrib, attrs
 
@@ -21,13 +19,12 @@ from otx.api.configuration.enums.model_lifecycle import ModelLifecycle
 
 @attrs
 class DefaultModelParameters(ConfigurableParameters):
-    """
-    Configuration element representing a the default set of hyper parameters for a
-    model.
+    """Configuration element representing a the default set of hyper parameters for a model.
 
-    :var header:
-    :var description: User friendly string describing what the ModelConfig represents,
-    that will be displayed in the UI.
+    Attributes:
+        header (str): Name of parameter group
+        description (str): User friendly string describing what the ModelConfig represents, that will be displayed in
+            the UI.
     """
 
     header: str = attrib(default="Default model hyper parameters")

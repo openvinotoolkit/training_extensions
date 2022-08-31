@@ -112,4 +112,5 @@ ignore = [
     "D406", # Section name should end with a newline
     "D407", # Missing dashed underline after section
     "D413", # Missing blank line after last section
+    "D418", # Methods decorated with @overload shouldn't contain a docstring
 ]

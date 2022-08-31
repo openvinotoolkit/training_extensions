@@ -1,6 +1,4 @@
-"""
-Sync pipeline executor based on ModelAPI
-"""
+"""Sync pipeline executor based on ModelAPI."""
 # Copyright (C) 2021-2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -27,8 +25,7 @@ from otx.api.utils.shape_factory import ShapeFactory
 
 
 class ChainExecutor:
-    """
-    Sync executor for task-chain inference
+    """Sync executor for task-chain inference.
 
     Args:
         models: list of models for inference
@@ -48,9 +45,7 @@ class ChainExecutor:
 
     # pylint: disable=too-many-locals
     def single_run(self, input_image: np.ndarray) -> AnnotationSceneEntity:
-        """
-        Inference for single image
-        """
+        """Inference for single image."""
         current_objects = [(input_image, Annotation(Rectangle(0, 0, 1, 1), labels=[]))]
         result_scene = AnnotationSceneEntity([], AnnotationSceneKind.PREDICTION)
         for index, model in enumerate(self.models):
@@ -73,9 +68,7 @@ class ChainExecutor:
     def crop(
         item: np.ndarray, parent_annotation: Annotation, item_annotation: Annotation
     ) -> Tuple[np.ndarray, Annotation]:
-        """
-        Crop operation between chain stages
-        """
+        """Crop operation between chain stages."""
         new_item = ShapeFactory.shape_as_rectangle(item_annotation.shape).crop_numpy_array(item)
         item_annotation.shape = item_annotation.shape.normalize_wrt_roi_shape(
             ShapeFactory.shape_as_rectangle(parent_annotation.shape)
@@ -83,9 +76,7 @@ class ChainExecutor:
         return new_item, item_annotation
 
     def run(self, input_stream: Union[int, str], loop: bool = False) -> None:
-        """
-        Run demo using input stream (image, video stream, camera)
-        """
+        """Run demo using input stream (image, video stream, camera)."""
         streamer = get_streamer(input_stream, loop)
 
         for frame in streamer:

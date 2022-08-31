@@ -1,6 +1,4 @@
-"""
-Module contains SemanticSegmentationDataset
-"""
+"""Module contains SemanticSegmentationDataset."""
 
 # Copyright (C) 2021 Intel Corporation
 #

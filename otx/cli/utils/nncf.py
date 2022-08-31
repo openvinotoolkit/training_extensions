@@ -1,6 +1,4 @@
-"""
-NNCF-related utils
-"""
+"""NNCF-related utils."""
 
 # Copyright (C) 2021 Intel Corporation
 #
@@ -20,7 +18,8 @@ import torch
 
 
 def is_checkpoint_nncf(path):
-    """
+    """Check if checkpoint is NNCF checkpoint.
+
     The function uses metadata stored in a checkpoint to check if the
     checkpoint was the result of trainning of NNCF-compressed model.
     """

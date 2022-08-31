@@ -1,6 +1,4 @@
-"""
-OTX CLI entry point.
-"""
+"""OTX CLI entry point."""
 
 # Copyright (C) 2021 Intel Corporation
 #
@@ -39,9 +37,7 @@ __all__ = [
 
 
 def parse_args():
-    """
-    Parses command line arguments.
-    """
+    """Parses command line arguments."""
 
     parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument("operation", choices=[x[4:] for x in __all__])
@@ -50,7 +46,8 @@ def parse_args():
 
 
 def main():
-    """
+    """Entry point for OTX CLI.
+
     This function is a single entry point for all OTX CLI related operations:
       - demo
       - deploy

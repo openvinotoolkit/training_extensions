@@ -1,4 +1,4 @@
-""" This module contains functions for basic operations """
+"""This module contains functions for basic operations."""
 
 # Copyright (C) 2021-2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
@@ -21,14 +21,18 @@ def get_intersections_and_cardinalities(
     predictions: List[np.ndarray],
     labels: List[LabelEntity],
 ) -> Tuple[NumberPerLabel, NumberPerLabel]:
-    """
-    Returns all intersections and cardinalities between reference masks and prediction masks.
+    """Returns all intersections and cardinalities between reference masks and prediction masks.
+
     Intersections and cardinalities are each returned in a dictionary mapping each label to its corresponding
     number of intersection/cardinality pixels
-    :param references: reference masks,s one mask per image
-    :param predictions: prediction masks, one mask per image
-    :param labels: labels in input masks
-    :return: (all_intersections, all_cardinalities)
+
+    Args:
+        references (List[np.ndarray]): reference masks,s one mask per image
+        predictions (List[np.ndarray]): prediction masks, one mask per image
+        labels (List[LabelEntity]): labels in input masks
+
+    Returns:
+        Tuple[NumberPerLabel, NumberPerLabel]: (all_intersections, all_cardinalities)
     """
     all_intersections: NumberPerLabel = {label: 0 for label in labels}
     all_intersections[None] = 0
@@ -48,13 +52,15 @@ def get_intersections_and_cardinalities(
 
 
 def intersection_box(box1: Rectangle, box2: Rectangle) -> Optional[List[float]]:
-    """
-    Calculate the intersection box of two bounding boxes
+    """Calculate the intersection box of two bounding boxes.
 
-    :param box1: a Rectangle that represents the first bounding box
-    :param box2: a Rectangle that represents the second bounding box
-    :return: a Rectangle that represents the intersection box if inputs have a valid
-     intersection, else None
+    Args:
+        box1: a Rectangle that represents the first bounding box
+        box2: a Rectangle that represents the second bounding box
+
+    Returns:
+        a Rectangle that represents the intersection box if inputs have
+        a valid intersection, else None
     """
     x_left = max(box1.x1, box2.x1)
     y_top = max(box1.y1, box2.y1)
@@ -66,14 +72,16 @@ def intersection_box(box1: Rectangle, box2: Rectangle) -> Optional[List[float]]:
 
 
 def intersection_over_union(box1: Rectangle, box2: Rectangle, intersection: Optional[List[float]] = None) -> float:
-    """
-    Calculate the Intersection over Union (IoU) of two bounding boxes.
+    """Calculate the Intersection over Union (IoU) of two bounding boxes.
 
-    :param box1: a Rectangle representing a bounding box
-    :param box2: a Rectangle representing a second bounding box
-    :param intersection: precomputed intersection between two boxes (see intersection_box function), if exists.
-    :raises: value error in case iou outside of [0.0, 1.0]
-    :return: intersection-over-union of box1 and box2
+    Args:
+        box1: a Rectangle representing a bounding box
+        box2: a Rectangle representing a second bounding box
+        intersection: precomputed intersection between two boxes (see
+            intersection_box function), if exists.
+
+    Returns:
+        intersection-over-union of box1 and box2
     """
     iou = 0.0
     if intersection is None:
@@ -91,11 +99,13 @@ def intersection_over_union(box1: Rectangle, box2: Rectangle, intersection: Opti
 
 
 def precision_per_class(matrix: np.ndarray) -> np.ndarray:
-    """
-    Compute the precision per class based on the confusion matrix.
+    """Compute the precision per class based on the confusion matrix.
 
-    :param matrix: the computed confusion matrix
-    :return: the precision (per class), defined as TP/(TP+FP)
+    Args:
+        matrix: the computed confusion matrix
+
+    Returns:
+        the precision (per class), defined as TP/(TP+FP)
     """
     if not matrix.shape[0] == matrix.shape[1]:
         # If the matrix is not square (there is a column for "other" label), the "other" column is deleted.
@@ -108,11 +118,13 @@ def precision_per_class(matrix: np.ndarray) -> np.ndarray:
 
 
 def recall_per_class(matrix: np.ndarray) -> np.ndarray:
-    """
-    Compute the recall per class based on the confusion matrix.
+    """Compute the recall per class based on the confusion matrix.
 
-    :param matrix: the computed confusion matrix
-    :return: the recall (per class), defined as TP/(TP+FN)
+    Args:
+        matrix: the computed confusion matrix
+
+    Returns:
+        the recall (per class), defined as TP/(TP+FN)
     """
     tp_per_class = matrix.diagonal()
     sum_tp_fn_per_class = matrix.sum(1)
@@ -120,13 +132,17 @@ def recall_per_class(matrix: np.ndarray) -> np.ndarray:
 
 
 def divide_arrays_with_possible_zeros(array1: np.ndarray, array2: np.ndarray) -> np.ndarray:
-    """
-    Sometimes the denominator in the precision or recall computation can contain a zero. In that case, a zero is
-    returned for that element (https://stackoverflow.com/a/32106804).
+    """Sometimes the denominator in the precision or recall computation can contain a zero.
 
-    :param array1: the numerator
-    :param array2: the denominator
-    :return: the divided arrays (numerator/denominator) with a value of zero where the denominator was zero.
+    In that case, a zero is returned for that element (https://stackoverflow.com/a/32106804).
+
+    Args:
+        array1: the numerator
+        array2: the denominator
+
+    Returns:
+        the divided arrays (numerator/denominator) with a value of zero
+        where the denominator was zero.
     """
     with np.errstate(divide="ignore", invalid="ignore"):
         result = np.true_divide(array1, array2)

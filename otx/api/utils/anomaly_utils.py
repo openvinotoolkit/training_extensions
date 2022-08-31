@@ -21,12 +21,16 @@ def create_detection_annotation_from_anomaly_heatmap(
 ) -> List[Annotation]:
     """Create box annotation from the soft predictions.
 
-    :param hard_prediction: hard prediction containing the final label index per pixel.
-    :param soft_prediction: soft prediction with shape
-    :param label_map: dictionary mapping labels to an index.
-        It is assumed that the first item in the dictionary corresponds to the
-        background label and will therefore be ignored.
-    :return: List of annotations.
+    Args:
+        hard_prediction: hard prediction containing the final label
+            index per pixel.
+        soft_prediction: soft prediction with shape
+        label_map: dictionary mapping labels to an index. It is assumed
+            that the first item in the dictionary corresponds to the
+            background label and will therefore be ignored.
+
+    Returns:
+        List of annotations.
     """
     # pylint: disable=too-many-locals
     if hard_prediction.ndim == 3 and hard_prediction.shape[0] == 1:

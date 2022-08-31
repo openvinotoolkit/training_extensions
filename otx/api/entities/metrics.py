@@ -1,4 +1,4 @@
-"""This module implements the Metric entities"""
+"""This module implements the Metric entities."""
 
 # Copyright (C) 2021-2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
@@ -17,8 +17,8 @@ from otx.api.utils.time_utils import now
 
 
 class MetricEntity(metaclass=abc.ABCMeta):
-    """
-    This interface is used to represent a metric, which is the smallest building block for the performance statistics.
+    """This interface represents a metric, which is the smallest building block for the performance statistics.
+
     It only contains the name of the metric.
     See also :class:`MetricsGroup` and :class:`Performance` for the structure of performance statistics.
     """
@@ -27,9 +27,7 @@ class MetricEntity(metaclass=abc.ABCMeta):
 
     @property
     def name(self):
-        """
-        Returns the name of the Metric Entity
-        """
+        """Returns the name of the Metric Entity."""
         return self.__name
 
     @name.setter
@@ -38,19 +36,18 @@ class MetricEntity(metaclass=abc.ABCMeta):
 
     @staticmethod
     def type() -> str:
-        """
-        Returns the type of the MetricEntity, e.g. "curve"
-        """
+        """Returns the type of the MetricEntity, e.g. "curve."""
 
 
 class CountMetric(MetricEntity):
-    """
-    This metric represents an integer value.
+    """This metric represents an integer value.
 
-    :param name: The name of the metric
-    :param value: The value of the metric
+    Args:
+        name: The name of the metric
+        value: The value of the metric
 
-    :example: The count for number of images in a project
+    Example:
+        The count for number of images in a project
 
     >>> count_metric = CountMetric(name="Number of images", value=20)
 
@@ -64,17 +61,19 @@ class CountMetric(MetricEntity):
 
     @staticmethod
     def type():
+        """Returns the type of the MetricEntity."""
         return "count"
 
 
 class InfoMetric(MetricEntity):
-    """
-    This metric represents a string value.
+    """This metric represents a string value.
 
-    :param name: The name of the info metric
-    :param value: The info of the metric
+    Args:
+        name: The name of the info metric
+        value: The info of the metric
 
-    :example: An info metric of training from scratch
+    Example:
+        An info metric of training from scratch
 
     >>> info_metric = InfoMetric(name="Model info", value="This model is trained from scratch")
 
@@ -88,17 +87,19 @@ class InfoMetric(MetricEntity):
 
     @staticmethod
     def type():
+        """Returns the type of the MetricEntity."""
         return "string"
 
 
 class DateMetric(MetricEntity):
-    """
-    This metric represents a date time value.
+    """This metric represents a date time value.
 
-    :param name: The name of the date metric
-    :param date: The datetime value of the metric
+    Args:
+        name: The name of the date metric
+        date: The datetime value of the metric
 
-    :example: A DateMetric for model creation date (e.g., now).
+    Example:
+        A DateMetric for model creation date (e.g., now).
 
     >>> metric = DateMetric(name="Model creation", date=datetime.datetime.now(datetime.timezone.utc))
 
@@ -114,18 +115,21 @@ class DateMetric(MetricEntity):
 
     @staticmethod
     def type():
+        """Returns the type of the MetricEntity."""
         return "date"
 
 
 class ScoreMetric(MetricEntity):
-    """
-    This metric represents a float value.
+    """This metric represents a float value.
+
     This metric is typically used for storing performance metrics, such as accuracy, f-measure, dice score, etc.
 
-    :param name: The name of the score
-    :param value: The value of the score
+    Args:
+        name: The name of the score
+        value: The value of the score
 
-    :example: Accuracy of a model
+    Example:
+        Accuracy of a model
 
     >>> score_metric = ScoreMetric(name="Model accuracy", value=0.5)
 
@@ -139,28 +143,32 @@ class ScoreMetric(MetricEntity):
             raise ValueError("The value of a ScoreMetric is not allowed to be NaN.")
 
     def __eq__(self, other: object) -> bool:
+        """Returns True if the score metrics are equal."""
         if not isinstance(other, ScoreMetric):
             return False
         return self.name == other.name and self.value == other.value
 
     def __repr__(self):
+        """Returns the representation of the score metric."""
         return f"ScoreMetric(name=`{self.name}`, score=`{self.value}`)"
 
     @staticmethod
     def type():
+        """Returns the type of the MetricEntity."""
         return "score"
 
 
 class DurationMetric(MetricEntity):
-    """
-    This metric represents a duration metric, which include hour (int), minute (int), and second (float).
+    """This metric represents a duration metric, which include hour (int), minute (int), and second (float).
 
-    :param name: The name of the duration metric
-    :param hour: The hour value of the metric
-    :param minute: The minute value of the metric
-    :param second: The second value of the metric
+    Args:
+        name: The name of the duration metric
+        hour: The hour value of the metric
+        minute: The minute value of the metric
+        second: The second value of the metric
 
-    :example: Creating a metric for training duration of 1 hour 5 minutes.
+    Example:
+        Creating a metric for training duration of 1 hour 5 minutes.
 
     >>> duration_metric = DurationMetric(name="Training duration", hour=1, minute=5, second=0)
 
@@ -173,17 +181,18 @@ class DurationMetric(MetricEntity):
         self.name = name
 
     def get_duration_string(self) -> str:
-        """
-        Returns the string representation of the duration.
+        """Returns the string representation of the duration.
 
-        :example: Duration string of 1 hour 1 minute and 1.50 seconds.
+        Example:
+            Duration string of 1 hour 1 minute and 1.50 seconds.
 
         >>> from otx.api.entities.metrics import DurationMetric
         >>> dur_met = DurationMetric("test", 1, 1, 1.5)  # 1 hour 1 minute and 1.5 seconds
         >>> dur_met.get_duration_string()
         '1 hour 1 minute 1.50 seconds'
 
-        :return: the string representation of the duration.
+        Returns:
+            the string representation of the duration.
         """
         output: str = ""
         if self.hour != 0:
@@ -197,19 +206,22 @@ class DurationMetric(MetricEntity):
 
     @staticmethod
     def from_seconds(name: str, seconds: float) -> "DurationMetric":
-        """
-        Returns a duration metrics, with name and converted durations from seconds.
+        """Returns a duration metrics, with name and converted durations from seconds.
 
-        :example: Converting 70 seconds to duration metric.
+        Example:
+            Converting 70 seconds to duration metric.
 
         >>> from otx.api.entities.metrics import DurationMetric
         >>> dur_met = DurationMetric.from_seconds("test", 70)  # 1 hour 1 minute and 1.5 seconds
         >>> dur_met.get_duration_string()
         '1 minute 10.00 seconds'
 
-        :param name:
-        :param seconds:
-        :return:
+        Args:
+            name
+            seconds
+
+        Returns:
+            DurationMetric: the duration metric with name and converted durations from seconds.
         """
         hour = int(seconds // 3600)
         modulo = seconds % 3600
@@ -219,14 +231,15 @@ class DurationMetric(MetricEntity):
 
     @staticmethod
     def type():
+        """Returns the type of the MetricEntity."""
         return "duration"
 
 
 class CurveMetric(MetricEntity):
-    """
-    This metric represents a curve. The coordinates are represented as x and y lists.
+    """This metric represents a curve. The coordinates are represented as x and y lists.
 
-    :example: A line curve of: [(0,1), (1, 5), (2, 8)]
+    Example:
+        A line curve of: [(0,1), (1, 5), (2, 8)]
 
     >>> CurveMetric("Line", xs=[0, 1, 2], ys=[1, 5, 8])
     CurveMetric(name=`Line`, ys=(3 values), xs=(3 values))
@@ -237,9 +250,10 @@ class CurveMetric(MetricEntity):
     >>> CurveMetric("Loss", ys=[0.5, 0.2, 0.1])
     CurveMetric(name=`Loss`, ys=(3 values), xs=(None values))
 
-    :param name: The name of the curve
-    :param xs: the list of floats in x-axis
-    :param ys: the list of floats in y-axis
+    Args:
+        name: The name of the curve
+        xs: the list of floats in x-axis
+        ys: the list of floats in y-axis
     """
 
     def __init__(self, name: str, ys: List[float], xs: Optional[List[float]] = None):
@@ -255,19 +269,16 @@ class CurveMetric(MetricEntity):
 
     @property
     def ys(self) -> List[float]:
-        """
-        Returns the list of floats on y-axis.
-        """
+        """Returns the list of floats on y-axis."""
         return self.__ys
 
     @property
     def xs(self) -> List[float]:
-        """
-        Returns the list of floats on x-axis.
-        """
+        """Returns the list of floats on x-axis."""
         return self.__xs
 
     def __repr__(self):
+        """Returns the string representation of the object."""
         return (
             f"CurveMetric(name=`{self.name}`, ys=({len(self.ys)} values), "
             f"xs=({len(self.xs) if self.xs is not None else 'None'} values))"
@@ -275,24 +286,28 @@ class CurveMetric(MetricEntity):
 
     @staticmethod
     def type():
+        """Returns the type of the MetricEntity."""
         return "curve"
 
 
 class MatrixMetric(MetricEntity):
-    """
-    This metric represents a matrix. The cells are represented as a list of lists of integers. In the case of a
-    confusion matrix, the rows represent the ground truth items and the columns represent the predicted items.
+    """This metric represents a matrix. The cells are represented as a list of lists of integers.
 
-    :example: A matrix of: [[4,0,1], [0,3,2], [1,2,2]]
+    In the case of a confusion matrix, the rows represent the ground truth items and the columns represent the
+    predicted items.
 
-    >>> MatrixMetric("Confusion Matrix", matrix_values=np.array([[4,0,1], [0,3,2], [1,2,2]]))
-    MatrixMetric(name=`Confusion Matrix`, matrix_values=(3x3) matrix, row labels=None, column labels=None)
+    Example:
+        A matrix of: [[4,0,1], [0,3,2], [1,2,2]]
 
-    :param name: The name of the matrix
-    :param matrix_values: the matrix data
-    :param row_labels: labels for the rows
-    :param column_labels: labels for the columns
-    :param normalize: set to True to normalize each row of the matrix
+        >>> MatrixMetric("Confusion Matrix", matrix_values=np.array([[4,0,1], [0,3,2], [1,2,2]]))
+        MatrixMetric(name=`Confusion Matrix`, matrix_values=(3x3) matrix, row labels=None, column labels=None)
+
+    Args:
+        name: The name of the matrix
+        matrix_values: the matrix data
+        row_labels: labels for the rows
+        column_labels: labels for the columns
+        normalize: set to True to normalize each row of the matrix
     """
 
     __row_labels: Optional[List[str]] = None
@@ -333,29 +348,21 @@ class MatrixMetric(MetricEntity):
 
     @property
     def matrix_values(self) -> np.ndarray:
-        """
-        Returns the matrix data.
-        """
+        """Returns the matrix data."""
         return self.__matrix_values
 
     @property
     def row_labels(self) -> Optional[List[str]]:
-        """
-        Returns the row labels.
-        """
+        """Returns the row labels."""
         return self.__row_labels
 
     @property
     def column_labels(self) -> Optional[List[str]]:
-        """
-        Returns the column labels.
-        """
+        """Returns the column labels."""
         return self.__column_labels
 
     def normalize(self):
-        """
-        Normalizes the confusion matrix by dividing by the sum of the rows.
-        """
+        """Normalizes the confusion matrix by dividing by the sum of the rows."""
         self.__matrix_values = self.__matrix_values.astype(np.float32) / self.__matrix_values.astype(np.float32).sum(
             axis=1, keepdims=True
         )  # Divide all values by the sum of its row
@@ -367,6 +374,7 @@ class MatrixMetric(MetricEntity):
             logger.warning("Replacing NaN in the matrix with zeroes since the sum of one (or more) row(s) was zero.")
 
     def __repr__(self):
+        """Returns the string representation of the object."""
         return (
             f"MatrixMetric(name=`{self.name}`, matrix_values=({self.__matrix_values.shape[0]}x"
             f"{self.__matrix_values.shape[1]}) matrix, row labels={self.__row_labels}, column labels"
@@ -375,32 +383,32 @@ class MatrixMetric(MetricEntity):
 
     @staticmethod
     def type():
+        """Returns the type of the MetricEntity."""
         return "matrix"
 
 
 class NullMetric(MetricEntity):
-    """
-    Represents 'Metric not found'.
-    """
+    """Represents 'Metric not found'."""
 
     def __init__(self) -> None:
         self.name = "NullMetric"
 
     def __repr__(self):
+        """Returns the string representation of the object."""
         return "NullMetric()"
 
     def __eq__(self, other):
+        """Returns True if the other object is a NullMetric."""
         return isinstance(other, NullMetric)
 
     @staticmethod
     def type():
+        """Returns the type of the MetricEntity."""
         return "null"
 
 
 class VisualizationType(Enum):
-    """
-    This enum defines how the metrics will be visualized on the UI.
-    """
+    """This enum defines how the metrics will be visualized on the UI."""
 
     TEXT = 0
     RADIAL_BAR = 1
@@ -410,8 +418,8 @@ class VisualizationType(Enum):
 
 
 class ColorPalette(Enum):
-    """
-    Enum class specifying the color palette to be used by the UI to display statistics.
+    """Enum class specifying the color palette to be used by the UI to display statistics.
+
     If the statistics are per label, set to LABEL so the UI will use the label color palette.
     Otherwise, set to DEFAULT (allow the UI to choose a color palette)
     """
@@ -421,9 +429,7 @@ class ColorPalette(Enum):
 
 
 class VisualizationInfo:
-    """
-    This represents the visualization info a metrics group. See :class:`MetricsGroup`.
-    """
+    """This represents the visualization info a metrics group. See :class:`MetricsGroup`."""
 
     __type: VisualizationType
     name: str  # todo: this should be a part of MetricsGroup, not the visualization info.
@@ -440,19 +446,16 @@ class VisualizationInfo:
 
     @property
     def type(self) -> VisualizationType:
-        """
-        Returns the type of the visualization
-        """
+        """Returns the type of the visualization."""
         return self.__type
 
     def __repr__(self):
+        """Returns the string representation of the object."""
         return f"VisualizationInfo(name='{self.name}', type='{self.type.name}', palette='{self.palette.name}')"
 
 
 class TextChartInfo(VisualizationInfo):
-    """
-    This represents a visualization using text, which uses only a single string
-    """
+    """This represents a visualization using text, which uses only a single string."""
 
     def __init__(
         self,
@@ -461,13 +464,12 @@ class TextChartInfo(VisualizationInfo):
         super().__init__(name, VisualizationType.TEXT)
 
     def __repr__(self):
+        """Returns the string representation of the object."""
         return f"TextChartInfo(name='{self.name}, 'type='{self.type}')"
 
 
 class LineChartInfo(VisualizationInfo):
-    """
-    This represents a visualization using a line chart.
-    """
+    """This represents a visualization using a line chart."""
 
     x_axis_label: str
     y_axis_label: str
@@ -489,6 +491,7 @@ class LineChartInfo(VisualizationInfo):
         self.y_axis_label = y_axis_label
 
     def __repr__(self):
+        """Returns the string representation of the object."""
         return (
             f"LineChartInfo(name='{self.name}, 'type='{self.type}', x_axis_label='{self.x_axis_label}', "
             f"y_axis_label='{self.y_axis_label}')"
@@ -496,9 +499,7 @@ class LineChartInfo(VisualizationInfo):
 
 
 class BarChartInfo(VisualizationInfo):
-    """
-    This represents a visualization using a bar chart.
-    """
+    """This represents a visualization using a bar chart."""
 
     def __init__(
         self,
@@ -514,13 +515,12 @@ class BarChartInfo(VisualizationInfo):
         super().__init__(name, visualization_type, palette)
 
     def __repr__(self):
+        """Returns the string representation of the object."""
         return f"BarChartInfo(name='{self.name}', type='{self.type}')"
 
 
 class MatrixChartInfo(VisualizationInfo):
-    """
-    This represents a visualization using a matrix.
-    """
+    """This represents a visualization using a matrix."""
 
     header: str
     row_header: str
@@ -544,6 +544,7 @@ class MatrixChartInfo(VisualizationInfo):
             self.column_header = column_header
 
     def __repr__(self):
+        """Returns the string representation of the object."""
         return (
             f"MatrixChartInfo(name='{self.name}', type='{self.type}', header='{self.header}', row_header='"
             f"{self.row_header}', column_header='{self.column_header}')"
@@ -555,23 +556,22 @@ _VisualizationInfo = TypeVar("_VisualizationInfo", bound=VisualizationInfo)
 
 
 class MetricsGroup(Generic[_Metric, _VisualizationInfo]):
-    """
-    This class aggregates a list of metric entities and defines how this group will be
-    visualized on the UI. This class is the parent class to the different types of
-    MetricsGroup that each represent a different type of chart in the UI.
+    """This class aggregates a list of metric entities and defines how this group will be visualized on the UI.
 
-    :example: An accuracy as a metrics group
+    This class is the parent class to the different types of MetricsGroup that each represent a different type of chart
+    in the UI.
 
-    >>> acc = ScoreMetric("Accuracy", 0.5)
-    >>> visual_info = BarChartInfo("Accuracy", visualization_type=_VisualizationInfo.BAR)  # show it as radial bar
-    >>> metrics_group = BarMetricsGroup([acc], visual_info)
+    Example:
+        An accuracy as a metrics group
+            >>> acc = ScoreMetric("Accuracy", 0.5)
+            >>> visual_info = BarChartInfo("Accuracy", visualization_type=_VisualizationInfo.BAR)  # show as radial bar
+            >>> metrics_group = BarMetricsGroup([acc], visual_info)
 
-    Loss curves as a metrics group
-
-    >>> train_loss = CurveMetric("Train loss", xs=[0, 1, 2], ys=[5, 3, 1])
-    >>> val_loss = CurveMetric("Validation", xs=[0, 1, 2], ys=[6, 4, 2])
-    >>> visual_info = LineChartInfo("Loss curve", x_axis_label="# epoch", y_axis_label="Loss")
-    >>> metrics_group = LineMetricsGroup([train_loss, val_loss], visual_info)
+        Loss curves as a metrics group
+            >>> train_loss = CurveMetric("Train loss", xs=[0, 1, 2], ys=[5, 3, 1])
+            >>> val_loss = CurveMetric("Validation", xs=[0, 1, 2], ys=[6, 4, 2])
+            >>> visual_info = LineChartInfo("Loss curve", x_axis_label="# epoch", y_axis_label="Loss")
+            >>> metrics_group = LineMetricsGroup([train_loss, val_loss], visual_info)
     """
 
     def __init__(self, metrics: Sequence[_Metric], visualization_info: _VisualizationInfo):
@@ -584,9 +584,9 @@ class MetricsGroup(Generic[_Metric, _VisualizationInfo]):
 
 
 class MatrixMetricsGroup(MetricsGroup[MatrixMetric, MatrixChartInfo]):
-    """
-    This class represent a matrix chart in the UI. Multiple matrices can be displayed
-    in the same chart.
+    """This class represent a matrix chart in the UI.
+
+    Multiple matrices can be displayed in the same chart.
     """
 
     def __init__(self, metrics: Sequence[MatrixMetric], visualization_info: MatrixChartInfo):
@@ -594,9 +594,9 @@ class MatrixMetricsGroup(MetricsGroup[MatrixMetric, MatrixChartInfo]):
 
 
 class LineMetricsGroup(MetricsGroup[CurveMetric, LineChartInfo]):
-    """
-    This class represent a line chart in the UI. Multiple lines can be displayed in a
-    single chart.
+    """This class represent a line chart in the UI.
+
+    Multiple lines can be displayed in a single chart.
     """
 
     def __init__(self, metrics: Sequence[CurveMetric], visualization_info: LineChartInfo):
@@ -604,9 +604,9 @@ class LineMetricsGroup(MetricsGroup[CurveMetric, LineChartInfo]):
 
 
 class BarMetricsGroup(MetricsGroup[Union[ScoreMetric, CountMetric], BarChartInfo]):
-    """
-    This class represent a bar or radial bar chart in the UI. Each metric in the metrics
-     group represents the value of a single bar/radial bar in the chart.
+    """This class represent a bar or radial bar chart in the UI.
+
+    Each metric in the metrics group represents the value of a single bar/radial bar in the chart.
     """
 
     def __init__(
@@ -623,9 +623,9 @@ class TextMetricsGroup(
         TextChartInfo,
     ]
 ):
-    """
-    This class represent a text chart in the UI. Text charts contain only one metric,
-    which can be of type CountMetric, ScoreMetric, DateMetric, DurationMetric or
+    """This class represent a text chart in the UI.
+
+    Text charts contain only one metric, which can be of type CountMetric, ScoreMetric, DateMetric, DurationMetric or
     InfoMetric.
     """
 
@@ -644,12 +644,13 @@ class TextMetricsGroup(
 
 
 class Performance:
-    """
-    This performance class wraps the statistics of an entity (e.g., Model, Resultset)
-    The content of this class is as follows:
+    """This performance class wraps the statistics of an entity (e.g., Model, Resultset).
 
-    :param score: the performance score. This will be the point of comparison between two performances.
-    :param dashboard_metrics: (optional) additional statistics, containing charts, curves, and other additional info.
+    Args:
+        score: the performance score. This will be the point of
+            comparison between two performances.
+        dashboard_metrics: (optional) additional statistics, containing
+            charts, curves, and other additional info.
     """
 
     def __init__(self, score: ScoreMetric, dashboard_metrics: Optional[List[MetricsGroup]] = None):
@@ -664,37 +665,41 @@ class Performance:
         return self._score
 
     def __eq__(self, other: object) -> bool:
+        """Returns True if self and other have the same score and dashboard metrics."""
         if not isinstance(other, Performance):
             return False
         return self.score == other.score
 
     def __repr__(self):
+        """Returns a string representation of the performance."""
         return f"Performance(score: {self.score.value}, dashboard: ({len(self.dashboard_metrics)} metric groups))"
 
 
 class NullPerformance(Performance):
-    """
-    This is used to represent 'Performance not found'
-    """
+    """This is used to represent 'Performance not found'."""
 
     def __init__(self) -> None:
         super().__init__(score=ScoreMetric(name="Null score", value=0.0))
 
     def __repr__(self):
+        """Returns a string representation of the performance."""
         return "NullPerformance()"
 
     def __eq__(self, other):
+        """Returns True if other is a NullPerformance."""
         return isinstance(other, NullPerformance)
 
 
 class MultiScorePerformance(Performance):
-    """
-    This class can be used in tasks where performance is measured by multiple metrics
+    """This class can be used in tasks where performance is measured by multiple metrics.
 
-    :param primary_score: The main performance score.
-    :param additional_metrics: List of additional scores. When no primary score is provided, the first additional score
-        takes priority as the main project score.
-    :param dashboard_metrics: (optional) additional statistics, containing charts, curves, and other additional info.
+    Args:
+        primary_score: The main performance score.
+        additional_metrics: List of additional scores. When no primary
+            score is provided, the first additional score takes priority
+            as the main project score.
+        dashboard_metrics: (optional) additional statistics, containing
+            charts, curves, and other additional info.
     """
 
     def __init__(
@@ -727,11 +732,13 @@ class MultiScorePerformance(Performance):
         return self._additional_scores
 
     def __eq__(self, other: object) -> bool:
+        """Returns True if the other object is a MultiScorePerformance with the same primary and additional scores."""
         if not isinstance(other, MultiScorePerformance):
             return False
         return self.primary_score == other.primary_score and self.additional_scores == other.additional_scores
 
     def __repr__(self):
+        """Returns the representation of the performance."""
         return (
             f"MultiScorePerformance(score: {self.score.value}, primary_metric: {self.primary_score}, "
             f"additional_metrics: ({len(self.additional_scores)} metrics), "

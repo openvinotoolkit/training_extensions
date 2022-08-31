@@ -1,6 +1,4 @@
-"""
-This module implements helpers for drawing shapes
-"""
+"""This module implements helpers for drawing shapes."""
 
 # Copyright (C) 2021-2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
@@ -44,28 +42,28 @@ _Any = TypeVar("_Any")
 
 
 class DrawerEntity(Generic[_Any]):
-    """
-    An interface to draw a shape of type ``T`` onto an image.
-    """
+    """An interface to draw a shape of type ``T`` onto an image."""
 
     supported_types: Sequence[Type[ShapeEntity]] = []
 
     @abc.abstractmethod
     def draw(self, image: np.ndarray, entity: _Any, labels: List[ScoredLabel]) -> np.ndarray:
-        """
-        Draw an entity to a given frame
+        """Draw an entity to a given frame.
 
-        :param image:
-        :param entity:
-        :param labels: Labels of the shapes to draw
-        :return: frame with shape drawn on it
+        Args:
+            image (np.ndarray): The image to draw the entity on.
+            entity (T): The entity to draw.
+            labels (List[ScoredLabel]): Labels of the shapes to draw
+
+        Returns:
+            np.ndarray: frame with shape drawn on it
         """
         raise NotImplementedError
 
 
 class Helpers:
-    """
-    Contains variables which are used by all subclasses
+    """Contains variables which are used by all subclasses.
+
     Contains functions which help with generating coordinates, text and text scale.
     These functions are use by the DrawerEntity Classes when drawing to an image.
     """
@@ -96,17 +94,17 @@ class Helpers:
         y2: int,
         color: Tuple[int, int, int],
         alpha: float,
-    ):
-        """
-        Draw a rectangle on an image.
+    ) -> np.ndarray:
+        """Draw a rectangle on an image.
 
-        :param img: Image
-        :param x1: Left side
-        :param y1: Top side
-        :param x2: Right side
-        :param y2: Bottom side
-        :param color: Color
-        :param alpha: Alpha value between 0 and 1
+        Args:
+            img (np.ndarray): Image
+            x1 (int): Left side
+            y1 (int): Top side
+            x2 (int): Right side
+            y2 (int): Bottom side
+            color (Tuple[int, int, int]): Color
+            alpha (float): Alpha value between 0 and 1
         """
         x1 = np.clip(x1, 0, img.shape[1] - 1)
         y1 = np.clip(y1, 0, img.shape[0] - 1)
@@ -116,9 +114,14 @@ class Helpers:
         rect[:] = (alpha * np.array(color))[np.newaxis, np.newaxis] + (1 - alpha) * rect
         return img
 
-    def generate_text_scale(self, image) -> float:
-        """
-        :return: scale for the text
+    def generate_text_scale(self, image: np.ndarray) -> float:
+        """Calculates the scale of the text.
+
+        Args:
+            image (np.ndarray): Image to calculate the text scale for.
+
+        Returns:
+            scale for the text
         """
         return round(image.shape[1] / self.assumed_image_width_for_text_scale, 1)
 
@@ -126,15 +129,18 @@ class Helpers:
     def generate_text_for_label(
         label: Union[LabelEntity, ScoredLabel], show_labels: bool, show_confidence: bool
     ) -> str:
-        """
-        Return a string representing a given label and its associated probability if label is a ScoredLabel.
+        """Return a string representing a given label and its associated probability if label is a ScoredLabel.
 
         The exact format of the string depends on the function parameters described below.
 
-        :param label: Label
-        :param show_labels: Whether to render the labels above the shape
-        :param show_confidence: Whether to render the confidence above the shape
-        :return: Formatted string (e.g. `"Cat 58%"`)
+        Args:
+            label (Union[LabelEntity, ScoredLabel]): Label
+            show_labels (bool): Whether to render the labels above the shape
+            show_confidence (bool): Whether to render the confidence above the
+                shape
+
+        Returns:
+            str: Formatted string (e.g. `"Cat 58%"`)
         """
         text = ""
         if show_labels:
@@ -152,18 +158,22 @@ class Helpers:
         show_labels: bool,
         show_confidence: bool,
     ) -> Tuple[Callable[[np.ndarray], np.ndarray], int, int]:
-        """
-        Generate a function which can be called to draw a list of labels onto an image
-        relatively to the cursor position.
+        """Generate draw function and content width and height for labels.
 
+        Generates a function which can be called to draw a list of labels onto an image relatively to the
+        cursor position.
         The width and height of the content is also returned and can be determined to compute
         the best position for content before actually drawing it.
 
-        :param labels: List of labels
-        :param image: Image (used to compute font size)
-        :param show_labels: Whether to show the label name
-        :param show_confidence: Whether to show the confidence probability
-        :return: A tuple containing the drawing function, the content width, and the content height
+        Args:
+            labels (Sequence[Union[LabelEntity, ScoredLabel]]): List of labels
+            image (np.ndarray): Image (used to compute font size)
+            show_labels (bool): Whether to show the label name
+            show_confidence (bool): Whether to show the confidence probability
+
+        Returns:
+            A tuple containing the drawing function, the content width,
+            and the content height
         """
         draw_commands = []
         content_width = 0
@@ -195,18 +205,23 @@ class Helpers:
     def generate_draw_command_for_text(
         self, text: str, text_scale: float, thickness: int, color: Tuple[int, int, int]
     ) -> Tuple[Callable[[np.ndarray], np.ndarray], int, int]:
-        """
+        """Generate function to draw text on image relative to cursor position.
+
         Generate a function which can be called to draw the given text onto an image
         relatively to the cursor position.
 
         The width and height of the content is also returned and can be determined to compute
         the best position for content before actually drawing it.
 
-        :param text: Text to draw
-        :param text_scale: Font size
-        :param thickness: Thickness of the text
-        :param color: Color fo the text
-        :return: A tuple containing the drawing function, the content width, and the content height
+        Args:
+            text (str): Text to draw
+            text_scale (float): Font size
+            thickness (int): Thickness of the text
+            color (Tuple[int, int, int]): Color of the text
+
+        Returns:
+            A tuple containing the drawing function, the content width,
+            and the content height
         """
 
         padding = self.content_padding
@@ -266,13 +281,15 @@ class Helpers:
         flagpole_start_point: Coordinate,
         flagpole_end_point: Coordinate,
     ):
-        """
-        Draw a small flagpole between two points.
+        """Draw a small flagpole between two points.
 
-        :param image: Image
-        :param flagpole_start_point: Start of the flagpole
-        :param flagpole_end_point: End of the flagpole
-        :return: Image
+        Args:
+            image: Image
+            flagpole_start_point: Start of the flagpole
+            flagpole_end_point: End of the flagpole
+
+        Returns:
+            Image
         """
         return cv2.line(
             image,
@@ -283,17 +300,15 @@ class Helpers:
         )
 
     def newline(self):
-        """
-        Move the cursor to the next line.
-        """
+        """Move the cursor to the next line."""
         self.cursor_pos.x = 0
         self.cursor_pos.y += self.line_height + self.content_margin
 
     def set_cursor_pos(self, cursor_pos: Optional[Coordinate] = None):
-        """
-        Move the cursor to a new position.
+        """Move the cursor to a new position.
 
-        :param cursor_pos: New position of the curson; (0,0) if not specified.
+        Args:
+            cursor_pos (Optional[Coordinate]): New position of the cursor; (0,0) if not specified.
         """
         if cursor_pos is None:
             cursor_pos = Coordinate(0, 0)
@@ -302,11 +317,13 @@ class Helpers:
 
 
 class ShapeDrawer(DrawerEntity[AnnotationSceneEntity]):
-    """
-    ShapeDrawer to draw any shape on a numpy array. Will overlay the shapes in the same way that the UI does.
+    """ShapeDrawer to draw any shape on a numpy array. Will overlay the shapes in the same way that the UI does.
 
-    :param show_count: Whether or not to render the amount of objects on screen in the top left.
-    :param is_one_label: Whether there is only one label present in the project.
+    Args:
+        show_count: Whether or not to render the amount of objects on
+            screen in the top left.
+        is_one_label: Whether there is only one label present in the
+            project.
     """
 
     # TODO Connect show_count,is_is_one_label to the UI for toggling.
@@ -335,14 +352,20 @@ class ShapeDrawer(DrawerEntity[AnnotationSceneEntity]):
         entity: AnnotationSceneEntity,
         labels: List[ScoredLabel],
     ) -> np.ndarray:
-        """
-        Use a compatible drawer to draw all shapes of an annotation to the corresponding image.
+        """Use a compatible drawer to draw all shapes of an annotation to the corresponding image.
+
         Also render a label in the top left if we need to.
 
-        :param image: Numpy image, one frame of a video on which to draw something
-        :param entity: AnnotationSceneEntity entity corresponding to this particular frame of the video
-        :param labels: Can be passed as an empty list since they are already present in annotation_scene
-        :return: Modified image.
+        Args:
+            image: Numpy image, one frame of a video on which to draw
+                something
+            entity: AnnotationSceneEntity entity corresponding to this
+                particular frame of the video
+            labels: Can be passed as an empty list since they are
+                already present in annotation_scene
+
+        Returns:
+            Modified image.
         """
 
         num_annotations = 0
@@ -374,9 +397,7 @@ class ShapeDrawer(DrawerEntity[AnnotationSceneEntity]):
         return image
 
     class TopLeftDrawer(Helpers, DrawerEntity[Annotation]):
-        """
-        Draws labels in an image's top left corner
-        """
+        """Draws labels in an image's top left corner."""
 
         def __init__(self, show_labels, show_confidence, is_one_label):
             super().__init__()
@@ -385,21 +406,27 @@ class ShapeDrawer(DrawerEntity[AnnotationSceneEntity]):
             self.is_one_label = is_one_label
 
         def draw(self, image: np.ndarray, entity: Annotation, labels: List[ScoredLabel]) -> np.ndarray:
-            """
-            Draw the labels of a shape in the image top left corner
+            """Draw the labels of a shape in the image top left corner.
 
-            :param image: Image
-            :param entity: Annotation
-            :param labels: labels to be drawn on the image
+            Args:
+                image (np.ndarray): Image
+                entity (Annotation): Annotation
+                labels (List[ScoredLabels]): (Unused) labels to be drawn on the image
+
+            Returns:
+                np.ndarray: Image with label on top.
             """
             return self.draw_labels(image, entity.get_labels())
 
         def draw_labels(self, image: np.ndarray, labels: Sequence[Union[LabelEntity, ScoredLabel]]) -> np.ndarray:
-            """
-            Draw the labels in the image top left corner
+            """Draw the labels in the image top left corner.
 
-            :param image: Image
-            :param labels: Sequence of labels
+            Args:
+                image (np.ndarray): Image
+                labels (Sequence[Union[LabelEntity, ScoredLabel]]): Sequence of labels
+
+            Returns:
+                np.ndarray: Image with label on top.
             """
             show_confidence = self.show_confidence if not self.is_one_label else False
 
@@ -413,11 +440,14 @@ class ShapeDrawer(DrawerEntity[AnnotationSceneEntity]):
             return image
 
         def draw_annotation_count(self, image: np.ndarray, num_annotations: int) -> np.ndarray:
-            """
-            Draw the number of annotations to the top left corner of the image
+            """Draw the number of annotations to the top left corner of the image.
 
-            :param image: Image
-            :param num_annotations: Number of annotations
+            Args:
+                image (np.ndarray): Image
+                num_annotations (int): Number of annotations
+
+            Returns:
+                np.ndarray: Image with annotation count on top.
             """
             text = f"Count: {num_annotations}"
             color = self.yellow
@@ -433,9 +463,7 @@ class ShapeDrawer(DrawerEntity[AnnotationSceneEntity]):
             return image
 
     class RectangleDrawer(Helpers, DrawerEntity[Rectangle]):
-        """
-        Draws rectangles
-        """
+        """Draws rectangles."""
 
         supported_types = [Rectangle]
 
@@ -445,6 +473,16 @@ class ShapeDrawer(DrawerEntity[AnnotationSceneEntity]):
             self.show_confidence = show_confidence
 
         def draw(self, image: np.ndarray, entity: Rectangle, labels: List[ScoredLabel]) -> np.ndarray:
+            """Draws a rectangle on the image along with labels.
+
+            Args:
+                image (np.ndarray): Image to draw on.
+                entity (Rectangle): Rectangle to draw.
+                labels (List[ScoredLabel]): List of labels.
+
+            Returns:
+                np.ndarray: Image with rectangle drawn on it.
+            """
             base_color = labels[0].color.bgr_tuple
 
             # Draw the rectangle on the image
@@ -476,9 +514,7 @@ class ShapeDrawer(DrawerEntity[AnnotationSceneEntity]):
             return image
 
     class EllipseDrawer(Helpers, DrawerEntity[Ellipse]):
-        """
-        Draws ellipses
-        """
+        """Draws ellipses."""
 
         supported_types = [Ellipse]
 
@@ -488,6 +524,16 @@ class ShapeDrawer(DrawerEntity[AnnotationSceneEntity]):
             self.show_confidence = show_confidence
 
         def draw(self, image: np.ndarray, entity: Ellipse, labels: List[ScoredLabel]) -> np.ndarray:
+            """Draw the ellipse on the image.
+
+            Args:
+                image (np.ndarray): Image to draw on.
+                entity (Ellipse): Ellipse to draw.
+                labels (List[ScoredLabel]): Labels to draw.
+
+            Returns:
+                np.ndarray: Image with the ellipse drawn on it.
+            """
             base_color = labels[0].color.bgr_tuple
             if entity.width > entity.height:
                 axes = (
@@ -562,9 +608,7 @@ class ShapeDrawer(DrawerEntity[AnnotationSceneEntity]):
             return image
 
     class PolygonDrawer(Helpers, DrawerEntity[Polygon]):
-        """
-        Draws polygons
-        """
+        """Draws polygons."""
 
         supported_types = [Polygon]
 
@@ -574,6 +618,16 @@ class ShapeDrawer(DrawerEntity[AnnotationSceneEntity]):
             self.show_confidence = show_confidence
 
         def draw(self, image: np.ndarray, entity: Polygon, labels: List[ScoredLabel]) -> np.ndarray:
+            """Draw polygon and labels on image.
+
+            Args:
+                image (np.ndarray): Image to draw on.
+                entity (Polygon): Polygon to draw.
+                labels (List[ScoredLabel]): List of labels to draw.
+
+            Returns:
+                np.ndarray: Image with polygon drawn on it.
+            """
             base_color = labels[0].color.bgr_tuple
 
             # Draw the shape on the image

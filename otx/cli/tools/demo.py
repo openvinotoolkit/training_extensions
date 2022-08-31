@@ -1,6 +1,4 @@
-"""
-Model inference demonstration tool.
-"""
+"""Model inference demonstration tool."""
 
 # Copyright (C) 2021 Intel Corporation
 #
@@ -44,9 +42,7 @@ ESC_BUTTON = 27
 
 
 def parse_args():
-    """
-    Parses command line arguments.
-    """
+    """Parses command line arguments."""
 
     pre_parser = argparse.ArgumentParser(add_help=False)
     pre_parser.add_argument("template")
@@ -94,9 +90,7 @@ def parse_args():
 
 
 def get_predictions(task, frame):
-    """
-    Returns list of predictions made by task on frame and time spent on doing prediction.
-    """
+    """Returns list of predictions made by task on frame and time spent on doing prediction."""
 
     empty_annotation = AnnotationSceneEntity(annotations=[], kind=AnnotationSceneKind.PREDICTION)
 
@@ -118,9 +112,7 @@ def get_predictions(task, frame):
 
 
 def main():
-    """
-    Main function that is used for model demonstration.
-    """
+    """Main function that is used for model demonstration."""
 
     # Dynamically create an argument parser based on override parameters.
     args, template, hyper_parameters = parse_args()

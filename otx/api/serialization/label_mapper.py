@@ -1,9 +1,9 @@
+""".This module contains the mapper for label related entities."""
 #
 # Copyright (C) 2021-2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 
-""" This module contains the mapper for label related entities """
 
 import json
 from typing import Dict, Union, cast
@@ -24,9 +24,7 @@ from .id_mapper import IDMapper
 
 
 class ColorMapper:
-    """
-    This class maps a `Color` entity to a serialized dictionary, and vice versa
-    """
+    """This class maps a `Color` entity to a serialized dictionary, and vice versa."""
 
     @staticmethod
     def forward(instance: Color) -> dict:
@@ -47,9 +45,7 @@ class ColorMapper:
 
 
 class LabelMapper:
-    """
-    This class maps a `Label` entity to a serialized dictionary, and vice versa
-    """
+    """This class maps a `Label` entity to a serialized dictionary, and vice versa."""
 
     @staticmethod
     def forward(
@@ -91,9 +87,7 @@ class LabelMapper:
 
 
 class LabelGroupMapper:
-    """
-    This class maps a `LabelGroup` entity to a serialized dictionary, and vice versa
-    """
+    """This class maps a `LabelGroup` entity to a serialized dictionary, and vice versa."""
 
     @staticmethod
     def forward(instance: LabelGroup) -> dict:
@@ -119,9 +113,7 @@ class LabelGroupMapper:
 
 
 class LabelGraphMapper:
-    """
-    This class maps a `LabelGraph` entity to a serialized dictionary, and vice versa
-    """
+    """This class maps a `LabelGraph` entity to a serialized dictionary, and vice versa."""
 
     @staticmethod
     def forward(instance: Union[LabelGraph, LabelTree]) -> dict:
@@ -158,9 +150,7 @@ class LabelGraphMapper:
 
 
 class LabelSchemaMapper:
-    """
-    This class maps a `LabelSchema` entity to a serialized dictionary, and vice versa
-    """
+    """This class maps a `LabelSchema` entity to a serialized dictionary, and vice versa."""
 
     @staticmethod
     def forward(
@@ -198,9 +188,7 @@ class LabelSchemaMapper:
 
 
 def label_schema_to_bytes(label_schema: LabelSchemaEntity) -> bytes:
-    """
-    Returns json-serialized LabelSchemaEntity as bytes.
-    """
+    """Returns json-serialized LabelSchemaEntity as bytes."""
 
     serialized_label_schema = LabelSchemaMapper.forward(label_schema)
     return json.dumps(serialized_label_schema, indent=4).encode()

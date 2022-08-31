@@ -1,11 +1,8 @@
+"""This module contains utility functions used within the configuration helper module."""
 # Copyright (C) 2021-2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 
-
-"""
-This module contains utility functions used within the configuration helper module
-"""
 
 import os
 from enum import Enum
@@ -30,16 +27,18 @@ def _search_in_config_dict_inner(
     prior_keys: List[str] = None,
     results: List[Tuple[Any, List[str]]] = None,
 ) -> List[Tuple[Any, List[str]]]:
-    """
-    Helper function for the `search_in_config_dict` function defined below.
+    """Helper function for the `search_in_config_dict` function defined below.
 
-    :param config_dict: dict to search in
-    :param key_to_search: dict key to look for
-    :param prior_keys: List of prior keys leading to the key_to_search.
-    :param results: List of previously found results
+    Args:
+        config_dict: dict to search in
+        key_to_search: dict key to look for
+        prior_keys: List of prior keys leading to the key_to_search.
+        results: List of previously found results
 
-    :return: List of (value_at_key_to_search, key_path_to_key_to_search) tuples, representing each occurrence of
-        key_to_search within config_dict
+    Returns:
+        List of (value_at_key_to_search, key_path_to_key_to_search)
+        tuples, representing each occurrence of key_to_search within
+        config_dict
     """
     if prior_keys is None:
         prior_keys = []
@@ -60,29 +59,36 @@ def _search_in_config_dict_inner(
 
 
 def search_in_config_dict(config_dict: dict, key_to_search: str) -> List[Tuple[Any, List[str]]]:
-    """
-    Recursively searches a config_dict for all instances of key_to_search and returns the key path to them
+    """Recursively searches a config_dict for all instances of key_to_search and returns the key path to them.
 
-    :param config_dict: dict to search in
-    :param key_to_search: dict key to look for
+    Args:
+        config_dict: dict to search in
+        key_to_search: dict key to look for
 
-    :return: List of (value_at_key_to_search, key_path_to_key_to_search) tuples, representing each occurrence of
-        key_to_search within config_dict
+    Returns:
+        List of (value_at_key_to_search, key_path_to_key_to_search)
+        tuples, representing each occurrence of key_to_search within
+        config_dict
     """
     return _search_in_config_dict_inner(config_dict, key_to_search=key_to_search)
 
 
 def input_to_config_dict(input_config: Union[str, DictConfig, dict], check_config_type: bool = True) -> dict:
-    """
-    Takes an input_config which can be a string, filepath, dict or DictConfig and
-    performs basic validation that it can be converted into a configuration.
+    """Validate input configuration.
 
-    :param input_config: String, filepath, dict or DictConfig describing a configuration
-    :param check_config_type: True to check that the input has a proper `type` attribute
-        in order to be converted into a ConfigurableParameters object. False to disable
-        this check. Defaults to True.
-    :raises: ValueError if the input does not pass validation, and does not seem to describe a valid configuration.
-    :return: dictionary or DictConfig
+    Takes an input_config which can be a string, filepath, dict or DictConfig and performs basic validation that it
+    can be converted into a configuration.
+
+    Args:
+        input_config: String, filepath, dict or DictConfig describing a
+            configuration
+        check_config_type: True to check that the input has a proper
+            `type` attribute in order to be converted into a
+            ConfigurableParameters object. False to disable this check.
+            Defaults to True.
+
+    Returns:
+        dictionary or DictConfig
     """
     valid_types = (
         get_enum_names(PrimitiveElementMapping)
@@ -121,14 +127,19 @@ def input_to_config_dict(input_config: Union[str, DictConfig, dict], check_confi
 
 
 def deserialize_enum_value(value: Union[str, Enum], enum_type: Type[Enum]):
-    """
-    Deserializes a value to an instance of a certain Enum. This checks whether the `value` passed is already an
-    instance of the target Enum, in which case this function just returns the input `value`. If value is a string, this
-    function returns the corresponding instance of the Enum passed in `enum_type`.
+    """Deserializes a value to an instance of a certain Enum.
 
-    :param value: value to deserialize
-    :param enum_type: class (should be a subclass of Enum) that the name belongs to
-    :return: instance of `enum_type`.`value`
+    This checks whether the `value` passed is already an instance of the target Enum, in which case this function just
+    returns the input `value`. If value is a string, this function returns the corresponding instance of the Enum
+    passed in `enum_type`.
+
+    Args:
+        value: value to deserialize
+        enum_type: class (should be a subclass of Enum) that the name
+            belongs to
+
+    Returns:
+        instance of `enum_type`.`value`
     """
     if isinstance(value, enum_type):
         instance = value
@@ -148,11 +159,13 @@ def deserialize_enum_value(value: Union[str, Enum], enum_type: Type[Enum]):
 
 
 def ids_to_strings(config_dict: dict) -> dict:
-    """
-    Converts ID's in the `config_dict` to their string representation.
+    """Converts ID's in the `config_dict` to their string representation.
 
-    :param config_dict: Dictionary in which to replace the ID's by strings
-    :return: Updated config_dict dictionary
+    Args:
+        config_dict: Dictionary in which to replace the ID's by strings
+
+    Returns:
+        Updated config_dict dictionary
     """
     for key, value in config_dict.items():
         if isinstance(value, ID):
