@@ -49,7 +49,7 @@ from ote_sdk.utils.argument_checks import (
 )
 
 from mmseg.apis import export_model
-from mmseg.core.hooks.auxiliary_hooks import FeatureVectorHook, SaliencyMapHook
+from mmseg.core.hooks.auxiliary_hooks import FeatureVectorHook
 from mmseg.datasets import build_dataloader, build_dataset
 from mmseg.models import build_segmentor
 from mmseg.parallel import MMDataCPU
@@ -196,16 +196,15 @@ class OTESegmentationInferenceTask(IInferenceTask, IExportTask, IEvaluationTask,
         pre_hook_handle = self._model.register_forward_pre_hook(pre_hook)
         hook_handle = self._model.register_forward_hook(hook)
 
-        prediction_results = self._infer_segmentor(self._model, self._config, dataset, dump_features=True,
-                                                   dump_saliency_map=not is_evaluation)
-        self._add_predictions_to_dataset(prediction_results, dataset)
+        prediction_results = self._infer_segmentor(self._model, self._config, dataset, dump_features=True)
+        self._add_predictions_to_dataset(prediction_results, dataset, dump_soft_prediction=not is_evaluation)
         pre_hook_handle.remove()
         hook_handle.remove()
 
         return dataset
 
-    def _add_predictions_to_dataset(self, prediction_results, dataset):
-        for dataset_item, (prediction, feature_vector, saliency_map) in zip(dataset, prediction_results):
+    def _add_predictions_to_dataset(self, prediction_results, dataset, dump_soft_prediction):
+        for dataset_item, (prediction, feature_vector) in zip(dataset, prediction_results):
             soft_prediction = np.transpose(prediction, axes=(1, 2, 0))
             hard_prediction = create_hard_prediction_from_soft_prediction(
                 soft_prediction=soft_prediction,
@@ -223,18 +222,23 @@ class OTESegmentationInferenceTask(IInferenceTask, IExportTask, IEvaluationTask,
                 active_score = TensorEntity(name="representation_vector", numpy=feature_vector.reshape(-1))
                 dataset_item.append_metadata_item(active_score, model=self._task_environment.model)
 
-            if saliency_map is not None:
-                class_act_map = get_activation_map(saliency_map, (dataset_item.width, dataset_item.height))
-                result_media = ResultMediaEntity(name="saliency_map",
-                                                 type="Saliency map",
-                                                 annotation_scene=dataset_item.annotation_scene,
-                                                 roi=dataset_item.roi,
-                                                 numpy=class_act_map)
-                dataset_item.append_metadata_item(result_media, model=self._task_environment.model)
+            if dump_soft_prediction:
+                for label_index, label in self._label_dictionary.items():
+                    if label_index == 0:
+                        continue
+                    current_label_soft_prediction = soft_prediction[:, :, label_index]
 
-    def _infer_segmentor(self,
-                         model: torch.nn.Module, config: Config, dataset: DatasetEntity,
-                         dump_features: bool = False, dump_saliency_map: bool = False) -> None:
+                    class_act_map = get_activation_map(current_label_soft_prediction)
+                    result_media = ResultMediaEntity(name='Soft Prediction',
+                                                     type='soft_prediction',
+                                                     label=label,
+                                                     annotation_scene=dataset_item.annotation_scene,
+                                                     roi=dataset_item.roi,
+                                                     numpy=class_act_map)
+                    dataset_item.append_metadata_item(result_media, model=self._task_environment.model)
+
+    def _infer_segmentor(self, model: torch.nn.Module, config: Config, dataset: DatasetEntity,
+                         dump_features: bool = False) -> None:
         model.eval()
 
         test_config = prepare_for_testing(config, dataset)
@@ -254,21 +258,18 @@ class OTESegmentationInferenceTask(IInferenceTask, IExportTask, IEvaluationTask,
 
         eval_predictions = []
         feature_vectors = []
-        saliency_maps = []
 
         # Use a single gpu for testing. Set in both mm_val_dataloader and eval_model
         with FeatureVectorHook(model.module.backbone) if dump_features else nullcontext() as fhook:
-            with SaliencyMapHook(model.module.backbone) if dump_saliency_map else nullcontext() as shook:
-                for data in mm_val_dataloader:
-                    with torch.no_grad():
-                        result = model(return_loss=False, output_logits=True, **data)
-                    eval_predictions.extend(result)
-                feature_vectors = fhook.records if dump_features else [None] * len(dataset)
-                saliency_maps = shook.records if dump_saliency_map else [None] * len(dataset)
-        assert len(eval_predictions) == len(feature_vectors) == len(saliency_maps), \
+            for data in mm_val_dataloader:
+                with torch.no_grad():
+                    result = model(return_loss=False, output_logits=True, **data)
+                eval_predictions.extend(result)
+            feature_vectors = fhook.records if dump_features else [None] * len(dataset)
+        assert len(eval_predictions) == len(feature_vectors), \
                'Number of elements should be the same, however, number of outputs are ' \
-               f"{len(eval_predictions)}, {len(feature_vectors)}, and {len(saliency_maps)}"
-        predictions = zip(eval_predictions, feature_vectors, saliency_maps)
+               f"{len(eval_predictions)} and {len(feature_vectors)}"
+        predictions = zip(eval_predictions, feature_vectors)
         return predictions
 
     @check_input_parameters_type()

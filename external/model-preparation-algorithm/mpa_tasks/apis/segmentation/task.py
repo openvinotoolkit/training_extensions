@@ -11,12 +11,12 @@ import numpy as np
 import torch
 from mmcv.utils import ConfigDict
 from segmentation_tasks.apis.segmentation.config_utils import remove_from_config
-from segmentation_tasks.apis.segmentation.ote_utils import TrainingProgressCallback, InferenceProgressCallback
+from segmentation_tasks.apis.segmentation.ote_utils import (TrainingProgressCallback, InferenceProgressCallback,
+                                                            get_activation_map)
 from segmentation_tasks.extension.utils.hooks import OTELoggerHook
 from mpa import MPAConstants
 from mpa_tasks.apis import BaseTask, TrainType
 from mpa_tasks.apis.segmentation import SegmentationConfig
-from mpa_tasks.utils.data_utils import get_actmap
 from mpa.utils.config_utils import MPAConfig
 from mpa.utils.logger import get_logger
 from ote_sdk.configuration import cfg_helper
@@ -73,7 +73,6 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
               ) -> DatasetEntity:
         logger.info('infer()')
         dump_features = True
-        dump_saliency_map = not inference_parameters.is_evaluation if inference_parameters else True
 
         if inference_parameters is not None:
             update_progress_callback = inference_parameters.update_progress
@@ -87,13 +86,11 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         stage_module = 'SegInferrer'
         self._data_cfg = self._init_test_data_cfg(dataset)
         self._label_dictionary = dict(enumerate(self._labels, 1))
-        results = self._run_task(stage_module, mode='train', dataset=dataset, dump_features=dump_features,
-                                  dump_saliency_map=dump_saliency_map)
+        results = self._run_task(stage_module, mode='train', dataset=dataset, dump_features=dump_features)
         logger.debug(f'result of run_task {stage_module} module = {results}')
         predictions = results['outputs']
-        prediction_results = zip(predictions['eval_predictions'], predictions['feature_vectors'],
-                                  predictions['saliency_maps'])
-        self._add_predictions_to_dataset(prediction_results, dataset, dump_saliency_map=not is_evaluation)
+        prediction_results = zip(predictions['eval_predictions'], predictions['feature_vectors'])
+        self._add_predictions_to_dataset(prediction_results, dataset, dump_soft_prediction=not is_evaluation)
         return dataset
 
     def evaluate(self,
@@ -211,10 +208,10 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         )
         return data_cfg
 
-    def _add_predictions_to_dataset(self, prediction_results, dataset, dump_saliency_map):
+    def _add_predictions_to_dataset(self, prediction_results, dataset, dump_soft_prediction):
         """ Loop over dataset again to assign predictions. Convert from MMSegmentation format to OTE format. """
 
-        for dataset_item, (prediction, feature_vector, saliency_map) in zip(dataset, prediction_results):
+        for dataset_item, (prediction, feature_vector) in zip(dataset, prediction_results):
             soft_prediction = np.transpose(prediction[0], axes=(1, 2, 0))
             hard_prediction = create_hard_prediction_from_soft_prediction(
                 soft_prediction=soft_prediction,
@@ -232,12 +229,19 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
                 active_score = TensorEntity(name="representation_vector", numpy=feature_vector.reshape(-1))
                 dataset_item.append_metadata_item(active_score, model=self._task_environment.model)
 
-            if dump_saliency_map and saliency_map is not None:
-                saliency_map = get_actmap(saliency_map, (dataset_item.width, dataset_item.height) )
-                saliency_map_media = ResultMediaEntity(name="saliency_map", type="Saliency map",
-                                                annotation_scene=dataset_item.annotation_scene,
-                                                numpy=saliency_map, roi=dataset_item.roi)
-                dataset_item.append_metadata_item(saliency_map_media, model=self._task_environment.model)
+            if dump_soft_prediction:
+                for label_index, label in self._label_dictionary.items():
+                    if label_index == 0:
+                        continue
+                    current_label_soft_prediction = soft_prediction[:, :, label_index]
+                    class_act_map = get_activation_map(current_label_soft_prediction)
+                    result_media = ResultMediaEntity(name='Soft Prediction',
+                                                     type='soft_prediction',
+                                                     label=label,
+                                                     annotation_scene=dataset_item.annotation_scene,
+                                                     roi=dataset_item.roi,
+                                                     numpy=class_act_map)
+                    dataset_item.append_metadata_item(result_media, model=self._task_environment.model)
 
     @staticmethod
     def _patch_datasets(config: MPAConfig, domain=Domain.SEGMENTATION):

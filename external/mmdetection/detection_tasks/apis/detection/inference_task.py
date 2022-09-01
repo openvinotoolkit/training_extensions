@@ -51,6 +51,7 @@ from ote_sdk.utils.argument_checks import (
     DatasetParamTypeCheck,
     check_input_parameters_type,
 )
+from ote_sdk.utils.vis_utils import get_actmap
 
 from mmdet.apis import export_model
 from detection_tasks.apis.detection.config_utils import patch_config, prepare_for_testing, set_hyperparams
@@ -250,13 +251,12 @@ class OTEDetectionInferenceTask(IInferenceTask, IExportTask, IEvaluationTask, IU
             if feature_vector is not None:
                 active_score = TensorEntity(name="representation_vector", numpy=feature_vector)
                 dataset_item.append_metadata_item(active_score, model=self._task_environment.model)
-            
+
             if saliency_map is not None:
-                width, height = dataset_item.width, dataset_item.height
-                saliency_map = cv2.resize(saliency_map, (width, height), interpolation=cv2.INTER_NEAREST)
-                saliency_map_media = ResultMediaEntity(name="saliency_map", type="Saliency map",
-                                                annotation_scene=dataset_item.annotation_scene, 
-                                                numpy=saliency_map, roi=dataset_item.roi)
+                saliency_map = get_actmap(saliency_map, (dataset_item.width, dataset_item.height))
+                saliency_map_media = ResultMediaEntity(name="Saliency Map", type="saliency_map",
+                                                       annotation_scene=dataset_item.annotation_scene,
+                                                       numpy=saliency_map, roi=dataset_item.roi)
                 dataset_item.append_metadata_item(saliency_map_media, model=self._task_environment.model)
 
 
@@ -292,7 +292,7 @@ class OTEDetectionInferenceTask(IInferenceTask, IExportTask, IEvaluationTask, IU
         model = self._model
         with model.register_forward_pre_hook(pre_hook), model.register_forward_hook(hook):
             prediction_results, _ = self._infer_detector(model, self._config, dataset, dump_features=True, eval=False, 
-                                                        dump_saliency_map=dump_saliency_map)
+                                                         dump_saliency_map=dump_saliency_map)
         self._add_predictions_to_dataset(prediction_results, dataset, self.confidence_threshold)
 
         logger.info('Inference completed')
@@ -337,8 +337,8 @@ class OTEDetectionInferenceTask(IInferenceTask, IExportTask, IEvaluationTask, IU
 
             Args:
                 model (torch.nn.Module): PyTorch model
-                input (Tuple): input 
-                out (List[torch.Tensor]): a list of feature maps 
+                input (Tuple): input
+                out (List[torch.Tensor]): a list of feature maps
             """
             with torch.no_grad():
                 saliency_map = get_saliency_map(out[-1])

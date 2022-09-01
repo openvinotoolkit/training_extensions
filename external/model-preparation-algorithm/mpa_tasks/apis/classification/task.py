@@ -17,7 +17,6 @@ from mpa.utils.config_utils import MPAConfig
 from mpa.utils.logger import get_logger
 from mpa_tasks.apis import BaseTask, TrainType
 from mpa_tasks.apis.classification import ClassificationConfig
-from mpa_tasks.utils.data_utils import get_actmap
 from ote_sdk.configuration import cfg_helper
 from ote_sdk.configuration.helper.utils import ids_to_strings
 from ote_sdk.entities.datasets import DatasetEntity
@@ -60,6 +59,7 @@ from ote_sdk.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from ote_sdk.usecases.tasks.interfaces.unload_interface import IUnload
 from ote_sdk.utils.argument_checks import check_input_parameters_type
 from ote_sdk.utils.labels_utils import get_empty_label
+from ote_sdk.utils.vis_utils import get_actmap
 from torchreid_tasks.nncf_task import OTEClassificationNNCFTask
 
 # from torchreid_tasks.utils import TrainingProgressCallback
@@ -246,7 +246,7 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
 
             if saliency_map is not None:
                 saliency_map = get_actmap(saliency_map, (dataset_item.width, dataset_item.height))
-                saliency_map_media = ResultMediaEntity(name="saliency_map", type="Saliency map",
+                saliency_map_media = ResultMediaEntity(name="Saliency Map", type="saliency_map",
                                                        annotation_scene=dataset_item.annotation_scene,
                                                        numpy=saliency_map, roi=dataset_item.roi,
                                                        label=item_labels[0].label)
