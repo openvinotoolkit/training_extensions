@@ -120,8 +120,8 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
             AnomalyModule: Anomalib
                 classification or segmentation model with/without weights.
         """
-        model = get_model(config=self.config)
         if ote_model is None:
+            model = get_model(config=self.config)
             logger.info(
                 "No trained model in project yet. Created new model with '%s'",
                 self.model_name,
@@ -130,10 +130,16 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
             buffer = io.BytesIO(ote_model.get_data("weights.pth"))
             model_data = torch.load(buffer, map_location=torch.device("cpu"))
 
+            if model_data["config"]["model"]["backbone"] != self.config["model"]["backbone"]:
+                logger.warning(
+                    "Backbone of the model in the Task Environment is different from the one in the template. "
+                    f"creating model with backbone={model_data['config']['model']['backbone']}"
+                )
+                self.config["model"]["backbone"] = model_data["config"]["model"]["backbone"]
             try:
+                model = get_model(config=self.config)
                 model.load_state_dict(model_data["model"])
                 logger.info("Loaded model weights from Task Environment")
-
             except BaseException as exception:
                 raise ValueError("Could not load the saved model. The model file structure is invalid.") from exception
 
