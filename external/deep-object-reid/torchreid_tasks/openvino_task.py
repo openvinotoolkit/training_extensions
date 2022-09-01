@@ -191,7 +191,7 @@ class OpenVINOClassificationTask(IDeploymentTask, IInferenceTask, IEvaluationTas
             feature_vec_media = TensorEntity(name="representation_vector", numpy=repr_vector.reshape(-1))
             dataset_item.append_metadata_item(feature_vec_media, model=self.model)
             if dump_features:
-                saliency_media = ResultMediaEntity(name="saliency_map", type="Saliency map",
+                saliency_media = ResultMediaEntity(name="Saliency Map", type="saliency_map",
                                                    annotation_scene=dataset_item.annotation_scene,
                                                    numpy=actmap, roi=dataset_item.roi,
                                                    label=predicted_scene.annotations[0].get_labels()[0].label)
