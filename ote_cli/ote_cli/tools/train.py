@@ -148,6 +148,7 @@ def main():
         label_schema=generate_label_schema(dataset, template.task_type),
         model_template=template,
     )
+
     if args.load_weights:
         model_adapters = {
             "weights.pth": ModelAdapter(read_binary(args.load_weights)),
