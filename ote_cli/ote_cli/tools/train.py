@@ -90,7 +90,7 @@ def parse_args():
     )
     parser.add_argument(
         "--resume",
-        required=False,
+        action='store_true',
         help="Resume training from previously saved checkpoint"
     )
     parser.add_argument(
