@@ -20,6 +20,7 @@ from collections import defaultdict
 from typing import Optional
 
 import torch
+from mmcv.runner import load_state_dict
 from ote_sdk.configuration import cfg_helper
 from ote_sdk.configuration.helper.utils import ids_to_strings
 from ote_sdk.entities.datasets import DatasetEntity
@@ -133,7 +134,7 @@ class OTESegmentationNNCFTask(OTESegmentationInferenceTask, IOptimizationTask):
                     logger.info("Loaded model weights from Task Environment and wrapped by NNCF")
                 else:
                     try:
-                        model.load_state_dict(model_data['model'])
+                        load_state_dict(model, model_data['model'])
                         logger.info(f"Loaded model weights from Task Environment")
                         logger.info(f"Model architecture: {self._model_name}")
                     except BaseException as ex:
