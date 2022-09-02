@@ -294,9 +294,8 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
     def _set_metadata(self, output_model: ModelEntity):
         output_model.set_data("image_threshold", self.model.image_threshold.value.cpu().numpy().tobytes())
         output_model.set_data("pixel_threshold", self.model.pixel_threshold.value.cpu().numpy().tobytes())
-        if hasattr(self.model, "normalization_metrics") and self.model.normalization_metrics.state_dict() is not None:
-            for key, value in self.model.normalization_metrics.state_dict().items():
-                output_model.set_data(key, value.cpu().numpy().tobytes())
+        output_model.set_data("min", self.model.normalization_metrics.state_dict()["min"].cpu().numpy().tobytes())
+        output_model.set_data("max", self.model.normalization_metrics.state_dict()["max"].cpu().numpy().tobytes())
 
     @staticmethod
     def _is_docker() -> bool:
