@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+from cmath import nan
 import numpy as np
 from sklearn.metrics import confusion_matrix as sklearn_confusion_matrix
 from mmcv.utils.registry import build_from_cfg
@@ -136,7 +137,8 @@ class MPAClsDataset(BaseDataset):
             gt_labels = self.get_gt_labels()
             accuracies = self.class_accuracy(results, gt_labels)
             
-            accuracies[np.isnan(accuracies)] = 0
+            if any(np.isnan(accuracies)):
+                accuracies = np.nan_to_num(accuracies)
             
             eval_results.update({f'{c} accuracy': a for c, a in zip(self.CLASSES, accuracies)})
             eval_results.update({'mean accuracy': np.mean(accuracies)})
