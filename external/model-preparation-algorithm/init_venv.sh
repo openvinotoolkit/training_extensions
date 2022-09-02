@@ -71,7 +71,7 @@ fi
 # install PyTorch and MMCV.
 export TORCH_VERSION=1.8.2
 export TORCHVISION_VERSION=0.9.2
-export MMCV_VERSION=1.3.14
+export MMCV_VERSION=1.6.1
 
 if [[ -z ${CUDA_VERSION} ]]; then
   echo "CUDA was not found, installing dependencies in CPU-only mode. If you want to use CUDA, set CUDA_HOME and CUDA_VERSION beforehand."
@@ -116,17 +116,18 @@ sed -i "s/force=False/force=True/g" "${venv_dir}"/lib/python"${PYTHON_VERSION}"/
 pip install -e ../../ote_sdk/ || exit 1
 
 # Install tasks
-pip install -e ../deep-object-reid || exit 1
+#pip install -e ../deep-object-reid || exit 1
 pip install -e ../mmdetection || exit 1
-pip install -e ../mmsegmentation || exit 1
+#pip install -e ../mmsegmentation || exit 1
 pip install -e . || exit 1
 
 # Install backends
-pip install -e ../deep-object-reid/submodule || exit 1
-pip install numpy==1.21.4
-pip install --no-cache-dir --no-binary=mmpycocotools mmpycocotools || exit 1
-pip install -e ../mmdetection/submodule || exit 1
-pip install -e ../mmsegmentation/submodule || exit 1
+#pip install -e ../deep-object-reid/submodule || exit 1
+pip install numpy==1.21.4 || exit 1
+#pip install --no-cache-dir --no-binary=mmpycocotools mmpycocotools || exit 1
+#pip install -e ../mmdetection/submodule || exit 1
+pip install mmdet==2.25.1 exit 1
+#pip install -e ../mmsegmentation/submodule || exit 1
 pip install -e submodule || exit 1
 
 # Build NNCF extensions

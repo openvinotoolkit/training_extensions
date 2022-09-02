@@ -324,9 +324,6 @@ class BaseTask:
         def __repr__(self):
             return f"'{__name__}.OnHookInitialized'"
 
-        def __reduce__(self):
-            return (self.__class__, (id(self.task_instance),))
-
     def update_override_configurations(self, config):
         logger.info(f"update override config with: {config}")
         config = ConfigDict(**config)

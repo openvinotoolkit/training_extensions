@@ -43,19 +43,19 @@ from ote_sdk.utils.argument_checks import (
 )
 
 from mmdet.apis import train_detector
-from mmdet.apis.fake_input import get_fake_input
+#from mmdet.apis.fake_input import get_fake_input
 from detection_tasks.apis.detection.config_utils import prepare_for_training, remove_from_config
 from detection_tasks.apis.detection.configuration import OTEDetectionConfig
 from detection_tasks.apis.detection.inference_task import OTEDetectionInferenceTask
 from detection_tasks.apis.detection.ote_utils import OptimizationProgressCallback
 from detection_tasks.extension.utils.hooks import OTELoggerHook
-from mmdet.apis.train import build_val_dataloader
+#from mmdet.apis.train import build_val_dataloader
 from mmdet.datasets import build_dataloader, build_dataset
-from mmdet.integration.nncf import check_nncf_is_enabled
-from mmdet.integration.nncf import is_state_nncf
-from mmdet.integration.nncf import wrap_nncf_model
-from mmdet.integration.nncf import is_accuracy_aware_training_set
-from mmdet.integration.nncf.config import compose_nncf_config
+#from mmdet.integration.nncf import check_nncf_is_enabled
+#from mmdet.integration.nncf import is_state_nncf
+#from mmdet.integration.nncf import wrap_nncf_model
+#from mmdet.integration.nncf import is_accuracy_aware_training_set
+#from mmdet.integration.nncf.config import compose_nncf_config
 from mmdet.utils.logger import get_root_logger
 
 
