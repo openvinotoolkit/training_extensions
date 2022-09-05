@@ -6,16 +6,16 @@ on:
       - feature/otx
     workflow_dispatch: # run on request (no need for PR)
 
-  jobs:
-    Code-Quality-Checks:
-      runs-on: [self-hosted, linux, x64]
-      steps:
-        - uses: actions/checkout@v2
-        - name: Set up Python 3.8
-          uses: actions/setup-python@v2
-          with:
-            python-version: 3.8
-        - name: Install dependencies
-          run: python -m pip install tox
-        - name: Code Quality Checks
-          run: tox -e pre-commit
+jobs:
+  Code-Quality-Checks:
+    runs-on: [self-hosted, linux, x64]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: Install dependencies
+        run: python -m pip install tox
+      - name: Code Quality Checks
+        run: tox -e pre-commit
