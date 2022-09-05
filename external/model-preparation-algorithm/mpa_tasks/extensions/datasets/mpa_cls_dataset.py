@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from cmath import nan
 import numpy as np
 from sklearn.metrics import confusion_matrix as sklearn_confusion_matrix
 from mmcv.utils.registry import build_from_cfg
