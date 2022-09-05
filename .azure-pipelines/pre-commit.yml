@@ -1,0 +1,13 @@
+# Linting, Code quality and pre-merge coverage pipeline
+
+pr:
+  - feature/otx
+
+jobs:
+  - job:
+    displayName: "Pre-commit checks"
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+      - script: tox -e pre-commit
+        displayName: "Run Linting and Quality Checks"
