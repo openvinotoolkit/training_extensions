@@ -4,11 +4,11 @@
 #
 
 from dataclasses import dataclass
-from typing import Callable, Optional
+from typing import Any, Callable, Optional
 
 
 # pylint: disable=unused-argument
-def default_progress_callback(progress: float, score: Optional[float] = None):
+def default_progress_callback(progress: int, score: Optional[float] = None):
     """This is the default progress callback for OptimizationParameters."""
 
 
@@ -30,5 +30,5 @@ class OptimizationParameters:
     """
 
     resume: bool = False
-    update_progress: Callable[[int], None] = default_progress_callback
+    update_progress: Callable[[int, Optional[float]], Any] = default_progress_callback
     save_model: Callable[[], None] = default_save_model_callback

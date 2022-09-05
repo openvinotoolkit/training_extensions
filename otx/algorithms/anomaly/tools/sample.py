@@ -131,6 +131,9 @@ class OtxAnomalyTask:
         Returns:
            Dataloader
         """
+        dataclass: Union[
+            Type[AnomalyDetectionDataset], Type[AnomalySegmentationDataset], Type[AnomalyClassificationDataset]
+        ]
         if self.task_type == TaskType.ANOMALY_DETECTION:
             dataclass = AnomalyDetectionDataset
         elif self.task_type == TaskType.ANOMALY_SEGMENTATION:
