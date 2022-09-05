@@ -19,6 +19,7 @@ from typing import Optional, Union
 from pytorch_lightning.callbacks.progress import TQDMProgressBar
 
 from otx.api.entities.inference_parameters import InferenceParameters
+from otx.api.entities.optimization_parameters import OptimizationParameters
 from otx.api.entities.train_parameters import TrainParameters, default_progress_callback
 
 
@@ -28,7 +29,9 @@ class ProgressCallback(TQDMProgressBar):
     Modify progress callback to show completion of the entire training step.
     """
 
-    def __init__(self, parameters: Optional[Union[TrainParameters, InferenceParameters]] = None) -> None:
+    def __init__(
+        self, parameters: Optional[Union[TrainParameters, InferenceParameters, OptimizationParameters]] = None
+    ) -> None:
         super().__init__()
         self.current_epoch: int = 0
         self.max_epochs: int = 0
