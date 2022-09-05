@@ -194,20 +194,21 @@ class BaseTask:
                 self._recipe_cfg.pop('adaptive_validation_interval')
 
         # Add/remove early stop hook
-        if 'early_stop_cfg' in self._recipe_cfg:
+        if 'early_stop' in self._recipe_cfg:
             remove_custom_hook(self._recipe_cfg, 'EarlyStoppingHook')
-            early_stop_cfg = self._recipe_cfg.get('early_stop_cfg', None)
-            if early_stop_cfg is not None:
-                early_stop_hook = dict(
+            early_stop = self._recipe_cfg.get('early_stop', False)
+            logger.info(f"early_stop : {early_stop}")
+            if early_stop is not False:
+                early_stop_hook = ConfigDict(
                                     type='LazyEarlyStoppingHook',
                                     start=3,
-                                    patience=early_stop_cfg.patience,
-                                    iteration_patience=early_stop_cfg.iteration_patience,
+                                    patience=early_stop.patience,
+                                    iteration_patience=early_stop.iteration_patience,
                                     interval=1,
                                     metric=self._recipe_cfg.early_stop_metric,
                                     priority=75,
                                 )
-                update_or_add_custom_hook(early_stop_cfg, ConfigDict(early_stop_hook))
+                update_or_add_custom_hook(self._recipe_cfg, early_stop_hook)
             else:
                 remove_custom_hook(self._recipe_cfg, 'LazyEarlyStoppingHook')
 

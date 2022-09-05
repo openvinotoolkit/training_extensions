@@ -261,7 +261,7 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
 
         if self._hyperparams.learning_parameters.enable_early_stopping is True:
             early_stop = ConfigDict(patience=int(self._hyperparams.learning_parameters.patience),
-                                        iteration_patience=int(self._hyperparams.learning_parameters.patience))
+                                    iteration_patience=int(self._hyperparams.learning_parameters.iteration_patience))
         else:
             early_stop = False
 
