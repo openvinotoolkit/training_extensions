@@ -10,9 +10,10 @@ jobs:
   Code-Quality-Checks:
     runs-on: [self-hosted, linux, x64]
     steps:
-      - uses: actions/checkout@v2
       - name: Set up Python 3.8
         uses: actions/setup-python@v2
+      - name: Checkout repository
+        uses: actions/checkout@v2
         with:
           python-version: 3.8
       - name: Install dependencies
