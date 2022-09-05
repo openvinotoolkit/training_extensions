@@ -184,12 +184,18 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         warmup_iters = int(self._hyperparams.learning_parameters.learning_rate_warmup_iters)
         lr_config = ConfigDict(warmup_iters=warmup_iters) if warmup_iters > 0 \
             else ConfigDict(warmup_iters=warmup_iters, warmup=None)
+        
+        if self._hyperparams.learning_parameters.enable_early_stopping is True:
+            early_stop = ConfigDict(patience=int(self._hyperparams.learning_parameters.patience),
+                                        iteration_patience=int(self._hyperparams.learning_parameters.patience))
+        else:
+            early_stop = None
+
         return ConfigDict(
             optimizer=ConfigDict(lr=self._hyperparams.learning_parameters.learning_rate),
             lr_config=lr_config,
-            early_stop=self._hyperparams.learning_parameters.enable_early_stopping,
-            adaptive_validation_interval=self._hyperparams.learning_parameters.adaptive_val_interval,
-            patience=int(self._hyperparams.learning_parameters.patience),
+            early_stop=early_stop,
+            use_adaptive_interval=int(self._hyperparams.learning_parameters.use_adaptive_interval),
             data=ConfigDict(
                 samples_per_gpu=int(self._hyperparams.learning_parameters.batch_size),
                 workers_per_gpu=int(self._hyperparams.learning_parameters.num_workers),

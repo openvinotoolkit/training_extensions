@@ -258,11 +258,17 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         warmup_iters = int(self._hyperparams.learning_parameters.learning_rate_warmup_iters)
         lr_config = ConfigDict(warmup_iters=warmup_iters) if warmup_iters > 0 \
             else ConfigDict(warmup_iters=warmup_iters, warmup=None)
+
+        if self._hyperparams.learning_parameters.enable_early_stopping is True:
+            early_stop = ConfigDict(patience=int(self._hyperparams.learning_parameters.patience),
+                                        iteration_patience=int(self._hyperparams.learning_parameters.patience))
+        else:
+            early_stop = False
+
         return ConfigDict(
             optimizer=ConfigDict(lr=self._hyperparams.learning_parameters.learning_rate),
             lr_config=lr_config,
-            early_stop=self._hyperparams.learning_parameters.enable_early_stopping,
-            patience=int(self._hyperparams.learning_parameters.patience),
+            early_stop=early_stop,
             data=ConfigDict(
                 samples_per_gpu=int(self._hyperparams.learning_parameters.batch_size),
                 workers_per_gpu=int(self._hyperparams.learning_parameters.num_workers),
@@ -378,7 +384,7 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
             config.early_stop_metric = 'mAP'
         elif self._hierarchical:
             cfg.metric = ['MHAcc', 'avgClsAcc', 'mAP']
-            config.early_stop_metric = 'mAP'
+            config.early_stop_metric = 'MHAcc'
         else:
             cfg.metric = ['accuracy', 'class_accuracy']
             config.early_stop_metric = 'accuracy'

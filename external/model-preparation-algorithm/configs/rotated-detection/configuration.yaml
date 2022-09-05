@@ -122,7 +122,7 @@ learning_parameters:
   enable_early_stopping:
     affects_outcome_of: TRAINING
     default_value: true
-    description: Adaptive early exit from training when accuracy isn't changed or decreased for several epochs.
+    description: Early exit from training when validation accuracy isn't changed or decreased for several epochs.
     editable: true
     header: Enable early stopping of the training
     type: BOOLEAN
@@ -136,9 +136,9 @@ learning_parameters:
   patience:
     affects_outcome_of: TRAINING
     default_value: 10
-    description: Number of epochs without improvement before the system will automatically stop training.
+    description: Training will stop if the model does not improve within the number of epochs of patience.
     editable: true
-    header: Early stopping patience
+    header: Patience for early stopping
     max_value: 50
     min_value: 0
     type: INTEGER
@@ -149,7 +149,25 @@ learning_parameters:
       type: UI_RULES
     value: 10
     visible_in_ui: true
-    warning: Early stopping patience is applied exclusively when early stopping is enabled.
+    warning: This is applied exclusively when early stopping is enabled.
+  iteration_patience:
+    affects_outcome_of: TRAINING
+    default_value: 0
+    description:
+      Training will stop if the model does not improve within the number of iterations of patience. 
+      This ensures the model is trained enough with the number of iterations of patience before early stopping.
+    editable: true
+    header: Iteration patience for early stopping
+    max_value: 1000
+    min_value: 0
+    type: INTEGER
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: 0
+    visible_in_ui: true
   type: PARAMETER_GROUP
   visible_in_ui: true
 postprocessing:
