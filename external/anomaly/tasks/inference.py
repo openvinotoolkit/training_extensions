@@ -36,7 +36,7 @@ from anomalib.utils.callbacks import (
 from omegaconf import DictConfig, ListConfig
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.inference_parameters import InferenceParameters
-from ote_sdk.entities.metrics import Performance, ScoreMetric
+from ote_sdk.entities.metrics import NullPerformance, Performance, ScoreMetric
 from ote_sdk.entities.model import (
     ModelEntity,
     ModelFormat,
@@ -289,8 +289,11 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         output_model.set_data("label_schema.json", label_schema_to_bytes(self.task_environment.label_schema))
         self._set_metadata(output_model)
 
-        f1_score = self.model.image_metrics.F1Score.compute().item()
-        output_model.performance = Performance(score=ScoreMetric(name="F1 Score", value=f1_score))
+        if hasattr(self.model, "image_metrics"):
+            f1_score = self.model.image_metrics.F1Score.compute().item()
+            output_model.performance = Performance(score=ScoreMetric(name="F1 Score", value=f1_score))
+        else:
+            output_model.performance = NullPerformance()
         output_model.precision = self.precision
         output_model.optimization_methods = self.optimization_methods
 

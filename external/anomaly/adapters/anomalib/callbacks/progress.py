@@ -1,4 +1,7 @@
-"""Progressbar Callback for OTE task."""
+"""Progressbar  and Score Reporting callback Callback for OTE task.
+
+TODO Since only one progressbar callback is supported HPO is combined into one callback. Remove this after the refactor
+"""
 
 # Copyright (C) 2021 Intel Corporation
 #
@@ -34,9 +37,9 @@ class ProgressCallback(TQDMProgressBar):
         self._progress: float = 0
 
         if parameters is not None:
-            self.update_progress_callback = parameters.update_progress
+            self.progress_and_hpo_callback = parameters.update_progress
         else:
-            self.update_progress_callback = default_progress_callback
+            self.progress_and_hpo_callback = default_progress_callback
 
     def on_train_start(self, trainer, pl_module):
         """Store max epochs and current epoch from trainer."""
@@ -71,6 +74,22 @@ class ProgressCallback(TQDMProgressBar):
         super().on_test_batch_end(trainer, pl_module, outputs, batch, batch_idx, dataloader_idx)
         self._update_progress(stage="test")
 
+    def on_validation_epoch_end(self, trainer, pl_module):  # pylint: disable=unused-argument
+        """If score exists in trainer.logged_metrics, report the score."""
+        if self.progress_and_hpo_callback is not None:
+            score = None
+            metric = getattr(self.progress_and_hpo_callback, "metric", None)
+            print(f"[DEBUG-HPO] logged_metrics = {trainer.logged_metrics}")
+            if metric in trainer.logged_metrics:
+                score = float(trainer.logged_metrics[metric])
+                if score < 1.0:
+                    score = score + int(trainer.global_step)
+                else:
+                    score = -(score + int(trainer.global_step))
+
+            # Always assumes that hpo validation step is called during training.
+            self.progress_and_hpo_callback(int(self._get_progress("train")), score)  # pylint: disable=not-callable
+
     def _reset_progress(self):
         self._progress = 0.0
 
@@ -100,4 +119,4 @@ class ProgressCallback(TQDMProgressBar):
 
     def _update_progress(self, stage: str):
         progress = self._get_progress(stage)
-        self.update_progress_callback(int(progress))
+        self.progress_and_hpo_callback(int(progress))

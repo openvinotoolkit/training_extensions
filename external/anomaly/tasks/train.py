@@ -18,7 +18,7 @@ import io
 from typing import Optional
 
 import torch
-from adapters.anomalib.callbacks import ProgressCallback, ScoreReportingCallback
+from adapters.anomalib.callbacks import ProgressCallback
 from adapters.anomalib.data import OTEAnomalyDataModule
 from adapters.anomalib.logger import get_logger
 from anomalib.models import AnomalyModule, get_model
@@ -71,7 +71,6 @@ class TrainingTask(InferenceTask, ITrainingTask):
         callbacks = [
             ProgressCallback(parameters=train_parameters),
             MinMaxNormalizationCallback(),
-            ScoreReportingCallback(parameters=train_parameters),
             MetricsConfigurationCallback(
                 adaptive_threshold=config.metrics.threshold.adaptive,
                 default_image_threshold=config.metrics.threshold.image_default,
