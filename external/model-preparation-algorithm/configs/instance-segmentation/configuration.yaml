@@ -150,6 +150,19 @@ learning_parameters:
     value: 10
     visible_in_ui: true
     warning: Early stopping patience is applied exclusively when early stopping is enabled.
+  adaptive_val_interval:
+    affects_outcome_of: TRAINING
+    default_value: true
+    description: Depending on the size of iteration per epoch, adaptively update the validation interval and related values.
+    editable: true
+    header: Adaptive validation interval
+    type: BOOLEAN
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    visible_in_ui: true
   type: PARAMETER_GROUP
   visible_in_ui: true
 postprocessing:
