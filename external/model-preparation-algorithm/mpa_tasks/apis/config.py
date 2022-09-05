@@ -77,6 +77,14 @@ class BaseConfig(ConfigurableParameters):
             affects_outcome_of=ModelLifecycle.TRAINING
         )
 
+        adaptive_val_interval = configurable_boolean(
+            default_value=False,
+            header="Adaptive validation interval",
+            description="Depending on the size of iteration per epoch, adaptively update the validation interval and related values.",
+            warning="This will automatically control the early stopping patience and interval when early stopping is enabled.",
+            affects_outcome_of=ModelLifecycle.TRAINING
+        )
+
         enable_early_stopping = configurable_boolean(
             default_value=True,
             header="Enable early stopping of the training",

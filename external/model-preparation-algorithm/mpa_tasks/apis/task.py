@@ -162,7 +162,14 @@ class BaseTask:
             if len(recipe_hparams) > 0:
                 self._recipe_cfg.merge_from_dict(recipe_hparams)
 
-            # Put early stop hook
+            # Add/remove adaptive interval hook
+            if hasattr(self._recipe_cfg, 'adaptive_validation_interval'):
+                if self._recipe_cfg.adaptive_validation_interval is True:
+                    self._recipe_cfg.adaptive_validation_interval = dict(max_interval=5)
+                else:
+                    self._recipe_cfg.pop('adaptive_validation_interval')
+
+            # Add/remove early stop hook
             if self._recipe_cfg.early_stop is True:
                 patience = self._recipe_cfg.patience
                 metric = self._recipe_cfg.early_stop_metric
