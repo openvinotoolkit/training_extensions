@@ -1,6 +1,4 @@
-"""
-File system based datasets registry.
-"""
+"""File system based datasets registry."""
 
 # Copyright (C) 2021 Intel Corporation
 #
@@ -21,8 +19,7 @@ from otx.api.entities.model_template import TaskType
 
 # pylint: disable=too-many-return-statements
 def get_dataset_class(task_type):
-    """
-    Returns a dataset class by task type.
+    """Returns a dataset class by task type.
 
     Args:
         task_type: A task type such as ANOMALY_CLASSIFICATION, ANOMALY_DETECTION, ANOMALY_SEGMENTATION,

@@ -1,4 +1,4 @@
-"""This module contains the base class for deep learning image-based tasks. """
+"""This module contains the base class for deep learning image-based tasks."""
 
 
 # Copyright (C) 2021-2022 Intel Corporation
@@ -13,12 +13,13 @@ from otx.api.usecases.tasks.interfaces.training_interface import ITrainingTask
 
 
 class ImageDeepLearningTask(IInferenceTask, ITrainingTask, IEvaluationTask, metaclass=abc.ABCMeta):
-    """
-    A base class for a deep learning image-based tasks.
+    """A base class for a deep learning image-based tasks.
+
     This class inherits from ITask, ITraining, IComputesPerformance and IReporting.
 
-    :example: A YOLO detection task.
+    Example:
+        A YOLO detection task.
 
-    >>> class YOLODetection(ImageDeepLearningTask):
-    ...     pass
+        >>> class YOLODetection(ImageDeepLearningTask):
+        ...     pass
     """

@@ -1,6 +1,4 @@
-"""
-Model quality evaluation tool.
-"""
+"""Model quality evaluation tool."""
 
 # Copyright (C) 2021 Intel Corporation
 #
@@ -37,9 +35,7 @@ from otx.cli.utils.parser import (
 
 
 def parse_args():
-    """
-    Parses command line arguments.
-    """
+    """Parses command line arguments."""
 
     pre_parser = argparse.ArgumentParser(add_help=False)
     pre_parser.add_argument("template")
@@ -78,8 +74,8 @@ def parse_args():
 
 
 def check_label_schemas(label_schema_a, label_schema_b):
-    """
-    Checks that both passed label schemas have labels with the same names.
+    """Checks that both passed label schemas have labels with the same names.
+
     If it is False that it raises RuntimeError.
     """
 
@@ -91,9 +87,7 @@ def check_label_schemas(label_schema_a, label_schema_b):
 
 
 def main():
-    """
-    Main function that is used for model evaluation.
-    """
+    """Main function that is used for model evaluation."""
 
     # Dynamically create an argument parser based on override parameters.
     args, template, hyper_parameters = parse_args()

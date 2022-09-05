@@ -16,8 +16,7 @@ from otx.api.entities.label import Domain, LabelEntity
 
 @dataclass
 class LabelSource:
-    """
-    This dataclass contains information about the source of a scored label.
+    """This dataclass contains information about the source of a scored label.
 
     For annotations, the id of the user who created the label and for predictions, the
     id and model storage id of the model that created the prediction. When a user has
@@ -31,13 +30,13 @@ class LabelSource:
 
 
 class ScoredLabel:
-    """
-    This represents a label along with a probability. This is used inside :class:`Annotation`.
+    """This represents a label along with a probability. This is used inside `Annotation` class.
 
-    :param label: a label. See :class:`Label`
-    :param probability: a float denoting the probability of the shape belonging to the label.
-    :param label_source: a LabelSource dataclass containing the id of the user who created
-        or the model that predicted this label.
+    Args:
+        label (LabelEntity): Label entity to which probability and source are attached.
+        probability (float): a float denoting the probability of the shape belonging to the label.
+        label_source (LabelSource): a LabelSource dataclass containing the id of the user who created
+            or the model that predicted this label.
     """
 
     def __init__(
@@ -55,72 +54,65 @@ class ScoredLabel:
 
     @property
     def name(self) -> str:
-        """
-        Name of the label.
-        """
+        """Name of the label."""
         return self.label.name
 
     @property
     def id_(self) -> ID:
-        """
-        Returns the label id.
-        """
+        """Returns the label id."""
         return self.label.id_
 
     @property
     def id(self) -> ID:
-        """DEPRECATED"""
+        """DEPRECATED."""
         return self.label.id
 
     @property
     def color(self) -> Color:
-        """
-        Color of the label.
-        """
+        """Color of the label."""
         return self.label.color
 
     @property
     def hotkey(self) -> str:
-        """
-        Hotkey of the label.
-        """
+        """Hotkey of the label."""
         return self.label.hotkey
 
     @property
     def domain(self) -> Domain:
-        """
-        Domain of the label.
-        """
+        """Domain of the label."""
         return self.label.domain
 
     @property
     def is_empty(self) -> bool:
-        """
-        Check if the label is empty
-        """
+        """Check if the label is empty."""
         return self.label.is_empty
 
     @property
     def creation_date(self) -> datetime.datetime:
-        """
-        Creation data of the label
-        """
+        """Creation data of the label."""
         return self.label.creation_date
 
     def get_label(self) -> LabelEntity:
-        """
-        Gets the label that the ScoredLabel object was initialized with.
-        """
+        """Gets the label that the ScoredLabel object was initialized with."""
         return self.label
 
     def __repr__(self):
+        """String representation of the label."""
         return (
             f"ScoredLabel({self.id_}, name={self.name}, probability={self.probability}, "
             f"domain={self.domain}, color={self.color}, hotkey={self.hotkey}, "
             f"label_source={self.label_source})"
         )
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
+        """Checks if the label is equal to the other label.
+
+        Args:
+            other (ScoredLabel): Label to compare with
+
+        Returns:
+            bool: True if the labels are equal, False otherwise
+        """
         if isinstance(other, ScoredLabel):
             return (
                 self.id_ == other.id_
@@ -134,4 +126,5 @@ class ScoredLabel:
         return False
 
     def __hash__(self):
+        """Returns hash of the label."""
         return hash(str(self))

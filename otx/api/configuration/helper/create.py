@@ -1,12 +1,11 @@
+"""This module contains the definition for the `create` function within the configuration helper.
+
+This function can be used to create a OTX configuration object from a dictionary or yaml representation.
+"""
 # Copyright (C) 2021-2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 
-
-"""
-This module contains the definition for the `create` function within the configuration helper. This function can be
-used to create a OTX configuration object from a dictionary or yaml representation.
-"""
 
 from __future__ import annotations
 
@@ -48,12 +47,15 @@ METADATA_ENUMS = {
 
 
 def construct_attrib_from_dict(dict_object: Union[dict, DictConfig]) -> ExposureTypeVar:
-    """
-    Constructs a ui exposure element from an input dictionary or DictConfig. Elements are mapped according to the
-    'type' field in the input dict.
+    """Constructs a ui exposure element from an input dictionary or DictConfig.
 
-    :param dict_object: Dictionary containing the arguments for the element constructor.
-    :return: Rule or UIRules element, constructed according to the input dict_object
+    Elements are mapped according to the 'type' field in the input dict.
+
+    Args:
+        dict_object (Union[dict, DictConfig]): Dictionary containing the arguments for the element constructor.
+
+    Returns:
+        ExposureTypeVar: Rule or UIRules element, constructed according to the input dict_object.
     """
     value_dict = dict(dict_object)
     object_type = str(value_dict.pop(metadata_keys.TYPE))
@@ -66,11 +68,13 @@ def construct_attrib_from_dict(dict_object: Union[dict, DictConfig]) -> Exposure
 
 
 def construct_ui_rules_from_dict(ui_exposure_settings: Union[dict, DictConfig]) -> UIRules:
-    """
-    Takes a dictionary representation of ui exposure logic and constructs an UIRules element out of this.
+    """Takes a dictionary representation of ui exposure logic and constructs an UIRules element out of this.
 
-    :param ui_exposure_settings: dictionary representing the logic to govern exposure of a parameter in the UI
-    :return: Exposure element constructed according to the settings passed in ui_exposure_settings
+    Args:
+        ui_exposure_settings: dictionary representing the logic to govern exposure of a parameter in the UI
+
+    Returns:
+        Exposure element constructed according to the settings passed in ui_exposure_settings
     """
     if ui_exposure_settings is None:
         return NullUIRules()
@@ -99,13 +103,19 @@ def construct_ui_rules_from_dict(ui_exposure_settings: Union[dict, DictConfig]) 
 
 
 def create_default_configurable_enum_from_dict(parameter_dict: Union[dict, DictConfig]) -> dict:
-    """
-    Takes a parameter_dict representing a configurable Enum and consumes the ENUM_NAME, OPTIONS and DEFAULT_VALUE
-    metadata. From this, a new subclass of ConfigurableEnum is constructed. The DEFAULT_VALUE of the parameter_dict is
-    updated with the appropriate ConfigurableEnum instance.
+    """Create a default configurable enum from a dictionary.
 
-    :param parameter_dict: Dictionary representation of an enum_selectable parameter. Can be either serialized or not.
-    :return: parameter_dict containing the default_value instantiated as a ConfigurableEnum
+    Takes a parameter_dict representing a configurable Enum and consumes the ENUM_NAME, OPTIONS and DEFAULT_VALUE
+    metadata.
+
+    From this, a new subclass of ConfigurableEnum is constructed. The DEFAULT_VALUE of the parameter_dict is updated
+    with the appropriate ConfigurableEnum instance.
+
+    Args:
+        parameter_dict: Dictionary representation of an enum_selectable parameter. Can be either serialized or not.
+
+    Returns:
+        parameter_dict containing the default_value instantiated as a ConfigurableEnum
     """
     # Some input type validation here first, to keep mypy happy
     if isinstance(parameter_dict, DictConfig):
@@ -136,9 +146,9 @@ def create_default_configurable_enum_from_dict(parameter_dict: Union[dict, DictC
 
 
 def gather_parameter_arguments_and_values_from_dict(config_dict_section: Union[dict, DictConfig]) -> dict:
-    """
-    Collect the arguments needed to construct an attrs class out of a config dict section representing a parameter
-    group. Parameters living in the group are constructed in this function as well.
+    """Collect arguments needed to construct attrs class out of a config dict section representing a parameter group.
+
+    Parameters living in the group are constructed in this function as well.
 
     This function returns a dictionary that contains the keys `make_arguments`, `call_arguments` and `values`.
     make_arguments are the arguments that should be passed to attr.make_class to dynamically generate a class
@@ -146,9 +156,14 @@ def gather_parameter_arguments_and_values_from_dict(config_dict_section: Union[d
     call_arguments are the arguments that should be passed in the initialization call to the constructor
     values are the parameter values, that can be set once the instance of the parameter group is created.
 
-    :param config_dict_section: Dictionary representation of a parameter group in a configuration, for which to gather
-        the constructor arguments
-    :return: dictionary containing the make_arguments, call_arguments and values parsed from the config_dict_section
+    Args:
+        config_dict_section: Dictionary representation of a parameter
+            group in a configuration, for which to gather the
+            constructor arguments
+
+    Returns:
+        dictionary containing the make_arguments, call_arguments and
+        values parsed from the config_dict_section
     """
     # pylint: disable=too-many-locals
     make_arguments = {}
@@ -196,13 +211,19 @@ def gather_parameter_arguments_and_values_from_dict(config_dict_section: Union[d
 
 
 def create_parameter_group(config_dict_section: Union[dict, DictConfig]) -> ParameterGroupTypeVar:
-    """
-    Creates a parameter group object out of a config_dict_section, which is a dictionary or DictConfig representing a
-    parameter group. This method should only be used for simple groups, i.e. parameter groups not containing any other
-    parameter groups. For nested groups, the function 'create_nested_parameter_group' should be used instead.
+    """Creates a parameter group object out of a config_dict_section.
 
-    :param config_dict_section: Dictionary representation of the parameter group to construct
-    :return: ParameterGroup or ConfigurableParameters object constructed according to config_dict_section
+    config_dict_section is a dictionary or DictConfig representing a parameter group.
+    This method should only be used for simple groups, i.e. parameter groups not containing any other parameter groups.
+    For nested groups, the function 'create_nested_parameter_group' should be used instead.
+
+    Args:
+        config_dict_section: Dictionary representation of the parameter
+            group to construct
+
+    Returns:
+        ParameterGroup or ConfigurableParameters object constructed
+        according to config_dict_section
     """
     params_and_values = gather_parameter_arguments_and_values_from_dict(config_dict_section)
     make_arguments = params_and_values["make_arguments"]
@@ -230,12 +251,16 @@ def create_parameter_group(config_dict_section: Union[dict, DictConfig]) -> Para
 
 
 def create_nested_parameter_group(config_dict_section: Union[dict, DictConfig]) -> ParameterGroup:
-    """
-    Creates a parameter group object out of a config_dict_section, which is a dictionary or DictConfig representing a
-    parameter group. This method should be used for nested groups, and uses recursion to reconstruct those.
+    """Creates a parameter group object out of a config_dict_section.
 
-    :param config_dict_section: Dictionary representation of the parameter group to construct
-    :return: ParameterGroup or Configuration object constructed according to config_dict_section
+    config_dict_section is a dictionary or DictConfig representing a parameter group. This method should be used for
+    nested groups, and uses recursion to reconstruct those.
+
+    Args:
+        config_dict_section: Dictionary representation of the parameter group to construct
+
+    Returns:
+        ParameterGroup or Configuration object constructed according to config_dict_section
     """
     groups = {}
     main_config = copy.deepcopy(config_dict_section)
@@ -265,12 +290,15 @@ def create_nested_parameter_group(config_dict_section: Union[dict, DictConfig]) 
 
 
 def contains_parameter_groups(config_dict: Union[dict, DictConfig]) -> List[str]:
-    """
-    Determines whether a configuration or configuration section specified in `config_dict` contains any parameter groups
-    or not. Returns a list of the group names if it does, and an empty list otherwise
+    """Checks whether a configuration or configuration section specified in `config_dict` contains parameter groups.
 
-    :param config_dict: Dictionary or DictConfig representing a configuration or configuration section.
-    :return: List of names of parameter groups that are defined in the config_dict, if any. Empty list otherwise.
+    Returns a list of the group names if it does, and an empty list otherwise
+
+    Args:
+        config_dict: Dictionary or DictConfig representing a configuration or configuration section.
+
+    Returns:
+        List of names of parameter groups that are defined in the config_dict, if any. Empty list otherwise.
     """
     if isinstance(config_dict, DictConfig):
         input_dict: dict = OmegaConf.to_container(config_dict)  # type: ignore
@@ -292,12 +320,16 @@ def contains_parameter_groups(config_dict: Union[dict, DictConfig]) -> List[str]
 
 
 def from_dict_attr(config_dict: Union[dict, DictConfig]) -> ConfigurableParameters:
-    """
-    Creates a configuration object from an input config_dict. Uses recursion to handle nested parameter groups in the
-    config
+    """Creates a configuration object from an input config_dict.
 
-    :param config_dict: Dictionary representation of a TaskConfig, ProjectConfig or ComponentConfig
-    :return: ParameterGroup object constructed according to config_dict
+    Uses recursion to handle nested parameter groups in the config
+
+    Args:
+        config_dict (Union[dict, DictConfig]): Dictionary representation of a TaskConfig,
+            ProjectConfig or ComponentConfig
+
+    Returns:
+        ConfigurableParameters: ParameterGroup object constructed according to config_dict
     """
     local_config_dict = copy.deepcopy(config_dict)
 
@@ -331,11 +363,14 @@ def from_dict_attr(config_dict: Union[dict, DictConfig]) -> ConfigurableParamete
 
 
 def create(input_config: Union[str, DictConfig, dict]) -> ConfigurableParameters:
-    """
-    Create a configuration object from a yaml string, yaml file path, dictionary or OmegaConf DictConfig object.
+    """Create a configuration object from a yaml string, yaml file path, dictionary or OmegaConf DictConfig object.
 
-    :param input_config: yaml string, dictionary, DictConfig or filepath describing a configuration.
-    :return: ConfigurableParameters object
+    Args:
+        input_config: yaml string, dictionary, DictConfig or filepath
+            describing a configuration.
+
+    Returns:
+        ConfigurableParameters object
     """
     # Parse input, validate config type and convert to dict if needed
     config_dict = input_to_config_dict(copy.deepcopy(input_config))

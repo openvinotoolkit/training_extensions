@@ -1,17 +1,15 @@
+"""This module contains the mapper for ID entities."""
 #
 # Copyright (C) 2021-2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 
-""" This module contains the mapper for ID entities """
 
 from otx.api.entities.id import ID
 
 
 class IDMapper:
-    """
-    This class maps an `ID` entity to a string, and vice versa
-    """
+    """This class maps an `ID` entity to a string, and vice versa."""
 
     @staticmethod
     def forward(instance: ID) -> str:

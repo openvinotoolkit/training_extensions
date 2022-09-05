@@ -144,5 +144,5 @@ repos:
         entry: pydocstyle
         language: python
         types: [python]
-        files: '^(otx/algorithms/anomaly|external/anomaly).*\.py'
-        exclude: "otx/algorithms/anomaly/tests|external/anomaly/tests"
+        files: '^otx/.*\.py'
+        exclude: "otx/algorithms/anomaly/tests|external/anomaly/tests|otx/cli/utils/tests.py"

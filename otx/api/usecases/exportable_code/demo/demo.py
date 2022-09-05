@@ -1,6 +1,4 @@
-"""
-Demo based on ModelAPI
-"""
+"""Demo based on ModelAPI."""
 # Copyright (C) 2021-2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -20,9 +18,7 @@ from otx.api.usecases.exportable_code.demo.demo_package import (
 
 
 def build_argparser():
-    """
-    Parses command line arguments.
-    """
+    """Parses command line arguments."""
     parser = ArgumentParser(add_help=False)
     args = parser.add_argument_group("Options")
     args.add_argument(
@@ -82,9 +78,7 @@ EXECUTORS = {
 
 
 def get_inferencer_class(type_inference, models):
-    """
-    Return class for inference of models
-    """
+    """Return class for inference of models."""
     if len(models) > 1:
         type_inference = "chain"
         print("You started the task chain pipeline with the provided models in the order in which they were specified")
@@ -92,9 +86,7 @@ def get_inferencer_class(type_inference, models):
 
 
 def main():
-    """
-    Main function that is used to run demo.
-    """
+    """Main function that is used to run demo."""
     args = build_argparser().parse_args()
     # create models
     models = []

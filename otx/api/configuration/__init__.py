@@ -1,10 +1,7 @@
-# Copyright (C) 2021-2022 Intel Corporation
-# SPDX-License-Identifier: Apache-2.0
-#
+"""OTX configurable parameters and helper utilities.
 
-"""
-This module contains base elements that make up OTX ConfigurableParameters, as well as a collection of helper functions
-to interact with them.
+This module contains base elements that make up OTX ConfigurableParameters, as well as a collection of helper
+functions to interact with them.
 
 The configuration helper module can be imported as `otx_config_helper` and implements the following:
 
@@ -12,6 +9,10 @@ The configuration helper module can be imported as `otx_config_helper` and imple
    :members:
 
 """
+# Copyright (C) 2021-2022 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
+
 
 # TODO: Remove cfg_helper once https://jira.devtools.intel.com/browse/CVS-67869 is done:
 import otx.api.configuration.helper as otx_config_helper

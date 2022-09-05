@@ -1,12 +1,12 @@
+"""This module contains the configuration helper functions.
+
+These can be used to create, convert or interact with OTX configuration objects or dictionaries, yaml strings or yaml
+files representing those objects.
+"""
 # Copyright (C) 2021-2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 
-
-"""
-This module contains the configuration helper functions, which can be used to create, convert or interact with
-OTX configuration objects or dictionaries, yaml strings or yaml files representing those objects
-"""
 
 from .convert import convert
 from .create import create

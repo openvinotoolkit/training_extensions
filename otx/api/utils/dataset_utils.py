@@ -1,6 +1,4 @@
-"""
-Dataset utils
-"""
+"""Dataset utils."""
 
 # Copyright (C) 2021 Intel Corporation
 #
@@ -26,12 +24,15 @@ from otx.api.entities.shapes.rectangle import Rectangle
 
 
 def get_fully_annotated_idx(dataset: DatasetEntity) -> List[int]:
-    """
-    Find the indices of the fully annotated items in a dataset.
+    """Find the indices of the fully annotated items in a dataset.
+
     A dataset item is fully annotated if local annotations are available, or if the item has the `normal` label.
 
-    :param dataset: Dataset that may contain both partially and fully annotated items
-    :return: List of indices of the fully annotated dataset items.
+    Args:
+        dataset (DatasetEntity): Dataset that may contain both partially and fully annotated items.
+
+    Returns:
+        List[int]: List of indices of the fully annotated dataset items.
     """
     local_idx = []
     for idx, gt_item in enumerate(dataset):
@@ -48,14 +49,16 @@ def get_local_subset(
     fully_annotated_idx: Optional[List[int]] = None,
     include_normal: bool = True,
 ) -> DatasetEntity:
-    """
-    Extract a subset that contains only those dataset items that have local annotations.
+    """Extract a subset that contains only those dataset items that have local annotations.
 
-    :param dataset: Dataset from which we want to extract the locally annotated subset.
-    :param fully_annotated_idx: The indices of the fully annotated dataset items. If not provided,
+    Args:
+        dataset (DatasetEntity): Dataset from which we want to extract the locally annotated subset.
+        fully_annotated_idx (Optional[List[int]]): The indices of the fully annotated dataset items. If not provided,
             the function will compute the indices before creating the subset.
-    :param include_normal: When true, global normal annotations will be included in the local dataset.
-    :return: Output dataset with only local annotations
+        include_normal (bool): When true, global normal annotations will be included in the local dataset.
+
+    Returns:
+        DatasetEntity: Output dataset with only local annotations
     """
     local_items = []
     if fully_annotated_idx is None:
@@ -92,11 +95,13 @@ def get_local_subset(
 
 
 def get_global_subset(dataset: DatasetEntity) -> DatasetEntity:
-    """
-    Extract a subset that contains only the global annotations.
+    """Extract a subset that contains only the global annotations.
 
-    :param dataset: Dataset from which we want to extract the globally annotated subset.
-    :return: Output dataset with only global annotations
+    Args:
+        dataset (DatasetEntity): Dataset from which we want to extract the globally annotated subset.
+
+    Returns:
+        DatasetEntity: Output dataset with only global annotations
     """
     global_items = []
     for item in dataset:
@@ -119,11 +124,13 @@ def get_global_subset(dataset: DatasetEntity) -> DatasetEntity:
 def split_local_global_dataset(
     dataset: DatasetEntity,
 ) -> Tuple[DatasetEntity, DatasetEntity]:
-    """
-    Split a dataset into the globally and locally annotated subsets.
+    """Split a dataset into the globally and locally annotated subsets.
 
-    :param dataset: Input dataset
-    :return: Globally annotated subset, locally annotated subset
+    Args:
+        dataset (DatasetEntity): Input dataset
+
+    Returns:
+        Tuple[DatasetEntity, DatasetEntity]: Tuple of the globally and locally annotated subsets.
     """
     global_dataset = get_global_subset(dataset)
     local_dataset = get_local_subset(dataset)
@@ -133,11 +140,13 @@ def split_local_global_dataset(
 def split_local_global_resultset(
     resultset: ResultSetEntity,
 ) -> Tuple[ResultSetEntity, ResultSetEntity]:
-    """
-    Split a resultset into the globally and locally annotated resultsets.
+    """Split a resultset into the globally and locally annotated resultsets.
 
-    :param resultset: Input result set
-    :return: Globally annotated result set, locally annotated result set
+    Args:
+        resultset (ResultSetEntity): Input resultset
+
+    Returns:
+        Tuple[ResultSetEntity, ResultSetEntity]: Tuple of the globally and locally annotated resultsets.
     """
     global_gt_dataset = get_global_subset(resultset.ground_truth_dataset)
     local_gt_dataset = get_local_subset(resultset.ground_truth_dataset, include_normal=False)
@@ -161,11 +170,13 @@ def split_local_global_resultset(
 
 
 def contains_anomalous_images(dataset: DatasetEntity) -> bool:
-    """
-    Check if a dataset contains any items with the anomalous label.
+    """Check if a dataset contains any items with the anomalous label.
 
-    :param dataset: Dataset to check for anomalous items.
-    :return: boolean indicating if the dataset contains any anomalous items.
+    Args:
+        dataset (DatasetEntity): Dataset to check for anomalous items.
+
+    Returns:
+        bool: True if the dataset contains anomalous items, False otherwise.
     """
     for item in dataset:
         labels = item.get_shapes_labels()

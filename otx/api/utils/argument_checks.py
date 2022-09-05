@@ -1,6 +1,4 @@
-"""
-Utils for checking functions and methods arguments
-"""
+"""Utils for checking functions and methods arguments."""
 
 # Copyright (C) 2021-2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
@@ -43,7 +41,7 @@ IMAGE_FILE_EXTENSIONS = [
 
 
 def get_bases(parameter) -> set:
-    """Function to get set of all base classes of parameter"""
+    """Function to get set of all base classes of parameter."""
 
     def __get_bases(parameter_type):
         return [parameter_type.__name__] + list(
@@ -54,7 +52,7 @@ def get_bases(parameter) -> set:
 
 
 def get_parameter_repr(parameter) -> str:
-    """Function to get parameter representation"""
+    """Function to get parameter representation."""
     try:
         parameter_str = repr(parameter)
     # pylint: disable=broad-except
@@ -64,7 +62,7 @@ def get_parameter_repr(parameter) -> str:
 
 
 def raise_value_error_if_parameter_has_unexpected_type(parameter, parameter_name, expected_type):
-    """Function raises ValueError exception if parameter has unexpected type"""
+    """Function raises ValueError exception if parameter has unexpected type."""
     if isinstance(expected_type, typing.ForwardRef):
         expected_type = expected_type.__forward_arg__
     if isinstance(expected_type, str):
@@ -88,7 +86,7 @@ def raise_value_error_if_parameter_has_unexpected_type(parameter, parameter_name
 
 
 def check_nested_elements_type(iterable, parameter_name, expected_type):
-    """Function raises ValueError exception if one of elements in collection has unexpected type"""
+    """Function raises ValueError exception if one of elements in collection has unexpected type."""
     for element in iterable:
         check_parameter_type(
             parameter=element,
@@ -98,7 +96,7 @@ def check_nested_elements_type(iterable, parameter_name, expected_type):
 
 
 def check_dictionary_keys_values_type(parameter, parameter_name, expected_key_class, expected_value_class):
-    """Function raises ValueError exception if dictionary key or value has unexpected type"""
+    """Function raises ValueError exception if dictionary key or value has unexpected type."""
     for key, value in parameter.items():
         check_parameter_type(
             parameter=key,
@@ -113,7 +111,7 @@ def check_dictionary_keys_values_type(parameter, parameter_name, expected_key_cl
 
 
 def check_nested_classes_parameters(parameter, parameter_name, origin_class, nested_elements_class):
-    """Function to check type of parameters with nested elements"""
+    """Function to check type of parameters with nested elements."""
     # Checking origin class
     raise_value_error_if_parameter_has_unexpected_type(
         parameter=parameter, parameter_name=parameter_name, expected_type=origin_class
@@ -149,7 +147,7 @@ def check_nested_classes_parameters(parameter, parameter_name, origin_class, nes
 
 
 def check_parameter_type(parameter, parameter_name, expected_type):
-    """Function extracts nested expected types and raises ValueError exception if parameter has unexpected type"""
+    """Function extracts nested expected types and raises ValueError exception if parameter has unexpected type."""
     # pylint: disable=W0212
     if expected_type in [typing.Any, inspect._empty]:  # type: ignore
         return
@@ -191,9 +189,11 @@ def check_parameter_type(parameter, parameter_name, expected_type):
 
 
 def check_input_parameters_type(custom_checks: typing.Optional[dict] = None):
-    """
-    Decorator to check input parameters type
-    :param custom_checks: dictionary where key - name of parameter and value - custom check class
+    """Decorator to check input parameters type.
+
+    Args:
+        custom_checks: dictionary where key - name of parameter and
+            value - custom check class
     """
     if custom_checks is None:
         custom_checks = {}
@@ -239,7 +239,7 @@ def check_input_parameters_type(custom_checks: typing.Optional[dict] = None):
 
 
 def check_file_extension(file_path: str, file_path_name: str, expected_extensions: list):
-    """Function raises ValueError exception if file has unexpected extension"""
+    """Function raises ValueError exception if file has unexpected extension."""
     file_extension = splitext(file_path)[1].lower()
     if file_extension not in expected_extensions:
         raise ValueError(
@@ -248,25 +248,25 @@ def check_file_extension(file_path: str, file_path_name: str, expected_extension
 
 
 def check_that_null_character_absents_in_string(parameter: str, parameter_name: str):
-    """Function raises ValueError exception if null character: '\0' is specified in path to file"""
+    r"""Function raises ValueError exception if null character: '\0' is specified in path to file."""
     if "\0" in parameter:
         raise ValueError(f"null char \\0 is specified in {parameter_name}: {parameter}")
 
 
 def check_that_file_exists(file_path: str, file_path_name: str):
-    """Function raises ValueError exception if file not exists"""
+    """Function raises ValueError exception if file not exists."""
     if not exists(file_path):
         raise ValueError(f"File {file_path} specified in '{file_path_name}' parameter not exists")
 
 
 def check_that_parameter_is_not_empty(parameter, parameter_name):
-    """Function raises ValueError if parameter is empty"""
+    """Function raises ValueError if parameter is empty."""
     if not parameter:
         raise ValueError(f"parameter {parameter_name} is empty")
 
 
 def check_that_all_characters_printable(parameter, parameter_name, allow_crlf=False):
-    """Function raises ValueError if one of string-parameter characters is not printable"""
+    """Function raises ValueError if one of string-parameter characters is not printable."""
     if not allow_crlf:
         all_characters_printable = all(c.isprintable() for c in parameter)
     else:
@@ -276,8 +276,11 @@ def check_that_all_characters_printable(parameter, parameter_name, allow_crlf=Fa
 
 
 def check_is_parameter_like_dataset(parameter, parameter_name):
-    """Function raises ValueError exception if parameter does not have __len__, __getitem__ and get_subset attributes of
-    DataSet-type object"""
+    """Checks if the parameter is like a dataset.
+
+    Function raises ValueError exception if parameter does not have __len__, __getitem__ and get_subset attributes of
+    DataSet-type object.
+    """
     for expected_attribute in ("__len__", "__getitem__", "get_subset"):
         if not hasattr(parameter, expected_attribute):
             parameter_type = type(parameter)
@@ -288,7 +291,7 @@ def check_is_parameter_like_dataset(parameter, parameter_name):
 
 
 def check_file_path(parameter, parameter_name, expected_file_extensions):
-    """Function to check file path string objects"""
+    """Function to check file path string objects."""
     raise_value_error_if_parameter_has_unexpected_type(
         parameter=parameter,
         parameter_name=parameter_name,
@@ -306,7 +309,7 @@ def check_file_path(parameter, parameter_name, expected_file_extensions):
 
 
 def check_directory_path(parameter, parameter_name):
-    """Function to check directory path string objects"""
+    """Function to check directory path string objects."""
     raise_value_error_if_parameter_has_unexpected_type(
         parameter=parameter,
         parameter_name=parameter_name,
@@ -318,23 +321,23 @@ def check_directory_path(parameter, parameter_name):
 
 
 class BaseInputArgumentChecker(ABC):
-    """Abstract class to check input arguments"""
+    """Abstract class to check input arguments."""
 
     @abstractmethod
     def check(self):
-        """Abstract method to check input arguments"""
+        """Abstract method to check input arguments."""
         raise NotImplementedError("The check is not implemented")
 
 
 class InputConfigCheck(BaseInputArgumentChecker):
-    """Class to check input config_parameters"""
+    """Class to check input config_parameters."""
 
     def __init__(self, parameter, parameter_name):
         self.parameter = parameter
         self.parameter_name = parameter_name
 
     def check(self):
-        """Method raises ValueError exception if "input_config" parameter is not equal to expected"""
+        """Method raises ValueError exception if "input_config" parameter is not equal to expected."""
         raise_value_error_if_parameter_has_unexpected_type(
             parameter=self.parameter,
             parameter_name=self.parameter_name,
@@ -362,7 +365,7 @@ class InputConfigCheck(BaseInputArgumentChecker):
 
 
 class FilePathCheck(BaseInputArgumentChecker):
-    """Class to check file_path-like parameters"""
+    """Class to check file_path-like parameters."""
 
     def __init__(self, parameter, parameter_name, expected_file_extension):
         self.parameter = parameter
@@ -370,12 +373,12 @@ class FilePathCheck(BaseInputArgumentChecker):
         self.expected_file_extensions = expected_file_extension
 
     def check(self):
-        """Method raises ValueError exception if file path parameter is not equal to expected"""
+        """Method raises ValueError exception if file path parameter is not equal to expected."""
         check_file_path(self.parameter, self.parameter_name, self.expected_file_extensions)
 
 
 class OptionalFilePathCheck(BaseInputArgumentChecker):
-    """Class to check optional file_path-like parameters"""
+    """Class to check optional file_path-like parameters."""
 
     def __init__(self, parameter, parameter_name, expected_file_extension):
         self.parameter = parameter
@@ -383,25 +386,25 @@ class OptionalFilePathCheck(BaseInputArgumentChecker):
         self.expected_file_extensions = expected_file_extension
 
     def check(self):
-        """Method raises ValueError exception if file path parameter is not equal to expected"""
+        """Method raises ValueError exception if file path parameter is not equal to expected."""
         if self.parameter is not None:
             check_file_path(self.parameter, self.parameter_name, self.expected_file_extensions)
 
 
 class DatasetParamTypeCheck(BaseInputArgumentChecker):
-    """Class to check DatasetEntity-type parameters"""
+    """Class to check DatasetEntity-type parameters."""
 
     def __init__(self, parameter, parameter_name):
         self.parameter = parameter
         self.parameter_name = parameter_name
 
     def check(self):
-        """Method raises ValueError exception if parameter is not equal to Dataset"""
+        """Method raises ValueError exception if parameter is not equal to Dataset."""
         check_is_parameter_like_dataset(parameter=self.parameter, parameter_name=self.parameter_name)
 
 
 class OptionalImageFilePathCheck(OptionalFilePathCheck):
-    """Class to check optional image file path parameters"""
+    """Class to check optional image file path parameters."""
 
     def __init__(self, parameter, parameter_name):
         super().__init__(
@@ -412,7 +415,7 @@ class OptionalImageFilePathCheck(OptionalFilePathCheck):
 
 
 class YamlFilePathCheck(FilePathCheck):
-    """Class to check optional yaml file path parameters"""
+    """Class to check optional yaml file path parameters."""
 
     def __init__(self, parameter, parameter_name):
         super().__init__(
@@ -423,7 +426,7 @@ class YamlFilePathCheck(FilePathCheck):
 
 
 class JsonFilePathCheck(FilePathCheck):
-    """Class to check optional yaml file path parameters"""
+    """Class to check optional yaml file path parameters."""
 
     def __init__(self, parameter, parameter_name):
         super().__init__(
@@ -434,25 +437,25 @@ class JsonFilePathCheck(FilePathCheck):
 
 
 class DirectoryPathCheck(BaseInputArgumentChecker):
-    """Class to check directory path parameters"""
+    """Class to check directory path parameters."""
 
     def __init__(self, parameter, parameter_name):
         self.parameter = parameter
         self.parameter_name = parameter_name
 
     def check(self):
-        """Method raises ValueError exception if directory path parameter is not equal to expected"""
+        """Method raises ValueError exception if directory path parameter is not equal to expected."""
         check_directory_path(parameter=self.parameter, parameter_name=self.parameter_name)
 
 
 class OptionalDirectoryPathCheck(BaseInputArgumentChecker):
-    """Class to check optional directory path parameters"""
+    """Class to check optional directory path parameters."""
 
     def __init__(self, parameter, parameter_name):
         self.parameter = parameter
         self.parameter_name = parameter_name
 
     def check(self):
-        """Method raises ValueError exception if directory path parameter is not equal to expected"""
+        """Method raises ValueError exception if directory path parameter is not equal to expected."""
         if self.parameter is not None:
             check_directory_path(parameter=self.parameter, parameter_name=self.parameter_name)

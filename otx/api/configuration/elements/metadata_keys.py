@@ -1,11 +1,9 @@
+"""This module contains the keys that can be used to retrieve parameter metadata."""
 # Copyright (C) 2021-2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 
 
-"""
-This module contains the keys that can be used to retrieve parameter metadata
-"""
 from typing import List
 
 DEFAULT_VALUE = "default_value"
@@ -26,12 +24,14 @@ AUTO_HPO_VALUE = "auto_hpo_value"
 
 
 def allows_model_template_override(keyword: str) -> bool:
-    """
-    Returns True if the metadata element described by `keyword` can be overridden in a model template file
+    """Returns True if the metadata element described by `keyword` can be overridden in a model template file.
 
-    :param keyword: Name of the metadata key to check
-    :return: True if the metadata indicated by `keyword` can be overridden in a model template .yaml file, False
-        otherwise
+    Args:
+        keyword (str): Name of the metadata key to check.
+
+    Returns:
+        bool: True if the metadata indicated by `keyword` can be overridden in a model template .yaml file, False
+        otherwise.
     """
     overrideable_keys = [
         DEFAULT_VALUE,
@@ -52,22 +52,23 @@ def allows_model_template_override(keyword: str) -> bool:
 
 
 def allows_dictionary_values(keyword: str) -> bool:
-    """
-    Returns True if the metadata element described by `keyword` allows having a dictionary as its value
+    """Returns True if the metadata element described by `keyword` allows having a dictionary as its value.
 
-    :param keyword: Name of the metadata key to check
-    :return: True if the metadata indicated by `keyword` allows having a dictionary as its value, False
-        otherwise
+    Args:
+        keyword (str): Name of the metadata key to check.
+
+    Returns:
+        bool: True if the metadata indicated by `keyword` allows having a dictionary as its value, False otherwise.
     """
     keys_allowing_dictionary_values = [OPTIONS, UI_RULES]
     return keyword in keys_allowing_dictionary_values
 
 
 def all_keys() -> List[str]:
-    """
-    Returns a list of all metadata keys.
+    """Returns a list of all metadata keys.
 
-    :return: List of all available metadata keys
+    Returns:
+        List[str]: List of all available metadata keys
     """
     return [
         DEFAULT_VALUE,

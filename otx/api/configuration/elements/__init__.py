@@ -1,11 +1,7 @@
+"""This module contains all elements needed to construct a OTX configuration object."""
 # Copyright (C) 2021-2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-
-
-"""
-This module contains all elements needed to construct a OTX configuration object
-"""
 
 
 from .configurable_enum import ConfigurableEnum

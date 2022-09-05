@@ -1,6 +1,4 @@
-"""
-Model deployment tool.
-"""
+"""Model deployment tool."""
 
 # Copyright (C) 2021 Intel Corporation
 #
@@ -28,9 +26,7 @@ from otx.cli.utils.io import read_label_schema, read_model
 
 
 def parse_args():
-    """
-    Parses command line arguments.
-    """
+    """Parses command line arguments."""
     parser = argparse.ArgumentParser()
     parser.add_argument("template")
     parser.add_argument(
@@ -47,9 +43,7 @@ def parse_args():
 
 
 def main():
-    """
-    Main function that is used for model evaluation.
-    """
+    """Main function that is used for model evaluation."""
 
     # Parses input arguments.
     args = parse_args()

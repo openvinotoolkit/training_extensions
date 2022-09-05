@@ -1,4 +1,4 @@
-"""This module implements the Ellipse shape entity"""
+"""This module implements the Ellipse shape entity."""
 # Copyright (C) 2021-2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -22,17 +22,17 @@ from otx.api.utils.time_utils import now
 
 
 class Ellipse(Shape):
-    """
-    Ellipse represents an ellipse that is encapsulated by a Rectangle.
+    """Ellipse represents an ellipse that is encapsulated by a Rectangle.
 
     - x1 and y1 represent the top-left coordinate of the encapsulating rectangle
     - x2 and y2 representing the bottom-right coordinate of the encapsulating rectangle
 
-    :param x1: left x coordinate of encapsulating rectangle
-    :param y1: top y coordinate of encapsulating rectangle
-    :param x2: right x coordinate of encapsulating rectangle
-    :param y2: bottom y coordinate of encapsulating rectangle
-    :param modification_date: last modified date
+    Args:
+        x1: left x coordinate of encapsulating rectangle
+        y1: top y coordinate of encapsulating rectangle
+        x2: right x coordinate of encapsulating rectangle
+        y2: bottom y coordinate of encapsulating rectangle
+        modification_date: last modified date
     """
 
     # pylint: disable=too-many-arguments; Requires refactor
@@ -63,9 +63,11 @@ class Ellipse(Shape):
             )
 
     def __repr__(self):
+        """Returns the representation of the Ellipse."""
         return f"Ellipse(x1={self.x1}, y1={self.y1}, x2={self.x2}, y2={self.y2})"
 
     def __eq__(self, other):
+        """Returns True if Ellipse is equal to other."""
         if isinstance(other, Ellipse):
             return (
                 self.x1 == other.x1
@@ -77,64 +79,61 @@ class Ellipse(Shape):
         return False
 
     def __hash__(self):
+        """Returns the hash of the Ellipse."""
         return hash(str(self))
 
     @property
     def width(self) -> float:
-        """
-        Returns the width of the ellipse. (x-axis)
+        """Returns the width [x-axis] of the ellipse.
 
-        :example:
+        Example:
 
         >>> e1 = Ellipse(x1=0.5, x2=1.0, y1=0.0, y2=0.5)
         >>> e1.width
         0.5
 
-        :return: the width of the ellipse. (x-axis)
+        Returns:
+            the width of the ellipse. (x-axis)
         """
         return self.x2 - self.x1
 
     @property
     def height(self) -> float:
-        """
-        Returns the height of the ellipse. (y-axis)
+        """Returns the height [y-axis] of the ellipse.
 
-        :example:
+        Example:
 
         >>> e1 = Ellipse(x1=0.5, x2=1.0, y1=0.0, y2=0.5)
         >>> e1.height
         0.5
 
-        :return: the height of the ellipse. (y-axis)
+        Returns:
+            the height of the ellipse. (y-axis)
         """
         return self.y2 - self.y1
 
     @property
     def x_center(self) -> float:
-        """
-        Returns the x coordinate in the center of the ellipse.
-        """
+        """Returns the x coordinate in the center of the ellipse."""
         return self.x1 + self.width / 2
 
     @property
     def y_center(self) -> float:
-        """
-        Returns the y coordinate in the center of the ellipse.
-        """
+        """Returns the y coordinate in the center of the ellipse."""
         return self.y1 + self.height / 2
 
     @property
     def minor_axis(self) -> float:
-        """
-        Returns the minor axis of the ellipse.
+        """Returns the minor axis of the ellipse.
 
-        :example:
+        Example:
 
         >>> e1 = Ellipse(x1=0.5, x2=1.0, y1=0.0, y2=0.4)
         >>> e1.minor_axis
         0.2
 
-        :return: minor axis of ellipse.
+        Returns:
+            minor axis of ellipse.
         """
         if self.width > self.height:
             return self.height / 2
@@ -142,27 +141,28 @@ class Ellipse(Shape):
 
     @property
     def major_axis(self) -> float:
-        """
-        Returns the major axis of the ellipse.
+        """Returns the major axis of the ellipse.
 
-        :example:
+        Example:
 
         >>> e1 = Ellipse(x1=0.5, x2=1.0, y1=0.0, y2=0.4)
         >>> e1.major_axis
         0.25
 
-        :return: major axis of ellipse.
+        Returns:
+            major axis of ellipse.
         """
         if self.height > self.width:
             return self.height / 2
         return self.width / 2
 
     def normalize_wrt_roi_shape(self, roi_shape: Rectangle) -> "Ellipse":
-        """
-        Transforms from the `roi` coordinate system to the normalized coordinate system.
+        """Transforms from the `roi` coordinate system to the normalized coordinate system.
+
         This function is the inverse of ``denormalize_wrt_roi_shape``.
 
-        :example: Assume we have Ellipse `c1` which lives in the top-right quarter of a 2D space.
+        Example:
+            Assume we have Ellipse `c1` which lives in the top-right quarter of a 2D space.
             The 2D space where `c1` lives in is an `roi` living in the top-left quarter of the normalized coordinate
             space. This function returns Ellipse `c1` expressed in the normalized coordinate space.
 
@@ -175,8 +175,11 @@ class Ellipse(Shape):
             >>> normalized
             Ellipse(, x1=0.25, y1=0.25, x2=0.3, y2=0.3)
 
-        :param roi_shape: Region of Interest
-        :return: New polygon in the image coordinate system
+        Args:
+            roi_shape: Region of Interest
+
+        Returns:
+            New polygon in the image coordinate system
         """
 
         if not isinstance(roi_shape, Rectangle):
@@ -192,11 +195,12 @@ class Ellipse(Shape):
         )
 
     def denormalize_wrt_roi_shape(self, roi_shape: Rectangle) -> "Ellipse":
-        """
-        Transforming shape from the normalized coordinate system to the `roi` coordinate system.
+        """Transforming shape from the normalized coordinate system to the `roi` coordinate system.
+
         This function is the inverse of ``normalize_wrt_roi_shape``
 
-        :example: Assume we have Ellipse `c1` which lives in the top-right quarter of the normalized coordinate space.
+        Example:
+            Assume we have Ellipse `c1` which lives in the top-right quarter of the normalized coordinate space.
             The `roi` is a rectangle living in the half right of the normalized coordinate space.
             This function returns Ellipse `c1` expressed in the coordinate space of `roi`. (should return top-half)
 
@@ -210,8 +214,11 @@ class Ellipse(Shape):
             >>> normalized
             Ellipse(, x1=0.0, y1=0.0, x2=1.0, y2=0.5)
 
-        :param roi_shape: Region of Interest
-        :return: New polygon in the ROI coordinate system
+        Args:
+            roi_shape: Region of Interest
+
+        Returns:
+            New polygon in the ROI coordinate system
         """
         if not isinstance(roi_shape, Rectangle):
             raise ValueError("roi_shape has to be a Rectangle.")
@@ -227,12 +234,17 @@ class Ellipse(Shape):
 
     # pylint: disable=no-member; PyLint cannot find scipy.special.ellipeinc()
     def get_evenly_distributed_ellipse_coordinates(self, number_of_coordinates: int = 50) -> List[Tuple[float, float]]:
-        """
+        """Returns evenly distributed coordinates along the ellipse.
+
         Makes use of scipy.special.ellipeinc() which provides the numerical integral along the perimeter of the ellipse,
         and scipy.optimize.root() for solving the equal-arcs length equation for the angles.
 
-        :param number_of_coordinates: number of evenly distributed points to generate along the ellipsis line
-        :return: list of tuple's with coordinates along the ellipse line
+        Args:
+            number_of_coordinates: number of evenly distributed points
+                to generate along the ellipsis line
+
+        Returns:
+            list of tuple's with coordinates along the ellipse line
         """
         angles = 2 * np.pi * np.arange(number_of_coordinates) / number_of_coordinates
         e = (1.0 - self.minor_axis**2.0 / self.major_axis**2.0) ** 0.5
@@ -257,14 +269,14 @@ class Ellipse(Shape):
         return shapely_polygon(coordinates)
 
     def get_area(self) -> float:
-        """
-        Computes the approximate area of the Ellipse. Area is a value between 0 and 1, computed as
+        """Computes the approximate area of the Ellipse.
+
+        Area is a value between 0 and 1, computed as
         `pi * vertex * co-vertex`.
+            >>> Ellipse(x1=0, y1=0, x2=0.8, y2=0.4).get_area()
+            0.25132741228718347
 
-
-        >>> Ellipse(x1=0, y1=0, x2=0.8, y2=0.4).get_area()
-        0.25132741228718347
-
-        :return: area of the shape
+        Returns:
+            area of the shape
         """
         return math.pi * self.minor_axis * self.major_axis

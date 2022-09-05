@@ -308,7 +308,7 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
                 raise RuntimeError("Model is already optimized by POT")
 
         if optimization_parameters is not None:
-            optimization_parameters.update_progress(10)
+            optimization_parameters.update_progress(10, None)
 
         engine = IEEngine(config=ADDict({"device": "CPU"}), data_loader=data_loader, metric=None)
         pipeline = create_pipeline(algo_config=self._get_optimization_algorithms_configs(), engine=engine)
@@ -316,7 +316,7 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
         compress_model_weights(compressed_model)
 
         if optimization_parameters is not None:
-            optimization_parameters.update_progress(90)
+            optimization_parameters.update_progress(90, None)
 
         with tempfile.TemporaryDirectory() as tempdir:
             save_model(compressed_model, tempdir, model_name="model")
@@ -337,7 +337,7 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
         self.inferencer = self.load_inferencer()
 
         if optimization_parameters is not None:
-            optimization_parameters.update_progress(100)
+            optimization_parameters.update_progress(100, None)
         logger.info("POT optimization completed")
 
     def load_inferencer(self) -> OpenVINOInferencer:

@@ -1,4 +1,4 @@
-"""This file defines the ModelConfiguration, ModelEntity and Model classes"""
+"""This file defines the ModelConfiguration, ModelEntity and Model classes."""
 
 # Copyright (C) 2021-2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
@@ -30,23 +30,22 @@ class TargetDevice(IntEnum):
 
 
 class ModelOptimizationMethod(Enum):
-    """
-    Optimized model format.
-    """
+    """Optimized model format."""
 
     TENSORRT = auto()
     OPENVINO = auto()
 
     def __str__(self) -> str:
+        """Returns ModelOptimizationMethod as string."""
         return str(self.name)
 
 
 @dataclass
 class DatasetRequirements:
-    """
-    Expected requirements for the dataset in order to use this algorithm.
+    """Expected requirements for the dataset in order to use this algorithm.
 
-    :var classes: Classes which must be present in the dataset
+    Attributes:
+        classes (Optional[List[str]]): Classes which must be present in the dataset
     """
 
     classes: Optional[List[str]] = None
@@ -54,29 +53,27 @@ class DatasetRequirements:
 
 @dataclass
 class ExportableCodePaths:
-    """
-    The paths to the different versions of the exportable code for a given model template.
-    """
+    """The paths to the different versions of the exportable code for a given model template."""
 
     default: Optional[str] = None
     openvino: Optional[str] = None
 
 
 class TaskFamily(Enum):
-    """
-    Overall task family.
-    """
+    """Overall task family."""
 
     VISION = auto()
     FLOW_CONTROL = auto()
     DATASET = auto()
 
     def __str__(self) -> str:
+        """Returns task family as a string."""
         return str(self.name)
 
 
 class TaskInfo(NamedTuple):
-    """
+    """Task information.
+
     NamedTuple to store information about the task type like label domain, if it is
     trainable, if it is an anomaly task and if it supports global or local labels.
     """
@@ -89,16 +86,15 @@ class TaskInfo(NamedTuple):
 
 
 class TaskType(Enum):
-    """
-    The type of algorithm within the task family. Also contains relevant information
-    about the task type like label domain, if it is trainable, if it is an anomaly task
-    or if it supports global or local labels.
-    """
+    """The type of algorithm within the task family.
 
-    def __new__(cls, *args):
-        obj = object.__new__(cls)
-        obj._value_ = args[0]
-        return obj
+    Also contains relevant information about the task type like label domain, if it is trainable,
+    if it is an anomaly task or if it supports global or local labels.
+
+    Args:
+        value (int): (Unused) Unique integer for .value property of Enum (auto() does not work)
+        task_info (TaskInfo): NamedTuple containing information about the task's capabilities
+    """
 
     # pylint: disable=unused-argument
     def __init__(
@@ -106,15 +102,17 @@ class TaskType(Enum):
         value: int,
         task_info: TaskInfo,
     ):
-        """
-        :param value: Unique integer for .value property of Enum (auto() does not work)
-        :param task_info: NamedTuple containing information about the task's capabilities
-        """
         self.domain = task_info.domain
         self.is_trainable = task_info.is_trainable
         self.is_anomaly = task_info.is_anomaly
         self.is_global = task_info.is_global
         self.is_local = task_info.is_local
+
+    def __new__(cls, *args):
+        """Returns new instance."""
+        obj = object.__new__(cls)
+        obj._value_ = args[0]
+        return obj
 
     NULL = 1, TaskInfo(
         domain=Domain.NULL,
@@ -209,18 +207,25 @@ class TaskType(Enum):
     )
 
     def __str__(self) -> str:
+        """Returns name."""
         return self.name
 
     def __repr__(self) -> str:
+        """Returns name."""
         return self.name
 
 
 def task_type_to_label_domain(task_type: TaskType) -> Domain:
-    """
-    Links the task type to the label domain enum.
+    """Links the task type to the label domain enum.
 
     Note that not all task types have an associated domain (e.g. crop task).
     In this case, a ``ValueError`` is raised.
+
+    Args:
+        task_type (TaskType): The task type to get the label domain for.
+
+    Returns:
+        Domain: The label domain for the task type.
     """
     mapping = {
         TaskType.CLASSIFICATION: Domain.CLASSIFICATION,
@@ -241,15 +246,18 @@ def task_type_to_label_domain(task_type: TaskType) -> Domain:
 
 @dataclass
 class HyperParameterData:
-    """
+    """HyperParameter Data.
+
     Class that contains the raw hyper parameter data, for those hyper parameters for the model that are
     user-configurable.
 
-    :var base_path: The path to the yaml file specifying the base configurable parameters to use in the model
-    :var parameter_overrides: Nested dictionary that describes overrides for the metadata for the user-configurable
-        hyper parameters that are used in the model. This allows multiple models to share the same base hyper
-        parameters, while for each individual model the defaults, parameter ranges, descriptions, etc. can still
-        be customized.
+    Attributes:
+        base_path (Optional[str]): The path to the yaml file specifying the base configurable parameters to use in the
+            model. Defaults to None.
+        parameter_overrides (Dict): Nested dictionary that describes overrides for the metadata for the
+            user-configurable hyper parameters that are used in the model. This allows multiple models to share the
+            same base hyper-parameters, while for each individual model the defaults, parameter ranges, descriptions,
+            etc. can still be customized.
     """
 
     base_path: Optional[str] = None
@@ -258,11 +266,13 @@ class HyperParameterData:
     __has_valid_configurable_parameters: bool = field(default=False, repr=False)
 
     def load_parameters(self, model_template_path: str):
-        """
+        """Load hyper parameters.
+
         Loads the actual hyper parameters defined in the file at `base_path`, and performs any overrides specified in
         the `parameter_overrides`.
 
-        :param model_template_path: file path to the model template file in which the HyperParameters live.
+        Args:
+            model_template_path (str): file path to the model template file in which the HyperParameters live.
         """
         has_valid_configurable_parameters = False
         if self.base_path is not None and os.path.exists(model_template_path):
@@ -286,45 +296,46 @@ class HyperParameterData:
 
     @property
     def data(self) -> Dict:
-        """
-        Returns a dictionary containing the set of hyper parameters defined in the ModelTemplate. This does not
-        contain the actual parameter values, but instead holds the parameter schema's in a structured manner. The
-        actual values should be either loaded from the database, or will be initialized from the defaults upon
-        creating a configurable parameter object out of this data
+        """Returns a dictionary containing the set of hyper parameters defined in the ModelTemplate.
+
+        This does not contain the actual parameter values, but instead holds the parameter schema's in
+        a structured manner. The actual values should be either loaded from the database, or will be initialized from
+        the defaults upon creating a configurable parameter object out of this data.
         """
         return self.__data
 
     @property
     def has_overrides(self) -> bool:
-        """
-        Returns True if any parameter overrides are defined by the HyperParameters instance, False otherwise
-        """
+        """Returns True if any parameter overrides are defined by the HyperParameters instance, False otherwise."""
         return self.parameter_overrides != {}
 
     @property
     def has_valid_configurable_parameters(self) -> bool:
-        """
-        Returns True if the HyperParameterData instance contains valid configurable
-        parameters, extracted from the model template. False otherwise.
+        """Check if configurable parameters are valid.
+
+        Returns True if the HyperParameterData instance contains valid configurable parameters, extracted from the
+        model template. False otherwise.
         """
         return self.__has_valid_configurable_parameters
 
     def substitute_parameter_overrides(self):
-        """
-        Carries out the parameter overrides specified in the `parameter_overrides` attribute. Validates whether the
-        overridden parameters exist in the base set of configurable parameters, and whether the metadata values that
-        should be overridden are valid metadata attributes.
+        """Carries out the parameter overrides specified in the `parameter_overrides` attribute.
+
+        Validates whether the overridden parameters exist in the base set of configurable parameters,
+        and whether the metadata values that should be overridden are valid metadata attributes.
         """
         self.__substitute_parameter_overrides(self.parameter_overrides, self.__data)
 
     def __substitute_parameter_overrides(self, override_dict: Dict, parameter_dict: Dict):
-        """
+        """Substitutes parameters form override_dict into parameter_dict.
+
         Recursively substitutes overridden parameter values specified in `override_dict` into the base set of
         hyper parameters passed in as `parameter_dict`
 
-        :param override_dict: dictionary containing the parameter overrides
-        :param parameter_dict: dictionary that contains the base set of hyper parameters, in which the overridden
-            values are substituted
+        Args:
+            override_dict (Dict): dictionary containing the parameter overrides
+            parameter_dict (Dict): dictionary that contains the base set of hyper parameters, in which the overridden
+                values are substituted
         """
         for key, value in override_dict.items():
             if isinstance(value, dict) and not metadata_keys.allows_dictionary_values(key):
@@ -343,14 +354,15 @@ class HyperParameterData:
 
     @classmethod
     def __remove_parameter_values_from_data(cls, data: dict):
-        """
-        This method removes the actual parameter values from the input parameter data.
+        """This method removes the actual parameter values from the input parameter data.
+
         These values should be removed because the parameters should be instantiated
         from the default_values, instead of their values.
 
         NOTE: This method modifies its input dictionary, it does not return a new copy
 
-        :param data: Parameter dictionary to remove values from
+        Args:
+            data: Parameter dictionary to remove values from
         """
         data_copy = copy.deepcopy(data)
         for key, value in data_copy.items():
@@ -361,39 +373,39 @@ class HyperParameterData:
                 data.pop(key)
 
     def manually_set_data_and_validate(self, hyper_parameters: dict):
-        """
-        This function is used to manually set the hyper parameter data from a
-        dictionary. It is meant to be used in testing only, in cases where the model
+        """This function is used to manually set the hyper parameter data from a dictionary.
+
+        It is meant to be used in testing only, in cases where the model
         template is not backed up by an actual yaml file.
 
-        :param hyper_parameters: Dictionary containing the data to be set
+        Args:
+            hyper_parameters (Dict): Dictionary containing the data to be set
         """
         self.__data = hyper_parameters
         self.__has_valid_configurable_parameters = True
 
 
 class InstantiationType(Enum):
-    """
-    The method to instantiate a given task.
-    """
+    """The method to instantiate a given task."""
 
     NONE = auto()
     CLASS = auto()
     GRPC = auto()
 
     def __str__(self) -> str:
+        """Returns the name of the instantiation type."""
         return str(self.name)
 
 
 @dataclass
 class Dependency:
-    """
-    Dependency required by the task.
+    """Dependency required by the task.
 
-    :var source: Source of the dependency
-    :var destination: Destination folder to install the dependency
-    :var size: Size of the dependency in bytes
-    :var sha256: SHA-256 checksum of the dependency file
+    Attributes:
+        source (str): Source of the dependency
+        destination (str): Destination folder to install the dependency
+        size (Optional[int]): Size of the dependency in bytes
+        sha256 (Optional[str]): SHA-256 checksum of the dependency file
     """
 
     source: str
@@ -404,12 +416,12 @@ class Dependency:
 
 @dataclass
 class EntryPoints:
-    """
-    Path of the Python classes implementing the task interface.
+    """Path of the Python classes implementing the task interface.
 
-    :var base: Base interface implementing the functionality in a framework such as PyTorch or TensorFlow
-    :var openvino: OpenVINO interface
-    :var nncf: NNCF interface
+    Attributes:
+        base (str): Base interface implementing the functionality in a framework such as PyTorch or TensorFlow
+        openvino (Optional[str]): OpenVINO interface.
+        nncf (Optional[str]): NNCF interface
     """
 
     base: str
@@ -420,38 +432,43 @@ class EntryPoints:
 # pylint: disable=too-many-instance-attributes
 @dataclass
 class ModelTemplate:
-    """
-    This class represents a Task in the Task database. It can be either a CLASS type,
-    with the class path specified or a GRPC type with its address.
+    """This class represents a Task in the Task database.
+
+    It can be either a CLASS type, with the class path specified or a GRPC type with its address.
     The task chain uses this information to setup a `ChainLink` (A task in the chain)
 
-    :var model_template_id: ID of the model template
-    :var model_template_path: path to the original model template file
-    :var name: user-friendly name for the algorithm used in the task
-    :var summary: Summary of what the algorithm does
-    :var application: Name of the application solved by this algorithm
-    :var framework: The framework used by the algorithm
-    :var max_nodes: Max number of nodes for training
-    :var initial_weights: Optional URL to the initial weights used by the algorithm
-    :var is_trainable: specify whether task is trainable
-    :var training_targets: device used for training
-    :var inference_targets: device used for inference
-    :var dataset_requirements: list of dataset requirements
-    :var capabilities: list of task capabilities
-    :var instantiation: InstantiationType (CLASS or GRPC)
-    :var hyper_parameters: HyperParameterData object containing the base path to the configurable parameter definition,
-        as well as any overrides for the base parameters that are specific for the current template
-    :var grpc_address: the grpc host address (for instantiation type == GRPC)
-    :var entrypoints: Entrypoints implementing the Python task interface
-    :var exportable_code_expression: if it exists, the path to the exportable code sources
-    :var task_type_sort_priority: priority of order of how tasks are shown in the pipeline dropdown
-        for a given task type. E.g. for classification Inception is default and has weight 0.
-        Unassigned priority will have -1 as priority.
-        mobilenet is less important, and has a higher value. Default is zero (the highest priority).
-    :var model_optimization_methods: list of ModelOptimizationMethod. This lists all methods available
-        to optimize the inference model for the task
-    :var gigaflops: how many billions of operations are required to do inference on a single data item
-    :var size: how much disk space the model will approximately take
+    model_template_id (str): ID of the model template
+    model_template_path (str): path to the original model template file
+    name (str): user-friendly name for the algorithm used in the task
+    task_family (TaskFamily): overall task family of the task. One of VISION, FLOW_CONTROL AND DATASET.
+    task_type (TaskType): Type of algorithm within task family.
+    instantiation (InstantiationType): InstantiationType (CLASS or GRPC)
+    summary (str): Summary of what the algorithm does. Defaults to "".
+    framework (Optional[str]): The framework used by the algorithm. Defaults to None.
+    max_nodes (int): Max number of nodes for training. Defaults to 1.
+    application (Optional[str]): Name of the application solved by this algorithm. Defaults to None.
+    dependencies (Liar[Dependency]): List of dependencies required by the algorithm. Defaults to empty `field`.
+    initial_weights (Optional[str]): Optional URL to the initial weights used by the algorithm. Defaults to None
+    training_targets (List[TargetDevice]): device used for training. Defaults to empty `field`.
+    inference_targets (List[TargetDevices]): device used for inference. Defaults to empty `field`.
+    dataset_requirements (DatasetRequirements): list of dataset requirements. Defaults to empty `field`.
+    model_optimization_methods (List[ModelOptimizationMethod]): list of ModelOptimizationMethod.
+        This lists all methods available to optimize the inference model for the task
+    hyper_parameters (HyperParameterData): HyperParameterData object containing the base path to the configurable
+        parameter definition, as well as any overrides for the base parameters that are specific for the
+        current template.
+    is_trainable (bool): specify whether task is trainable
+    capabilities (List[str]): list of task capabilities
+    grpc_address (Optional[str]): the grpc host address (for instantiation type == GRPC)
+    entrypoints (Optional[Entrypoints]): Entrypoints implementing the Python task interface
+    base_model_path (str): Path to template file for the base model used for nncf compression.
+    exportable_code_paths (ExportableCodePaths): if it exists, the path to the exportable code sources.
+        Defaults to empty `field`.
+    task_type_sort_priority (int): priority of order of how tasks are shown in the pipeline dropdown for a given task
+        type. E.g. for classification Inception is default and has weight 0. Unassigned priority will have -1 as
+        priority. mobilenet is less important, and has a higher value. Default is zero (the highest priority).
+    gigaflops (float): how many billions of operations are required to do inference on a single data item.
+    size (float): how much disk space the model will approximately take.
     """
 
     model_template_id: str
@@ -480,8 +497,10 @@ class ModelTemplate:
     task_type_sort_priority: int = -1
     gigaflops: float = 0
     size: float = 0
+    hpo: Optional[dict] = None
 
     def __post_init__(self):
+        """Do sanitation checks before loading the hyper-parameters."""
         if self.instantiation == InstantiationType.GRPC and self.grpc_address == "":
             raise ValueError("Task is registered as gRPC, but no gRPC address is specified")
         if self.instantiation == InstantiationType.CLASS and self.entrypoints is None:
@@ -495,32 +514,19 @@ class ModelTemplate:
         self.hyper_parameters.load_parameters(self.model_template_path)
 
     def computes_uncertainty_score(self) -> bool:
-        """
-        Returns true if "compute_uncertainty_score" is in capabilities
-
-        :return: true if "compute_uncertainty_score" is in capabilities, false otherwise
-        """
+        """Returns true if "compute_uncertainty_score" is in capabilities false otherwise."""
         return "compute_uncertainty_score" in self.capabilities
 
     def computes_representations(self) -> bool:
-        """
-        Returns true if "compute_representations" is in capabilities
-
-        :return: true if "compute_representations" is in capabilities, false otherwise
-        """
+        """Returns true if "compute_representations" is in capabilities."""
         return "compute_representations" in self.capabilities
 
     def is_task_global(self) -> bool:
-        """
-        Returns ``True`` if the task is global task i.e. if task produces global labels
-        """
+        """Returns ``True`` if the task is global task i.e. if task produces global labels."""
         return self.task_type.is_global
 
     def supports_auto_hpo(self) -> bool:
-        """
-        Returns `True` if the algorithm supports automatic hyper parameter
-        optimization, `False` otherwise
-        """
+        """Returns `True` if the algorithm supports automatic hyper parameter optimization, `False` otherwise."""
         if not self.hyper_parameters.has_valid_configurable_parameters:
             return False
         auto_hpo_state_results = search_in_config_dict(
@@ -533,9 +539,7 @@ class ModelTemplate:
 
 
 class NullModelTemplate(ModelTemplate):
-    """
-    Represent an empty model template. Note that a task based on this model template cannot be instantiated.
-    """
+    """Represent an empty model template. Note that a task based on this model template cannot be instantiated."""
 
     def __init__(self) -> None:
         super().__init__(
@@ -569,8 +573,13 @@ TRAINABLE_TASK_TYPES: Sequence[TaskType] = (
 
 
 def _parse_model_template_from_omegaconf(config: Union[DictConfig, ListConfig]) -> ModelTemplate:
-    """
-    Parse an OmegaConf configuration into a model template.
+    """Parse an OmegaConf configuration into a model template.
+
+    Args:
+        config (Union[DictConfig, ListConfig]): The configuration to parse.
+
+    Returns:
+        ModelTemplate: The parsed model template.
     """
     schema = OmegaConf.structured(ModelTemplate)
     config = OmegaConf.merge(schema, config)
@@ -578,10 +587,13 @@ def _parse_model_template_from_omegaconf(config: Union[DictConfig, ListConfig]) 
 
 
 def parse_model_template(model_template_path: str) -> ModelTemplate:
-    """
-    Read a model template from a file.
+    """Read a model template from a file.
 
-    :param model_template_path: Path to the model template template.yaml file
+    Args:
+        model_template_path (str): Path to the model template template.yaml file
+
+    Returns:
+        ModelTemplate: The model template parsed from the file.
     """
     config = OmegaConf.load(model_template_path)
     if not isinstance(config, DictConfig):
@@ -594,10 +606,15 @@ def parse_model_template(model_template_path: str) -> ModelTemplate:
 
 
 def parse_model_template_from_dict(model_template_dict: dict) -> ModelTemplate:
-    """
-    Read a model template from a dictionary.
+    """Read a model template from a dictionary.
 
     Note that the model_template_id must be defined inside the dictionary.
+
+    Args:
+        model_template_dict (dict): Dictionary containing the model template.
+
+    Returns:
+        ModelTemplate: The model template.
     """
     config = OmegaConf.create(model_template_dict)
     return _parse_model_template_from_omegaconf(config)

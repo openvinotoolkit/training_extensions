@@ -1,6 +1,4 @@
-"""
-Model templates registry.
-"""
+"""Model templates registry."""
 
 # Copyright (C) 2021 Intel Corporation
 #
@@ -26,9 +24,7 @@ from otx.api.entities.model_template import parse_model_template
 
 
 class Registry:
-    """
-    Class that implements a model templates registry.
-    """
+    """Class that implements a model templates registry."""
 
     def __init__(self, templates_dir=None, templates=None, experimental=False):
         if templates is None:
@@ -62,9 +58,7 @@ class Registry:
         return {template.task_type for template in templates}
 
     def filter(self, framework=None, task_type=None):
-        """
-        Filters registry by framework and/or task type and returns filtered registry.
-        """
+        """Filters registry by framework and/or task type and returns filtered registry."""
 
         templates = copy.deepcopy(self.templates)
         if framework is not None:
@@ -74,9 +68,7 @@ class Registry:
         return Registry(templates=templates)
 
     def get(self, template_id):
-        """
-        Returns a model template with specified template_id.
-        """
+        """Returns a model template with specified template_id."""
 
         templates = [template for template in self.templates if template.model_template_id == template_id]
         if not templates:
@@ -84,6 +76,7 @@ class Registry:
         return templates[0]
 
     def __str__(self):
+        """Returns the string representation of the registry."""
         templates_infos = [
             {
                 "name": t.name,
@@ -97,8 +90,8 @@ class Registry:
 
 
 def find_and_parse_model_template(path_or_id):
-    """
-    In first function attempts to read a model template from disk under assumption that a path is passed.
+    """In first function attempts to read a model template from disk under assumption that a path is passed.
+
     If the attempt is failed, it tries to find template in registry under assumption that an ID is passed.
     """
 

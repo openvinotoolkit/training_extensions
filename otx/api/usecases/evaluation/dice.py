@@ -1,4 +1,4 @@
-""" This module contains the Dice performance provider. """
+"""This module contains the Dice performance provider."""
 
 # Copyright (C) 2021-2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
@@ -29,8 +29,7 @@ from otx.api.utils.time_utils import timeit
 
 
 class DiceAverage(IPerformanceProvider):
-    """
-    Computes the average Dice coefficient overall and for individual labels.
+    """Computes the average Dice coefficient overall and for individual labels.
 
     See https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient for background information.
 
@@ -40,10 +39,11 @@ class DiceAverage(IPerformanceProvider):
     Dice is computed by computing the intersection and union computed over the whole dataset, instead of
     computing intersection and union for individual images and then averaging.
 
-    :param resultset: ResultSet that score will be computed for
-    :param average:
-        MICRO: every pixel has the same weight, regardless of label
-        MACRO: compute score per label, return the average of the per-label scores
+    Args:
+        resultset (ResultSetEntity): ResultSet that score will be computed for
+        average (MetricAverageMethod): One of
+            - MICRO: every pixel has the same weight, regardless of label
+            - MACRO: compute score per label, return the average of the per-label scores
     """
 
     def __init__(
@@ -59,19 +59,16 @@ class DiceAverage(IPerformanceProvider):
 
     @property
     def overall_dice(self) -> ScoreMetric:
-        """
-        Returns the dice average as ScoreMetric
-        """
+        """Returns the dice average as ScoreMetric."""
         return self._overall_dice
 
     @property
     def dice_per_label(self) -> Dict[LabelEntity, ScoreMetric]:
-        """
-        Returns a dictionary mapping the label to its corresponding dice score (as ScoreMetric)
-        """
+        """Returns a dictionary mapping the label to its corresponding dice score (as ScoreMetric)."""
         return self._dice_per_label
 
     def get_performance(self) -> Performance:
+        """Returns the performance of the resultset."""
         score = self.overall_dice
         dashboard_metrics: Optional[List[MetricsGroup]]
         if len(self.dice_per_label) == 0:
@@ -93,11 +90,15 @@ class DiceAverage(IPerformanceProvider):
     def __compute_dice_averaged_over_pixels(
         cls, resultset: ResultSetEntity, average: MetricAverageMethod
     ) -> Tuple[ScoreMetric, Dict[LabelEntity, ScoreMetric]]:
-        """
-        computes the diced averaged over pixels
-        :param average: Averaging method to use
-        :param resultset: Result set to use
-        :return: A tuple containing the overall DICE score, and per label DICE score
+        """Computes the diced averaged over pixels.
+
+        Args:
+            resultset (ResultSetEntity): Result set to use
+            average (MetricAverageMethod): Averaging method to use
+
+        Returns:
+            Tuple[ScoreMetric, Dict[LabelEntity, ScoreMetric]]: Tuple of the overall dice and the dice averaged over
+                pixels for each label.
         """
         if len(resultset.prediction_dataset) == 0:
             raise ValueError("Cannot compute the DICE score of an empty result set.")
@@ -132,18 +133,27 @@ class DiceAverage(IPerformanceProvider):
         all_cardinality: Dict[Optional[LabelEntity], int],
         average: MetricAverageMethod,
     ) -> Tuple[ScoreMetric, Dict[LabelEntity, ScoreMetric]]:
-        """
-        Computes dice score using intersection and cardinality dictionaries.
+        """Computes dice score using intersection and cardinality dictionaries.
+
         Both dictionaries must contain the same set of keys.
         Dice score is computed by: 2 * intersection / cardinality
 
-        :param average: Averaging method to use
-        :param all_intersection: collection of intersections per label
-        :param all_cardinality: collection of cardinality per label
-        :return: A tuple containing the overall DICE score, and per label DICE score
-        :raises KeyError: if the keys in intersection and cardinality do not match
-        :raises KeyError: if the key `None` is not present in either all_intersection or all_cardinality
-        :raises ValueError: if the intersection for a certain key is larger than its corresponding cardinality
+        Args:
+            average: Averaging method to use
+            all_intersection: collection of intersections per label
+            all_cardinality: collection of cardinality per label
+
+        Returns:
+            A tuple containing the overall DICE score, and per label
+            DICE score
+
+        Raises:
+            KeyError: if the keys in intersection and cardinality do not
+                match
+            KeyError: if the key `None` is not present in either
+                all_intersection or all_cardinality
+            ValueError: if the intersection for a certain key is larger
+                than its corresponding cardinality
         """
         dice_per_label: Dict[LabelEntity, ScoreMetric] = {}
 
@@ -177,10 +187,12 @@ class DiceAverage(IPerformanceProvider):
 
     @staticmethod
     def __compute_single_dice_score_using_intersection_and_cardinality(intersection: int, cardinality: int):
-        """
-        Computes a single dice score using intersection and cardinality.
+        """Computes a single dice score using intersection and cardinality.
+
         Dice score is computed by: 2 * intersection / cardinality
-        :raises ValueError: If intersection is larger than cardinality
+
+        Raises:
+            ValueError: If intersection is larger than cardinality
         """
         if intersection > cardinality:
             raise ValueError("intersection cannot be larger than cardinality")

@@ -1,6 +1,4 @@
-"""
-Visualisation module.
-"""
+"""Visualisation module."""
 
 # Copyright (C) 2021 Intel Corporation
 #
@@ -17,14 +15,20 @@ Visualisation module.
 # and limitations under the License.
 
 
+from typing import List, Tuple
+from warnings import warn
+
 import cv2
 import numpy as np
+from cv2 import Mat
 
+from otx.api.entities.annotation import Annotation
 from otx.api.entities.model_template import TaskType
 from otx.api.entities.shapes.polygon import Polygon
+from otx.api.entities.shapes.rectangle import Rectangle
 
 
-def put_text_on_rect_bg(frame, message, position, color=(255, 255, 0)):
+def put_text_on_rect_bg(frame: Mat, message: str, position: Tuple[int, int], color=(255, 255, 0)):
     """Puts a text message on a black rectangular aread in specified position of a frame."""
 
     font_face = cv2.FONT_HERSHEY_COMPLEX
@@ -47,10 +51,8 @@ def put_text_on_rect_bg(frame, message, position, color=(255, 255, 0)):
     return text_size
 
 
-def draw_masks(frame, predictions, put_object_count=False):
-    """
-    Converts predictions to masks and draw them on frame.
-    """
+def draw_masks(frame: Mat, predictions, put_object_count: bool = False):
+    """Converts predictions to masks and draw them on frame."""
 
     frame = frame.copy()
     height, width = frame.shape[0], frame.shape[1]
@@ -99,10 +101,8 @@ def draw_masks(frame, predictions, put_object_count=False):
     return frame
 
 
-def put_labels(frame, predictions):
-    """
-    Converts predictions to text labels and puts them to the top left corner of a frame.
-    """
+def put_labels(frame: Mat, predictions: List[Annotation]):
+    """Converts predictions to text labels and puts them to the top left corner of a frame."""
 
     frame = frame.copy()
     assert len(predictions) == 1
@@ -114,34 +114,35 @@ def put_labels(frame, predictions):
     return frame
 
 
-def draw_bounding_boxes(frame, predictions, put_object_count):
-    """
-    Converts predictions to bounding boxes and draws them on a frame.
-    """
+def draw_bounding_boxes(frame: Mat, predictions: List[Annotation], put_object_count: bool):
+    """Converts predictions to bounding boxes and draws them on a frame."""
 
     frame = frame.copy()
     height, width = frame.shape[0], frame.shape[1]
     for prediction in predictions:
-        x1 = int(prediction.shape.x1 * width)
-        x2 = int(prediction.shape.x2 * width)
-        y1 = int(prediction.shape.y1 * height)
-        y2 = int(prediction.shape.y2 * height)
-        assert len(prediction.get_labels()) == 1
-        label = prediction.get_labels()[0]
-        color = tuple(getattr(label.color, x) for x in ("blue", "green", "red"))
-        cv2.rectangle(frame, (x1, y1), (x2, y2), color, thickness=2)
-        put_text_on_rect_bg(frame, label.name, (x1, y1), color=color)
+        if isinstance(prediction.shape, Rectangle):
+            x1 = int(prediction.shape.x1 * width)
+            x2 = int(prediction.shape.x2 * width)
+            y1 = int(prediction.shape.y1 * height)
+            y2 = int(prediction.shape.y2 * height)
+            assert len(prediction.get_labels()) == 1
+            label = prediction.get_labels()[0]
+            color = tuple(getattr(label.color, x) for x in ("blue", "green", "red"))
+            cv2.rectangle(frame, (x1, y1), (x2, y2), color, thickness=2)
+            put_text_on_rect_bg(frame, label.name, (x1, y1), color=color)
+        else:
+            warn(
+                f"Predictions called on Annotations with shape {type(prediction.shape)}."
+                "Expected shape to be of type Rectangle."
+            )
 
     if put_object_count:
         put_text_on_rect_bg(frame, f"Obj. count: {len(predictions)}", (0, 0))
     return frame
 
 
-def draw_predictions(task_type, predictions, frame, fit_to_size):
-    """
-    Converts predictions to visual representations depending on task type and
-    draws them on a frame.
-    """
+def draw_predictions(task_type: TaskType, predictions: List[Annotation], frame: Mat, fit_to_size: Tuple[int, int]):
+    """Converts predictions to visual representations depending on task type and draws them on a frame."""
 
     width, height = frame.shape[1], frame.shape[0]
     if fit_to_size:

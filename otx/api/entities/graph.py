@@ -11,10 +11,10 @@ from otx.api.entities.interfaces.graph_interface import IGraph
 
 
 class Graph(IGraph):
-    """
-    The concrete implementation of IGraph. This implementation is using networkx library.
+    """The concrete implementation of IGraph. This implementation is using networkx library.
 
-    :param directed: set to True if the graph is a directed graph.
+    Args:
+        directed (bool): set to True if the graph is a directed graph.
     """
 
     def __init__(self, directed: bool = False):
@@ -22,34 +22,34 @@ class Graph(IGraph):
         self.directed = directed
 
     def get_graph(self) -> Union[nx.Graph, nx.MultiDiGraph]:
-        """
-        Get the underlying NetworkX graph.
-        """
+        """Get the underlying NetworkX graph."""
         return self._graph
 
     def set_graph(self, graph: Union[nx.Graph, nx.MultiDiGraph]):
-        """
-        Set the underlying NetworkX graph.
-        """
+        """Set the underlying NetworkX graph."""
         self._graph = graph
 
     def add_edge(self, node1, node2, edge_value=None):
+        """Adds edge between node1 and node2."""
         # pylint: disable=arguments-differ
         self._graph.add_edge(node1, node2, value=edge_value)
 
     def num_nodes(self) -> int:
+        """Returns the number of nodes in the graph."""
         return self._graph.number_of_nodes()
 
     def add_node(self, node):
+        """Adds node to the graph."""
         if node not in self._graph.nodes:
             self._graph.add_node(node)
 
     def has_edge_between(self, node1, node2):
+        """Returns True if there is an edge between node1 and node2."""
         return node1 in self.neighbors(node2)
 
     def neighbors(self, node):
-        """
-        Returns neighbors of `label`
+        """Returns neighbors of `label`.
+
         Note: when `node` does not exist in the graph an empty list is returned
         """
         try:
@@ -59,6 +59,7 @@ class Graph(IGraph):
         return result
 
     def find_out_edges(self, node):
+        """Returns the edges that have `node` as a destination."""
         # pylint: disable=no-member
         if node not in self._graph.nodes:
             raise KeyError(f"The node `{node}` is not part of the graph")
@@ -68,6 +69,7 @@ class Graph(IGraph):
         return []
 
     def find_in_edges(self, node):
+        """Returns the edges that have `node` as a source."""
         # pylint: disable=no-member
         if node not in self._graph.nodes:
             raise KeyError(f"The node `{node}` is not part of the graph")
@@ -77,17 +79,17 @@ class Graph(IGraph):
         return []
 
     def find_cliques(self):
-        """
-        Returns cliques in the graph
-        """
+        """Returns cliques in the graph."""
         return nx.algorithms.clique.find_cliques(self._graph)
 
     @property
     def nodes(self):
+        """Returns the nodes in the graph."""
         return self._graph.nodes
 
     @property
     def edges(self):
+        """Returns all the edges in the graph."""
         if isinstance(self._graph, nx.MultiDiGraph):
             all_edges = self._graph.edges(keys=True, data=True)
         else:
@@ -96,24 +98,25 @@ class Graph(IGraph):
 
     @property
     def num_labels(self):
-        """
-        Returns the number of labels in the graph
-        """
+        """Returns the number of labels in the graph."""
         return nx.convert_matrix.to_numpy_matrix(self._graph).shape[0]
 
     def remove_edges(self, node1, node2):
+        """Removes edges between both the nodes."""
         self._graph.remove_edge(node1, node2)
 
     def remove_node(self, node):
-        """
-        Remove node from graph
-        :param node: node to remove
+        """Remove node from graph.
+
+        Args:
+            node: node to remove
         """
         self._graph.remove_node(node)
 
     def descendants(self, parent):
-        """
-        Returns descendants (children and children of children, etc.) of `parent`
+        """Returns descendants.
+
+        (children and children of children, etc.) of `parent`.
         """
         try:
             edges = list(nx.edge_dfs(self._graph, parent, orientation="reverse"))
@@ -122,6 +125,7 @@ class Graph(IGraph):
         return [edge[0] for edge in edges]
 
     def __eq__(self, other: object) -> bool:
+        """Returns True if the two graphs are equal."""
         if isinstance(other, Graph):
             return (
                 self.directed == other.directed
@@ -132,15 +136,11 @@ class Graph(IGraph):
 
 
 class MultiDiGraph(Graph):
-    """
-    Multi Dimensional implementation of a Graph.
-    """
+    """Multi Dimensional implementation of a Graph."""
 
     def __init__(self) -> None:
         super().__init__(directed=True)
 
     def topological_sort(self):
-        """
-        Returns a generator of nodes in topologically sorted order
-        """
+        """Returns a generator of nodes in topologically sorted order."""
         return nx.topological_sort(self._graph)

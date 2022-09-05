@@ -26,7 +26,7 @@ class IVisualizer(metaclass=abc.ABCMeta):
         self,
         image: np.ndarray,
         annotation: AnnotationSceneEntity,
-        meta: dict,
+        meta: Optional[dict] = None,
     ) -> np.ndarray:
         """
         Draw annotations on the image

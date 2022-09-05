@@ -1,4 +1,4 @@
-"""This module implements the ID entity"""
+"""This module implements the ID entity."""
 # Copyright (C) 2021-2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -9,15 +9,14 @@ from bson import ObjectId
 
 
 class ID(str):
-    """
-    An identifier for objects that can be persisted in repositories
+    """An identifier for objects that can be persisted in repositories.
 
     Usually the creation of IDs is handled by the repositories. In that case objects are initialized with an empty ID()
+        >>> str(ID())
+        ''
 
-    >>> str(ID())
-    ''
-
-    :param representation: value of the identifier
+    Args:
+        Optional[Union[str, ObjectId]]: value of the identifier
     """
 
     # Instead of using composition, we directly subclass the str builtin type.
@@ -29,6 +28,7 @@ class ID(str):
     # The __init__ function is still left for typing correctness and so that Sphinx can get the prototype of the class.
 
     def __new__(cls, representation: Optional[Union[str, ObjectId]] = None):
+        """Creates a new ID object."""
         if representation is None:
             representation = ""
         elif isinstance(representation, ObjectId):
@@ -48,10 +48,9 @@ class ID(str):
     # It should be the same as the argument in init
     @property
     def representation(self):
-        """
-        Returns the value of the identifier
-        """
+        """Returns the value of the identifier."""
         return self
 
     def __repr__(self):
+        """Returns the representation of the identifier."""
         return f"ID({self})"

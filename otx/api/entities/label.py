@@ -1,8 +1,8 @@
+"""This module define the label entity."""
 # Copyright (C) 2021-2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 
-"""This module define the label entity."""
 
 import datetime
 from enum import Enum, auto
@@ -14,9 +14,7 @@ from otx.api.utils.time_utils import now
 
 
 class Domain(Enum):
-    """
-    Describes an algorithm domain like classification, detection, ...
-    """
+    """Describes an algorithm domain like classification, detection, etc."""
 
     NULL = auto()
     CLASSIFICATION = auto()
@@ -29,13 +27,12 @@ class Domain(Enum):
     ROTATED_DETECTION = auto()
 
     def __str__(self):
+        """Returns Domain name."""
         return str(self.name)
 
 
 class LabelEntity:
-    """
-    This represents a label. The Label is the object that the user annotates
-    and the tasks predict.
+    """This represents a label. The Label is the object that the user annotates and the tasks predict.
 
     For example, a label with name "car" can be constructed as follows.
 
@@ -69,16 +66,20 @@ class LabelEntity:
     This is why an empty label is introduced. The empty label makes an explicit
     distinction between missing annotations and "negative" images.
 
-    :param name: the name of the label
-    :param domain: the algorithm domain this label is associated to
-    :param color: the color of the label (See :class:`Color`)
-    :param hotkey: key or combination of keys to select this label in the UI
-    :param creation_date: the date time of the label creation
-    :param is_empty: set to True if the label is an empty label.
-    :param id: the ID of the label. Set to ID() so that a new unique ID
-        will be assigned upon saving. If the argument is None, it will be set to ID()
-    :param is_anomalous: boolean that indicates whether the label is the Anomalous label. Always set to False for non-
-        anomaly projects.
+    Args:
+        name: the name of the label
+        domain: the algorithm domain this label is associated to
+        color: the color of the label (See :class:`Color`)
+        hotkey: key or combination of keys to select this label in the
+            UI
+        creation_date: the date time of the label creation
+        is_empty: set to True if the label is an empty label.
+        id: the ID of the label. Set to ID() so that a new unique ID
+            will be assigned upon saving. If the argument is None, it
+            will be set to ID()
+        is_anomalous: boolean that indicates whether the label is the
+            Anomalous label. Always set to False for non- anomaly
+            projects.
     """
 
     # pylint: disable=redefined-builtin, too-many-instance-attributes, too-many-arguments; Requires refactor
@@ -108,9 +109,7 @@ class LabelEntity:
 
     @property
     def name(self):
-        """
-        Returns the label name.
-        """
+        """Returns the label name."""
         return self._name
 
     @name.setter
@@ -119,9 +118,7 @@ class LabelEntity:
 
     @property
     def color(self) -> Color:
-        """
-        Returns the Color object for the label.
-        """
+        """Returns the Color object for the label."""
         return self._color
 
     @color.setter
@@ -130,9 +127,7 @@ class LabelEntity:
 
     @property
     def hotkey(self) -> str:
-        """
-        Returns the hotkey for the label
-        """
+        """Returns the hotkey for the label."""
         return self._hotkey
 
     @hotkey.setter
@@ -141,9 +136,7 @@ class LabelEntity:
 
     @property
     def domain(self):
-        """
-        Returns the algorithm domain associated to this label
-        """
+        """Returns the algorithm domain associated to this label."""
         return self._domain
 
     @domain.setter
@@ -152,23 +145,17 @@ class LabelEntity:
 
     @property
     def is_empty(self) -> bool:
-        """
-        Returns a boolean indicating if the label is an empty label
-        """
+        """Returns a boolean indicating if the label is an empty label."""
         return self._is_empty
 
     @property
     def creation_date(self) -> datetime.datetime:
-        """
-        Returns the creation date of the label
-        """
+        """Returns the creation date of the label."""
         return self._creation_date
 
     @property
     def id_(self) -> ID:
-        """
-        Returns the label id.
-        """
+        """Returns the label id."""
         return self.__id_
 
     @id_.setter
@@ -177,21 +164,23 @@ class LabelEntity:
 
     @property
     def id(self) -> ID:
-        """DEPRECATED"""
+        """DEPRECATED."""
         return self.__id_
 
     @id.setter
     def id(self, value: ID):
-        """DEPRECATED"""
+        """DEPRECATED."""
         self.__id_ = value
 
     def __repr__(self):
+        """String representation of the label."""
         return (
             f"LabelEntity({self.id_}, name={self.name}, hotkey={self.hotkey}, "
             f"domain={self.domain}, color={self.color}, is_anomalous={self.is_anomalous})"
         )
 
     def __eq__(self, other):
+        """Returns True if the two labels are equal."""
         if isinstance(other, LabelEntity):
             return (
                 self.id_ == other.id_
@@ -204,14 +193,17 @@ class LabelEntity:
         return False
 
     def __lt__(self, other):
+        """Returns True if self.id < other.id."""
         if isinstance(other, LabelEntity):
             return self.id_ < other.id_
         return False
 
     def __gt__(self, other):
+        """Returns True if self.id is greater than other.id."""
         if isinstance(other, LabelEntity):
             return self.id_ > other.id_
         return False
 
     def __hash__(self):
+        """Returns hash of the label."""
         return hash(str(self))
