@@ -15,8 +15,8 @@
 # and limitations under the License.
 
 from attr import attrs
-from configs.base import BaseAnomalyConfig
 
+from otx.algorithms.anomaly.configs.base import BaseAnomalyConfig
 from otx.algorithms.anomaly.configs.base.configuration_enums import ModelBackbone
 from otx.api.configuration.elements import (
     add_parameter_group,
