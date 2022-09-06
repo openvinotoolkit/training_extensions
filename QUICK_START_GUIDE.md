@@ -212,13 +212,13 @@ optional arguments:
                         header: Enable early stopping of the training
                         type: BOOLEAN
                         default_value: True
-  --learning_parameters.early_stop_patience PATIENCE
+  --learning_parameters.early_stop_patience EARLY_STOP_PATIENCE
                         header: Patience for early stopping
                         type: INTEGER
                         default_value: 10
                         max_value: 50
                         min_value: 0
-  --learning_parameters.early_stop_iteration_patience ITERATION_PATIENCE
+  --learning_parameters.early_stop_iteration_patience EARLY_STOP_ITERATION_PATIENCE
                         header: Iteration patience for early stopping
                         type: INTEGER
                         default_value: 0
