@@ -1,2 +1,2 @@
 opencv-python==4.5.5.64  # remedy for fixed opencv-python-headless version in e2e-test-framework
-# typing-extensions>=4.1.0 # remedy for fixed typing-extensions version in e2e-test-framework
+optuna==2.10.1 # remedy for fixed optuna version incompatible in OTE CI
