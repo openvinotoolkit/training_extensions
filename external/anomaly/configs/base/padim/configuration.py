@@ -38,7 +38,7 @@ class PadimAnomalyBaseConfig(BaseAnomalyConfig):
         header = string_attribute("Learning Parameters")
         description = header
 
-        # Editable is set to false as wide_resent_model is very large for
+        # Editable is set to false as WideResNet50 is very large for
         # onnx's protobuf (2gb) limit. This ends up crashing the export.
         backbone = selectable(
             default_value=ModelBackbone.RESNET18,
