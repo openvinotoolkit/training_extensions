@@ -81,7 +81,7 @@ class BaseConfig(ConfigurableParameters):
             default_value=False,
             header="Use adaptive validation interval",
             description="Depending on the size of iteration per epoch, adaptively update the validation interval and related values.",
-            warning="This will automatically control the This and interval when early stopping is enabled.",
+            warning="This will automatically control the patience and interval when early stopping is enabled.",
             affects_outcome_of=ModelLifecycle.TRAINING
         )
 
