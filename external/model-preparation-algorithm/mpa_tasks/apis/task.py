@@ -185,10 +185,10 @@ class BaseTask:
         self._precision = [ModelPrecision.FP32]
 
         # Add/remove adaptive interval hook
-        if 'use_adaptive_interval' in self._recipe_cfg:
-            ada_interval_cfg = self._recipe_cfg.get('adaptive_validation_interval', False)
-            if self._recipe_cfg.use_adaptive_interval is False and ada_interval_cfg:
-                self._recipe_cfg.pop('adaptive_validation_interval')
+        if self._recipe_cfg.get('use_adaptive_interval', False):
+            self._recipe_cfg.adaptive_validation_interval = self._recipe_cfg.get('adaptive_validation_interval', dict(max_interval=5))
+        else:
+            self._recipe_cfg.pop('adaptive_validation_interval', None)
         
         # Add/remove early stop hook
         if 'early_stop' in self._recipe_cfg:
