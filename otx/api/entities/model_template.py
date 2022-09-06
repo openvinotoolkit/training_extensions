@@ -497,7 +497,7 @@ class ModelTemplate:
     task_type_sort_priority: int = -1
     gigaflops: float = 0
     size: float = 0
-    hpo: Optional[dict] = None
+    hpo: Optional[Dict] = None
 
     def __post_init__(self):
         """Do sanitation checks before loading the hyper-parameters."""
