@@ -24,9 +24,9 @@ def get_template_rel_dir(template):
     return os.path.dirname(os.path.relpath(template.model_template_path))
 
 
-def get_some_vars(template, root):
+def get_template_dir(template, root) -> str:
 
-    # Get the type of the algorithm.
+    # Get the template directory of the algorithm.
     # The location of the template files are as follows:
     # ~/training_extensions/otx/algorithms/<algorithm>/**/template.yaml
     # To get the ``algorithm``, index of the "algorithms" can be
@@ -41,11 +41,11 @@ def get_some_vars(template, root):
     template_work_dir = os.path.join(work_dir, template_dir)
 
     os.makedirs(template_work_dir, exist_ok=True)
-    return work_dir, template_work_dir, algo_backend_dir
+    return template_work_dir
 
 
 def otx_train_testing(template, root, otx_dir, args):
-    work_dir, template_work_dir, _ = get_some_vars(template, root)
+    template_work_dir = get_template_dir(template, root)
     command_line = [
         "otx",
         "train",
@@ -70,7 +70,7 @@ def otx_train_testing(template, root, otx_dir, args):
 
 
 def otx_hpo_testing(template, root, otx_dir, args):
-    _, template_work_dir, _ = get_some_vars(template, root)
+    template_work_dir = get_template_dir(template, root)
     if os.path.exists(f"{template_work_dir}/hpo"):
         shutil.rmtree(f"{template_work_dir}/hpo")
     command_line = [
@@ -101,7 +101,7 @@ def otx_hpo_testing(template, root, otx_dir, args):
 
 
 def otx_export_testing(template, root):
-    _, template_work_dir, _ = get_some_vars(template, root)
+    template_work_dir = get_template_dir(template, root)
     command_line = [
         "otx",
         "export",
@@ -118,7 +118,7 @@ def otx_export_testing(template, root):
 
 
 def otx_eval_testing(template, root, otx_dir, args):
-    _, template_work_dir, _ = get_some_vars(template, root)
+    template_work_dir = get_template_dir(template, root)
     command_line = [
         "otx",
         "eval",
@@ -137,7 +137,7 @@ def otx_eval_testing(template, root, otx_dir, args):
 
 
 def otx_eval_openvino_testing(template, root, otx_dir, args, threshold):
-    _, template_work_dir, _ = get_some_vars(template, root)
+    template_work_dir = get_template_dir(template, root)
     command_line = [
         "otx",
         "eval",
@@ -165,7 +165,7 @@ def otx_eval_openvino_testing(template, root, otx_dir, args, threshold):
 
 
 def otx_demo_testing(template, root, otx_dir, args):
-    _, template_work_dir, _ = get_some_vars(template, root)
+    template_work_dir = get_template_dir(template, root)
     command_line = [
         "otx",
         "demo",
@@ -181,7 +181,7 @@ def otx_demo_testing(template, root, otx_dir, args):
 
 
 def otx_demo_openvino_testing(template, root, otx_dir, args):
-    _, template_work_dir, _ = get_some_vars(template, root)
+    template_work_dir = get_template_dir(template, root)
     command_line = [
         "otx",
         "demo",
@@ -197,7 +197,7 @@ def otx_demo_openvino_testing(template, root, otx_dir, args):
 
 
 def otx_deploy_openvino_testing(template, root, otx_dir, args):
-    _, template_work_dir, _ = get_some_vars(template, root)
+    template_work_dir = get_template_dir(template, root)
     deployment_dir = f"{template_work_dir}/deployed_{template.model_template_id}"
     command_line = [
         "otx",
@@ -265,7 +265,7 @@ def otx_deploy_openvino_testing(template, root, otx_dir, args):
 
 
 def otx_eval_deployment_testing(template, root, otx_dir, args, threshold):
-    _, template_work_dir, _ = get_some_vars(template, root)
+    template_work_dir = get_template_dir(template, root)
     command_line = [
         "otx",
         "eval",
@@ -293,7 +293,7 @@ def otx_eval_deployment_testing(template, root, otx_dir, args, threshold):
 
 
 def otx_demo_deployment_testing(template, root, otx_dir, args):
-    _, template_work_dir, _ = get_some_vars(template, root)
+    template_work_dir = get_template_dir(template, root)
     command_line = [
         "otx",
         "demo",
@@ -309,7 +309,7 @@ def otx_demo_deployment_testing(template, root, otx_dir, args):
 
 
 def pot_optimize_testing(template, root, otx_dir, args):
-    _, template_work_dir, _ = get_some_vars(template, root)
+    template_work_dir = get_template_dir(template, root)
     command_line = [
         "otx",
         "optimize",
@@ -334,7 +334,7 @@ def pot_optimize_testing(template, root, otx_dir, args):
 
 
 def pot_eval_testing(template, root, otx_dir, args):
-    _, template_work_dir, _ = get_some_vars(template, root)
+    template_work_dir = get_template_dir(template, root)
     command_line = [
         "otx",
         "eval",
@@ -353,7 +353,7 @@ def pot_eval_testing(template, root, otx_dir, args):
 
 
 def nncf_optimize_testing(template, root, otx_dir, args):
-    _, template_work_dir, _ = get_some_vars(template, root)
+    template_work_dir = get_template_dir(template, root)
     command_line = [
         "otx",
         "optimize",
@@ -380,7 +380,7 @@ def nncf_optimize_testing(template, root, otx_dir, args):
 
 
 def nncf_export_testing(template, root):
-    _, template_work_dir, _ = get_some_vars(template, root)
+    template_work_dir = get_template_dir(template, root)
     command_line = [
         "otx",
         "export",
@@ -402,7 +402,7 @@ def nncf_export_testing(template, root):
 
 
 def nncf_eval_testing(template, root, otx_dir, args, threshold):
-    _, template_work_dir, _ = get_some_vars(template, root)
+    template_work_dir = get_template_dir(template, root)
     command_line = [
         "otx",
         "eval",
@@ -430,7 +430,7 @@ def nncf_eval_testing(template, root, otx_dir, args, threshold):
 
 
 def nncf_eval_openvino_testing(template, root, otx_dir, args):
-    _, template_work_dir, _ = get_some_vars(template, root)
+    template_work_dir = get_template_dir(template, root)
     command_line = [
         "otx",
         "eval",
