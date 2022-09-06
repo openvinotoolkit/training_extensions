@@ -93,7 +93,7 @@ class BaseConfig(ConfigurableParameters):
             affects_outcome_of=ModelLifecycle.TRAINING
         )
         
-        patience = configurable_integer(
+        early_stop_patience = configurable_integer(
             default_value=5,
             min_value=0,
             max_value=50,
@@ -103,7 +103,7 @@ class BaseConfig(ConfigurableParameters):
             affects_outcome_of=ModelLifecycle.TRAINING
         )
 
-        iteration_patience = configurable_integer(
+        early_stop_iteration_patience = configurable_integer(
             default_value=0,
             min_value=0,
             max_value=1000,

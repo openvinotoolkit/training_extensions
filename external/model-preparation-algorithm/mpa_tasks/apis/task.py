@@ -73,7 +73,7 @@ class BaseTask:
         self.on_hook_initialized = self.OnHookInitialized(self)
 
         # to override configuration at runtime
-        self.override_configs = defaultdict(list)
+        self.override_configs = {}
 
     def _run_task(self, stage_module, mode=None, dataset=None, parameters=None, **kwargs):
         # FIXME: Temporary remedy for CVS-88098
@@ -186,19 +186,15 @@ class BaseTask:
 
         # Add/remove adaptive interval hook
         if 'use_adaptive_interval' in self._recipe_cfg:
-            if self._recipe_cfg.use_adaptive_interval is True:
-                ada_interval_cfg = self._recipe_cfg.get('adaptive_validation_interval', None)
-                if ada_interval_cfg is None:
-                    self._recipe_cfg.adaptive_validation_interval = dict(max_interval=5)
-            else:
+            ada_interval_cfg = self._recipe_cfg.get('adaptive_validation_interval', False)
+            if self._recipe_cfg.use_adaptive_interval is False and ada_interval_cfg:
                 self._recipe_cfg.pop('adaptive_validation_interval')
-
+        
         # Add/remove early stop hook
         if 'early_stop' in self._recipe_cfg:
             remove_custom_hook(self._recipe_cfg, 'EarlyStoppingHook')
             early_stop = self._recipe_cfg.get('early_stop', False)
-            logger.info(f"early_stop : {early_stop}")
-            if early_stop is not False:
+            if early_stop:
                 early_stop_hook = ConfigDict(
                                     type='LazyEarlyStoppingHook',
                                     start=3,

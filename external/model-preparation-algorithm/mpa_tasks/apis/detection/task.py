@@ -185,9 +185,9 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         lr_config = ConfigDict(warmup_iters=warmup_iters) if warmup_iters > 0 \
             else ConfigDict(warmup_iters=warmup_iters, warmup=None)
         
-        if self._hyperparams.learning_parameters.enable_early_stopping is True:
-            early_stop = ConfigDict(patience=int(self._hyperparams.learning_parameters.patience),
-                                    iteration_patience=int(self._hyperparams.learning_parameters.iteration_patience))
+        if self._hyperparams.learning_parameters.enable_early_stopping:
+            early_stop = ConfigDict(patience=int(self._hyperparams.learning_parameters.early_stop_patience),
+                                    iteration_patience=int(self._hyperparams.learning_parameters.early_stop_iteration_patience))
         else:
             early_stop = False
 

@@ -133,7 +133,7 @@ learning_parameters:
       type: UI_RULES
     visible_in_ui: true
     warning: null
-  patience:
+  early_stop_patience:
     affects_outcome_of: TRAINING
     default_value: 10
     description: Training will stop if the model does not improve within the number of epochs of patience.
@@ -150,7 +150,7 @@ learning_parameters:
     value: 10
     visible_in_ui: true
     warning: This is applied exclusively when early stopping is enabled.
-  iteration_patience:
+  early_stop_iteration_patience:
     affects_outcome_of: TRAINING
     default_value: 0
     description:
