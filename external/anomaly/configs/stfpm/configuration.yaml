@@ -250,7 +250,7 @@ nncf_optimization:
     auto_hpo_value: null
     default_value: false
     description: Whether filter pruning is supported
-    editable: true
+    editable: false
     header: Whether filter pruning is supported
     type: BOOLEAN
     ui_rules:
@@ -259,7 +259,7 @@ nncf_optimization:
       rules: []
       type: UI_RULES
     value: false
-    visible_in_ui: true
+    visible_in_ui: false
     warning: null
   type: PARAMETER_GROUP
   visible_in_ui: true
