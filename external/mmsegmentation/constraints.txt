@@ -1,1 +1,1 @@
-typing-extensions>=4.1.0 # remedy for typing-extensions version in e2e-test-framework
+# typing-extensions>=4.1.0 # remedy for typing-extensions version in e2e-test-framework
