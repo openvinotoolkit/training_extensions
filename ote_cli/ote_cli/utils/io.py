@@ -68,8 +68,10 @@ def read_model(model_configuration, path, train_dataset):
         "pixel_threshold",
         "min",
         "max",
+        "configurable_params.json"
     )
 
+    # TODO[EUGENE]: READ CONFIGURABLE PARAM
     if path.endswith(".bin") or path.endswith(".xml"):
         # Openvino IR.
         model_adapters = {

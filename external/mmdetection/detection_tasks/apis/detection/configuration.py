@@ -167,7 +167,66 @@ class OTEDetectionConfig(ConfigurableParameters):
                             description="Quantization preset that defines quantization scheme",
                             editable=True, visible_in_ui=True)
 
+    @attrs
+    class __TilingParameters(ParameterGroup):
+        header = string_attribute('Tiling Parameters')
+        description = header
+        
+        enable_tiling = configurable_boolean(
+            default_value=False,
+            header="Enable tiling",
+            description="Enable tiling",
+            warning="",
+            affects_outcome_of=ModelLifecycle.NONE
+        )
+
+        tile_size = configurable_integer(
+            header="Tile Dimension",
+            description="Tile Dimension",
+            default_value=400,
+            min_value=100,
+            max_value=maxsize,
+            affects_outcome_of=ModelLifecycle.NONE
+        )
+
+        tile_overlap = configurable_float(
+            header="Tile Overlap",
+            description="Tile Overlap",
+            default_value=0.2,
+            min_value=0.0,
+            max_value=1.0,
+            affects_outcome_of=ModelLifecycle.NONE
+        )
+
+        tile_max_number = configurable_integer(
+            header="Max object per image",
+            description="Max object per image",
+            default_value=1500,
+            min_value=0,
+            max_value=maxsize,
+            affects_outcome_of=ModelLifecycle.NONE
+        )
+
+        enable_adaptive_params = configurable_boolean(
+            default_value=True,
+            header="Enable adaptive tiling parameters",
+            description="Enable adaptive tiling parameters",
+            warning="",
+            affects_outcome_of=ModelLifecycle.NONE
+        )
+
+        adaptive_object_tile_ratio = configurable_float(
+            header="Object Tile Ratio",
+            description="Object Tile Ratio",
+            default_value=0.01,
+            min_value=0.0,
+            max_value=1.0,
+            warning="",
+            affects_outcome_of=ModelLifecycle.NONE
+        )
+
     learning_parameters = add_parameter_group(__LearningParameters)
     postprocessing = add_parameter_group(__Postprocessing)
     nncf_optimization = add_parameter_group(__NNCFOptimization)
     pot_parameters = add_parameter_group(__POTParameter)
+    tiling_parameters = add_parameter_group(__TilingParameters)

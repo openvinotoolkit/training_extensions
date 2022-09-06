@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+from functools import partial
 import attr
 import copy
 import cv2
@@ -21,6 +22,7 @@ import numpy as np
 import os
 import ote_sdk.usecases.exportable_code.demo as demo
 import tempfile
+import time
 import warnings
 from addict import Dict as ADDict
 from compression.api import DataLoader
@@ -64,6 +66,7 @@ from ote_sdk.utils.argument_checks import (
     DatasetParamTypeCheck,
     check_input_parameters_type,
 )
+from ote_sdk.utils import Tiler
 from shutil import copyfile, copytree
 from typing import Any, Dict, List, Optional, Tuple, Union
 from zipfile import ZipFile
@@ -72,7 +75,20 @@ from mmdet.utils.logger import get_root_logger
 from .configuration import OTEDetectionConfig
 from . import model_wrappers
 
+from mmcv.ops import nms
+
 logger = get_root_logger()
+
+
+def refine_results(scores, labels, boxes, iou_threshold=0.45, max_num=200):
+    max_coordinate = boxes.max()
+    offsets = labels.astype(boxes.dtype) * (max_coordinate + 1)
+    boxes_for_nms = boxes + offsets[:, None]
+    dets, keep = nms(boxes_for_nms, scores, iou_threshold)
+    if max_num > 0:
+        dets = dets[:max_num]
+        keep = keep[:max_num]
+    return dets, keep
 
 
 class BaseInferencerWithConverter(BaseInferencer):
@@ -180,6 +196,55 @@ class OpenVINOMaskInferencer(BaseInferencerWithConverter):
 
         super().__init__(configuration, model, converter)
 
+    def predict_tile(self, image: np.ndarray, tile_size: int, overlap: float, max_number: int) -> Tuple[AnnotationSceneEntity, np.ndarray, np.ndarray]:
+
+        scores = np.empty((0), dtype=np.float32)
+        labels = np.empty((0), dtype=np.uint32)
+        boxes = np.empty((0, 4), dtype=np.float32)
+        masks = []
+
+        tiler = Tiler(tile_size=tile_size, overlap=overlap)
+        tiles, offsets = tiler.tile(image)
+
+        original_shape = image.shape
+        metadata = None
+        for tile, offset in zip(tiles, offsets):
+            tile, metadata = self.model.preprocess(tile)
+            raw_predictions = self.model.infer_sync(tile)
+            metadata['resize_mask'] = False
+            predictions = self.model.postprocess(raw_predictions, metadata)
+
+            tile_scores, tile_labels, tile_boxes, tile_masks = predictions
+            if len(tile_scores):
+                y, x = offset
+                tile_boxes[:, 0] += x
+                tile_boxes[:, 1] += y
+                tile_boxes[:, 2] += x
+                tile_boxes[:, 3] += y
+                scores = np.concatenate((scores, tile_scores))
+                labels = np.concatenate((labels, tile_labels))
+                boxes = np.concatenate((boxes, tile_boxes))
+                masks.extend(tile_masks)
+
+        # TODO[EUGENE]: call refine_results (Multiclass-NMS)
+        _, keep = nms(boxes, scores, iou_threshold=0.45, max_num=max_number)
+        boxes = boxes[keep]
+        labels = labels[keep]
+        scores = scores[keep]
+        masks = [masks[keep_idx] for keep_idx in keep]
+
+        for i in range(len(boxes)):
+            masks[i] = self.model._segm_postprocess(boxes[i], masks[i], *original_shape[:-1])
+
+        assert len(scores) == len(labels) == len(boxes) == len(masks)
+        detections = scores, labels, boxes, masks
+        metadata["original_shape"] = original_shape
+        detections = self.converter.convert_to_annotation(detections, metadata)
+
+        # TODO[EUGENE]: FIND A WAY TO INCLUDE FEATURE VECTOR AND FEATURE MAP
+        features = (None, None)
+        return detections, features
+
 
 class OpenVINORotatedRectInferencer(BaseInferencerWithConverter):
     @check_input_parameters_type()
@@ -243,13 +308,19 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
         self.task_type = self.task_environment.model_template.task_type
         self.confidence_threshold: float = 0.0
         self.inferencer = self.load_inferencer()
+        self.config = self.load_config()
         logger.info('OpenVINO task initialization completed')
 
     @property
     def hparams(self):
         return self.task_environment.get_hyper_parameters(OTEDetectionConfig)
 
-    def load_inferencer(self) -> Union[OpenVINODetectionInferencer, OpenVINOMaskInferencer] :
+    def load_config(self) -> Dict:
+        if self.model.get_data("configurable_params.json"):
+            return json.loads(self.model.get_data("configurable_params.json"))
+        return dict()
+
+    def load_inferencer(self) -> Union[OpenVINODetectionInferencer, OpenVINOMaskInferencer]:
         _hparams = copy.deepcopy(self.hparams)
         self.confidence_threshold = float(np.frombuffer(self.model.get_data("confidence_threshold"), dtype=np.float32)[0])
         _hparams.postprocessing.confidence_threshold = self.confidence_threshold
@@ -270,13 +341,21 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
     @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def infer(self, dataset: DatasetEntity, inference_parameters: Optional[InferenceParameters] = None) -> DatasetEntity:
         logger.info('Start OpenVINO inference')
-        # TODO[EUGENE]: Make dataset to tiles (according to tile parameters) -> Merge tiles -> dataset item
         update_progress_callback = default_progress_callback
         add_saliency_map = True
         if inference_parameters is not None:
             update_progress_callback = inference_parameters.update_progress
             add_saliency_map = not inference_parameters.is_evaluation
+
+        if self.config and self.config['tiling_parameters']['enable_tiling']['value']:
+            tile_size = self.config['tiling_parameters']['tile_size']['value']
+            tile_overlap = self.config['tiling_parameters']['tile_overlap']['value']
+            max_number = self.config['tiling_parameters']['tile_max_number']['value']
+            self.inferencer.predict = partial(self.inferencer.predict_tile, tile_size=tile_size, overlap=tile_overlap,
+                                              max_number=max_number)
+
         dataset_size = len(dataset)
+        start_time = time.perf_counter()
         for i, dataset_item in enumerate(dataset, 1):
             predicted_scene, features = self.inferencer.predict(dataset_item.numpy)
             dataset_item.append_annotations(predicted_scene.annotations)
@@ -290,10 +369,11 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
                 width, height = dataset_item.width, dataset_item.height
                 saliency_map = cv2.resize(saliency_map[0], (width, height), interpolation=cv2.INTER_NEAREST)
                 saliency_map_media = ResultMediaEntity(name="saliency_map", type="Saliency map",
-                                                annotation_scene=dataset_item.annotation_scene, 
-                                                numpy=saliency_map, roi=dataset_item.roi)
+                                                       annotation_scene=dataset_item.annotation_scene,
+                                                       numpy=saliency_map, roi=dataset_item.roi)
                 dataset_item.append_metadata_item(saliency_map_media, model=self.model)
         logger.info('OpenVINO inference completed')
+        logger.info(f"Total Item: {len(dataset)}, Total Time: {time.perf_counter() - start_time}")
         return dataset
 
     @check_input_parameters_type()
