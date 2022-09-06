@@ -37,7 +37,7 @@ from ote_sdk.test_suite.e2e_test_system import e2e_pytest_api
 from ote_sdk.tests.test_helpers import generate_random_annotated_image
 from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType
 
-from api_helpers import eval
+from tests.mpa_common import eval
 
 
 DEFAULT_SEG_TEMPLATE_DIR = osp.join("configs", "segmentation", "ocr-lite-hrnet-18-mod2")

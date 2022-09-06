@@ -26,6 +26,11 @@ from ote_sdk.test_suite.training_tests_actions import (
     OTETestPotEvaluationAction,
     OTETestTrainingAction,
     OTETestTrainingEvaluationAction,
+    OTETestNNCFAction,
+    OTETestNNCFEvaluationAction,
+    OTETestNNCFExportAction,
+    OTETestNNCFExportEvaluationAction,
+    OTETestNNCFGraphAction,
 )
 from ote_sdk.test_suite.training_tests_common import ROOT_PATH_KEY, make_paths_be_abs
 from segmentation_tasks.extension.datasets.mmdataset import load_dataset_items
@@ -42,6 +47,11 @@ def get_test_action_classes() -> List[Type[BaseOTETestAction]]:
         OTETestExportEvaluationAction,
         OTETestPotAction,
         OTETestPotEvaluationAction,
+        # OTETestNNCFAction,
+        # OTETestNNCFEvaluationAction,
+        # OTETestNNCFExportAction,
+        # OTETestNNCFExportEvaluationAction,
+        # OTETestNNCFGraphAction,
     ]
 
 
@@ -75,7 +85,7 @@ def DATASET_PARAMETERS_FIELDS() -> List[str]:
 DatasetParameters = namedtuple("DatasetParameters", DATASET_PARAMETERS_FIELDS())
 
 
-def get_dataset_params_from_dataset_definitions(dataset_definitions, dataset_name):
+def _get_dataset_params_from_dataset_definitions(dataset_definitions, dataset_name):
     if dataset_name not in dataset_definitions:
         raise ValueError(
             f"dataset {dataset_name} is absent in dataset_definitions, "
@@ -100,7 +110,7 @@ def get_dataset_params_from_dataset_definitions(dataset_definitions, dataset_nam
     return params
 
 
-def create_classification_dataset_and_labels_schema(dataset_params, model_name):
+def _create_classification_dataset_and_labels_schema(dataset_params, model_name):
     logger.debug(f"Using for train annotation file {dataset_params.annotations_train}")
     logger.debug(f"Using for val annotation file {dataset_params.annotations_val}")
 
@@ -117,7 +127,7 @@ def create_classification_dataset_and_labels_schema(dataset_params, model_name):
     return dataset, labels_schema
 
 
-def create_object_detection_dataset_and_labels_schema(dataset_params):
+def _create_object_detection_dataset_and_labels_schema(dataset_params):
     logger.debug(f"Using for train annotation file {dataset_params.annotations_train}")
     logger.debug(f"Using for val annotation file {dataset_params.annotations_val}")
     labels_list = []
@@ -154,7 +164,7 @@ def create_object_detection_dataset_and_labels_schema(dataset_params):
     return dataset, labels_schema
 
 
-def create_segmentation_dataset_and_labels_schema(dataset_params):
+def _create_segmentation_dataset_and_labels_schema(dataset_params):
     logger.debug(f"Using for train annotation file {dataset_params.annotations_train}")
     logger.debug(f"Using for val annotation file {dataset_params.annotations_val}")
     labels_list = []

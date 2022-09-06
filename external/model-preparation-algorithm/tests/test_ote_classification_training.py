@@ -3,37 +3,42 @@
 #
 
 import logging
+import os
 import os.path as osp
 from copy import deepcopy
+from pprint import pformat
 from typing import Any, Callable, Dict, List, Optional, Type
 
 import pytest
-
-from ote_sdk.test_suite.e2e_test_system import e2e_pytest_performance
+from ote_sdk.test_suite.e2e_test_system import DataCollector, e2e_pytest_performance
 from ote_sdk.test_suite.training_test_case import (
     OTETestCaseInterface,
     generate_ote_integration_test_case_class,
 )
 from ote_sdk.test_suite.training_tests_common import (
-    make_path_be_abs,
     KEEP_CONFIG_FIELD_VALUE,
     REALLIFE_USECASE_CONSTANT,
     ROOT_PATH_KEY,
+    make_path_be_abs,
 )
 from ote_sdk.test_suite.training_tests_helper import (
-    OTETestHelper,
     DefaultOTETestCreationParametersInterface,
+    OTETestHelper,
     OTETrainingTestInterface,
 )
 
-from test_helpers import (
+from tests.mpa_common import (
+    _create_classification_dataset_and_labels_schema,
+    _get_dataset_params_from_dataset_definitions,
     get_test_action_classes,
-    get_dataset_params_from_dataset_definitions,
-    create_classification_dataset_and_labels_schema,
 )
 
-
 logger = logging.getLogger(__name__)
+
+
+@pytest.fixture
+def ote_test_domain_fx():
+    return "custom-classification-cls-incr"
 
 
 class ClassificationClsIncrTrainingTestParameters(
@@ -115,7 +120,7 @@ class TestOTEReallifeClassificationClsIncr(OTETrainingTestInterface):
             num_training_iters = test_parameters["num_training_iters"]
             batch_size = test_parameters["batch_size"]
 
-            dataset_params = get_dataset_params_from_dataset_definitions(
+            dataset_params = _get_dataset_params_from_dataset_definitions(
                 dataset_definitions, dataset_name
             )
 
@@ -131,7 +136,7 @@ class TestOTEReallifeClassificationClsIncr(OTETrainingTestInterface):
             logger.debug(
                 "training params factory: Before creating dataset and labels_schema"
             )
-            dataset, labels_schema = create_classification_dataset_and_labels_schema(
+            dataset, labels_schema = _create_classification_dataset_and_labels_schema(
                 dataset_params, model_name
             )
             ckpt_path = None
@@ -179,6 +184,33 @@ class TestOTEReallifeClassificationClsIncr(OTETrainingTestInterface):
             current_test_parameters_fx, params_factories_for_test_actions_fx
         )
         return test_case
+
+    # TODO: move to common fixtures
+    @pytest.fixture
+    def data_collector_fx(self, request) -> DataCollector:
+        setup = deepcopy(request.node.callspec.params)
+        setup["environment_name"] = os.environ.get("TT_ENVIRONMENT_NAME", "no-env")
+        setup["test_type"] = os.environ.get("TT_TEST_TYPE", "no-test-type")  # TODO: get from e2e test type
+        setup["scenario"] = "api"  # TODO(lbeynens): get from a fixture!
+        setup["test"] = request.node.name
+        setup["subject"] = "custom-classification-cls-incr"
+        setup["project"] = "ote"
+        if "test_parameters" in setup:
+            assert isinstance(setup["test_parameters"], dict)
+            if "dataset_name" not in setup:
+                setup["dataset_name"] = setup["test_parameters"].get("dataset_name")
+            if "model_name" not in setup:
+                setup["model_name"] = setup["test_parameters"].get("model_name")
+            if "test_stage" not in setup:
+                setup["test_stage"] = setup["test_parameters"].get("test_stage")
+            if "usecase" not in setup:
+                setup["usecase"] = setup["test_parameters"].get("usecase")
+        logger.info(f"creating DataCollector: setup=\n{pformat(setup, width=140)}")
+        data_collector = DataCollector(name="TestOTEIntegration", setup=setup)
+        with data_collector:
+            logger.info("data_collector is created")
+            yield data_collector
+        logger.info("data_collector is released")
 
     @e2e_pytest_performance
     def test(

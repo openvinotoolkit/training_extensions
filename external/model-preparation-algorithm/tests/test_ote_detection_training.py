@@ -10,6 +10,7 @@ from pprint import pformat
 from typing import Any, Callable, Dict, List, Optional, Type
 
 import pytest
+from ote_sdk.entities.label import Domain
 from ote_sdk.test_suite.e2e_test_system import DataCollector, e2e_pytest_performance
 from ote_sdk.test_suite.training_test_case import (
     OTETestCaseInterface,
@@ -27,13 +28,18 @@ from ote_sdk.test_suite.training_tests_helper import (
     OTETrainingTestInterface,
 )
 
-from test_helpers import (
+from tests.mpa_common import (
     get_test_action_classes,
-    create_object_detection_dataset_and_labels_schema,
-    get_dataset_params_from_dataset_definitions,
+    _create_object_detection_dataset_and_labels_schema,
+    _get_dataset_params_from_dataset_definitions,
 )
 
 logger = logging.getLogger(__name__)
+
+
+@pytest.fixture
+def ote_test_domain_fx():
+    return "custom-detection-cls-incr"
 
 
 class DetectionClsIncrTrainingTestParameters(DefaultOTETestCreationParametersInterface):
@@ -58,6 +64,35 @@ class DetectionClsIncrTrainingTestParameters(DefaultOTETestCreationParametersInt
         return deepcopy(test_bunches)
 
 
+def get_dummy_compressed_model(task):
+    """
+    Return compressed model without initialization
+    """
+    # pylint:disable=protected-access
+    from mmdet.integration.nncf import wrap_nncf_model
+    from mmdet.apis.fake_input import get_fake_input
+
+    # Disable quantaizers initialization
+    for compression in task._config.nncf_config['compression']:
+        if compression["algorithm"] == "quantization":
+            compression["initializer"] = {
+                "batchnorm_adaptation": {
+                    "num_bn_adaptation_samples": 0
+                }
+            }
+
+    _, compressed_model = wrap_nncf_model(task._model,
+                                          task._config,
+                                          get_fake_input_func=get_fake_input)
+    return compressed_model
+
+
+
+
+
+
+
+
 class TestOTEReallifeObjectDetectionClsIncr(OTETrainingTestInterface):
     """
     The main class of running test in this file.
@@ -73,7 +108,7 @@ class TestOTEReallifeObjectDetectionClsIncr(OTETrainingTestInterface):
         tests discovering.
         """
         return cls.helper.get_list_of_tests(usecase)
-
+    
     @pytest.fixture
     def params_factories_for_test_actions_fx(
         self,
@@ -97,7 +132,7 @@ class TestOTEReallifeObjectDetectionClsIncr(OTETrainingTestInterface):
             num_training_iters = test_parameters["num_training_iters"]
             batch_size = test_parameters["batch_size"]
 
-            dataset_params = get_dataset_params_from_dataset_definitions(
+            dataset_params = _get_dataset_params_from_dataset_definitions(
                 dataset_definitions, dataset_name
             )
 
@@ -113,7 +148,7 @@ class TestOTEReallifeObjectDetectionClsIncr(OTETrainingTestInterface):
             logger.debug(
                 "training params factory: Before creating dataset and labels_schema"
             )
-            dataset, labels_schema = create_object_detection_dataset_and_labels_schema(
+            dataset, labels_schema = _create_object_detection_dataset_and_labels_schema(
                 dataset_params
             )
             ckpt_path = None
@@ -134,9 +169,43 @@ class TestOTEReallifeObjectDetectionClsIncr(OTETrainingTestInterface):
                 "batch_size": batch_size,
                 "checkpoint": ckpt_path,
             }
+            
+        def _nncf_graph_params_factory() -> Dict:
+            if dataset_definitions is None:
+                pytest.skip('The parameter "--dataset-definitions" is not set')
+
+            model_name = test_parameters['model_name']
+            if "Custom_Object_Detection" in model_name:
+                domain = Domain.DETECTION
+            elif "Custom_Counting_Instance_Segmentation" in model_name:
+                domain = Domain.INSTANCE_SEGMENTATION
+            else:
+                domain = None
+            dataset_name = test_parameters['dataset_name']
+
+            dataset_params = _get_dataset_params_from_dataset_definitions(dataset_definitions, dataset_name)
+
+            if model_name not in template_paths:
+                raise ValueError(f'Model {model_name} is absent in template_paths, '
+                                f'template_paths.keys={list(template_paths.keys())}')
+            template_path = make_path_be_abs(template_paths[model_name], template_paths[ROOT_PATH_KEY])
+
+            logger.debug('training params factory: Before creating dataset and labels_schema')
+            dataset, labels_schema = _create_object_detection_dataset_and_labels_schema(
+                dataset_params, domain)
+            logger.debug('training params factory: After creating dataset and labels_schema')
+
+            return {
+                'dataset': dataset,
+                'labels_schema': labels_schema,
+                'template_path': template_path,
+                'reference_dir': ote_current_reference_dir_fx,
+                'fn_get_compressed_model': get_dummy_compressed_model,
+            }
 
         params_factories_for_test_actions = {
             "training": _training_params_factory,
+            # "nncf_graph": _nncf_graph_params_factory,
         }
         logger.debug("params_factories_for_test_actions_fx: end")
         return params_factories_for_test_actions
@@ -171,7 +240,7 @@ class TestOTEReallifeObjectDetectionClsIncr(OTETrainingTestInterface):
         )  # TODO: get from e2e test type
         setup["scenario"] = "api"  # TODO: get from a fixture!
         setup["test"] = request.node.name
-        setup["subject"] = "detection-cls-incr"
+        setup["subject"] = "custom-detection-cls-incr"
         setup["project"] = "ote"
         if "test_parameters" in setup:
             assert isinstance(setup["test_parameters"], dict)

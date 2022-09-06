@@ -26,13 +26,18 @@ from ote_sdk.test_suite.training_tests_helper import (
     OTETrainingTestInterface,
 )
 
-from test_helpers import (
+from tests.mpa_common import (
     get_test_action_classes,
-    create_segmentation_dataset_and_labels_schema,
-    get_dataset_params_from_dataset_definitions,
+    _create_segmentation_dataset_and_labels_schema,
+    _get_dataset_params_from_dataset_definitions,
 )
 
 logger = logging.getLogger(__name__)
+
+
+@pytest.fixture
+def ote_test_domain_fx():
+    return "custom-segmentation-cls-incr"
 
 
 class SegmentationClsIncrTrainingTestParameters(
@@ -106,7 +111,7 @@ class TestOTEReallifeSegmentationClsIncr(OTETrainingTestInterface):
             num_training_iters = test_parameters["num_training_iters"]
             batch_size = test_parameters["batch_size"]
 
-            dataset_params = get_dataset_params_from_dataset_definitions(
+            dataset_params = _get_dataset_params_from_dataset_definitions(
                 dataset_definitions, dataset_name
             )
 
@@ -122,7 +127,7 @@ class TestOTEReallifeSegmentationClsIncr(OTETrainingTestInterface):
             logger.debug(
                 "training params factory: Before creating dataset and labels_schema"
             )
-            dataset, labels_schema = create_segmentation_dataset_and_labels_schema(
+            dataset, labels_schema = _create_segmentation_dataset_and_labels_schema(
                 dataset_params
             )
             import os.path as osp
@@ -182,7 +187,7 @@ class TestOTEReallifeSegmentationClsIncr(OTETrainingTestInterface):
         )  # TODO: get from e2e test type
         setup["scenario"] = "api"  # TODO: get from a fixture!
         setup["test"] = request.node.name
-        setup["subject"] = "segmentation-cls-incr"
+        setup["subject"] = "custom-segmentation-cls-incr"
         setup["project"] = "ote"
         if "test_parameters" in setup:
             assert isinstance(setup["test_parameters"], dict)
