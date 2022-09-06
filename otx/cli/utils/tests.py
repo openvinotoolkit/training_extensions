@@ -24,9 +24,9 @@ def get_template_rel_dir(template):
     return os.path.dirname(os.path.relpath(template.model_template_path))
 
 
-def get_some_vars(template, root):
+def get_template_dir(template, root) -> str:
 
-    # Get the type of the algorithm.
+    # Get the template directory of the algorithm.
     # The location of the template files are as follows:
     # ~/training_extensions/otx/algorithms/<algorithm>/**/template.yaml
     # To get the ``algorithm``, index of the "algorithms" can be
@@ -41,46 +41,11 @@ def get_some_vars(template, root):
     template_work_dir = os.path.join(work_dir, template_dir)
 
     os.makedirs(template_work_dir, exist_ok=True)
-    return work_dir, template_work_dir, algo_backend_dir
-
-
-def create_venv(algo_backend_dir, work_dir):
-    venv_dir = f"{work_dir}/venv"
-    if not os.path.exists(venv_dir):
-        assert run([f"./{algo_backend_dir}/init_venv.sh", venv_dir]).returncode == 0
-        assert run([f"{work_dir}/venv/bin/python", "-m", "pip", "install", "-e", "otx"]).returncode == 0
-
-
-def extract_export_vars(path):
-    vars = {}
-    with open(path) as f:
-        for line in f:
-            line = line.strip()
-            if line.startswith("export ") and "=" in line:
-                line = line.replace("export ", "").split("=")
-                assert len(line) == 2
-                vars[line[0].strip()] = line[1].strip()
-    return vars
-
-
-def collect_env_vars(work_dir):
-    vars = extract_export_vars(f"{work_dir}/venv/bin/activate")
-    vars.update({"PATH": f"{work_dir}/venv/bin/:" + os.environ["PATH"]})
-    vars_map = {
-        "HTTP_PROXY": ["http_proxy", "HTTP_PROXY"],
-        "HTTPS_PROXY": ["https_proxy", "HTTPS_PROXY"],
-        "NO_PROXY": ["no_proxy", "NO_PROXY"],
-    }
-    for var, aliases in vars_map.items():
-        for alias in aliases:
-            if alias in os.environ:
-                vars.update({var: os.environ[alias]})
-                break
-    return vars
+    return template_work_dir
 
 
 def otx_train_testing(template, root, otx_dir, args):
-    work_dir, template_work_dir, _ = get_some_vars(template, root)
+    template_work_dir = get_template_dir(template, root)
     command_line = [
         "otx",
         "train",
@@ -99,13 +64,13 @@ def otx_train_testing(template, root, otx_dir, args):
     if "--load-weights" in args:
         command_line.extend(["--load-weights", f'{os.path.join(otx_dir, args["--load-weights"])}'])
     command_line.extend(args["train_params"])
-    assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
+    assert run(command_line).returncode == 0
     assert os.path.exists(f"{template_work_dir}/trained_{template.model_template_id}/weights.pth")
     assert os.path.exists(f"{template_work_dir}/trained_{template.model_template_id}/label_schema.json")
 
 
 def otx_hpo_testing(template, root, otx_dir, args):
-    work_dir, template_work_dir, _ = get_some_vars(template, root)
+    template_work_dir = get_template_dir(template, root)
     if os.path.exists(f"{template_work_dir}/hpo"):
         shutil.rmtree(f"{template_work_dir}/hpo")
     command_line = [
@@ -127,7 +92,7 @@ def otx_hpo_testing(template, root, otx_dir, args):
         "1",
     ]
     command_line.extend(args["train_params"])
-    assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
+    assert run(command_line).returncode == 0
     assert os.path.exists(f"{template_work_dir}/hpo/hpopt_status.json")
     with open(f"{template_work_dir}/hpo/hpopt_status.json", "r") as f:
         assert json.load(f).get("best_config_id", None) is not None
@@ -136,7 +101,7 @@ def otx_hpo_testing(template, root, otx_dir, args):
 
 
 def otx_export_testing(template, root):
-    work_dir, template_work_dir, _ = get_some_vars(template, root)
+    template_work_dir = get_template_dir(template, root)
     command_line = [
         "otx",
         "export",
@@ -146,14 +111,14 @@ def otx_export_testing(template, root):
         "--save-model-to",
         f"{template_work_dir}/exported_{template.model_template_id}",
     ]
-    assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
+    assert run(command_line).returncode == 0
     assert os.path.exists(f"{template_work_dir}/exported_{template.model_template_id}/openvino.xml")
     assert os.path.exists(f"{template_work_dir}/exported_{template.model_template_id}/openvino.bin")
     assert os.path.exists(f"{template_work_dir}/exported_{template.model_template_id}/label_schema.json")
 
 
 def otx_eval_testing(template, root, otx_dir, args):
-    work_dir, template_work_dir, _ = get_some_vars(template, root)
+    template_work_dir = get_template_dir(template, root)
     command_line = [
         "otx",
         "eval",
@@ -167,12 +132,12 @@ def otx_eval_testing(template, root, otx_dir, args):
         "--save-performance",
         f"{template_work_dir}/trained_{template.model_template_id}/performance.json",
     ]
-    assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
+    assert run(command_line).returncode == 0
     assert os.path.exists(f"{template_work_dir}/trained_{template.model_template_id}/performance.json")
 
 
 def otx_eval_openvino_testing(template, root, otx_dir, args, threshold):
-    work_dir, template_work_dir, _ = get_some_vars(template, root)
+    template_work_dir = get_template_dir(template, root)
     command_line = [
         "otx",
         "eval",
@@ -186,7 +151,7 @@ def otx_eval_openvino_testing(template, root, otx_dir, args, threshold):
         "--save-performance",
         f"{template_work_dir}/exported_{template.model_template_id}/performance.json",
     ]
-    assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
+    assert run(command_line).returncode == 0
     assert os.path.exists(f"{template_work_dir}/exported_{template.model_template_id}/performance.json")
     with open(f"{template_work_dir}/trained_{template.model_template_id}/performance.json") as read_file:
         trained_performance = json.load(read_file)
@@ -200,7 +165,7 @@ def otx_eval_openvino_testing(template, root, otx_dir, args, threshold):
 
 
 def otx_demo_testing(template, root, otx_dir, args):
-    work_dir, template_work_dir, _ = get_some_vars(template, root)
+    template_work_dir = get_template_dir(template, root)
     command_line = [
         "otx",
         "demo",
@@ -212,11 +177,11 @@ def otx_demo_testing(template, root, otx_dir, args):
         "--delay",
         "-1",
     ]
-    assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
+    assert run(command_line).returncode == 0
 
 
 def otx_demo_openvino_testing(template, root, otx_dir, args):
-    work_dir, template_work_dir, _ = get_some_vars(template, root)
+    template_work_dir = get_template_dir(template, root)
     command_line = [
         "otx",
         "demo",
@@ -228,11 +193,11 @@ def otx_demo_openvino_testing(template, root, otx_dir, args):
         "--delay",
         "-1",
     ]
-    assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
+    assert run(command_line).returncode == 0
 
 
 def otx_deploy_openvino_testing(template, root, otx_dir, args):
-    work_dir, template_work_dir, _ = get_some_vars(template, root)
+    template_work_dir = get_template_dir(template, root)
     deployment_dir = f"{template_work_dir}/deployed_{template.model_template_id}"
     command_line = [
         "otx",
@@ -243,7 +208,7 @@ def otx_deploy_openvino_testing(template, root, otx_dir, args):
         "--save-model-to",
         deployment_dir,
     ]
-    assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
+    assert run(command_line).returncode == 0
     assert run(["unzip", "-o", "openvino.zip"], cwd=deployment_dir).returncode == 0
     assert (
         run(
@@ -256,7 +221,6 @@ def otx_deploy_openvino_testing(template, root, otx_dir, args):
         run(
             ["python3", "-m", "pip", "install", "wheel"],
             cwd=os.path.join(deployment_dir, "python"),
-            env=collect_env_vars(os.path.join(deployment_dir, "python")),
         ).returncode
         == 0
     )
@@ -265,7 +229,6 @@ def otx_deploy_openvino_testing(template, root, otx_dir, args):
         run(
             ["python3", "-m", "pip", "install", "pip", "--upgrade"],
             cwd=os.path.join(deployment_dir, "python"),
-            env=collect_env_vars(os.path.join(deployment_dir, "python")),
         ).returncode
         == 0
     )
@@ -280,7 +243,6 @@ def otx_deploy_openvino_testing(template, root, otx_dir, args):
                 os.path.join(deployment_dir, "python", "requirements.txt"),
             ],
             cwd=os.path.join(deployment_dir, "python"),
-            env=collect_env_vars(os.path.join(deployment_dir, "python")),
         ).returncode
         == 0
     )
@@ -297,14 +259,13 @@ def otx_deploy_openvino_testing(template, root, otx_dir, args):
                 "--no_show",
             ],
             cwd=os.path.join(deployment_dir, "python"),
-            env=collect_env_vars(os.path.join(deployment_dir, "python")),
         ).returncode
         == 0
     )
 
 
 def otx_eval_deployment_testing(template, root, otx_dir, args, threshold):
-    work_dir, template_work_dir, _ = get_some_vars(template, root)
+    template_work_dir = get_template_dir(template, root)
     command_line = [
         "otx",
         "eval",
@@ -318,7 +279,7 @@ def otx_eval_deployment_testing(template, root, otx_dir, args, threshold):
         "--save-performance",
         f"{template_work_dir}/deployed_{template.model_template_id}/performance.json",
     ]
-    assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
+    assert run(command_line).returncode == 0
     assert os.path.exists(f"{template_work_dir}/deployed_{template.model_template_id}/performance.json")
     with open(f"{template_work_dir}/exported_{template.model_template_id}/performance.json") as read_file:
         exported_performance = json.load(read_file)
@@ -332,7 +293,7 @@ def otx_eval_deployment_testing(template, root, otx_dir, args, threshold):
 
 
 def otx_demo_deployment_testing(template, root, otx_dir, args):
-    work_dir, template_work_dir, _ = get_some_vars(template, root)
+    template_work_dir = get_template_dir(template, root)
     command_line = [
         "otx",
         "demo",
@@ -344,11 +305,11 @@ def otx_demo_deployment_testing(template, root, otx_dir, args):
         "--delay",
         "-1",
     ]
-    assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
+    assert run(command_line).returncode == 0
 
 
 def pot_optimize_testing(template, root, otx_dir, args):
-    work_dir, template_work_dir, _ = get_some_vars(template, root)
+    template_work_dir = get_template_dir(template, root)
     command_line = [
         "otx",
         "optimize",
@@ -366,14 +327,14 @@ def pot_optimize_testing(template, root, otx_dir, args):
         "--save-model-to",
         f"{template_work_dir}/pot_{template.model_template_id}",
     ]
-    assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
+    assert run(command_line).returncode == 0
     assert os.path.exists(f"{template_work_dir}/pot_{template.model_template_id}/openvino.xml")
     assert os.path.exists(f"{template_work_dir}/pot_{template.model_template_id}/openvino.bin")
     assert os.path.exists(f"{template_work_dir}/pot_{template.model_template_id}/label_schema.json")
 
 
 def pot_eval_testing(template, root, otx_dir, args):
-    work_dir, template_work_dir, _ = get_some_vars(template, root)
+    template_work_dir = get_template_dir(template, root)
     command_line = [
         "otx",
         "eval",
@@ -387,12 +348,12 @@ def pot_eval_testing(template, root, otx_dir, args):
         "--save-performance",
         f"{template_work_dir}/pot_{template.model_template_id}/performance.json",
     ]
-    assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
+    assert run(command_line).returncode == 0
     assert os.path.exists(f"{template_work_dir}/pot_{template.model_template_id}/performance.json")
 
 
 def nncf_optimize_testing(template, root, otx_dir, args):
-    work_dir, template_work_dir, _ = get_some_vars(template, root)
+    template_work_dir = get_template_dir(template, root)
     command_line = [
         "otx",
         "optimize",
@@ -413,13 +374,13 @@ def nncf_optimize_testing(template, root, otx_dir, args):
         f"{template_work_dir}/nncf_{template.model_template_id}/train_performance.json",
     ]
     command_line.extend(args["train_params"])
-    assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
+    assert run(command_line).returncode == 0
     assert os.path.exists(f"{template_work_dir}/nncf_{template.model_template_id}/weights.pth")
     assert os.path.exists(f"{template_work_dir}/nncf_{template.model_template_id}/label_schema.json")
 
 
 def nncf_export_testing(template, root):
-    work_dir, template_work_dir, _ = get_some_vars(template, root)
+    template_work_dir = get_template_dir(template, root)
     command_line = [
         "otx",
         "export",
@@ -429,7 +390,7 @@ def nncf_export_testing(template, root):
         "--save-model-to",
         f"{template_work_dir}/exported_nncf_{template.model_template_id}",
     ]
-    assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
+    assert run(command_line).returncode == 0
     assert os.path.exists(f"{template_work_dir}/exported_nncf_{template.model_template_id}/openvino.xml")
     assert os.path.exists(f"{template_work_dir}/exported_nncf_{template.model_template_id}/openvino.bin")
     assert os.path.exists(f"{template_work_dir}/exported_nncf_{template.model_template_id}/label_schema.json")
@@ -441,7 +402,7 @@ def nncf_export_testing(template, root):
 
 
 def nncf_eval_testing(template, root, otx_dir, args, threshold):
-    work_dir, template_work_dir, _ = get_some_vars(template, root)
+    template_work_dir = get_template_dir(template, root)
     command_line = [
         "otx",
         "eval",
@@ -455,7 +416,7 @@ def nncf_eval_testing(template, root, otx_dir, args, threshold):
         "--save-performance",
         f"{template_work_dir}/nncf_{template.model_template_id}/performance.json",
     ]
-    assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
+    assert run(command_line).returncode == 0
     assert os.path.exists(f"{template_work_dir}/nncf_{template.model_template_id}/performance.json")
     with open(f"{template_work_dir}/nncf_{template.model_template_id}/train_performance.json") as read_file:
         trained_performance = json.load(read_file)
@@ -469,7 +430,7 @@ def nncf_eval_testing(template, root, otx_dir, args, threshold):
 
 
 def nncf_eval_openvino_testing(template, root, otx_dir, args):
-    work_dir, template_work_dir, _ = get_some_vars(template, root)
+    template_work_dir = get_template_dir(template, root)
     command_line = [
         "otx",
         "eval",
@@ -483,7 +444,7 @@ def nncf_eval_openvino_testing(template, root, otx_dir, args):
         "--save-performance",
         f"{template_work_dir}/exported_nncf_{template.model_template_id}/performance.json",
     ]
-    assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
+    assert run(command_line).returncode == 0
     assert os.path.exists(f"{template_work_dir}/exported_nncf_{template.model_template_id}/performance.json")
 
 

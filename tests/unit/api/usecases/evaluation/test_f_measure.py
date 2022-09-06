@@ -89,13 +89,13 @@ class TestFMeasureFunctions:
         """
         base_box = [2, 2, 5, 6]
         # Checking box returned by "intersection_box" for boxes that intersect in two points
-        assert intersection_box(box1=base_box, box2=[4, 4, 7, 8]) == [4, 5, 6, 4]
+        assert intersection_box(box1=base_box, box2=[4, 4, 7, 8]) == (4, 5, 6, 4)
         # Checking box returned by "intersection_box" for boxes that intersect in one point
-        assert intersection_box(box1=base_box, box2=[1, 1, 2, 2]) == [2, 2, 2, 2]
+        assert intersection_box(box1=base_box, box2=[1, 1, 2, 2]) == (2, 2, 2, 2)
         # Checking box returned by "intersection_box" for boxes that intersect by one side
-        assert intersection_box(box1=base_box, box2=[2, 1, 5, 2]) == [2, 5, 2, 2]
+        assert intersection_box(box1=base_box, box2=[2, 1, 5, 2]) == (2, 5, 2, 2)
         # Checking box returned by "intersection_box" when one of boxes completely covers other
-        assert intersection_box(box1=base_box, box2=[0, 0, 10, 10]) == [2, 5, 6, 2]
+        assert intersection_box(box1=base_box, box2=[0, 0, 10, 10]) == (2, 5, 6, 2)
 
     @pytest.mark.priority_medium
     @pytest.mark.unit
