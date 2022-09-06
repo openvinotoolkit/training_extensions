@@ -35,7 +35,7 @@ learning_parameters:
     auto_hpo_value: null
     default_value: resnet18
     description: Pre-trained backbone used for feature extraction
-    editable: true
+    editable: false
     enum_name: ModelBackbone
     header: Model Backbone
     options:
@@ -48,7 +48,7 @@ learning_parameters:
       rules: []
       type: UI_RULES
     value: resnet18
-    visible_in_ui: true
+    visible_in_ui: false
     warning: null
   description: Learning Parameters
   header: Learning Parameters
