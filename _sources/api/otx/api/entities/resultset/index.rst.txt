@@ -1,0 +1,152 @@
+:py:mod:`otx.api.entities.resultset`
+====================================
+
+.. py:module:: otx.api.entities.resultset
+
+.. autoapi-nested-parse::
+
+   This module implements the ResultSet entity.
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   otx.api.entities.resultset.ResultsetPurpose
+   otx.api.entities.resultset.ResultSetEntity
+
+
+
+
+.. py:class:: ResultsetPurpose
+
+   Bases: :py:obj:`enum.Enum`
+
+   This defines the purpose of the resultset.
+
+   EVALUATION denotes resultsets generated at Evaluation stage on validation subset.
+
+   TEST denotes resultsets generated at Evaluation stage on test subset.
+
+   PREEVALUATION denotes resultsets generated at Preevaluation stage (e.g., train from
+   scratch) onn validation subset.
+
+   .. py:attribute:: EVALUATION
+      :annotation: = 0
+
+      
+
+   .. py:attribute:: TEST
+      :annotation: = 1
+
+      
+
+   .. py:attribute:: PREEVALUATION
+      :annotation: = 2
+
+      
+
+   .. py:method:: __repr__()
+
+      Returns ResultsetPurpose as a string.
+
+
+   .. py:method:: __str__()
+
+      Returns a user friendly representation of the ResultSetPurpose.
+
+      This that can be used for instance in a progress reporting message.
+
+
+
+.. py:class:: ResultSetEntity(model: otx.api.entities.model.ModelEntity, ground_truth_dataset: otx.api.entities.datasets.DatasetEntity, prediction_dataset: otx.api.entities.datasets.DatasetEntity, purpose: ResultsetPurpose = ResultsetPurpose.EVALUATION, performance: Optional[otx.api.entities.metrics.Performance] = None, creation_date: Optional[datetime.datetime] = None, id: Optional[otx.api.entities.id.ID] = None)
+
+   ResultsetEntity.
+
+   It aggregates:
+       - the dataset containing ground truth (based on user annotations)
+       - the dataset containing predictions for the above ground truth dataset
+
+   In addition, it links to the model which computed the predictions, as well as the performance of this model on the
+   ground truth dataset.
+
+   :param model: the model using which the prediction_dataset has been
+                 generated
+   :param ground_truth_dataset: the dataset containing ground truth
+                                annotation
+   :param prediction_dataset: the dataset containing prediction
+   :param purpose: see :class:`ResultsetPurpose`
+   :param performance: the performance of the model on the ground truth
+                       dataset
+   :param creation_date: the date time which the resultset is created. Set
+                         to None to set this to
+   :param id: the id of the resultset. Set to ID() so that a new unique ID
+              will be assigned upon saving. If the argument is None, it
+              will be set to ID()
+
+   datetime.now(datetime.timezone.utc)
+
+   .. py:method:: id_() -> otx.api.entities.id.ID
+      :property:
+
+      Returns the id of the ResultSet.
+
+
+   .. py:method:: id() -> otx.api.entities.id.ID
+      :property:
+
+      DEPRECATED.
+
+
+   .. py:method:: model() -> otx.api.entities.model.ModelEntity
+      :property:
+
+      Returns the model that is used for the ResultSet.
+
+
+   .. py:method:: prediction_dataset() -> otx.api.entities.datasets.DatasetEntity
+      :property:
+
+      Returns the prediction dataset that is used in the ResultSet.
+
+
+   .. py:method:: ground_truth_dataset() -> otx.api.entities.datasets.DatasetEntity
+      :property:
+
+      Returns the ground truth dataset that is used in the ResultSet.
+
+
+   .. py:method:: performance() -> otx.api.entities.metrics.Performance
+      :property:
+
+      Returns the performance of the model on the ground truth dataset.
+
+
+   .. py:method:: purpose() -> ResultsetPurpose
+      :property:
+
+      Returns the purpose of the ResultSet, for example ResultSetPurpose.EVALUATION.
+
+
+   .. py:method:: creation_date() -> datetime.datetime
+      :property:
+
+      Returns the creation date of the ResultSet.
+
+
+   .. py:method:: has_score_metric() -> bool
+
+      Returns True if the resultset contains non-null performance and score value.
+
+
+   .. py:method:: __repr__()
+
+      String representation of the resultset.
+
+
+

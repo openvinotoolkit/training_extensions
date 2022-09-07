@@ -1,0 +1,358 @@
+:py:mod:`otx.api.utils.shape_drawer`
+====================================
+
+.. py:module:: otx.api.utils.shape_drawer
+
+.. autoapi-nested-parse::
+
+   This module implements helpers for drawing shapes.
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   otx.api.utils.shape_drawer.DrawerEntity
+   otx.api.utils.shape_drawer.Helpers
+   otx.api.utils.shape_drawer.ShapeDrawer
+
+
+
+
+Attributes
+~~~~~~~~~~
+
+.. autoapisummary::
+
+   otx.api.utils.shape_drawer.CvTextSize
+   otx.api.utils.shape_drawer._Any
+
+
+.. py:data:: CvTextSize
+   
+
+   
+
+.. py:data:: _Any
+   
+
+   
+
+.. py:class:: DrawerEntity
+
+   Bases: :py:obj:`Generic`\ [\ :py:obj:`_Any`\ ]
+
+   An interface to draw a shape of type ``T`` onto an image.
+
+   .. py:attribute:: supported_types
+      :annotation: :Sequence[Type[otx.api.entities.shapes.shape.ShapeEntity]] = []
+
+      
+
+   .. py:method:: draw(image: numpy.ndarray, entity: _Any, labels: List[otx.api.entities.scored_label.ScoredLabel]) -> numpy.ndarray
+      :abstractmethod:
+
+      Draw an entity to a given frame.
+
+      :param image: The image to draw the entity on.
+      :type image: np.ndarray
+      :param entity: The entity to draw.
+      :type entity: T
+      :param labels: Labels of the shapes to draw
+      :type labels: List[ScoredLabel]
+
+      :returns: frame with shape drawn on it
+      :rtype: np.ndarray
+
+
+
+.. py:class:: Helpers
+
+   Contains variables which are used by all subclasses.
+
+   Contains functions which help with generating coordinates, text and text scale.
+   These functions are use by the DrawerEntity Classes when drawing to an image.
+
+   .. py:method:: draw_transparent_rectangle(img: numpy.ndarray, x1: int, y1: int, x2: int, y2: int, color: Tuple[int, int, int], alpha: float) -> numpy.ndarray
+      :staticmethod:
+
+      Draw a rectangle on an image.
+
+      :param img: Image
+      :type img: np.ndarray
+      :param x1: Left side
+      :type x1: int
+      :param y1: Top side
+      :type y1: int
+      :param x2: Right side
+      :type x2: int
+      :param y2: Bottom side
+      :type y2: int
+      :param color: Color
+      :type color: Tuple[int, int, int]
+      :param alpha: Alpha value between 0 and 1
+      :type alpha: float
+
+
+   .. py:method:: generate_text_scale(image: numpy.ndarray) -> float
+
+      Calculates the scale of the text.
+
+      :param image: Image to calculate the text scale for.
+      :type image: np.ndarray
+
+      :returns: scale for the text
+
+
+   .. py:method:: generate_text_for_label(label: Union[otx.api.entities.label.LabelEntity, otx.api.entities.scored_label.ScoredLabel], show_labels: bool, show_confidence: bool) -> str
+      :staticmethod:
+
+      Return a string representing a given label and its associated probability if label is a ScoredLabel.
+
+      The exact format of the string depends on the function parameters described below.
+
+      :param label: Label
+      :type label: Union[LabelEntity, ScoredLabel]
+      :param show_labels: Whether to render the labels above the shape
+      :type show_labels: bool
+      :param show_confidence: Whether to render the confidence above the
+                              shape
+      :type show_confidence: bool
+
+      :returns: Formatted string (e.g. `"Cat 58%"`)
+      :rtype: str
+
+
+   .. py:method:: generate_draw_command_for_labels(labels: Sequence[Union[otx.api.entities.label.LabelEntity, otx.api.entities.scored_label.ScoredLabel]], image: numpy.ndarray, show_labels: bool, show_confidence: bool) -> Tuple[Callable[[numpy.ndarray], numpy.ndarray], int, int]
+
+      Generate draw function and content width and height for labels.
+
+      Generates a function which can be called to draw a list of labels onto an image relatively to the
+      cursor position.
+      The width and height of the content is also returned and can be determined to compute
+      the best position for content before actually drawing it.
+
+      :param labels: List of labels
+      :type labels: Sequence[Union[LabelEntity, ScoredLabel]]
+      :param image: Image (used to compute font size)
+      :type image: np.ndarray
+      :param show_labels: Whether to show the label name
+      :type show_labels: bool
+      :param show_confidence: Whether to show the confidence probability
+      :type show_confidence: bool
+
+      :returns: A tuple containing the drawing function, the content width,
+                and the content height
+
+
+   .. py:method:: generate_draw_command_for_text(text: str, text_scale: float, thickness: int, color: Tuple[int, int, int]) -> Tuple[Callable[[numpy.ndarray], numpy.ndarray], int, int]
+
+      Generate function to draw text on image relative to cursor position.
+
+      Generate a function which can be called to draw the given text onto an image
+      relatively to the cursor position.
+
+      The width and height of the content is also returned and can be determined to compute
+      the best position for content before actually drawing it.
+
+      :param text: Text to draw
+      :type text: str
+      :param text_scale: Font size
+      :type text_scale: float
+      :param thickness: Thickness of the text
+      :type thickness: int
+      :param color: Color of the text
+      :type color: Tuple[int, int, int]
+
+      :returns: A tuple containing the drawing function, the content width,
+                and the content height
+
+
+   .. py:method:: draw_flagpole(image: numpy.ndarray, flagpole_start_point: otx.api.entities.coordinate.Coordinate, flagpole_end_point: otx.api.entities.coordinate.Coordinate)
+      :staticmethod:
+
+      Draw a small flagpole between two points.
+
+      :param image: Image
+      :param flagpole_start_point: Start of the flagpole
+      :param flagpole_end_point: End of the flagpole
+
+      :returns: Image
+
+
+   .. py:method:: newline()
+
+      Move the cursor to the next line.
+
+
+   .. py:method:: set_cursor_pos(cursor_pos: Optional[otx.api.entities.coordinate.Coordinate] = None)
+
+      Move the cursor to a new position.
+
+      :param cursor_pos: New position of the cursor; (0,0) if not specified.
+      :type cursor_pos: Optional[Coordinate]
+
+
+
+.. py:class:: ShapeDrawer(show_count, is_one_label)
+
+   Bases: :py:obj:`DrawerEntity`\ [\ :py:obj:`otx.api.entities.annotation.AnnotationSceneEntity`\ ]
+
+   ShapeDrawer to draw any shape on a numpy array. Will overlay the shapes in the same way that the UI does.
+
+   :param show_count: Whether or not to render the amount of objects on
+                      screen in the top left.
+   :param is_one_label: Whether there is only one label present in the
+                        project.
+
+   .. py:class:: TopLeftDrawer(show_labels, show_confidence, is_one_label)
+
+      Bases: :py:obj:`Helpers`, :py:obj:`DrawerEntity`\ [\ :py:obj:`otx.api.entities.annotation.Annotation`\ ]
+
+      Draws labels in an image's top left corner.
+
+      .. py:method:: draw(image: numpy.ndarray, entity: otx.api.entities.annotation.Annotation, labels: List[otx.api.entities.scored_label.ScoredLabel]) -> numpy.ndarray
+
+         Draw the labels of a shape in the image top left corner.
+
+         :param image: Image
+         :type image: np.ndarray
+         :param entity: Annotation
+         :type entity: Annotation
+         :param labels: (Unused) labels to be drawn on the image
+         :type labels: List[ScoredLabels]
+
+         :returns: Image with label on top.
+         :rtype: np.ndarray
+
+
+      .. py:method:: draw_labels(image: numpy.ndarray, labels: Sequence[Union[otx.api.entities.label.LabelEntity, otx.api.entities.scored_label.ScoredLabel]]) -> numpy.ndarray
+
+         Draw the labels in the image top left corner.
+
+         :param image: Image
+         :type image: np.ndarray
+         :param labels: Sequence of labels
+         :type labels: Sequence[Union[LabelEntity, ScoredLabel]]
+
+         :returns: Image with label on top.
+         :rtype: np.ndarray
+
+
+      .. py:method:: draw_annotation_count(image: numpy.ndarray, num_annotations: int) -> numpy.ndarray
+
+         Draw the number of annotations to the top left corner of the image.
+
+         :param image: Image
+         :type image: np.ndarray
+         :param num_annotations: Number of annotations
+         :type num_annotations: int
+
+         :returns: Image with annotation count on top.
+         :rtype: np.ndarray
+
+
+
+   .. py:class:: RectangleDrawer(show_labels, show_confidence)
+
+      Bases: :py:obj:`Helpers`, :py:obj:`DrawerEntity`\ [\ :py:obj:`otx.api.entities.shapes.rectangle.Rectangle`\ ]
+
+      Draws rectangles.
+
+      .. py:attribute:: supported_types
+         
+
+         
+
+      .. py:method:: draw(image: numpy.ndarray, entity: otx.api.entities.shapes.rectangle.Rectangle, labels: List[otx.api.entities.scored_label.ScoredLabel]) -> numpy.ndarray
+
+         Draws a rectangle on the image along with labels.
+
+         :param image: Image to draw on.
+         :type image: np.ndarray
+         :param entity: Rectangle to draw.
+         :type entity: Rectangle
+         :param labels: List of labels.
+         :type labels: List[ScoredLabel]
+
+         :returns: Image with rectangle drawn on it.
+         :rtype: np.ndarray
+
+
+
+   .. py:class:: EllipseDrawer(show_labels, show_confidence)
+
+      Bases: :py:obj:`Helpers`, :py:obj:`DrawerEntity`\ [\ :py:obj:`otx.api.entities.shapes.ellipse.Ellipse`\ ]
+
+      Draws ellipses.
+
+      .. py:attribute:: supported_types
+         
+
+         
+
+      .. py:method:: draw(image: numpy.ndarray, entity: otx.api.entities.shapes.ellipse.Ellipse, labels: List[otx.api.entities.scored_label.ScoredLabel]) -> numpy.ndarray
+
+         Draw the ellipse on the image.
+
+         :param image: Image to draw on.
+         :type image: np.ndarray
+         :param entity: Ellipse to draw.
+         :type entity: Ellipse
+         :param labels: Labels to draw.
+         :type labels: List[ScoredLabel]
+
+         :returns: Image with the ellipse drawn on it.
+         :rtype: np.ndarray
+
+
+
+   .. py:class:: PolygonDrawer(show_labels, show_confidence)
+
+      Bases: :py:obj:`Helpers`, :py:obj:`DrawerEntity`\ [\ :py:obj:`otx.api.entities.shapes.polygon.Polygon`\ ]
+
+      Draws polygons.
+
+      .. py:attribute:: supported_types
+         
+
+         
+
+      .. py:method:: draw(image: numpy.ndarray, entity: otx.api.entities.shapes.polygon.Polygon, labels: List[otx.api.entities.scored_label.ScoredLabel]) -> numpy.ndarray
+
+         Draw polygon and labels on image.
+
+         :param image: Image to draw on.
+         :type image: np.ndarray
+         :param entity: Polygon to draw.
+         :type entity: Polygon
+         :param labels: List of labels to draw.
+         :type labels: List[ScoredLabel]
+
+         :returns: Image with polygon drawn on it.
+         :rtype: np.ndarray
+
+
+
+   .. py:method:: draw(image: numpy.ndarray, entity: otx.api.entities.annotation.AnnotationSceneEntity, labels: List[otx.api.entities.scored_label.ScoredLabel]) -> numpy.ndarray
+
+      Use a compatible drawer to draw all shapes of an annotation to the corresponding image.
+
+      Also render a label in the top left if we need to.
+
+      :param image: Numpy image, one frame of a video on which to draw
+                    something
+      :param entity: AnnotationSceneEntity entity corresponding to this
+                     particular frame of the video
+      :param labels: Can be passed as an empty list since they are
+                     already present in annotation_scene
+
+      :returns: Modified image.
+
+
+

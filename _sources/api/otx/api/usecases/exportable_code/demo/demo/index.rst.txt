@@ -1,0 +1,54 @@
+:py:mod:`otx.api.usecases.exportable_code.demo.demo`
+====================================================
+
+.. py:module:: otx.api.usecases.exportable_code.demo.demo
+
+.. autoapi-nested-parse::
+
+   Demo based on ModelAPI.
+
+
+
+Module Contents
+---------------
+
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   otx.api.usecases.exportable_code.demo.demo.build_argparser
+   otx.api.usecases.exportable_code.demo.demo.get_inferencer_class
+   otx.api.usecases.exportable_code.demo.demo.main
+
+
+
+Attributes
+~~~~~~~~~~
+
+.. autoapisummary::
+
+   otx.api.usecases.exportable_code.demo.demo.EXECUTORS
+
+
+.. py:function:: build_argparser()
+
+   Parses command line arguments.
+
+
+.. py:data:: EXECUTORS
+   
+
+   
+
+.. py:function:: get_inferencer_class(type_inference, models)
+
+   Return class for inference of models.
+
+
+.. py:function:: main()
+
+   Main function that is used to run demo.
+
+

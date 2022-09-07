@@ -1,0 +1,57 @@
+:py:mod:`otx.api.usecases.exportable_code.visualizers.anomaly_visualizer`
+=========================================================================
+
+.. py:module:: otx.api.usecases.exportable_code.visualizers.anomaly_visualizer
+
+.. autoapi-nested-parse::
+
+   Visualizer for results of anomaly task prediction.
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   otx.api.usecases.exportable_code.visualizers.anomaly_visualizer.AnomalyVisualizer
+
+
+
+
+.. py:class:: AnomalyVisualizer(window_name: Optional[str] = None, show_count: bool = False, is_one_label: bool = False, no_show: bool = False, delay: Optional[int] = None)
+
+   Bases: :py:obj:`otx.api.usecases.exportable_code.visualizers.visualizer.Visualizer`
+
+   Visualize the predicted output by drawing the annotations on the input image.
+
+   .. rubric:: Example
+
+   >>> predictions = inference_model.predict(frame)
+   >>> annotation = prediction_converter.convert_to_annotation(predictions)
+   >>> output = visualizer.draw(frame, annotation.shape, annotation.get_labels())
+   >>> visualizer.show(output)
+
+   .. py:method:: to_heat_mask(mask: numpy.ndarray) -> numpy.ndarray
+      :staticmethod:
+
+      Create heat mask from saliency map.
+
+      :param mask: saliency map
+
+
+   .. py:method:: draw(image: numpy.ndarray, annotation: otx.api.entities.annotation.AnnotationSceneEntity, meta: dict) -> numpy.ndarray
+
+      Draw annotations on the image.
+
+      :param image: Input image
+      :param annotation: Annotations to be drawn on the input image
+      :param metadata: Metadata with saliency map
+
+      :returns: Output image with annotations.
+
+
+

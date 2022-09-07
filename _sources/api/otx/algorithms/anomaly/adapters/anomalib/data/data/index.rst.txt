@@ -1,0 +1,158 @@
+:py:mod:`otx.algorithms.anomaly.adapters.anomalib.data.data`
+============================================================
+
+.. py:module:: otx.algorithms.anomaly.adapters.anomalib.data.data
+
+.. autoapi-nested-parse::
+
+   Anomaly Dataset Utils.
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   otx.algorithms.anomaly.adapters.anomalib.data.data.OTXAnomalyDataset
+   otx.algorithms.anomaly.adapters.anomalib.data.data.OTXAnomalyDataModule
+
+
+
+
+Attributes
+~~~~~~~~~~
+
+.. autoapisummary::
+
+   otx.algorithms.anomaly.adapters.anomalib.data.data.logger
+
+
+.. py:data:: logger
+   
+
+   
+
+.. py:class:: OTXAnomalyDataset(config: Union[omegaconf.DictConfig, omegaconf.ListConfig], dataset: otx.api.entities.datasets.DatasetEntity, task_type: otx.api.entities.model_template.TaskType)
+
+   Bases: :py:obj:`torch.utils.data.Dataset`
+
+   Anomaly Dataset Adaptor.
+
+   This class converts OTX Dataset into Anomalib dataset that
+   is a sub-class of Vision Dataset.
+
+   :param config: Anomalib config
+   :type config: Union[DictConfig, ListConfig]
+   :param dataset: [description]: OTX SDK Dataset
+   :type dataset: DatasetEntity
+
+   .. rubric:: Example
+
+   >>> from tests.helpers.dataset import OTXAnomalyDatasetGenerator
+   >>> from otx.utils.data import AnomalyDataset
+
+   >>> dataset_generator = OTXAnomalyDatasetGenerator()
+   >>> dataset = dataset_generator.generate()
+   >>> anomaly_dataset = AnomalyDataset(config=config, dataset=dataset)
+   >>> anomaly_dataset[0]["image"].shape
+   torch.Size([3, 256, 256])
+
+   .. py:method:: __len__() -> int
+
+      Get size of the dataset.
+
+      :returns: Size of the dataset.
+      :rtype: int
+
+
+   .. py:method:: __getitem__(index: int) -> Dict[str, Union[int, torch.Tensor]]
+
+      Get dataset item.
+
+      :param index: Index of the dataset sample.
+      :type index: int
+
+      :raises ValueError: When the task type is not supported.
+
+      :returns: Dataset item.
+      :rtype: Dict[str, Union[int, Tensor]]
+
+
+
+.. py:class:: OTXAnomalyDataModule(config: Union[omegaconf.DictConfig, omegaconf.ListConfig], dataset: otx.api.entities.datasets.DatasetEntity, task_type: otx.api.entities.model_template.TaskType)
+
+   Bases: :py:obj:`pytorch_lightning.core.datamodule.LightningDataModule`
+
+   Anomaly DataModule.
+
+   This class converts OTX Dataset into Anomalib dataset and stores
+   train/val/test dataloaders.
+
+   :param config: Anomalib config
+   :type config: Union[DictConfig, ListConfig]
+   :param dataset: OTX SDK Dataset
+   :type dataset: DatasetEntity
+
+   .. rubric:: Example
+
+   >>> from tests.helpers.dataset import OTXAnomalyDatasetGenerator
+   >>> from otx.utils.data import AnomalyDataModule
+
+   >>> dataset_generator = OTXAnomalyDatasetGenerator()
+   >>> dataset = dataset_generator.generate()
+   >>> data_module = OTXAnomalyDataModule(config=config, dataset=dataset)
+   >>> i, data = next(enumerate(data_module.train_dataloader()))
+   >>> data["image"].shape
+   torch.Size([32, 3, 256, 256])
+
+   .. py:method:: setup(stage: Optional[str] = None) -> None
+
+      Setup Anomaly Data Module.
+
+      :param stage: train/val/test stages.
+                    Defaults to None.
+      :type stage: Optional[str], optional
+
+
+   .. py:method:: summary()
+
+      Print size of the dataset, number of anomalous images and number of normal images.
+
+
+   .. py:method:: train_dataloader() -> Union[torch.utils.data.DataLoader, List[torch.utils.data.DataLoader], Dict[str, torch.utils.data.DataLoader]]
+
+      Train Dataloader.
+
+      :returns: Train dataloader.
+      :rtype: Union[DataLoader, List[DataLoader], Dict[str, DataLoader]]
+
+
+   .. py:method:: val_dataloader() -> Union[torch.utils.data.DataLoader, List[torch.utils.data.DataLoader]]
+
+      Validation Dataloader.
+
+      :returns: Validation Dataloader.
+      :rtype: Union[DataLoader, List[DataLoader]]
+
+
+   .. py:method:: test_dataloader() -> Union[torch.utils.data.DataLoader, List[torch.utils.data.DataLoader]]
+
+      Test Dataloader.
+
+      :returns: Test Dataloader.
+      :rtype: Union[DataLoader, List[DataLoader]]
+
+
+   .. py:method:: predict_dataloader() -> Union[torch.utils.data.DataLoader, List[torch.utils.data.DataLoader]]
+
+      Predict Dataloader.
+
+      :returns: Predict Dataloader.
+      :rtype: Union[DataLoader, List[DataLoader]]
+
+
+

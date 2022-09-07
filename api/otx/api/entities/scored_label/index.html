@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>otx.api.entities.scored_label &mdash; OpenVINO Training Extensions  documentation</title>
+      <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../_static/jquery.js"></script>
+        <script src="../../../../../_static/underscore.js"></script>
+        <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../../../_static/doctools.js"></script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../../index.html" class="icon icon-home"> OpenVINO Training Extensions
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../index.html">OpenVINO Training Extensions</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li><code class="xref py py-mod docutils literal notranslate"><span class="pre">otx.api.entities.scored_label</span></code></li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../../_sources/api/otx/api/entities/scored_label/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-otx.api.entities.scored_label">
+<span id="otx-api-entities-scored-label"></span><h1><a class="reference internal" href="#module-otx.api.entities.scored_label" title="otx.api.entities.scored_label"><code class="xref py py-mod docutils literal notranslate"><span class="pre">otx.api.entities.scored_label</span></code></a><a class="headerlink" href="#module-otx.api.entities.scored_label" title="Permalink to this heading"></a></h1>
+<p>This module define the scored label entity.</p>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this heading"></a></h2>
+<section id="classes">
+<h3>Classes<a class="headerlink" href="#classes" title="Permalink to this heading"></a></h3>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.api.entities.scored_label.LabelSource" title="otx.api.entities.scored_label.LabelSource"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LabelSource</span></code></a></p></td>
+<td><p>This dataclass contains information about the source of a scored label.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.api.entities.scored_label.ScoredLabel" title="otx.api.entities.scored_label.ScoredLabel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ScoredLabel</span></code></a></p></td>
+<td><p>This represents a label along with a probability. This is used inside <cite>Annotation</cite> class.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.api.entities.scored_label.LabelSource">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.scored_label.</span></span><span class="sig-name descname"><span class="pre">LabelSource</span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/scored_label.html#LabelSource"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.scored_label.LabelSource" title="Permalink to this definition"></a></dt>
+<dd><p>This dataclass contains information about the source of a scored label.</p>
+<p>For annotations, the id of the user who created the label and for predictions, the
+id and model storage id of the model that created the prediction. When a user has
+accepted a predictions as is, both the user id of the user who accepted and the
+model/model storage id of the model that predicted should be filled in.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.entities.scored_label.LabelSource.user_id">
+<span class="sig-name descname"><span class="pre">user_id</span></span><em class="property"><span class="w"> </span><span class="pre">:str</span> <span class="pre">=</span></em><a class="reference internal" href="../../../../../_modules/otx/api/entities/scored_label.html#LabelSource.user_id"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.scored_label.LabelSource.user_id" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.entities.scored_label.LabelSource.model_id">
+<span class="sig-name descname"><span class="pre">model_id</span></span><em class="property"><span class="w"> </span><span class="pre">:otx.api.entities.id.ID</span></em><a class="reference internal" href="../../../../../_modules/otx/api/entities/scored_label.html#LabelSource.model_id"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.scored_label.LabelSource.model_id" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.entities.scored_label.LabelSource.model_storage_id">
+<span class="sig-name descname"><span class="pre">model_storage_id</span></span><em class="property"><span class="w"> </span><span class="pre">:otx.api.entities.id.ID</span></em><a class="reference internal" href="../../../../../_modules/otx/api/entities/scored_label.html#LabelSource.model_storage_id"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.scored_label.LabelSource.model_storage_id" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.api.entities.scored_label.ScoredLabel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.scored_label.</span></span><span class="sig-name descname"><span class="pre">ScoredLabel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">probability</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_source</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#otx.api.entities.scored_label.LabelSource" title="otx.api.entities.scored_label.LabelSource"><span class="pre">LabelSource</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/otx/api/entities/scored_label.html#ScoredLabel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.scored_label.ScoredLabel" title="Permalink to this definition"></a></dt>
+<dd><p>This represents a label along with a probability. This is used inside <cite>Annotation</cite> class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>label</strong> (<a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><em>LabelEntity</em></a>) – Label entity to which probability and source are attached.</p></li>
+<li><p><strong>probability</strong> (<em>float</em>) – a float denoting the probability of the shape belonging to the label.</p></li>
+<li><p><strong>label_source</strong> (<a class="reference internal" href="#otx.api.entities.scored_label.LabelSource" title="otx.api.entities.scored_label.LabelSource"><em>LabelSource</em></a>) – a LabelSource dataclass containing the id of the user who created
+or the model that predicted this label.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.scored_label.ScoredLabel.name">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/scored_label.html#ScoredLabel.name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.scored_label.ScoredLabel.name" title="Permalink to this definition"></a></dt>
+<dd><p>Name of the label.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.scored_label.ScoredLabel.id_">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">id_</span></span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../id/index.html#otx.api.entities.id.ID" title="otx.api.entities.id.ID"><span class="pre">otx.api.entities.id.ID</span></a></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/scored_label.html#ScoredLabel.id_"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.scored_label.ScoredLabel.id_" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the label id.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.scored_label.ScoredLabel.id">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">id</span></span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../id/index.html#otx.api.entities.id.ID" title="otx.api.entities.id.ID"><span class="pre">otx.api.entities.id.ID</span></a></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/scored_label.html#ScoredLabel.id"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.scored_label.ScoredLabel.id" title="Permalink to this definition"></a></dt>
+<dd><p>DEPRECATED.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.scored_label.ScoredLabel.color">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">color</span></span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../color/index.html#otx.api.entities.color.Color" title="otx.api.entities.color.Color"><span class="pre">otx.api.entities.color.Color</span></a></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/scored_label.html#ScoredLabel.color"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.scored_label.ScoredLabel.color" title="Permalink to this definition"></a></dt>
+<dd><p>Color of the label.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.scored_label.ScoredLabel.hotkey">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">hotkey</span></span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/scored_label.html#ScoredLabel.hotkey"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.scored_label.ScoredLabel.hotkey" title="Permalink to this definition"></a></dt>
+<dd><p>Hotkey of the label.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.scored_label.ScoredLabel.domain">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">domain</span></span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../label/index.html#otx.api.entities.label.Domain" title="otx.api.entities.label.Domain"><span class="pre">otx.api.entities.label.Domain</span></a></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/scored_label.html#ScoredLabel.domain"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.scored_label.ScoredLabel.domain" title="Permalink to this definition"></a></dt>
+<dd><p>Domain of the label.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.scored_label.ScoredLabel.is_empty">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_empty</span></span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/scored_label.html#ScoredLabel.is_empty"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.scored_label.ScoredLabel.is_empty" title="Permalink to this definition"></a></dt>
+<dd><p>Check if the label is empty.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.scored_label.ScoredLabel.creation_date">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">creation_date</span></span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">datetime.datetime</span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/scored_label.html#ScoredLabel.creation_date"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.scored_label.ScoredLabel.creation_date" title="Permalink to this definition"></a></dt>
+<dd><p>Creation data of the label.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.scored_label.ScoredLabel.get_label">
+<span class="sig-name descname"><span class="pre">get_label</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/scored_label.html#ScoredLabel.get_label"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.scored_label.ScoredLabel.get_label" title="Permalink to this definition"></a></dt>
+<dd><p>Gets the label that the ScoredLabel object was initialized with.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.scored_label.ScoredLabel.__repr__">
+<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/otx/api/entities/scored_label.html#ScoredLabel.__repr__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.scored_label.ScoredLabel.__repr__" title="Permalink to this definition"></a></dt>
+<dd><p>String representation of the label.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.scored_label.ScoredLabel.__eq__">
+<span class="sig-name descname"><span class="pre">__eq__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">object</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/scored_label.html#ScoredLabel.__eq__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.scored_label.ScoredLabel.__eq__" title="Permalink to this definition"></a></dt>
+<dd><p>Checks if the label is equal to the other label.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>other</strong> (<a class="reference internal" href="#otx.api.entities.scored_label.ScoredLabel" title="otx.api.entities.scored_label.ScoredLabel"><em>ScoredLabel</em></a>) – Label to compare with</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>True if the labels are equal, False otherwise</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.scored_label.ScoredLabel.__hash__">
+<span class="sig-name descname"><span class="pre">__hash__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/otx/api/entities/scored_label.html#ScoredLabel.__hash__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.scored_label.ScoredLabel.__hash__" title="Permalink to this definition"></a></dt>
+<dd><p>Returns hash of the label.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, OpenVINO Training Extensions Contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

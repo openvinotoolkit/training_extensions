@@ -1,0 +1,35 @@
+:py:mod:`otx.cli.tools.export`
+==============================
+
+.. py:module:: otx.cli.tools.export
+
+.. autoapi-nested-parse::
+
+   Model exporting tool.
+
+
+
+Module Contents
+---------------
+
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   otx.cli.tools.export.parse_args
+   otx.cli.tools.export.main
+
+
+
+.. py:function:: parse_args()
+
+   Parses command line arguments.
+
+
+.. py:function:: main()
+
+   Main function that is used for model exporting.
+
+

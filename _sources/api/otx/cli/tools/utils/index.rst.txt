@@ -1,0 +1,20 @@
+:py:mod:`otx.cli.tools.utils`
+=============================
+
+.. py:module:: otx.cli.tools.utils
+
+.. autoapi-nested-parse::
+
+   CLI tools for OTX.
+
+
+
+Subpackages
+-----------
+.. toctree::
+   :titlesonly:
+   :maxdepth: 3
+
+   demo/index.rst
+
+

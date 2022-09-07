@@ -1,0 +1,456 @@
+:py:mod:`otx.api.configuration`
+===============================
+
+.. py:module:: otx.api.configuration
+
+.. autoapi-nested-parse::
+
+   OTX configurable parameters and helper utilities.
+
+   This module contains base elements that make up OTX ConfigurableParameters, as well as a collection of helper
+   functions to interact with them.
+
+   The configuration helper module can be imported as `otx_config_helper` and implements the following:
+
+   .. automodule:: otx.api.configuration.helper
+      :members:
+
+
+
+Subpackages
+-----------
+.. toctree::
+   :titlesonly:
+   :maxdepth: 3
+
+   elements/index.rst
+   enums/index.rst
+   helper/index.rst
+   ui_rules/index.rst
+
+
+Submodules
+----------
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+
+   configurable_parameters/index.rst
+   default_model_parameters/index.rst
+   model_lifecycle/index.rst
+
+
+Package Contents
+----------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   otx.api.configuration.ConfigurableEnum
+   otx.api.configuration.ModelLifecycle
+   otx.api.configuration.Action
+   otx.api.configuration.NullUIRules
+   otx.api.configuration.Operator
+   otx.api.configuration.Rule
+   otx.api.configuration.UIRules
+   otx.api.configuration.ConfigurableParameters
+   otx.api.configuration.DefaultModelParameters
+
+
+
+
+.. py:class:: ConfigurableEnum
+
+   Bases: :py:obj:`enum.Enum`
+
+   This class is used as the basis for defining `selectable` configurable parameters in the OTX API.
+
+   Enums reflecting `selectable` options should inherit from thisclass.
+
+   .. py:method:: __str__()
+
+      Retrieves the string representation of an instance of the ConfigurableEnum (or subclasses thereof).
+
+
+   .. py:method:: __eq__(other) -> bool
+
+      Returns True if the ConfigurableEnum instance is equal to the other ConfigurableEnum instance.
+
+      Checks whether one ConfigurableEnum instance (or instance of a subclass thereof) is equal to the `other`
+      object. Comparison is made based on class name, instance value and instance name.
+
+      :returns: True if the two instances are equal, False otherwise.
+      :rtype: bool
+
+
+   .. py:method:: __hash__()
+
+      Computes hash for the ConfigurableEnum instance.
+
+
+   .. py:method:: get_class_info() -> dict
+      :classmethod:
+
+      Creates a dictionary representation of the ConfigurableEnum.
+
+      This includes the name of the enum and the (name, value) pairs representing its members.
+
+      :returns: Dictionary representation of the ConfigurableEnum.
+      :rtype: dict
+
+
+   .. py:method:: get_names() -> List[str]
+      :classmethod:
+
+      Returns a list of names that can be used to index the Enum.
+
+
+   .. py:method:: get_values() -> List[str]
+      :classmethod:
+
+      Returns a list of values that can be used to index the Enum.
+
+
+
+.. py:class:: ModelLifecycle
+
+   Bases: :py:obj:`enum.Enum`
+
+   This Enum represents the different stages in the ModelLifecycle.
+
+   It is used by configuration parameters to indicate
+   in which stage of the model lifecycle the parameter takes effect. Selecting a stage early in the lifecycle implies
+   that all downstream stages are affected as well (e.g. if this is set to `ModelLifecycle.TRAINING`, it is assumed
+   that inference and testing are also impacted).
+
+   Currently the following stages are possible:
+   ARCHITECTURE - Select this stage if the parameter modifies the model architecture, such that the most recently
+       trained weights cannot directly by used for the next training round due to a model topology mismatch. For
+       example, a parameter `model_depth` that controls the number of downsampling steps in a UNet model should
+       have this stage set.
+   TRAINING - Select this stage if the parameter is likely to change the outcome of the training process. For example,
+       the parameter `learning_rate` should have this stage set.
+   INFERENCE - Select this stage if the parameter changes the result of inference. For example, a parameter
+       `probability_threshold` that controls the threshold for binary classification should have this stage set.
+   TESTING - Select this stage if the parameter changes the outcome of the evaluation process. For example, a parameter
+       'test_metric` that controls which metric to use for testing does not change training or inference results, but
+       does affect the final evaluation of the model. Therefore, it should have this stage set.
+   NONE - Select this stage if the parameter is non-functional, for example if it only impacts training speed but
+       should not change the training outcome. For example, a parameter `num_workers` that controls the number of
+       threads used in a dataloader should have this stage set.
+
+   .. py:attribute:: NONE
+      
+
+      
+
+   .. py:attribute:: ARCHITECTURE
+      
+
+      
+
+   .. py:attribute:: TRAINING
+      
+
+      
+
+   .. py:attribute:: INFERENCE
+      
+
+      
+
+   .. py:attribute:: TESTING
+      
+
+      
+
+   .. py:method:: __str__()
+
+      Retrieves the string representation of an instance of the Enum.
+
+
+
+.. py:class:: Action
+
+   Bases: :py:obj:`enum.Enum`
+
+   This Enum represents the allowed actions that UI rules can dictate on configuration parameters.
+
+   .. py:attribute:: HIDE
+      
+
+      
+
+   .. py:attribute:: SHOW
+      
+
+      
+
+   .. py:attribute:: ENABLE_EDITING
+      
+
+      
+
+   .. py:attribute:: DISABLE_EDITING
+      
+
+      
+
+   .. py:method:: __str__()
+
+      Retrieves the string representation of an instance of the Enum.
+
+
+
+.. py:class:: NullUIRules
+
+   Bases: :py:obj:`UIRules`
+
+   This class represents an empty, unset UIRules element.
+
+   .. py:attribute:: rules
+      :annotation: :List[Union[Rule, UIRules]]
+
+      
+
+
+.. py:class:: Operator
+
+   Bases: :py:obj:`enum.Enum`
+
+   This Enum represents the allowed operators for use in constructing UI rules for configuration parameters.
+
+   These operators can be used to disable a configuration parameter, conditional on the value of another parameter.
+
+   .. py:attribute:: NOT
+      
+
+      
+
+   .. py:attribute:: EQUAL_TO
+      
+
+      
+
+   .. py:attribute:: LESS_THAN
+      
+
+      
+
+   .. py:attribute:: GREATER_THAN
+      
+
+      
+
+   .. py:attribute:: AND
+      
+
+      
+
+   .. py:attribute:: OR
+      
+
+      
+
+   .. py:attribute:: XOR
+      
+
+      
+
+   .. py:method:: __str__()
+
+      Retrieves the string representation of an instance of the Enum.
+
+
+
+.. py:class:: Rule
+
+   This class represents a `operator` applied to the `value` of the configurable parameter `parameter`.
+
+   The parameter for which the rule should be evaluated is identified by name, or by a list of names representing the
+   attribute path to the parameter in case of a nested configuration.
+
+   .. py:attribute:: parameter
+      :annotation: :Union[str, List[str]]
+
+      
+
+   .. py:attribute:: value
+      :annotation: :ALLOWED_RULE_VALUE_TYPES
+
+      
+
+   .. py:attribute:: operator
+      :annotation: :otx.api.configuration.ui_rules.types.Operator
+
+      
+
+   .. py:attribute:: type
+      :annotation: :otx.api.configuration.enums.config_element_type.ConfigElementType
+
+      
+
+   .. py:method:: to_dict(enum_to_str: bool = True) -> dict
+
+      Method to serialize a Rule instance to its dictionary representation.
+
+      :param enum_to_str: Set to True to convert Enum instances to their string representation
+      :type enum_to_str: bool
+
+      :returns: dictionary representation of the Rule object for which this method is called
+      :rtype: dict
+
+
+
+.. py:class:: UIRules
+
+   This class allows the combination of ExposureRules using boolean logic.
+
+   The class can be set as an attribute of a configurable parameter. If the `rules`
+   (combined according to the `operator`) evaluate to True, the corresponding`action` will be taken in the UI.
+
+   If UIRules are nested, only the `action` of the outermost UIRule will be considered.
+
+   .. py:attribute:: rules
+      :annotation: :List[Union[Rule, UIRules]]
+
+      
+
+   .. py:attribute:: operator
+      :annotation: :otx.api.configuration.ui_rules.types.Operator
+
+      
+
+   .. py:attribute:: action
+      :annotation: :otx.api.configuration.ui_rules.types.Action
+
+      
+
+   .. py:attribute:: type
+      :annotation: :otx.api.configuration.enums.config_element_type.ConfigElementType
+
+      
+
+   .. py:method:: add_rule(rule: Union[Rule, UIRules])
+
+      Adds rule.
+
+
+   .. py:method:: to_dict(enum_to_str: bool = True) -> dict
+
+      Method to serialize an UIRules instance to its dictionary representation.
+
+      Applies recursion to convert nested rules, if applicable.
+
+      :param enum_to_str: Set to True to convert Enum instances to their
+                          string representation
+
+      :returns: dictionary representation of the UIRules object for which
+                this method is called
+
+
+
+.. py:class:: ConfigurableParameters
+
+   Bases: :py:obj:`otx.api.configuration.elements.parameter_group.ParameterGroup`
+
+   Base class representing a generic set of configurable parameters.
+
+   A ConfigurableParameters instance is essentially a parameter group with an id
+   attached to it, so that it can be uniquely identified in the repositories.
+
+   .. attribute:: id
+
+      ID that uniquely identifies the ConfigurableParameters
+
+      :type: ID
+
+   .. attribute:: type
+
+      Type of the ConfigurableParameters
+
+      :type: ConfigElementType
+
+   .. py:attribute:: id
+      :annotation: :otx.api.entities.id.ID
+
+      
+
+   .. py:attribute:: type
+      :annotation: :otx.api.configuration.enums.config_element_type.ConfigElementType
+
+      
+
+
+.. py:class:: DefaultModelParameters
+
+   Bases: :py:obj:`otx.api.configuration.configurable_parameters.ConfigurableParameters`
+
+   Configuration element representing a the default set of hyper parameters for a model.
+
+   .. attribute:: header
+
+      Name of parameter group
+
+      :type: str
+
+   .. attribute:: description
+
+      User friendly string describing what the ModelConfig represents, that will be displayed in
+      the UI.
+
+      :type: str
+
+   .. py:class:: _LearningParameters
+
+      Bases: :py:obj:`otx.api.configuration.elements.ParameterGroup`
+
+      .. py:attribute:: header
+         
+
+         
+
+      .. py:attribute:: description
+         
+
+         
+
+      .. py:attribute:: visible_in_ui
+         
+
+         
+
+      .. py:attribute:: batch_size
+         
+
+         
+
+      .. py:attribute:: epochs
+         
+
+         
+
+      .. py:attribute:: learning_rate
+         
+
+         
+
+
+   .. py:attribute:: header
+      :annotation: :str
+
+      
+
+   .. py:attribute:: description
+      :annotation: :str
+
+      
+
+   .. py:attribute:: learning_parameters
+      
+
+      
+
+

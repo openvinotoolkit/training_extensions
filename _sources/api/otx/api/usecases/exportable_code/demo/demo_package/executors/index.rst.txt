@@ -1,0 +1,94 @@
+:py:mod:`otx.api.usecases.exportable_code.demo.demo_package.executors`
+======================================================================
+
+.. py:module:: otx.api.usecases.exportable_code.demo.demo_package.executors
+
+.. autoapi-nested-parse::
+
+   Initialization of executors.
+
+
+
+Submodules
+----------
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+
+   asynchronous/index.rst
+   sync_pipeline/index.rst
+   synchronous/index.rst
+
+
+Package Contents
+----------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   otx.api.usecases.exportable_code.demo.demo_package.executors.AsyncExecutor
+   otx.api.usecases.exportable_code.demo.demo_package.executors.ChainExecutor
+   otx.api.usecases.exportable_code.demo.demo_package.executors.SyncExecutor
+
+
+
+
+.. py:class:: AsyncExecutor(model: otx.api.usecases.exportable_code.demo.demo_package.model_container.ModelContainer, visualizer: otx.api.usecases.exportable_code.visualizers.Visualizer)
+
+   Async inferencer.
+
+   :param model: model for inference
+   :param visualizer: visualizer of inference results
+
+   .. py:method:: run(input_stream: Union[int, str], loop: bool = False) -> None
+
+      Async inference for input stream (image, video stream, camera).
+
+
+   .. py:method:: render_result(results: Tuple[Any, dict]) -> numpy.ndarray
+
+      Render for results of inference.
+
+
+
+.. py:class:: ChainExecutor(models: List[otx.api.usecases.exportable_code.demo.demo_package.model_container.ModelContainer], visualizer: otx.api.usecases.exportable_code.visualizers.Visualizer)
+
+   Sync executor for task-chain inference.
+
+   :param models: list of models for inference
+   :param visualizer: visualizer of inference results
+
+   .. py:method:: single_run(input_image: numpy.ndarray) -> otx.api.entities.annotation.AnnotationSceneEntity
+
+      Inference for single image.
+
+
+   .. py:method:: crop(item: numpy.ndarray, parent_annotation: otx.api.entities.annotation.Annotation, item_annotation: otx.api.entities.annotation.Annotation) -> Tuple[numpy.ndarray, otx.api.entities.annotation.Annotation]
+      :staticmethod:
+
+      Crop operation between chain stages.
+
+
+   .. py:method:: run(input_stream: Union[int, str], loop: bool = False) -> None
+
+      Run demo using input stream (image, video stream, camera).
+
+
+
+.. py:class:: SyncExecutor(model: otx.api.usecases.exportable_code.demo.demo_package.model_container.ModelContainer, visualizer: otx.api.usecases.exportable_code.visualizers.Visualizer)
+
+   Synchronous executor for model inference.
+
+   :param model: model for inference
+   :type model: ModelContainer
+   :param visualizer: visualizer of inference results. Defaults to None.
+   :type visualizer: Visualizer
+
+   .. py:method:: run(input_stream: Union[int, str], loop: bool = False) -> None
+
+      Run demo using input stream (image, video stream, camera).
+
+
+

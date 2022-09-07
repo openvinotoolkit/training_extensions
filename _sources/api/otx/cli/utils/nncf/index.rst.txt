@@ -1,0 +1,32 @@
+:py:mod:`otx.cli.utils.nncf`
+============================
+
+.. py:module:: otx.cli.utils.nncf
+
+.. autoapi-nested-parse::
+
+   NNCF-related utils.
+
+
+
+Module Contents
+---------------
+
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   otx.cli.utils.nncf.is_checkpoint_nncf
+
+
+
+.. py:function:: is_checkpoint_nncf(path)
+
+   Check if checkpoint is NNCF checkpoint.
+
+   The function uses metadata stored in a checkpoint to check if the
+   checkpoint was the result of trainning of NNCF-compressed model.
+
+

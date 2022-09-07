@@ -1,0 +1,41 @@
+:py:mod:`otx.api.serialization.datetime_mapper`
+===============================================
+
+.. py:module:: otx.api.serialization.datetime_mapper
+
+.. autoapi-nested-parse::
+
+   This module contains the mapper for datetime.
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   otx.api.serialization.datetime_mapper.DatetimeMapper
+
+
+
+
+.. py:class:: DatetimeMapper
+
+   This class maps a `datetime.datetime` entity to a string, and vice versa.
+
+   .. py:method:: forward(instance: datetime.datetime) -> str
+      :staticmethod:
+
+      Serializes datetime to str.
+
+
+   .. py:method:: backward(instance: Union[None, str]) -> datetime.datetime
+      :staticmethod:
+
+      Deserializes datetime from str or create new one if it is None.
+
+
+

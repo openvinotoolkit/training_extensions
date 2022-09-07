@@ -1,0 +1,217 @@
+:py:mod:`otx.api.usecases.exportable_code.inference`
+====================================================
+
+.. py:module:: otx.api.usecases.exportable_code.inference
+
+.. autoapi-nested-parse::
+
+   Initialization of inference interfaces.
+
+
+
+Submodules
+----------
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+
+   inference/index.rst
+
+
+Package Contents
+----------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   otx.api.usecases.exportable_code.inference.AsyncOpenVINOTask
+   otx.api.usecases.exportable_code.inference.BaseInferencer
+   otx.api.usecases.exportable_code.inference.BaseOpenVINOInferencer
+   otx.api.usecases.exportable_code.inference.IInferencer
+
+
+
+
+.. py:class:: AsyncOpenVINOTask(streamer: otx.api.usecases.exportable_code.streamer.streamer.BaseStreamer, inferencer: BaseOpenVINOInferencer, drop_output: Optional[int] = None)
+
+   This class runs asynchronous inference on a BaseOpenVinoInferencer.
+
+   Using a BaseStreamer as input
+
+   :param streamer: A streamer that provides input for the inferencer
+   :param inferencer: The inferencer to use to generate predictions
+   :param drop_output: Set to a number to limit the amount of results
+                       stored at a time. If inference is completed but there is
+                       no room for the output. The output will be dropped.Set
+                       to 0 to disable, Set to None to automatically determine
+                       a good value
+
+   .. py:method:: __iter__() -> Iterator[Tuple[numpy.ndarray, List[numpy.ndarray]]]
+
+      Starts the asynchronous inference loop.
+
+      .. rubric:: Example
+
+      >>> streamer = VideoStreamer("../demo.mp4")
+      >>> inferencer = ExampleOpenVINOInferencer(weights="model.bin", num_requests=4)
+      >>> async_task = AsyncOpenVINOTask(streamer, inferencer)
+      >>> for image, predictions in async_task:
+      ...    # Do something with predictions
+
+      :Yields: *Iterator[Tuple[np.ndarray, List[np.ndarray]]]* -- A Tuple with the used image and a list of predictions
+
+
+   .. py:method:: __idle_request_available() -> bool
+
+      Returns True if one idle request is available.
+
+      :returns: True if one idle request is available
+      :rtype: bool
+
+
+   .. py:method:: __wait_for_request(num_requests: Optional[int] = None, timeout: Optional[int] = None) -> bool
+
+      Wait for num_requests to become available.
+
+      :param num_requests: Number of requests that should be available
+                           for the function to return False. If set to None waits
+                           for all requests to finish. Defaults to None.
+      :param timeout: Amount of milliseconds to wait before function
+                      returns regardless of available requests. Set to None to
+                      wait regardless of the time. Defaults to None.
+
+      :returns: bool -- Returns True if no requests are available, False if
+                num_requests are available
+
+
+   .. py:method:: __make_request(image: numpy.ndarray, completed_requests: queue.Queue)
+
+      Makes an asynchronous request.
+
+      :param image: Image to run inference on.
+      :param completed_requests: Queue where results should be placed.
+
+      :raises RuntimeError: Raised if no idle requests are available
+
+
+
+.. py:class:: BaseInferencer
+
+   Bases: :py:obj:`IInferencer`, :py:obj:`abc.ABC`
+
+   Base class for standard inference.
+
+   The user needs to implement the following:
+       + `load_model`
+       + `pre_process`
+       + `forward`
+       + `post_process`
+
+   .. py:method:: predict(image: numpy.ndarray) -> otx.api.entities.annotation.AnnotationSceneEntity
+
+      Perform a prediction for a given input image.
+
+      :param image: Input image
+
+      :returns: Output predictions
+
+
+
+.. py:class:: BaseOpenVINOInferencer(model_file: Union[str, bytes], weights_file: Union[str, bytes, None] = None, device: str = 'CPU', num_requests: int = 1)
+
+   Bases: :py:obj:`BaseInferencer`, :py:obj:`abc.ABC`
+
+   Base class for OpenVINO inference.
+
+   Can handle the basic flow of reading and loading a model. If the network needs to be reshaped,
+   override the load_model function.
+   One would need to implement the following methods to use this as OpenVINO
+   Inferencer
+       + `pre_process`
+       + `forward`
+       + `post_process`
+
+   :param weight_path: Path to the weight file
+   :param device: Device to use for inference. Check available devices
+                  with IECore().available_devices.
+   :param num_requests: Number of simultaneous requests that can be issued
+                        to the model, has no effect on synchronous execution.
+
+   :raises ValueError: Raised if the device is not available.
+
+   .. py:method:: read_model(model_file: Union[pathlib.Path, str, bytes], weights_file: Union[pathlib.Path, str, bytes, None] = None)
+
+      Reads an OpenVINO model and saves its input and output keys to a list.
+
+      :param model_file: Path to the model file or bytes with data from OpenVINO's .xml file.
+      :param weights: A .xml, .bin or .onnx file to be loaded. if a .xml
+                      or .bin is provided a file of the same name with the
+                      other extension is also expected
+
+      :raises ValueError: Raised if a weights file that is not compatible with OpenVINO
+          is provided
+
+
+   .. py:method:: load_model(model_file: Union[str, bytes], weights_file: Union[str, bytes, None])
+
+      Loads an OpenVINO or ONNX model, overwrite this function if you need to reshape the network.
+
+      Or retrieve additional information from the network after loading it.
+
+      :param model_file: Path to the model file or bytes with data from OpenVINO's .xml file.
+      :type model_file: Union[str, bytes]
+      :param weights_file (weights_file: Union[str, bytes, None]): A .xml, .bin or .onnx file to be loaded. if a .xml
+                                         or .bin is provided a file of the same name with the
+                                         other extension is also expected
+
+
+
+.. py:class:: IInferencer
+
+   Base interface class for the inference task.
+
+   This class could be used by both the analyse method in the task, and the exportable code inference.
+
+
+   .. py:method:: pre_process(image: numpy.ndarray) -> Tuple[Any, Any]
+      :abstractmethod:
+
+      Pre-process input image and return the pre-processed image with meta-data if required.
+
+      This method should pre-process the input image, and return the processed output and if required a Tuple with
+      metadata that is required for post_process to work.
+
+
+   .. py:method:: forward(image: Any) -> Any
+      :abstractmethod:
+
+      Forward the input image to the model and return the output.
+
+      NOTE: The input is typed as Any at the moment, mainly because it could be numpy
+          array,torch Tensor or tf Tensor. In the future, it could be an idea to be
+          more specific.
+
+      This method should perform the prediction by forward-passing the input image
+      to the model, and return the predictions in a dictionary format.
+
+      For instance, for a segmentation task, the predictions could be {"mask": mask}.
+
+
+   .. py:method:: post_process(prediction: Any, metadata: Any) -> otx.api.entities.annotation.AnnotationSceneEntity
+      :abstractmethod:
+
+      Post-process the raw predictions, and return the AnnotationSceneEntity.
+
+      This method should include the post-processing methods that are applied to the raw predictions from the
+      self.forward() stage.
+
+
+   .. py:method:: predict(image: numpy.ndarray) -> otx.api.entities.annotation.AnnotationSceneEntity
+      :abstractmethod:
+
+      This method performs a prediction.
+
+
+

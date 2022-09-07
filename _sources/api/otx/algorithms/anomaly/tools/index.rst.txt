@@ -1,0 +1,20 @@
+:py:mod:`otx.algorithms.anomaly.tools`
+======================================
+
+.. py:module:: otx.algorithms.anomaly.tools
+
+.. autoapi-nested-parse::
+
+   Collection of tools to run anomaly training extension.
+
+
+
+Submodules
+----------
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+
+   sample/index.rst
+
+

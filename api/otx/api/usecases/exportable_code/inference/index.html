@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>otx.api.usecases.exportable_code.inference &mdash; OpenVINO Training Extensions  documentation</title>
+      <link rel="stylesheet" href="../../../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../../../" id="documentation_options" src="../../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../../_static/jquery.js"></script>
+        <script src="../../../../../../_static/underscore.js"></script>
+        <script src="../../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../../../../_static/doctools.js"></script>
+    <script src="../../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../../../index.html" class="icon icon-home"> OpenVINO Training Extensions
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../../index.html">OpenVINO Training Extensions</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li><code class="xref py py-mod docutils literal notranslate"><span class="pre">otx.api.usecases.exportable_code.inference</span></code></li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../../../_sources/api/otx/api/usecases/exportable_code/inference/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-otx.api.usecases.exportable_code.inference">
+<span id="otx-api-usecases-exportable-code-inference"></span><h1><a class="reference internal" href="#module-otx.api.usecases.exportable_code.inference" title="otx.api.usecases.exportable_code.inference"><code class="xref py py-mod docutils literal notranslate"><span class="pre">otx.api.usecases.exportable_code.inference</span></code></a><a class="headerlink" href="#module-otx.api.usecases.exportable_code.inference" title="Permalink to this heading"></a></h1>
+<p>Initialization of inference interfaces.</p>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="inference/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">otx.api.usecases.exportable_code.inference.inference</span></code></a></li>
+</ul>
+</div>
+</section>
+<section id="package-contents">
+<h2>Package Contents<a class="headerlink" href="#package-contents" title="Permalink to this heading"></a></h2>
+<section id="classes">
+<h3>Classes<a class="headerlink" href="#classes" title="Permalink to this heading"></a></h3>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.api.usecases.exportable_code.inference.AsyncOpenVINOTask" title="otx.api.usecases.exportable_code.inference.AsyncOpenVINOTask"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AsyncOpenVINOTask</span></code></a></p></td>
+<td><p>This class runs asynchronous inference on a BaseOpenVinoInferencer.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.api.usecases.exportable_code.inference.BaseInferencer" title="otx.api.usecases.exportable_code.inference.BaseInferencer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BaseInferencer</span></code></a></p></td>
+<td><p>Base class for standard inference.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.api.usecases.exportable_code.inference.BaseOpenVINOInferencer" title="otx.api.usecases.exportable_code.inference.BaseOpenVINOInferencer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BaseOpenVINOInferencer</span></code></a></p></td>
+<td><p>Base class for OpenVINO inference.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.api.usecases.exportable_code.inference.IInferencer" title="otx.api.usecases.exportable_code.inference.IInferencer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">IInferencer</span></code></a></p></td>
+<td><p>Base interface class for the inference task.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.api.usecases.exportable_code.inference.AsyncOpenVINOTask">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.usecases.exportable_code.inference.</span></span><span class="sig-name descname"><span class="pre">AsyncOpenVINOTask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">streamer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../streamer/streamer/index.html#otx.api.usecases.exportable_code.streamer.streamer.BaseStreamer" title="otx.api.usecases.exportable_code.streamer.streamer.BaseStreamer"><span class="pre">otx.api.usecases.exportable_code.streamer.streamer.BaseStreamer</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">inferencer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.usecases.exportable_code.inference.BaseOpenVINOInferencer" title="otx.api.usecases.exportable_code.inference.BaseOpenVINOInferencer"><span class="pre">BaseOpenVINOInferencer</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">drop_output</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/exportable_code/inference/inference.html#AsyncOpenVINOTask"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.exportable_code.inference.AsyncOpenVINOTask" title="Permalink to this definition"></a></dt>
+<dd><p>This class runs asynchronous inference on a BaseOpenVinoInferencer.</p>
+<p>Using a BaseStreamer as input</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>streamer</strong> – A streamer that provides input for the inferencer</p></li>
+<li><p><strong>inferencer</strong> – The inferencer to use to generate predictions</p></li>
+<li><p><strong>drop_output</strong> – Set to a number to limit the amount of results
+stored at a time. If inference is completed but there is
+no room for the output. The output will be dropped.Set
+to 0 to disable, Set to None to automatically determine
+a good value</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.usecases.exportable_code.inference.AsyncOpenVINOTask.__iter__">
+<span class="sig-name descname"><span class="pre">__iter__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#otx.api.usecases.exportable_code.inference.AsyncOpenVINOTask.__iter__" title="Permalink to this definition"></a></dt>
+<dd><p>Starts the asynchronous inference loop.</p>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">streamer</span> <span class="o">=</span> <span class="n">VideoStreamer</span><span class="p">(</span><span class="s2">&quot;../demo.mp4&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">inferencer</span> <span class="o">=</span> <span class="n">ExampleOpenVINOInferencer</span><span class="p">(</span><span class="n">weights</span><span class="o">=</span><span class="s2">&quot;model.bin&quot;</span><span class="p">,</span> <span class="n">num_requests</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">async_task</span> <span class="o">=</span> <span class="n">AsyncOpenVINOTask</span><span class="p">(</span><span class="n">streamer</span><span class="p">,</span> <span class="n">inferencer</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">image</span><span class="p">,</span> <span class="n">predictions</span> <span class="ow">in</span> <span class="n">async_task</span><span class="p">:</span>
+<span class="gp">... </span>   <span class="c1"># Do something with predictions</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Yields</dt>
+<dd class="field-odd"><p><em>Iterator[Tuple[np.ndarray, List[np.ndarray]]]</em> – A Tuple with the used image and a list of predictions</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.usecases.exportable_code.inference.AsyncOpenVINOTask.__idle_request_available">
+<span class="sig-name descname"><span class="pre">__idle_request_available</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#otx.api.usecases.exportable_code.inference.AsyncOpenVINOTask.__idle_request_available" title="Permalink to this definition"></a></dt>
+<dd><p>Returns True if one idle request is available.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>True if one idle request is available</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.usecases.exportable_code.inference.AsyncOpenVINOTask.__wait_for_request">
+<span class="sig-name descname"><span class="pre">__wait_for_request</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_requests</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#otx.api.usecases.exportable_code.inference.AsyncOpenVINOTask.__wait_for_request" title="Permalink to this definition"></a></dt>
+<dd><p>Wait for num_requests to become available.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>num_requests</strong> – Number of requests that should be available
+for the function to return False. If set to None waits
+for all requests to finish. Defaults to None.</p></li>
+<li><p><strong>timeout</strong> – Amount of milliseconds to wait before function
+returns regardless of available requests. Set to None to
+wait regardless of the time. Defaults to None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>bool – Returns True if no requests are available, False if
+num_requests are available</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.usecases.exportable_code.inference.AsyncOpenVINOTask.__make_request">
+<span class="sig-name descname"><span class="pre">__make_request</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">completed_requests</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">queue.Queue</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.usecases.exportable_code.inference.AsyncOpenVINOTask.__make_request" title="Permalink to this definition"></a></dt>
+<dd><p>Makes an asynchronous request.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>image</strong> – Image to run inference on.</p></li>
+<li><p><strong>completed_requests</strong> – Queue where results should be placed.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>RuntimeError</strong> – Raised if no idle requests are available</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.api.usecases.exportable_code.inference.BaseInferencer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.usecases.exportable_code.inference.</span></span><span class="sig-name descname"><span class="pre">BaseInferencer</span></span><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/exportable_code/inference/inference.html#BaseInferencer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.exportable_code.inference.BaseInferencer" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#otx.api.usecases.exportable_code.inference.IInferencer" title="otx.api.usecases.exportable_code.inference.IInferencer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">IInferencer</span></code></a>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">abc.ABC</span></code></p>
+<p>Base class for standard inference.</p>
+<dl class="simple">
+<dt>The user needs to implement the following:</dt><dd><ul class="simple">
+<li><p><cite>load_model</cite></p></li>
+<li><p><cite>pre_process</cite></p></li>
+<li><p><cite>forward</cite></p></li>
+<li><p><cite>post_process</cite></p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.usecases.exportable_code.inference.BaseInferencer.predict">
+<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../../../entities/annotation/index.html#otx.api.entities.annotation.AnnotationSceneEntity" title="otx.api.entities.annotation.AnnotationSceneEntity"><span class="pre">otx.api.entities.annotation.AnnotationSceneEntity</span></a></span></span><a class="headerlink" href="#otx.api.usecases.exportable_code.inference.BaseInferencer.predict" title="Permalink to this definition"></a></dt>
+<dd><p>Perform a prediction for a given input image.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>image</strong> – Input image</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Output predictions</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.api.usecases.exportable_code.inference.BaseOpenVINOInferencer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.usecases.exportable_code.inference.</span></span><span class="sig-name descname"><span class="pre">BaseOpenVINOInferencer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">bytes</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">bytes</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'CPU'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_requests</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/exportable_code/inference/inference.html#BaseOpenVINOInferencer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.exportable_code.inference.BaseOpenVINOInferencer" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#otx.api.usecases.exportable_code.inference.BaseInferencer" title="otx.api.usecases.exportable_code.inference.BaseInferencer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BaseInferencer</span></code></a>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">abc.ABC</span></code></p>
+<p>Base class for OpenVINO inference.</p>
+<p>Can handle the basic flow of reading and loading a model. If the network needs to be reshaped,
+override the load_model function.
+One would need to implement the following methods to use this as OpenVINO
+Inferencer</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><cite>pre_process</cite></p></li>
+<li><p><cite>forward</cite></p></li>
+<li><p><cite>post_process</cite></p></li>
+</ul>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>weight_path</strong> – Path to the weight file</p></li>
+<li><p><strong>device</strong> – Device to use for inference. Check available devices
+with IECore().available_devices.</p></li>
+<li><p><strong>num_requests</strong> – Number of simultaneous requests that can be issued
+to the model, has no effect on synchronous execution.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>ValueError</strong> – Raised if the device is not available.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.usecases.exportable_code.inference.BaseOpenVINOInferencer.read_model">
+<span class="sig-name descname"><span class="pre">read_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">pathlib.Path</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">bytes</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">pathlib.Path</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">bytes</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.usecases.exportable_code.inference.BaseOpenVINOInferencer.read_model" title="Permalink to this definition"></a></dt>
+<dd><p>Reads an OpenVINO model and saves its input and output keys to a list.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_file</strong> – Path to the model file or bytes with data from OpenVINO’s .xml file.</p></li>
+<li><p><strong>weights</strong> – A .xml, .bin or .onnx file to be loaded. if a .xml
+or .bin is provided a file of the same name with the
+other extension is also expected</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>ValueError</strong> – Raised if a weights file that is not compatible with OpenVINO
+is provided</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.usecases.exportable_code.inference.BaseOpenVINOInferencer.load_model">
+<span class="sig-name descname"><span class="pre">load_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">bytes</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">bytes</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.usecases.exportable_code.inference.BaseOpenVINOInferencer.load_model" title="Permalink to this definition"></a></dt>
+<dd><p>Loads an OpenVINO or ONNX model, overwrite this function if you need to reshape the network.</p>
+<p>Or retrieve additional information from the network after loading it.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_file</strong> (<em>Union</em><em>[</em><em>str</em><em>, </em><em>bytes</em><em>]</em>) – Path to the model file or bytes with data from OpenVINO’s .xml file.</p></li>
+<li><p><strong>(</strong><strong>weights_file</strong> (<em>weights_file</em>) – Union[str, bytes, None]): A .xml, .bin or .onnx file to be loaded. if a .xml
+or .bin is provided a file of the same name with the
+other extension is also expected</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.api.usecases.exportable_code.inference.IInferencer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.usecases.exportable_code.inference.</span></span><span class="sig-name descname"><span class="pre">IInferencer</span></span><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/exportable_code/inference/inference.html#IInferencer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.exportable_code.inference.IInferencer" title="Permalink to this definition"></a></dt>
+<dd><p>Base interface class for the inference task.</p>
+<p>This class could be used by both the analyse method in the task, and the exportable code inference.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.usecases.exportable_code.inference.IInferencer.pre_process">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pre_process</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#otx.api.usecases.exportable_code.inference.IInferencer.pre_process" title="Permalink to this definition"></a></dt>
+<dd><p>Pre-process input image and return the pre-processed image with meta-data if required.</p>
+<p>This method should pre-process the input image, and return the processed output and if required a Tuple with
+metadata that is required for post_process to work.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.usecases.exportable_code.inference.IInferencer.forward">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="headerlink" href="#otx.api.usecases.exportable_code.inference.IInferencer.forward" title="Permalink to this definition"></a></dt>
+<dd><p>Forward the input image to the model and return the output.</p>
+<dl class="simple">
+<dt>NOTE: The input is typed as Any at the moment, mainly because it could be numpy</dt><dd><p>array,torch Tensor or tf Tensor. In the future, it could be an idea to be
+more specific.</p>
+</dd>
+</dl>
+<p>This method should perform the prediction by forward-passing the input image
+to the model, and return the predictions in a dictionary format.</p>
+<p>For instance, for a segmentation task, the predictions could be {“mask”: mask}.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.usecases.exportable_code.inference.IInferencer.post_process">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">post_process</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prediction</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../../../entities/annotation/index.html#otx.api.entities.annotation.AnnotationSceneEntity" title="otx.api.entities.annotation.AnnotationSceneEntity"><span class="pre">otx.api.entities.annotation.AnnotationSceneEntity</span></a></span></span><a class="headerlink" href="#otx.api.usecases.exportable_code.inference.IInferencer.post_process" title="Permalink to this definition"></a></dt>
+<dd><p>Post-process the raw predictions, and return the AnnotationSceneEntity.</p>
+<p>This method should include the post-processing methods that are applied to the raw predictions from the
+self.forward() stage.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.usecases.exportable_code.inference.IInferencer.predict">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../../../entities/annotation/index.html#otx.api.entities.annotation.AnnotationSceneEntity" title="otx.api.entities.annotation.AnnotationSceneEntity"><span class="pre">otx.api.entities.annotation.AnnotationSceneEntity</span></a></span></span><a class="headerlink" href="#otx.api.usecases.exportable_code.inference.IInferencer.predict" title="Permalink to this definition"></a></dt>
+<dd><p>This method performs a prediction.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, OpenVINO Training Extensions Contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

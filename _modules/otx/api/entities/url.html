@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>otx.api.entities.url &mdash; OpenVINO Training Extensions  documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../index.html" class="icon icon-home"> OpenVINO Training Extensions
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">OpenVINO Training Extensions</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+          <li><a href="../../../otx.html">otx</a> &raquo;</li>
+      <li>otx.api.entities.url</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for otx.api.entities.url</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;This file defines the URL class.&quot;&quot;&quot;</span>
+
+<span class="c1"># Copyright (C) 2021-2022 Intel Corporation</span>
+<span class="c1"># SPDX-License-Identifier: Apache-2.0</span>
+<span class="c1">#</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span>
+
+
+<div class="viewcode-block" id="URL"><a class="viewcode-back" href="../../../../api/otx/api/entities/url/index.html#otx.api.entities.url.URL">[docs]</a><span class="k">class</span> <span class="nc">URL</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Class for working with URLs.</span>
+
+<span class="sd">    Provides functions for getting components of the URL such as &lt;scheme&gt;://&lt;host&gt;/&lt;path&gt;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="URL.__parse"><a class="viewcode-back" href="../../../../api/otx/api/entities/url/index.html#otx.api.entities.url.URL.__parse">[docs]</a>    <span class="k">def</span> <span class="nf">__parse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Parse URL into 3 internal saved components.</span>
+
+<span class="sd">        (Function stolen from urllib library)</span>
+<span class="sd">        &lt;scheme&gt;://&lt;netloc&gt;/&lt;path&gt;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">def</span> <span class="nf">__splitnetloc</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+            <span class="n">delimiter</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>  <span class="c1"># position of end of domain part of url, default is end</span>
+            <span class="k">for</span> <span class="n">char</span> <span class="ow">in</span> <span class="s2">&quot;/?#&quot;</span><span class="p">:</span>  <span class="c1"># look for delimiters; the order is NOT important</span>
+                <span class="n">position</span> <span class="o">=</span> <span class="n">url</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">char</span><span class="p">,</span> <span class="n">start</span><span class="p">)</span>  <span class="c1"># find first of this delimiter</span>
+                <span class="k">if</span> <span class="n">position</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># if found</span>
+                    <span class="n">delimiter</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">delimiter</span><span class="p">,</span> <span class="n">position</span><span class="p">)</span>  <span class="c1"># use earliest delimiter position</span>
+            <span class="k">return</span> <span class="n">url</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">delimiter</span><span class="p">],</span> <span class="n">url</span><span class="p">[</span><span class="n">delimiter</span><span class="p">:]</span>  <span class="c1"># return (domain, rest)</span>
+
+        <span class="k">if</span> <span class="n">url</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Cannot build an URL from None&quot;</span><span class="p">)</span>
+
+        <span class="n">scheme_chars</span> <span class="o">=</span> <span class="s2">&quot;abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+-.&quot;</span>
+        <span class="n">netloc</span> <span class="o">=</span> <span class="n">scheme</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="n">url</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">character</span> <span class="ow">in</span> <span class="n">url</span><span class="p">[:</span><span class="n">i</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="n">character</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">scheme_chars</span><span class="p">:</span>
+                    <span class="k">break</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">rest</span> <span class="o">=</span> <span class="n">url</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span> <span class="p">:]</span>  <span class="c1"># make sure &quot;url&quot; is not actually a port number (in which case</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">rest</span> <span class="ow">or</span> <span class="nb">any</span><span class="p">(</span><span class="n">c</span> <span class="ow">not</span> <span class="ow">in</span> <span class="s2">&quot;0123456789&quot;</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">rest</span><span class="p">):</span>
+                    <span class="n">scheme</span><span class="p">,</span> <span class="n">url</span> <span class="o">=</span> <span class="n">url</span><span class="p">[:</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">(),</span> <span class="n">rest</span>  <span class="c1"># Not a port</span>
+
+        <span class="k">if</span> <span class="n">url</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;//&quot;</span><span class="p">:</span>
+            <span class="n">netloc</span><span class="p">,</span> <span class="n">url</span> <span class="o">=</span> <span class="n">__splitnetloc</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="s2">&quot;[&quot;</span> <span class="ow">in</span> <span class="n">netloc</span> <span class="ow">and</span> <span class="s2">&quot;]&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">netloc</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="s2">&quot;]&quot;</span> <span class="ow">in</span> <span class="n">netloc</span> <span class="ow">and</span> <span class="s2">&quot;[&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">netloc</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid IPv6 URL&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s2">&quot;#&quot;</span> <span class="ow">in</span> <span class="n">url</span><span class="p">:</span>
+            <span class="n">url</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">url</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;#&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s2">&quot;?&quot;</span> <span class="ow">in</span> <span class="n">url</span><span class="p">:</span>
+            <span class="n">url</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">url</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;?&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">__scheme</span> <span class="o">=</span> <span class="n">scheme</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__netloc</span> <span class="o">=</span> <span class="n">netloc</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__path</span> <span class="o">=</span> <span class="n">url</span></div>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="s2">&quot;URL&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">]):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__url</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__scheme</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__netloc</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__path</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__parse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__url</span><span class="p">)</span>
+
+<div class="viewcode-block" id="URL.__repr__"><a class="viewcode-back" href="../../../../api/otx/api/entities/url/index.html#otx.api.entities.url.URL.__repr__">[docs]</a>    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns representation of url.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;URL(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">__url</span><span class="si">}</span><span class="s2">)&quot;</span></div>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="URL.extension"><a class="viewcode-back" href="../../../../api/otx/api/entities/url/index.html#otx.api.entities.url.URL.extension">[docs]</a>    <span class="k">def</span> <span class="nf">extension</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Gets the extension of the URL.&quot;&quot;&quot;</span>
+        <span class="n">basename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__path</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">basename</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="s2">&quot;.&quot;</span> <span class="ow">in</span> <span class="n">basename</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span></div>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="URL.scheme"><a class="viewcode-back" href="../../../../api/otx/api/entities/url/index.html#otx.api.entities.url.URL.scheme">[docs]</a>    <span class="k">def</span> <span class="nf">scheme</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Gets the scheme of the URL.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__scheme</span></div>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="URL.host"><a class="viewcode-back" href="../../../../api/otx/api/entities/url/index.html#otx.api.entities.url.URL.host">[docs]</a>    <span class="k">def</span> <span class="nf">host</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Gets the host of the URL.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__netloc</span></div>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="URL.path"><a class="viewcode-back" href="../../../../api/otx/api/entities/url/index.html#otx.api.entities.url.URL.path">[docs]</a>    <span class="k">def</span> <span class="nf">path</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns the full path to the full.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__path</span></div>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="URL.relative_path"><a class="viewcode-back" href="../../../../api/otx/api/entities/url/index.html#otx.api.entities.url.URL.relative_path">[docs]</a>    <span class="k">def</span> <span class="nf">relative_path</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns the relative path to the full.&quot;&quot;&quot;</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span>
+        <span class="k">while</span> <span class="n">path</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">):</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="n">path</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+        <span class="k">return</span> <span class="n">path</span></div>
+
+<div class="viewcode-block" id="URL.__str__"><a class="viewcode-back" href="../../../../api/otx/api/entities/url/index.html#otx.api.entities.url.URL.__str__">[docs]</a>    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns url as string depending on the value of scheme and host.&quot;&quot;&quot;</span>
+        <span class="c1"># In this case, it is allowed to violate the guidelines, and to use multiple return statements.</span>
+        <span class="c1"># As it improves readability of the code</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">scheme</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">__path</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">host</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">scheme</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">__path</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">scheme</span><span class="si">}</span><span class="s2">://</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="si">}{</span><span class="bp">self</span><span class="o">.</span><span class="n">__path</span><span class="si">}</span><span class="s2">&quot;</span></div>
+
+<div class="viewcode-block" id="URL.__hash__"><a class="viewcode-back" href="../../../../api/otx/api/entities/url/index.html#otx.api.entities.url.URL.__hash__">[docs]</a>    <span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns hash of url.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="URL.__eq__"><a class="viewcode-back" href="../../../../api/otx/api/entities/url/index.html#otx.api.entities.url.URL.__eq__">[docs]</a>    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Checks if the url strings are equal.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">==</span> <span class="nb">str</span><span class="p">(</span><span class="n">other</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="URL.__len__"><a class="viewcode-back" href="../../../../api/otx/api/entities/url/index.html#otx.api.entities.url.URL.__len__">[docs]</a>    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns length of url.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__url</span><span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, OpenVINO Training Extensions Contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

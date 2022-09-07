@@ -1,0 +1,161 @@
+:py:mod:`otx.api.configuration.elements.parameter_group`
+========================================================
+
+.. py:module:: otx.api.configuration.elements.parameter_group
+
+.. autoapi-nested-parse::
+
+   ParameterGroup is the main class responsible for grouping configurable parameters together.
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   otx.api.configuration.elements.parameter_group.ParameterGroup
+
+
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   otx.api.configuration.elements.parameter_group.add_parameter_group
+
+
+
+Attributes
+~~~~~~~~~~
+
+.. autoapisummary::
+
+   otx.api.configuration.elements.parameter_group._ParameterGroup
+
+
+.. py:class:: ParameterGroup
+
+   A group of configuration elements.
+
+   Parameters living within the parameter group are typed attrs Attributes. The schema for each parameter is defined
+   in its metadata, which can be retrieved using the `get_metadata` method from the parent ParameterGroup instance.
+
+   .. attribute:: header
+
+      User friendly name for the parameter group, that will be
+      displayed in the UI
+
+      :type: str
+
+   .. attribute:: description
+
+      User friendly string describing what the parameter
+      group represents, that will be displayed in the UI.
+
+      :type: str
+
+   .. attribute:: visible_in_ui
+
+      Boolean that controls whether or not this
+      parameter group will be exposed through the REST API and
+      shown in the UI. Set to False to hide this group. Defaults
+      to True
+
+      :type: bool
+
+   .. py:attribute:: header
+      :annotation: :str
+
+      
+
+   .. py:attribute:: description
+      :annotation: :str
+
+      
+
+   .. py:attribute:: visible_in_ui
+      :annotation: :bool
+
+      
+
+   .. py:attribute:: type
+      :annotation: :otx.api.configuration.enums.config_element_type.ConfigElementType
+
+      
+
+   .. py:method:: __attrs_post_init__()
+
+      Update parameter and group after __init__.
+
+      This method is called after the __init__ method to update the parameter and group fields of the ParameterGroup
+      instance.
+
+
+   .. py:method:: get_metadata(parameter_name: str) -> dict
+
+      Retrieve the metadata for a particular parameter from the group.
+
+      :param parameter_name: name of the parameter for which to get the
+                             metadata
+      :type parameter_name: str
+
+      :returns:
+
+                dictionary containing the metadata for the requested
+                    parameter. Returns an empty dict if no metadata was found
+                    for the parameter, or if the parameter was not found in the
+                    group.
+      :rtype: dict
+
+
+   .. py:method:: set_metadata_value(parameter_name: str, metadata_key: str, value: Union[int, float, str, bool, enum.Enum]) -> bool
+
+      Sets the value of a specific metadata item `metadata_key` for the parameter named `parameter_name`.
+
+      :param parameter_name: name of the parameter for which to get the
+                             metadata item
+      :type parameter_name: str
+      :param metadata_key: name of the metadata value to set
+      :type metadata_key: str
+      :param value: New value to assign to the metadata item accessed by
+                    `metadata_key`. The type of `value` has to exactly match
+                    the type of the current value of the metadata item
+      :type value: Union[int, float, str, bool, Enum]
+
+      :returns: True if the metadata item was successfully updated, False
+                otherwise
+
+
+   .. py:method:: update_auto_hpo_states()
+
+      Update hpo state based on teh value of parameters.
+
+      Updates the `auto_hpo_state` metadata field for all parameters in the parameter
+      group, based on the values of the parameters and the values of their
+      `auto_hpo_value` metadata fields.
+
+
+   .. py:method:: __eq__(other)
+
+      Comparison with support for dynamically generated ParameterGroups.
+
+      Override default implementation of __eq__ to enable comparison of
+      ParameterGroups generated dynamically via the config helper.
+
+
+
+.. py:data:: _ParameterGroup
+   
+
+   
+
+.. py:function:: add_parameter_group(group: Type[_ParameterGroup]) -> _ParameterGroup
+
+   Wrapper to attr.ib to add nested parameter groups to a configuration.
+
+

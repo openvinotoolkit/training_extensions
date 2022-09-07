@@ -1,0 +1,350 @@
+:py:mod:`otx.algorithms.anomaly.tasks`
+======================================
+
+.. py:module:: otx.algorithms.anomaly.tasks
+
+.. autoapi-nested-parse::
+
+   Initialization of OTX Anomalib.
+
+
+
+Submodules
+----------
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+
+   inference/index.rst
+   nncf/index.rst
+   openvino/index.rst
+   train/index.rst
+
+
+Package Contents
+----------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   otx.algorithms.anomaly.tasks.InferenceTask
+   otx.algorithms.anomaly.tasks.NNCFTask
+   otx.algorithms.anomaly.tasks.OpenVINOTask
+   otx.algorithms.anomaly.tasks.TrainingTask
+
+
+
+
+.. py:class:: InferenceTask(task_environment: otx.api.entities.task_environment.TaskEnvironment)
+
+   Bases: :py:obj:`otx.api.usecases.tasks.interfaces.inference_interface.IInferenceTask`, :py:obj:`otx.api.usecases.tasks.interfaces.evaluate_interface.IEvaluationTask`, :py:obj:`otx.api.usecases.tasks.interfaces.export_interface.IExportTask`, :py:obj:`otx.api.usecases.tasks.interfaces.unload_interface.IUnload`
+
+   Base Anomaly Task.
+
+   .. py:method:: get_config() -> Union[omegaconf.DictConfig, omegaconf.ListConfig]
+
+      Get Anomalib Config from task environment.
+
+      :returns: Anomalib config.
+      :rtype: Union[DictConfig, ListConfig]
+
+
+   .. py:method:: load_model(otx_model: Optional[otx.api.entities.model.ModelEntity]) -> anomalib.models.AnomalyModule
+
+      Create and Load Anomalib Module from OTX Model.
+
+      This method checks if the task environment has a saved OTX Model,
+      and creates one. If the OTX model already exists, it returns the
+      the model with the saved weights.
+
+      :param otx_model: OTX Model from the
+                        task environment.
+      :type otx_model: Optional[ModelEntity]
+
+      :returns:
+
+                Anomalib
+                    classification or segmentation model with/without weights.
+      :rtype: AnomalyModule
+
+
+   .. py:method:: cancel_training() -> None
+
+      Cancel the training `after_batch_end`.
+
+      This terminates the training; however validation is still performed.
+
+
+   .. py:method:: infer(dataset: otx.api.entities.datasets.DatasetEntity, inference_parameters: otx.api.entities.inference_parameters.InferenceParameters) -> otx.api.entities.datasets.DatasetEntity
+
+      Perform inference on a dataset.
+
+      :param dataset: Dataset to infer.
+      :type dataset: DatasetEntity
+      :param inference_parameters: Inference parameters.
+      :type inference_parameters: InferenceParameters
+
+      :returns: Output dataset with predictions.
+      :rtype: DatasetEntity
+
+
+   .. py:method:: evaluate(output_resultset: otx.api.entities.resultset.ResultSetEntity, evaluation_metric: Optional[str] = None) -> None
+
+      Evaluate the performance on a result set.
+
+      :param output_resultset: Result Set from which the performance is evaluated.
+      :type output_resultset: ResultSetEntity
+      :param evaluation_metric: Evaluation metric. Defaults to None. Instead,
+                                metric is chosen depending on the task type.
+      :type evaluation_metric: Optional[str], optional
+
+
+   .. py:method:: _export_to_onnx(onnx_path: str)
+
+      Export model to ONNX.
+
+      :param onnx_path: path to save ONNX file
+      :type onnx_path: str
+
+
+   .. py:method:: export(export_type: otx.api.usecases.tasks.interfaces.export_interface.ExportType, output_model: otx.api.entities.model.ModelEntity) -> None
+
+      Export model to OpenVINO IR.
+
+      :param export_type: Export type should be ExportType.OPENVINO
+      :type export_type: ExportType
+      :param output_model: The model entity in which to write the OpenVINO IR data
+      :type output_model: ModelEntity
+
+      :raises Exception: If export_type is not ExportType.OPENVINO
+
+
+   .. py:method:: _model_info() -> Dict
+
+      Return model info to save the model weights.
+
+      :returns: Model info.
+      :rtype: Dict
+
+
+   .. py:method:: save_model(output_model: otx.api.entities.model.ModelEntity) -> None
+
+      Save the model after training is completed.
+
+      :param output_model: Output model onto which the weights are saved.
+      :type output_model: ModelEntity
+
+
+   .. py:method:: _set_metadata(output_model: otx.api.entities.model.ModelEntity)
+
+
+   .. py:method:: _is_docker() -> bool
+      :staticmethod:
+
+      Check whether the task runs in docker container.
+
+      :returns: True if task runs in docker, False otherwise.
+      :rtype: bool
+
+
+   .. py:method:: unload() -> None
+
+      Unload the task.
+
+
+
+.. py:class:: NNCFTask(task_environment: otx.api.entities.task_environment.TaskEnvironment)
+
+   Bases: :py:obj:`otx.algorithms.anomaly.tasks.inference.InferenceTask`, :py:obj:`otx.api.usecases.tasks.interfaces.optimization_interface.IOptimizationTask`
+
+   Base Anomaly Task.
+
+   .. py:method:: _set_attributes_by_hyperparams()
+
+
+   .. py:method:: load_model(otx_model: Optional[otx.api.entities.model.ModelEntity]) -> anomalib.models.AnomalyModule
+
+      Create and Load Anomalib Module from OTX Model.
+
+      This method checks if the task environment has a saved OTX Model,
+      and creates one. If the OTX model already exists, it returns the
+      the model with the saved weights.
+
+      :param otx_model: OTX Model from the
+                        task environment.
+      :type otx_model: Optional[ModelEntity]
+
+      :returns:
+
+                Anomalib
+                    classification or segmentation model with/without weights.
+      :rtype: AnomalyModule
+
+
+   .. py:method:: optimize(optimization_type: otx.api.usecases.tasks.interfaces.optimization_interface.OptimizationType, dataset: otx.api.entities.datasets.DatasetEntity, output_model: otx.api.entities.model.ModelEntity, optimization_parameters: Optional[otx.api.entities.optimization_parameters.OptimizationParameters] = None)
+
+      Train the anomaly classification model.
+
+      :param optimization_type: Type of optimization.
+      :type optimization_type: OptimizationType
+      :param dataset: Input dataset.
+      :type dataset: DatasetEntity
+      :param output_model: Output model to save the model weights.
+      :type output_model: ModelEntity
+      :param optimization_parameters: Training parameters
+      :type optimization_parameters: OptimizationParameters
+
+
+   .. py:method:: _model_info() -> Dict
+
+      Return model info to save the model weights.
+
+      :returns: Model info.
+      :rtype: Dict
+
+
+   .. py:method:: _export_to_onnx(onnx_path: str)
+
+      Export model to ONNX.
+
+      :param onnx_path: path to save ONNX file
+      :type onnx_path: str
+
+
+
+.. py:class:: OpenVINOTask(task_environment: otx.api.entities.task_environment.TaskEnvironment)
+
+   Bases: :py:obj:`otx.api.usecases.tasks.interfaces.inference_interface.IInferenceTask`, :py:obj:`otx.api.usecases.tasks.interfaces.evaluate_interface.IEvaluationTask`, :py:obj:`otx.api.usecases.tasks.interfaces.optimization_interface.IOptimizationTask`, :py:obj:`otx.api.usecases.tasks.interfaces.deployment_interface.IDeploymentTask`
+
+   OpenVINO inference task.
+
+   :param task_environment: task environment of the trained anomaly model
+   :type task_environment: TaskEnvironment
+
+   .. py:method:: get_config() -> addict.Dict
+
+      Get Anomalib Config from task environment.
+
+      :returns: Anomalib config
+      :rtype: ADDict
+
+
+   .. py:method:: infer(dataset: otx.api.entities.datasets.DatasetEntity, inference_parameters: otx.api.entities.inference_parameters.InferenceParameters) -> otx.api.entities.datasets.DatasetEntity
+
+      Perform Inference.
+
+      :param dataset: Inference dataset
+      :type dataset: DatasetEntity
+      :param inference_parameters: Inference parameters.
+      :type inference_parameters: InferenceParameters
+
+      :returns: Output dataset storing inference predictions.
+      :rtype: DatasetEntity
+
+
+   .. py:method:: get_meta_data() -> Dict
+
+      Get Meta Data.
+
+
+   .. py:method:: evaluate(output_resultset: otx.api.entities.resultset.ResultSetEntity, evaluation_metric: Optional[str] = None)
+
+      Evaluate the performance of the model.
+
+      :param output_resultset: Result set storing ground truth and predicted dataset.
+      :type output_resultset: ResultSetEntity
+      :param evaluation_metric: Evaluation metric. Defaults to None.
+      :type evaluation_metric: Optional[str], optional
+
+
+   .. py:method:: _get_optimization_algorithms_configs() -> List[addict.Dict]
+
+      Returns list of optimization algorithms configurations.
+
+
+   .. py:method:: optimize(optimization_type: otx.api.usecases.tasks.interfaces.optimization_interface.OptimizationType, dataset: otx.api.entities.datasets.DatasetEntity, output_model: otx.api.entities.model.ModelEntity, optimization_parameters: Optional[otx.api.entities.optimization_parameters.OptimizationParameters])
+
+      Optimize the model.
+
+      :param optimization_type: Type of optimization [POT or NNCF]
+      :type optimization_type: OptimizationType
+      :param dataset: Input Dataset.
+      :type dataset: DatasetEntity
+      :param output_model: Output model.
+      :type output_model: ModelEntity
+      :param optimization_parameters: Optimization parameters.
+      :type optimization_parameters: Optional[OptimizationParameters]
+
+      :raises ValueError: When the optimization type is not POT, which is the only support type at the moment.
+
+
+   .. py:method:: load_inferencer() -> anomalib.deploy.OpenVINOInferencer
+
+      Create the OpenVINO inferencer object.
+
+      :returns: OpenVINOInferencer object
+
+
+   .. py:method:: __save_weights(path: str, data: bytes) -> None
+      :staticmethod:
+
+      Write data to file.
+
+      :param path: Path of output file
+      :type path: str
+      :param data: Data to write
+      :type data: bytes
+
+
+   .. py:method:: __load_weights(path: str, output_model: otx.api.entities.model.ModelEntity, key: str) -> None
+      :staticmethod:
+
+      Load weights into output model.
+
+      :param path: Path to weights
+      :type path: str
+      :param output_model: Model to which the weights are assigned
+      :type output_model: ModelEntity
+      :param key: Key of the output model into which the weights are assigned
+      :type key: str
+
+
+   .. py:method:: _get_openvino_configuration() -> Dict[str, Any]
+
+      Return configuration required by the exported model.
+
+
+   .. py:method:: deploy(output_model: otx.api.entities.model.ModelEntity) -> None
+
+      Exports the weights from ``output_model`` along with exportable code.
+
+      :param output_model: Model with ``openvino.xml`` and ``.bin`` keys
+      :type output_model: ModelEntity
+
+      :raises Exception: If ``task_environment.model`` is None
+
+
+
+.. py:class:: TrainingTask(task_environment: otx.api.entities.task_environment.TaskEnvironment)
+
+   Bases: :py:obj:`otx.algorithms.anomaly.tasks.inference.InferenceTask`, :py:obj:`otx.api.usecases.tasks.interfaces.training_interface.ITrainingTask`
+
+   Base Anomaly Task.
+
+   .. py:method:: train(dataset: otx.api.entities.datasets.DatasetEntity, output_model: otx.api.entities.model.ModelEntity, train_parameters: otx.api.entities.train_parameters.TrainParameters, seed: Optional[int] = None) -> None
+
+      Train the anomaly classification model.
+
+      :param dataset: Input dataset.
+      :type dataset: DatasetEntity
+      :param output_model: Output model to save the model weights.
+      :type output_model: ModelEntity
+      :param train_parameters: Training parameters
+      :type train_parameters: TrainParameters
+      :param seed: (Optional[int]): Setting seed to a value other than 0 also marks PytorchLightning trainer's
+                   deterministic flag to True.
+
+
+

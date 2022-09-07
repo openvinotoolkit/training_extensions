@@ -1,0 +1,58 @@
+:py:mod:`otx.algorithms.anomaly.tasks.train`
+============================================
+
+.. py:module:: otx.algorithms.anomaly.tasks.train
+
+.. autoapi-nested-parse::
+
+   Anomaly Classification Task.
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   otx.algorithms.anomaly.tasks.train.TrainingTask
+
+
+
+
+Attributes
+~~~~~~~~~~
+
+.. autoapisummary::
+
+   otx.algorithms.anomaly.tasks.train.logger
+
+
+.. py:data:: logger
+   
+
+   
+
+.. py:class:: TrainingTask(task_environment: otx.api.entities.task_environment.TaskEnvironment)
+
+   Bases: :py:obj:`otx.algorithms.anomaly.tasks.inference.InferenceTask`, :py:obj:`otx.api.usecases.tasks.interfaces.training_interface.ITrainingTask`
+
+   Base Anomaly Task.
+
+   .. py:method:: train(dataset: otx.api.entities.datasets.DatasetEntity, output_model: otx.api.entities.model.ModelEntity, train_parameters: otx.api.entities.train_parameters.TrainParameters, seed: Optional[int] = None) -> None
+
+      Train the anomaly classification model.
+
+      :param dataset: Input dataset.
+      :type dataset: DatasetEntity
+      :param output_model: Output model to save the model weights.
+      :type output_model: ModelEntity
+      :param train_parameters: Training parameters
+      :type train_parameters: TrainParameters
+      :param seed: (Optional[int]): Setting seed to a value other than 0 also marks PytorchLightning trainer's
+                   deterministic flag to True.
+
+
+

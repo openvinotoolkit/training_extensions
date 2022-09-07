@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>otx.api.configuration.enums.model_lifecycle &mdash; OpenVINO Training Extensions  documentation</title>
+      <link rel="stylesheet" href="../../../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../../../" id="documentation_options" src="../../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../../_static/jquery.js"></script>
+        <script src="../../../../../../_static/underscore.js"></script>
+        <script src="../../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../../../../_static/doctools.js"></script>
+    <script src="../../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../../../index.html" class="icon icon-home"> OpenVINO Training Extensions
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../../index.html">OpenVINO Training Extensions</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li><code class="xref py py-mod docutils literal notranslate"><span class="pre">otx.api.configuration.enums.model_lifecycle</span></code></li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../../../_sources/api/otx/api/configuration/enums/model_lifecycle/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-otx.api.configuration.enums.model_lifecycle">
+<span id="otx-api-configuration-enums-model-lifecycle"></span><h1><a class="reference internal" href="#module-otx.api.configuration.enums.model_lifecycle" title="otx.api.configuration.enums.model_lifecycle"><code class="xref py py-mod docutils literal notranslate"><span class="pre">otx.api.configuration.enums.model_lifecycle</span></code></a><a class="headerlink" href="#module-otx.api.configuration.enums.model_lifecycle" title="Permalink to this heading"></a></h1>
+<p>This module contains the ModelLifecycle Enum.</p>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this heading"></a></h2>
+<section id="classes">
+<h3>Classes<a class="headerlink" href="#classes" title="Permalink to this heading"></a></h3>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.api.configuration.enums.model_lifecycle.ModelLifecycle" title="otx.api.configuration.enums.model_lifecycle.ModelLifecycle"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ModelLifecycle</span></code></a></p></td>
+<td><p>This Enum represents the different stages in the ModelLifecycle.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.api.configuration.enums.model_lifecycle.ModelLifecycle">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.configuration.enums.model_lifecycle.</span></span><span class="sig-name descname"><span class="pre">ModelLifecycle</span></span><a class="reference internal" href="../../../../../../_modules/otx/api/configuration/enums/model_lifecycle.html#ModelLifecycle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.configuration.enums.model_lifecycle.ModelLifecycle" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">enum.Enum</span></code></p>
+<p>This Enum represents the different stages in the ModelLifecycle.</p>
+<p>It is used by configuration parameters to indicate
+in which stage of the model lifecycle the parameter takes effect. Selecting a stage early in the lifecycle implies
+that all downstream stages are affected as well (e.g. if this is set to <cite>ModelLifecycle.TRAINING</cite>, it is assumed
+that inference and testing are also impacted).</p>
+<p>Currently the following stages are possible:
+ARCHITECTURE - Select this stage if the parameter modifies the model architecture, such that the most recently</p>
+<blockquote>
+<div><p>trained weights cannot directly by used for the next training round due to a model topology mismatch. For
+example, a parameter <cite>model_depth</cite> that controls the number of downsampling steps in a UNet model should
+have this stage set.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>TRAINING - Select this stage if the parameter is likely to change the outcome of the training process. For example,</dt><dd><p>the parameter <cite>learning_rate</cite> should have this stage set.</p>
+</dd>
+<dt>INFERENCE - Select this stage if the parameter changes the result of inference. For example, a parameter</dt><dd><p><cite>probability_threshold</cite> that controls the threshold for binary classification should have this stage set.</p>
+</dd>
+<dt>TESTING - Select this stage if the parameter changes the outcome of the evaluation process. For example, a parameter</dt><dd><p>‘test_metric` that controls which metric to use for testing does not change training or inference results, but
+does affect the final evaluation of the model. Therefore, it should have this stage set.</p>
+</dd>
+<dt>NONE - Select this stage if the parameter is non-functional, for example if it only impacts training speed but</dt><dd><p>should not change the training outcome. For example, a parameter <cite>num_workers</cite> that controls the number of
+threads used in a dataloader should have this stage set.</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.configuration.enums.model_lifecycle.ModelLifecycle.NONE">
+<span class="sig-name descname"><span class="pre">NONE</span></span><a class="reference internal" href="../../../../../../_modules/otx/api/configuration/enums/model_lifecycle.html#ModelLifecycle.NONE"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.configuration.enums.model_lifecycle.ModelLifecycle.NONE" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.configuration.enums.model_lifecycle.ModelLifecycle.ARCHITECTURE">
+<span class="sig-name descname"><span class="pre">ARCHITECTURE</span></span><a class="reference internal" href="../../../../../../_modules/otx/api/configuration/enums/model_lifecycle.html#ModelLifecycle.ARCHITECTURE"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.configuration.enums.model_lifecycle.ModelLifecycle.ARCHITECTURE" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.configuration.enums.model_lifecycle.ModelLifecycle.TRAINING">
+<span class="sig-name descname"><span class="pre">TRAINING</span></span><a class="reference internal" href="../../../../../../_modules/otx/api/configuration/enums/model_lifecycle.html#ModelLifecycle.TRAINING"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.configuration.enums.model_lifecycle.ModelLifecycle.TRAINING" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.configuration.enums.model_lifecycle.ModelLifecycle.INFERENCE">
+<span class="sig-name descname"><span class="pre">INFERENCE</span></span><a class="reference internal" href="../../../../../../_modules/otx/api/configuration/enums/model_lifecycle.html#ModelLifecycle.INFERENCE"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.configuration.enums.model_lifecycle.ModelLifecycle.INFERENCE" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.configuration.enums.model_lifecycle.ModelLifecycle.TESTING">
+<span class="sig-name descname"><span class="pre">TESTING</span></span><a class="reference internal" href="../../../../../../_modules/otx/api/configuration/enums/model_lifecycle.html#ModelLifecycle.TESTING"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.configuration.enums.model_lifecycle.ModelLifecycle.TESTING" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.configuration.enums.model_lifecycle.ModelLifecycle.__str__">
+<span class="sig-name descname"><span class="pre">__str__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../../../_modules/otx/api/configuration/enums/model_lifecycle.html#ModelLifecycle.__str__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.configuration.enums.model_lifecycle.ModelLifecycle.__str__" title="Permalink to this definition"></a></dt>
+<dd><p>Retrieves the string representation of an instance of the Enum.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, OpenVINO Training Extensions Contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

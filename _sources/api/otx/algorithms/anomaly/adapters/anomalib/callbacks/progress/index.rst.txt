@@ -1,0 +1,77 @@
+:py:mod:`otx.algorithms.anomaly.adapters.anomalib.callbacks.progress`
+=====================================================================
+
+.. py:module:: otx.algorithms.anomaly.adapters.anomalib.callbacks.progress
+
+.. autoapi-nested-parse::
+
+   Progressbar Callback for OTX task.
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   otx.algorithms.anomaly.adapters.anomalib.callbacks.progress.ProgressCallback
+
+
+
+
+.. py:class:: ProgressCallback(parameters: Optional[Union[otx.api.entities.train_parameters.TrainParameters, otx.api.entities.inference_parameters.InferenceParameters, otx.api.entities.optimization_parameters.OptimizationParameters]] = None)
+
+   Bases: :py:obj:`pytorch_lightning.callbacks.progress.TQDMProgressBar`
+
+   Progress Callback.
+
+   Modify progress callback to show completion of the entire training step.
+
+   .. py:method:: on_train_start(trainer, pl_module)
+
+      Store max epochs and current epoch from trainer.
+
+
+   .. py:method:: on_predict_start(trainer, pl_module)
+
+      Reset progress bar when prediction starts.
+
+
+   .. py:method:: on_test_start(trainer, pl_module)
+
+      Reset progress bar when testing starts.
+
+
+   .. py:method:: on_train_batch_end(trainer, pl_module, outputs, batch, batch_idx)
+
+      Adds training completion percentage to the progress bar.
+
+
+   .. py:method:: on_predict_batch_end(trainer, pl_module, outputs, batch, batch_idx, dataloader_idx)
+
+      Adds prediction completion percentage to the progress bar.
+
+
+   .. py:method:: on_test_batch_end(trainer, pl_module, outputs, batch, batch_idx, dataloader_idx)
+
+      Adds testing completion percentage to the progress bar.
+
+
+   .. py:method:: _reset_progress()
+
+
+   .. py:method:: _get_progress(stage: str = 'train') -> float
+
+      Get progress for train and test stages.
+
+      :param stage: Train or Test stages. Defaults to "train".
+      :type stage: str, optional
+
+
+   .. py:method:: _update_progress(stage: str)
+
+
+

@@ -1,0 +1,26 @@
+:py:mod:`otx.api.usecases.tasks.interfaces`
+===========================================
+
+.. py:module:: otx.api.usecases.tasks.interfaces
+
+.. autoapi-nested-parse::
+
+   Interfaces for OTX Tasks.
+
+
+
+Submodules
+----------
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+
+   deployment_interface/index.rst
+   evaluate_interface/index.rst
+   export_interface/index.rst
+   inference_interface/index.rst
+   optimization_interface/index.rst
+   training_interface/index.rst
+   unload_interface/index.rst
+
+

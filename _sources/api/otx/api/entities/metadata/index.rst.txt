@@ -1,0 +1,114 @@
+:py:mod:`otx.api.entities.metadata`
+===================================
+
+.. py:module:: otx.api.entities.metadata
+
+.. autoapi-nested-parse::
+
+   This module defines classes representing metadata information.
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   otx.api.entities.metadata.IMetadata
+   otx.api.entities.metadata.FloatType
+   otx.api.entities.metadata.FloatMetadata
+   otx.api.entities.metadata.MetadataItemEntity
+
+
+
+
+.. py:class:: IMetadata
+
+   This interface represents any additional metadata information which can be connected to an IMedia.
+
+   .. py:attribute:: __name
+      
+
+      
+
+   .. py:method:: name()
+      :property:
+
+      Gets or sets the name of the Metadata item.
+
+
+
+.. py:class:: FloatType
+
+   Bases: :py:obj:`enum.Enum`
+
+   Represents the use of the FloatMetadata.
+
+   .. py:attribute:: FLOAT
+      
+
+      
+
+   .. py:attribute:: EMBEDDING_VALUE
+      
+
+      
+
+   .. py:attribute:: ACTIVE_SCORE
+      
+
+      
+
+   .. py:method:: __str__()
+
+      Return the name of FloatType enum.
+
+
+
+.. py:class:: FloatMetadata(name: str, value: float, float_type: FloatType = FloatType.FLOAT)
+
+   Bases: :py:obj:`IMetadata`
+
+   This class represents metadata of type float.
+
+   :param name: Name of the metadata.
+   :type name: str
+   :param value: Value of the metadata.
+   :type value: float
+   :param float_type: Type of the metadata.
+   :type float_type: FloatType
+
+   .. py:method:: __repr__()
+
+      Prints the model, data and type of the MetadataItemEntity.
+
+
+   .. py:method:: __eq__(other)
+
+      Checks if two FloatMetadata have the same name, value and type.
+
+
+
+.. py:class:: MetadataItemEntity(data: IMetadata, model: Optional[otx.api.entities.model.ModelEntity] = None)
+
+   This class is a wrapper class which connects the metadata value to model, which was used to generate it.
+
+   :param data: The metadata value.
+   :type data: IMetadata
+   :param model: The model which was used to generate the metadata. Defaults to None.
+   :type model: Optional[ModelEntity]
+
+   .. py:method:: __repr__()
+
+      Prints the model and data of the MetadataItemEntity.
+
+
+   .. py:method:: __eq__(other)
+
+      Returns true if the model and the data match the other MetadataItemEntity.
+
+
+

@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>otx.api.entities.annotation &mdash; OpenVINO Training Extensions  documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../index.html" class="icon icon-home"> OpenVINO Training Extensions
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">OpenVINO Training Extensions</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+          <li><a href="../../../otx.html">otx</a> &raquo;</li>
+      <li>otx.api.entities.annotation</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for otx.api.entities.annotation</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;This module define the annotation entity.&quot;&quot;&quot;</span>
+<span class="c1"># Copyright (C) 2021-2022 Intel Corporation</span>
+<span class="c1"># SPDX-License-Identifier: Apache-2.0</span>
+<span class="c1">#</span>
+
+<span class="kn">import</span> <span class="nn">abc</span>
+<span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Set</span>
+
+<span class="kn">from</span> <span class="nn">bson</span> <span class="kn">import</span> <span class="n">ObjectId</span>
+
+<span class="kn">from</span> <span class="nn">otx.api.entities.id</span> <span class="kn">import</span> <span class="n">ID</span>
+<span class="kn">from</span> <span class="nn">otx.api.entities.label</span> <span class="kn">import</span> <span class="n">LabelEntity</span>
+<span class="kn">from</span> <span class="nn">otx.api.entities.scored_label</span> <span class="kn">import</span> <span class="n">ScoredLabel</span>
+<span class="kn">from</span> <span class="nn">otx.api.entities.shapes.shape</span> <span class="kn">import</span> <span class="n">ShapeEntity</span>
+<span class="kn">from</span> <span class="nn">otx.api.utils.time_utils</span> <span class="kn">import</span> <span class="n">now</span>
+
+
+<div class="viewcode-block" id="Annotation"><a class="viewcode-back" href="../../../../api/otx/api/entities/annotation/index.html#otx.api.entities.annotation.Annotation">[docs]</a><span class="k">class</span> <span class="nc">Annotation</span><span class="p">(</span><span class="n">metaclass</span><span class="o">=</span><span class="n">abc</span><span class="o">.</span><span class="n">ABCMeta</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Base class for annotation objects.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        shape (ShapeEntity): the shape of the annotation</span>
+<span class="sd">        labels (List[ScoredLabel]): the labels of the annotation</span>
+<span class="sd">        id (Optional[ID]): the id of the annotation</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># pylint: disable=redefined-builtin;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shape</span><span class="p">:</span> <span class="n">ShapeEntity</span><span class="p">,</span> <span class="n">labels</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">ScoredLabel</span><span class="p">],</span> <span class="nb">id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ID</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__id_</span> <span class="o">=</span> <span class="n">ID</span><span class="p">(</span><span class="n">ObjectId</span><span class="p">())</span> <span class="k">if</span> <span class="nb">id</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__shape</span> <span class="o">=</span> <span class="n">shape</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__labels</span> <span class="o">=</span> <span class="n">labels</span>
+
+<div class="viewcode-block" id="Annotation.__repr__"><a class="viewcode-back" href="../../../../api/otx/api/entities/annotation/index.html#otx.api.entities.annotation.Annotation.__repr__">[docs]</a>    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;String representation of the annotation.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;shape=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;labels=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">get_labels</span><span class="p">(</span><span class="n">include_empty</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="si">}</span><span class="s2">, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;id=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">id_</span><span class="si">}</span><span class="s2">)&quot;</span>
+        <span class="p">)</span></div>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="Annotation.id_"><a class="viewcode-back" href="../../../../api/otx/api/entities/annotation/index.html#otx.api.entities.annotation.Annotation.id_">[docs]</a>    <span class="k">def</span> <span class="nf">id_</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns the id for the annotation.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__id_</span></div>
+
+    <span class="nd">@id_</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">id_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__id_</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="Annotation.id"><a class="viewcode-back" href="../../../../api/otx/api/entities/annotation/index.html#otx.api.entities.annotation.Annotation.id">[docs]</a>    <span class="k">def</span> <span class="nf">id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;DEPRECATED.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__id_</span></div>
+
+    <span class="nd">@id</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;DEPRECATED.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__id_</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="Annotation.shape"><a class="viewcode-back" href="../../../../api/otx/api/entities/annotation/index.html#otx.api.entities.annotation.Annotation.shape">[docs]</a>    <span class="k">def</span> <span class="nf">shape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ShapeEntity</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Returns the shape that is in the annotation.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__shape</span></div>
+
+    <span class="nd">@shape</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">shape</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__shape</span> <span class="o">=</span> <span class="n">value</span>
+
+<div class="viewcode-block" id="Annotation.get_labels"><a class="viewcode-back" href="../../../../api/otx/api/entities/annotation/index.html#otx.api.entities.annotation.Annotation.get_labels">[docs]</a>    <span class="k">def</span> <span class="nf">get_labels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">include_empty</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">ScoredLabel</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Get scored labels that are assigned to this annotation.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            include_empty (bool): set to True to include empty label (if exists) in the output. Defaults to False.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List of labels in annotation</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">label</span> <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__labels</span> <span class="k">if</span> <span class="n">include_empty</span> <span class="ow">or</span> <span class="p">(</span><span class="ow">not</span> <span class="n">label</span><span class="o">.</span><span class="n">is_empty</span><span class="p">)]</span></div>
+
+<div class="viewcode-block" id="Annotation.get_label_ids"><a class="viewcode-back" href="../../../../api/otx/api/entities/annotation/index.html#otx.api.entities.annotation.Annotation.get_label_ids">[docs]</a>    <span class="k">def</span> <span class="nf">get_label_ids</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">include_empty</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="n">ID</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Get a set of ID&#39;s of labels that are assigned to this annotation.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            include_empty (bool): set to True to include empty label (if exists) in the output. Defaults to False.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Set of label id&#39;s in annotation</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span><span class="n">label</span><span class="o">.</span><span class="n">id_</span> <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__labels</span> <span class="k">if</span> <span class="n">include_empty</span> <span class="ow">or</span> <span class="p">(</span><span class="ow">not</span> <span class="n">label</span><span class="o">.</span><span class="n">is_empty</span><span class="p">)}</span></div>
+
+<div class="viewcode-block" id="Annotation.append_label"><a class="viewcode-back" href="../../../../api/otx/api/entities/annotation/index.html#otx.api.entities.annotation.Annotation.append_label">[docs]</a>    <span class="k">def</span> <span class="nf">append_label</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">:</span> <span class="n">ScoredLabel</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Appends the scored label to the annotation.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            label (ScoredLabel): the scored label to be appended to the annotation</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">label</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Annotation.set_labels"><a class="viewcode-back" href="../../../../api/otx/api/entities/annotation/index.html#otx.api.entities.annotation.Annotation.set_labels">[docs]</a>    <span class="k">def</span> <span class="nf">set_labels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">labels</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">ScoredLabel</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Sets the labels of the annotation to be the input of the function.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            labels (List[ScoredLabel]): the scored labels to be set as annotation labels</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__labels</span> <span class="o">=</span> <span class="n">labels</span></div>
+
+<div class="viewcode-block" id="Annotation.__eq__"><a class="viewcode-back" href="../../../../api/otx/api/entities/annotation/index.html#otx.api.entities.annotation.Annotation.__eq__">[docs]</a>    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Checks if the two annotations are equal.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            other (Annotation): Annotation to compare with.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: True if the two annotations are equal, False otherwise.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Annotation</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">id_</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">id_</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_labels</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">get_labels</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">shape</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span></div></div>
+
+
+<div class="viewcode-block" id="AnnotationSceneKind"><a class="viewcode-back" href="../../../../api/otx/api/entities/annotation/index.html#otx.api.entities.annotation.AnnotationSceneKind">[docs]</a><span class="k">class</span> <span class="nc">AnnotationSceneKind</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;AnnotationSceneKinds for an Annotation object.&quot;&quot;&quot;</span>
+
+    <span class="c1">#:  NONE represents NULLAnnotationScene&#39;s (See :class:`NullAnnotationScene`)</span>
+<div class="viewcode-block" id="AnnotationSceneKind.NONE"><a class="viewcode-back" href="../../../../api/otx/api/entities/annotation/index.html#otx.api.entities.annotation.AnnotationSceneKind.NONE">[docs]</a>    <span class="n">NONE</span> <span class="o">=</span> <span class="mi">0</span></div>
+    <span class="c1">#:  ANNOTATION represents user annotation</span>
+<div class="viewcode-block" id="AnnotationSceneKind.ANNOTATION"><a class="viewcode-back" href="../../../../api/otx/api/entities/annotation/index.html#otx.api.entities.annotation.AnnotationSceneKind.ANNOTATION">[docs]</a>    <span class="n">ANNOTATION</span> <span class="o">=</span> <span class="mi">1</span></div>
+    <span class="c1">#:  PREDICTION represents analysis result, which will be shown to the user</span>
+<div class="viewcode-block" id="AnnotationSceneKind.PREDICTION"><a class="viewcode-back" href="../../../../api/otx/api/entities/annotation/index.html#otx.api.entities.annotation.AnnotationSceneKind.PREDICTION">[docs]</a>    <span class="n">PREDICTION</span> <span class="o">=</span> <span class="mi">2</span></div>
+    <span class="c1">#:  EVALUATION represents analysis result for evaluation purposes, which will NOT be shown to the user</span>
+<div class="viewcode-block" id="AnnotationSceneKind.EVALUATION"><a class="viewcode-back" href="../../../../api/otx/api/entities/annotation/index.html#otx.api.entities.annotation.AnnotationSceneKind.EVALUATION">[docs]</a>    <span class="n">EVALUATION</span> <span class="o">=</span> <span class="mi">3</span></div>
+    <span class="c1">#:  INTERMEDIATE represents intermediary state.</span>
+    <span class="c1">#:  This is used when the analysis is being transferred from one task to another.</span>
+    <span class="c1">#:  This will not be shown to the user.</span>
+    <span class="c1">#:  This state will be changed to either PREDICTION or EVALUATION at the end of analysis process.</span>
+<div class="viewcode-block" id="AnnotationSceneKind.INTERMEDIATE"><a class="viewcode-back" href="../../../../api/otx/api/entities/annotation/index.html#otx.api.entities.annotation.AnnotationSceneKind.INTERMEDIATE">[docs]</a>    <span class="n">INTERMEDIATE</span> <span class="o">=</span> <span class="mi">4</span></div>
+    <span class="c1">#:  TASK_PREDICTION represents analysis results for a single task</span>
+<div class="viewcode-block" id="AnnotationSceneKind.TASK_PREDICTION"><a class="viewcode-back" href="../../../../api/otx/api/entities/annotation/index.html#otx.api.entities.annotation.AnnotationSceneKind.TASK_PREDICTION">[docs]</a>    <span class="n">TASK_PREDICTION</span> <span class="o">=</span> <span class="mi">5</span></div>
+
+<div class="viewcode-block" id="AnnotationSceneKind.__str__"><a class="viewcode-back" href="../../../../api/otx/api/entities/annotation/index.html#otx.api.entities.annotation.AnnotationSceneKind.__str__">[docs]</a>    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;String representation of the AnnotationSceneKind.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="AnnotationSceneEntity"><a class="viewcode-back" href="../../../../api/otx/api/entities/annotation/index.html#otx.api.entities.annotation.AnnotationSceneEntity">[docs]</a><span class="k">class</span> <span class="nc">AnnotationSceneEntity</span><span class="p">(</span><span class="n">metaclass</span><span class="o">=</span><span class="n">abc</span><span class="o">.</span><span class="n">ABCMeta</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;This class represents a user annotation or a result (prediction).</span>
+
+<span class="sd">    It serves as a collection of shapes, with a relation to the media entity.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        Creating an annotation:</span>
+
+<span class="sd">        &gt;&gt;&gt; from otx.api.entities.annotation import Annotation, AnnotationSceneEntity, AnnotationSceneKind</span>
+<span class="sd">        &gt;&gt;&gt; from otx.api.entities.shapes.rectangle import Rectangle</span>
+<span class="sd">        &gt;&gt;&gt; box = Rectangle(x1=0.0, y1=0.0, x2=0.5, y2=0.5)  # Box covering top-left quart of image</span>
+<span class="sd">        &gt;&gt;&gt; AnnotationSceneEntity(annotations=[Annotation(shape=box, labels=[])], kind=AnnotationSceneKind.ANNOTATION)</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        annotations (List[Annotation]): List of annotations in the scene</span>
+<span class="sd">        kind (AnnotationSceneKind): Kind of the annotation scene. E.g. `AnnotationSceneKind.ANNOTATION`.</span>
+<span class="sd">        editor (str): The user that made this annotation scene object.</span>
+<span class="sd">        creation_date (Optional[datetime.datetime]): Creation date of annotation scene entity. If None, current time is</span>
+<span class="sd">            used. Defaults to None.</span>
+<span class="sd">        id (Optional[ID]): ID of AnnotationSceneEntity. If None a new `ID` is created. Defaults to None.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># pylint: disable=too-many-arguments, redefined-builtin</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">annotations</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Annotation</span><span class="p">],</span>
+        <span class="n">kind</span><span class="p">:</span> <span class="n">AnnotationSceneKind</span><span class="p">,</span>
+        <span class="n">editor</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">creation_date</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="nb">id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ID</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__annotations</span> <span class="o">=</span> <span class="n">annotations</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__kind</span> <span class="o">=</span> <span class="n">kind</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__editor</span> <span class="o">=</span> <span class="n">editor</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__creation_date</span> <span class="o">=</span> <span class="n">now</span><span class="p">()</span> <span class="k">if</span> <span class="n">creation_date</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">creation_date</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__id_</span> <span class="o">=</span> <span class="n">ID</span><span class="p">()</span> <span class="k">if</span> <span class="nb">id</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">id</span>
+
+<div class="viewcode-block" id="AnnotationSceneEntity.__repr__"><a class="viewcode-back" href="../../../../api/otx/api/entities/annotation/index.html#otx.api.entities.annotation.AnnotationSceneEntity.__repr__">[docs]</a>    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;String representation of the annotation scene.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;annotations=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">annotations</span><span class="si">}</span><span class="s2">, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;kind=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">kind</span><span class="si">}</span><span class="s2">, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;editor=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">editor_name</span><span class="si">}</span><span class="s2">, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;creation_date=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">creation_date</span><span class="si">}</span><span class="s2">, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;id=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">id_</span><span class="si">}</span><span class="s2">)&quot;</span>
+        <span class="p">)</span></div>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="AnnotationSceneEntity.id_"><a class="viewcode-back" href="../../../../api/otx/api/entities/annotation/index.html#otx.api.entities.annotation.AnnotationSceneEntity.id_">[docs]</a>    <span class="k">def</span> <span class="nf">id_</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ID</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Returns the ID of the AnnotationSceneEntity.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__id_</span></div>
+
+    <span class="nd">@id_</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">id_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__id_</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="AnnotationSceneEntity.id"><a class="viewcode-back" href="../../../../api/otx/api/entities/annotation/index.html#otx.api.entities.annotation.AnnotationSceneEntity.id">[docs]</a>    <span class="k">def</span> <span class="nf">id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;DEPRECATED.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__id_</span></div>
+
+    <span class="nd">@id</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;DEPRECATED.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__id_</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="AnnotationSceneEntity.kind"><a class="viewcode-back" href="../../../../api/otx/api/entities/annotation/index.html#otx.api.entities.annotation.AnnotationSceneEntity.kind">[docs]</a>    <span class="k">def</span> <span class="nf">kind</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AnnotationSceneKind</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Returns the AnnotationSceneKind of the AnnotationSceneEntity.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__kind</span></div>
+
+    <span class="nd">@kind</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">kind</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__kind</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="AnnotationSceneEntity.editor_name"><a class="viewcode-back" href="../../../../api/otx/api/entities/annotation/index.html#otx.api.entities.annotation.AnnotationSceneEntity.editor_name">[docs]</a>    <span class="k">def</span> <span class="nf">editor_name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Returns the editor&#39;s name that made the AnnotationSceneEntity object.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__editor</span></div>
+
+    <span class="nd">@editor_name</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">editor_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__editor</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="AnnotationSceneEntity.creation_date"><a class="viewcode-back" href="../../../../api/otx/api/entities/annotation/index.html#otx.api.entities.annotation.AnnotationSceneEntity.creation_date">[docs]</a>    <span class="k">def</span> <span class="nf">creation_date</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Returns the creation date of the AnnotationSceneEntity object.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__creation_date</span></div>
+
+    <span class="nd">@creation_date</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">creation_date</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__creation_date</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="AnnotationSceneEntity.annotations"><a class="viewcode-back" href="../../../../api/otx/api/entities/annotation/index.html#otx.api.entities.annotation.AnnotationSceneEntity.annotations">[docs]</a>    <span class="k">def</span> <span class="nf">annotations</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Annotation</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Return the Annotations that are present in the AnnotationSceneEntity.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__annotations</span></div>
+
+    <span class="nd">@annotations</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">annotations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Annotation</span><span class="p">]):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__annotations</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="AnnotationSceneEntity.shapes"><a class="viewcode-back" href="../../../../api/otx/api/entities/annotation/index.html#otx.api.entities.annotation.AnnotationSceneEntity.shapes">[docs]</a>    <span class="k">def</span> <span class="nf">shapes</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">ShapeEntity</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Returns all shapes that are inside the annotations of the AnnotationSceneEntity.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">annotation</span><span class="o">.</span><span class="n">shape</span> <span class="k">for</span> <span class="n">annotation</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">annotations</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="AnnotationSceneEntity.contains_any"><a class="viewcode-back" href="../../../../api/otx/api/entities/annotation/index.html#otx.api.entities.annotation.AnnotationSceneEntity.contains_any">[docs]</a>    <span class="k">def</span> <span class="nf">contains_any</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">labels</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">LabelEntity</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Checks whether the annotation contains any labels in the input parameter.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            labels (List[LabelEntity]): List of labels to compare to.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: True if there is any intersection between self.get_labels(include_empty=True) with labels.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">label_names</span> <span class="o">=</span> <span class="p">{</span><span class="n">label</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">labels</span><span class="p">}</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">({</span><span class="n">label</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_labels</span><span class="p">(</span><span class="n">include_empty</span><span class="o">=</span><span class="kc">True</span><span class="p">)}</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">label_names</span><span class="p">))</span> <span class="o">!=</span> <span class="mi">0</span></div>
+
+<div class="viewcode-block" id="AnnotationSceneEntity.append_annotation"><a class="viewcode-back" href="../../../../api/otx/api/entities/annotation/index.html#otx.api.entities.annotation.AnnotationSceneEntity.append_annotation">[docs]</a>    <span class="k">def</span> <span class="nf">append_annotation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">annotation</span><span class="p">:</span> <span class="n">Annotation</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Appends the passed annotation to the list of annotations present in the AnnotationSceneEntity object.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">annotations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">annotation</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AnnotationSceneEntity.append_annotations"><a class="viewcode-back" href="../../../../api/otx/api/entities/annotation/index.html#otx.api.entities.annotation.AnnotationSceneEntity.append_annotations">[docs]</a>    <span class="k">def</span> <span class="nf">append_annotations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">annotations</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Annotation</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Adds a list of annotations to the annotation scene.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">annotations</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">annotations</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AnnotationSceneEntity.get_labels"><a class="viewcode-back" href="../../../../api/otx/api/entities/annotation/index.html#otx.api.entities.annotation.AnnotationSceneEntity.get_labels">[docs]</a>    <span class="k">def</span> <span class="nf">get_labels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">include_empty</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">LabelEntity</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Returns a list of unique labels which appear in this annotation scene.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            include_empty (bool): Set to True to include empty label (if exists) in the output. Defaults to False.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List[LabelEntity]: a list of labels which appear in this annotation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">labels</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">LabelEntity</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">annotation</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">annotations</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">annotation</span><span class="o">.</span><span class="n">get_labels</span><span class="p">(</span><span class="n">include_empty</span><span class="o">=</span><span class="n">include_empty</span><span class="p">):</span>
+                <span class="n">id_</span> <span class="o">=</span> <span class="n">label</span><span class="o">.</span><span class="n">id_</span>
+                <span class="k">if</span> <span class="n">id_</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">labels</span><span class="p">:</span>
+                    <span class="n">labels</span><span class="p">[</span><span class="n">id_</span><span class="p">]</span> <span class="o">=</span> <span class="n">label</span><span class="o">.</span><span class="n">get_label</span><span class="p">()</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">labels</span><span class="o">.</span><span class="n">values</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="AnnotationSceneEntity.get_label_ids"><a class="viewcode-back" href="../../../../api/otx/api/entities/annotation/index.html#otx.api.entities.annotation.AnnotationSceneEntity.get_label_ids">[docs]</a>    <span class="k">def</span> <span class="nf">get_label_ids</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">include_empty</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="n">ID</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Returns a set of the ID&#39;s of unique labels which appear in this annotation scene.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            include_empty (bool): Set to True to include empty label (if exists) in the output. Defaults to False.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Set[ID]: a set of the ID&#39;s of labels which appear in this annotation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">output</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="n">ID</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">annotation</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">annotations</span><span class="p">:</span>
+            <span class="n">output</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">annotation</span><span class="o">.</span><span class="n">get_label_ids</span><span class="p">(</span><span class="n">include_empty</span><span class="o">=</span><span class="n">include_empty</span><span class="p">)))</span>
+        <span class="k">return</span> <span class="n">output</span></div></div>
+
+
+<div class="viewcode-block" id="NullAnnotationSceneEntity"><a class="viewcode-back" href="../../../../api/otx/api/entities/annotation/index.html#otx.api.entities.annotation.NullAnnotationSceneEntity">[docs]</a><span class="k">class</span> <span class="nc">NullAnnotationSceneEntity</span><span class="p">(</span><span class="n">AnnotationSceneEntity</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Represents &#39;AnnotationSceneEntity not found.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="nb">id</span><span class="o">=</span><span class="n">ID</span><span class="p">(),</span>
+            <span class="n">kind</span><span class="o">=</span><span class="n">AnnotationSceneKind</span><span class="o">.</span><span class="n">NONE</span><span class="p">,</span>
+            <span class="n">editor</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="n">creation_date</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span>
+            <span class="n">annotations</span><span class="o">=</span><span class="p">[],</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="NullAnnotationSceneEntity.__repr__"><a class="viewcode-back" href="../../../../api/otx/api/entities/annotation/index.html#otx.api.entities.annotation.NullAnnotationSceneEntity.__repr__">[docs]</a>    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;String representation NullAnnotationSceneEntity.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s2">&quot;NullAnnotationSceneEntity()&quot;</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, OpenVINO Training Extensions Contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

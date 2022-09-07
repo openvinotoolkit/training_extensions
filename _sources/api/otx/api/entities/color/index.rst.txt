@@ -1,0 +1,151 @@
+:py:mod:`otx.api.entities.color`
+================================
+
+.. py:module:: otx.api.entities.color
+
+.. autoapi-nested-parse::
+
+   This module define the color entity.
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   otx.api.entities.color.ColorEntity
+   otx.api.entities.color.Color
+
+
+
+
+.. py:class:: ColorEntity(red: int, green: int, blue: int, alpha: int)
+
+   This class represents an abstract Color, some functions are still abstract.
+
+   .. py:method:: red() -> int
+      :property:
+
+      Returns the red color value for the ColorEntity object.
+
+
+   .. py:method:: green() -> int
+      :property:
+
+      Returns the green color value for the ColorEntity object.
+
+
+   .. py:method:: blue() -> int
+      :property:
+
+      Returns the blue color value for the ColorEntity object.
+
+
+   .. py:method:: alpha() -> int
+      :property:
+
+      Returns the alpha value for the ColorEntity object.
+
+
+   .. py:method:: hex_str() -> str
+      :property:
+
+      Returns the color in a Hex representation.
+
+
+   .. py:method:: from_hex_str(string: str)
+      :classmethod:
+      :abstractmethod:
+
+      Converts a hex string to a color.
+
+      :param string: The hex string
+      :type string: str
+
+
+   .. py:method:: random()
+      :classmethod:
+      :abstractmethod:
+
+      Generates a random Color.
+
+
+
+.. py:class:: Color(red: int, green: int, blue: int, alpha: int = 255)
+
+   Bases: :py:obj:`ColorEntity`
+
+   Represents an RGBA color.
+
+   .. py:method:: __repr__()
+
+      Returns string representation of the color.
+
+
+   .. py:method:: __eq__(other)
+
+      Returns True if both colors are equal.
+
+
+   .. py:method:: hex_str() -> str
+      :property:
+
+      Returns the color in a Hex representation.
+
+
+   .. py:method:: from_hex_str(string: str) -> Color
+      :classmethod:
+
+      Creates Color() instance given a hex string.
+
+      Supports 6 character hex string (RGB), or 8 character hex string (RGBA).
+      The string might optionally start with a number sign (#).
+
+      .. rubric:: Example
+
+      Creating color object:
+
+      >>> Color.from_hex_str("#ff0000")
+      Color(red=255, green=0, blue=0, alpha=255)
+
+      >>> Color.from_hex_str("0000ff")
+      Color(red=0, green=0, blue=255, alpha=255)
+
+      >>> Color.from_hex_str("#96Ff00C8")
+      Color(red=150, green=255, blue=0, alpha=200)
+
+      :param string: Hex string
+      :type string: str
+
+      :returns: Color instance
+
+
+   .. py:method:: random() -> Color
+      :classmethod:
+
+      Generate random Color() instance.
+
+      :returns: Color instance with random color
+
+
+   .. py:method:: rgb_tuple() -> Tuple[int, int, int]
+      :property:
+
+      Retrieves the Color as a RGB tuple.
+
+      :returns: Tuple[int, int, int]
+
+
+   .. py:method:: bgr_tuple() -> Tuple[int, int, int]
+      :property:
+
+      Retrieves the Color as a BGR tuple.
+
+      :returns: Tuple[int, int, int]
+
+
+

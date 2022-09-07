@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>otx.api.entities.train_parameters &mdash; OpenVINO Training Extensions  documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../index.html" class="icon icon-home"> OpenVINO Training Extensions
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">OpenVINO Training Extensions</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+          <li><a href="../../../otx.html">otx</a> &raquo;</li>
+      <li>otx.api.entities.train_parameters</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for otx.api.entities.train_parameters</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;This module implements the TrainingParameters entity.&quot;&quot;&quot;</span>
+<span class="c1"># Copyright (C) 2021-2022 Intel Corporation</span>
+<span class="c1"># SPDX-License-Identifier: Apache-2.0</span>
+<span class="c1">#</span>
+
+<span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Protocol</span>
+
+
+<div class="viewcode-block" id="UpdateProgressCallback"><a class="viewcode-back" href="../../../../api/otx/api/entities/train_parameters/index.html#otx.api.entities.train_parameters.UpdateProgressCallback">[docs]</a><span class="k">class</span> <span class="nc">UpdateProgressCallback</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;UpdateProgressCallback protocol.</span>
+
+<span class="sd">    Used as a replacement of Callable[] type since Callable doesn’t handle default parameters like</span>
+<span class="sd">    `score: Optional[float] = None`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="UpdateProgressCallback.__call__"><a class="viewcode-back" href="../../../../api/otx/api/entities/train_parameters/index.html#otx.api.entities.train_parameters.UpdateProgressCallback.__call__">[docs]</a>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">progress</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">score</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Callback to provide updates about the progress of a task.</span>
+
+<span class="sd">        It is recommended to call this function at least once per epoch.</span>
+<span class="sd">        However, the exact frequency is left to the task implementer.</span>
+
+<span class="sd">        An optional `score` can also be passed. If specified, this score can be used by HPO</span>
+<span class="sd">        to monitor the improvement of the task.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            progress: Progress as a percentage</span>
+<span class="sd">            score: Optional validation score</span>
+<span class="sd">        &quot;&quot;&quot;</span></div></div>
+
+
+<span class="c1"># pylint: disable=unused-argument</span>
+<div class="viewcode-block" id="default_progress_callback"><a class="viewcode-back" href="../../../../api/otx/api/entities/train_parameters/index.html#otx.api.entities.train_parameters.default_progress_callback">[docs]</a><span class="k">def</span> <span class="nf">default_progress_callback</span><span class="p">(</span><span class="n">progress</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">score</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Default progress callback. It is a placeholder (does nothing) and is used in empty TrainParameters.&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="default_save_model_callback"><a class="viewcode-back" href="../../../../api/otx/api/entities/train_parameters/index.html#otx.api.entities.train_parameters.default_save_model_callback">[docs]</a><span class="k">def</span> <span class="nf">default_save_model_callback</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Default save model callback. It is a placeholder (does nothing) and is used in empty TrainParameters.&quot;&quot;&quot;</span></div>
+
+
+<span class="nd">@dataclass</span>
+<div class="viewcode-block" id="TrainParameters"><a class="viewcode-back" href="../../../../api/otx/api/entities/train_parameters/index.html#otx.api.entities.train_parameters.TrainParameters">[docs]</a><span class="k">class</span> <span class="nc">TrainParameters</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Train parameters.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        resume: Set to ``True`` if training must be resume with the</span>
+<span class="sd">            optimizer state; set to ``False`` to discard the optimizer</span>
+<span class="sd">            state and start with fresh optimizer</span>
+<span class="sd">        update_progress: Callback which can be used to provide updates</span>
+<span class="sd">            about the progress of a task.</span>
+<span class="sd">        save_model: Callback to notify that the model weights have been</span>
+<span class="sd">            changed. This callback can be used by the task when</span>
+<span class="sd">            temporary weights should be saved (for instance, at the end</span>
+<span class="sd">            of an epoch). If this callback has been used to save</span>
+<span class="sd">            temporary weights, those weights will be used to resume</span>
+<span class="sd">            training if for some reason training was suspended.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="TrainParameters.resume"><a class="viewcode-back" href="../../../../api/otx/api/entities/train_parameters/index.html#otx.api.entities.train_parameters.TrainParameters.resume">[docs]</a>    <span class="n">resume</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span></div>
+<div class="viewcode-block" id="TrainParameters.update_progress"><a class="viewcode-back" href="../../../../api/otx/api/entities/train_parameters/index.html#otx.api.entities.train_parameters.TrainParameters.update_progress">[docs]</a>    <span class="n">update_progress</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]],</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="n">default_progress_callback</span></div>
+<div class="viewcode-block" id="TrainParameters.save_model"><a class="viewcode-back" href="../../../../api/otx/api/entities/train_parameters/index.html#otx.api.entities.train_parameters.TrainParameters.save_model">[docs]</a>    <span class="n">save_model</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="n">default_save_model_callback</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, OpenVINO Training Extensions Contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

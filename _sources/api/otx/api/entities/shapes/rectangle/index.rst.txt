@@ -1,0 +1,252 @@
+:py:mod:`otx.api.entities.shapes.rectangle`
+===========================================
+
+.. py:module:: otx.api.entities.shapes.rectangle
+
+.. autoapi-nested-parse::
+
+   This module implements the Rectangle shape entity.
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   otx.api.entities.shapes.rectangle.Rectangle
+
+
+
+
+.. py:class:: Rectangle(x1: float, y1: float, x2: float, y2: float, modification_date: Optional[datetime.datetime] = None)
+
+   Bases: :py:obj:`otx.api.entities.shapes.shape.Shape`
+
+   Rectangle represents a rectangular shape.
+
+   Rectangle are used to annotate detection and classification tasks. In the
+   classification case, the rectangle is a full rectangle spanning the whole related
+   item (could be an image, video frame, a region of interest).
+
+   - x1 and y1 represent the top-left coordinate of the rectangle
+   - x2 and y2 representing the bottom-right coordinate of the rectangle
+
+   :param x1: x-coordinate of the top-left corner of the rectangle
+   :type x1: float
+   :param y1: y-coordinate of the top-left corner of the rectangle
+   :type y1: float
+   :param x2: x-coordinate of the bottom-right corner of the rectangle
+   :type x2: float
+   :param y2: y-coordinate of the bottom-right corner of the rectangle
+   :type y2: float
+   :param modification_date: Date of the last modification of the rectangle
+   :type modification_date: datetime.datetime
+
+   .. py:method:: __repr__()
+
+      String representation of the rectangle.
+
+
+   .. py:method:: __eq__(other: object)
+
+      Returns True if `other` is a `Rectangle` with the same coordinates.
+
+
+   .. py:method:: __hash__()
+
+      Returns hash of the rectangle.
+
+
+   .. py:method:: clip_to_visible_region() -> Rectangle
+
+      Clip the rectangle to the [0, 1] visible region of an image.
+
+      :returns: Clipped rectangle.
+      :rtype: Rectangle
+
+
+   .. py:method:: normalize_wrt_roi_shape(roi_shape: otx.api.entities.shapes.shape.ShapeEntity) -> Rectangle
+
+      Transforms from the `roi` coordinate system to the normalized coordinate system.
+
+      .. rubric:: Example
+
+      Assume we have rectangle `b1` which lives in the top-right quarter of
+      a 2D space. The 2D space where `b1` lives in is an `roi` living in the top-left
+      quarter of the normalized coordinate space. This function returns rectangle
+      `b1` expressed in the normalized coordinate space.
+
+          >>> from otx.api.entities.annotation import Annotation
+          >>> b1 = Rectangle(x1=0.5, x2=1.0, y1=0.0, y2=0.5)
+          >>> roi = Rectangle(x1=0.0, x2=0.5, y1=0.0, y2=0.5)
+          >>> normalized = b1.normalize_wrt_roi_shape(roi_shape)
+          >>> normalized
+          Box(, x=0.25, y=0.0, width=0.25, height=0.25)
+
+      :param roi_shape: Region of Interest.
+      :type roi_shape: ShapeEntity
+
+      :raises ValueError: If the `roi_shape` is not a `Rectangle`.
+
+      :returns: New polygon in the image coordinate system
+
+
+   .. py:method:: denormalize_wrt_roi_shape(roi_shape: otx.api.entities.shapes.shape.ShapeEntity) -> Rectangle
+
+      Transforming shape from the normalized coordinate system to the `roi` coordinate system.
+
+      .. rubric:: Example
+
+      Assume we have rectangle `b1` which lives in the top-right quarter of
+      the normalized coordinate space. The `roi` is a rectangle living in the half
+      right of the normalized coordinate space. This function returns rectangle
+      `b1` expressed in the coordinate space of `roi`. (should return top-half)
+      Box denormalized to a rectangle as ROI
+
+          >>> from otx.api.entities.annotation import Annotation
+          >>> b1 = Rectangle(x1=0.5, x2=1.0, y1=0.0, y2=0.5)
+          # the top-right
+          >>> roi = Annotation(Rectangle(x1=0.5, x2=1.0, y1=0.0, y2=1.0))
+          # the half-right
+          >>> normalized = b1.denormalize_wrt_roi_shape(roi_shape)
+          # should return top half
+          >>> normalized
+          Box(, x=0.0, y=0.0, width=1.0, height=0.5)
+
+      :param roi_shape: Region of Interest
+      :type roi_shape: ShapeEntity
+
+      :raises ValueError: If the `roi_shape` is not a `Rectangle`.
+
+      :returns: New polygon in the ROI coordinate system
+      :rtype: Rectangle
+
+
+   .. py:method:: _as_shapely_polygon() -> shapely.geometry.Polygon
+
+      Convert shape to a shapely polygon.
+
+      Shapely polygons are within the SDK used to calculate the intersection between Shapes.
+      It is also used in the SDK to find shapes that are visible within a given ROI.
+
+      :returns: Shapely polygon representation of the shape.
+      :rtype: shapely_polygon
+
+
+   .. py:method:: generate_full_box() -> Rectangle
+      :classmethod:
+
+      Returns a rectangle that fully encapsulates the normalized coordinate space.
+
+      .. rubric:: Example
+
+      >>> Rectangle.generate_full_box()
+      Box(, x=0.0, y=0.0, width=1.0, height=1.0)
+
+      :returns: A rectangle that fully encapsulates the normalized coordinate space.
+      :rtype: Rectangle
+
+
+   .. py:method:: is_full_box(rectangle: otx.api.entities.shapes.shape.ShapeEntity) -> bool
+      :staticmethod:
+
+      Returns true if rectangle is a full box (occupying the full normalized coordinate space).
+
+      .. rubric:: Example
+
+      >>> b1 = Rectangle(x1=0.5, x2=1.0, y1=0.0, y2=1.0)
+      >>> Rectangle.is_full_box(b1)
+      False
+
+      >>> b2 = Rectangle(x1=0.0, x2=1.0, y1=0.0, y2=1.0)
+      >>> Rectangle.is_full_box(b2)
+      True
+
+      :param rectangle: rectangle to evaluate
+      :type rectangle: ShapeEntity
+
+      :returns: true if it fully encapsulate normalized coordinate space.
+      :rtype: bool
+
+
+   .. py:method:: crop_numpy_array(data: numpy.ndarray) -> numpy.ndarray
+
+      Crop the given Numpy array to the region of interest represented by this rectangle.
+
+      :param data: Image to crop.
+      :type data: np.ndarray
+
+      :returns: Cropped image.
+      :rtype: np.ndarray
+
+
+   .. py:method:: width() -> float
+      :property:
+
+      Returns the width of the rectangle (x-axis).
+
+      .. rubric:: Example
+
+      >>> b1 = Rectangle(x1=0.5, x2=1.0, y1=0.0, y2=0.5)
+      >>> b1.width
+      0.5
+
+      :returns: the width of the rectangle. (x-axis)
+      :rtype: float
+
+
+   .. py:method:: height() -> float
+      :property:
+
+      Returns the height of the rectangle (y-axis).
+
+      .. rubric:: Example
+
+      >>> b1 = Rectangle(x1=0.5, x2=1.0, y1=0.0, y2=0.5)
+      >>> b1.height
+      0.5
+
+      :returns: the height of the rectangle. (y-axis)
+      :rtype: float
+
+
+   .. py:method:: diagonal() -> float
+      :property:
+
+      Returns the diagonal size/hypotenuse  of the rectangle (x-axis).
+
+      .. rubric:: Example
+
+      >>> b1 = Rectangle(x1=0.0, x2=0.3, y1=0.0, y2=0.4)
+      >>> b1.diagonal
+      0.5
+
+      :returns: the width of the rectangle. (x-axis)
+      :rtype: float
+
+
+   .. py:method:: get_area() -> float
+
+      Computes the approximate area of the shape.
+
+      Area is a value between 0 and 1, calculated as (x2-x1) * (y2-y1)
+
+      NOTE: This method should not be relied on for exact area computation. The area
+      is approximate, because shapes are continuous, but pixels are discrete.
+
+      .. rubric:: Example
+
+      >>> Rectangle(0, 0, 1, 1).get_area()
+      1.0
+      >>> Rectangle(0.5, 0.5, 1.0, 1.0).get_area()
+      0.25
+
+      :returns: Approximate area of the shape.
+      :rtype: float
+
+
+

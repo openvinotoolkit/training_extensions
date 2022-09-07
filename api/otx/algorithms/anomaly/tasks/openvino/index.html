@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>otx.algorithms.anomaly.tasks.openvino &mdash; OpenVINO Training Extensions  documentation</title>
+      <link rel="stylesheet" href="../../../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../../../" id="documentation_options" src="../../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../../_static/jquery.js"></script>
+        <script src="../../../../../../_static/underscore.js"></script>
+        <script src="../../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../../../../_static/doctools.js"></script>
+    <script src="../../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../../../index.html" class="icon icon-home"> OpenVINO Training Extensions
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../../index.html">OpenVINO Training Extensions</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li><code class="xref py py-mod docutils literal notranslate"><span class="pre">otx.algorithms.anomaly.tasks.openvino</span></code></li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../../../_sources/api/otx/algorithms/anomaly/tasks/openvino/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-otx.algorithms.anomaly.tasks.openvino">
+<span id="otx-algorithms-anomaly-tasks-openvino"></span><h1><a class="reference internal" href="#module-otx.algorithms.anomaly.tasks.openvino" title="otx.algorithms.anomaly.tasks.openvino"><code class="xref py py-mod docutils literal notranslate"><span class="pre">otx.algorithms.anomaly.tasks.openvino</span></code></a><a class="headerlink" href="#module-otx.algorithms.anomaly.tasks.openvino" title="Permalink to this heading"></a></h1>
+<p>OpenVINO Anomaly Task.</p>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this heading"></a></h2>
+<section id="classes">
+<h3>Classes<a class="headerlink" href="#classes" title="Permalink to this heading"></a></h3>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.algorithms.anomaly.tasks.openvino.OTXOpenVINOAnomalyDataloader" title="otx.algorithms.anomaly.tasks.openvino.OTXOpenVINOAnomalyDataloader"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OTXOpenVINOAnomalyDataloader</span></code></a></p></td>
+<td><p>Dataloader for loading OTX dataset into OTX OpenVINO Inferencer.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.algorithms.anomaly.tasks.openvino.OpenVINOTask" title="otx.algorithms.anomaly.tasks.openvino.OpenVINOTask"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OpenVINOTask</span></code></a></p></td>
+<td><p>OpenVINO inference task.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="attributes">
+<h3>Attributes<a class="headerlink" href="#attributes" title="Permalink to this heading"></a></h3>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.algorithms.anomaly.tasks.openvino.logger" title="otx.algorithms.anomaly.tasks.openvino.logger"><code class="xref py py-obj docutils literal notranslate"><span class="pre">logger</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py data">
+<dt class="sig sig-object py" id="otx.algorithms.anomaly.tasks.openvino.logger">
+<span class="sig-prename descclassname"><span class="pre">otx.algorithms.anomaly.tasks.openvino.</span></span><span class="sig-name descname"><span class="pre">logger</span></span><a class="reference internal" href="../../../../../../_modules/otx/algorithms/anomaly/tasks/openvino.html#logger"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.anomaly.tasks.openvino.logger" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.algorithms.anomaly.tasks.openvino.OTXOpenVINOAnomalyDataloader">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.anomaly.tasks.openvino.</span></span><span class="sig-name descname"><span class="pre">OTXOpenVINOAnomalyDataloader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">addict.Dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../../../api/entities/datasets/index.html#otx.api.entities.datasets.DatasetEntity" title="otx.api.entities.datasets.DatasetEntity"><span class="pre">otx.api.entities.datasets.DatasetEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">inferencer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">anomalib.deploy.OpenVINOInferencer</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../../_modules/otx/algorithms/anomaly/tasks/openvino.html#OTXOpenVINOAnomalyDataloader"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.anomaly.tasks.openvino.OTXOpenVINOAnomalyDataloader" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">compression.api.DataLoader</span></code></p>
+<p>Dataloader for loading OTX dataset into OTX OpenVINO Inferencer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dataset</strong> (<a class="reference internal" href="../../../../api/entities/datasets/index.html#otx.api.entities.datasets.DatasetEntity" title="otx.api.entities.datasets.DatasetEntity"><em>DatasetEntity</em></a>) – OTX dataset entity</p></li>
+<li><p><strong>inferencer</strong> (<em>OpenVINOInferencer</em>) – OpenVINO Inferencer</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.anomaly.tasks.openvino.OTXOpenVINOAnomalyDataloader.__getitem__">
+<span class="sig-name descname"><span class="pre">__getitem__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../../_modules/otx/algorithms/anomaly/tasks/openvino.html#OTXOpenVINOAnomalyDataloader.__getitem__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.anomaly.tasks.openvino.OTXOpenVINOAnomalyDataloader.__getitem__" title="Permalink to this definition"></a></dt>
+<dd><p>Get dataset item.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>index</strong> (<em>int</em>) – Index of the dataset sample.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Dataset item.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.anomaly.tasks.openvino.OTXOpenVINOAnomalyDataloader.__len__">
+<span class="sig-name descname"><span class="pre">__len__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="reference internal" href="../../../../../../_modules/otx/algorithms/anomaly/tasks/openvino.html#OTXOpenVINOAnomalyDataloader.__len__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.anomaly.tasks.openvino.OTXOpenVINOAnomalyDataloader.__len__" title="Permalink to this definition"></a></dt>
+<dd><p>Get size of the dataset.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Size of the dataset.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.algorithms.anomaly.tasks.openvino.OpenVINOTask">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.anomaly.tasks.openvino.</span></span><span class="sig-name descname"><span class="pre">OpenVINOTask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">task_environment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../../../api/entities/task_environment/index.html#otx.api.entities.task_environment.TaskEnvironment" title="otx.api.entities.task_environment.TaskEnvironment"><span class="pre">otx.api.entities.task_environment.TaskEnvironment</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../../_modules/otx/algorithms/anomaly/tasks/openvino.html#OpenVINOTask"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.anomaly.tasks.openvino.OpenVINOTask" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../../../api/usecases/tasks/interfaces/inference_interface/index.html#otx.api.usecases.tasks.interfaces.inference_interface.IInferenceTask" title="otx.api.usecases.tasks.interfaces.inference_interface.IInferenceTask"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.api.usecases.tasks.interfaces.inference_interface.IInferenceTask</span></code></a>, <a class="reference internal" href="../../../../api/usecases/tasks/interfaces/evaluate_interface/index.html#otx.api.usecases.tasks.interfaces.evaluate_interface.IEvaluationTask" title="otx.api.usecases.tasks.interfaces.evaluate_interface.IEvaluationTask"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.api.usecases.tasks.interfaces.evaluate_interface.IEvaluationTask</span></code></a>, <a class="reference internal" href="../../../../api/usecases/tasks/interfaces/optimization_interface/index.html#otx.api.usecases.tasks.interfaces.optimization_interface.IOptimizationTask" title="otx.api.usecases.tasks.interfaces.optimization_interface.IOptimizationTask"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.api.usecases.tasks.interfaces.optimization_interface.IOptimizationTask</span></code></a>, <a class="reference internal" href="../../../../api/usecases/tasks/interfaces/deployment_interface/index.html#otx.api.usecases.tasks.interfaces.deployment_interface.IDeploymentTask" title="otx.api.usecases.tasks.interfaces.deployment_interface.IDeploymentTask"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.api.usecases.tasks.interfaces.deployment_interface.IDeploymentTask</span></code></a></p>
+<p>OpenVINO inference task.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>task_environment</strong> (<a class="reference internal" href="../../../../api/entities/task_environment/index.html#otx.api.entities.task_environment.TaskEnvironment" title="otx.api.entities.task_environment.TaskEnvironment"><em>TaskEnvironment</em></a>) – task environment of the trained anomaly model</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.anomaly.tasks.openvino.OpenVINOTask.get_config">
+<span class="sig-name descname"><span class="pre">get_config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">addict.Dict</span></span></span><a class="reference internal" href="../../../../../../_modules/otx/algorithms/anomaly/tasks/openvino.html#OpenVINOTask.get_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.anomaly.tasks.openvino.OpenVINOTask.get_config" title="Permalink to this definition"></a></dt>
+<dd><p>Get Anomalib Config from task environment.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Anomalib config</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>ADDict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.anomaly.tasks.openvino.OpenVINOTask.infer">
+<span class="sig-name descname"><span class="pre">infer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../../../api/entities/datasets/index.html#otx.api.entities.datasets.DatasetEntity" title="otx.api.entities.datasets.DatasetEntity"><span class="pre">otx.api.entities.datasets.DatasetEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">inference_parameters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../../../api/entities/inference_parameters/index.html#otx.api.entities.inference_parameters.InferenceParameters" title="otx.api.entities.inference_parameters.InferenceParameters"><span class="pre">otx.api.entities.inference_parameters.InferenceParameters</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../../../../api/entities/datasets/index.html#otx.api.entities.datasets.DatasetEntity" title="otx.api.entities.datasets.DatasetEntity"><span class="pre">otx.api.entities.datasets.DatasetEntity</span></a></span></span><a class="reference internal" href="../../../../../../_modules/otx/algorithms/anomaly/tasks/openvino.html#OpenVINOTask.infer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.anomaly.tasks.openvino.OpenVINOTask.infer" title="Permalink to this definition"></a></dt>
+<dd><p>Perform Inference.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dataset</strong> (<a class="reference internal" href="../../../../api/entities/datasets/index.html#otx.api.entities.datasets.DatasetEntity" title="otx.api.entities.datasets.DatasetEntity"><em>DatasetEntity</em></a>) – Inference dataset</p></li>
+<li><p><strong>inference_parameters</strong> (<a class="reference internal" href="../../../../api/entities/inference_parameters/index.html#otx.api.entities.inference_parameters.InferenceParameters" title="otx.api.entities.inference_parameters.InferenceParameters"><em>InferenceParameters</em></a>) – Inference parameters.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Output dataset storing inference predictions.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="../../../../api/entities/datasets/index.html#otx.api.entities.datasets.DatasetEntity" title="otx.api.entities.datasets.DatasetEntity">DatasetEntity</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.anomaly.tasks.openvino.OpenVINOTask.get_meta_data">
+<span class="sig-name descname"><span class="pre">get_meta_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span></span></span><a class="reference internal" href="../../../../../../_modules/otx/algorithms/anomaly/tasks/openvino.html#OpenVINOTask.get_meta_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.anomaly.tasks.openvino.OpenVINOTask.get_meta_data" title="Permalink to this definition"></a></dt>
+<dd><p>Get Meta Data.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.anomaly.tasks.openvino.OpenVINOTask.evaluate">
+<span class="sig-name descname"><span class="pre">evaluate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_resultset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../../../api/entities/resultset/index.html#otx.api.entities.resultset.ResultSetEntity" title="otx.api.entities.resultset.ResultSetEntity"><span class="pre">otx.api.entities.resultset.ResultSetEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">evaluation_metric</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../../_modules/otx/algorithms/anomaly/tasks/openvino.html#OpenVINOTask.evaluate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.anomaly.tasks.openvino.OpenVINOTask.evaluate" title="Permalink to this definition"></a></dt>
+<dd><p>Evaluate the performance of the model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>output_resultset</strong> (<a class="reference internal" href="../../../../api/entities/resultset/index.html#otx.api.entities.resultset.ResultSetEntity" title="otx.api.entities.resultset.ResultSetEntity"><em>ResultSetEntity</em></a>) – Result set storing ground truth and predicted dataset.</p></li>
+<li><p><strong>evaluation_metric</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em><em>, </em><em>optional</em>) – Evaluation metric. Defaults to None.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.anomaly.tasks.openvino.OpenVINOTask._get_optimization_algorithms_configs">
+<span class="sig-name descname"><span class="pre">_get_optimization_algorithms_configs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">addict.Dict</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../../_modules/otx/algorithms/anomaly/tasks/openvino.html#OpenVINOTask._get_optimization_algorithms_configs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.anomaly.tasks.openvino.OpenVINOTask._get_optimization_algorithms_configs" title="Permalink to this definition"></a></dt>
+<dd><p>Returns list of optimization algorithms configurations.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.anomaly.tasks.openvino.OpenVINOTask.optimize">
+<span class="sig-name descname"><span class="pre">optimize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">optimization_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../../../api/usecases/tasks/interfaces/optimization_interface/index.html#otx.api.usecases.tasks.interfaces.optimization_interface.OptimizationType" title="otx.api.usecases.tasks.interfaces.optimization_interface.OptimizationType"><span class="pre">otx.api.usecases.tasks.interfaces.optimization_interface.OptimizationType</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../../../api/entities/datasets/index.html#otx.api.entities.datasets.DatasetEntity" title="otx.api.entities.datasets.DatasetEntity"><span class="pre">otx.api.entities.datasets.DatasetEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../../../api/entities/model/index.html#otx.api.entities.model.ModelEntity" title="otx.api.entities.model.ModelEntity"><span class="pre">otx.api.entities.model.ModelEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimization_parameters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../../../api/entities/optimization_parameters/index.html#otx.api.entities.optimization_parameters.OptimizationParameters" title="otx.api.entities.optimization_parameters.OptimizationParameters"><span class="pre">otx.api.entities.optimization_parameters.OptimizationParameters</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../../_modules/otx/algorithms/anomaly/tasks/openvino.html#OpenVINOTask.optimize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.anomaly.tasks.openvino.OpenVINOTask.optimize" title="Permalink to this definition"></a></dt>
+<dd><p>Optimize the model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>optimization_type</strong> (<a class="reference internal" href="../../../../api/usecases/tasks/interfaces/optimization_interface/index.html#otx.api.usecases.tasks.interfaces.optimization_interface.OptimizationType" title="otx.api.usecases.tasks.interfaces.optimization_interface.OptimizationType"><em>OptimizationType</em></a>) – Type of optimization [POT or NNCF]</p></li>
+<li><p><strong>dataset</strong> (<a class="reference internal" href="../../../../api/entities/datasets/index.html#otx.api.entities.datasets.DatasetEntity" title="otx.api.entities.datasets.DatasetEntity"><em>DatasetEntity</em></a>) – Input Dataset.</p></li>
+<li><p><strong>output_model</strong> (<a class="reference internal" href="../../../../api/entities/model/index.html#otx.api.entities.model.ModelEntity" title="otx.api.entities.model.ModelEntity"><em>ModelEntity</em></a>) – Output model.</p></li>
+<li><p><strong>optimization_parameters</strong> (<em>Optional</em><em>[</em><a class="reference internal" href="../../../../api/entities/optimization_parameters/index.html#otx.api.entities.optimization_parameters.OptimizationParameters" title="otx.api.entities.optimization_parameters.OptimizationParameters"><em>OptimizationParameters</em></a><em>]</em>) – Optimization parameters.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>ValueError</strong> – When the optimization type is not POT, which is the only support type at the moment.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.anomaly.tasks.openvino.OpenVINOTask.load_inferencer">
+<span class="sig-name descname"><span class="pre">load_inferencer</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">anomalib.deploy.OpenVINOInferencer</span></span></span><a class="reference internal" href="../../../../../../_modules/otx/algorithms/anomaly/tasks/openvino.html#OpenVINOTask.load_inferencer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.anomaly.tasks.openvino.OpenVINOTask.load_inferencer" title="Permalink to this definition"></a></dt>
+<dd><p>Create the OpenVINO inferencer object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>OpenVINOInferencer object</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.anomaly.tasks.openvino.OpenVINOTask.__save_weights">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">__save_weights</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../../../../../_modules/otx/algorithms/anomaly/tasks/openvino.html#OpenVINOTask.__save_weights"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.anomaly.tasks.openvino.OpenVINOTask.__save_weights" title="Permalink to this definition"></a></dt>
+<dd><p>Write data to file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> (<em>str</em>) – Path of output file</p></li>
+<li><p><strong>data</strong> (<em>bytes</em>) – Data to write</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.anomaly.tasks.openvino.OpenVINOTask.__load_weights">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">__load_weights</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../../../api/entities/model/index.html#otx.api.entities.model.ModelEntity" title="otx.api.entities.model.ModelEntity"><span class="pre">otx.api.entities.model.ModelEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../../../../../_modules/otx/algorithms/anomaly/tasks/openvino.html#OpenVINOTask.__load_weights"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.anomaly.tasks.openvino.OpenVINOTask.__load_weights" title="Permalink to this definition"></a></dt>
+<dd><p>Load weights into output model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> (<em>str</em>) – Path to weights</p></li>
+<li><p><strong>output_model</strong> (<a class="reference internal" href="../../../../api/entities/model/index.html#otx.api.entities.model.ModelEntity" title="otx.api.entities.model.ModelEntity"><em>ModelEntity</em></a>) – Model to which the weights are assigned</p></li>
+<li><p><strong>key</strong> (<em>str</em>) – Key of the output model into which the weights are assigned</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.anomaly.tasks.openvino.OpenVINOTask._get_openvino_configuration">
+<span class="sig-name descname"><span class="pre">_get_openvino_configuration</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../../_modules/otx/algorithms/anomaly/tasks/openvino.html#OpenVINOTask._get_openvino_configuration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.anomaly.tasks.openvino.OpenVINOTask._get_openvino_configuration" title="Permalink to this definition"></a></dt>
+<dd><p>Return configuration required by the exported model.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.anomaly.tasks.openvino.OpenVINOTask.deploy">
+<span class="sig-name descname"><span class="pre">deploy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../../../api/entities/model/index.html#otx.api.entities.model.ModelEntity" title="otx.api.entities.model.ModelEntity"><span class="pre">otx.api.entities.model.ModelEntity</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../../../../../_modules/otx/algorithms/anomaly/tasks/openvino.html#OpenVINOTask.deploy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.algorithms.anomaly.tasks.openvino.OpenVINOTask.deploy" title="Permalink to this definition"></a></dt>
+<dd><p>Exports the weights from <code class="docutils literal notranslate"><span class="pre">output_model</span></code> along with exportable code.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>output_model</strong> (<a class="reference internal" href="../../../../api/entities/model/index.html#otx.api.entities.model.ModelEntity" title="otx.api.entities.model.ModelEntity"><em>ModelEntity</em></a>) – Model with <code class="docutils literal notranslate"><span class="pre">openvino.xml</span></code> and <code class="docutils literal notranslate"><span class="pre">.bin</span></code> keys</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>Exception</strong> – If <code class="docutils literal notranslate"><span class="pre">task_environment.model</span></code> is None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, OpenVINO Training Extensions Contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>otx.algorithms.anomaly.configs.stfpm.configuration &mdash; OpenVINO Training Extensions  documentation</title>
+      <link rel="stylesheet" href="../../../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../../../" id="documentation_options" src="../../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../../_static/jquery.js"></script>
+        <script src="../../../../../../_static/underscore.js"></script>
+        <script src="../../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../../../../_static/doctools.js"></script>
+    <script src="../../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../../../index.html" class="icon icon-home"> OpenVINO Training Extensions
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../api/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../../index.html">OpenVINO Training Extensions</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../../../index.html">Module code</a> &raquo;</li>
+          <li><a href="../../../../../otx.html">otx</a> &raquo;</li>
+      <li>otx.algorithms.anomaly.configs.stfpm.configuration</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for otx.algorithms.anomaly.configs.stfpm.configuration</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Configurable parameters for STFPM anomaly base task.&quot;&quot;&quot;</span>
+
+<span class="c1"># Copyright (C) 2022 Intel Corporation</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1"># http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing,</span>
+<span class="c1"># software distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions</span>
+<span class="c1"># and limitations under the License.</span>
+
+<span class="kn">from</span> <span class="nn">attr</span> <span class="kn">import</span> <span class="n">attrs</span>
+
+<span class="kn">from</span> <span class="nn">otx.algorithms.anomaly.configs.base</span> <span class="kn">import</span> <span class="n">BaseAnomalyConfig</span>
+<span class="kn">from</span> <span class="nn">otx.algorithms.anomaly.configs.base.configuration_enums</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">EarlyStoppingMetrics</span><span class="p">,</span>
+    <span class="n">ModelBackbone</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">otx.api.configuration.elements</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">ParameterGroup</span><span class="p">,</span>
+    <span class="n">add_parameter_group</span><span class="p">,</span>
+    <span class="n">configurable_float</span><span class="p">,</span>
+    <span class="n">configurable_integer</span><span class="p">,</span>
+    <span class="n">selectable</span><span class="p">,</span>
+    <span class="n">string_attribute</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">otx.api.configuration.model_lifecycle</span> <span class="kn">import</span> <span class="n">ModelLifecycle</span>
+
+
+<span class="nd">@attrs</span>
+<div class="viewcode-block" id="STFPMAnomalyBaseConfig"><a class="viewcode-back" href="../../../../../../api/otx/algorithms/anomaly/configs/stfpm/index.html#otx.algorithms.anomaly.configs.stfpm.configuration.STFPMAnomalyBaseConfig">[docs]</a><span class="k">class</span> <span class="nc">STFPMAnomalyBaseConfig</span><span class="p">(</span><span class="n">BaseAnomalyConfig</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Configurable parameters for STFPM anomaly base task.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="STFPMAnomalyBaseConfig.header"><a class="viewcode-back" href="../../../../../../api/otx/algorithms/anomaly/configs/stfpm/configuration/index.html#otx.algorithms.anomaly.configs.stfpm.configuration.STFPMAnomalyBaseConfig.header">[docs]</a>    <span class="n">header</span> <span class="o">=</span> <span class="n">string_attribute</span><span class="p">(</span><span class="s2">&quot;Configuration for STFPM&quot;</span><span class="p">)</span></div>
+<div class="viewcode-block" id="STFPMAnomalyBaseConfig.description"><a class="viewcode-back" href="../../../../../../api/otx/algorithms/anomaly/configs/stfpm/configuration/index.html#otx.algorithms.anomaly.configs.stfpm.configuration.STFPMAnomalyBaseConfig.description">[docs]</a>    <span class="n">description</span> <span class="o">=</span> <span class="n">header</span></div>
+
+    <span class="nd">@attrs</span>
+<div class="viewcode-block" id="STFPMAnomalyBaseConfig.LearningParameters"><a class="viewcode-back" href="../../../../../../api/otx/algorithms/anomaly/configs/stfpm/configuration/index.html#otx.algorithms.anomaly.configs.stfpm.configuration.STFPMAnomalyBaseConfig.LearningParameters">[docs]</a>    <span class="k">class</span> <span class="nc">LearningParameters</span><span class="p">(</span><span class="n">BaseAnomalyConfig</span><span class="o">.</span><span class="n">LearningParameters</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Parameters that can be tuned using HPO.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="STFPMAnomalyBaseConfig.LearningParameters.lr"><a class="viewcode-back" href="../../../../../../api/otx/algorithms/anomaly/configs/stfpm/configuration/index.html#otx.algorithms.anomaly.configs.stfpm.configuration.STFPMAnomalyBaseConfig.LearningParameters.lr">[docs]</a>        <span class="n">lr</span> <span class="o">=</span> <span class="n">configurable_float</span><span class="p">(</span>
+            <span class="n">default_value</span><span class="o">=</span><span class="mf">0.4</span><span class="p">,</span>
+            <span class="n">header</span><span class="o">=</span><span class="s2">&quot;Learning Rate&quot;</span><span class="p">,</span>
+            <span class="n">min_value</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">,</span>
+            <span class="n">max_value</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Learning rate used for optimizing the Student network.&quot;</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="STFPMAnomalyBaseConfig.LearningParameters.momentum"><a class="viewcode-back" href="../../../../../../api/otx/algorithms/anomaly/configs/stfpm/configuration/index.html#otx.algorithms.anomaly.configs.stfpm.configuration.STFPMAnomalyBaseConfig.LearningParameters.momentum">[docs]</a>        <span class="n">momentum</span> <span class="o">=</span> <span class="n">configurable_float</span><span class="p">(</span>
+            <span class="n">default_value</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span>
+            <span class="n">header</span><span class="o">=</span><span class="s2">&quot;Momentum&quot;</span><span class="p">,</span>
+            <span class="n">min_value</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+            <span class="n">max_value</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Momentum used for SGD optimizer&quot;</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="STFPMAnomalyBaseConfig.LearningParameters.weight_decay"><a class="viewcode-back" href="../../../../../../api/otx/algorithms/anomaly/configs/stfpm/configuration/index.html#otx.algorithms.anomaly.configs.stfpm.configuration.STFPMAnomalyBaseConfig.LearningParameters.weight_decay">[docs]</a>        <span class="n">weight_decay</span> <span class="o">=</span> <span class="n">configurable_float</span><span class="p">(</span>
+            <span class="n">default_value</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">,</span>
+            <span class="n">header</span><span class="o">=</span><span class="s2">&quot;Weight Decay&quot;</span><span class="p">,</span>
+            <span class="n">min_value</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">,</span>
+            <span class="n">max_value</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Decay for SGD optimizer&quot;</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="STFPMAnomalyBaseConfig.LearningParameters.backbone"><a class="viewcode-back" href="../../../../../../api/otx/algorithms/anomaly/configs/stfpm/configuration/index.html#otx.algorithms.anomaly.configs.stfpm.configuration.STFPMAnomalyBaseConfig.LearningParameters.backbone">[docs]</a>        <span class="n">backbone</span> <span class="o">=</span> <span class="n">selectable</span><span class="p">(</span>
+            <span class="n">default_value</span><span class="o">=</span><span class="n">ModelBackbone</span><span class="o">.</span><span class="n">RESNET18</span><span class="p">,</span>
+            <span class="n">header</span><span class="o">=</span><span class="s2">&quot;Model Backbone&quot;</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Pre-trained backbone used for feature extraction&quot;</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+        <span class="nd">@attrs</span>
+<div class="viewcode-block" id="STFPMAnomalyBaseConfig.LearningParameters.EarlyStoppingParameters"><a class="viewcode-back" href="../../../../../../api/otx/algorithms/anomaly/configs/stfpm/configuration/index.html#otx.algorithms.anomaly.configs.stfpm.configuration.STFPMAnomalyBaseConfig.LearningParameters.EarlyStoppingParameters">[docs]</a>        <span class="k">class</span> <span class="nc">EarlyStoppingParameters</span><span class="p">(</span><span class="n">ParameterGroup</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;Early stopping parameters.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="STFPMAnomalyBaseConfig.LearningParameters.EarlyStoppingParameters.header"><a class="viewcode-back" href="../../../../../../api/otx/algorithms/anomaly/configs/stfpm/configuration/index.html#otx.algorithms.anomaly.configs.stfpm.configuration.STFPMAnomalyBaseConfig.LearningParameters.EarlyStoppingParameters.header">[docs]</a>            <span class="n">header</span> <span class="o">=</span> <span class="n">string_attribute</span><span class="p">(</span><span class="s2">&quot;Early Stopping Parameters&quot;</span><span class="p">)</span></div>
+<div class="viewcode-block" id="STFPMAnomalyBaseConfig.LearningParameters.EarlyStoppingParameters.description"><a class="viewcode-back" href="../../../../../../api/otx/algorithms/anomaly/configs/stfpm/configuration/index.html#otx.algorithms.anomaly.configs.stfpm.configuration.STFPMAnomalyBaseConfig.LearningParameters.EarlyStoppingParameters.description">[docs]</a>            <span class="n">description</span> <span class="o">=</span> <span class="n">header</span></div>
+
+<div class="viewcode-block" id="STFPMAnomalyBaseConfig.LearningParameters.EarlyStoppingParameters.metric"><a class="viewcode-back" href="../../../../../../api/otx/algorithms/anomaly/configs/stfpm/configuration/index.html#otx.algorithms.anomaly.configs.stfpm.configuration.STFPMAnomalyBaseConfig.LearningParameters.EarlyStoppingParameters.metric">[docs]</a>            <span class="n">metric</span> <span class="o">=</span> <span class="n">selectable</span><span class="p">(</span>
+                <span class="n">default_value</span><span class="o">=</span><span class="n">EarlyStoppingMetrics</span><span class="o">.</span><span class="n">IMAGE_F1</span><span class="p">,</span>
+                <span class="n">header</span><span class="o">=</span><span class="s2">&quot;Early Stopping Metric&quot;</span><span class="p">,</span>
+                <span class="n">description</span><span class="o">=</span><span class="s2">&quot;The metric used to determine if the model should stop training&quot;</span><span class="p">,</span>
+            <span class="p">)</span></div>
+
+<div class="viewcode-block" id="STFPMAnomalyBaseConfig.LearningParameters.EarlyStoppingParameters.patience"><a class="viewcode-back" href="../../../../../../api/otx/algorithms/anomaly/configs/stfpm/configuration/index.html#otx.algorithms.anomaly.configs.stfpm.configuration.STFPMAnomalyBaseConfig.LearningParameters.EarlyStoppingParameters.patience">[docs]</a>            <span class="n">patience</span> <span class="o">=</span> <span class="n">configurable_integer</span><span class="p">(</span>
+                <span class="n">default_value</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+                <span class="n">min_value</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">max_value</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+                <span class="n">header</span><span class="o">=</span><span class="s2">&quot;Early Stopping Patience&quot;</span><span class="p">,</span>
+                <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Number of epochs to wait for an improvement in the monitored metric. If the metric has &quot;</span>
+                <span class="s2">&quot;not improved for this many epochs, the training will stop and the best model will be &quot;</span>
+                <span class="s2">&quot;returned.&quot;</span><span class="p">,</span>
+                <span class="n">warning</span><span class="o">=</span><span class="s2">&quot;Setting this value too low might lead to underfitting. Setting the value too high will &quot;</span>
+                <span class="s2">&quot;increase the training time and might lead to overfitting.&quot;</span><span class="p">,</span>
+                <span class="n">affects_outcome_of</span><span class="o">=</span><span class="n">ModelLifecycle</span><span class="o">.</span><span class="n">TRAINING</span><span class="p">,</span>
+            <span class="p">)</span></div></div>
+
+<div class="viewcode-block" id="STFPMAnomalyBaseConfig.LearningParameters.early_stopping"><a class="viewcode-back" href="../../../../../../api/otx/algorithms/anomaly/configs/stfpm/configuration/index.html#otx.algorithms.anomaly.configs.stfpm.configuration.STFPMAnomalyBaseConfig.LearningParameters.early_stopping">[docs]</a>        <span class="n">early_stopping</span> <span class="o">=</span> <span class="n">add_parameter_group</span><span class="p">(</span><span class="n">EarlyStoppingParameters</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="STFPMAnomalyBaseConfig.LearningParameters.max_epochs"><a class="viewcode-back" href="../../../../../../api/otx/algorithms/anomaly/configs/stfpm/configuration/index.html#otx.algorithms.anomaly.configs.stfpm.configuration.STFPMAnomalyBaseConfig.LearningParameters.max_epochs">[docs]</a>        <span class="n">max_epochs</span> <span class="o">=</span> <span class="n">configurable_integer</span><span class="p">(</span>
+            <span class="n">default_value</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+            <span class="n">header</span><span class="o">=</span><span class="s2">&quot;Max Epochs&quot;</span><span class="p">,</span>
+            <span class="n">min_value</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">max_value</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Maximum number of epochs to train the model for.&quot;</span><span class="p">,</span>
+            <span class="n">warning</span><span class="o">=</span><span class="s2">&quot;Training for very few epochs might lead to poor performance. If Early Stopping is enabled then &quot;</span>
+            <span class="s2">&quot;increasing the value of max epochs might not lead to desired result.&quot;</span><span class="p">,</span>
+            <span class="n">affects_outcome_of</span><span class="o">=</span><span class="n">ModelLifecycle</span><span class="o">.</span><span class="n">TRAINING</span><span class="p">,</span>
+        <span class="p">)</span></div></div>
+
+<div class="viewcode-block" id="STFPMAnomalyBaseConfig.learning_parameters"><a class="viewcode-back" href="../../../../../../api/otx/algorithms/anomaly/configs/stfpm/configuration/index.html#otx.algorithms.anomaly.configs.stfpm.configuration.STFPMAnomalyBaseConfig.learning_parameters">[docs]</a>    <span class="n">learning_parameters</span> <span class="o">=</span> <span class="n">add_parameter_group</span><span class="p">(</span><span class="n">LearningParameters</span><span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, OpenVINO Training Extensions Contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

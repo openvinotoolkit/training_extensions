@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>otx.api.entities.label &mdash; OpenVINO Training Extensions  documentation</title>
+      <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../_static/jquery.js"></script>
+        <script src="../../../../../_static/underscore.js"></script>
+        <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../../../_static/doctools.js"></script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../../index.html" class="icon icon-home"> OpenVINO Training Extensions
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../index.html">OpenVINO Training Extensions</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li><code class="xref py py-mod docutils literal notranslate"><span class="pre">otx.api.entities.label</span></code></li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../../_sources/api/otx/api/entities/label/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-otx.api.entities.label">
+<span id="otx-api-entities-label"></span><h1><a class="reference internal" href="#module-otx.api.entities.label" title="otx.api.entities.label"><code class="xref py py-mod docutils literal notranslate"><span class="pre">otx.api.entities.label</span></code></a><a class="headerlink" href="#module-otx.api.entities.label" title="Permalink to this heading"></a></h1>
+<p>This module define the label entity.</p>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this heading"></a></h2>
+<section id="classes">
+<h3>Classes<a class="headerlink" href="#classes" title="Permalink to this heading"></a></h3>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.api.entities.label.Domain" title="otx.api.entities.label.Domain"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Domain</span></code></a></p></td>
+<td><p>Describes an algorithm domain like classification, detection, etc.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LabelEntity</span></code></a></p></td>
+<td><p>This represents a label. The Label is the object that the user annotates and the tasks predict.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.api.entities.label.Domain">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.label.</span></span><span class="sig-name descname"><span class="pre">Domain</span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label.html#Domain"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label.Domain" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">enum.Enum</span></code></p>
+<p>Describes an algorithm domain like classification, detection, etc.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.entities.label.Domain.NULL">
+<span class="sig-name descname"><span class="pre">NULL</span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label.html#Domain.NULL"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label.Domain.NULL" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.entities.label.Domain.CLASSIFICATION">
+<span class="sig-name descname"><span class="pre">CLASSIFICATION</span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label.html#Domain.CLASSIFICATION"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label.Domain.CLASSIFICATION" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.entities.label.Domain.DETECTION">
+<span class="sig-name descname"><span class="pre">DETECTION</span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label.html#Domain.DETECTION"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label.Domain.DETECTION" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.entities.label.Domain.SEGMENTATION">
+<span class="sig-name descname"><span class="pre">SEGMENTATION</span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label.html#Domain.SEGMENTATION"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label.Domain.SEGMENTATION" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.entities.label.Domain.ANOMALY_CLASSIFICATION">
+<span class="sig-name descname"><span class="pre">ANOMALY_CLASSIFICATION</span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label.html#Domain.ANOMALY_CLASSIFICATION"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label.Domain.ANOMALY_CLASSIFICATION" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.entities.label.Domain.ANOMALY_DETECTION">
+<span class="sig-name descname"><span class="pre">ANOMALY_DETECTION</span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label.html#Domain.ANOMALY_DETECTION"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label.Domain.ANOMALY_DETECTION" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.entities.label.Domain.ANOMALY_SEGMENTATION">
+<span class="sig-name descname"><span class="pre">ANOMALY_SEGMENTATION</span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label.html#Domain.ANOMALY_SEGMENTATION"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label.Domain.ANOMALY_SEGMENTATION" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.entities.label.Domain.INSTANCE_SEGMENTATION">
+<span class="sig-name descname"><span class="pre">INSTANCE_SEGMENTATION</span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label.html#Domain.INSTANCE_SEGMENTATION"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label.Domain.INSTANCE_SEGMENTATION" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.entities.label.Domain.ROTATED_DETECTION">
+<span class="sig-name descname"><span class="pre">ROTATED_DETECTION</span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label.html#Domain.ROTATED_DETECTION"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label.Domain.ROTATED_DETECTION" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.label.Domain.__str__">
+<span class="sig-name descname"><span class="pre">__str__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label.html#Domain.__str__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label.Domain.__str__" title="Permalink to this definition"></a></dt>
+<dd><p>Returns Domain name.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.api.entities.label.LabelEntity">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.label.</span></span><span class="sig-name descname"><span class="pre">LabelEntity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">domain</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.entities.label.Domain" title="otx.api.entities.label.Domain"><span class="pre">Domain</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../color/index.html#otx.api.entities.color.Color" title="otx.api.entities.color.Color"><span class="pre">otx.api.entities.color.Color</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hotkey</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">creation_date</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">datetime.datetime</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_empty</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../id/index.html#otx.api.entities.id.ID" title="otx.api.entities.id.ID"><span class="pre">otx.api.entities.id.ID</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_anomalous</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label.html#LabelEntity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label.LabelEntity" title="Permalink to this definition"></a></dt>
+<dd><p>This represents a label. The Label is the object that the user annotates and the tasks predict.</p>
+<p>For example, a label with name “car” can be constructed as follows.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">car</span> <span class="o">=</span> <span class="n">LabelEntity</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;car&quot;</span><span class="p">,</span> <span class="n">domain</span><span class="o">=</span><span class="n">Domain</span><span class="o">.</span><span class="n">DETECTION</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="rubric">About Empty Label</p>
+<p>In addition to representing the presence of a certain object, the label can also
+be used to represent the absence of objects in the image (or other media types).
+Such a label is referred to as empty label.
+The empty label is constructed as follows:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">empty</span> <span class="o">=</span> <span class="n">LabelEntity</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;empty&quot;</span><span class="p">,</span> <span class="n">domain</span><span class="o">=</span><span class="n">Domain</span><span class="o">.</span><span class="n">DETECTION</span><span class="p">,</span> <span class="n">is_empty</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Empty label is used to declare that there is nothing of interest inside this image.
+For example, let’s assume a car detection project. During annotation process,
+for positive images (images with cars), the users are asked to annotate the images
+with bounding boxes with car label. However, when the user sees a negative image
+(no car), the user needs to annotate this image with an empty label.</p>
+<p>The empty label is particularly useful to distinguish images with no objects
+of interest from images that have not been annotated, especially in task-chain
+scenario. Let’s assume car detection task that is followed with with another
+detection task which detects the driver inside the car. There are two issues here:</p>
+<ol class="arabic simple">
+<li><dl class="simple">
+<dt>The user can (intentionally or unintentionally) miss to annotate</dt><dd><p>the driver inside a car.</p>
+</dd>
+</dl>
+</li>
+<li><p>There is no driver inside the car.</p></li>
+</ol>
+<p>Without empty label, these two cases cannot be distinguished.
+This is why an empty label is introduced. The empty label makes an explicit
+distinction between missing annotations and “negative” images.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> – the name of the label</p></li>
+<li><p><strong>domain</strong> – the algorithm domain this label is associated to</p></li>
+<li><p><strong>color</strong> – the color of the label (See <code class="xref py py-class docutils literal notranslate"><span class="pre">Color</span></code>)</p></li>
+<li><p><strong>hotkey</strong> – key or combination of keys to select this label in the
+UI</p></li>
+<li><p><strong>creation_date</strong> – the date time of the label creation</p></li>
+<li><p><strong>is_empty</strong> – set to True if the label is an empty label.</p></li>
+<li><p><strong>id</strong> – the ID of the label. Set to ID() so that a new unique ID
+will be assigned upon saving. If the argument is None, it
+will be set to ID()</p></li>
+<li><p><strong>is_anomalous</strong> – boolean that indicates whether the label is the
+Anomalous label. Always set to False for non- anomaly
+projects.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.label.LabelEntity.name">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label.html#LabelEntity.name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label.LabelEntity.name" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the label name.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.label.LabelEntity.color">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">color</span></span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../color/index.html#otx.api.entities.color.Color" title="otx.api.entities.color.Color"><span class="pre">otx.api.entities.color.Color</span></a></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label.html#LabelEntity.color"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label.LabelEntity.color" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the Color object for the label.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.label.LabelEntity.hotkey">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">hotkey</span></span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label.html#LabelEntity.hotkey"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label.LabelEntity.hotkey" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the hotkey for the label.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.label.LabelEntity.domain">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">domain</span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label.html#LabelEntity.domain"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label.LabelEntity.domain" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the algorithm domain associated to this label.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.label.LabelEntity.is_empty">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_empty</span></span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label.html#LabelEntity.is_empty"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label.LabelEntity.is_empty" title="Permalink to this definition"></a></dt>
+<dd><p>Returns a boolean indicating if the label is an empty label.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.label.LabelEntity.creation_date">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">creation_date</span></span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">datetime.datetime</span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label.html#LabelEntity.creation_date"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label.LabelEntity.creation_date" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the creation date of the label.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.label.LabelEntity.id_">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">id_</span></span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../id/index.html#otx.api.entities.id.ID" title="otx.api.entities.id.ID"><span class="pre">otx.api.entities.id.ID</span></a></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label.html#LabelEntity.id_"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label.LabelEntity.id_" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the label id.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.label.LabelEntity.id">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">id</span></span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../id/index.html#otx.api.entities.id.ID" title="otx.api.entities.id.ID"><span class="pre">otx.api.entities.id.ID</span></a></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label.html#LabelEntity.id"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label.LabelEntity.id" title="Permalink to this definition"></a></dt>
+<dd><p>DEPRECATED.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.label.LabelEntity.__repr__">
+<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label.html#LabelEntity.__repr__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label.LabelEntity.__repr__" title="Permalink to this definition"></a></dt>
+<dd><p>String representation of the label.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.label.LabelEntity.__eq__">
+<span class="sig-name descname"><span class="pre">__eq__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label.html#LabelEntity.__eq__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label.LabelEntity.__eq__" title="Permalink to this definition"></a></dt>
+<dd><p>Returns True if the two labels are equal.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.label.LabelEntity.__lt__">
+<span class="sig-name descname"><span class="pre">__lt__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label.html#LabelEntity.__lt__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label.LabelEntity.__lt__" title="Permalink to this definition"></a></dt>
+<dd><p>Returns True if self.id &lt; other.id.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.label.LabelEntity.__gt__">
+<span class="sig-name descname"><span class="pre">__gt__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label.html#LabelEntity.__gt__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label.LabelEntity.__gt__" title="Permalink to this definition"></a></dt>
+<dd><p>Returns True if self.id is greater than other.id.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.label.LabelEntity.__hash__">
+<span class="sig-name descname"><span class="pre">__hash__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label.html#LabelEntity.__hash__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label.LabelEntity.__hash__" title="Permalink to this definition"></a></dt>
+<dd><p>Returns hash of the label.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, OpenVINO Training Extensions Contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

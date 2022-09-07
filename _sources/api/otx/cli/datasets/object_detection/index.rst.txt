@@ -1,0 +1,20 @@
+:py:mod:`otx.cli.datasets.object_detection`
+===========================================
+
+.. py:module:: otx.cli.datasets.object_detection
+
+.. autoapi-nested-parse::
+
+   Datasets for object detection tasks.
+
+
+
+Submodules
+----------
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+
+   dataset/index.rst
+
+

@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>otx.api.usecases.exportable_code.demo.demo_package.model_container &mdash; OpenVINO Training Extensions  documentation</title>
+      <link rel="stylesheet" href="../../../../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../../../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../../../../" id="documentation_options" src="../../../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../../../_static/jquery.js"></script>
+        <script src="../../../../../../../_static/underscore.js"></script>
+        <script src="../../../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../../../../../_static/doctools.js"></script>
+    <script src="../../../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../../../../index.html" class="icon icon-home"> OpenVINO Training Extensions
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../../api/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../../../index.html">OpenVINO Training Extensions</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../../../../index.html">Module code</a> &raquo;</li>
+          <li><a href="../../../../../../otx.html">otx</a> &raquo;</li>
+      <li>otx.api.usecases.exportable_code.demo.demo_package.model_container</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for otx.api.usecases.exportable_code.demo.demo_package.model_container</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;ModelContainer class used for loading the model in the model wrapper.&quot;&quot;&quot;</span>
+<span class="c1"># Copyright (C) 2022 Intel Corporation</span>
+<span class="c1"># SPDX-License-Identifier: Apache-2.0</span>
+<span class="c1">#</span>
+
+<span class="kn">import</span> <span class="nn">importlib</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Tuple</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">openvino.model_zoo.model_api.adapters</span> <span class="kn">import</span> <span class="n">OpenvinoAdapter</span><span class="p">,</span> <span class="n">create_core</span>
+<span class="kn">from</span> <span class="nn">openvino.model_zoo.model_api.models</span> <span class="kn">import</span> <span class="n">Model</span>
+
+<span class="kn">from</span> <span class="nn">otx.api.entities.label_schema</span> <span class="kn">import</span> <span class="n">LabelSchemaEntity</span>
+<span class="kn">from</span> <span class="nn">otx.api.entities.model_template</span> <span class="kn">import</span> <span class="n">TaskType</span>
+<span class="kn">from</span> <span class="nn">otx.api.serialization.label_mapper</span> <span class="kn">import</span> <span class="n">LabelSchemaMapper</span>
+
+<span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">get_model_path</span><span class="p">,</span> <span class="n">get_parameters</span>
+
+
+<div class="viewcode-block" id="ModelContainer"><a class="viewcode-back" href="../../../../../../../api/otx/api/usecases/exportable_code/demo/demo_package/model_container/index.html#otx.api.usecases.exportable_code.demo.demo_package.ModelContainer">[docs]</a><span class="k">class</span> <span class="nc">ModelContainer</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Class for storing the model wrapper based on Model API and needed parameters of model.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        model_dir (Path): path to model directory</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_dir</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="n">get_parameters</span><span class="p">(</span><span class="n">model_dir</span> <span class="o">/</span> <span class="s2">&quot;config.json&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_labels</span> <span class="o">=</span> <span class="n">LabelSchemaMapper</span><span class="o">.</span><span class="n">backward</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;model_parameters&quot;</span><span class="p">][</span><span class="s2">&quot;labels&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_task_type</span> <span class="o">=</span> <span class="n">TaskType</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;converter_type&quot;</span><span class="p">]]</span>
+
+        <span class="c1"># labels for modelAPI wrappers can be empty, because unused in pre- and postprocessing</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model_parameters</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;model_parameters&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model_parameters</span><span class="p">[</span><span class="s2">&quot;labels&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="n">model_adapter</span> <span class="o">=</span> <span class="n">OpenvinoAdapter</span><span class="p">(</span><span class="n">create_core</span><span class="p">(),</span> <span class="n">get_model_path</span><span class="p">(</span><span class="n">model_dir</span> <span class="o">/</span> <span class="s2">&quot;model.xml&quot;</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_initialize_wrapper</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">core_model</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">create_model</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;type_of_model&quot;</span><span class="p">],</span>
+            <span class="n">model_adapter</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model_parameters</span><span class="p">,</span>
+            <span class="n">preload</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="ModelContainer.task_type"><a class="viewcode-back" href="../../../../../../../api/otx/api/usecases/exportable_code/demo/demo_package/model_container/index.html#otx.api.usecases.exportable_code.demo.demo_package.ModelContainer.task_type">[docs]</a>    <span class="k">def</span> <span class="nf">task_type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TaskType</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Task type property.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_task_type</span></div>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="ModelContainer.labels"><a class="viewcode-back" href="../../../../../../../api/otx/api/usecases/exportable_code/demo/demo_package/model_container/index.html#otx.api.usecases.exportable_code.demo.demo_package.ModelContainer.labels">[docs]</a>    <span class="k">def</span> <span class="nf">labels</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LabelSchemaEntity</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Labels property.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_labels</span></div>
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="ModelContainer._initialize_wrapper"><a class="viewcode-back" href="../../../../../../../api/otx/api/usecases/exportable_code/demo/demo_package/model_container/index.html#otx.api.usecases.exportable_code.demo.demo_package.ModelContainer._initialize_wrapper">[docs]</a>    <span class="k">def</span> <span class="nf">_initialize_wrapper</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Load the model class.&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">importlib</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span><span class="s2">&quot;model_wrappers&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ModuleNotFoundError</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Using model wrapper from Open Model Zoo ModelAPI&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ModelContainer.__call__"><a class="viewcode-back" href="../../../../../../../api/otx/api/usecases/exportable_code/demo/demo_package/model_container/index.html#otx.api.usecases.exportable_code.demo.demo_package.ModelContainer.__call__">[docs]</a>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Returns the output of the model.</span>
+
+<span class="sd">        # TODO possibly unused. Remove?</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            input_data (np.ndarray): Input image/video data.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tuple[Any, dict]: Model predictions.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">core_model</span><span class="p">(</span><span class="n">input_data</span><span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, OpenVINO Training Extensions Contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

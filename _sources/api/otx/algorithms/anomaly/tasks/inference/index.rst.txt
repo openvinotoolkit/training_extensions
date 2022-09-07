@@ -1,0 +1,155 @@
+:py:mod:`otx.algorithms.anomaly.tasks.inference`
+================================================
+
+.. py:module:: otx.algorithms.anomaly.tasks.inference
+
+.. autoapi-nested-parse::
+
+   Anomaly Classification Task.
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   otx.algorithms.anomaly.tasks.inference.InferenceTask
+
+
+
+
+Attributes
+~~~~~~~~~~
+
+.. autoapisummary::
+
+   otx.algorithms.anomaly.tasks.inference.logger
+
+
+.. py:data:: logger
+   
+
+   
+
+.. py:class:: InferenceTask(task_environment: otx.api.entities.task_environment.TaskEnvironment)
+
+   Bases: :py:obj:`otx.api.usecases.tasks.interfaces.inference_interface.IInferenceTask`, :py:obj:`otx.api.usecases.tasks.interfaces.evaluate_interface.IEvaluationTask`, :py:obj:`otx.api.usecases.tasks.interfaces.export_interface.IExportTask`, :py:obj:`otx.api.usecases.tasks.interfaces.unload_interface.IUnload`
+
+   Base Anomaly Task.
+
+   .. py:method:: get_config() -> Union[omegaconf.DictConfig, omegaconf.ListConfig]
+
+      Get Anomalib Config from task environment.
+
+      :returns: Anomalib config.
+      :rtype: Union[DictConfig, ListConfig]
+
+
+   .. py:method:: load_model(otx_model: Optional[otx.api.entities.model.ModelEntity]) -> anomalib.models.AnomalyModule
+
+      Create and Load Anomalib Module from OTX Model.
+
+      This method checks if the task environment has a saved OTX Model,
+      and creates one. If the OTX model already exists, it returns the
+      the model with the saved weights.
+
+      :param otx_model: OTX Model from the
+                        task environment.
+      :type otx_model: Optional[ModelEntity]
+
+      :returns:
+
+                Anomalib
+                    classification or segmentation model with/without weights.
+      :rtype: AnomalyModule
+
+
+   .. py:method:: cancel_training() -> None
+
+      Cancel the training `after_batch_end`.
+
+      This terminates the training; however validation is still performed.
+
+
+   .. py:method:: infer(dataset: otx.api.entities.datasets.DatasetEntity, inference_parameters: otx.api.entities.inference_parameters.InferenceParameters) -> otx.api.entities.datasets.DatasetEntity
+
+      Perform inference on a dataset.
+
+      :param dataset: Dataset to infer.
+      :type dataset: DatasetEntity
+      :param inference_parameters: Inference parameters.
+      :type inference_parameters: InferenceParameters
+
+      :returns: Output dataset with predictions.
+      :rtype: DatasetEntity
+
+
+   .. py:method:: evaluate(output_resultset: otx.api.entities.resultset.ResultSetEntity, evaluation_metric: Optional[str] = None) -> None
+
+      Evaluate the performance on a result set.
+
+      :param output_resultset: Result Set from which the performance is evaluated.
+      :type output_resultset: ResultSetEntity
+      :param evaluation_metric: Evaluation metric. Defaults to None. Instead,
+                                metric is chosen depending on the task type.
+      :type evaluation_metric: Optional[str], optional
+
+
+   .. py:method:: _export_to_onnx(onnx_path: str)
+
+      Export model to ONNX.
+
+      :param onnx_path: path to save ONNX file
+      :type onnx_path: str
+
+
+   .. py:method:: export(export_type: otx.api.usecases.tasks.interfaces.export_interface.ExportType, output_model: otx.api.entities.model.ModelEntity) -> None
+
+      Export model to OpenVINO IR.
+
+      :param export_type: Export type should be ExportType.OPENVINO
+      :type export_type: ExportType
+      :param output_model: The model entity in which to write the OpenVINO IR data
+      :type output_model: ModelEntity
+
+      :raises Exception: If export_type is not ExportType.OPENVINO
+
+
+   .. py:method:: _model_info() -> Dict
+
+      Return model info to save the model weights.
+
+      :returns: Model info.
+      :rtype: Dict
+
+
+   .. py:method:: save_model(output_model: otx.api.entities.model.ModelEntity) -> None
+
+      Save the model after training is completed.
+
+      :param output_model: Output model onto which the weights are saved.
+      :type output_model: ModelEntity
+
+
+   .. py:method:: _set_metadata(output_model: otx.api.entities.model.ModelEntity)
+
+
+   .. py:method:: _is_docker() -> bool
+      :staticmethod:
+
+      Check whether the task runs in docker container.
+
+      :returns: True if task runs in docker, False otherwise.
+      :rtype: bool
+
+
+   .. py:method:: unload() -> None
+
+      Unload the task.
+
+
+

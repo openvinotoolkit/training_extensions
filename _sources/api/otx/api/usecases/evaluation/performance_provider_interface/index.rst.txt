@@ -1,0 +1,37 @@
+:py:mod:`otx.api.usecases.evaluation.performance_provider_interface`
+====================================================================
+
+.. py:module:: otx.api.usecases.evaluation.performance_provider_interface
+
+.. autoapi-nested-parse::
+
+   This module contains interface for performance providers.
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   otx.api.usecases.evaluation.performance_provider_interface.IPerformanceProvider
+
+
+
+
+.. py:class:: IPerformanceProvider
+
+   Interface for performance provider.
+
+   TODO: subject for refactoring.
+
+   .. py:method:: get_performance() -> otx.api.entities.metrics.Performance
+      :abstractmethod:
+
+      Returns the computed performance.
+
+
+

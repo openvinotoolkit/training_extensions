@@ -1,0 +1,137 @@
+:py:mod:`otx.api.entities.scored_label`
+=======================================
+
+.. py:module:: otx.api.entities.scored_label
+
+.. autoapi-nested-parse::
+
+   This module define the scored label entity.
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   otx.api.entities.scored_label.LabelSource
+   otx.api.entities.scored_label.ScoredLabel
+
+
+
+
+.. py:class:: LabelSource
+
+   This dataclass contains information about the source of a scored label.
+
+   For annotations, the id of the user who created the label and for predictions, the
+   id and model storage id of the model that created the prediction. When a user has
+   accepted a predictions as is, both the user id of the user who accepted and the
+   model/model storage id of the model that predicted should be filled in.
+
+   .. py:attribute:: user_id
+      :annotation: :str = 
+
+      
+
+   .. py:attribute:: model_id
+      :annotation: :otx.api.entities.id.ID
+
+      
+
+   .. py:attribute:: model_storage_id
+      :annotation: :otx.api.entities.id.ID
+
+      
+
+
+.. py:class:: ScoredLabel(label: otx.api.entities.label.LabelEntity, probability: float = 0.0, label_source: Optional[LabelSource] = None)
+
+   This represents a label along with a probability. This is used inside `Annotation` class.
+
+   :param label: Label entity to which probability and source are attached.
+   :type label: LabelEntity
+   :param probability: a float denoting the probability of the shape belonging to the label.
+   :type probability: float
+   :param label_source: a LabelSource dataclass containing the id of the user who created
+                        or the model that predicted this label.
+   :type label_source: LabelSource
+
+   .. py:method:: name() -> str
+      :property:
+
+      Name of the label.
+
+
+   .. py:method:: id_() -> otx.api.entities.id.ID
+      :property:
+
+      Returns the label id.
+
+
+   .. py:method:: id() -> otx.api.entities.id.ID
+      :property:
+
+      DEPRECATED.
+
+
+   .. py:method:: color() -> otx.api.entities.color.Color
+      :property:
+
+      Color of the label.
+
+
+   .. py:method:: hotkey() -> str
+      :property:
+
+      Hotkey of the label.
+
+
+   .. py:method:: domain() -> otx.api.entities.label.Domain
+      :property:
+
+      Domain of the label.
+
+
+   .. py:method:: is_empty() -> bool
+      :property:
+
+      Check if the label is empty.
+
+
+   .. py:method:: creation_date() -> datetime.datetime
+      :property:
+
+      Creation data of the label.
+
+
+   .. py:method:: get_label() -> otx.api.entities.label.LabelEntity
+
+      Gets the label that the ScoredLabel object was initialized with.
+
+
+   .. py:method:: __repr__()
+
+      String representation of the label.
+
+
+   .. py:method:: __eq__(other: object) -> bool
+
+      Checks if the label is equal to the other label.
+
+      :param other: Label to compare with
+      :type other: ScoredLabel
+
+      :returns: True if the labels are equal, False otherwise
+      :rtype: bool
+
+
+   .. py:method:: __hash__()
+
+      Returns hash of the label.
+
+
+

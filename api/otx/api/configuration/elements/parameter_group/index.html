@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>otx.api.configuration.elements.parameter_group &mdash; OpenVINO Training Extensions  documentation</title>
+      <link rel="stylesheet" href="../../../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../../../" id="documentation_options" src="../../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../../_static/jquery.js"></script>
+        <script src="../../../../../../_static/underscore.js"></script>
+        <script src="../../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../../../../_static/doctools.js"></script>
+    <script src="../../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../../../index.html" class="icon icon-home"> OpenVINO Training Extensions
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../../index.html">OpenVINO Training Extensions</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li><code class="xref py py-mod docutils literal notranslate"><span class="pre">otx.api.configuration.elements.parameter_group</span></code></li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../../../_sources/api/otx/api/configuration/elements/parameter_group/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-otx.api.configuration.elements.parameter_group">
+<span id="otx-api-configuration-elements-parameter-group"></span><h1><a class="reference internal" href="#module-otx.api.configuration.elements.parameter_group" title="otx.api.configuration.elements.parameter_group"><code class="xref py py-mod docutils literal notranslate"><span class="pre">otx.api.configuration.elements.parameter_group</span></code></a><a class="headerlink" href="#module-otx.api.configuration.elements.parameter_group" title="Permalink to this heading"></a></h1>
+<p>ParameterGroup is the main class responsible for grouping configurable parameters together.</p>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this heading"></a></h2>
+<section id="classes">
+<h3>Classes<a class="headerlink" href="#classes" title="Permalink to this heading"></a></h3>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.api.configuration.elements.parameter_group.ParameterGroup" title="otx.api.configuration.elements.parameter_group.ParameterGroup"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ParameterGroup</span></code></a></p></td>
+<td><p>A group of configuration elements.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="functions">
+<h3>Functions<a class="headerlink" href="#functions" title="Permalink to this heading"></a></h3>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.api.configuration.elements.parameter_group.add_parameter_group" title="otx.api.configuration.elements.parameter_group.add_parameter_group"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_parameter_group</span></code></a>(→ _ParameterGroup)</p></td>
+<td><p>Wrapper to attr.ib to add nested parameter groups to a configuration.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="attributes">
+<h3>Attributes<a class="headerlink" href="#attributes" title="Permalink to this heading"></a></h3>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.api.configuration.elements.parameter_group._ParameterGroup" title="otx.api.configuration.elements.parameter_group._ParameterGroup"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_ParameterGroup</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.api.configuration.elements.parameter_group.ParameterGroup">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.configuration.elements.parameter_group.</span></span><span class="sig-name descname"><span class="pre">ParameterGroup</span></span><a class="reference internal" href="../../../../../../_modules/otx/api/configuration/elements/parameter_group.html#ParameterGroup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.configuration.elements.parameter_group.ParameterGroup" title="Permalink to this definition"></a></dt>
+<dd><p>A group of configuration elements.</p>
+<p>Parameters living within the parameter group are typed attrs Attributes. The schema for each parameter is defined
+in its metadata, which can be retrieved using the <cite>get_metadata</cite> method from the parent ParameterGroup instance.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.configuration.elements.parameter_group.ParameterGroup.header">
+<span class="sig-name descname"><span class="pre">header</span></span><a class="reference internal" href="../../../../../../_modules/otx/api/configuration/elements/parameter_group.html#ParameterGroup.header"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.configuration.elements.parameter_group.ParameterGroup.header" title="Permalink to this definition"></a></dt>
+<dd><p>User friendly name for the parameter group, that will be
+displayed in the UI</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.configuration.elements.parameter_group.ParameterGroup.description">
+<span class="sig-name descname"><span class="pre">description</span></span><a class="reference internal" href="../../../../../../_modules/otx/api/configuration/elements/parameter_group.html#ParameterGroup.description"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.configuration.elements.parameter_group.ParameterGroup.description" title="Permalink to this definition"></a></dt>
+<dd><p>User friendly string describing what the parameter
+group represents, that will be displayed in the UI.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.configuration.elements.parameter_group.ParameterGroup.visible_in_ui">
+<span class="sig-name descname"><span class="pre">visible_in_ui</span></span><a class="reference internal" href="../../../../../../_modules/otx/api/configuration/elements/parameter_group.html#ParameterGroup.visible_in_ui"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.configuration.elements.parameter_group.ParameterGroup.visible_in_ui" title="Permalink to this definition"></a></dt>
+<dd><p>Boolean that controls whether or not this
+parameter group will be exposed through the REST API and
+shown in the UI. Set to False to hide this group. Defaults
+to True</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id0">
+<span class="sig-name descname"><span class="pre">header</span></span><em class="property"><span class="w"> </span><span class="pre">:str</span></em><a class="reference internal" href="../../../../../../_modules/otx/api/configuration/elements/parameter_group.html#ParameterGroup.header"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id0" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id1">
+<span class="sig-name descname"><span class="pre">description</span></span><em class="property"><span class="w"> </span><span class="pre">:str</span></em><a class="reference internal" href="../../../../../../_modules/otx/api/configuration/elements/parameter_group.html#ParameterGroup.description"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id1" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id2">
+<span class="sig-name descname"><span class="pre">visible_in_ui</span></span><em class="property"><span class="w"> </span><span class="pre">:bool</span></em><a class="reference internal" href="../../../../../../_modules/otx/api/configuration/elements/parameter_group.html#ParameterGroup.visible_in_ui"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id2" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.configuration.elements.parameter_group.ParameterGroup.type">
+<span class="sig-name descname"><span class="pre">type</span></span><em class="property"><span class="w"> </span><span class="pre">:otx.api.configuration.enums.config_element_type.ConfigElementType</span></em><a class="reference internal" href="../../../../../../_modules/otx/api/configuration/elements/parameter_group.html#ParameterGroup.type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.configuration.elements.parameter_group.ParameterGroup.type" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.configuration.elements.parameter_group.ParameterGroup.__attrs_post_init__">
+<span class="sig-name descname"><span class="pre">__attrs_post_init__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../../../_modules/otx/api/configuration/elements/parameter_group.html#ParameterGroup.__attrs_post_init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.configuration.elements.parameter_group.ParameterGroup.__attrs_post_init__" title="Permalink to this definition"></a></dt>
+<dd><p>Update parameter and group after __init__.</p>
+<p>This method is called after the __init__ method to update the parameter and group fields of the ParameterGroup
+instance.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.configuration.elements.parameter_group.ParameterGroup.get_metadata">
+<span class="sig-name descname"><span class="pre">get_metadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameter_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="../../../../../../_modules/otx/api/configuration/elements/parameter_group.html#ParameterGroup.get_metadata"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.configuration.elements.parameter_group.ParameterGroup.get_metadata" title="Permalink to this definition"></a></dt>
+<dd><p>Retrieve the metadata for a particular parameter from the group.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>parameter_name</strong> (<em>str</em>) – name of the parameter for which to get the
+metadata</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>dictionary containing the metadata for the requested</dt><dd><p>parameter. Returns an empty dict if no metadata was found
+for the parameter, or if the parameter was not found in the
+group.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.configuration.elements.parameter_group.ParameterGroup.set_metadata_value">
+<span class="sig-name descname"><span class="pre">set_metadata_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameter_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">bool</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">enum.Enum</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../../../../../../_modules/otx/api/configuration/elements/parameter_group.html#ParameterGroup.set_metadata_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.configuration.elements.parameter_group.ParameterGroup.set_metadata_value" title="Permalink to this definition"></a></dt>
+<dd><p>Sets the value of a specific metadata item <cite>metadata_key</cite> for the parameter named <cite>parameter_name</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>parameter_name</strong> (<em>str</em>) – name of the parameter for which to get the
+metadata item</p></li>
+<li><p><strong>metadata_key</strong> (<em>str</em>) – name of the metadata value to set</p></li>
+<li><p><strong>value</strong> (<em>Union</em><em>[</em><em>int</em><em>, </em><em>float</em><em>, </em><em>str</em><em>, </em><em>bool</em><em>, </em><em>Enum</em><em>]</em>) – New value to assign to the metadata item accessed by
+<cite>metadata_key</cite>. The type of <cite>value</cite> has to exactly match
+the type of the current value of the metadata item</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>True if the metadata item was successfully updated, False
+otherwise</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.configuration.elements.parameter_group.ParameterGroup.update_auto_hpo_states">
+<span class="sig-name descname"><span class="pre">update_auto_hpo_states</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../../../_modules/otx/api/configuration/elements/parameter_group.html#ParameterGroup.update_auto_hpo_states"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.configuration.elements.parameter_group.ParameterGroup.update_auto_hpo_states" title="Permalink to this definition"></a></dt>
+<dd><p>Update hpo state based on teh value of parameters.</p>
+<p>Updates the <cite>auto_hpo_state</cite> metadata field for all parameters in the parameter
+group, based on the values of the parameters and the values of their
+<cite>auto_hpo_value</cite> metadata fields.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.configuration.elements.parameter_group.ParameterGroup.__eq__">
+<span class="sig-name descname"><span class="pre">__eq__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../../_modules/otx/api/configuration/elements/parameter_group.html#ParameterGroup.__eq__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.configuration.elements.parameter_group.ParameterGroup.__eq__" title="Permalink to this definition"></a></dt>
+<dd><p>Comparison with support for dynamically generated ParameterGroups.</p>
+<p>Override default implementation of __eq__ to enable comparison of
+ParameterGroups generated dynamically via the config helper.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="otx.api.configuration.elements.parameter_group._ParameterGroup">
+<span class="sig-prename descclassname"><span class="pre">otx.api.configuration.elements.parameter_group.</span></span><span class="sig-name descname"><span class="pre">_ParameterGroup</span></span><a class="reference internal" href="../../../../../../_modules/otx/api/configuration/elements/parameter_group.html#_ParameterGroup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.configuration.elements.parameter_group._ParameterGroup" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.api.configuration.elements.parameter_group.add_parameter_group">
+<span class="sig-prename descclassname"><span class="pre">otx.api.configuration.elements.parameter_group.</span></span><span class="sig-name descname"><span class="pre">add_parameter_group</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">group</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">_ParameterGroup</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">_ParameterGroup</span></span></span><a class="reference internal" href="../../../../../../_modules/otx/api/configuration/elements/parameter_group.html#add_parameter_group"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.configuration.elements.parameter_group.add_parameter_group" title="Permalink to this definition"></a></dt>
+<dd><p>Wrapper to attr.ib to add nested parameter groups to a configuration.</p>
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, OpenVINO Training Extensions Contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

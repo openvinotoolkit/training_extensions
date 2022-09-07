@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>otx.api.usecases.evaluation.accuracy &mdash; OpenVINO Training Extensions  documentation</title>
+      <link rel="stylesheet" href="../../../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../../../" id="documentation_options" src="../../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../../_static/jquery.js"></script>
+        <script src="../../../../../../_static/underscore.js"></script>
+        <script src="../../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../../../../_static/doctools.js"></script>
+    <script src="../../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../../../index.html" class="icon icon-home"> OpenVINO Training Extensions
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../../index.html">OpenVINO Training Extensions</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li><code class="xref py py-mod docutils literal notranslate"><span class="pre">otx.api.usecases.evaluation.accuracy</span></code></li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../../../_sources/api/otx/api/usecases/evaluation/accuracy/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-otx.api.usecases.evaluation.accuracy">
+<span id="otx-api-usecases-evaluation-accuracy"></span><h1><a class="reference internal" href="#module-otx.api.usecases.evaluation.accuracy" title="otx.api.usecases.evaluation.accuracy"><code class="xref py py-mod docutils literal notranslate"><span class="pre">otx.api.usecases.evaluation.accuracy</span></code></a><a class="headerlink" href="#module-otx.api.usecases.evaluation.accuracy" title="Permalink to this heading"></a></h1>
+<p>This module contains the implementation of Accuracy performance provider.</p>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this heading"></a></h2>
+<section id="classes">
+<h3>Classes<a class="headerlink" href="#classes" title="Permalink to this heading"></a></h3>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.api.usecases.evaluation.accuracy.Accuracy" title="otx.api.usecases.evaluation.accuracy.Accuracy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Accuracy</span></code></a></p></td>
+<td><p>This class is responsible for providing Accuracy measures; mainly for Classification problems.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="functions">
+<h3>Functions<a class="headerlink" href="#functions" title="Permalink to this heading"></a></h3>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.api.usecases.evaluation.accuracy.precision_metrics_group" title="otx.api.usecases.evaluation.accuracy.precision_metrics_group"><code class="xref py py-obj docutils literal notranslate"><span class="pre">precision_metrics_group</span></code></a>(...)</p></td>
+<td><p>Computes the precision per class based on a confusion matrix and returns them as ScoreMetrics in a MetricsGroup.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.api.usecases.evaluation.accuracy.recall_metrics_group" title="otx.api.usecases.evaluation.accuracy.recall_metrics_group"><code class="xref py py-obj docutils literal notranslate"><span class="pre">recall_metrics_group</span></code></a>(...)</p></td>
+<td><p>Computes the recall per class based on a confusion matrix and returns them as ScoreMetrics in a MetricsGroup.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.api.usecases.evaluation.accuracy.__get_gt_and_predicted_label_indices_from_resultset" title="otx.api.usecases.evaluation.accuracy.__get_gt_and_predicted_label_indices_from_resultset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__get_gt_and_predicted_label_indices_from_resultset</span></code></a>(...)</p></td>
+<td><p>Returns the label indices lists for ground truth and prediction datasets in a tuple.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.api.usecases.evaluation.accuracy.__compute_unnormalized_confusion_matrices_for_label_group" title="otx.api.usecases.evaluation.accuracy.__compute_unnormalized_confusion_matrices_for_label_group"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__compute_unnormalized_confusion_matrices_for_label_group</span></code></a>(...)</p></td>
+<td><p>Returns matrix metric for a certain label group.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.api.usecases.evaluation.accuracy.compute_unnormalized_confusion_matrices_from_resultset" title="otx.api.usecases.evaluation.accuracy.compute_unnormalized_confusion_matrices_from_resultset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_unnormalized_confusion_matrices_from_resultset</span></code></a>(...)</p></td>
+<td><p>Computes an (unnormalized) confusion matrix for every label group in the resultset.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="attributes">
+<h3>Attributes<a class="headerlink" href="#attributes" title="Permalink to this heading"></a></h3>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.api.usecases.evaluation.accuracy.logger" title="otx.api.usecases.evaluation.accuracy.logger"><code class="xref py py-obj docutils literal notranslate"><span class="pre">logger</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py data">
+<dt class="sig sig-object py" id="otx.api.usecases.evaluation.accuracy.logger">
+<span class="sig-prename descclassname"><span class="pre">otx.api.usecases.evaluation.accuracy.</span></span><span class="sig-name descname"><span class="pre">logger</span></span><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/evaluation/accuracy.html#logger"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.evaluation.accuracy.logger" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.api.usecases.evaluation.accuracy.Accuracy">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.usecases.evaluation.accuracy.</span></span><span class="sig-name descname"><span class="pre">Accuracy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">resultset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../../entities/resultset/index.html#otx.api.entities.resultset.ResultSetEntity" title="otx.api.entities.resultset.ResultSetEntity"><span class="pre">otx.api.entities.resultset.ResultSetEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">average</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../averaging/index.html#otx.api.usecases.evaluation.averaging.MetricAverageMethod" title="otx.api.usecases.evaluation.averaging.MetricAverageMethod"><span class="pre">otx.api.usecases.evaluation.averaging.MetricAverageMethod</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">MetricAverageMethod.MICRO</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/evaluation/accuracy.html#Accuracy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.evaluation.accuracy.Accuracy" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../performance_provider_interface/index.html#otx.api.usecases.evaluation.performance_provider_interface.IPerformanceProvider" title="otx.api.usecases.evaluation.performance_provider_interface.IPerformanceProvider"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.api.usecases.evaluation.performance_provider_interface.IPerformanceProvider</span></code></a></p>
+<p>This class is responsible for providing Accuracy measures; mainly for Classification problems.</p>
+<p>The calculation both supports multi label and binary label predictions.</p>
+<p>Accuracy is the proportion of the predicted correct labels, to the total number (predicted and actual)
+labels for that instance. Overall accuracy is the average across all instances.</p>
+<blockquote>
+<div><p>resultset (ResultSetEntity): ResultSet that score will be computed for
+average (MetricAverageMethod): The averaging method, either MICRO or MACRO</p>
+<blockquote>
+<div><p>MICRO: compute average over all predictions in all label groups
+MACRO: compute accuracy per label group, return the average of the per-label-group accuracy scores</p>
+</div></blockquote>
+</div></blockquote>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.usecases.evaluation.accuracy.Accuracy.accuracy">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">accuracy</span></span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../../../entities/metrics/index.html#otx.api.entities.metrics.ScoreMetric" title="otx.api.entities.metrics.ScoreMetric"><span class="pre">otx.api.entities.metrics.ScoreMetric</span></a></span></span><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/evaluation/accuracy.html#Accuracy.accuracy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.evaluation.accuracy.Accuracy.accuracy" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the accuracy as ScoreMetric.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.usecases.evaluation.accuracy.Accuracy.get_performance">
+<span class="sig-name descname"><span class="pre">get_performance</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../../../entities/metrics/index.html#otx.api.entities.metrics.Performance" title="otx.api.entities.metrics.Performance"><span class="pre">otx.api.entities.metrics.Performance</span></a></span></span><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/evaluation/accuracy.html#Accuracy.get_performance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.evaluation.accuracy.Accuracy.get_performance" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the performance with accuracy and confusion metrics.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.usecases.evaluation.accuracy.Accuracy._compute_accuracy">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_compute_accuracy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">average</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../averaging/index.html#otx.api.usecases.evaluation.averaging.MetricAverageMethod" title="otx.api.usecases.evaluation.averaging.MetricAverageMethod"><span class="pre">otx.api.usecases.evaluation.averaging.MetricAverageMethod</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">confusion_matrices</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../../entities/metrics/index.html#otx.api.entities.metrics.MatrixMetric" title="otx.api.entities.metrics.MatrixMetric"><span class="pre">otx.api.entities.metrics.MatrixMetric</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/evaluation/accuracy.html#Accuracy._compute_accuracy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.evaluation.accuracy.Accuracy._compute_accuracy" title="Permalink to this definition"></a></dt>
+<dd><p>Compute accuracy using the confusion matrices.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>average</strong> (<em>MatricAverageMethod</em>) – The averaging method, either MICRO or MACRO
+MICRO: compute average over all predictions in all label groups
+MACRO: compute accuracy per label group, return the average of the per-label-group accuracy scores</p></li>
+<li><p><strong>confusion_matrices</strong> (<em>List</em><em>[</em><a class="reference internal" href="../../../entities/metrics/index.html#otx.api.entities.metrics.MatrixMetric" title="otx.api.entities.metrics.MatrixMetric"><em>MatrixMetric</em></a><em>]</em>) – the confusion matrices to compute accuracy from.
+MUST be unnormalized.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Raises</dt><dd><p>ValueError: when the ground truth dataset does not contain annotations
+RuntimeError: when the averaging methods is not known</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>the accuracy score for the provided confusion matrix</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.api.usecases.evaluation.accuracy.precision_metrics_group">
+<span class="sig-prename descclassname"><span class="pre">otx.api.usecases.evaluation.accuracy.</span></span><span class="sig-name descname"><span class="pre">precision_metrics_group</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">confusion_matrix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../../entities/metrics/index.html#otx.api.entities.metrics.MatrixMetric" title="otx.api.entities.metrics.MatrixMetric"><span class="pre">otx.api.entities.metrics.MatrixMetric</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../../../entities/metrics/index.html#otx.api.entities.metrics.MetricsGroup" title="otx.api.entities.metrics.MetricsGroup"><span class="pre">otx.api.entities.metrics.MetricsGroup</span></a></span></span><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/evaluation/accuracy.html#precision_metrics_group"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.evaluation.accuracy.precision_metrics_group" title="Permalink to this definition"></a></dt>
+<dd><p>Computes the precision per class based on a confusion matrix and returns them as ScoreMetrics in a MetricsGroup.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>confusion_matrix</strong> – matrix to compute the precision per class for</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a BarMetricsGroup with the per class precision.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.api.usecases.evaluation.accuracy.recall_metrics_group">
+<span class="sig-prename descclassname"><span class="pre">otx.api.usecases.evaluation.accuracy.</span></span><span class="sig-name descname"><span class="pre">recall_metrics_group</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">confusion_matrix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../../entities/metrics/index.html#otx.api.entities.metrics.MatrixMetric" title="otx.api.entities.metrics.MatrixMetric"><span class="pre">otx.api.entities.metrics.MatrixMetric</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../../../entities/metrics/index.html#otx.api.entities.metrics.MetricsGroup" title="otx.api.entities.metrics.MetricsGroup"><span class="pre">otx.api.entities.metrics.MetricsGroup</span></a></span></span><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/evaluation/accuracy.html#recall_metrics_group"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.evaluation.accuracy.recall_metrics_group" title="Permalink to this definition"></a></dt>
+<dd><p>Computes the recall per class based on a confusion matrix and returns them as ScoreMetrics in a MetricsGroup.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>confusion_matrix</strong> – matrix to compute the recall per class for</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a BarMetricsGroup with the per class recall</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.api.usecases.evaluation.accuracy.__get_gt_and_predicted_label_indices_from_resultset">
+<span class="sig-prename descclassname"><span class="pre">otx.api.usecases.evaluation.accuracy.</span></span><span class="sig-name descname"><span class="pre">__get_gt_and_predicted_label_indices_from_resultset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">resultset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../../entities/resultset/index.html#otx.api.entities.resultset.ResultSetEntity" title="otx.api.entities.resultset.ResultSetEntity"><span class="pre">otx.api.entities.resultset.ResultSetEntity</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/evaluation/accuracy.html#__get_gt_and_predicted_label_indices_from_resultset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.evaluation.accuracy.__get_gt_and_predicted_label_indices_from_resultset" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the label indices lists for ground truth and prediction datasets in a tuple.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>resultset</strong> – </p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a tuple containing two lists. The first list contains the ground truth label indices, and the second contains
+the prediction label indices.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.api.usecases.evaluation.accuracy.__compute_unnormalized_confusion_matrices_for_label_group">
+<span class="sig-prename descclassname"><span class="pre">otx.api.usecases.evaluation.accuracy.</span></span><span class="sig-name descname"><span class="pre">__compute_unnormalized_confusion_matrices_for_label_group</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">true_label_idx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">predicted_label_idx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_group</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../../entities/label_schema/index.html#otx.api.entities.label_schema.LabelGroup" title="otx.api.entities.label_schema.LabelGroup"><span class="pre">otx.api.entities.label_schema.LabelGroup</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">task_labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../../entities/label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../../../entities/metrics/index.html#otx.api.entities.metrics.MatrixMetric" title="otx.api.entities.metrics.MatrixMetric"><span class="pre">otx.api.entities.metrics.MatrixMetric</span></a></span></span><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/evaluation/accuracy.html#__compute_unnormalized_confusion_matrices_for_label_group"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.evaluation.accuracy.__compute_unnormalized_confusion_matrices_for_label_group" title="Permalink to this definition"></a></dt>
+<dd><p>Returns matrix metric for a certain label group.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>true_label_idx</strong> (<em>List</em><em>[</em><em>Set</em><em>[</em><em>int</em><em>]</em><em>]</em>) – list of sets of label indices for the ground truth dataset</p></li>
+<li><p><strong>predicted_label_idx</strong> (<em>List</em><em>[</em><em>Set</em><em>[</em><em>int</em><em>]</em><em>]</em>) – list of sets of label indices for the prediction dataset</p></li>
+<li><p><strong>label_group</strong> (<a class="reference internal" href="../../../entities/label_schema/index.html#otx.api.entities.label_schema.LabelGroup" title="otx.api.entities.label_schema.LabelGroup"><em>LabelGroup</em></a>) – label group to compute the confusion matrix for</p></li>
+<li><p><strong>task_labels</strong> (<em>List</em><em>[</em><a class="reference internal" href="../../../entities/label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><em>LabelEntity</em></a><em>]</em>) – list of labels for the task</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>confusion matrix for the label group</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="../../../entities/metrics/index.html#otx.api.entities.metrics.MatrixMetric" title="otx.api.entities.metrics.MatrixMetric">MatrixMetric</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.api.usecases.evaluation.accuracy.compute_unnormalized_confusion_matrices_from_resultset">
+<span class="sig-prename descclassname"><span class="pre">otx.api.usecases.evaluation.accuracy.</span></span><span class="sig-name descname"><span class="pre">compute_unnormalized_confusion_matrices_from_resultset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">resultset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../../entities/resultset/index.html#otx.api.entities.resultset.ResultSetEntity" title="otx.api.entities.resultset.ResultSetEntity"><span class="pre">otx.api.entities.resultset.ResultSetEntity</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../../entities/metrics/index.html#otx.api.entities.metrics.MatrixMetric" title="otx.api.entities.metrics.MatrixMetric"><span class="pre">otx.api.entities.metrics.MatrixMetric</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/evaluation/accuracy.html#compute_unnormalized_confusion_matrices_from_resultset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.evaluation.accuracy.compute_unnormalized_confusion_matrices_from_resultset" title="Permalink to this definition"></a></dt>
+<dd><p>Computes an (unnormalized) confusion matrix for every label group in the resultset.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>resultset</strong> – the input resultset</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the computed unnormalized confusion matrices</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, OpenVINO Training Extensions Contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

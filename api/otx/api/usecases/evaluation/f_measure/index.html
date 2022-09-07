@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>otx.api.usecases.evaluation.f_measure &mdash; OpenVINO Training Extensions  documentation</title>
+      <link rel="stylesheet" href="../../../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../../../" id="documentation_options" src="../../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../../_static/jquery.js"></script>
+        <script src="../../../../../../_static/underscore.js"></script>
+        <script src="../../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../../../../_static/doctools.js"></script>
+    <script src="../../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../../../index.html" class="icon icon-home"> OpenVINO Training Extensions
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../../index.html">OpenVINO Training Extensions</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li><code class="xref py py-mod docutils literal notranslate"><span class="pre">otx.api.usecases.evaluation.f_measure</span></code></li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../../../_sources/api/otx/api/usecases/evaluation/f_measure/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-otx.api.usecases.evaluation.f_measure">
+<span id="otx-api-usecases-evaluation-f-measure"></span><h1><a class="reference internal" href="#module-otx.api.usecases.evaluation.f_measure" title="otx.api.usecases.evaluation.f_measure"><code class="xref py py-mod docutils literal notranslate"><span class="pre">otx.api.usecases.evaluation.f_measure</span></code></a><a class="headerlink" href="#module-otx.api.usecases.evaluation.f_measure" title="Permalink to this heading"></a></h1>
+<p>This module contains the f-measure performance provider class.</p>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this heading"></a></h2>
+<section id="classes">
+<h3>Classes<a class="headerlink" href="#classes" title="Permalink to this heading"></a></h3>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.api.usecases.evaluation.f_measure._Metrics" title="otx.api.usecases.evaluation.f_measure._Metrics"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_Metrics</span></code></a></p></td>
+<td><p>This class collects the metrics related to detection.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.api.usecases.evaluation.f_measure._ResultCounters" title="otx.api.usecases.evaluation.f_measure._ResultCounters"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_ResultCounters</span></code></a></p></td>
+<td><p>This class collects the number of prediction, TP and FN.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.api.usecases.evaluation.f_measure._AggregatedResults" title="otx.api.usecases.evaluation.f_measure._AggregatedResults"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_AggregatedResults</span></code></a></p></td>
+<td><p>This class collects the aggregated results for F-measure.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.api.usecases.evaluation.f_measure._OverallResults" title="otx.api.usecases.evaluation.f_measure._OverallResults"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_OverallResults</span></code></a></p></td>
+<td><p>This class collects the overall results that is computed by the F-measure performance provider.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.api.usecases.evaluation.f_measure._FMeasureCalculator" title="otx.api.usecases.evaluation.f_measure._FMeasureCalculator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_FMeasureCalculator</span></code></a></p></td>
+<td><p>This class contains the functions to calculate FMeasure.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.api.usecases.evaluation.f_measure.FMeasure" title="otx.api.usecases.evaluation.f_measure.FMeasure"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FMeasure</span></code></a></p></td>
+<td><p>Computes the f-measure (also known as F1-score) for a resultset.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="functions">
+<h3>Functions<a class="headerlink" href="#functions" title="Permalink to this heading"></a></h3>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.api.usecases.evaluation.f_measure.intersection_box" title="otx.api.usecases.evaluation.f_measure.intersection_box"><code class="xref py py-obj docutils literal notranslate"><span class="pre">intersection_box</span></code></a>(→ Tuple[float, float, float, float])</p></td>
+<td><p>Calculate the intersection box of two bounding boxes.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.api.usecases.evaluation.f_measure.bounding_box_intersection_over_union" title="otx.api.usecases.evaluation.f_measure.bounding_box_intersection_over_union"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bounding_box_intersection_over_union</span></code></a>(→ float)</p></td>
+<td><p>Calculate the Intersection over Union (IoU) of two bounding boxes.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.api.usecases.evaluation.f_measure.get_iou_matrix" title="otx.api.usecases.evaluation.f_measure.get_iou_matrix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_iou_matrix</span></code></a>(→ numpy.ndarray)</p></td>
+<td><p>Constructs an iou matrix of shape [num_ground_truth_boxes, num_predicted_boxes].</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.api.usecases.evaluation.f_measure.get_n_false_negatives" title="otx.api.usecases.evaluation.f_measure.get_n_false_negatives"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_n_false_negatives</span></code></a>(→ int)</p></td>
+<td><p>Get the number of false negatives inside the IoU matrix for a given threshold.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="attributes">
+<h3>Attributes<a class="headerlink" href="#attributes" title="Permalink to this heading"></a></h3>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.api.usecases.evaluation.f_measure.logger" title="otx.api.usecases.evaluation.f_measure.logger"><code class="xref py py-obj docutils literal notranslate"><span class="pre">logger</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.api.usecases.evaluation.f_measure.ALL_CLASSES_NAME" title="otx.api.usecases.evaluation.f_measure.ALL_CLASSES_NAME"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ALL_CLASSES_NAME</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py data">
+<dt class="sig sig-object py" id="otx.api.usecases.evaluation.f_measure.logger">
+<span class="sig-prename descclassname"><span class="pre">otx.api.usecases.evaluation.f_measure.</span></span><span class="sig-name descname"><span class="pre">logger</span></span><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/evaluation/f_measure.html#logger"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.evaluation.f_measure.logger" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="otx.api.usecases.evaluation.f_measure.ALL_CLASSES_NAME">
+<span class="sig-prename descclassname"><span class="pre">otx.api.usecases.evaluation.f_measure.</span></span><span class="sig-name descname"><span class="pre">ALL_CLASSES_NAME</span></span><em class="property"><span class="w"> </span><span class="pre">=</span> <span class="pre">All</span> <span class="pre">Classes</span></em><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/evaluation/f_measure.html#ALL_CLASSES_NAME"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.evaluation.f_measure.ALL_CLASSES_NAME" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.api.usecases.evaluation.f_measure.intersection_box">
+<span class="sig-prename descclassname"><span class="pre">otx.api.usecases.evaluation.f_measure.</span></span><span class="sig-name descname"><span class="pre">intersection_box</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">box1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">box2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/evaluation/f_measure.html#intersection_box"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.evaluation.f_measure.intersection_box" title="Permalink to this definition"></a></dt>
+<dd><p>Calculate the intersection box of two bounding boxes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>box1</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>, </em><em>str</em><em>, </em><em>float</em><em>]</em>) – (x1, y1, x2, y2, class, score)</p></li>
+<li><p><strong>box2</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>, </em><em>str</em><em>, </em><em>float</em><em>]</em>) – (x1, y1, x2, y2, class, score)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>(x_left, x_right, y_bottom, y_top)</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Tuple[float, float, float, float]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.api.usecases.evaluation.f_measure.bounding_box_intersection_over_union">
+<span class="sig-prename descclassname"><span class="pre">otx.api.usecases.evaluation.f_measure.</span></span><span class="sig-name descname"><span class="pre">bounding_box_intersection_over_union</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">box1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">box2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/evaluation/f_measure.html#bounding_box_intersection_over_union"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.evaluation.f_measure.bounding_box_intersection_over_union" title="Permalink to this definition"></a></dt>
+<dd><p>Calculate the Intersection over Union (IoU) of two bounding boxes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>box1</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>, </em><em>str</em><em>, </em><em>float</em><em>]</em>) – (x1, y1, x2, y2, class, score)</p></li>
+<li><p><strong>box2</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>, </em><em>str</em><em>, </em><em>float</em><em>]</em>) – (x1, y1, x2, y2, class, score)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>ValueError</strong> – In case the IoU is outside of [0.0, 1.0]</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Intersection-over-union of box1 and box2.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.api.usecases.evaluation.f_measure.get_iou_matrix">
+<span class="sig-prename descclassname"><span class="pre">otx.api.usecases.evaluation.f_measure.</span></span><span class="sig-name descname"><span class="pre">get_iou_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ground_truth</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">predicted</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/evaluation/f_measure.html#get_iou_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.evaluation.f_measure.get_iou_matrix" title="Permalink to this definition"></a></dt>
+<dd><p>Constructs an iou matrix of shape [num_ground_truth_boxes, num_predicted_boxes].</p>
+<p>Each cell(x,y) in the iou matrix contains the intersection over union of ground truth box(x) and predicted box(y)
+An iou matrix corresponds to a single image</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ground_truth</strong> (<em>List</em><em>[</em><em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>, </em><em>str</em><em>, </em><em>float</em><em>]</em><em>]</em>) – List of ground truth boxes.
+Each box is a list of (x,y) coordinates and a label.
+a box: [x1: float, y1, x2, y2, class: str, score: float]
+boxes_per_image: [box1, box2, …]
+boxes1: [boxes_per_image_1, boxes_per_image_2, boxes_per_image_3, …]</p></li>
+<li><p><strong>predicted</strong> (<em>List</em><em>[</em><em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>, </em><em>str</em><em>, </em><em>float</em><em>]</em><em>]</em>) – List of predicted boxes.
+Each box is a list of (x,y) coordinates and a label.
+a box: [x1: float, y1, x2, y2, class: str, score: float]
+boxes_per_image: [box1, box2, …]
+boxes2: [boxes_per_image_1, boxes_per_image_2, boxes_per_image_3, …]</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>IoU matrix of shape [ground_truth_boxes, predicted_boxes]</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.api.usecases.evaluation.f_measure.get_n_false_negatives">
+<span class="sig-prename descclassname"><span class="pre">otx.api.usecases.evaluation.f_measure.</span></span><span class="sig-name descname"><span class="pre">get_n_false_negatives</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">iou_matrix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iou_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/evaluation/f_measure.html#get_n_false_negatives"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.evaluation.f_measure.get_n_false_negatives" title="Permalink to this definition"></a></dt>
+<dd><p>Get the number of false negatives inside the IoU matrix for a given threshold.</p>
+<p>The first loop accounts for all the ground truth boxes which do not have a high enough iou with any predicted
+box (they go undetected)
+The second loop accounts for the much rarer case where two ground truth boxes are detected by the same predicted
+box. The principle is that each ground truth box requires a unique prediction box</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>iou_matrix</strong> (<em>np.ndarray</em>) – IoU matrix of shape [ground_truth_boxes, predicted_boxes]</p></li>
+<li><p><strong>iou_threshold</strong> (<em>float</em>) – IoU threshold to use for the false negatives.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Number of false negatives</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.api.usecases.evaluation.f_measure._Metrics">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.usecases.evaluation.f_measure.</span></span><span class="sig-name descname"><span class="pre">_Metrics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f_measure</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">precision</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recall</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/evaluation/f_measure.html#_Metrics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.evaluation.f_measure._Metrics" title="Permalink to this definition"></a></dt>
+<dd><p>This class collects the metrics related to detection.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>f_measure</strong> (<em>float</em>) – F-measure of the model.</p></li>
+<li><p><strong>precision</strong> (<em>float</em>) – Precision of the model.</p></li>
+<li><p><strong>recall</strong> (<em>float</em>) – Recall of the model.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.api.usecases.evaluation.f_measure._ResultCounters">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.usecases.evaluation.f_measure.</span></span><span class="sig-name descname"><span class="pre">_ResultCounters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_false_negatives</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_true</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_predicted</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/evaluation/f_measure.html#_ResultCounters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.evaluation.f_measure._ResultCounters" title="Permalink to this definition"></a></dt>
+<dd><p>This class collects the number of prediction, TP and FN.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_false_negatives</strong> (<em>int</em>) – Number of false negatives.</p></li>
+<li><p><strong>n_true</strong> (<em>int</em>) – Number of true positives.</p></li>
+<li><p><strong>n_predictions</strong> (<em>int</em>) – Number of predictions.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.usecases.evaluation.f_measure._ResultCounters.calculate_f_measure">
+<span class="sig-name descname"><span class="pre">calculate_f_measure</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#otx.api.usecases.evaluation.f_measure._Metrics" title="otx.api.usecases.evaluation.f_measure._Metrics"><span class="pre">_Metrics</span></a></span></span><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/evaluation/f_measure.html#_ResultCounters.calculate_f_measure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.evaluation.f_measure._ResultCounters.calculate_f_measure" title="Permalink to this definition"></a></dt>
+<dd><p>Calculates and returns precision, recall, and f-measure.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>_Metrics object with Precision, recall, and f-measure.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="#otx.api.usecases.evaluation.f_measure._Metrics" title="otx.api.usecases.evaluation.f_measure._Metrics">_Metrics</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.api.usecases.evaluation.f_measure._AggregatedResults">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.usecases.evaluation.f_measure.</span></span><span class="sig-name descname"><span class="pre">_AggregatedResults</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">classes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/evaluation/f_measure.html#_AggregatedResults"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.evaluation.f_measure._AggregatedResults" title="Permalink to this definition"></a></dt>
+<dd><p>This class collects the aggregated results for F-measure.</p>
+<dl class="simple">
+<dt>The result contains:</dt><dd><ul class="simple">
+<li><p>f_measure_curve</p></li>
+<li><p>precision_curve</p></li>
+<li><p>recall_curve</p></li>
+<li><p>all_classes_f_measure_curve</p></li>
+<li><p>best_f_measure</p></li>
+<li><p>best_threshold</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>classes</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) – List of classes.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.api.usecases.evaluation.f_measure._OverallResults">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.usecases.evaluation.f_measure.</span></span><span class="sig-name descname"><span class="pre">_OverallResults</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">per_confidence</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.usecases.evaluation.f_measure._AggregatedResults" title="otx.api.usecases.evaluation.f_measure._AggregatedResults"><span class="pre">_AggregatedResults</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">per_nms</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#otx.api.usecases.evaluation.f_measure._AggregatedResults" title="otx.api.usecases.evaluation.f_measure._AggregatedResults"><span class="pre">_AggregatedResults</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">best_f_measure_per_class</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">best_f_measure</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/evaluation/f_measure.html#_OverallResults"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.evaluation.f_measure._OverallResults" title="Permalink to this definition"></a></dt>
+<dd><p>This class collects the overall results that is computed by the F-measure performance provider.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>per_confidence</strong> (<a class="reference internal" href="#otx.api.usecases.evaluation.f_measure._AggregatedResults" title="otx.api.usecases.evaluation.f_measure._AggregatedResults"><em>_AggregatedResults</em></a>) – _AggregatedResults object for each confidence level.</p></li>
+<li><p><strong>per_nms</strong> (<em>Optional</em><em>[</em><a class="reference internal" href="#otx.api.usecases.evaluation.f_measure._AggregatedResults" title="otx.api.usecases.evaluation.f_measure._AggregatedResults"><em>_AggregatedResults</em></a><em>]</em>) – _AggregatedResults object for each NMS threshold.</p></li>
+<li><p><strong>best_f_measure_per_class</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>float</em><em>]</em>) – Best f-measure per class.</p></li>
+<li><p><strong>best_f_measure</strong> (<em>float</em>) – Best f-measure.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.api.usecases.evaluation.f_measure._FMeasureCalculator">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.usecases.evaluation.f_measure.</span></span><span class="sig-name descname"><span class="pre">_FMeasureCalculator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ground_truth_boxes_per_image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prediction_boxes_per_image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/evaluation/f_measure.html#_FMeasureCalculator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.evaluation.f_measure._FMeasureCalculator" title="Permalink to this definition"></a></dt>
+<dd><p>This class contains the functions to calculate FMeasure.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ground_truth_boxes_per_image</strong> (<em>List</em><em>[</em><em>List</em><em>[</em><em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>, </em><em>str</em><em>, </em><em>float</em><em>]</em><em>]</em><em>]</em>) – a box: [x1: float, y1, x2, y2, class: str, score: float]
+boxes_per_image: [box1, box2, …]
+ground_truth_boxes_per_image: [boxes_per_image_1, boxes_per_image_2, boxes_per_image_3, …]</p></li>
+<li><p><strong>prediction_boxes_per_image</strong> (<em>List</em><em>[</em><em>List</em><em>[</em><em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>, </em><em>str</em><em>, </em><em>float</em><em>]</em><em>]</em><em>]</em>) – a box: [x1: float, y1, x2, y2, class: str, score: float]
+boxes_per_image: [box1, box2, …]
+predicted_boxes_per_image: [boxes_per_image_1, boxes_per_image_2, boxes_per_image_3, …]</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.usecases.evaluation.f_measure._FMeasureCalculator.evaluate_detections">
+<span class="sig-name descname"><span class="pre">evaluate_detections</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">classes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iou_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">result_based_nms_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cross_class_nms</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#otx.api.usecases.evaluation.f_measure._OverallResults" title="otx.api.usecases.evaluation.f_measure._OverallResults"><span class="pre">_OverallResults</span></a></span></span><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/evaluation/f_measure.html#_FMeasureCalculator.evaluate_detections"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.evaluation.f_measure._FMeasureCalculator.evaluate_detections" title="Permalink to this definition"></a></dt>
+<dd><p>Evaluates detections by computing f_measures across multiple confidence thresholds and iou thresholds.</p>
+<p>By default, this function evaluates 39 confidence thresholds, finds the best confidence threshold and appends
+it to the result Dict
+Each one of the (default 39+20) pairs of confidence and nms thresholds is used to evaluate the f-measure for
+each class, then the intermediate metrics are summed across classes to compute an all_classes f_measure.
+Finally, the best results across all evaluations are appended to the result dictionary along with the thresholds
+used to achieve them.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>classes</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) – Names of classes to be evaluated.</p></li>
+<li><p><strong>iou_threshold</strong> (<em>float</em>) – IOU threshold. Defaults to 0.5.</p></li>
+<li><p><strong>result_based_nms_threshold</strong> (<em>bool</em>) – Boolean that determines whether multiple nms threshold are examined.
+Defaults to False.</p></li>
+<li><p><strong>cross_class_nms</strong> (<em>bool</em>) – Set to True to perform NMS between boxes with different classes. Defaults to False.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>_OverallResults object with the result statistics (e.g F-measure).</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#otx.api.usecases.evaluation.f_measure._OverallResults" title="otx.api.usecases.evaluation.f_measure._OverallResults">_OverallResults</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.usecases.evaluation.f_measure._FMeasureCalculator.get_results_per_confidence">
+<span class="sig-name descname"><span class="pre">get_results_per_confidence</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">classes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">confidence_range</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iou_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#otx.api.usecases.evaluation.f_measure._AggregatedResults" title="otx.api.usecases.evaluation.f_measure._AggregatedResults"><span class="pre">_AggregatedResults</span></a></span></span><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/evaluation/f_measure.html#_FMeasureCalculator.get_results_per_confidence"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.evaluation.f_measure._FMeasureCalculator.get_results_per_confidence" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the results for confidence threshold in range confidence_range.</p>
+<p>Varies confidence based on confidence_range, the results are appended in a dictionary and returned, it also
+returns the best f_measure found and the confidence threshold used to get said f_measure</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>classes</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) – Names of classes to be evaluated.</p></li>
+<li><p><strong>confidence_range</strong> (<em>List</em><em>[</em><em>float</em><em>]</em>) – List of confidence thresholds to be evaluated.</p></li>
+<li><p><strong>iou_threshold</strong> (<em>float</em>) – IoU threshold to use for false negatives.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>_AggregatedResults object with the result statistics (e.g F-measure).</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#otx.api.usecases.evaluation.f_measure._AggregatedResults" title="otx.api.usecases.evaluation.f_measure._AggregatedResults">_AggregatedResults</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.usecases.evaluation.f_measure._FMeasureCalculator.get_results_per_nms">
+<span class="sig-name descname"><span class="pre">get_results_per_nms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">classes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iou_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_f_measure</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cross_class_nms</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#otx.api.usecases.evaluation.f_measure._AggregatedResults" title="otx.api.usecases.evaluation.f_measure._AggregatedResults"><span class="pre">_AggregatedResults</span></a></span></span><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/evaluation/f_measure.html#_FMeasureCalculator.get_results_per_nms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.evaluation.f_measure._FMeasureCalculator.get_results_per_nms" title="Permalink to this definition"></a></dt>
+<dd><p>Returns results for nms threshold in range nms_range.</p>
+<p>First, we calculate the critical nms of each box, meaning the nms_threshold
+that would cause it to be disappear
+This is an expensive O(n**2) operation, however, doing this makes filtering for every single nms_threshold much
+faster at O(n)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>classes</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) – List of classes</p></li>
+<li><p><strong>iou_threshold</strong> (<em>float</em>) – IoU threshold</p></li>
+<li><p><strong>min_f_measure</strong> (<em>float</em>) – the minimum F-measure required to select a NMS threshold</p></li>
+<li><p><strong>cross_class_nms</strong> (<em>bool</em>) – set to True to perform NMS between boxes with different classes. Defaults to False.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Object containing the results for each NMS threshold value</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#otx.api.usecases.evaluation.f_measure._AggregatedResults" title="otx.api.usecases.evaluation.f_measure._AggregatedResults">_AggregatedResults</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.usecases.evaluation.f_measure._FMeasureCalculator.evaluate_classes">
+<span class="sig-name descname"><span class="pre">evaluate_classes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">classes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iou_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">confidence_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#otx.api.usecases.evaluation.f_measure._Metrics" title="otx.api.usecases.evaluation.f_measure._Metrics"><span class="pre">_Metrics</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/evaluation/f_measure.html#_FMeasureCalculator.evaluate_classes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.evaluation.f_measure._FMeasureCalculator.evaluate_classes" title="Permalink to this definition"></a></dt>
+<dd><p>Returns Dict of f_measure, precision and recall for each class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>classes</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) – List of classes to be evaluated.</p></li>
+<li><p><strong>iou_threshold</strong> (<em>float</em>) – IoU threshold to use for false negatives.</p></li>
+<li><p><strong>confidence_threshold</strong> (<em>float</em>) – Confidence threshold to use for false negatives.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The metrics (e.g. F-measure) for each class.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Dict[str, <a class="reference internal" href="#otx.api.usecases.evaluation.f_measure._Metrics" title="otx.api.usecases.evaluation.f_measure._Metrics">_Metrics</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.usecases.evaluation.f_measure._FMeasureCalculator.get_f_measure_for_class">
+<span class="sig-name descname"><span class="pre">get_f_measure_for_class</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">class_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iou_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">confidence_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#otx.api.usecases.evaluation.f_measure._Metrics" title="otx.api.usecases.evaluation.f_measure._Metrics"><span class="pre">_Metrics</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#otx.api.usecases.evaluation.f_measure._ResultCounters" title="otx.api.usecases.evaluation.f_measure._ResultCounters"><span class="pre">_ResultCounters</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/evaluation/f_measure.html#_FMeasureCalculator.get_f_measure_for_class"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.evaluation.f_measure._FMeasureCalculator.get_f_measure_for_class" title="Permalink to this definition"></a></dt>
+<dd><p>Get f_measure for specific class, iou threshold, and confidence threshold.</p>
+<p>In order to reduce the number of redundant iterations and allow for cleaner, more general code later on,
+all boxes are filtered at this stage by class and predicted boxes are filtered by confidence threshold</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>class_name</strong> (<em>str</em>) – Name of the class for which the F measure is computed</p></li>
+<li><p><strong>iou_threshold</strong> (<em>float</em>) – IoU threshold</p></li>
+<li><p><strong>confidence_threshold</strong> (<em>float</em>) – Confidence threshold</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a structure containing the statistics (e.g. f_measure) and a structure
+containing the intermediated counters used to derive the stats (e.g. num. false positives)</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Tuple[<a class="reference internal" href="#otx.api.usecases.evaluation.f_measure._Metrics" title="otx.api.usecases.evaluation.f_measure._Metrics">_Metrics</a>, <a class="reference internal" href="#otx.api.usecases.evaluation.f_measure._ResultCounters" title="otx.api.usecases.evaluation.f_measure._ResultCounters">_ResultCounters</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.usecases.evaluation.f_measure._FMeasureCalculator.__get_critical_nms">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">__get_critical_nms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">boxes_per_image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cross_class_nms</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/evaluation/f_measure.html#_FMeasureCalculator.__get_critical_nms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.evaluation.f_measure._FMeasureCalculator.__get_critical_nms" title="Permalink to this definition"></a></dt>
+<dd><p>Return list of critical NMS values for each box in each image.</p>
+<p>Maps each predicted box to the highest nms-threshold which would suppress that box, aka the smallest
+nms_threshold before the box disappears.
+Having these values allows us to later filter by nms-threshold in O(n) rather than O(n**2)
+Highest losing iou, holds the value of the highest iou that a box has with any
+other box of the same class and higher confidence score.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>boxes_per_image</strong> (<em>List</em><em>[</em><em>List</em><em>[</em><em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>, </em><em>str</em><em>, </em><em>float</em><em>]</em><em>]</em><em>]</em>) – List of predicted boxes per
+image.
+a box: [x1: float, y1, x2, y2, class: str, score: float]
+boxes_per_image: [box1, box2, …]</p></li>
+<li><p><strong>cross_class_nms</strong> (<em>bool</em>) – Whether to use cross class NMS.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>List of critical NMS values for each box in each image.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>List[List[float]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.usecases.evaluation.f_measure._FMeasureCalculator.__filter_nms">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">__filter_nms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">boxes_per_image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">critical_nms</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nms_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/evaluation/f_measure.html#_FMeasureCalculator.__filter_nms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.evaluation.f_measure._FMeasureCalculator.__filter_nms" title="Permalink to this definition"></a></dt>
+<dd><p>Filters out predicted boxes whose critical nms is higher than the given nms_threshold.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>boxes_per_image</strong> (<em>List</em><em>[</em><em>List</em><em>[</em><em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>, </em><em>str</em><em>, </em><em>float</em><em>]</em><em>]</em><em>]</em>) – List of boxes per image.
+a box: [x1: float, y1, x2, y2, class: str, score: float]
+boxes_per_image: [box1, box2, …]</p></li>
+<li><p><strong>critical_nms</strong> (<em>List</em><em>[</em><em>List</em><em>[</em><em>float</em><em>]</em><em>]</em>) – List of list of critical nms for each box in each image</p></li>
+<li><p><strong>nms_threshold</strong> (<em>float</em>) – NMS threshold used for filtering</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>List of list of filtered boxes in each image</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>List[List[Tuple[float, float, float, float, str, float]]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.usecases.evaluation.f_measure._FMeasureCalculator.__filter_class">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">__filter_class</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">boxes_per_image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">class_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/evaluation/f_measure.html#_FMeasureCalculator.__filter_class"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.evaluation.f_measure._FMeasureCalculator.__filter_class" title="Permalink to this definition"></a></dt>
+<dd><p>Filters boxes to only keep members of one class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>boxes_per_image</strong> (<em>List</em><em>[</em><em>List</em><em>[</em><em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>, </em><em>str</em><em>, </em><em>float</em><em>]</em><em>]</em><em>]</em>) – a list of lists of boxes</p></li>
+<li><p><strong>class_name</strong> (<em>str</em>) – Name of the class for which the boxes are filtered</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a list of lists of boxes</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>List[List[Tuple[float, float, float, float, str, float]]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.usecases.evaluation.f_measure._FMeasureCalculator.__filter_confidence">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">__filter_confidence</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">boxes_per_image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">confidence_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/evaluation/f_measure.html#_FMeasureCalculator.__filter_confidence"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.evaluation.f_measure._FMeasureCalculator.__filter_confidence" title="Permalink to this definition"></a></dt>
+<dd><p>Filters boxes to only keep ones with higher confidence than a given confidence threshold.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>boxes_per_image</strong> (<em>List</em><em>[</em><em>List</em><em>[</em><em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>, </em><em>str</em><em>, </em><em>float</em><em>]</em><em>]</em><em>]</em>) – a box: [x1: float, y1, x2, y2, class: str, score: float]
+boxes_per_image: [box1, box2, …]</p></li>
+<li><p><strong>confidence_threshold</strong> (<em>float</em>) – Confidence threshold</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>Boxes with higher confidence than the given</dt><dd><p>threshold.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>List[List[Tuple[float, float, float, float, str, float]]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.usecases.evaluation.f_measure._FMeasureCalculator.get_counters">
+<span class="sig-name descname"><span class="pre">get_counters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">iou_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#otx.api.usecases.evaluation.f_measure._ResultCounters" title="otx.api.usecases.evaluation.f_measure._ResultCounters"><span class="pre">_ResultCounters</span></a></span></span><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/evaluation/f_measure.html#_FMeasureCalculator.get_counters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.evaluation.f_measure._FMeasureCalculator.get_counters" title="Permalink to this definition"></a></dt>
+<dd><p>Return counts of true positives, false positives and false negatives for a given iou threshold.</p>
+<p>For each image (the loop), compute the number of false negatives, the number of predicted boxes, and the number
+of ground truth boxes, then add each value to its corresponding counter</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>iou_threshold</strong> (<em>float</em>) – IoU threshold</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Structure containing the number of false negatives, true positives and predictions.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#otx.api.usecases.evaluation.f_measure._ResultCounters" title="otx.api.usecases.evaluation.f_measure._ResultCounters">_ResultCounters</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.api.usecases.evaluation.f_measure.FMeasure">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.usecases.evaluation.f_measure.</span></span><span class="sig-name descname"><span class="pre">FMeasure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">resultset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../../entities/resultset/index.html#otx.api.entities.resultset.ResultSetEntity" title="otx.api.entities.resultset.ResultSetEntity"><span class="pre">otx.api.entities.resultset.ResultSetEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">vary_confidence_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vary_nms_threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cross_class_nms</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/evaluation/f_measure.html#FMeasure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.evaluation.f_measure.FMeasure" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../performance_provider_interface/index.html#otx.api.usecases.evaluation.performance_provider_interface.IPerformanceProvider" title="otx.api.usecases.evaluation.performance_provider_interface.IPerformanceProvider"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.api.usecases.evaluation.performance_provider_interface.IPerformanceProvider</span></code></a></p>
+<p>Computes the f-measure (also known as F1-score) for a resultset.</p>
+<p>The f-measure is typically used in detection (localization) tasks to obtain a single number that balances precision
+and recall.</p>
+<p>To determine whether a predicted box matches a ground truth box an overlap measured
+is used based on a minimum
+intersection-over-union (IoU), by default a value of 0.5 is used.</p>
+<p>In addition spurious results are eliminated by applying non-max suppression (NMS) so that two predicted boxes with
+IoU &gt; threshold are reduced to one. This threshold can be determined automatically by setting <cite>vary_nms_threshold</cite>
+to True.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>resultset</strong> (<a class="reference internal" href="../../../entities/resultset/index.html#otx.api.entities.resultset.ResultSetEntity" title="otx.api.entities.resultset.ResultSetEntity"><em>ResultSetEntity</em></a>) – ResultSet entity used for calculating the F-Measure</p></li>
+<li><p><strong>vary_confidence_threshold</strong> (<em>bool</em>) – if True the maximal F-measure is determined by optimizing for different
+confidence threshold values Defaults to False.</p></li>
+<li><p><strong>vary_nms_threshold</strong> (<em>bool</em>) – if True the maximal F-measure is determined by optimizing for different NMS threshold
+values. Defaults to False.</p></li>
+<li><p><strong>cross_class_nms</strong> (<em>bool</em>) – Whether non-max suppression should be applied cross-class. If True this will eliminate
+boxes with sufficient overlap even if they are from different classes. Defaults to False.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>ValueError</strong> – if prediction dataset and ground truth dataset are empty</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.usecases.evaluation.f_measure.FMeasure.box_class_index">
+<span class="sig-name descname"><span class="pre">box_class_index</span></span><em class="property"><span class="w"> </span><span class="pre">=</span> <span class="pre">4</span></em><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/evaluation/f_measure.html#FMeasure.box_class_index"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.evaluation.f_measure.FMeasure.box_class_index" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.usecases.evaluation.f_measure.FMeasure.box_score_index">
+<span class="sig-name descname"><span class="pre">box_score_index</span></span><em class="property"><span class="w"> </span><span class="pre">=</span> <span class="pre">5</span></em><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/evaluation/f_measure.html#FMeasure.box_score_index"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.evaluation.f_measure.FMeasure.box_score_index" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.usecases.evaluation.f_measure.FMeasure.f_measure">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">f_measure</span></span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../../../entities/metrics/index.html#otx.api.entities.metrics.ScoreMetric" title="otx.api.entities.metrics.ScoreMetric"><span class="pre">otx.api.entities.metrics.ScoreMetric</span></a></span></span><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/evaluation/f_measure.html#FMeasure.f_measure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.evaluation.f_measure.FMeasure.f_measure" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the f-measure as ScoreMetric.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.usecases.evaluation.f_measure.FMeasure.f_measure_per_label">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">f_measure_per_label</span></span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../../entities/label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="../../../entities/metrics/index.html#otx.api.entities.metrics.ScoreMetric" title="otx.api.entities.metrics.ScoreMetric"><span class="pre">otx.api.entities.metrics.ScoreMetric</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/evaluation/f_measure.html#FMeasure.f_measure_per_label"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.evaluation.f_measure.FMeasure.f_measure_per_label" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the f-measure per label as dictionary (Label -&gt; ScoreMetric).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.usecases.evaluation.f_measure.FMeasure.f_measure_per_confidence">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">f_measure_per_confidence</span></span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../../entities/metrics/index.html#otx.api.entities.metrics.CurveMetric" title="otx.api.entities.metrics.CurveMetric"><span class="pre">otx.api.entities.metrics.CurveMetric</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/evaluation/f_measure.html#FMeasure.f_measure_per_confidence"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.evaluation.f_measure.FMeasure.f_measure_per_confidence" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the curve for f-measure per confidence as CurveMetric if exists.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.usecases.evaluation.f_measure.FMeasure.best_confidence_threshold">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">best_confidence_threshold</span></span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../../entities/metrics/index.html#otx.api.entities.metrics.ScoreMetric" title="otx.api.entities.metrics.ScoreMetric"><span class="pre">otx.api.entities.metrics.ScoreMetric</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/evaluation/f_measure.html#FMeasure.best_confidence_threshold"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.evaluation.f_measure.FMeasure.best_confidence_threshold" title="Permalink to this definition"></a></dt>
+<dd><p>Returns best confidence threshold as ScoreMetric if exists.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.usecases.evaluation.f_measure.FMeasure.f_measure_per_nms">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">f_measure_per_nms</span></span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../../entities/metrics/index.html#otx.api.entities.metrics.CurveMetric" title="otx.api.entities.metrics.CurveMetric"><span class="pre">otx.api.entities.metrics.CurveMetric</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/evaluation/f_measure.html#FMeasure.f_measure_per_nms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.evaluation.f_measure.FMeasure.f_measure_per_nms" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the curve for f-measure per nms threshold as CurveMetric if exists.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.usecases.evaluation.f_measure.FMeasure.best_nms_threshold">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">best_nms_threshold</span></span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../../entities/metrics/index.html#otx.api.entities.metrics.ScoreMetric" title="otx.api.entities.metrics.ScoreMetric"><span class="pre">otx.api.entities.metrics.ScoreMetric</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/evaluation/f_measure.html#FMeasure.best_nms_threshold"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.evaluation.f_measure.FMeasure.best_nms_threshold" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the best NMS threshold as ScoreMetric if exists.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.usecases.evaluation.f_measure.FMeasure.get_performance">
+<span class="sig-name descname"><span class="pre">get_performance</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../../../entities/metrics/index.html#otx.api.entities.metrics.Performance" title="otx.api.entities.metrics.Performance"><span class="pre">otx.api.entities.metrics.Performance</span></a></span></span><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/evaluation/f_measure.html#FMeasure.get_performance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.evaluation.f_measure.FMeasure.get_performance" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the performance which consists of the F-Measure score and the dashboard metrics.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Performance object containing the F-Measure score and the dashboard metrics.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="../../../entities/metrics/index.html#otx.api.entities.metrics.Performance" title="otx.api.entities.metrics.Performance">Performance</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.usecases.evaluation.f_measure.FMeasure.__get_boxes_from_dataset_as_list">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">__get_boxes_from_dataset_as_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../../entities/datasets/index.html#otx.api.entities.datasets.DatasetEntity" title="otx.api.entities.datasets.DatasetEntity"><span class="pre">otx.api.entities.datasets.DatasetEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../../entities/label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/evaluation/f_measure.html#FMeasure.__get_boxes_from_dataset_as_list"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.evaluation.f_measure.FMeasure.__get_boxes_from_dataset_as_list" title="Permalink to this definition"></a></dt>
+<dd><p>Return list of boxes from dataset.</p>
+<dl class="simple">
+<dt>Explanation of output shape:</dt><dd><p>a box: [x1: float, y1, x2, y2, class: str, score: float]
+boxes_per_image: [box1, box2, …]
+ground_truth_boxes_per_image: [boxes_per_image_1, boxes_per_image_2, boxes_per_image_3, …]</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dataset</strong> (<a class="reference internal" href="../../../entities/datasets/index.html#otx.api.entities.datasets.DatasetEntity" title="otx.api.entities.datasets.DatasetEntity"><em>DatasetEntity</em></a>) – Dataset to get boxes from.</p></li>
+<li><p><strong>labels</strong> (<em>List</em><em>[</em><a class="reference internal" href="../../../entities/label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><em>LabelEntity</em></a><em>]</em>) – Labels to get boxes for.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>List of boxes for each image in the dataset.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>List[List[Tuple[float, float, float, float, str, float]]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, OpenVINO Training Extensions Contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

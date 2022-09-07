@@ -1,0 +1,104 @@
+:py:mod:`otx.api.utils.time_utils`
+==================================
+
+.. py:module:: otx.api.utils.time_utils
+
+.. autoapi-nested-parse::
+
+   This module implements time related utility functions.
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   otx.api.utils.time_utils.TimeEstimator
+
+
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   otx.api.utils.time_utils.now
+   otx.api.utils.time_utils.timeit
+
+
+
+.. py:function:: now() -> datetime.datetime
+
+   Return the current UTC creation_date and time up to a millisecond accuracy.
+
+   This function is preferable over the Python datetime.datetime.now() function
+   because it uses the same accuracy (milliseconds) as MongoDB rather than microsecond accuracy.
+
+   :returns: Date and time up to a millisecond precision.
+
+
+.. py:function:: timeit(func)
+
+   This function can be used as a decorator as @timeit.
+
+   It will print out how long the function took to execute.
+
+   :param func: The decorated function
+
+   :returns: The wrapped function
+
+
+.. py:class:: TimeEstimator(smoothing_factor: float = 0.02, inflation_factor: float = 1.1, update_window: float = 1.0, starting_progress: float = 1.0)
+
+   The time estimator.
+
+   Estimate the remaining time given the progress, and the progress changes. The estimator starts estimation at a
+   starting progress that is not necessarily 0. This choice is motivated by the fact that the first percent of
+   progress often takes a much longer time than the following percents.
+
+   :param smoothing_factor: Smoothing factor for the exponentially
+                            weighted moving average. There's a great explanation at
+                            https://www.wallstreetmojo.com/ewma/
+   :type smoothing_factor: float
+   :param inflation_factor: The factor by which the initial total time
+                            estimation is inflated to ensure decreasing
+   :type inflation_factor: float
+   :param update_window: Last update happened at progress1, next update
+                         will happen at (progress1 + update window)
+   :type update_window: float
+   :param starting_progress: The progress at which the time_remaining
+                             estimation starts time estimation
+   :type starting_progress: float
+
+   .. py:method:: time_remaining_from_progress(progress: float) -> float
+
+      Updates the current progress, and returns the estimated remaining time in seconds (float).
+
+      :param progress: The new progress (floating point percentage, 0.0 - 100.0)
+      :type progress: float
+
+      :returns: The expected remaining time in seconds (float)
+
+
+   .. py:method:: get_time_remaining()
+
+      If the new estimation is higher than the previous one by up to 2 seconds, return old estimation.
+
+      :returns: Estimated remaining time in seconds (float)
+
+
+   .. py:method:: update(progress: float)
+
+      Update the estimator with a new progress (floating point percentage, between 0.0 - 100.0).
+
+      :param progress: Progress of the process
+      :type progress: float
+
+      :returns: None
+
+
+

@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>otx.api.utils.time_utils &mdash; OpenVINO Training Extensions  documentation</title>
+      <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../_static/jquery.js"></script>
+        <script src="../../../../../_static/underscore.js"></script>
+        <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../../../_static/doctools.js"></script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../../index.html" class="icon icon-home"> OpenVINO Training Extensions
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../index.html">OpenVINO Training Extensions</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li><code class="xref py py-mod docutils literal notranslate"><span class="pre">otx.api.utils.time_utils</span></code></li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../../_sources/api/otx/api/utils/time_utils/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-otx.api.utils.time_utils">
+<span id="otx-api-utils-time-utils"></span><h1><a class="reference internal" href="#module-otx.api.utils.time_utils" title="otx.api.utils.time_utils"><code class="xref py py-mod docutils literal notranslate"><span class="pre">otx.api.utils.time_utils</span></code></a><a class="headerlink" href="#module-otx.api.utils.time_utils" title="Permalink to this heading"></a></h1>
+<p>This module implements time related utility functions.</p>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this heading"></a></h2>
+<section id="classes">
+<h3>Classes<a class="headerlink" href="#classes" title="Permalink to this heading"></a></h3>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.api.utils.time_utils.TimeEstimator" title="otx.api.utils.time_utils.TimeEstimator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TimeEstimator</span></code></a></p></td>
+<td><p>The time estimator.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="functions">
+<h3>Functions<a class="headerlink" href="#functions" title="Permalink to this heading"></a></h3>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.api.utils.time_utils.now" title="otx.api.utils.time_utils.now"><code class="xref py py-obj docutils literal notranslate"><span class="pre">now</span></code></a>(→ datetime.datetime)</p></td>
+<td><p>Return the current UTC creation_date and time up to a millisecond accuracy.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.api.utils.time_utils.timeit" title="otx.api.utils.time_utils.timeit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">timeit</span></code></a>(func)</p></td>
+<td><p>This function can be used as a decorator as &#64;timeit.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.api.utils.time_utils.now">
+<span class="sig-prename descclassname"><span class="pre">otx.api.utils.time_utils.</span></span><span class="sig-name descname"><span class="pre">now</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">datetime.datetime</span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/utils/time_utils.html#now"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.utils.time_utils.now" title="Permalink to this definition"></a></dt>
+<dd><p>Return the current UTC creation_date and time up to a millisecond accuracy.</p>
+<p>This function is preferable over the Python datetime.datetime.now() function
+because it uses the same accuracy (milliseconds) as MongoDB rather than microsecond accuracy.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Date and time up to a millisecond precision.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.api.utils.time_utils.timeit">
+<span class="sig-prename descclassname"><span class="pre">otx.api.utils.time_utils.</span></span><span class="sig-name descname"><span class="pre">timeit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/otx/api/utils/time_utils.html#timeit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.utils.time_utils.timeit" title="Permalink to this definition"></a></dt>
+<dd><p>This function can be used as a decorator as &#64;timeit.</p>
+<p>It will print out how long the function took to execute.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>func</strong> – The decorated function</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The wrapped function</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.api.utils.time_utils.TimeEstimator">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.utils.time_utils.</span></span><span class="sig-name descname"><span class="pre">TimeEstimator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">smoothing_factor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.02</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inflation_factor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">update_window</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">starting_progress</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/otx/api/utils/time_utils.html#TimeEstimator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.utils.time_utils.TimeEstimator" title="Permalink to this definition"></a></dt>
+<dd><p>The time estimator.</p>
+<p>Estimate the remaining time given the progress, and the progress changes. The estimator starts estimation at a
+starting progress that is not necessarily 0. This choice is motivated by the fact that the first percent of
+progress often takes a much longer time than the following percents.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>smoothing_factor</strong> (<em>float</em>) – Smoothing factor for the exponentially
+weighted moving average. There’s a great explanation at
+<a class="reference external" href="https://www.wallstreetmojo.com/ewma/">https://www.wallstreetmojo.com/ewma/</a></p></li>
+<li><p><strong>inflation_factor</strong> (<em>float</em>) – The factor by which the initial total time
+estimation is inflated to ensure decreasing</p></li>
+<li><p><strong>update_window</strong> (<em>float</em>) – Last update happened at progress1, next update
+will happen at (progress1 + update window)</p></li>
+<li><p><strong>starting_progress</strong> (<em>float</em>) – The progress at which the time_remaining
+estimation starts time estimation</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.utils.time_utils.TimeEstimator.time_remaining_from_progress">
+<span class="sig-name descname"><span class="pre">time_remaining_from_progress</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/utils/time_utils.html#TimeEstimator.time_remaining_from_progress"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.utils.time_utils.TimeEstimator.time_remaining_from_progress" title="Permalink to this definition"></a></dt>
+<dd><p>Updates the current progress, and returns the estimated remaining time in seconds (float).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>progress</strong> (<em>float</em>) – The new progress (floating point percentage, 0.0 - 100.0)</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The expected remaining time in seconds (float)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.utils.time_utils.TimeEstimator.get_time_remaining">
+<span class="sig-name descname"><span class="pre">get_time_remaining</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/otx/api/utils/time_utils.html#TimeEstimator.get_time_remaining"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.utils.time_utils.TimeEstimator.get_time_remaining" title="Permalink to this definition"></a></dt>
+<dd><p>If the new estimation is higher than the previous one by up to 2 seconds, return old estimation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Estimated remaining time in seconds (float)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.utils.time_utils.TimeEstimator.update">
+<span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/otx/api/utils/time_utils.html#TimeEstimator.update"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.utils.time_utils.TimeEstimator.update" title="Permalink to this definition"></a></dt>
+<dd><p>Update the estimator with a new progress (floating point percentage, between 0.0 - 100.0).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>progress</strong> (<em>float</em>) – Progress of the process</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, OpenVINO Training Extensions Contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

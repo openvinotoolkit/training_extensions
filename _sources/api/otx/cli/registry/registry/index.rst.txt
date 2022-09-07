@@ -1,0 +1,63 @@
+:py:mod:`otx.cli.registry.registry`
+===================================
+
+.. py:module:: otx.cli.registry.registry
+
+.. autoapi-nested-parse::
+
+   Model templates registry.
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   otx.cli.registry.registry.Registry
+
+
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   otx.cli.registry.registry.find_and_parse_model_template
+
+
+
+.. py:class:: Registry(templates_dir=None, templates=None, experimental=False)
+
+   Class that implements a model templates registry.
+
+   .. py:method:: __collect_task_types(templates)
+      :staticmethod:
+
+
+   .. py:method:: filter(framework=None, task_type=None)
+
+      Filters registry by framework and/or task type and returns filtered registry.
+
+
+   .. py:method:: get(template_id)
+
+      Returns a model template with specified template_id.
+
+
+   .. py:method:: __str__()
+
+      Returns the string representation of the registry.
+
+
+
+.. py:function:: find_and_parse_model_template(path_or_id)
+
+   In first function attempts to read a model template from disk under assumption that a path is passed.
+
+   If the attempt is failed, it tries to find template in registry under assumption that an ID is passed.
+
+

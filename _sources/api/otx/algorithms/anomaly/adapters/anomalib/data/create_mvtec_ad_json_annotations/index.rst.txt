@@ -1,0 +1,182 @@
+:py:mod:`otx.algorithms.anomaly.adapters.anomalib.data.create_mvtec_ad_json_annotations`
+========================================================================================
+
+.. py:module:: otx.algorithms.anomaly.adapters.anomalib.data.create_mvtec_ad_json_annotations
+
+.. autoapi-nested-parse::
+
+   Create MVTec AD (CC BY-NC-SA 4.0) JSON Annotations for OTX CLI.
+
+   Description:
+       This script converts MVTec AD dataset masks to OTX CLI annotation format for
+           classification, detection and segmentation tasks.
+
+   License:
+       MVTec AD dataset is released under the Creative Commons
+       Attribution-NonCommercial-ShareAlike 4.0 International License
+       (CC BY-NC-SA 4.0)(https://creativecommons.org/licenses/by-nc-sa/4.0/).
+
+   Reference:
+       - Paul Bergmann, Kilian Batzner, Michael Fauser, David Sattlegger, Carsten Steger:
+         The MVTec Anomaly Detection Dataset: A Comprehensive Real-World Dataset for
+         Unsupervised Anomaly Detection; in: International Journal of Computer Vision
+         129(4):1038-1059, 2021, DOI: 10.1007/s11263-020-01400-4.
+
+       - Paul Bergmann, Michael Fauser, David Sattlegger, Carsten Steger: MVTec AD —
+         A Comprehensive Real-World Dataset for Unsupervised Anomaly Detection;
+         in: IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR),
+         9584-9592, 2019, DOI: 10.1109/CVPR.2019.00982.
+
+   .. rubric:: Example
+
+   Assume that MVTec AD dataset is located in "./data/anomaly/MVTec/" from the root
+   directory in training_extensions. JSON annotations could be created by running the
+   following:
+
+   >>> import os
+   '~/training_extensions'
+   >>> os.listdir("./data/anomaly")
+   ['detection', 'shapes', 'segmentation', 'MVTec', 'classification']
+
+   The following script will generate the classification, detection and segmentation
+   JSON annotations to each category in ./data/anomaly/MVTec dataset.
+
+   >>> python external/anomaly/adapters.anomalib/data/create_mvtec_ad_json_annotations.py     ...     --data_path ./data/anomaly/MVTec/
+
+
+
+Module Contents
+---------------
+
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   otx.algorithms.anomaly.adapters.anomalib.data.create_mvtec_ad_json_annotations.create_bboxes_from_mask
+   otx.algorithms.anomaly.adapters.anomalib.data.create_mvtec_ad_json_annotations.create_polygons_from_mask
+   otx.algorithms.anomaly.adapters.anomalib.data.create_mvtec_ad_json_annotations.create_classification_json_items
+   otx.algorithms.anomaly.adapters.anomalib.data.create_mvtec_ad_json_annotations.create_detection_json_items
+   otx.algorithms.anomaly.adapters.anomalib.data.create_mvtec_ad_json_annotations.create_segmentation_json_items
+   otx.algorithms.anomaly.adapters.anomalib.data.create_mvtec_ad_json_annotations.save_json_items
+   otx.algorithms.anomaly.adapters.anomalib.data.create_mvtec_ad_json_annotations.create_task_annotations
+   otx.algorithms.anomaly.adapters.anomalib.data.create_mvtec_ad_json_annotations.create_mvtec_ad_category_annotations
+   otx.algorithms.anomaly.adapters.anomalib.data.create_mvtec_ad_json_annotations.create_mvtec_ad_annotations
+   otx.algorithms.anomaly.adapters.anomalib.data.create_mvtec_ad_json_annotations.get_args
+   otx.algorithms.anomaly.adapters.anomalib.data.create_mvtec_ad_json_annotations.main
+
+
+
+.. py:function:: create_bboxes_from_mask(mask_path: str) -> List[List[float]]
+
+   Create bounding box from binary mask.
+
+   :param mask_path: Path to binary mask.
+   :type mask_path: str
+
+   :returns: Bounding box coordinates.
+   :rtype: List[List[float]]
+
+
+.. py:function:: create_polygons_from_mask(mask_path: str) -> List[List[List[float]]]
+
+   Create polygons from binary mask.
+
+   :param mask_path: Path to binary mask.
+   :type mask_path: str
+
+   :returns: Polygon coordinates.
+   :rtype: List[List[float]]
+
+
+.. py:function:: create_classification_json_items(pd_items: pandas.DataFrame) -> Dict[str, Any]
+
+   Create JSON items for the classification task.
+
+   :param pd_items: MVTec AD samples in pandas DataFrame object.
+   :type pd_items: pd.DataFrame
+
+   :returns: MVTec AD classification JSON items
+   :rtype: Dict[str, Any]
+
+
+.. py:function:: create_detection_json_items(pd_items: pandas.DataFrame) -> Dict[str, Any]
+
+   Create JSON items for the detection task.
+
+   :param pd_items: MVTec AD samples in pandas DataFrame object.
+   :type pd_items: pd.DataFrame
+
+   :returns: MVTec AD detection JSON items
+   :rtype: Dict[str, Any]
+
+
+.. py:function:: create_segmentation_json_items(pd_items: pandas.DataFrame) -> Dict[str, Any]
+
+   Create JSON items for the segmentation task.
+
+   :param pd_items: MVTec AD samples in pandas DataFrame object.
+   :type pd_items: pd.DataFrame
+
+   :returns: MVTec AD segmentation JSON items
+   :rtype: Dict[str, Any]
+
+
+.. py:function:: save_json_items(json_items: Dict[str, Any], file: str) -> None
+
+   Save JSON items to file.
+
+   :param json_items: MVTec AD JSON items
+   :type json_items: Dict[str, Any]
+   :param file: Path to save as a JSON file.
+   :type file: str
+
+
+.. py:function:: create_task_annotations(task: str, data_path: str, annotation_path: str) -> None
+
+   Create MVTec AD categories for a given task.
+
+   :param task: Task type to save annotations.
+   :type task: str
+   :param data_path: Path to MVTec AD category.
+   :type data_path: str
+   :param annotation_path: Path to save MVTec AD category JSON annotation items.
+   :type annotation_path: str
+
+   :raises ValueError: When task is not classification, detection or segmentation.
+
+
+.. py:function:: create_mvtec_ad_category_annotations(data_path: str, annotation_path: str) -> None
+
+   Create MVTec AD category annotations for classification, detection and segmentation tasks.
+
+   :param data_path: Path to MVTec AD category.
+   :type data_path: str
+   :param annotation_path: Path to save MVTec AD category JSON annotation items.
+   :type annotation_path: str
+
+
+.. py:function:: create_mvtec_ad_annotations(mvtec_data_path: str, mvtec_annotation_path: Optional[str] = None) -> None
+
+   Create JSON annotations for MVTec AD dataset.
+
+   :param mvtec_data_path: Path to MVTec AD dataset.
+   :type mvtec_data_path: str
+   :param mvtec_annotation_path: Path to save JSON annotations. Defaults to None.
+   :type mvtec_annotation_path: Optional[str], optional
+
+
+.. py:function:: get_args() -> argparse.Namespace
+
+   Get command line arguments.
+
+   :returns: List of arguments.
+   :rtype: Namespace
+
+
+.. py:function:: main()
+
+   Create MVTec AD Annotations.
+
+

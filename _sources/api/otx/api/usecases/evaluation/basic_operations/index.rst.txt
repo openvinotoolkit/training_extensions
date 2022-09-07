@@ -1,0 +1,114 @@
+:py:mod:`otx.api.usecases.evaluation.basic_operations`
+======================================================
+
+.. py:module:: otx.api.usecases.evaluation.basic_operations
+
+.. autoapi-nested-parse::
+
+   This module contains functions for basic operations.
+
+
+
+Module Contents
+---------------
+
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   otx.api.usecases.evaluation.basic_operations.get_intersections_and_cardinalities
+   otx.api.usecases.evaluation.basic_operations.intersection_box
+   otx.api.usecases.evaluation.basic_operations.intersection_over_union
+   otx.api.usecases.evaluation.basic_operations.precision_per_class
+   otx.api.usecases.evaluation.basic_operations.recall_per_class
+   otx.api.usecases.evaluation.basic_operations.divide_arrays_with_possible_zeros
+
+
+
+Attributes
+~~~~~~~~~~
+
+.. autoapisummary::
+
+   otx.api.usecases.evaluation.basic_operations.NumberPerLabel
+
+
+.. py:data:: NumberPerLabel
+   
+
+   
+
+.. py:function:: get_intersections_and_cardinalities(references: List[numpy.ndarray], predictions: List[numpy.ndarray], labels: List[otx.api.entities.label.LabelEntity]) -> Tuple[NumberPerLabel, NumberPerLabel]
+
+   Returns all intersections and cardinalities between reference masks and prediction masks.
+
+   Intersections and cardinalities are each returned in a dictionary mapping each label to its corresponding
+   number of intersection/cardinality pixels
+
+   :param references: reference masks,s one mask per image
+   :type references: List[np.ndarray]
+   :param predictions: prediction masks, one mask per image
+   :type predictions: List[np.ndarray]
+   :param labels: labels in input masks
+   :type labels: List[LabelEntity]
+
+   :returns: (all_intersections, all_cardinalities)
+   :rtype: Tuple[NumberPerLabel, NumberPerLabel]
+
+
+.. py:function:: intersection_box(box1: otx.api.entities.shapes.rectangle.Rectangle, box2: otx.api.entities.shapes.rectangle.Rectangle) -> Optional[List[float]]
+
+   Calculate the intersection box of two bounding boxes.
+
+   :param box1: a Rectangle that represents the first bounding box
+   :param box2: a Rectangle that represents the second bounding box
+
+   :returns: a Rectangle that represents the intersection box if inputs have
+             a valid intersection, else None
+
+
+.. py:function:: intersection_over_union(box1: otx.api.entities.shapes.rectangle.Rectangle, box2: otx.api.entities.shapes.rectangle.Rectangle, intersection: Optional[List[float]] = None) -> float
+
+   Calculate the Intersection over Union (IoU) of two bounding boxes.
+
+   :param box1: a Rectangle representing a bounding box
+   :param box2: a Rectangle representing a second bounding box
+   :param intersection: precomputed intersection between two boxes (see
+                        intersection_box function), if exists.
+
+   :returns: intersection-over-union of box1 and box2
+
+
+.. py:function:: precision_per_class(matrix: numpy.ndarray) -> numpy.ndarray
+
+   Compute the precision per class based on the confusion matrix.
+
+   :param matrix: the computed confusion matrix
+
+   :returns: the precision (per class), defined as TP/(TP+FP)
+
+
+.. py:function:: recall_per_class(matrix: numpy.ndarray) -> numpy.ndarray
+
+   Compute the recall per class based on the confusion matrix.
+
+   :param matrix: the computed confusion matrix
+
+   :returns: the recall (per class), defined as TP/(TP+FN)
+
+
+.. py:function:: divide_arrays_with_possible_zeros(array1: numpy.ndarray, array2: numpy.ndarray) -> numpy.ndarray
+
+   Sometimes the denominator in the precision or recall computation can contain a zero.
+
+   In that case, a zero is returned for that element (https://stackoverflow.com/a/32106804).
+
+   :param array1: the numerator
+   :param array2: the denominator
+
+   :returns: the divided arrays (numerator/denominator) with a value of zero
+             where the denominator was zero.
+
+

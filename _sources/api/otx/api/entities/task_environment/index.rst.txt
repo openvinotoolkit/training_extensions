@@ -1,0 +1,122 @@
+:py:mod:`otx.api.entities.task_environment`
+===========================================
+
+.. py:module:: otx.api.entities.task_environment
+
+.. autoapi-nested-parse::
+
+   This module implements the TaskEnvironment entity.
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   otx.api.entities.task_environment.TaskEnvironment
+
+
+
+
+Attributes
+~~~~~~~~~~
+
+.. autoapisummary::
+
+   otx.api.entities.task_environment.TypeVariable
+
+
+.. py:data:: TypeVariable
+   
+
+   
+
+.. py:class:: TaskEnvironment(model_template: otx.api.entities.model_template.ModelTemplate, model: Optional[otx.api.entities.model.ModelEntity], hyper_parameters: otx.api.configuration.ConfigurableParameters, label_schema: otx.api.entities.label_schema.LabelSchemaEntity)
+
+   Defines the machine learning environment the task runs in.
+
+   Args:
+   model_template (ModelTemplate): The model template used for this task
+   model (Optional[ModelEntity]): Model to use; if not specified, the task must be either weight-less
+       or use pre-trained or randomly initialised weights.
+   hyper_parameters (ConfigurableParameters): Set of hyper parameters
+   label_schema (LabelSchemaEntity): Label schema associated to this task
+
+   .. py:method:: __repr__()
+
+      String representation of the TaskEnvironment object.
+
+
+   .. py:method:: __eq__(other: object) -> bool
+
+      Compares two TaskEnvironment objects.
+
+      :param other: Object to compare with.
+      :type other: TaskEnvironment
+
+      :returns: True if equal, False otherwise.
+      :rtype: bool
+
+
+   .. py:method:: get_labels(include_empty: bool = False) -> List[otx.api.entities.label.LabelEntity]
+
+      Return the labels in this task environment (based on the label schema).
+
+      :param include_empty: Include the empty label if ``True``. Defaults to False.
+      :type include_empty: bool
+
+      :returns: List of labels
+      :rtype: List[LabelEntity]
+
+
+   .. py:method:: get_hyper_parameters(instance_of: Optional[Type[TypeVariable]] = None) -> TypeVariable
+
+      Returns Configuration for the task, de-serialized as type specified in `instance_of`.
+
+      If the type of the configurable parameters is unknown, a generic
+      ConfigurableParameters object with all available parameters can be obtained
+      by calling method with instance_of = None.
+
+      .. rubric:: Example
+
+      >>> self.get_hyper_parameters(instance_of=TorchSegmentationConfig)
+      TorchSegmentationConfig()
+
+      :param instance_of: subtype of ModelConfig of the hyperparamters. Defaults to None.
+      :type instance_of: Optional[Type[TypeVariable]]
+
+      :returns: ConfigurableParameters entity
+      :rtype: TypeVariable
+
+
+   .. py:method:: set_hyper_parameters(hyper_parameters: otx.api.configuration.ConfigurableParameters)
+
+      Sets the hyper parameters for the task.
+
+      .. rubric:: Example
+
+      >>> self.set_hyper_parameters(hyper_parameters=TorchSegmentationParameters())
+      None
+
+      :param hyper_parameters: ConfigurableParameters entity to assign to task
+      :type hyper_parameters: ConfigurationParameter
+
+
+   .. py:method:: get_model_configuration() -> otx.api.entities.model.ModelConfiguration
+
+      Get the configuration needed to use the current model.
+
+      That is the current set of:
+          * configurable parameters
+          * labels
+          * label schema
+
+      :returns: Model configuration
+      :rtype: ModelConfiguration
+
+
+

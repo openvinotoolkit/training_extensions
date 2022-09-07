@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>otx.cli.tools.utils.demo.visualization &mdash; OpenVINO Training Extensions  documentation</title>
+      <link rel="stylesheet" href="../../../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../../../" id="documentation_options" src="../../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../../_static/jquery.js"></script>
+        <script src="../../../../../../_static/underscore.js"></script>
+        <script src="../../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../../../../_static/doctools.js"></script>
+    <script src="../../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../../../index.html" class="icon icon-home"> OpenVINO Training Extensions
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../api/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../../index.html">OpenVINO Training Extensions</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../../../index.html">Module code</a> &raquo;</li>
+          <li><a href="../../../../../otx.html">otx</a> &raquo;</li>
+      <li>otx.cli.tools.utils.demo.visualization</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for otx.cli.tools.utils.demo.visualization</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Visualisation module.&quot;&quot;&quot;</span>
+
+<span class="c1"># Copyright (C) 2021 Intel Corporation</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1"># http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing,</span>
+<span class="c1"># software distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions</span>
+<span class="c1"># and limitations under the License.</span>
+
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span>
+<span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">warn</span>
+
+<span class="kn">import</span> <span class="nn">cv2</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">cv2</span> <span class="kn">import</span> <span class="n">Mat</span>
+
+<span class="kn">from</span> <span class="nn">otx.api.entities.annotation</span> <span class="kn">import</span> <span class="n">Annotation</span>
+<span class="kn">from</span> <span class="nn">otx.api.entities.model_template</span> <span class="kn">import</span> <span class="n">TaskType</span>
+<span class="kn">from</span> <span class="nn">otx.api.entities.shapes.polygon</span> <span class="kn">import</span> <span class="n">Polygon</span>
+<span class="kn">from</span> <span class="nn">otx.api.entities.shapes.rectangle</span> <span class="kn">import</span> <span class="n">Rectangle</span>
+
+
+<div class="viewcode-block" id="put_text_on_rect_bg"><a class="viewcode-back" href="../../../../../../api/otx/cli/tools/utils/demo/visualization/index.html#otx.cli.tools.utils.demo.visualization.put_text_on_rect_bg">[docs]</a><span class="k">def</span> <span class="nf">put_text_on_rect_bg</span><span class="p">(</span><span class="n">frame</span><span class="p">:</span> <span class="n">Mat</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">position</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">)):</span>
+    <span class="sd">&quot;&quot;&quot;Puts a text message on a black rectangular aread in specified position of a frame.&quot;&quot;&quot;</span>
+
+    <span class="n">font_face</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">FONT_HERSHEY_COMPLEX</span>
+    <span class="n">font_scale</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">thickness</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">color_bg</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">position</span>
+    <span class="n">text_size</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">getTextSize</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">font_face</span><span class="p">,</span> <span class="n">font_scale</span><span class="p">,</span> <span class="n">thickness</span><span class="p">)</span>
+    <span class="n">text_w</span><span class="p">,</span> <span class="n">text_h</span> <span class="o">=</span> <span class="n">text_size</span>
+    <span class="n">cv2</span><span class="o">.</span><span class="n">rectangle</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">position</span><span class="p">,</span> <span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="n">text_w</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">y</span> <span class="o">+</span> <span class="n">text_h</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="n">color_bg</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">cv2</span><span class="o">.</span><span class="n">putText</span><span class="p">(</span>
+        <span class="n">frame</span><span class="p">,</span>
+        <span class="n">message</span><span class="p">,</span>
+        <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">+</span> <span class="n">text_h</span> <span class="o">+</span> <span class="n">font_scale</span> <span class="o">-</span> <span class="mi">1</span><span class="p">),</span>
+        <span class="n">font_face</span><span class="p">,</span>
+        <span class="n">font_scale</span><span class="p">,</span>
+        <span class="n">color</span><span class="p">,</span>
+        <span class="n">thickness</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">text_size</span></div>
+
+
+<div class="viewcode-block" id="draw_masks"><a class="viewcode-back" href="../../../../../../api/otx/cli/tools/utils/demo/visualization/index.html#otx.cli.tools.utils.demo.visualization.draw_masks">[docs]</a><span class="k">def</span> <span class="nf">draw_masks</span><span class="p">(</span><span class="n">frame</span><span class="p">:</span> <span class="n">Mat</span><span class="p">,</span> <span class="n">predictions</span><span class="p">,</span> <span class="n">put_object_count</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Converts predictions to masks and draw them on frame.&quot;&quot;&quot;</span>
+
+    <span class="n">frame</span> <span class="o">=</span> <span class="n">frame</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">height</span><span class="p">,</span> <span class="n">width</span> <span class="o">=</span> <span class="n">frame</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">frame</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">segments_image</span> <span class="o">=</span> <span class="n">frame</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">aggregated_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">frame</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">2</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+    <span class="n">aggregated_colored_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">frame</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">prediction</span> <span class="ow">in</span> <span class="n">predictions</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">prediction</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">Polygon</span><span class="p">):</span>
+            <span class="k">continue</span>
+        <span class="n">contours</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[(</span><span class="nb">int</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">x</span> <span class="o">*</span> <span class="n">width</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">y</span> <span class="o">*</span> <span class="n">height</span><span class="p">))</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">prediction</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">points</span><span class="p">]])</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">prediction</span><span class="o">.</span><span class="n">get_labels</span><span class="p">())</span> <span class="o">==</span> <span class="mi">1</span>
+        <span class="n">label</span> <span class="o">=</span> <span class="n">prediction</span><span class="o">.</span><span class="n">get_labels</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">color</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">label</span><span class="o">.</span><span class="n">color</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;blue&quot;</span><span class="p">,</span> <span class="s2">&quot;green&quot;</span><span class="p">,</span> <span class="s2">&quot;red&quot;</span><span class="p">))</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">height</span><span class="p">,</span> <span class="n">width</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+        <span class="n">cv2</span><span class="o">.</span><span class="n">drawContours</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">contours</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">cv2</span><span class="o">.</span><span class="n">drawContours</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">contours</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">color</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">rect</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">boundingRect</span><span class="p">(</span><span class="n">contours</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">cv2</span><span class="o">.</span><span class="n">rectangle</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="p">(</span><span class="n">rect</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">rect</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="p">(</span><span class="n">rect</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">rect</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">rect</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">rect</span><span class="p">[</span><span class="mi">3</span><span class="p">]),</span> <span class="n">color</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">put_text_on_rect_bg</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">label</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="p">(</span><span class="n">rect</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">rect</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">)</span>
+        <span class="n">cv2</span><span class="o">.</span><span class="n">bitwise_or</span><span class="p">(</span><span class="n">aggregated_mask</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">dst</span><span class="o">=</span><span class="n">aggregated_mask</span><span class="p">)</span>
+        <span class="n">cv2</span><span class="o">.</span><span class="n">bitwise_or</span><span class="p">(</span>
+            <span class="n">aggregated_colored_mask</span><span class="p">,</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">color</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">),</span>
+            <span class="n">dst</span><span class="o">=</span><span class="n">aggregated_colored_mask</span><span class="p">,</span>
+            <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="c1"># Fill the area occupied by all instances with a colored instances mask image.</span>
+    <span class="n">cv2</span><span class="o">.</span><span class="n">bitwise_and</span><span class="p">(</span>
+        <span class="n">segments_image</span><span class="p">,</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">),</span>
+        <span class="n">dst</span><span class="o">=</span><span class="n">segments_image</span><span class="p">,</span>
+        <span class="n">mask</span><span class="o">=</span><span class="n">aggregated_mask</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">cv2</span><span class="o">.</span><span class="n">bitwise_or</span><span class="p">(</span>
+        <span class="n">segments_image</span><span class="p">,</span>
+        <span class="n">aggregated_colored_mask</span><span class="p">,</span>
+        <span class="n">dst</span><span class="o">=</span><span class="n">segments_image</span><span class="p">,</span>
+        <span class="n">mask</span><span class="o">=</span><span class="n">aggregated_mask</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="c1"># Blend original image with the one, where instances are colored.</span>
+    <span class="c1"># As a result instances masks become transparent.</span>
+    <span class="n">cv2</span><span class="o">.</span><span class="n">addWeighted</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">segments_image</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">dst</span><span class="o">=</span><span class="n">frame</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">put_object_count</span><span class="p">:</span>
+        <span class="n">put_text_on_rect_bg</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Obj. count: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">predictions</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">frame</span></div>
+
+
+<div class="viewcode-block" id="put_labels"><a class="viewcode-back" href="../../../../../../api/otx/cli/tools/utils/demo/visualization/index.html#otx.cli.tools.utils.demo.visualization.put_labels">[docs]</a><span class="k">def</span> <span class="nf">put_labels</span><span class="p">(</span><span class="n">frame</span><span class="p">:</span> <span class="n">Mat</span><span class="p">,</span> <span class="n">predictions</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Annotation</span><span class="p">]):</span>
+    <span class="sd">&quot;&quot;&quot;Converts predictions to text labels and puts them to the top left corner of a frame.&quot;&quot;&quot;</span>
+
+    <span class="n">frame</span> <span class="o">=</span> <span class="n">frame</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">predictions</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
+    <span class="c1"># TODO (ilya-krylov): handle multi-label classification</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">predictions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get_labels</span><span class="p">())</span> <span class="o">==</span> <span class="mi">1</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="n">predictions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get_labels</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">color</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">label</span><span class="o">.</span><span class="n">color</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;blue&quot;</span><span class="p">,</span> <span class="s2">&quot;green&quot;</span><span class="p">,</span> <span class="s2">&quot;red&quot;</span><span class="p">))</span>
+    <span class="n">put_text_on_rect_bg</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">label</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">frame</span></div>
+
+
+<div class="viewcode-block" id="draw_bounding_boxes"><a class="viewcode-back" href="../../../../../../api/otx/cli/tools/utils/demo/visualization/index.html#otx.cli.tools.utils.demo.visualization.draw_bounding_boxes">[docs]</a><span class="k">def</span> <span class="nf">draw_bounding_boxes</span><span class="p">(</span><span class="n">frame</span><span class="p">:</span> <span class="n">Mat</span><span class="p">,</span> <span class="n">predictions</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Annotation</span><span class="p">],</span> <span class="n">put_object_count</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Converts predictions to bounding boxes and draws them on a frame.&quot;&quot;&quot;</span>
+
+    <span class="n">frame</span> <span class="o">=</span> <span class="n">frame</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">height</span><span class="p">,</span> <span class="n">width</span> <span class="o">=</span> <span class="n">frame</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">frame</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">prediction</span> <span class="ow">in</span> <span class="n">predictions</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">prediction</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">Rectangle</span><span class="p">):</span>
+            <span class="n">x1</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">prediction</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">x1</span> <span class="o">*</span> <span class="n">width</span><span class="p">)</span>
+            <span class="n">x2</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">prediction</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">x2</span> <span class="o">*</span> <span class="n">width</span><span class="p">)</span>
+            <span class="n">y1</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">prediction</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">y1</span> <span class="o">*</span> <span class="n">height</span><span class="p">)</span>
+            <span class="n">y2</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">prediction</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">y2</span> <span class="o">*</span> <span class="n">height</span><span class="p">)</span>
+            <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">prediction</span><span class="o">.</span><span class="n">get_labels</span><span class="p">())</span> <span class="o">==</span> <span class="mi">1</span>
+            <span class="n">label</span> <span class="o">=</span> <span class="n">prediction</span><span class="o">.</span><span class="n">get_labels</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">color</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">label</span><span class="o">.</span><span class="n">color</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;blue&quot;</span><span class="p">,</span> <span class="s2">&quot;green&quot;</span><span class="p">,</span> <span class="s2">&quot;red&quot;</span><span class="p">))</span>
+            <span class="n">cv2</span><span class="o">.</span><span class="n">rectangle</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">),</span> <span class="p">(</span><span class="n">x2</span><span class="p">,</span> <span class="n">y2</span><span class="p">),</span> <span class="n">color</span><span class="p">,</span> <span class="n">thickness</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+            <span class="n">put_text_on_rect_bg</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">label</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Predictions called on Annotations with shape </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">prediction</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="si">}</span><span class="s2">.&quot;</span>
+                <span class="s2">&quot;Expected shape to be of type Rectangle.&quot;</span>
+            <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">put_object_count</span><span class="p">:</span>
+        <span class="n">put_text_on_rect_bg</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Obj. count: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">predictions</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">frame</span></div>
+
+
+<div class="viewcode-block" id="draw_predictions"><a class="viewcode-back" href="../../../../../../api/otx/cli/tools/utils/demo/visualization/index.html#otx.cli.tools.utils.demo.visualization.draw_predictions">[docs]</a><span class="k">def</span> <span class="nf">draw_predictions</span><span class="p">(</span><span class="n">task_type</span><span class="p">:</span> <span class="n">TaskType</span><span class="p">,</span> <span class="n">predictions</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Annotation</span><span class="p">],</span> <span class="n">frame</span><span class="p">:</span> <span class="n">Mat</span><span class="p">,</span> <span class="n">fit_to_size</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]):</span>
+    <span class="sd">&quot;&quot;&quot;Converts predictions to visual representations depending on task type and draws them on a frame.&quot;&quot;&quot;</span>
+
+    <span class="n">width</span><span class="p">,</span> <span class="n">height</span> <span class="o">=</span> <span class="n">frame</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">frame</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">fit_to_size</span><span class="p">:</span>
+        <span class="n">ratio_x</span> <span class="o">=</span> <span class="n">fit_to_size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">width</span>
+        <span class="n">ratio_y</span> <span class="o">=</span> <span class="n">fit_to_size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">height</span>
+        <span class="n">ratio</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">ratio_x</span><span class="p">,</span> <span class="n">ratio_y</span><span class="p">)</span>
+        <span class="n">frame</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">resize</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">fx</span><span class="o">=</span><span class="n">ratio</span><span class="p">,</span> <span class="n">fy</span><span class="o">=</span><span class="n">ratio</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">task_type</span> <span class="ow">in</span> <span class="p">{</span><span class="n">TaskType</span><span class="o">.</span><span class="n">DETECTION</span><span class="p">,</span> <span class="n">TaskType</span><span class="o">.</span><span class="n">ANOMALY_DETECTION</span><span class="p">}:</span>
+        <span class="n">frame</span> <span class="o">=</span> <span class="n">draw_bounding_boxes</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">predictions</span><span class="p">,</span> <span class="n">put_object_count</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">task_type</span> <span class="ow">in</span> <span class="p">{</span><span class="n">TaskType</span><span class="o">.</span><span class="n">CLASSIFICATION</span><span class="p">,</span> <span class="n">TaskType</span><span class="o">.</span><span class="n">ANOMALY_CLASSIFICATION</span><span class="p">}:</span>
+        <span class="n">frame</span> <span class="o">=</span> <span class="n">put_labels</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">predictions</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">task_type</span> <span class="ow">in</span> <span class="p">{</span><span class="n">TaskType</span><span class="o">.</span><span class="n">INSTANCE_SEGMENTATION</span><span class="p">,</span> <span class="n">TaskType</span><span class="o">.</span><span class="n">ROTATED_DETECTION</span><span class="p">}:</span>
+        <span class="n">frame</span> <span class="o">=</span> <span class="n">draw_masks</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">predictions</span><span class="p">,</span> <span class="n">put_object_count</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">task_type</span> <span class="ow">in</span> <span class="p">{</span><span class="n">TaskType</span><span class="o">.</span><span class="n">SEGMENTATION</span><span class="p">,</span> <span class="n">TaskType</span><span class="o">.</span><span class="n">ANOMALY_SEGMENTATION</span><span class="p">}:</span>
+        <span class="n">frame</span> <span class="o">=</span> <span class="n">draw_masks</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">predictions</span><span class="p">,</span> <span class="n">put_object_count</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown task type: </span><span class="si">{</span><span class="n">task_type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">frame</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, OpenVINO Training Extensions Contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

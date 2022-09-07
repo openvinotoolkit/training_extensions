@@ -1,0 +1,358 @@
+:py:mod:`otx.api.entities.model`
+================================
+
+.. py:module:: otx.api.entities.model
+
+.. autoapi-nested-parse::
+
+   This file defines the ModelConfiguration, ModelEntity and Model classes.
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   otx.api.entities.model.ModelPrecision
+   otx.api.entities.model.ModelConfiguration
+   otx.api.entities.model.ModelFormat
+   otx.api.entities.model.ModelOptimizationType
+   otx.api.entities.model.OptimizationMethod
+   otx.api.entities.model.ModelEntity
+
+
+
+
+.. py:class:: ModelPrecision
+
+   Bases: :py:obj:`enum.IntEnum`
+
+   Represents the ModelPrecision of a Model.
+
+   .. py:attribute:: INT4
+      
+
+      
+
+   .. py:attribute:: INT8
+      
+
+      
+
+   .. py:attribute:: FP16
+      
+
+      
+
+   .. py:attribute:: FP32
+      
+
+      
+
+
+.. py:class:: ModelConfiguration(configurable_parameters: otx.api.configuration.ConfigurableParameters, label_schema: otx.api.entities.label_schema.LabelSchemaEntity)
+
+   This class represents the task configuration which was used to generate a specific model.
+
+   Those are the parameters that a task may need in order to use the model.
+
+   :param configurable_parameters: Task configurable parameters used to
+                                   generate the model
+   :param label_schema: Label schema inside the project used to generate
+                        the model
+
+   .. py:attribute:: configurable_parameters
+      :annotation: :otx.api.configuration.ConfigurableParameters
+
+      
+
+   .. py:method:: get_label_schema() -> otx.api.entities.label_schema.LabelSchemaEntity
+
+      Get the LabelSchema.
+
+
+
+.. py:class:: ModelFormat
+
+   Bases: :py:obj:`enum.IntEnum`
+
+   Indicate the format of the model.
+
+   .. py:attribute:: OPENVINO
+      
+
+      
+
+   .. py:attribute:: BASE_FRAMEWORK
+      
+
+      
+
+   .. py:attribute:: ONNX
+      
+
+      
+
+
+.. py:class:: ModelOptimizationType
+
+   Bases: :py:obj:`enum.IntEnum`
+
+   Represents optimization type that is used to optimize the model.
+
+   .. py:attribute:: NONE
+      
+
+      
+
+   .. py:attribute:: MO
+      
+
+      
+
+   .. py:attribute:: NNCF
+      
+
+      
+
+   .. py:attribute:: POT
+      
+
+      
+
+
+.. py:class:: OptimizationMethod
+
+   Bases: :py:obj:`enum.IntEnum`
+
+   Represents optimization method that is used to optimize the model.
+
+   .. py:attribute:: FILTER_PRUNING
+      
+
+      
+
+   .. py:attribute:: QUANTIZATION
+      
+
+      
+
+
+.. py:class:: ModelEntity(train_dataset: otx.api.entities.datasets.DatasetEntity, configuration: ModelConfiguration, *, creation_date: Optional[datetime.datetime] = None, performance: Optional[otx.api.entities.metrics.Performance] = None, previous_trained_revision: Optional[ModelEntity] = None, previous_revision: Optional[ModelEntity] = None, version: int = 1, tags: Optional[List[str]] = None, model_format: ModelFormat = ModelFormat.OPENVINO, training_duration: float = 0.0, model_adapters: Optional[Dict[str, otx.api.usecases.adapters.model_adapter.ModelAdapter]] = None, exportable_code_adapter: Optional[otx.api.usecases.adapters.model_adapter.ExportableCodeAdapter] = None, precision: Optional[List[ModelPrecision]] = None, latency: int = 0, fps_throughput: int = 0, target_device: otx.api.entities.model_template.TargetDevice = TargetDevice.CPU, target_device_type: Optional[str] = None, optimization_type: ModelOptimizationType = ModelOptimizationType.NONE, optimization_methods: List[OptimizationMethod] = None, optimization_objectives: Dict[str, str] = None, performance_improvement: Dict[str, float] = None, model_size_reduction: float = 0.0, _id: Optional[otx.api.entities.id.ID] = None)
+
+   Represents the Entity of a Model.
+
+   .. py:method:: id_() -> otx.api.entities.id.ID
+      :property:
+
+      Gets or sets the id of a Model.
+
+
+   .. py:method:: id() -> otx.api.entities.id.ID
+      :property:
+
+      DEPRECATED.
+
+
+   .. py:method:: configuration() -> ModelConfiguration
+      :property:
+
+      Gets or sets the configuration of the Model.
+
+
+   .. py:method:: creation_date() -> datetime.datetime
+      :property:
+
+      Gets or sets the creation_date of the Model.
+
+
+   .. py:method:: train_dataset() -> otx.api.entities.datasets.DatasetEntity
+      :property:
+
+      Gets or sets the current Training Dataset.
+
+
+   .. py:method:: previous_trained_revision() -> Union[None, ModelEntity]
+      :property:
+
+      Gets or sets the previous model.
+
+      :returns: None if no previous_trained_revision has been created
+
+
+   .. py:method:: previous_revision() -> Union[None, ModelEntity]
+      :property:
+
+      Gets or sets the previous model.
+
+
+   .. py:method:: version() -> int
+      :property:
+
+      Gets or sets the version.
+
+
+   .. py:method:: tags() -> List[str]
+      :property:
+
+      Gets or sets the tags of the Model.
+
+
+   .. py:method:: model_format() -> ModelFormat
+      :property:
+
+      Gets the model format.
+
+
+   .. py:method:: performance() -> otx.api.entities.metrics.Performance
+      :property:
+
+      Gets or sets the current Performance of the Model.
+
+
+   .. py:method:: training_duration() -> float
+      :property:
+
+      Gets or sets the current training duration.
+
+
+   .. py:method:: precision() -> List[ModelPrecision]
+      :property:
+
+      Get or set the precision for the model.
+
+      This has effect on accuracy, latency and throughput of the model.
+
+
+   .. py:method:: latency() -> int
+      :property:
+
+      Get or set the latency of the model.
+
+      Unit is milliseconds (ms)
+
+
+   .. py:method:: fps_throughput() -> int
+      :property:
+
+      Get or set the throughput of the model.
+
+      Unit is frames per second (fps)
+
+
+   .. py:method:: target_device() -> otx.api.entities.model_template.TargetDevice
+      :property:
+
+      Get or set the device on which the model will be deployed.
+
+
+   .. py:method:: target_device_type() -> Optional[str]
+      :property:
+
+      Get or set the type of the target device used by the model.
+
+
+   .. py:method:: optimization_methods() -> Optional[List[OptimizationMethod]]
+      :property:
+
+      Get or set the optimization methods used on the model.
+
+
+   .. py:method:: optimization_type() -> ModelOptimizationType
+      :property:
+
+      Get or set the optimization type used for the model.
+
+
+   .. py:method:: optimization_objectives() -> Optional[Dict[str, str]]
+      :property:
+
+      Get or set the optimization level of the model.
+
+
+   .. py:method:: performance_improvement() -> Optional[Dict[str, float]]
+      :property:
+
+      Get or set the performance improvement of the model.
+
+
+   .. py:method:: model_size_reduction() -> float
+      :property:
+
+      Get or set the reduction in model size by optimizing.
+
+
+   .. py:method:: exportable_code() -> Optional[bytes]
+      :property:
+
+      Get the exportable_code from the exportable code adapter.
+
+
+   .. py:method:: exportable_code_adapter() -> Optional[otx.api.usecases.adapters.model_adapter.ExportableCodeAdapter]
+      :property:
+
+      Returns the exportable code adapter.
+
+
+   .. py:method:: get_data(key: str) -> bytes
+
+      Fetches byte data for a certain model.
+
+      :param key: key to fetch data for
+
+      :returns: data for the key.
+      :rtype: bytes
+
+
+   .. py:method:: set_data(key: str, data: Union[bytes, otx.api.usecases.adapters.model_adapter.IDataSource], skip_deletion=False)
+
+      Sets the data for a specified key, either from a binary blob or from a data source.
+
+      If the key already exists it appends existing data url to a list of urls that will be removed upon saving the
+      model. Skip deletion parameter should only be true if replacing bytes data with a file.
+
+
+   .. py:method:: delete_data(key: str)
+
+      This function is used to delete data sources that are on the filesystem.
+
+      If the key exists the model adapter will be appended to a list of model adapter that will be removed once the
+      model is saved by the repo. Note that an optimized model must contain at least 1 DataSource otherwise you are
+      left with an invalid optimized model.
+
+
+   .. py:method:: model_adapters() -> Dict[str, otx.api.usecases.adapters.model_adapter.ModelAdapter]
+      :property:
+
+      Returns the dictionary of model adapters for each data key.
+
+
+   .. py:method:: weight_paths() -> Dict[str, otx.api.entities.url.URL]
+      :property:
+
+      Returns the the path to URLs for each data key.
+
+      Note that this function will raise an error if the model was not saved to a database.
+
+
+   .. py:method:: is_optimized() -> bool
+
+      Returns a boolean indicating if the model has been optimized or not.
+
+
+   .. py:method:: __eq__(other) -> bool
+
+      Compares if both the ModelEntities use the same dataset and have the same performance.
+
+      :param other: ModelEntity to compare with.
+      :type other: ModelEntity
+
+      :returns: True if the two ModelEntities are equal, False otherwise.
+      :rtype: bool
+
+
+

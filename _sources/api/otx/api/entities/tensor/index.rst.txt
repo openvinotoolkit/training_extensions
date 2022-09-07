@@ -1,0 +1,61 @@
+:py:mod:`otx.api.entities.tensor`
+=================================
+
+.. py:module:: otx.api.entities.tensor
+
+.. autoapi-nested-parse::
+
+   This module implements the Tensor entity.
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   otx.api.entities.tensor.TensorEntity
+
+
+
+
+.. py:class:: TensorEntity(name: str, numpy: numpy.ndarray)
+
+   Bases: :py:obj:`otx.api.entities.metadata.IMetadata`
+
+   Represents a metadata of tensor type in OTX.
+
+   :param name: name of metadata
+   :param numpy: the numpy data of the tensor
+
+   .. py:method:: numpy() -> numpy.ndarray
+      :property:
+
+      Returns the numpy representation of the tensor.
+
+
+   .. py:method:: shape() -> Tuple[int, Ellipsis]
+      :property:
+
+      Returns the shape of the tensor.
+
+
+   .. py:method:: __eq__(other)
+
+      Returns True if the tensors are equal.
+
+
+   .. py:method:: __str__()
+
+      Returns the string representation of the tensor.
+
+
+   .. py:method:: __repr__()
+
+      Returns the representation of the tensor.
+
+
+

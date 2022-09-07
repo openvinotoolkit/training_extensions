@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>otx.api.configuration.elements.utils &mdash; OpenVINO Training Extensions  documentation</title>
+      <link rel="stylesheet" href="../../../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../../../" id="documentation_options" src="../../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../../_static/jquery.js"></script>
+        <script src="../../../../../../_static/underscore.js"></script>
+        <script src="../../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../../../../_static/doctools.js"></script>
+    <script src="../../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../../../index.html" class="icon icon-home"> OpenVINO Training Extensions
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../../index.html">OpenVINO Training Extensions</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li><code class="xref py py-mod docutils literal notranslate"><span class="pre">otx.api.configuration.elements.utils</span></code></li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../../../_sources/api/otx/api/configuration/elements/utils/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-otx.api.configuration.elements.utils">
+<span id="otx-api-configuration-elements-utils"></span><h1><a class="reference internal" href="#module-otx.api.configuration.elements.utils" title="otx.api.configuration.elements.utils"><code class="xref py py-mod docutils literal notranslate"><span class="pre">otx.api.configuration.elements.utils</span></code></a><a class="headerlink" href="#module-otx.api.configuration.elements.utils" title="Permalink to this heading"></a></h1>
+<p>Utility functions for attr package.</p>
+<p>This module contains utility functions to use with the attr package, concerning for instance parameter validation
+or serialization. They are used within the otx_config_helper or the configuration elements.</p>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this heading"></a></h2>
+<section id="functions">
+<h3>Functions<a class="headerlink" href="#functions" title="Permalink to this heading"></a></h3>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.api.configuration.elements.utils.attr_enum_to_str_serializer" title="otx.api.configuration.elements.utils.attr_enum_to_str_serializer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">attr_enum_to_str_serializer</span></code></a>(→ str)</p></td>
+<td><p>This function converts Enums to their string representation.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.api.configuration.elements.utils._convert_enum_selectable_value" title="otx.api.configuration.elements.utils._convert_enum_selectable_value"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_convert_enum_selectable_value</span></code></a>(→ ConfigurableEnumTypeVar)</p></td>
+<td><p>Helper function that converts the input value to an instance of the correct ConfigurableEnum.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.api.configuration.elements.utils.construct_attr_enum_selectable_converter" title="otx.api.configuration.elements.utils.construct_attr_enum_selectable_converter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">construct_attr_enum_selectable_converter</span></code></a>(...)</p></td>
+<td><p>This function converts an input value to the correct instance of the ConfigurableEnum.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.api.configuration.elements.utils.construct_attr_enum_selectable_onsetattr" title="otx.api.configuration.elements.utils.construct_attr_enum_selectable_onsetattr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">construct_attr_enum_selectable_onsetattr</span></code></a>(...)</p></td>
+<td><p>This function converts an input value to the correct instance of the ConfigurableEnum.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.api.configuration.elements.utils.construct_attr_value_validator" title="otx.api.configuration.elements.utils.construct_attr_value_validator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">construct_attr_value_validator</span></code></a>(...)</p></td>
+<td><p>Constructs a validator function that is used in the attribute validation of numeric configurable parameters.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.api.configuration.elements.utils.construct_attr_selectable_validator" title="otx.api.configuration.elements.utils.construct_attr_selectable_validator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">construct_attr_selectable_validator</span></code></a>(...)</p></td>
+<td><p>Constructs a validator function that is used in the attribute validation of selectable configurable parameters.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.api.configuration.elements.utils.convert_string_to_id" title="otx.api.configuration.elements.utils.convert_string_to_id"><code class="xref py py-obj docutils literal notranslate"><span class="pre">convert_string_to_id</span></code></a>(→ otx.api.entities.id.ID)</p></td>
+<td><p>This function converts an input string representing an ID into an OTX ID object.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.api.configuration.elements.utils.attr_strict_int_validator" title="otx.api.configuration.elements.utils.attr_strict_int_validator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">attr_strict_int_validator</span></code></a>(→ None)</p></td>
+<td><p>Validates that the value set for an attribute is an integer.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.api.configuration.elements.utils._validate_and_convert_float" title="otx.api.configuration.elements.utils._validate_and_convert_float"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_validate_and_convert_float</span></code></a>(→ Optional[float])</p></td>
+<td><p>Validate that a value is a float, or a number that can be converted to a float.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.api.configuration.elements.utils.attr_strict_float_on_setattr" title="otx.api.configuration.elements.utils.attr_strict_float_on_setattr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">attr_strict_float_on_setattr</span></code></a>(→ float)</p></td>
+<td><p>Validate that the value set for an attribute is a float, or a number that can be converted to a float.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.api.configuration.elements.utils.attr_strict_float_converter" title="otx.api.configuration.elements.utils.attr_strict_float_converter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">attr_strict_float_converter</span></code></a>(→ float)</p></td>
+<td><p>Converts a value to float.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="attributes">
+<h3>Attributes<a class="headerlink" href="#attributes" title="Permalink to this heading"></a></h3>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.api.configuration.elements.utils.NumericTypeVar" title="otx.api.configuration.elements.utils.NumericTypeVar"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NumericTypeVar</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.api.configuration.elements.utils.SelectableTypeVar" title="otx.api.configuration.elements.utils.SelectableTypeVar"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SelectableTypeVar</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.api.configuration.elements.utils.ConfigurableEnumTypeVar" title="otx.api.configuration.elements.utils.ConfigurableEnumTypeVar"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ConfigurableEnumTypeVar</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py data">
+<dt class="sig sig-object py" id="otx.api.configuration.elements.utils.NumericTypeVar">
+<span class="sig-prename descclassname"><span class="pre">otx.api.configuration.elements.utils.</span></span><span class="sig-name descname"><span class="pre">NumericTypeVar</span></span><a class="reference internal" href="../../../../../../_modules/otx/api/configuration/elements/utils.html#NumericTypeVar"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.configuration.elements.utils.NumericTypeVar" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="otx.api.configuration.elements.utils.SelectableTypeVar">
+<span class="sig-prename descclassname"><span class="pre">otx.api.configuration.elements.utils.</span></span><span class="sig-name descname"><span class="pre">SelectableTypeVar</span></span><a class="reference internal" href="../../../../../../_modules/otx/api/configuration/elements/utils.html#SelectableTypeVar"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.configuration.elements.utils.SelectableTypeVar" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="otx.api.configuration.elements.utils.ConfigurableEnumTypeVar">
+<span class="sig-prename descclassname"><span class="pre">otx.api.configuration.elements.utils.</span></span><span class="sig-name descname"><span class="pre">ConfigurableEnumTypeVar</span></span><a class="reference internal" href="../../../../../../_modules/otx/api/configuration/elements/utils.html#ConfigurableEnumTypeVar"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.configuration.elements.utils.ConfigurableEnumTypeVar" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.api.configuration.elements.utils.attr_enum_to_str_serializer">
+<span class="sig-prename descclassname"><span class="pre">otx.api.configuration.elements.utils.</span></span><span class="sig-name descname"><span class="pre">attr_enum_to_str_serializer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">instance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">object</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attribute</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">attr.Attribute</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">enum.Enum</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../../../../../../_modules/otx/api/configuration/elements/utils.html#attr_enum_to_str_serializer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.configuration.elements.utils.attr_enum_to_str_serializer" title="Permalink to this definition"></a></dt>
+<dd><p>This function converts Enums to their string representation.</p>
+<p>It is used when converting between yaml and python object representation of the configuration.
+The function signature matches what is expected by the <cite>attr.asdict</cite> value_serializer argument.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>instance</strong> (<em>object</em>) – (Unused) The instance of the class that the attribute is attached to.</p></li>
+<li><p><strong>attribute</strong> (<em>Attribute</em>) – (unused) The attribute that is being serialized.</p></li>
+<li><p><strong>value</strong> (<em>Union</em><em>[</em><em>Enum</em><em>, </em><em>str</em><em>]</em>) – The value to serialize.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The string representation of the value.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.api.configuration.elements.utils._convert_enum_selectable_value">
+<span class="sig-prename descclassname"><span class="pre">otx.api.configuration.elements.utils.</span></span><span class="sig-name descname"><span class="pre">_convert_enum_selectable_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ConfigurableEnumTypeVar</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enum_class</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">ConfigurableEnumTypeVar</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ConfigurableEnumTypeVar</span></span></span><a class="reference internal" href="../../../../../../_modules/otx/api/configuration/elements/utils.html#_convert_enum_selectable_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.configuration.elements.utils._convert_enum_selectable_value" title="Permalink to this definition"></a></dt>
+<dd><p>Helper function that converts the input value to an instance of the correct ConfigurableEnum.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>value</strong> (<em>Union</em><em>[</em><em>str</em><em>, </em><em>ConfigurableEnumTypeVar</em><em>]</em>) – input value to convert</p></li>
+<li><p><strong>enum_class</strong> (<em>Type</em><em>[</em><em>ConfigurableEnumTypeVar</em><em>]</em>) – Type of the Enum to convert to</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Instance of the correct ConfigurableEnum</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>ConfigurableEnumTypeVar</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.api.configuration.elements.utils.construct_attr_enum_selectable_converter">
+<span class="sig-prename descclassname"><span class="pre">otx.api.configuration.elements.utils.</span></span><span class="sig-name descname"><span class="pre">construct_attr_enum_selectable_converter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">default_value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ConfigurableEnumTypeVar</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ConfigurableEnumTypeVar</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ConfigurableEnumTypeVar</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../../_modules/otx/api/configuration/elements/utils.html#construct_attr_enum_selectable_converter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.configuration.elements.utils.construct_attr_enum_selectable_converter" title="Permalink to this definition"></a></dt>
+<dd><p>This function converts an input value to the correct instance of the ConfigurableEnum.</p>
+<p>It is used when initializing a selectable parameter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>default_value</strong> (<em>ConfigurableEnumTypeVar</em>) – Default value for the selectable</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Function that converts an input value to the correct instance of the ConfigurableEnum.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Callable[[Union[str, ConfigurableEnumTypeVar]], ConfigurableEnumTypeVar]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.api.configuration.elements.utils.construct_attr_enum_selectable_onsetattr">
+<span class="sig-prename descclassname"><span class="pre">otx.api.configuration.elements.utils.</span></span><span class="sig-name descname"><span class="pre">construct_attr_enum_selectable_onsetattr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">default_value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ConfigurableEnumTypeVar</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../parameter_group/index.html#otx.api.configuration.elements.parameter_group.ParameterGroup" title="otx.api.configuration.elements.parameter_group.ParameterGroup"><span class="pre">otx.api.configuration.elements.parameter_group.ParameterGroup</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">attr.Attribute</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ConfigurableEnumTypeVar</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ConfigurableEnumTypeVar</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../../_modules/otx/api/configuration/elements/utils.html#construct_attr_enum_selectable_onsetattr"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.configuration.elements.utils.construct_attr_enum_selectable_onsetattr" title="Permalink to this definition"></a></dt>
+<dd><p>This function converts an input value to the correct instance of the ConfigurableEnum.</p>
+<p>It is used when setting a value for a selectable parameter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>default_value</strong> (<em>ConfigurableEnumTypeVar</em>) – Default value for the enum_selectable.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>Function that converts an input</dt><dd><p>value to the correct instance of the ConfigurableEnum.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Callable[[Union[str, ConfigurableEnumTypeVar]], ConfigurableEnumTypeVar]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.api.configuration.elements.utils.construct_attr_value_validator">
+<span class="sig-prename descclassname"><span class="pre">otx.api.configuration.elements.utils.</span></span><span class="sig-name descname"><span class="pre">construct_attr_value_validator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">min_value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">NumericTypeVar</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">NumericTypeVar</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../parameter_group/index.html#otx.api.configuration.elements.parameter_group.ParameterGroup" title="otx.api.configuration.elements.parameter_group.ParameterGroup"><span class="pre">otx.api.configuration.elements.parameter_group.ParameterGroup</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">attr.Attribute</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">NumericTypeVar</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../../_modules/otx/api/configuration/elements/utils.html#construct_attr_value_validator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.configuration.elements.utils.construct_attr_value_validator" title="Permalink to this definition"></a></dt>
+<dd><p>Constructs a validator function that is used in the attribute validation of numeric configurable parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>min_value</strong> (<em>NumericTypeVar</em>) – Minimum value for the parameter</p></li>
+<li><p><strong>max_value</strong> (<em>NumericTypeVar</em>) – Maximum value for the parameter</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Function that validates the input value.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Callable[[<a class="reference internal" href="../index.html#otx.api.configuration.elements.ParameterGroup" title="otx.api.configuration.elements.ParameterGroup">ParameterGroup</a>, Attribute, NumericTypeVar], None]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.api.configuration.elements.utils.construct_attr_selectable_validator">
+<span class="sig-prename descclassname"><span class="pre">otx.api.configuration.elements.utils.</span></span><span class="sig-name descname"><span class="pre">construct_attr_selectable_validator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">SelectableTypeVar</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../parameter_group/index.html#otx.api.configuration.elements.parameter_group.ParameterGroup" title="otx.api.configuration.elements.parameter_group.ParameterGroup"><span class="pre">otx.api.configuration.elements.parameter_group.ParameterGroup</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">attr.Attribute</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">SelectableTypeVar</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../../_modules/otx/api/configuration/elements/utils.html#construct_attr_selectable_validator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.configuration.elements.utils.construct_attr_selectable_validator" title="Permalink to this definition"></a></dt>
+<dd><p>Constructs a validator function that is used in the attribute validation of selectable configurable parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>options</strong> (<em>List</em><em>[</em><em>SelectableTypeVar</em><em>]</em>) – List of valid options for the parameter.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Function that validates the input value.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Callable[[<a class="reference internal" href="../index.html#otx.api.configuration.elements.ParameterGroup" title="otx.api.configuration.elements.ParameterGroup">ParameterGroup</a>, Attribute, SelectableTypeVar], None]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.api.configuration.elements.utils.convert_string_to_id">
+<span class="sig-prename descclassname"><span class="pre">otx.api.configuration.elements.utils.</span></span><span class="sig-name descname"><span class="pre">convert_string_to_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id_string</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="../../../entities/id/index.html#otx.api.entities.id.ID" title="otx.api.entities.id.ID"><span class="pre">otx.api.entities.id.ID</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../../../entities/id/index.html#otx.api.entities.id.ID" title="otx.api.entities.id.ID"><span class="pre">otx.api.entities.id.ID</span></a></span></span><a class="reference internal" href="../../../../../../_modules/otx/api/configuration/elements/utils.html#convert_string_to_id"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.configuration.elements.utils.convert_string_to_id" title="Permalink to this definition"></a></dt>
+<dd><p>This function converts an input string representing an ID into an OTX ID object.</p>
+<p>Inputs that are already in the form of an ID are left untouched.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>id_string</strong> (<em>Optional</em><em>[</em><em>Union</em><em>[</em><em>str</em><em>, </em><a class="reference internal" href="../../../entities/id/index.html#otx.api.entities.id.ID" title="otx.api.entities.id.ID"><em>ID</em></a><em>]</em><em>]</em>) – string, ID or None object that should be converted to an ID.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the input as an instance of ID</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="../../../entities/id/index.html#otx.api.entities.id.ID" title="otx.api.entities.id.ID">ID</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.api.configuration.elements.utils.attr_strict_int_validator">
+<span class="sig-prename descclassname"><span class="pre">otx.api.configuration.elements.utils.</span></span><span class="sig-name descname"><span class="pre">attr_strict_int_validator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">instance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../parameter_group/index.html#otx.api.configuration.elements.parameter_group.ParameterGroup" title="otx.api.configuration.elements.parameter_group.ParameterGroup"><span class="pre">otx.api.configuration.elements.parameter_group.ParameterGroup</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">attribute</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">attr.Attribute</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../../../../../_modules/otx/api/configuration/elements/utils.html#attr_strict_int_validator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.configuration.elements.utils.attr_strict_int_validator" title="Permalink to this definition"></a></dt>
+<dd><p>Validates that the value set for an attribute is an integer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>instance</strong> (<a class="reference internal" href="../index.html#otx.api.configuration.elements.ParameterGroup" title="otx.api.configuration.elements.ParameterGroup"><em>ParameterGroup</em></a>) – (Unused) ParameterGroup to which the attribute belongs</p></li>
+<li><p><strong>attribute</strong> (<em>Attribute</em>) – Attribute for which to validate the value</p></li>
+<li><p><strong>value</strong> (<em>int</em>) – Value to validate</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>TypeError</strong> – if the value passed to the validator is not an integer</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.api.configuration.elements.utils._validate_and_convert_float">
+<span class="sig-prename descclassname"><span class="pre">otx.api.configuration.elements.utils.</span></span><span class="sig-name descname"><span class="pre">_validate_and_convert_float</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../../_modules/otx/api/configuration/elements/utils.html#_validate_and_convert_float"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.configuration.elements.utils._validate_and_convert_float" title="Permalink to this definition"></a></dt>
+<dd><p>Validate that a value is a float, or a number that can be converted to a float.</p>
+<p>If the value is valid, this method will return the value as float. Otherwise, this
+method returns None</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>value</strong> (<em>float</em>) – Value to validate and convert</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The value as a float, or None if the value is not valid</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Optional[float]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.api.configuration.elements.utils.attr_strict_float_on_setattr">
+<span class="sig-prename descclassname"><span class="pre">otx.api.configuration.elements.utils.</span></span><span class="sig-name descname"><span class="pre">attr_strict_float_on_setattr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">instance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../parameter_group/index.html#otx.api.configuration.elements.parameter_group.ParameterGroup" title="otx.api.configuration.elements.parameter_group.ParameterGroup"><span class="pre">otx.api.configuration.elements.parameter_group.ParameterGroup</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">attribute</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">attr.Attribute</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="../../../../../../_modules/otx/api/configuration/elements/utils.html#attr_strict_float_on_setattr"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.configuration.elements.utils.attr_strict_float_on_setattr" title="Permalink to this definition"></a></dt>
+<dd><p>Validate that the value set for an attribute is a float, or a number that can be converted to a float.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>instance</strong> (<a class="reference internal" href="../index.html#otx.api.configuration.elements.ParameterGroup" title="otx.api.configuration.elements.ParameterGroup"><em>ParameterGroup</em></a>) – ParameterGroup to which the attribute belongs</p></li>
+<li><p><strong>attribute</strong> (<em>Attribute</em>) – Attribute for which to validate the value</p></li>
+<li><p><strong>value</strong> (<em>float</em>) – Value to validate</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>TypeError</strong> – if the value passed to the validator is not a float or number</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The value as a float</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.api.configuration.elements.utils.attr_strict_float_converter">
+<span class="sig-prename descclassname"><span class="pre">otx.api.configuration.elements.utils.</span></span><span class="sig-name descname"><span class="pre">attr_strict_float_converter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="../../../../../../_modules/otx/api/configuration/elements/utils.html#attr_strict_float_converter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.configuration.elements.utils.attr_strict_float_converter" title="Permalink to this definition"></a></dt>
+<dd><p>Converts a value to float.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>value</strong> (<em>float</em>) – value to convert</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>TypeError</strong> – if value cannot be converted to float</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Value as float</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, OpenVINO Training Extensions Contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

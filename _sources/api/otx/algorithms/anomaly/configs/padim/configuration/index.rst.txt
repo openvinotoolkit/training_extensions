@@ -1,0 +1,68 @@
+:py:mod:`otx.algorithms.anomaly.configs.padim.configuration`
+============================================================
+
+.. py:module:: otx.algorithms.anomaly.configs.padim.configuration
+
+.. autoapi-nested-parse::
+
+   Configurable parameters for Padim anomaly task.
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   otx.algorithms.anomaly.configs.padim.configuration.PadimAnomalyBaseConfig
+
+
+
+
+.. py:class:: PadimAnomalyBaseConfig
+
+   Bases: :py:obj:`otx.algorithms.anomaly.configs.base.BaseAnomalyConfig`
+
+   Configurable parameters for PADIM anomaly classification task.
+
+   .. py:class:: LearningParameters
+
+      Bases: :py:obj:`otx.algorithms.anomaly.configs.base.BaseAnomalyConfig.LearningParameters`
+
+      Parameters that can be tuned using HPO.
+
+      .. py:attribute:: header
+         
+
+         
+
+      .. py:attribute:: description
+         
+
+         
+
+      .. py:attribute:: backbone
+         
+
+         
+
+
+   .. py:attribute:: header
+      
+
+      
+
+   .. py:attribute:: description
+      
+
+      
+
+   .. py:attribute:: learning_parameters
+      
+
+      
+
+

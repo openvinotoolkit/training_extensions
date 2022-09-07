@@ -1,0 +1,31 @@
+:py:mod:`otx.cli.datasets.semantic_segmentation.dataset`
+========================================================
+
+.. py:module:: otx.cli.datasets.semantic_segmentation.dataset
+
+.. autoapi-nested-parse::
+
+   Module contains SemanticSegmentationDataset.
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   otx.cli.datasets.semantic_segmentation.dataset.SemanticSegmentationDataset
+
+
+
+
+.. py:class:: SemanticSegmentationDataset(train_subset=None, val_subset=None, test_subset=None)
+
+   Bases: :py:obj:`otx.api.entities.datasets.DatasetEntity`
+
+   Class for working with file-system based Semantic Segmentation dataset.
+
+

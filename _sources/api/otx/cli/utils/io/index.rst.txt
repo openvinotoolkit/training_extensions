@@ -1,0 +1,88 @@
+:py:mod:`otx.cli.utils.io`
+==========================
+
+.. py:module:: otx.cli.utils.io
+
+.. autoapi-nested-parse::
+
+   Utils for model io operations.
+
+
+
+Module Contents
+---------------
+
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   otx.cli.utils.io.save_model_data
+   otx.cli.utils.io.read_binary
+   otx.cli.utils.io.read_model
+   otx.cli.utils.io.read_label_schema
+   otx.cli.utils.io.generate_label_schema
+
+
+
+.. py:function:: save_model_data(model: otx.api.entities.model.ModelEntity, folder: str) -> None
+
+   Saves model data to folder. Folder is created if it does not exist.
+
+   :param model: The model to save.
+   :type model: ModelEntity
+   :param folder: Path to output folder.
+   :type folder: str
+
+
+.. py:function:: read_binary(path: str) -> bytes
+
+   Loads binary data stored at path.
+
+   :param path: A path where to load data from.
+   :type path: str
+
+   :returns: Binary data.
+   :rtype: bytes
+
+
+.. py:function:: read_model(model_configuration: otx.api.entities.model.ModelConfiguration, path: str, train_dataset: otx.api.entities.datasets.DatasetEntity) -> otx.api.entities.model.ModelEntity
+
+   Creates ModelEntity based on model_configuration and data stored at path.
+
+   :param model_configuration: ModelConfiguration object.
+   :type model_configuration: ModelConfiguration
+   :param path: Path to the model data.
+   :type path: str
+   :param train_dataset: DatasetEntity object.
+   :type train_dataset: DatasetEntity
+
+   :returns: ModelEntity object.
+   :rtype: ModelEntity
+
+
+.. py:function:: read_label_schema(path: str) -> otx.api.entities.label_schema.LabelSchemaEntity
+
+   Reads serialized LabelSchema and returns deserialized LabelSchema.
+
+   :param path: Path to model. It assmues that the `label_schema.json` is at the same location as the model.
+   :type path: str
+
+   :returns: Desetialized LabelSchemaEntity.
+   :rtype: LabelSchemaEntity
+
+
+.. py:function:: generate_label_schema(dataset: otx.api.entities.datasets.DatasetEntity, task_type: otx.api.entities.model_template.TaskType) -> otx.api.entities.label_schema.LabelSchemaEntity
+
+   Generates label schema depending on task type.
+
+   :param dataset: Task specific dataset.
+   :type dataset: DatasetEntity
+   :param task_type: Task type used to call dataset specific functions and update label schema.
+   :type task_type: TaskType
+
+   :returns: Label schema for the task.
+   :rtype: LabelSchemaEntity
+
+

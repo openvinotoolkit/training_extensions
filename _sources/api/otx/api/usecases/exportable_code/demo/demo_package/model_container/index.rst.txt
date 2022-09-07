@@ -1,0 +1,63 @@
+:py:mod:`otx.api.usecases.exportable_code.demo.demo_package.model_container`
+============================================================================
+
+.. py:module:: otx.api.usecases.exportable_code.demo.demo_package.model_container
+
+.. autoapi-nested-parse::
+
+   ModelContainer class used for loading the model in the model wrapper.
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   otx.api.usecases.exportable_code.demo.demo_package.model_container.ModelContainer
+
+
+
+
+.. py:class:: ModelContainer(model_dir: pathlib.Path)
+
+   Class for storing the model wrapper based on Model API and needed parameters of model.
+
+   :param model_dir: path to model directory
+   :type model_dir: Path
+
+   .. py:method:: task_type() -> otx.api.entities.model_template.TaskType
+      :property:
+
+      Task type property.
+
+
+   .. py:method:: labels() -> otx.api.entities.label_schema.LabelSchemaEntity
+      :property:
+
+      Labels property.
+
+
+   .. py:method:: _initialize_wrapper() -> None
+      :staticmethod:
+
+      Load the model class.
+
+
+   .. py:method:: __call__(input_data: numpy.ndarray) -> Tuple[Any, dict]
+
+      Returns the output of the model.
+
+      # TODO possibly unused. Remove?
+
+      :param input_data: Input image/video data.
+      :type input_data: np.ndarray
+
+      :returns: Model predictions.
+      :rtype: Tuple[Any, dict]
+
+
+

@@ -1,0 +1,31 @@
+:py:mod:`otx.api.usecases.tasks`
+================================
+
+.. py:module:: otx.api.usecases.tasks
+
+.. autoapi-nested-parse::
+
+   Task Interfaces based on Interfaces defined in the OTX API.
+
+
+
+Subpackages
+-----------
+.. toctree::
+   :titlesonly:
+   :maxdepth: 3
+
+   interfaces/index.rst
+
+
+Submodules
+----------
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+
+   exceptions/index.rst
+   image_computer_vision/index.rst
+   image_deep_learning_task/index.rst
+
+

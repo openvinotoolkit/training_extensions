@@ -1,0 +1,37 @@
+:py:mod:`otx.cli.tools.optimize`
+================================
+
+.. py:module:: otx.cli.tools.optimize
+
+.. autoapi-nested-parse::
+
+   Model optimization tool.
+
+
+
+Module Contents
+---------------
+
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   otx.cli.tools.optimize.parse_args
+   otx.cli.tools.optimize.main
+
+
+
+.. py:function:: parse_args()
+
+   Parses command line arguments.
+
+   It dynamically generates help for hyper-parameters which are specific to particular model template.
+
+
+.. py:function:: main()
+
+   Main function that is used for model training.
+
+

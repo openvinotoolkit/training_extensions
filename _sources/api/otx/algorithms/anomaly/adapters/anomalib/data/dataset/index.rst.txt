@@ -1,0 +1,147 @@
+:py:mod:`otx.algorithms.anomaly.adapters.anomalib.data.dataset`
+===============================================================
+
+.. py:module:: otx.algorithms.anomaly.adapters.anomalib.data.dataset
+
+.. autoapi-nested-parse::
+
+   DataLoaders for Anomaly Tasks.
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   otx.algorithms.anomaly.adapters.anomalib.data.dataset.BaseAnomalyDataset
+   otx.algorithms.anomaly.adapters.anomalib.data.dataset.AnomalyClassificationDataset
+   otx.algorithms.anomaly.adapters.anomalib.data.dataset.AnomalySegmentationDataset
+   otx.algorithms.anomaly.adapters.anomalib.data.dataset.AnomalyDetectionDataset
+
+
+
+
+.. py:class:: BaseAnomalyDataset(train_subset: Optional[Dict[str, str]] = None, val_subset: Optional[Dict[str, str]] = None, test_subset: Optional[Dict[str, str]] = None)
+
+   Bases: :py:obj:`otx.api.entities.datasets.DatasetEntity`, :py:obj:`abc.ABC`
+
+   Base Dataloader for Anomaly Tasks.
+
+   .. py:method:: get_dataset_items(ann_file_path: pathlib.Path, data_root_dir: pathlib.Path, subset: otx.api.entities.subset.Subset) -> List[otx.api.entities.dataset_item.DatasetItemEntity]
+      :abstractmethod:
+
+      To be implemented ib subclasses.
+
+
+
+.. py:class:: AnomalyClassificationDataset(train_subset: Optional[Dict[str, str]] = None, val_subset: Optional[Dict[str, str]] = None, test_subset: Optional[Dict[str, str]] = None)
+
+   Bases: :py:obj:`BaseAnomalyDataset`
+
+   Dataloader for Anomaly Classification Task.
+
+   Example:
+   >>> train_subset = {
+           "ann_file": "data/anomaly/classification/train.json",
+           "data_root": "data/anomaly/shapes",
+       }
+   >>> val_subset = {"ann_file": "data/anomaly/classification/val.json", "data_root": "data/anomaly/shapes"}
+   >>> training_dataset = AnomalyClassificationDataset(
+           train_subset=train_subset, val_subset=val_subset
+       )
+   >>> test_subset = {"ann_file": "data/anomaly/classification/test.json", "data_root": "data/anomaly/shapes"}
+   >>> testing_dataset = AnomalyClassificationDataset(test_subset=test_subset)
+
+   .. py:method:: get_dataset_items(ann_file_path: pathlib.Path, data_root_dir: pathlib.Path, subset: otx.api.entities.subset.Subset) -> List[otx.api.entities.dataset_item.DatasetItemEntity]
+
+      Loads dataset based on the image path in annotation file.
+
+      :param ann_file_path: Path to json containing the annotations.
+                            For example of annotation look at `data/anomaly/[train, test,val].json.
+      :type ann_file_path: Path
+      :param data_root_dir: Path to folder containing images.
+      :type data_root_dir: Path
+      :param subset: Subset of the dataset.
+      :type subset: Subset
+
+      :returns: List containing subset dataset.
+      :rtype: List[DatasetItemEntity]
+
+
+
+.. py:class:: AnomalySegmentationDataset(train_subset: Optional[Dict[str, str]] = None, val_subset: Optional[Dict[str, str]] = None, test_subset: Optional[Dict[str, str]] = None)
+
+   Bases: :py:obj:`BaseAnomalyDataset`
+
+   Dataloader for Anomaly Segmentation Task.
+
+   .. rubric:: Example
+
+   >>> train_subset = {
+           "ann_file": "data/anomaly/segmentation/train.json",
+           "data_root": "data/anomaly/shapes",
+       }
+   >>> val_subset = {"ann_file": "data/anomaly/segmentation/val.json", "data_root": "data/anomaly/shapes"}
+   >>> training_dataset = AnomalySegmentationDataset(
+           train_subset=train_subset, val_subset=val_subset
+       )
+   >>> test_subset = {"ann_file": "data/anomaly/segmentation/test.json", "data_root": "data/anomaly/shapes"}
+   >>> testing_dataset = AnomalySegmentationDataset(test_subset=test_subset)
+
+   .. py:method:: get_dataset_items(ann_file_path: pathlib.Path, data_root_dir: pathlib.Path, subset: otx.api.entities.subset.Subset) -> List[otx.api.entities.dataset_item.DatasetItemEntity]
+
+      Loads dataset based on the image path in annotation file.
+
+      :param ann_file_path: Path to json containing the annotations.
+                            For example of annotation look at `data/anomaly/[train, test,val].json.
+      :type ann_file_path: Path
+      :param data_root_dir: Path to folder containing images.
+      :type data_root_dir: Path
+      :param subset: Subset of the dataset.
+      :type subset: Subset
+
+      :returns: List containing subset dataset.
+      :rtype: List[DatasetItemEntity]
+
+
+
+.. py:class:: AnomalyDetectionDataset(train_subset: Optional[Dict[str, str]] = None, val_subset: Optional[Dict[str, str]] = None, test_subset: Optional[Dict[str, str]] = None)
+
+   Bases: :py:obj:`BaseAnomalyDataset`
+
+   Dataloader for Anomaly Segmentation Task.
+
+   .. rubric:: Example
+
+   >>> train_subset = {
+           "ann_file": "data/anomaly/detection/train.json",
+           "data_root": "data/anomaly/shapes",
+       }
+   >>> val_subset = {"ann_file": "data/anomaly/detection/val.json", "data_root": "data/anomaly/shapes"}
+   >>> training_dataset = AnomalyDetectionDataset(
+           train_subset=train_subset, val_subset=val_subset
+       )
+   >>> test_subset = {"ann_file": "data/anomaly/detection/test.json", "data_root": "data/anomaly/shapes"}
+   >>> testing_dataset = AnomalyDetectionDataset(test_subset=test_subset)
+
+   .. py:method:: get_dataset_items(ann_file_path: pathlib.Path, data_root_dir: pathlib.Path, subset: otx.api.entities.subset.Subset) -> List[otx.api.entities.dataset_item.DatasetItemEntity]
+
+      Loads dataset based on the image path in annotation file.
+
+      :param ann_file_path: Path to json containing the annotations.
+                            For example of annotation look at `data/anomaly/[train, test,val].json.
+      :type ann_file_path: Path
+      :param data_root_dir: Path to folder containing images.
+      :type data_root_dir: Path
+      :param subset: Subset of the dataset.
+      :type subset: Subset
+
+      :returns: List containing subset dataset.
+      :rtype: List[DatasetItemEntity]
+
+
+

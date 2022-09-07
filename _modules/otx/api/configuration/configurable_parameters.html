@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>otx.api.configuration.configurable_parameters &mdash; OpenVINO Training Extensions  documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../index.html" class="icon icon-home"> OpenVINO Training Extensions
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">OpenVINO Training Extensions</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+          <li><a href="../../../otx.html">otx</a> &raquo;</li>
+      <li>otx.api.configuration.configurable_parameters</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for otx.api.configuration.configurable_parameters</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;This module contains the base class to define ConfigurableParameters within OTX.&quot;&quot;&quot;</span>
+<span class="c1"># Copyright (C) 2021-2022 Intel Corporation</span>
+<span class="c1"># SPDX-License-Identifier: Apache-2.0</span>
+<span class="c1">#</span>
+<span class="kn">from</span> <span class="nn">attr</span> <span class="kn">import</span> <span class="n">attrib</span><span class="p">,</span> <span class="n">attrs</span><span class="p">,</span> <span class="n">setters</span>
+
+<span class="kn">from</span> <span class="nn">otx.api.entities.id</span> <span class="kn">import</span> <span class="n">ID</span>
+
+<span class="kn">from</span> <span class="nn">.elements.parameter_group</span> <span class="kn">import</span> <span class="n">ParameterGroup</span>
+<span class="kn">from</span> <span class="nn">.elements.utils</span> <span class="kn">import</span> <span class="n">convert_string_to_id</span>
+<span class="kn">from</span> <span class="nn">.enums.config_element_type</span> <span class="kn">import</span> <span class="n">ConfigElementType</span>
+
+
+<span class="nd">@attrs</span><span class="p">(</span><span class="n">auto_attribs</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">eq</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<div class="viewcode-block" id="ConfigurableParameters"><a class="viewcode-back" href="../../../../api/otx/api/configuration/index.html#otx.api.configuration.configurable_parameters.ConfigurableParameters">[docs]</a><span class="k">class</span> <span class="nc">ConfigurableParameters</span><span class="p">(</span><span class="n">ParameterGroup</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Base class representing a generic set of configurable parameters.</span>
+
+<span class="sd">    A ConfigurableParameters instance is essentially a parameter group with an id</span>
+<span class="sd">    attached to it, so that it can be uniquely identified in the repositories.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        id (ID): ID that uniquely identifies the ConfigurableParameters</span>
+<span class="sd">        type (ConfigElementType): Type of the ConfigurableParameters</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="ConfigurableParameters.id"><a class="viewcode-back" href="../../../../api/otx/api/configuration/configurable_parameters/index.html#otx.api.configuration.configurable_parameters.ConfigurableParameters.id">[docs]</a>    <span class="nb">id</span><span class="p">:</span> <span class="n">ID</span> <span class="o">=</span> <span class="n">attrib</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="n">ID</span><span class="p">(),</span> <span class="n">kw_only</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">converter</span><span class="o">=</span><span class="n">convert_string_to_id</span><span class="p">)</span></div>
+<div class="viewcode-block" id="ConfigurableParameters.type"><a class="viewcode-back" href="../../../../api/otx/api/configuration/configurable_parameters/index.html#otx.api.configuration.configurable_parameters.ConfigurableParameters.type">[docs]</a>    <span class="nb">type</span><span class="p">:</span> <span class="n">ConfigElementType</span> <span class="o">=</span> <span class="n">attrib</span><span class="p">(</span>
+        <span class="n">default</span><span class="o">=</span><span class="n">ConfigElementType</span><span class="o">.</span><span class="n">CONFIGURABLE_PARAMETERS</span><span class="p">,</span>
+        <span class="nb">repr</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">init</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">on_setattr</span><span class="o">=</span><span class="n">setters</span><span class="o">.</span><span class="n">frozen</span><span class="p">,</span>
+    <span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, OpenVINO Training Extensions Contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>otx.api.usecases.exportable_code.streamer.streamer &mdash; OpenVINO Training Extensions  documentation</title>
+      <link rel="stylesheet" href="../../../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../../../" id="documentation_options" src="../../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../../_static/jquery.js"></script>
+        <script src="../../../../../../_static/underscore.js"></script>
+        <script src="../../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../../../../_static/doctools.js"></script>
+    <script src="../../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../../../index.html" class="icon icon-home"> OpenVINO Training Extensions
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../api/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../../index.html">OpenVINO Training Extensions</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../../../index.html">Module code</a> &raquo;</li>
+          <li><a href="../../../../../otx.html">otx</a> &raquo;</li>
+      <li>otx.api.usecases.exportable_code.streamer.streamer</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for otx.api.usecases.exportable_code.streamer.streamer</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Streamer for reading input.&quot;&quot;&quot;</span>
+
+<span class="c1"># Copyright (C) 2021-2022 Intel Corporation</span>
+<span class="c1"># SPDX-License-Identifier: Apache-2.0</span>
+<span class="c1">#</span>
+
+<span class="kn">import</span> <span class="nn">abc</span>
+<span class="kn">import</span> <span class="nn">multiprocessing</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">queue</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">cv2</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+
+<div class="viewcode-block" id="InvalidInput"><a class="viewcode-back" href="../../../../../../api/otx/api/usecases/exportable_code/streamer/streamer/index.html#otx.api.usecases.exportable_code.streamer.InvalidInput">[docs]</a><span class="k">class</span> <span class="nc">InvalidInput</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Exception for wrong input format.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="n">message</span></div>
+
+
+<div class="viewcode-block" id="OpenError"><a class="viewcode-back" href="../../../../../../api/otx/api/usecases/exportable_code/streamer/streamer/index.html#otx.api.usecases.exportable_code.streamer.OpenError">[docs]</a><span class="k">class</span> <span class="nc">OpenError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Exception for error opening reader.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="n">message</span></div>
+
+
+<div class="viewcode-block" id="MediaType"><a class="viewcode-back" href="../../../../../../api/otx/api/usecases/exportable_code/streamer/streamer/index.html#otx.api.usecases.exportable_code.streamer.MediaType">[docs]</a><span class="k">class</span> <span class="nc">MediaType</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;This Enum represents the types of input.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="MediaType.IMAGE"><a class="viewcode-back" href="../../../../../../api/otx/api/usecases/exportable_code/streamer/streamer/index.html#otx.api.usecases.exportable_code.streamer.MediaType.IMAGE">[docs]</a>    <span class="n">IMAGE</span> <span class="o">=</span> <span class="mi">1</span></div>
+<div class="viewcode-block" id="MediaType.DIR"><a class="viewcode-back" href="../../../../../../api/otx/api/usecases/exportable_code/streamer/streamer/index.html#otx.api.usecases.exportable_code.streamer.MediaType.DIR">[docs]</a>    <span class="n">DIR</span> <span class="o">=</span> <span class="mi">2</span></div>
+<div class="viewcode-block" id="MediaType.VIDEO"><a class="viewcode-back" href="../../../../../../api/otx/api/usecases/exportable_code/streamer/streamer/index.html#otx.api.usecases.exportable_code.streamer.MediaType.VIDEO">[docs]</a>    <span class="n">VIDEO</span> <span class="o">=</span> <span class="mi">3</span></div>
+<div class="viewcode-block" id="MediaType.CAMERA"><a class="viewcode-back" href="../../../../../../api/otx/api/usecases/exportable_code/streamer/streamer/index.html#otx.api.usecases.exportable_code.streamer.MediaType.CAMERA">[docs]</a>    <span class="n">CAMERA</span> <span class="o">=</span> <span class="mi">4</span></div></div>
+
+
+<div class="viewcode-block" id="BaseStreamer"><a class="viewcode-back" href="../../../../../../api/otx/api/usecases/exportable_code/streamer/streamer/index.html#otx.api.usecases.exportable_code.streamer.BaseStreamer">[docs]</a><span class="k">class</span> <span class="nc">BaseStreamer</span><span class="p">(</span><span class="n">metaclass</span><span class="o">=</span><span class="n">abc</span><span class="o">.</span><span class="n">ABCMeta</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Base Streamer interface to implement Image, Video and Camera streamers.&quot;&quot;&quot;</span>
+
+    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+<div class="viewcode-block" id="BaseStreamer.__iter__"><a class="viewcode-back" href="../../../../../../api/otx/api/usecases/exportable_code/streamer/streamer/index.html#otx.api.usecases.exportable_code.streamer.BaseStreamer.__iter__">[docs]</a>    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Iterate through the streamer object that is a Python Generator object.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            np.ndarray: Yield the image or video frame.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+<div class="viewcode-block" id="BaseStreamer.get_type"><a class="viewcode-back" href="../../../../../../api/otx/api/usecases/exportable_code/streamer/streamer/index.html#otx.api.usecases.exportable_code.streamer.BaseStreamer.get_type">[docs]</a>    <span class="k">def</span> <span class="nf">get_type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MediaType</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Get type of streamer.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            MediaType: type of streamer.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div></div>
+
+
+<div class="viewcode-block" id="_process_run"><a class="viewcode-back" href="../../../../../../api/otx/api/usecases/exportable_code/streamer/streamer/index.html#otx.api.usecases.exportable_code.streamer._process_run">[docs]</a><span class="k">def</span> <span class="nf">_process_run</span><span class="p">(</span><span class="n">streamer</span><span class="p">:</span> <span class="n">BaseStreamer</span><span class="p">,</span> <span class="n">buffer</span><span class="p">:</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">Queue</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Private function that is run by the thread.</span>
+
+<span class="sd">    Waits for the buffer to gain space for timeout seconds while it is full.</span>
+<span class="sd">    If no space was available within this time the function will exit</span>
+
+<span class="sd">    streamer (BaseStreamer): The streamer to retrieve frames from</span>
+<span class="sd">    buffer (multiprocessing.Queue): The buffer to place the retrieved frames in</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">frame</span> <span class="ow">in</span> <span class="n">streamer</span><span class="p">:</span>
+        <span class="n">buffer</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ThreadedStreamer"><a class="viewcode-back" href="../../../../../../api/otx/api/usecases/exportable_code/streamer/streamer/index.html#otx.api.usecases.exportable_code.streamer.ThreadedStreamer">[docs]</a><span class="k">class</span> <span class="nc">ThreadedStreamer</span><span class="p">(</span><span class="n">BaseStreamer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Runs a BaseStreamer on a separate thread.</span>
+
+<span class="sd">    streamer (BaseStreamer): The streamer to run on a thread</span>
+<span class="sd">    buffer_size (int): Number of frame to buffer internally. Defaults to 2.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; streamer = VideoStreamer(path=&quot;../demo.mp4&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; threaded_streamer = ThreadedStreamer(streamer)</span>
+<span class="sd">        &gt;&gt;&gt; for frame in threaded_streamer:</span>
+<span class="sd">        ...    pass</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">streamer</span><span class="p">:</span> <span class="n">BaseStreamer</span><span class="p">,</span> <span class="n">buffer_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">buffer_size</span> <span class="o">=</span> <span class="n">buffer_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">streamer</span> <span class="o">=</span> <span class="n">streamer</span>
+
+<div class="viewcode-block" id="ThreadedStreamer.__iter__"><a class="viewcode-back" href="../../../../../../api/otx/api/usecases/exportable_code/streamer/streamer/index.html#otx.api.usecases.exportable_code.streamer.ThreadedStreamer.__iter__">[docs]</a>    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Get frames from streamer and yield them.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            Iterator[np.ndarray]: Yield the image or video frame.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">buffer</span><span class="p">:</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">Queue</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">Queue</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">buffer_size</span><span class="p">)</span>
+        <span class="n">process</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">Process</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">_process_run</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">streamer</span><span class="p">,</span> <span class="n">buffer</span><span class="p">))</span>
+        <span class="c1"># Make thread a daemon so that it will exit when the main program exits as well</span>
+        <span class="n">process</span><span class="o">.</span><span class="n">daemon</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">process</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">while</span> <span class="n">process</span><span class="o">.</span><span class="n">is_alive</span><span class="p">()</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">buffer</span><span class="o">.</span><span class="n">empty</span><span class="p">():</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="k">yield</span> <span class="n">buffer</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+                <span class="k">except</span> <span class="n">queue</span><span class="o">.</span><span class="n">Empty</span><span class="p">:</span>
+                    <span class="k">pass</span>
+        <span class="k">except</span> <span class="ne">GeneratorExit</span><span class="p">:</span>
+            <span class="n">process</span><span class="o">.</span><span class="n">terminate</span><span class="p">()</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">process</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+            <span class="c1"># The kill() function is only available in Python 3.7.</span>
+            <span class="c1"># Skip it if running an older Python version.</span>
+            <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span> <span class="o">&gt;=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">7</span><span class="p">)</span> <span class="ow">and</span> <span class="n">process</span><span class="o">.</span><span class="n">exitcode</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">process</span><span class="o">.</span><span class="n">kill</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="ThreadedStreamer.get_type"><a class="viewcode-back" href="../../../../../../api/otx/api/usecases/exportable_code/streamer/streamer/index.html#otx.api.usecases.exportable_code.streamer.ThreadedStreamer.get_type">[docs]</a>    <span class="k">def</span> <span class="nf">get_type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MediaType</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Get type of internal streamer.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            MediaType: type of internal streamer.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">streamer</span><span class="o">.</span><span class="n">get_type</span><span class="p">()</span></div></div>
+
+
+<div class="viewcode-block" id="VideoStreamer"><a class="viewcode-back" href="../../../../../../api/otx/api/usecases/exportable_code/streamer/streamer/index.html#otx.api.usecases.exportable_code.streamer.VideoStreamer">[docs]</a><span class="k">class</span> <span class="nc">VideoStreamer</span><span class="p">(</span><span class="n">BaseStreamer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Video Streamer.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        path: Path to the video file.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; streamer = VideoStreamer(path=&quot;../demo.mp4&quot;)</span>
+<span class="sd">        ... for frame in streamer:</span>
+<span class="sd">        ...    pass</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">loop</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">media_type</span> <span class="o">=</span> <span class="n">MediaType</span><span class="o">.</span><span class="n">VIDEO</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">loop</span> <span class="o">=</span> <span class="n">loop</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cap</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">VideoCapture</span><span class="p">()</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cap</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">input_path</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">status</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">InvalidInput</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Can&#39;t open the video from </span><span class="si">{</span><span class="n">input_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="VideoStreamer.__iter__"><a class="viewcode-back" href="../../../../../../api/otx/api/usecases/exportable_code/streamer/streamer/index.html#otx.api.usecases.exportable_code.streamer.VideoStreamer.__iter__">[docs]</a>    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Iterates over frames of the video.</span>
+
+<span class="sd">        If self.loop is set to True, the video will loop infinitely.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">status</span><span class="p">,</span> <span class="n">image</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cap</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">status</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">cv2</span><span class="o">.</span><span class="n">cvtColor</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">COLOR_BGR2RGB</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">loop</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">cap</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">cv2</span><span class="o">.</span><span class="n">CAP_PROP_POS_FRAMES</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">break</span></div>
+
+<div class="viewcode-block" id="VideoStreamer.get_type"><a class="viewcode-back" href="../../../../../../api/otx/api/usecases/exportable_code/streamer/streamer/index.html#otx.api.usecases.exportable_code.streamer.VideoStreamer.get_type">[docs]</a>    <span class="k">def</span> <span class="nf">get_type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MediaType</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Returns the type of media.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">MediaType</span><span class="o">.</span><span class="n">VIDEO</span></div></div>
+
+
+<div class="viewcode-block" id="CameraStreamer"><a class="viewcode-back" href="../../../../../../api/otx/api/usecases/exportable_code/streamer/streamer/index.html#otx.api.usecases.exportable_code.streamer.CameraStreamer">[docs]</a><span class="k">class</span> <span class="nc">CameraStreamer</span><span class="p">(</span><span class="n">BaseStreamer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Stream video frames from camera.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        camera_device (int): Camera device index e.g, 0, 1</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; streamer = CameraStreamer(camera_device=0)</span>
+<span class="sd">        ... for frame in streamer:</span>
+<span class="sd">        ...     cv2.imshow(&quot;Window&quot;, frame)</span>
+<span class="sd">        ...     if ord(&quot;q&quot;) == cv2.waitKey(1):</span>
+<span class="sd">        ...         break</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">camera_device</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">media_type</span> <span class="o">=</span> <span class="n">MediaType</span><span class="o">.</span><span class="n">CAMERA</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stream</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">VideoCapture</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">camera_device</span><span class="p">))</span>
+        <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">InvalidInput</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Can&#39;t find the camera </span><span class="si">{</span><span class="n">camera_device</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">error</span>
+
+<div class="viewcode-block" id="CameraStreamer.__iter__"><a class="viewcode-back" href="../../../../../../api/otx/api/usecases/exportable_code/streamer/streamer/index.html#otx.api.usecases.exportable_code.streamer.CameraStreamer.__iter__">[docs]</a>    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Read video and yield the frame.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            stream: Video stream captured via OpenCV&#39;s VideoCapture</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Individual frame</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">frame_available</span><span class="p">,</span> <span class="n">frame</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stream</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">frame_available</span><span class="p">:</span>
+                <span class="k">break</span>
+            <span class="n">frame</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">cvtColor</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">COLOR_BGR2RGB</span><span class="p">)</span>
+            <span class="k">yield</span> <span class="n">frame</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">stream</span><span class="o">.</span><span class="n">release</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="CameraStreamer.get_type"><a class="viewcode-back" href="../../../../../../api/otx/api/usecases/exportable_code/streamer/streamer/index.html#otx.api.usecases.exportable_code.streamer.CameraStreamer.get_type">[docs]</a>    <span class="k">def</span> <span class="nf">get_type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MediaType</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Returns the type of media.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">MediaType</span><span class="o">.</span><span class="n">CAMERA</span></div></div>
+
+
+<div class="viewcode-block" id="ImageStreamer"><a class="viewcode-back" href="../../../../../../api/otx/api/usecases/exportable_code/streamer/streamer/index.html#otx.api.usecases.exportable_code.streamer.ImageStreamer">[docs]</a><span class="k">class</span> <span class="nc">ImageStreamer</span><span class="p">(</span><span class="n">BaseStreamer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Stream from image file.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        input_path (str): Path to an image.</span>
+<span class="sd">        loop (bool): Whether to loop through the image or not. Defaults to False.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; streamer = ImageStreamer(path=&quot;../images&quot;)</span>
+<span class="sd">        ... for frame in streamer:</span>
+<span class="sd">        ...     cv2.imshow(&quot;Window&quot;, frame)</span>
+<span class="sd">        ...     cv2.waitKey(0)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">loop</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">loop</span> <span class="o">=</span> <span class="n">loop</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">media_type</span> <span class="o">=</span> <span class="n">MediaType</span><span class="o">.</span><span class="n">IMAGE</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">input_path</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">InvalidInput</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Can&#39;t find the image by </span><span class="si">{</span><span class="n">input_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">image</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="n">input_path</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">IMREAD_COLOR</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">image</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">OpenError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Can&#39;t open the image from </span><span class="si">{</span><span class="n">input_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">image</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">cvtColor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">image</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">COLOR_BGR2RGB</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ImageStreamer.__iter__"><a class="viewcode-back" href="../../../../../../api/otx/api/usecases/exportable_code/streamer/streamer/index.html#otx.api.usecases.exportable_code.streamer.ImageStreamer.__iter__">[docs]</a>    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;If loop is True, yield the image again and again.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">loop</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">image</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">image</span></div>
+
+<div class="viewcode-block" id="ImageStreamer.get_type"><a class="viewcode-back" href="../../../../../../api/otx/api/usecases/exportable_code/streamer/streamer/index.html#otx.api.usecases.exportable_code.streamer.ImageStreamer.get_type">[docs]</a>    <span class="k">def</span> <span class="nf">get_type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MediaType</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Returns the type of the streamer.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">MediaType</span><span class="o">.</span><span class="n">IMAGE</span></div></div>
+
+
+<div class="viewcode-block" id="DirStreamer"><a class="viewcode-back" href="../../../../../../api/otx/api/usecases/exportable_code/streamer/streamer/index.html#otx.api.usecases.exportable_code.streamer.DirStreamer">[docs]</a><span class="k">class</span> <span class="nc">DirStreamer</span><span class="p">(</span><span class="n">BaseStreamer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Stream from directory of images.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        path: Path to directory.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; streamer = DirStreamer(path=&quot;../images&quot;)</span>
+<span class="sd">        ... for frame in streamer:</span>
+<span class="sd">        ...     cv2.imshow(&quot;Window&quot;, frame)</span>
+<span class="sd">        ...     cv2.waitKey(0)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">loop</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">loop</span> <span class="o">=</span> <span class="n">loop</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">media_type</span> <span class="o">=</span> <span class="n">MediaType</span><span class="o">.</span><span class="n">DIR</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dir</span> <span class="o">=</span> <span class="n">input_path</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dir</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">InvalidInput</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Can&#39;t find the dir by </span><span class="si">{</span><span class="n">input_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">names</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dir</span><span class="p">))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">OpenError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The dir </span><span class="si">{</span><span class="n">input_path</span><span class="si">}</span><span class="s2"> is empty&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">file_id</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="p">:</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dir</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+            <span class="n">image</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">filename</span><span class="p">),</span> <span class="n">cv2</span><span class="o">.</span><span class="n">IMREAD_COLOR</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">image</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span>
+        <span class="k">raise</span> <span class="n">OpenError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Can&#39;t read the first image from </span><span class="si">{</span><span class="n">input_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="DirStreamer.__iter__"><a class="viewcode-back" href="../../../../../../api/otx/api/usecases/exportable_code/streamer/streamer/index.html#otx.api.usecases.exportable_code.streamer.DirStreamer.__iter__">[docs]</a>    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Iterates over the images in a directory.</span>
+
+<span class="sd">        If self.loop is True, it reiterates again from the first image in the directory.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_id</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="p">):</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">file_id</span><span class="p">])</span>
+            <span class="n">image</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">filename</span><span class="p">),</span> <span class="n">cv2</span><span class="o">.</span><span class="n">IMREAD_COLOR</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_id</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">file_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_id</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">file_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_id</span> <span class="o">+</span> <span class="mi">1</span> <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">loop</span> <span class="k">else</span> <span class="mi">0</span>
+            <span class="k">if</span> <span class="n">image</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">cv2</span><span class="o">.</span><span class="n">cvtColor</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">COLOR_BGR2RGB</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DirStreamer.get_type"><a class="viewcode-back" href="../../../../../../api/otx/api/usecases/exportable_code/streamer/streamer/index.html#otx.api.usecases.exportable_code.streamer.DirStreamer.get_type">[docs]</a>    <span class="k">def</span> <span class="nf">get_type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MediaType</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Returns the type of the streamer.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">MediaType</span><span class="o">.</span><span class="n">DIR</span></div></div>
+
+
+<div class="viewcode-block" id="get_streamer"><a class="viewcode-back" href="../../../../../../api/otx/api/usecases/exportable_code/streamer/streamer/index.html#otx.api.usecases.exportable_code.streamer.get_streamer">[docs]</a><span class="k">def</span> <span class="nf">get_streamer</span><span class="p">(</span>
+    <span class="n">input_stream</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="n">loop</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">threaded</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BaseStreamer</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Get streamer object based on the file path or camera device index provided.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        input_stream (Union[int, str]): Path to file or directory or index for camera.</span>
+<span class="sd">        loop (bool): Enable reading the input in a loop. Defaults to False.</span>
+<span class="sd">        threaded (bool): Run streaming on a separate thread. Threaded streaming option. Defaults to False.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        BaseStreamer: Streamer object.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># errors: Dict = {InvalidInput: [], OpenError: []}</span>
+    <span class="n">errors</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">streamer</span><span class="p">:</span> <span class="n">BaseStreamer</span>
+    <span class="k">for</span> <span class="n">reader</span> <span class="ow">in</span> <span class="p">(</span><span class="n">ImageStreamer</span><span class="p">,</span> <span class="n">DirStreamer</span><span class="p">,</span> <span class="n">VideoStreamer</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">streamer</span> <span class="o">=</span> <span class="n">reader</span><span class="p">(</span><span class="n">input_stream</span><span class="p">,</span> <span class="n">loop</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+            <span class="k">if</span> <span class="n">threaded</span><span class="p">:</span>
+                <span class="n">streamer</span> <span class="o">=</span> <span class="n">ThreadedStreamer</span><span class="p">(</span><span class="n">streamer</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">streamer</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">InvalidInput</span><span class="p">,</span> <span class="n">OpenError</span><span class="p">)</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
+            <span class="n">errors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">streamer</span> <span class="o">=</span> <span class="n">CameraStreamer</span><span class="p">(</span><span class="n">input_stream</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+        <span class="k">if</span> <span class="n">threaded</span><span class="p">:</span>
+            <span class="n">streamer</span> <span class="o">=</span> <span class="n">ThreadedStreamer</span><span class="p">(</span><span class="n">streamer</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">streamer</span>
+    <span class="k">except</span> <span class="p">(</span><span class="n">InvalidInput</span><span class="p">,</span> <span class="n">OpenError</span><span class="p">)</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
+        <span class="n">errors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">errors</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="n">errors</span><span class="p">)</span>
+
+    <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, OpenVINO Training Extensions Contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

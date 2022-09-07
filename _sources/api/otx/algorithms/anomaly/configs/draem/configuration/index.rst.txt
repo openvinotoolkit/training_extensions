@@ -1,0 +1,110 @@
+:py:mod:`otx.algorithms.anomaly.configs.draem.configuration`
+============================================================
+
+.. py:module:: otx.algorithms.anomaly.configs.draem.configuration
+
+.. autoapi-nested-parse::
+
+   Configurable parameters for Draem anomaly task.
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   otx.algorithms.anomaly.configs.draem.configuration.DraemAnomalyBaseConfig
+
+
+
+
+.. py:class:: DraemAnomalyBaseConfig
+
+   Bases: :py:obj:`otx.algorithms.anomaly.configs.base.BaseAnomalyConfig`
+
+   Configurable parameters for DRAEM anomaly classification task.
+
+   .. py:class:: LearningParameters
+
+      Bases: :py:obj:`otx.algorithms.anomaly.configs.base.BaseAnomalyConfig.LearningParameters`
+
+      Parameters that can be tuned using HPO.
+
+      .. py:class:: EarlyStoppingParameters
+
+         Bases: :py:obj:`otx.api.configuration.elements.ParameterGroup`
+
+         Early stopping parameters.
+
+         .. py:attribute:: header
+            
+
+            
+
+         .. py:attribute:: description
+            
+
+            
+
+         .. py:attribute:: metric
+            
+
+            
+
+         .. py:attribute:: patience
+            
+
+            
+
+
+      .. py:attribute:: header
+         
+
+         
+
+      .. py:attribute:: description
+         
+
+         
+
+      .. py:attribute:: train_batch_size
+         
+
+         
+
+      .. py:attribute:: lr
+         
+
+         
+
+      .. py:attribute:: early_stopping
+         
+
+         
+
+      .. py:attribute:: max_epochs
+         
+
+         
+
+
+   .. py:attribute:: header
+      
+
+      
+
+   .. py:attribute:: description
+      
+
+      
+
+   .. py:attribute:: learning_parameters
+      
+
+      
+
+

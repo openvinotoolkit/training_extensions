@@ -1,0 +1,20 @@
+:py:mod:`otx.cli.datasets.semantic_segmentation`
+================================================
+
+.. py:module:: otx.cli.datasets.semantic_segmentation
+
+.. autoapi-nested-parse::
+
+   Datasets for semantic segmentation.
+
+
+
+Submodules
+----------
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+
+   dataset/index.rst
+
+

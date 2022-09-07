@@ -1,0 +1,95 @@
+:py:mod:`otx.api.configuration.helper.utils`
+============================================
+
+.. py:module:: otx.api.configuration.helper.utils
+
+.. autoapi-nested-parse::
+
+   This module contains utility functions used within the configuration helper module.
+
+
+
+Module Contents
+---------------
+
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   otx.api.configuration.helper.utils._search_in_config_dict_inner
+   otx.api.configuration.helper.utils.search_in_config_dict
+   otx.api.configuration.helper.utils.input_to_config_dict
+   otx.api.configuration.helper.utils.deserialize_enum_value
+   otx.api.configuration.helper.utils.ids_to_strings
+
+
+
+.. py:function:: _search_in_config_dict_inner(config_dict: dict, key_to_search: str, prior_keys: List[str] = None, results: List[Tuple[Any, List[str]]] = None) -> List[Tuple[Any, List[str]]]
+
+   Helper function for the `search_in_config_dict` function defined below.
+
+   :param config_dict: dict to search in
+   :param key_to_search: dict key to look for
+   :param prior_keys: List of prior keys leading to the key_to_search.
+   :param results: List of previously found results
+
+   :returns: List of (value_at_key_to_search, key_path_to_key_to_search)
+             tuples, representing each occurrence of key_to_search within
+             config_dict
+
+
+.. py:function:: search_in_config_dict(config_dict: dict, key_to_search: str) -> List[Tuple[Any, List[str]]]
+
+   Recursively searches a config_dict for all instances of key_to_search and returns the key path to them.
+
+   :param config_dict: dict to search in
+   :param key_to_search: dict key to look for
+
+   :returns: List of (value_at_key_to_search, key_path_to_key_to_search)
+             tuples, representing each occurrence of key_to_search within
+             config_dict
+
+
+.. py:function:: input_to_config_dict(input_config: Union[str, omegaconf.DictConfig, dict], check_config_type: bool = True) -> dict
+
+   Validate input configuration.
+
+   Takes an input_config which can be a string, filepath, dict or DictConfig and performs basic validation that it
+   can be converted into a configuration.
+
+   :param input_config: String, filepath, dict or DictConfig describing a
+                        configuration
+   :param check_config_type: True to check that the input has a proper
+                             `type` attribute in order to be converted into a
+                             ConfigurableParameters object. False to disable this check.
+                             Defaults to True.
+
+   :returns: dictionary or DictConfig
+
+
+.. py:function:: deserialize_enum_value(value: Union[str, enum.Enum], enum_type: Type[enum.Enum])
+
+   Deserializes a value to an instance of a certain Enum.
+
+   This checks whether the `value` passed is already an instance of the target Enum, in which case this function just
+   returns the input `value`. If value is a string, this function returns the corresponding instance of the Enum
+   passed in `enum_type`.
+
+   :param value: value to deserialize
+   :param enum_type: class (should be a subclass of Enum) that the name
+                     belongs to
+
+   :returns: instance of `enum_type`.`value`
+
+
+.. py:function:: ids_to_strings(config_dict: dict) -> dict
+
+   Converts ID's in the `config_dict` to their string representation.
+
+   :param config_dict: Dictionary in which to replace the ID's by strings
+
+   :returns: Updated config_dict dictionary
+
+

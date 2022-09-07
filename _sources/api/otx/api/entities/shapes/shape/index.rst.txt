@@ -1,0 +1,199 @@
+:py:mod:`otx.api.entities.shapes.shape`
+=======================================
+
+.. py:module:: otx.api.entities.shapes.shape
+
+.. autoapi-nested-parse::
+
+   This file defines the ShapeEntity interface and the Shape abstract class.
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   otx.api.entities.shapes.shape.ShapeType
+   otx.api.entities.shapes.shape.ShapeEntity
+   otx.api.entities.shapes.shape.Shape
+
+
+
+
+.. py:exception:: GeometryException
+
+   Bases: :py:obj:`ValueError`
+
+   Exception that is thrown if the geometry of a Shape is invalid.
+
+
+.. py:class:: ShapeType
+
+   Bases: :py:obj:`enum.IntEnum`
+
+   Shows which type of Shape is being used.
+
+   .. py:attribute:: ELLIPSE
+      
+
+      
+
+   .. py:attribute:: RECTANGLE
+      
+
+      
+
+   .. py:attribute:: POLYGON
+      
+
+      
+
+
+.. py:class:: ShapeEntity(shape_type: ShapeType)
+
+   This interface represents the annotation shapes on the media given by user annotations or system analysis.
+
+   The shapes is a 2D geometric shape living in a normalized coordinate system (the values range from 0 to 1).
+
+   .. py:method:: type() -> ShapeType
+      :property:
+
+      Get the type of Shape that this Shape represents.
+
+
+   .. py:method:: get_area() -> float
+      :abstractmethod:
+
+      Get the area of the shape.
+
+
+   .. py:method:: intersects(other: Shape) -> bool
+      :abstractmethod:
+
+      Returns true if other intersects with shape, otherwise returns false.
+
+      :param other: Shape to compare with
+      :type other: Shape
+
+      :returns: true if other intersects with shape, otherwise returns false
+      :rtype: bool
+
+
+   .. py:method:: contains_center(other: ShapeEntity) -> bool
+      :abstractmethod:
+
+      Checks whether the center of the 'other' shape is located in the shape.
+
+      :param other: Shape to compare with
+      :type other: ShapeEntity
+
+      :returns: true if the center of the 'other' shape is located in the shape, otherwise returns false
+      :rtype: bool
+
+
+   .. py:method:: normalize_wrt_roi_shape(roi_shape: otx.api.entities.shapes.rectangle.Rectangle) -> Shape
+      :abstractmethod:
+
+      The inverse of denormalize_wrt_roi_shape.
+
+      Transforming shape from the `roi` coordinate system to the normalized coordinate system.
+      This is used when the tasks want to save the analysis results.
+
+      For example in Detection -> Segmentation pipeline, the analysis results of segmentation
+      needs to be normalized to the roi (bounding boxes) coming from the detection.
+
+      :param roi_shape: Shape of the roi.
+      :type roi_shape: Rectangle
+
+      :returns: Shape in the normalized coordinate system.
+      :rtype: Shape
+
+
+   .. py:method:: denormalize_wrt_roi_shape(roi_shape: otx.api.entities.shapes.rectangle.Rectangle) -> ShapeEntity
+      :abstractmethod:
+
+      The inverse of normalize_wrt_roi_shape.
+
+      Transforming shape from the normalized coordinate system to the `roi` coordinate system.
+      This is used to pull ground truth during training process of the tasks.
+      Examples given in the Shape implementations.
+
+      :param roi_shape: Shape of the roi.
+      :type roi_shape: Rectangle
+
+      :returns: Shape in the `roi` coordinate system.
+      :rtype: ShapeEntity
+
+
+   .. py:method:: _as_shapely_polygon() -> shapely.geometry.Polygon
+      :abstractmethod:
+
+      Convert shape to a shapely polygon.
+
+      Shapely polygons are within the SDK used to calculate the intersection between Shapes.
+      It is also used in the SDK to find shapes that are visible within a given ROI.
+
+      :returns: Shapely polygon representation of the shape.
+      :rtype: shapely_polygon
+
+
+
+.. py:class:: Shape(shape_type: ShapeType, modification_date: datetime.datetime)
+
+   Bases: :py:obj:`ShapeEntity`
+
+   Base class for Shape entities.
+
+   .. py:method:: __repr__()
+
+      Returns the date of the last modification of the shape.
+
+
+   .. py:method:: get_area() -> float
+      :abstractmethod:
+
+      Get the area of the shape.
+
+
+   .. py:method:: intersects(other: Shape) -> bool
+
+      Returns True, if other intersects with shape, otherwise returns False.
+
+
+   .. py:method:: contains_center(other: ShapeEntity) -> bool
+
+      Checks whether the center of the 'other' shape is located in the shape.
+
+      :param other: Shape to compare with.
+      :type other: ShapeEntity
+
+      :returns: Boolean that indicates whether the center of the other shape is located in the shape
+      :rtype: bool
+
+
+   .. py:method:: _validate_coordinates(x: float, y: float) -> bool
+
+      Check if coordinate is valid.
+
+      Checks whether the values for a given x,y coordinate pair lie within the range of (0,1) that is expected for
+      the normalized coordinate system. Issues a warning if the coordinates are out of bounds.
+
+      :param x: x-coordinate to validate
+      :type x: float
+      :param y: y-coordinate to validate
+      :type y: float
+
+      :returns: ``True`` if coordinates are within expected range, ``False`` otherwise
+      :rtype: bool
+
+
+   .. py:method:: __hash__()
+
+      Returns the hash of shape.
+
+
+

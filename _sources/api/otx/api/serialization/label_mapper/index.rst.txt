@@ -1,0 +1,126 @@
+:py:mod:`otx.api.serialization.label_mapper`
+============================================
+
+.. py:module:: otx.api.serialization.label_mapper
+
+.. autoapi-nested-parse::
+
+   .This module contains the mapper for label related entities.
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   otx.api.serialization.label_mapper.ColorMapper
+   otx.api.serialization.label_mapper.LabelMapper
+   otx.api.serialization.label_mapper.LabelGroupMapper
+   otx.api.serialization.label_mapper.LabelGraphMapper
+   otx.api.serialization.label_mapper.LabelSchemaMapper
+
+
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   otx.api.serialization.label_mapper.label_schema_to_bytes
+
+
+
+.. py:class:: ColorMapper
+
+   This class maps a `Color` entity to a serialized dictionary, and vice versa.
+
+   .. py:method:: forward(instance: otx.api.entities.color.Color) -> dict
+      :staticmethod:
+
+      Serializes to dict.
+
+
+   .. py:method:: backward(instance: dict) -> otx.api.entities.color.Color
+      :staticmethod:
+
+      Deserializes from dict.
+
+
+
+.. py:class:: LabelMapper
+
+   This class maps a `Label` entity to a serialized dictionary, and vice versa.
+
+   .. py:method:: forward(instance: otx.api.entities.label.LabelEntity) -> dict
+      :staticmethod:
+
+      Serializes to dict.
+
+
+   .. py:method:: backward(instance: dict) -> otx.api.entities.label.LabelEntity
+      :staticmethod:
+
+      Deserializes from dict.
+
+
+
+.. py:class:: LabelGroupMapper
+
+   This class maps a `LabelGroup` entity to a serialized dictionary, and vice versa.
+
+   .. py:method:: forward(instance: otx.api.entities.label_schema.LabelGroup) -> dict
+      :staticmethod:
+
+      Serializes to dict.
+
+
+   .. py:method:: backward(instance: dict, all_labels: Dict[otx.api.entities.id.ID, otx.api.entities.label.LabelEntity]) -> otx.api.entities.label_schema.LabelGroup
+      :staticmethod:
+
+      Deserializes from dict.
+
+
+
+.. py:class:: LabelGraphMapper
+
+   This class maps a `LabelGraph` entity to a serialized dictionary, and vice versa.
+
+   .. py:method:: forward(instance: Union[otx.api.entities.label_schema.LabelGraph, otx.api.entities.label_schema.LabelTree]) -> dict
+      :staticmethod:
+
+      Serializes to dict.
+
+
+   .. py:method:: backward(instance: dict, all_labels: Dict[otx.api.entities.id.ID, otx.api.entities.label.LabelEntity]) -> Union[otx.api.entities.label_schema.LabelTree, otx.api.entities.label_schema.LabelGraph]
+      :staticmethod:
+
+      Deserializes from dict.
+
+
+
+.. py:class:: LabelSchemaMapper
+
+   This class maps a `LabelSchema` entity to a serialized dictionary, and vice versa.
+
+   .. py:method:: forward(instance: otx.api.entities.label_schema.LabelSchemaEntity) -> dict
+      :staticmethod:
+
+      Serializes to dict.
+
+
+   .. py:method:: backward(instance: dict) -> otx.api.entities.label_schema.LabelSchemaEntity
+      :staticmethod:
+
+      Deserializes from dict.
+
+
+
+.. py:function:: label_schema_to_bytes(label_schema: otx.api.entities.label_schema.LabelSchemaEntity) -> bytes
+
+   Returns json-serialized LabelSchemaEntity as bytes.
+
+

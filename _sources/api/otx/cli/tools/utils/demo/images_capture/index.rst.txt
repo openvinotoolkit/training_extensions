@@ -1,0 +1,166 @@
+:py:mod:`otx.cli.tools.utils.demo.images_capture`
+=================================================
+
+.. py:module:: otx.cli.tools.utils.demo.images_capture
+
+.. autoapi-nested-parse::
+
+   Images capturing module.
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   otx.cli.tools.utils.demo.images_capture.ImagesCapture
+   otx.cli.tools.utils.demo.images_capture.ImreadWrapper
+   otx.cli.tools.utils.demo.images_capture.DirReader
+   otx.cli.tools.utils.demo.images_capture.VideoCapWrapper
+   otx.cli.tools.utils.demo.images_capture.CameraCapWrapper
+
+
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   otx.cli.tools.utils.demo.images_capture.open_images_capture
+
+
+
+.. py:exception:: InvalidInput(message)
+
+   Bases: :py:obj:`Exception`
+
+   Exception for wrong input format.
+
+
+.. py:exception:: OpenError(message)
+
+   Bases: :py:obj:`Exception`
+
+   Exception for error opening reader.
+
+
+.. py:class:: ImagesCapture
+
+   Images capturing base class.
+
+   .. py:method:: read()
+      :abstractmethod:
+
+      Returns captured image.
+
+
+   .. py:method:: fps()
+      :abstractmethod:
+
+      Returns a frequency of getting images from source.
+
+
+   .. py:method:: get_type()
+      :abstractmethod:
+
+      Returns type of image capture.
+
+
+
+.. py:class:: ImreadWrapper(source, loop)
+
+   Bases: :py:obj:`ImagesCapture`
+
+   Class for reading an image from file.
+
+   .. py:method:: read()
+
+      Returns captured image.
+
+
+   .. py:method:: fps()
+
+      Returns a frequency of getting images from source.
+
+
+   .. py:method:: get_type()
+
+      Returns type of image capture.
+
+
+
+.. py:class:: DirReader(source, loop)
+
+   Bases: :py:obj:`ImagesCapture`
+
+   Class for reading images from directory.
+
+   .. py:method:: read()
+
+      Returns captured image.
+
+
+   .. py:method:: fps()
+
+      Returns a frequency of getting images from source.
+
+
+   .. py:method:: get_type()
+
+      Returns type of image capture.
+
+
+
+.. py:class:: VideoCapWrapper(source, loop)
+
+   Bases: :py:obj:`ImagesCapture`
+
+   Class for capturing images from video.
+
+   .. py:method:: read()
+
+      Returns captured image.
+
+
+   .. py:method:: fps()
+
+      Returns a frequency of getting images from source.
+
+
+   .. py:method:: get_type()
+
+      Returns type of image capture.
+
+
+
+.. py:class:: CameraCapWrapper(source, camera_resolution)
+
+   Bases: :py:obj:`ImagesCapture`
+
+   Class for capturing images from camera.
+
+   .. py:method:: read()
+
+      Returns captured image.
+
+
+   .. py:method:: fps()
+
+      Returns a frequency of getting images from source.
+
+
+   .. py:method:: get_type()
+
+      Returns type of image capture.
+
+
+
+.. py:function:: open_images_capture(source, loop, camera_resolution=(1280, 720))
+
+   Opens images capture.
+
+

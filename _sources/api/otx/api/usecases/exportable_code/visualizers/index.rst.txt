@@ -1,0 +1,135 @@
+:py:mod:`otx.api.usecases.exportable_code.visualizers`
+======================================================
+
+.. py:module:: otx.api.usecases.exportable_code.visualizers
+
+.. autoapi-nested-parse::
+
+   Initialization of visualizers.
+
+
+
+Submodules
+----------
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+
+   anomaly_visualizer/index.rst
+   visualizer/index.rst
+
+
+Package Contents
+----------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   otx.api.usecases.exportable_code.visualizers.AnomalyVisualizer
+   otx.api.usecases.exportable_code.visualizers.IVisualizer
+   otx.api.usecases.exportable_code.visualizers.Visualizer
+
+
+
+
+.. py:class:: AnomalyVisualizer(window_name: Optional[str] = None, show_count: bool = False, is_one_label: bool = False, no_show: bool = False, delay: Optional[int] = None)
+
+   Bases: :py:obj:`otx.api.usecases.exportable_code.visualizers.visualizer.Visualizer`
+
+   Visualize the predicted output by drawing the annotations on the input image.
+
+   .. rubric:: Example
+
+   >>> predictions = inference_model.predict(frame)
+   >>> annotation = prediction_converter.convert_to_annotation(predictions)
+   >>> output = visualizer.draw(frame, annotation.shape, annotation.get_labels())
+   >>> visualizer.show(output)
+
+   .. py:method:: to_heat_mask(mask: numpy.ndarray) -> numpy.ndarray
+      :staticmethod:
+
+      Create heat mask from saliency map.
+
+      :param mask: saliency map
+
+
+   .. py:method:: draw(image: numpy.ndarray, annotation: otx.api.entities.annotation.AnnotationSceneEntity, meta: dict) -> numpy.ndarray
+
+      Draw annotations on the image.
+
+      :param image: Input image
+      :param annotation: Annotations to be drawn on the input image
+      :param metadata: Metadata with saliency map
+
+      :returns: Output image with annotations.
+
+
+
+.. py:class:: IVisualizer
+
+   Interface for converter.
+
+   .. py:method:: draw(image: numpy.ndarray, annotation: otx.api.entities.annotation.AnnotationSceneEntity, meta: dict) -> numpy.ndarray
+      :abstractmethod:
+
+      Draw annotations on the image.
+
+      :param image: Input image
+      :param annotation: Annotations to be drawn on the input image
+      :param metadata: Metadata is needed to render
+
+      :returns: Output image with annotations.
+
+
+   .. py:method:: show(image: numpy.ndarray) -> None
+      :abstractmethod:
+
+      Show result image.
+
+
+   .. py:method:: is_quit() -> bool
+      :abstractmethod:
+
+      Check if user wishes to quit.
+
+
+
+.. py:class:: Visualizer(window_name: Optional[str] = None, show_count: bool = False, is_one_label: bool = False, no_show: bool = False, delay: Optional[int] = None)
+
+   Bases: :py:obj:`IVisualizer`
+
+   Visualize the predicted output by drawing the annotations on the input image.
+
+   .. rubric:: Example
+
+   >>> predictions = inference_model.predict(frame)
+   >>> annotation = prediction_converter.convert_to_annotation(predictions)
+   >>> output = visualizer.draw(frame, annotation.shape, annotation.get_labels())
+   >>> visualizer.show(output)
+
+   .. py:method:: draw(image: numpy.ndarray, annotation: otx.api.entities.annotation.AnnotationSceneEntity, meta: Optional[dict] = None) -> numpy.ndarray
+
+      Draw annotations on the image.
+
+      :param image: Input image
+      :param annotation: Annotations to be drawn on the input image
+
+      :returns: Output image with annotations.
+
+
+   .. py:method:: show(image: numpy.ndarray) -> None
+
+      Show result image.
+
+      :param image: Image to be shown.
+      :type image: np.ndarray
+
+
+   .. py:method:: is_quit() -> bool
+
+      Check user wish to quit.
+
+
+

@@ -1,0 +1,35 @@
+:py:mod:`otx.cli.tools.deploy`
+==============================
+
+.. py:module:: otx.cli.tools.deploy
+
+.. autoapi-nested-parse::
+
+   Model deployment tool.
+
+
+
+Module Contents
+---------------
+
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   otx.cli.tools.deploy.parse_args
+   otx.cli.tools.deploy.main
+
+
+
+.. py:function:: parse_args()
+
+   Parses command line arguments.
+
+
+.. py:function:: main()
+
+   Main function that is used for model evaluation.
+
+

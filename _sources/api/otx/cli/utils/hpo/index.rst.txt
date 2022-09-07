@@ -1,0 +1,280 @@
+:py:mod:`otx.cli.utils.hpo`
+===========================
+
+.. py:module:: otx.cli.utils.hpo
+
+.. autoapi-nested-parse::
+
+   Utils for HPO with hpopt.
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   otx.cli.utils.hpo.HpoCallback
+   otx.cli.utils.hpo.HpoManager
+   otx.cli.utils.hpo.HpoDataset
+   otx.cli.utils.hpo.HpoUnpickler
+
+
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   otx.cli.utils.hpo.check_hpopt_available
+   otx.cli.utils.hpo._check_hpo_enabled_task
+   otx.cli.utils.hpo._is_mpa_framework_task
+   otx.cli.utils.hpo._is_cls_framework_task
+   otx.cli.utils.hpo._is_det_framework_task
+   otx.cli.utils.hpo._is_seg_framework_task
+   otx.cli.utils.hpo._is_anomaly_framework_task
+   otx.cli.utils.hpo.run_hpo
+   otx.cli.utils.hpo.get_cuda_device_list
+   otx.cli.utils.hpo.run_hpo_trainer
+   otx.cli.utils.hpo.exec_hpo_trainer
+   otx.cli.utils.hpo.get_train_wrapper_task
+   otx.cli.utils.hpo._convert_parameter_group_to_dict
+   otx.cli.utils.hpo._set_dict_to_parameter_group
+   otx.cli.utils.hpo._load_hpopt_config
+   otx.cli.utils.hpo._get_best_model_weight_path
+   otx.cli.utils.hpo._get_hpo_dir
+   otx.cli.utils.hpo._get_hpo_trial_workdir
+   otx.cli.utils.hpo.main
+
+
+
+Attributes
+~~~~~~~~~~
+
+.. autoapisummary::
+
+   otx.cli.utils.hpo.hpopt
+
+
+.. py:data:: hpopt
+   
+
+   
+
+.. py:function:: check_hpopt_available() -> bool
+
+   Check whether hpopt is avaiable.
+
+
+.. py:function:: _check_hpo_enabled_task(task_type: otx.api.entities.model_template.TaskType)
+
+   Check whether HPO available task.
+
+
+.. py:function:: _is_mpa_framework_task(task_type: otx.api.entities.model_template.TaskType)
+
+   Check whether mpa framework task.
+
+
+.. py:function:: _is_cls_framework_task(task_type: otx.api.entities.model_template.TaskType)
+
+   Check whether classification framework task.
+
+
+.. py:function:: _is_det_framework_task(task_type: otx.api.entities.model_template.TaskType)
+
+   Check whether detection framework task.
+
+
+.. py:function:: _is_seg_framework_task(task_type: otx.api.entities.model_template.TaskType)
+
+   Check whether segmentation framework task.
+
+
+.. py:function:: _is_anomaly_framework_task(task_type: otx.api.entities.model_template.TaskType)
+
+   Check whether anomaly framework task.
+
+
+.. py:function:: run_hpo(args: argparse.Namespace, environment: otx.api.entities.task_environment.TaskEnvironment, dataset: otx.api.entities.datasets.DatasetEntity, task_type: otx.api.entities.model_template.TaskType)
+
+   Update the environment with better hyper-parameters found by HPO.
+
+
+.. py:function:: get_cuda_device_list()
+
+   Returns the list of avaiable cuda devices.
+
+
+.. py:function:: run_hpo_trainer(hp_config, hyper_parameters, model_template, dataset_paths: Dict[str, str], task_type: otx.api.entities.model_template.TaskType)
+
+   Run each training of each trial with given hyper parameters.
+
+
+.. py:function:: exec_hpo_trainer(arg_file_name, alloc_gpus)
+
+   Execute new process to train model for ASHA's trial.
+
+
+.. py:function:: get_train_wrapper_task(impl_class, task_type)
+
+   Get task wrapper for the HPO with given task type.
+
+
+.. py:function:: _convert_parameter_group_to_dict(parameter_group: otx.api.entities.task_environment.TypeVariable)
+
+
+.. py:function:: _set_dict_to_parameter_group(origin_hp: otx.api.configuration.configurable_parameters.ConfigurableParameters, hp_config: Dict)
+
+   Set given hyper parameter to hyper parameter in environment aligning with "ConfigurableParameters".
+
+
+.. py:function:: _load_hpopt_config(file_path: str)
+
+   Load HPOpt config file.
+
+
+.. py:function:: _get_best_model_weight_path(hpo_dir: str, trial_num: str, task_type: otx.api.entities.model_template.TaskType)
+
+   Return best model weight from HPO trial directory.
+
+
+.. py:function:: _get_hpo_dir(hp_config)
+
+   Return HPO work directory path from hp_config.
+
+
+.. py:function:: _get_hpo_trial_workdir(hp_config)
+
+   Return HPO trial work directory path from hp_config.
+
+
+.. py:class:: HpoCallback(hp_config, metric, hpo_task)
+
+   Bases: :py:obj:`otx.api.entities.train_parameters.UpdateProgressCallback`
+
+   Callback class to report score to hpopt.
+
+   .. py:method:: __call__(progress: float, score: Optional[float] = None)
+
+      Reports score to hpopt when called.
+
+      :param progress: (Unused) This is an artifact of using ProgressCallback for HPOCallback.
+      :type progress: float
+      :param score: Score to report. Defaults to None.
+      :type score: Optional[float], optional
+
+
+
+.. py:class:: HpoManager(environment, dataset, dataset_paths, expected_time_ratio, hpo_save_path)
+
+   Manage overall HPO process.
+
+   .. py:method:: check_resumable()
+
+      Check if HPO could be resumed from the previous result.
+
+      If previous results are found, ask the user if resume or start from scratch.
+
+
+   .. py:method:: run()
+
+      Execute HPO according to configuration.
+
+
+   .. py:method:: __alloc_gpus(gpu_alloc_list)
+
+
+   .. py:method:: generate_hpo_search_space(hp_space_dict)
+      :staticmethod:
+
+      Generate search space from user's input.
+
+
+   .. py:method:: remove_empty_keys(arg_dict)
+      :staticmethod:
+
+      Remove keys with null values in the arg_dict dictionary.
+
+
+   .. py:method:: get_num_full_iterations(environment)
+      :staticmethod:
+
+      Get the number of full iterations for the specified environment.
+
+
+   .. py:method:: safe_pickle_dump(dir_path, file_name, data)
+      :staticmethod:
+
+      Dump a pickle file with minimal file permission.
+
+
+   .. py:method:: set_hyperparameter(origin_hp, hp_config)
+      :staticmethod:
+
+      Set given hyper parameter to hyper parameter in environment aligning with "ConfigurableParameters".
+
+
+
+.. py:class:: HpoDataset(fullset: otx.api.entities.datasets.DatasetEntity, config=None, indices=None)
+
+   Wrapper class for DatasetEntity of dataset.
+
+   It's used to make subset during HPO.
+
+   .. py:method:: __len__() -> int
+
+      Gets size of dataset.
+
+
+   .. py:method:: __getitem__(indx) -> dict
+
+      Get item from dataset.
+
+
+   .. py:method:: __getattr__(name)
+
+      Get attribute from fullset.
+
+
+   .. py:method:: get_subset(subset: otx.api.entities.subset.Subset)
+
+      Get subset according to subset_ratio if training dataset is requested.
+
+
+
+.. py:class:: HpoUnpickler
+
+   Bases: :py:obj:`pickle.Unpickler`
+
+   Safe unpickler for HPO.
+
+   .. py:attribute:: __safe_builtins
+      
+
+      
+
+   .. py:attribute:: __safe_collections
+      
+
+      
+
+   .. py:attribute:: __allowed_classes
+      
+
+      
+
+   .. py:method:: find_class(module_name, class_name)
+
+      Find class in module_name.
+
+
+
+.. py:function:: main()
+
+   Run run_hpo_trainer with a pickle file.
+
+

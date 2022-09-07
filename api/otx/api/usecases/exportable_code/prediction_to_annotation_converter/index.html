@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>otx.api.usecases.exportable_code.prediction_to_annotation_converter &mdash; OpenVINO Training Extensions  documentation</title>
+      <link rel="stylesheet" href="../../../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../../../" id="documentation_options" src="../../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../../_static/jquery.js"></script>
+        <script src="../../../../../../_static/underscore.js"></script>
+        <script src="../../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../../../../_static/doctools.js"></script>
+    <script src="../../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../../../index.html" class="icon icon-home"> OpenVINO Training Extensions
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../../index.html">OpenVINO Training Extensions</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li><code class="xref py py-mod docutils literal notranslate"><span class="pre">otx.api.usecases.exportable_code.prediction_to_annotation_converter</span></code></li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../../../_sources/api/otx/api/usecases/exportable_code/prediction_to_annotation_converter/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-otx.api.usecases.exportable_code.prediction_to_annotation_converter">
+<span id="otx-api-usecases-exportable-code-prediction-to-annotation-converter"></span><h1><a class="reference internal" href="#module-otx.api.usecases.exportable_code.prediction_to_annotation_converter" title="otx.api.usecases.exportable_code.prediction_to_annotation_converter"><code class="xref py py-mod docutils literal notranslate"><span class="pre">otx.api.usecases.exportable_code.prediction_to_annotation_converter</span></code></a><a class="headerlink" href="#module-otx.api.usecases.exportable_code.prediction_to_annotation_converter" title="Permalink to this heading"></a></h1>
+<p>Converters for output of inferencers.</p>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this heading"></a></h2>
+<section id="classes">
+<h3>Classes<a class="headerlink" href="#classes" title="Permalink to this heading"></a></h3>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.api.usecases.exportable_code.prediction_to_annotation_converter.IPredictionToAnnotationConverter" title="otx.api.usecases.exportable_code.prediction_to_annotation_converter.IPredictionToAnnotationConverter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">IPredictionToAnnotationConverter</span></code></a></p></td>
+<td><p>Interface for converter.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.api.usecases.exportable_code.prediction_to_annotation_converter.DetectionToAnnotationConverter" title="otx.api.usecases.exportable_code.prediction_to_annotation_converter.DetectionToAnnotationConverter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DetectionToAnnotationConverter</span></code></a></p></td>
+<td><p>Converts Object Detections to Annotations.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.api.usecases.exportable_code.prediction_to_annotation_converter.DetectionBoxToAnnotationConverter" title="otx.api.usecases.exportable_code.prediction_to_annotation_converter.DetectionBoxToAnnotationConverter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DetectionBoxToAnnotationConverter</span></code></a></p></td>
+<td><p>Converts DetectionBox Predictions ModelAPI to Annotations.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.api.usecases.exportable_code.prediction_to_annotation_converter.SegmentationToAnnotationConverter" title="otx.api.usecases.exportable_code.prediction_to_annotation_converter.SegmentationToAnnotationConverter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SegmentationToAnnotationConverter</span></code></a></p></td>
+<td><p>Converts Segmentation Predictions ModelAPI to Annotations.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.api.usecases.exportable_code.prediction_to_annotation_converter.ClassificationToAnnotationConverter" title="otx.api.usecases.exportable_code.prediction_to_annotation_converter.ClassificationToAnnotationConverter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ClassificationToAnnotationConverter</span></code></a></p></td>
+<td><p>Converts Classification Predictions ModelAPI to Annotations.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.api.usecases.exportable_code.prediction_to_annotation_converter.AnomalyClassificationToAnnotationConverter" title="otx.api.usecases.exportable_code.prediction_to_annotation_converter.AnomalyClassificationToAnnotationConverter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AnomalyClassificationToAnnotationConverter</span></code></a></p></td>
+<td><p>Converts AnomalyClassification Predictions ModelAPI to Annotations.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.api.usecases.exportable_code.prediction_to_annotation_converter.AnomalySegmentationToAnnotationConverter" title="otx.api.usecases.exportable_code.prediction_to_annotation_converter.AnomalySegmentationToAnnotationConverter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AnomalySegmentationToAnnotationConverter</span></code></a></p></td>
+<td><p>Converts AnomalyClassification Predictions ModelAPI to Annotations.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.api.usecases.exportable_code.prediction_to_annotation_converter.AnomalyDetectionToAnnotationConverter" title="otx.api.usecases.exportable_code.prediction_to_annotation_converter.AnomalyDetectionToAnnotationConverter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AnomalyDetectionToAnnotationConverter</span></code></a></p></td>
+<td><p>Converts Anomaly Detection Predictions ModelAPI to Annotations.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.api.usecases.exportable_code.prediction_to_annotation_converter.MaskToAnnotationConverter" title="otx.api.usecases.exportable_code.prediction_to_annotation_converter.MaskToAnnotationConverter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MaskToAnnotationConverter</span></code></a></p></td>
+<td><p>Converts DetectionBox Predictions ModelAPI to Annotations.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.api.usecases.exportable_code.prediction_to_annotation_converter.RotatedRectToAnnotationConverter" title="otx.api.usecases.exportable_code.prediction_to_annotation_converter.RotatedRectToAnnotationConverter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RotatedRectToAnnotationConverter</span></code></a></p></td>
+<td><p>Converts Rotated Rect (mask) Predictions ModelAPI to Annotations.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="functions">
+<h3>Functions<a class="headerlink" href="#functions" title="Permalink to this heading"></a></h3>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.api.usecases.exportable_code.prediction_to_annotation_converter.create_converter" title="otx.api.usecases.exportable_code.prediction_to_annotation_converter.create_converter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_converter</span></code></a>(→ IPredictionToAnnotationConverter)</p></td>
+<td><p>Simple factory for converters based on type of tasks.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.api.usecases.exportable_code.prediction_to_annotation_converter.IPredictionToAnnotationConverter">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.usecases.exportable_code.prediction_to_annotation_converter.</span></span><span class="sig-name descname"><span class="pre">IPredictionToAnnotationConverter</span></span><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/exportable_code/prediction_to_annotation_converter.html#IPredictionToAnnotationConverter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.exportable_code.prediction_to_annotation_converter.IPredictionToAnnotationConverter" title="Permalink to this definition"></a></dt>
+<dd><p>Interface for converter.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.usecases.exportable_code.prediction_to_annotation_converter.IPredictionToAnnotationConverter.convert_to_annotation">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">convert_to_annotation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">predictions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../../../entities/annotation/index.html#otx.api.entities.annotation.AnnotationSceneEntity" title="otx.api.entities.annotation.AnnotationSceneEntity"><span class="pre">otx.api.entities.annotation.AnnotationSceneEntity</span></a></span></span><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/exportable_code/prediction_to_annotation_converter.html#IPredictionToAnnotationConverter.convert_to_annotation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.exportable_code.prediction_to_annotation_converter.IPredictionToAnnotationConverter.convert_to_annotation" title="Permalink to this definition"></a></dt>
+<dd><p>Convert raw predictions to AnnotationScene format.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>predictions</strong> (<em>Any</em>) – raw predictions from inferencer</p></li>
+<li><p><strong>metadata</strong> (<em>Dict</em>) – metadata from inferencer</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>annotation object containing the shapes obtained from the raw predictions.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="../../../entities/annotation/index.html#otx.api.entities.annotation.AnnotationSceneEntity" title="otx.api.entities.annotation.AnnotationSceneEntity">AnnotationSceneEntity</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.api.usecases.exportable_code.prediction_to_annotation_converter.DetectionToAnnotationConverter">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.usecases.exportable_code.prediction_to_annotation_converter.</span></span><span class="sig-name descname"><span class="pre">DetectionToAnnotationConverter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../../entities/label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/exportable_code/prediction_to_annotation_converter.html#DetectionToAnnotationConverter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.exportable_code.prediction_to_annotation_converter.DetectionToAnnotationConverter" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#otx.api.usecases.exportable_code.prediction_to_annotation_converter.IPredictionToAnnotationConverter" title="otx.api.usecases.exportable_code.prediction_to_annotation_converter.IPredictionToAnnotationConverter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">IPredictionToAnnotationConverter</span></code></a></p>
+<p>Converts Object Detections to Annotations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>labels</strong> (<em>List</em><em>[</em><a class="reference internal" href="../../../entities/label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><em>LabelEntity</em></a><em>]</em>) – list of labels</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.usecases.exportable_code.prediction_to_annotation_converter.DetectionToAnnotationConverter.convert_to_annotation">
+<span class="sig-name descname"><span class="pre">convert_to_annotation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">predictions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../../../entities/annotation/index.html#otx.api.entities.annotation.AnnotationSceneEntity" title="otx.api.entities.annotation.AnnotationSceneEntity"><span class="pre">otx.api.entities.annotation.AnnotationSceneEntity</span></a></span></span><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/exportable_code/prediction_to_annotation_converter.html#DetectionToAnnotationConverter.convert_to_annotation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.exportable_code.prediction_to_annotation_converter.DetectionToAnnotationConverter.convert_to_annotation" title="Permalink to this definition"></a></dt>
+<dd><p>Converts a set of predictions into an AnnotationScene object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>predictions</strong> (<em>np.ndarray</em>) – <dl class="simple">
+<dt>Prediction with shape [num_predictions, 6] or</dt><dd><p>[num_predictions, 7]</p>
+</dd>
+</dl>
+<p>Supported detection formats are</p>
+<ul>
+<li><p>[label, confidence, x1, y1, x2, y2]</p></li>
+<li><p>[_, label, confidence, x1, y1, x2, y2]</p></li>
+</ul>
+<p><cite>label</cite> can be any integer that can be mapped to <cite>self.labels</cite>
+<cite>confidence</cite> should be a value between 0 and 1
+<cite>x1</cite>, <cite>x2</cite>, <cite>y1</cite> and <cite>y2</cite> are expected to be normalized.</p>
+</p></li>
+<li><p><strong>metadata</strong> (<em>Optional</em><em>[</em><em>Dict</em><em>]</em>) – (Unused)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>AnnotationScene Object containing the boxes obtained from the prediction.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>AnnotationScene</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.usecases.exportable_code.prediction_to_annotation_converter.DetectionToAnnotationConverter.__convert_to_annotations">
+<span class="sig-name descname"><span class="pre">__convert_to_annotations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">predictions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../../entities/annotation/index.html#otx.api.entities.annotation.Annotation" title="otx.api.entities.annotation.Annotation"><span class="pre">otx.api.entities.annotation.Annotation</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/exportable_code/prediction_to_annotation_converter.html#DetectionToAnnotationConverter.__convert_to_annotations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.exportable_code.prediction_to_annotation_converter.DetectionToAnnotationConverter.__convert_to_annotations" title="Permalink to this definition"></a></dt>
+<dd><p>Converts a list of Detections to OTX Annotation objects.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>predictions</strong> (<em>np.ndarray</em>) – A list of predictions with shape [num_prediction, 6] or
+[num_predictions, 7]</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A list of Annotation objects with Rectangle shapes</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>List[<a class="reference internal" href="../../../entities/annotation/index.html#otx.api.entities.annotation.Annotation" title="otx.api.entities.annotation.Annotation">Annotation</a>]</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>ValueError</strong> – This error is raised if the shape of prediction is not
+(n, 7) or (n, 6)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.api.usecases.exportable_code.prediction_to_annotation_converter.create_converter">
+<span class="sig-prename descclassname"><span class="pre">otx.api.usecases.exportable_code.prediction_to_annotation_converter.</span></span><span class="sig-name descname"><span class="pre">create_converter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">converter_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../../entities/label/index.html#otx.api.entities.label.Domain" title="otx.api.entities.label.Domain"><span class="pre">otx.api.entities.label.Domain</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../../entities/label_schema/index.html#otx.api.entities.label_schema.LabelSchemaEntity" title="otx.api.entities.label_schema.LabelSchemaEntity"><span class="pre">otx.api.entities.label_schema.LabelSchemaEntity</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#otx.api.usecases.exportable_code.prediction_to_annotation_converter.IPredictionToAnnotationConverter" title="otx.api.usecases.exportable_code.prediction_to_annotation_converter.IPredictionToAnnotationConverter"><span class="pre">IPredictionToAnnotationConverter</span></a></span></span><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/exportable_code/prediction_to_annotation_converter.html#create_converter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.exportable_code.prediction_to_annotation_converter.create_converter" title="Permalink to this definition"></a></dt>
+<dd><p>Simple factory for converters based on type of tasks.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>converter_type</strong> (<a class="reference internal" href="../../../entities/label/index.html#otx.api.entities.label.Domain" title="otx.api.entities.label.Domain"><em>Domain</em></a>) – type of converter</p></li>
+<li><p><strong>labels</strong> (<a class="reference internal" href="../../../entities/label_schema/index.html#otx.api.entities.label_schema.LabelSchemaEntity" title="otx.api.entities.label_schema.LabelSchemaEntity"><em>LabelSchemaEntity</em></a>) – label schema entity</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.api.usecases.exportable_code.prediction_to_annotation_converter.DetectionBoxToAnnotationConverter">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.usecases.exportable_code.prediction_to_annotation_converter.</span></span><span class="sig-name descname"><span class="pre">DetectionBoxToAnnotationConverter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../../entities/label_schema/index.html#otx.api.entities.label_schema.LabelSchemaEntity" title="otx.api.entities.label_schema.LabelSchemaEntity"><span class="pre">otx.api.entities.label_schema.LabelSchemaEntity</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/exportable_code/prediction_to_annotation_converter.html#DetectionBoxToAnnotationConverter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.exportable_code.prediction_to_annotation_converter.DetectionBoxToAnnotationConverter" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#otx.api.usecases.exportable_code.prediction_to_annotation_converter.IPredictionToAnnotationConverter" title="otx.api.usecases.exportable_code.prediction_to_annotation_converter.IPredictionToAnnotationConverter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">IPredictionToAnnotationConverter</span></code></a></p>
+<p>Converts DetectionBox Predictions ModelAPI to Annotations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>labels</strong> (<a class="reference internal" href="../../../entities/label_schema/index.html#otx.api.entities.label_schema.LabelSchemaEntity" title="otx.api.entities.label_schema.LabelSchemaEntity"><em>LabelSchemaEntity</em></a>) – Label Schema containing the label info of the task</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.usecases.exportable_code.prediction_to_annotation_converter.DetectionBoxToAnnotationConverter.convert_to_annotation">
+<span class="sig-name descname"><span class="pre">convert_to_annotation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">predictions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">openvino.model_zoo.model_api.models.utils.Detection</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../../../entities/annotation/index.html#otx.api.entities.annotation.AnnotationSceneEntity" title="otx.api.entities.annotation.AnnotationSceneEntity"><span class="pre">otx.api.entities.annotation.AnnotationSceneEntity</span></a></span></span><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/exportable_code/prediction_to_annotation_converter.html#DetectionBoxToAnnotationConverter.convert_to_annotation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.exportable_code.prediction_to_annotation_converter.DetectionBoxToAnnotationConverter.convert_to_annotation" title="Permalink to this definition"></a></dt>
+<dd><p>Convert predictions to OTX Annotation Scene using the metadata.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>predictions</strong> (<em>tuple</em>) – Raw predictions from the model.</p></li>
+<li><p><strong>metadata</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – Variable containing metadata information.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>OTX annotation scene entity object.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="../../../entities/annotation/index.html#otx.api.entities.annotation.AnnotationSceneEntity" title="otx.api.entities.annotation.AnnotationSceneEntity">AnnotationSceneEntity</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.api.usecases.exportable_code.prediction_to_annotation_converter.SegmentationToAnnotationConverter">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.usecases.exportable_code.prediction_to_annotation_converter.</span></span><span class="sig-name descname"><span class="pre">SegmentationToAnnotationConverter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../../entities/label_schema/index.html#otx.api.entities.label_schema.LabelSchemaEntity" title="otx.api.entities.label_schema.LabelSchemaEntity"><span class="pre">otx.api.entities.label_schema.LabelSchemaEntity</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/exportable_code/prediction_to_annotation_converter.html#SegmentationToAnnotationConverter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.exportable_code.prediction_to_annotation_converter.SegmentationToAnnotationConverter" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#otx.api.usecases.exportable_code.prediction_to_annotation_converter.IPredictionToAnnotationConverter" title="otx.api.usecases.exportable_code.prediction_to_annotation_converter.IPredictionToAnnotationConverter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">IPredictionToAnnotationConverter</span></code></a></p>
+<p>Converts Segmentation Predictions ModelAPI to Annotations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>labels</strong> (<a class="reference internal" href="../../../entities/label_schema/index.html#otx.api.entities.label_schema.LabelSchemaEntity" title="otx.api.entities.label_schema.LabelSchemaEntity"><em>LabelSchemaEntity</em></a>) – Label Schema containing the label info of the task</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.usecases.exportable_code.prediction_to_annotation_converter.SegmentationToAnnotationConverter.convert_to_annotation">
+<span class="sig-name descname"><span class="pre">convert_to_annotation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">predictions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../../../entities/annotation/index.html#otx.api.entities.annotation.AnnotationSceneEntity" title="otx.api.entities.annotation.AnnotationSceneEntity"><span class="pre">otx.api.entities.annotation.AnnotationSceneEntity</span></a></span></span><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/exportable_code/prediction_to_annotation_converter.html#SegmentationToAnnotationConverter.convert_to_annotation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.exportable_code.prediction_to_annotation_converter.SegmentationToAnnotationConverter.convert_to_annotation" title="Permalink to this definition"></a></dt>
+<dd><p>Convert predictions to OTX Annotation Scene using the metadata.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>predictions</strong> (<em>tuple</em>) – Raw predictions from the model.</p></li>
+<li><p><strong>metadata</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – Variable containing metadata information.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>OTX annotation scene entity object.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="../../../entities/annotation/index.html#otx.api.entities.annotation.AnnotationSceneEntity" title="otx.api.entities.annotation.AnnotationSceneEntity">AnnotationSceneEntity</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.api.usecases.exportable_code.prediction_to_annotation_converter.ClassificationToAnnotationConverter">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.usecases.exportable_code.prediction_to_annotation_converter.</span></span><span class="sig-name descname"><span class="pre">ClassificationToAnnotationConverter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../../entities/label_schema/index.html#otx.api.entities.label_schema.LabelSchemaEntity" title="otx.api.entities.label_schema.LabelSchemaEntity"><span class="pre">otx.api.entities.label_schema.LabelSchemaEntity</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/exportable_code/prediction_to_annotation_converter.html#ClassificationToAnnotationConverter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.exportable_code.prediction_to_annotation_converter.ClassificationToAnnotationConverter" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#otx.api.usecases.exportable_code.prediction_to_annotation_converter.IPredictionToAnnotationConverter" title="otx.api.usecases.exportable_code.prediction_to_annotation_converter.IPredictionToAnnotationConverter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">IPredictionToAnnotationConverter</span></code></a></p>
+<p>Converts Classification Predictions ModelAPI to Annotations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>labels</strong> (<a class="reference internal" href="../../../entities/label_schema/index.html#otx.api.entities.label_schema.LabelSchemaEntity" title="otx.api.entities.label_schema.LabelSchemaEntity"><em>LabelSchemaEntity</em></a>) – Label Schema containing the label info of the task</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.usecases.exportable_code.prediction_to_annotation_converter.ClassificationToAnnotationConverter.convert_to_annotation">
+<span class="sig-name descname"><span class="pre">convert_to_annotation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">predictions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../../../entities/annotation/index.html#otx.api.entities.annotation.AnnotationSceneEntity" title="otx.api.entities.annotation.AnnotationSceneEntity"><span class="pre">otx.api.entities.annotation.AnnotationSceneEntity</span></a></span></span><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/exportable_code/prediction_to_annotation_converter.html#ClassificationToAnnotationConverter.convert_to_annotation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.exportable_code.prediction_to_annotation_converter.ClassificationToAnnotationConverter.convert_to_annotation" title="Permalink to this definition"></a></dt>
+<dd><p>Convert predictions to OTX Annotation Scene using the metadata.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>predictions</strong> (<em>tuple</em>) – Raw predictions from the model.</p></li>
+<li><p><strong>metadata</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – Variable containing metadata information.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>OTX annotation scene entity object.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="../../../entities/annotation/index.html#otx.api.entities.annotation.AnnotationSceneEntity" title="otx.api.entities.annotation.AnnotationSceneEntity">AnnotationSceneEntity</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.api.usecases.exportable_code.prediction_to_annotation_converter.AnomalyClassificationToAnnotationConverter">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.usecases.exportable_code.prediction_to_annotation_converter.</span></span><span class="sig-name descname"><span class="pre">AnomalyClassificationToAnnotationConverter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../../entities/label_schema/index.html#otx.api.entities.label_schema.LabelSchemaEntity" title="otx.api.entities.label_schema.LabelSchemaEntity"><span class="pre">otx.api.entities.label_schema.LabelSchemaEntity</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/exportable_code/prediction_to_annotation_converter.html#AnomalyClassificationToAnnotationConverter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.exportable_code.prediction_to_annotation_converter.AnomalyClassificationToAnnotationConverter" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#otx.api.usecases.exportable_code.prediction_to_annotation_converter.IPredictionToAnnotationConverter" title="otx.api.usecases.exportable_code.prediction_to_annotation_converter.IPredictionToAnnotationConverter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">IPredictionToAnnotationConverter</span></code></a></p>
+<p>Converts AnomalyClassification Predictions ModelAPI to Annotations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>labels</strong> (<a class="reference internal" href="../../../entities/label_schema/index.html#otx.api.entities.label_schema.LabelSchemaEntity" title="otx.api.entities.label_schema.LabelSchemaEntity"><em>LabelSchemaEntity</em></a>) – Label Schema containing the label info of the task</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.usecases.exportable_code.prediction_to_annotation_converter.AnomalyClassificationToAnnotationConverter.convert_to_annotation">
+<span class="sig-name descname"><span class="pre">convert_to_annotation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">predictions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../../../entities/annotation/index.html#otx.api.entities.annotation.AnnotationSceneEntity" title="otx.api.entities.annotation.AnnotationSceneEntity"><span class="pre">otx.api.entities.annotation.AnnotationSceneEntity</span></a></span></span><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/exportable_code/prediction_to_annotation_converter.html#AnomalyClassificationToAnnotationConverter.convert_to_annotation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.exportable_code.prediction_to_annotation_converter.AnomalyClassificationToAnnotationConverter.convert_to_annotation" title="Permalink to this definition"></a></dt>
+<dd><p>Convert predictions to OTX Annotation Scene using the metadata.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>predictions</strong> (<em>tuple</em>) – Raw predictions from the model.</p></li>
+<li><p><strong>metadata</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – Variable containing metadata information.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>OTX annotation scene entity object.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="../../../entities/annotation/index.html#otx.api.entities.annotation.AnnotationSceneEntity" title="otx.api.entities.annotation.AnnotationSceneEntity">AnnotationSceneEntity</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.api.usecases.exportable_code.prediction_to_annotation_converter.AnomalySegmentationToAnnotationConverter">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.usecases.exportable_code.prediction_to_annotation_converter.</span></span><span class="sig-name descname"><span class="pre">AnomalySegmentationToAnnotationConverter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../../entities/label_schema/index.html#otx.api.entities.label_schema.LabelSchemaEntity" title="otx.api.entities.label_schema.LabelSchemaEntity"><span class="pre">otx.api.entities.label_schema.LabelSchemaEntity</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/exportable_code/prediction_to_annotation_converter.html#AnomalySegmentationToAnnotationConverter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.exportable_code.prediction_to_annotation_converter.AnomalySegmentationToAnnotationConverter" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#otx.api.usecases.exportable_code.prediction_to_annotation_converter.IPredictionToAnnotationConverter" title="otx.api.usecases.exportable_code.prediction_to_annotation_converter.IPredictionToAnnotationConverter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">IPredictionToAnnotationConverter</span></code></a></p>
+<p>Converts AnomalyClassification Predictions ModelAPI to Annotations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>labels</strong> (<a class="reference internal" href="../../../entities/label_schema/index.html#otx.api.entities.label_schema.LabelSchemaEntity" title="otx.api.entities.label_schema.LabelSchemaEntity"><em>LabelSchemaEntity</em></a>) – Label Schema containing the label info of the task</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.usecases.exportable_code.prediction_to_annotation_converter.AnomalySegmentationToAnnotationConverter.convert_to_annotation">
+<span class="sig-name descname"><span class="pre">convert_to_annotation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">predictions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../../../entities/annotation/index.html#otx.api.entities.annotation.AnnotationSceneEntity" title="otx.api.entities.annotation.AnnotationSceneEntity"><span class="pre">otx.api.entities.annotation.AnnotationSceneEntity</span></a></span></span><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/exportable_code/prediction_to_annotation_converter.html#AnomalySegmentationToAnnotationConverter.convert_to_annotation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.exportable_code.prediction_to_annotation_converter.AnomalySegmentationToAnnotationConverter.convert_to_annotation" title="Permalink to this definition"></a></dt>
+<dd><p>Convert predictions to OTX Annotation Scene using the metadata.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>predictions</strong> (<em>tuple</em>) – Raw predictions from the model.</p></li>
+<li><p><strong>metadata</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – Variable containing metadata information.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>OTX annotation scene entity object.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="../../../entities/annotation/index.html#otx.api.entities.annotation.AnnotationSceneEntity" title="otx.api.entities.annotation.AnnotationSceneEntity">AnnotationSceneEntity</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.api.usecases.exportable_code.prediction_to_annotation_converter.AnomalyDetectionToAnnotationConverter">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.usecases.exportable_code.prediction_to_annotation_converter.</span></span><span class="sig-name descname"><span class="pre">AnomalyDetectionToAnnotationConverter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../../entities/label_schema/index.html#otx.api.entities.label_schema.LabelSchemaEntity" title="otx.api.entities.label_schema.LabelSchemaEntity"><span class="pre">otx.api.entities.label_schema.LabelSchemaEntity</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/exportable_code/prediction_to_annotation_converter.html#AnomalyDetectionToAnnotationConverter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.exportable_code.prediction_to_annotation_converter.AnomalyDetectionToAnnotationConverter" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#otx.api.usecases.exportable_code.prediction_to_annotation_converter.IPredictionToAnnotationConverter" title="otx.api.usecases.exportable_code.prediction_to_annotation_converter.IPredictionToAnnotationConverter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">IPredictionToAnnotationConverter</span></code></a></p>
+<p>Converts Anomaly Detection Predictions ModelAPI to Annotations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>labels</strong> (<a class="reference internal" href="../../../entities/label_schema/index.html#otx.api.entities.label_schema.LabelSchemaEntity" title="otx.api.entities.label_schema.LabelSchemaEntity"><em>LabelSchemaEntity</em></a>) – Label Schema containing the label info of the task</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.usecases.exportable_code.prediction_to_annotation_converter.AnomalyDetectionToAnnotationConverter.convert_to_annotation">
+<span class="sig-name descname"><span class="pre">convert_to_annotation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">predictions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../../../entities/annotation/index.html#otx.api.entities.annotation.AnnotationSceneEntity" title="otx.api.entities.annotation.AnnotationSceneEntity"><span class="pre">otx.api.entities.annotation.AnnotationSceneEntity</span></a></span></span><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/exportable_code/prediction_to_annotation_converter.html#AnomalyDetectionToAnnotationConverter.convert_to_annotation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.exportable_code.prediction_to_annotation_converter.AnomalyDetectionToAnnotationConverter.convert_to_annotation" title="Permalink to this definition"></a></dt>
+<dd><p>Convert predictions to OTX Annotation Scene using the metadata.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>predictions</strong> (<em>tuple</em>) – Raw predictions from the model.</p></li>
+<li><p><strong>metadata</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – Variable containing metadata information.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>OTX annotation scene entity object.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="../../../entities/annotation/index.html#otx.api.entities.annotation.AnnotationSceneEntity" title="otx.api.entities.annotation.AnnotationSceneEntity">AnnotationSceneEntity</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.api.usecases.exportable_code.prediction_to_annotation_converter.MaskToAnnotationConverter">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.usecases.exportable_code.prediction_to_annotation_converter.</span></span><span class="sig-name descname"><span class="pre">MaskToAnnotationConverter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../../entities/label_schema/index.html#otx.api.entities.label_schema.LabelSchemaEntity" title="otx.api.entities.label_schema.LabelSchemaEntity"><span class="pre">otx.api.entities.label_schema.LabelSchemaEntity</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/exportable_code/prediction_to_annotation_converter.html#MaskToAnnotationConverter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.exportable_code.prediction_to_annotation_converter.MaskToAnnotationConverter" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#otx.api.usecases.exportable_code.prediction_to_annotation_converter.IPredictionToAnnotationConverter" title="otx.api.usecases.exportable_code.prediction_to_annotation_converter.IPredictionToAnnotationConverter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">IPredictionToAnnotationConverter</span></code></a></p>
+<p>Converts DetectionBox Predictions ModelAPI to Annotations.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.usecases.exportable_code.prediction_to_annotation_converter.MaskToAnnotationConverter.convert_to_annotation">
+<span class="sig-name descname"><span class="pre">convert_to_annotation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">predictions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../../../entities/annotation/index.html#otx.api.entities.annotation.AnnotationSceneEntity" title="otx.api.entities.annotation.AnnotationSceneEntity"><span class="pre">otx.api.entities.annotation.AnnotationSceneEntity</span></a></span></span><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/exportable_code/prediction_to_annotation_converter.html#MaskToAnnotationConverter.convert_to_annotation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.exportable_code.prediction_to_annotation_converter.MaskToAnnotationConverter.convert_to_annotation" title="Permalink to this definition"></a></dt>
+<dd><p>Convert predictions to OTX Annotation Scene using the metadata.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>predictions</strong> (<em>tuple</em>) – Raw predictions from the model.</p></li>
+<li><p><strong>metadata</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – Variable containing metadata information.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>OTX annotation scene entity object.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="../../../entities/annotation/index.html#otx.api.entities.annotation.AnnotationSceneEntity" title="otx.api.entities.annotation.AnnotationSceneEntity">AnnotationSceneEntity</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.api.usecases.exportable_code.prediction_to_annotation_converter.RotatedRectToAnnotationConverter">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.usecases.exportable_code.prediction_to_annotation_converter.</span></span><span class="sig-name descname"><span class="pre">RotatedRectToAnnotationConverter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../../entities/label_schema/index.html#otx.api.entities.label_schema.LabelSchemaEntity" title="otx.api.entities.label_schema.LabelSchemaEntity"><span class="pre">otx.api.entities.label_schema.LabelSchemaEntity</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/exportable_code/prediction_to_annotation_converter.html#RotatedRectToAnnotationConverter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.exportable_code.prediction_to_annotation_converter.RotatedRectToAnnotationConverter" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#otx.api.usecases.exportable_code.prediction_to_annotation_converter.IPredictionToAnnotationConverter" title="otx.api.usecases.exportable_code.prediction_to_annotation_converter.IPredictionToAnnotationConverter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">IPredictionToAnnotationConverter</span></code></a></p>
+<p>Converts Rotated Rect (mask) Predictions ModelAPI to Annotations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>labels</strong> (<a class="reference internal" href="../../../entities/label_schema/index.html#otx.api.entities.label_schema.LabelSchemaEntity" title="otx.api.entities.label_schema.LabelSchemaEntity"><em>LabelSchemaEntity</em></a>) – Label Schema containing the label info of the task</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.usecases.exportable_code.prediction_to_annotation_converter.RotatedRectToAnnotationConverter.convert_to_annotation">
+<span class="sig-name descname"><span class="pre">convert_to_annotation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">predictions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../../../entities/annotation/index.html#otx.api.entities.annotation.AnnotationSceneEntity" title="otx.api.entities.annotation.AnnotationSceneEntity"><span class="pre">otx.api.entities.annotation.AnnotationSceneEntity</span></a></span></span><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/exportable_code/prediction_to_annotation_converter.html#RotatedRectToAnnotationConverter.convert_to_annotation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.exportable_code.prediction_to_annotation_converter.RotatedRectToAnnotationConverter.convert_to_annotation" title="Permalink to this definition"></a></dt>
+<dd><p>Convert predictions to OTX Annotation Scene using the metadata.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>predictions</strong> (<em>tuple</em>) – Raw predictions from the model.</p></li>
+<li><p><strong>metadata</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – Variable containing metadata information.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>OTX annotation scene entity object.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="../../../entities/annotation/index.html#otx.api.entities.annotation.AnnotationSceneEntity" title="otx.api.entities.annotation.AnnotationSceneEntity">AnnotationSceneEntity</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, OpenVINO Training Extensions Contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

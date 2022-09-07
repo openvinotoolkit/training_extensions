@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>otx.api.entities.annotation &mdash; OpenVINO Training Extensions  documentation</title>
+      <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../_static/jquery.js"></script>
+        <script src="../../../../../_static/underscore.js"></script>
+        <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../../../_static/doctools.js"></script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../../index.html" class="icon icon-home"> OpenVINO Training Extensions
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../index.html">OpenVINO Training Extensions</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li><code class="xref py py-mod docutils literal notranslate"><span class="pre">otx.api.entities.annotation</span></code></li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../../_sources/api/otx/api/entities/annotation/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-otx.api.entities.annotation">
+<span id="otx-api-entities-annotation"></span><h1><a class="reference internal" href="#module-otx.api.entities.annotation" title="otx.api.entities.annotation"><code class="xref py py-mod docutils literal notranslate"><span class="pre">otx.api.entities.annotation</span></code></a><a class="headerlink" href="#module-otx.api.entities.annotation" title="Permalink to this heading"></a></h1>
+<p>This module define the annotation entity.</p>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this heading"></a></h2>
+<section id="classes">
+<h3>Classes<a class="headerlink" href="#classes" title="Permalink to this heading"></a></h3>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.api.entities.annotation.Annotation" title="otx.api.entities.annotation.Annotation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Annotation</span></code></a></p></td>
+<td><p>Base class for annotation objects.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.api.entities.annotation.AnnotationSceneKind" title="otx.api.entities.annotation.AnnotationSceneKind"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AnnotationSceneKind</span></code></a></p></td>
+<td><p>AnnotationSceneKinds for an Annotation object.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.api.entities.annotation.AnnotationSceneEntity" title="otx.api.entities.annotation.AnnotationSceneEntity"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AnnotationSceneEntity</span></code></a></p></td>
+<td><p>This class represents a user annotation or a result (prediction).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.api.entities.annotation.NullAnnotationSceneEntity" title="otx.api.entities.annotation.NullAnnotationSceneEntity"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NullAnnotationSceneEntity</span></code></a></p></td>
+<td><p>Represents 'AnnotationSceneEntity not found.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.api.entities.annotation.Annotation">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.annotation.</span></span><span class="sig-name descname"><span class="pre">Annotation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shape</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../shapes/shape/index.html#otx.api.entities.shapes.shape.ShapeEntity" title="otx.api.entities.shapes.shape.ShapeEntity"><span class="pre">otx.api.entities.shapes.shape.ShapeEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../scored_label/index.html#otx.api.entities.scored_label.ScoredLabel" title="otx.api.entities.scored_label.ScoredLabel"><span class="pre">otx.api.entities.scored_label.ScoredLabel</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../id/index.html#otx.api.entities.id.ID" title="otx.api.entities.id.ID"><span class="pre">otx.api.entities.id.ID</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/otx/api/entities/annotation.html#Annotation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.annotation.Annotation" title="Permalink to this definition"></a></dt>
+<dd><p>Base class for annotation objects.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>shape</strong> (<a class="reference internal" href="../shapes/shape/index.html#otx.api.entities.shapes.shape.ShapeEntity" title="otx.api.entities.shapes.shape.ShapeEntity"><em>ShapeEntity</em></a>) – the shape of the annotation</p></li>
+<li><p><strong>labels</strong> (<em>List</em><em>[</em><a class="reference internal" href="../scored_label/index.html#otx.api.entities.scored_label.ScoredLabel" title="otx.api.entities.scored_label.ScoredLabel"><em>ScoredLabel</em></a><em>]</em>) – the labels of the annotation</p></li>
+<li><p><strong>id</strong> (<em>Optional</em><em>[</em><a class="reference internal" href="../id/index.html#otx.api.entities.id.ID" title="otx.api.entities.id.ID"><em>ID</em></a><em>]</em>) – the id of the annotation</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.annotation.Annotation.__repr__">
+<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/otx/api/entities/annotation.html#Annotation.__repr__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.annotation.Annotation.__repr__" title="Permalink to this definition"></a></dt>
+<dd><p>String representation of the annotation.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.annotation.Annotation.id_">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">id_</span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/annotation.html#Annotation.id_"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.annotation.Annotation.id_" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the id for the annotation.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.annotation.Annotation.id">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">id</span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/annotation.html#Annotation.id"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.annotation.Annotation.id" title="Permalink to this definition"></a></dt>
+<dd><p>DEPRECATED.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.annotation.Annotation.shape">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">shape</span></span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../shapes/shape/index.html#otx.api.entities.shapes.shape.ShapeEntity" title="otx.api.entities.shapes.shape.ShapeEntity"><span class="pre">otx.api.entities.shapes.shape.ShapeEntity</span></a></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/annotation.html#Annotation.shape"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.annotation.Annotation.shape" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the shape that is in the annotation.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.annotation.Annotation.get_labels">
+<span class="sig-name descname"><span class="pre">get_labels</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">include_empty</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../scored_label/index.html#otx.api.entities.scored_label.ScoredLabel" title="otx.api.entities.scored_label.ScoredLabel"><span class="pre">otx.api.entities.scored_label.ScoredLabel</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/annotation.html#Annotation.get_labels"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.annotation.Annotation.get_labels" title="Permalink to this definition"></a></dt>
+<dd><p>Get scored labels that are assigned to this annotation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>include_empty</strong> (<em>bool</em>) – set to True to include empty label (if exists) in the output. Defaults to False.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>List of labels in annotation</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.annotation.Annotation.get_label_ids">
+<span class="sig-name descname"><span class="pre">get_label_ids</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">include_empty</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../id/index.html#otx.api.entities.id.ID" title="otx.api.entities.id.ID"><span class="pre">otx.api.entities.id.ID</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/annotation.html#Annotation.get_label_ids"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.annotation.Annotation.get_label_ids" title="Permalink to this definition"></a></dt>
+<dd><p>Get a set of ID’s of labels that are assigned to this annotation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>include_empty</strong> (<em>bool</em>) – set to True to include empty label (if exists) in the output. Defaults to False.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Set of label id’s in annotation</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.annotation.Annotation.append_label">
+<span class="sig-name descname"><span class="pre">append_label</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../scored_label/index.html#otx.api.entities.scored_label.ScoredLabel" title="otx.api.entities.scored_label.ScoredLabel"><span class="pre">otx.api.entities.scored_label.ScoredLabel</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/annotation.html#Annotation.append_label"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.annotation.Annotation.append_label" title="Permalink to this definition"></a></dt>
+<dd><p>Appends the scored label to the annotation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>label</strong> (<a class="reference internal" href="../scored_label/index.html#otx.api.entities.scored_label.ScoredLabel" title="otx.api.entities.scored_label.ScoredLabel"><em>ScoredLabel</em></a>) – the scored label to be appended to the annotation</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.annotation.Annotation.set_labels">
+<span class="sig-name descname"><span class="pre">set_labels</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../scored_label/index.html#otx.api.entities.scored_label.ScoredLabel" title="otx.api.entities.scored_label.ScoredLabel"><span class="pre">otx.api.entities.scored_label.ScoredLabel</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/annotation.html#Annotation.set_labels"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.annotation.Annotation.set_labels" title="Permalink to this definition"></a></dt>
+<dd><p>Sets the labels of the annotation to be the input of the function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>labels</strong> (<em>List</em><em>[</em><a class="reference internal" href="../scored_label/index.html#otx.api.entities.scored_label.ScoredLabel" title="otx.api.entities.scored_label.ScoredLabel"><em>ScoredLabel</em></a><em>]</em>) – the scored labels to be set as annotation labels</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.annotation.Annotation.__eq__">
+<span class="sig-name descname"><span class="pre">__eq__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">object</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/annotation.html#Annotation.__eq__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.annotation.Annotation.__eq__" title="Permalink to this definition"></a></dt>
+<dd><p>Checks if the two annotations are equal.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>other</strong> (<a class="reference internal" href="#otx.api.entities.annotation.Annotation" title="otx.api.entities.annotation.Annotation"><em>Annotation</em></a>) – Annotation to compare with.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>True if the two annotations are equal, False otherwise.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.api.entities.annotation.AnnotationSceneKind">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.annotation.</span></span><span class="sig-name descname"><span class="pre">AnnotationSceneKind</span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/annotation.html#AnnotationSceneKind"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.annotation.AnnotationSceneKind" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">enum.Enum</span></code></p>
+<p>AnnotationSceneKinds for an Annotation object.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.entities.annotation.AnnotationSceneKind.NONE">
+<span class="sig-name descname"><span class="pre">NONE</span></span><em class="property"><span class="w"> </span><span class="pre">=</span> <span class="pre">0</span></em><a class="reference internal" href="../../../../../_modules/otx/api/entities/annotation.html#AnnotationSceneKind.NONE"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.annotation.AnnotationSceneKind.NONE" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.entities.annotation.AnnotationSceneKind.ANNOTATION">
+<span class="sig-name descname"><span class="pre">ANNOTATION</span></span><em class="property"><span class="w"> </span><span class="pre">=</span> <span class="pre">1</span></em><a class="reference internal" href="../../../../../_modules/otx/api/entities/annotation.html#AnnotationSceneKind.ANNOTATION"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.annotation.AnnotationSceneKind.ANNOTATION" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.entities.annotation.AnnotationSceneKind.PREDICTION">
+<span class="sig-name descname"><span class="pre">PREDICTION</span></span><em class="property"><span class="w"> </span><span class="pre">=</span> <span class="pre">2</span></em><a class="reference internal" href="../../../../../_modules/otx/api/entities/annotation.html#AnnotationSceneKind.PREDICTION"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.annotation.AnnotationSceneKind.PREDICTION" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.entities.annotation.AnnotationSceneKind.EVALUATION">
+<span class="sig-name descname"><span class="pre">EVALUATION</span></span><em class="property"><span class="w"> </span><span class="pre">=</span> <span class="pre">3</span></em><a class="reference internal" href="../../../../../_modules/otx/api/entities/annotation.html#AnnotationSceneKind.EVALUATION"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.annotation.AnnotationSceneKind.EVALUATION" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.entities.annotation.AnnotationSceneKind.INTERMEDIATE">
+<span class="sig-name descname"><span class="pre">INTERMEDIATE</span></span><em class="property"><span class="w"> </span><span class="pre">=</span> <span class="pre">4</span></em><a class="reference internal" href="../../../../../_modules/otx/api/entities/annotation.html#AnnotationSceneKind.INTERMEDIATE"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.annotation.AnnotationSceneKind.INTERMEDIATE" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.entities.annotation.AnnotationSceneKind.TASK_PREDICTION">
+<span class="sig-name descname"><span class="pre">TASK_PREDICTION</span></span><em class="property"><span class="w"> </span><span class="pre">=</span> <span class="pre">5</span></em><a class="reference internal" href="../../../../../_modules/otx/api/entities/annotation.html#AnnotationSceneKind.TASK_PREDICTION"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.annotation.AnnotationSceneKind.TASK_PREDICTION" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.annotation.AnnotationSceneKind.__str__">
+<span class="sig-name descname"><span class="pre">__str__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/otx/api/entities/annotation.html#AnnotationSceneKind.__str__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.annotation.AnnotationSceneKind.__str__" title="Permalink to this definition"></a></dt>
+<dd><p>String representation of the AnnotationSceneKind.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.api.entities.annotation.AnnotationSceneEntity">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.annotation.</span></span><span class="sig-name descname"><span class="pre">AnnotationSceneEntity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">annotations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#otx.api.entities.annotation.Annotation" title="otx.api.entities.annotation.Annotation"><span class="pre">Annotation</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kind</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.entities.annotation.AnnotationSceneKind" title="otx.api.entities.annotation.AnnotationSceneKind"><span class="pre">AnnotationSceneKind</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">editor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">creation_date</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">datetime.datetime</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../id/index.html#otx.api.entities.id.ID" title="otx.api.entities.id.ID"><span class="pre">otx.api.entities.id.ID</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/otx/api/entities/annotation.html#AnnotationSceneEntity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.annotation.AnnotationSceneEntity" title="Permalink to this definition"></a></dt>
+<dd><p>This class represents a user annotation or a result (prediction).</p>
+<p>It serves as a collection of shapes, with a relation to the media entity.</p>
+<p class="rubric">Example</p>
+<p>Creating an annotation:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">otx.api.entities.annotation</span> <span class="kn">import</span> <span class="n">Annotation</span><span class="p">,</span> <span class="n">AnnotationSceneEntity</span><span class="p">,</span> <span class="n">AnnotationSceneKind</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">otx.api.entities.shapes.rectangle</span> <span class="kn">import</span> <span class="n">Rectangle</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">box</span> <span class="o">=</span> <span class="n">Rectangle</span><span class="p">(</span><span class="n">x1</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">y1</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">x2</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">y2</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>  <span class="c1"># Box covering top-left quart of image</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">AnnotationSceneEntity</span><span class="p">(</span><span class="n">annotations</span><span class="o">=</span><span class="p">[</span><span class="n">Annotation</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="n">box</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="p">[])],</span> <span class="n">kind</span><span class="o">=</span><span class="n">AnnotationSceneKind</span><span class="o">.</span><span class="n">ANNOTATION</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>annotations</strong> (<em>List</em><em>[</em><a class="reference internal" href="#otx.api.entities.annotation.Annotation" title="otx.api.entities.annotation.Annotation"><em>Annotation</em></a><em>]</em>) – List of annotations in the scene</p></li>
+<li><p><strong>kind</strong> (<a class="reference internal" href="#otx.api.entities.annotation.AnnotationSceneKind" title="otx.api.entities.annotation.AnnotationSceneKind"><em>AnnotationSceneKind</em></a>) – Kind of the annotation scene. E.g. <cite>AnnotationSceneKind.ANNOTATION</cite>.</p></li>
+<li><p><strong>editor</strong> (<em>str</em>) – The user that made this annotation scene object.</p></li>
+<li><p><strong>creation_date</strong> (<em>Optional</em><em>[</em><em>datetime.datetime</em><em>]</em>) – Creation date of annotation scene entity. If None, current time is
+used. Defaults to None.</p></li>
+<li><p><strong>id</strong> (<em>Optional</em><em>[</em><a class="reference internal" href="../id/index.html#otx.api.entities.id.ID" title="otx.api.entities.id.ID"><em>ID</em></a><em>]</em>) – ID of AnnotationSceneEntity. If None a new <cite>ID</cite> is created. Defaults to None.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.annotation.AnnotationSceneEntity.__repr__">
+<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/otx/api/entities/annotation.html#AnnotationSceneEntity.__repr__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.annotation.AnnotationSceneEntity.__repr__" title="Permalink to this definition"></a></dt>
+<dd><p>String representation of the annotation scene.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.annotation.AnnotationSceneEntity.id_">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">id_</span></span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../id/index.html#otx.api.entities.id.ID" title="otx.api.entities.id.ID"><span class="pre">otx.api.entities.id.ID</span></a></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/annotation.html#AnnotationSceneEntity.id_"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.annotation.AnnotationSceneEntity.id_" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the ID of the AnnotationSceneEntity.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.annotation.AnnotationSceneEntity.id">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">id</span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/annotation.html#AnnotationSceneEntity.id"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.annotation.AnnotationSceneEntity.id" title="Permalink to this definition"></a></dt>
+<dd><p>DEPRECATED.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.annotation.AnnotationSceneEntity.kind">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">kind</span></span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#otx.api.entities.annotation.AnnotationSceneKind" title="otx.api.entities.annotation.AnnotationSceneKind"><span class="pre">AnnotationSceneKind</span></a></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/annotation.html#AnnotationSceneEntity.kind"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.annotation.AnnotationSceneEntity.kind" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the AnnotationSceneKind of the AnnotationSceneEntity.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.annotation.AnnotationSceneEntity.editor_name">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">editor_name</span></span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/annotation.html#AnnotationSceneEntity.editor_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.annotation.AnnotationSceneEntity.editor_name" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the editor’s name that made the AnnotationSceneEntity object.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.annotation.AnnotationSceneEntity.creation_date">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">creation_date</span></span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">datetime.datetime</span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/annotation.html#AnnotationSceneEntity.creation_date"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.annotation.AnnotationSceneEntity.creation_date" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the creation date of the AnnotationSceneEntity object.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.annotation.AnnotationSceneEntity.annotations">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">annotations</span></span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#otx.api.entities.annotation.Annotation" title="otx.api.entities.annotation.Annotation"><span class="pre">Annotation</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/annotation.html#AnnotationSceneEntity.annotations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.annotation.AnnotationSceneEntity.annotations" title="Permalink to this definition"></a></dt>
+<dd><p>Return the Annotations that are present in the AnnotationSceneEntity.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.annotation.AnnotationSceneEntity.shapes">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">shapes</span></span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../shapes/shape/index.html#otx.api.entities.shapes.shape.ShapeEntity" title="otx.api.entities.shapes.shape.ShapeEntity"><span class="pre">otx.api.entities.shapes.shape.ShapeEntity</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/annotation.html#AnnotationSceneEntity.shapes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.annotation.AnnotationSceneEntity.shapes" title="Permalink to this definition"></a></dt>
+<dd><p>Returns all shapes that are inside the annotations of the AnnotationSceneEntity.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.annotation.AnnotationSceneEntity.contains_any">
+<span class="sig-name descname"><span class="pre">contains_any</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/annotation.html#AnnotationSceneEntity.contains_any"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.annotation.AnnotationSceneEntity.contains_any" title="Permalink to this definition"></a></dt>
+<dd><p>Checks whether the annotation contains any labels in the input parameter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>labels</strong> (<em>List</em><em>[</em><a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><em>LabelEntity</em></a><em>]</em>) – List of labels to compare to.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>True if there is any intersection between self.get_labels(include_empty=True) with labels.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.annotation.AnnotationSceneEntity.append_annotation">
+<span class="sig-name descname"><span class="pre">append_annotation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">annotation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.entities.annotation.Annotation" title="otx.api.entities.annotation.Annotation"><span class="pre">Annotation</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/annotation.html#AnnotationSceneEntity.append_annotation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.annotation.AnnotationSceneEntity.append_annotation" title="Permalink to this definition"></a></dt>
+<dd><p>Appends the passed annotation to the list of annotations present in the AnnotationSceneEntity object.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.annotation.AnnotationSceneEntity.append_annotations">
+<span class="sig-name descname"><span class="pre">append_annotations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">annotations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#otx.api.entities.annotation.Annotation" title="otx.api.entities.annotation.Annotation"><span class="pre">Annotation</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/annotation.html#AnnotationSceneEntity.append_annotations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.annotation.AnnotationSceneEntity.append_annotations" title="Permalink to this definition"></a></dt>
+<dd><p>Adds a list of annotations to the annotation scene.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.annotation.AnnotationSceneEntity.get_labels">
+<span class="sig-name descname"><span class="pre">get_labels</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">include_empty</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/annotation.html#AnnotationSceneEntity.get_labels"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.annotation.AnnotationSceneEntity.get_labels" title="Permalink to this definition"></a></dt>
+<dd><p>Returns a list of unique labels which appear in this annotation scene.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>include_empty</strong> (<em>bool</em>) – Set to True to include empty label (if exists) in the output. Defaults to False.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a list of labels which appear in this annotation.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>List[<a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity">LabelEntity</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.annotation.AnnotationSceneEntity.get_label_ids">
+<span class="sig-name descname"><span class="pre">get_label_ids</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">include_empty</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../id/index.html#otx.api.entities.id.ID" title="otx.api.entities.id.ID"><span class="pre">otx.api.entities.id.ID</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/annotation.html#AnnotationSceneEntity.get_label_ids"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.annotation.AnnotationSceneEntity.get_label_ids" title="Permalink to this definition"></a></dt>
+<dd><p>Returns a set of the ID’s of unique labels which appear in this annotation scene.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>include_empty</strong> (<em>bool</em>) – Set to True to include empty label (if exists) in the output. Defaults to False.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a set of the ID’s of labels which appear in this annotation.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Set[<a class="reference internal" href="../id/index.html#otx.api.entities.id.ID" title="otx.api.entities.id.ID">ID</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.api.entities.annotation.NullAnnotationSceneEntity">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.annotation.</span></span><span class="sig-name descname"><span class="pre">NullAnnotationSceneEntity</span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/annotation.html#NullAnnotationSceneEntity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.annotation.NullAnnotationSceneEntity" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#otx.api.entities.annotation.AnnotationSceneEntity" title="otx.api.entities.annotation.AnnotationSceneEntity"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AnnotationSceneEntity</span></code></a></p>
+<p>Represents ‘AnnotationSceneEntity not found.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.annotation.NullAnnotationSceneEntity.__repr__">
+<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/otx/api/entities/annotation.html#NullAnnotationSceneEntity.__repr__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.annotation.NullAnnotationSceneEntity.__repr__" title="Permalink to this definition"></a></dt>
+<dd><p>String representation NullAnnotationSceneEntity.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, OpenVINO Training Extensions Contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

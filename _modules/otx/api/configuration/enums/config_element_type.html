@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>otx.api.configuration.enums.config_element_type &mdash; OpenVINO Training Extensions  documentation</title>
+      <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../_static/jquery.js"></script>
+        <script src="../../../../../_static/underscore.js"></script>
+        <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../../../_static/doctools.js"></script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../../index.html" class="icon icon-home"> OpenVINO Training Extensions
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../api/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../index.html">OpenVINO Training Extensions</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../../index.html">Module code</a> &raquo;</li>
+          <li><a href="../../../../otx.html">otx</a> &raquo;</li>
+      <li>otx.api.configuration.enums.config_element_type</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for otx.api.configuration.enums.config_element_type</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Enums for configuration element types used to construct/interact with OTX configuration objects.&quot;&quot;&quot;</span>
+<span class="c1"># Copyright (C) 2021-2022 Intel Corporation</span>
+<span class="c1"># SPDX-License-Identifier: Apache-2.0</span>
+<span class="c1">#</span>
+
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span><span class="p">,</span> <span class="n">auto</span>
+
+
+<div class="viewcode-block" id="ElementCategory"><a class="viewcode-back" href="../../../../../api/otx/api/configuration/enums/config_element_type/index.html#otx.api.configuration.enums.config_element_type.ElementCategory">[docs]</a><span class="k">class</span> <span class="nc">ElementCategory</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;This Enum represents the categories of configuration elements that are known in OTX.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="ElementCategory.PRIMITIVES"><a class="viewcode-back" href="../../../../../api/otx/api/configuration/enums/config_element_type/index.html#otx.api.configuration.enums.config_element_type.ElementCategory.PRIMITIVES">[docs]</a>    <span class="n">PRIMITIVES</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span></div>
+<div class="viewcode-block" id="ElementCategory.GROUPS"><a class="viewcode-back" href="../../../../../api/otx/api/configuration/enums/config_element_type/index.html#otx.api.configuration.enums.config_element_type.ElementCategory.GROUPS">[docs]</a>    <span class="n">GROUPS</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span></div>
+<div class="viewcode-block" id="ElementCategory.RULES"><a class="viewcode-back" href="../../../../../api/otx/api/configuration/enums/config_element_type/index.html#otx.api.configuration.enums.config_element_type.ElementCategory.RULES">[docs]</a>    <span class="n">RULES</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="ElementCategory.__str__"><a class="viewcode-back" href="../../../../../api/otx/api/configuration/enums/config_element_type/index.html#otx.api.configuration.enums.config_element_type.ElementCategory.__str__">[docs]</a>    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Retrieves the string representation of an instance of the Enum.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span></div></div>
+
+
+<div class="viewcode-block" id="ConfigElementType"><a class="viewcode-back" href="../../../../../api/otx/api/configuration/enums/index.html#otx.api.configuration.enums.config_element_type.ConfigElementType">[docs]</a><span class="k">class</span> <span class="nc">ConfigElementType</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;This Enum represents the available elements to compose a configuration.</span>
+
+<span class="sd">    Each instance holds a name, value and category representing a configuration element.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Because this Enum takes both a value and a category, the auto() mechanism cannot be used to assign values. Hence,</span>
+    <span class="c1"># they are assigned manually.</span>
+<div class="viewcode-block" id="ConfigElementType.INTEGER"><a class="viewcode-back" href="../../../../../api/otx/api/configuration/enums/config_element_type/index.html#otx.api.configuration.enums.config_element_type.ConfigElementType.INTEGER">[docs]</a>    <span class="n">INTEGER</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">ElementCategory</span><span class="o">.</span><span class="n">PRIMITIVES</span></div>
+<div class="viewcode-block" id="ConfigElementType.FLOAT"><a class="viewcode-back" href="../../../../../api/otx/api/configuration/enums/config_element_type/index.html#otx.api.configuration.enums.config_element_type.ConfigElementType.FLOAT">[docs]</a>    <span class="n">FLOAT</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">ElementCategory</span><span class="o">.</span><span class="n">PRIMITIVES</span></div>
+<div class="viewcode-block" id="ConfigElementType.BOOLEAN"><a class="viewcode-back" href="../../../../../api/otx/api/configuration/enums/config_element_type/index.html#otx.api.configuration.enums.config_element_type.ConfigElementType.BOOLEAN">[docs]</a>    <span class="n">BOOLEAN</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span> <span class="n">ElementCategory</span><span class="o">.</span><span class="n">PRIMITIVES</span></div>
+<div class="viewcode-block" id="ConfigElementType.FLOAT_SELECTABLE"><a class="viewcode-back" href="../../../../../api/otx/api/configuration/enums/config_element_type/index.html#otx.api.configuration.enums.config_element_type.ConfigElementType.FLOAT_SELECTABLE">[docs]</a>    <span class="n">FLOAT_SELECTABLE</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="n">ElementCategory</span><span class="o">.</span><span class="n">PRIMITIVES</span></div>
+<div class="viewcode-block" id="ConfigElementType.SELECTABLE"><a class="viewcode-back" href="../../../../../api/otx/api/configuration/enums/config_element_type/index.html#otx.api.configuration.enums.config_element_type.ConfigElementType.SELECTABLE">[docs]</a>    <span class="n">SELECTABLE</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span> <span class="n">ElementCategory</span><span class="o">.</span><span class="n">PRIMITIVES</span></div>
+<div class="viewcode-block" id="ConfigElementType.PARAMETER_GROUP"><a class="viewcode-back" href="../../../../../api/otx/api/configuration/enums/config_element_type/index.html#otx.api.configuration.enums.config_element_type.ConfigElementType.PARAMETER_GROUP">[docs]</a>    <span class="n">PARAMETER_GROUP</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span> <span class="n">ElementCategory</span><span class="o">.</span><span class="n">GROUPS</span></div>
+<div class="viewcode-block" id="ConfigElementType.CONFIGURABLE_PARAMETERS"><a class="viewcode-back" href="../../../../../api/otx/api/configuration/enums/config_element_type/index.html#otx.api.configuration.enums.config_element_type.ConfigElementType.CONFIGURABLE_PARAMETERS">[docs]</a>    <span class="n">CONFIGURABLE_PARAMETERS</span> <span class="o">=</span> <span class="mi">6</span><span class="p">,</span> <span class="n">ElementCategory</span><span class="o">.</span><span class="n">GROUPS</span></div>
+<div class="viewcode-block" id="ConfigElementType.RULE"><a class="viewcode-back" href="../../../../../api/otx/api/configuration/enums/config_element_type/index.html#otx.api.configuration.enums.config_element_type.ConfigElementType.RULE">[docs]</a>    <span class="n">RULE</span> <span class="o">=</span> <span class="mi">7</span><span class="p">,</span> <span class="n">ElementCategory</span><span class="o">.</span><span class="n">RULES</span></div>
+<div class="viewcode-block" id="ConfigElementType.UI_RULES"><a class="viewcode-back" href="../../../../../api/otx/api/configuration/enums/config_element_type/index.html#otx.api.configuration.enums.config_element_type.ConfigElementType.UI_RULES">[docs]</a>    <span class="n">UI_RULES</span> <span class="o">=</span> <span class="mi">8</span><span class="p">,</span> <span class="n">ElementCategory</span><span class="o">.</span><span class="n">RULES</span></div>
+
+    <span class="k">def</span> <span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">category</span><span class="p">:</span> <span class="n">ElementCategory</span><span class="p">):</span>  <span class="c1"># pylint: disable=unused-argument</span>
+        <span class="sd">&quot;&quot;&quot;Creates a new instance of the Enum.</span>
+
+<span class="sd">        The ConfigElementType Enum holds both a value and a category. In this method the `value` argument is parsed and</span>
+<span class="sd">        assigned.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="nb">object</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span>
+        <span class="c1"># Only the value is assigned here, since the _category_ attribute does not exists yet.</span>
+        <span class="n">obj</span><span class="o">.</span><span class="n">_value_</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">return</span> <span class="n">obj</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">category</span><span class="p">:</span> <span class="n">ElementCategory</span><span class="p">):</span>  <span class="c1"># pylint: disable=unused-argument</span>
+        <span class="sd">&quot;&quot;&quot;Upon initialization, the Enum category is assigned.&quot;&quot;&quot;</span>
+        <span class="c1"># We cannot assign to _category_ in the __new__ method since it is not a valid attribute yet until the Enum is</span>
+        <span class="c1"># initialized</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_category_</span> <span class="o">=</span> <span class="n">category</span>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="ConfigElementType.category"><a class="viewcode-back" href="../../../../../api/otx/api/configuration/enums/config_element_type/index.html#otx.api.configuration.enums.config_element_type.ConfigElementType.category">[docs]</a>    <span class="k">def</span> <span class="nf">category</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ElementCategory</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Returns the element category which the ConfigElementType belongs to.</span>
+
+<span class="sd">        Categories are instances of the `otx.api.configuration.configuration_types.ElementCategory` Enum.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_category_</span></div>
+
+<div class="viewcode-block" id="ConfigElementType.__str__"><a class="viewcode-back" href="../../../../../api/otx/api/configuration/enums/config_element_type/index.html#otx.api.configuration.enums.config_element_type.ConfigElementType.__str__">[docs]</a>    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Retrieves the string representation of an instance of the Enum.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, OpenVINO Training Extensions Contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

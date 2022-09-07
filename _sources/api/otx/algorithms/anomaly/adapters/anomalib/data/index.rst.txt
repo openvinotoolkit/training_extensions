@@ -1,0 +1,109 @@
+:py:mod:`otx.algorithms.anomaly.adapters.anomalib.data`
+=======================================================
+
+.. py:module:: otx.algorithms.anomaly.adapters.anomalib.data
+
+.. autoapi-nested-parse::
+
+   Initialization of Anomaly Dataset Utils.
+
+
+
+Submodules
+----------
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+
+   create_mvtec_ad_json_annotations/index.rst
+   data/index.rst
+   dataset/index.rst
+   mvtec/index.rst
+
+
+Package Contents
+----------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   otx.algorithms.anomaly.adapters.anomalib.data.OTXAnomalyDataModule
+
+
+
+
+.. py:class:: OTXAnomalyDataModule(config: Union[omegaconf.DictConfig, omegaconf.ListConfig], dataset: otx.api.entities.datasets.DatasetEntity, task_type: otx.api.entities.model_template.TaskType)
+
+   Bases: :py:obj:`pytorch_lightning.core.datamodule.LightningDataModule`
+
+   Anomaly DataModule.
+
+   This class converts OTX Dataset into Anomalib dataset and stores
+   train/val/test dataloaders.
+
+   :param config: Anomalib config
+   :type config: Union[DictConfig, ListConfig]
+   :param dataset: OTX SDK Dataset
+   :type dataset: DatasetEntity
+
+   .. rubric:: Example
+
+   >>> from tests.helpers.dataset import OTXAnomalyDatasetGenerator
+   >>> from otx.utils.data import AnomalyDataModule
+
+   >>> dataset_generator = OTXAnomalyDatasetGenerator()
+   >>> dataset = dataset_generator.generate()
+   >>> data_module = OTXAnomalyDataModule(config=config, dataset=dataset)
+   >>> i, data = next(enumerate(data_module.train_dataloader()))
+   >>> data["image"].shape
+   torch.Size([32, 3, 256, 256])
+
+   .. py:method:: setup(stage: Optional[str] = None) -> None
+
+      Setup Anomaly Data Module.
+
+      :param stage: train/val/test stages.
+                    Defaults to None.
+      :type stage: Optional[str], optional
+
+
+   .. py:method:: summary()
+
+      Print size of the dataset, number of anomalous images and number of normal images.
+
+
+   .. py:method:: train_dataloader() -> Union[torch.utils.data.DataLoader, List[torch.utils.data.DataLoader], Dict[str, torch.utils.data.DataLoader]]
+
+      Train Dataloader.
+
+      :returns: Train dataloader.
+      :rtype: Union[DataLoader, List[DataLoader], Dict[str, DataLoader]]
+
+
+   .. py:method:: val_dataloader() -> Union[torch.utils.data.DataLoader, List[torch.utils.data.DataLoader]]
+
+      Validation Dataloader.
+
+      :returns: Validation Dataloader.
+      :rtype: Union[DataLoader, List[DataLoader]]
+
+
+   .. py:method:: test_dataloader() -> Union[torch.utils.data.DataLoader, List[torch.utils.data.DataLoader]]
+
+      Test Dataloader.
+
+      :returns: Test Dataloader.
+      :rtype: Union[DataLoader, List[DataLoader]]
+
+
+   .. py:method:: predict_dataloader() -> Union[torch.utils.data.DataLoader, List[torch.utils.data.DataLoader]]
+
+      Predict Dataloader.
+
+      :returns: Predict Dataloader.
+      :rtype: Union[DataLoader, List[DataLoader]]
+
+
+

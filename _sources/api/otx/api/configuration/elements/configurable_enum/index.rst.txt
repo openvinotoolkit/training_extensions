@@ -1,0 +1,77 @@
+:py:mod:`otx.api.configuration.elements.configurable_enum`
+==========================================================
+
+.. py:module:: otx.api.configuration.elements.configurable_enum
+
+.. autoapi-nested-parse::
+
+   This module contains the ConfigurableEnum, that is used to define Enums which can be configured by the user.
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   otx.api.configuration.elements.configurable_enum.ConfigurableEnum
+
+
+
+
+.. py:class:: ConfigurableEnum
+
+   Bases: :py:obj:`enum.Enum`
+
+   This class is used as the basis for defining `selectable` configurable parameters in the OTX API.
+
+   Enums reflecting `selectable` options should inherit from thisclass.
+
+   .. py:method:: __str__()
+
+      Retrieves the string representation of an instance of the ConfigurableEnum (or subclasses thereof).
+
+
+   .. py:method:: __eq__(other) -> bool
+
+      Returns True if the ConfigurableEnum instance is equal to the other ConfigurableEnum instance.
+
+      Checks whether one ConfigurableEnum instance (or instance of a subclass thereof) is equal to the `other`
+      object. Comparison is made based on class name, instance value and instance name.
+
+      :returns: True if the two instances are equal, False otherwise.
+      :rtype: bool
+
+
+   .. py:method:: __hash__()
+
+      Computes hash for the ConfigurableEnum instance.
+
+
+   .. py:method:: get_class_info() -> dict
+      :classmethod:
+
+      Creates a dictionary representation of the ConfigurableEnum.
+
+      This includes the name of the enum and the (name, value) pairs representing its members.
+
+      :returns: Dictionary representation of the ConfigurableEnum.
+      :rtype: dict
+
+
+   .. py:method:: get_names() -> List[str]
+      :classmethod:
+
+      Returns a list of names that can be used to index the Enum.
+
+
+   .. py:method:: get_values() -> List[str]
+      :classmethod:
+
+      Returns a list of values that can be used to index the Enum.
+
+
+

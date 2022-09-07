@@ -1,0 +1,463 @@
+:py:mod:`otx.api.usecases.evaluation`
+=====================================
+
+.. py:module:: otx.api.usecases.evaluation
+
+.. autoapi-nested-parse::
+
+   Evaluation metrics.
+
+   .. automodule:: otx.api.usecases.evaluation.accuracy
+      :members:
+      :undoc-members:
+
+   .. automodule:: otx.api.usecases.evaluation.basic_operations
+      :members:
+      :undoc-members:
+
+   .. automodule:: otx.api.usecases.evaluation.dice
+      :members:
+      :undoc-members:
+
+   .. automodule:: otx.api.usecases.evaluation.f_measure
+      :members:
+      :undoc-members:
+
+   .. automodule:: otx.api.usecases.evaluation.get_performance_interface
+      :members:
+      :undoc-members:
+
+   .. automodule:: otx.api.usecases.evaluation.metrics_helper
+      :members:
+      :undoc-members:
+
+
+
+Submodules
+----------
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+
+   accuracy/index.rst
+   anomaly_metrics/index.rst
+   averaging/index.rst
+   basic_operations/index.rst
+   dice/index.rst
+   f_measure/index.rst
+   metrics_helper/index.rst
+   performance_provider_interface/index.rst
+
+
+Package Contents
+----------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   otx.api.usecases.evaluation.Accuracy
+   otx.api.usecases.evaluation.MetricAverageMethod
+   otx.api.usecases.evaluation.DiceAverage
+   otx.api.usecases.evaluation.FMeasure
+   otx.api.usecases.evaluation.MetricsHelper
+
+
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   otx.api.usecases.evaluation.get_intersections_and_cardinalities
+   otx.api.usecases.evaluation.intersection_box
+   otx.api.usecases.evaluation.intersection_over_union
+   otx.api.usecases.evaluation.precision_per_class
+   otx.api.usecases.evaluation.recall_per_class
+
+
+
+.. py:class:: Accuracy(resultset: otx.api.entities.resultset.ResultSetEntity, average: otx.api.usecases.evaluation.averaging.MetricAverageMethod = MetricAverageMethod.MICRO)
+
+   Bases: :py:obj:`otx.api.usecases.evaluation.performance_provider_interface.IPerformanceProvider`
+
+   This class is responsible for providing Accuracy measures; mainly for Classification problems.
+
+   The calculation both supports multi label and binary label predictions.
+
+   Accuracy is the proportion of the predicted correct labels, to the total number (predicted and actual)
+   labels for that instance. Overall accuracy is the average across all instances.
+       resultset (ResultSetEntity): ResultSet that score will be computed for
+       average (MetricAverageMethod): The averaging method, either MICRO or MACRO
+           MICRO: compute average over all predictions in all label groups
+           MACRO: compute accuracy per label group, return the average of the per-label-group accuracy scores
+
+   .. py:method:: accuracy() -> otx.api.entities.metrics.ScoreMetric
+      :property:
+
+      Returns the accuracy as ScoreMetric.
+
+
+   .. py:method:: get_performance() -> otx.api.entities.metrics.Performance
+
+      Returns the performance with accuracy and confusion metrics.
+
+
+   .. py:method:: _compute_accuracy(average: otx.api.usecases.evaluation.averaging.MetricAverageMethod, confusion_matrices: List[otx.api.entities.metrics.MatrixMetric]) -> float
+      :staticmethod:
+
+      Compute accuracy using the confusion matrices.
+
+      :param average: The averaging method, either MICRO or MACRO
+                      MICRO: compute average over all predictions in all label groups
+                      MACRO: compute accuracy per label group, return the average of the per-label-group accuracy scores
+      :type average: MatricAverageMethod
+      :param confusion_matrices: the confusion matrices to compute accuracy from.
+                                 MUST be unnormalized.
+      :type confusion_matrices: List[MatrixMetric]
+
+      Raises
+          ValueError: when the ground truth dataset does not contain annotations
+          RuntimeError: when the averaging methods is not known
+      :returns: the accuracy score for the provided confusion matrix
+      :rtype: float
+
+
+
+.. py:class:: MetricAverageMethod
+
+   Bases: :py:obj:`enum.Enum`
+
+   This defines the metrics averaging method.
+
+   .. py:attribute:: MICRO
+      
+
+      
+
+   .. py:attribute:: MACRO
+      
+
+      
+
+
+.. py:function:: get_intersections_and_cardinalities(references: List[numpy.ndarray], predictions: List[numpy.ndarray], labels: List[otx.api.entities.label.LabelEntity]) -> Tuple[NumberPerLabel, NumberPerLabel]
+
+   Returns all intersections and cardinalities between reference masks and prediction masks.
+
+   Intersections and cardinalities are each returned in a dictionary mapping each label to its corresponding
+   number of intersection/cardinality pixels
+
+   :param references: reference masks,s one mask per image
+   :type references: List[np.ndarray]
+   :param predictions: prediction masks, one mask per image
+   :type predictions: List[np.ndarray]
+   :param labels: labels in input masks
+   :type labels: List[LabelEntity]
+
+   :returns: (all_intersections, all_cardinalities)
+   :rtype: Tuple[NumberPerLabel, NumberPerLabel]
+
+
+.. py:function:: intersection_box(box1: otx.api.entities.shapes.rectangle.Rectangle, box2: otx.api.entities.shapes.rectangle.Rectangle) -> Optional[List[float]]
+
+   Calculate the intersection box of two bounding boxes.
+
+   :param box1: a Rectangle that represents the first bounding box
+   :param box2: a Rectangle that represents the second bounding box
+
+   :returns: a Rectangle that represents the intersection box if inputs have
+             a valid intersection, else None
+
+
+.. py:function:: intersection_over_union(box1: otx.api.entities.shapes.rectangle.Rectangle, box2: otx.api.entities.shapes.rectangle.Rectangle, intersection: Optional[List[float]] = None) -> float
+
+   Calculate the Intersection over Union (IoU) of two bounding boxes.
+
+   :param box1: a Rectangle representing a bounding box
+   :param box2: a Rectangle representing a second bounding box
+   :param intersection: precomputed intersection between two boxes (see
+                        intersection_box function), if exists.
+
+   :returns: intersection-over-union of box1 and box2
+
+
+.. py:function:: precision_per_class(matrix: numpy.ndarray) -> numpy.ndarray
+
+   Compute the precision per class based on the confusion matrix.
+
+   :param matrix: the computed confusion matrix
+
+   :returns: the precision (per class), defined as TP/(TP+FP)
+
+
+.. py:function:: recall_per_class(matrix: numpy.ndarray) -> numpy.ndarray
+
+   Compute the recall per class based on the confusion matrix.
+
+   :param matrix: the computed confusion matrix
+
+   :returns: the recall (per class), defined as TP/(TP+FN)
+
+
+.. py:class:: DiceAverage(resultset: otx.api.entities.resultset.ResultSetEntity, average: otx.api.usecases.evaluation.averaging.MetricAverageMethod = MetricAverageMethod.MACRO)
+
+   Bases: :py:obj:`otx.api.usecases.evaluation.performance_provider_interface.IPerformanceProvider`
+
+   Computes the average Dice coefficient overall and for individual labels.
+
+   See https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient for background information.
+
+   To compute the Dice coefficient the shapes in the dataset items of the prediction and ground truth
+   dataset are first converted to masks.
+
+   Dice is computed by computing the intersection and union computed over the whole dataset, instead of
+   computing intersection and union for individual images and then averaging.
+
+   :param resultset: ResultSet that score will be computed for
+   :type resultset: ResultSetEntity
+   :param average: One of
+                   - MICRO: every pixel has the same weight, regardless of label
+                   - MACRO: compute score per label, return the average of the per-label scores
+   :type average: MetricAverageMethod
+
+   .. py:method:: overall_dice() -> otx.api.entities.metrics.ScoreMetric
+      :property:
+
+      Returns the dice average as ScoreMetric.
+
+
+   .. py:method:: dice_per_label() -> Dict[otx.api.entities.label.LabelEntity, otx.api.entities.metrics.ScoreMetric]
+      :property:
+
+      Returns a dictionary mapping the label to its corresponding dice score (as ScoreMetric).
+
+
+   .. py:method:: get_performance() -> otx.api.entities.metrics.Performance
+
+      Returns the performance of the resultset.
+
+
+   .. py:method:: __compute_dice_averaged_over_pixels(resultset: otx.api.entities.resultset.ResultSetEntity, average: otx.api.usecases.evaluation.averaging.MetricAverageMethod) -> Tuple[otx.api.entities.metrics.ScoreMetric, Dict[otx.api.entities.label.LabelEntity, otx.api.entities.metrics.ScoreMetric]]
+      :classmethod:
+
+      Computes the diced averaged over pixels.
+
+      :param resultset: Result set to use
+      :type resultset: ResultSetEntity
+      :param average: Averaging method to use
+      :type average: MetricAverageMethod
+
+      :returns:
+
+                Tuple of the overall dice and the dice averaged over
+                    pixels for each label.
+      :rtype: Tuple[ScoreMetric, Dict[LabelEntity, ScoreMetric]]
+
+
+   .. py:method:: compute_dice_using_intersection_and_cardinality(all_intersection: Dict[Optional[otx.api.entities.label.LabelEntity], int], all_cardinality: Dict[Optional[otx.api.entities.label.LabelEntity], int], average: otx.api.usecases.evaluation.averaging.MetricAverageMethod) -> Tuple[otx.api.entities.metrics.ScoreMetric, Dict[otx.api.entities.label.LabelEntity, otx.api.entities.metrics.ScoreMetric]]
+      :classmethod:
+
+      Computes dice score using intersection and cardinality dictionaries.
+
+      Both dictionaries must contain the same set of keys.
+      Dice score is computed by: 2 * intersection / cardinality
+
+      :param average: Averaging method to use
+      :param all_intersection: collection of intersections per label
+      :param all_cardinality: collection of cardinality per label
+
+      :returns: A tuple containing the overall DICE score, and per label
+                DICE score
+
+      :raises KeyError: if the keys in intersection and cardinality do not
+          match
+      :raises KeyError: if the key `None` is not present in either
+          all_intersection or all_cardinality
+      :raises ValueError: if the intersection for a certain key is larger
+          than its corresponding cardinality
+
+
+   .. py:method:: __compute_single_dice_score_using_intersection_and_cardinality(intersection: int, cardinality: int)
+      :staticmethod:
+
+      Computes a single dice score using intersection and cardinality.
+
+      Dice score is computed by: 2 * intersection / cardinality
+
+      :raises ValueError: If intersection is larger than cardinality
+
+
+
+.. py:class:: FMeasure(resultset: otx.api.entities.resultset.ResultSetEntity, vary_confidence_threshold: bool = False, vary_nms_threshold: bool = False, cross_class_nms: bool = False)
+
+   Bases: :py:obj:`otx.api.usecases.evaluation.performance_provider_interface.IPerformanceProvider`
+
+   Computes the f-measure (also known as F1-score) for a resultset.
+
+   The f-measure is typically used in detection (localization) tasks to obtain a single number that balances precision
+   and recall.
+
+   To determine whether a predicted box matches a ground truth box an overlap measured
+   is used based on a minimum
+   intersection-over-union (IoU), by default a value of 0.5 is used.
+
+   In addition spurious results are eliminated by applying non-max suppression (NMS) so that two predicted boxes with
+   IoU > threshold are reduced to one. This threshold can be determined automatically by setting `vary_nms_threshold`
+   to True.
+
+   :param resultset: ResultSet entity used for calculating the F-Measure
+   :type resultset: ResultSetEntity
+   :param vary_confidence_threshold: if True the maximal F-measure is determined by optimizing for different
+                                     confidence threshold values Defaults to False.
+   :type vary_confidence_threshold: bool
+   :param vary_nms_threshold: if True the maximal F-measure is determined by optimizing for different NMS threshold
+                              values. Defaults to False.
+   :type vary_nms_threshold: bool
+   :param cross_class_nms: Whether non-max suppression should be applied cross-class. If True this will eliminate
+                           boxes with sufficient overlap even if they are from different classes. Defaults to False.
+   :type cross_class_nms: bool
+
+   :raises ValueError: if prediction dataset and ground truth dataset are empty
+
+   .. py:attribute:: box_class_index
+      :annotation: = 4
+
+      
+
+   .. py:attribute:: box_score_index
+      :annotation: = 5
+
+      
+
+   .. py:method:: f_measure() -> otx.api.entities.metrics.ScoreMetric
+      :property:
+
+      Returns the f-measure as ScoreMetric.
+
+
+   .. py:method:: f_measure_per_label() -> Dict[otx.api.entities.label.LabelEntity, otx.api.entities.metrics.ScoreMetric]
+      :property:
+
+      Returns the f-measure per label as dictionary (Label -> ScoreMetric).
+
+
+   .. py:method:: f_measure_per_confidence() -> Optional[otx.api.entities.metrics.CurveMetric]
+      :property:
+
+      Returns the curve for f-measure per confidence as CurveMetric if exists.
+
+
+   .. py:method:: best_confidence_threshold() -> Optional[otx.api.entities.metrics.ScoreMetric]
+      :property:
+
+      Returns best confidence threshold as ScoreMetric if exists.
+
+
+   .. py:method:: f_measure_per_nms() -> Optional[otx.api.entities.metrics.CurveMetric]
+      :property:
+
+      Returns the curve for f-measure per nms threshold as CurveMetric if exists.
+
+
+   .. py:method:: best_nms_threshold() -> Optional[otx.api.entities.metrics.ScoreMetric]
+      :property:
+
+      Returns the best NMS threshold as ScoreMetric if exists.
+
+
+   .. py:method:: get_performance() -> otx.api.entities.metrics.Performance
+
+      Returns the performance which consists of the F-Measure score and the dashboard metrics.
+
+      :returns: Performance object containing the F-Measure score and the dashboard metrics.
+      :rtype: Performance
+
+
+   .. py:method:: __get_boxes_from_dataset_as_list(dataset: otx.api.entities.datasets.DatasetEntity, labels: List[otx.api.entities.label.LabelEntity]) -> List[List[Tuple[float, float, float, float, str, float]]]
+      :staticmethod:
+
+      Return list of boxes from dataset.
+
+      Explanation of output shape:
+          a box: [x1: float, y1, x2, y2, class: str, score: float]
+          boxes_per_image: [box1, box2, …]
+          ground_truth_boxes_per_image: [boxes_per_image_1, boxes_per_image_2, boxes_per_image_3, …]
+
+      :param dataset: Dataset to get boxes from.
+      :type dataset: DatasetEntity
+      :param labels: Labels to get boxes for.
+      :type labels: List[LabelEntity]
+
+      :returns: List of boxes for each image in the dataset.
+      :rtype: List[List[Tuple[float, float, float, float, str, float]]]
+
+
+
+.. py:class:: MetricsHelper
+
+   Contains metrics computation functions.
+
+   TODO: subject for refactoring.
+
+   .. py:method:: compute_f_measure(resultset: otx.api.entities.resultset.ResultSetEntity, vary_confidence_threshold: bool = False, vary_nms_threshold: bool = False, cross_class_nms: bool = False) -> otx.api.usecases.evaluation.f_measure.FMeasure
+      :staticmethod:
+
+      Compute the F-Measure on a resultset given some parameters.
+
+      :param resultset: The resultset used to compute f-measure
+      :param vary_confidence_threshold: Flag specifying whether f-measure
+                                        shall be computed for different confidence threshold
+                                        values
+      :param vary_nms_threshold: Flag specifying whether f-measure shall
+                                 be computed for different NMS threshold values
+      :param cross_class_nms: Whether non-max suppression should be
+                              applied cross-class
+
+      :returns: FMeasure object
+
+
+   .. py:method:: compute_dice_averaged_over_pixels(resultset: otx.api.entities.resultset.ResultSetEntity, average: otx.api.usecases.evaluation.averaging.MetricAverageMethod = MetricAverageMethod.MACRO) -> otx.api.usecases.evaluation.dice.DiceAverage
+      :staticmethod:
+
+      Compute the Dice average on a resultset, averaged over the pixels.
+
+      :param resultset: The resultset used to compute the Dice average
+      :param average: The averaging method, either MICRO or MACRO
+
+      :returns: DiceAverage object
+
+
+   .. py:method:: compute_accuracy(resultset: otx.api.entities.resultset.ResultSetEntity, average: otx.api.usecases.evaluation.averaging.MetricAverageMethod = MetricAverageMethod.MICRO) -> otx.api.usecases.evaluation.accuracy.Accuracy
+      :staticmethod:
+
+      Compute the Accuracy on a resultset, averaged over the different label groups.
+
+      :param resultset: The resultset used to compute the accuracy
+      :param average: The averaging method, either MICRO or MACRO
+
+      :returns: Accuracy object
+
+
+   .. py:method:: compute_anomaly_segmentation_scores(resultset: otx.api.entities.resultset.ResultSetEntity) -> otx.api.usecases.evaluation.anomaly_metrics.AnomalySegmentationScores
+      :staticmethod:
+
+      Compute the anomaly localization performance metrics on an anomaly segmentation resultset.
+
+      :param resultset: The resultset used to compute the metrics
+
+      :returns: AnomalyLocalizationScores object
+
+
+   .. py:method:: compute_anomaly_detection_scores(resultset: otx.api.entities.resultset.ResultSetEntity) -> otx.api.usecases.evaluation.anomaly_metrics.AnomalyDetectionScores
+      :staticmethod:
+
+      Compute the anomaly localization performance metrics on an anomaly detection resultset.
+
+      :param resultset: The resultset used to compute the metrics
+
+      :returns: AnomalyLocalizationScores object
+
+
+

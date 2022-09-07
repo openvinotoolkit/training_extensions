@@ -1,0 +1,41 @@
+:py:mod:`otx.api.usecases.evaluation.averaging`
+===============================================
+
+.. py:module:: otx.api.usecases.evaluation.averaging
+
+.. autoapi-nested-parse::
+
+   Averaging module contains averaging method enumeration.
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   otx.api.usecases.evaluation.averaging.MetricAverageMethod
+
+
+
+
+.. py:class:: MetricAverageMethod
+
+   Bases: :py:obj:`enum.Enum`
+
+   This defines the metrics averaging method.
+
+   .. py:attribute:: MICRO
+      
+
+      
+
+   .. py:attribute:: MACRO
+      
+
+      
+
+

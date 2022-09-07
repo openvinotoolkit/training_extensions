@@ -1,0 +1,120 @@
+:py:mod:`otx.api.configuration.helper.config_element_mapping`
+=============================================================
+
+.. py:module:: otx.api.configuration.helper.config_element_mapping
+
+.. autoapi-nested-parse::
+
+   This module contains mappings from ConfigElementType names to the appropriate constructor classes or functions.
+
+   Currently three different mappings are defined: `PrimitiveElementMapping` representing the different base parameter
+   types, `GroupElementMapping` representing the different configuration groups and `RuleElementMapping` representing the
+   different ui exposure logic classes
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   otx.api.configuration.helper.config_element_mapping.PrimitiveElementMapping
+   otx.api.configuration.helper.config_element_mapping.GroupElementMapping
+   otx.api.configuration.helper.config_element_mapping.RuleElementMapping
+
+
+
+
+.. py:class:: PrimitiveElementMapping
+
+   Bases: :py:obj:`enum.Enum`
+
+   This Enum represents the mapping from primitive configuration element names to their constructors.
+
+   It is only used by the ConfigHelper to be able to reconstruct a configuration object out of a dictionary
+   or yaml string.
+
+   .. py:attribute:: INTEGER
+      
+
+      
+
+   .. py:attribute:: FLOAT
+      
+
+      
+
+   .. py:attribute:: BOOLEAN
+      
+
+      
+
+   .. py:attribute:: FLOAT_SELECTABLE
+      
+
+      
+
+   .. py:attribute:: SELECTABLE
+      
+
+      
+
+   .. py:method:: __str__()
+
+      Retrieves the string representation of an instance of the Enum.
+
+
+
+.. py:class:: GroupElementMapping
+
+   Bases: :py:obj:`enum.Enum`
+
+   This Enum represents the mapping from configuration group names to their constructors.
+
+   It is only used by the ConfigHelper to be able to reconstruct a configuration object out of a dictionary or yaml
+   string.
+
+   .. py:attribute:: PARAMETER_GROUP
+      
+
+      
+
+   .. py:attribute:: CONFIGURABLE_PARAMETERS
+      
+
+      
+
+   .. py:method:: __str__()
+
+      Retrieves the string representation of an instance of the Enum.
+
+
+
+.. py:class:: RuleElementMapping
+
+   Bases: :py:obj:`enum.Enum`
+
+   This Enum represents the mapping from configuration logic names to their constructors.
+
+   It is only used by the ConfigHelper to be able to reconstruct a configuration object out of a dictionary or yaml
+   string.
+
+   .. py:attribute:: RULE
+      
+
+      
+
+   .. py:attribute:: UI_RULES
+      
+
+      
+
+   .. py:method:: __str__()
+
+      Retrieves the string representation of an instance of the Enum.
+
+
+

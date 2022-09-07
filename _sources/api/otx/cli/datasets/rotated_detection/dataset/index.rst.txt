@@ -1,0 +1,38 @@
+:py:mod:`otx.cli.datasets.rotated_detection.dataset`
+====================================================
+
+.. py:module:: otx.cli.datasets.rotated_detection.dataset
+
+.. autoapi-nested-parse::
+
+   Module contains ObjectDetectionDataset.
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   otx.cli.datasets.rotated_detection.dataset.RotatedDetectionDataset
+
+
+
+
+.. py:class:: RotatedDetectionDataset(train_subset=None, val_subset=None, test_subset=None)
+
+   Bases: :py:obj:`otx.api.entities.datasets.DatasetEntity`
+
+   Class for working with file-system based Instance Segmentation dataset.
+
+   :param train_subset: A dictionary with keys "ann_file" and "data_root".
+   :type train_subset: dict
+   :param val_subset: A dictionary with keys "ann_file" and "data_root".
+   :type val_subset: dict
+   :param test_subset: A dictionary with keys "ann_file" and "data_root".
+   :type test_subset: dict
+
+

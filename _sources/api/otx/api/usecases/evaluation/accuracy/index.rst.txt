@@ -1,0 +1,150 @@
+:py:mod:`otx.api.usecases.evaluation.accuracy`
+==============================================
+
+.. py:module:: otx.api.usecases.evaluation.accuracy
+
+.. autoapi-nested-parse::
+
+   This module contains the implementation of Accuracy performance provider.
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   otx.api.usecases.evaluation.accuracy.Accuracy
+
+
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   otx.api.usecases.evaluation.accuracy.precision_metrics_group
+   otx.api.usecases.evaluation.accuracy.recall_metrics_group
+   otx.api.usecases.evaluation.accuracy.__get_gt_and_predicted_label_indices_from_resultset
+   otx.api.usecases.evaluation.accuracy.__compute_unnormalized_confusion_matrices_for_label_group
+   otx.api.usecases.evaluation.accuracy.compute_unnormalized_confusion_matrices_from_resultset
+
+
+
+Attributes
+~~~~~~~~~~
+
+.. autoapisummary::
+
+   otx.api.usecases.evaluation.accuracy.logger
+
+
+.. py:data:: logger
+   
+
+   
+
+.. py:class:: Accuracy(resultset: otx.api.entities.resultset.ResultSetEntity, average: otx.api.usecases.evaluation.averaging.MetricAverageMethod = MetricAverageMethod.MICRO)
+
+   Bases: :py:obj:`otx.api.usecases.evaluation.performance_provider_interface.IPerformanceProvider`
+
+   This class is responsible for providing Accuracy measures; mainly for Classification problems.
+
+   The calculation both supports multi label and binary label predictions.
+
+   Accuracy is the proportion of the predicted correct labels, to the total number (predicted and actual)
+   labels for that instance. Overall accuracy is the average across all instances.
+       resultset (ResultSetEntity): ResultSet that score will be computed for
+       average (MetricAverageMethod): The averaging method, either MICRO or MACRO
+           MICRO: compute average over all predictions in all label groups
+           MACRO: compute accuracy per label group, return the average of the per-label-group accuracy scores
+
+   .. py:method:: accuracy() -> otx.api.entities.metrics.ScoreMetric
+      :property:
+
+      Returns the accuracy as ScoreMetric.
+
+
+   .. py:method:: get_performance() -> otx.api.entities.metrics.Performance
+
+      Returns the performance with accuracy and confusion metrics.
+
+
+   .. py:method:: _compute_accuracy(average: otx.api.usecases.evaluation.averaging.MetricAverageMethod, confusion_matrices: List[otx.api.entities.metrics.MatrixMetric]) -> float
+      :staticmethod:
+
+      Compute accuracy using the confusion matrices.
+
+      :param average: The averaging method, either MICRO or MACRO
+                      MICRO: compute average over all predictions in all label groups
+                      MACRO: compute accuracy per label group, return the average of the per-label-group accuracy scores
+      :type average: MatricAverageMethod
+      :param confusion_matrices: the confusion matrices to compute accuracy from.
+                                 MUST be unnormalized.
+      :type confusion_matrices: List[MatrixMetric]
+
+      Raises
+          ValueError: when the ground truth dataset does not contain annotations
+          RuntimeError: when the averaging methods is not known
+      :returns: the accuracy score for the provided confusion matrix
+      :rtype: float
+
+
+
+.. py:function:: precision_metrics_group(confusion_matrix: otx.api.entities.metrics.MatrixMetric) -> otx.api.entities.metrics.MetricsGroup
+
+   Computes the precision per class based on a confusion matrix and returns them as ScoreMetrics in a MetricsGroup.
+
+   :param confusion_matrix: matrix to compute the precision per class for
+
+   :returns: a BarMetricsGroup with the per class precision.
+
+
+.. py:function:: recall_metrics_group(confusion_matrix: otx.api.entities.metrics.MatrixMetric) -> otx.api.entities.metrics.MetricsGroup
+
+   Computes the recall per class based on a confusion matrix and returns them as ScoreMetrics in a MetricsGroup.
+
+   :param confusion_matrix: matrix to compute the recall per class for
+
+   :returns: a BarMetricsGroup with the per class recall
+
+
+.. py:function:: __get_gt_and_predicted_label_indices_from_resultset(resultset: otx.api.entities.resultset.ResultSetEntity) -> Tuple[List[Set[int]], List[Set[int]]]
+
+   Returns the label indices lists for ground truth and prediction datasets in a tuple.
+
+   :param resultset:
+
+   :returns: a tuple containing two lists. The first list contains the ground truth label indices, and the second contains
+             the prediction label indices.
+
+
+.. py:function:: __compute_unnormalized_confusion_matrices_for_label_group(true_label_idx: List[Set[int]], predicted_label_idx: List[Set[int]], label_group: otx.api.entities.label_schema.LabelGroup, task_labels: List[otx.api.entities.label.LabelEntity]) -> otx.api.entities.metrics.MatrixMetric
+
+   Returns matrix metric for a certain label group.
+
+   :param true_label_idx: list of sets of label indices for the ground truth dataset
+   :type true_label_idx: List[Set[int]]
+   :param predicted_label_idx: list of sets of label indices for the prediction dataset
+   :type predicted_label_idx: List[Set[int]]
+   :param label_group: label group to compute the confusion matrix for
+   :type label_group: LabelGroup
+   :param task_labels: list of labels for the task
+   :type task_labels: List[LabelEntity]
+
+   :returns: confusion matrix for the label group
+   :rtype: MatrixMetric
+
+
+.. py:function:: compute_unnormalized_confusion_matrices_from_resultset(resultset: otx.api.entities.resultset.ResultSetEntity) -> List[otx.api.entities.metrics.MatrixMetric]
+
+   Computes an (unnormalized) confusion matrix for every label group in the resultset.
+
+   :param resultset: the input resultset
+
+   :returns: the computed unnormalized confusion matrices
+
+

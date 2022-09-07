@@ -1,0 +1,281 @@
+:py:mod:`otx.api.entities.annotation`
+=====================================
+
+.. py:module:: otx.api.entities.annotation
+
+.. autoapi-nested-parse::
+
+   This module define the annotation entity.
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   otx.api.entities.annotation.Annotation
+   otx.api.entities.annotation.AnnotationSceneKind
+   otx.api.entities.annotation.AnnotationSceneEntity
+   otx.api.entities.annotation.NullAnnotationSceneEntity
+
+
+
+
+.. py:class:: Annotation(shape: otx.api.entities.shapes.shape.ShapeEntity, labels: List[otx.api.entities.scored_label.ScoredLabel], id: Optional[otx.api.entities.id.ID] = None)
+
+   Base class for annotation objects.
+
+   :param shape: the shape of the annotation
+   :type shape: ShapeEntity
+   :param labels: the labels of the annotation
+   :type labels: List[ScoredLabel]
+   :param id: the id of the annotation
+   :type id: Optional[ID]
+
+   .. py:method:: __repr__()
+
+      String representation of the annotation.
+
+
+   .. py:method:: id_()
+      :property:
+
+      Returns the id for the annotation.
+
+
+   .. py:method:: id()
+      :property:
+
+      DEPRECATED.
+
+
+   .. py:method:: shape() -> otx.api.entities.shapes.shape.ShapeEntity
+      :property:
+
+      Returns the shape that is in the annotation.
+
+
+   .. py:method:: get_labels(include_empty: bool = False) -> List[otx.api.entities.scored_label.ScoredLabel]
+
+      Get scored labels that are assigned to this annotation.
+
+      :param include_empty: set to True to include empty label (if exists) in the output. Defaults to False.
+      :type include_empty: bool
+
+      :returns: List of labels in annotation
+
+
+   .. py:method:: get_label_ids(include_empty: bool = False) -> Set[otx.api.entities.id.ID]
+
+      Get a set of ID's of labels that are assigned to this annotation.
+
+      :param include_empty: set to True to include empty label (if exists) in the output. Defaults to False.
+      :type include_empty: bool
+
+      :returns: Set of label id's in annotation
+
+
+   .. py:method:: append_label(label: otx.api.entities.scored_label.ScoredLabel) -> None
+
+      Appends the scored label to the annotation.
+
+      :param label: the scored label to be appended to the annotation
+      :type label: ScoredLabel
+
+
+   .. py:method:: set_labels(labels: List[otx.api.entities.scored_label.ScoredLabel]) -> None
+
+      Sets the labels of the annotation to be the input of the function.
+
+      :param labels: the scored labels to be set as annotation labels
+      :type labels: List[ScoredLabel]
+
+
+   .. py:method:: __eq__(other: object) -> bool
+
+      Checks if the two annotations are equal.
+
+      :param other: Annotation to compare with.
+      :type other: Annotation
+
+      :returns: True if the two annotations are equal, False otherwise.
+      :rtype: bool
+
+
+
+.. py:class:: AnnotationSceneKind
+
+   Bases: :py:obj:`enum.Enum`
+
+   AnnotationSceneKinds for an Annotation object.
+
+   .. py:attribute:: NONE
+      :annotation: = 0
+
+      
+
+   .. py:attribute:: ANNOTATION
+      :annotation: = 1
+
+      
+
+   .. py:attribute:: PREDICTION
+      :annotation: = 2
+
+      
+
+   .. py:attribute:: EVALUATION
+      :annotation: = 3
+
+      
+
+   .. py:attribute:: INTERMEDIATE
+      :annotation: = 4
+
+      
+
+   .. py:attribute:: TASK_PREDICTION
+      :annotation: = 5
+
+      
+
+   .. py:method:: __str__()
+
+      String representation of the AnnotationSceneKind.
+
+
+
+.. py:class:: AnnotationSceneEntity(annotations: List[Annotation], kind: AnnotationSceneKind, editor: str = '', creation_date: Optional[datetime.datetime] = None, id: Optional[otx.api.entities.id.ID] = None)
+
+   This class represents a user annotation or a result (prediction).
+
+   It serves as a collection of shapes, with a relation to the media entity.
+
+   .. rubric:: Example
+
+   Creating an annotation:
+
+   >>> from otx.api.entities.annotation import Annotation, AnnotationSceneEntity, AnnotationSceneKind
+   >>> from otx.api.entities.shapes.rectangle import Rectangle
+   >>> box = Rectangle(x1=0.0, y1=0.0, x2=0.5, y2=0.5)  # Box covering top-left quart of image
+   >>> AnnotationSceneEntity(annotations=[Annotation(shape=box, labels=[])], kind=AnnotationSceneKind.ANNOTATION)
+
+   :param annotations: List of annotations in the scene
+   :type annotations: List[Annotation]
+   :param kind: Kind of the annotation scene. E.g. `AnnotationSceneKind.ANNOTATION`.
+   :type kind: AnnotationSceneKind
+   :param editor: The user that made this annotation scene object.
+   :type editor: str
+   :param creation_date: Creation date of annotation scene entity. If None, current time is
+                         used. Defaults to None.
+   :type creation_date: Optional[datetime.datetime]
+   :param id: ID of AnnotationSceneEntity. If None a new `ID` is created. Defaults to None.
+   :type id: Optional[ID]
+
+   .. py:method:: __repr__()
+
+      String representation of the annotation scene.
+
+
+   .. py:method:: id_() -> otx.api.entities.id.ID
+      :property:
+
+      Returns the ID of the AnnotationSceneEntity.
+
+
+   .. py:method:: id()
+      :property:
+
+      DEPRECATED.
+
+
+   .. py:method:: kind() -> AnnotationSceneKind
+      :property:
+
+      Returns the AnnotationSceneKind of the AnnotationSceneEntity.
+
+
+   .. py:method:: editor_name() -> str
+      :property:
+
+      Returns the editor's name that made the AnnotationSceneEntity object.
+
+
+   .. py:method:: creation_date() -> datetime.datetime
+      :property:
+
+      Returns the creation date of the AnnotationSceneEntity object.
+
+
+   .. py:method:: annotations() -> List[Annotation]
+      :property:
+
+      Return the Annotations that are present in the AnnotationSceneEntity.
+
+
+   .. py:method:: shapes() -> List[otx.api.entities.shapes.shape.ShapeEntity]
+      :property:
+
+      Returns all shapes that are inside the annotations of the AnnotationSceneEntity.
+
+
+   .. py:method:: contains_any(labels: List[otx.api.entities.label.LabelEntity]) -> bool
+
+      Checks whether the annotation contains any labels in the input parameter.
+
+      :param labels: List of labels to compare to.
+      :type labels: List[LabelEntity]
+
+      :returns: True if there is any intersection between self.get_labels(include_empty=True) with labels.
+      :rtype: bool
+
+
+   .. py:method:: append_annotation(annotation: Annotation) -> None
+
+      Appends the passed annotation to the list of annotations present in the AnnotationSceneEntity object.
+
+
+   .. py:method:: append_annotations(annotations: List[Annotation]) -> None
+
+      Adds a list of annotations to the annotation scene.
+
+
+   .. py:method:: get_labels(include_empty: bool = False) -> List[otx.api.entities.label.LabelEntity]
+
+      Returns a list of unique labels which appear in this annotation scene.
+
+      :param include_empty: Set to True to include empty label (if exists) in the output. Defaults to False.
+      :type include_empty: bool
+
+      :returns: a list of labels which appear in this annotation.
+      :rtype: List[LabelEntity]
+
+
+   .. py:method:: get_label_ids(include_empty: bool = False) -> Set[otx.api.entities.id.ID]
+
+      Returns a set of the ID's of unique labels which appear in this annotation scene.
+
+      :param include_empty: Set to True to include empty label (if exists) in the output. Defaults to False.
+      :type include_empty: bool
+
+      :returns: a set of the ID's of labels which appear in this annotation.
+      :rtype: Set[ID]
+
+
+
+.. py:class:: NullAnnotationSceneEntity
+
+   Bases: :py:obj:`AnnotationSceneEntity`
+
+   Represents 'AnnotationSceneEntity not found.
+
+   .. py:method:: __repr__()
+
+      String representation NullAnnotationSceneEntity.
+
+
+

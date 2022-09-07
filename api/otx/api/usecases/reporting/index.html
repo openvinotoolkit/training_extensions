@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>otx.api.usecases.reporting &mdash; OpenVINO Training Extensions  documentation</title>
+      <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../_static/jquery.js"></script>
+        <script src="../../../../../_static/underscore.js"></script>
+        <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../../../_static/doctools.js"></script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../../index.html" class="icon icon-home"> OpenVINO Training Extensions
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../index.html">OpenVINO Training Extensions</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li><code class="xref py py-mod docutils literal notranslate"><span class="pre">otx.api.usecases.reporting</span></code></li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../../_sources/api/otx/api/usecases/reporting/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-otx.api.usecases.reporting">
+<span id="otx-api-usecases-reporting"></span><h1><a class="reference internal" href="#module-otx.api.usecases.reporting" title="otx.api.usecases.reporting"><code class="xref py py-mod docutils literal notranslate"><span class="pre">otx.api.usecases.reporting</span></code></a><a class="headerlink" href="#module-otx.api.usecases.reporting" title="Permalink to this heading"></a></h1>
+<p>Training reporting.</p>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="callback/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">otx.api.usecases.reporting.callback</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="time_monitor_callback/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">otx.api.usecases.reporting.time_monitor_callback</span></code></a></li>
+</ul>
+</div>
+</section>
+<section id="package-contents">
+<h2>Package Contents<a class="headerlink" href="#package-contents" title="Permalink to this heading"></a></h2>
+<section id="classes">
+<h3>Classes<a class="headerlink" href="#classes" title="Permalink to this heading"></a></h3>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.api.usecases.reporting.Callback" title="otx.api.usecases.reporting.Callback"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Callback</span></code></a></p></td>
+<td><p>Abstract base class used to build new callbacks.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.api.usecases.reporting.TimeMonitorCallback" title="otx.api.usecases.reporting.TimeMonitorCallback"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TimeMonitorCallback</span></code></a></p></td>
+<td><p>A callback to monitor the progress of training.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.api.usecases.reporting.Callback">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.usecases.reporting.</span></span><span class="sig-name descname"><span class="pre">Callback</span></span><a class="reference internal" href="../../../../../_modules/otx/api/usecases/reporting/callback.html#Callback"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.reporting.Callback" title="Permalink to this definition"></a></dt>
+<dd><p>Abstract base class used to build new callbacks.</p>
+<dl class="simple">
+<dt>Properties</dt><dd><dl class="simple">
+<dt>params: dict. Training parameters</dt><dd><p>(eg. verbosity, batch size, number of epochs…).</p>
+</dd>
+<dt>model: instance of <cite>keras.models.Model</cite>.</dt><dd><p>Reference of the model being trained.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p>The <cite>logs</cite> dictionary that callback methods
+take as argument will contain keys for quantities relevant to
+the current batch or epoch.</p>
+<p>Currently, the <cite>.fit()</cite> method of the <cite>Sequential</cite> model class
+will include the following quantities in the <cite>logs</cite> that
+it passes to its callbacks:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>on_epoch_end: logs include <cite>acc</cite> and <cite>loss</cite>, and</dt><dd><p>optionally include <cite>val_loss</cite>
+(if validation is enabled in <cite>fit</cite>), and <cite>val_acc</cite>
+(if validation and accuracy monitoring are enabled).</p>
+</dd>
+<dt>on_batch_begin: logs include <cite>size</cite>,</dt><dd><p>the number of samples in the current batch.</p>
+</dd>
+<dt>on_batch_end: logs include <cite>loss</cite>, and optionally <cite>acc</cite></dt><dd><p>(if accuracy monitoring is enabled).</p>
+</dd>
+</dl>
+</div></blockquote>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.usecases.reporting.Callback.set_params">
+<span class="sig-name descname"><span class="pre">set_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">params</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.usecases.reporting.Callback.set_params" title="Permalink to this definition"></a></dt>
+<dd><p>Sets callback parameters.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.usecases.reporting.Callback.set_model">
+<span class="sig-name descname"><span class="pre">set_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.usecases.reporting.Callback.set_model" title="Permalink to this definition"></a></dt>
+<dd><p>Sets callback model.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.usecases.reporting.Callback.on_epoch_begin">
+<span class="sig-name descname"><span class="pre">on_epoch_begin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">epoch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.usecases.reporting.Callback.on_epoch_begin" title="Permalink to this definition"></a></dt>
+<dd><p>It is called on epoch begin event.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.usecases.reporting.Callback.on_epoch_end">
+<span class="sig-name descname"><span class="pre">on_epoch_end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">epoch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.usecases.reporting.Callback.on_epoch_end" title="Permalink to this definition"></a></dt>
+<dd><p>It is called on epoch end event.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.usecases.reporting.Callback.on_batch_begin">
+<span class="sig-name descname"><span class="pre">on_batch_begin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.usecases.reporting.Callback.on_batch_begin" title="Permalink to this definition"></a></dt>
+<dd><p>It is called on batch begin event.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.usecases.reporting.Callback.on_batch_end">
+<span class="sig-name descname"><span class="pre">on_batch_end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.usecases.reporting.Callback.on_batch_end" title="Permalink to this definition"></a></dt>
+<dd><p>It is called on batch end event.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.usecases.reporting.Callback.on_train_begin">
+<span class="sig-name descname"><span class="pre">on_train_begin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.usecases.reporting.Callback.on_train_begin" title="Permalink to this definition"></a></dt>
+<dd><p>It is called on train begin event.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.usecases.reporting.Callback.on_train_end">
+<span class="sig-name descname"><span class="pre">on_train_end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.usecases.reporting.Callback.on_train_end" title="Permalink to this definition"></a></dt>
+<dd><p>It is called on train end event.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.usecases.reporting.Callback.on_train_batch_begin">
+<span class="sig-name descname"><span class="pre">on_train_batch_begin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.usecases.reporting.Callback.on_train_batch_begin" title="Permalink to this definition"></a></dt>
+<dd><p>It is called on train batch begin event.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.usecases.reporting.Callback.on_train_batch_end">
+<span class="sig-name descname"><span class="pre">on_train_batch_end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.usecases.reporting.Callback.on_train_batch_end" title="Permalink to this definition"></a></dt>
+<dd><p>It is called on train batch end event.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.usecases.reporting.Callback.on_test_begin">
+<span class="sig-name descname"><span class="pre">on_test_begin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.usecases.reporting.Callback.on_test_begin" title="Permalink to this definition"></a></dt>
+<dd><p>It is called on test begin event.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.usecases.reporting.Callback.on_test_end">
+<span class="sig-name descname"><span class="pre">on_test_end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.usecases.reporting.Callback.on_test_end" title="Permalink to this definition"></a></dt>
+<dd><p>It is called on test end event.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.usecases.reporting.Callback.on_test_batch_begin">
+<span class="sig-name descname"><span class="pre">on_test_batch_begin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.usecases.reporting.Callback.on_test_batch_begin" title="Permalink to this definition"></a></dt>
+<dd><p>It is called on test batch begin event.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.usecases.reporting.Callback.on_test_batch_end">
+<span class="sig-name descname"><span class="pre">on_test_batch_end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.usecases.reporting.Callback.on_test_batch_end" title="Permalink to this definition"></a></dt>
+<dd><p>It is called on test batch end event.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.api.usecases.reporting.TimeMonitorCallback">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.usecases.reporting.</span></span><span class="sig-name descname"><span class="pre">TimeMonitorCallback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_epoch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_train_steps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_val_steps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_test_steps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epoch_history</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_history</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">update_progress_callback</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../entities/train_parameters/index.html#otx.api.entities.train_parameters.UpdateProgressCallback" title="otx.api.entities.train_parameters.UpdateProgressCallback"><span class="pre">otx.api.entities.train_parameters.UpdateProgressCallback</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/otx/api/usecases/reporting/time_monitor_callback.html#TimeMonitorCallback"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.reporting.TimeMonitorCallback" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="callback/index.html#otx.api.usecases.reporting.callback.Callback" title="otx.api.usecases.reporting.callback.Callback"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.api.usecases.reporting.callback.Callback</span></code></a></p>
+<p>A callback to monitor the progress of training.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>num_epoch</strong> (<em>int</em>) – Amount of epochs</p></li>
+<li><p><strong>num_train_steps</strong> (<em>int</em>) – amount of training steps per epoch</p></li>
+<li><p><strong>num_val_steps</strong> (<em>int</em>) – amount of validation steps per epoch</p></li>
+<li><p><strong>num_test_steps</strong> (<em>int</em>) – amount of testing steps</p></li>
+<li><p><strong>epoch_history</strong> (<em>int</em>) – Amount of previous epochs to calculate average epoch time over</p></li>
+<li><p><strong>step_history</strong> (<em>int</em>) – Amount of previous steps to calculate average steps time over</p></li>
+<li><p><strong>update_progress_callback</strong> (<em>Optional</em><em>[</em><a class="reference internal" href="../../entities/train_parameters/index.html#otx.api.entities.train_parameters.UpdateProgressCallback" title="otx.api.entities.train_parameters.UpdateProgressCallback"><em>UpdateProgressCallback</em></a><em>]</em>) – Callback to update progress</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.usecases.reporting.TimeMonitorCallback.on_train_batch_begin">
+<span class="sig-name descname"><span class="pre">on_train_batch_begin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.usecases.reporting.TimeMonitorCallback.on_train_batch_begin" title="Permalink to this definition"></a></dt>
+<dd><p>Set the value of current step and start the timer.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.usecases.reporting.TimeMonitorCallback.on_train_batch_end">
+<span class="sig-name descname"><span class="pre">on_train_batch_end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.usecases.reporting.TimeMonitorCallback.on_train_batch_end" title="Permalink to this definition"></a></dt>
+<dd><p>Compute average time taken to complete a step.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.usecases.reporting.TimeMonitorCallback.is_stalling">
+<span class="sig-name descname"><span class="pre">is_stalling</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#otx.api.usecases.reporting.TimeMonitorCallback.is_stalling" title="Permalink to this definition"></a></dt>
+<dd><p>Returns True if the training is stalling.</p>
+<p>Returns True if the current step has taken more than 30 seconds and
+at least 20x more than the average step duration</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.usecases.reporting.TimeMonitorCallback.__calculate_average_step">
+<span class="sig-name descname"><span class="pre">__calculate_average_step</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.usecases.reporting.TimeMonitorCallback.__calculate_average_step" title="Permalink to this definition"></a></dt>
+<dd><p>Compute average duration taken to complete a step.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.usecases.reporting.TimeMonitorCallback.on_test_batch_begin">
+<span class="sig-name descname"><span class="pre">on_test_batch_begin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.usecases.reporting.TimeMonitorCallback.on_test_batch_begin" title="Permalink to this definition"></a></dt>
+<dd><p>Set the number of current epoch and start the timer.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.usecases.reporting.TimeMonitorCallback.on_test_batch_end">
+<span class="sig-name descname"><span class="pre">on_test_batch_end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.usecases.reporting.TimeMonitorCallback.on_test_batch_end" title="Permalink to this definition"></a></dt>
+<dd><p>Compute average time taken to complete a step based on a running average of <cite>step_history</cite> steps.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.usecases.reporting.TimeMonitorCallback.on_train_begin">
+<span class="sig-name descname"><span class="pre">on_train_begin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.usecases.reporting.TimeMonitorCallback.on_train_begin" title="Permalink to this definition"></a></dt>
+<dd><p>Sets training to true.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.usecases.reporting.TimeMonitorCallback.on_train_end">
+<span class="sig-name descname"><span class="pre">on_train_end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.usecases.reporting.TimeMonitorCallback.on_train_end" title="Permalink to this definition"></a></dt>
+<dd><p>Handles early stopping when the total_steps is greater than the current_step.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.usecases.reporting.TimeMonitorCallback.on_epoch_begin">
+<span class="sig-name descname"><span class="pre">on_epoch_begin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">epoch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.usecases.reporting.TimeMonitorCallback.on_epoch_begin" title="Permalink to this definition"></a></dt>
+<dd><p>Set the number of current epoch and start the timer.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.usecases.reporting.TimeMonitorCallback.on_epoch_end">
+<span class="sig-name descname"><span class="pre">on_epoch_end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">epoch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.usecases.reporting.TimeMonitorCallback.on_epoch_end" title="Permalink to this definition"></a></dt>
+<dd><p>Computes the average time taken to complete an epoch based on a running average of <cite>epoch_history</cite> epochs.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.usecases.reporting.TimeMonitorCallback._calculate_average_epoch">
+<span class="sig-name descname"><span class="pre">_calculate_average_epoch</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.usecases.reporting.TimeMonitorCallback._calculate_average_epoch" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.usecases.reporting.TimeMonitorCallback.get_progress">
+<span class="sig-name descname"><span class="pre">get_progress</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.usecases.reporting.TimeMonitorCallback.get_progress" title="Permalink to this definition"></a></dt>
+<dd><p>Returns current progress as a percentage.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, OpenVINO Training Extensions Contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

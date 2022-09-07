@@ -1,0 +1,48 @@
+:py:mod:`otx.api.usecases.exportable_code.demo.demo_package.executors.sync_pipeline`
+====================================================================================
+
+.. py:module:: otx.api.usecases.exportable_code.demo.demo_package.executors.sync_pipeline
+
+.. autoapi-nested-parse::
+
+   Sync pipeline executor based on ModelAPI.
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   otx.api.usecases.exportable_code.demo.demo_package.executors.sync_pipeline.ChainExecutor
+
+
+
+
+.. py:class:: ChainExecutor(models: List[otx.api.usecases.exportable_code.demo.demo_package.model_container.ModelContainer], visualizer: otx.api.usecases.exportable_code.visualizers.Visualizer)
+
+   Sync executor for task-chain inference.
+
+   :param models: list of models for inference
+   :param visualizer: visualizer of inference results
+
+   .. py:method:: single_run(input_image: numpy.ndarray) -> otx.api.entities.annotation.AnnotationSceneEntity
+
+      Inference for single image.
+
+
+   .. py:method:: crop(item: numpy.ndarray, parent_annotation: otx.api.entities.annotation.Annotation, item_annotation: otx.api.entities.annotation.Annotation) -> Tuple[numpy.ndarray, otx.api.entities.annotation.Annotation]
+      :staticmethod:
+
+      Crop operation between chain stages.
+
+
+   .. py:method:: run(input_stream: Union[int, str], loop: bool = False) -> None
+
+      Run demo using input stream (image, video stream, camera).
+
+
+

@@ -1,0 +1,36 @@
+:py:mod:`otx.algorithms.anomaly.adapters.anomalib.callbacks.score_report`
+=========================================================================
+
+.. py:module:: otx.algorithms.anomaly.adapters.anomalib.callbacks.score_report
+
+.. autoapi-nested-parse::
+
+   Score reporting callback.
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   otx.algorithms.anomaly.adapters.anomalib.callbacks.score_report.ScoreReportingCallback
+
+
+
+
+.. py:class:: ScoreReportingCallback(parameters: Optional[otx.api.entities.train_parameters.TrainParameters] = None)
+
+   Bases: :py:obj:`pytorch_lightning.Callback`
+
+   Callback for reporting score.
+
+   .. py:method:: on_validation_epoch_end(trainer, pl_module)
+
+      If score exists in trainer.logged_metrics, report the score.
+
+
+

@@ -1,0 +1,138 @@
+:py:mod:`otx.algorithms.anomaly.adapters.anomalib.exportable_code`
+==================================================================
+
+.. py:module:: otx.algorithms.anomaly.adapters.anomalib.exportable_code
+
+.. autoapi-nested-parse::
+
+   Exportable code for Anomaly tasks.
+
+
+
+Submodules
+----------
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+
+   anomaly_classification/index.rst
+   anomaly_detection/index.rst
+   anomaly_segmentation/index.rst
+   base/index.rst
+
+
+Package Contents
+----------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   otx.algorithms.anomaly.adapters.anomalib.exportable_code.AnomalyClassification
+   otx.algorithms.anomaly.adapters.anomalib.exportable_code.AnomalyDetection
+   otx.algorithms.anomaly.adapters.anomalib.exportable_code.AnomalySegmentation
+   otx.algorithms.anomaly.adapters.anomalib.exportable_code.AnomalyBase
+
+
+
+
+.. py:class:: AnomalyClassification(model_adapter, configuration=None, preload=False)
+
+   Bases: :py:obj:`otx.algorithms.anomaly.adapters.anomalib.exportable_code.base.AnomalyBase`
+
+   Wrapper for anomaly classification task.
+
+   .. py:attribute:: __model__
+      :annotation: = anomaly_classification
+
+      
+
+   .. py:method:: postprocess(outputs: Dict[str, numpy.ndarray], meta: Dict[str, Any]) -> float
+
+      Resize the outputs of the model to original image size.
+
+      :param outputs: Raw outputs of the model after ``infer_sync`` is called.
+      :type outputs: Dict[str, np.ndarray]
+      :param meta: Metadata which contains values such as threshold, original image size.
+      :type meta: Dict[str, Any]
+
+      :returns: Normalized anomaly score
+      :rtype: float
+
+
+
+.. py:class:: AnomalyDetection(model_adapter, configuration=None, preload=False)
+
+   Bases: :py:obj:`otx.algorithms.anomaly.adapters.anomalib.exportable_code.base.AnomalyBase`
+
+   Wrapper for anomaly detection task.
+
+   .. py:attribute:: __model__
+      :annotation: = anomaly_detection
+
+      
+
+   .. py:method:: postprocess(outputs: Dict[str, numpy.ndarray], meta: Dict[str, Any]) -> numpy.ndarray
+
+      Resize the outputs of the model to original image size.
+
+      :param outputs: Raw outputs of the model after ``infer_sync`` is called.
+      :type outputs: Dict[str, np.ndarray]
+      :param meta: Metadata which contains values such as threshold, original image size.
+      :type meta: Dict[str, Any]
+
+      :returns: Detection Mask
+      :rtype: np.ndarray
+
+
+
+.. py:class:: AnomalySegmentation(model_adapter, configuration=None, preload=False)
+
+   Bases: :py:obj:`otx.algorithms.anomaly.adapters.anomalib.exportable_code.base.AnomalyBase`
+
+   Wrapper for anomaly segmentation task.
+
+   .. py:attribute:: __model__
+      :annotation: = anomaly_segmentation
+
+      
+
+   .. py:method:: postprocess(outputs: Dict[str, numpy.ndarray], meta: Dict[str, Any]) -> numpy.ndarray
+
+      Resize the outputs of the model to original image size.
+
+      :param outputs: Raw outputs of the model after ``infer_sync`` is called.
+      :type outputs: Dict[str, np.ndarray]
+      :param meta: Metadata which contains values such as threshold, original image size.
+      :type meta: Dict[str, Any]
+
+      :returns: Segmentation Mask
+      :rtype: np.ndarray
+
+
+
+.. py:class:: AnomalyBase(model_adapter, configuration=None, preload=False)
+
+   Bases: :py:obj:`openvino.model_zoo.model_api.models.SegmentationModel`
+
+   Wrapper for anomaly tasks.
+
+   .. py:attribute:: __model__
+      :annotation: = anomaly_base
+
+      
+
+   .. py:method:: parameters()
+      :classmethod:
+
+      Dictionary containing model parameters.
+
+
+   .. py:method:: _normalize(targets: Union[numpy.ndarray, numpy.float32], threshold: Union[numpy.ndarray, float], min_val: Union[numpy.ndarray, float], max_val: Union[numpy.ndarray, float]) -> numpy.ndarray
+      :staticmethod:
+
+      Apply min-max normalization and shift the values such that the threshold value is centered at 0.5.
+
+
+

@@ -1,0 +1,71 @@
+:py:mod:`otx.api.entities.optimization_parameters`
+==================================================
+
+.. py:module:: otx.api.entities.optimization_parameters
+
+.. autoapi-nested-parse::
+
+   This module implements the OptimizationParameters entity.
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   otx.api.entities.optimization_parameters.OptimizationParameters
+
+
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   otx.api.entities.optimization_parameters.default_progress_callback
+   otx.api.entities.optimization_parameters.default_save_model_callback
+
+
+
+.. py:function:: default_progress_callback(progress: int, score: Optional[float] = None)
+
+   This is the default progress callback for OptimizationParameters.
+
+
+.. py:function:: default_save_model_callback()
+
+   This is the default save model callback for OptimizationParameters.
+
+
+.. py:class:: OptimizationParameters
+
+   Optimization parameters.
+
+   resume (bool): Set to ``True`` if optimization must be resume with the optimizer state;
+       set to ``False`` to discard the optimizer state and start with fresh optimizer
+   update_progress (Callable[int], None): Callback which can be used to provide updates about the progress of a task.
+   save_model (Callable[List, None]): Callback to notify that the model weights have been changed.
+       This callback can be used by the task when temporary weights should be saved (for instance, at the
+       end of an epoch). If this callback has been used to save temporary weights, those weights will be
+       used to resume optimization if for some reason training was suspended.
+
+   .. py:attribute:: resume
+      :annotation: :bool = False
+
+      
+
+   .. py:attribute:: update_progress
+      :annotation: :Callable[[int, Optional[float]], Any]
+
+      
+
+   .. py:attribute:: save_model
+      :annotation: :Callable[[], None]
+
+      
+
+

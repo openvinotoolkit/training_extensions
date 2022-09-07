@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>otx.api.entities.label_schema &mdash; OpenVINO Training Extensions  documentation</title>
+      <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../_static/jquery.js"></script>
+        <script src="../../../../../_static/underscore.js"></script>
+        <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../../../_static/doctools.js"></script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../../index.html" class="icon icon-home"> OpenVINO Training Extensions
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../index.html">OpenVINO Training Extensions</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li><code class="xref py py-mod docutils literal notranslate"><span class="pre">otx.api.entities.label_schema</span></code></li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../../_sources/api/otx/api/entities/label_schema/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-otx.api.entities.label_schema">
+<span id="otx-api-entities-label-schema"></span><h1><a class="reference internal" href="#module-otx.api.entities.label_schema" title="otx.api.entities.label_schema"><code class="xref py py-mod docutils literal notranslate"><span class="pre">otx.api.entities.label_schema</span></code></a><a class="headerlink" href="#module-otx.api.entities.label_schema" title="Permalink to this heading"></a></h1>
+<p>This module implements the LabelSchema entity.</p>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this heading"></a></h2>
+<section id="classes">
+<h3>Classes<a class="headerlink" href="#classes" title="Permalink to this heading"></a></h3>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.api.entities.label_schema.LabelGroupType" title="otx.api.entities.label_schema.LabelGroupType"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LabelGroupType</span></code></a></p></td>
+<td><p>Enum to indicate the LabelGroupType.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.api.entities.label_schema.LabelGroup" title="otx.api.entities.label_schema.LabelGroup"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LabelGroup</span></code></a></p></td>
+<td><p>A label group which has exclusive (multiclass) or contains the empty label.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.api.entities.label_schema.LabelGraph" title="otx.api.entities.label_schema.LabelGraph"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LabelGraph</span></code></a></p></td>
+<td><p>Represents connectivity between labels as a graph. For example exclusivity or hierarchy.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.api.entities.label_schema.LabelTree" title="otx.api.entities.label_schema.LabelTree"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LabelTree</span></code></a></p></td>
+<td><p>Represents a hierarchy of labels in the form a tree.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.api.entities.label_schema.LabelSchemaEntity" title="otx.api.entities.label_schema.LabelSchemaEntity"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LabelSchemaEntity</span></code></a></p></td>
+<td><p>This class represents the relationships of labels.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="attributes">
+<h3>Attributes<a class="headerlink" href="#attributes" title="Permalink to this heading"></a></h3>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.api.entities.label_schema.logger" title="otx.api.entities.label_schema.logger"><code class="xref py py-obj docutils literal notranslate"><span class="pre">logger</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py data">
+<dt class="sig sig-object py" id="otx.api.entities.label_schema.logger">
+<span class="sig-prename descclassname"><span class="pre">otx.api.entities.label_schema.</span></span><span class="sig-name descname"><span class="pre">logger</span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label_schema.html#logger"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label_schema.logger" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="otx.api.entities.label_schema.LabelGroupExistsException">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.label_schema.</span></span><span class="sig-name descname"><span class="pre">LabelGroupExistsException</span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label_schema.html#LabelGroupExistsException"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label_schema.LabelGroupExistsException" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">ValueError</span></code></p>
+<p>Exception thrown if the LabelGroup already exists.</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="otx.api.entities.label_schema.LabelGroupDoesNotExistException">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.label_schema.</span></span><span class="sig-name descname"><span class="pre">LabelGroupDoesNotExistException</span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label_schema.html#LabelGroupDoesNotExistException"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label_schema.LabelGroupDoesNotExistException" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">ValueError</span></code></p>
+<p>Exception thrown if the LabelGroup does not exist.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.api.entities.label_schema.LabelGroupType">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.label_schema.</span></span><span class="sig-name descname"><span class="pre">LabelGroupType</span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label_schema.html#LabelGroupType"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label_schema.LabelGroupType" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">enum.Enum</span></code></p>
+<p>Enum to indicate the LabelGroupType.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.entities.label_schema.LabelGroupType.EXCLUSIVE">
+<span class="sig-name descname"><span class="pre">EXCLUSIVE</span></span><em class="property"><span class="w"> </span><span class="pre">=</span> <span class="pre">1</span></em><a class="reference internal" href="../../../../../_modules/otx/api/entities/label_schema.html#LabelGroupType.EXCLUSIVE"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label_schema.LabelGroupType.EXCLUSIVE" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.entities.label_schema.LabelGroupType.EMPTY_LABEL">
+<span class="sig-name descname"><span class="pre">EMPTY_LABEL</span></span><em class="property"><span class="w"> </span><span class="pre">=</span> <span class="pre">2</span></em><a class="reference internal" href="../../../../../_modules/otx/api/entities/label_schema.html#LabelGroupType.EMPTY_LABEL"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label_schema.LabelGroupType.EMPTY_LABEL" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.api.entities.label_schema.LabelGroup">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.label_schema.</span></span><span class="sig-name descname"><span class="pre">LabelGroup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.entities.label_schema.LabelGroupType" title="otx.api.entities.label_schema.LabelGroupType"><span class="pre">LabelGroupType</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">LabelGroupType.EXCLUSIVE</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../id/index.html#otx.api.entities.id.ID" title="otx.api.entities.id.ID"><span class="pre">otx.api.entities.id.ID</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label_schema.html#LabelGroup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label_schema.LabelGroup" title="Permalink to this definition"></a></dt>
+<dd><p>A label group which has exclusive (multiclass) or contains the empty label.</p>
+<p>Non-exclusive (multilabel) relationships are represented by multiple (exclusive)
+label groups.</p>
+<p>The labels have to be from one task.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – Descriptive name of the label group</p></li>
+<li><p><strong>labels</strong> (<em>Sequence</em><em>[</em><a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><em>LabelEntity</em></a><em>]</em>) – Labels that form the group</p></li>
+<li><p><strong>group_type</strong> (<a class="reference internal" href="#otx.api.entities.label_schema.LabelGroupType" title="otx.api.entities.label_schema.LabelGroupType"><em>LabelGroupType</em></a>) – EXCLUSIVE or EMPTY_LABEL</p></li>
+<li><p><strong>id</strong> (<a class="reference internal" href="../id/index.html#otx.api.entities.id.ID" title="otx.api.entities.id.ID"><em>ID</em></a>) – ID of the LabelGroup. If no ID is provided, a new ObjectId()
+will be assigned</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.label_schema.LabelGroup.id">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">id</span></span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../id/index.html#otx.api.entities.id.ID" title="otx.api.entities.id.ID"><span class="pre">otx.api.entities.id.ID</span></a></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label_schema.html#LabelGroup.id"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label_schema.LabelGroup.id" title="Permalink to this definition"></a></dt>
+<dd><p>DEPRECATED.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.label_schema.LabelGroup.minimum_label_id">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">minimum_label_id</span></span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../id/index.html#otx.api.entities.id.ID" title="otx.api.entities.id.ID"><span class="pre">otx.api.entities.id.ID</span></a></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label_schema.html#LabelGroup.minimum_label_id"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label_schema.LabelGroup.minimum_label_id" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the minimum (oldest) label ID, which is the first label in self.labels since this list is sorted.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.label_schema.LabelGroup.remove_label">
+<span class="sig-name descname"><span class="pre">remove_label</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label_schema.html#LabelGroup.remove_label"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label_schema.LabelGroup.remove_label" title="Permalink to this definition"></a></dt>
+<dd><p>Remove label from label group if it exists in the group.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>label</strong> (<a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><em>LabelEntity</em></a>) – label to remove</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.label_schema.LabelGroup.is_single_label">
+<span class="sig-name descname"><span class="pre">is_single_label</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label_schema.html#LabelGroup.is_single_label"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label_schema.LabelGroup.is_single_label" title="Permalink to this definition"></a></dt>
+<dd><p>Returns True if the label group only contains one label.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>True if the label group only contains one label.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.label_schema.LabelGroup.__eq__">
+<span class="sig-name descname"><span class="pre">__eq__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">object</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label_schema.html#LabelGroup.__eq__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label_schema.LabelGroup.__eq__" title="Permalink to this definition"></a></dt>
+<dd><p>Returns True if the LabelGroup is equal to the other object.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.label_schema.LabelGroup.__repr__">
+<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label_schema.html#LabelGroup.__repr__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label_schema.LabelGroup.__repr__" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the string representation of the LabelGroup.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.api.entities.label_schema.LabelGraph">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.label_schema.</span></span><span class="sig-name descname"><span class="pre">LabelGraph</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">directed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label_schema.html#LabelGraph"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label_schema.LabelGraph" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../graph/index.html#otx.api.entities.graph.Graph" title="otx.api.entities.graph.Graph"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.api.entities.graph.Graph</span></code></a></p>
+<p>Represents connectivity between labels as a graph. For example exclusivity or hierarchy.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>directed</strong> (<em>bool</em>) – whether the relationships are directed or undirected
+(symmetrical)</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.label_schema.LabelGraph.add_edges">
+<span class="sig-name descname"><span class="pre">add_edges</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">edges</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label_schema.html#LabelGraph.add_edges"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label_schema.LabelGraph.add_edges" title="Permalink to this definition"></a></dt>
+<dd><p>Add edges between Labels.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.label_schema.LabelGraph.num_labels">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">num_labels</span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label_schema.html#LabelGraph.num_labels"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label_schema.LabelGraph.num_labels" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the number of nodes in the graph.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.label_schema.LabelGraph.type">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">type</span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label_schema.html#LabelGraph.type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label_schema.LabelGraph.type" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the type of the LabelGraph.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.label_schema.LabelGraph.subgraph">
+<span class="sig-name descname"><span class="pre">subgraph</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#otx.api.entities.label_schema.LabelGraph" title="otx.api.entities.label_schema.LabelGraph"><span class="pre">LabelGraph</span></a></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label_schema.html#LabelGraph.subgraph"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label_schema.LabelGraph.subgraph" title="Permalink to this definition"></a></dt>
+<dd><p>Return the subgraph containing the given labels.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.label_schema.LabelGraph.__eq__">
+<span class="sig-name descname"><span class="pre">__eq__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label_schema.html#LabelGraph.__eq__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label_schema.LabelGraph.__eq__" title="Permalink to this definition"></a></dt>
+<dd><p>Returns True if the LabelGraph is equal to the other LabelGraph.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.api.entities.label_schema.LabelTree">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.label_schema.</span></span><span class="sig-name descname"><span class="pre">LabelTree</span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label_schema.html#LabelTree"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label_schema.LabelTree" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../graph/index.html#otx.api.entities.graph.MultiDiGraph" title="otx.api.entities.graph.MultiDiGraph"><code class="xref py py-obj docutils literal notranslate"><span class="pre">otx.api.entities.graph.MultiDiGraph</span></code></a></p>
+<p>Represents a hierarchy of labels in the form a tree.</p>
+<p>The tree is represented by a directed graph</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.label_schema.LabelTree.add_edge">
+<span class="sig-name descname"><span class="pre">add_edge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label_schema.html#LabelTree.add_edge"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label_schema.LabelTree.add_edge" title="Permalink to this definition"></a></dt>
+<dd><p>Add edge between two nodes in the tree.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>node1</strong> – first node</p></li>
+<li><p><strong>node2</strong> – second node</p></li>
+<li><p><strong>edge_value</strong> – The value of the new edge. Defaults to None.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.label_schema.LabelTree.add_node">
+<span class="sig-name descname"><span class="pre">add_node</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label_schema.html#LabelTree.add_node"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label_schema.LabelTree.add_node" title="Permalink to this definition"></a></dt>
+<dd><p>Add node to the tree.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.label_schema.LabelTree.add_edges">
+<span class="sig-name descname"><span class="pre">add_edges</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">edges</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label_schema.html#LabelTree.add_edges"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label_schema.LabelTree.add_edges" title="Permalink to this definition"></a></dt>
+<dd><p>Add edges between Labels.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.label_schema.LabelTree.remove_node">
+<span class="sig-name descname"><span class="pre">remove_node</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label_schema.html#LabelTree.remove_node"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label_schema.LabelTree.remove_node" title="Permalink to this definition"></a></dt>
+<dd><p>Remove node from the tree.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.label_schema.LabelTree.num_labels">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">num_labels</span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label_schema.html#LabelTree.num_labels"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label_schema.LabelTree.num_labels" title="Permalink to this definition"></a></dt>
+<dd><p>Return the number of labels in the tree.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.label_schema.LabelTree.clear_topological_cache">
+<span class="sig-name descname"><span class="pre">clear_topological_cache</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label_schema.html#LabelTree.clear_topological_cache"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label_schema.LabelTree.clear_topological_cache" title="Permalink to this definition"></a></dt>
+<dd><p>Clear the internal cache of the list of labels sorted in topological order.</p>
+<dl class="simple">
+<dt>This function should be called if the topology of the graph has changed to</dt><dd><p>prevent the cache from being stale.</p>
+</dd>
+<dt>Note that it is automatically called when modifying the topology through the</dt><dd><p>methods provided by this class.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.label_schema.LabelTree.get_labels_in_topological_order">
+<span class="sig-name descname"><span class="pre">get_labels_in_topological_order</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label_schema.html#LabelTree.get_labels_in_topological_order"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label_schema.LabelTree.get_labels_in_topological_order" title="Permalink to this definition"></a></dt>
+<dd><p>Return a list of the labels in this graph sorted in topological order.</p>
+<p>To avoid performance issues, the output of this function is cached.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>sorted list of labels</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>List[<a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity">LabelEntity</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.label_schema.LabelTree.type">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">type</span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label_schema.html#LabelTree.type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label_schema.LabelTree.type" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the type of the LabelTree.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.label_schema.LabelTree.add_child">
+<span class="sig-name descname"><span class="pre">add_child</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">child</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label_schema.html#LabelTree.add_child"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label_schema.LabelTree.add_child" title="Permalink to this definition"></a></dt>
+<dd><p>Add a <cite>child</cite> Label to <cite>parent</cite>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.label_schema.LabelTree.get_parent">
+<span class="sig-name descname"><span class="pre">get_parent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label_schema.html#LabelTree.get_parent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label_schema.LabelTree.get_parent" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the parent of <cite>label</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>the parent if it has one otherwise None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.label_schema.LabelTree.get_children">
+<span class="sig-name descname"><span class="pre">get_children</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label_schema.html#LabelTree.get_children"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label_schema.LabelTree.get_children" title="Permalink to this definition"></a></dt>
+<dd><p>Returns children of <cite>parent</cite>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.label_schema.LabelTree.get_descendants">
+<span class="sig-name descname"><span class="pre">get_descendants</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label_schema.html#LabelTree.get_descendants"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label_schema.LabelTree.get_descendants" title="Permalink to this definition"></a></dt>
+<dd><p>Returns descendants (children and children of children, etc.) of <cite>parent</cite>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.label_schema.LabelTree.get_siblings">
+<span class="sig-name descname"><span class="pre">get_siblings</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label_schema.html#LabelTree.get_siblings"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label_schema.LabelTree.get_siblings" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the siblings of a label.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.label_schema.LabelTree.get_ancestors">
+<span class="sig-name descname"><span class="pre">get_ancestors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label_schema.html#LabelTree.get_ancestors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label_schema.LabelTree.get_ancestors" title="Permalink to this definition"></a></dt>
+<dd><p>Returns ancestors of <cite>label</cite>, including self.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.label_schema.LabelTree.subgraph">
+<span class="sig-name descname"><span class="pre">subgraph</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#otx.api.entities.label_schema.LabelTree" title="otx.api.entities.label_schema.LabelTree"><span class="pre">LabelTree</span></a></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label_schema.html#LabelTree.subgraph"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label_schema.LabelTree.subgraph" title="Permalink to this definition"></a></dt>
+<dd><p>Return the subgraph containing the given labels.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.label_schema.LabelTree.__eq__">
+<span class="sig-name descname"><span class="pre">__eq__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label_schema.html#LabelTree.__eq__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label_schema.LabelTree.__eq__" title="Permalink to this definition"></a></dt>
+<dd><p>Check if two LabelTrees are equal.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.api.entities.label_schema.LabelSchemaEntity">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.label_schema.</span></span><span class="sig-name descname"><span class="pre">LabelSchemaEntity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_tree</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.entities.label_schema.LabelTree" title="otx.api.entities.label_schema.LabelTree"><span class="pre">LabelTree</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_groups</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#otx.api.entities.label_schema.LabelGroup" title="otx.api.entities.label_schema.LabelGroup"><span class="pre">LabelGroup</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label_schema.html#LabelSchemaEntity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label_schema.LabelSchemaEntity" title="Permalink to this definition"></a></dt>
+<dd><p>This class represents the relationships of labels.</p>
+<p>This class currently keeps track of the following relationships:</p>
+<ul class="simple">
+<li><p>parent/child label relationship</p></li>
+<li><p>label group relationships</p></li>
+</ul>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>label_tree</strong> (<a class="reference internal" href="#otx.api.entities.label_schema.LabelTree" title="otx.api.entities.label_schema.LabelTree"><em>LabelTree</em></a>) – a hierarchy of labels represented as a tree</p></li>
+<li><p><strong>label_groups</strong> (<em>List</em><em>[</em><a class="reference internal" href="#otx.api.entities.label_schema.LabelGroup" title="otx.api.entities.label_schema.LabelGroup"><em>LabelGroup</em></a><em>]</em>) – list of groups of labels that form logical groups.
+E.g. a group of mutually exclusive labels.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.label_schema.LabelSchemaEntity.get_labels">
+<span class="sig-name descname"><span class="pre">get_labels</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">include_empty</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label_schema.html#LabelSchemaEntity.get_labels"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label_schema.LabelSchemaEntity.get_labels" title="Permalink to this definition"></a></dt>
+<dd><p>Get the labels in the label schema.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>include_empty</strong> (<em>bool</em>) – flag determining whether to include empty
+labels</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of all labels in the label schema</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>List[<a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity">LabelEntity</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.label_schema.LabelSchemaEntity.get_groups">
+<span class="sig-name descname"><span class="pre">get_groups</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">include_empty</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#otx.api.entities.label_schema.LabelGroup" title="otx.api.entities.label_schema.LabelGroup"><span class="pre">LabelGroup</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label_schema.html#LabelSchemaEntity.get_groups"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label_schema.LabelSchemaEntity.get_groups" title="Permalink to this definition"></a></dt>
+<dd><p>Get the label groups in the label schema.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>include_empty</strong> (<em>bool</em>) – flag determining whether to include empty
+label groups</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of all label groups in the label schema</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>List[<a class="reference internal" href="#otx.api.entities.label_schema.LabelGroup" title="otx.api.entities.label_schema.LabelGroup">LabelGroup</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.label_schema.LabelSchemaEntity.add_group">
+<span class="sig-name descname"><span class="pre">add_group</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_group</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.entities.label_schema.LabelGroup" title="otx.api.entities.label_schema.LabelGroup"><span class="pre">LabelGroup</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label_schema.html#LabelSchemaEntity.add_group"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label_schema.LabelSchemaEntity.add_group" title="Permalink to this definition"></a></dt>
+<dd><p>Adding a group to label schema.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>label_group</strong> (<a class="reference internal" href="#otx.api.entities.label_schema.LabelGroup" title="otx.api.entities.label_schema.LabelGroup"><em>LabelGroup</em></a>) – label group to add</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.label_schema.LabelSchemaEntity.add_child">
+<span class="sig-name descname"><span class="pre">add_child</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">child</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label_schema.html#LabelSchemaEntity.add_child"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label_schema.LabelSchemaEntity.add_child" title="Permalink to this definition"></a></dt>
+<dd><p>Add a <cite>child</cite> Label to <cite>parent</cite>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.label_schema.LabelSchemaEntity.get_parent">
+<span class="sig-name descname"><span class="pre">get_parent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label_schema.html#LabelSchemaEntity.get_parent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label_schema.LabelSchemaEntity.get_parent" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the parent of <cite>label</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>the parent if it has one otherwise None</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>Optional[<a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity">LabelEntity</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.label_schema.LabelSchemaEntity.get_label_ids">
+<span class="sig-name descname"><span class="pre">get_label_ids</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">include_empty</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../id/index.html#otx.api.entities.id.ID" title="otx.api.entities.id.ID"><span class="pre">otx.api.entities.id.ID</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label_schema.html#LabelSchemaEntity.get_label_ids"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label_schema.LabelSchemaEntity.get_label_ids" title="Permalink to this definition"></a></dt>
+<dd><p>Returns a list of label ids that are in the LabelSchema.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>include_empty</strong> (<em>bool</em>) – Include empty label id or not.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>sorted list of label ids</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>List[<a class="reference internal" href="../id/index.html#otx.api.entities.id.ID" title="otx.api.entities.id.ID">ID</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.label_schema.LabelSchemaEntity.get_label_group_by_name">
+<span class="sig-name descname"><span class="pre">get_label_group_by_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">group_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#otx.api.entities.label_schema.LabelGroup" title="otx.api.entities.label_schema.LabelGroup"><span class="pre">LabelGroup</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label_schema.html#LabelSchemaEntity.get_label_group_by_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label_schema.LabelSchemaEntity.get_label_group_by_name" title="Permalink to this definition"></a></dt>
+<dd><p>Get the label group by the passed group_name.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>group_name</strong> (<em>str</em>) – name of the group to get</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Optional[LabelGroup]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.label_schema.LabelSchemaEntity.get_exclusive_groups">
+<span class="sig-name descname"><span class="pre">get_exclusive_groups</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#otx.api.entities.label_schema.LabelGroup" title="otx.api.entities.label_schema.LabelGroup"><span class="pre">LabelGroup</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label_schema.html#LabelSchemaEntity.get_exclusive_groups"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label_schema.LabelSchemaEntity.get_exclusive_groups" title="Permalink to this definition"></a></dt>
+<dd><p>Returns exclusive groups in the LabelSchema.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.label_schema.LabelSchemaEntity.add_labels_to_group_by_group_name">
+<span class="sig-name descname"><span class="pre">add_labels_to_group_by_group_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">group_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label_schema.html#LabelSchemaEntity.add_labels_to_group_by_group_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label_schema.LabelSchemaEntity.add_labels_to_group_by_group_name" title="Permalink to this definition"></a></dt>
+<dd><p>Adds <cite>labels</cite> to group named <cite>group_name</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>labels</strong> (<em>str</em>) – list of Label</p></li>
+<li><p><strong>group_name</strong> (<em>Sequence</em><em>[</em><a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><em>LabelEntity</em></a><em>]</em>) – group name</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference internal" href="#otx.api.entities.label_schema.LabelGroupDoesNotExistException" title="otx.api.entities.label_schema.LabelGroupDoesNotExistException"><strong>LabelGroupDoesNotExistException</strong></a> – This is raised if the group
+does not exist</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.label_schema.LabelSchemaEntity.__append_group">
+<span class="sig-name descname"><span class="pre">__append_group</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_group</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.entities.label_schema.LabelGroup" title="otx.api.entities.label_schema.LabelGroup"><span class="pre">LabelGroup</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label_schema.html#LabelSchemaEntity.__append_group"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label_schema.LabelSchemaEntity.__append_group" title="Permalink to this definition"></a></dt>
+<dd><p>Convenience function for appending <cite>label_group</cite> to the necessary internal data structures.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>label_group</strong> (<a class="reference internal" href="#otx.api.entities.label_schema.LabelGroup" title="otx.api.entities.label_schema.LabelGroup"><em>LabelGroup</em></a>) – label group to append</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.label_schema.LabelSchemaEntity.are_exclusive">
+<span class="sig-name descname"><span class="pre">are_exclusive</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">label2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label_schema.html#LabelSchemaEntity.are_exclusive"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label_schema.LabelSchemaEntity.are_exclusive" title="Permalink to this definition"></a></dt>
+<dd><p>Returns whether <cite>label</cite> and <cite>label2</cite> are mutually exclusive.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.label_schema.LabelSchemaEntity.get_children">
+<span class="sig-name descname"><span class="pre">get_children</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label_schema.html#LabelSchemaEntity.get_children"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label_schema.LabelSchemaEntity.get_children" title="Permalink to this definition"></a></dt>
+<dd><p>Return a list of the children of the passed parent Label.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.label_schema.LabelSchemaEntity.get_siblings_in_group">
+<span class="sig-name descname"><span class="pre">get_siblings_in_group</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label_schema.html#LabelSchemaEntity.get_siblings_in_group"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label_schema.LabelSchemaEntity.get_siblings_in_group" title="Permalink to this definition"></a></dt>
+<dd><p>Return a list of the ‘siblings’, which are all labels within the same group as a label.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.label_schema.LabelSchemaEntity.get_descendants">
+<span class="sig-name descname"><span class="pre">get_descendants</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label_schema.html#LabelSchemaEntity.get_descendants"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label_schema.LabelSchemaEntity.get_descendants" title="Permalink to this definition"></a></dt>
+<dd><p>Returns descendants (children and children of children, etc.) of <cite>parent</cite>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.label_schema.LabelSchemaEntity.get_ancestors">
+<span class="sig-name descname"><span class="pre">get_ancestors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label_schema.html#LabelSchemaEntity.get_ancestors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label_schema.LabelSchemaEntity.get_ancestors" title="Permalink to this definition"></a></dt>
+<dd><p>Returns ancestors of <cite>label</cite>, including self.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.label_schema.LabelSchemaEntity.get_group_containing_label">
+<span class="sig-name descname"><span class="pre">get_group_containing_label</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#otx.api.entities.label_schema.LabelGroup" title="otx.api.entities.label_schema.LabelGroup"><span class="pre">LabelGroup</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label_schema.html#LabelSchemaEntity.get_group_containing_label"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label_schema.LabelSchemaEntity.get_group_containing_label" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the label group which contains the label.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>label</strong> (<a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><em>LabelEntity</em></a>) – the query label</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the group containing the label</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Optional[<a class="reference internal" href="#otx.api.entities.label_schema.LabelGroup" title="otx.api.entities.label_schema.LabelGroup">LabelGroup</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.label_schema.LabelSchemaEntity.get_labels_exclusive_to">
+<span class="sig-name descname"><span class="pre">get_labels_exclusive_to</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label_schema.html#LabelSchemaEntity.get_labels_exclusive_to"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label_schema.LabelSchemaEntity.get_labels_exclusive_to" title="Permalink to this definition"></a></dt>
+<dd><p>Returns a list of labels that are exclusive to the passed label.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.label_schema.LabelSchemaEntity.__get_exclusivity_recursion">
+<span class="sig-name descname"><span class="pre">__get_exclusivity_recursion</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_empty</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label_schema.html#LabelSchemaEntity.__get_exclusivity_recursion"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label_schema.LabelSchemaEntity.__get_exclusivity_recursion" title="Permalink to this definition"></a></dt>
+<dd><p>Recursively computes all labels exclusive to a non-empty label.</p>
+<dl class="simple">
+<dt>A label is exclusive with:</dt><dd><ul class="simple">
+<li><p>All labels in the same group</p></li>
+<li><p>All children of labels in the same group</p></li>
+<li><p>All labels in the same group as any of the label’s ancestors</p></li>
+<li><p>All children of labels in the same group as any of the label’s ancestors</p></li>
+<li><p>All empty labels that are not descendants of the label</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>label</strong> (<a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><em>LabelEntity</em></a>) – The label to get exclusive labels for</p></li>
+<li><p><strong>add_empty</strong> (<em>bool</em>) – If set to True, adds all empty labels that are
+not descendants of the label. This is only</p></li>
+</ul>
+</dd>
+</dl>
+<p>needed for the first recursion iteration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>List of labels exclusive to the label.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>List[<a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity">LabelEntity</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.label_schema.LabelSchemaEntity.__get_exclusivity_for_empty_label">
+<span class="sig-name descname"><span class="pre">__get_exclusivity_for_empty_label</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label_schema.html#LabelSchemaEntity.__get_exclusivity_for_empty_label"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label_schema.LabelSchemaEntity.__get_exclusivity_for_empty_label" title="Permalink to this definition"></a></dt>
+<dd><p>Get the labels exclusive to an empty label.</p>
+<p>For an empty label, all labels are exclusive to it except it’s ancestors.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>label</strong> (<a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><em>LabelEntity</em></a>) – empty Label to get exclusive labels for</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>List of Labels exclusive to the Label</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>List[<a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity">LabelEntity</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.label_schema.LabelSchemaEntity.__get_label">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">__get_label</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../scored_label/index.html#otx.api.entities.scored_label.ScoredLabel" title="otx.api.entities.scored_label.ScoredLabel"><span class="pre">otx.api.entities.scored_label.ScoredLabel</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label_schema.html#LabelSchemaEntity.__get_label"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label_schema.LabelSchemaEntity.__get_label" title="Permalink to this definition"></a></dt>
+<dd><p>Returns Label object from possibly non-label object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>label</strong> (<em>Union</em><em>[</em><a class="reference internal" href="../scored_label/index.html#otx.api.entities.scored_label.ScoredLabel" title="otx.api.entities.scored_label.ScoredLabel"><em>ScoredLabel</em></a><em>, </em><a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><em>LabelEntity</em></a><em>]</em>) – label to get Label object for</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Label object</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity">LabelEntity</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.label_schema.LabelSchemaEntity.__repr__">
+<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label_schema.html#LabelSchemaEntity.__repr__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label_schema.LabelSchemaEntity.__repr__" title="Permalink to this definition"></a></dt>
+<dd><p>String representation of LabelSchemaEntity.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.label_schema.LabelSchemaEntity.__eq__">
+<span class="sig-name descname"><span class="pre">__eq__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label_schema.html#LabelSchemaEntity.__eq__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label_schema.LabelSchemaEntity.__eq__" title="Permalink to this definition"></a></dt>
+<dd><p>Returns whether two LabelSchemaEntities are equal.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.label_schema.LabelSchemaEntity.from_labels">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_labels</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#otx.api.entities.label_schema.LabelSchemaEntity" title="otx.api.entities.label_schema.LabelSchemaEntity"><span class="pre">LabelSchemaEntity</span></a></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label_schema.html#LabelSchemaEntity.from_labels"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label_schema.LabelSchemaEntity.from_labels" title="Permalink to this definition"></a></dt>
+<dd><p>Create LabelSchemaEntity from a list of exclusive labels.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>labels</strong> (<em>Sequence</em><em>[</em><a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><em>LabelEntity</em></a><em>]</em>) – list of labels</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>LabelSchemaEntity from the given labels</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.label_schema.LabelSchemaEntity.resolve_labels_probabilistic">
+<span class="sig-name descname"><span class="pre">resolve_labels_probabilistic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scored_labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../scored_label/index.html#otx.api.entities.scored_label.ScoredLabel" title="otx.api.entities.scored_label.ScoredLabel"><span class="pre">otx.api.entities.scored_label.ScoredLabel</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">selected_labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../scored_label/index.html#otx.api.entities.scored_label.ScoredLabel" title="otx.api.entities.scored_label.ScoredLabel"><span class="pre">otx.api.entities.scored_label.ScoredLabel</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label_schema.html#LabelSchemaEntity.resolve_labels_probabilistic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label_schema.LabelSchemaEntity.resolve_labels_probabilistic" title="Permalink to this definition"></a></dt>
+<dd><p>Resolves hierarchical labels and exclusivity based on a list of ScoredLabels (labels with probability).</p>
+<p>The following two steps are taken:</p>
+<ul class="simple">
+<li><p>selects the most likely label from an exclusive (multiclass) group</p></li>
+<li><p>removes children of “not-most-likely” (non-max) parents in an exclusive group (top-down approach)</p></li>
+</ul>
+<p>The method is intended to post-process the output of probabilistic systems such as predictions coming from
+machine learning methods to resolve ambiguities and logical impossibilities. When processing (non-probabilistic)
+user input please use <cite>complete_labels</cite> instead.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>scored_labels</strong> (<em>List</em><em>[</em><a class="reference internal" href="../scored_label/index.html#otx.api.entities.scored_label.ScoredLabel" title="otx.api.entities.scored_label.ScoredLabel"><em>ScoredLabel</em></a><em>]</em>) – a list of ScoredLabels (labels with
+probability)</p></li>
+<li><p><strong>selected_labels</strong> (<em>List</em><em>[</em><a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><em>LabelEntity</em></a><em>]</em>) – if not None, will only consider labels
+within <cite>selected_labels</cite> for resolving. Any other labels
+which have relations with selected_labels (e.g. parent),
+but are outside <cite>selected_labels</cite> are set to a default
+probability of 1.0</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.label_schema.LabelSchemaEntity.__resolve_labels_probabilistic">
+<span class="sig-name descname"><span class="pre">__resolve_labels_probabilistic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_to_probability</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">selected_labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../scored_label/index.html#otx.api.entities.scored_label.ScoredLabel" title="otx.api.entities.scored_label.ScoredLabel"><span class="pre">otx.api.entities.scored_label.ScoredLabel</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label_schema.html#LabelSchemaEntity.__resolve_labels_probabilistic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label_schema.LabelSchemaEntity.__resolve_labels_probabilistic" title="Permalink to this definition"></a></dt>
+<dd><p>Resolves hierarchical labels and exclusivity based on a probabilistic label output.</p>
+<ul class="simple">
+<li><p>selects the most likely (max) label from an exclusive group</p></li>
+<li><p>removes children of non-max parents in an exclusive group</p></li>
+</ul>
+<p>See <cite>resolve_labels_probabilistic</cite> for parameter descriptions</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>label_to_probability</strong> (<em>Dict</em><em>[</em><a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><em>LabelEntity</em></a><em>, </em><em>float</em><em>]</em>) – map from <cite>Label</cite> to float.</p></li>
+<li><p><strong>selected_labels</strong> (<em>Optional</em><em>[</em><em>Sequence</em><em>[</em><a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><em>LabelEntity</em></a><em>]</em><em>]</em>) – Subset of labels.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>List of ScoredLabels (labels with probability)</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>List[<a class="reference internal" href="../scored_label/index.html#otx.api.entities.scored_label.ScoredLabel" title="otx.api.entities.scored_label.ScoredLabel">ScoredLabel</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.label_schema.LabelSchemaEntity.__suppress_descendant_output">
+<span class="sig-name descname"><span class="pre">__suppress_descendant_output</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hard_classification</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label_schema.html#LabelSchemaEntity.__suppress_descendant_output"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label_schema.LabelSchemaEntity.__suppress_descendant_output" title="Permalink to this definition"></a></dt>
+<dd><p>Suppresses outputs in <cite>label_to_probability</cite>.</p>
+<p>Sets probability to 0.0 for descendants of parents that have 0 probability in <cite>hard_classification</cite>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.label_schema.LabelSchemaEntity.__resolve_exclusive_labels">
+<span class="sig-name descname"><span class="pre">__resolve_exclusive_labels</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_to_probability</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label_schema.html#LabelSchemaEntity.__resolve_exclusive_labels"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label_schema.LabelSchemaEntity.__resolve_exclusive_labels" title="Permalink to this definition"></a></dt>
+<dd><p>Resolve exclusive labels.</p>
+<p>For labels in <cite>label_to_probability</cite> sets labels that are most likely (maximum probability) in their exclusive
+group to 1.0 and other (non-max) labels to probability 0.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.label_schema.LabelSchemaEntity.__add_missing_ancestors">
+<span class="sig-name descname"><span class="pre">__add_missing_ancestors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label_to_probability</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">selected_labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/label_schema.html#LabelSchemaEntity.__add_missing_ancestors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.label_schema.LabelSchemaEntity.__add_missing_ancestors" title="Permalink to this definition"></a></dt>
+<dd><p>Adds missing ancestors (of the same task) to the <cite>label_to_probability</cite> map.</p>
+<p>Missing ancestors get probability <cite>probability</cite></p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, OpenVINO Training Extensions Contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,24 @@
+:py:mod:`otx.api.usecases`
+==========================
+
+.. py:module:: otx.api.usecases
+
+.. autoapi-nested-parse::
+
+   Utilities and use cases built on top of OTX API.
+
+
+
+Subpackages
+-----------
+.. toctree::
+   :titlesonly:
+   :maxdepth: 3
+
+   adapters/index.rst
+   evaluation/index.rst
+   exportable_code/index.rst
+   reporting/index.rst
+   tasks/index.rst
+
+

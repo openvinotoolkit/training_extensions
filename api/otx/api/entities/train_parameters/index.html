@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>otx.api.entities.train_parameters &mdash; OpenVINO Training Extensions  documentation</title>
+      <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../_static/jquery.js"></script>
+        <script src="../../../../../_static/underscore.js"></script>
+        <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../../../_static/doctools.js"></script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../../index.html" class="icon icon-home"> OpenVINO Training Extensions
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../index.html">OpenVINO Training Extensions</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li><code class="xref py py-mod docutils literal notranslate"><span class="pre">otx.api.entities.train_parameters</span></code></li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../../_sources/api/otx/api/entities/train_parameters/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-otx.api.entities.train_parameters">
+<span id="otx-api-entities-train-parameters"></span><h1><a class="reference internal" href="#module-otx.api.entities.train_parameters" title="otx.api.entities.train_parameters"><code class="xref py py-mod docutils literal notranslate"><span class="pre">otx.api.entities.train_parameters</span></code></a><a class="headerlink" href="#module-otx.api.entities.train_parameters" title="Permalink to this heading"></a></h1>
+<p>This module implements the TrainingParameters entity.</p>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this heading"></a></h2>
+<section id="classes">
+<h3>Classes<a class="headerlink" href="#classes" title="Permalink to this heading"></a></h3>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.api.entities.train_parameters.UpdateProgressCallback" title="otx.api.entities.train_parameters.UpdateProgressCallback"><code class="xref py py-obj docutils literal notranslate"><span class="pre">UpdateProgressCallback</span></code></a></p></td>
+<td><p>UpdateProgressCallback protocol.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.api.entities.train_parameters.TrainParameters" title="otx.api.entities.train_parameters.TrainParameters"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TrainParameters</span></code></a></p></td>
+<td><p>Train parameters.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="functions">
+<h3>Functions<a class="headerlink" href="#functions" title="Permalink to this heading"></a></h3>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.api.entities.train_parameters.default_progress_callback" title="otx.api.entities.train_parameters.default_progress_callback"><code class="xref py py-obj docutils literal notranslate"><span class="pre">default_progress_callback</span></code></a>(progress[, score])</p></td>
+<td><p>Default progress callback. It is a placeholder (does nothing) and is used in empty TrainParameters.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.api.entities.train_parameters.default_save_model_callback" title="otx.api.entities.train_parameters.default_save_model_callback"><code class="xref py py-obj docutils literal notranslate"><span class="pre">default_save_model_callback</span></code></a>()</p></td>
+<td><p>Default save model callback. It is a placeholder (does nothing) and is used in empty TrainParameters.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.api.entities.train_parameters.UpdateProgressCallback">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.train_parameters.</span></span><span class="sig-name descname"><span class="pre">UpdateProgressCallback</span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/train_parameters.html#UpdateProgressCallback"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.train_parameters.UpdateProgressCallback" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">Protocol</span></code></p>
+<p>UpdateProgressCallback protocol.</p>
+<p>Used as a replacement of Callable[] type since Callable doesn’t handle default parameters like
+<cite>score: Optional[float] = None</cite></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.train_parameters.UpdateProgressCallback.__call__">
+<span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">score</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/otx/api/entities/train_parameters.html#UpdateProgressCallback.__call__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.train_parameters.UpdateProgressCallback.__call__" title="Permalink to this definition"></a></dt>
+<dd><p>Callback to provide updates about the progress of a task.</p>
+<p>It is recommended to call this function at least once per epoch.
+However, the exact frequency is left to the task implementer.</p>
+<p>An optional <cite>score</cite> can also be passed. If specified, this score can be used by HPO
+to monitor the improvement of the task.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>progress</strong> – Progress as a percentage</p></li>
+<li><p><strong>score</strong> – Optional validation score</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.api.entities.train_parameters.default_progress_callback">
+<span class="sig-prename descclassname"><span class="pre">otx.api.entities.train_parameters.</span></span><span class="sig-name descname"><span class="pre">default_progress_callback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">score</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/otx/api/entities/train_parameters.html#default_progress_callback"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.train_parameters.default_progress_callback" title="Permalink to this definition"></a></dt>
+<dd><p>Default progress callback. It is a placeholder (does nothing) and is used in empty TrainParameters.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.api.entities.train_parameters.default_save_model_callback">
+<span class="sig-prename descclassname"><span class="pre">otx.api.entities.train_parameters.</span></span><span class="sig-name descname"><span class="pre">default_save_model_callback</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/otx/api/entities/train_parameters.html#default_save_model_callback"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.train_parameters.default_save_model_callback" title="Permalink to this definition"></a></dt>
+<dd><p>Default save model callback. It is a placeholder (does nothing) and is used in empty TrainParameters.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.api.entities.train_parameters.TrainParameters">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.train_parameters.</span></span><span class="sig-name descname"><span class="pre">TrainParameters</span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/train_parameters.html#TrainParameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.train_parameters.TrainParameters" title="Permalink to this definition"></a></dt>
+<dd><p>Train parameters.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.entities.train_parameters.TrainParameters.resume">
+<span class="sig-name descname"><span class="pre">resume</span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/train_parameters.html#TrainParameters.resume"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.train_parameters.TrainParameters.resume" title="Permalink to this definition"></a></dt>
+<dd><p>Set to <code class="docutils literal notranslate"><span class="pre">True</span></code> if training must be resume with the
+optimizer state; set to <code class="docutils literal notranslate"><span class="pre">False</span></code> to discard the optimizer
+state and start with fresh optimizer</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.entities.train_parameters.TrainParameters.update_progress">
+<span class="sig-name descname"><span class="pre">update_progress</span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/train_parameters.html#TrainParameters.update_progress"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.train_parameters.TrainParameters.update_progress" title="Permalink to this definition"></a></dt>
+<dd><p>Callback which can be used to provide updates
+about the progress of a task.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.entities.train_parameters.TrainParameters.save_model">
+<span class="sig-name descname"><span class="pre">save_model</span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/train_parameters.html#TrainParameters.save_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.train_parameters.TrainParameters.save_model" title="Permalink to this definition"></a></dt>
+<dd><p>Callback to notify that the model weights have been
+changed. This callback can be used by the task when
+temporary weights should be saved (for instance, at the end
+of an epoch). If this callback has been used to save
+temporary weights, those weights will be used to resume
+training if for some reason training was suspended.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id0">
+<span class="sig-name descname"><span class="pre">resume</span></span><em class="property"><span class="w"> </span><span class="pre">:bool</span> <span class="pre">=</span> <span class="pre">False</span></em><a class="reference internal" href="../../../../../_modules/otx/api/entities/train_parameters.html#TrainParameters.resume"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id0" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id1">
+<span class="sig-name descname"><span class="pre">update_progress</span></span><em class="property"><span class="w"> </span><span class="pre">:Callable[[int,</span> <span class="pre">Optional[float]],</span> <span class="pre">Any]</span></em><a class="reference internal" href="../../../../../_modules/otx/api/entities/train_parameters.html#TrainParameters.update_progress"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id1" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id2">
+<span class="sig-name descname"><span class="pre">save_model</span></span><em class="property"><span class="w"> </span><span class="pre">:Callable[[],</span> <span class="pre">None]</span></em><a class="reference internal" href="../../../../../_modules/otx/api/entities/train_parameters.html#TrainParameters.save_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id2" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, OpenVINO Training Extensions Contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

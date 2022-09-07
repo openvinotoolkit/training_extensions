@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>otx.api.entities.resultset &mdash; OpenVINO Training Extensions  documentation</title>
+      <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../_static/jquery.js"></script>
+        <script src="../../../../../_static/underscore.js"></script>
+        <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../../../_static/doctools.js"></script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../../index.html" class="icon icon-home"> OpenVINO Training Extensions
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../index.html">OpenVINO Training Extensions</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li><code class="xref py py-mod docutils literal notranslate"><span class="pre">otx.api.entities.resultset</span></code></li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../../_sources/api/otx/api/entities/resultset/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-otx.api.entities.resultset">
+<span id="otx-api-entities-resultset"></span><h1><a class="reference internal" href="#module-otx.api.entities.resultset" title="otx.api.entities.resultset"><code class="xref py py-mod docutils literal notranslate"><span class="pre">otx.api.entities.resultset</span></code></a><a class="headerlink" href="#module-otx.api.entities.resultset" title="Permalink to this heading"></a></h1>
+<p>This module implements the ResultSet entity.</p>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this heading"></a></h2>
+<section id="classes">
+<h3>Classes<a class="headerlink" href="#classes" title="Permalink to this heading"></a></h3>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.api.entities.resultset.ResultsetPurpose" title="otx.api.entities.resultset.ResultsetPurpose"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ResultsetPurpose</span></code></a></p></td>
+<td><p>This defines the purpose of the resultset.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.api.entities.resultset.ResultSetEntity" title="otx.api.entities.resultset.ResultSetEntity"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ResultSetEntity</span></code></a></p></td>
+<td><p>ResultsetEntity.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.api.entities.resultset.ResultsetPurpose">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.resultset.</span></span><span class="sig-name descname"><span class="pre">ResultsetPurpose</span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/resultset.html#ResultsetPurpose"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.resultset.ResultsetPurpose" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">enum.Enum</span></code></p>
+<p>This defines the purpose of the resultset.</p>
+<p>EVALUATION denotes resultsets generated at Evaluation stage on validation subset.</p>
+<p>TEST denotes resultsets generated at Evaluation stage on test subset.</p>
+<p>PREEVALUATION denotes resultsets generated at Preevaluation stage (e.g., train from
+scratch) onn validation subset.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.entities.resultset.ResultsetPurpose.EVALUATION">
+<span class="sig-name descname"><span class="pre">EVALUATION</span></span><em class="property"><span class="w"> </span><span class="pre">=</span> <span class="pre">0</span></em><a class="reference internal" href="../../../../../_modules/otx/api/entities/resultset.html#ResultsetPurpose.EVALUATION"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.resultset.ResultsetPurpose.EVALUATION" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.entities.resultset.ResultsetPurpose.TEST">
+<span class="sig-name descname"><span class="pre">TEST</span></span><em class="property"><span class="w"> </span><span class="pre">=</span> <span class="pre">1</span></em><a class="reference internal" href="../../../../../_modules/otx/api/entities/resultset.html#ResultsetPurpose.TEST"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.resultset.ResultsetPurpose.TEST" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.entities.resultset.ResultsetPurpose.PREEVALUATION">
+<span class="sig-name descname"><span class="pre">PREEVALUATION</span></span><em class="property"><span class="w"> </span><span class="pre">=</span> <span class="pre">2</span></em><a class="reference internal" href="../../../../../_modules/otx/api/entities/resultset.html#ResultsetPurpose.PREEVALUATION"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.resultset.ResultsetPurpose.PREEVALUATION" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.resultset.ResultsetPurpose.__repr__">
+<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/otx/api/entities/resultset.html#ResultsetPurpose.__repr__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.resultset.ResultsetPurpose.__repr__" title="Permalink to this definition"></a></dt>
+<dd><p>Returns ResultsetPurpose as a string.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.resultset.ResultsetPurpose.__str__">
+<span class="sig-name descname"><span class="pre">__str__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/otx/api/entities/resultset.html#ResultsetPurpose.__str__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.resultset.ResultsetPurpose.__str__" title="Permalink to this definition"></a></dt>
+<dd><p>Returns a user friendly representation of the ResultSetPurpose.</p>
+<p>This that can be used for instance in a progress reporting message.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.api.entities.resultset.ResultSetEntity">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.resultset.</span></span><span class="sig-name descname"><span class="pre">ResultSetEntity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../model/index.html#otx.api.entities.model.ModelEntity" title="otx.api.entities.model.ModelEntity"><span class="pre">otx.api.entities.model.ModelEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">ground_truth_dataset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../datasets/index.html#otx.api.entities.datasets.DatasetEntity" title="otx.api.entities.datasets.DatasetEntity"><span class="pre">otx.api.entities.datasets.DatasetEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">prediction_dataset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../datasets/index.html#otx.api.entities.datasets.DatasetEntity" title="otx.api.entities.datasets.DatasetEntity"><span class="pre">otx.api.entities.datasets.DatasetEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">purpose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.entities.resultset.ResultsetPurpose" title="otx.api.entities.resultset.ResultsetPurpose"><span class="pre">ResultsetPurpose</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">ResultsetPurpose.EVALUATION</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">performance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../metrics/index.html#otx.api.entities.metrics.Performance" title="otx.api.entities.metrics.Performance"><span class="pre">otx.api.entities.metrics.Performance</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">creation_date</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">datetime.datetime</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../id/index.html#otx.api.entities.id.ID" title="otx.api.entities.id.ID"><span class="pre">otx.api.entities.id.ID</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/otx/api/entities/resultset.html#ResultSetEntity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.resultset.ResultSetEntity" title="Permalink to this definition"></a></dt>
+<dd><p>ResultsetEntity.</p>
+<dl class="simple">
+<dt>It aggregates:</dt><dd><ul class="simple">
+<li><p>the dataset containing ground truth (based on user annotations)</p></li>
+<li><p>the dataset containing predictions for the above ground truth dataset</p></li>
+</ul>
+</dd>
+</dl>
+<p>In addition, it links to the model which computed the predictions, as well as the performance of this model on the
+ground truth dataset.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> – the model using which the prediction_dataset has been
+generated</p></li>
+<li><p><strong>ground_truth_dataset</strong> – the dataset containing ground truth
+annotation</p></li>
+<li><p><strong>prediction_dataset</strong> – the dataset containing prediction</p></li>
+<li><p><strong>purpose</strong> – see <a class="reference internal" href="#otx.api.entities.resultset.ResultsetPurpose" title="otx.api.entities.resultset.ResultsetPurpose"><code class="xref py py-class docutils literal notranslate"><span class="pre">ResultsetPurpose</span></code></a></p></li>
+<li><p><strong>performance</strong> – the performance of the model on the ground truth
+dataset</p></li>
+<li><p><strong>creation_date</strong> – the date time which the resultset is created. Set
+to None to set this to</p></li>
+<li><p><strong>id</strong> – the id of the resultset. Set to ID() so that a new unique ID
+will be assigned upon saving. If the argument is None, it
+will be set to ID()</p></li>
+</ul>
+</dd>
+</dl>
+<p>datetime.now(datetime.timezone.utc)</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.resultset.ResultSetEntity.id_">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">id_</span></span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../id/index.html#otx.api.entities.id.ID" title="otx.api.entities.id.ID"><span class="pre">otx.api.entities.id.ID</span></a></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/resultset.html#ResultSetEntity.id_"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.resultset.ResultSetEntity.id_" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the id of the ResultSet.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.resultset.ResultSetEntity.id">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">id</span></span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../id/index.html#otx.api.entities.id.ID" title="otx.api.entities.id.ID"><span class="pre">otx.api.entities.id.ID</span></a></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/resultset.html#ResultSetEntity.id"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.resultset.ResultSetEntity.id" title="Permalink to this definition"></a></dt>
+<dd><p>DEPRECATED.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.resultset.ResultSetEntity.model">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">model</span></span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../model/index.html#otx.api.entities.model.ModelEntity" title="otx.api.entities.model.ModelEntity"><span class="pre">otx.api.entities.model.ModelEntity</span></a></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/resultset.html#ResultSetEntity.model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.resultset.ResultSetEntity.model" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the model that is used for the ResultSet.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.resultset.ResultSetEntity.prediction_dataset">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">prediction_dataset</span></span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../datasets/index.html#otx.api.entities.datasets.DatasetEntity" title="otx.api.entities.datasets.DatasetEntity"><span class="pre">otx.api.entities.datasets.DatasetEntity</span></a></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/resultset.html#ResultSetEntity.prediction_dataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.resultset.ResultSetEntity.prediction_dataset" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the prediction dataset that is used in the ResultSet.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.resultset.ResultSetEntity.ground_truth_dataset">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ground_truth_dataset</span></span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../datasets/index.html#otx.api.entities.datasets.DatasetEntity" title="otx.api.entities.datasets.DatasetEntity"><span class="pre">otx.api.entities.datasets.DatasetEntity</span></a></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/resultset.html#ResultSetEntity.ground_truth_dataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.resultset.ResultSetEntity.ground_truth_dataset" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the ground truth dataset that is used in the ResultSet.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.resultset.ResultSetEntity.performance">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">performance</span></span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../metrics/index.html#otx.api.entities.metrics.Performance" title="otx.api.entities.metrics.Performance"><span class="pre">otx.api.entities.metrics.Performance</span></a></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/resultset.html#ResultSetEntity.performance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.resultset.ResultSetEntity.performance" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the performance of the model on the ground truth dataset.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.resultset.ResultSetEntity.purpose">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">purpose</span></span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#otx.api.entities.resultset.ResultsetPurpose" title="otx.api.entities.resultset.ResultsetPurpose"><span class="pre">ResultsetPurpose</span></a></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/resultset.html#ResultSetEntity.purpose"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.resultset.ResultSetEntity.purpose" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the purpose of the ResultSet, for example ResultSetPurpose.EVALUATION.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.resultset.ResultSetEntity.creation_date">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">creation_date</span></span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">datetime.datetime</span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/resultset.html#ResultSetEntity.creation_date"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.resultset.ResultSetEntity.creation_date" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the creation date of the ResultSet.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.resultset.ResultSetEntity.has_score_metric">
+<span class="sig-name descname"><span class="pre">has_score_metric</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/resultset.html#ResultSetEntity.has_score_metric"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.resultset.ResultSetEntity.has_score_metric" title="Permalink to this definition"></a></dt>
+<dd><p>Returns True if the resultset contains non-null performance and score value.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.resultset.ResultSetEntity.__repr__">
+<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/otx/api/entities/resultset.html#ResultSetEntity.__repr__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.resultset.ResultSetEntity.__repr__" title="Permalink to this definition"></a></dt>
+<dd><p>String representation of the resultset.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, OpenVINO Training Extensions Contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

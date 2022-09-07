@@ -1,0 +1,20 @@
+:py:mod:`otx.algorithms.anomaly.adapters`
+=========================================
+
+.. py:module:: otx.algorithms.anomaly.adapters
+
+.. autoapi-nested-parse::
+
+   Adapters for Anomalib.
+
+
+
+Subpackages
+-----------
+.. toctree::
+   :titlesonly:
+   :maxdepth: 3
+
+   anomalib/index.rst
+
+

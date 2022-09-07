@@ -1,0 +1,119 @@
+:py:mod:`otx.api.configuration.enums.config_element_type`
+=========================================================
+
+.. py:module:: otx.api.configuration.enums.config_element_type
+
+.. autoapi-nested-parse::
+
+   Enums for configuration element types used to construct/interact with OTX configuration objects.
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   otx.api.configuration.enums.config_element_type.ElementCategory
+   otx.api.configuration.enums.config_element_type.ConfigElementType
+
+
+
+
+.. py:class:: ElementCategory
+
+   Bases: :py:obj:`enum.Enum`
+
+   This Enum represents the categories of configuration elements that are known in OTX.
+
+   .. py:attribute:: PRIMITIVES
+      
+
+      
+
+   .. py:attribute:: GROUPS
+      
+
+      
+
+   .. py:attribute:: RULES
+      
+
+      
+
+   .. py:method:: __str__()
+
+      Retrieves the string representation of an instance of the Enum.
+
+
+
+.. py:class:: ConfigElementType(value: int, category: ElementCategory)
+
+   Bases: :py:obj:`enum.Enum`
+
+   This Enum represents the available elements to compose a configuration.
+
+   Each instance holds a name, value and category representing a configuration element.
+
+   .. py:attribute:: INTEGER
+      
+
+      
+
+   .. py:attribute:: FLOAT
+      
+
+      
+
+   .. py:attribute:: BOOLEAN
+      
+
+      
+
+   .. py:attribute:: FLOAT_SELECTABLE
+      
+
+      
+
+   .. py:attribute:: SELECTABLE
+      
+
+      
+
+   .. py:attribute:: PARAMETER_GROUP
+      
+
+      
+
+   .. py:attribute:: CONFIGURABLE_PARAMETERS
+      
+
+      
+
+   .. py:attribute:: RULE
+      
+
+      
+
+   .. py:attribute:: UI_RULES
+      
+
+      
+
+   .. py:method:: category() -> ElementCategory
+      :property:
+
+      Returns the element category which the ConfigElementType belongs to.
+
+      Categories are instances of the `otx.api.configuration.configuration_types.ElementCategory` Enum.
+
+
+   .. py:method:: __str__()
+
+      Retrieves the string representation of an instance of the Enum.
+
+
+

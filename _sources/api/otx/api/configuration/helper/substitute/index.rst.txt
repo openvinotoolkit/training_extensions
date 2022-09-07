@@ -1,0 +1,122 @@
+:py:mod:`otx.api.configuration.helper.substitute`
+=================================================
+
+.. py:module:: otx.api.configuration.helper.substitute
+
+.. autoapi-nested-parse::
+
+   Definitions for `substitute_values` and `substitute_values_for_lifecycle` functions within the configuration helper.
+
+   These functions can be used to update values or ids in a OTX configuration object, according to a value dictionary or
+   configuration object
+
+
+
+Module Contents
+---------------
+
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   otx.api.configuration.helper.substitute._should_parameter_be_updated
+   otx.api.configuration.helper.substitute._substitute
+   otx.api.configuration.helper.substitute.substitute_values
+   otx.api.configuration.helper.substitute.substitute_values_for_lifecycle
+
+
+
+.. py:function:: _should_parameter_be_updated(config_element: otx.api.configuration.elements.ParameterGroup, parameter_name: str, model_lifecycle: Optional[Union[Sequence[otx.api.configuration.enums.ModelLifecycle], otx.api.configuration.enums.ModelLifecycle]]) -> bool
+
+   Check if parameter should be updated.
+
+   Checks whether a parameter `parameter_name` belonging to a ParameterGroup
+   `config_element` fullfills the criterion for updating it's value, giving in
+   `model_lifecycle`.
+
+   config_element (ParameterGroup): ParameterGroup which the parameter belongs to
+   parameter_name (str): Name of the parameter
+   model_lifecycle (Optional[Union[Sequence[ModelLifecycle], ModelLifecycle]]):
+       Phase or list of phases of the model lifecycle which the parameter should
+       affect in order to update it.
+
+   :returns: True if the parameter should be updated, False otherwise
+   :rtype: bool
+
+
+.. py:function:: _substitute(config: otx.api.configuration.configurable_parameters.ConfigurableParameters, value_input: Dict, allow_missing_values: bool = False, model_lifecycle: Optional[Union[otx.api.configuration.enums.ModelLifecycle, Sequence[otx.api.configuration.enums.ModelLifecycle]]] = None)
+
+   Substitutes values from value_input into the config object.
+
+   The structures of value_input and config have to match in order for the values to be substituted
+   correctly. If the argument `model_lifecycle` is provided, only parameters that
+   affect the specified phase in the model lifecycle will be substituted.
+
+   Values are substituted in place.
+
+   :param config: ConfigurableParameter object to substitute values into.
+   :type config: ConfigurableParameters
+   :param value_input: ConfigurableParameters (either in object, dict, yaml or DictConfig representation) to take
+                       the values to be substituted from.
+   :type value_input: Dict
+   :param allow_missing_values: True to allow missing values in the configuration, i.e. if a value is found in
+                                `value_input`, but not in `config`, it will silently be ignored. If set to False, an AttributeError will be
+                                raised. Defaults to False.
+   :type allow_missing_values: bool
+   :param model_lifecycle: Optional phase or list of phases
+                           in the model lifecycle to carry out the substitution for. If no `model_lifecycle` is provided, substitution
+                           will be carried out for all parameters.
+   :type model_lifecycle: Optional[Union[ModelLifecycle, Sequence[ModelLifecycle]]]
+
+
+.. py:function:: substitute_values(config: otx.api.configuration.configurable_parameters.ConfigurableParameters, value_input: Union[str, omegaconf.DictConfig, dict, otx.api.configuration.configurable_parameters.ConfigurableParameters], allow_missing_values: bool = False)
+
+   Substitutes values from value_input into the config object.
+
+   The structures of value_input and config have to match in order for the values to be substituted
+   correctly.
+
+   Values are substituted in place.
+
+   :param config: ConfigurableParameter object to substitute values into.
+   :type config: ConfigurableParameters
+   :param value_input: ConfigurableParameters (either in object,
+                       dict, yaml or DictConfig representation) to take the values to be substituted from.
+   :type value_input: Union[str, DictConfig, dict, ConfigurableParameters]
+   :param allow_missing_values: True to allow missing values in the configuration,
+                                i.e. if a value is found in `value_input`, but not in `config`, it will
+                                silently be ignored. If set to False, an AttributeError will be
+                                raised. Defaults to False.
+   :type allow_missing_values: bool
+
+
+.. py:function:: substitute_values_for_lifecycle(config: otx.api.configuration.configurable_parameters.ConfigurableParameters, value_input: otx.api.configuration.configurable_parameters.ConfigurableParameters, model_lifecycle: Union[otx.api.configuration.enums.ModelLifecycle, Sequence[otx.api.configuration.enums.ModelLifecycle]], allow_missing_values: bool = True)
+
+   Substitutes values from value_input into the config object.
+
+   The structures of value_input and config have to match in order for the values to be substituted correctly.
+   If the argument `model_lifecycle` is provided, only parameters that affect the specified phase in the model
+   lifecycle will be substituted.
+
+   Values are substituted in place.
+
+   :param config: ConfigurableParameter object to substitute values into
+   :type config: ConfigurableParameters
+   :param value_input: ConfigurableParameters to take the values to be substituted
+                       from.
+   :type value_input: ConfigurableParameters
+   :param model_lifecycle: Phase or list of phases in the
+                           model lifecycle to carry out the substitution for. For example, if
+                           `model_lifecycle = ModelLifecycle.INFERENCE` is passed, only parameters that
+                           affect inference will be updated, and the rest of the parameters will
+                           remain untouched.
+   :type model_lifecycle: Union[ModelLifecycle, Sequence[ModelLifecycle]]
+   :param allow_missing_values: True to allow missing values in the configuration,
+                                i.e. if a value is found in `value_input`, but not in `config`, it will
+                                silently be ignored. If set to False, an AttributeError will be
+                                raised. Defaults to True.
+   :type allow_missing_values: bool
+
+

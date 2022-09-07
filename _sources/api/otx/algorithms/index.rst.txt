@@ -1,0 +1,20 @@
+:py:mod:`otx.algorithms`
+========================
+
+.. py:module:: otx.algorithms
+
+.. autoapi-nested-parse::
+
+   OTX Algorithms.
+
+
+
+Subpackages
+-----------
+.. toctree::
+   :titlesonly:
+   :maxdepth: 3
+
+   anomaly/index.rst
+
+

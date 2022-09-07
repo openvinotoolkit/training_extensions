@@ -1,0 +1,261 @@
+:py:mod:`otx.api.utils.argument_checks`
+=======================================
+
+.. py:module:: otx.api.utils.argument_checks
+
+.. autoapi-nested-parse::
+
+   Utils for checking functions and methods arguments.
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   otx.api.utils.argument_checks.BaseInputArgumentChecker
+   otx.api.utils.argument_checks.InputConfigCheck
+   otx.api.utils.argument_checks.FilePathCheck
+   otx.api.utils.argument_checks.OptionalFilePathCheck
+   otx.api.utils.argument_checks.DatasetParamTypeCheck
+   otx.api.utils.argument_checks.OptionalImageFilePathCheck
+   otx.api.utils.argument_checks.YamlFilePathCheck
+   otx.api.utils.argument_checks.JsonFilePathCheck
+   otx.api.utils.argument_checks.DirectoryPathCheck
+   otx.api.utils.argument_checks.OptionalDirectoryPathCheck
+
+
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   otx.api.utils.argument_checks.get_bases
+   otx.api.utils.argument_checks.get_parameter_repr
+   otx.api.utils.argument_checks.raise_value_error_if_parameter_has_unexpected_type
+   otx.api.utils.argument_checks.check_nested_elements_type
+   otx.api.utils.argument_checks.check_dictionary_keys_values_type
+   otx.api.utils.argument_checks.check_nested_classes_parameters
+   otx.api.utils.argument_checks.check_parameter_type
+   otx.api.utils.argument_checks.check_input_parameters_type
+   otx.api.utils.argument_checks.check_file_extension
+   otx.api.utils.argument_checks.check_that_null_character_absents_in_string
+   otx.api.utils.argument_checks.check_that_file_exists
+   otx.api.utils.argument_checks.check_that_parameter_is_not_empty
+   otx.api.utils.argument_checks.check_that_all_characters_printable
+   otx.api.utils.argument_checks.check_is_parameter_like_dataset
+   otx.api.utils.argument_checks.check_file_path
+   otx.api.utils.argument_checks.check_directory_path
+
+
+
+Attributes
+~~~~~~~~~~
+
+.. autoapisummary::
+
+   otx.api.utils.argument_checks.IMAGE_FILE_EXTENSIONS
+
+
+.. py:data:: IMAGE_FILE_EXTENSIONS
+   :annotation: = ['.bmp', '.dib', '.jpeg', '.jpg', '.jpe', '.jp2', '.png', '.webp', '.pbm', '.pgm', '.ppm',...
+
+   
+
+.. py:function:: get_bases(parameter) -> set
+
+   Function to get set of all base classes of parameter.
+
+
+.. py:function:: get_parameter_repr(parameter) -> str
+
+   Function to get parameter representation.
+
+
+.. py:function:: raise_value_error_if_parameter_has_unexpected_type(parameter, parameter_name, expected_type)
+
+   Function raises ValueError exception if parameter has unexpected type.
+
+
+.. py:function:: check_nested_elements_type(iterable, parameter_name, expected_type)
+
+   Function raises ValueError exception if one of elements in collection has unexpected type.
+
+
+.. py:function:: check_dictionary_keys_values_type(parameter, parameter_name, expected_key_class, expected_value_class)
+
+   Function raises ValueError exception if dictionary key or value has unexpected type.
+
+
+.. py:function:: check_nested_classes_parameters(parameter, parameter_name, origin_class, nested_elements_class)
+
+   Function to check type of parameters with nested elements.
+
+
+.. py:function:: check_parameter_type(parameter, parameter_name, expected_type)
+
+   Function extracts nested expected types and raises ValueError exception if parameter has unexpected type.
+
+
+.. py:function:: check_input_parameters_type(custom_checks: Optional[dict] = None)
+
+   Decorator to check input parameters type.
+
+   :param custom_checks: dictionary where key - name of parameter and
+                         value - custom check class
+
+
+.. py:function:: check_file_extension(file_path: str, file_path_name: str, expected_extensions: list)
+
+   Function raises ValueError exception if file has unexpected extension.
+
+
+.. py:function:: check_that_null_character_absents_in_string(parameter: str, parameter_name: str)
+
+   Function raises ValueError exception if null character: '\0' is specified in path to file.
+
+
+.. py:function:: check_that_file_exists(file_path: str, file_path_name: str)
+
+   Function raises ValueError exception if file not exists.
+
+
+.. py:function:: check_that_parameter_is_not_empty(parameter, parameter_name)
+
+   Function raises ValueError if parameter is empty.
+
+
+.. py:function:: check_that_all_characters_printable(parameter, parameter_name, allow_crlf=False)
+
+   Function raises ValueError if one of string-parameter characters is not printable.
+
+
+.. py:function:: check_is_parameter_like_dataset(parameter, parameter_name)
+
+   Checks if the parameter is like a dataset.
+
+   Function raises ValueError exception if parameter does not have __len__, __getitem__ and get_subset attributes of
+   DataSet-type object.
+
+
+.. py:function:: check_file_path(parameter, parameter_name, expected_file_extensions)
+
+   Function to check file path string objects.
+
+
+.. py:function:: check_directory_path(parameter, parameter_name)
+
+   Function to check directory path string objects.
+
+
+.. py:class:: BaseInputArgumentChecker
+
+   Bases: :py:obj:`abc.ABC`
+
+   Abstract class to check input arguments.
+
+   .. py:method:: check()
+      :abstractmethod:
+
+      Abstract method to check input arguments.
+
+
+
+.. py:class:: InputConfigCheck(parameter, parameter_name)
+
+   Bases: :py:obj:`BaseInputArgumentChecker`
+
+   Class to check input config_parameters.
+
+   .. py:method:: check()
+
+      Method raises ValueError exception if "input_config" parameter is not equal to expected.
+
+
+
+.. py:class:: FilePathCheck(parameter, parameter_name, expected_file_extension)
+
+   Bases: :py:obj:`BaseInputArgumentChecker`
+
+   Class to check file_path-like parameters.
+
+   .. py:method:: check()
+
+      Method raises ValueError exception if file path parameter is not equal to expected.
+
+
+
+.. py:class:: OptionalFilePathCheck(parameter, parameter_name, expected_file_extension)
+
+   Bases: :py:obj:`BaseInputArgumentChecker`
+
+   Class to check optional file_path-like parameters.
+
+   .. py:method:: check()
+
+      Method raises ValueError exception if file path parameter is not equal to expected.
+
+
+
+.. py:class:: DatasetParamTypeCheck(parameter, parameter_name)
+
+   Bases: :py:obj:`BaseInputArgumentChecker`
+
+   Class to check DatasetEntity-type parameters.
+
+   .. py:method:: check()
+
+      Method raises ValueError exception if parameter is not equal to Dataset.
+
+
+
+.. py:class:: OptionalImageFilePathCheck(parameter, parameter_name)
+
+   Bases: :py:obj:`OptionalFilePathCheck`
+
+   Class to check optional image file path parameters.
+
+
+.. py:class:: YamlFilePathCheck(parameter, parameter_name)
+
+   Bases: :py:obj:`FilePathCheck`
+
+   Class to check optional yaml file path parameters.
+
+
+.. py:class:: JsonFilePathCheck(parameter, parameter_name)
+
+   Bases: :py:obj:`FilePathCheck`
+
+   Class to check optional yaml file path parameters.
+
+
+.. py:class:: DirectoryPathCheck(parameter, parameter_name)
+
+   Bases: :py:obj:`BaseInputArgumentChecker`
+
+   Class to check directory path parameters.
+
+   .. py:method:: check()
+
+      Method raises ValueError exception if directory path parameter is not equal to expected.
+
+
+
+.. py:class:: OptionalDirectoryPathCheck(parameter, parameter_name)
+
+   Bases: :py:obj:`BaseInputArgumentChecker`
+
+   Class to check optional directory path parameters.
+
+   .. py:method:: check()
+
+      Method raises ValueError exception if directory path parameter is not equal to expected.
+
+
+

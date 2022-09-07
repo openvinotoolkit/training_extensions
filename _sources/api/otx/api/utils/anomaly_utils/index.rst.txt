@@ -1,0 +1,38 @@
+:py:mod:`otx.api.utils.anomaly_utils`
+=====================================
+
+.. py:module:: otx.api.utils.anomaly_utils
+
+.. autoapi-nested-parse::
+
+   Detection Utils.
+
+
+
+Module Contents
+---------------
+
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   otx.api.utils.anomaly_utils.create_detection_annotation_from_anomaly_heatmap
+
+
+
+.. py:function:: create_detection_annotation_from_anomaly_heatmap(hard_prediction: numpy.ndarray, soft_prediction: numpy.ndarray, label_map: Dict[int, otx.api.entities.label.LabelEntity]) -> List[otx.api.entities.annotation.Annotation]
+
+   Create box annotation from the soft predictions.
+
+   :param hard_prediction: hard prediction containing the final label
+                           index per pixel.
+   :param soft_prediction: soft prediction with shape
+   :param label_map: dictionary mapping labels to an index. It is assumed
+                     that the first item in the dictionary corresponds to the
+                     background label and will therefore be ignored.
+
+   :returns: List of annotations.
+
+

@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>otx.api.usecases.evaluation.basic_operations &mdash; OpenVINO Training Extensions  documentation</title>
+      <link rel="stylesheet" href="../../../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../../../" id="documentation_options" src="../../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../../_static/jquery.js"></script>
+        <script src="../../../../../../_static/underscore.js"></script>
+        <script src="../../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../../../../_static/doctools.js"></script>
+    <script src="../../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../../../index.html" class="icon icon-home"> OpenVINO Training Extensions
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../../index.html">OpenVINO Training Extensions</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li><code class="xref py py-mod docutils literal notranslate"><span class="pre">otx.api.usecases.evaluation.basic_operations</span></code></li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../../../_sources/api/otx/api/usecases/evaluation/basic_operations/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-otx.api.usecases.evaluation.basic_operations">
+<span id="otx-api-usecases-evaluation-basic-operations"></span><h1><a class="reference internal" href="#module-otx.api.usecases.evaluation.basic_operations" title="otx.api.usecases.evaluation.basic_operations"><code class="xref py py-mod docutils literal notranslate"><span class="pre">otx.api.usecases.evaluation.basic_operations</span></code></a><a class="headerlink" href="#module-otx.api.usecases.evaluation.basic_operations" title="Permalink to this heading"></a></h1>
+<p>This module contains functions for basic operations.</p>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this heading"></a></h2>
+<section id="functions">
+<h3>Functions<a class="headerlink" href="#functions" title="Permalink to this heading"></a></h3>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.api.usecases.evaluation.basic_operations.get_intersections_and_cardinalities" title="otx.api.usecases.evaluation.basic_operations.get_intersections_and_cardinalities"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_intersections_and_cardinalities</span></code></a>(...)</p></td>
+<td><p>Returns all intersections and cardinalities between reference masks and prediction masks.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.api.usecases.evaluation.basic_operations.intersection_box" title="otx.api.usecases.evaluation.basic_operations.intersection_box"><code class="xref py py-obj docutils literal notranslate"><span class="pre">intersection_box</span></code></a>(→ Optional[List[float]])</p></td>
+<td><p>Calculate the intersection box of two bounding boxes.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.api.usecases.evaluation.basic_operations.intersection_over_union" title="otx.api.usecases.evaluation.basic_operations.intersection_over_union"><code class="xref py py-obj docutils literal notranslate"><span class="pre">intersection_over_union</span></code></a>(→ float)</p></td>
+<td><p>Calculate the Intersection over Union (IoU) of two bounding boxes.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.api.usecases.evaluation.basic_operations.precision_per_class" title="otx.api.usecases.evaluation.basic_operations.precision_per_class"><code class="xref py py-obj docutils literal notranslate"><span class="pre">precision_per_class</span></code></a>(→ numpy.ndarray)</p></td>
+<td><p>Compute the precision per class based on the confusion matrix.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.api.usecases.evaluation.basic_operations.recall_per_class" title="otx.api.usecases.evaluation.basic_operations.recall_per_class"><code class="xref py py-obj docutils literal notranslate"><span class="pre">recall_per_class</span></code></a>(→ numpy.ndarray)</p></td>
+<td><p>Compute the recall per class based on the confusion matrix.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.api.usecases.evaluation.basic_operations.divide_arrays_with_possible_zeros" title="otx.api.usecases.evaluation.basic_operations.divide_arrays_with_possible_zeros"><code class="xref py py-obj docutils literal notranslate"><span class="pre">divide_arrays_with_possible_zeros</span></code></a>(→ numpy.ndarray)</p></td>
+<td><p>Sometimes the denominator in the precision or recall computation can contain a zero.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="attributes">
+<h3>Attributes<a class="headerlink" href="#attributes" title="Permalink to this heading"></a></h3>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.api.usecases.evaluation.basic_operations.NumberPerLabel" title="otx.api.usecases.evaluation.basic_operations.NumberPerLabel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NumberPerLabel</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py data">
+<dt class="sig sig-object py" id="otx.api.usecases.evaluation.basic_operations.NumberPerLabel">
+<span class="sig-prename descclassname"><span class="pre">otx.api.usecases.evaluation.basic_operations.</span></span><span class="sig-name descname"><span class="pre">NumberPerLabel</span></span><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/evaluation/basic_operations.html#NumberPerLabel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.evaluation.basic_operations.NumberPerLabel" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.api.usecases.evaluation.basic_operations.get_intersections_and_cardinalities">
+<span class="sig-prename descclassname"><span class="pre">otx.api.usecases.evaluation.basic_operations.</span></span><span class="sig-name descname"><span class="pre">get_intersections_and_cardinalities</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">references</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">predictions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../../entities/label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><span class="pre">otx.api.entities.label.LabelEntity</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">NumberPerLabel</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">NumberPerLabel</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/evaluation/basic_operations.html#get_intersections_and_cardinalities"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.evaluation.basic_operations.get_intersections_and_cardinalities" title="Permalink to this definition"></a></dt>
+<dd><p>Returns all intersections and cardinalities between reference masks and prediction masks.</p>
+<p>Intersections and cardinalities are each returned in a dictionary mapping each label to its corresponding
+number of intersection/cardinality pixels</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>references</strong> (<em>List</em><em>[</em><em>np.ndarray</em><em>]</em>) – reference masks,s one mask per image</p></li>
+<li><p><strong>predictions</strong> (<em>List</em><em>[</em><em>np.ndarray</em><em>]</em>) – prediction masks, one mask per image</p></li>
+<li><p><strong>labels</strong> (<em>List</em><em>[</em><a class="reference internal" href="../../../entities/label/index.html#otx.api.entities.label.LabelEntity" title="otx.api.entities.label.LabelEntity"><em>LabelEntity</em></a><em>]</em>) – labels in input masks</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>(all_intersections, all_cardinalities)</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Tuple[NumberPerLabel, NumberPerLabel]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.api.usecases.evaluation.basic_operations.intersection_box">
+<span class="sig-prename descclassname"><span class="pre">otx.api.usecases.evaluation.basic_operations.</span></span><span class="sig-name descname"><span class="pre">intersection_box</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">box1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../../entities/shapes/rectangle/index.html#otx.api.entities.shapes.rectangle.Rectangle" title="otx.api.entities.shapes.rectangle.Rectangle"><span class="pre">otx.api.entities.shapes.rectangle.Rectangle</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">box2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../../entities/shapes/rectangle/index.html#otx.api.entities.shapes.rectangle.Rectangle" title="otx.api.entities.shapes.rectangle.Rectangle"><span class="pre">otx.api.entities.shapes.rectangle.Rectangle</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/evaluation/basic_operations.html#intersection_box"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.evaluation.basic_operations.intersection_box" title="Permalink to this definition"></a></dt>
+<dd><p>Calculate the intersection box of two bounding boxes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>box1</strong> – a Rectangle that represents the first bounding box</p></li>
+<li><p><strong>box2</strong> – a Rectangle that represents the second bounding box</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a Rectangle that represents the intersection box if inputs have
+a valid intersection, else None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.api.usecases.evaluation.basic_operations.intersection_over_union">
+<span class="sig-prename descclassname"><span class="pre">otx.api.usecases.evaluation.basic_operations.</span></span><span class="sig-name descname"><span class="pre">intersection_over_union</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">box1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../../entities/shapes/rectangle/index.html#otx.api.entities.shapes.rectangle.Rectangle" title="otx.api.entities.shapes.rectangle.Rectangle"><span class="pre">otx.api.entities.shapes.rectangle.Rectangle</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">box2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../../entities/shapes/rectangle/index.html#otx.api.entities.shapes.rectangle.Rectangle" title="otx.api.entities.shapes.rectangle.Rectangle"><span class="pre">otx.api.entities.shapes.rectangle.Rectangle</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">intersection</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/evaluation/basic_operations.html#intersection_over_union"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.evaluation.basic_operations.intersection_over_union" title="Permalink to this definition"></a></dt>
+<dd><p>Calculate the Intersection over Union (IoU) of two bounding boxes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>box1</strong> – a Rectangle representing a bounding box</p></li>
+<li><p><strong>box2</strong> – a Rectangle representing a second bounding box</p></li>
+<li><p><strong>intersection</strong> – precomputed intersection between two boxes (see
+intersection_box function), if exists.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>intersection-over-union of box1 and box2</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.api.usecases.evaluation.basic_operations.precision_per_class">
+<span class="sig-prename descclassname"><span class="pre">otx.api.usecases.evaluation.basic_operations.</span></span><span class="sig-name descname"><span class="pre">precision_per_class</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">matrix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/evaluation/basic_operations.html#precision_per_class"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.evaluation.basic_operations.precision_per_class" title="Permalink to this definition"></a></dt>
+<dd><p>Compute the precision per class based on the confusion matrix.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>matrix</strong> – the computed confusion matrix</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the precision (per class), defined as TP/(TP+FP)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.api.usecases.evaluation.basic_operations.recall_per_class">
+<span class="sig-prename descclassname"><span class="pre">otx.api.usecases.evaluation.basic_operations.</span></span><span class="sig-name descname"><span class="pre">recall_per_class</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">matrix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/evaluation/basic_operations.html#recall_per_class"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.evaluation.basic_operations.recall_per_class" title="Permalink to this definition"></a></dt>
+<dd><p>Compute the recall per class based on the confusion matrix.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>matrix</strong> – the computed confusion matrix</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the recall (per class), defined as TP/(TP+FN)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.api.usecases.evaluation.basic_operations.divide_arrays_with_possible_zeros">
+<span class="sig-prename descclassname"><span class="pre">otx.api.usecases.evaluation.basic_operations.</span></span><span class="sig-name descname"><span class="pre">divide_arrays_with_possible_zeros</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">array1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">array2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="reference internal" href="../../../../../../_modules/otx/api/usecases/evaluation/basic_operations.html#divide_arrays_with_possible_zeros"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.evaluation.basic_operations.divide_arrays_with_possible_zeros" title="Permalink to this definition"></a></dt>
+<dd><p>Sometimes the denominator in the precision or recall computation can contain a zero.</p>
+<p>In that case, a zero is returned for that element (<a class="reference external" href="https://stackoverflow.com/a/32106804">https://stackoverflow.com/a/32106804</a>).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>array1</strong> – the numerator</p></li>
+<li><p><strong>array2</strong> – the denominator</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the divided arrays (numerator/denominator) with a value of zero
+where the denominator was zero.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, OpenVINO Training Extensions Contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

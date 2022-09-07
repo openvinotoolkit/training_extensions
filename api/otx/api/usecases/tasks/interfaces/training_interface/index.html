@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>otx.api.usecases.tasks.interfaces.training_interface &mdash; OpenVINO Training Extensions  documentation</title>
+      <link rel="stylesheet" href="../../../../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../../../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../../../../" id="documentation_options" src="../../../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../../../_static/jquery.js"></script>
+        <script src="../../../../../../../_static/underscore.js"></script>
+        <script src="../../../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../../../../../_static/doctools.js"></script>
+    <script src="../../../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../../../../index.html" class="icon icon-home"> OpenVINO Training Extensions
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../../../index.html">OpenVINO Training Extensions</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li><code class="xref py py-mod docutils literal notranslate"><span class="pre">otx.api.usecases.tasks.interfaces.training_interface</span></code></li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../../../../_sources/api/otx/api/usecases/tasks/interfaces/training_interface/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-otx.api.usecases.tasks.interfaces.training_interface">
+<span id="otx-api-usecases-tasks-interfaces-training-interface"></span><h1><a class="reference internal" href="#module-otx.api.usecases.tasks.interfaces.training_interface" title="otx.api.usecases.tasks.interfaces.training_interface"><code class="xref py py-mod docutils literal notranslate"><span class="pre">otx.api.usecases.tasks.interfaces.training_interface</span></code></a><a class="headerlink" href="#module-otx.api.usecases.tasks.interfaces.training_interface" title="Permalink to this heading"></a></h1>
+<p>This module contains the interface class for tasks that can perform training.</p>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this heading"></a></h2>
+<section id="classes">
+<h3>Classes<a class="headerlink" href="#classes" title="Permalink to this heading"></a></h3>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.api.usecases.tasks.interfaces.training_interface.ITrainingTask" title="otx.api.usecases.tasks.interfaces.training_interface.ITrainingTask"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ITrainingTask</span></code></a></p></td>
+<td><p>A base interface class for tasks which can perform training.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.api.usecases.tasks.interfaces.training_interface.ITrainingTask">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.usecases.tasks.interfaces.training_interface.</span></span><span class="sig-name descname"><span class="pre">ITrainingTask</span></span><a class="reference internal" href="../../../../../../../_modules/otx/api/usecases/tasks/interfaces/training_interface.html#ITrainingTask"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.tasks.interfaces.training_interface.ITrainingTask" title="Permalink to this definition"></a></dt>
+<dd><p>A base interface class for tasks which can perform training.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.usecases.tasks.interfaces.training_interface.ITrainingTask.save_model">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">save_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../../../entities/model/index.html#otx.api.entities.model.ModelEntity" title="otx.api.entities.model.ModelEntity"><span class="pre">otx.api.entities.model.ModelEntity</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../../../_modules/otx/api/usecases/tasks/interfaces/training_interface.html#ITrainingTask.save_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.tasks.interfaces.training_interface.ITrainingTask.save_model" title="Permalink to this definition"></a></dt>
+<dd><p>Save the model currently loaded by the task to <cite>output_model</cite>.</p>
+<p>This method is for instance used to save the pre-trained weights before training
+when the task has been initialised with pre-trained weights rather than an existing model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>output_model</strong> (<a class="reference internal" href="../../../../entities/model/index.html#otx.api.entities.model.ModelEntity" title="otx.api.entities.model.ModelEntity"><em>ModelEntity</em></a>) – Output model where the weights should be stored</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.usecases.tasks.interfaces.training_interface.ITrainingTask.train">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">train</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../../../entities/datasets/index.html#otx.api.entities.datasets.DatasetEntity" title="otx.api.entities.datasets.DatasetEntity"><span class="pre">otx.api.entities.datasets.DatasetEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../../../entities/model/index.html#otx.api.entities.model.ModelEntity" title="otx.api.entities.model.ModelEntity"><span class="pre">otx.api.entities.model.ModelEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_parameters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../../../entities/train_parameters/index.html#otx.api.entities.train_parameters.TrainParameters" title="otx.api.entities.train_parameters.TrainParameters"><span class="pre">otx.api.entities.train_parameters.TrainParameters</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../../../_modules/otx/api/usecases/tasks/interfaces/training_interface.html#ITrainingTask.train"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.tasks.interfaces.training_interface.ITrainingTask.train" title="Permalink to this definition"></a></dt>
+<dd><p>Train a new model using the model currently loaded by the task.</p>
+<p>If training was successful, the new model should be used for subsequent calls (e.g. <cite>optimize</cite> or <cite>infer</cite>).</p>
+<p>The new model weights should be saved in the object <cite>output_model</cite>.</p>
+<p>The task has two choices:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Set the output model weights, if the task was able to improve itself (according to own measures)</p></li>
+<li><p>Set the model state as failed if it failed to improve itself (according to own measures)</p></li>
+</ul>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dataset</strong> (<a class="reference internal" href="../../../../entities/datasets/index.html#otx.api.entities.datasets.DatasetEntity" title="otx.api.entities.datasets.DatasetEntity"><em>DatasetEntity</em></a>) – Dataset containing the training and validation splits to use for training.</p></li>
+<li><p><strong>output_model</strong> (<a class="reference internal" href="../../../../entities/model/index.html#otx.api.entities.model.ModelEntity" title="otx.api.entities.model.ModelEntity"><em>ModelEntity</em></a>) – Output model where the weights should be stored</p></li>
+<li><p><strong>train_parameters</strong> (<a class="reference internal" href="../../../../entities/train_parameters/index.html#otx.api.entities.train_parameters.TrainParameters" title="otx.api.entities.train_parameters.TrainParameters"><em>TrainParameters</em></a>) – Training parameters</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.usecases.tasks.interfaces.training_interface.ITrainingTask.cancel_training">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">cancel_training</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../../../../_modules/otx/api/usecases/tasks/interfaces/training_interface.html#ITrainingTask.cancel_training"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.usecases.tasks.interfaces.training_interface.ITrainingTask.cancel_training" title="Permalink to this definition"></a></dt>
+<dd><p>Cancels the currently running training process.</p>
+<p>If training is not running, do nothing.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, OpenVINO Training Extensions Contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

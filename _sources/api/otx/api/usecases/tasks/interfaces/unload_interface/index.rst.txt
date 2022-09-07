@@ -1,0 +1,45 @@
+:py:mod:`otx.api.usecases.tasks.interfaces.unload_interface`
+============================================================
+
+.. py:module:: otx.api.usecases.tasks.interfaces.unload_interface
+
+.. autoapi-nested-parse::
+
+   Unload Interface.
+
+   This module contains the interface class for tasks to be notified when the task does not need to be loaded anymore.
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   otx.api.usecases.tasks.interfaces.unload_interface.IUnload
+
+
+
+
+.. py:class:: IUnload
+
+   Interface to provide unload functionality.
+
+   This interface can be implemented by a task, if the task wants to be notified when
+   the task is not needed by the pipeline anymore.
+   This allows to clear GPU and system memory resources for example.
+
+   .. py:method:: unload()
+      :abstractmethod:
+
+      Unload task.
+
+      Unload any resources which have been used by the task.
+
+      It is acceptable to restart the server as a last resort strategy if unloading the resources is too difficult.
+
+
+

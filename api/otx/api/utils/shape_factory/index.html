@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>otx.api.utils.shape_factory &mdash; OpenVINO Training Extensions  documentation</title>
+      <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../_static/jquery.js"></script>
+        <script src="../../../../../_static/underscore.js"></script>
+        <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../../../_static/doctools.js"></script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../../index.html" class="icon icon-home"> OpenVINO Training Extensions
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../index.html">OpenVINO Training Extensions</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li><code class="xref py py-mod docutils literal notranslate"><span class="pre">otx.api.utils.shape_factory</span></code></li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../../_sources/api/otx/api/utils/shape_factory/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-otx.api.utils.shape_factory">
+<span id="otx-api-utils-shape-factory"></span><h1><a class="reference internal" href="#module-otx.api.utils.shape_factory" title="otx.api.utils.shape_factory"><code class="xref py py-mod docutils literal notranslate"><span class="pre">otx.api.utils.shape_factory</span></code></a><a class="headerlink" href="#module-otx.api.utils.shape_factory" title="Permalink to this heading"></a></h1>
+<p>This module implements helpers for converting shape entities.</p>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this heading"></a></h2>
+<section id="classes">
+<h3>Classes<a class="headerlink" href="#classes" title="Permalink to this heading"></a></h3>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.api.utils.shape_factory.ShapeFactory" title="otx.api.utils.shape_factory.ShapeFactory"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ShapeFactory</span></code></a></p></td>
+<td><p>Helper class converting between shape types.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.api.utils.shape_factory.ShapeFactory">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.utils.shape_factory.</span></span><span class="sig-name descname"><span class="pre">ShapeFactory</span></span><a class="reference internal" href="../../../../../_modules/otx/api/utils/shape_factory.html#ShapeFactory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.utils.shape_factory.ShapeFactory" title="Permalink to this definition"></a></dt>
+<dd><p>Helper class converting between shape types.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.utils.shape_factory.ShapeFactory.shape_as_rectangle">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">shape_as_rectangle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shape</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../entities/shapes/shape/index.html#otx.api.entities.shapes.shape.ShapeEntity" title="otx.api.entities.shapes.shape.ShapeEntity"><span class="pre">otx.api.entities.shapes.shape.ShapeEntity</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../../entities/shapes/rectangle/index.html#otx.api.entities.shapes.rectangle.Rectangle" title="otx.api.entities.shapes.rectangle.Rectangle"><span class="pre">otx.api.entities.shapes.rectangle.Rectangle</span></a></span></span><a class="reference internal" href="../../../../../_modules/otx/api/utils/shape_factory.html#ShapeFactory.shape_as_rectangle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.utils.shape_factory.ShapeFactory.shape_as_rectangle" title="Permalink to this definition"></a></dt>
+<dd><p>Get the outer-fitted rectangle representation of the shape.</p>
+<p><cite>media_width</cite> and <cite>media_height</cite> are the width and height of the media in
+which the shape is expressed.</p>
+<p class="rubric">Example</p>
+<p>Let’s assume a DatasetItem <cite>dataset_item</cite>.</p>
+<p>To obtain the shapes inside the full annotation as rectangles, one could call:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">otx.api.entities.dataset_item</span> <span class="kn">import</span> <span class="n">DatasetItem</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">otx.api.entities.image</span> <span class="kn">import</span> <span class="n">NullImage</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">otx.api.entities.annotation_scene</span> <span class="kn">import</span> <span class="n">NullAnnotationScene</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dataset_item</span> <span class="o">=</span> <span class="n">DatasetItem</span><span class="p">(</span><span class="n">media</span><span class="o">=</span><span class="n">NullImage</span><span class="p">(),</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">annotation</span><span class="o">=</span><span class="n">NullAnnotationScene</span><span class="p">())</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rectangles</span> <span class="o">=</span> <span class="p">[</span><span class="n">ShapeFactory</span><span class="o">.</span><span class="n">shape_as_rectangle</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">dataset_item</span><span class="o">.</span><span class="n">media</span><span class="o">.</span><span class="n">width</span><span class="p">,</span> <span class="n">dataset_item</span><span class="o">.</span><span class="n">media</span><span class="o">.</span><span class="n">height</span><span class="p">)</span> <span class="k">for</span> <span class="n">shape</span>
+<span class="gp">... </span><span class="ow">in</span> <span class="n">dataset_item</span><span class="o">.</span><span class="n">annotation_scene</span><span class="o">.</span><span class="n">shapes</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>To obtain the shapes inside the dataset item (note that dataset item can have
+roi), one should call:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">rectangles</span> <span class="o">=</span> <span class="p">[</span><span class="n">ShapeFactory</span><span class="o">.</span><span class="n">shape_as_rectangle</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span> <span class="k">for</span> <span class="n">shape</span> <span class="ow">in</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">dataset_item</span><span class="o">.</span><span class="n">get_annotations</span><span class="p">()]</span>
+</pre></div>
+</div>
+<p>Since the shapes in the first call come from annotation directly, this means
+they are expressed in the media coordinate system. Therefore,
+dataset_item.media.width and dataset_item.media.height are passed.
+While in the second call, the shapes come from denormalization results wrt.
+dataset_item.roi and therefore expressed inside the roi. In this case,
+dataset_item.width and dataset_item.height are passed.</p>
+<p>Converting Ellipse to rectangle</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">height</span> <span class="o">=</span> <span class="mi">240</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">width</span> <span class="o">=</span> <span class="mi">480</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rectangle</span> <span class="o">=</span> <span class="n">Rectangle</span><span class="p">(</span><span class="n">x1</span><span class="o">=</span><span class="mf">0.375</span><span class="p">,</span> <span class="n">y1</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">x2</span><span class="o">=</span><span class="mf">0.625</span><span class="p">,</span> <span class="n">y2</span><span class="o">=</span><span class="mf">0.75</span><span class="p">,</span>
+<span class="gp">... </span><span class="n">labels</span><span class="o">=</span><span class="p">[])</span> <span class="c1"># a square of 120 x 120 pixels at the center of the image</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ellipse</span> <span class="o">=</span> <span class="n">Ellipse</span><span class="p">(</span><span class="n">x1</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">y1</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">x2</span><span class="o">=</span><span class="mf">0.625</span><span class="p">,</span> <span class="n">y2</span><span class="o">=</span><span class="mf">0.56125</span><span class="p">,</span>
+<span class="gp">... </span><span class="n">labels</span><span class="o">=</span><span class="p">[])</span> <span class="c1"># an ellipse of radius 60 pixels (x2 is wrt width) at the</span>
+<span class="go">center of the image</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ellipse_as_rectangle</span> <span class="o">=</span> <span class="n">ShapeFactory</span><span class="o">.</span><span class="n">shape_as_rectangle</span><span class="p">(</span><span class="n">ellipse</span><span class="p">)</span>  <span class="c1"># get the</span>
+<span class="go">fitted rectangle for the ellipse</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">rectangle</span><span class="p">)</span> <span class="o">==</span> <span class="nb">str</span><span class="p">(</span><span class="n">ellipse_as_rectangle</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<p>Converting triangle to rectangle</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">points</span> <span class="o">=</span> <span class="p">[</span><span class="n">Point</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mf">0.25</span><span class="p">),</span> <span class="n">Point</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mf">0.375</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mf">0.75</span><span class="p">),</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">Point</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mf">0.625</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mf">0.75</span><span class="p">)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">triangle</span> <span class="o">=</span> <span class="n">Polygon</span><span class="p">(</span><span class="n">points</span><span class="o">=</span><span class="n">points</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="p">[])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">triangle_as_rectangle</span> <span class="o">=</span> <span class="n">ShapeFactory</span><span class="o">.</span><span class="n">shape_as_rectangle</span><span class="p">(</span><span class="n">triangle</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">triangle_as_rectangle</span><span class="p">)</span> <span class="o">==</span> <span class="nb">str</span><span class="p">(</span><span class="n">rectangle</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>shape</strong> (<a class="reference internal" href="../../entities/shapes/shape/index.html#otx.api.entities.shapes.shape.ShapeEntity" title="otx.api.entities.shapes.shape.ShapeEntity"><em>ShapeEntity</em></a>) – the shape to convert to rectangle</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>bounding box of the shape</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="../../entities/shapes/rectangle/index.html#otx.api.entities.shapes.rectangle.Rectangle" title="otx.api.entities.shapes.rectangle.Rectangle">Rectangle</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.utils.shape_factory.ShapeFactory.shape_as_polygon">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">shape_as_polygon</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shape</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../entities/shapes/shape/index.html#otx.api.entities.shapes.shape.ShapeEntity" title="otx.api.entities.shapes.shape.ShapeEntity"><span class="pre">otx.api.entities.shapes.shape.ShapeEntity</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../../entities/shapes/polygon/index.html#otx.api.entities.shapes.polygon.Polygon" title="otx.api.entities.shapes.polygon.Polygon"><span class="pre">otx.api.entities.shapes.polygon.Polygon</span></a></span></span><a class="reference internal" href="../../../../../_modules/otx/api/utils/shape_factory.html#ShapeFactory.shape_as_polygon"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.utils.shape_factory.ShapeFactory.shape_as_polygon" title="Permalink to this definition"></a></dt>
+<dd><p>Return a shape converted as polygon.</p>
+<p>For a rectangle, a polygon will be constructed with a point in each corner.
+For a ellipse, 360 points will be made. Otherwise, the original shape will be returned.
+The width/height for the parent need to be specified to make sure the aspect ratio is maintained.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>shape</strong> (<a class="reference internal" href="../../entities/shapes/shape/index.html#otx.api.entities.shapes.shape.ShapeEntity" title="otx.api.entities.shapes.shape.ShapeEntity"><em>ShapeEntity</em></a>) – the shape to convert to polygon.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the polygon representation of the shape.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="../../entities/shapes/polygon/index.html#otx.api.entities.shapes.polygon.Polygon" title="otx.api.entities.shapes.polygon.Polygon">Polygon</a></p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>NotImplementedError</strong> – if the shape is not a rectangle or ellipse.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.utils.shape_factory.ShapeFactory.shape_as_ellipse">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">shape_as_ellipse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shape</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../entities/shapes/shape/index.html#otx.api.entities.shapes.shape.ShapeEntity" title="otx.api.entities.shapes.shape.ShapeEntity"><span class="pre">otx.api.entities.shapes.shape.ShapeEntity</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../../entities/shapes/ellipse/index.html#otx.api.entities.shapes.ellipse.Ellipse" title="otx.api.entities.shapes.ellipse.Ellipse"><span class="pre">otx.api.entities.shapes.ellipse.Ellipse</span></a></span></span><a class="reference internal" href="../../../../../_modules/otx/api/utils/shape_factory.html#ShapeFactory.shape_as_ellipse"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.utils.shape_factory.ShapeFactory.shape_as_ellipse" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the inner-fitted ellipse for a given shape.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>shape</strong> (<a class="reference internal" href="../../entities/shapes/shape/index.html#otx.api.entities.shapes.shape.ShapeEntity" title="otx.api.entities.shapes.shape.ShapeEntity"><em>ShapeEntity</em></a>) – Shape to convert.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Ellipse representation of the shape.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="../../entities/shapes/ellipse/index.html#otx.api.entities.shapes.ellipse.Ellipse" title="otx.api.entities.shapes.ellipse.Ellipse">Ellipse</a></p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>NotImplementedError</strong> – If the shape is not a rectangle or polygon.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.utils.shape_factory.ShapeFactory.shape_produces_valid_crop">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">shape_produces_valid_crop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shape</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../entities/shapes/shape/index.html#otx.api.entities.shapes.shape.ShapeEntity" title="otx.api.entities.shapes.shape.ShapeEntity"><span class="pre">otx.api.entities.shapes.shape.ShapeEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">media_width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">media_height</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/utils/shape_factory.html#ShapeFactory.shape_produces_valid_crop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.utils.shape_factory.ShapeFactory.shape_produces_valid_crop" title="Permalink to this definition"></a></dt>
+<dd><p>Check if crop is valid.</p>
+<p>Checks if the shape produces a valid crop based on the image width and height,
+regardless of the contents of the image.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>shape</strong> (<a class="reference internal" href="../../entities/shapes/shape/index.html#otx.api.entities.shapes.shape.ShapeEntity" title="otx.api.entities.shapes.shape.ShapeEntity"><em>ShapeEntity</em></a>) – Shape to check</p></li>
+<li><p><strong>media_width</strong> (<em>int</em>) – Width of the image</p></li>
+<li><p><strong>media_height</strong> (<em>int</em>) – Height of the image</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>True if the shape produces a valid crop, False otherwise</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, OpenVINO Training Extensions Contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

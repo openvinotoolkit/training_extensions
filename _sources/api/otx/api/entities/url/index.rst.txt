@@ -1,0 +1,94 @@
+:py:mod:`otx.api.entities.url`
+==============================
+
+.. py:module:: otx.api.entities.url
+
+.. autoapi-nested-parse::
+
+   This file defines the URL class.
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   otx.api.entities.url.URL
+
+
+
+
+.. py:class:: URL(url: Union[URL, str])
+
+   Class for working with URLs.
+
+   Provides functions for getting components of the URL such as <scheme>://<host>/<path>
+
+   .. py:method:: __parse(url)
+
+      Parse URL into 3 internal saved components.
+
+      (Function stolen from urllib library)
+      <scheme>://<netloc>/<path>
+
+
+   .. py:method:: __repr__()
+
+      Returns representation of url.
+
+
+   .. py:method:: extension()
+      :property:
+
+      Gets the extension of the URL.
+
+
+   .. py:method:: scheme()
+      :property:
+
+      Gets the scheme of the URL.
+
+
+   .. py:method:: host()
+      :property:
+
+      Gets the host of the URL.
+
+
+   .. py:method:: path()
+      :property:
+
+      Returns the full path to the full.
+
+
+   .. py:method:: relative_path()
+      :property:
+
+      Returns the relative path to the full.
+
+
+   .. py:method:: __str__()
+
+      Returns url as string depending on the value of scheme and host.
+
+
+   .. py:method:: __hash__()
+
+      Returns hash of url.
+
+
+   .. py:method:: __eq__(other)
+
+      Checks if the url strings are equal.
+
+
+   .. py:method:: __len__()
+
+      Returns length of url.
+
+
+

@@ -1,0 +1,113 @@
+:py:mod:`otx.api.usecases.evaluation.dice`
+==========================================
+
+.. py:module:: otx.api.usecases.evaluation.dice
+
+.. autoapi-nested-parse::
+
+   This module contains the Dice performance provider.
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   otx.api.usecases.evaluation.dice.DiceAverage
+
+
+
+
+.. py:class:: DiceAverage(resultset: otx.api.entities.resultset.ResultSetEntity, average: otx.api.usecases.evaluation.averaging.MetricAverageMethod = MetricAverageMethod.MACRO)
+
+   Bases: :py:obj:`otx.api.usecases.evaluation.performance_provider_interface.IPerformanceProvider`
+
+   Computes the average Dice coefficient overall and for individual labels.
+
+   See https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient for background information.
+
+   To compute the Dice coefficient the shapes in the dataset items of the prediction and ground truth
+   dataset are first converted to masks.
+
+   Dice is computed by computing the intersection and union computed over the whole dataset, instead of
+   computing intersection and union for individual images and then averaging.
+
+   :param resultset: ResultSet that score will be computed for
+   :type resultset: ResultSetEntity
+   :param average: One of
+                   - MICRO: every pixel has the same weight, regardless of label
+                   - MACRO: compute score per label, return the average of the per-label scores
+   :type average: MetricAverageMethod
+
+   .. py:method:: overall_dice() -> otx.api.entities.metrics.ScoreMetric
+      :property:
+
+      Returns the dice average as ScoreMetric.
+
+
+   .. py:method:: dice_per_label() -> Dict[otx.api.entities.label.LabelEntity, otx.api.entities.metrics.ScoreMetric]
+      :property:
+
+      Returns a dictionary mapping the label to its corresponding dice score (as ScoreMetric).
+
+
+   .. py:method:: get_performance() -> otx.api.entities.metrics.Performance
+
+      Returns the performance of the resultset.
+
+
+   .. py:method:: __compute_dice_averaged_over_pixels(resultset: otx.api.entities.resultset.ResultSetEntity, average: otx.api.usecases.evaluation.averaging.MetricAverageMethod) -> Tuple[otx.api.entities.metrics.ScoreMetric, Dict[otx.api.entities.label.LabelEntity, otx.api.entities.metrics.ScoreMetric]]
+      :classmethod:
+
+      Computes the diced averaged over pixels.
+
+      :param resultset: Result set to use
+      :type resultset: ResultSetEntity
+      :param average: Averaging method to use
+      :type average: MetricAverageMethod
+
+      :returns:
+
+                Tuple of the overall dice and the dice averaged over
+                    pixels for each label.
+      :rtype: Tuple[ScoreMetric, Dict[LabelEntity, ScoreMetric]]
+
+
+   .. py:method:: compute_dice_using_intersection_and_cardinality(all_intersection: Dict[Optional[otx.api.entities.label.LabelEntity], int], all_cardinality: Dict[Optional[otx.api.entities.label.LabelEntity], int], average: otx.api.usecases.evaluation.averaging.MetricAverageMethod) -> Tuple[otx.api.entities.metrics.ScoreMetric, Dict[otx.api.entities.label.LabelEntity, otx.api.entities.metrics.ScoreMetric]]
+      :classmethod:
+
+      Computes dice score using intersection and cardinality dictionaries.
+
+      Both dictionaries must contain the same set of keys.
+      Dice score is computed by: 2 * intersection / cardinality
+
+      :param average: Averaging method to use
+      :param all_intersection: collection of intersections per label
+      :param all_cardinality: collection of cardinality per label
+
+      :returns: A tuple containing the overall DICE score, and per label
+                DICE score
+
+      :raises KeyError: if the keys in intersection and cardinality do not
+          match
+      :raises KeyError: if the key `None` is not present in either
+          all_intersection or all_cardinality
+      :raises ValueError: if the intersection for a certain key is larger
+          than its corresponding cardinality
+
+
+   .. py:method:: __compute_single_dice_score_using_intersection_and_cardinality(intersection: int, cardinality: int)
+      :staticmethod:
+
+      Computes a single dice score using intersection and cardinality.
+
+      Dice score is computed by: 2 * intersection / cardinality
+
+      :raises ValueError: If intersection is larger than cardinality
+
+
+

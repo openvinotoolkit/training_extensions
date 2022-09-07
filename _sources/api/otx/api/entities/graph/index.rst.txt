@@ -1,0 +1,141 @@
+:py:mod:`otx.api.entities.graph`
+================================
+
+.. py:module:: otx.api.entities.graph
+
+.. autoapi-nested-parse::
+
+   This module implements the TrainParameters entity.
+
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   otx.api.entities.graph.Graph
+   otx.api.entities.graph.MultiDiGraph
+
+
+
+
+.. py:class:: Graph(directed: bool = False)
+
+   Bases: :py:obj:`otx.api.entities.interfaces.graph_interface.IGraph`
+
+   The concrete implementation of IGraph. This implementation is using networkx library.
+
+   :param directed: set to True if the graph is a directed graph.
+   :type directed: bool
+
+   .. py:method:: get_graph() -> Union[networkx.Graph, networkx.MultiDiGraph]
+
+      Get the underlying NetworkX graph.
+
+
+   .. py:method:: set_graph(graph: Union[networkx.Graph, networkx.MultiDiGraph])
+
+      Set the underlying NetworkX graph.
+
+
+   .. py:method:: add_edge(node1, node2, edge_value=None)
+
+      Adds edge between node1 and node2.
+
+
+   .. py:method:: num_nodes() -> int
+
+      Returns the number of nodes in the graph.
+
+
+   .. py:method:: add_node(node)
+
+      Adds node to the graph.
+
+
+   .. py:method:: has_edge_between(node1, node2)
+
+      Returns True if there is an edge between node1 and node2.
+
+
+   .. py:method:: neighbors(node)
+
+      Returns neighbors of `label`.
+
+      Note: when `node` does not exist in the graph an empty list is returned
+
+
+   .. py:method:: find_out_edges(node)
+
+      Returns the edges that have `node` as a destination.
+
+
+   .. py:method:: find_in_edges(node)
+
+      Returns the edges that have `node` as a source.
+
+
+   .. py:method:: find_cliques()
+
+      Returns cliques in the graph.
+
+
+   .. py:method:: nodes()
+      :property:
+
+      Returns the nodes in the graph.
+
+
+   .. py:method:: edges()
+      :property:
+
+      Returns all the edges in the graph.
+
+
+   .. py:method:: num_labels()
+      :property:
+
+      Returns the number of labels in the graph.
+
+
+   .. py:method:: remove_edges(node1, node2)
+
+      Removes edges between both the nodes.
+
+
+   .. py:method:: remove_node(node)
+
+      Remove node from graph.
+
+      :param node: node to remove
+
+
+   .. py:method:: descendants(parent)
+
+      Returns descendants.
+
+      (children and children of children, etc.) of `parent`.
+
+
+   .. py:method:: __eq__(other: object) -> bool
+
+      Returns True if the two graphs are equal.
+
+
+
+.. py:class:: MultiDiGraph
+
+   Bases: :py:obj:`Graph`
+
+   Multi Dimensional implementation of a Graph.
+
+   .. py:method:: topological_sort()
+
+      Returns a generator of nodes in topologically sorted order.
+
+
+

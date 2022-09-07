@@ -1,0 +1,61 @@
+:py:mod:`otx.algorithms.anomaly.adapters.anomalib.config.anomalib_config`
+=========================================================================
+
+.. py:module:: otx.algorithms.anomaly.adapters.anomalib.config.anomalib_config
+
+.. autoapi-nested-parse::
+
+   Configurable parameter conversion between OTX and Anomalib.
+
+
+
+Module Contents
+---------------
+
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   otx.algorithms.anomaly.adapters.anomalib.config.anomalib_config.get_anomalib_config
+   otx.algorithms.anomaly.adapters.anomalib.config.anomalib_config._anomalib_config_mapper
+   otx.algorithms.anomaly.adapters.anomalib.config.anomalib_config.update_anomalib_config
+
+
+
+.. py:function:: get_anomalib_config(task_name: str, otx_config: otx.api.configuration.configurable_parameters.ConfigurableParameters) -> Union[omegaconf.DictConfig, omegaconf.ListConfig]
+
+   Get anomalib configuration.
+
+   Create an anomalib config object that matches the values specified in the
+   OTX config.
+
+   :param otx_config: ConfigurableParameters: OTX config object parsed from
+                      configuration.yaml file
+
+   :returns: Anomalib config object for the specified model type with overwritten
+             default values.
+
+
+.. py:function:: _anomalib_config_mapper(anomalib_config: Union[omegaconf.DictConfig, omegaconf.ListConfig], otx_config: otx.api.configuration.configurable_parameters.ConfigurableParameters)
+
+   Return mapping from learning parameters to anomalib parameters.
+
+   :param anomalib_config: DictConfig: Anomalib config object
+   :param otx_config: ConfigurableParameters: OTX config object parsed from configuration.yaml file
+
+
+.. py:function:: update_anomalib_config(anomalib_config: Union[omegaconf.DictConfig, omegaconf.ListConfig], otx_config: otx.api.configuration.configurable_parameters.ConfigurableParameters)
+
+   Update anomalib configuration.
+
+   Overwrite the default parameter values in the anomalib config with the
+   values specified in the OTX config. The function is recursively called for
+   each parameter group present in the OTX config.
+
+   :param anomalib_config: DictConfig: Anomalib config object
+   :param otx_config: ConfigurableParameters: OTX config object parsed from
+                      configuration.yaml file
+
+

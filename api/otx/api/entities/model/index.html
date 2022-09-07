@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>otx.api.entities.model &mdash; OpenVINO Training Extensions  documentation</title>
+      <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../_static/jquery.js"></script>
+        <script src="../../../../../_static/underscore.js"></script>
+        <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../../../_static/doctools.js"></script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../../index.html" class="icon icon-home"> OpenVINO Training Extensions
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../index.html">OpenVINO Training Extensions</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li><code class="xref py py-mod docutils literal notranslate"><span class="pre">otx.api.entities.model</span></code></li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../../_sources/api/otx/api/entities/model/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-otx.api.entities.model">
+<span id="otx-api-entities-model"></span><h1><a class="reference internal" href="#module-otx.api.entities.model" title="otx.api.entities.model"><code class="xref py py-mod docutils literal notranslate"><span class="pre">otx.api.entities.model</span></code></a><a class="headerlink" href="#module-otx.api.entities.model" title="Permalink to this heading"></a></h1>
+<p>This file defines the ModelConfiguration, ModelEntity and Model classes.</p>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this heading"></a></h2>
+<section id="classes">
+<h3>Classes<a class="headerlink" href="#classes" title="Permalink to this heading"></a></h3>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.api.entities.model.ModelPrecision" title="otx.api.entities.model.ModelPrecision"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ModelPrecision</span></code></a></p></td>
+<td><p>Represents the ModelPrecision of a Model.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.api.entities.model.ModelConfiguration" title="otx.api.entities.model.ModelConfiguration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ModelConfiguration</span></code></a></p></td>
+<td><p>This class represents the task configuration which was used to generate a specific model.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.api.entities.model.ModelFormat" title="otx.api.entities.model.ModelFormat"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ModelFormat</span></code></a></p></td>
+<td><p>Indicate the format of the model.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.api.entities.model.ModelOptimizationType" title="otx.api.entities.model.ModelOptimizationType"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ModelOptimizationType</span></code></a></p></td>
+<td><p>Represents optimization type that is used to optimize the model.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#otx.api.entities.model.OptimizationMethod" title="otx.api.entities.model.OptimizationMethod"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OptimizationMethod</span></code></a></p></td>
+<td><p>Represents optimization method that is used to optimize the model.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#otx.api.entities.model.ModelEntity" title="otx.api.entities.model.ModelEntity"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ModelEntity</span></code></a></p></td>
+<td><p>Represents the Entity of a Model.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.api.entities.model.ModelPrecision">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.model.</span></span><span class="sig-name descname"><span class="pre">ModelPrecision</span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/model.html#ModelPrecision"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.model.ModelPrecision" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">enum.IntEnum</span></code></p>
+<p>Represents the ModelPrecision of a Model.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.entities.model.ModelPrecision.INT4">
+<span class="sig-name descname"><span class="pre">INT4</span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/model.html#ModelPrecision.INT4"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.model.ModelPrecision.INT4" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.entities.model.ModelPrecision.INT8">
+<span class="sig-name descname"><span class="pre">INT8</span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/model.html#ModelPrecision.INT8"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.model.ModelPrecision.INT8" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.entities.model.ModelPrecision.FP16">
+<span class="sig-name descname"><span class="pre">FP16</span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/model.html#ModelPrecision.FP16"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.model.ModelPrecision.FP16" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.entities.model.ModelPrecision.FP32">
+<span class="sig-name descname"><span class="pre">FP32</span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/model.html#ModelPrecision.FP32"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.model.ModelPrecision.FP32" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.api.entities.model.ModelConfiguration">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.model.</span></span><span class="sig-name descname"><span class="pre">ModelConfiguration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">configurable_parameters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../configuration/index.html#otx.api.configuration.ConfigurableParameters" title="otx.api.configuration.ConfigurableParameters"><span class="pre">otx.api.configuration.ConfigurableParameters</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../label_schema/index.html#otx.api.entities.label_schema.LabelSchemaEntity" title="otx.api.entities.label_schema.LabelSchemaEntity"><span class="pre">otx.api.entities.label_schema.LabelSchemaEntity</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/otx/api/entities/model.html#ModelConfiguration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.model.ModelConfiguration" title="Permalink to this definition"></a></dt>
+<dd><p>This class represents the task configuration which was used to generate a specific model.</p>
+<p>Those are the parameters that a task may need in order to use the model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>configurable_parameters</strong> – Task configurable parameters used to
+generate the model</p></li>
+<li><p><strong>label_schema</strong> – Label schema inside the project used to generate
+the model</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.entities.model.ModelConfiguration.configurable_parameters">
+<span class="sig-name descname"><span class="pre">configurable_parameters</span></span><em class="property"><span class="w"> </span><span class="pre">:otx.api.configuration.ConfigurableParameters</span></em><a class="reference internal" href="../../../../../_modules/otx/api/entities/model.html#ModelConfiguration.configurable_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.model.ModelConfiguration.configurable_parameters" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.model.ModelConfiguration.get_label_schema">
+<span class="sig-name descname"><span class="pre">get_label_schema</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../label_schema/index.html#otx.api.entities.label_schema.LabelSchemaEntity" title="otx.api.entities.label_schema.LabelSchemaEntity"><span class="pre">otx.api.entities.label_schema.LabelSchemaEntity</span></a></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/model.html#ModelConfiguration.get_label_schema"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.model.ModelConfiguration.get_label_schema" title="Permalink to this definition"></a></dt>
+<dd><p>Get the LabelSchema.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.api.entities.model.ModelFormat">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.model.</span></span><span class="sig-name descname"><span class="pre">ModelFormat</span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/model.html#ModelFormat"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.model.ModelFormat" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">enum.IntEnum</span></code></p>
+<p>Indicate the format of the model.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.entities.model.ModelFormat.OPENVINO">
+<span class="sig-name descname"><span class="pre">OPENVINO</span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/model.html#ModelFormat.OPENVINO"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.model.ModelFormat.OPENVINO" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.entities.model.ModelFormat.BASE_FRAMEWORK">
+<span class="sig-name descname"><span class="pre">BASE_FRAMEWORK</span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/model.html#ModelFormat.BASE_FRAMEWORK"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.model.ModelFormat.BASE_FRAMEWORK" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.entities.model.ModelFormat.ONNX">
+<span class="sig-name descname"><span class="pre">ONNX</span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/model.html#ModelFormat.ONNX"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.model.ModelFormat.ONNX" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.api.entities.model.ModelOptimizationType">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.model.</span></span><span class="sig-name descname"><span class="pre">ModelOptimizationType</span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/model.html#ModelOptimizationType"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.model.ModelOptimizationType" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">enum.IntEnum</span></code></p>
+<p>Represents optimization type that is used to optimize the model.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.entities.model.ModelOptimizationType.NONE">
+<span class="sig-name descname"><span class="pre">NONE</span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/model.html#ModelOptimizationType.NONE"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.model.ModelOptimizationType.NONE" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.entities.model.ModelOptimizationType.MO">
+<span class="sig-name descname"><span class="pre">MO</span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/model.html#ModelOptimizationType.MO"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.model.ModelOptimizationType.MO" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.entities.model.ModelOptimizationType.NNCF">
+<span class="sig-name descname"><span class="pre">NNCF</span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/model.html#ModelOptimizationType.NNCF"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.model.ModelOptimizationType.NNCF" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.entities.model.ModelOptimizationType.POT">
+<span class="sig-name descname"><span class="pre">POT</span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/model.html#ModelOptimizationType.POT"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.model.ModelOptimizationType.POT" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.api.entities.model.OptimizationMethod">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.model.</span></span><span class="sig-name descname"><span class="pre">OptimizationMethod</span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/model.html#OptimizationMethod"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.model.OptimizationMethod" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">enum.IntEnum</span></code></p>
+<p>Represents optimization method that is used to optimize the model.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.entities.model.OptimizationMethod.FILTER_PRUNING">
+<span class="sig-name descname"><span class="pre">FILTER_PRUNING</span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/model.html#OptimizationMethod.FILTER_PRUNING"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.model.OptimizationMethod.FILTER_PRUNING" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.entities.model.OptimizationMethod.QUANTIZATION">
+<span class="sig-name descname"><span class="pre">QUANTIZATION</span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/model.html#OptimizationMethod.QUANTIZATION"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.model.OptimizationMethod.QUANTIZATION" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.api.entities.model.ModelEntity">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.entities.model.</span></span><span class="sig-name descname"><span class="pre">ModelEntity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">train_dataset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../datasets/index.html#otx.api.entities.datasets.DatasetEntity" title="otx.api.entities.datasets.DatasetEntity"><span class="pre">otx.api.entities.datasets.DatasetEntity</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">configuration</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.entities.model.ModelConfiguration" title="otx.api.entities.model.ModelConfiguration"><span class="pre">ModelConfiguration</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">creation_date</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">datetime.datetime</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">performance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../metrics/index.html#otx.api.entities.metrics.Performance" title="otx.api.entities.metrics.Performance"><span class="pre">otx.api.entities.metrics.Performance</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">previous_trained_revision</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#otx.api.entities.model.ModelEntity" title="otx.api.entities.model.ModelEntity"><span class="pre">ModelEntity</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">previous_revision</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#otx.api.entities.model.ModelEntity" title="otx.api.entities.model.ModelEntity"><span class="pre">ModelEntity</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tags</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_format</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.entities.model.ModelFormat" title="otx.api.entities.model.ModelFormat"><span class="pre">ModelFormat</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">ModelFormat.OPENVINO</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">training_duration</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_adapters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="../../usecases/adapters/model_adapter/index.html#otx.api.usecases.adapters.model_adapter.ModelAdapter" title="otx.api.usecases.adapters.model_adapter.ModelAdapter"><span class="pre">otx.api.usecases.adapters.model_adapter.ModelAdapter</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exportable_code_adapter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../usecases/adapters/model_adapter/index.html#otx.api.usecases.adapters.model_adapter.ExportableCodeAdapter" title="otx.api.usecases.adapters.model_adapter.ExportableCodeAdapter"><span class="pre">otx.api.usecases.adapters.model_adapter.ExportableCodeAdapter</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">precision</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#otx.api.entities.model.ModelPrecision" title="otx.api.entities.model.ModelPrecision"><span class="pre">ModelPrecision</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">latency</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fps_throughput</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_device</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../model_template/index.html#otx.api.entities.model_template.TargetDevice" title="otx.api.entities.model_template.TargetDevice"><span class="pre">otx.api.entities.model_template.TargetDevice</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">TargetDevice.CPU</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_device_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimization_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.entities.model.ModelOptimizationType" title="otx.api.entities.model.ModelOptimizationType"><span class="pre">ModelOptimizationType</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">ModelOptimizationType.NONE</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimization_methods</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#otx.api.entities.model.OptimizationMethod" title="otx.api.entities.model.OptimizationMethod"><span class="pre">OptimizationMethod</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimization_objectives</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">performance_improvement</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_size_reduction</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../id/index.html#otx.api.entities.id.ID" title="otx.api.entities.id.ID"><span class="pre">otx.api.entities.id.ID</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/otx/api/entities/model.html#ModelEntity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.model.ModelEntity" title="Permalink to this definition"></a></dt>
+<dd><p>Represents the Entity of a Model.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.model.ModelEntity.id_">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">id_</span></span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../id/index.html#otx.api.entities.id.ID" title="otx.api.entities.id.ID"><span class="pre">otx.api.entities.id.ID</span></a></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/model.html#ModelEntity.id_"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.model.ModelEntity.id_" title="Permalink to this definition"></a></dt>
+<dd><p>Gets or sets the id of a Model.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.model.ModelEntity.id">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">id</span></span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../id/index.html#otx.api.entities.id.ID" title="otx.api.entities.id.ID"><span class="pre">otx.api.entities.id.ID</span></a></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/model.html#ModelEntity.id"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.model.ModelEntity.id" title="Permalink to this definition"></a></dt>
+<dd><p>DEPRECATED.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.model.ModelEntity.configuration">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">configuration</span></span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#otx.api.entities.model.ModelConfiguration" title="otx.api.entities.model.ModelConfiguration"><span class="pre">ModelConfiguration</span></a></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/model.html#ModelEntity.configuration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.model.ModelEntity.configuration" title="Permalink to this definition"></a></dt>
+<dd><p>Gets or sets the configuration of the Model.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.model.ModelEntity.creation_date">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">creation_date</span></span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">datetime.datetime</span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/model.html#ModelEntity.creation_date"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.model.ModelEntity.creation_date" title="Permalink to this definition"></a></dt>
+<dd><p>Gets or sets the creation_date of the Model.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.model.ModelEntity.train_dataset">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">train_dataset</span></span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../datasets/index.html#otx.api.entities.datasets.DatasetEntity" title="otx.api.entities.datasets.DatasetEntity"><span class="pre">otx.api.entities.datasets.DatasetEntity</span></a></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/model.html#ModelEntity.train_dataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.model.ModelEntity.train_dataset" title="Permalink to this definition"></a></dt>
+<dd><p>Gets or sets the current Training Dataset.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.model.ModelEntity.previous_trained_revision">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">previous_trained_revision</span></span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#otx.api.entities.model.ModelEntity" title="otx.api.entities.model.ModelEntity"><span class="pre">ModelEntity</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/model.html#ModelEntity.previous_trained_revision"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.model.ModelEntity.previous_trained_revision" title="Permalink to this definition"></a></dt>
+<dd><p>Gets or sets the previous model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>None if no previous_trained_revision has been created</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.model.ModelEntity.previous_revision">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">previous_revision</span></span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#otx.api.entities.model.ModelEntity" title="otx.api.entities.model.ModelEntity"><span class="pre">ModelEntity</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/model.html#ModelEntity.previous_revision"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.model.ModelEntity.previous_revision" title="Permalink to this definition"></a></dt>
+<dd><p>Gets or sets the previous model.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.model.ModelEntity.version">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">version</span></span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/model.html#ModelEntity.version"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.model.ModelEntity.version" title="Permalink to this definition"></a></dt>
+<dd><p>Gets or sets the version.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.model.ModelEntity.tags">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">tags</span></span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/model.html#ModelEntity.tags"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.model.ModelEntity.tags" title="Permalink to this definition"></a></dt>
+<dd><p>Gets or sets the tags of the Model.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.model.ModelEntity.model_format">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">model_format</span></span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#otx.api.entities.model.ModelFormat" title="otx.api.entities.model.ModelFormat"><span class="pre">ModelFormat</span></a></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/model.html#ModelEntity.model_format"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.model.ModelEntity.model_format" title="Permalink to this definition"></a></dt>
+<dd><p>Gets the model format.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.model.ModelEntity.performance">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">performance</span></span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../metrics/index.html#otx.api.entities.metrics.Performance" title="otx.api.entities.metrics.Performance"><span class="pre">otx.api.entities.metrics.Performance</span></a></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/model.html#ModelEntity.performance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.model.ModelEntity.performance" title="Permalink to this definition"></a></dt>
+<dd><p>Gets or sets the current Performance of the Model.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.model.ModelEntity.training_duration">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">training_duration</span></span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/model.html#ModelEntity.training_duration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.model.ModelEntity.training_duration" title="Permalink to this definition"></a></dt>
+<dd><p>Gets or sets the current training duration.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.model.ModelEntity.precision">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">precision</span></span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#otx.api.entities.model.ModelPrecision" title="otx.api.entities.model.ModelPrecision"><span class="pre">ModelPrecision</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/model.html#ModelEntity.precision"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.model.ModelEntity.precision" title="Permalink to this definition"></a></dt>
+<dd><p>Get or set the precision for the model.</p>
+<p>This has effect on accuracy, latency and throughput of the model.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.model.ModelEntity.latency">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">latency</span></span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/model.html#ModelEntity.latency"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.model.ModelEntity.latency" title="Permalink to this definition"></a></dt>
+<dd><p>Get or set the latency of the model.</p>
+<p>Unit is milliseconds (ms)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.model.ModelEntity.fps_throughput">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">fps_throughput</span></span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/model.html#ModelEntity.fps_throughput"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.model.ModelEntity.fps_throughput" title="Permalink to this definition"></a></dt>
+<dd><p>Get or set the throughput of the model.</p>
+<p>Unit is frames per second (fps)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.model.ModelEntity.target_device">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">target_device</span></span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../model_template/index.html#otx.api.entities.model_template.TargetDevice" title="otx.api.entities.model_template.TargetDevice"><span class="pre">otx.api.entities.model_template.TargetDevice</span></a></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/model.html#ModelEntity.target_device"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.model.ModelEntity.target_device" title="Permalink to this definition"></a></dt>
+<dd><p>Get or set the device on which the model will be deployed.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.model.ModelEntity.target_device_type">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">target_device_type</span></span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/model.html#ModelEntity.target_device_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.model.ModelEntity.target_device_type" title="Permalink to this definition"></a></dt>
+<dd><p>Get or set the type of the target device used by the model.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.model.ModelEntity.optimization_methods">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">optimization_methods</span></span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#otx.api.entities.model.OptimizationMethod" title="otx.api.entities.model.OptimizationMethod"><span class="pre">OptimizationMethod</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/model.html#ModelEntity.optimization_methods"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.model.ModelEntity.optimization_methods" title="Permalink to this definition"></a></dt>
+<dd><p>Get or set the optimization methods used on the model.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.model.ModelEntity.optimization_type">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">optimization_type</span></span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#otx.api.entities.model.ModelOptimizationType" title="otx.api.entities.model.ModelOptimizationType"><span class="pre">ModelOptimizationType</span></a></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/model.html#ModelEntity.optimization_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.model.ModelEntity.optimization_type" title="Permalink to this definition"></a></dt>
+<dd><p>Get or set the optimization type used for the model.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.model.ModelEntity.optimization_objectives">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">optimization_objectives</span></span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/model.html#ModelEntity.optimization_objectives"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.model.ModelEntity.optimization_objectives" title="Permalink to this definition"></a></dt>
+<dd><p>Get or set the optimization level of the model.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.model.ModelEntity.performance_improvement">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">performance_improvement</span></span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/model.html#ModelEntity.performance_improvement"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.model.ModelEntity.performance_improvement" title="Permalink to this definition"></a></dt>
+<dd><p>Get or set the performance improvement of the model.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.model.ModelEntity.model_size_reduction">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">model_size_reduction</span></span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/model.html#ModelEntity.model_size_reduction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.model.ModelEntity.model_size_reduction" title="Permalink to this definition"></a></dt>
+<dd><p>Get or set the reduction in model size by optimizing.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.model.ModelEntity.exportable_code">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">exportable_code</span></span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bytes</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/model.html#ModelEntity.exportable_code"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.model.ModelEntity.exportable_code" title="Permalink to this definition"></a></dt>
+<dd><p>Get the exportable_code from the exportable code adapter.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.model.ModelEntity.exportable_code_adapter">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">exportable_code_adapter</span></span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../usecases/adapters/model_adapter/index.html#otx.api.usecases.adapters.model_adapter.ExportableCodeAdapter" title="otx.api.usecases.adapters.model_adapter.ExportableCodeAdapter"><span class="pre">otx.api.usecases.adapters.model_adapter.ExportableCodeAdapter</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/model.html#ModelEntity.exportable_code_adapter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.model.ModelEntity.exportable_code_adapter" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the exportable code adapter.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.model.ModelEntity.get_data">
+<span class="sig-name descname"><span class="pre">get_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bytes</span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/model.html#ModelEntity.get_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.model.ModelEntity.get_data" title="Permalink to this definition"></a></dt>
+<dd><p>Fetches byte data for a certain model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>key</strong> – key to fetch data for</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>data for the key.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bytes</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.model.ModelEntity.set_data">
+<span class="sig-name descname"><span class="pre">set_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">bytes</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="../../usecases/adapters/model_adapter/index.html#otx.api.usecases.adapters.model_adapter.IDataSource" title="otx.api.usecases.adapters.model_adapter.IDataSource"><span class="pre">otx.api.usecases.adapters.model_adapter.IDataSource</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_deletion</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/otx/api/entities/model.html#ModelEntity.set_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.model.ModelEntity.set_data" title="Permalink to this definition"></a></dt>
+<dd><p>Sets the data for a specified key, either from a binary blob or from a data source.</p>
+<p>If the key already exists it appends existing data url to a list of urls that will be removed upon saving the
+model. Skip deletion parameter should only be true if replacing bytes data with a file.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.model.ModelEntity.delete_data">
+<span class="sig-name descname"><span class="pre">delete_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/otx/api/entities/model.html#ModelEntity.delete_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.model.ModelEntity.delete_data" title="Permalink to this definition"></a></dt>
+<dd><p>This function is used to delete data sources that are on the filesystem.</p>
+<p>If the key exists the model adapter will be appended to a list of model adapter that will be removed once the
+model is saved by the repo. Note that an optimized model must contain at least 1 DataSource otherwise you are
+left with an invalid optimized model.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.model.ModelEntity.model_adapters">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">model_adapters</span></span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="../../usecases/adapters/model_adapter/index.html#otx.api.usecases.adapters.model_adapter.ModelAdapter" title="otx.api.usecases.adapters.model_adapter.ModelAdapter"><span class="pre">otx.api.usecases.adapters.model_adapter.ModelAdapter</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/model.html#ModelEntity.model_adapters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.model.ModelEntity.model_adapters" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the dictionary of model adapters for each data key.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.model.ModelEntity.weight_paths">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">weight_paths</span></span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="../url/index.html#otx.api.entities.url.URL" title="otx.api.entities.url.URL"><span class="pre">otx.api.entities.url.URL</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/model.html#ModelEntity.weight_paths"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.model.ModelEntity.weight_paths" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the the path to URLs for each data key.</p>
+<p>Note that this function will raise an error if the model was not saved to a database.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.model.ModelEntity.is_optimized">
+<span class="sig-name descname"><span class="pre">is_optimized</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/model.html#ModelEntity.is_optimized"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.model.ModelEntity.is_optimized" title="Permalink to this definition"></a></dt>
+<dd><p>Returns a boolean indicating if the model has been optimized or not.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.entities.model.ModelEntity.__eq__">
+<span class="sig-name descname"><span class="pre">__eq__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../../../../../_modules/otx/api/entities/model.html#ModelEntity.__eq__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#otx.api.entities.model.ModelEntity.__eq__" title="Permalink to this definition"></a></dt>
+<dd><p>Compares if both the ModelEntities use the same dataset and have the same performance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>other</strong> (<a class="reference internal" href="#otx.api.entities.model.ModelEntity" title="otx.api.entities.model.ModelEntity"><em>ModelEntity</em></a>) – ModelEntity to compare with.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>True if the two ModelEntities are equal, False otherwise.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, OpenVINO Training Extensions Contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
