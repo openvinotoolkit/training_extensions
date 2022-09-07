@@ -241,6 +241,7 @@ setup(
     name="otx",
     version=get_otx_version(),
     packages=find_packages(exclude=("tests",)),
+    package_data={"": ["requirements.txt", "README.md", "LICENSE"]},  # Needed for exportable code
     install_requires=REQUIRED_PACKAGES,
     extras_require=EXTRAS_REQUIRE,
     entry_points={
