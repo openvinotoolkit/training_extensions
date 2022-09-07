@@ -1,9 +1,6 @@
 name: Build Docs
 
 on:
-  pull_request: # This is temporary as we are testing the workflow. Remove when merge to main.
-    branches:
-      - feature/otx
   push:
     branches: [feature/otx]
   workflow_dispatch: # run on request (no need for PR)
