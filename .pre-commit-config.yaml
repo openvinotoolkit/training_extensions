@@ -26,7 +26,7 @@ repos:
       - id: black
         name: "black (rest)"
         args: [--line-length, "120"]
-        files: '^external/anomaly/.*\.py'
+        files: '^(external/anomaly|external/model-preparation-algorithm)/.*\.py'
 
   - repo: https://github.com/PyCQA/flake8
     rev: "5.0.3"
