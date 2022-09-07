@@ -73,24 +73,16 @@ def get_dummy_compressed_model(task):
     from mmdet.apis.fake_input import get_fake_input
 
     # Disable quantaizers initialization
-    for compression in task._config.nncf_config['compression']:
+    for compression in task._config.nncf_config["compression"]:
         if compression["algorithm"] == "quantization":
             compression["initializer"] = {
-                "batchnorm_adaptation": {
-                    "num_bn_adaptation_samples": 0
-                }
+                "batchnorm_adaptation": {"num_bn_adaptation_samples": 0}
             }
 
-    _, compressed_model = wrap_nncf_model(task._model,
-                                          task._config,
-                                          get_fake_input_func=get_fake_input)
+    _, compressed_model = wrap_nncf_model(
+        task._model, task._config, get_fake_input_func=get_fake_input
+    )
     return compressed_model
-
-
-
-
-
-
 
 
 class TestOTEReallifeObjectDetectionClsIncr(OTETrainingTestInterface):
@@ -108,7 +100,7 @@ class TestOTEReallifeObjectDetectionClsIncr(OTETrainingTestInterface):
         tests discovering.
         """
         return cls.helper.get_list_of_tests(usecase)
-    
+
     @pytest.fixture
     def params_factories_for_test_actions_fx(
         self,
@@ -169,38 +161,49 @@ class TestOTEReallifeObjectDetectionClsIncr(OTETrainingTestInterface):
                 "batch_size": batch_size,
                 "checkpoint": ckpt_path,
             }
-            
+
         def _nncf_graph_params_factory() -> Dict:
             if dataset_definitions is None:
                 pytest.skip('The parameter "--dataset-definitions" is not set')
 
-            model_name = test_parameters['model_name']
+            model_name = test_parameters["model_name"]
             if "Custom_Object_Detection" in model_name:
                 domain = Domain.DETECTION
             elif "Custom_Counting_Instance_Segmentation" in model_name:
                 domain = Domain.INSTANCE_SEGMENTATION
             else:
                 domain = None
-            dataset_name = test_parameters['dataset_name']
+            dataset_name = test_parameters["dataset_name"]
 
-            dataset_params = _get_dataset_params_from_dataset_definitions(dataset_definitions, dataset_name)
+            dataset_params = _get_dataset_params_from_dataset_definitions(
+                dataset_definitions, dataset_name
+            )
 
             if model_name not in template_paths:
-                raise ValueError(f'Model {model_name} is absent in template_paths, '
-                                f'template_paths.keys={list(template_paths.keys())}')
-            template_path = make_path_be_abs(template_paths[model_name], template_paths[ROOT_PATH_KEY])
+                raise ValueError(
+                    f"Model {model_name} is absent in template_paths, "
+                    f"template_paths.keys={list(template_paths.keys())}"
+                )
+            template_path = make_path_be_abs(
+                template_paths[model_name], template_paths[ROOT_PATH_KEY]
+            )
 
-            logger.debug('training params factory: Before creating dataset and labels_schema')
+            logger.debug(
+                "training params factory: Before creating dataset and labels_schema"
+            )
             dataset, labels_schema = _create_object_detection_dataset_and_labels_schema(
-                dataset_params, domain)
-            logger.debug('training params factory: After creating dataset and labels_schema')
+                dataset_params, domain
+            )
+            logger.debug(
+                "training params factory: After creating dataset and labels_schema"
+            )
 
             return {
-                'dataset': dataset,
-                'labels_schema': labels_schema,
-                'template_path': template_path,
-                'reference_dir': ote_current_reference_dir_fx,
-                'fn_get_compressed_model': get_dummy_compressed_model,
+                "dataset": dataset,
+                "labels_schema": labels_schema,
+                "template_path": template_path,
+                "reference_dir": ote_current_reference_dir_fx,
+                "fn_get_compressed_model": get_dummy_compressed_model,
             }
 
         params_factories_for_test_actions = {
