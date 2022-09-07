@@ -182,7 +182,7 @@ learning_parameters:
       rules: []
       type: UI_RULES
     visible_in_ui: true
-    warning: This will automatically control the This and interval when early stopping is enabled.
+    warning: This will automatically control the patience and interval when early stopping is enabled.
   type: PARAMETER_GROUP
   visible_in_ui: true
 postprocessing:
