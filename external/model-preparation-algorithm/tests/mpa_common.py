@@ -26,11 +26,11 @@ from ote_sdk.test_suite.training_tests_actions import (
     OTETestPotEvaluationAction,
     OTETestTrainingAction,
     OTETestTrainingEvaluationAction,
-    OTETestNNCFAction,
-    OTETestNNCFEvaluationAction,
-    OTETestNNCFExportAction,
-    OTETestNNCFExportEvaluationAction,
-    OTETestNNCFGraphAction,
+    # OTETestNNCFAction,
+    # OTETestNNCFEvaluationAction,
+    # OTETestNNCFExportAction,
+    # OTETestNNCFExportEvaluationAction,
+    # OTETestNNCFGraphAction,
 )
 from ote_sdk.test_suite.training_tests_common import ROOT_PATH_KEY, make_paths_be_abs
 from segmentation_tasks.extension.datasets.mmdataset import load_dataset_items
