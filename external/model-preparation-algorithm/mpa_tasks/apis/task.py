@@ -49,7 +49,7 @@ class BaseTask:
         self._anchors = {}
         if task_environment.model is not None:
             logger.info('loading the model from the task env.')
-            state_dict = self._load_model_state_dict(self._task_environment.model)
+            state_dict = self._load_model_ckpt(self._task_environment.model)
             if state_dict:
                 self._model_ckpt = os.path.join(self._output_path, 'env_model_ckpt.pth')
                 if os.path.exists(self._model_ckpt):
@@ -230,7 +230,7 @@ class BaseTask:
         """
         return dict()
 
-    def _load_model_state_dict(self, model: ModelEntity):
+    def _load_model_ckpt(self, model: ModelEntity):
         if 'weights.pth' in model.model_adapters:
             # If a model has been trained and saved for the task already, create empty model and load weights here
             buffer = io.BytesIO(model.get_data("weights.pth"))
@@ -238,10 +238,10 @@ class BaseTask:
 
             # set confidence_threshold as well
             self.confidence_threshold = model_data.get('confidence_threshold', self.confidence_threshold)
-            if model_data.get('anchors'):
+            if model_data.get('anchors', False):
                 self._anchors = model_data['anchors']
 
-            return model_data.get('model', model_data.get('state_dict', None))
+            return model_data
         else:
             return None
 
