@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="docs/source/images/logos/otx-logo-black.png" width="300px">
+<img src="docs/source/images/logos/otx-logo-black.png" width="200px">
 
 # OpenVINO™ Training Extensions
 
