@@ -90,8 +90,8 @@ def parse_args():
     )
     parser.add_argument(
         "--resume",
-        action='store_true',
-        help="Resume training from previously saved checkpoint"
+        action="store_true",
+        help="Resume training from previously saved checkpoint",
     )
     parser.add_argument(
         "--save-model-to",
