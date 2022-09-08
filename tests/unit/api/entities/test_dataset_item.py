@@ -490,6 +490,8 @@ class TestDatasetItemEntity:
     @pytest.mark.priority_medium
     @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
+    @pytest.mark.xfail
+    # TODO: Fix this - https://jira.devtools.intel.com/browse/CVS-91526
     def test_dataset_item_get_annotations(self):
         """
         <b>Description:</b>
@@ -506,7 +508,6 @@ class TestDatasetItemEntity:
         1. Check that get_annotations returns all annotations in the dataset item if the ROI is a full box
         2. Check that after adding the parameter "labels", only the annotations with that label are returned
         3. Check that for a ROI that includes only one of the annotations, only that annotation is returned
-        todo: CVS-75919 fix a bug in get_annotations method and add tests that cover it
         """
         # Check that get_annotations returns all items if the ROI is a full box.
         full_box_roi_dataset_item = DatasetItemParameters().default_values_dataset_item()
