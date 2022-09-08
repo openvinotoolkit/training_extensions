@@ -2,6 +2,8 @@
 
 <img src="docs/source/images/logos/otx-logo-black.png" width="300px">
 
+# OpenVINO™ Training Extensions
+
 ---
 
 [![python](https://img.shields.io/badge/python-3.8%2B-green)]()
