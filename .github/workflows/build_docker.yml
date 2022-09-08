@@ -1,0 +1,17 @@
+name: Build Docker Image
+
+on:
+  pull_request:
+    paths:
+      - "Dockerfile"
+      - "requirements/*.txt"
+      - ".github/workflows/build_docker.yml"
+
+jobs:
+  Build-Docker-File:
+    runs-on: [self-hosted, linux, x64]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Build Docker Image
+        run: docker build --build-arg http_proxy="$http_proxy" --build-arg https_proxy="$https_proxy" --build-arg no_proxy="$no_proxy" -t otx .

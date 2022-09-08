@@ -1,18 +1,27 @@
 #########################################################
 ## Python Environment with CUDA
 #########################################################
+ARG http_proxy
+ARG https_proxy
+ARG no_proxy
 
-FROM nvidia/cuda:11.4.0-devel-ubuntu20.04 AS python_base_cuda
+FROM nvidia/cuda:10.2-devel-ubuntu18.04 AS python_base_cuda
 LABEL MAINTAINER="OpenVINO Training Extensions Development Team"
+
+# Setup proxies
+
+ENV http_proxy=$http_proxy
+ENV https_proxy=$https_proxy
+ENV no_proxy=$no_proxy
 
 # Update system and install wget
 RUN apt-get update && \
     DEBIAN_FRONTEND="noninteractive" apt-get install --no-install-recommends -y \
-        wget=1.20.3-1ubuntu2 \
-        ffmpeg=7:4.2.7-0ubuntu0.1 \
-        libpython3.8=3.8.10-0ubuntu1~20.04.5 \
-        git=1:2.25.1-1ubuntu3.5 \
-        sudo=1.8.31-1ubuntu1.2 && \
+        wget \
+        ffmpeg \
+        libpython3.8 \
+        git \
+        sudo && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
@@ -49,13 +58,13 @@ RUN pip install --no-cache-dir -r /tmp/otx/requirements/openvino.txt
 # Install other requirements related to development
 RUN apt-get update && \
     DEBIAN_FRONTEND="noninteractive" apt-get install --no-install-recommends -y \
-        nodejs=10.19.0~dfsg-3ubuntu1 \
-        npm=6.14.4+ds-1ubuntu2 \
-        ruby=1:2.7+1 && \
+        nodejs \
+        npm \
+        ruby && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
 # Install OTX
 COPY . /otx
 WORKDIR /otx
-RUN pip install --no-cache-dir -e .
+RUN pip install -e .
