@@ -32,7 +32,7 @@ hyper_parameters:
       num_workers:
         default_value: 0
       learning_rate:
-        default_value: 0.016
+        default_value: 0.0058
         auto_hpo_state: POSSIBLE
       learning_rate_warmup_iters:
         default_value: 100
