@@ -1,9 +1,17 @@
-# OpenVINO™ Training Extensions
+<div align="center">
+
+<img src="docs/source/images/logos/otx-logo-black.png" width="300px">
+
+---
 
 [![python](https://img.shields.io/badge/python-3.8%2B-green)]()
 [![black](https://img.shields.io/badge/code%20style-black-000000.svg)]()
 [![mypy](https://img.shields.io/badge/%20type_checker-mypy-%231674b1?style=flat)]()
 [![openvino](https://img.shields.io/badge/openvino-2021.4-purple)]()
+
+---
+
+</div>
 
 OpenVINO™ Training Extensions provide a convenient environment to train
 Deep Learning models and convert them using the [OpenVINO™
