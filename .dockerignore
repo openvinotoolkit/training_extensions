@@ -1,0 +1,10 @@
+.tox
+.vscode
+build/
+.mypy_cache
+__pycache__
+.pytest_cache
+lightning_logs/
+results/
+venv/
+.github/
