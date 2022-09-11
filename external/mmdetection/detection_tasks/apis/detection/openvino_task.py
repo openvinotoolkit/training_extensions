@@ -203,14 +203,20 @@ class OpenVINOMaskInferencer(BaseInferencerWithConverter):
         boxes = np.empty((0, 4), dtype=np.float32)
         masks = []
 
-        tiler = Tiler(tile_size=tile_size, overlap=overlap)
-        tiles, offsets = tiler.tile(image)
+        batch_size = 1
+        tiler = Tiler(tile_size=400, overlap=overlap, batch_size=batch_size)
 
         original_shape = image.shape
         metadata = None
-        for tile, offset in zip(tiles, offsets):
-            tile, metadata = self.model.preprocess(tile)
-            raw_predictions = self.model.infer_sync(tile)
+        for tile, offset in tiler.tile(image):
+            # dict_inputs = {self.model.image_blob_name: tile, "meta_list": []}
+            # self.model.batch_preprocess(dict_inputs)
+            # meta_list = dict_inputs.pop("meta_list")
+            # raw_predictions = self.model.infer_sync(dict_inputs)
+            # predictions = self.model.batch_postprocess(raw_predictions, meta_list, resize_mask=False)
+
+            tile_dict, metadata = self.model.preprocess(tile[0])
+            raw_predictions = self.model.infer_sync(tile_dict)
             metadata['resize_mask'] = False
             predictions = self.model.postprocess(raw_predictions, metadata)
 
@@ -355,7 +361,6 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
                                               max_number=max_number)
 
         dataset_size = len(dataset)
-        start_time = time.perf_counter()
         for i, dataset_item in enumerate(dataset, 1):
             predicted_scene, features = self.inferencer.predict(dataset_item.numpy)
             dataset_item.append_annotations(predicted_scene.annotations)
@@ -373,7 +378,6 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
                                                        numpy=saliency_map, roi=dataset_item.roi)
                 dataset_item.append_metadata_item(saliency_map_media, model=self.model)
         logger.info('OpenVINO inference completed')
-        logger.info(f"Total Item: {len(dataset)}, Total Time: {time.perf_counter() - start_time}")
         return dataset
 
     @check_input_parameters_type()
