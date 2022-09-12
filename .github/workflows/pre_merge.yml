@@ -22,7 +22,6 @@ jobs:
         run: tox -re pre-commit
   Pre-Merge-Tests:
     runs-on: [self-hosted, linux, x64]
-    container: otx
     needs: Code-Quality-Checks
     steps:
       - name: Checkout repository
