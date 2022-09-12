@@ -4,6 +4,14 @@
    :members:
    :undoc-members:
 
+.. automodule:: otx.api.usecases.evaluation.anomaly_metrics
+   :members:
+   :undoc-members:
+
+.. automodule:: otx.api.usecases.evaluation.averaging
+   :members:
+   :undoc-members:
+
 .. automodule:: otx.api.usecases.evaluation.basic_operations
    :members:
    :undoc-members:
@@ -16,14 +24,13 @@
    :members:
    :undoc-members:
 
-.. automodule:: otx.api.usecases.evaluation.get_performance_interface
-   :members:
-   :undoc-members:
-
 .. automodule:: otx.api.usecases.evaluation.metrics_helper
    :members:
    :undoc-members:
 
+.. automodule:: otx.api.usecases.evaluation.performance_provider_interface
+   :members:
+   :undoc-members:
 """
 
 # Copyright (C) 2021-2022 Intel Corporation

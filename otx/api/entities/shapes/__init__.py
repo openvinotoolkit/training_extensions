@@ -1,14 +1,14 @@
 """Entities containing shapes.
 
-.. automodule:: otx.api.entities.shapes.rectangle
-   :members:
-   :undoc-members:
-
-.. automodule:: otx.api.entities.shapes.circle
+.. automodule:: otx.api.entities.shapes.ellipse
    :members:
    :undoc-members:
 
 .. automodule:: otx.api.entities.shapes.polygon
+   :members:
+   :undoc-members:
+
+.. automodule:: otx.api.entities.shapes.rectangle
    :members:
    :undoc-members:
 
