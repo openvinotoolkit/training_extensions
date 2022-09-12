@@ -13,17 +13,25 @@ LABEL MAINTAINER="OpenVINO Training Extensions Development Team"
 ENV http_proxy=$HTTP_PROXY
 ENV https_proxy=$HTTPS_PROXY
 ENV no_proxy=$NO_PROXY
+ENV DEBIAN_FRONTEND="noninteractive"
 
-# Update system and install wget
+# Update system and install dependencies
 RUN apt-get update && \
-    DEBIAN_FRONTEND="noninteractive" apt-get install --no-install-recommends -y \
+    apt-get install --no-install-recommends -y \
+    software-properties-common \
         wget \
         ffmpeg \
         libpython3.8 \
-        git \
         curl \
         nodejs \
         npm && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Install latest git for github actions
+RUN apt-get update && \
+    add-apt-repository ppa:git-core/ppa &&\
+    apt-get install --no-install-recommends -y git=1:2.37.3-0ppa1\~ubuntu18.04.1 &&\
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
