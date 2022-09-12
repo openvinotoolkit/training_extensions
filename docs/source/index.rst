@@ -1,8 +1,3 @@
-.. training_extensions documentation master file, created by
-   sphinx-quickstart on Fri Sep  9 09:58:44 2022.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 OpenVINO Training Extensions -- OTX
 ===============================================
 
