@@ -24,6 +24,7 @@ RUN apt-get update && \
         libpython3.8 \
         curl \
         nodejs \
+        unzip \
         npm && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
