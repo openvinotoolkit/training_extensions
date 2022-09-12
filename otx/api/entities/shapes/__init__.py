@@ -1,21 +1,4 @@
-"""Entities containing shapes.
-
-.. automodule:: otx.api.entities.shapes.ellipse
-   :members:
-   :undoc-members:
-
-.. automodule:: otx.api.entities.shapes.polygon
-   :members:
-   :undoc-members:
-
-.. automodule:: otx.api.entities.shapes.rectangle
-   :members:
-   :undoc-members:
-
-.. automodule:: otx.api.entities.shapes.shape
-   :members:
-   :undoc-members:
-"""
+"""Entities containing shapes."""
 
 # Copyright (C) 2021-2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
