@@ -35,6 +35,8 @@
 
    tar xzf ./actions-runner-linux-x64-2.296.1.tar.gz
 
+   rm actions-runner-linux-x64-2.296.1.tar.gz
+
    ./config.sh --url https://github.com/openvinotoolkit/training_extensions --token <enter-your-token-here>
    ```
 
