@@ -42,7 +42,7 @@
 
    Follow the instructions on the screen to complete the installation.
 
-1. To ensure that coverage report is uploaded to codacy, add the following environment variables to the container:
+1. To ensure that coverage report is uploaded to codacy, add the following ~/.bashrc file in the container.
 
    ```bash
    export CODACY_PROJECT_TOKEN=<codacy-project-token>
