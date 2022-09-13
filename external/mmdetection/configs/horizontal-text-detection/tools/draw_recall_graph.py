@@ -19,12 +19,12 @@
 
 import argparse
 from os.path import exists
-import subprocess  # nosec
+import subprocess
 
 import mmcv
 
-from mmdet.datasets import build_dataset # pylint: disable=import-error
-from mmdet.core.evaluation.text_evaluation import text_eval # pylint: disable=import-error
+from mmdet.datasets import build_dataset  # pylint: disable=import-error
+from mmdet.core.evaluation.text_evaluation import text_eval  # pylint: disable=import-error
 
 
 def parse_args():
@@ -49,13 +49,12 @@ def main():
 
     detection_file = 'horizontal_text_detection'
     if not exists(f'{detection_file}.bbox.json'):
-        subprocess.run(
-            f'python ../../../../../external/mmdetection/tools/test.py'
-            f' {args.config} {args.snapshot}'
-            f' --options jsonfile_prefix={detection_file}'
-            f' --format-only',
-            check=True, shell=True
-        )
+        command = [
+            'python', '../../../../../external/mmdetection/tools/test.py',
+            f'{args.config}', f'{args.snapshot}',
+            '--options', f'jsonfile_prefix={detection_file}', '--format-only'
+        ]
+        subprocess.run(command, check=True)
 
     cfg = mmcv.Config.fromfile(args.config)
     dataset = build_dataset(cfg.data.test)

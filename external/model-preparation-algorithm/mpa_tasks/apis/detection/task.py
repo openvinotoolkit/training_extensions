@@ -56,6 +56,8 @@ from ote_sdk.usecases.tasks.interfaces.unload_interface import IUnload
 from detection_tasks.apis.detection import OTEDetectionNNCFTask
 from ote_sdk.utils.argument_checks import check_input_parameters_type
 from ote_sdk.entities.model_template import parse_model_template
+from ote_sdk.utils.vis_utils import get_actmap
+
 
 logger = get_logger()
 
@@ -265,9 +267,8 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
                 dataset_item.append_metadata_item(active_score, model=self._task_environment.model)
 
             if saliency_map is not None:
-                width, height = dataset_item.width, dataset_item.height
-                saliency_map = cv2.resize(saliency_map, (width, height), interpolation=cv2.INTER_NEAREST)
-                saliency_map_media = ResultMediaEntity(name="saliency_map", type="Saliency map",
+                saliency_map = get_actmap(saliency_map, (dataset_item.width, dataset_item.height))
+                saliency_map_media = ResultMediaEntity(name="Saliency Map", type="saliency_map",
                                                        annotation_scene=dataset_item.annotation_scene,
                                                        numpy=saliency_map, roi=dataset_item.roi)
                 dataset_item.append_metadata_item(saliency_map_media, model=self._task_environment.model)

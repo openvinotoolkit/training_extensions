@@ -135,6 +135,10 @@ class MPAClsDataset(BaseDataset):
             results = np.vstack(results)
             gt_labels = self.get_gt_labels()
             accuracies = self.class_accuracy(results, gt_labels)
+
+            if any(np.isnan(accuracies)):
+                accuracies = np.nan_to_num(accuracies)
+
             eval_results.update({f'{c} accuracy': a for c, a in zip(self.CLASSES, accuracies)})
             eval_results.update({'mean accuracy': np.mean(accuracies)})
 

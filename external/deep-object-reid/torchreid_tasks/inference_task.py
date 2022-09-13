@@ -48,15 +48,16 @@ from ote_sdk.utils.argument_checks import (
     check_input_parameters_type,
 )
 from ote_sdk.utils.labels_utils import get_empty_label
+from ote_sdk.utils.vis_utils import get_actmap
 from scripts.default_config import (get_default_config, imagedata_kwargs,
                                     merge_from_files_with_base, model_kwargs)
 from torchreid.apis.export import export_ir, export_onnx
 from torchreid_tasks.monitors import DefaultMetricsMonitor, StopCallback
 from torchreid_tasks.parameters import OTEClassificationParameters
-from torchreid_tasks.utils import (active_score_from_probs, force_fp32, get_actmap, get_multiclass_predictions,
-                                            get_multilabel_predictions, InferenceProgressCallback,
-                                            OTEClassificationDataset, sigmoid_numpy, softmax_numpy,
-                                            get_multihead_class_info, get_hierarchical_predictions)
+from torchreid_tasks.utils import (active_score_from_probs, force_fp32, get_multiclass_predictions,
+                                   get_multilabel_predictions, InferenceProgressCallback,
+                                   OTEClassificationDataset, sigmoid_numpy, softmax_numpy,
+                                   get_multihead_class_info, get_hierarchical_predictions)
 from torchreid.metrics.classification import score_extraction
 from torchreid.utils import load_pretrained_weights
 
@@ -262,9 +263,9 @@ class OTEClassificationInferenceTask(IInferenceTask, IEvaluationTask, IExportTas
 
             if dump_features:
                 actmap = get_actmap(saliency_maps[i], (dataset_item.width, dataset_item.height))
-                saliency_media = ResultMediaEntity(name="saliency_map", type="Saliency map",
+                saliency_media = ResultMediaEntity(name="Saliency Map", type="saliency_map",
                                                    annotation_scene=dataset_item.annotation_scene,
-                                                   numpy=actmap, roi=dataset_item.roi, label = item_labels[0].label)
+                                                   numpy=actmap, roi=dataset_item.roi, label=item_labels[0].label)
                 dataset_item.append_metadata_item(saliency_media, model=self._task_environment.model)
 
         return dataset
