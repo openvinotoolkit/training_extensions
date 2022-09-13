@@ -1,0 +1,703 @@
+<!doctype html>
+<html class="no-js">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+<link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" /><link rel="next" title="Entities" href="../entities/index.html" /><link rel="prev" title="API Reference" href="../index.html" />
+
+    <meta name="generator" content="sphinx-4.5.0, furo 2021.07.31.beta41"/>
+        <title>Configuration - OpenVINO Training Extensions documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?digest=daa650a7760fac3eee23aa959745d2c866b74cb3" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?digest=93475b62d1c3bc01323a0eefdc14a62d77b12690" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  
+  }
+  body[data-theme="dark"] {
+    --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+  }
+  @media (prefers-color-scheme: dark) {
+    body:not([data-theme="light"]) {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+  }
+</style>
+    <link media="(prefers-color-scheme: dark)" rel="stylesheet" href="../../../_static/pygments_dark.css"></head>
+  <body>
+    
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path stroke="none" d="M0 0h24v24H0z" />
+      <line x1="4" y1="6" x2="20" y2="6" />
+      <line x1="10" y1="12" x2="20" y2="12" />
+      <line x1="6" y1="18" x2="20" y2="18" />
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-half" viewBox="0 0 24 24">
+    <title>Auto light/dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M13 12h5" />
+      <path d="M13 15h4" />
+      <path d="M13 18h1" />
+      <path d="M13 9h4" />
+      <path d="M13 6h1" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../../../index.html"><div class="brand">OpenVINO Training Extensions  documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand centered" href="../../../index.html">
+  
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo" src="../../../_static/otx-logo-black-mini.png" alt="Logo"/>
+  </div>
+  
+  
+</a><form class="sidebar-search-container" method="get" action="../../../search.html" role="search">
+  <input class="sidebar-search" placeholder=Search name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../tutorials/index.html">Tutorials</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../tutorials/install.html">Install OTX</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../how_to_guides/index.html">How to Guides</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 current has-children"><a class="reference internal" href="../../index.html">Reference</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
+<li class="toctree-l2 current has-children"><a class="reference internal" href="../index.html">API Reference</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
+<li class="toctree-l3 current current-page"><a class="current reference internal" href="#">Configuration</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../entities/index.html">Entities</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../entities/general.html">General</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../entities/shapes.html">Shapes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../entities/interfaces.html">Interfaces</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../usecases/index.html">Usecases</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../usecases/adapters.html">Adapters</a></li>
+<li class="toctree-l4 has-children"><a class="reference internal" href="../usecases/evaluation.html">Evaluation</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="../usecases/exportable_code.html">Exportable Code</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../usecases/reporting.html">Reporting</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../usecases/tasks.html">Task interfaces</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../cli/index.html">CLI Reference</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../algorithms/index.html">Algorithm Reference</a><input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../algorithms/anomaly/index.html">Anomaly</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../algorithms/classification/index.html">Classification</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../algorithms/detection/index.html">Detection</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../algorithms/segmentation/index.html">Segmentation</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../explanation/index.html">Explanation</a><input class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" role="switch" type="checkbox"/><label for="toctree-checkbox-9"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="simple">
+</ul>
+</li>
+</ul>
+
+</div>
+</div>
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <article role="main">
+        <div class="content-icon-container">
+          <div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <section id="module-otx.api.configuration">
+<span id="configuration"></span><h1>Configuration<a class="headerlink" href="#module-otx.api.configuration" title="Permalink to this headline">¶</a></h1>
+<p>OTX configurable parameters and helper utilities.</p>
+<p>This module contains base elements that make up OTX ConfigurableParameters, as well as a collection of helper
+functions to interact with them.</p>
+<p>The configuration helper module can be imported as <cite>otx_config_helper</cite> and implements the following:</p>
+<span class="target" id="module-otx.api.configuration.helper"></span><p>This module contains the configuration helper functions.</p>
+<p>These can be used to create, convert or interact with OTX configuration objects or dictionaries, yaml strings or yaml
+files representing those objects.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.api.configuration.helper.convert">
+<span class="sig-prename descclassname"><span class="pre">otx.api.configuration.helper.</span></span><span class="sig-name descname"><span class="pre">convert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.configuration.ConfigurableParameters" title="otx.api.configuration.configurable_parameters.ConfigurableParameters"><span class="pre">otx.api.configuration.configurable_parameters.ConfigurableParameters</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">otx.api.configuration.helper.convert.ConvertTypeVar</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enum_to_str</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id_to_str</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">values_only</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><span class="pre">otx.api.configuration.helper.convert.ConvertTypeVar</span></span></span><a class="headerlink" href="#otx.api.configuration.helper.convert" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a configuration object to either a yaml string, a dictionary or an OmegaConf DictConfig object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>config</strong> (<a class="reference internal" href="#otx.api.configuration.ConfigurableParameters" title="otx.api.configuration.ConfigurableParameters"><em>ConfigurableParameters</em></a>) – ConfigurableParameters object to convert</p></li>
+<li><p><strong>target</strong> (<em>Type</em><em>[</em><em>ConvertTypeVar</em><em>]</em>) – target type to convert to. Options are [str, dict, DictConfig]</p></li>
+<li><p><strong>enum_to_str</strong> (<em>bool</em>) – Boolean specifying whether to convert enums within the config
+to their string representation. For conversion to yaml, enums
+are automatically converted and this option is disregarded.</p></li>
+<li><p><strong>id_to_str</strong> (<em>bool</em>) – True to convert the id of the configurable parameters to a string
+representation, False to leave it as an ID object</p></li>
+<li><p><strong>values_only</strong> (<em>bool</em>) – True to keep only the parameter values, and remove all meta
+data from the target output</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>ValueError</strong> – if an unsupported conversion target is supplied</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><dl class="simple">
+<dt>Result of the conversion, the configuration specified in <cite>config</cite> in the</dt><dd><p>representation specified in <cite>target</cite></p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>ConvertTypeVar</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.api.configuration.helper.create">
+<span class="sig-prename descclassname"><span class="pre">otx.api.configuration.helper.</span></span><span class="sig-name descname"><span class="pre">create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">omegaconf.dictconfig.DictConfig</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><a class="reference internal" href="#otx.api.configuration.ConfigurableParameters" title="otx.api.configuration.configurable_parameters.ConfigurableParameters"><span class="pre">otx.api.configuration.configurable_parameters.ConfigurableParameters</span></a></span></span><a class="headerlink" href="#otx.api.configuration.helper.create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a configuration object from a yaml string, yaml file path, dictionary or OmegaConf DictConfig object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>input_config</strong> – yaml string, dictionary, DictConfig or filepath
+describing a configuration.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>ConfigurableParameters object</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.api.configuration.helper.substitute_values">
+<span class="sig-prename descclassname"><span class="pre">otx.api.configuration.helper.</span></span><span class="sig-name descname"><span class="pre">substitute_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.configuration.ConfigurableParameters" title="otx.api.configuration.configurable_parameters.ConfigurableParameters"><span class="pre">otx.api.configuration.configurable_parameters.ConfigurableParameters</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">value_input</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">omegaconf.dictconfig.DictConfig</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#otx.api.configuration.ConfigurableParameters" title="otx.api.configuration.configurable_parameters.ConfigurableParameters"><span class="pre">otx.api.configuration.configurable_parameters.ConfigurableParameters</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_missing_values</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.configuration.helper.substitute_values" title="Permalink to this definition">¶</a></dt>
+<dd><p>Substitutes values from value_input into the config object.</p>
+<p>The structures of value_input and config have to match in order for the values to be substituted
+correctly.</p>
+<p>Values are substituted in place.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>config</strong> (<a class="reference internal" href="#otx.api.configuration.ConfigurableParameters" title="otx.api.configuration.ConfigurableParameters"><em>ConfigurableParameters</em></a>) – ConfigurableParameter object to substitute values into.</p></li>
+<li><p><strong>value_input</strong> (<em>Union</em><em>[</em><em>str</em><em>, </em><em>DictConfig</em><em>, </em><em>dict</em><em>, </em><a class="reference internal" href="#otx.api.configuration.ConfigurableParameters" title="otx.api.configuration.ConfigurableParameters"><em>ConfigurableParameters</em></a><em>]</em>) – ConfigurableParameters (either in object,
+dict, yaml or DictConfig representation) to take the values to be substituted from.</p></li>
+<li><p><strong>allow_missing_values</strong> (<em>bool</em>) – True to allow missing values in the configuration,
+i.e. if a value is found in <cite>value_input</cite>, but not in <cite>config</cite>, it will
+silently be ignored. If set to False, an AttributeError will be
+raised. Defaults to False.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.api.configuration.helper.substitute_values_for_lifecycle">
+<span class="sig-prename descclassname"><span class="pre">otx.api.configuration.helper.</span></span><span class="sig-name descname"><span class="pre">substitute_values_for_lifecycle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.configuration.ConfigurableParameters" title="otx.api.configuration.configurable_parameters.ConfigurableParameters"><span class="pre">otx.api.configuration.configurable_parameters.ConfigurableParameters</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">value_input</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#otx.api.configuration.ConfigurableParameters" title="otx.api.configuration.configurable_parameters.ConfigurableParameters"><span class="pre">otx.api.configuration.configurable_parameters.ConfigurableParameters</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_lifecycle</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#otx.api.configuration.ModelLifecycle" title="otx.api.configuration.enums.model_lifecycle.ModelLifecycle"><span class="pre">otx.api.configuration.enums.model_lifecycle.ModelLifecycle</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#otx.api.configuration.ModelLifecycle" title="otx.api.configuration.enums.model_lifecycle.ModelLifecycle"><span class="pre">otx.api.configuration.enums.model_lifecycle.ModelLifecycle</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_missing_values</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.configuration.helper.substitute_values_for_lifecycle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Substitutes values from value_input into the config object.</p>
+<p>The structures of value_input and config have to match in order for the values to be substituted correctly.
+If the argument <cite>model_lifecycle</cite> is provided, only parameters that affect the specified phase in the model
+lifecycle will be substituted.</p>
+<p>Values are substituted in place.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>config</strong> (<a class="reference internal" href="#otx.api.configuration.ConfigurableParameters" title="otx.api.configuration.ConfigurableParameters"><em>ConfigurableParameters</em></a>) – ConfigurableParameter object to substitute values into</p></li>
+<li><p><strong>value_input</strong> (<a class="reference internal" href="#otx.api.configuration.ConfigurableParameters" title="otx.api.configuration.ConfigurableParameters"><em>ConfigurableParameters</em></a>) – ConfigurableParameters to take the values to be substituted
+from.</p></li>
+<li><p><strong>model_lifecycle</strong> (<em>Union</em><em>[</em><a class="reference internal" href="#otx.api.configuration.ModelLifecycle" title="otx.api.configuration.ModelLifecycle"><em>ModelLifecycle</em></a><em>, </em><em>Sequence</em><em>[</em><a class="reference internal" href="#otx.api.configuration.ModelLifecycle" title="otx.api.configuration.ModelLifecycle"><em>ModelLifecycle</em></a><em>]</em><em>]</em>) – Phase or list of phases in the
+model lifecycle to carry out the substitution for. For example, if
+<cite>model_lifecycle = ModelLifecycle.INFERENCE</cite> is passed, only parameters that
+affect inference will be updated, and the rest of the parameters will
+remain untouched.</p></li>
+<li><p><strong>allow_missing_values</strong> (<em>bool</em>) – True to allow missing values in the configuration,
+i.e. if a value is found in <cite>value_input</cite>, but not in <cite>config</cite>, it will
+silently be ignored. If set to False, an AttributeError will be
+raised. Defaults to True.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.api.configuration.helper.validate">
+<span class="sig-prename descclassname"><span class="pre">otx.api.configuration.helper.</span></span><span class="sig-name descname"><span class="pre">validate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">otx.api.configuration.elements.parameter_group.ParameterGroup</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#otx.api.configuration.helper.validate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Validate a configuration object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>config</strong> – Configuration to validate</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>True if config is valid</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.api.configuration.Action">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.configuration.</span></span><span class="sig-name descname"><span class="pre">Action</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.configuration.Action" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">enum.Enum</span></code></p>
+<p>This Enum represents the allowed actions that UI rules can dictate on configuration parameters.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.configuration.Action.DISABLE_EDITING">
+<span class="sig-name descname"><span class="pre">DISABLE_EDITING</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">4</span></em><a class="headerlink" href="#otx.api.configuration.Action.DISABLE_EDITING" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.configuration.Action.ENABLE_EDITING">
+<span class="sig-name descname"><span class="pre">ENABLE_EDITING</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3</span></em><a class="headerlink" href="#otx.api.configuration.Action.ENABLE_EDITING" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.configuration.Action.HIDE">
+<span class="sig-name descname"><span class="pre">HIDE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#otx.api.configuration.Action.HIDE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.configuration.Action.SHOW">
+<span class="sig-name descname"><span class="pre">SHOW</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></em><a class="headerlink" href="#otx.api.configuration.Action.SHOW" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+</dd></dl>
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.api.configuration.ConfigurableEnum">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.configuration.</span></span><span class="sig-name descname"><span class="pre">ConfigurableEnum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.configuration.ConfigurableEnum" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">enum.Enum</span></code></p>
+<p>This class is used as the basis for defining <cite>selectable</cite> configurable parameters in the OTX API.</p>
+<p>Enums reflecting <cite>selectable</cite> options should inherit from thisclass.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.configuration.ConfigurableEnum.get_class_info">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_class_info</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#otx.api.configuration.ConfigurableEnum.get_class_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a dictionary representation of the ConfigurableEnum.</p>
+<p>This includes the name of the enum and the (name, value) pairs representing its members.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Dictionary representation of the ConfigurableEnum.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.configuration.ConfigurableEnum.get_names">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_names</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#otx.api.configuration.ConfigurableEnum.get_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of names that can be used to index the Enum.</p>
+</dd></dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.configuration.ConfigurableEnum.get_values">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_values</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#otx.api.configuration.ConfigurableEnum.get_values" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of values that can be used to index the Enum.</p>
+</dd></dl>
+</dd></dl>
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.api.configuration.ConfigurableParameters">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.configuration.</span></span><span class="sig-name descname"><span class="pre">ConfigurableParameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">header</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'Default</span> <span class="pre">parameter</span> <span class="pre">group</span> <span class="pre">description'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">visible_in_ui</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="../entities/general.html#otx.api.entities.id.ID" title="otx.api.entities.id.ID"><span class="pre">otx.api.entities.id.ID</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">ID()</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.configuration.ConfigurableParameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">otx.api.configuration.elements.parameter_group.ParameterGroup</span></code></p>
+<p>Base class representing a generic set of configurable parameters.</p>
+<p>A ConfigurableParameters instance is essentially a parameter group with an id
+attached to it, so that it can be uniquely identified in the repositories.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.configuration.ConfigurableParameters.id">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#otx.api.configuration.ConfigurableParameters.id" title="Permalink to this definition">¶</a></dt>
+<dd><p>ID that uniquely identifies the ConfigurableParameters</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="../entities/general.html#otx.api.entities.id.ID" title="otx.api.entities.id.ID">ID</a></p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.configuration.ConfigurableParameters.type">
+<span class="sig-name descname"><span class="pre">type</span></span><a class="headerlink" href="#otx.api.configuration.ConfigurableParameters.type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Type of the ConfigurableParameters</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>ConfigElementType</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id0">
+<span class="sig-name descname"><span class="pre">id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../entities/general.html#otx.api.entities.id.ID" title="otx.api.entities.id.ID"><span class="pre">otx.api.entities.id.ID</span></a></em><a class="headerlink" href="#id0" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id1">
+<span class="sig-name descname"><span class="pre">type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">otx.api.configuration.enums.config_element_type.ConfigElementType</span></em><a class="headerlink" href="#id1" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+</dd></dl>
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.api.configuration.DefaultModelParameters">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.configuration.</span></span><span class="sig-name descname"><span class="pre">DefaultModelParameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">visible_in_ui</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">header</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'Default</span> <span class="pre">model</span> <span class="pre">hyper</span> <span class="pre">parameters'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">learning_parameters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">otx.api.configuration.default_model_parameters.DefaultModelParameters._LearningParameters</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">NOTHING</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="../entities/general.html#otx.api.entities.id.ID" title="otx.api.entities.id.ID"><span class="pre">otx.api.entities.id.ID</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">ID()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'Default</span> <span class="pre">model</span> <span class="pre">hyper</span> <span class="pre">parameter</span> <span class="pre">section</span> <span class="pre">description'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.configuration.DefaultModelParameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#otx.api.configuration.ConfigurableParameters" title="otx.api.configuration.configurable_parameters.ConfigurableParameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">otx.api.configuration.configurable_parameters.ConfigurableParameters</span></code></a></p>
+<p>Configuration element representing a the default set of hyper parameters for a model.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.configuration.DefaultModelParameters.header">
+<span class="sig-name descname"><span class="pre">header</span></span><a class="headerlink" href="#otx.api.configuration.DefaultModelParameters.header" title="Permalink to this definition">¶</a></dt>
+<dd><p>Name of parameter group</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.configuration.DefaultModelParameters.description">
+<span class="sig-name descname"><span class="pre">description</span></span><a class="headerlink" href="#otx.api.configuration.DefaultModelParameters.description" title="Permalink to this definition">¶</a></dt>
+<dd><p>User friendly string describing what the ModelConfig represents, that will be displayed in
+the UI.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id2">
+<span class="sig-name descname"><span class="pre">description</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#id2" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id3">
+<span class="sig-name descname"><span class="pre">header</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#id3" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+</dd></dl>
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.api.configuration.ModelLifecycle">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.configuration.</span></span><span class="sig-name descname"><span class="pre">ModelLifecycle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.configuration.ModelLifecycle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">enum.Enum</span></code></p>
+<p>This Enum represents the different stages in the ModelLifecycle.</p>
+<p>It is used by configuration parameters to indicate
+in which stage of the model lifecycle the parameter takes effect. Selecting a stage early in the lifecycle implies
+that all downstream stages are affected as well (e.g. if this is set to <cite>ModelLifecycle.TRAINING</cite>, it is assumed
+that inference and testing are also impacted).</p>
+<p>Currently the following stages are possible:
+ARCHITECTURE - Select this stage if the parameter modifies the model architecture, such that the most recently</p>
+<blockquote>
+<div><p>trained weights cannot directly by used for the next training round due to a model topology mismatch. For
+example, a parameter <cite>model_depth</cite> that controls the number of downsampling steps in a UNet model should
+have this stage set.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>TRAINING - Select this stage if the parameter is likely to change the outcome of the training process. For example,</dt><dd><p>the parameter <cite>learning_rate</cite> should have this stage set.</p>
+</dd>
+<dt>INFERENCE - Select this stage if the parameter changes the result of inference. For example, a parameter</dt><dd><p><cite>probability_threshold</cite> that controls the threshold for binary classification should have this stage set.</p>
+</dd>
+<dt>TESTING - Select this stage if the parameter changes the outcome of the evaluation process. For example, a parameter</dt><dd><p>‘test_metric` that controls which metric to use for testing does not change training or inference results, but
+does affect the final evaluation of the model. Therefore, it should have this stage set.</p>
+</dd>
+<dt>NONE - Select this stage if the parameter is non-functional, for example if it only impacts training speed but</dt><dd><p>should not change the training outcome. For example, a parameter <cite>num_workers</cite> that controls the number of
+threads used in a dataloader should have this stage set.</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.configuration.ModelLifecycle.ARCHITECTURE">
+<span class="sig-name descname"><span class="pre">ARCHITECTURE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></em><a class="headerlink" href="#otx.api.configuration.ModelLifecycle.ARCHITECTURE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.configuration.ModelLifecycle.INFERENCE">
+<span class="sig-name descname"><span class="pre">INFERENCE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">4</span></em><a class="headerlink" href="#otx.api.configuration.ModelLifecycle.INFERENCE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.configuration.ModelLifecycle.NONE">
+<span class="sig-name descname"><span class="pre">NONE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#otx.api.configuration.ModelLifecycle.NONE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.configuration.ModelLifecycle.TESTING">
+<span class="sig-name descname"><span class="pre">TESTING</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">5</span></em><a class="headerlink" href="#otx.api.configuration.ModelLifecycle.TESTING" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.configuration.ModelLifecycle.TRAINING">
+<span class="sig-name descname"><span class="pre">TRAINING</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3</span></em><a class="headerlink" href="#otx.api.configuration.ModelLifecycle.TRAINING" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+</dd></dl>
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.api.configuration.NullUIRules">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.configuration.</span></span><span class="sig-name descname"><span class="pre">NullUIRules</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">operator</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#otx.api.configuration.Operator" title="otx.api.configuration.ui_rules.types.Operator"><span class="pre">otx.api.configuration.ui_rules.types.Operator</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Operator.AND</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">action</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#otx.api.configuration.Action" title="otx.api.configuration.ui_rules.types.Action"><span class="pre">otx.api.configuration.ui_rules.types.Action</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Action.DISABLE_EDITING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">otx.api.configuration.enums.config_element_type.ConfigElementType</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">ConfigElementType.UI_RULES</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rules</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#otx.api.configuration.Rule" title="otx.api.configuration.ui_rules.rules.Rule"><span class="pre">otx.api.configuration.ui_rules.rules.Rule</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#otx.api.configuration.UIRules" title="otx.api.configuration.ui_rules.rules.UIRules"><span class="pre">otx.api.configuration.ui_rules.rules.UIRules</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">NOTHING</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.configuration.NullUIRules" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#otx.api.configuration.UIRules" title="otx.api.configuration.ui_rules.rules.UIRules"><code class="xref py py-class docutils literal notranslate"><span class="pre">otx.api.configuration.ui_rules.rules.UIRules</span></code></a></p>
+<p>This class represents an empty, unset UIRules element.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.configuration.NullUIRules.rules">
+<span class="sig-name descname"><span class="pre">rules</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#otx.api.configuration.Rule" title="otx.api.configuration.ui_rules.rules.Rule"><span class="pre">otx.api.configuration.ui_rules.rules.Rule</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#otx.api.configuration.UIRules" title="otx.api.configuration.ui_rules.rules.UIRules"><span class="pre">otx.api.configuration.ui_rules.rules.UIRules</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#otx.api.configuration.NullUIRules.rules" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+</dd></dl>
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.api.configuration.Operator">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.configuration.</span></span><span class="sig-name descname"><span class="pre">Operator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.configuration.Operator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">enum.Enum</span></code></p>
+<p>This Enum represents the allowed operators for use in constructing UI rules for configuration parameters.</p>
+<p>These operators can be used to disable a configuration parameter, conditional on the value of another parameter.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.configuration.Operator.AND">
+<span class="sig-name descname"><span class="pre">AND</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">5</span></em><a class="headerlink" href="#otx.api.configuration.Operator.AND" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.configuration.Operator.EQUAL_TO">
+<span class="sig-name descname"><span class="pre">EQUAL_TO</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></em><a class="headerlink" href="#otx.api.configuration.Operator.EQUAL_TO" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.configuration.Operator.GREATER_THAN">
+<span class="sig-name descname"><span class="pre">GREATER_THAN</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">4</span></em><a class="headerlink" href="#otx.api.configuration.Operator.GREATER_THAN" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.configuration.Operator.LESS_THAN">
+<span class="sig-name descname"><span class="pre">LESS_THAN</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3</span></em><a class="headerlink" href="#otx.api.configuration.Operator.LESS_THAN" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.configuration.Operator.NOT">
+<span class="sig-name descname"><span class="pre">NOT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#otx.api.configuration.Operator.NOT" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.configuration.Operator.OR">
+<span class="sig-name descname"><span class="pre">OR</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">6</span></em><a class="headerlink" href="#otx.api.configuration.Operator.OR" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.configuration.Operator.XOR">
+<span class="sig-name descname"><span class="pre">XOR</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">7</span></em><a class="headerlink" href="#otx.api.configuration.Operator.XOR" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+</dd></dl>
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.api.configuration.Rule">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.configuration.</span></span><span class="sig-name descname"><span class="pre">Rule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">operator</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#otx.api.configuration.Operator" title="otx.api.configuration.ui_rules.types.Operator"><span class="pre">otx.api.configuration.ui_rules.types.Operator</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Operator.EQUAL_TO</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">otx.api.configuration.enums.config_element_type.ConfigElementType</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">ConfigElementType.RULE</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.configuration.Rule" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>This class represents a <cite>operator</cite> applied to the <cite>value</cite> of the configurable parameter <cite>parameter</cite>.</p>
+<p>The parameter for which the rule should be evaluated is identified by name, or by a list of names representing the
+attribute path to the parameter in case of a nested configuration.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.configuration.Rule.operator">
+<span class="sig-name descname"><span class="pre">operator</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#otx.api.configuration.Operator" title="otx.api.configuration.ui_rules.types.Operator"><span class="pre">otx.api.configuration.ui_rules.types.Operator</span></a></em><a class="headerlink" href="#otx.api.configuration.Rule.operator" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.configuration.Rule.parameter">
+<span class="sig-name descname"><span class="pre">parameter</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#otx.api.configuration.Rule.parameter" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.configuration.Rule.to_dict">
+<span class="sig-name descname"><span class="pre">to_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">enum_to_str</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#otx.api.configuration.Rule.to_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method to serialize a Rule instance to its dictionary representation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>enum_to_str</strong> (<em>bool</em>) – Set to True to convert Enum instances to their string representation</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>dictionary representation of the Rule object for which this method is called</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.configuration.Rule.type">
+<span class="sig-name descname"><span class="pre">type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">otx.api.configuration.enums.config_element_type.ConfigElementType</span></em><a class="headerlink" href="#otx.api.configuration.Rule.type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.configuration.Rule.value">
+<span class="sig-name descname"><span class="pre">value</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#otx.api.configuration.Rule.value" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+</dd></dl>
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.api.configuration.UIRules">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.api.configuration.</span></span><span class="sig-name descname"><span class="pre">UIRules</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">operator</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#otx.api.configuration.Operator" title="otx.api.configuration.ui_rules.types.Operator"><span class="pre">otx.api.configuration.ui_rules.types.Operator</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Operator.AND</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">action</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#otx.api.configuration.Action" title="otx.api.configuration.ui_rules.types.Action"><span class="pre">otx.api.configuration.ui_rules.types.Action</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Action.DISABLE_EDITING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ConfigElementType</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">ConfigElementType.UI_RULES</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rules</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#otx.api.configuration.Rule" title="otx.api.configuration.Rule"><span class="pre">Rule</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#otx.api.configuration.UIRules" title="otx.api.configuration.UIRules"><span class="pre">UIRules</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.configuration.UIRules" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>This class allows the combination of ExposureRules using boolean logic.</p>
+<p>The class can be set as an attribute of a configurable parameter. If the <cite>rules</cite>
+(combined according to the <cite>operator</cite>) evaluate to True, the corresponding`action` will be taken in the UI.</p>
+<p>If UIRules are nested, only the <cite>action</cite> of the outermost UIRule will be considered.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.configuration.UIRules.action">
+<span class="sig-name descname"><span class="pre">action</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#otx.api.configuration.Action" title="otx.api.configuration.ui_rules.types.Action"><span class="pre">otx.api.configuration.ui_rules.types.Action</span></a></em><a class="headerlink" href="#otx.api.configuration.UIRules.action" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.configuration.UIRules.add_rule">
+<span class="sig-name descname"><span class="pre">add_rule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rule</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#otx.api.configuration.Rule" title="otx.api.configuration.ui_rules.rules.Rule"><span class="pre">otx.api.configuration.ui_rules.rules.Rule</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#otx.api.configuration.UIRules" title="otx.api.configuration.ui_rules.rules.UIRules"><span class="pre">otx.api.configuration.ui_rules.rules.UIRules</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.api.configuration.UIRules.add_rule" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds rule.</p>
+</dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.configuration.UIRules.operator">
+<span class="sig-name descname"><span class="pre">operator</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#otx.api.configuration.Operator" title="otx.api.configuration.ui_rules.types.Operator"><span class="pre">otx.api.configuration.ui_rules.types.Operator</span></a></em><a class="headerlink" href="#otx.api.configuration.UIRules.operator" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.configuration.UIRules.rules">
+<span class="sig-name descname"><span class="pre">rules</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#otx.api.configuration.Rule" title="otx.api.configuration.ui_rules.rules.Rule"><span class="pre">otx.api.configuration.ui_rules.rules.Rule</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#otx.api.configuration.UIRules" title="otx.api.configuration.ui_rules.rules.UIRules"><span class="pre">otx.api.configuration.ui_rules.rules.UIRules</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#otx.api.configuration.UIRules.rules" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.api.configuration.UIRules.to_dict">
+<span class="sig-name descname"><span class="pre">to_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">enum_to_str</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#otx.api.configuration.UIRules.to_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method to serialize an UIRules instance to its dictionary representation.</p>
+<p>Applies recursion to convert nested rules, if applicable.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>enum_to_str</strong> – Set to True to convert Enum instances to their
+string representation</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>dictionary representation of the UIRules object for which
+this method is called</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.api.configuration.UIRules.type">
+<span class="sig-name descname"><span class="pre">type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">otx.api.configuration.enums.config_element_type.ConfigElementType</span></em><a class="headerlink" href="#otx.api.configuration.UIRules.type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+</dd></dl>
+</section>
+
+      </article>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="../entities/index.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">Entities</div>
+              </div>
+              <svg><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="../index.html">
+              <svg><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">API Reference</div>
+                
+              </div>
+            </a>
+        </div>
+
+        <div class="related-information">
+              Copyright &#169; 2022, OpenVINO Training Extensions Contributors
+            |
+            Built with <a href="https://www.sphinx-doc.org/">Sphinx</a>
+              and
+              <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+              <a href="https://github.com/pradyunsg/furo">Furo theme</a>.
+            |
+            <a class="muted-link" href="../../../_sources/reference/api/configuration/index.rst.txt"
+               rel="nofollow">
+              Show Source
+            </a>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer no-toc">
+      
+      
+      
+    </aside>
+  </div>
+</div><script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/scripts/main.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    </body>
+</html>

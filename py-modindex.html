@@ -1,1087 +1,570 @@
-<!DOCTYPE html>
-<html class="writer-html5" lang="en" >
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Python Module Index &mdash; OpenVINO Training Extensions  documentation</title>
-      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-      <link rel="stylesheet" href="_static/graphviz.css" type="text/css" />
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+<!doctype html>
+<html class="no-js">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" />
+
+    <meta name="generator" content="sphinx-4.5.0, furo 2021.07.31.beta41"/><title>Python Module Index - OpenVINO Training Extensions documentation</title>
+<link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=daa650a7760fac3eee23aa959745d2c866b74cb3" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?digest=93475b62d1c3bc01323a0eefdc14a62d77b12690" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
   
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-        <script src="_static/jquery.js"></script>
-        <script src="_static/underscore.js"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script src="_static/doctools.js"></script>
-    <script src="_static/js/theme.js"></script>
-    <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" />
- 
+  }
+  body[data-theme="dark"] {
+    --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+  }
+  @media (prefers-color-scheme: dark) {
+    body:not([data-theme="light"]) {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+  }
+</style>
+    <link media="(prefers-color-scheme: dark)" rel="stylesheet" href="_static/pygments_dark.css"></head>
+  <body>
+    
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path stroke="none" d="M0 0h24v24H0z" />
+      <line x1="4" y1="6" x2="20" y2="6" />
+      <line x1="10" y1="12" x2="20" y2="12" />
+      <line x1="6" y1="18" x2="20" y2="18" />
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-half" viewBox="0 0 24 24">
+    <title>Auto light/dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M13 12h5" />
+      <path d="M13 15h4" />
+      <path d="M13 18h1" />
+      <path d="M13 9h4" />
+      <path d="M13 6h1" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
 
 
-</head>
 
-<body class="wy-body-for-nav"> 
-  <div class="wy-grid-for-nav">
-    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
-      <div class="wy-side-scroll">
-        <div class="wy-side-nav-search" >
-            <a href="index.html" class="icon icon-home"> OpenVINO Training Extensions
-          </a>
-<div role="search">
-  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
-    <input type="hidden" name="check_keywords" value="yes" />
-    <input type="hidden" name="area" value="default" />
-  </form>
-</div>
-        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="index.html"><div class="brand">OpenVINO Training Extensions  documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand centered" href="index.html">
+  
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo" src="_static/otx-logo-black-mini.png" alt="Logo"/>
+  </div>
+  
+  
+</a><form class="sidebar-search-container" method="get" action="search.html" role="search">
+  <input class="sidebar-search" placeholder=Search name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="api/index.html">API Reference</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="tutorials/index.html">Tutorials</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/install.html">Install OTX</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="how_to_guides/index.html">How to Guides</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="reference/index.html">Reference</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="reference/api/index.html">API Reference</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="reference/api/configuration/index.html">Configuration</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="reference/api/entities/index.html">Entities</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="reference/api/entities/general.html">General</a></li>
+<li class="toctree-l4"><a class="reference internal" href="reference/api/entities/shapes.html">Shapes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="reference/api/entities/interfaces.html">Interfaces</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="reference/api/usecases/index.html">Usecases</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="reference/api/usecases/adapters.html">Adapters</a></li>
+<li class="toctree-l4 has-children"><a class="reference internal" href="reference/api/usecases/evaluation.html">Evaluation</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="simple">
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="reference/api/usecases/exportable_code.html">Exportable Code</a></li>
+<li class="toctree-l4"><a class="reference internal" href="reference/api/usecases/reporting.html">Reporting</a></li>
+<li class="toctree-l4"><a class="reference internal" href="reference/api/usecases/tasks.html">Task interfaces</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="reference/cli/index.html">CLI Reference</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="reference/algorithms/index.html">Algorithm Reference</a><input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="reference/algorithms/anomaly/index.html">Anomaly</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reference/algorithms/classification/index.html">Classification</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reference/algorithms/detection/index.html">Detection</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reference/algorithms/segmentation/index.html">Segmentation</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="explanation/index.html">Explanation</a><input class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" role="switch" type="checkbox"/><label for="toctree-checkbox-9"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="simple">
+</ul>
+</li>
 </ul>
 
-        </div>
-      </div>
-    </nav>
-
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
-          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="index.html">OpenVINO Training Extensions</a>
-      </nav>
-
-      <div class="wy-nav-content">
-        <div class="rst-content">
-          <div role="navigation" aria-label="Page navigation">
-  <ul class="wy-breadcrumbs">
-      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Python Module Index</li>
-      <li class="wy-breadcrumbs-aside">
-      </li>
-  </ul>
-  <hr/>
 </div>
-          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
-           <div itemprop="articleBody">
-             
-
-   <h1>Python Module Index</h1>
-
-   <div class="modindex-jumpbox">
-   <a href="#cap-o"><strong>o</strong></a>
-   </div>
-
-   <table class="indextable modindextable">
-     <tr class="pcap"><td></td><td>&#160;</td><td></td></tr>
-     <tr class="cap" id="cap-o"><td></td><td>
-       <strong>o</strong></td><td></td></tr>
-     <tr>
-       <td><img src="_static/minus.png" class="toggler"
-              id="toggle-1" style="display: none" alt="-" /></td>
-       <td>
-       <a href="api/otx/index.html#module-otx"><code class="xref">otx</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/algorithms/index.html#module-otx.algorithms"><code class="xref">otx.algorithms</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/algorithms/anomaly/index.html#module-otx.algorithms.anomaly"><code class="xref">otx.algorithms.anomaly</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/algorithms/anomaly/adapters/index.html#module-otx.algorithms.anomaly.adapters"><code class="xref">otx.algorithms.anomaly.adapters</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/algorithms/anomaly/adapters/anomalib/index.html#module-otx.algorithms.anomaly.adapters.anomalib"><code class="xref">otx.algorithms.anomaly.adapters.anomalib</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/algorithms/anomaly/adapters/anomalib/callbacks/index.html#module-otx.algorithms.anomaly.adapters.anomalib.callbacks"><code class="xref">otx.algorithms.anomaly.adapters.anomalib.callbacks</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/algorithms/anomaly/adapters/anomalib/callbacks/inference/index.html#module-otx.algorithms.anomaly.adapters.anomalib.callbacks.inference"><code class="xref">otx.algorithms.anomaly.adapters.anomalib.callbacks.inference</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/algorithms/anomaly/adapters/anomalib/callbacks/progress/index.html#module-otx.algorithms.anomaly.adapters.anomalib.callbacks.progress"><code class="xref">otx.algorithms.anomaly.adapters.anomalib.callbacks.progress</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/algorithms/anomaly/adapters/anomalib/callbacks/score_report/index.html#module-otx.algorithms.anomaly.adapters.anomalib.callbacks.score_report"><code class="xref">otx.algorithms.anomaly.adapters.anomalib.callbacks.score_report</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/algorithms/anomaly/adapters/anomalib/config/index.html#module-otx.algorithms.anomaly.adapters.anomalib.config"><code class="xref">otx.algorithms.anomaly.adapters.anomalib.config</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/algorithms/anomaly/adapters/anomalib/config/anomalib_config/index.html#module-otx.algorithms.anomaly.adapters.anomalib.config.anomalib_config"><code class="xref">otx.algorithms.anomaly.adapters.anomalib.config.anomalib_config</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/algorithms/anomaly/adapters/anomalib/data/index.html#module-otx.algorithms.anomaly.adapters.anomalib.data"><code class="xref">otx.algorithms.anomaly.adapters.anomalib.data</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/algorithms/anomaly/adapters/anomalib/data/create_mvtec_ad_json_annotations/index.html#module-otx.algorithms.anomaly.adapters.anomalib.data.create_mvtec_ad_json_annotations"><code class="xref">otx.algorithms.anomaly.adapters.anomalib.data.create_mvtec_ad_json_annotations</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/algorithms/anomaly/adapters/anomalib/data/data/index.html#module-otx.algorithms.anomaly.adapters.anomalib.data.data"><code class="xref">otx.algorithms.anomaly.adapters.anomalib.data.data</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/algorithms/anomaly/adapters/anomalib/data/dataset/index.html#module-otx.algorithms.anomaly.adapters.anomalib.data.dataset"><code class="xref">otx.algorithms.anomaly.adapters.anomalib.data.dataset</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/algorithms/anomaly/adapters/anomalib/data/mvtec/index.html#module-otx.algorithms.anomaly.adapters.anomalib.data.mvtec"><code class="xref">otx.algorithms.anomaly.adapters.anomalib.data.mvtec</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/algorithms/anomaly/adapters/anomalib/exportable_code/index.html#module-otx.algorithms.anomaly.adapters.anomalib.exportable_code"><code class="xref">otx.algorithms.anomaly.adapters.anomalib.exportable_code</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/algorithms/anomaly/adapters/anomalib/exportable_code/anomaly_classification/index.html#module-otx.algorithms.anomaly.adapters.anomalib.exportable_code.anomaly_classification"><code class="xref">otx.algorithms.anomaly.adapters.anomalib.exportable_code.anomaly_classification</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/algorithms/anomaly/adapters/anomalib/exportable_code/anomaly_detection/index.html#module-otx.algorithms.anomaly.adapters.anomalib.exportable_code.anomaly_detection"><code class="xref">otx.algorithms.anomaly.adapters.anomalib.exportable_code.anomaly_detection</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/algorithms/anomaly/adapters/anomalib/exportable_code/anomaly_segmentation/index.html#module-otx.algorithms.anomaly.adapters.anomalib.exportable_code.anomaly_segmentation"><code class="xref">otx.algorithms.anomaly.adapters.anomalib.exportable_code.anomaly_segmentation</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/algorithms/anomaly/adapters/anomalib/exportable_code/base/index.html#module-otx.algorithms.anomaly.adapters.anomalib.exportable_code.base"><code class="xref">otx.algorithms.anomaly.adapters.anomalib.exportable_code.base</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/algorithms/anomaly/adapters/anomalib/logger/index.html#module-otx.algorithms.anomaly.adapters.anomalib.logger"><code class="xref">otx.algorithms.anomaly.adapters.anomalib.logger</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/algorithms/anomaly/adapters/anomalib/logger/logger/index.html#module-otx.algorithms.anomaly.adapters.anomalib.logger.logger"><code class="xref">otx.algorithms.anomaly.adapters.anomalib.logger.logger</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/algorithms/anomaly/configs/index.html#module-otx.algorithms.anomaly.configs"><code class="xref">otx.algorithms.anomaly.configs</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/algorithms/anomaly/configs/base/index.html#module-otx.algorithms.anomaly.configs.base"><code class="xref">otx.algorithms.anomaly.configs.base</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/algorithms/anomaly/configs/base/configuration/index.html#module-otx.algorithms.anomaly.configs.base.configuration"><code class="xref">otx.algorithms.anomaly.configs.base.configuration</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/algorithms/anomaly/configs/base/configuration_enums/index.html#module-otx.algorithms.anomaly.configs.base.configuration_enums"><code class="xref">otx.algorithms.anomaly.configs.base.configuration_enums</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/algorithms/anomaly/configs/draem/index.html#module-otx.algorithms.anomaly.configs.draem"><code class="xref">otx.algorithms.anomaly.configs.draem</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/algorithms/anomaly/configs/draem/configuration/index.html#module-otx.algorithms.anomaly.configs.draem.configuration"><code class="xref">otx.algorithms.anomaly.configs.draem.configuration</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/algorithms/anomaly/configs/padim/index.html#module-otx.algorithms.anomaly.configs.padim"><code class="xref">otx.algorithms.anomaly.configs.padim</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/algorithms/anomaly/configs/padim/configuration/index.html#module-otx.algorithms.anomaly.configs.padim.configuration"><code class="xref">otx.algorithms.anomaly.configs.padim.configuration</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/algorithms/anomaly/configs/stfpm/index.html#module-otx.algorithms.anomaly.configs.stfpm"><code class="xref">otx.algorithms.anomaly.configs.stfpm</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/algorithms/anomaly/configs/stfpm/configuration/index.html#module-otx.algorithms.anomaly.configs.stfpm.configuration"><code class="xref">otx.algorithms.anomaly.configs.stfpm.configuration</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/algorithms/anomaly/tasks/index.html#module-otx.algorithms.anomaly.tasks"><code class="xref">otx.algorithms.anomaly.tasks</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/algorithms/anomaly/tasks/inference/index.html#module-otx.algorithms.anomaly.tasks.inference"><code class="xref">otx.algorithms.anomaly.tasks.inference</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/algorithms/anomaly/tasks/nncf/index.html#module-otx.algorithms.anomaly.tasks.nncf"><code class="xref">otx.algorithms.anomaly.tasks.nncf</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/algorithms/anomaly/tasks/openvino/index.html#module-otx.algorithms.anomaly.tasks.openvino"><code class="xref">otx.algorithms.anomaly.tasks.openvino</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/algorithms/anomaly/tasks/train/index.html#module-otx.algorithms.anomaly.tasks.train"><code class="xref">otx.algorithms.anomaly.tasks.train</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/algorithms/anomaly/tools/index.html#module-otx.algorithms.anomaly.tools"><code class="xref">otx.algorithms.anomaly.tools</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/algorithms/anomaly/tools/sample/index.html#module-otx.algorithms.anomaly.tools.sample"><code class="xref">otx.algorithms.anomaly.tools.sample</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/index.html#module-otx.api"><code class="xref">otx.api</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/configuration/index.html#module-otx.api.configuration"><code class="xref">otx.api.configuration</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/configuration/configurable_parameters/index.html#module-otx.api.configuration.configurable_parameters"><code class="xref">otx.api.configuration.configurable_parameters</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/configuration/default_model_parameters/index.html#module-otx.api.configuration.default_model_parameters"><code class="xref">otx.api.configuration.default_model_parameters</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/configuration/elements/index.html#module-otx.api.configuration.elements"><code class="xref">otx.api.configuration.elements</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/configuration/elements/configurable_enum/index.html#module-otx.api.configuration.elements.configurable_enum"><code class="xref">otx.api.configuration.elements.configurable_enum</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/configuration/elements/metadata_keys/index.html#module-otx.api.configuration.elements.metadata_keys"><code class="xref">otx.api.configuration.elements.metadata_keys</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/configuration/elements/parameter_group/index.html#module-otx.api.configuration.elements.parameter_group"><code class="xref">otx.api.configuration.elements.parameter_group</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/configuration/elements/primitive_parameters/index.html#module-otx.api.configuration.elements.primitive_parameters"><code class="xref">otx.api.configuration.elements.primitive_parameters</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/configuration/elements/utils/index.html#module-otx.api.configuration.elements.utils"><code class="xref">otx.api.configuration.elements.utils</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/configuration/enums/index.html#module-otx.api.configuration.enums"><code class="xref">otx.api.configuration.enums</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/configuration/enums/auto_hpo_state/index.html#module-otx.api.configuration.enums.auto_hpo_state"><code class="xref">otx.api.configuration.enums.auto_hpo_state</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/configuration/enums/config_element_type/index.html#module-otx.api.configuration.enums.config_element_type"><code class="xref">otx.api.configuration.enums.config_element_type</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/configuration/enums/model_lifecycle/index.html#module-otx.api.configuration.enums.model_lifecycle"><code class="xref">otx.api.configuration.enums.model_lifecycle</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/configuration/enums/utils/index.html#module-otx.api.configuration.enums.utils"><code class="xref">otx.api.configuration.enums.utils</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/configuration/helper/index.html#module-otx.api.configuration.helper"><code class="xref">otx.api.configuration.helper</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/configuration/helper/config_element_mapping/index.html#module-otx.api.configuration.helper.config_element_mapping"><code class="xref">otx.api.configuration.helper.config_element_mapping</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/configuration/helper/convert/index.html#module-otx.api.configuration.helper.convert"><code class="xref">otx.api.configuration.helper.convert</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/configuration/helper/create/index.html#module-otx.api.configuration.helper.create"><code class="xref">otx.api.configuration.helper.create</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/configuration/helper/substitute/index.html#module-otx.api.configuration.helper.substitute"><code class="xref">otx.api.configuration.helper.substitute</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/configuration/helper/utils/index.html#module-otx.api.configuration.helper.utils"><code class="xref">otx.api.configuration.helper.utils</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/configuration/helper/validate/index.html#module-otx.api.configuration.helper.validate"><code class="xref">otx.api.configuration.helper.validate</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/configuration/model_lifecycle/index.html#module-otx.api.configuration.model_lifecycle"><code class="xref">otx.api.configuration.model_lifecycle</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/configuration/ui_rules/index.html#module-otx.api.configuration.ui_rules"><code class="xref">otx.api.configuration.ui_rules</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/configuration/ui_rules/rules/index.html#module-otx.api.configuration.ui_rules.rules"><code class="xref">otx.api.configuration.ui_rules.rules</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/configuration/ui_rules/types/index.html#module-otx.api.configuration.ui_rules.types"><code class="xref">otx.api.configuration.ui_rules.types</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/configuration/ui_rules/utils/index.html#module-otx.api.configuration.ui_rules.utils"><code class="xref">otx.api.configuration.ui_rules.utils</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/entities/index.html#module-otx.api.entities"><code class="xref">otx.api.entities</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/entities/annotation/index.html#module-otx.api.entities.annotation"><code class="xref">otx.api.entities.annotation</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/entities/color/index.html#module-otx.api.entities.color"><code class="xref">otx.api.entities.color</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/entities/coordinate/index.html#module-otx.api.entities.coordinate"><code class="xref">otx.api.entities.coordinate</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/entities/dataset_item/index.html#module-otx.api.entities.dataset_item"><code class="xref">otx.api.entities.dataset_item</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/entities/datasets/index.html#module-otx.api.entities.datasets"><code class="xref">otx.api.entities.datasets</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/entities/graph/index.html#module-otx.api.entities.graph"><code class="xref">otx.api.entities.graph</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/entities/id/index.html#module-otx.api.entities.id"><code class="xref">otx.api.entities.id</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/entities/image/index.html#module-otx.api.entities.image"><code class="xref">otx.api.entities.image</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/entities/inference_parameters/index.html#module-otx.api.entities.inference_parameters"><code class="xref">otx.api.entities.inference_parameters</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/entities/interfaces/index.html#module-otx.api.entities.interfaces"><code class="xref">otx.api.entities.interfaces</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/entities/interfaces/graph_interface/index.html#module-otx.api.entities.interfaces.graph_interface"><code class="xref">otx.api.entities.interfaces.graph_interface</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/entities/label/index.html#module-otx.api.entities.label"><code class="xref">otx.api.entities.label</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/entities/label_schema/index.html#module-otx.api.entities.label_schema"><code class="xref">otx.api.entities.label_schema</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/entities/media/index.html#module-otx.api.entities.media"><code class="xref">otx.api.entities.media</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/entities/metadata/index.html#module-otx.api.entities.metadata"><code class="xref">otx.api.entities.metadata</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/entities/metrics/index.html#module-otx.api.entities.metrics"><code class="xref">otx.api.entities.metrics</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/entities/model/index.html#module-otx.api.entities.model"><code class="xref">otx.api.entities.model</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/entities/model_template/index.html#module-otx.api.entities.model_template"><code class="xref">otx.api.entities.model_template</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/entities/optimization_parameters/index.html#module-otx.api.entities.optimization_parameters"><code class="xref">otx.api.entities.optimization_parameters</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/entities/result_media/index.html#module-otx.api.entities.result_media"><code class="xref">otx.api.entities.result_media</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/entities/resultset/index.html#module-otx.api.entities.resultset"><code class="xref">otx.api.entities.resultset</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/entities/scored_label/index.html#module-otx.api.entities.scored_label"><code class="xref">otx.api.entities.scored_label</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/entities/shapes/index.html#module-otx.api.entities.shapes"><code class="xref">otx.api.entities.shapes</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/entities/shapes/ellipse/index.html#module-otx.api.entities.shapes.ellipse"><code class="xref">otx.api.entities.shapes.ellipse</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/entities/shapes/polygon/index.html#module-otx.api.entities.shapes.polygon"><code class="xref">otx.api.entities.shapes.polygon</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/entities/shapes/rectangle/index.html#module-otx.api.entities.shapes.rectangle"><code class="xref">otx.api.entities.shapes.rectangle</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/entities/shapes/shape/index.html#module-otx.api.entities.shapes.shape"><code class="xref">otx.api.entities.shapes.shape</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/entities/subset/index.html#module-otx.api.entities.subset"><code class="xref">otx.api.entities.subset</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/entities/task_environment/index.html#module-otx.api.entities.task_environment"><code class="xref">otx.api.entities.task_environment</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/entities/tensor/index.html#module-otx.api.entities.tensor"><code class="xref">otx.api.entities.tensor</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/entities/train_parameters/index.html#module-otx.api.entities.train_parameters"><code class="xref">otx.api.entities.train_parameters</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/entities/url/index.html#module-otx.api.entities.url"><code class="xref">otx.api.entities.url</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/serialization/index.html#module-otx.api.serialization"><code class="xref">otx.api.serialization</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/serialization/datetime_mapper/index.html#module-otx.api.serialization.datetime_mapper"><code class="xref">otx.api.serialization.datetime_mapper</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/serialization/id_mapper/index.html#module-otx.api.serialization.id_mapper"><code class="xref">otx.api.serialization.id_mapper</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/serialization/label_mapper/index.html#module-otx.api.serialization.label_mapper"><code class="xref">otx.api.serialization.label_mapper</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/usecases/index.html#module-otx.api.usecases"><code class="xref">otx.api.usecases</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/usecases/adapters/index.html#module-otx.api.usecases.adapters"><code class="xref">otx.api.usecases.adapters</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/usecases/adapters/model_adapter/index.html#module-otx.api.usecases.adapters.model_adapter"><code class="xref">otx.api.usecases.adapters.model_adapter</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/usecases/evaluation/index.html#module-otx.api.usecases.evaluation"><code class="xref">otx.api.usecases.evaluation</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/usecases/evaluation/accuracy/index.html#module-otx.api.usecases.evaluation.accuracy"><code class="xref">otx.api.usecases.evaluation.accuracy</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/usecases/evaluation/anomaly_metrics/index.html#module-otx.api.usecases.evaluation.anomaly_metrics"><code class="xref">otx.api.usecases.evaluation.anomaly_metrics</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/usecases/evaluation/averaging/index.html#module-otx.api.usecases.evaluation.averaging"><code class="xref">otx.api.usecases.evaluation.averaging</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/usecases/evaluation/basic_operations/index.html#module-otx.api.usecases.evaluation.basic_operations"><code class="xref">otx.api.usecases.evaluation.basic_operations</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/usecases/evaluation/dice/index.html#module-otx.api.usecases.evaluation.dice"><code class="xref">otx.api.usecases.evaluation.dice</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/usecases/evaluation/f_measure/index.html#module-otx.api.usecases.evaluation.f_measure"><code class="xref">otx.api.usecases.evaluation.f_measure</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/usecases/evaluation/metrics_helper/index.html#module-otx.api.usecases.evaluation.metrics_helper"><code class="xref">otx.api.usecases.evaluation.metrics_helper</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/usecases/evaluation/performance_provider_interface/index.html#module-otx.api.usecases.evaluation.performance_provider_interface"><code class="xref">otx.api.usecases.evaluation.performance_provider_interface</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/usecases/exportable_code/index.html#module-otx.api.usecases.exportable_code"><code class="xref">otx.api.usecases.exportable_code</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/usecases/exportable_code/demo/index.html#module-otx.api.usecases.exportable_code.demo"><code class="xref">otx.api.usecases.exportable_code.demo</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/usecases/exportable_code/demo/demo/index.html#module-otx.api.usecases.exportable_code.demo.demo"><code class="xref">otx.api.usecases.exportable_code.demo.demo</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/usecases/exportable_code/demo/demo_package/index.html#module-otx.api.usecases.exportable_code.demo.demo_package"><code class="xref">otx.api.usecases.exportable_code.demo.demo_package</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/usecases/exportable_code/demo/demo_package/executors/index.html#module-otx.api.usecases.exportable_code.demo.demo_package.executors"><code class="xref">otx.api.usecases.exportable_code.demo.demo_package.executors</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/usecases/exportable_code/demo/demo_package/executors/asynchronous/index.html#module-otx.api.usecases.exportable_code.demo.demo_package.executors.asynchronous"><code class="xref">otx.api.usecases.exportable_code.demo.demo_package.executors.asynchronous</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/usecases/exportable_code/demo/demo_package/executors/sync_pipeline/index.html#module-otx.api.usecases.exportable_code.demo.demo_package.executors.sync_pipeline"><code class="xref">otx.api.usecases.exportable_code.demo.demo_package.executors.sync_pipeline</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/usecases/exportable_code/demo/demo_package/executors/synchronous/index.html#module-otx.api.usecases.exportable_code.demo.demo_package.executors.synchronous"><code class="xref">otx.api.usecases.exportable_code.demo.demo_package.executors.synchronous</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/usecases/exportable_code/demo/demo_package/model_container/index.html#module-otx.api.usecases.exportable_code.demo.demo_package.model_container"><code class="xref">otx.api.usecases.exportable_code.demo.demo_package.model_container</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/usecases/exportable_code/demo/demo_package/utils/index.html#module-otx.api.usecases.exportable_code.demo.demo_package.utils"><code class="xref">otx.api.usecases.exportable_code.demo.demo_package.utils</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/usecases/exportable_code/demo/setup/index.html#module-otx.api.usecases.exportable_code.demo.setup"><code class="xref">otx.api.usecases.exportable_code.demo.setup</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/usecases/exportable_code/inference/index.html#module-otx.api.usecases.exportable_code.inference"><code class="xref">otx.api.usecases.exportable_code.inference</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/usecases/exportable_code/inference/inference/index.html#module-otx.api.usecases.exportable_code.inference.inference"><code class="xref">otx.api.usecases.exportable_code.inference.inference</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/usecases/exportable_code/prediction_to_annotation_converter/index.html#module-otx.api.usecases.exportable_code.prediction_to_annotation_converter"><code class="xref">otx.api.usecases.exportable_code.prediction_to_annotation_converter</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/usecases/exportable_code/streamer/index.html#module-otx.api.usecases.exportable_code.streamer"><code class="xref">otx.api.usecases.exportable_code.streamer</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/usecases/exportable_code/streamer/streamer/index.html#module-otx.api.usecases.exportable_code.streamer.streamer"><code class="xref">otx.api.usecases.exportable_code.streamer.streamer</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/usecases/exportable_code/visualizers/index.html#module-otx.api.usecases.exportable_code.visualizers"><code class="xref">otx.api.usecases.exportable_code.visualizers</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/usecases/exportable_code/visualizers/anomaly_visualizer/index.html#module-otx.api.usecases.exportable_code.visualizers.anomaly_visualizer"><code class="xref">otx.api.usecases.exportable_code.visualizers.anomaly_visualizer</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/usecases/exportable_code/visualizers/visualizer/index.html#module-otx.api.usecases.exportable_code.visualizers.visualizer"><code class="xref">otx.api.usecases.exportable_code.visualizers.visualizer</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/usecases/reporting/index.html#module-otx.api.usecases.reporting"><code class="xref">otx.api.usecases.reporting</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/usecases/reporting/callback/index.html#module-otx.api.usecases.reporting.callback"><code class="xref">otx.api.usecases.reporting.callback</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/usecases/reporting/time_monitor_callback/index.html#module-otx.api.usecases.reporting.time_monitor_callback"><code class="xref">otx.api.usecases.reporting.time_monitor_callback</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/usecases/tasks/index.html#module-otx.api.usecases.tasks"><code class="xref">otx.api.usecases.tasks</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/usecases/tasks/exceptions/index.html#module-otx.api.usecases.tasks.exceptions"><code class="xref">otx.api.usecases.tasks.exceptions</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/usecases/tasks/image_computer_vision/index.html#module-otx.api.usecases.tasks.image_computer_vision"><code class="xref">otx.api.usecases.tasks.image_computer_vision</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/usecases/tasks/image_deep_learning_task/index.html#module-otx.api.usecases.tasks.image_deep_learning_task"><code class="xref">otx.api.usecases.tasks.image_deep_learning_task</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/usecases/tasks/interfaces/index.html#module-otx.api.usecases.tasks.interfaces"><code class="xref">otx.api.usecases.tasks.interfaces</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/usecases/tasks/interfaces/deployment_interface/index.html#module-otx.api.usecases.tasks.interfaces.deployment_interface"><code class="xref">otx.api.usecases.tasks.interfaces.deployment_interface</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/usecases/tasks/interfaces/evaluate_interface/index.html#module-otx.api.usecases.tasks.interfaces.evaluate_interface"><code class="xref">otx.api.usecases.tasks.interfaces.evaluate_interface</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/usecases/tasks/interfaces/export_interface/index.html#module-otx.api.usecases.tasks.interfaces.export_interface"><code class="xref">otx.api.usecases.tasks.interfaces.export_interface</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/usecases/tasks/interfaces/inference_interface/index.html#module-otx.api.usecases.tasks.interfaces.inference_interface"><code class="xref">otx.api.usecases.tasks.interfaces.inference_interface</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/usecases/tasks/interfaces/optimization_interface/index.html#module-otx.api.usecases.tasks.interfaces.optimization_interface"><code class="xref">otx.api.usecases.tasks.interfaces.optimization_interface</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/usecases/tasks/interfaces/training_interface/index.html#module-otx.api.usecases.tasks.interfaces.training_interface"><code class="xref">otx.api.usecases.tasks.interfaces.training_interface</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/usecases/tasks/interfaces/unload_interface/index.html#module-otx.api.usecases.tasks.interfaces.unload_interface"><code class="xref">otx.api.usecases.tasks.interfaces.unload_interface</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/utils/index.html#module-otx.api.utils"><code class="xref">otx.api.utils</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/utils/anomaly_utils/index.html#module-otx.api.utils.anomaly_utils"><code class="xref">otx.api.utils.anomaly_utils</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/utils/argument_checks/index.html#module-otx.api.utils.argument_checks"><code class="xref">otx.api.utils.argument_checks</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/utils/dataset_utils/index.html#module-otx.api.utils.dataset_utils"><code class="xref">otx.api.utils.dataset_utils</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/utils/importing/index.html#module-otx.api.utils.importing"><code class="xref">otx.api.utils.importing</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/utils/labels_utils/index.html#module-otx.api.utils.labels_utils"><code class="xref">otx.api.utils.labels_utils</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/utils/segmentation_utils/index.html#module-otx.api.utils.segmentation_utils"><code class="xref">otx.api.utils.segmentation_utils</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/utils/shape_drawer/index.html#module-otx.api.utils.shape_drawer"><code class="xref">otx.api.utils.shape_drawer</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/utils/shape_factory/index.html#module-otx.api.utils.shape_factory"><code class="xref">otx.api.utils.shape_factory</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/api/utils/time_utils/index.html#module-otx.api.utils.time_utils"><code class="xref">otx.api.utils.time_utils</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/cli/index.html#module-otx.cli"><code class="xref">otx.cli</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/cli/datasets/index.html#module-otx.cli.datasets"><code class="xref">otx.cli.datasets</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/cli/datasets/image_classification/index.html#module-otx.cli.datasets.image_classification"><code class="xref">otx.cli.datasets.image_classification</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/cli/datasets/image_classification/dataset/index.html#module-otx.cli.datasets.image_classification.dataset"><code class="xref">otx.cli.datasets.image_classification.dataset</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/cli/datasets/instance_segmentation/index.html#module-otx.cli.datasets.instance_segmentation"><code class="xref">otx.cli.datasets.instance_segmentation</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/cli/datasets/instance_segmentation/dataset/index.html#module-otx.cli.datasets.instance_segmentation.dataset"><code class="xref">otx.cli.datasets.instance_segmentation.dataset</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/cli/datasets/object_detection/index.html#module-otx.cli.datasets.object_detection"><code class="xref">otx.cli.datasets.object_detection</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/cli/datasets/object_detection/dataset/index.html#module-otx.cli.datasets.object_detection.dataset"><code class="xref">otx.cli.datasets.object_detection.dataset</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/cli/datasets/rotated_detection/index.html#module-otx.cli.datasets.rotated_detection"><code class="xref">otx.cli.datasets.rotated_detection</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/cli/datasets/rotated_detection/dataset/index.html#module-otx.cli.datasets.rotated_detection.dataset"><code class="xref">otx.cli.datasets.rotated_detection.dataset</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/cli/datasets/semantic_segmentation/index.html#module-otx.cli.datasets.semantic_segmentation"><code class="xref">otx.cli.datasets.semantic_segmentation</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/cli/datasets/semantic_segmentation/dataset/index.html#module-otx.cli.datasets.semantic_segmentation.dataset"><code class="xref">otx.cli.datasets.semantic_segmentation.dataset</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/cli/registry/index.html#module-otx.cli.registry"><code class="xref">otx.cli.registry</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/cli/registry/registry/index.html#module-otx.cli.registry.registry"><code class="xref">otx.cli.registry.registry</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/cli/tools/index.html#module-otx.cli.tools"><code class="xref">otx.cli.tools</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/cli/tools/cli/index.html#module-otx.cli.tools.cli"><code class="xref">otx.cli.tools.cli</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/cli/tools/demo/index.html#module-otx.cli.tools.demo"><code class="xref">otx.cli.tools.demo</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/cli/tools/deploy/index.html#module-otx.cli.tools.deploy"><code class="xref">otx.cli.tools.deploy</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/cli/tools/eval/index.html#module-otx.cli.tools.eval"><code class="xref">otx.cli.tools.eval</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/cli/tools/export/index.html#module-otx.cli.tools.export"><code class="xref">otx.cli.tools.export</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/cli/tools/find/index.html#module-otx.cli.tools.find"><code class="xref">otx.cli.tools.find</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/cli/tools/optimize/index.html#module-otx.cli.tools.optimize"><code class="xref">otx.cli.tools.optimize</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/cli/tools/train/index.html#module-otx.cli.tools.train"><code class="xref">otx.cli.tools.train</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/cli/tools/utils/index.html#module-otx.cli.tools.utils"><code class="xref">otx.cli.tools.utils</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/cli/tools/utils/demo/index.html#module-otx.cli.tools.utils.demo"><code class="xref">otx.cli.tools.utils.demo</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/cli/tools/utils/demo/images_capture/index.html#module-otx.cli.tools.utils.demo.images_capture"><code class="xref">otx.cli.tools.utils.demo.images_capture</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/cli/tools/utils/demo/visualization/index.html#module-otx.cli.tools.utils.demo.visualization"><code class="xref">otx.cli.tools.utils.demo.visualization</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/cli/utils/index.html#module-otx.cli.utils"><code class="xref">otx.cli.utils</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/cli/utils/config/index.html#module-otx.cli.utils.config"><code class="xref">otx.cli.utils.config</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/cli/utils/hpo/index.html#module-otx.cli.utils.hpo"><code class="xref">otx.cli.utils.hpo</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/cli/utils/importing/index.html#module-otx.cli.utils.importing"><code class="xref">otx.cli.utils.importing</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/cli/utils/io/index.html#module-otx.cli.utils.io"><code class="xref">otx.cli.utils.io</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/cli/utils/nncf/index.html#module-otx.cli.utils.nncf"><code class="xref">otx.cli.utils.nncf</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/cli/utils/parser/index.html#module-otx.cli.utils.parser"><code class="xref">otx.cli.utils.parser</code></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&#160;&#160;&#160;
-       <a href="api/otx/cli/utils/tests/index.html#module-otx.cli.utils.tests"><code class="xref">otx.cli.utils.tests</code></a></td><td>
-       <em></em></td></tr>
-   </table>
-
-
-           </div>
-          </div>
-          <footer>
-
-  <hr/>
-
-  <div role="contentinfo">
-    <p>&#169; Copyright 2022, OpenVINO Training Extensions Contributors.</p>
-  </div>
-
-  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    provided by <a href="https://readthedocs.org">Read the Docs</a>.
-   
-
-</footer>
-        </div>
+</div>
       </div>
-    </section>
-  </div>
-  <script>
-      jQuery(function () {
-          SphinxRtdTheme.Navigation.enable(true);
-      });
-  </script> 
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <article role="main">
+        <div class="content-icon-container">
+          <div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        
+<section class="domainindex-section">
+  <h1>Python Module Index</h1>
+  <div class="domainindex-jumpbox"><a href="#cap-o"><strong>o</strong></a></div>
+</section>
+<table class="domainindex-table">
+  <tr class="pcap">
+    <td></td><td>&#160;</td><td></td>
+  </tr>
+  <tr class="cap" id="cap-o">
+    <td></td><td><strong>o</strong></td><td></td>
+  </tr>
+  <tr>
+    <td><img src="_static/minus.png" class="toggler"
+              id="toggle-1" style="display: none" alt="-" /></td>
+    <td>
+        <code class="xref">otx</code></td><td>
+    <em></em></td>
+  </tr>
+  <tr class="cg-1">
+    <td></td>
+    <td>&#160;&#160;&#160;
+        <a href="reference/algorithms/anomaly/index.html#module-otx.algorithms.anomaly"><code class="xref">otx.algorithms.anomaly</code></a></td><td>
+    <em></em></td>
+  </tr>
+  <tr class="cg-1">
+    <td></td>
+    <td>&#160;&#160;&#160;
+        <a href="reference/api/configuration/index.html#module-otx.api.configuration"><code class="xref">otx.api.configuration</code></a></td><td>
+    <em></em></td>
+  </tr>
+  <tr class="cg-1">
+    <td></td>
+    <td>&#160;&#160;&#160;
+        <a href="reference/api/configuration/index.html#module-otx.api.configuration.helper"><code class="xref">otx.api.configuration.helper</code></a></td><td>
+    <em></em></td>
+  </tr>
+  <tr class="cg-1">
+    <td></td>
+    <td>&#160;&#160;&#160;
+        <a href="reference/api/entities/general.html#module-otx.api.entities.annotation"><code class="xref">otx.api.entities.annotation</code></a></td><td>
+    <em></em></td>
+  </tr>
+  <tr class="cg-1">
+    <td></td>
+    <td>&#160;&#160;&#160;
+        <a href="reference/api/entities/general.html#module-otx.api.entities.color"><code class="xref">otx.api.entities.color</code></a></td><td>
+    <em></em></td>
+  </tr>
+  <tr class="cg-1">
+    <td></td>
+    <td>&#160;&#160;&#160;
+        <a href="reference/api/entities/general.html#module-otx.api.entities.coordinate"><code class="xref">otx.api.entities.coordinate</code></a></td><td>
+    <em></em></td>
+  </tr>
+  <tr class="cg-1">
+    <td></td>
+    <td>&#160;&#160;&#160;
+        <a href="reference/api/entities/general.html#module-otx.api.entities.dataset_item"><code class="xref">otx.api.entities.dataset_item</code></a></td><td>
+    <em></em></td>
+  </tr>
+  <tr class="cg-1">
+    <td></td>
+    <td>&#160;&#160;&#160;
+        <a href="reference/api/entities/general.html#module-otx.api.entities.datasets"><code class="xref">otx.api.entities.datasets</code></a></td><td>
+    <em></em></td>
+  </tr>
+  <tr class="cg-1">
+    <td></td>
+    <td>&#160;&#160;&#160;
+        <a href="reference/api/entities/general.html#module-otx.api.entities.graph"><code class="xref">otx.api.entities.graph</code></a></td><td>
+    <em></em></td>
+  </tr>
+  <tr class="cg-1">
+    <td></td>
+    <td>&#160;&#160;&#160;
+        <a href="reference/api/entities/general.html#module-otx.api.entities.id"><code class="xref">otx.api.entities.id</code></a></td><td>
+    <em></em></td>
+  </tr>
+  <tr class="cg-1">
+    <td></td>
+    <td>&#160;&#160;&#160;
+        <a href="reference/api/entities/general.html#module-otx.api.entities.image"><code class="xref">otx.api.entities.image</code></a></td><td>
+    <em></em></td>
+  </tr>
+  <tr class="cg-1">
+    <td></td>
+    <td>&#160;&#160;&#160;
+        <a href="reference/api/entities/general.html#module-otx.api.entities.inference_parameters"><code class="xref">otx.api.entities.inference_parameters</code></a></td><td>
+    <em></em></td>
+  </tr>
+  <tr class="cg-1">
+    <td></td>
+    <td>&#160;&#160;&#160;
+        <a href="reference/api/entities/interfaces.html#module-otx.api.entities.interfaces.graph_interface"><code class="xref">otx.api.entities.interfaces.graph_interface</code></a></td><td>
+    <em></em></td>
+  </tr>
+  <tr class="cg-1">
+    <td></td>
+    <td>&#160;&#160;&#160;
+        <a href="reference/api/entities/general.html#module-otx.api.entities.label"><code class="xref">otx.api.entities.label</code></a></td><td>
+    <em></em></td>
+  </tr>
+  <tr class="cg-1">
+    <td></td>
+    <td>&#160;&#160;&#160;
+        <a href="reference/api/entities/general.html#module-otx.api.entities.label_schema"><code class="xref">otx.api.entities.label_schema</code></a></td><td>
+    <em></em></td>
+  </tr>
+  <tr class="cg-1">
+    <td></td>
+    <td>&#160;&#160;&#160;
+        <a href="reference/api/entities/general.html#module-otx.api.entities.media"><code class="xref">otx.api.entities.media</code></a></td><td>
+    <em></em></td>
+  </tr>
+  <tr class="cg-1">
+    <td></td>
+    <td>&#160;&#160;&#160;
+        <a href="reference/api/entities/general.html#module-otx.api.entities.metadata"><code class="xref">otx.api.entities.metadata</code></a></td><td>
+    <em></em></td>
+  </tr>
+  <tr class="cg-1">
+    <td></td>
+    <td>&#160;&#160;&#160;
+        <a href="reference/api/entities/general.html#module-otx.api.entities.metrics"><code class="xref">otx.api.entities.metrics</code></a></td><td>
+    <em></em></td>
+  </tr>
+  <tr class="cg-1">
+    <td></td>
+    <td>&#160;&#160;&#160;
+        <a href="reference/api/entities/general.html#module-otx.api.entities.model"><code class="xref">otx.api.entities.model</code></a></td><td>
+    <em></em></td>
+  </tr>
+  <tr class="cg-1">
+    <td></td>
+    <td>&#160;&#160;&#160;
+        <a href="reference/api/entities/general.html#module-otx.api.entities.model_template"><code class="xref">otx.api.entities.model_template</code></a></td><td>
+    <em></em></td>
+  </tr>
+  <tr class="cg-1">
+    <td></td>
+    <td>&#160;&#160;&#160;
+        <a href="reference/api/entities/general.html#module-otx.api.entities.optimization_parameters"><code class="xref">otx.api.entities.optimization_parameters</code></a></td><td>
+    <em></em></td>
+  </tr>
+  <tr class="cg-1">
+    <td></td>
+    <td>&#160;&#160;&#160;
+        <a href="reference/api/entities/general.html#module-otx.api.entities.result_media"><code class="xref">otx.api.entities.result_media</code></a></td><td>
+    <em></em></td>
+  </tr>
+  <tr class="cg-1">
+    <td></td>
+    <td>&#160;&#160;&#160;
+        <a href="reference/api/entities/general.html#module-otx.api.entities.resultset"><code class="xref">otx.api.entities.resultset</code></a></td><td>
+    <em></em></td>
+  </tr>
+  <tr class="cg-1">
+    <td></td>
+    <td>&#160;&#160;&#160;
+        <a href="reference/api/entities/general.html#module-otx.api.entities.scored_label"><code class="xref">otx.api.entities.scored_label</code></a></td><td>
+    <em></em></td>
+  </tr>
+  <tr class="cg-1">
+    <td></td>
+    <td>&#160;&#160;&#160;
+        <a href="reference/api/entities/shapes.html#module-otx.api.entities.shapes.ellipse"><code class="xref">otx.api.entities.shapes.ellipse</code></a></td><td>
+    <em></em></td>
+  </tr>
+  <tr class="cg-1">
+    <td></td>
+    <td>&#160;&#160;&#160;
+        <a href="reference/api/entities/shapes.html#module-otx.api.entities.shapes.polygon"><code class="xref">otx.api.entities.shapes.polygon</code></a></td><td>
+    <em></em></td>
+  </tr>
+  <tr class="cg-1">
+    <td></td>
+    <td>&#160;&#160;&#160;
+        <a href="reference/api/entities/shapes.html#module-otx.api.entities.shapes.rectangle"><code class="xref">otx.api.entities.shapes.rectangle</code></a></td><td>
+    <em></em></td>
+  </tr>
+  <tr class="cg-1">
+    <td></td>
+    <td>&#160;&#160;&#160;
+        <a href="reference/api/entities/shapes.html#module-otx.api.entities.shapes.shape"><code class="xref">otx.api.entities.shapes.shape</code></a></td><td>
+    <em></em></td>
+  </tr>
+  <tr class="cg-1">
+    <td></td>
+    <td>&#160;&#160;&#160;
+        <a href="reference/api/entities/general.html#module-otx.api.entities.subset"><code class="xref">otx.api.entities.subset</code></a></td><td>
+    <em></em></td>
+  </tr>
+  <tr class="cg-1">
+    <td></td>
+    <td>&#160;&#160;&#160;
+        <a href="reference/api/entities/general.html#module-otx.api.entities.task_environment"><code class="xref">otx.api.entities.task_environment</code></a></td><td>
+    <em></em></td>
+  </tr>
+  <tr class="cg-1">
+    <td></td>
+    <td>&#160;&#160;&#160;
+        <a href="reference/api/entities/general.html#module-otx.api.entities.tensor"><code class="xref">otx.api.entities.tensor</code></a></td><td>
+    <em></em></td>
+  </tr>
+  <tr class="cg-1">
+    <td></td>
+    <td>&#160;&#160;&#160;
+        <a href="reference/api/entities/general.html#module-otx.api.entities.train_parameters"><code class="xref">otx.api.entities.train_parameters</code></a></td><td>
+    <em></em></td>
+  </tr>
+  <tr class="cg-1">
+    <td></td>
+    <td>&#160;&#160;&#160;
+        <a href="reference/api/entities/general.html#module-otx.api.entities.url"><code class="xref">otx.api.entities.url</code></a></td><td>
+    <em></em></td>
+  </tr>
+  <tr class="cg-1">
+    <td></td>
+    <td>&#160;&#160;&#160;
+        <a href="reference/api/usecases/index.html#module-otx.api.usecases"><code class="xref">otx.api.usecases</code></a></td><td>
+    <em></em></td>
+  </tr>
+  <tr class="cg-1">
+    <td></td>
+    <td>&#160;&#160;&#160;
+        <a href="reference/api/usecases/index.html#module-otx.api.usecases.adapters"><code class="xref">otx.api.usecases.adapters</code></a></td><td>
+    <em></em></td>
+  </tr>
+  <tr class="cg-1">
+    <td></td>
+    <td>&#160;&#160;&#160;
+        <a href="reference/api/usecases/adapters.html#module-otx.api.usecases.adapters.model_adapter"><code class="xref">otx.api.usecases.adapters.model_adapter</code></a></td><td>
+    <em></em></td>
+  </tr>
+  <tr class="cg-1">
+    <td></td>
+    <td>&#160;&#160;&#160;
+        <a href="reference/api/usecases/evaluation.html#module-otx.api.usecases.evaluation.accuracy"><code class="xref">otx.api.usecases.evaluation.accuracy</code></a></td><td>
+    <em></em></td>
+  </tr>
+  <tr class="cg-1">
+    <td></td>
+    <td>&#160;&#160;&#160;
+        <a href="reference/api/usecases/evaluation.html#module-otx.api.usecases.evaluation.anomaly_metrics"><code class="xref">otx.api.usecases.evaluation.anomaly_metrics</code></a></td><td>
+    <em></em></td>
+  </tr>
+  <tr class="cg-1">
+    <td></td>
+    <td>&#160;&#160;&#160;
+        <a href="reference/api/usecases/evaluation.html#module-otx.api.usecases.evaluation.averaging"><code class="xref">otx.api.usecases.evaluation.averaging</code></a></td><td>
+    <em></em></td>
+  </tr>
+  <tr class="cg-1">
+    <td></td>
+    <td>&#160;&#160;&#160;
+        <a href="reference/api/usecases/evaluation.html#module-otx.api.usecases.evaluation.basic_operations"><code class="xref">otx.api.usecases.evaluation.basic_operations</code></a></td><td>
+    <em></em></td>
+  </tr>
+  <tr class="cg-1">
+    <td></td>
+    <td>&#160;&#160;&#160;
+        <a href="reference/api/usecases/evaluation.html#module-otx.api.usecases.evaluation.dice"><code class="xref">otx.api.usecases.evaluation.dice</code></a></td><td>
+    <em></em></td>
+  </tr>
+  <tr class="cg-1">
+    <td></td>
+    <td>&#160;&#160;&#160;
+        <a href="reference/api/usecases/evaluation.html#module-otx.api.usecases.evaluation.f_measure"><code class="xref">otx.api.usecases.evaluation.f_measure</code></a></td><td>
+    <em></em></td>
+  </tr>
+  <tr class="cg-1">
+    <td></td>
+    <td>&#160;&#160;&#160;
+        <a href="reference/api/usecases/evaluation.html#module-otx.api.usecases.evaluation.metrics_helper"><code class="xref">otx.api.usecases.evaluation.metrics_helper</code></a></td><td>
+    <em></em></td>
+  </tr>
+  <tr class="cg-1">
+    <td></td>
+    <td>&#160;&#160;&#160;
+        <a href="reference/api/usecases/evaluation.html#module-otx.api.usecases.evaluation.performance_provider_interface"><code class="xref">otx.api.usecases.evaluation.performance_provider_interface</code></a></td><td>
+    <em></em></td>
+  </tr>
+  <tr class="cg-1">
+    <td></td>
+    <td>&#160;&#160;&#160;
+        <a href="reference/api/usecases/reporting.html#module-otx.api.usecases.reporting"><code class="xref">otx.api.usecases.reporting</code></a></td><td>
+    <em></em></td>
+  </tr>
+  <tr class="cg-1">
+    <td></td>
+    <td>&#160;&#160;&#160;
+        <a href="reference/api/usecases/reporting.html#module-otx.api.usecases.reporting.callback"><code class="xref">otx.api.usecases.reporting.callback</code></a></td><td>
+    <em></em></td>
+  </tr>
+  <tr class="cg-1">
+    <td></td>
+    <td>&#160;&#160;&#160;
+        <a href="reference/api/usecases/reporting.html#module-otx.api.usecases.reporting.time_monitor_callback"><code class="xref">otx.api.usecases.reporting.time_monitor_callback</code></a></td><td>
+    <em></em></td>
+  </tr>
+  <tr class="cg-1">
+    <td></td>
+    <td>&#160;&#160;&#160;
+        <a href="reference/api/usecases/tasks.html#module-otx.api.usecases.tasks"><code class="xref">otx.api.usecases.tasks</code></a></td><td>
+    <em></em></td>
+  </tr>
+  <tr class="cg-1">
+    <td></td>
+    <td>&#160;&#160;&#160;
+        <a href="reference/cli/index.html#module-otx.cli"><code class="xref">otx.cli</code></a></td><td>
+    <em></em></td>
+  </tr>
+</table>
 
-</body>
+      </article>
+      <footer>
+        
+        <div class="related-pages">
+          
+          
+        </div>
+
+        <div class="related-information">
+              Copyright &#169; 2022, OpenVINO Training Extensions Contributors
+            |
+            Built with <a href="https://www.sphinx-doc.org/">Sphinx</a>
+              and
+              <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+              <a href="https://github.com/pradyunsg/furo">Furo theme</a>.
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer no-toc">
+      
+      
+      
+    </aside>
+  </div>
+</div><script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/scripts/main.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    </body>
 </html>
