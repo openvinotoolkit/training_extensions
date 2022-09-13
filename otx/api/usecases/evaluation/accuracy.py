@@ -47,8 +47,10 @@ class Accuracy(IPerformanceProvider):
 
     Accuracy is the proportion of the predicted correct labels, to the total number (predicted and actual)
     labels for that instance. Overall accuracy is the average across all instances.
+
+    Args:
         resultset (ResultSetEntity): ResultSet that score will be computed for
-        average (MetricAverageMethod): The averaging method, either MICRO or MACRO
+        average (MetricAverageMethod, optional): The averaging method, either MICRO or MACRO
             MICRO: compute average over all predictions in all label groups
             MACRO: compute accuracy per label group, return the average of the per-label-group accuracy scores
     """
