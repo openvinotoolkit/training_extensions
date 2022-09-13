@@ -8,6 +8,7 @@
 from typing import Optional, Tuple
 
 import cv2
+import imagesize
 import numpy as np
 
 from ote_sdk.entities.annotation import Annotation
@@ -56,9 +57,14 @@ class Image(IMedia2DEntity):
         """
         if self.__data is not None:
             return self.__data.shape[0], self.__data.shape[1]
-        # TODO(pdruzhkov). Get image size w/o reading & decoding its data.
-        image = cv2.imread(self.__file_path)
-        return image.shape[:2]
+        try:
+            width, height = imagesize.get(self.__file_path)
+            if width <= 0 or height <=0:
+                raise ValueError('Invalide image size')
+        except ValueError:
+            image = cv2.imread(self.__file_path)
+            height, width = image.shape[:2]
+        return height, width
 
     @property
     def numpy(self) -> np.ndarray:
