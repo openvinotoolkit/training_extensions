@@ -42,16 +42,14 @@
 
    Follow the instructions on the screen to complete the installation.
 
-1. To ensure that coverage report is uploaded to codacy, add the following ~/.bashrc file in the container.
-
    ```bash
-   export CODACY_PROJECT_TOKEN=<codacy-project-token>
+
    ```
 
 1. Now the container is ready. Type `exit` to leave the container.
 
-1. Start github actions runner in detached mode in the container by
+1. Start github actions runner in detached mode in the container and set the codacy token as an environment variable.
 
    ```bash
-   sudo docker exec -d otx-ci-container /home/validation/actions-runner/run.sh
+   sudo docker exec -d otx-ci-container /bin/bash -c "export CODACY_PROJECT_TOKEN=<codacy-project-token> && /home/validation/actions-runner/run.sh"
    ```
