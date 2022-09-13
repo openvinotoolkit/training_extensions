@@ -42,10 +42,6 @@
 
    Follow the instructions on the screen to complete the installation.
 
-   ```bash
-
-   ```
-
 1. Now the container is ready. Type `exit` to leave the container.
 
 1. Start github actions runner in detached mode in the container and set the codacy token as an environment variable.
