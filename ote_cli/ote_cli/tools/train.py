@@ -89,8 +89,8 @@ def parse_args():
         help="Load only weights from previously saved checkpoint",
     )
     parser.add_argument(
-        "--resume",
-        action="store_true",
+        "--resume-from",
+        required=False,
         help="Resume training from previously saved checkpoint",
     )
     parser.add_argument(
@@ -149,19 +149,20 @@ def main():
         model_template=template,
     )
 
-    if args.load_weights:
+    if args.load_weights or args.resume_from:
+        ckpt_path = args.resume_from if args.resume_from else args.load_weights
         model_adapters = {
-            "weights.pth": ModelAdapter(read_binary(args.load_weights)),
+            "weights.pth": ModelAdapter(read_binary(ckpt_path)),
         }
-        if osp.exists(osp.join(osp.dirname(args.load_weights), "label_schema.json")):
+        if osp.exists(osp.join(osp.dirname(ckpt_path), "label_schema.json")):
             model_adapters.update(
                 {
                     "label_schema.json": ModelAdapter(
-                        label_schema_to_bytes(read_label_schema(args.load_weights))
+                        label_schema_to_bytes(read_label_schema(ckpt_path))
                     )
                 }
             )
-        if args.resume:
+        if args.resume_from:
             model_adapters.update({"resume": True})
 
         environment.model = ModelEntity(

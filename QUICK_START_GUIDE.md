@@ -150,6 +150,8 @@ optional arguments:
                         Comma-separated paths to validation data folders.
   --load-weights LOAD_WEIGHTS
                         Load only weights from previously saved checkpoint
+  --resume-from RESUME_FROM
+                        Resume training from previously saved checkpoint
   --save-model-to SAVE_MODEL_TO
                         Location where trained model will be stored.
   --enable-hpo          Execute hyper parameters optimization (HPO) before training.
