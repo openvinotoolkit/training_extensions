@@ -109,7 +109,7 @@ repos:
         alias: mypy_external
         name: "mypy - legacy (external)"
         files: '^external/anomaly/.*\.py'
-        additional_dependencies: [attrs==21.2.*]
+        additional_dependencies: [attrs==21.2.*, types-PyYAML]
         exclude: "^external/anomaly/tests"
 
   - repo: https://github.com/PyCQA/pylint

@@ -109,10 +109,7 @@ class NNCFTask(InferenceTask, IOptimizationTask):
             AnomalyModule: Anomalib
                 classification or segmentation model with/without weights.
         """
-        # replaces the templates dir with configs and removes task type
-        nncf_config_path = os.path.join(
-            self.base_dir.partition("templates")[0], "configs", self.base_dir.split("/")[-1], "compression_config.json"
-        )
+        nncf_config_path = os.path.join(self.base_dir, "compression_config.json")
 
         with open(nncf_config_path, encoding="utf8") as nncf_config_file:
             common_nncf_config = json.load(nncf_config_file)
