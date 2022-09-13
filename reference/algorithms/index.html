@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="Anomaly" href="anomaly/index.html" /><link rel="prev" title="CLI Reference" href="../cli/index.html" />
 
     <meta name="generator" content="sphinx-4.5.0, furo 2021.07.31.beta41"/>
-        <title>Algorithm Reference - OpenVINO Training Extensions documentation</title>
+        <title>Algorithms - OpenVINO Training Extensions documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?digest=daa650a7760fac3eee23aa959745d2c866b74cb3" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?digest=93475b62d1c3bc01323a0eefdc14a62d77b12690" />
@@ -132,7 +132,7 @@
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
       </div>
-      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
         <div class="visually-hidden">Toggle table of contents sidebar</div>
         <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
       </label>
@@ -185,7 +185,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../cli/index.html">CLI Reference</a></li>
-<li class="toctree-l2 current has-children current-page"><a class="current reference internal" href="#">Algorithm Reference</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2 current has-children current-page"><a class="current reference internal" href="#">Algorithms</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="anomaly/index.html">Anomaly</a></li>
 <li class="toctree-l3"><a class="reference internal" href="classification/index.html">Classification</a></li>
 <li class="toctree-l3"><a class="reference internal" href="detection/index.html">Detection</a></li>
@@ -217,15 +217,20 @@
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
           </div>
-          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
             <div class="visually-hidden">Toggle table of contents sidebar</div>
             <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
           </label>
         </div>
-        <section id="algorithm-reference">
-<h1>Algorithm Reference<a class="headerlink" href="#algorithm-reference" title="Permalink to this headline">¶</a></h1>
+        <section id="algorithms">
+<h1>Algorithms<a class="headerlink" href="#algorithms" title="Permalink to this headline">¶</a></h1>
+<section id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>This section contains algorithmic implementations. <code class="docutils literal notranslate"><span class="pre">otx</span></code> provides number of
+different algorithms such as classification, detection,
+segmentation and anomaly with various learning types such as supervised,
+semi and self-supervised learning.</p>
 <div class="toctree-wrapper compound">
-<p class="caption" role="heading"><span class="caption-text">List of Algorithms:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="anomaly/index.html">Anomaly</a></li>
 <li class="toctree-l1"><a class="reference internal" href="classification/index.html">Classification</a></li>
@@ -233,6 +238,63 @@
 <li class="toctree-l1"><a class="reference internal" href="segmentation/index.html">Segmentation</a></li>
 </ul>
 </div>
+</section>
+<section id="organizational-structure">
+<h2>Organizational Structure<a class="headerlink" href="#organizational-structure" title="Permalink to this headline">¶</a></h2>
+<p>Algorithms have the following organizational structure:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>&lt;algorithm&gt;
+├── adapters
+│   └── &lt;library&gt;
+│       ├── config
+│       ├── data
+│       └── ...
+├── configs
+│   └── &lt;model_name&gt;
+│       ├── template.yaml
+│       ├── configuration.py
+│       ├── configuration.yaml
+│       ├── compression_config.json
+│       └── hpo_config.yaml
+├── tasks
+│   ├── train.py
+│   ├── inference.py
+│   ├── nncf.py
+│   └── openvino.py
+└── tools
+   ├── README.md
+   └── sample.py
+</pre></div>
+</div>
+<p>where each algorithm has <code class="docutils literal notranslate"><span class="pre">adapters</span></code>, <code class="docutils literal notranslate"><span class="pre">configs</span></code>, <code class="docutils literal notranslate"><span class="pre">tasks</span></code> and <code class="docutils literal notranslate"><span class="pre">tools</span></code>.</p>
+<section id="adapters">
+<h3>Adapters<a class="headerlink" href="#adapters" title="Permalink to this headline">¶</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">adapters</span></code> contain modules to wrap the original library used to perform the
+task. For instance, detection task uses
+<a class="reference external" href="https://github.com/open-mmlab/mmdetection">mmdetection</a> library, meaning that
+<code class="docutils literal notranslate"><span class="pre">adapters</span></code> comprises adapters to wrap <code class="docutils literal notranslate"><span class="pre">mmdetection</span></code> to use with <code class="docutils literal notranslate"><span class="pre">otx</span></code>.</p>
+</section>
+<section id="configs">
+<h3>Configs<a class="headerlink" href="#configs" title="Permalink to this headline">¶</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">configs</span></code> contain configuration related files including training, inference,
+<a class="reference external" href="https://github.com/openvinotoolkit/nncf">NNCF</a> and
+<a class="reference external" href="https://github.com/openvinotoolkit/hyper_parameter_optimization">HPO</a>.</p>
+</section>
+<section id="tasks">
+<h3>Tasks<a class="headerlink" href="#tasks" title="Permalink to this headline">¶</a></h3>
+<p id="id1">Tasks contain implementations that correspond to each phase in the workflow from
+training to OpenVINO inference. Each algorithm expects <code class="docutils literal notranslate"><span class="pre">train</span></code>, <code class="docutils literal notranslate"><span class="pre">inference</span></code>,
+<code class="docutils literal notranslate"><span class="pre">nncf</span></code> and <code class="docutils literal notranslate"><span class="pre">openvino</span></code> python modules that implement the
+<a class="reference external" href="https://github.com/openvinotoolkit/training_extensions/tree/feature/otx/otx/api/usecases/tasks/interfaces">task interfaces</a>.</p>
+</section>
+<section id="tools">
+<h3>Tools<a class="headerlink" href="#tools" title="Permalink to this headline">¶</a></h3>
+<p>Tools contain python implementations that performs <a class="reference internal" href="#id1"><span class="std std-ref">tasks</span></a> in
+end-to-end workflow. For example, current anomaly implementation has <code class="docutils literal notranslate"><span class="pre">sample.py</span></code>
+file that reads an input dataset, trains a model and exports the model to
+OpenVINO IR via either <a class="reference external" href="https://docs.openvino.ai/2020.4/pot_README.html">POT</a>
+or <a class="reference external" href="https://docs.openvino.ai/latest/docs_nncf_introduction.html">NNCF</a>.</p>
+</section>
+</section>
 </section>
 
       </article>
@@ -277,8 +339,34 @@
         
       </footer>
     </div>
-    <aside class="toc-drawer no-toc">
+    <aside class="toc-drawer">
       
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            Contents
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Algorithms</a><ul>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#organizational-structure">Organizational Structure</a><ul>
+<li><a class="reference internal" href="#adapters">Adapters</a></li>
+<li><a class="reference internal" href="#configs">Configs</a></li>
+<li><a class="reference internal" href="#tasks">Tasks</a></li>
+<li><a class="reference internal" href="#tools">Tools</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
       
       
     </aside>
