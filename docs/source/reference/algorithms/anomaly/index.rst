@@ -1,6 +1,11 @@
 Anomaly
 =======
 
-.. automodule:: otx.algorithms.anomaly
-   :members:
-   :undoc-members:
+.. toctree::
+   :maxdepth: 3
+   :caption: Contents:
+
+   adapters/index
+   configs
+   tasks
+   tools
