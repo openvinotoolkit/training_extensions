@@ -32,7 +32,7 @@ class Ellipse(Shape):
         y1: top y coordinate of encapsulating rectangle
         x2: right x coordinate of encapsulating rectangle
         y2: bottom y coordinate of encapsulating rectangle
-        modification_date: last modified date
+            modification_date: last modified date
     """
 
     # pylint: disable=too-many-arguments; Requires refactor
@@ -273,6 +273,7 @@ class Ellipse(Shape):
 
         Area is a value between 0 and 1, computed as
         `pi * vertex * co-vertex`.
+
             >>> Ellipse(x1=0, y1=0, x2=0.8, y2=0.4).get_area()
             0.25132741228718347
 
