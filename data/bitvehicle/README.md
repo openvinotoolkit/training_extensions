@@ -3,8 +3,9 @@
 ## Prepare the Dataset
 
 1. Download the [dataset](http://iitlab.bit.edu.cn/mcislab/vehicledb/).
-2. Unpack the dataset in the `images` directory:
-   ```
+1. Unpack the dataset in the `images` directory:
+
+   ```bash
     $ tree
     .
     ├── bitvehicle_test.json
@@ -15,9 +16,10 @@
     |   ...
     └── README.md
    ```
-3. Downscale images to increase training speed:
 
-   ```
+1. Downscale images to increase training speed:
+
+   ```bash
    python <training_toolbox_tensorflow>/tools/downscale_images.py -target_size 512 <training_toolbox_tensorflow>/data/bitvehicle/images
 
    ```
@@ -27,68 +29,72 @@
 The structure of JSON files is fairly straightforward. There are three
 top-level arrays: `images`, `annotations` and `categories`.
 
-**Example of arrays and their fields**
+### Example of arrays and their fields
 
 1. `images` records:
+
+   ```json
+   {
+     "dataset": "BitVehicle",
+     "height": 1080,
+     "id": 4,
+     "width": 1920,
+     "file_name": "vehicle_0000005.jpg",
+     "coco_url": null,
+     "license": null,
+     "flickr_url": null,
+     "image": "./images/vehicle_0000005.jpg",
+     "date_captured": null
+   }
    ```
-       {
-           "dataset": "BitVehicle",
-           "height": 1080,
-           "id": 4,
-           "width": 1920,
-           "file_name":
-           "vehicle_0000005.jpg",
-           "coco_url": null,
-           "license": null,
-           "flickr_url": null,
-           "image": "./images/vehicle_0000005.jpg",
-           "date_captured": null
-       }
-   ```
-2. `annotation` records:
-   ```
+
+1. `annotation` records:
+
+   ```json
    [
-       {
-           "area": 199023.0,
-           "id": 10,
-           "iscrowd": 0,
-           "category_id": 1,
-           "is_occluded": false,
-           "image_id": 4,
-           "segmentation": null,
-           "bbox": [512.0, 346.0, 407.0, 489.0],
-           "attributes": {}
-       },
-       {
-           "area": 2668.0,
-           "id": 11,
-           "iscrowd": 0,
-           "category_id": 2,
-           "is_occluded": false,
-           "image_id": 4,
-           "segmentation": null,
-           "bbox": [638.0, 773.0, 92.0, 29.0],
-           "attributes": {}
-       },
-       {
-           "area": 5187.0,
-           "id": 12,
-           "iscrowd": 0,
-           "category_id": 1,
-           "is_occluded": true,
-           "image_id": 4,
-           "segmentation": null,
-           "bbox": [1023.0, 0.0, 273.0, 19.0],
-           "attributes": {}
-       }
+     {
+       "area": 199023.0,
+       "id": 10,
+       "iscrowd": 0,
+       "category_id": 1,
+       "is_occluded": false,
+       "image_id": 4,
+       "segmentation": null,
+       "bbox": [512.0, 346.0, 407.0, 489.0],
+       "attributes": {}
+     },
+     {
+       "area": 2668.0,
+       "id": 11,
+       "iscrowd": 0,
+       "category_id": 2,
+       "is_occluded": false,
+       "image_id": 4,
+       "segmentation": null,
+       "bbox": [638.0, 773.0, 92.0, 29.0],
+       "attributes": {}
+     },
+     {
+       "area": 5187.0,
+       "id": 12,
+       "iscrowd": 0,
+       "category_id": 1,
+       "is_occluded": true,
+       "image_id": 4,
+       "segmentation": null,
+       "bbox": [1023.0, 0.0, 273.0, 19.0],
+       "attributes": {}
+     }
    ]
    ```
-3. `categories` records:
-   ```
+
+1. `categories` records:
+
+   ```json
    [
-       {"id": 0, "name": "bg", "supercategory": ""},
-       {"id": 1, "name": "vehicle", "supercategory": ""},
-       {"id": 2, "name": "plate", "supercategory": ""}
+     { "id": 0, "name": "bg", "supercategory": "" },
+     { "id": 1, "name": "vehicle", "supercategory": "" },
+     { "id": 2, "name": "plate", "supercategory": "" }
    ]
    ```
 

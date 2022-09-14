@@ -12,15 +12,15 @@ inference. It allows you to export and convert the models to the needed format. 
 
 ## Detailed Workflow
 
-![](training_extensions_framework.png)
+![Training Extensions Framework](training_extensions_framework.png)
 
 1. To start working with OTE, prepare and annotate your dataset. For example, on CVAT.
 
-2. OTE train the model, using training interface, and evaluate the model quality on your dataset, using evaluation and inference interfaces.
+1. OTE train the model, using training interface, and evaluate the model quality on your dataset, using evaluation and inference interfaces.
 
-Note: prepare a separate dataset or split the dataset you have for more accurate quality evaluation.
+   Note: prepare a separate dataset or split the dataset you have for more accurate quality evaluation.
 
-3. Having successful evaluation results received, you have an opportunity to deploy your model or continue optimizing it, using NNCF and POT. For more information about these frameworks, go to [Optimization Guide](https://docs.openvino.ai/nightly/openvino_docs_model_optimization_guide.html).
+1. Having successful evaluation results received, you have an opportunity to deploy your model or continue optimizing it, using NNCF and POT. For more information about these frameworks, go to [Optimization Guide](https://docs.openvino.ai/nightly/openvino_docs_model_optimization_guide.html).
 
 If the results are unsatisfactory, add datasets and perform the same steps, starting with dataset annotation.
 
@@ -43,20 +43,20 @@ If the results are unsatisfactory, add datasets and perform the same steps, star
 
 1. Clone repository in the working directory by running the following:
 
-   ```
+   ```bash
    git clone https://github.com/openvinotoolkit/training_extensions.git
    cd training_extensions
    git checkout -b develop origin/develop
    git submodule update --init --recursive
    ```
 
-2. Install prerequisites by running the following:
+1. Install prerequisites by running the following:
 
-   ```
+   ```bash
    sudo apt-get install python3-pip python3-venv
    ```
 
-3. Search for available scripts that create python virtual environments for different task types:
+1. Search for available scripts that create python virtual environments for different task types:
 
    ```bash
    find external/ -name init_venv.sh
@@ -64,18 +64,20 @@ If the results are unsatisfactory, add datasets and perform the same steps, star
 
    Sample output:
 
-   ```
+   ```bash
    external/mmdetection/init_venv.sh
    external/mmsegmentation/init_venv.sh
    external/deep-object-reid/init_venv.sh
    ```
 
-4. Create, activate Object Detection virtual environment, and install `ote_cli`:
-   ```
+1. Create, activate Object Detection virtual environment, and install `ote_cli`:
+
+   ```bash
    ./external/mmdetection/init_venv.sh det_venv
    source det_venv/bin/activate
    pip3 install -e ote_cli/
    ```
+
    To learn more about OTE CLI commands go to [GitHub](https://github.com/openvinotoolkit/training_extensions/blob/master/QUICK_START_GUIDE.md).
 
 ## Tutorials

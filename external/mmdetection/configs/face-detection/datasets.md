@@ -1,6 +1,6 @@
-## Prepare datasets
+# Prepare datasets
 
-### 1. Download datasets
+## 1. Download datasets
 
 Download and unpack it to the `${DATA_DIR}` folder.
 
@@ -14,7 +14,7 @@ export DATA_DIR=${WORK_DIR}/data
 
 So that `ls -la $DATA_DIR` gives you:
 
-```
+```bash
 drwxrwxr-x 5 user user 4096 nov  3 12:42 .
 drwxr-xr-x 8 user user 4096 nov  3 12:42 ..
 drwxrwxr-x 2 user user 4096 nov 31  2017 wider_face_split
@@ -22,7 +22,7 @@ drwxrwxr-x 3 user user 4096 nov 18  2015 WIDER_train
 drwxrwxr-x 3 user user 4096 nov 18  2015 WIDER_val
 ```
 
-### 2. Convert datasets
+## 2. Convert datasets
 
 Convert downloaded and extracted annotation to MSCOCO format with `face` as the only one class.
 

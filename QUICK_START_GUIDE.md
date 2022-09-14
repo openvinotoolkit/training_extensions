@@ -12,26 +12,26 @@
 
 1. Clone the training_extensions repository with the following commands:
 
-   ```
+   ```bash
    git clone https://github.com/openvinotoolkit/training_extensions.git
    cd training_extensions
    git checkout develop
    git submodule update --init --recursive
    ```
 
-2. Install prerequisites with:
+1. Install prerequisites with:
 
-   ```
+   ```bash
    sudo apt-get install python3-pip python3-venv
    ```
 
    Although they are not required, You may also want to use Jupyter notebooks or OTE CLI tools:
 
-   ```
+   ```bash
    pip3 install notebook; cd ote_cli/notebooks/; jupyter notebook
    ```
 
-3. Search for available scripts that create python virtual environments for different task types:
+1. Search for available scripts that create python virtual environments for different task types:
 
    ```bash
    find external/ -name init_venv.sh
@@ -39,7 +39,7 @@
 
    Sample output:
 
-   ```
+   ```bash
    external/mmdetection/init_venv.sh
    external/mmsegmentation/init_venv.sh
    external/deep-object-reid/init_venv.sh
@@ -48,7 +48,7 @@
    Each line in the output gives an `init_venv.sh` script that creates a virtual environment
    for the corresponding task type.
 
-4. Choose a task type, for example,`external/mmdetection` for Object Detection.
+1. Choose a task type, for example,`external/mmdetection` for Object Detection.
 
    ```bash
    TASK_ALGO_DIR=./external/mmdetection/
@@ -56,7 +56,7 @@
 
    Note that the variable `TASK_ALGO_DIR` is set in this example for simplicity and will not be used in scripts.
 
-5. Create and activate a virtual environment for the chosen task, then install the `ote_cli`.
+1. Create and activate a virtual environment for the chosen task, then install the `ote_cli`.
    Note that the virtual environment directory may be created anywhere on your system.
    The `./cur_task_venv` is just an example used here for convenience.
 
@@ -74,7 +74,7 @@
    from the chosen task folder is used to avoid breaking constraints
    for the OTE task.
 
-6. When `ote_cli` is installed in the virtual environment, you can use the
+1. When `ote_cli` is installed in the virtual environment, you can use the
    `ote` command line interface to perform various actions for templates related to the chosen task type, such as running, training, evaluating, exporting, etc.
 
 ## OTE CLI commands
@@ -83,13 +83,13 @@
 
 `ote find` lists model templates available for the given virtual environment.
 
-```
+```bash
 ote find --root $TASK_ALGO_DIR
 ```
 
 Output for the mmdetection used in the above example looks as follows:
 
-```
+```yaml
 - id: Custom_Object_Detection_Gen3_VFNet
   name: VFNet
   path: ./external/mmdetection/configs/ote/custom-object-detection/gen3_resnet50_VFNet/template.yaml
@@ -120,13 +120,13 @@ With the `--help` command, you can list additional information, such as its para
 
 command example:
 
-```
+```bash
 ote train ./external/mmdetection/configs/ote/custom-object-detection/gen3_mobilenetV2_ATSS/template.yaml --help
 ```
 
 output example:
 
-```
+```bash
 usage: ote train [-h] --train-ann-files TRAIN_ANN_FILES --train-data-roots
                  TRAIN_DATA_ROOTS --val-ann-files VAL_ANN_FILES
                  --val-data-roots VAL_DATA_ROOTS [--load-weights LOAD_WEIGHTS]
@@ -161,13 +161,13 @@ optional arguments:
 
 command example:
 
-```
+```bash
 ote train ./external/mmdetection/configs/ote/custom-object-detection/gen3_mobilenetV2_ATSS/template.yaml params --help
 ```
 
 output example:
 
-```
+```bash
 usage: ote train template params [-h]
                                  [--learning_parameters.batch_size BATCH_SIZE]
                                  [--learning_parameters.learning_rate LEARNING_RATE]
@@ -241,26 +241,26 @@ optional arguments:
 For example:
 Optimize a PyTorch model (.pth) with OpenVINO NNCF:
 
-```
+```bash
 ote optimize ./external/mmdetection/configs/ote/custom-object-detection/gen3_mobilenetV2_ATSS/template.yaml --load-weights weights.pth --save-model-to ./nncf_output --save-performance ./nncf_output/performance.json --train-ann-file ./data/car_tree_bug/annotations/instances_default.json --train-data-roots ./data/car_tree_bug/images --val-ann-file ./data/car_tree_bug/annotations/instances_default.json --val-data-roots ./data/car_tree_bug/images
 ```
 
 Optimize OpenVINO model (.bin or .xml) with OpenVINO POT:
 
-```
+```bash
 ote optimize ./external/mmdetection/configs/ote/custom-object-detection/gen3_mobilenetV2_ATSS/template.yaml --load-weights openvino.xml --save-model-to ./pot_output --save-performance ./pot_output/performance.json --train-ann-file ./data/car_tree_bug/annotations/instances_default.json --train-data-roots ./data/car_tree_bug/images --val-ann-file ./data/car_tree_bug/annotations/instances_default.json --val-data-roots ./data/car_tree_bug/images
 ```
 
 With the `--help` command, you can list additional information.
 command example:
 
-```
+```bash
 ote optimize ./external/mmdetection/configs/ote/custom-object-detection/gen3_mobilenetV2_ATSS/template.yaml --help
 ```
 
 Output example:
 
-```
+```bash
 usage: ote optimize [-h] --train-ann-files TRAIN_ANN_FILES --train-data-roots TRAIN_DATA_ROOTS --val-ann-files
                  VAL_ANN_FILES --val-data-roots VAL_DATA_ROOTS --load-weights LOAD_WEIGHTS --save-model-to
                  SAVE_MODEL_TO [--aux-weights AUX_WEIGHTS]
@@ -296,13 +296,13 @@ optional arguments:
 With the `--help` command, you can list additional information, such as its parameters common to all model templates:
 command example:
 
-```
+```bash
 ote eval ./external/mmdetection/configs/ote/custom-object-detection/gen3_mobilenetV2_ATSS/template.yaml --help
 ```
 
 output example:
 
-```
+```bash
 usage: ote eval [-h] --test-ann-files TEST_ANN_FILES --test-data-roots
                 TEST_DATA_ROOTS --load-weights LOAD_WEIGHTS
                 [--save-performance SAVE_PERFORMANCE]
@@ -333,13 +333,13 @@ optional arguments:
 With the `--help` command, you can list additional information, such as its parameters common to all model templates:
 command example:
 
-```
+```bash
 ote export ./external/mmdetection/configs/ote/custom-object-detection/gen3_mobilenetV2_ATSS/template.yaml --help
 ```
 
 output example:
 
-```
+```bash
 usage: ote export [-h] --load-weights LOAD_WEIGHTS --save-model-to
                   SAVE_MODEL_TO
                   template
@@ -362,13 +362,13 @@ optional arguments:
 With the `--help` command, you can list additional information, such as its parameters common to all model templates:
 command example:
 
-```
+```bash
 ote demo ./external/mmdetection/configs/ote/custom-object-detection/gen3_mobilenetV2_ATSS/template.yaml --help
 ```
 
 output example:
 
-```
+```bash
 usage: ote demo [-h] -i INPUT --load-weights LOAD_WEIGHTS
                 [--fit-to-size FIT_TO_SIZE FIT_TO_SIZE] [--loop]
                 [--delay DELAY] [--display-perf]
@@ -406,13 +406,13 @@ optional arguments:
 With the `--help` command, you can list additional information, such as its parameters common to all model templates:
 command example:
 
-```
+```bash
 ote deploy ./external/mmdetection/configs/ote/custom-object-detection/gen3_mobilenetV2_ATSS/template.yaml --help
 ```
 
 output example:
 
-```
+```bash
 usage: ote deploy [-h] --load-weights LOAD_WEIGHTS
                   [--save-model-to SAVE_MODEL_TO]
                   template
