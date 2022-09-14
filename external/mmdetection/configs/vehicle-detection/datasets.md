@@ -1,6 +1,6 @@
-## Prepare datasets
+# Prepare datasets
 
-### 1. Download datasets
+## 1. Download datasets
 
 Collect or download images with vehicles presented on them. One can download MS-COCO dataset and remain images with cars only.
 
