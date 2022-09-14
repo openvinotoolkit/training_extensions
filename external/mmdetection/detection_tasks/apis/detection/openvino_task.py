@@ -204,7 +204,7 @@ class OpenVINOMaskInferencer(BaseInferencerWithConverter):
         masks = []
 
         batch_size = 1
-        tiler = Tiler(tile_size=400, overlap=overlap, batch_size=batch_size)
+        tiler = Tiler(tile_size=tile_size, overlap=0.5, batch_size=batch_size)
 
         original_shape = image.shape
         metadata = None
@@ -222,7 +222,7 @@ class OpenVINOMaskInferencer(BaseInferencerWithConverter):
 
             tile_scores, tile_labels, tile_boxes, tile_masks = predictions
             if len(tile_scores):
-                y, x = offset
+                y, x = offset[0]
                 tile_boxes[:, 0] += x
                 tile_boxes[:, 1] += y
                 tile_boxes[:, 2] += x
