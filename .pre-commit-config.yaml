@@ -146,3 +146,10 @@ repos:
         types: [python]
         files: '^otx/.*\.py'
         exclude: "otx/algorithms/anomaly/tests|external/anomaly/tests|otx/cli/utils/tests.py"
+
+  - repo: https://github.com/jumanjihouse/pre-commit-hooks
+    rev: 2.1.6
+    hooks:
+      - id: markdownlint
+        # TODO: Check all files even tests after migration to otx is complete
+        exclude: "^(ote_sdk|tests|.github)/*"

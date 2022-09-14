@@ -1,6 +1,6 @@
-## Prepare datasets
+# Prepare datasets
 
-### 1. Download datasets
+## 1. Download datasets
 
 To be able to train networks and/or get quality metrics for pre-trained ones,
 it's necessary to download at least one dataset from following resources.
@@ -13,7 +13,7 @@ it's necessary to download at least one dataset from following resources.
 - [MSRA-TD500](<http://www.iapr-tc11.org/mediawiki/index.php/MSRA_Text_Detection_500_Database_(MSRA-TD500)>)
 - [COCO-Text](https://bgshih.github.io/cocotext/)
 
-### 2. Convert datasets
+## 2. Convert datasets
 
 Extract downloaded datasets in `${DATA_DIR}/text-dataset` folder.
 
@@ -52,7 +52,7 @@ So, if you would like not to use all datasets above, please change its content.
 
 The structure of the folder with datasets:
 
-```
+```bash
 ${DATA_DIR}/text-dataset
     ├── coco-text
     ├── icdar2013
