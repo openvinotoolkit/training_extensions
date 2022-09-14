@@ -1,7 +1,6 @@
 default_language_version:
   python: python3.8
   node: 16.15.0
-  ruby: 2.7.2
 
 repos:
   - repo: https://github.com/PyCQA/isort

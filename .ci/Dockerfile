@@ -25,6 +25,7 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
         nodejs=8.10.0\~dfsg-2ubuntu0.4 \
         unzip=6.0-21ubuntu1.1 \
         npm=3.5.2-0ubuntu4 \
+        ruby-dev=1:2.5.1 \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
