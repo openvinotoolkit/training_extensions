@@ -6,7 +6,7 @@ ARG HTTPS_PROXY
 ARG NO_PROXY
 
 FROM nvidia/cuda:10.2-devel-ubuntu18.04 AS python_base_cuda
-LABEL MAINTAINER="OpenVINO Training Extensions Development Team"
+LABEL maintainer="OpenVINO Training Extensions Development Team"
 
 # Setup proxies
 
@@ -16,18 +16,17 @@ ENV no_proxy=$NO_PROXY
 ENV DEBIAN_FRONTEND="noninteractive"
 
 # Update system and install dependencies
-RUN apt-get update && \
-    apt-get install --no-install-recommends -y \
-    software-properties-common \
-        wget \
-        ffmpeg \
-        libpython3.8 \
-        curl \
-        nodejs \
-        unzip \
-        npm && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install --no-install-recommends -y \
+    software-properties-common=0.96.24.32.18 \
+        wget=1.19.4-1ubuntu2.2 \
+        ffmpeg=7:3.4.11-0ubuntu0.1 \
+        libpython3.8=3.8.0-3ubuntu1\~18.04.2 \
+        curl=7.58.0-2ubuntu3.20 \
+        nodejs=8.10.0\~dfsg-2ubuntu0.4 \
+        unzip=6.0-21ubuntu1.1 \
+        npm=3.5.2-0ubuntu4 \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install latest git for github actions
 RUN apt-get update && \

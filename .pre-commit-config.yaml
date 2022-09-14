@@ -152,4 +152,11 @@ repos:
     hooks:
       - id: markdownlint
         # TODO: Check all files even tests after migration to otx is complete
-        exclude: "^(ote_sdk|tests|.github)/*"
+        exclude: "^(ote_sdk|tests|.github)"
+
+  - repo: https://github.com/AleksaC/hadolint-py
+    rev: v2.10.0
+    hooks:
+      - id: hadolint
+        name: Lint Dockerfiles
+        description: Runs hadolint to lint Dockerfiles
