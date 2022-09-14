@@ -12,10 +12,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-      - name: Set up Python 3.8
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.8
       - name: Install dependencies
         run: python -m pip install tox
       - name: Code Quality Checks
@@ -26,11 +22,22 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-      - name: Set up Python 3.8
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.8
       - name: Install dependencies
         run: python -m pip install tox
       - name: Pre-Merge Tests
         run: tox -re pre-merge
+      - name: Upload coverage report
+        run: |
+          # If the workflow is triggered from PR then it gets the commit id from the PR.
+          # else it uses the commit id of the latest commit. This is because the commit
+          # of the checked-out branch/commit does not exist in the tree as it is grafted.
+          # Also note: GitHub does not pass secrets to pipelines triggered from a fork.
+          # This means that upload will fail for PRs from forks.
+          if [ -n "${{ github.event.pull_request.head.sha }}" ]
+          then
+            COMMIT_ID=${{ github.event.pull_request.head.sha }}
+          else
+            COMMIT_ID=${{ github.sha }}
+          fi
+          pip install codacy-coverage
+          python-codacy-coverage -r .tox/coverage.xml -c $COMMIT_ID

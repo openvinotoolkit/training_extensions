@@ -14,6 +14,6 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .anomalib_config import get_anomalib_config
+from .anomalib_config import get_anomalib_config, update_anomalib_config
 
-__all__ = ["get_anomalib_config"]
+__all__ = ["get_anomalib_config", "update_anomalib_config"]

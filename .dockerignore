@@ -1,0 +1,15 @@
+**/venv/**
+.git
+.github
+.mypy_cache
+.pytest_cache
+.tox
+.vscode
+__pycache__
+build/
+data/
+docs/
+lightning_logs/
+misc/
+results/
+venv/
