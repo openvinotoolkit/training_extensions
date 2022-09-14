@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="docs/source/images/logos/otx-logo-black.png" width="200px">
+<img src="docs/source/_images/logos/otx-logo-black.png" width="200px">
 
 # OpenVINO™ Training Extensions
 
@@ -10,9 +10,11 @@
 [![black](https://img.shields.io/badge/code%20style-black-000000.svg)]()
 [![mypy](https://img.shields.io/badge/%20type_checker-mypy-%231674b1?style=flat)]()
 [![openvino](https://img.shields.io/badge/openvino-2021.4-purple)]()
-[![Codacy Badge](https://app.codacy.com/project/badge/Grade/34245035749b4c4fa59a8dfe277133c2)](https://www.codacy.com/gh/openvinotoolkit/training_extensions/dashboard?utm_source=github.com&utm_medium=referral&utm_content=openvinotoolkit/training_extensions&utm_campaign=Badge_Grade)
-[![Build Docs](https://github.com/openvinotoolkit/training_extensions/actions/workflows/docs.yml/badge.svg)](https://github.com/openvinotoolkit/training_extensions/actions/workflows/docs.yml)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/34245035749b4c4fa59a8dfe277133c2)](https://www.codacy.com/gh/openvinotoolkit/training_extensions/dashboard?utm_source=github.com&utm_medium=referral&utm_content=openvinotoolkit/training_extensions&utm_campaign=Badge_Grade)
+[![Codacy Badge](https://app.codacy.com/project/badge/Coverage/34245035749b4c4fa59a8dfe277133c2)](https://www.codacy.com/gh/openvinotoolkit/training_extensions/dashboard?utm_source=github.com&utm_medium=referral&utm_content=openvinotoolkit/training_extensions&utm_campaign=Badge_Coverage)
+[![Build Docs](https://github.com/openvinotoolkit/training_extensions/actions/workflows/docs.yml/badge.svg)](https://github.com/openvinotoolkit/training_extensions/actions/workflows/docs.yml)
 
 ---
 
