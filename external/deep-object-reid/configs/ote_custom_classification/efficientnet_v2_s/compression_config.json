@@ -45,16 +45,6 @@
         "nncf_config": {
             "compression": [
                 {
-                    "algorithm": "filter_pruning",
-                    "pruning_init": 0.1,
-                    "params": {
-                        "schedule": "baseline",
-                        "pruning_flops_target": 0.1,
-                        "filter_importance": "geometric_median",
-                        "prune_downsample_convs": true
-                    }
-                },
-                {
                     "algorithm": "quantization",
                     "preset": "mixed",
                     "initializer": {
