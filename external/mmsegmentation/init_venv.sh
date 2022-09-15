@@ -6,13 +6,13 @@
 set -v
 set -x
 
-work_dir=$(realpath "$(dirname $0)")
+work_dir=$(realpath "$(dirname "$0")")
 
 venv_dir=$1
 PYTHON_NAME=$2
 
 if [ -z "$venv_dir" ]; then
-  venv_dir=$(realpath -m ${work_dir}/venv)
+  venv_dir=$(realpath -m "${work_dir}"/venv)
 else
   venv_dir=$(realpath -m "$venv_dir")
 fi
@@ -30,7 +30,7 @@ if [[ $PYTHON_VERSION != "3.7" && $PYTHON_VERSION != "3.8" && $PYTHON_VERSION !=
   exit 1
 fi
 
-cd ${work_dir}
+cd "${work_dir}" || exit
 
 if [[ -e ${venv_dir} ]]; then
   echo
@@ -40,14 +40,15 @@ if [[ -e ${venv_dir} ]]; then
 fi
 
 # Create virtual environment
-$PYTHON_NAME -m venv ${venv_dir} --prompt="segmentation"
+$PYTHON_NAME -m venv "${venv_dir}" --prompt="segmentation"
 
 if ! [ -e "${venv_dir}/bin/activate" ]; then
   echo "The virtual environment was not created."
   exit
 fi
 
-. ${venv_dir}/bin/activate
+# shellcheck source=/dev/null
+. "${venv_dir}"/bin/activate
 
 # Get CUDA version.
 CUDA_HOME_CANDIDATE=/usr/local/cuda
@@ -62,9 +63,9 @@ if [ -e "$CUDA_HOME" ]; then
     CUDA_VERSION=$(cat $CUDA_HOME/version.txt | sed -e "s/^.*CUDA Version *//" -e "s/ .*//")
   else
     # Get CUDA version from directory name.
-    CUDA_HOME_DIR=`readlink -f $CUDA_HOME`
-    CUDA_HOME_DIR=`basename $CUDA_HOME_DIR`
-    CUDA_VERSION=`echo $CUDA_HOME_DIR | cut -d "-" -f 2`
+    CUDA_HOME_DIR=$(readlink -f $CUDA_HOME)
+    CUDA_HOME_DIR=$(basename "$CUDA_HOME_DIR")
+    CUDA_VERSION=$(echo "$CUDA_HOME_DIR" | cut -d "-" -f 2)
   fi
 fi
 
@@ -77,17 +78,17 @@ if [[ -z ${CUDA_VERSION} ]]; then
   echo "CUDA was not found, installing dependencies in CPU-only mode. If you want to use CUDA, set CUDA_HOME and CUDA_VERSION beforehand."
 else
   # Remove dots from CUDA version string, if any.
-  CUDA_VERSION_CODE=$(echo ${CUDA_VERSION} | sed -e "s/\.//" -e "s/\(...\).*/\1/")
+  CUDA_VERSION_CODE=$(echo "${CUDA_VERSION}" | sed -e "s/\.//" -e "s/\(...\).*/\1/")
   echo "Using CUDA_VERSION ${CUDA_VERSION}"
   if [[ "${CUDA_VERSION_CODE}" != "111" ]] && [[ "${CUDA_VERSION_CODE}" != "102" ]] ; then
     echo "CUDA version must be either 11.1 or 10.2"
     exit 1
   fi
-  echo "export CUDA_HOME=${CUDA_HOME}" >> ${venv_dir}/bin/activate
+  echo "export CUDA_HOME=${CUDA_HOME}" >> "${venv_dir}"/bin/activate
 fi
 
-CONSTRAINTS_FILE=$(tempfile)
-cat constraints.txt >> ${CONSTRAINTS_FILE}
+CONSTRAINTS_FILE=$(mktemp)
+cat constraints.txt >> "${CONSTRAINTS_FILE}"
 export PIP_CONSTRAINT=${CONSTRAINTS_FILE}
 
 # Newer versions of pip have troubles with NNCF installation from the repo commit.
@@ -104,13 +105,13 @@ else
 fi
 
 # Install pytorch
-echo torch==${TORCH_VERSION} >> ${CONSTRAINTS_FILE}
-echo torchvision==${TORCHVISION_VERSION} >> ${CONSTRAINTS_FILE}
-pip install torch==${TORCH_VERSION} torchvision==${TORCHVISION_VERSION} -f https://download.pytorch.org/whl/lts/1.8/torch_lts.html || exit 1
+echo torch=="${TORCH_VERSION}" >> "${CONSTRAINTS_FILE}"
+echo torchvision=="${TORCHVISION_VERSION}" >> "${CONSTRAINTS_FILE}"
+pip install torch=="${TORCH_VERSION}" torchvision=="${TORCHVISION_VERSION}" -f https://download.pytorch.org/whl/lts/1.8/torch_lts.html || exit 1
 
 # Install mmcv
 pip install --no-cache-dir mmcv-full==${MMCV_VERSION} || exit 1
-sed -i "s/force=False/force=True/g" ${venv_dir}/lib/python${PYTHON_VERSION}/site-packages/mmcv/utils/registry.py  # Patch: remedy for MMCV registry collision from mmdet/mmseg
+sed -i "s/force=False/force=True/g" "${venv_dir}"/lib/python"${PYTHON_VERSION}"/site-packages/mmcv/utils/registry.py  # Patch: remedy for MMCV registry collision from mmdet/mmseg
 
 # Install algo backend.
 pip install -e submodule/ || exit 1

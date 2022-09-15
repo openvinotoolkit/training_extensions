@@ -2,13 +2,13 @@
 set -v
 set -x
 
-work_dir=$(realpath "$(dirname $0)")
+work_dir=$(realpath "$(dirname "$0")")
 
 venv_dir=$1
 PYTHON_NAME=$2
 
 if [ -z "$venv_dir" ]; then
-  venv_dir=$(realpath -m ${work_dir}/venv)
+  venv_dir=$(realpath -m "${work_dir}"/venv)
 else
   venv_dir=$(realpath -m "$venv_dir")
 fi
@@ -26,7 +26,7 @@ if [[ $PYTHON_VERSION != "3.8" && $PYTHON_VERSION != "3.9" ]]; then
   exit 1
 fi
 
-cd ${work_dir}
+cd "${work_dir}" || exit
 
 if [[ -e ${venv_dir} ]]; then
   echo
@@ -36,14 +36,15 @@ if [[ -e ${venv_dir} ]]; then
 fi
 
 # Create virtual environment
-$PYTHON_NAME -m venv ${venv_dir} --prompt="anomalib"
+$PYTHON_NAME -m venv "${venv_dir}" --prompt="anomalib"
 
 if ! [ -e "${venv_dir}/bin/activate" ]; then
   echo "The virtual environment was not created."
   exit
 fi
 
-. ${venv_dir}/bin/activate
+# shellcheck source=/dev/null
+. "${venv_dir}"/bin/activate
 
 # Get CUDA version.
 CUDA_HOME_CANDIDATE=/usr/local/cuda
@@ -58,9 +59,9 @@ if [ -e "$CUDA_HOME" ]; then
     CUDA_VERSION=$(cat $CUDA_HOME/version.txt | sed -e "s/^.*CUDA Version *//" -e "s/ .*//")
   else
     # Get CUDA version from directory name.
-    CUDA_HOME_DIR=`readlink -f $CUDA_HOME`
-    CUDA_HOME_DIR=`basename $CUDA_HOME_DIR`
-    CUDA_VERSION=`echo $CUDA_HOME_DIR | cut -d "-" -f 2`
+    CUDA_HOME_DIR=$(readlink -f $CUDA_HOME)
+    CUDA_HOME_DIR=$(basename "$CUDA_HOME_DIR")
+    CUDA_VERSION=$(echo "$CUDA_HOME_DIR" | cut -d "-" -f 2)
   fi
 fi
 
@@ -73,7 +74,7 @@ if [[ -z ${CUDA_VERSION} ]]; then
   echo "CUDA was not found, installing dependencies in CPU-only mode. If you want to use CUDA, set CUDA_HOME and CUDA_VERSION beforehand."
 else
   # Remove dots from CUDA version string, if any.
-  CUDA_VERSION_CODE=$(echo ${CUDA_VERSION} | sed -e "s/\.//" -e "s/\(...\).*/\1/")
+  CUDA_VERSION_CODE=$(echo "${CUDA_VERSION}" | sed -e "s/\.//" -e "s/\(...\).*/\1/")
   echo "Using CUDA_VERSION ${CUDA_VERSION}"
   if [[ "${CUDA_VERSION_CODE}" != "111" ]] ; then
     echo "CUDA version must be 11.1"
@@ -87,8 +88,8 @@ else
   fi
 fi
 
-CONSTRAINTS_FILE=$(tempfile)
-cat constraints.txt >> ${CONSTRAINTS_FILE}
+CONSTRAINTS_FILE=$(mktemp)
+cat constraints.txt >> "${CONSTRAINTS_FILE}"
 export PIP_CONSTRAINT=${CONSTRAINTS_FILE}
 
 # Newer versions of pip have troubles with NNCF installation from the repo commit.
@@ -98,14 +99,18 @@ pip install --upgrade setuptools || exit 1
 
 if [[ -z $CUDA_VERSION_CODE ]]; then
   pip install torch==${TORCH_VERSION}+cpu torchtext==${TORCHTEXT_VERSION} torchvision==${TORCHVISION_VERSION}+cpu -f https://download.pytorch.org/whl/lts/1.8/torch_lts.html --no-cache || exit 1
-  echo torch==${TORCH_VERSION}+cpu >> ${CONSTRAINTS_FILE}
-  echo torchvision==${TORCHVISION_VERSION}+cpu >> ${CONSTRAINTS_FILE}
-  echo torchtext==${TORCHTEXT_VERSION} >> ${CONSTRAINTS_FILE}
+  {
+    echo torch==${TORCH_VERSION}+cpu
+    echo torchvision==${TORCHVISION_VERSION}+cpu
+    echo torchtext==${TORCHTEXT_VERSION}
+   } >> "${CONSTRAINTS_FILE}"
 else
-  pip install torchtext==${TORCHTEXT_VERSION} torch==${TORCH_VERSION}+cu${CUDA_VERSION_CODE} torchvision==${TORCHVISION_VERSION}+cu${CUDA_VERSION_CODE} -f https://download.pytorch.org/whl/lts/1.8/torch_lts.html --no-cache || exit 1
-  echo torch==${TORCH_VERSION}+cu${CUDA_VERSION_CODE} >> ${CONSTRAINTS_FILE}
-  echo torchvision==${TORCHVISION_VERSION}+cu${CUDA_VERSION_CODE} >> ${CONSTRAINTS_FILE}
-  echo torchtext==${TORCHTEXT_VERSION} >> ${CONSTRAINTS_FILE}
+  pip install torchtext==${TORCHTEXT_VERSION} torch==${TORCH_VERSION}+cu"${CUDA_VERSION_CODE}" torchvision==${TORCHVISION_VERSION}+cu"${CUDA_VERSION_CODE}" -f https://download.pytorch.org/whl/lts/1.8/torch_lts.html --no-cache || exit 1
+  {
+    echo torch==${TORCH_VERSION}+cu"${CUDA_VERSION_CODE}"
+    echo torchvision==${TORCHVISION_VERSION}+cu"${CUDA_VERSION_CODE}"
+    echo torchtext==${TORCHTEXT_VERSION}
+   } >> "${CONSTRAINTS_FILE}"
 fi
 
 pip install -r requirements.txt || exit 1
