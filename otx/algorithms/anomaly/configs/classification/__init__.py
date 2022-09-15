@@ -1,4 +1,4 @@
-"""Base configurable parameter for anomaly tasks."""
+"""Configuration for classification tasks."""
 
 # Copyright (C) 2022 Intel Corporation
 #
@@ -13,9 +13,3 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions
 # and limitations under the License.
-
-from .draem import DraemAnomalyBaseConfig
-from .padim import PadimAnomalyBaseConfig
-from .stfpm import STFPMAnomalyBaseConfig
-
-__all__ = ["PadimAnomalyBaseConfig", "STFPMAnomalyBaseConfig", "DraemAnomalyBaseConfig"]

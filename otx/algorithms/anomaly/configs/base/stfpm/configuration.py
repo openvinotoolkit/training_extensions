@@ -15,7 +15,13 @@
 # and limitations under the License.
 
 from attr import attrs
-from ote_sdk.configuration.elements import (
+
+from otx.algorithms.anomaly.configs.base.configuration import BaseAnomalyConfig
+from otx.algorithms.anomaly.configs.base.configuration_enums import (
+    EarlyStoppingMetrics,
+    ModelBackbone,
+)
+from otx.api.configuration.elements import (
     ParameterGroup,
     add_parameter_group,
     configurable_float,
@@ -23,13 +29,7 @@ from ote_sdk.configuration.elements import (
     selectable,
     string_attribute,
 )
-from ote_sdk.configuration.model_lifecycle import ModelLifecycle
-
-from otx.algorithms.anomaly.configs.base.configuration import BaseAnomalyConfig
-from otx.algorithms.anomaly.configs.base.configuration_enums import (
-    EarlyStoppingMetrics,
-    ModelBackbone,
-)
+from otx.api.configuration.model_lifecycle import ModelLifecycle
 
 
 @attrs

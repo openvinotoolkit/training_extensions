@@ -1,4 +1,4 @@
-"""Base configurable parameter for anomaly tasks."""
+"""Configurable parameters for STFPM anomaly classification task."""
 
 # Copyright (C) 2022 Intel Corporation
 #
@@ -14,8 +14,11 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .draem import DraemAnomalyBaseConfig
-from .padim import PadimAnomalyBaseConfig
-from .stfpm import STFPMAnomalyBaseConfig
+from attr import attrs
 
-__all__ = ["PadimAnomalyBaseConfig", "STFPMAnomalyBaseConfig", "DraemAnomalyBaseConfig"]
+from otx.algorithms.anomaly.configs.base import STFPMAnomalyBaseConfig
+
+
+@attrs
+class STFPMAnomalyClassificationConfig(STFPMAnomalyBaseConfig):
+    """Configurable parameters for STFPM anomaly classification task."""
