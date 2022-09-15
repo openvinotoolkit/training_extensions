@@ -59,7 +59,7 @@ args = {
         '--learning_parameters.learning_rate_warmup_iters',
         '25',
         '--learning_parameters.num_iters',
-        '5',
+        '20',
         '--learning_parameters.batch_size',
         '2'
     ]

@@ -21,13 +21,25 @@ from ote_sdk.test_suite.e2e_test_system import e2e_pytest_component
 
 from ote_cli.registry import Registry
 
-templates = Registry('external').templates
+templates = Registry('external/model-preparation-algorithm').templates
 paths = [os.path.relpath(template.model_template_path) for template in templates]
 ids = [os.path.relpath(template.model_template_id) for template in templates]
 
-class TestTemplates:
+class TestMPATemplates:
     @e2e_pytest_component
     @pytest.mark.parametrize("path", paths, ids=ids)
+    def test_template(self, path):
+        template = parse_model_template(path)
+        assert template.hyper_parameters.data
+
+
+anomaly_templates = Registry('external/model-preparation-algorithm').templates
+anomaly_paths = [os.path.relpath(template.model_template_path) for template in anomaly_templates]
+anomaly_ids = [os.path.relpath(template.model_template_id) for template in anomaly_templates]
+
+class TestAnomalyTemplates:
+    @e2e_pytest_component
+    @pytest.mark.parametrize("path", anomaly_paths, ids=anomaly_ids)
     def test_template(self, path):
         template = parse_model_template(path)
         assert template.hyper_parameters.data
