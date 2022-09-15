@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+from attr import attrs
 from sys import maxsize
 
 from ote_sdk.configuration.elements import (ParameterGroup,
@@ -31,7 +32,10 @@ class LearningRateSchedule(ConfigurableEnum):
     CUSTOM = 'custom'
 
 
+@attrs
 class BaseConfig(ConfigurableParameters):
+
+    @attrs
     class BaseLearningParameters(ParameterGroup):
         batch_size = configurable_integer(
             default_value=5,
@@ -93,6 +97,7 @@ class BaseConfig(ConfigurableParameters):
             affects_outcome_of=ModelLifecycle.NONE
         )
 
+    @attrs
     class BasePostprocessing(ParameterGroup):
         result_based_confidence_threshold = configurable_boolean(
             default_value=True,
@@ -110,6 +115,7 @@ class BaseConfig(ConfigurableParameters):
             affects_outcome_of=ModelLifecycle.INFERENCE
         )
 
+    @attrs
     class BaseNNCFOptimization(ParameterGroup):
         enable_quantization = configurable_boolean(
             default_value=True,
@@ -125,6 +131,13 @@ class BaseConfig(ConfigurableParameters):
             affects_outcome_of=ModelLifecycle.TRAINING
         )
 
+        pruning_supported = configurable_boolean(
+            default_value=False,
+            header="Whether filter pruning is supported",
+            description="Whether filter pruning is supported",
+            affects_outcome_of=ModelLifecycle.TRAINING
+        )
+
         maximal_accuracy_degradation = configurable_float(
             default_value=1.0,
             min_value=0.0,
@@ -134,6 +147,7 @@ class BaseConfig(ConfigurableParameters):
             affects_outcome_of=ModelLifecycle.TRAINING
         )
 
+    @attrs
     class BasePOTParameter(ParameterGroup):
         stat_subset_size = configurable_integer(
             header="Number of data samples",
@@ -143,6 +157,7 @@ class BaseConfig(ConfigurableParameters):
             max_value=maxsize
         )
 
+    @attrs
     class BaseAlgoBackendParameters(ParameterGroup):
         train_type = selectable(default_value=TrainType.Incremental,
                                 header='train type',

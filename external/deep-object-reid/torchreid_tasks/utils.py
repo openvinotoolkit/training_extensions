@@ -498,15 +498,6 @@ class OptimizationProgressCallback(TimeMonitorCallback):
 
 
 @check_input_parameters_type()
-def get_actmap(features: Union[np.ndarray, Iterable, int, float],
-               output_res: Union[tuple, list]):
-    am = cv.resize(features, output_res)
-    am = cv.applyColorMap(am, cv.COLORMAP_JET)
-    am = cv.cvtColor(am, cv.COLOR_BGR2RGB)
-    return am
-
-
-@check_input_parameters_type()
 def active_score_from_probs(predictions: Union[np.ndarray, Iterable, int, float]):
     top_idxs = np.argpartition(predictions, -2)[-2:]
     top_probs = predictions[top_idxs]
@@ -614,7 +605,7 @@ class OTELoggerHook(LoggerHook):
     @master_only
     @check_input_parameters_type()
     def log(self, runner: BaseRunner):
-        tags = self.get_loggable_tags(runner, allow_text=False)
+        tags = self.get_loggable_tags(runner, allow_text=False, tags_to_skip=())
         if runner.max_epochs is not None:
             normalized_iter = self.get_iter(runner) / runner.max_iters * runner.max_epochs
         else:
