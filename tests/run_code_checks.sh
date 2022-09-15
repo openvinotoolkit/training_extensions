@@ -1,8 +1,9 @@
 #!/bin/bash
 
-WORK_DIR=`mktemp -d`
-python3 -m venv $WORK_DIR
-source $WORK_DIR/bin/activate
+WORK_DIR=$(mktemp -d)
+python3 -m venv "$WORK_DIR"
+# shellcheck source=/dev/null
+source "$WORK_DIR"/bin/activate
 pip install pip --upgrade
 pip install wheel
 pip install ote_sdk/
