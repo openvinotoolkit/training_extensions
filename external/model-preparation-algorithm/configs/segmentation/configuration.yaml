@@ -197,7 +197,7 @@ algo_backend:
     description: Quantization preset that defines quantization scheme
     editable: True
     enum_name: TrainType
-    header: train type
+    header: Train type
     options:
       Incremental: "Incremental"
     type: SELECTABLE
