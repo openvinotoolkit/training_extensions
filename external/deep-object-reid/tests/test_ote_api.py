@@ -47,16 +47,19 @@ DEFAULT_TEMPLATE_DIR = osp.join('configs', 'ote_custom_classification', 'efficie
 
 
 @e2e_pytest_api
+@pytest.mark.skip(reason="This test case will be deprecated soon")
 def test_reading_efficientnet_b0():
     parse_model_template(osp.join('configs', 'ote_custom_classification', 'efficientnet_b0', 'template_experimental.yaml'))
 
 
 @e2e_pytest_api
+@pytest.mark.skip(reason="This test case will be deprecated soon")
 def test_reading_mobilenet_v3_large_075():
     parse_model_template(osp.join('configs', 'ote_custom_classification', 'mobilenet_v3_large_075', 'template_experimental.yaml'))
 
 
 @e2e_pytest_api
+@pytest.mark.skip(reason="This test case will be deprecated soon")
 def test_configuration_yaml():
     configuration = OTEClassificationParameters()
     configuration_yaml_str = convert(configuration, str)
@@ -128,6 +131,7 @@ def default_task_setup():
 
 
 @e2e_pytest_api
+@pytest.mark.skip(reason="This test case will be deprecated soon")
 def test_training_progress_tracking(default_task_setup):
     print('Task initialized, model training starts.')
     training_progress_curve = []
@@ -151,6 +155,7 @@ def test_training_progress_tracking(default_task_setup):
 
 
 @e2e_pytest_api
+@pytest.mark.skip(reason="This test case will be deprecated soon")
 def test_inference_progress_tracking(default_task_setup):
     task, _, dataset = default_task_setup
 
@@ -170,5 +175,6 @@ def test_inference_progress_tracking(default_task_setup):
     assert np.all(inference_progress_curve[1:] >= inference_progress_curve[:-1])
 
 @e2e_pytest_api
+@pytest.mark.skip(reason="This test case will be deprecated soon")
 def test_nncf_optimize_progress_tracking():
     pytest.xfail('NNCF is not supported yet')

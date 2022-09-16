@@ -67,6 +67,7 @@ templates = Registry('external/deep-object-reid', experimental=True).filter(task
 templates_ids = [template.model_template_id for template in templates]
 
 
+@pytest.mark.skip(reason="This test case will be deprecated soon")
 class TestToolsClassification:
     @e2e_pytest_component
     def test_create_venv(self):

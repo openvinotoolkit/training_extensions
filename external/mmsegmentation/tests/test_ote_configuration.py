@@ -13,6 +13,7 @@
 # and limitations under the License.
 
 import os.path as osp
+import pytest
 
 from ote_sdk.configuration.helper import convert, create
 from ote_sdk.test_suite.e2e_test_system import e2e_pytest_api
@@ -21,6 +22,7 @@ from segmentation_tasks.apis.segmentation.configuration import OTESegmentationCo
 
 
 @e2e_pytest_api
+@pytest.mark.skip(reason="This test case will be deprecated soon")
 def test_configuration_yaml():
     configuration = OTESegmentationConfig()
     configuration_yaml_str = convert(configuration, str)
