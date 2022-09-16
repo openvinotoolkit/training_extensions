@@ -95,5 +95,5 @@ repos:
         entry: pydocstyle
         language: python
         types: [python]
-        files: '^(external/anomaly|external/model-preparation-algorithm)/.*\.py'
-        exclude: "(external/anomaly|external/model-preparation-algorithm)/tests"
+        files: '^external/anomaly/.*\.py'
+        exclude: "external/anomaly/tests"
