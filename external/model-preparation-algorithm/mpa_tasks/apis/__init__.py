@@ -4,3 +4,5 @@
 
 from .config import BaseConfig, TrainType, LearningRateSchedule
 from .task import BaseTask
+
+__all__ = [BaseConfig, TrainType, LearningRateSchedule, BaseTask]

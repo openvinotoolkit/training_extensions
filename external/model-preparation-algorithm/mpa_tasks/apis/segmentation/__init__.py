@@ -9,3 +9,12 @@ from .task import SegmentationInferenceTask, SegmentationTrainTask, Segmentation
 import mpa_tasks.extensions.datasets.mpa_seg_dataset
 
 import mpa.seg
+
+__all__ = [
+    SegmentationConfig,
+    SegmentationInferenceTask,
+    SegmentationTrainTask,
+    SegmentationNNCFTask,
+    mpa_tasks.extensions.datasets.mpa_seg_dataset,
+    mpa.seg
+]

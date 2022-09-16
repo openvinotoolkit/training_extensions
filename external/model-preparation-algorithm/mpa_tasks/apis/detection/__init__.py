@@ -9,3 +9,12 @@ from .task import DetectionInferenceTask, DetectionTrainTask, DetectionNNCFTask
 import mpa_tasks.extensions.datasets.mpa_det_dataset
 
 import mpa.det
+
+__all__ = [
+    DetectionConfig,
+    DetectionInferenceTask,
+    DetectionTrainTask,
+    DetectionNNCFTask,
+    mpa_tasks.extensions.datasets.mpa_det_dataset,
+    mpa.det,
+]

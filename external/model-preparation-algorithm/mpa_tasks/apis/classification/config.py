@@ -4,13 +4,15 @@
 
 from attr import attrs
 
-from ote_sdk.configuration.elements import (add_parameter_group,
-                                            # ParameterGroup,
-                                            # configurable_boolean,
-                                            # configurable_float,
-                                            # configurable_integer,
-                                            # selectable,
-                                            string_attribute)
+from ote_sdk.configuration.elements import (
+    add_parameter_group,
+    # ParameterGroup,
+    # configurable_boolean,
+    # configurable_float,
+    # configurable_integer,
+    # selectable,
+    string_attribute,
+)
 
 from mpa_tasks.apis import BaseConfig
 
@@ -19,12 +21,12 @@ from mpa_tasks.apis import BaseConfig
 class ClassificationConfig(BaseConfig):
     @attrs
     class __LearningParameters(BaseConfig.BaseLearningParameters):
-        header = string_attribute('Learning Parameters')
+        header = string_attribute("Learning Parameters")
         description = header
 
     @attrs
     class __AlgoBackend(BaseConfig.BaseAlgoBackendParameters):
-        header = string_attribute('Parameters for the MPA algo-backend')
+        header = string_attribute("Parameters for the MPA algo-backend")
         description = header
 
     learning_parameters = add_parameter_group(__LearningParameters)
