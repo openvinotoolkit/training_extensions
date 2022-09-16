@@ -5,13 +5,11 @@
 
 import os
 import pytest
-from subprocess import run
 
 from ote_sdk.test_suite.e2e_test_system import e2e_pytest_component
 
 from ote_cli.registry import Registry
 from ote_cli.utils.tests import (
-    collect_env_vars,
     create_venv,
     get_some_vars,
     ote_demo_deployment_testing,
@@ -46,7 +44,7 @@ args0 = {
         '--learning_parameters.num_iters',
         '2',
         '--learning_parameters.batch_size',
-        '2'
+        '4'
     ]
 }
 
@@ -64,18 +62,18 @@ args = {
         '--learning_parameters.num_iters',
         '2',
         '--learning_parameters.batch_size',
-        '2'
+        '4'
     ]
 }
 
-root = '/tmp/ote_cli_det/'
+root = '/tmp/ote_cli/'
 ote_dir = os.getcwd()
 
 templates = Registry('external/model-preparation-algorithm').filter(task_type='DETECTION').templates
 templates_ids = [template.model_template_id for template in templates]
 
 
-class TestToolsDetClsIncr:
+class TestToolsMPADetection:
     @e2e_pytest_component
     def test_create_venv(self):
         work_dir, _, algo_backend_dir = get_some_vars(templates[0], root)
