@@ -4,7 +4,7 @@
 
 from attr import attrs
 from mpa_tasks.apis import BaseConfig
-from ote_sdk.configuration.elements import (  # ParameterGroup,; configurable_boolean,; configurable_float,; configurable_integer,; selectable,
+from ote_sdk.configuration.elements import (
     add_parameter_group,
     string_attribute,
 )
