@@ -52,7 +52,7 @@ class ClassificationClsIncrTrainingTestParameters(
             dict(
                 model_name=[
                     "Custom_Image_Classification_EfficinetNet-B0",
-                    "Custom_Image_Classification_EfficinetNet-V2-S",
+                    "Custom_Image_Classification_EfficientNet-V2-S",
                     "Custom_Image_Classification_MobileNet-V3-large-1x",
                 ],
                 dataset_name=["cifar10_cls_incr"],
@@ -61,7 +61,7 @@ class ClassificationClsIncrTrainingTestParameters(
             dict(
                 model_name=[
                     "Custom_Image_Classification_EfficinetNet-B0",
-                    "Custom_Image_Classification_EfficinetNet-V2-S",
+                    "Custom_Image_Classification_EfficientNet-V2-S",
                     "Custom_Image_Classification_MobileNet-V3-large-1x",
                 ],
                 dataset_name=["cifar10_cls_incr"],

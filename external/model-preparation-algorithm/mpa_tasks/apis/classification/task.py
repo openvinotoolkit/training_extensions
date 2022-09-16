@@ -17,7 +17,6 @@ from mpa.utils.config_utils import MPAConfig
 from mpa.utils.logger import get_logger
 from mpa_tasks.apis import BaseTask, TrainType
 from mpa_tasks.apis.classification import ClassificationConfig
-from mpa_tasks.utils.data_utils import get_actmap
 from ote_sdk.configuration import cfg_helper
 from ote_sdk.configuration.helper.utils import ids_to_strings
 from ote_sdk.entities.datasets import DatasetEntity
@@ -60,6 +59,7 @@ from ote_sdk.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from ote_sdk.usecases.tasks.interfaces.unload_interface import IUnload
 from ote_sdk.utils.argument_checks import check_input_parameters_type
 from ote_sdk.utils.labels_utils import get_empty_label
+from ote_sdk.utils.vis_utils import get_actmap
 from torchreid_tasks.nncf_task import OTEClassificationNNCFTask
 
 # from torchreid_tasks.utils import TrainingProgressCallback
@@ -171,8 +171,7 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         output_model.optimization_type = ModelOptimizationType.MO
 
         stage_module = 'ClsExporter'
-        self._initialize()
-        results = self._run_task(stage_module, mode='train', precision=self._precision[0].name)
+        results = self._run_task(stage_module, mode='train', precision='FP32', export=True)
         logger.debug(f'results of run_task = {results}')
         results = results.get('outputs')
         logger.debug(f'results of run_task = {results}')
@@ -187,7 +186,7 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
                 output_model.set_data('openvino.bin', f.read())
             with open(xml_file, "rb") as f:
                 output_model.set_data('openvino.xml', f.read())
-        output_model.precision = self._precision
+        output_model.precision = [ModelPrecision.FP32]
         output_model.set_data("label_schema.json", label_schema_to_bytes(self._task_environment.label_schema))
         logger.info('Exporting completed')
 
@@ -247,7 +246,7 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
 
             if saliency_map is not None:
                 saliency_map = get_actmap(saliency_map, (dataset_item.width, dataset_item.height))
-                saliency_map_media = ResultMediaEntity(name="saliency_map", type="Saliency map",
+                saliency_map_media = ResultMediaEntity(name="Saliency Map", type="saliency_map",
                                                        annotation_scene=dataset_item.annotation_scene,
                                                        numpy=saliency_map, roi=dataset_item.roi,
                                                        label=item_labels[0].label)
@@ -284,7 +283,9 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         elif train_type == TrainType.Incremental:
             recipe = os.path.join(recipe_root, 'class_incr.yaml')
         else:
-            raise NotImplementedError(f'train type {train_type} is not implemented yet.')
+            # raise NotImplementedError(f'train type {train_type} is not implemented yet.')
+            # FIXME: Temporary remedy for CVS-88098
+            logger.warning(f'train type {train_type} is not implemented yet.')
 
         self._recipe_cfg = MPAConfig.fromfile(recipe)
         self._patch_datasets(self._recipe_cfg)  # for OTE compatibility
@@ -300,6 +301,15 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         else:
             cfg_path = os.path.join(base_dir, 'model.py')
         cfg = MPAConfig.fromfile(cfg_path)
+
+        # To initialize different HP according to task / Support HP change via CLI & UI
+        if not self._multilabel:
+            template = MPAConfig.fromfile(self.template_file_path)
+            template_params = template.hyper_parameters.parameter_overrides.learning_parameters
+            incoming_params = self._hyperparams.learning_parameters
+            if cfg.get('runner', False) and (template_params.num_iters.default_value != incoming_params.num_iters):
+                cfg.runner.max_epochs = incoming_params.num_iters
+
         cfg.model.multilabel = self._multilabel
         cfg.model.hierarchical = self._hierarchical
         if self._hierarchical:

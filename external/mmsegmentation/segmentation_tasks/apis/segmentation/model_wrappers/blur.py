@@ -26,13 +26,16 @@ from ote_sdk.utils.segmentation_utils import create_hard_prediction_from_soft_pr
 
 
 @check_input_parameters_type()
-def get_actmap(
-    features: Union[np.ndarray, Iterable, int, float], output_res: Union[tuple, list]
-):
-    am = cv2.resize(features, output_res)
-    am = cv2.applyColorMap(am, cv2.COLORMAP_JET)
-    am = cv2.cvtColor(am, cv2.COLOR_BGR2RGB)
-    return am
+def get_activation_map(features: Union[np.ndarray, Iterable, int, float]):
+    min_soft_score = np.min(features)
+    max_soft_score = np.max(features)
+    factor = 255.0 / (max_soft_score - min_soft_score + 1e-12)
+
+    float_act_map = factor * (features - min_soft_score)
+    int_act_map = np.uint8(np.floor(float_act_map))
+    int_act_map = cv2.applyColorMap(int_act_map, cv2.COLORMAP_JET)
+    int_act_map = cv2.cvtColor(int_act_map, cv2.COLOR_BGR2RGB)
+    return int_act_map
 
 
 class BlurSegmentation(SegmentationModel):
@@ -78,18 +81,16 @@ class BlurSegmentation(SegmentationModel):
             soft_threshold=self.soft_threshold,
             blur_strength=self.blur_strength
         )
-        hard_prediction = cv2.resize(hard_prediction, metadata['original_shape'][1::-1], 0, 0, interpolation=cv2.INTER_NEAREST)
-        
-        if 'feature_vector' not in outputs or 'saliency_map' not in outputs:
-            warnings.warn('Could not find Feature Vector and Saliency Map in OpenVINO output. '
-                'Please rerun OpenVINO export or retrain the model.')
-            metadata["saliency_map"] = None
+        hard_prediction = cv2.resize(hard_prediction, metadata['original_shape'][1::-1], 0, 0,
+                                     interpolation=cv2.INTER_NEAREST)
+        soft_prediction = cv2.resize(soft_prediction, metadata['original_shape'][1::-1], 0, 0,
+                                     interpolation=cv2.INTER_NEAREST)
+        metadata['soft_prediction'] = soft_prediction
+
+        if 'feature_vector' not in outputs:
+            warnings.warn('Could not find Feature Vector in OpenVINO output. Please rerun export or retrain the model.')
             metadata["feature_vector"] = None
         else:
-            metadata["saliency_map"] = get_actmap(
-                outputs["saliency_map"][0],
-                (metadata["original_shape"][1], metadata["original_shape"][0]),
-            )
             metadata["feature_vector"] = outputs["feature_vector"].reshape(-1)
 
         return hard_prediction
