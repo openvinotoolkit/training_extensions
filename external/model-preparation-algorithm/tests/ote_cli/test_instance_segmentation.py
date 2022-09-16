@@ -41,9 +41,9 @@ args0 = {
     'train_params': [
         'params',
         '--learning_parameters.num_iters',
-        '5',
+        '2',
         '--learning_parameters.batch_size',
-        '2'
+        '4'
     ]
 }
 
@@ -61,7 +61,7 @@ args = {
         '--learning_parameters.num_iters',
         '2',
         '--learning_parameters.batch_size',
-        '2'
+        '4'
     ]
 }
 

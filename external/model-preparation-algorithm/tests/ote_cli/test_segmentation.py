@@ -50,7 +50,7 @@ args = {
         '--learning_parameters.num_iters',
         '2',
         '--learning_parameters.batch_size',
-        '2'
+        '4'
     ]
 }
 
