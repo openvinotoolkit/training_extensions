@@ -75,13 +75,9 @@ def get_dummy_compressed_model(task):
     # Disable quantaizers initialization
     for compression in task._config.nncf_config["compression"]:
         if compression["algorithm"] == "quantization":
-            compression["initializer"] = {
-                "batchnorm_adaptation": {"num_bn_adaptation_samples": 0}
-            }
+            compression["initializer"] = {"batchnorm_adaptation": {"num_bn_adaptation_samples": 0}}
 
-    _, compressed_model = wrap_nncf_model(
-        task._model, task._config, get_fake_input_func=get_fake_input
-    )
+    _, compressed_model = wrap_nncf_model(task._model, task._config, get_fake_input_func=get_fake_input)
     return compressed_model
 
 
@@ -124,34 +120,24 @@ class TestOTEReallifeObjectDetectionClsIncr(OTETrainingTestInterface):
             num_training_iters = test_parameters["num_training_iters"]
             batch_size = test_parameters["batch_size"]
 
-            dataset_params = _get_dataset_params_from_dataset_definitions(
-                dataset_definitions, dataset_name
-            )
+            dataset_params = _get_dataset_params_from_dataset_definitions(dataset_definitions, dataset_name)
 
             if model_name not in template_paths:
                 raise ValueError(
                     f"Model {model_name} is absent in template_paths, "
                     f"template_paths.keys={list(template_paths.keys())}"
                 )
-            template_path = make_path_be_abs(
-                template_paths[model_name], template_paths[ROOT_PATH_KEY]
-            )
+            template_path = make_path_be_abs(template_paths[model_name], template_paths[ROOT_PATH_KEY])
 
-            logger.debug(
-                "training params factory: Before creating dataset and labels_schema"
-            )
-            dataset, labels_schema = _create_object_detection_dataset_and_labels_schema(
-                dataset_params
-            )
+            logger.debug("training params factory: Before creating dataset and labels_schema")
+            dataset, labels_schema = _create_object_detection_dataset_and_labels_schema(dataset_params)
             ckpt_path = None
             if hasattr(dataset_params, "pre_trained_model"):
                 ckpt_path = osp.join(
                     osp.join(dataset_params.pre_trained_model, model_name),
                     "weights.pth",
                 )
-            logger.debug(
-                "training params factory: After creating dataset and labels_schema"
-            )
+            logger.debug("training params factory: After creating dataset and labels_schema")
 
             return {
                 "dataset": dataset,
@@ -175,28 +161,18 @@ class TestOTEReallifeObjectDetectionClsIncr(OTETrainingTestInterface):
                 domain = None
             dataset_name = test_parameters["dataset_name"]
 
-            dataset_params = _get_dataset_params_from_dataset_definitions(
-                dataset_definitions, dataset_name
-            )
+            dataset_params = _get_dataset_params_from_dataset_definitions(dataset_definitions, dataset_name)
 
             if model_name not in template_paths:
                 raise ValueError(
                     f"Model {model_name} is absent in template_paths, "
                     f"template_paths.keys={list(template_paths.keys())}"
                 )
-            template_path = make_path_be_abs(
-                template_paths[model_name], template_paths[ROOT_PATH_KEY]
-            )
+            template_path = make_path_be_abs(template_paths[model_name], template_paths[ROOT_PATH_KEY])
 
-            logger.debug(
-                "training params factory: Before creating dataset and labels_schema"
-            )
-            dataset, labels_schema = _create_object_detection_dataset_and_labels_schema(
-                dataset_params, domain
-            )
-            logger.debug(
-                "training params factory: After creating dataset and labels_schema"
-            )
+            logger.debug("training params factory: Before creating dataset and labels_schema")
+            dataset, labels_schema = _create_object_detection_dataset_and_labels_schema(dataset_params, domain)
+            logger.debug("training params factory: After creating dataset and labels_schema")
 
             return {
                 "dataset": dataset,
@@ -214,9 +190,7 @@ class TestOTEReallifeObjectDetectionClsIncr(OTETrainingTestInterface):
         return params_factories_for_test_actions
 
     @pytest.fixture
-    def test_case_fx(
-        self, current_test_parameters_fx, params_factories_for_test_actions_fx
-    ):
+    def test_case_fx(self, current_test_parameters_fx, params_factories_for_test_actions_fx):
         """
         This fixture returns the test case class OTEIntegrationTestCase that should be used for the current test.
         Note that the cache from the test helper allows to store the instance of the class
@@ -228,9 +202,7 @@ class TestOTEReallifeObjectDetectionClsIncr(OTETrainingTestInterface):
         If the main parameters used for this test differs w.r.t. the previous test, a new instance of
         test case class will be created.
         """
-        test_case = type(self).helper.get_test_case(
-            current_test_parameters_fx, params_factories_for_test_actions_fx
-        )
+        test_case = type(self).helper.get_test_case(current_test_parameters_fx, params_factories_for_test_actions_fx)
         return test_case
 
     # TODO: move to common fixtures
@@ -238,9 +210,7 @@ class TestOTEReallifeObjectDetectionClsIncr(OTETrainingTestInterface):
     def data_collector_fx(self, request) -> DataCollector:
         setup = deepcopy(request.node.callspec.params)
         setup["environment_name"] = os.environ.get("TT_ENVIRONMENT_NAME", "no-env")
-        setup["test_type"] = os.environ.get(
-            "TT_TEST_TYPE", "no-test-type"
-        )  # TODO: get from e2e test type
+        setup["test_type"] = os.environ.get("TT_TEST_TYPE", "no-test-type")  # TODO: get from e2e test type
         setup["scenario"] = "api"  # TODO: get from a fixture!
         setup["test"] = request.node.name
         setup["subject"] = "custom-detection-cls-incr"

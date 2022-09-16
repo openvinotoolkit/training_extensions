@@ -56,9 +56,7 @@ class TestMPASegAPI:
             "ocr-lite-hrnet-x-mod3",
         ]
         for model_template in segmentation_template:
-            parse_model_template(
-                osp.join("configs", "segmentation", model_template, "template.yaml")
-            )
+            parse_model_template(osp.join("configs", "segmentation", model_template, "template.yaml"))
 
     @staticmethod
     def generate_label_schema(label_names):
@@ -66,8 +64,7 @@ class TestMPASegAPI:
         rgb = [int(i) for i in np.random.randint(0, 256, 3)]
         colors = [Color(*rgb) for _ in range(len(label_names))]
         not_empty_labels = [
-            LabelEntity(name=name, color=colors[i], domain=label_domain, id=i)
-            for i, name in enumerate(label_names)
+            LabelEntity(name=name, color=colors[i], domain=label_domain, id=i) for i, name in enumerate(label_names)
         ]
         empty_label = LabelEntity(
             name="Empty label",
@@ -78,12 +75,8 @@ class TestMPASegAPI:
         )
 
         label_schema = LabelSchemaEntity()
-        exclusive_group = LabelGroup(
-            name="labels", labels=not_empty_labels, group_type=LabelGroupType.EXCLUSIVE
-        )
-        empty_group = LabelGroup(
-            name="empty", labels=[empty_label], group_type=LabelGroupType.EMPTY_LABEL
-        )
+        exclusive_group = LabelGroup(name="labels", labels=not_empty_labels, group_type=LabelGroupType.EXCLUSIVE)
+        empty_group = LabelGroup(name="empty", labels=[empty_label], group_type=LabelGroupType.EMPTY_LABEL)
         label_schema.add_group(exclusive_group)
         label_schema.add_group(empty_group)
         return label_schema
@@ -99,9 +92,7 @@ class TestMPASegAPI:
             model_template=model_template,
         )
 
-        warnings.filterwarnings(
-            "ignore", message=".* coordinates .* are out of bounds.*"
-        )
+        warnings.filterwarnings("ignore", message=".* coordinates .* are out of bounds.*")
         items = []
         for i in range(0, number_of_images):
             image_numpy, shapes = generate_random_annotated_image(
@@ -127,21 +118,14 @@ class TestMPASegAPI:
                         Point(in_shape.x1, in_shape.y2),
                     ]
                 elif isinstance(in_shape, Ellipse):
-                    points = [
-                        Point(x, y)
-                        for x, y in in_shape.get_evenly_distributed_ellipse_coordinates()
-                    ]
+                    points = [Point(x, y) for x, y in in_shape.get_evenly_distributed_ellipse_coordinates()]
                 elif isinstance(in_shape, Polygon):
                     points = in_shape.points
 
-                out_shapes.append(
-                    Annotation(Polygon(points=points), labels=shape_labels)
-                )
+                out_shapes.append(Annotation(Polygon(points=points), labels=shape_labels))
 
             image = Image(data=image_numpy)
-            annotation = AnnotationSceneEntity(
-                kind=AnnotationSceneKind.ANNOTATION, annotations=out_shapes
-            )
+            annotation = AnnotationSceneEntity(kind=AnnotationSceneKind.ANNOTATION, annotations=out_shapes)
             items.append(DatasetItemEntity(media=image, annotation_scene=annotation))
         warnings.resetwarnings()
 
@@ -187,21 +171,16 @@ class TestMPASegAPI:
 
         This test should be finished in under one minute on a workstation.
         """
-        hyper_parameters, model_template = self.setup_configurable_parameters(
-            DEFAULT_SEG_TEMPLATE_DIR, num_iters=200
-        )
-        segmentation_environment, dataset = self.init_environment(
-            hyper_parameters, model_template, 64
-        )
+        hyper_parameters, model_template = self.setup_configurable_parameters(DEFAULT_SEG_TEMPLATE_DIR, num_iters=200)
+        segmentation_environment, dataset = self.init_environment(hyper_parameters, model_template, 64)
 
-        segmentation_task = SegmentationTrainTask(
-            task_environment=segmentation_environment
-        )
+        segmentation_task = SegmentationTrainTask(task_environment=segmentation_environment)
 
         executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="train_thread")
 
         output_model = ModelEntity(
-            dataset, segmentation_environment.get_model_configuration(),
+            dataset,
+            segmentation_environment.get_model_configuration(),
         )
 
         training_progress_curve = []
@@ -214,9 +193,7 @@ class TestMPASegAPI:
 
         # Test stopping after some time
         start_time = time.time()
-        train_future = executor.submit(
-            segmentation_task.train, dataset, output_model, train_parameters
-        )
+        train_future = executor.submit(segmentation_task.train, dataset, output_model, train_parameters)
         # give train_thread some time to initialize the model
         while not segmentation_task._is_training:
             time.sleep(10)
@@ -233,18 +210,12 @@ class TestMPASegAPI:
         segmentation_task.cancel_training()
 
         train_future.result()
-        assert (
-            time.time() - start_time < 25
-        )  # stopping process has to happen in less than 25 seconds
+        assert time.time() - start_time < 25  # stopping process has to happen in less than 25 seconds
 
     @e2e_pytest_api
     def test_training_progress_tracking(self):
-        hyper_parameters, model_template = self.setup_configurable_parameters(
-            DEFAULT_SEG_TEMPLATE_DIR, num_iters=5
-        )
-        segmentation_environment, dataset = self.init_environment(
-            hyper_parameters, model_template, 12
-        )
+        hyper_parameters, model_template = self.setup_configurable_parameters(DEFAULT_SEG_TEMPLATE_DIR, num_iters=5)
+        segmentation_environment, dataset = self.init_environment(hyper_parameters, model_template, 12)
 
         task = SegmentationTrainTask(task_environment=segmentation_environment)
         print("Task initialized, model training starts.")
@@ -257,7 +228,8 @@ class TestMPASegAPI:
         train_parameters = TrainParameters
         train_parameters.update_progress = progress_callback
         output_model = ModelEntity(
-            dataset, segmentation_environment.get_model_configuration(),
+            dataset,
+            segmentation_environment.get_model_configuration(),
         )
         task.train(dataset, output_model, train_parameters)
 
@@ -266,12 +238,8 @@ class TestMPASegAPI:
 
     @e2e_pytest_api
     def test_inference_progress_tracking(self):
-        hyper_parameters, model_template = self.setup_configurable_parameters(
-            DEFAULT_SEG_TEMPLATE_DIR, num_iters=10
-        )
-        segmentation_environment, dataset = self.init_environment(
-            hyper_parameters, model_template, 12
-        )
+        hyper_parameters, model_template = self.setup_configurable_parameters(DEFAULT_SEG_TEMPLATE_DIR, num_iters=10)
+        segmentation_environment, dataset = self.init_environment(hyper_parameters, model_template, 12)
 
         task = SegmentationInferenceTask(task_environment=segmentation_environment)
         print("Task initialized, model inference starts.")
@@ -292,12 +260,8 @@ class TestMPASegAPI:
     @e2e_pytest_api
     def test_inference_task(self):
         # Prepare pretrained weights
-        hyper_parameters, model_template = self.setup_configurable_parameters(
-            DEFAULT_SEG_TEMPLATE_DIR, num_iters=2
-        )
-        segmentation_environment, dataset = self.init_environment(
-            hyper_parameters, model_template, 30
-        )
+        hyper_parameters, model_template = self.setup_configurable_parameters(DEFAULT_SEG_TEMPLATE_DIR, num_iters=2)
+        segmentation_environment, dataset = self.init_environment(hyper_parameters, model_template, 30)
         val_dataset = dataset.get_subset(Subset.VALIDATION)
 
         train_task = SegmentationTrainTask(task_environment=segmentation_environment)
@@ -310,23 +274,20 @@ class TestMPASegAPI:
         train_parameters = TrainParameters
         train_parameters.update_progress = progress_callback
         trained_model = ModelEntity(
-            dataset, segmentation_environment.get_model_configuration(),
+            dataset,
+            segmentation_environment.get_model_configuration(),
         )
         train_task.train(dataset, trained_model, train_parameters)
         performance_after_train = eval(train_task, trained_model, val_dataset)
 
         # Create InferenceTask
         segmentation_environment.model = trained_model
-        inference_task = SegmentationInferenceTask(
-            task_environment=segmentation_environment
-        )
+        inference_task = SegmentationInferenceTask(task_environment=segmentation_environment)
 
         performance_after_load = eval(inference_task, trained_model, val_dataset)
 
         assert performance_after_train == performance_after_load
 
         # Export
-        exported_model = ModelEntity(
-            dataset, segmentation_environment.get_model_configuration(), _id=ObjectId()
-        )
+        exported_model = ModelEntity(dataset, segmentation_environment.get_model_configuration(), _id=ObjectId())
         inference_task.export(ExportType.OPENVINO, exported_model)

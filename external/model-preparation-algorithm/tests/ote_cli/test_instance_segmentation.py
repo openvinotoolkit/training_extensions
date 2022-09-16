@@ -26,50 +26,37 @@ from ote_cli.utils.tests import (
     nncf_eval_testing,
     nncf_eval_openvino_testing,
     pot_optimize_testing,
-    pot_eval_testing
+    pot_eval_testing,
 )
 
 # Pre-train w/ 'car & tree' class
 args0 = {
-    '--train-ann-file': 'data/car_tree_bug/annotations/instances_car_tree.json',
-    '--train-data-roots': 'data/car_tree_bug/images',
-    '--val-ann-file': 'data/car_tree_bug/annotations/instances_car_tree.json',
-    '--val-data-roots': 'data/car_tree_bug/images',
-    '--test-ann-files': 'data/car_tree_bug/annotations/instances_car_tree.json',
-    '--test-data-roots': 'data/car_tree_bug/images',
-    '--input': 'data/car_tree_bug/images',
-    'train_params': [
-        'params',
-        '--learning_parameters.num_iters',
-        '2',
-        '--learning_parameters.batch_size',
-        '4'
-    ]
+    "--train-ann-file": "data/car_tree_bug/annotations/instances_car_tree.json",
+    "--train-data-roots": "data/car_tree_bug/images",
+    "--val-ann-file": "data/car_tree_bug/annotations/instances_car_tree.json",
+    "--val-data-roots": "data/car_tree_bug/images",
+    "--test-ann-files": "data/car_tree_bug/annotations/instances_car_tree.json",
+    "--test-data-roots": "data/car_tree_bug/images",
+    "--input": "data/car_tree_bug/images",
+    "train_params": ["params", "--learning_parameters.num_iters", "2", "--learning_parameters.batch_size", "4"],
 }
 
 # Class-Incremental learning w/ 'car', 'tree', 'bug' classes
 args = {
-    '--train-ann-file': 'data/car_tree_bug/annotations/instances_default.json',
-    '--train-data-roots': 'data/car_tree_bug/images',
-    '--val-ann-file': 'data/car_tree_bug/annotations/instances_default.json',
-    '--val-data-roots': 'data/car_tree_bug/images',
-    '--test-ann-files': 'data/car_tree_bug/annotations/instances_default.json',
-    '--test-data-roots': 'data/car_tree_bug/images',
-    '--input': 'data/car_tree_bug/images',
-    'train_params': [
-        'params',
-        '--learning_parameters.num_iters',
-        '2',
-        '--learning_parameters.batch_size',
-        '4'
-    ]
+    "--train-ann-file": "data/car_tree_bug/annotations/instances_default.json",
+    "--train-data-roots": "data/car_tree_bug/images",
+    "--val-ann-file": "data/car_tree_bug/annotations/instances_default.json",
+    "--val-data-roots": "data/car_tree_bug/images",
+    "--test-ann-files": "data/car_tree_bug/annotations/instances_default.json",
+    "--test-data-roots": "data/car_tree_bug/images",
+    "--input": "data/car_tree_bug/images",
+    "train_params": ["params", "--learning_parameters.num_iters", "2", "--learning_parameters.batch_size", "4"],
 }
 
-root = '/tmp/ote_cli/'
+root = "/tmp/ote_cli/"
 ote_dir = os.getcwd()
 
-templates = Registry(
-        'external/model-preparation-algorithm').filter(task_type='INSTANCE_SEGMENTATION').templates
+templates = Registry("external/model-preparation-algorithm").filter(task_type="INSTANCE_SEGMENTATION").templates
 templates_ids = [template.model_template_id for template in templates]
 
 
@@ -80,12 +67,12 @@ class TestToolsMPAInstanceSegmentation:
         create_venv(algo_backend_dir, work_dir)
 
     @e2e_pytest_component
-    @pytest.mark.parametrize('template', templates, ids=templates_ids)
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_ote_train(self, template):
         ote_train_testing(template, root, ote_dir, args0)
         _, template_work_dir, _ = get_some_vars(template, root)
         args1 = args.copy()
-        args1['--load-weights'] = f'{template_work_dir}/trained_{template.model_template_id}/weights.pth'
+        args1["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/weights.pth"
         ote_train_testing(template, root, ote_dir, args1)
 
     @e2e_pytest_component

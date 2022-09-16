@@ -34,30 +34,30 @@ from ote_cli.utils.tests import (
 
 
 args = {
-    '--train-ann-file': 'data/segmentation/custom/annotations/training',
-    '--train-data-roots': 'data/segmentation/custom/images/training',
-    '--val-ann-file': 'data/segmentation/custom/annotations/training',
-    '--val-data-roots': 'data/segmentation/custom/images/training',
-    '--test-ann-files': 'data/segmentation/custom/annotations/training',
-    '--test-data-roots': 'data/segmentation/custom/images/training',
-    '--input': 'data/segmentation/custom/images/training',
-    'train_params': [
-        'params',
-        '--learning_parameters.learning_rate_fixed_iters',
-        '0',
-        '--learning_parameters.learning_rate_warmup_iters',
-        '25',
-        '--learning_parameters.num_iters',
-        '2',
-        '--learning_parameters.batch_size',
-        '4'
-    ]
+    "--train-ann-file": "data/segmentation/custom/annotations/training",
+    "--train-data-roots": "data/segmentation/custom/images/training",
+    "--val-ann-file": "data/segmentation/custom/annotations/training",
+    "--val-data-roots": "data/segmentation/custom/images/training",
+    "--test-ann-files": "data/segmentation/custom/annotations/training",
+    "--test-data-roots": "data/segmentation/custom/images/training",
+    "--input": "data/segmentation/custom/images/training",
+    "train_params": [
+        "params",
+        "--learning_parameters.learning_rate_fixed_iters",
+        "0",
+        "--learning_parameters.learning_rate_warmup_iters",
+        "25",
+        "--learning_parameters.num_iters",
+        "2",
+        "--learning_parameters.batch_size",
+        "4",
+    ],
 }
 
-root = '/tmp/ote_cli/'
+root = "/tmp/ote_cli/"
 ote_dir = os.getcwd()
 
-templates = Registry('external/model-preparation-algorithm').filter(task_type='SEGMENTATION').templates
+templates = Registry("external/model-preparation-algorithm").filter(task_type="SEGMENTATION").templates
 templates_ids = [template.model_template_id for template in templates]
 
 
@@ -66,8 +66,8 @@ class TestToolsMPASegmentation:
     def test_create_venv(self):
         work_dir, _, algo_backend_dir = get_some_vars(templates[0], root)
         create_venv(algo_backend_dir, work_dir)
-        print(f'algo_backend_dir: {algo_backend_dir}')
-        print(f'work_dir: {work_dir}')
+        print(f"algo_backend_dir: {algo_backend_dir}")
+        print(f"work_dir: {work_dir}")
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
@@ -75,7 +75,7 @@ class TestToolsMPASegmentation:
         ote_train_testing(template, root, ote_dir, args)
         _, template_work_dir, _ = get_some_vars(template, root)
         args1 = args.copy()
-        args1['--load-weights'] = f'{template_work_dir}/trained_{template.model_template_id}/weights.pth'
+        args1["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/weights.pth"
         ote_train_testing(template, root, ote_dir, args1)
 
     @e2e_pytest_component
@@ -158,13 +158,13 @@ class TestToolsMPASegmentation:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_pot_optimize(self, template):
-        if template.model_template_id.startswith('ClassIncremental_Semantic_Segmentation_Lite-HRNet-'):
-            pytest.skip('CVS-82482')
+        if template.model_template_id.startswith("ClassIncremental_Semantic_Segmentation_Lite-HRNet-"):
+            pytest.skip("CVS-82482")
         pot_optimize_testing(template, root, ote_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_pot_eval(self, template):
-        if template.model_template_id.startswith('ClassIncremental_Semantic_Segmentation_Lite-HRNet-'):
-            pytest.skip('CVS-82482')
+        if template.model_template_id.startswith("ClassIncremental_Semantic_Segmentation_Lite-HRNet-"):
+            pytest.skip("CVS-82482")
         pot_eval_testing(template, root, ote_dir, args)

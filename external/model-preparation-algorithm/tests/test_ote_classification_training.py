@@ -41,9 +41,7 @@ def ote_test_domain_fx():
     return "custom-classification-cls-incr"
 
 
-class ClassificationClsIncrTrainingTestParameters(
-    DefaultOTETestCreationParametersInterface
-):
+class ClassificationClsIncrTrainingTestParameters(DefaultOTETestCreationParametersInterface):
     def test_case_class(self) -> Type[OTETestCaseInterface]:
         return generate_ote_integration_test_case_class(get_test_action_classes())
 
@@ -120,25 +118,17 @@ class TestOTEReallifeClassificationClsIncr(OTETrainingTestInterface):
             num_training_iters = test_parameters["num_training_iters"]
             batch_size = test_parameters["batch_size"]
 
-            dataset_params = _get_dataset_params_from_dataset_definitions(
-                dataset_definitions, dataset_name
-            )
+            dataset_params = _get_dataset_params_from_dataset_definitions(dataset_definitions, dataset_name)
 
             if model_name not in template_paths:
                 raise ValueError(
                     f"Model {model_name} is absent in template_paths, "
                     f"template_paths.keys={list(template_paths.keys())}"
                 )
-            template_path = make_path_be_abs(
-                template_paths[model_name], template_paths[ROOT_PATH_KEY]
-            )
+            template_path = make_path_be_abs(template_paths[model_name], template_paths[ROOT_PATH_KEY])
 
-            logger.debug(
-                "training params factory: Before creating dataset and labels_schema"
-            )
-            dataset, labels_schema = _create_classification_dataset_and_labels_schema(
-                dataset_params, model_name
-            )
+            logger.debug("training params factory: Before creating dataset and labels_schema")
+            dataset, labels_schema = _create_classification_dataset_and_labels_schema(dataset_params, model_name)
             ckpt_path = None
             if hasattr(dataset_params, "pre_trained_model"):
                 ckpt_path = osp.join(
@@ -146,9 +136,7 @@ class TestOTEReallifeClassificationClsIncr(OTETrainingTestInterface):
                     "weights.pth",
                 )
             logger.info(f"Pretrained path : {ckpt_path}")
-            logger.debug(
-                "training params factory: After creating dataset and labels_schema"
-            )
+            logger.debug("training params factory: After creating dataset and labels_schema")
 
             return {
                 "dataset": dataset,
@@ -166,9 +154,7 @@ class TestOTEReallifeClassificationClsIncr(OTETrainingTestInterface):
         return params_factories_for_test_actions
 
     @pytest.fixture
-    def test_case_fx(
-        self, current_test_parameters_fx, params_factories_for_test_actions_fx
-    ):
+    def test_case_fx(self, current_test_parameters_fx, params_factories_for_test_actions_fx):
         """
         This fixture returns the test case class OTEIntegrationTestCase that should be used for the current test.
         Note that the cache from the test helper allows to store the instance of the class
@@ -180,9 +166,7 @@ class TestOTEReallifeClassificationClsIncr(OTETrainingTestInterface):
         If the main parameters used for this test differs w.r.t. the previous test, a new instance of
         test case class will be created.
         """
-        test_case = type(self).helper.get_test_case(
-            current_test_parameters_fx, params_factories_for_test_actions_fx
-        )
+        test_case = type(self).helper.get_test_case(current_test_parameters_fx, params_factories_for_test_actions_fx)
         return test_case
 
     # TODO: move to common fixtures

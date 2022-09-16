@@ -32,44 +32,44 @@ from ote_cli.utils.tests import (
 
 # Pre-train w/ 'intel', 'openvino' classes
 args0 = {
-    '--train-ann-file': '',
-    '--train-data-roots': 'data/text_recognition/initial_data',
-    '--val-ann-file': '',
-    '--val-data-roots': 'data/text_recognition/initial_data',
-    '--test-ann-files': '',
-    '--test-data-roots': 'data/text_recognition/initial_data',
-    '--input': 'data/text_recognition/initial_data/intel',
-    'train_params': [
-        'params',
-        '--learning_parameters.num_iters',
-        '2',
-        '--learning_parameters.batch_size',
-        '4',
-    ]
+    "--train-ann-file": "",
+    "--train-data-roots": "data/text_recognition/initial_data",
+    "--val-ann-file": "",
+    "--val-data-roots": "data/text_recognition/initial_data",
+    "--test-ann-files": "",
+    "--test-data-roots": "data/text_recognition/initial_data",
+    "--input": "data/text_recognition/initial_data/intel",
+    "train_params": [
+        "params",
+        "--learning_parameters.num_iters",
+        "2",
+        "--learning_parameters.batch_size",
+        "4",
+    ],
 }
 
 # Pre-train w/ 'intel', 'openvino', 'opencv' classes
 args = {
-    '--train-ann-file': '',
-    '--train-data-roots': 'data/text_recognition/IL_data',
-    '--val-ann-file': '',
-    '--val-data-roots': 'data/text_recognition/IL_data',
-    '--test-ann-files': '',
-    '--test-data-roots': 'data/text_recognition/IL_data',
-    '--input': 'data/text_recognition/IL_data/intel',
-    'train_params': [
-        'params',
-        '--learning_parameters.num_iters',
-        '2',
-        '--learning_parameters.batch_size',
-        '4',
-    ]
+    "--train-ann-file": "",
+    "--train-data-roots": "data/text_recognition/IL_data",
+    "--val-ann-file": "",
+    "--val-data-roots": "data/text_recognition/IL_data",
+    "--test-ann-files": "",
+    "--test-data-roots": "data/text_recognition/IL_data",
+    "--input": "data/text_recognition/IL_data/intel",
+    "train_params": [
+        "params",
+        "--learning_parameters.num_iters",
+        "2",
+        "--learning_parameters.batch_size",
+        "4",
+    ],
 }
 
-root = '/tmp/ote_cli/'
+root = "/tmp/ote_cli/"
 ote_dir = os.getcwd()
 
-templates = Registry('external/model-preparation-algorithm').filter(task_type='CLASSIFICATION').templates
+templates = Registry("external/model-preparation-algorithm").filter(task_type="CLASSIFICATION").templates
 templates_ids = [template.model_template_id for template in templates]
 
 
@@ -85,7 +85,7 @@ class TestToolsMPAClassification:
         ote_train_testing(template, root, ote_dir, args0)
         _, template_work_dir, _ = get_some_vars(template, root)
         args1 = args.copy()
-        args1['--load-weights'] = f'{template_work_dir}/trained_{template.model_template_id}/weights.pth'
+        args1["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/weights.pth"
         ote_train_testing(template, root, ote_dir, args1)
 
     @e2e_pytest_component
@@ -178,38 +178,38 @@ class TestToolsMPAClassification:
 
 # Pre-train w/ 'car', 'tree' classes
 args0_m = {
-    '--train-ann-file': 'data/car_tree_bug/annotations/multilabel_car_tree.json',
-    '--train-data-roots': 'data/car_tree_bug/images',
-    '--val-ann-file': 'data/car_tree_bug/annotations/multilabel_car_tree.json',
-    '--val-data-roots': 'data/car_tree_bug/images',
-    '--test-ann-files': 'data/car_tree_bug/annotations/multilabel_car_tree.json',
-    '--test-data-roots': 'data/car_tree_bug/images',
-    '--input': 'data/car_tree_bug/images',
-    'train_params': [
-        'params',
-        '--learning_parameters.num_iters',
-        '2',
-        '--learning_parameters.batch_size',
-        '4',
-    ]
+    "--train-ann-file": "data/car_tree_bug/annotations/multilabel_car_tree.json",
+    "--train-data-roots": "data/car_tree_bug/images",
+    "--val-ann-file": "data/car_tree_bug/annotations/multilabel_car_tree.json",
+    "--val-data-roots": "data/car_tree_bug/images",
+    "--test-ann-files": "data/car_tree_bug/annotations/multilabel_car_tree.json",
+    "--test-data-roots": "data/car_tree_bug/images",
+    "--input": "data/car_tree_bug/images",
+    "train_params": [
+        "params",
+        "--learning_parameters.num_iters",
+        "2",
+        "--learning_parameters.batch_size",
+        "4",
+    ],
 }
 
 # Class-Incremental learning w/ 'car', 'tree', 'bug' classes
 args_m = {
-    '--train-ann-file': 'data/car_tree_bug/annotations/multilabel_default.json',
-    '--train-data-roots': 'data/car_tree_bug/images',
-    '--val-ann-file': 'data/car_tree_bug/annotations/multilabel_default.json',
-    '--val-data-roots': 'data/car_tree_bug/images',
-    '--test-ann-files': 'data/car_tree_bug/annotations/multilabel_default.json',
-    '--test-data-roots': 'data/car_tree_bug/images',
-    '--input': 'data/car_tree_bug/images',
-    'train_params': [
-        'params',
-        '--learning_parameters.num_iters',
-        '2',
-        '--learning_parameters.batch_size',
-        '4',
-    ]
+    "--train-ann-file": "data/car_tree_bug/annotations/multilabel_default.json",
+    "--train-data-roots": "data/car_tree_bug/images",
+    "--val-ann-file": "data/car_tree_bug/annotations/multilabel_default.json",
+    "--val-data-roots": "data/car_tree_bug/images",
+    "--test-ann-files": "data/car_tree_bug/annotations/multilabel_default.json",
+    "--test-data-roots": "data/car_tree_bug/images",
+    "--input": "data/car_tree_bug/images",
+    "train_params": [
+        "params",
+        "--learning_parameters.num_iters",
+        "2",
+        "--learning_parameters.batch_size",
+        "4",
+    ],
 }
 
 
@@ -225,7 +225,7 @@ class TestToolsMPAMultilabelClassification:
         ote_train_testing(template, root, ote_dir, args0_m)
         _, template_work_dir, _ = get_some_vars(template, root)
         args1 = args_m.copy()
-        args1['--load-weights'] = f'{template_work_dir}/trained_{template.model_template_id}/weights.pth'
+        args1["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/weights.pth"
         ote_train_testing(template, root, ote_dir, args1)
 
     @e2e_pytest_component
@@ -321,20 +321,20 @@ class TestToolsMPAMultilabelClassification:
 
 # TODO: (Jihwan) Enable C-IL test without image loading via ote-cli.
 args_h = {
-    '--train-ann-file': 'data/car_tree_bug/annotations/hierarchical_default.json',
-    '--train-data-roots': 'data/car_tree_bug/images',
-    '--val-ann-file': 'data/car_tree_bug/annotations/hierarchical_default.json',
-    '--val-data-roots': 'data/car_tree_bug/images',
-    '--test-ann-files': 'data/car_tree_bug/annotations/hierarchical_default.json',
-    '--test-data-roots': 'data/car_tree_bug/images',
-    '--input': 'data/car_tree_bug/images',
-    'train_params': [
-        'params',
-        '--learning_parameters.num_iters',
-        '2',
-        '--learning_parameters.batch_size',
-        '2',
-    ]
+    "--train-ann-file": "data/car_tree_bug/annotations/hierarchical_default.json",
+    "--train-data-roots": "data/car_tree_bug/images",
+    "--val-ann-file": "data/car_tree_bug/annotations/hierarchical_default.json",
+    "--val-data-roots": "data/car_tree_bug/images",
+    "--test-ann-files": "data/car_tree_bug/annotations/hierarchical_default.json",
+    "--test-data-roots": "data/car_tree_bug/images",
+    "--input": "data/car_tree_bug/images",
+    "train_params": [
+        "params",
+        "--learning_parameters.num_iters",
+        "2",
+        "--learning_parameters.batch_size",
+        "2",
+    ],
 }
 
 
@@ -350,7 +350,7 @@ class TestToolsMPAHierarchicalClassification:
         ote_train_testing(template, root, ote_dir, args_h)
         _, template_work_dir, _ = get_some_vars(template, root)
         args1 = args_h.copy()
-        args1['--load-weights'] = f'{template_work_dir}/trained_{template.model_template_id}/weights.pth'
+        args1["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/weights.pth"
         ote_train_testing(template, root, ote_dir, args1)
 
     @e2e_pytest_component

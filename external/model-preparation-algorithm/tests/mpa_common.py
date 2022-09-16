@@ -60,9 +60,7 @@ def eval(task: BaseTask, model: ModelEntity, dataset: DatasetEntity) -> Performa
     result_dataset = task.infer(dataset.with_empty_annotations())
     end_time = time.time()
     print(f"{len(dataset)} analysed in {end_time - start_time} seconds")
-    result_set = ResultSetEntity(
-        model=model, ground_truth_dataset=dataset, prediction_dataset=result_dataset
-    )
+    result_set = ResultSetEntity(model=model, ground_truth_dataset=dataset, prediction_dataset=result_dataset)
     task.evaluate(result_set)
     assert result_set.performance is not None
     return result_set.performance
@@ -92,11 +90,7 @@ def _get_dataset_params_from_dataset_definitions(dataset_definitions, dataset_na
             f"dataset_definitions.keys={list(dataset_definitions.keys())}"
         )
     cur_dataset_definition = dataset_definitions[dataset_name]
-    training_parameters_fields = {
-        k: v
-        for k, v in cur_dataset_definition.items()
-        if k in DATASET_PARAMETERS_FIELDS()
-    }
+    training_parameters_fields = {k: v for k, v in cur_dataset_definition.items() if k in DATASET_PARAMETERS_FIELDS()}
     make_paths_be_abs(training_parameters_fields, dataset_definitions[ROOT_PATH_KEY])
 
     assert set(DATASET_PARAMETERS_FIELDS()) == set(
