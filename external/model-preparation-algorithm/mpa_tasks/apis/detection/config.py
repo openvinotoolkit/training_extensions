@@ -3,14 +3,12 @@
 #
 
 from attr import attrs
-
+from mpa_tasks.apis import BaseConfig, LearningRateSchedule
 from ote_sdk.configuration.elements import (
     add_parameter_group,
     selectable,
     string_attribute,
 )
-
-from mpa_tasks.apis import BaseConfig, LearningRateSchedule
 
 
 @attrs

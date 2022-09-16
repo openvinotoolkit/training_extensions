@@ -34,9 +34,7 @@ class LoadImageFromOTEDataset:
         img = dataset_item.numpy
         shape = img.shape
 
-        assert (
-            img.shape[0] == results["height"]
-        ), f"{img.shape[0]} != {results['height']}"
+        assert img.shape[0] == results["height"], f"{img.shape[0]} != {results['height']}"
         assert img.shape[1] == results["width"], f"{img.shape[1]} != {results['width']}"
 
         filename = f"Dataset item index {results['index']}"

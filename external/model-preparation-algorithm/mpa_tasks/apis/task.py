@@ -8,6 +8,7 @@ import os
 import shutil
 import tempfile
 from typing import Union
+
 import numpy as np
 import torch
 from mmcv.utils.config import Config, ConfigDict
@@ -20,7 +21,6 @@ from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.model import ModelEntity, ModelPrecision
 from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.serialization.label_mapper import LabelSchemaMapper
-
 
 logger = get_logger()
 DEFAULT_META_KEYS = (
@@ -60,9 +60,7 @@ class BaseTask:
                 if os.path.exists(self._model_ckpt):
                     os.remove(self._model_ckpt)
                 torch.save(state_dict, self._model_ckpt)
-                self._model_label_schema = self._load_model_label_schema(
-                    self._task_environment.model
-                )
+                self._model_label_schema = self._load_model_label_schema(self._task_environment.model)
 
         # property below will be initialized by initialize()
         self._recipe_cfg = None
@@ -82,9 +80,7 @@ class BaseTask:
         # to override configuration at runtime
         self.override_configs = {}
 
-    def _run_task(
-        self, stage_module, mode=None, dataset=None, parameters=None, **kwargs
-    ):
+    def _run_task(self, stage_module, mode=None, dataset=None, parameters=None, **kwargs):
         # FIXME: Temporary remedy for CVS-88098
         export = kwargs.get("export", False)
         self._initialize(dataset, export=export)
@@ -101,8 +97,7 @@ class BaseTask:
         logger.info(f"running task... kwargs = {kwargs}")
         if self._recipe_cfg is None:
             raise RuntimeError(
-                "'recipe_cfg' is not initialized yet."
-                "call prepare() method before calling this method"
+                "'recipe_cfg' is not initialized yet." "call prepare() method before calling this method"
             )
 
         if mode is not None:
@@ -111,9 +106,7 @@ class BaseTask:
         common_cfg = ConfigDict(dict(output_path=self._output_path))
 
         # build workflow using recipe configuration
-        workflow = build(
-            self._recipe_cfg, self._mode, stage_type=stage_module, common_cfg=common_cfg
-        )
+        workflow = build(self._recipe_cfg, self._mode, stage_type=stage_module, common_cfg=common_cfg)
 
         # run workflow with task specific model config and data config
         output = workflow.run(
@@ -164,8 +157,7 @@ class BaseTask:
         return self._hyperparams
 
     def _initialize(self, dataset=None, output_model=None, export=False):
-        """ prepare configurations to run a task through MPA's stage
-        """
+        """prepare configurations to run a task through MPA's stage"""
         logger.info("initializing....")
         self._init_recipe()
         if not export:
@@ -175,9 +167,7 @@ class BaseTask:
         if "custom_hooks" in self.override_configs:
             override_custom_hooks = self.override_configs.pop("custom_hooks")
             for override_custom_hook in override_custom_hooks:
-                update_or_add_custom_hook(
-                    self._recipe_cfg, ConfigDict(override_custom_hook)
-                )
+                update_or_add_custom_hook(self._recipe_cfg, ConfigDict(override_custom_hook))
         if len(self.override_configs) > 0:
             logger.info(f"before override configs merging = {self._recipe_cfg}")
             self._recipe_cfg.merge_from_dict(self.override_configs)
@@ -199,9 +189,7 @@ class BaseTask:
         # add Cancel tranining hook
         update_or_add_custom_hook(
             self._recipe_cfg,
-            ConfigDict(
-                type="CancelInterfaceHook", init_callback=self.on_hook_initialized
-            ),
+            ConfigDict(type="CancelInterfaceHook", init_callback=self.on_hook_initialized),
         )
         if self._time_monitor is not None:
             update_or_add_custom_hook(
@@ -214,9 +202,7 @@ class BaseTask:
                 ),
             )
         if self._learning_curves is not None:
-            self._recipe_cfg.log_config.hooks.append(
-                {"type": "OTELoggerHook", "curves": self._learning_curves}
-            )
+            self._recipe_cfg.log_config.hooks.append({"type": "OTELoggerHook", "curves": self._learning_curves})
 
         logger.info("initialized.")
 
@@ -261,9 +247,7 @@ class BaseTask:
             model_data = torch.load(buffer, map_location=torch.device("cpu"))
 
             # set confidence_threshold as well
-            self.confidence_threshold = model_data.get(
-                "confidence_threshold", self.confidence_threshold
-            )
+            self.confidence_threshold = model_data.get("confidence_threshold", self.confidence_threshold)
             if model_data.get("anchors"):
                 self._anchors = model_data["anchors"]
 
@@ -292,9 +276,7 @@ class BaseTask:
     @staticmethod
     def _get_confidence_threshold(hyperparams):
         confidence_threshold = 0.3
-        if hasattr(hyperparams, "postprocessing") and hasattr(
-            hyperparams.postprocessing, "confidence_threshold"
-        ):
+        if hasattr(hyperparams, "postprocessing") and hasattr(hyperparams.postprocessing, "confidence_threshold"):
             confidence_threshold = hyperparams.postprocessing.confidence_threshold
         return confidence_threshold
 

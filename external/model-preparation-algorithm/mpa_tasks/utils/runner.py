@@ -26,7 +26,7 @@ class EpochRunnerWithCancel(EpochBasedRunner):
         self.distributed = True if world_size > 1 else False
 
     def stop(self) -> bool:
-        """ Returning a boolean to break the training loop
+        """Returning a boolean to break the training loop
         This method supports distributed training by broadcasting should_stop to other ranks
         :return: a cancellation bool
         """

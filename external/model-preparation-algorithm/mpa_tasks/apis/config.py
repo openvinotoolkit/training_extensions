@@ -2,18 +2,17 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from attr import attrs
 from sys import maxsize
 
+from attr import attrs
+from ote_sdk.configuration import ConfigurableEnum, ConfigurableParameters
 from ote_sdk.configuration.elements import (
     ParameterGroup,
-    selectable,
     configurable_boolean,
     configurable_float,
     configurable_integer,
+    selectable,
 )
-from ote_sdk.configuration import ConfigurableParameters
-from ote_sdk.configuration import ConfigurableEnum
 from ote_sdk.configuration.model_lifecycle import ModelLifecycle
 
 
