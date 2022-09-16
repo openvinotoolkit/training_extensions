@@ -163,6 +163,14 @@ class OTEDetectionConfig(ConfigurableParameters):
             max_value=maxsize
         )
 
+        stat_requests_number = configurable_integer(
+            header="Number of requests",
+            description="Number of requests during statistics collection",
+            default_value=0,
+            min_value=0,
+            max_value=maxsize
+        )
+
         preset = selectable(default_value=POTQuantizationPreset.PERFORMANCE, header="Preset",
                             description="Quantization preset that defines quantization scheme",
                             editable=True, visible_in_ui=True)
