@@ -81,7 +81,7 @@ class OteAnomalyTask:
 
             If MVTec dataset is placed under the above directory, then we could run,
 
-            >>> model_template_path = "./configs/anomaly_classification/padim/template.yaml"
+            >>> model_template_path = "./configs/classification/padim/template.yaml"
             >>> dataset_path = "./datasets/MVTec"
             >>> task = OteAnomalyTask(
             ...     dataset_path=dataset_path,
@@ -343,7 +343,7 @@ def parse_args() -> Namespace:
     )
     parser.add_argument(
         "--model_template_path",
-        default="./templates/classification/padim/template.yaml",
+        default="./configs/classification/padim/template.yaml",
     )
     parser.add_argument("--dataset_path", default="./datasets/MVTec")
     parser.add_argument("--category", default="bottle")

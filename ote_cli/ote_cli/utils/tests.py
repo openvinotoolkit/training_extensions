@@ -73,24 +73,6 @@ def collect_env_vars(work_dir):
     return vars
 
 
-def patch_demo_py(src_path, dst_path):
-    with open(src_path) as read_file:
-        content = [line for line in read_file]
-        replaced = False
-        for i, line in enumerate(content):
-            if "visualizer = create_visualizer(models[-1].task_type)" in line:
-                content[i] = "    visualizer = Visualizer(); visualizer.show = show\n"
-                replaced = True
-        assert replaced
-        content = [
-            "from ote_sdk.usecases.exportable_code.visualizers import Visualizer\n",
-            "def show(self):\n",
-            "    pass\n\n",
-        ] + content
-        with open(dst_path, "w") as write_file:
-            write_file.write("".join(content))
-
-
 def ote_train_testing(template, root, ote_dir, args):
     work_dir, template_work_dir, _ = get_some_vars(template, root)
     command_line = [
@@ -323,21 +305,16 @@ def ote_deploy_openvino_testing(template, root, ote_dir, args):
         == 0
     )
 
-    # Patch demo since we are not able to run cv2.imshow on CI.
-    patch_demo_py(
-        os.path.join(deployment_dir, "python", "demo.py"),
-        os.path.join(deployment_dir, "python", "demo_patched.py"),
-    )
-
     assert (
         run(
             [
                 "python3",
-                "demo_patched.py",
+                "demo.py",
                 "-m",
                 "../model",
                 "-i",
                 os.path.join(ote_dir, args["--input"]),
+                "--no_show",
             ],
             cwd=os.path.join(deployment_dir, "python"),
             env=collect_env_vars(os.path.join(deployment_dir, "python")),

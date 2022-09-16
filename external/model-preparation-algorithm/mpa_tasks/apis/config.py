@@ -1,6 +1,7 @@
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
+
 from attr import attrs
 from sys import maxsize
 
@@ -33,6 +34,7 @@ class LearningRateSchedule(ConfigurableEnum):
 
 @attrs
 class BaseConfig(ConfigurableParameters):
+
     @attrs
     class BaseLearningParameters(ParameterGroup):
         batch_size = configurable_integer(
@@ -126,6 +128,13 @@ class BaseConfig(ConfigurableParameters):
             default_value=False,
             header="Enable filter pruning algorithm",
             description="Enable filter pruning algorithm",
+            affects_outcome_of=ModelLifecycle.TRAINING
+        )
+
+        pruning_supported = configurable_boolean(
+            default_value=False,
+            header="Whether filter pruning is supported",
+            description="Whether filter pruning is supported",
             affects_outcome_of=ModelLifecycle.TRAINING
         )
 

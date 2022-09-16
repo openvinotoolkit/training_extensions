@@ -15,7 +15,6 @@
 from functools import partial
 import attr
 import copy
-import cv2
 import io
 import json
 import numpy as np
@@ -67,6 +66,7 @@ from ote_sdk.utils.argument_checks import (
     check_input_parameters_type,
 )
 from ote_sdk.utils import Tiler
+from ote_sdk.utils.vis_utils import get_actmap
 from shutil import copyfile, copytree
 from typing import Any, Dict, List, Optional, Tuple, Union
 from zipfile import ZipFile
@@ -371,9 +371,8 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
                 dataset_item.append_metadata_item(representation_vector, model=self.model)
 
             if add_saliency_map and saliency_map is not None:
-                width, height = dataset_item.width, dataset_item.height
-                saliency_map = cv2.resize(saliency_map[0], (width, height), interpolation=cv2.INTER_NEAREST)
-                saliency_map_media = ResultMediaEntity(name="saliency_map", type="Saliency map",
+                saliency_map = get_actmap(saliency_map, (dataset_item.width, dataset_item.height))
+                saliency_map_media = ResultMediaEntity(name="Saliency Map", type="saliency_map",
                                                        annotation_scene=dataset_item.annotation_scene,
                                                        numpy=saliency_map, roi=dataset_item.roi)
                 dataset_item.append_metadata_item(saliency_map_media, model=self.model)

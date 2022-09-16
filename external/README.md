@@ -34,7 +34,7 @@ Every sub-project is fully indepedent from each other, and each of them has its 
 | Custom_Image_Classification_MobileNet-V3-large-1x              | MobileNet-V3-large-1x            | 0.44                | 4.29            | deep-object-reid/configs/ote_custom_classification/mobilenet_v3_large_1/template_experimental.yaml |
 | ClassIncremental_Image_Classification_EfficinetNet-B0          | EfficientNet-B0-ClsIncr          | 0.81                | 4.09            | model-preparation-algorithm/configs/classification/efficientnet_b0_cls_incr/template.yaml          |
 | Custom_Image_Classification_EfficinetNet-B0                    | EfficientNet-B0                  | 0.81                | 4.09            | deep-object-reid/configs/ote_custom_classification/efficientnet_b0/template_experimental.yaml      |
-| ClassIncremental_Image_Classification_EfficinetNet-V2-S        | EfficientNet-V2-S-ClsIncr        | 5.76                | 20.23           | model-preparation-algorithm/configs/classification/efficientnet_v2_s_cls_incr/template.yaml        |
+| ClassIncremental_Image_Classification_EfficientNet-V2-S        | EfficientNet-V2-S-ClsIncr        | 5.76                | 20.23           | model-preparation-algorithm/configs/classification/efficientnet_v2_s_cls_incr/template.yaml        |
 | Custom_Image_Classification_EfficientNet-V2-S                  | EfficientNet-V2-S                | 5.76                | 20.23           | deep-object-reid/configs/ote_custom_classification/efficientnet_v2_s/template_experimental.yaml    |
 
 ## Object Detection

@@ -135,9 +135,14 @@ class MPAClsDataset(BaseDataset):
             results = np.vstack(results)
             gt_labels = self.get_gt_labels()
             accuracies = self.class_accuracy(results, gt_labels)
+
+            if any(np.isnan(accuracies)):
+                accuracies = np.nan_to_num(accuracies)
+
             eval_results.update({f'{c} accuracy': a for c, a in zip(self.CLASSES, accuracies)})
             eval_results.update({'mean accuracy': np.mean(accuracies)})
 
+        eval_results['accuracy'] = eval_results['accuracy_top-1']
         return eval_results
 
     def class_accuracy(self, results, gt_labels):
@@ -261,6 +266,7 @@ class MPAMultilabelClsDataset(MPAClsDataset):
                 if k in metrics:
                     eval_results[k] = v
 
+        eval_results['accuracy'] = mAP_value
         return eval_results
 
 
@@ -380,5 +386,6 @@ class MPAHierarchicalClsDataset(MPAMultilabelClsDataset):
         eval_results['MHAcc'] = total_acc
         eval_results['avgClsAcc'] = total_acc_sl / self.hierarchical_info['num_multiclass_heads']
         eval_results['mAP'] = mAP_value
+        eval_results['accuracy'] = total_acc
 
         return eval_results
