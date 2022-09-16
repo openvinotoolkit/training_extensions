@@ -155,11 +155,8 @@ class BaseTask:
         """
         logger.info('initializing....')
         self._init_recipe()
-        self._overwrite_parameters()
         if not export:
-            recipe_hparams = self._init_recipe_hparam()
-            if len(recipe_hparams) > 0:
-                self._recipe_cfg.merge_from_dict(recipe_hparams)
+            self._overwrite_parameters()
         if "custom_hooks" in self.override_configs:
             override_custom_hooks = self.override_configs.pop("custom_hooks")
             for override_custom_hook in override_custom_hooks:

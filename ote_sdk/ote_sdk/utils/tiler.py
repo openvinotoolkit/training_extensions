@@ -10,7 +10,7 @@ import numpy as np
 
 
 class Tiler:
-    def __init__(self, tile_size: Union[int, Sequence], overlap: float, batch_size=1) -> None:
+    def __init__(self, tile_size: int, overlap: float, batch_size=1) -> None:
         self.tile_size = tile_size
         self.overlap = overlap
         self.stride = int(tile_size * (1 - overlap))
