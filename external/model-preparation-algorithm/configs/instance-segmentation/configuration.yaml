@@ -133,6 +133,21 @@ learning_parameters:
       type: UI_RULES
     visible_in_ui: true
     warning: null
+  early_stop_start:
+    affects_outcome_of: TRAINING
+    default_value: 3
+    editable: true
+    header: Start epoch for early stopping
+    max_value: 1000
+    min_value: 0
+    type: INTEGER
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: 3
+    visible_in_ui: false
   early_stop_patience:
     affects_outcome_of: TRAINING
     default_value: 10
