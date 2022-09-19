@@ -197,7 +197,7 @@ class BaseTask:
             if early_stop:
                 early_stop_hook = ConfigDict(
                                     type='LazyEarlyStoppingHook',
-                                    start=3,
+                                    start=early_stop.start,
                                     patience=early_stop.patience,
                                     iteration_patience=early_stop.iteration_patience,
                                     interval=1,

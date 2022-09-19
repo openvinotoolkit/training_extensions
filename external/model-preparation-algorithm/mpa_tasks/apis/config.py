@@ -93,6 +93,14 @@ class BaseConfig(ConfigurableParameters):
             affects_outcome_of=ModelLifecycle.TRAINING
         )
         
+        early_stop_start = configurable_integer(
+            default_value=3,
+            min_value=0,
+            max_value=1000,
+            header="Start epoch for early stopping",
+            affects_outcome_of=ModelLifecycle.TRAINING
+        )
+
         early_stop_patience = configurable_integer(
             default_value=5,
             min_value=0,
