@@ -2,6 +2,25 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+try:
+    import e2e.fixtures
+
+    import os
+    from e2e import config as config_e2e
+    from e2e.conftest_utils import *  # noqa
+    from e2e.conftest_utils import pytest_addoption as _e2e_pytest_addoption  # noqa
+    from e2e import config  # noqa
+    from e2e.utils import get_plugins_from_packages
+
+    config_e2e.repository_name = os.environ.get(
+        "TT_REPOSITORY_NAME",
+        "ote/training_extensions/external/model-preparation-algorithm",
+    )
+    pytest_plugins = get_plugins_from_packages([e2e])
+except ImportError:
+    _e2e_pytest_addoption = None
+    pass
+
 import pytest
 from ote_sdk.test_suite.pytest_insertions import (
     get_pytest_plugins_from_ote,
