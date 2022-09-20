@@ -17,9 +17,9 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- Replace Class-Incremental Learning models in Model Preparation Algorithm (MPA) as OTE default models
-- Replace OTE ignored label support with external ignored label
-- MPA training schedule enhanced
+- [MPA] Replace Class-Incremental Learning models as OTE default models
+- [MPA] Replace OTE ignored label support with external ignored label
+- [MPA] Enhance training schedules
 - [Anomaly] Extend conftest configuration for anomaly backend. (<https://github.com/openvinotoolkit/training_extensions/pull/1097>)
 - [Anomaly] Expose more params to the UI (<https://github.com/openvinotoolkit/training_extensions/pull/1085>)
 - [Anomaly] Change directory structure for anomaly templates. (<https://github.com/openvinotoolkit/training_extensions/pull/1105>)
