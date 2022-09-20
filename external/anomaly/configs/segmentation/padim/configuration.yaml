@@ -130,7 +130,7 @@ nncf_optimization:
       rules: []
       type: UI_RULES
     value: false
-    visible_in_ui: true
+    visible_in_ui: false
     warning: null
   type: PARAMETER_GROUP
   visible_in_ui: true

@@ -38,6 +38,15 @@ hyper_parameters:
         default_value: 100
       num_iters:
         default_value: 90
+    nncf_optimization:
+      enable_quantization:
+        default_value: true
+      enable_pruning:
+        default_value: false
+      pruning_supported:
+        default_value: true
+      maximal_accuracy_degradation:
+        default_value: 1.0
     algo_backend:
       train_type:
         default_value: Incremental

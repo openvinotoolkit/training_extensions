@@ -1,0 +1,1 @@
+optuna==2.10.1 # remedy for fixed optuna version incompatible in OTE CI

@@ -46,6 +46,7 @@ from segmentation_tasks.apis.segmentation import OTESegmentationTrainingTask
 DEFAULT_TEMPLATE_DIR = osp.join('configs', 'custom-sematic-segmentation', 'ocr-lite-hrnet-18-mod2')
 
 
+@pytest.mark.skip(reason="This test case will be deprecated soon")
 class API(unittest.TestCase):
     """
     Collection of tests for OTE API and OTE Model Templates
