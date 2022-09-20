@@ -81,7 +81,7 @@ def get_dummy_compressed_model(task):
     return compressed_model
 
 
-class TestOTEReallifeObjectDetectionClsIncr(OTETrainingTestInterface):
+class TestOTEReallifeMPADet(OTETrainingTestInterface):
     """
     The main class of running test in this file.
     """
