@@ -72,7 +72,7 @@ class SegmentationClsIncrTrainingTestParameters(
         return deepcopy(test_bunches)
 
 
-class TestOTEReallifeSegmentationClsIncr(OTETrainingTestInterface):
+class TestOTEReallifeMPASeg(OTETrainingTestInterface):
     """
     The main class of running test in this file.
     """

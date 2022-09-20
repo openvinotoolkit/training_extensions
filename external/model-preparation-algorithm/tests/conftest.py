@@ -4,16 +4,23 @@
 
 try:
     import e2e.fixtures
-
-    from e2e.conftest_utils import * # noqa
-    from e2e.conftest_utils import pytest_addoption as _e2e_pytest_addoption # noqa
-    from e2e import config # noqa
+    from e2e.conftest_utils import *  # noqa
+    from e2e.conftest_utils import pytest_addoption as _e2e_pytest_addoption  # noqa
+    from e2e import config  # noqa
     from e2e.utils import get_plugins_from_packages
+
     pytest_plugins = get_plugins_from_packages([e2e])
+    import os
+    from e2e import config as config_e2e
+
+    config_e2e.repository_name = os.environ.get(
+        "TT_REPOSITORY_NAME",
+        "ote/training_extensions/external/model-preparation-algorithm",
+    )
 except ImportError:
     _e2e_pytest_addoption = None
     pass
-import config
+
 import pytest
 from ote_sdk.test_suite.pytest_insertions import (
     get_pytest_plugins_from_ote,
@@ -25,9 +32,7 @@ from ote_sdk.test_suite.training_tests_common import REALLIFE_USECASE_CONSTANT
 
 pytest_plugins = get_pytest_plugins_from_ote()
 
-ote_conftest_insertion(
-    default_repository_name="ote/training_extensions/external/model-preparation-algorithm"
-)
+ote_conftest_insertion(default_repository_name="ote/training_extensions/external/model-preparation-algorithm")
 
 
 @pytest.fixture
