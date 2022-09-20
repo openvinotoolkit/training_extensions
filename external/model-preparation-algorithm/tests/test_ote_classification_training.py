@@ -81,7 +81,7 @@ class ClassificationClsIncrTrainingTestParameters(
         return deepcopy(DEFAULT_TEST_PARAMETERS)
 
 
-class TestOTEReallifeClassificationClsIncr(OTETrainingTestInterface):
+class TestOTEReallifeMPACls(OTETrainingTestInterface):
     """
     The main class of running test in this file.
     """
