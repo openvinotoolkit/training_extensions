@@ -1,4 +1,4 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # Anomaly Requirements.                                                       #
-anomalib==0.3.5
+anomalib==0.3.6
 pytorch-lightning>=1.6.0,<1.7.0

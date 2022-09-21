@@ -303,8 +303,8 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
     def _set_metadata(self, output_model: ModelEntity):
         output_model.set_data("image_threshold", self.model.image_threshold.value.cpu().numpy().tobytes())
         output_model.set_data("pixel_threshold", self.model.pixel_threshold.value.cpu().numpy().tobytes())
-        output_model.set_data("min", self.model.min_max.min.cpu().numpy().tobytes())
-        output_model.set_data("max", self.model.min_max.max.cpu().numpy().tobytes())
+        output_model.set_data("min", self.model.normalization_metrics.state_dict()["min"].cpu().numpy().tobytes())
+        output_model.set_data("max", self.model.normalization_metrics.state_dict()["max"].cpu().numpy().tobytes())
 
     @staticmethod
     def _is_docker() -> bool:

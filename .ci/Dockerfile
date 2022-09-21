@@ -56,18 +56,15 @@ FROM python_base_cuda as otx_development_env
 # Install all OTX requirements. Serves as a way to cache the requirements
 
 COPY ./requirements/anomaly.txt /tmp/otx/requirements/anomaly.txt
-RUN pip install --no-cache-dir -r /tmp/otx/requirements/anomaly.txt
-
 COPY ./requirements/base.txt /tmp/otx/requirements/base.txt
-RUN pip install --no-cache-dir -r /tmp/otx/requirements/base.txt
-
 COPY ./requirements/dev.txt /tmp/otx/requirements/dev.txt
-RUN pip install --no-cache-dir -r /tmp/otx/requirements/dev.txt
-
 COPY ./requirements/docs.txt /tmp/otx/requirements/docs.txt
-RUN pip install --no-cache-dir -r /tmp/otx/requirements/docs.txt
-
 COPY ./requirements/openvino.txt /tmp/otx/requirements/openvino.txt
-RUN pip install --no-cache-dir -r /tmp/otx/requirements/openvino.txt
+
+RUN pip install --no-cache-dir -r /tmp/otx/requirements/anomaly.txt \
+    -r /tmp/otx/requirements/base.txt \
+    -r /tmp/otx/requirements/dev.txt \
+    -r /tmp/otx/requirements/docs.txt \
+    -r /tmp/otx/requirements/openvino.txt
 
 WORKDIR /home/validation
