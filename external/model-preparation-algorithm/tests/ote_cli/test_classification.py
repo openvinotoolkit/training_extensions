@@ -241,7 +241,6 @@ args_m = {
 
 class TestToolsMPAMultilabelClassification:
     @e2e_pytest_component
-    @pytest.mark.skipif(TT_STABILITY_TEST, reason="This is TT_STABILITY_TEST")
     def test_create_venv(self):
         work_dir, _, algo_backend_dir = get_some_vars(templates[0], root)
         create_venv(algo_backend_dir, work_dir)
@@ -382,7 +381,6 @@ args_h = {
 
 class TestToolsMPAHierarchicalClassification:
     @e2e_pytest_component
-    @pytest.mark.skipif(TT_STABILITY_TEST, reason="This is TT_STABILITY_TEST")
     def test_create_venv(self):
         work_dir, _, algo_backend_dir = get_some_vars(templates[0], root)
         create_venv(algo_backend_dir, work_dir)
