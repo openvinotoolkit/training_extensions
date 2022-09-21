@@ -280,18 +280,13 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
 
     def _init_recipe_hparam(self) -> dict:
         warmup_iters = int(self._hyperparams.learning_parameters.learning_rate_warmup_iters)
-        lr_config = (
-            ConfigDict(warmup_iters=warmup_iters)
-            if warmup_iters > 0
+        lr_config = ConfigDict(warmup_iters=warmup_iters) if warmup_iters > 0 \
             else ConfigDict(warmup_iters=warmup_iters, warmup=None)
-        )
 
         if self._hyperparams.learning_parameters.enable_early_stopping:
-            early_stop = ConfigDict(
-                start=int(self._hyperparams.learning_parameters.early_stop_start),
-                patience=int(self._hyperparams.learning_parameters.early_stop_patience),
-                iteration_patience=int(self._hyperparams.learning_parameters.early_stop_iteration_patience),
-            )
+            early_stop = ConfigDict(start=int(self._hyperparams.learning_parameters.early_stop_start),
+                                    patience=int(self._hyperparams.learning_parameters.early_stop_patience),
+                                    iteration_patience=int(self._hyperparams.learning_parameters.early_stop_iteration_patience))
         else:
             early_stop = False
 
@@ -410,14 +405,14 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
     def _patch_evaluation(self, config: MPAConfig):
         cfg = config.evaluation
         if self._multilabel:
-            cfg.metric = ["accuracy-mlc", "mAP", "CP", "OP", "CR", "OR", "CF1", "OF1"]
-            config.early_stop_metric = "mAP"
+            cfg.metric = ['accuracy-mlc', 'mAP', 'CP', 'OP', 'CR', 'OR', 'CF1', 'OF1']
+            config.early_stop_metric = 'mAP'
         elif self._hierarchical:
-            cfg.metric = ["MHAcc", "avgClsAcc", "mAP"]
-            config.early_stop_metric = "MHAcc"
+            cfg.metric = ['MHAcc', 'avgClsAcc', 'mAP']
+            config.early_stop_metric = 'MHAcc'
         else:
-            cfg.metric = ["accuracy", "class_accuracy"]
-            config.early_stop_metric = "accuracy"
+            cfg.metric = ['accuracy', 'class_accuracy']
+            config.early_stop_metric = 'accuracy'
 
 
 class ClassificationTrainTask(ClassificationInferenceTask):

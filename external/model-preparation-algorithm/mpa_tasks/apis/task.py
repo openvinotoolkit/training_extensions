@@ -3,6 +3,7 @@
 #
 
 import abc
+from collections import defaultdict
 import io
 import os
 import shutil
@@ -15,7 +16,7 @@ from mmcv.utils.config import Config, ConfigDict
 from mpa.builder import build
 from mpa.modules.hooks.cancel_interface_hook import CancelInterfaceHook
 from mpa.stage import Stage
-from mpa.utils.config_utils import remove_custom_hook, update_or_add_custom_hook
+from mpa.utils.config_utils import update_or_add_custom_hook, remove_custom_hook
 from mpa.utils.logger import get_logger
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.model import ModelEntity, ModelPrecision
@@ -189,30 +190,28 @@ class BaseTask:
         self._precision = [ModelPrecision.FP32]
 
         # Add/remove adaptive interval hook
-        if self._recipe_cfg.get("use_adaptive_interval", False):
-            self._recipe_cfg.adaptive_validation_interval = self._recipe_cfg.get(
-                "adaptive_validation_interval", dict(max_interval=5)
-            )
+        if self._recipe_cfg.get('use_adaptive_interval', False):
+            self._recipe_cfg.adaptive_validation_interval = self._recipe_cfg.get('adaptive_validation_interval', dict(max_interval=5))
         else:
-            self._recipe_cfg.pop("adaptive_validation_interval", None)
-
+            self._recipe_cfg.pop('adaptive_validation_interval', None)
+        
         # Add/remove early stop hook
-        if "early_stop" in self._recipe_cfg:
-            remove_custom_hook(self._recipe_cfg, "EarlyStoppingHook")
-            early_stop = self._recipe_cfg.get("early_stop", False)
+        if 'early_stop' in self._recipe_cfg:
+            remove_custom_hook(self._recipe_cfg, 'EarlyStoppingHook')
+            early_stop = self._recipe_cfg.get('early_stop', False)
             if early_stop:
                 early_stop_hook = ConfigDict(
-                    type="LazyEarlyStoppingHook",
-                    start=early_stop.start,
-                    patience=early_stop.patience,
-                    iteration_patience=early_stop.iteration_patience,
-                    interval=1,
-                    metric=self._recipe_cfg.early_stop_metric,
-                    priority=75,
-                )
+                                    type='LazyEarlyStoppingHook',
+                                    start=early_stop.start,
+                                    patience=early_stop.patience,
+                                    iteration_patience=early_stop.iteration_patience,
+                                    interval=1,
+                                    metric=self._recipe_cfg.early_stop_metric,
+                                    priority=75,
+                                )
                 update_or_add_custom_hook(self._recipe_cfg, early_stop_hook)
             else:
-                remove_custom_hook(self._recipe_cfg, "LazyEarlyStoppingHook")
+                remove_custom_hook(self._recipe_cfg, 'LazyEarlyStoppingHook')
 
         # add Cancel tranining hook
         update_or_add_custom_hook(

@@ -169,7 +169,7 @@ learning_parameters:
     affects_outcome_of: TRAINING
     default_value: 0
     description:
-      Training will stop if the model does not improve within the number of iterations of patience.
+      Training will stop if the model does not improve within the number of iterations of patience. 
       This ensures the model is trained enough with the number of iterations of patience before early stopping.
     editable: true
     header: Iteration patience for early stopping

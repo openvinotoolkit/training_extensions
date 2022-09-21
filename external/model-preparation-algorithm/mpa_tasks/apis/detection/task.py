@@ -201,18 +201,13 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
 
     def _init_recipe_hparam(self) -> dict:
         warmup_iters = int(self._hyperparams.learning_parameters.learning_rate_warmup_iters)
-        lr_config = (
-            ConfigDict(warmup_iters=warmup_iters)
-            if warmup_iters > 0
+        lr_config = ConfigDict(warmup_iters=warmup_iters) if warmup_iters > 0 \
             else ConfigDict(warmup_iters=warmup_iters, warmup=None)
-        )
-
+        
         if self._hyperparams.learning_parameters.enable_early_stopping:
-            early_stop = ConfigDict(
-                start=int(self._hyperparams.learning_parameters.early_stop_start),
-                patience=int(self._hyperparams.learning_parameters.early_stop_patience),
-                iteration_patience=int(self._hyperparams.learning_parameters.early_stop_iteration_patience),
-            )
+            early_stop = ConfigDict(start=int(self._hyperparams.learning_parameters.early_stop_start),
+                                    patience=int(self._hyperparams.learning_parameters.early_stop_patience),
+                                    iteration_patience=int(self._hyperparams.learning_parameters.early_stop_iteration_patience))
         else:
             early_stop = False
 
@@ -373,7 +368,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         cfg.metric = "mAP"
         cfg.save_best = "mAP"
         # EarlyStoppingHook
-        config.early_stop_metric = "mAP"
+        config.early_stop_metric = 'mAP'
 
     def _det_add_predictions_to_dataset(self, all_results, width, height, confidence_threshold):
         shapes = []
