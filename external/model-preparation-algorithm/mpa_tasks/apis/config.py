@@ -77,6 +77,52 @@ class BaseConfig(ConfigurableParameters):
             affects_outcome_of=ModelLifecycle.TRAINING,
         )
 
+        use_adaptive_interval = configurable_boolean(
+            default_value=False,
+            header="Use adaptive validation interval",
+            description="Depending on the size of iteration per epoch, \
+                         adaptively update the validation interval and related values.",
+            warning="This will automatically control the patience and interval when early stopping is enabled.",
+            affects_outcome_of=ModelLifecycle.TRAINING,
+        )
+
+        enable_early_stopping = configurable_boolean(
+            default_value=True,
+            header="Enable early stopping of the training",
+            description="Early exit from training when validation accuracy isn't \
+                         changed or decreased for several epochs.",
+            affects_outcome_of=ModelLifecycle.TRAINING,
+        )
+
+        early_stop_start = configurable_integer(
+            default_value=3,
+            min_value=0,
+            max_value=1000,
+            header="Start epoch for early stopping",
+            affects_outcome_of=ModelLifecycle.TRAINING,
+        )
+
+        early_stop_patience = configurable_integer(
+            default_value=5,
+            min_value=0,
+            max_value=50,
+            header="Patience for early stopping",
+            description="Training will stop if the model does not improve within the number of epochs of patience.",
+            warning="This is applied exclusively when early stopping is enabled.",
+            affects_outcome_of=ModelLifecycle.TRAINING,
+        )
+
+        early_stop_iteration_patience = configurable_integer(
+            default_value=0,
+            min_value=0,
+            max_value=1000,
+            header="Iteration patience for early stopping",
+            description="Training will stop if the model does not improve within the number of iterations of patience. \
+                        the model is trained enough with the number of iterations of patience before early stopping.",
+            warning="This is applied exclusively when early stopping is enabled.",
+            affects_outcome_of=ModelLifecycle.TRAINING,
+        )
+
         num_workers = configurable_integer(
             default_value=0,
             min_value=0,

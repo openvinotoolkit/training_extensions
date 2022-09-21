@@ -206,9 +206,21 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
             if warmup_iters > 0
             else ConfigDict(warmup_iters=warmup_iters, warmup=None)
         )
+
+        if self._hyperparams.learning_parameters.enable_early_stopping:
+            early_stop = ConfigDict(
+                start=int(self._hyperparams.learning_parameters.early_stop_start),
+                patience=int(self._hyperparams.learning_parameters.early_stop_patience),
+                iteration_patience=int(self._hyperparams.learning_parameters.early_stop_iteration_patience),
+            )
+        else:
+            early_stop = False
+
         return ConfigDict(
             optimizer=ConfigDict(lr=self._hyperparams.learning_parameters.learning_rate),
             lr_config=lr_config,
+            early_stop=early_stop,
+            use_adaptive_interval=self._hyperparams.learning_parameters.use_adaptive_interval,
             data=ConfigDict(
                 samples_per_gpu=int(self._hyperparams.learning_parameters.batch_size),
                 workers_per_gpu=int(self._hyperparams.learning_parameters.num_workers),
@@ -361,9 +373,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         cfg.metric = "mAP"
         cfg.save_best = "mAP"
         # EarlyStoppingHook
-        for cfg in config.get("custom_hooks", []):
-            if "EarlyStoppingHook" in cfg.type:
-                cfg.metric = "mAP"
+        config.early_stop_metric = "mAP"
 
     def _det_add_predictions_to_dataset(self, all_results, width, height, confidence_threshold):
         shapes = []
