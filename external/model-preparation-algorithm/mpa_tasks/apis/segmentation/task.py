@@ -149,9 +149,18 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         warmup_iters = int(self._hyperparams.learning_parameters.learning_rate_warmup_iters)
         lr_config = ConfigDict(warmup_iters=warmup_iters) if warmup_iters > 0 \
             else ConfigDict(warmup_iters=warmup_iters, warmup=None)
+        
+        if self._hyperparams.learning_parameters.enable_early_stopping:
+            early_stop = ConfigDict(start=int(self._hyperparams.learning_parameters.early_stop_start),
+                                    patience=int(self._hyperparams.learning_parameters.early_stop_patience),
+                                    iteration_patience=int(self._hyperparams.learning_parameters.early_stop_iteration_patience))
+        else:
+            early_stop = False
+
         return ConfigDict(
             optimizer=ConfigDict(lr=self._hyperparams.learning_parameters.learning_rate),
             lr_config=lr_config,
+            early_stop=early_stop,
             data=ConfigDict(
                 samples_per_gpu=int(self._hyperparams.learning_parameters.batch_size),
                 workers_per_gpu=int(self._hyperparams.learning_parameters.num_workers),
@@ -291,10 +300,7 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         cfg.save_best = 'mDice'
         cfg.rule = 'greater'
         # EarlyStoppingHook
-        for cfg in config.get('custom_hooks', []):
-            if 'EarlyStoppingHook' in cfg.type:
-                cfg.metric = 'mDice'
-
+        config.early_stop_metric = 'mDice'
 
 class SegmentationTrainTask(SegmentationInferenceTask, ITrainingTask):
     def save_model(self, output_model: ModelEntity):

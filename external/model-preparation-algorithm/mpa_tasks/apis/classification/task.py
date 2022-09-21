@@ -258,9 +258,18 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         warmup_iters = int(self._hyperparams.learning_parameters.learning_rate_warmup_iters)
         lr_config = ConfigDict(warmup_iters=warmup_iters) if warmup_iters > 0 \
             else ConfigDict(warmup_iters=warmup_iters, warmup=None)
+
+        if self._hyperparams.learning_parameters.enable_early_stopping:
+            early_stop = ConfigDict(start=int(self._hyperparams.learning_parameters.early_stop_start),
+                                    patience=int(self._hyperparams.learning_parameters.early_stop_patience),
+                                    iteration_patience=int(self._hyperparams.learning_parameters.early_stop_iteration_patience))
+        else:
+            early_stop = False
+
         return ConfigDict(
             optimizer=ConfigDict(lr=self._hyperparams.learning_parameters.learning_rate),
             lr_config=lr_config,
+            early_stop=early_stop,
             data=ConfigDict(
                 samples_per_gpu=int(self._hyperparams.learning_parameters.batch_size),
                 workers_per_gpu=int(self._hyperparams.learning_parameters.num_workers),
@@ -301,14 +310,6 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         else:
             cfg_path = os.path.join(base_dir, 'model.py')
         cfg = MPAConfig.fromfile(cfg_path)
-
-        # To initialize different HP according to task / Support HP change via CLI & UI
-        if not self._multilabel:
-            template = MPAConfig.fromfile(self.template_file_path)
-            template_params = template.hyper_parameters.parameter_overrides.learning_parameters
-            incoming_params = self._hyperparams.learning_parameters
-            if cfg.get('runner', False) and (template_params.num_iters.default_value != incoming_params.num_iters):
-                cfg.runner.max_epochs = incoming_params.num_iters
 
         cfg.model.multilabel = self._multilabel
         cfg.model.hierarchical = self._hierarchical
@@ -381,10 +382,13 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         cfg = config.evaluation
         if self._multilabel:
             cfg.metric = ['accuracy-mlc', 'mAP', 'CP', 'OP', 'CR', 'OR', 'CF1', 'OF1']
+            config.early_stop_metric = 'mAP'
         elif self._hierarchical:
             cfg.metric = ['MHAcc', 'avgClsAcc', 'mAP']
+            config.early_stop_metric = 'MHAcc'
         else:
             cfg.metric = ['accuracy', 'class_accuracy']
+            config.early_stop_metric = 'accuracy'
 
 
 class ClassificationTrainTask(ClassificationInferenceTask):
