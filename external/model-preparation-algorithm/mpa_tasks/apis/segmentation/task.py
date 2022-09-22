@@ -277,9 +277,7 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         cfg.save_best = 'mDice'
         cfg.rule = 'greater'
         # EarlyStoppingHook
-        for cfg in config.get('custom_hooks', []):
-            if 'EarlyStoppingHook' in cfg.type:
-                cfg.metric = 'mDice'
+        config.early_stop_metric = 'mDice'
 
 
 class SegmentationTrainTask(SegmentationInferenceTask, ITrainingTask):
