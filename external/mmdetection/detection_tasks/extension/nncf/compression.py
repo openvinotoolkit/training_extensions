@@ -8,9 +8,9 @@ import tempfile
 import mmcv
 import torch
 
-from mmdet.utils import get_root_logger, prepare_mmdet_model_for_execution
+from mmdet.utils import get_root_logger
 from .utils import (check_nncf_is_enabled, get_nncf_version, is_nncf_enabled,
-                    load_checkpoint, no_nncf_trace)
+                    load_checkpoint, no_nncf_trace, prepare_mmdet_model_for_execution)
 
 
 def get_nncf_metadata():
@@ -293,7 +293,7 @@ def wrap_nncf_model(model,
         return args, kwargs
 
     model.dummy_forward_fn = dummy_forward
-    export_method = type(model).export
+    export_method = type(model).onnx_export
 
     if 'log_dir' in nncf_config:
         os.makedirs(nncf_config['log_dir'], exist_ok=True)
@@ -305,7 +305,7 @@ def wrap_nncf_model(model,
                                                       compression_state=compression_state)
     if resuming_state_dict:
         load_state(model, resuming_state_dict, is_resume=True)
-    model.export = export_method.__get__(model)
+    model.onnx_export = export_method.__get__(model)
 
     return compression_ctrl, model
 

@@ -16,7 +16,8 @@ from .hooks import CancelTrainingHook, FixedMomentumUpdaterHook, OTELoggerHook, 
 from .hooks import EarlyStoppingHook, ReduceLROnPlateauLrUpdaterHook, StopLossNanTrainingHook
 from .pipelines import LoadImageFromOTEDataset, LoadAnnotationFromOTEDataset
 from .runner import EpochRunnerWithCancel
+from .data_cpu import MMDataCPU
 
 __all__ = [CancelTrainingHook, FixedMomentumUpdaterHook, LoadImageFromOTEDataset, EpochRunnerWithCancel,
            LoadAnnotationFromOTEDataset, OTELoggerHook, OTEProgressHook, EarlyStoppingHook,
-           ReduceLROnPlateauLrUpdaterHook, StopLossNanTrainingHook]
+           ReduceLROnPlateauLrUpdaterHook, StopLossNanTrainingHook, MMDataCPU]
