@@ -39,7 +39,7 @@ args0 = {
     "--test-ann-files": "data/car_tree_bug/annotations/instances_car_tree.json",
     "--test-data-roots": "data/car_tree_bug/images",
     "--input": "data/car_tree_bug/images",
-    "train_params": ["params", "--learning_parameters.num_iters", "2", "--learning_parameters.batch_size", "4"],
+    "train_params": ["params", "--learning_parameters.num_iters", "4", "--learning_parameters.batch_size", "4"],
 }
 
 # Class-Incremental learning w/ 'car', 'tree', 'bug' classes
@@ -51,7 +51,7 @@ args = {
     "--test-ann-files": "data/car_tree_bug/annotations/instances_default.json",
     "--test-data-roots": "data/car_tree_bug/images",
     "--input": "data/car_tree_bug/images",
-    "train_params": ["params", "--learning_parameters.num_iters", "2", "--learning_parameters.batch_size", "4"],
+    "train_params": ["params", "--learning_parameters.num_iters", "4", "--learning_parameters.batch_size", "4"],
 }
 
 root = "/tmp/ote_cli/"

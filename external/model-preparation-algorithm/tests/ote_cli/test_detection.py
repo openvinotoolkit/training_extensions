@@ -40,7 +40,7 @@ args0 = {
     "--test-ann-files": "data/airport/annotation_person_train.json",
     "--test-data-roots": "data/airport/train",
     "--input": "data/airport/train",
-    "train_params": ["params", "--learning_parameters.num_iters", "2", "--learning_parameters.batch_size", "4"],
+    "train_params": ["params", "--learning_parameters.num_iters", "4", "--learning_parameters.batch_size", "4"],
 }
 
 # Class-Incremental learning w/ 'vehicle', 'person', 'non-vehicle' classes
