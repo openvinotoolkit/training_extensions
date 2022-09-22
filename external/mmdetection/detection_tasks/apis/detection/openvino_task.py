@@ -80,7 +80,7 @@ from mmcv.ops import nms
 logger = get_root_logger()
 
 
-def refine_results(scores, labels, boxes, iou_threshold=0.45, max_num=200):
+def multiclass_nms(scores, labels, boxes, iou_threshold=0.45, max_num=200):
     max_coordinate = boxes.max()
     offsets = labels.astype(boxes.dtype) * (max_coordinate + 1)
     boxes_for_nms = boxes + offsets[:, None]
@@ -108,7 +108,7 @@ class BaseInferencerWithConverter(BaseInferencer):
         detections = self.model.postprocess(prediction, metadata)
 
         return self.converter.convert_to_annotation(detections, metadata)
-    
+
     @check_input_parameters_type()
     def predict(self, image: np.ndarray) -> Tuple[AnnotationSceneEntity, np.ndarray, np.ndarray]:
         image, metadata = self.pre_process(image)
@@ -161,6 +161,50 @@ class OpenVINODetectionInferencer(BaseInferencerWithConverter):
 
         super().__init__(configuration, model, converter)
 
+    def predict_tile(self, image: np.ndarray, tile_size: int, overlap: float, max_number: int) -> Tuple[AnnotationSceneEntity, np.ndarray, np.ndarray]:
+        # TODO[EUGENE]
+        scores = np.empty((0), dtype=np.float32)
+        labels = np.empty((0), dtype=np.uint32)
+        boxes = np.empty((0, 4), dtype=np.float32)
+
+        batch_size = 1
+        tiler = Tiler(tile_size=tile_size, overlap=overlap, batch_size=batch_size)
+
+        original_shape = image.shape
+        metadata = None
+        for tile, offset in tiler.tile(image):
+            tile_dict, metadata = self.model.preprocess(tile[0])
+            raw_predictions = self.model.infer_sync(tile_dict)
+            metadata['resize_mask'] = False
+            predictions = self.model.postprocess(raw_predictions, metadata)
+
+            tile_scores, tile_labels, tile_boxes, tile_masks = predictions
+            if len(tile_scores):
+                y, x = offset[0]
+                tile_boxes[:, 0] += x
+                tile_boxes[:, 1] += y
+                tile_boxes[:, 2] += x
+                tile_boxes[:, 3] += y
+                scores = np.concatenate((scores, tile_scores))
+                labels = np.concatenate((labels, tile_labels))
+                boxes = np.concatenate((boxes, tile_boxes))
+
+        # TODO[EUGENE]: call refine_results (Multiclass-NMS)
+        _, keep = multiclass_nms(scores, labels, boxes, max_num=max_number)
+        boxes = boxes[keep]
+        labels = labels[keep]
+        scores = scores[keep]
+
+        assert len(scores) == len(labels) == len(boxes)
+        detections = scores, labels, boxes
+        metadata["original_shape"] = original_shape
+        detections = self.converter.convert_to_annotation(detections, metadata)
+
+        # TODO[EUGENE]: FIND A WAY TO INCLUDE FEATURE VECTOR AND FEATURE MAP
+        features = (None, None)
+        return detections, features
+
+
 
 class OpenVINOMaskInferencer(BaseInferencerWithConverter):
     @check_input_parameters_type()
@@ -204,17 +248,11 @@ class OpenVINOMaskInferencer(BaseInferencerWithConverter):
         masks = []
 
         batch_size = 1
-        tiler = Tiler(tile_size=tile_size, overlap=0.5, batch_size=batch_size)
+        tiler = Tiler(tile_size=tile_size, overlap=overlap, batch_size=batch_size)
 
         original_shape = image.shape
         metadata = None
         for tile, offset in tiler.tile(image):
-            # dict_inputs = {self.model.image_blob_name: tile, "meta_list": []}
-            # self.model.batch_preprocess(dict_inputs)
-            # meta_list = dict_inputs.pop("meta_list")
-            # raw_predictions = self.model.infer_sync(dict_inputs)
-            # predictions = self.model.batch_postprocess(raw_predictions, meta_list, resize_mask=False)
-
             tile_dict, metadata = self.model.preprocess(tile[0])
             raw_predictions = self.model.infer_sync(tile_dict)
             metadata['resize_mask'] = False
@@ -233,7 +271,7 @@ class OpenVINOMaskInferencer(BaseInferencerWithConverter):
                 masks.extend(tile_masks)
 
         # TODO[EUGENE]: call refine_results (Multiclass-NMS)
-        _, keep = nms(boxes, scores, iou_threshold=0.45, max_num=max_number)
+        _, keep = multiclass_nms(scores, labels, boxes, max_num=max_number)
         boxes = boxes[keep]
         labels = labels[keep]
         scores = scores[keep]
