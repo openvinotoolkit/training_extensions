@@ -74,7 +74,10 @@ TT_STABILITY_TESTS = os.environ.get("TT_STABILITY_TESTS", False)
 if TT_STABILITY_TESTS:
     default_template = parse_model_template(
         os.path.join(
-            "external/model-preparation-algorithm/configs", "detection", "mobilenetv2_atss_cls_incr", "template.yaml"
+            "external/model-preparation-algorithm/configs",
+            "classification",
+            "efficientnet_b0_cls_incr",
+            "template.yaml",
         )
     )
     templates = [default_template] * 100
