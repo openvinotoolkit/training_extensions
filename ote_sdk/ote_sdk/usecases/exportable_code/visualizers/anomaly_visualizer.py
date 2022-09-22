@@ -43,8 +43,9 @@ class AnomalyVisualizer(Visualizer):
                 cv2.WINDOW_NORMAL | cv2.WINDOW_KEEPRATIO | cv2.WINDOW_GUI_EXPANDED,
             )
             self.trackbar_name = "Opacity"
-            cv2.createTrackbar(self.trackbar_name, self.window_name,
-                               0, 100, lambda x: x)
+            cv2.createTrackbar(
+                self.trackbar_name, self.window_name, 0, 100, lambda x: x
+            )
 
     @staticmethod
     def to_heat_mask(mask: np.ndarray) -> np.ndarray:

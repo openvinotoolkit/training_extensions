@@ -40,9 +40,7 @@ from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType
 from tests.mpa_common import eval
 
 
-DEFAULT_CLS_TEMPLATE_DIR = osp.join(
-    "configs", "classification", "efficientnet_b0_cls_incr"
-)
+DEFAULT_CLS_TEMPLATE_DIR = osp.join("configs", "classification", "efficientnet_b0_cls_incr")
 
 
 class TestMPAClsAPI:
@@ -54,9 +52,7 @@ class TestMPAClsAPI:
             "mobilenet_v3_large_1_cls_incr",
         ]
         for model_template in classification_template:
-            parse_model_template(
-                osp.join("configs", "classification", model_template, "template.yaml")
-            )
+            parse_model_template(osp.join("configs", "classification", model_template, "template.yaml"))
 
     @staticmethod
     def generate_label_schema(not_empty_labels, multilabel=False, hierarchical=False):
@@ -64,12 +60,8 @@ class TestMPAClsAPI:
 
         label_schema = LabelSchemaEntity()
         if multilabel:
-            emptylabel = LabelEntity(
-                name="Empty label", is_empty=True, domain=Domain.CLASSIFICATION
-            )
-            empty_group = LabelGroup(
-                name="empty", labels=[emptylabel], group_type=LabelGroupType.EMPTY_LABEL
-            )
+            emptylabel = LabelEntity(name="Empty label", is_empty=True, domain=Domain.CLASSIFICATION)
+            empty_group = LabelGroup(name="empty", labels=[emptylabel], group_type=LabelGroupType.EMPTY_LABEL)
             for label in not_empty_labels:
                 label_schema.add_group(
                     LabelGroup(
@@ -82,12 +74,8 @@ class TestMPAClsAPI:
         elif hierarchical:
             single_label_classes = ["b", "g", "r"]
             multi_label_classes = ["w", "p"]
-            emptylabel = LabelEntity(
-                name="Empty label", is_empty=True, domain=Domain.CLASSIFICATION
-            )
-            empty_group = LabelGroup(
-                name="empty", labels=[emptylabel], group_type=LabelGroupType.EMPTY_LABEL
-            )
+            emptylabel = LabelEntity(name="Empty label", is_empty=True, domain=Domain.CLASSIFICATION)
+            empty_group = LabelGroup(name="empty", labels=[emptylabel], group_type=LabelGroupType.EMPTY_LABEL)
             single_labels = []
             for label in not_empty_labels:
                 if label.name in multi_label_classes:
@@ -125,9 +113,7 @@ class TestMPAClsAPI:
         hyper_parameters.learning_parameters.num_iters = num_iters
         return hyper_parameters, model_template
 
-    def init_environment(
-        self, params, model_template, multilabel, hierarchical, number_of_images=10
-    ):
+    def init_environment(self, params, model_template, multilabel, hierarchical, number_of_images=10):
         resolution = (224, 224)
         if hierarchical:
             colors = [(0, 255, 0), (0, 0, 255), (255, 0, 0), (0, 0, 0), (230, 230, 250)]
@@ -138,9 +124,7 @@ class TestMPAClsAPI:
             cls_names = ["b", "g"]
             texts = ["Blue", "Green"]
         env_labels = [
-            LabelEntity(
-                name=name, domain=Domain.CLASSIFICATION, is_empty=False, id=ID(i)
-            )
+            LabelEntity(name=name, domain=Domain.CLASSIFICATION, is_empty=False, id=ID(i))
             for i, name in enumerate(cls_names)
         ]
 
@@ -164,12 +148,8 @@ class TestMPAClsAPI:
                 image = Image(data=class_img)
                 labels = [ScoredLabel(label=lbl, probability=1.0)]
                 shapes = [Annotation(Rectangle.generate_full_box(), labels)]
-                annotation_scene = AnnotationSceneEntity(
-                    kind=AnnotationSceneKind.ANNOTATION, annotations=shapes
-                )
-                items.append(
-                    DatasetItemEntity(media=image, annotation_scene=annotation_scene)
-                )
+                annotation_scene = AnnotationSceneEntity(kind=AnnotationSceneKind.ANNOTATION, annotations=shapes)
+                items.append(DatasetItemEntity(media=image, annotation_scene=annotation_scene))
 
         rng = random.Random()
         rng.seed(100)
@@ -203,9 +183,7 @@ class TestMPAClsAPI:
         ids=["multiclass", "multilabel", "hierarchical"],
     )
     def test_training_progress_tracking(self, multilabel, hierarchical):
-        hyper_parameters, model_template = self.setup_configurable_parameters(
-            DEFAULT_CLS_TEMPLATE_DIR, num_iters=5
-        )
+        hyper_parameters, model_template = self.setup_configurable_parameters(DEFAULT_CLS_TEMPLATE_DIR, num_iters=5)
         task_environment, dataset = self.init_environment(
             hyper_parameters, model_template, multilabel, hierarchical, 20
         )
@@ -219,7 +197,10 @@ class TestMPAClsAPI:
 
         train_parameters = TrainParameters
         train_parameters.update_progress = progress_callback
-        output_model = ModelEntity(dataset, task_environment.get_model_configuration(),)
+        output_model = ModelEntity(
+            dataset,
+            task_environment.get_model_configuration(),
+        )
         task.train(dataset, output_model, train_parameters)
 
         assert len(training_progress_curve) > 0
@@ -232,9 +213,7 @@ class TestMPAClsAPI:
         ids=["multiclass", "multilabel", "hierarchical"],
     )
     def test_inference_progress_tracking(self, multilabel, hierarchical):
-        hyper_parameters, model_template = self.setup_configurable_parameters(
-            DEFAULT_CLS_TEMPLATE_DIR, num_iters=5
-        )
+        hyper_parameters, model_template = self.setup_configurable_parameters(DEFAULT_CLS_TEMPLATE_DIR, num_iters=5)
         task_environment, dataset = self.init_environment(
             hyper_parameters, model_template, multilabel, hierarchical, 20
         )
@@ -261,17 +240,13 @@ class TestMPAClsAPI:
     )
     def test_inference_task(self, multilabel, hierarchical):
         # Prepare pretrained weights
-        hyper_parameters, model_template = self.setup_configurable_parameters(
-            DEFAULT_CLS_TEMPLATE_DIR, num_iters=2
-        )
+        hyper_parameters, model_template = self.setup_configurable_parameters(DEFAULT_CLS_TEMPLATE_DIR, num_iters=2)
         classification_environment, dataset = self.init_environment(
             hyper_parameters, model_template, multilabel, hierarchical, 50
         )
         val_dataset = dataset.get_subset(Subset.VALIDATION)
 
-        train_task = ClassificationTrainTask(
-            task_environment=classification_environment
-        )
+        train_task = ClassificationTrainTask(task_environment=classification_environment)
 
         training_progress_curve = []
 
@@ -281,16 +256,15 @@ class TestMPAClsAPI:
         train_parameters = TrainParameters
         train_parameters.update_progress = progress_callback
         trained_model = ModelEntity(
-            dataset, classification_environment.get_model_configuration(),
+            dataset,
+            classification_environment.get_model_configuration(),
         )
         train_task.train(dataset, trained_model, train_parameters)
         performance_after_train = eval(train_task, trained_model, val_dataset)
 
         # Create InferenceTask
         classification_environment.model = trained_model
-        inference_task = ClassificationInferenceTask(
-            task_environment=classification_environment
-        )
+        inference_task = ClassificationInferenceTask(task_environment=classification_environment)
 
         performance_after_load = eval(inference_task, trained_model, val_dataset)
 
