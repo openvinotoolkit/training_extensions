@@ -52,6 +52,7 @@ from ote_sdk.serialization.label_mapper import LabelSchemaMapper, label_schema_t
 from ote_sdk.usecases.evaluation.metrics_helper import MetricsHelper
 from ote_sdk.usecases.exportable_code.inference import BaseInferencer
 from ote_sdk.usecases.exportable_code.prediction_to_annotation_converter import (
+    DetectionToAnnotationConverter,
     DetectionBoxToAnnotationConverter,
     IPredictionToAnnotationConverter,
     MaskToAnnotationConverter,
@@ -67,8 +68,7 @@ from ote_sdk.utils.argument_checks import (
 )
 from ote_sdk.utils import Tiler
 from ote_sdk.utils.vis_utils import get_actmap
-from shutil import copyfile, copytree
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, Optional, Tuple, Union
 from zipfile import ZipFile
 
 from mmdet.utils.logger import get_root_logger
@@ -157,15 +157,17 @@ class OpenVINODetectionInferencer(BaseInferencerWithConverter):
         configuration = {**attr.asdict(hparams.postprocessing,
                               filter=lambda attr, value: attr.name not in ['header', 'description', 'type', 'visible_in_ui'])}
         model = Model.create_model('OTE_SSD', model_adapter, configuration, preload=True)
-        converter = DetectionBoxToAnnotationConverter(label_schema)
+        if hparams.tiling_parameters.enable_tiling:
+            converter = DetectionToAnnotationConverter(label_schema)
+        else:
+            converter = DetectionBoxToAnnotationConverter(label_schema)
 
         super().__init__(configuration, model, converter)
 
     def predict_tile(self, image: np.ndarray, tile_size: int, overlap: float, max_number: int) -> Tuple[AnnotationSceneEntity, np.ndarray, np.ndarray]:
-        # TODO[EUGENE]
-        scores = np.empty((0), dtype=np.float32)
-        labels = np.empty((0), dtype=np.uint32)
-        boxes = np.empty((0, 4), dtype=np.float32)
+        scores = []
+        labels = []
+        boxes = []
 
         batch_size = 1
         tiler = Tiler(tile_size=tile_size, overlap=overlap, batch_size=batch_size)
@@ -175,35 +177,32 @@ class OpenVINODetectionInferencer(BaseInferencerWithConverter):
         for tile, offset in tiler.tile(image):
             tile_dict, metadata = self.model.preprocess(tile[0])
             raw_predictions = self.model.infer_sync(tile_dict)
-            metadata['resize_mask'] = False
-            predictions = self.model.postprocess(raw_predictions, metadata)
+            detections = self.model.postprocess(raw_predictions, metadata)
 
-            tile_scores, tile_labels, tile_boxes, tile_masks = predictions
-            if len(tile_scores):
+            for det in detections:
                 y, x = offset[0]
-                tile_boxes[:, 0] += x
-                tile_boxes[:, 1] += y
-                tile_boxes[:, 2] += x
-                tile_boxes[:, 3] += y
-                scores = np.concatenate((scores, tile_scores))
-                labels = np.concatenate((labels, tile_labels))
-                boxes = np.concatenate((boxes, tile_boxes))
+                scores.append(det.score)
+                labels.append(det.id)
+                box = [float(det.xmin + x) , float(det.ymin + y) , float(det.xmax + x) , float(det.ymax + y)]
+                boxes.append(box)
 
-        # TODO[EUGENE]: call refine_results (Multiclass-NMS)
+        scores = np.asarray(scores, dtype=np.float32)
+        labels = np.asarray(labels, dtype=np.uint32)
+        boxes = np.asarray(boxes, dtype=np.float32)
+
+        assert len(scores) == len(labels) == len(boxes)
         _, keep = multiclass_nms(scores, labels, boxes, max_num=max_number)
         boxes = boxes[keep]
         labels = labels[keep]
         scores = scores[keep]
 
-        assert len(scores) == len(labels) == len(boxes)
-        detections = scores, labels, boxes
         metadata["original_shape"] = original_shape
+        detections = np.concatenate((labels[:, np.newaxis], scores[:, np.newaxis], boxes), axis=-1)
         detections = self.converter.convert_to_annotation(detections, metadata)
 
-        # TODO[EUGENE]: FIND A WAY TO INCLUDE FEATURE VECTOR AND FEATURE MAP
+        #TODO[EUGENE]: add feature vector and feature map
         features = (None, None)
         return detections, features
-
 
 
 class OpenVINOMaskInferencer(BaseInferencerWithConverter):
@@ -240,7 +239,11 @@ class OpenVINOMaskInferencer(BaseInferencerWithConverter):
 
         super().__init__(configuration, model, converter)
 
-    def predict_tile(self, image: np.ndarray, tile_size: int, overlap: float, max_number: int) -> Tuple[AnnotationSceneEntity, np.ndarray, np.ndarray]:
+    def predict_tile(self,
+                     image: np.ndarray,
+                     tile_size: int,
+                     overlap: float,
+                     max_number: int) -> Tuple[AnnotationSceneEntity, np.ndarray, np.ndarray]:
 
         scores = np.empty((0), dtype=np.float32)
         labels = np.empty((0), dtype=np.uint32)
@@ -351,8 +354,8 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
         self.model = self.task_environment.model
         self.task_type = self.task_environment.model_template.task_type
         self.confidence_threshold: float = 0.0
-        self.inferencer = self.load_inferencer()
         self.config = self.load_config()
+        self.inferencer = self.load_inferencer()
         logger.info('OpenVINO task initialization completed')
 
     @property
@@ -366,8 +369,10 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
 
     def load_inferencer(self) -> Union[OpenVINODetectionInferencer, OpenVINOMaskInferencer]:
         _hparams = copy.deepcopy(self.hparams)
-        self.confidence_threshold = float(np.frombuffer(self.model.get_data("confidence_threshold"), dtype=np.float32)[0])
+        self.confidence_threshold = float(
+            np.frombuffer(self.model.get_data("confidence_threshold"), dtype=np.float32)[0])
         _hparams.postprocessing.confidence_threshold = self.confidence_threshold
+        _hparams.tiling_parameters.enable_tiling = self.config['tiling_parameters']['enable_tiling']['value']
         args = [
             _hparams,
             self.task_environment.label_schema,
@@ -383,7 +388,9 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
         raise RuntimeError(f"Unknown OpenVINO Inferencer TaskType: {self.task_type}")
 
     @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
-    def infer(self, dataset: DatasetEntity, inference_parameters: Optional[InferenceParameters] = None) -> DatasetEntity:
+    def infer(self,
+              dataset: DatasetEntity,
+              inference_parameters: Optional[InferenceParameters] = None) -> DatasetEntity:
         logger.info('Start OpenVINO inference')
         update_progress_callback = default_progress_callback
         add_saliency_map = True
@@ -423,7 +430,8 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
                  evaluation_metric: Optional[str] = None):
         logger.info('Start OpenVINO metric evaluation')
         if evaluation_metric is not None:
-            logger.warning(f'Requested to use {evaluation_metric} metric, but parameter is ignored. Use F-measure instead.')
+            logger.warning(
+                f'Requested to use {evaluation_metric} metric, but parameter is ignored. Use F-measure instead.')
         output_result_set.performance = MetricsHelper.compute_f_measure(output_result_set).get_performance()
         logger.info('OpenVINO metric evaluation completed')
 
@@ -451,8 +459,8 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
             for root, dirs, files in os.walk(os.path.dirname(model_wrappers.__file__)):
                 for file in files:
                     file_path = os.path.join(root, file)
-                    arch.write(file_path, 
-                              os.path.join("python", "model_wrappers", file_path.split("model_wrappers/")[1]))
+                    arch.write(file_path,
+                               os.path.join("python", "model_wrappers", file_path.split("model_wrappers/")[1]))
             # python files
             arch.write(os.path.join(work_dir, "requirements.txt"), os.path.join("python", "requirements.txt"))
             arch.write(os.path.join(work_dir, "LICENSE"), os.path.join("python", "LICENSE"))
@@ -532,7 +540,8 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
                 output_model.set_data("openvino.xml", f.read())
             with open(os.path.join(tempdir, "model.bin"), "rb") as f:
                 output_model.set_data("openvino.bin", f.read())
-            output_model.set_data("confidence_threshold", np.array([self.confidence_threshold], dtype=np.float32).tobytes())
+            output_model.set_data(
+                "confidence_threshold", np.array([self.confidence_threshold], dtype=np.float32).tobytes())
 
         output_model.set_data("label_schema.json", label_schema_to_bytes(self.task_environment.label_schema))
 
