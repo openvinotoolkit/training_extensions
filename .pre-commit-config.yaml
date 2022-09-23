@@ -68,18 +68,18 @@ repos:
         files: '^ote_cli/.*\.py'
         additional_dependencies: [types-PyYAML]
       - id: mypy
-        alias: mypy_external
-        name: "mypy (external)"
-        files: '^(external/anomaly|external/model-preparation-algorithm)/.*\.py'
+        alias: mypy_anomaly
+        name: "mypy (anomaly)"
+        files: '^external/anomaly/.*\.py'
         additional_dependencies: [attrs==21.2.*]
-        exclude: "^(external/anomaly|external/model-preparation-algorithm)/tests"
+        exclude: "^external/anomaly/tests"
 
   - repo: https://github.com/PyCQA/pylint
     rev: "v2.14.5"
     hooks:
       - id: pylint
         name: "pylint"
-        files: '^(ote_sdk|ote_cli|external/anomaly|external/model-preparation-algorithm)/.*\.py'
+        files: '^(ote_sdk|ote_cli|external/anomaly)/.*\.py'
         entry: pylint
         language: system
         types: [python]

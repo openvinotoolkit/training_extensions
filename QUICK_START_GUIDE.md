@@ -175,6 +175,9 @@ usage: ote train template params [-h]
                                  [--learning_parameters.learning_rate LEARNING_RATE]
                                  [--learning_parameters.learning_rate_warmup_iters LEARNING_RATE_WARMUP_ITERS]
                                  [--learning_parameters.num_iters NUM_ITERS]
+                                 [--learning_parameters.enable_early_stopping ENABLE_EARLY_STOPPING]
+                                 [--learning_parameters.early_stop_patience EARLY_STOP_PATIENCE]
+                                 [--learning_parameters.early_stop_iteration_patience EARLY_STOP_ITERATION_PATIENCE]
                                  [--postprocessing.confidence_threshold CONFIDENCE_THRESHOLD]
                                  [--postprocessing.result_based_confidence_threshold RESULT_BASED_CONFIDENCE_THRESHOLD]
                                  [--nncf_optimization.enable_quantization ENABLE_QUANTIZATION]
@@ -207,6 +210,22 @@ optional arguments:
                         default_value: 300
                         max_value: 100000
                         min_value: 1
+  --learning_parameters.enable_early_stopping ENABLE_EARLY_STOPPING
+                        header: Enable early stopping of the training
+                        type: BOOLEAN
+                        default_value: True
+  --learning_parameters.early_stop_patience EARLY_STOP_PATIENCE
+                        header: Patience for early stopping
+                        type: INTEGER
+                        default_value: 10
+                        max_value: 50
+                        min_value: 0
+  --learning_parameters.early_stop_iteration_patience EARLY_STOP_ITERATION_PATIENCE
+                        header: Iteration patience for early stopping
+                        type: INTEGER
+                        default_value: 0
+                        max_value: 1000
+                        min_value: 0
   --postprocessing.confidence_threshold CONFIDENCE_THRESHOLD
                         header: Confidence threshold
                         type: FLOAT

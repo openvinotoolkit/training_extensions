@@ -3,21 +3,20 @@
 #
 
 import numpy as np
-from sklearn.metrics import confusion_matrix as sklearn_confusion_matrix
-from mmcv.utils.registry import build_from_cfg
 from mmcls.core import average_performance, mAP
+from mmcls.datasets.base_dataset import BaseDataset
 from mmcls.datasets.builder import DATASETS, PIPELINES
 from mmcls.datasets.pipelines import Compose
-from mmcls.datasets.base_dataset import BaseDataset
-from mpa_tasks.utils.data_utils import get_cls_img_indices, get_old_new_img_indices
+from mmcv.utils.registry import build_from_cfg
 from mpa.utils.logger import get_logger
+from mpa_tasks.utils.data_utils import get_cls_img_indices, get_old_new_img_indices
+from sklearn.metrics import confusion_matrix as sklearn_confusion_matrix
 
 logger = get_logger()
 
 
 @DATASETS.register_module()
 class MPAClsDataset(BaseDataset):
-
     def __init__(self, ote_dataset=None, labels=None, empty_label=None, **kwargs):
         self.ote_dataset = ote_dataset
         self.labels = labels
@@ -27,24 +26,24 @@ class MPAClsDataset(BaseDataset):
 
         self.CLASSES = list(label.name for label in labels)
         self.gt_labels = []
-        pipeline = kwargs['pipeline']
+        pipeline = kwargs["pipeline"]
         self.num_classes = len(self.CLASSES)
 
-        test_mode = kwargs.get('test_mode', False)
+        test_mode = kwargs.get("test_mode", False)
         if test_mode is False:
-            new_classes = kwargs.pop('new_classes', [])
+            new_classes = kwargs.pop("new_classes", [])
             self.img_indices = self.get_indices(new_classes)
 
         if isinstance(pipeline, dict):
             self.pipeline = {}
             for k, v in pipeline.items():
-                _pipeline = [dict(type='LoadImageFromOTEDataset'), *v]
+                _pipeline = [dict(type="LoadImageFromOTEDataset"), *v]
                 _pipeline = [build_from_cfg(p, PIPELINES) for p in _pipeline]
                 self.pipeline[k] = Compose(_pipeline)
             self.num_pipes = len(pipeline)
         elif isinstance(pipeline, list):
             self.num_pipes = 1
-            _pipeline = [dict(type='LoadImageFromOTEDataset'), *pipeline]
+            _pipeline = [dict(type="LoadImageFromOTEDataset"), *pipeline]
             self.pipeline = Compose([build_from_cfg(p, PIPELINES) for p in _pipeline])
         self.load_annotations()
 
@@ -75,8 +74,14 @@ class MPAClsDataset(BaseDataset):
 
         height, width = item.height, item.width
 
-        data_info = dict(dataset_item=item, width=width, height=height, index=index,
-                         gt_label=self.gt_labels[index], ignored_labels=ignored_labels)
+        data_info = dict(
+            dataset_item=item,
+            width=width,
+            height=height,
+            index=index,
+            gt_label=self.gt_labels[index],
+            ignored_labels=ignored_labels,
+        )
 
         if self.pipeline is None:
             return data_info
@@ -95,11 +100,7 @@ class MPAClsDataset(BaseDataset):
     def __len__(self):
         return len(self.ote_dataset)
 
-    def evaluate(self,
-                 results,
-                 metric='accuracy',
-                 metric_options=None,
-                 logger=None):
+    def evaluate(self, results, metric="accuracy", metric_options=None, logger=None):
         """Evaluate the dataset with new metric 'class_accuracy'
 
         Args:
@@ -117,15 +118,15 @@ class MPAClsDataset(BaseDataset):
         """
 
         if metric_options is None:
-            metric_options = {'topk': (1, 5) if self.num_classes >= 5 else (1, )}
+            metric_options = {"topk": (1, 5) if self.num_classes >= 5 else (1,)}
 
         if isinstance(metric, str):
             metrics = [metric]
         else:
             metrics = metric
 
-        if 'class_accuracy' in metrics:
-            metrics.remove('class_accuracy')
+        if "class_accuracy" in metrics:
+            metrics.remove("class_accuracy")
             self.class_acc = True
 
         eval_results = super().evaluate(results, metrics, metric_options, logger)
@@ -139,10 +140,10 @@ class MPAClsDataset(BaseDataset):
             if any(np.isnan(accuracies)):
                 accuracies = np.nan_to_num(accuracies)
 
-            eval_results.update({f'{c} accuracy': a for c, a in zip(self.CLASSES, accuracies)})
-            eval_results.update({'mean accuracy': np.mean(accuracies)})
+            eval_results.update({f"{c} accuracy": a for c, a in zip(self.CLASSES, accuracies)})
+            eval_results.update({"mean accuracy": np.mean(accuracies)})
 
-        eval_results['accuracy'] = eval_results['accuracy_top-1']
+        eval_results["accuracy"] = eval_results["accuracy_top-1"]
         return eval_results
 
     def class_accuracy(self, results, gt_labels):
@@ -182,12 +183,7 @@ class MPAMultilabelClsDataset(MPAClsDataset):
             self.gt_labels.append(onehot_indices)
         self.gt_labels = np.array(self.gt_labels)
 
-    def evaluate(self,
-                 results,
-                 metric='mAP',
-                 metric_options=None,
-                 indices=None,
-                 logger=None):
+    def evaluate(self, results, metric="mAP", metric_options=None, indices=None, logger=None):
         """Evaluate the dataset.
         Args:
             results (list): Testing results of the dataset.
@@ -202,34 +198,33 @@ class MPAMultilabelClsDataset(MPAClsDataset):
             dict: evaluation results
         """
         if metric_options is None or metric_options == {}:
-            metric_options = {'thr': 0.5}
+            metric_options = {"thr": 0.5}
 
         if isinstance(metric, str):
             metrics = [metric]
         else:
             metrics = metric
-        allowed_metrics = ['accuracy-mlc', 'mAP', 'CP', 'CR', 'CF1', 'OP', 'OR', 'OF1']
+        allowed_metrics = ["accuracy-mlc", "mAP", "CP", "CR", "CF1", "OP", "OR", "OF1"]
         eval_results = {}
         results = np.vstack(results)
         gt_labels = self.get_gt_labels()
         if indices is not None:
             gt_labels = gt_labels[indices]
         num_imgs = len(results)
-        assert len(gt_labels) == num_imgs, 'dataset testing results should '\
-            'be of the same length as gt_labels.'
+        assert len(gt_labels) == num_imgs, "dataset testing results should " "be of the same length as gt_labels."
 
         invalid_metrics = set(metrics) - set(allowed_metrics)
         if len(invalid_metrics) != 0:
-            raise ValueError(f'metric {invalid_metrics} is not supported.')
+            raise ValueError(f"metric {invalid_metrics} is not supported.")
 
-        if 'accuracy-mlc' in metrics:
+        if "accuracy-mlc" in metrics:
             true_label_idx = []
             pred_label_idx = []
-            pos_thr = metric_options.get('thr', 0.5)
+            pos_thr = metric_options.get("thr", 0.5)
 
-            true_label = (gt_labels == 1)
-            pred_label = (results > pos_thr)
-            cls_index = [i+1 for i in range(len(self.labels))]
+            true_label = gt_labels == 1
+            pred_label = results > pos_thr
+            cls_index = [i + 1 for i in range(len(self.labels))]
             for true_lbl, pred_lbl in zip(true_label, pred_label):
                 true_lbl_idx = set(true_lbl * cls_index) - set([0])  # except empty
                 pred_lbl_idx = set(pred_lbl * cls_index) - set([0])
@@ -238,42 +233,35 @@ class MPAMultilabelClsDataset(MPAClsDataset):
 
             confusion_matrices = []
             for cls_idx in cls_index:
-                group_labels_idx = set([cls_idx-1])
-                y_true = [int(not group_labels_idx.issubset(true_labels))
-                          for true_labels in true_label_idx]
-                y_pred = [int(not group_labels_idx.issubset(pred_labels))
-                          for pred_labels in pred_label_idx]
+                group_labels_idx = set([cls_idx - 1])
+                y_true = [int(not group_labels_idx.issubset(true_labels)) for true_labels in true_label_idx]
+                y_pred = [int(not group_labels_idx.issubset(pred_labels)) for pred_labels in pred_label_idx]
                 matrix_data = sklearn_confusion_matrix(y_true, y_pred, labels=list(range(len([0, 1]))))
                 confusion_matrices.append(matrix_data)
-            correct_per_label_group = [
-                np.trace(mat) for mat in confusion_matrices
-            ]
-            total_per_label_group = [
-                np.sum(mat) for mat in confusion_matrices
-            ]
+            correct_per_label_group = [np.trace(mat) for mat in confusion_matrices]
+            total_per_label_group = [np.sum(mat) for mat in confusion_matrices]
 
             acc = np.sum(correct_per_label_group) / np.sum(total_per_label_group)  # MICRO average
-            eval_results['accuracy-mlc'] = acc
+            eval_results["accuracy-mlc"] = acc
 
-        if 'mAP' in metrics:
+        if "mAP" in metrics:
             mAP_value = mAP(results, gt_labels)
-            eval_results['mAP'] = mAP_value
-        if len(set(metrics) - {'mAP'}) != 0:
-            performance_keys = ['CP', 'CR', 'CF1', 'OP', 'OR', 'OF1']
-            performance_values = average_performance(results, gt_labels,
-                                                     **metric_options)
+            eval_results["mAP"] = mAP_value
+        if len(set(metrics) - {"mAP"}) != 0:
+            performance_keys = ["CP", "CR", "CF1", "OP", "OR", "OF1"]
+            performance_values = average_performance(results, gt_labels, **metric_options)
             for k, v in zip(performance_keys, performance_values):
                 if k in metrics:
                     eval_results[k] = v
 
-        eval_results['accuracy'] = mAP_value
+        eval_results["accuracy"] = mAP_value
         return eval_results
 
 
 @DATASETS.register_module()
 class MPAHierarchicalClsDataset(MPAMultilabelClsDataset):
     def __init__(self, **kwargs):
-        self.hierarchical_info = kwargs.pop('hierarchical_info', None)
+        self.hierarchical_info = kwargs.pop("hierarchical_info", None)
         super().__init__(**kwargs)
 
     def load_annotations(self):
@@ -283,14 +271,15 @@ class MPAHierarchicalClsDataset(MPAMultilabelClsDataset):
             item_labels = self.ote_dataset[i].get_roi_labels(self.labels, include_empty=include_empty)
             ignored_labels = self.ote_dataset[i].ignored_labels
             if item_labels:
-                num_cls_heads = self.hierarchical_info['num_multiclass_heads']
+                num_cls_heads = self.hierarchical_info["num_multiclass_heads"]
 
-                class_indices = [0]*(self.hierarchical_info['num_multiclass_heads'] +
-                                     self.hierarchical_info['num_multilabel_classes'])
+                class_indices = [0] * (
+                    self.hierarchical_info["num_multiclass_heads"] + self.hierarchical_info["num_multilabel_classes"]
+                )
                 for j in range(num_cls_heads):
                     class_indices[j] = -1
                 for ote_lbl in item_labels:
-                    group_idx, in_group_idx = self.hierarchical_info['class_to_group_idx'][ote_lbl.name]
+                    group_idx, in_group_idx = self.hierarchical_info["class_to_group_idx"][ote_lbl.name]
                     if group_idx < num_cls_heads:
                         class_indices[group_idx] = in_group_idx
                     elif ote_lbl not in ignored_labels:
@@ -298,8 +287,9 @@ class MPAHierarchicalClsDataset(MPAMultilabelClsDataset):
                     else:
                         class_indices[num_cls_heads + in_group_idx] = -1
             else:  # this supposed to happen only on inference stage or if we have a negative in multilabel data
-                class_indices = [-1]*(self.hierarchical_info['num_multiclass_heads'] +
-                                      self.hierarchical_info['num_multilabel_classes'])
+                class_indices = [-1] * (
+                    self.hierarchical_info["num_multiclass_heads"] + self.hierarchical_info["num_multilabel_classes"]
+                )
             self.gt_labels.append(class_indices)
         self.gt_labels = np.array(self.gt_labels)
 
@@ -322,12 +312,7 @@ class MPAHierarchicalClsDataset(MPAMultilabelClsDataset):
 
         return np.mean(accuracy_values) * 100 if len(accuracy_values) > 0 else 1.0
 
-    def evaluate(self,
-                 results,
-                 metric='MHAcc',
-                 metric_options=None,
-                 indices=None,
-                 logger=None):
+    def evaluate(self, results, metric="MHAcc", metric_options=None, indices=None, logger=None):
         """Evaluate the dataset.
         Args:
             results (list): Testing results of the dataset.
@@ -342,50 +327,54 @@ class MPAHierarchicalClsDataset(MPAMultilabelClsDataset):
             dict: evaluation results
         """
         if metric_options is None or metric_options == {}:
-            metric_options = {'thr': 0.5}
+            metric_options = {"thr": 0.5}
 
         if isinstance(metric, str):
             metrics = [metric]
         else:
             metrics = metric
 
-        allowed_metrics = ['MHAcc', 'avgClsAcc', 'mAP']
+        allowed_metrics = ["MHAcc", "avgClsAcc", "mAP"]
         eval_results = {}
         results = np.vstack(results)
         gt_labels = self.get_gt_labels()
         if indices is not None:
             gt_labels = gt_labels[indices]
         num_imgs = len(results)
-        assert len(gt_labels) == num_imgs, 'dataset testing results should '\
-            'be of the same length as gt_labels.'
+        assert len(gt_labels) == num_imgs, "dataset testing results should " "be of the same length as gt_labels."
 
         invalid_metrics = set(metrics) - set(allowed_metrics)
         if len(invalid_metrics) != 0:
-            raise ValueError(f'metric {invalid_metrics} is not supported.')
+            raise ValueError(f"metric {invalid_metrics} is not supported.")
 
-        total_acc = 0.
-        total_acc_sl = 0.
-        for i in range(self.hierarchical_info['num_multiclass_heads']):
-            multiclass_logit = results[:, self.hierarchical_info['head_idx_to_logits_range'][i][0]:
-                                          self.hierarchical_info['head_idx_to_logits_range'][i][1]]  # noqa: E127
+        total_acc = 0.0
+        total_acc_sl = 0.0
+        for i in range(self.hierarchical_info["num_multiclass_heads"]):
+            multiclass_logit = results[
+                :,
+                self.hierarchical_info["head_idx_to_logits_range"][i][0] : self.hierarchical_info[
+                    "head_idx_to_logits_range"
+                ][i][1],
+            ]  # noqa: E127
             multiclass_gt = gt_labels[:, i]
             cls_acc = self.mean_top_k_accuracy(multiclass_logit, multiclass_gt, k=1)
             total_acc += cls_acc
             total_acc_sl += cls_acc
 
-        mAP_value = 0.
-        if self.hierarchical_info['num_multilabel_classes'] and 'mAP' in metrics:
-            multilabel_logits = results[:, self.hierarchical_info['num_single_label_classes']:]
-            multilabel_gt = gt_labels[:, self.hierarchical_info['num_multiclass_heads']:]
+        mAP_value = 0.0
+        if self.hierarchical_info["num_multilabel_classes"] and "mAP" in metrics:
+            multilabel_logits = results[:, self.hierarchical_info["num_single_label_classes"] :]
+            multilabel_gt = gt_labels[:, self.hierarchical_info["num_multiclass_heads"] :]
             mAP_value = mAP(multilabel_logits, multilabel_gt)
 
         total_acc += mAP_value
-        total_acc /= (self.hierarchical_info['num_multiclass_heads'] +
-                      int(self.hierarchical_info['num_multilabel_classes'] > 0))
+        total_acc /= self.hierarchical_info["num_multiclass_heads"] + int(
+            self.hierarchical_info["num_multilabel_classes"] > 0
+        )
 
-        eval_results['MHAcc'] = total_acc
-        eval_results['avgClsAcc'] = total_acc_sl / self.hierarchical_info['num_multiclass_heads']
-        eval_results['mAP'] = mAP_value
-        eval_results['accuracy'] = total_acc
+        eval_results["MHAcc"] = total_acc
+        eval_results["avgClsAcc"] = total_acc_sl / self.hierarchical_info["num_multiclass_heads"]
+        eval_results["mAP"] = mAP_value
+        eval_results["accuracy"] = total_acc
 
         return eval_results
