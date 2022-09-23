@@ -23,7 +23,6 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - Model Preparation Algorithm (MPA)
-
   - Replace Class-Incremental Learning models as OTE default models (<https://github.com/openvinotoolkit/training_extensions/pull/1150>)
   - Replace OTE ignored label support with external ignored label for Classification (<https://github.com/openvinotoolkit/training_extensions/pull/1132>) / Detection (<https://github.com/openvinotoolkit/training_extensions/pull/1128>) / Segmentation (<https://github.com/openvinotoolkit/training_extensions/pull/1134>)
   - Enable mixed precision for Classification / Detection / Segmentation (<https://github.com/openvinotoolkit/training_extensions/pull/1198>)
