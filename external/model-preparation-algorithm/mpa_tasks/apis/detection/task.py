@@ -505,7 +505,7 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
         stage_module = "DetectionTrainer"
         self._data_cfg = self._init_train_data_cfg(dataset)
         self._is_training = True
-        results = self._run_task(stage_module, mode="train", dataset=dataset, parameters=train_parameters)
+        results = self._run_task(stage_module, mode="train", dataset=dataset, parameters=train_parameters, resume=self._resume)
 
         # Check for stop signal when training has stopped. If should_stop is true, training was cancelled and no new
         if self._should_stop:
