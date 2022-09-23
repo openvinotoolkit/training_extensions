@@ -35,7 +35,7 @@ All notable changes to this project will be documented in this file.
   - Extend conftest configuration for anomaly backend. (<https://github.com/openvinotoolkit/training_extensions/pull/1097>)
   - Expose more params to the UI (<https://github.com/openvinotoolkit/training_extensions/pull/1085>)
   - Change directory structure for anomaly templates. (<https://github.com/openvinotoolkit/training_extensions/pull/1105>)
-  - Use is_anomalous attribute instead of string matching (< https://github.com/openvinotoolkit/training_extensions/pull/1120>)
+  - Use is_anomalous attribute instead of string matching (<https://github.com/openvinotoolkit/training_extensions/pull/1120>)
   - Set nncf version (<https://github.com/openvinotoolkit/training_extensions/pull/1124>)
   - Move to learning parameters (<https://github.com/openvinotoolkit/training_extensions/pull/1152>)
   - Change OpenVINO MO Command (<https://github.com/openvinotoolkit/training_extensions/pull/1221>)
