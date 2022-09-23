@@ -11,7 +11,7 @@ All notable changes to this project will be documented in this file.
     - Instance Segmentation (<https://github.com/openvinotoolkit/training_extensions/pull/1142>)
     - Multilabel (<https://github.com/openvinotoolkit/training_extensions/pull/1132>) / Hierarchical-label (<https://github.com/openvinotoolkit/training_extensions/pull/1159>) support in Classification
     - SSD and YOLOX model template for Detection (<https://github.com/openvinotoolkit/training_extensions/pull/1156>)
-  - Saliency map support for Classification(<https://github.com/openvinotoolkit/training_extensions/pull/1166>) / Detection(<https://github.com/openvinotoolkit/training_extensions/pull/1155>) / Segmentation (<https://github.com/openvinotoolkit/training_extensions/pull/1158>)
+  - Saliency map support for Classification (<https://github.com/openvinotoolkit/training_extensions/pull/1166>) / Detection (<https://github.com/openvinotoolkit/training_extensions/pull/1155>) / Segmentation (<https://github.com/openvinotoolkit/training_extensions/pull/1158>)
   - NNCF (<https://github.com/openvinotoolkit/training_extensions/pull/1157>) / HPO (<https://github.com/openvinotoolkit/training_extensions/pull/1168>) support for MPA tasks
   - Balanced Sampler support for Classification (<https://github.com/openvinotoolkit/training_extensions/pull/1139>)
   - Add Adaptive Training for Detection / Instance Segmentation (<https://github.com/openvinotoolkit/training_extensions/pull/1190>)
@@ -23,6 +23,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - Model Preparation Algorithm (MPA)
+
   - Replace Class-Incremental Learning models as OTE default models (<https://github.com/openvinotoolkit/training_extensions/pull/1150>)
   - Replace OTE ignored label support with external ignored label for Classification (<https://github.com/openvinotoolkit/training_extensions/pull/1132>) / Detection (<https://github.com/openvinotoolkit/training_extensions/pull/1128>) / Segmentation (<https://github.com/openvinotoolkit/training_extensions/pull/1134>)
   - Enable mixed precision for Classification / Detection / Segmentation (<https://github.com/openvinotoolkit/training_extensions/pull/1198>)
@@ -31,15 +32,20 @@ All notable changes to this project will be documented in this file.
   - Disable Obsolete test cases for OTE CI (<https://github.com/openvinotoolkit/training_extensions/pull/1220>)
 
 - Anomaly
-  - Extend conftest configuration for anomaly backend. (<https://github.com/openvinotoolkit/training_extensions/pull/1097>)
+  - Extend conftest configuration for anomaly backend (<https://github.com/openvinotoolkit/training_extensions/pull/1097>)
   - Expose more params to the UI (<https://github.com/openvinotoolkit/training_extensions/pull/1085>)
-  - Change directory structure for anomaly templates. (<https://github.com/openvinotoolkit/training_extensions/pull/1105>)
+  - Change directory structure for anomaly templates (<https://github.com/openvinotoolkit/training_extensions/pull/1105>)
   - Use is_anomalous attribute instead of string matching (<https://github.com/openvinotoolkit/training_extensions/pull/1120>)
   - Set nncf version (<https://github.com/openvinotoolkit/training_extensions/pull/1124>)
   - Move to learning parameters (<https://github.com/openvinotoolkit/training_extensions/pull/1152>)
   - Change OpenVINO MO Command (<https://github.com/openvinotoolkit/training_extensions/pull/1221>)
 
 ### Fixed
+
+- Model Preparation Algorithm (MPA)
+
+  - Fix inference issues for Detection (<https://github.com/openvinotoolkit/training_extensions/pull/1167>)
+  - Some minor issues
 
 - Anomaly
   - Fix non deterministic + sample.py (<https://github.com/openvinotoolkit/training_extensions/pull/1118>)
