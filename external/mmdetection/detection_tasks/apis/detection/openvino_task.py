@@ -235,9 +235,7 @@ class OpenVINODetectionInferencer(BaseInferencerWithConverter):
         original_shape = image.shape
         metadata = None
         for tile, offset in tiler.tile(image):
-            tile_dict, metadata = self.model.preprocess(tile[0])
-            raw_predictions = self.model.infer_sync(tile_dict)
-            detections = self.model.postprocess(raw_predictions, metadata)
+            detections, metadata = self.model(tile[0])
             score, label, box = self.process_tile_prediction(detections, offset)
             scores.extend(score)
             labels.extend(label)
@@ -523,6 +521,7 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
         parameters['converter_type'] = str(self.task_type)
         parameters['model_parameters'] = self.inferencer.configuration
         parameters['model_parameters']['labels'] = LabelSchemaMapper.forward(self.task_environment.label_schema)
+        parameters['tiling_parameters'] = self.config['tiling_parameters']
 
         zip_buffer = io.BytesIO()
         with ZipFile(zip_buffer, 'w') as arch:

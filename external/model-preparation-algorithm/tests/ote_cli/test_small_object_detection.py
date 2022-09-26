@@ -36,7 +36,7 @@ args = {
     '--val-data-roots': 'data/small_objects/images/val',
     '--test-ann-files': 'data/small_objects/annotations/instances_test.json',
     '--test-data-roots': 'data/small_objects/images/test',
-    '--input': 'data/small_objects/train',
+    '--input': 'data/small_objects/images/train',
     'train_params': [
         'params',
         '--learning_parameters.num_iters',
