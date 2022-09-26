@@ -2,5 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from .config import BaseConfig, TrainType, LearningRateSchedule
+from .config import BaseConfig, LearningRateSchedule, TrainType
 from .task import BaseTask
+
+__all__ = [BaseConfig, TrainType, LearningRateSchedule, BaseTask]

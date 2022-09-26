@@ -2,8 +2,8 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from mmdet.datasets.builder import DATASETS
 from detection_tasks.extension.datasets import OTEDataset
+from mmdet.datasets.builder import DATASETS
 from mpa.utils.logger import get_logger
 from mpa_tasks.utils.data_utils import get_old_new_img_indices
 
@@ -14,11 +14,11 @@ logger = get_logger()
 class MPADetDataset(OTEDataset):
     def __init__(self, **kwargs):
         dataset_cfg = kwargs.copy()
-        _ = dataset_cfg.pop('org_type', None)
-        new_classes = dataset_cfg.pop('new_classes', [])
+        _ = dataset_cfg.pop("org_type", None)
+        new_classes = dataset_cfg.pop("new_classes", [])
         super().__init__(**dataset_cfg)
 
-        test_mode = kwargs.get('test_mode', False)
+        test_mode = kwargs.get("test_mode", False)
         if test_mode is False:
             self.img_indices = get_old_new_img_indices(self.labels, new_classes, self.ote_dataset)
 
@@ -32,4 +32,4 @@ class MPADetDataset(OTEDataset):
             list[int]: All categories in the image of specified index.
         """
 
-        return self.get_ann_info(idx)['labels'].astype(int).tolist()
+        return self.get_ann_info(idx)["labels"].astype(int).tolist()

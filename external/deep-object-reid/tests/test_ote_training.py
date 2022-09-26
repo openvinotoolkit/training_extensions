@@ -130,16 +130,16 @@ class ClassificationTrainingTestParameters(DefaultOTETestCreationParametersInter
         test_bunches = [
                 dict(
                     model_name=[
-                       'Custom_Image_Classification_EfficientNet-V2-S',
-                       'Custom_Image_Classification_MobileNet-V3-large-1x',
+                        'Custom_Image_Classification_EfficientNet-V2-S',
+                        'Custom_Image_Classification_MobileNet-V3-large-1x',
                     ],
                     dataset_name=['lg_chem_short','mlc_voc_short'],
                     usecase='precommit',
                 ),
                 dict(
                     model_name=[
-                       'Custom_Image_Classification_EfficientNet-V2-S',
-                       'Custom_Image_Classification_MobileNet-V3-large-1x',
+                        'Custom_Image_Classification_EfficientNet-V2-S',
+                        'Custom_Image_Classification_MobileNet-V3-large-1x',
                     ],
                     dataset_name=['lg_chem','cifar100','mlc_voc'],
                     max_num_epochs=KEEP_CONFIG_FIELD_VALUE,
@@ -457,6 +457,7 @@ class TestOTEReallifeClassification(OTETrainingTestInterface):
         logger.info('data_collector is released')
 
     @e2e_pytest_performance
+    @pytest.mark.skip(reason="This test case will be deprecated soon")
     def test(self,
              test_parameters,
              test_case_fx, data_collector_fx,

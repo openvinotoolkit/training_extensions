@@ -49,31 +49,34 @@ class TestDocs:
 
     @e2e_pytest_component
     def test_algorithms_table(self):
-        def algorithms_generate_table(templates):
+        def algorithms_table(templates):
             attributes = ["model_template_id", "name", "gigaflops", "size"]
-            header = attributes + ["Path"]
-            attributes_in_md = {"name": "Name", "model_template_id": "ID", "gigaflops": "Complexity (GFlops)", "size": "Model size (MB)", "Path": "Path"}
-            
-            table = [" | ".join([attributes_in_md[x] for x in header])] + [" | ".join(["-------" for _ in header])]
-            
+            algo_table = defaultdict(list)
+
             for template in sorted(templates, key=lambda x: float(x.gigaflops)):
-                record = [str(getattr(template, attr)) for attr in attributes ]
+                if template.model_template_path.split("/")[-1] != "template.yaml":
+                    continue
+                record = [str(getattr(template, attr)) for attr in attributes]
                 record.append(os.path.relpath(template.model_template_path, './external'))
-                record = " | ".join(record)
-                table += [record]
-            return "\n".join(table)
-        
+                algo_table[record[0]] = record[1:]
+            return algo_table
+
+        readme_table = defaultdict(list) # ["name", "gigaflops", "size", "Path"]
         with open("external/README.md", encoding="UTF-8") as read_file:
             full_text = ''
             for line in read_file:
                 full_text += line
-        
+                if "|" in line:
+                    model_lst = line.replace(" ", "").strip().split("|")
+                    model_lst = " ".join(model_lst).split()
+                    readme_table[model_lst[0]] = model_lst[1:]
+
         registry = Registry(".")
         templates_per_task_type = defaultdict(list)
         for template in sorted(registry.templates, key=lambda x:str(x.task_type)):
             templates_per_task_type[template.task_type].append(template)
         for task_type, templates in templates_per_task_type.items():
-            generated_table = algorithms_generate_table(templates)
-            print("\n", task_type)
-            print(generated_table)
-            assert generated_table in full_text, f"\n{generated_table} not in \n{full_text}\n for the task {task_type}\n"
+            algorithm_table = algorithms_table(templates)
+            for model_id in algorithm_table.keys():
+                assert model_id in readme_table, f"\n {model_id} not in 'external/README.md' for {task_type}"
+                assert algorithm_table[model_id] == readme_table[model_id], f"\n {model_id}'s info in 'external/README.md' is wrong"

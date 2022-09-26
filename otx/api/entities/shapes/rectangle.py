@@ -4,7 +4,7 @@
 #
 
 # Conflict with Isort
-# pylint: disable=wrong-import-order
+# pylint: disable=wrong-import-order, cyclic-import
 
 import datetime
 import math

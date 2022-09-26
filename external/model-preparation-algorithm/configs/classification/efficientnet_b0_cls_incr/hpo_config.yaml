@@ -4,12 +4,12 @@ hp_space:
   learning_parameters.learning_rate:
     param_type: qloguniform
     range:
-      - 0.0003
-      - 0.1
-      - 0.0001
+      - 0.00098
+      - 0.0245
+      - 0.00001
   learning_parameters.batch_size:
     param_type: qloguniform
     range:
-      - 64
-      - 256
+      - 42
+      - 96
       - 2
