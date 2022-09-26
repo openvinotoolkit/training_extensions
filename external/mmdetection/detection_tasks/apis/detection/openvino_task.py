@@ -80,7 +80,24 @@ from mmcv.ops import nms
 logger = get_root_logger()
 
 
-def multiclass_nms(scores, labels, boxes, iou_threshold=0.45, max_num=200):
+def multiclass_nms(scores: np.ndarray, labels: np.ndarray, boxes: np.ndarray, iou_threshold=0.45, max_num=200):
+    """ Multi-class NMS
+
+    strategy: in order to perform NMS independently per class,
+    we add an offset to all the boxes. The offset is dependent
+    only on the class idx, and is large enough so that boxes
+    from different classes do not overlap
+
+    Args:
+        scores (np.ndarray): box scores
+        labels (np.ndarray): box label indices
+        boxes (np.ndarray): box coordinates
+        iou_threshold (float, optional): IoU threshold. Defaults to 0.45.
+        max_num (int, optional): Max number of objects filter. Defaults to 200.
+
+    Returns:
+        _type_: _description_
+    """
     max_coordinate = boxes.max()
     offsets = labels.astype(boxes.dtype) * (max_coordinate + 1)
     boxes_for_nms = boxes + offsets[:, None]
@@ -153,9 +170,11 @@ class OpenVINODetectionInferencer(BaseInferencerWithConverter):
 
         """
 
-        model_adapter = OpenvinoAdapter(create_core(), model_file, weight_file, device=device, max_num_requests=num_requests)
-        configuration = {**attr.asdict(hparams.postprocessing,
-                              filter=lambda attr, value: attr.name not in ['header', 'description', 'type', 'visible_in_ui'])}
+        model_adapter = OpenvinoAdapter(
+            create_core(), model_file, weight_file, device=device, max_num_requests=num_requests)
+        configuration = {**attr.asdict(
+                        hparams.postprocessing, filter=lambda attr, value: attr.name not in [
+                            'header', 'description', 'type', 'visible_in_ui'])}
         model = Model.create_model('OTE_SSD', model_adapter, configuration, preload=True)
         if hparams.tiling_parameters.enable_tiling:
             converter = DetectionToAnnotationConverter(label_schema)
@@ -164,7 +183,22 @@ class OpenVINODetectionInferencer(BaseInferencerWithConverter):
 
         super().__init__(configuration, model, converter)
 
-    def predict_tile(self, image: np.ndarray, tile_size: int, overlap: float, max_number: int) -> Tuple[AnnotationSceneEntity, np.ndarray, np.ndarray]:
+    def predict_tile(self,
+                     image: np.ndarray,
+                     tile_size: int,
+                     overlap: float,
+                     max_number: int) -> Tuple[AnnotationSceneEntity, np.ndarray, np.ndarray]:
+        """ Run prediction by tiling image to small patches
+
+        Args:
+            image (np.ndarray): input image
+            tile_size (int): tile crop size
+            overlap (float): overlap ratio between tiles
+            max_number (int): max number of predicted objects allowed
+
+        Returns:
+            Tuple[AnnotationSceneEntity, np.ndarray, np.ndarray]: detections, feature vector and feature map
+        """
         scores = []
         labels = []
         boxes = []
@@ -200,7 +234,7 @@ class OpenVINODetectionInferencer(BaseInferencerWithConverter):
         detections = np.concatenate((labels[:, np.newaxis], scores[:, np.newaxis], boxes), axis=-1)
         detections = self.converter.convert_to_annotation(detections, metadata)
 
-        #TODO[EUGENE]: add feature vector and feature map
+        # TODO[EUGENE]: add feature vector and feature map
         features = (None, None)
         return detections, features
 
@@ -244,7 +278,17 @@ class OpenVINOMaskInferencer(BaseInferencerWithConverter):
                      tile_size: int,
                      overlap: float,
                      max_number: int) -> Tuple[AnnotationSceneEntity, np.ndarray, np.ndarray]:
+        """ Run prediction by tiling image to small patches
 
+        Args:
+            image (np.ndarray): input image
+            tile_size (int): tile crop size
+            overlap (float): overlap ratio between tiles
+            max_number (int): max number of predicted objects allowed
+
+        Returns:
+            Tuple[AnnotationSceneEntity, np.ndarray, np.ndarray]: detections, feature vector and feature map
+        """
         scores = np.empty((0), dtype=np.float32)
         labels = np.empty((0), dtype=np.uint32)
         boxes = np.empty((0, 4), dtype=np.float32)
@@ -273,7 +317,6 @@ class OpenVINOMaskInferencer(BaseInferencerWithConverter):
                 boxes = np.concatenate((boxes, tile_boxes))
                 masks.extend(tile_masks)
 
-        # TODO[EUGENE]: call refine_results (Multiclass-NMS)
         _, keep = multiclass_nms(scores, labels, boxes, max_num=max_number)
         boxes = boxes[keep]
         labels = labels[keep]
@@ -363,6 +406,11 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
         return self.task_environment.get_hyper_parameters(OTEDetectionConfig)
 
     def load_config(self) -> Dict:
+        """ Load configurable parameters from trained model
+
+        Returns:
+            Dict: config dictionary
+        """
         if self.model.get_data("configurable_params.json"):
             return json.loads(self.model.get_data("configurable_params.json"))
         return dict()
@@ -402,6 +450,7 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
             tile_size = self.config['tiling_parameters']['tile_size']['value']
             tile_overlap = self.config['tiling_parameters']['tile_overlap']['value']
             max_number = self.config['tiling_parameters']['tile_max_number']['value']
+            logger.info('Run inference with tiling')
             self.inferencer.predict = partial(self.inferencer.predict_tile, tile_size=tile_size, overlap=tile_overlap,
                                               max_number=max_number)
 
