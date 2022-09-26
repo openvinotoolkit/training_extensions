@@ -9,10 +9,15 @@ All notable changes to this project will be documented in this file.
 - Model Preparation Algorithm (MPA)
   - Add new tasks / model templates for Class-Incremental Learning
     - Instance Segmentation (<https://github.com/openvinotoolkit/training_extensions/pull/1142>)
-    - Multilabel (<https://github.com/openvinotoolkit/training_extensions/pull/1132>) / Hierarchical-label (<https://github.com/openvinotoolkit/training_extensions/pull/1159>) support in Classification
+    - Multilabel (<https://github.com/openvinotoolkit/training_extensions/pull/1132>) in Classification
+    - Hierarchical-label (<https://github.com/openvinotoolkit/training_extensions/pull/1159>) in Classification
     - SSD and YOLOX model template for Detection (<https://github.com/openvinotoolkit/training_extensions/pull/1156>)
-  - Saliency map support for Classification (<https://github.com/openvinotoolkit/training_extensions/pull/1166>) / Detection (<https://github.com/openvinotoolkit/training_extensions/pull/1155>) / Segmentation (<https://github.com/openvinotoolkit/training_extensions/pull/1158>)
-  - NNCF (<https://github.com/openvinotoolkit/training_extensions/pull/1157>) / HPO (<https://github.com/openvinotoolkit/training_extensions/pull/1168>) support for MPA tasks
+  - Saliency map support
+    - Classification (<https://github.com/openvinotoolkit/training_extensions/pull/1166>)
+    - Detection (<https://github.com/openvinotoolkit/training_extensions/pull/1155>)
+    - Segmentation (<https://github.com/openvinotoolkit/training_extensions/pull/1158>)
+  - NNCF (<https://github.com/openvinotoolkit/training_extensions/pull/1157>) support
+  - HPO (<https://github.com/openvinotoolkit/training_extensions/pull/1168>) support
   - Balanced Sampler support for Classification (<https://github.com/openvinotoolkit/training_extensions/pull/1139>)
   - Add Adaptive Training for Detection / Instance Segmentation (<https://github.com/openvinotoolkit/training_extensions/pull/1190>)
 - Anomaly
@@ -25,7 +30,10 @@ All notable changes to this project will be documented in this file.
 - Model Preparation Algorithm (MPA)
 
   - Replace Class-Incremental Learning models as OTE default models (<https://github.com/openvinotoolkit/training_extensions/pull/1150>)
-  - Replace OTE ignored label support with external ignored label for Classification (<https://github.com/openvinotoolkit/training_extensions/pull/1132>) / Detection (<https://github.com/openvinotoolkit/training_extensions/pull/1128>) / Segmentation (<https://github.com/openvinotoolkit/training_extensions/pull/1134>)
+  - Replace OTE ignored label support with external ignored label
+    - Classification (<https://github.com/openvinotoolkit/training_extensions/pull/1132>)
+    - Detection (<https://github.com/openvinotoolkit/training_extensions/pull/1128>)
+    - Segmentation (<https://github.com/openvinotoolkit/training_extensions/pull/1134>)
   - Enable mixed precision for Classification / Detection / Segmentation (<https://github.com/openvinotoolkit/training_extensions/pull/1198>)
   - Enhance training schedule for Classification (<https://github.com/openvinotoolkit/training_extensions/pull/1212>)
   - Change Model optimization hyper-parameters for Classification / Detection (<https://github.com/openvinotoolkit/training_extensions/pull/1170>)
