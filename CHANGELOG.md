@@ -53,6 +53,7 @@ All notable changes to this project will be documented in this file.
 - Model Preparation Algorithm (MPA)
 
   - Fix inference issues for Detection (<https://github.com/openvinotoolkit/training_extensions/pull/1167>)
+  - Fix model compatibility issue between SC1.1 and 1.2 in Segmentation (<https://github.com/openvinotoolkit/training_extensions/pull/1264>)
   - Some minor issues
 
 - Anomaly
