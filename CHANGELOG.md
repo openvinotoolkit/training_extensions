@@ -9,8 +9,9 @@ All notable changes to this project will be documented in this file.
 - Model Preparation Algorithm (MPA)
   - Add new tasks / model templates for Class-Incremental Learning
     - Instance Segmentation (<https://github.com/openvinotoolkit/training_extensions/pull/1142>)
-    - Multilabel (<https://github.com/openvinotoolkit/training_extensions/pull/1132>) in Classification
-    - Hierarchical-label (<https://github.com/openvinotoolkit/training_extensions/pull/1159>) in Classification
+    - Classification
+      - Multilabel (<https://github.com/openvinotoolkit/training_extensions/pull/1132>)
+      - Hierarchical-label (<https://github.com/openvinotoolkit/training_extensions/pull/1159>)
     - SSD and YOLOX model template for Detection (<https://github.com/openvinotoolkit/training_extensions/pull/1156>)
   - Saliency map support
     - Classification (<https://github.com/openvinotoolkit/training_extensions/pull/1166>)
