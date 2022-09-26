@@ -119,6 +119,71 @@ learning_parameters:
     value: 0
     visible_in_ui: true
     warning: null
+  enable_early_stopping:
+    affects_outcome_of: TRAINING
+    default_value: true
+    description: Early exit from training when validation accuracy isn't changed or decreased for several epochs.
+    editable: true
+    header: Enable early stopping of the training
+    type: BOOLEAN
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    visible_in_ui: true
+    warning: null
+  early_stop_start:
+    affects_outcome_of: TRAINING
+    default_value: 3
+    editable: true
+    header: Start epoch for early stopping
+    max_value: 1000
+    min_value: 0
+    type: INTEGER
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: 3
+    visible_in_ui: false
+  early_stop_patience:
+    affects_outcome_of: TRAINING
+    default_value: 10
+    description: Training will stop if the model does not improve within the number of epochs of patience.
+    editable: true
+    header: Patience for early stopping
+    max_value: 50
+    min_value: 0
+    type: INTEGER
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: 10
+    visible_in_ui: true
+    warning: This is applied exclusively when early stopping is enabled.
+  early_stop_iteration_patience:
+    affects_outcome_of: TRAINING
+    default_value: 0
+    description:
+      Training will stop if the model does not improve within the number of iterations of patience.
+      This ensures the model is trained enough with the number of iterations of patience before early stopping.
+    editable: true
+    header: Iteration patience for early stopping
+    max_value: 1000
+    min_value: 0
+    type: INTEGER
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: 0
+    visible_in_ui: true
+    warning: This is applied exclusively when early stopping is enabled.
   type: PARAMETER_GROUP
   visible_in_ui: true
 postprocessing:
@@ -259,6 +324,21 @@ nncf_optimization:
       type: UI_RULES
     value: false
     visible_in_ui: true
+    warning: null
+  pruning_supported:
+    affects_outcome_of: TRAINING
+    default_value: false
+    description: Whether filter pruning is supported
+    editable: false
+    header: Whether filter pruning is supported
+    type: BOOLEAN
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: false
+    visible_in_ui: false
     warning: null
   maximal_accuracy_degradation:
     affects_outcome_of: NONE

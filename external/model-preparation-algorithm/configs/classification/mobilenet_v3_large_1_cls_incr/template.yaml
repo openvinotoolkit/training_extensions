@@ -32,12 +32,21 @@ hyper_parameters:
       num_workers:
         default_value: 0
       learning_rate:
-        default_value: 0.016
+        default_value: 0.0058
         auto_hpo_state: POSSIBLE
       learning_rate_warmup_iters:
-        default_value: 100
+        default_value: 10
       num_iters:
-        default_value: 20
+        default_value: 90
+    nncf_optimization:
+      enable_quantization:
+        default_value: true
+      enable_pruning:
+        default_value: false
+      pruning_supported:
+        default_value: true
+      maximal_accuracy_degradation:
+        default_value: 1.0
     algo_backend:
       train_type:
         default_value: Incremental
