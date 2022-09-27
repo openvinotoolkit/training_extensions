@@ -103,7 +103,7 @@ class DetectionToAnnotationConverter(IPredictionToAnnotationConverter):
                             (n, 7) or (n, 6)
         """
         annotations = []
-        if predictions.shape[1:] < (6,) or predictions.shape[1:] > (7,):
+        if len(predictions) and predictions.shape[1:] < (6,) or predictions.shape[1:] > (7,):
             raise ValueError(
                 f"Shape of prediction is not expected, expected (n, 7) or (n, 6) "
                 f"got {predictions.shape}"

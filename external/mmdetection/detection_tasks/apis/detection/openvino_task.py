@@ -40,6 +40,7 @@ from ote_sdk.entities.model import (
     ModelPrecision,
     OptimizationMethod,
 )
+from ote_sdk.configuration.helper.utils import config_to_bytes
 from ote_sdk.entities.model_template import TaskType
 from ote_sdk.entities.optimization_parameters import OptimizationParameters
 from ote_sdk.entities.result_media import ResultMediaEntity
@@ -142,6 +143,8 @@ class BaseInferencerWithConverter(BaseInferencer):
         detections = self.model.postprocess(prediction, metadata)
         if len(detections) and isinstance(detections[0], utils.Detection):
             detections = self.convert2array(detections)
+        if not isinstance(detections, np.ndarray):
+            detections = np.array(detections)
         return self.converter.convert_to_annotation(detections, metadata)
 
     @check_input_parameters_type()
@@ -620,6 +623,7 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
                 "confidence_threshold", np.array([self.confidence_threshold], dtype=np.float32).tobytes())
 
         output_model.set_data("label_schema.json", label_schema_to_bytes(self.task_environment.label_schema))
+        output_model.set_data("config.json", config_to_bytes(self.hparams))
 
         # set model attributes for quantized model
         output_model.model_format = ModelFormat.OPENVINO

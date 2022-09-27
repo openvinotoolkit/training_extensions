@@ -42,7 +42,7 @@ args = {
         '--learning_parameters.num_iters',
         '2',
         '--learning_parameters.batch_size',
-        '2',
+        '4',
         '--tiling_parameters.enable_tiling',
         '1',
         '--tiling_parameters.enable_adaptive_params',
