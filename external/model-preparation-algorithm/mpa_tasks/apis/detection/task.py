@@ -182,7 +182,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
             output_model.precision = [ModelPrecision.FP32]
             output_model.optimization_methods = self._optimization_methods
             output_model.set_data("label_schema.json", label_schema_to_bytes(self._task_environment.label_schema))
-            output_model.set_data("configurable_params.json", config_to_bytes(self._hyperparams))
+            output_model.set_data("config.json", config_to_bytes(self._hyperparams))
         logger.info('Exporting completed')
 
     def _overwrite_parameters(self):

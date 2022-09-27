@@ -178,12 +178,6 @@ def main():
 
     save_model_data(output_model, args.save_model_to)
 
-    if len(glob.glob(task._output_path + '/**/*.json')):
-        log_json = glob.glob(task._output_path + '/**/*.json')[0]
-        log_txt = glob.glob(task._output_path + '/**/*.log')[0]
-        shutil.copy(log_json, args.save_model_to)
-        shutil.copy(log_txt, args.save_model_to)
-
     validation_dataset = dataset.get_subset(Subset.VALIDATION)
     predicted_validation_dataset = task.infer(
         validation_dataset.with_empty_annotations(),

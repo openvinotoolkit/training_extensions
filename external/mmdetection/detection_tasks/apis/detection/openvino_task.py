@@ -429,13 +429,13 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
         return self.task_environment.get_hyper_parameters(OTEDetectionConfig)
 
     def load_config(self) -> Dict:
-        """ Load configurable parameters from trained model
+        """ Load configurable parameters from model adapter
 
         Returns:
             Dict: config dictionary
         """
-        if self.model.get_data("configurable_params.json"):
-            return json.loads(self.model.get_data("configurable_params.json"))
+        if self.model.get_data("config.json"):
+            return json.loads(self.model.get_data("config.json"))
         return dict()
 
     def load_inferencer(self) -> Union[OpenVINODetectionInferencer, OpenVINOMaskInferencer]:
