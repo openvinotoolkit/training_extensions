@@ -145,14 +145,12 @@ class BaseTask:
                 shutil.rmtree(self._output_path, ignore_errors=False)
 
     def _delete_scratch_space(self):
-        """
-        Remove model checkpoints and mpa logs
-        """
-
+        """Remove model checkpoints and mpa logs."""
         if os.path.exists(self._output_path):
             shutil.rmtree(self._output_path, ignore_errors=False)
 
     def __del__(self):
+        """Del function for remove model checkpoints."""
         self.finalize()
 
     def _pre_task_run(self):
@@ -179,7 +177,7 @@ class BaseTask:
         return self._hyperparams
 
     def _initialize(self, export=False):
-        """prepare configurations to run a task through MPA's stage"""
+        """Prepare configurations to run a task through MPA's stage."""
         logger.info("initializing....")
         self._init_recipe()
 
@@ -242,36 +240,23 @@ class BaseTask:
 
     @abc.abstractmethod
     def _init_recipe(self):
-        """
-        initialize the MPA's target recipe. (inclusive of stage type)
-        """
+        """Initialize the MPA's target recipe (inclusive of stage type)."""
         raise NotImplementedError("this method should be implemented")
 
     def _init_model_cfg(self) -> Union[Config, None]:
-        """
-        initialize model_cfg for override recipe's model configuration.
-        it can be None. (MPA's workflow consumable)
-        """
+        """Initialize model_cfg for override recipe's model configuration."""
         raise NotImplementedError("this method should be implemented")
 
     def _init_train_data_cfg(self, dataset: DatasetEntity) -> Union[Config, None]:
-        """
-        initialize data_cfg for override recipe's data configuration.
-        it can be Config or None. (MPA's workflow consumable)
-        """
+        """Initialize data_cfg for override recipe's data configuration."""
         return ConfigDict(data=dataset) if dataset else self._data_cfg
 
     def _init_test_data_cfg(self, dataset: DatasetEntity) -> Union[Config, None]:
-        """
-        initialize data_cfg for override recipe's data configuration.
-        it can be Config or None. (MPA's workflow consumable)
-        """
+        """Initialize data_cfg for override recipe's data configuration."""
         return ConfigDict(data=dataset) if dataset else self._data_cfg
 
     def _init_recipe_hparam(self) -> dict:
-        """
-        initialize recipe hyperparamter as dict.
-        """
+        """Initialize recipe hyperparamter as dict."""
         params = self._hyperparams.learning_parameters
         warmup_iters = int(params.learning_rate_warmup_iters)
         lr_config = (
@@ -352,12 +337,15 @@ class BaseTask:
             self.task_instance = task_instance
 
         def __call__(self, cancel_interface):
+            """Function call in OnHookInitialized."""
             self.task_instance.cancel_hook_initialized(cancel_interface)
 
         def __repr__(self):
+            """Function repr in OnHookInitialized."""
             return f"'{__name__}.OnHookInitialized'"
 
         def __reduce__(self):
+            """Function reduce in OnHookInitialized."""
             return (self.__class__, (id(self.task_instance),))
 
     def update_override_configurations(self, config):

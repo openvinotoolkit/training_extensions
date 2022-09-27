@@ -28,8 +28,8 @@ from otx.api.utils.argument_checks import check_input_parameters_type
 # pylint: disable=too-many-instance-attributes
 @RUNNERS.register_module()
 class EpochRunnerWithCancel(EpochBasedRunner):
-    """
-    Simple modification to EpochBasedRunner to allow cancelling the training during an epoch.
+    """Simple modification to EpochBasedRunner to allow cancelling the training during an epoch.
+
     A stopping hook should set the runner.should_stop flag to True if stopping is required.
     """
 
@@ -41,7 +41,8 @@ class EpochRunnerWithCancel(EpochBasedRunner):
         self.data_loader = None
 
     def stop(self) -> bool:
-        """Returning a boolean to break the training loop
+        """Returning a boolean to break the training loop.
+
         This method supports distributed training by broadcasting should_stop to other ranks
         :return: a cancellation bool
         """
@@ -57,6 +58,7 @@ class EpochRunnerWithCancel(EpochBasedRunner):
 
     @check_input_parameters_type()
     def train(self, data_loader: DataLoader, **kwargs):
+        """Train call hook."""
         self.model.train()
         self.mode = "train"
         self.data_loader = data_loader
