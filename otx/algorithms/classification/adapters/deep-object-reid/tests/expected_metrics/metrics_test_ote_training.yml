@@ -1,0 +1,132 @@
+
+'ACTION-training_evaluation,model-Custom_Image_Classification_EfficientNet-V2-S,dataset-lg_chem,num_epochs-CONFIG,batch-CONFIG,usecase-reallife':
+        'metrics.accuracy.Accuracy':
+                'target_value': 0.99
+                'max_diff_if_less_threshold': 0.005
+                'max_diff_if_greater_threshold': 0.03
+'ACTION-export_evaluation,model-Custom_Image_Classification_EfficientNet-V2-S,dataset-lg_chem,num_epochs-CONFIG,batch-CONFIG,usecase-reallife':
+        'metrics.accuracy.Accuracy':
+                'base': 'training_evaluation.metrics.accuracy.Accuracy'
+                'max_diff': 0.01
+'ACTION-pot_evaluation,model-Custom_Image_Classification_EfficientNet-V2-S,dataset-lg_chem,num_epochs-CONFIG,batch-CONFIG,usecase-reallife':
+        'metrics.accuracy.Accuracy':
+                'base': 'export_evaluation.metrics.accuracy.Accuracy'
+                'max_diff': 0.01
+'ACTION-nncf_evaluation,model-Custom_Image_Classification_EfficientNet-V2-S,dataset-lg_chem,num_epochs-CONFIG,batch-CONFIG,usecase-reallife':
+        'metrics.accuracy.Accuracy':
+                'base': 'training_evaluation.metrics.accuracy.Accuracy'
+                'max_diff_if_less_threshold': 0.01
+'ACTION-nncf_export_evaluation,model-Custom_Image_Classification_EfficientNet-V2-S,dataset-lg_chem,num_epochs-CONFIG,batch-CONFIG,usecase-reallife':
+        'metrics.accuracy.Accuracy':
+                'base': 'nncf_evaluation.metrics.accuracy.Accuracy'
+                'max_diff': 0.01
+
+'ACTION-training_evaluation,model-Custom_Image_Classification_EfficientNet-V2-S,dataset-cifar100,num_epochs-CONFIG,batch-CONFIG,usecase-reallife':
+        'metrics.accuracy.Accuracy':
+                'target_value': 0.91
+                'max_diff_if_less_threshold': 0.005
+                'max_diff_if_greater_threshold': 0.03
+'ACTION-export_evaluation,model-Custom_Image_Classification_EfficientNet-V2-S,dataset-cifar100,num_epochs-CONFIG,batch-CONFIG,usecase-reallife':
+        'metrics.accuracy.Accuracy':
+                'base': 'training_evaluation.metrics.accuracy.Accuracy'
+                'max_diff': 0.01
+'ACTION-pot_evaluation,model-Custom_Image_Classification_EfficientNet-V2-S,dataset-cifar100,num_epochs-CONFIG,batch-CONFIG,usecase-reallife':
+        'metrics.accuracy.Accuracy':
+                'base': 'export_evaluation.metrics.accuracy.Accuracy'
+                'max_diff': 0.01
+'ACTION-nncf_evaluation,model-Custom_Image_Classification_EfficientNet-V2-S,dataset-cifar100,num_epochs-CONFIG,batch-CONFIG,usecase-reallife':
+        'metrics.accuracy.Accuracy':
+                'base': 'training_evaluation.metrics.accuracy.Accuracy'
+                'max_diff_if_less_threshold': 0.01
+'ACTION-nncf_export_evaluation,model-Custom_Image_Classification_EfficientNet-V2-S,dataset-cifar100,num_epochs-CONFIG,batch-CONFIG,usecase-reallife':
+        'metrics.accuracy.Accuracy':
+                'base': 'nncf_evaluation.metrics.accuracy.Accuracy'
+                'max_diff': 0.01
+
+'ACTION-training_evaluation,model-Custom_Image_Classification_MobileNet-V3-large-1x,dataset-lg_chem,num_epochs-CONFIG,batch-CONFIG,usecase-reallife':
+        'metrics.accuracy.Accuracy':
+                'target_value': 0.98
+                'max_diff_if_less_threshold': 0.005
+                'max_diff_if_greater_threshold': 0.03
+'ACTION-export_evaluation,model-Custom_Image_Classification_MobileNet-V3-large-1x,dataset-lg_chem,num_epochs-CONFIG,batch-CONFIG,usecase-reallife':
+        'metrics.accuracy.Accuracy':
+                'base': 'training_evaluation.metrics.accuracy.Accuracy'
+                'max_diff': 0.01
+'ACTION-pot_evaluation,model-Custom_Image_Classification_MobileNet-V3-large-1x,dataset-lg_chem,num_epochs-CONFIG,batch-CONFIG,usecase-reallife':
+        'metrics.accuracy.Accuracy':
+                'base': 'export_evaluation.metrics.accuracy.Accuracy'
+                'max_diff': 0.03
+'ACTION-nncf_evaluation,model-Custom_Image_Classification_MobileNet-V3-large-1x,dataset-lg_chem,num_epochs-CONFIG,batch-CONFIG,usecase-reallife':
+        'metrics.accuracy.Accuracy':
+                'base': 'training_evaluation.metrics.accuracy.Accuracy'
+                'max_diff_if_less_threshold': 0.01
+'ACTION-nncf_export_evaluation,model-Custom_Image_Classification_MobileNet-V3-large-1x,dataset-lg_chem,num_epochs-CONFIG,batch-CONFIG,usecase-reallife':
+        'metrics.accuracy.Accuracy':
+                'base': 'nncf_evaluation.metrics.accuracy.Accuracy'
+                'max_diff': 0.01
+
+'ACTION-training_evaluation,model-Custom_Image_Classification_MobileNet-V3-large-1x,dataset-cifar100,num_epochs-CONFIG,batch-CONFIG,usecase-reallife':
+        'metrics.accuracy.Accuracy':
+                'target_value': 0.84
+                'max_diff_if_less_threshold': 0.005
+                'max_diff_if_greater_threshold': 0.03
+'ACTION-export_evaluation,model-Custom_Image_Classification_MobileNet-V3-large-1x,dataset-cifar100,num_epochs-CONFIG,batch-CONFIG,usecase-reallife':
+        'metrics.accuracy.Accuracy':
+                'base': 'training_evaluation.metrics.accuracy.Accuracy'
+                'max_diff': 0.01
+'ACTION-pot_evaluation,model-Custom_Image_Classification_MobileNet-V3-large-1x,dataset-cifar100,num_epochs-CONFIG,batch-CONFIG,usecase-reallife':
+        'metrics.accuracy.Accuracy':
+                'base': 'export_evaluation.metrics.accuracy.Accuracy'
+                'max_diff': 0.01
+'ACTION-nncf_evaluation,model-Custom_Image_Classification_MobileNet-V3-large-1x,dataset-cifar100,num_epochs-CONFIG,batch-CONFIG,usecase-reallife':
+        'metrics.accuracy.Accuracy':
+                'base': 'training_evaluation.metrics.accuracy.Accuracy'
+                'max_diff_if_less_threshold': 0.01
+'ACTION-nncf_export_evaluation,model-Custom_Image_Classification_MobileNet-V3-large-1x,dataset-cifar100,num_epochs-CONFIG,batch-CONFIG,usecase-reallife':
+        'metrics.accuracy.Accuracy':
+                'base': 'nncf_evaluation.metrics.accuracy.Accuracy'
+                'max_diff': 0.01
+
+'ACTION-training_evaluation,model-Custom_Image_Classification_EfficientNet-V2-S,dataset-mlc_voc,num_epochs-CONFIG,batch-CONFIG,usecase-reallife':
+        'metrics.accuracy.Accuracy':
+                'target_value': 0.98
+                'max_diff_if_less_threshold': 0.005
+                'max_diff_if_greater_threshold': 0.03
+'ACTION-export_evaluation,model-Custom_Image_Classification_EfficientNet-V2-S,dataset-mlc_voc,num_epochs-CONFIG,batch-CONFIG,usecase-reallife':
+        'metrics.accuracy.Accuracy':
+                'base': 'training_evaluation.metrics.accuracy.Accuracy'
+                'max_diff': 0.01
+'ACTION-pot_evaluation,model-Custom_Image_Classification_EfficientNet-V2-S,dataset-mlc_voc,num_epochs-CONFIG,batch-CONFIG,usecase-reallife':
+        'metrics.accuracy.Accuracy':
+                'base': 'export_evaluation.metrics.accuracy.Accuracy'
+                'max_diff': 0.01
+'ACTION-nncf_evaluation,model-Custom_Image_Classification_EfficientNet-V2-S,dataset-mlc_voc,num_epochs-CONFIG,batch-CONFIG,usecase-reallife':
+        'metrics.accuracy.Accuracy':
+                'base': 'training_evaluation.metrics.accuracy.Accuracy'
+                'max_diff_if_less_threshold': 0.01
+'ACTION-nncf_export_evaluation,model-Custom_Image_Classification_EfficientNet-V2-S,dataset-mlc_voc,num_epochs-CONFIG,batch-CONFIG,usecase-reallife':
+        'metrics.accuracy.Accuracy':
+                'base': 'nncf_evaluation.metrics.accuracy.Accuracy'
+                'max_diff': 0.01
+
+'ACTION-training_evaluation,model-Custom_Image_Classification_MobileNet-V3-large-1x,dataset-mlc_voc,num_epochs-CONFIG,batch-CONFIG,usecase-reallife':
+        'metrics.accuracy.Accuracy':
+                'target_value': 0.98
+                'max_diff_if_less_threshold': 0.005
+                'max_diff_if_greater_threshold': 0.03
+'ACTION-export_evaluation,model-Custom_Image_Classification_MobileNet-V3-large-1x,dataset-mlc_voc,num_epochs-CONFIG,batch-CONFIG,usecase-reallife':
+        'metrics.accuracy.Accuracy':
+                'base': 'training_evaluation.metrics.accuracy.Accuracy'
+                'max_diff': 0.01
+'ACTION-pot_evaluation,model-Custom_Image_Classification_MobileNet-V3-large-1x,dataset-mlc_voc,num_epochs-CONFIG,batch-CONFIG,usecase-reallife':
+        'metrics.accuracy.Accuracy':
+                'base': 'export_evaluation.metrics.accuracy.Accuracy'
+                'max_diff': 0.01
+'ACTION-nncf_evaluation,model-Custom_Image_Classification_MobileNet-V3-large-1x,dataset-mlc_voc,num_epochs-CONFIG,batch-CONFIG,usecase-reallife':
+        'metrics.accuracy.Accuracy':
+                'base': 'training_evaluation.metrics.accuracy.Accuracy'
+                'max_diff_if_less_threshold': 0.01
+'ACTION-nncf_export_evaluation,model-Custom_Image_Classification_MobileNet-V3-large-1x,dataset-mlc_voc,num_epochs-CONFIG,batch-CONFIG,usecase-reallife':
+        'metrics.accuracy.Accuracy':
+                'base': 'nncf_evaluation.metrics.accuracy.Accuracy'
+                'max_diff': 0.01
