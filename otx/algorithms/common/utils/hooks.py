@@ -218,8 +218,7 @@ class OTEProgressHook(Hook):
 
 @HOOKS.register_module()
 class EarlyStoppingHook(Hook):
-    """
-    Cancel training when a metric has stopped improving.
+    """Cancel training when a metric has stopped improving.
 
     Early Stopping hook monitors a metric quantity and if no improvement is seen for a ‘patience’
     number of epochs, the training is cancelled.
@@ -387,8 +386,7 @@ class EarlyStoppingHook(Hook):
 
 @HOOKS.register_module()
 class ReduceLROnPlateauLrUpdaterHook(LrUpdaterHook):
-    """
-    Reduce learning rate when a metric has stopped improving.
+    """Reduce learning rate when a metric has stopped improving.
 
     Models often benefit from reducing the learning rate by a factor of 2-10 once learning stagnates.
     This scheduler reads a metrics quantity and if no improvement is seen for a ‘patience’
