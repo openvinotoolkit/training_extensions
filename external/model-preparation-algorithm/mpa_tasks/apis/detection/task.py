@@ -186,7 +186,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         logger.info('Exporting completed')
 
     def _overwrite_parameters(self):
-        """ Overwrite config parameters with TaskEnvironment hyperparameters and config tiling parameters. """
+        """ Overwrite config parameters with TaskEnvironment hyper-parameters and config tiling parameters. """
         super()._overwrite_parameters()
         if bool(self._hyperparams.tiling_parameters.enable_tiling):
             tile_params = ConfigDict(
@@ -208,6 +208,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
                     )
                 )
             )
+            self._recipe_cfg.merge_from_dict(dict(evaluation=dict(iou_thr=[0.5])))
             self._recipe_cfg.merge_from_dict(tile_params)
 
     def _init_recipe(self):
@@ -472,7 +473,7 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
         stage_module = 'DetectionTrainer'
         self._data_cfg = self._init_train_data_cfg(dataset)
         self._is_training = True
-        self._config_tiling_parameters(dataset)
+        self._adapt_tiling_parameters(dataset)
         results = self._run_task(stage_module, mode='train', dataset=dataset, parameters=train_parameters)
 
         # Check for stop signal when training has stopped. If should_stop is true, training was cancelled and no new
@@ -588,12 +589,11 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
 
         return output
 
-    def _config_tiling_parameters(self, dataset):
-        # TODO[EUGENE]: ADD Description
-        """_summary_
+    def _adapt_tiling_parameters(self, dataset):
+        """ Adapt tile size, overlap and max number of output based on training annotation statistics
 
         Args:
-            dataset (_type_): _description_
+            dataset (ObjectDetectionDataset): OTX customized object detection dataset
         """
         if bool(self._hyperparams.tiling_parameters.enable_adaptive_params):
             adaptive_object_tile_ratio = float(self._hyperparams.tiling_parameters.adaptive_object_tile_ratio)

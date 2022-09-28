@@ -143,7 +143,7 @@ class BaseInferencerWithConverter(BaseInferencer):
         detections = self.model.postprocess(prediction, metadata)
         if len(detections) and isinstance(detections[0], utils.Detection):
             detections = self.convert2array(detections)
-        if not isinstance(detections, np.ndarray):
+        if not isinstance(detections, np.ndarray) and isinstance(self, OpenVINODetectionInferencer):
             detections = np.array(detections)
         return self.converter.convert_to_annotation(detections, metadata)
 
