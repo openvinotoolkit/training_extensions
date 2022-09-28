@@ -18,8 +18,6 @@ Model training tool.
 
 import argparse
 import os.path as osp
-import shutil
-import glob
 
 from ote_sdk.configuration.helper import create
 from ote_sdk.entities.inference_parameters import InferenceParameters
