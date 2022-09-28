@@ -2,10 +2,10 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from mmcls.datasets import PIPELINES
-import copy
+from typing import Any, Dict
+
 import numpy as np
-from typing import Dict, Any, Optional
+from mmcls.datasets import PIPELINES
 from ote_sdk.utils.argument_checks import check_input_parameters_type
 
 
@@ -30,29 +30,30 @@ class LoadImageFromOTEDataset:
 
     @check_input_parameters_type()
     def __call__(self, results: Dict[str, Any]):
-        dataset_item = results['dataset_item']
+        dataset_item = results["dataset_item"]
         img = dataset_item.numpy
         shape = img.shape
 
-        assert img.shape[0] == results['height'], f"{img.shape[0]} != {results['height']}"
-        assert img.shape[1] == results['width'], f"{img.shape[1]} != {results['width']}"
+        assert img.shape[0] == results["height"], f"{img.shape[0]} != {results['height']}"
+        assert img.shape[1] == results["width"], f"{img.shape[1]} != {results['width']}"
 
         filename = f"Dataset item index {results['index']}"
-        results['filename'] = filename
-        results['ori_filename'] = filename
-        results['img'] = img
-        results['img_shape'] = shape
-        results['ori_shape'] = shape
+        results["filename"] = filename
+        results["ori_filename"] = filename
+        results["img"] = img
+        results["img_shape"] = shape
+        results["ori_shape"] = shape
         # Set initial values for default meta_keys
-        results['pad_shape'] = shape
+        results["pad_shape"] = shape
         num_channels = 1 if len(shape) < 3 else shape[2]
-        results['img_norm_cfg'] = dict(
+        results["img_norm_cfg"] = dict(
             mean=np.zeros(num_channels, dtype=np.float32),
             std=np.ones(num_channels, dtype=np.float32),
-            to_rgb=False)
-        results['img_fields'] = ['img']
+            to_rgb=False,
+        )
+        results["img_fields"] = ["img"]
 
         if self.to_float32:
-            results['img'] = results['img'].astype(np.float32)
+            results["img"] = results["img"].astype(np.float32)
 
         return results

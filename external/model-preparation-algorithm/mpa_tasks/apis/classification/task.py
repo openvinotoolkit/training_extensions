@@ -83,14 +83,14 @@ class TrainingProgressCallback(TimeMonitorCallback):
         self.past_epoch_duration.append(time.time() - self.start_epoch_time)
         self._calculate_average_epoch()
         score = None
-        if hasattr(self.update_progress_callback, 'metric') and isinstance(logs, dict):
+        if hasattr(self.update_progress_callback, "metric") and isinstance(logs, dict):
             score = logs.get(self.update_progress_callback.metric, None)
             logger.info(f"logged score for metric {self.update_progress_callback.metric} = {score}")
             score = 0.01 * float(score) if score is not None else None
             if score is not None:
-                iter_num = logs.get('current_iters', None)
+                iter_num = logs.get("current_iters", None)
                 if iter_num is not None:
-                    logger.info(f'score = {score} at epoch {epoch} / {int(iter_num)}')
+                    logger.info(f"score = {score} at epoch {epoch} / {int(iter_num)}")
                     # as a trick, score (at least if it's accuracy not the loss) and iteration number
                     # could be assembled just using summation and then disassembeled.
                     if 1.0 > score:
@@ -114,32 +114,43 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         self._multilabel = False
         self._hierarchical = False
 
-        self._multilabel = len(task_environment.label_schema.get_groups(False)) > 1 and \
-                           len(task_environment.label_schema.get_groups(False)) == \
-                           len(task_environment.get_labels(include_empty=False))  # noqa:E127
+        self._multilabel = len(task_environment.label_schema.get_groups(False)) > 1 and len(
+            task_environment.label_schema.get_groups(False)
+        ) == len(
+            task_environment.get_labels(include_empty=False)
+        )  # noqa:E127
 
         self._hierarchical_info = None
         if not self._multilabel and len(task_environment.label_schema.get_groups(False)) > 1:
             self._hierarchical = True
             self._hierarchical_info = get_hierarchical_info(task_environment.label_schema)
 
-    def infer(self,
-              dataset: DatasetEntity,
-              inference_parameters: Optional[InferenceParameters] = None
-              ) -> DatasetEntity:
-        logger.info('called infer()')
-        stage_module = 'ClsInferrer'
+    def infer(
+        self,
+        dataset: DatasetEntity,
+        inference_parameters: Optional[InferenceParameters] = None,
+    ) -> DatasetEntity:
+        logger.info("called infer()")
+        stage_module = "ClsInferrer"
         self._data_cfg = self._init_test_data_cfg(dataset)
         dataset = dataset.with_empty_annotations()
 
         dump_features = True
         dump_saliency_map = not inference_parameters.is_evaluation if inference_parameters else True
-        results = self._run_task(stage_module, mode='train', dataset=dataset, dump_features=dump_features,
-                                 dump_saliency_map=dump_saliency_map)
-        logger.debug(f'result of run_task {stage_module} module = {results}')
-        predictions = results['outputs']
-        prediction_results = zip(predictions['eval_predictions'], predictions['feature_vectors'],
-                                 predictions['saliency_maps'])
+        results = self._run_task(
+            stage_module,
+            mode="train",
+            dataset=dataset,
+            dump_features=dump_features,
+            dump_saliency_map=dump_saliency_map,
+        )
+        logger.debug(f"result of run_task {stage_module} module = {results}")
+        predictions = results["outputs"]
+        prediction_results = zip(
+            predictions["eval_predictions"],
+            predictions["feature_vectors"],
+            predictions["saliency_maps"],
+        )
 
         update_progress_callback = default_progress_callback
         if inference_parameters is not None:
@@ -148,62 +159,65 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         self._add_predictions_to_dataset(prediction_results, dataset, update_progress_callback)
         return dataset
 
-    def evaluate(self,
-                 output_result_set: ResultSetEntity,
-                 evaluation_metric: Optional[str] = None):
-        logger.info('called evaluate()')
+    def evaluate(
+        self,
+        output_result_set: ResultSetEntity,
+        evaluation_metric: Optional[str] = None,
+    ):
+        logger.info("called evaluate()")
         metric = MetricsHelper.compute_accuracy(output_result_set)
         logger.info(f"Accuracy after evaluation: {metric.accuracy.value}")
         output_result_set.performance = metric.get_performance()
-        logger.info('Evaluation completed')
+        logger.info("Evaluation completed")
 
     def unload(self):
-        logger.info('called unload()')
+        logger.info("called unload()")
         self.finalize()
 
-    def export(self,
-               export_type: ExportType,
-               output_model: ModelEntity):
-        logger.info('Exporting the model')
+    def export(self, export_type: ExportType, output_model: ModelEntity):
+        logger.info("Exporting the model")
         if export_type != ExportType.OPENVINO:
-            raise RuntimeError(f'not supported export type {export_type}')
+            raise RuntimeError(f"not supported export type {export_type}")
         output_model.model_format = ModelFormat.OPENVINO
         output_model.optimization_type = ModelOptimizationType.MO
 
-        stage_module = 'ClsExporter'
-        results = self._run_task(stage_module, mode='train', precision='FP32', export=True)
-        logger.debug(f'results of run_task = {results}')
-        results = results.get('outputs')
-        logger.debug(f'results of run_task = {results}')
+        stage_module = "ClsExporter"
+        results = self._run_task(stage_module, mode="train", precision="FP32", export=True)
+        logger.debug(f"results of run_task = {results}")
+        results = results.get("outputs")
+        logger.debug(f"results of run_task = {results}")
         if results is None:
             logger.error(f"error while exporting model {results.get('msg')}")
         else:
-            bin_file = results.get('bin')
-            xml_file = results.get('xml')
+            bin_file = results.get("bin")
+            xml_file = results.get("xml")
             if xml_file is None or bin_file is None:
-                raise RuntimeError('invalid status of exporting. bin and xml should not be None')
+                raise RuntimeError("invalid status of exporting. bin and xml should not be None")
             with open(bin_file, "rb") as f:
-                output_model.set_data('openvino.bin', f.read())
+                output_model.set_data("openvino.bin", f.read())
             with open(xml_file, "rb") as f:
-                output_model.set_data('openvino.xml', f.read())
+                output_model.set_data("openvino.xml", f.read())
         output_model.precision = [ModelPrecision.FP32]
-        output_model.set_data("label_schema.json", label_schema_to_bytes(self._task_environment.label_schema))
-        logger.info('Exporting completed')
+        output_model.set_data(
+            "label_schema.json",
+            label_schema_to_bytes(self._task_environment.label_schema),
+        )
+        logger.info("Exporting completed")
 
     def _add_predictions_to_dataset(self, prediction_results, dataset, update_progress_callback):
-        """ Loop over dataset again to assign predictions. Convert from MMClassification format to OTE format. """
+        """Loop over dataset again to assign predictions. Convert from MMClassification format to OTE format."""
         dataset_size = len(dataset)
         for i, (dataset_item, prediction_items) in enumerate(zip(dataset, prediction_results)):
             item_labels = []
             pos_thr = 0.5
             prediction_item, feature_vector, saliency_map = prediction_items
             if any(np.isnan(prediction_item)):
-                logger.info('Nan in prediction_item.')
+                logger.info("Nan in prediction_item.")
 
             if self._multilabel:
                 if max(prediction_item) < pos_thr:
-                    logger.info('Confidence is smaller than pos_thr, empty_label will be appended to item_labels.')
-                    item_labels.append(ScoredLabel(self._empty_label, probability=1.))
+                    logger.info("Confidence is smaller than pos_thr, empty_label will be appended to item_labels.")
+                    item_labels.append(ScoredLabel(self._empty_label, probability=1.0))
                 else:
                     for cls_idx, pred_item in enumerate(prediction_item):
                         if pred_item > pos_thr:
@@ -211,31 +225,37 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
                             item_labels.append(cls_label)
 
             elif self._hierarchical:
-                for head_idx in range(self._hierarchical_info['num_multiclass_heads']):
-                    logits_begin, logits_end = self._hierarchical_info['head_idx_to_logits_range'][head_idx]
-                    head_logits = prediction_item[logits_begin : logits_end]
+                for head_idx in range(self._hierarchical_info["num_multiclass_heads"]):
+                    logits_begin, logits_end = self._hierarchical_info["head_idx_to_logits_range"][head_idx]
+                    head_logits = prediction_item[logits_begin:logits_end]
                     head_pred = np.argmax(head_logits)  # Assume logits already passed softmax
-                    label_str = self._hierarchical_info['all_groups'][head_idx][head_pred]
+                    label_str = self._hierarchical_info["all_groups"][head_idx][head_pred]
                     ote_label = next(x for x in self._labels if x.name == label_str)
                     item_labels.append(ScoredLabel(label=ote_label, probability=float(head_logits[head_pred])))
 
-                if self._hierarchical_info['num_multilabel_classes']:
-                    logits_begin, logits_end = self._hierarchical_info['num_single_label_classes'], -1
-                    head_logits = prediction_item[logits_begin : logits_end]
+                if self._hierarchical_info["num_multilabel_classes"]:
+                    logits_begin, logits_end = (
+                        self._hierarchical_info["num_single_label_classes"],
+                        -1,
+                    )
+                    head_logits = prediction_item[logits_begin:logits_end]
                     for logit_idx, logit in enumerate(head_logits):
                         if logit > pos_thr:  # Assume logits already passed sigmoid
-                            label_str_idx = self._hierarchical_info['num_multiclass_heads'] + logit_idx
-                            label_str = self._hierarchical_info['all_groups'][label_str_idx][0]
+                            label_str_idx = self._hierarchical_info["num_multiclass_heads"] + logit_idx
+                            label_str = self._hierarchical_info["all_groups"][label_str_idx][0]
                             ote_label = next(x for x in self._labels if x.name == label_str)
                             item_labels.append(ScoredLabel(label=ote_label, probability=float(logit)))
                 item_labels = self._task_environment.label_schema.resolve_labels_probabilistic(item_labels)
                 if not item_labels:
-                    logger.info('item_labels is empty.')
-                    item_labels.append(ScoredLabel(self._empty_label, probability=1.))
+                    logger.info("item_labels is empty.")
+                    item_labels.append(ScoredLabel(self._empty_label, probability=1.0))
 
             else:
                 label_idx = prediction_item.argmax()
-                cls_label = ScoredLabel(self._labels[label_idx], probability=float(prediction_item[label_idx]))
+                cls_label = ScoredLabel(
+                    self._labels[label_idx],
+                    probability=float(prediction_item[label_idx]),
+                )
                 item_labels.append(cls_label)
 
             dataset_item.append_labels(item_labels)
@@ -246,21 +266,39 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
 
             if saliency_map is not None:
                 saliency_map = get_actmap(saliency_map, (dataset_item.width, dataset_item.height))
-                saliency_map_media = ResultMediaEntity(name="Saliency Map", type="saliency_map",
-                                                       annotation_scene=dataset_item.annotation_scene,
-                                                       numpy=saliency_map, roi=dataset_item.roi,
-                                                       label=item_labels[0].label)
+                saliency_map_media = ResultMediaEntity(
+                    name="Saliency Map",
+                    type="saliency_map",
+                    annotation_scene=dataset_item.annotation_scene,
+                    numpy=saliency_map,
+                    roi=dataset_item.roi,
+                    label=item_labels[0].label,
+                )
                 dataset_item.append_metadata_item(saliency_map_media, model=self._task_environment.model)
 
             update_progress_callback(int(i / dataset_size * 100))
 
     def _init_recipe_hparam(self) -> dict:
         warmup_iters = int(self._hyperparams.learning_parameters.learning_rate_warmup_iters)
-        lr_config = ConfigDict(warmup_iters=warmup_iters) if warmup_iters > 0 \
+        lr_config = (
+            ConfigDict(warmup_iters=warmup_iters)
+            if warmup_iters > 0
             else ConfigDict(warmup_iters=warmup_iters, warmup=None)
+        )
+
+        if self._hyperparams.learning_parameters.enable_early_stopping:
+            early_stop = ConfigDict(
+                start=int(self._hyperparams.learning_parameters.early_stop_start),
+                patience=int(self._hyperparams.learning_parameters.early_stop_patience),
+                iteration_patience=int(self._hyperparams.learning_parameters.early_stop_iteration_patience),
+            )
+        else:
+            early_stop = False
+
         return ConfigDict(
             optimizer=ConfigDict(lr=self._hyperparams.learning_parameters.learning_rate),
             lr_config=lr_config,
+            early_stop=early_stop,
             data=ConfigDict(
                 samples_per_gpu=int(self._hyperparams.learning_parameters.batch_size),
                 workers_per_gpu=int(self._hyperparams.learning_parameters.num_workers),
@@ -269,46 +307,38 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         )
 
     def _init_recipe(self):
-        logger.info('called _init_recipe()')
+        logger.info("called _init_recipe()")
 
-        recipe_root = os.path.join(MPAConstants.RECIPES_PATH, 'stages/classification')
+        recipe_root = os.path.join(MPAConstants.RECIPES_PATH, "stages/classification")
         train_type = self._hyperparams.algo_backend.train_type
-        logger.info(f'train type = {train_type}')
+        logger.info(f"train type = {train_type}")
 
-        recipe = os.path.join(recipe_root, 'class_incr.yaml')
+        recipe = os.path.join(recipe_root, "class_incr.yaml")
         if train_type == TrainType.SemiSupervised:
-            raise NotImplementedError(f'train type {train_type} is not implemented yet.')
+            raise NotImplementedError(f"train type {train_type} is not implemented yet.")
         elif train_type == TrainType.SelfSupervised:
-            raise NotImplementedError(f'train type {train_type} is not implemented yet.')
+            raise NotImplementedError(f"train type {train_type} is not implemented yet.")
         elif train_type == TrainType.Incremental:
-            recipe = os.path.join(recipe_root, 'class_incr.yaml')
+            recipe = os.path.join(recipe_root, "class_incr.yaml")
         else:
             # raise NotImplementedError(f'train type {train_type} is not implemented yet.')
             # FIXME: Temporary remedy for CVS-88098
-            logger.warning(f'train type {train_type} is not implemented yet.')
+            logger.warning(f"train type {train_type} is not implemented yet.")
 
         self._recipe_cfg = MPAConfig.fromfile(recipe)
         self._patch_datasets(self._recipe_cfg)  # for OTE compatibility
         self._patch_evaluation(self._recipe_cfg)  # for OTE compatibility
-        logger.info(f'initialized recipe = {recipe}')
+        logger.info(f"initialized recipe = {recipe}")
 
     def _init_model_cfg(self):
         base_dir = os.path.abspath(os.path.dirname(self.template_file_path))
         if self._multilabel:
-            cfg_path = os.path.join(base_dir, 'model_multilabel.py')
+            cfg_path = os.path.join(base_dir, "model_multilabel.py")
         elif self._hierarchical:
-            cfg_path = os.path.join(base_dir, 'model_hierarchical.py')
+            cfg_path = os.path.join(base_dir, "model_hierarchical.py")
         else:
-            cfg_path = os.path.join(base_dir, 'model.py')
+            cfg_path = os.path.join(base_dir, "model.py")
         cfg = MPAConfig.fromfile(cfg_path)
-
-        # To initialize different HP according to task / Support HP change via CLI & UI
-        if not self._multilabel:
-            template = MPAConfig.fromfile(self.template_file_path)
-            template_params = template.hyper_parameters.parameter_overrides.learning_parameters
-            incoming_params = self._hyperparams.learning_parameters
-            if cfg.get('runner', False) and (template_params.num_iters.default_value != incoming_params.num_iters):
-                cfg.runner.max_epochs = incoming_params.num_iters
 
         cfg.model.multilabel = self._multilabel
         cfg.model.hierarchical = self._hierarchical
@@ -326,7 +356,7 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
                 test=ConfigDict(
                     ote_dataset=dataset,
                     labels=self._labels,
-                )
+                ),
             )
         )
         return data_cfg
@@ -335,37 +365,37 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         def patch_color_conversion(pipeline):
             # Default data format for OTE is RGB, while mmdet uses BGR, so negate the color conversion flag.
             for pipeline_step in pipeline:
-                if pipeline_step.type == 'Normalize':
+                if pipeline_step.type == "Normalize":
                     to_rgb = False
-                    if 'to_rgb' in pipeline_step:
+                    if "to_rgb" in pipeline_step:
                         to_rgb = pipeline_step.to_rgb
                     to_rgb = not bool(to_rgb)
                     pipeline_step.to_rgb = to_rgb
-                elif pipeline_step.type == 'MultiScaleFlipAug':
+                elif pipeline_step.type == "MultiScaleFlipAug":
                     patch_color_conversion(pipeline_step.transforms)
 
-        assert 'data' in config
-        for subset in ('train', 'val', 'test'):
+        assert "data" in config
+        for subset in ("train", "val", "test"):
             cfg = config.data.get(subset, None)
             if not cfg:
                 continue
-            if cfg.type == 'RepeatDataset':
+            if cfg.type == "RepeatDataset":
                 cfg = cfg.dataset
 
             if self._multilabel:
-                cfg.type = 'MPAMultilabelClsDataset'
+                cfg.type = "MPAMultilabelClsDataset"
             elif self._hierarchical:
-                cfg.type = 'MPAHierarchicalClsDataset'
+                cfg.type = "MPAHierarchicalClsDataset"
                 cfg.hierarchical_info = self._hierarchical_info
-                if subset == 'train':
+                if subset == "train":
                     cfg.drop_last = True  # For stable hierarchical information indexing
             else:
-                cfg.type = 'MPAClsDataset'
+                cfg.type = "MPAClsDataset"
 
             # In train dataset, when sample size is smaller than batch size
-            if subset == 'train' and self._data_cfg:
+            if subset == "train" and self._data_cfg:
                 train_data_cfg = Stage.get_train_data_cfg(self._data_cfg)
-                if (len(train_data_cfg.get('ote_dataset', [])) < self._recipe_cfg.data.get('samples_per_gpu', 2)):
+                if len(train_data_cfg.get("ote_dataset", [])) < self._recipe_cfg.data.get("samples_per_gpu", 2):
                     cfg.drop_last = False
 
             cfg.domain = domain
@@ -373,32 +403,43 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
             cfg.labels = None
             cfg.empty_label = self._empty_label
             for pipeline_step in cfg.pipeline:
-                if subset == 'train' and pipeline_step.type == 'Collect':
+                if subset == "train" and pipeline_step.type == "Collect":
                     pipeline_step = BaseTask._get_meta_keys(pipeline_step)
             patch_color_conversion(cfg.pipeline)
 
     def _patch_evaluation(self, config: MPAConfig):
         cfg = config.evaluation
         if self._multilabel:
-            cfg.metric = ['accuracy-mlc', 'mAP', 'CP', 'OP', 'CR', 'OR', 'CF1', 'OF1']
+            cfg.metric = ["accuracy-mlc", "mAP", "CP", "OP", "CR", "OR", "CF1", "OF1"]
+            config.early_stop_metric = "mAP"
         elif self._hierarchical:
-            cfg.metric = ['MHAcc', 'avgClsAcc', 'mAP']
+            cfg.metric = ["MHAcc", "avgClsAcc", "mAP"]
+            config.early_stop_metric = "MHAcc"
         else:
-            cfg.metric = ['accuracy', 'class_accuracy']
+            cfg.metric = ["accuracy", "class_accuracy"]
+            config.early_stop_metric = "accuracy"
 
 
 class ClassificationTrainTask(ClassificationInferenceTask):
     def save_model(self, output_model: ModelEntity):
-        logger.info('called save_model')
+        logger.info("called save_model")
         buffer = io.BytesIO()
         hyperparams_str = ids_to_strings(cfg_helper.convert(self._hyperparams, dict, enum_to_str=True))
         labels = {label.name: label.color.rgb_tuple for label in self._labels}
         model_ckpt = torch.load(self._model_ckpt)
-        modelinfo = {'model': model_ckpt['state_dict'], 'config': hyperparams_str, 'labels': labels, 'VERSION': 1}
+        modelinfo = {
+            "model": model_ckpt["state_dict"],
+            "config": hyperparams_str,
+            "labels": labels,
+            "VERSION": 1,
+        }
 
         torch.save(modelinfo, buffer)
         output_model.set_data("weights.pth", buffer.getvalue())
-        output_model.set_data("label_schema.json", label_schema_to_bytes(self._task_environment.label_schema))
+        output_model.set_data(
+            "label_schema.json",
+            label_schema_to_bytes(self._task_environment.label_schema),
+        )
         output_model.precision = self._precision
 
     def cancel_training(self):
@@ -413,18 +454,20 @@ class ClassificationTrainTask(ClassificationInferenceTask):
         if self.cancel_interface is not None:
             self.cancel_interface.cancel()
         else:
-            logger.info('but training was not started yet. reserved it to cancel')
+            logger.info("but training was not started yet. reserved it to cancel")
             self.reserved_cancel = True
 
-    def train(self,
-              dataset: DatasetEntity,
-              output_model: ModelEntity,
-              train_parameters: Optional[TrainParameters] = None):
-        logger.info('train()')
+    def train(
+        self,
+        dataset: DatasetEntity,
+        output_model: ModelEntity,
+        train_parameters: Optional[TrainParameters] = None,
+    ):
+        logger.info("train()")
         # Check for stop signal between pre-eval and training.
         # If training is cancelled at this point,
         if self._should_stop:
-            logger.info('Training cancelled.')
+            logger.info("Training cancelled.")
             self._should_stop = False
             self._is_training = False
             return
@@ -436,23 +479,23 @@ class ClassificationTrainTask(ClassificationInferenceTask):
         self._time_monitor = TrainingProgressCallback(update_progress_callback)
         self._learning_curves = defaultdict(OTELoggerHook.Curve)
 
-        stage_module = 'ClsTrainer'
+        stage_module = "ClsTrainer"
         self._data_cfg = self._init_train_data_cfg(dataset)
         self._is_training = True
-        results = self._run_task(stage_module, mode='train', dataset=dataset, parameters=train_parameters)
+        results = self._run_task(stage_module, mode="train", dataset=dataset, parameters=train_parameters)
 
         # Check for stop signal between pre-eval and training.
         # If training is cancelled at this point,
         if self._should_stop:
-            logger.info('Training cancelled.')
+            logger.info("Training cancelled.")
             self._should_stop = False
             self._is_training = False
             return
 
         # get output model
-        model_ckpt = results.get('final_ckpt')
+        model_ckpt = results.get("final_ckpt")
         if model_ckpt is None:
-            logger.error('cannot find final checkpoint from the results.')
+            logger.error("cannot find final checkpoint from the results.")
             return
         else:
             # update checkpoint to the newly trained model
@@ -462,15 +505,17 @@ class ClassificationTrainTask(ClassificationInferenceTask):
         training_metrics, final_acc = self._generate_training_metrics_group(self._learning_curves)
         # save resulting model
         self.save_model(output_model)
-        performance = Performance(score=ScoreMetric(value=final_acc, name="accuracy"),
-                                  dashboard_metrics=training_metrics)
-        logger.info(f'Final model performance: {str(performance)}')
+        performance = Performance(
+            score=ScoreMetric(value=final_acc, name="accuracy"),
+            dashboard_metrics=training_metrics,
+        )
+        logger.info(f"Final model performance: {str(performance)}")
         output_model.performance = performance
         self._is_training = False
-        logger.info('train done.')
+        logger.info("train done.")
 
     def _init_train_data_cfg(self, dataset: DatasetEntity):
-        logger.info('init data cfg.')
+        logger.info("init data cfg.")
         data_cfg = ConfigDict(
             data=ConfigDict(
                 train=ConfigDict(
@@ -486,7 +531,7 @@ class ClassificationTrainTask(ClassificationInferenceTask):
         )
 
         for label in self._labels:
-            label.hotkey = 'a'
+            label.hotkey = "a"
         return data_cfg
 
     def _generate_training_metrics_group(self, learning_curves) -> Optional[List[MetricsGroup]]:
@@ -497,11 +542,11 @@ class ClassificationTrainTask(ClassificationInferenceTask):
         output: List[MetricsGroup] = []
 
         if self._multilabel:
-            metric_key = 'val/accuracy-mlc'
+            metric_key = "val/accuracy-mlc"
         elif self._hierarchical:
-            metric_key = 'val/MHAcc'
+            metric_key = "val/MHAcc"
         else:
-            metric_key = 'val/accuracy_top-1'
+            metric_key = "val/accuracy_top-1"
 
         # Learning curves
         best_acc = -1
@@ -509,8 +554,7 @@ class ClassificationTrainTask(ClassificationInferenceTask):
             return output
 
         for key, curve in learning_curves.items():
-            metric_curve = CurveMetric(xs=curve.x,
-                                       ys=curve.y, name=key)
+            metric_curve = CurveMetric(xs=curve.x, ys=curve.y, name=key)
             if key == metric_key:
                 best_acc = max(curve.y)
             visualization_info = LineChartInfo(name=key, x_axis_label="Timestamp", y_axis_label=key)
@@ -520,19 +564,18 @@ class ClassificationTrainTask(ClassificationInferenceTask):
 
 
 class ClassificationNNCFTask(OTEClassificationNNCFTask):
-
     @check_input_parameters_type()
     def __init__(self, task_environment: TaskEnvironment):
-        """"
+        """ "
         Task for compressing classification models using NNCF.
         """
         curr_model_path = task_environment.model_template.model_template_path
         base_model_path = os.path.join(
             os.path.dirname(os.path.abspath(curr_model_path)),
-            task_environment.model_template.base_model_path
+            task_environment.model_template.base_model_path,
         )
         if os.path.isfile(base_model_path):
-            logger.info(f'Base model for NNCF: {base_model_path}')
+            logger.info(f"Base model for NNCF: {base_model_path}")
             # Redirect to base model
             task_environment.model_template = parse_model_template(base_model_path)
         super().__init__(task_environment)

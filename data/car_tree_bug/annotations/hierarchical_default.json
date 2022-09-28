@@ -1,23 +1,24 @@
-{"images": [["Slide18.PNG", ["car"]], 
-            ["Slide19.PNG", ["tree"]], 
-            ["Slide16.PNG", ["car", "tree"]],
-            ["Slide20.PNG", ["bug"]], 
-            ["Slide2.PNG", ["car", "tree"]], 
-            ["Slide15.PNG", ["bug", "car"]]
-            ],
- "hierarchy":
-            [
-                {
-                "parent": "self",
-                "group": "natural",
-                "labels": ["tree", "bug"],
-                "task_type": "single-label"
-                },
-                {
-                "parent": "self",
-                "group": "manmade",
-                "labels": ["car"],
-                "task_type": "multi-label"
-                }
-            ]
+{
+  "images": [
+    ["Slide18.PNG", ["car"]],
+    ["Slide19.PNG", ["tree"]],
+    ["Slide16.PNG", ["car", "tree"]],
+    ["Slide20.PNG", ["bug"]],
+    ["Slide2.PNG", ["car", "tree"]],
+    ["Slide15.PNG", ["bug", "car"]]
+  ],
+  "hierarchy": [
+    {
+      "parent": "self",
+      "group": "natural",
+      "labels": ["tree", "bug"],
+      "task_type": "single-label"
+    },
+    {
+      "parent": "self",
+      "group": "manmade",
+      "labels": ["car"],
+      "task_type": "multi-label"
+    }
+  ]
 }

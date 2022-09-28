@@ -128,12 +128,6 @@ pip install -e ../mmdetection/submodule || exit 1
 pip install -e ../mmsegmentation/submodule || exit 1
 pip install -e submodule || exit 1
 
-MPA_DIR=`realpath submodule`
-echo "export MPA_DIR=${MPA_DIR}" >> ${venv_dir}/bin/activate
-
-# Install OTE CLI
-pip install -e ../../ote_cli || exit 1
-
 # Build NNCF extensions
 echo "Build NNCF extensions ..."
 python -c "import nncf"
