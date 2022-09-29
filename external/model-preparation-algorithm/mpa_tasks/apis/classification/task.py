@@ -280,11 +280,17 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
 
     def _init_recipe_hparam(self) -> dict:
         warmup_iters = int(self._hyperparams.learning_parameters.learning_rate_warmup_iters)
-        lr_config = (
-            ConfigDict(warmup_iters=warmup_iters)
-            if warmup_iters > 0
-            else ConfigDict(warmup_iters=warmup_iters, warmup=None)
-        )
+        if self._multilabel:
+            # hack to use 1cycle policy
+            lr_config = (
+                ConfigDict(max_lr=self._hyperparams.learning_parameters.learning_rate, warmup=None)
+            )
+        else:
+            lr_config = (
+                ConfigDict(warmup_iters=warmup_iters)
+                if warmup_iters > 0
+                else ConfigDict(warmup_iters=0, warmup=None)
+            )
 
         if self._hyperparams.learning_parameters.enable_early_stopping:
             early_stop = ConfigDict(
@@ -313,13 +319,13 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         train_type = self._hyperparams.algo_backend.train_type
         logger.info(f"train type = {train_type}")
 
-        recipe = os.path.join(recipe_root, "class_incr.yaml")
         if train_type == TrainType.SemiSupervised:
             raise NotImplementedError(f"train type {train_type} is not implemented yet.")
         elif train_type == TrainType.SelfSupervised:
             raise NotImplementedError(f"train type {train_type} is not implemented yet.")
         elif train_type == TrainType.Incremental:
-            recipe = os.path.join(recipe_root, "class_incr.yaml")
+            recipe = os.path.join(recipe_root, "class_incr_multilabel.yaml")  if self._multilabel \
+            else os.path.join(recipe_root, "class_incr.yaml")
         else:
             # raise NotImplementedError(f'train type {train_type} is not implemented yet.')
             # FIXME: Temporary remedy for CVS-88098
