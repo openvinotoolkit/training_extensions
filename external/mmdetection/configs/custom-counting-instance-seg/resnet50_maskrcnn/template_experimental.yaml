@@ -35,6 +35,9 @@ hyper_parameters:
         default_value: 200
       num_iters:
         default_value: 300
+    pot_parameters:
+      stat_requests_number:
+        default_value: 2
     nncf_optimization:
       enable_quantization:
         default_value: true
