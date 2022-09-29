@@ -36,7 +36,7 @@ from torch.utils.data.dataloader import DataLoader
 from otx.api.utils.argument_checks import check_input_parameters_type
 
 
-# pylint: disable=too-many-instance-attributes
+# pylint: disable=too-many-instance-attributes, attribute-defined-outside-init
 @RUNNERS.register_module()
 class EpochRunnerWithCancel(EpochBasedRunner):
     """Simple modification to EpochBasedRunner to allow cancelling the training during an epoch.

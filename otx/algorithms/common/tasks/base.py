@@ -20,7 +20,7 @@ import io
 import os
 import shutil
 import tempfile
-from typing import Dict, List, Optional, Union
+from typing import DefaultDict, Dict, List, Optional, Union
 
 import numpy as np
 import torch
@@ -31,11 +31,13 @@ from mpa.stage import Stage
 from mpa.utils.config_utils import remove_custom_hook, update_or_add_custom_hook
 from mpa.utils.logger import get_logger
 
+from otx.algorithms.common.utils.hooks import OTELoggerHook
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label import LabelEntity
 from otx.api.entities.model import ModelEntity, ModelPrecision, OptimizationMethod
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.serialization.label_mapper import LabelSchemaMapper
+from otx.api.usecases.reporting.time_monitor_callback import TimeMonitorCallback
 
 logger = get_logger()
 DEFAULT_META_KEYS = (
@@ -84,11 +86,11 @@ class BaseTask:
         self._recipe_cfg = None
         self._stage_module = None
         self._model_cfg = None
-        self._precision = None
+        self._precision = [ModelPrecision.FP32]
         self._data_cfg = None
         self._mode = None
-        self._time_monitor = None
-        self._learning_curves = None
+        self._time_monitor = None  # type: Optional[TimeMonitorCallback]
+        self._learning_curves = DefaultDict(OTELoggerHook.Curve)  # type: DefaultDict
         self._is_training = False
         self._should_stop = False
         self.cancel_interface = None
@@ -233,8 +235,7 @@ class BaseTask:
                     priority=71,
                 ),
             )
-        if self._learning_curves is not None:
-            self._recipe_cfg.log_config.hooks.append({"type": "OTELoggerHook", "curves": self._learning_curves})
+        self._recipe_cfg.log_config.hooks.append({"type": "OTELoggerHook", "curves": self._learning_curves})
 
         logger.info("initialized.")
 

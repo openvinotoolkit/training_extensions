@@ -1,4 +1,4 @@
-"""Configs Initialization of OTX Common Algorithms."""
+"""Task Initialization of OTX Detection."""
 
 # Copyright (C) 2022 Intel Corporation
 #
@@ -14,7 +14,19 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .base import BaseConfig, LearningRateSchedule, TrainType
-from .configuration_enums import POTQuantizationPreset
+import mpa.det as MPADetection
 
-__all__ = ["BaseConfig", "TrainType", "LearningRateSchedule", "POTQuantizationPreset"]
+from .dataset import MPADetDataset
+from .inference import DetectionInferenceTask
+from .nncf import OTXDetectionNNCFTask
+from .openvino import OpenVINODetectionTask
+from .train import DetectionTrainTask
+
+__all__ = [
+    "DetectionInferenceTask",
+    "DetectionTrainTask",
+    "OTXDetectionNNCFTask",
+    "OpenVINODetectionTask",
+    "MPADetection",
+    "MPADetDataset",
+]

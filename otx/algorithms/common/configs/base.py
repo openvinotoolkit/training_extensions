@@ -28,6 +28,8 @@ from otx.api.configuration.elements import (
 )
 from otx.api.configuration.model_lifecycle import ModelLifecycle
 
+from .configuration_enums import POTQuantizationPreset
+
 
 class TrainType(ConfigurableEnum):
     """TrainType for OTX Algorithms."""
@@ -228,6 +230,14 @@ class BaseConfig(ConfigurableParameters):
             default_value=300,
             min_value=1,
             max_value=maxsize,
+        )
+
+        preset = selectable(
+            default_value=POTQuantizationPreset.PERFORMANCE,
+            header="Preset",
+            description="Quantization preset that defines quantization scheme",
+            editable=True,
+            visible_in_ui=True,
         )
 
     @attrs
