@@ -104,6 +104,37 @@ def ote_train_testing(template, root, ote_dir, args):
     )
 
 
+def ote_resume_testing(template, root, ote_dir, args):
+    work_dir, template_work_dir, _ = get_some_vars(template, root)
+    command_line = [
+        "ote",
+        "train",
+        template.model_template_path,
+        "--train-ann-file",
+        f'{os.path.join(ote_dir, args["--train-ann-file"])}',
+        "--train-data-roots",
+        f'{os.path.join(ote_dir, args["--train-data-roots"])}',
+        "--val-ann-file",
+        f'{os.path.join(ote_dir, args["--val-ann-file"])}',
+        "--val-data-roots",
+        f'{os.path.join(ote_dir, args["--val-data-roots"])}',
+        "--save-model-to",
+        f"{template_work_dir}/trained_for_resume_{template.model_template_id}",
+    ]
+    if "--resume-from" in args:
+        command_line.extend(
+            ["--resume-from", f'{os.path.join(ote_dir, args["--resume-from"])}']
+        )
+    command_line.extend(args["train_params"])
+    assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
+    assert os.path.exists(
+        f"{template_work_dir}/trained_for_resume_{template.model_template_id}/weights.pth"
+    )
+    assert os.path.exists(
+        f"{template_work_dir}/trained_for_resume_{template.model_template_id}/label_schema.json"
+    )
+
+
 def ote_hpo_testing(template, root, ote_dir, args):
     work_dir, template_work_dir, _ = get_some_vars(template, root)
     if os.path.exists(f"{template_work_dir}/hpo"):

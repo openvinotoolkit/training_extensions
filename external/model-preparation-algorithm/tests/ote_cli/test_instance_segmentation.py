@@ -21,6 +21,7 @@ from ote_cli.utils.tests import (
     ote_eval_openvino_testing,
     ote_eval_testing,
     ote_train_testing,
+    ote_resume_testing,
     ote_export_testing,
     nncf_optimize_testing,
     nncf_export_testing,
@@ -53,6 +54,15 @@ args = {
     "--input": "data/car_tree_bug/images",
     "train_params": ["params", "--learning_parameters.num_iters", "4", "--learning_parameters.batch_size", "4"],
 }
+
+# Training params for resume, num_iters*2
+resume_params = [
+    "params",
+    "--learning_parameters.num_iters",
+    "8",
+    "--learning_parameters.batch_size",
+    "4",
+]
 
 root = "/tmp/ote_cli/"
 ote_dir = os.getcwd()
@@ -88,6 +98,16 @@ class TestToolsMPAInstanceSegmentation:
         args1 = args.copy()
         args1["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/weights.pth"
         ote_train_testing(template, root, ote_dir, args1)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_ote_resume(self, template):
+        ote_resume_testing(template, root, ote_dir, args0)
+        _, template_work_dir, _ = get_some_vars(template, root)
+        args1 = args0.copy()
+        args1["train_params"] = resume_params
+        args1["--resume-from"] = f"{template_work_dir}/trained_for_resume_{template.model_template_id}/weights.pth"
+        ote_resume_testing(template, root, ote_dir, args1)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
