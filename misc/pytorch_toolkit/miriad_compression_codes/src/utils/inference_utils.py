@@ -17,6 +17,8 @@ from torch.backends import cudnn
 cudnn.benchmark = True
 
 # The Float->Int module
+
+
 class Float2Int(nn.Module):
     def __init__(self, bit_depth=8):
         super().__init__()
@@ -27,6 +29,8 @@ class Float2Int(nn.Module):
         return x
 
 # The Int->Float module
+
+
 class Int2Float(nn.Module):
     def __init__(self, bit_depth=8):
         super().__init__()
@@ -36,12 +40,13 @@ class Int2Float(nn.Module):
         x = x.type(torch.float32) / (2**self.bit_depth - 1)
         return x
 
+
 def load_inference_model(config, run_type):
     if config['phase'] == 1:
         model = AutoEncoder(config['depth'], config['width'])
     else:
-        model =  Decoder(config['depth'], config['width'])
-    
+        model = Decoder(config['depth'], config['width'])
+
     # load the given model
     with open(os.path.abspath(config['model_file']), 'rb') as modelfile:
         loaded_model_file = torch.load(modelfile)
@@ -62,7 +67,8 @@ def load_inference_model(config, run_type):
 
     model.eval()
     return model
-    
+
+
 def validate_model(model, config, run_type):
 
     if config['bit_depth'] == 16:
@@ -71,21 +77,20 @@ def validate_model(model, config, run_type):
     else:
         float2int = Float2Int(config['bit_depth'])
         int2float = Int2Float(config['bit_depth'])
-    
+
     # GPU transfer
     if torch.cuda.is_available() and config['gpu']:
         model = model.cuda()
         # model  = model.cuda()
         float2int, int2float = float2int.cuda(), int2float.cuda()
 
-    
     images_transforms = torchvision.transforms.Compose(
-                                                [torchvision.transforms.Grayscale(),
-                                                torchvision.transforms.ToTensor()])
+        [torchvision.transforms.Grayscale(),
+         torchvision.transforms.ToTensor()])
     labels_transforms = torchvision.transforms.Compose(
-                                                [torchvision.transforms.Grayscale(),
-                                                torchvision.transforms.ToTensor()])
-    if config['inference']['phase']==1:
+        [torchvision.transforms.Grayscale(),
+         torchvision.transforms.ToTensor()])
+    if config['phase'] == 1:
         infer_dataset = CustomDatasetPhase1(config['inferdata'],
                                             transform_images=images_transforms,
                                             transform_masks=labels_transforms,
@@ -96,11 +101,13 @@ def validate_model(model, config, run_type):
     else:
         path_test_latent = config['path_to_latent']
         path_test_gdtruth = config['path_to_gdtruth']
-        infer_dataset = CustomDatasetPhase2(path_to_latent=path_test_latent, path_to_gdtruth=path_test_gdtruth, transform_images=images_transforms, transform_masks=labels_transforms, preserve_name=True, mod =  0)
-        infer_dataloader = data.DataLoader(infer_dataset, batch_size=1, num_workers=16, pin_memory=True, shuffle=False)
+        infer_dataset = CustomDatasetPhase2(path_to_latent=path_test_latent, path_to_gdtruth=path_test_gdtruth,
+                                            transform_images=images_transforms, transform_masks=labels_transforms, preserve_name=True, mod=0)
+        infer_dataloader = data.DataLoader(
+            infer_dataset, batch_size=1, num_workers=16, pin_memory=True, shuffle=False)
 
     with torch.no_grad():
-		# a global counter & accumulation variables
+        # a global counter & accumulation variables
         n = 0
         all_bits, all_bpp, all_ssim, all_psnr = [], [], [], []
 
@@ -108,8 +115,9 @@ def validate_model(model, config, run_type):
             if torch.cuda.is_available() and config['gpu']:
                 image = image.cuda()
             dtype1 = image.dtype
-            compressed = model.encoder(image) # forward through encoder
-            latent_int = float2int(compressed) # forward through Float2Int module
+            compressed = model.encoder(image)  # forward through encoder
+            # forward through Float2Int module
+            latent_int = float2int(compressed)
 
             # usual numpy conversions
             image_numpy = image.cpu().numpy()
@@ -120,17 +128,19 @@ def validate_model(model, config, run_type):
 
                 # calculate the source symbol distribution; required for huffman encoding
                 if config['bit_depth'] == 16:
-                    counts, bins = np.histogram(latent_int_numpy.ravel(), bins=2**12 - 1)
+                    counts, bins = np.histogram(
+                        latent_int_numpy.ravel(), bins=2**12 - 1)
                 else:
-                    ap = argparse.ArgumentParser();
-                    args = ap.parse_args();
-                    counts, bins = np.histogram(latent_int_numpy.ravel(), bins=2**args.bit_depth - 1)
+                    ap = argparse.ArgumentParser()
+                    args = ap.parse_args()
+                    counts, bins = np.histogram(
+                        latent_int_numpy.ravel(), bins=2**args.bit_depth - 1)
                 z = list(iter(zip(bins.tolist(), counts.tolist())))
-                Q = huffman.codebook(z) # Huffman codebookth 
-                H = 0 # calculate the entropy of the codebook
+                Q = huffman.codebook(z)  # Huffman codebookth
+                H = 0  # calculate the entropy of the codebook
                 for i, (_, bitstr) in enumerate(Q.items()):
                     H += counts[i]/counts.sum() * len(bitstr)
-                
+
                 # this is actual bpp to be reported
                 bits = H
             else:
@@ -142,15 +152,16 @@ def validate_model(model, config, run_type):
             # the canonical formula for calculating BPP
             bpp = latent_int_numpy.size * bits / image_numpy.size
 
-            latent_float = int2float(latent_int) # back to float
-            decompressed = model.decoder(latent_float) # forward through decoder
+            latent_float = int2float(latent_int)  # back to float
+            decompressed = model.decoder(
+                latent_float)  # forward through decoder
             original, reconstructed = image_numpy, decompressed.cpu().numpy()
 
             # computer required metrics
             ssim = compare_ssim_batch(original, reconstructed)
             psnr = compare_psnr_batch(original, reconstructed)
             psnr = 20.0 * np.log10(psnr)
-            
+
             # averaging
             all_bits.append(bits)
             all_bpp.append(bpp)
@@ -165,7 +176,7 @@ def validate_model(model, config, run_type):
                 # 2. The codebook after running AAC
                 latent_file_path = os.path.join(
                     os.path.abspath(config['out_latent']),
-                    'cbis_' + str(config['bit_depth']) + '_'+ name[0] + '.latent')
+                    'cbis_' + str(config['bit_depth']) + '_' + name[0] + '.latent')
                 with open(latent_file_path, 'wb') as latent_file:
                     pickle.dump({
                         'latent_int': latent_int.cpu().numpy(),
@@ -176,14 +187,15 @@ def validate_model(model, config, run_type):
             if config['produce_decompressed_image']:
                 # save the reconstructed image, if requested
                 reconstructed = reconstructed.squeeze()
-                reconstructed = Image.fromarray(reconstructed * 255.).convert('L')
+                reconstructed = Image.fromarray(
+                    reconstructed * 255.).convert('L')
                 decom_file = os.path.join(
-                                    os.path.abspath(config['out_decom']),
-                                    str(config['bit_depth']) + '_decom_' + name[0])
+                    os.path.abspath(config['out_decom']),
+                    str(config['bit_depth']) + '_decom_' + name[0])
                 reconstructed.save(decom_file)
 
             print('name: {}, bit_depth: {}, bpp: {}, ssim: {}, psnr: {}, dtype: {}'.format(name[0],
-                config['bit_depth'], bpp, ssim, psnr, dtype1))
+                                                                                           config['bit_depth'], bpp, ssim, psnr, dtype1))
 
             if n == config['max_samples']:
                 break
@@ -200,7 +212,8 @@ def validate_model(model, config, run_type):
                 json_content = json.load(json_file)
 
             # append to the content of json
-            json_content.append({'bits': all_bits, 'bpp': all_bpp, 'ssim': all_ssim, 'psnr': all_psnr})
+            json_content.append(
+                {'bits': all_bits, 'bpp': all_bpp, 'ssim': all_ssim, 'psnr': all_psnr})
 
             with open(json_fillpath, 'w') as json_file:
                 json.dump(json_content, json_file)
