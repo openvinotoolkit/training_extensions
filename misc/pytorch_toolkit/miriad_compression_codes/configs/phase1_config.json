@@ -7,7 +7,7 @@
         "gpu": "True",
         "interval": 3,
         "subset_size": 5,
-        "model_file_name": "",
+        "model_file_name": "model_weights/cbis_a1_b1.model",
         "randomize_subset": "True",
         "depth": 3,
         "width": 64,
@@ -16,7 +16,7 @@
         "phase": 1,
         "class_count": 3,
         "efficient_net": "True",
-        "iterate": 5,
+        "iterate": 0,
         "lr": 1e-8,
         "checkpoint": "model_weights/cbis_a1_b1.model",
         "device": "cuda",
@@ -27,7 +27,7 @@
         "image_path": "test_data/phase1data/train/cbis_sample/train/"
     },
     "inference": {
-        "model_file": "args.model_file",
+        "model_file": "model_weights/cbis_a1_b1.model",
         "inferdata": "test_data/phase1data/test/images",
         "bit_depth": 8,
         "gpu": "True",
@@ -44,7 +44,7 @@
         "checkpoint": "model_weights/cbis_a1_b1.model",
         "class_count": 3,
         "target_metric": 0.55,
-        "model_name_onnx": "miriad.onnx",
+        "model_name_onnx": "cbis_a1_b1.onnx",
         "input_shape": [
             1,
             1,
@@ -62,8 +62,8 @@
             1024,
             1024
         ],
-        "model_name_onnx": "miriad.onnx",
-        "model_name": "miriad",
+        "model_name_onnx": "cbis_a1_b1.onnx",
+        "model_name": "cbis_a1_b1",
         "alpha": 1,
         "beta": 1,
         "phi": 1,
