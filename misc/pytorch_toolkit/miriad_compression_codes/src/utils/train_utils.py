@@ -1,5 +1,7 @@
 from sched import scheduler
-import torch, torchvision, os
+import torch
+import torchvision
+import os
 from torch.utils import data
 from torch.backends import cudnn
 import numpy as np
@@ -20,6 +22,7 @@ def get_efficient_net_parameters(iterate, phi):
     beta = [np.sqrt(phi/i) for i in np.array(alpha)]
     beta = np.array(beta)
     return alpha, beta
+
 
 def load_model(alpha=1, beta=1, eff_flag=False, it_no=0, depth=3, width=96, phase=1, phi=1):
     if phase == 1:
@@ -49,25 +52,28 @@ def train_model_phase1(config, train_dataloader, model, optimizer, msecrit, epoc
         # The data fetch loop
         if torch.cuda.is_available() and config['gpu']:
             # images, labels = images.cuda(), labels.cuda()
-            img256, img128 = img256.cuda(),img128.cuda()
-            
+            img256, img128 = img256.cuda(), img128.cuda()
+
         optimizer.zero_grad()  # zero out grads
-        output256 = model(img256) # forward pass
-        output128 = model(img128) # forward pass
+        output256 = model(img256)  # forward pass
+        output128 = model(img128)  # forward pass
 
         loss1 = msecrit(output256, img256)
         loss2 = msecrit(output128, img128)
         total_loss = loss1 + loss2
         total_loss_r = total_loss.item()
 
-
         # compute the required metrics
-        ssim256 = compare_ssim_batch(img256.detach().cpu().numpy(), output256.detach().cpu().numpy())
-        psnr256 = compare_psnr_batch(img256.detach().cpu().numpy(), output256.detach().cpu().numpy())
+        ssim256 = compare_ssim_batch(
+            img256.detach().cpu().numpy(), output256.detach().cpu().numpy())
+        psnr256 = compare_psnr_batch(
+            img256.detach().cpu().numpy(), output256.detach().cpu().numpy())
         psnr256 = 20.0 * np.log10(psnr256)
 
-        ssim128 = compare_ssim_batch(img128.detach().cpu().numpy(), output128.detach().cpu().numpy())
-        psnr128 = compare_psnr_batch(img128.detach().cpu().numpy(), output128.detach().cpu().numpy())
+        ssim128 = compare_ssim_batch(
+            img128.detach().cpu().numpy(), output128.detach().cpu().numpy())
+        psnr128 = compare_psnr_batch(
+            img128.detach().cpu().numpy(), output128.detach().cpu().numpy())
         psnr128 = 20.0 * np.log10(psnr128)
 
         total_loss.backward()  # backward
@@ -92,11 +98,11 @@ def train_model_phase2(config, train_dataloader, model, optimizer, msecrit, epoc
                 images, labels = images.cuda(), labels.cuda()
             optimizer.zero_grad()  # zero out grads
             output = model(images)
-            loss1 += msecrit(output, labels)
+            loss1 += msecrit(output, images)
             # compute the required metrics
-            ssim1 += compare_ssim_batch((labels).detach().cpu().numpy(),
+            ssim1 += compare_ssim_batch((images).detach().cpu().numpy(),
                                         (output).detach().cpu().numpy())
-            psnr1 += compare_psnr_batch((labels).detach().cpu().numpy(),
+            psnr1 += compare_psnr_batch((images).detach().cpu().numpy(),
                                         (output).detach().cpu().numpy())
 
         for j in range(len(imageset2[0])):
@@ -108,7 +114,7 @@ def train_model_phase2(config, train_dataloader, model, optimizer, msecrit, epoc
 
             if torch.cuda.is_available() and config['gpu']:
                 images, labels = images.cuda(), labels.cuda()
-            output = model(images)
+            output = model(labels)
             loss2 += msecrit(output, labels)
 
             # compute the required metrics
@@ -144,17 +150,18 @@ def train_model_phase2(config, train_dataloader, model, optimizer, msecrit, epoc
 
 
 def validate_model_phase1(config, test_dataloader, model, msecrit):
-    for idx, (images, labels) in enumerate(test_dataloader):
+    n, avg_loss, avg_ssim, avg_psnr = 1, 0, 0, 0
+    for idx, (images, _) in enumerate(test_dataloader):
         if torch.cuda.is_available() and config['gpu']:
-            images, labels = images.cuda(), labels.cuda()
+            images = images.cuda()
 
         output = model(images)
-        loss = msecrit(output, labels)  # loss calculation
+        loss = msecrit(output, images)  # loss calculation
         # calculate the metrics (SSIM and pSNR)
         ssim = compare_ssim_batch(
-            labels.detach().cpu().numpy(), output.detach().cpu().numpy())
+            images.detach().cpu().numpy(), output.detach().cpu().numpy())
         psnr = compare_psnr_batch(
-            labels.detach().cpu().numpy(), output.detach().cpu().numpy())
+            images.detach().cpu().numpy(), output.detach().cpu().numpy())
 
         avg_loss = ((n * avg_loss) + loss.item()) / (n + 1)  # running mean
         avg_ssim = ((n * avg_ssim) + ssim) / (n + 1)  # running mean
@@ -164,17 +171,18 @@ def validate_model_phase1(config, test_dataloader, model, msecrit):
 
 
 def validate_model_phase2(config, test_dataloader, model, msecrit):
-    for idx, (images, labels) in enumerate(test_dataloader):
+    n, avg_loss, avg_ssim, avg_psnr = 1, 0, 0, 0
+    for idx, (images, _) in enumerate(test_dataloader):
         if torch.cuda.is_available() and config['gpu']:
-            images, labels = images.cuda(), labels.cuda()
+            images = images.cuda()
 
         output = model(images)
-        loss = msecrit(output, labels)  # loss calculation
+        loss = msecrit(output, images)  # loss calculation
         # calculate the metrics (SSIM and pSNR)
         ssim = compare_ssim_batch(
-            labels.detach().cpu().numpy(), output.detach().cpu().numpy())
+            images.detach().cpu().numpy(), output.detach().cpu().numpy())
         psnr = compare_psnr_batch(
-            labels.detach().cpu().numpy(), output.detach().cpu().numpy())
+            images.detach().cpu().numpy(), output.detach().cpu().numpy())
 
         avg_loss = ((n * avg_loss) + loss.item()) / (n + 1)  # running mean
         avg_ssim = ((n * avg_ssim) + ssim) / (n + 1)  # running mean
@@ -190,13 +198,15 @@ def train_model(config):
     labels_transforms = torchvision.transforms.Compose(
         [torchvision.transforms.Grayscale(), torchvision.transforms.ToTensor()])
 
+    avg_loss, avg_ssim, avg_psnr = 0, 0, 0
+
     if config['phase'] == 1:
         # Dataset & dataloader for training
         files256 = os.listdir(config['train_data'])
         files128 = os.listdir(config['train_data'])
-        
+
         train_dataset = CustomDatasetPhase1(config['train_data'],
-                                            files256 = files256,
+                                            files256=files256,
                                             files128=files128,
                                             split="train",
                                             transform_images=images_transforms,
@@ -245,9 +255,9 @@ def train_model(config):
 
     else:
         if config['phase'] == 1:
-            iterate, alpha, beta = 1, 1, 1
+            iterate, alpha, beta = 0, 1, 1
         else:
-            iterate, alpha, beta = 1, 0.65, 1.5
+            iterate, alpha, beta = 0, 0.65, 1.5
 
     for i in range(iterate):
         model = load_model(eff_flag=config['efficient_net'],
@@ -258,7 +268,8 @@ def train_model(config):
             model = model.cuda()
         # usual optimizer instance
         optimizer = torch.optim.Adam(model.parameters())
-        schedular = torch.optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.75)  # schedular instance
+        schedular = torch.optim.lr_scheduler.StepLR(
+            optimizer, step_size=10, gamma=0.75)  # schedular instance
         start_epoch = 0
         model_file = '.'.join([config['model_file_name'], 'pth'])
 
@@ -273,7 +284,8 @@ def train_model(config):
                 schedular.load_state_dict(loaded_file['schedular_state'])
                 start_epoch = loaded_file['epoch'] + 1
 
-                print('{tag} resuming from saved model'.format(tag=colored('[Saving]', 'red')))
+                print('{tag} resuming from saved model'.format(
+                    tag=colored('[Saving]', 'red')))
                 del loaded_file
 
         # For logging purpose; read anch chk for val decr : val in 2nd row < 1st row
@@ -308,7 +320,6 @@ def train_model(config):
             model.eval()  # switch to evaluation mode
 
             n = 0
-            avg_loss, avg_ssim, avg_psnr = 0.0, 0.0, 0.0
             with torch.no_grad():
                 # Testing phase starts
                 if config['phase'] == 1:
@@ -357,3 +368,5 @@ def train_model(config):
                 prev_test_ssim = avg_ssim
             else:
                 print(colored('[Saving] model NOT saved'))
+
+    return avg_loss, avg_ssim, avg_psnr

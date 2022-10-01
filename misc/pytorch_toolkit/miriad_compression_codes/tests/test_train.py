@@ -20,14 +20,9 @@ def create_train_test_for_phase1():
             if not os.path.exists(self.config["checkpoint"]):
                 download_checkpoint(phase=1)
             self.device = self.config["device"]
-            self.trainer = train_model(self.config)
-            self.trainer.train(
-                self.config["max_epoch"], self.config["savepath"])
-            cur_train_loss = self.trainer.current_train_loss
-            self.trainer.train(
-                self.config["max_epoch"], self.config["savepath"])
-            self.assertLessEqual(
-                self.trainer.current_train_loss, cur_train_loss)
+            avg_loss1, avg_ssim1, avg_psnr1 = train_model(self.config)
+            avg_loss2, avg_ssim2, avg_psnr2 = train_model(self.config)
+            self.assertLessEqual(avg_loss2, avg_loss1)
 
         def test_config(self):
             self.config = get_config(action='train', phase=1)
@@ -55,14 +50,9 @@ def create_train_test_for_phase2():
             if not os.path.exists(self.config["checkpoint"]):
                 download_checkpoint(phase=2)
             self.device = self.config["device"]
-            self.trainer = train_model(self.config)
-            self.trainer.train(
-                self.config["max_epoch"], self.config["savepath"])
-            cur_train_loss = self.trainer.current_train_loss
-            self.trainer.train(
-                self.config["max_epoch"], self.config["savepath"])
-            self.assertLessEqual(
-                self.trainer.current_train_loss, cur_train_loss)
+            avg_loss1, avg_ssim1, avg_psnr1 = train_model(self.config)
+            avg_loss2, avg_ssim2, avg_psnr2 = train_model(self.config)
+            self.assertLessEqual(avg_loss2, avg_loss1)
 
         def test_config(self):
             self.config = get_config(action='train', phase=2)
