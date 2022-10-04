@@ -18,14 +18,14 @@ import mpa.det as MPADetection
 
 from .dataset import MPADetDataset
 from .inference import DetectionInferenceTask
-from .nncf import OTXDetectionNNCFTask
+from .nncf import DetectionNNCFTask
 from .openvino import OpenVINODetectionTask
 from .train import DetectionTrainTask
 
 __all__ = [
     "DetectionInferenceTask",
     "DetectionTrainTask",
-    "OTXDetectionNNCFTask",
+    "DetectionNNCFTask",
     "OpenVINODetectionTask",
     "MPADetection",
     "MPADetDataset",
