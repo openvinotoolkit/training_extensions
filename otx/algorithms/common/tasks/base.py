@@ -38,6 +38,11 @@ from otx.api.entities.model import ModelEntity, ModelPrecision, OptimizationMeth
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.serialization.label_mapper import LabelSchemaMapper
 from otx.api.usecases.reporting.time_monitor_callback import TimeMonitorCallback
+from otx.api.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
+from otx.api.usecases.tasks.interfaces.export_interface import IExportTask
+from otx.api.usecases.tasks.interfaces.inference_interface import IInferenceTask
+from otx.api.usecases.tasks.interfaces.unload_interface import IUnload
+from otx.api.utils.argument_checks import check_input_parameters_type
 
 logger = get_logger()
 DEFAULT_META_KEYS = (
@@ -54,9 +59,12 @@ DEFAULT_META_KEYS = (
 
 
 # pylint: disable=too-many-instance-attributes, protected-access
-class BaseTask:
+class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
     """BaseTask for OTX Algorithms."""
 
+    _task_environment: TaskEnvironment
+
+    @check_input_parameters_type()
     def __init__(self, task_config, task_environment: TaskEnvironment):
         self._task_config = task_config
         self._task_environment = task_environment
@@ -64,7 +72,7 @@ class BaseTask:
         self._model_name = task_environment.model_template.name
         self._task_type = task_environment.model_template.task_type
         self._labels = task_environment.get_labels(include_empty=False)
-        self._output_path = tempfile.mkdtemp(prefix="MPA-task-")
+        self._output_path = tempfile.mkdtemp(prefix="OTX-task-")
         logger.info(f"created output path at {self._output_path}")
         self.confidence_threshold = self._get_confidence_threshold(self._hyperparams)
         # Set default model attributes.
@@ -140,12 +148,6 @@ class BaseTask:
         logger.info("run task done.")
         return output
 
-    def finalize(self):
-        """Remove output_path tree if cleanup_outputs."""
-        if self._recipe_cfg is not None and self._recipe_cfg.get("cleanup_outputs", False):
-            if os.path.exists(self._output_path):
-                shutil.rmtree(self._output_path, ignore_errors=False)
-
     def _delete_scratch_space(self):
         """Remove model checkpoints and mpa logs."""
         if os.path.exists(self._output_path):
@@ -153,7 +155,7 @@ class BaseTask:
 
     def __del__(self):
         """Del function for remove model checkpoints."""
-        self.finalize()
+        self._delete_scratch_space()
 
     def _pre_task_run(self):
         pass
@@ -177,6 +179,10 @@ class BaseTask:
     def hyperparams(self):
         """Hyper Parameters configuration."""
         return self._hyperparams
+
+    @property
+    def _precision_from_config(self):
+        return [ModelPrecision.FP16] if self._config.get("fp16", None) else [ModelPrecision.FP32]
 
     def _initialize(self, export=False):
         """Prepare configurations to run a task through MPA's stage."""
@@ -324,12 +330,41 @@ class BaseTask:
             confidence_threshold = hyperparams.postprocessing.confidence_threshold
         return confidence_threshold
 
+    @staticmethod
+    def _is_docker():
+        """Checks whether the task runs in docker container.
+
+        :return bool: True if task runs in docker
+        """
+        path = "/proc/self/cgroup"
+        is_in_docker = False
+        if os.path.isfile(path):
+            with open(path) as f:
+                is_in_docker = is_in_docker or any("docker" in line for line in f)
+        is_in_docker = is_in_docker or os.path.exists("/.dockerenv")
+        return is_in_docker
+
     def cancel_hook_initialized(self, cancel_interface: CancelInterfaceHook):
         """Initialization of cancel_interface hook."""
         logger.info("cancel hook is initialized")
         self.cancel_interface = cancel_interface
         if self.reserved_cancel and self.cancel_interface:
             self.cancel_interface.cancel()
+
+    def unload(self):
+        """Unload the task."""
+        self._delete_scratch_space()
+        if self._is_docker():
+            logger.warning("Got unload request. Unloading models. Throwing Segmentation Fault on purpose")
+            import ctypes
+
+            ctypes.string_at(0)
+        else:
+            logger.warning("Got unload request, but not on Docker. Only clearing CUDA cache")
+            torch.cuda.empty_cache()
+            logger.warning(
+                f"Done unloading. " f"Torch is still occupying {torch.cuda.memory_allocated()} bytes of GPU memory"
+            )
 
     class OnHookInitialized:
         """OnHookInitialized class."""

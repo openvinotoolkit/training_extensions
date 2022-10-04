@@ -55,6 +55,10 @@ from otx.api.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType, IExportTask
 from otx.api.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from otx.api.usecases.tasks.interfaces.unload_interface import IUnload
+from otx.api.utils.argument_checks import (
+    DatasetParamTypeCheck,
+    check_input_parameters_type,
+)
 from otx.api.utils.vis_utils import get_actmap
 
 logger = get_logger()
@@ -64,10 +68,12 @@ logger = get_logger()
 class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask, IUnload):
     """Inference Task Implementation of OTX Detection."""
 
+    @check_input_parameters_type()
     def __init__(self, task_environment: TaskEnvironment):
         # self._should_stop = False
         super().__init__(DetectionConfig, task_environment)
 
+    @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def infer(
         self,
         dataset: DatasetEntity,
@@ -137,6 +143,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         prediction_results = zip(predictions, output["feature_vectors"], output["saliency_maps"])
         return prediction_results, metric
 
+    @check_input_parameters_type()
     def evaluate(
         self,
         output_resultset: ResultSetEntity,
@@ -157,6 +164,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         """Unload the task."""
         self.finalize()
 
+    @check_input_parameters_type()
     def export(self, export_type: ExportType, output_model: ModelEntity):
         """Export function of OTX Detection Task."""
         # copied from OTE inference_task.py
