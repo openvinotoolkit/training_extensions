@@ -1,6 +1,6 @@
-"""Configs Initialization of OTX Common Algorithms."""
+"""Model Wrapper Initialization of OTX Detection."""
 
-# Copyright (C) 2022 Intel Corporation
+# Copyright (C) 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .base import BaseConfig, LearningRateSchedule, TrainType
-from .configuration_enums import POTQuantizationPreset
+from .openvino_models import OTEMaskRCNNModel, OTESSDModel
 
-__all__ = ["BaseConfig", "TrainType", "LearningRateSchedule", "POTQuantizationPreset"]
+__all__ = ["OTEMaskRCNNModel", "OTESSDModel"]

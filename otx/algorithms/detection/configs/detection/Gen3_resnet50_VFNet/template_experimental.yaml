@@ -1,0 +1,52 @@
+# Description.
+model_template_id: Custom_Object_Detection_Gen3_VFNet
+name: VFNet
+task_type: DETECTION
+task_family: VISION
+instantiation: "CLASS"
+summary: Class-Incremental Object Detection for VFNet
+application: ~
+
+# Algo backend.
+framework: OTEDetection v2.9.1
+
+# Task implementations.
+entrypoints:
+  base: otx.algorithms.detection.tasks.DetectionTrainTask
+  openvino: otx.algorithms.detection.tasks.OpenVINODetectionTask
+
+# Capabilities.
+capabilities:
+  - compute_representations
+
+# Hyperparameters.
+hyper_parameters:
+  base_path: ../configuration.yaml
+  parameter_overrides:
+    learning_parameters:
+      batch_size:
+        default_value: 4
+      learning_rate:
+        default_value: 0.001
+      learning_rate_warmup_iters:
+        default_value: 3
+      num_iters:
+        default_value: 100
+    algo_backend:
+      train_type:
+        default_value: Incremental
+
+# Training resources.
+max_nodes: 1
+training_targets:
+  - GPU
+  - CPU
+
+# Stats.
+gigaflops: 457.4
+size: 126.0
+# # Inference options. Defined by OpenVINO capabilities, not Algo Backend or Platform.
+# inference_targets:
+#   - CPU
+#   - GPU
+#   - VPU

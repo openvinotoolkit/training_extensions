@@ -1,4 +1,4 @@
-"""Configs Initialization of OTX Common Algorithms."""
+"""Initialization of ATSS model for Detection Task."""
 
 # Copyright (C) 2022 Intel Corporation
 #
@@ -13,8 +13,3 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions
 # and limitations under the License.
-
-from .base import BaseConfig, LearningRateSchedule, TrainType
-from .configuration_enums import POTQuantizationPreset
-
-__all__ = ["BaseConfig", "TrainType", "LearningRateSchedule", "POTQuantizationPreset"]

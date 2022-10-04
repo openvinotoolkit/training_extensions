@@ -18,7 +18,7 @@ import math
 import os
 from collections import defaultdict
 from math import inf, isnan
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 from mmcv.runner import BaseRunner, EpochBasedRunner
 from mmcv.runner.dist_utils import master_only
@@ -32,7 +32,7 @@ from otx.api.utils.argument_checks import check_input_parameters_type
 logger = get_logger()
 
 
-# pylint: disable=too-many-instance-attributes, protected-access, too-many-arguments
+# pylint: disable=too-many-instance-attributes, protected-access, too-many-arguments, unused-argument, no-self-use
 @HOOKS.register_module()
 class CancelTrainingHook(Hook):
     """CancelTrainingHook for Training Stopping."""
@@ -451,6 +451,7 @@ class ReduceLROnPlateauLrUpdaterHook(LrUpdaterHook):
         self.bad_count = 0
         self.last_iter = 0
         self.current_lr = -1.0
+        self.base_lr = []  # type: List
         self._init_rule(rule, metric)
         self.best_score = self.init_value_map[self.rule]
 
