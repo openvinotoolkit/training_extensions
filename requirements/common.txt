@@ -1,4 +1,4 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # Common Tasks Requirements.                                                       #
 mmcv-full==1.3.14
-# mpa @ git+https://github.com/openvinotoolkit/model_preparation_algorithm/tree/aec6cdcfd3a0a6e5234afa182d2bc48dbe990dfc
+-e external/model-preparation-algorithm/submodule

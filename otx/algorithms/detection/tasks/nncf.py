@@ -3,12 +3,11 @@ import io
 import json
 import os
 import tempfile
-from typing import List, Optional, DefaultDict
+from typing import DefaultDict, List, Optional
 
 import torch
 from mmcv.runner import load_checkpoint, load_state_dict
 from mmcv.utils import Config, ConfigDict
-from mpa.utils.config_utils import remove_custom_hook
 from mmdet.apis import train_detector
 from mmdet.apis.fake_input import get_fake_input
 from mmdet.apis.train import build_val_dataloader
@@ -21,6 +20,7 @@ from mmdet.integration.nncf import (
 )
 from mmdet.integration.nncf.config import compose_nncf_config
 from mmdet.models import build_detector
+from mpa.utils.config_utils import remove_custom_hook
 from mpa.utils.logger import get_logger
 
 from otx.algorithms.common.utils.hooks import OTELoggerHook
@@ -69,11 +69,10 @@ logger = get_logger()
 
 
 class OTXDetectionNNCFTask(DetectionInferenceTask, IOptimizationTask):
+    """Task for compressing detection models using NNCF."""
+
     @check_input_parameters_type()
     def __init__(self, task_environment: TaskEnvironment):
-        """ "
-        Task for compressing detection models using NNCF.
-        """
         # TODO: OTENNCFTASK + MPANNCFTASK, need to check base_model_path
         super().__init__(task_environment)
         curr_model_path = task_environment.model_template.model_template_path
@@ -253,8 +252,7 @@ class OTXDetectionNNCFTask(DetectionInferenceTask, IOptimizationTask):
 
     @staticmethod
     def _create_model(config: Config, from_scratch: bool = False):
-        """
-        Creates a model, based on the configuration in config
+        """Creates a model, based on the configuration in config.
 
         :param config: mmdetection configuration from which the model has to be built
         :param from_scratch: bool, if True does not load any weights
@@ -311,6 +309,7 @@ class OTXDetectionNNCFTask(DetectionInferenceTask, IOptimizationTask):
         output_model: ModelEntity,
         optimization_parameters: Optional[OptimizationParameters] = None,
     ):
+        """NNCF Optimization."""
         if optimization_type is not OptimizationType.NNCF:
             raise RuntimeError("NNCF is the only supported optimization")
 
@@ -382,6 +381,7 @@ class OTXDetectionNNCFTask(DetectionInferenceTask, IOptimizationTask):
 
     @check_input_parameters_type()
     def export(self, export_type: ExportType, output_model: ModelEntity):
+        """NNCF Export Function."""
         if self._compression_ctrl is None:
             super().export(export_type, output_model)
         else:
@@ -392,8 +392,11 @@ class OTXDetectionNNCFTask(DetectionInferenceTask, IOptimizationTask):
 
     @check_input_parameters_type()
     def save_model(self, output_model: ModelEntity):
+        """Saving model function for NNCF Task."""
         buffer = io.BytesIO()
-        hyperparams = self._task_environment.get_hyper_parameters(DetectionConfig)  # type: ConfigDict
+        hyperparams = self._task_environment.get_hyper_parameters(
+            DetectionConfig
+        )  # type: ConfigDict
         hyperparams_str = ids_to_strings(
             cfg_helper.convert(hyperparams, dict, enum_to_str=True)
         )
