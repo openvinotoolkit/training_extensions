@@ -21,14 +21,14 @@ from typing import List, Optional
 import shutil
 
 import torchreid
-from ote_sdk.entities.datasets import DatasetEntity
-from ote_sdk.entities.metrics import (CurveMetric, LineChartInfo, LineMetricsGroup,
+from otx.api.entities.datasets import DatasetEntity
+from otx.api.entities.metrics import (CurveMetric, LineChartInfo, LineMetricsGroup,
                                       MetricsGroup, Performance, ScoreMetric)
-from ote_sdk.entities.model import ModelEntity
-from ote_sdk.entities.subset import Subset
-from ote_sdk.entities.task_environment import TaskEnvironment
-from ote_sdk.entities.train_parameters import default_progress_callback, TrainParameters
-from ote_sdk.usecases.tasks.interfaces.training_interface import ITrainingTask
+from otx.api.entities.model import ModelEntity
+from otx.api.entities.subset import Subset
+from otx.api.entities.task_environment import TaskEnvironment
+from otx.api.entities.train_parameters import default_progress_callback, TrainParameters
+from otx.api.usecases.tasks.interfaces.training_interface import ITrainingTask
 from scripts.default_config import imagedata_kwargs, lr_scheduler_kwargs, optimizer_kwargs
 from torchreid.apis.training import run_lr_finder, run_training
 from torchreid_tasks.inference_task import OTEClassificationInferenceTask
@@ -37,7 +37,7 @@ from torchreid_tasks.utils import (OTEClassificationDataset, TrainingProgressCal
 from torchreid.ops import DataParallel
 from torchreid.utils import (load_pretrained_weights, set_random_seed,
                              check_isfile, resume_from_checkpoint)
-from ote_sdk.utils.argument_checks import (
+from otx.api.utils.argument_checks import (
     DatasetParamTypeCheck,
     check_input_parameters_type,
 )

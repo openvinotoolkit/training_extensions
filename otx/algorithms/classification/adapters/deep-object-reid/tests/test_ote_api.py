@@ -23,20 +23,20 @@ import numpy as np
 import pytest
 from e2e_test_system import e2e_pytest_api
 
-from ote_sdk.entities.annotation import Annotation, AnnotationSceneEntity, AnnotationSceneKind
-from ote_sdk.entities.datasets import Subset, DatasetEntity
-from ote_sdk.entities.dataset_item import DatasetItemEntity
-from ote_sdk.entities.id import ID
-from ote_sdk.entities.image import Image
-from ote_sdk.entities.inference_parameters import InferenceParameters
-from ote_sdk.entities.label import LabelEntity, Domain
-from ote_sdk.entities.model import ModelEntity
-from ote_sdk.entities.model_template import parse_model_template
-from ote_sdk.entities.shapes.rectangle import Rectangle
-from ote_sdk.entities.scored_label import ScoredLabel
-from ote_sdk.entities.task_environment import TaskEnvironment
-from ote_sdk.entities.train_parameters import TrainParameters
-from ote_sdk.configuration.helper import convert, create
+from otx.api.entities.annotation import Annotation, AnnotationSceneEntity, AnnotationSceneKind
+from otx.api.entities.datasets import Subset, DatasetEntity
+from otx.api.entities.dataset_item import DatasetItemEntity
+from otx.api.entities.id import ID
+from otx.api.entities.image import Image
+from otx.api.entities.inference_parameters import InferenceParameters
+from otx.api.entities.label import LabelEntity, Domain
+from otx.api.entities.model import ModelEntity
+from otx.api.entities.model_template import parse_model_template
+from otx.api.entities.shapes.rectangle import Rectangle
+from otx.api.entities.scored_label import ScoredLabel
+from otx.api.entities.task_environment import TaskEnvironment
+from otx.api.entities.train_parameters import TrainParameters
+from otx.api.configuration.helper import convert, create
 
 from torchreid_tasks.parameters import OTEClassificationParameters
 from torchreid_tasks.train_task import OTEClassificationTrainingTask

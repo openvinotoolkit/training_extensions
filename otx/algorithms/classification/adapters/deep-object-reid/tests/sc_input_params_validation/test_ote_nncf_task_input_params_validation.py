@@ -3,16 +3,16 @@
 #
 
 import pytest
-from ote_sdk.configuration.configurable_parameters import ConfigurableParameters
-from ote_sdk.entities.datasets import DatasetEntity
-from ote_sdk.entities.label_schema import LabelSchemaEntity
-from ote_sdk.entities.model import ModelConfiguration, ModelEntity
-from ote_sdk.test_suite.e2e_test_system import e2e_pytest_unit
-from ote_sdk.tests.parameters_validation.validation_helper import (
+from otx.api.configuration.configurable_parameters import ConfigurableParameters
+from otx.api.entities.datasets import DatasetEntity
+from otx.api.entities.label_schema import LabelSchemaEntity
+from otx.api.entities.model import ModelConfiguration, ModelEntity
+from otx.api.test_suite.e2e_test_system import e2e_pytest_unit
+from otx.api.tests.parameters_validation.validation_helper import (
     check_value_error_exception_raised,
 )
-from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType
-from ote_sdk.usecases.tasks.interfaces.optimization_interface import OptimizationType
+from otx.api.usecases.tasks.interfaces.export_interface import ExportType
+from otx.api.usecases.tasks.interfaces.optimization_interface import OptimizationType
 
 from torchreid_tasks.nncf_task import OTEClassificationNNCFTask
 

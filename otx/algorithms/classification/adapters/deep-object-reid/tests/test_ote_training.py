@@ -22,29 +22,29 @@ from pprint import pformat
 from typing import Any, Callable, Dict, List, Optional, Type
 
 import pytest
-from ote_sdk.entities.subset import Subset
-from ote_sdk.entities.model_template import parse_model_template
-from ote_sdk.entities.model import ModelEntity, ModelFormat, ModelOptimizationType
-from ote_sdk.configuration.helper import create as ote_sdk_configuration_helper_create
-from ote_sdk.usecases.tasks.interfaces.optimization_interface import OptimizationType
-from ote_sdk.utils.importing import get_impl_class
+from otx.api.entities.subset import Subset
+from otx.api.entities.model_template import parse_model_template
+from otx.api.entities.model import ModelEntity, ModelFormat, ModelOptimizationType
+from otx.api.configuration.helper import create as ote_sdk_configuration_helper_create
+from otx.api.usecases.tasks.interfaces.optimization_interface import OptimizationType
+from otx.api.utils.importing import get_impl_class
 
 
 from torchreid_tasks.utils import (ClassificationDatasetAdapter,
                                             generate_label_schema)
 
-from ote_sdk.test_suite.training_test_case import (OTETestCaseInterface,
+from otx.api.test_suite.training_test_case import (OTETestCaseInterface,
                                                    generate_ote_integration_test_case_class)
-from ote_sdk.test_suite.e2e_test_system import DataCollector, e2e_pytest_performance
-from ote_sdk.test_suite.training_tests_common import (make_path_be_abs,
+from otx.api.test_suite.e2e_test_system import DataCollector, e2e_pytest_performance
+from otx.api.test_suite.training_tests_common import (make_path_be_abs,
                                                       make_paths_be_abs,
                                                       KEEP_CONFIG_FIELD_VALUE,
                                                       REALLIFE_USECASE_CONSTANT,
                                                       ROOT_PATH_KEY)
-from ote_sdk.test_suite.training_tests_helper import (OTETestHelper,
+from otx.api.test_suite.training_tests_helper import (OTETestHelper,
                                                       DefaultOTETestCreationParametersInterface,
                                                       OTETrainingTestInterface)
-from ote_sdk.test_suite.training_tests_actions import (OTETestTrainingAction,
+from otx.api.test_suite.training_tests_actions import (OTETestTrainingAction,
                                                        is_nncf_enabled,
                                                        BaseOTETestAction,
                                                        OTETestTrainingEvaluationAction,
@@ -200,7 +200,7 @@ def _get_dummy_compressed_model(task):
 
 
 # TODO: This function copies with minor change OTETestTrainingAction
-#             from ote_sdk.test_suite.
+#             from otx.api.test_suite.
 #             Try to avoid copying of code.
 class ClassificationTestTrainingAction(OTETestTrainingAction):
     _name = "training"

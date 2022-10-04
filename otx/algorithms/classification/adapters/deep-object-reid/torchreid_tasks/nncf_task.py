@@ -22,16 +22,16 @@ import os
 import torch
 
 import torchreid
-from ote_sdk.entities.datasets import DatasetEntity
-from ote_sdk.entities.model import (ModelEntity, ModelFormat, ModelOptimizationType, ModelPrecision,
+from otx.api.entities.datasets import DatasetEntity
+from otx.api.entities.model import (ModelEntity, ModelFormat, ModelOptimizationType, ModelPrecision,
                                     OptimizationMethod)
-from ote_sdk.entities.optimization_parameters import OptimizationParameters
-from ote_sdk.entities.subset import Subset
-from ote_sdk.entities.task_environment import TaskEnvironment
-from ote_sdk.entities.train_parameters import default_progress_callback
-from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType
-from ote_sdk.usecases.tasks.interfaces.optimization_interface import IOptimizationTask, OptimizationType
-from ote_sdk.utils.argument_checks import (
+from otx.api.entities.optimization_parameters import OptimizationParameters
+from otx.api.entities.subset import Subset
+from otx.api.entities.task_environment import TaskEnvironment
+from otx.api.entities.train_parameters import default_progress_callback
+from otx.api.usecases.tasks.interfaces.export_interface import ExportType
+from otx.api.usecases.tasks.interfaces.optimization_interface import IOptimizationTask, OptimizationType
+from otx.api.utils.argument_checks import (
     DatasetParamTypeCheck,
     check_input_parameters_type,
 )

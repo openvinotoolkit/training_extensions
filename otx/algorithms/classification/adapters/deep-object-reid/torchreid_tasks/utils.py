@@ -30,22 +30,22 @@ from typing import Iterable, List, Union
 import cv2 as cv
 import numpy as np
 
-from ote_sdk.entities.annotation import (Annotation, AnnotationSceneEntity,
+from otx.api.entities.annotation import (Annotation, AnnotationSceneEntity,
                                          AnnotationSceneKind)
-from ote_sdk.entities.dataset_item import DatasetItemEntity
-from ote_sdk.entities.datasets import DatasetEntity
-from ote_sdk.entities.id import ID
-from ote_sdk.entities.image import Image
-from ote_sdk.entities.label import Domain, LabelEntity
-from ote_sdk.entities.label_schema import (LabelGroup, LabelGroupType,
+from otx.api.entities.dataset_item import DatasetItemEntity
+from otx.api.entities.datasets import DatasetEntity
+from otx.api.entities.id import ID
+from otx.api.entities.image import Image
+from otx.api.entities.label import Domain, LabelEntity
+from otx.api.entities.label_schema import (LabelGroup, LabelGroupType,
                                            LabelSchemaEntity)
-from ote_sdk.entities.model_template import ModelTemplate
-from ote_sdk.entities.scored_label import ScoredLabel
-from ote_sdk.entities.shapes.rectangle import Rectangle
-from ote_sdk.entities.subset import Subset
-from ote_sdk.entities.train_parameters import UpdateProgressCallback
-from ote_sdk.usecases.reporting.time_monitor_callback import TimeMonitorCallback
-from ote_sdk.utils.argument_checks import (
+from otx.api.entities.model_template import ModelTemplate
+from otx.api.entities.scored_label import ScoredLabel
+from otx.api.entities.shapes.rectangle import Rectangle
+from otx.api.entities.subset import Subset
+from otx.api.entities.train_parameters import UpdateProgressCallback
+from otx.api.usecases.reporting.time_monitor_callback import TimeMonitorCallback
+from otx.api.utils.argument_checks import (
     DatasetParamTypeCheck,
     OptionalDirectoryPathCheck,
     check_input_parameters_type,
@@ -577,7 +577,7 @@ from typing import Any, Dict, Optional
 from mmcv.runner.hooks import HOOKS, Hook, LoggerHook
 from mmcv.runner import BaseRunner, EpochBasedRunner
 from mmcv.runner.dist_utils import master_only
-from ote_sdk.utils.argument_checks import check_input_parameters_type
+from otx.api.utils.argument_checks import check_input_parameters_type
 @HOOKS.register_module()
 class OTELoggerHook(LoggerHook):
 

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from ote_sdk.configuration import ConfigurableEnum
+from otx.api.configuration import ConfigurableEnum
 
 
 class POTQuantizationPreset(ConfigurableEnum):

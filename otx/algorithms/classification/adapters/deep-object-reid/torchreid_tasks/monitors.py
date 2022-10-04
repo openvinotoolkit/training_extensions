@@ -17,7 +17,7 @@
 import abc
 
 from torch.utils.tensorboard import SummaryWriter
-from ote_sdk.utils.argument_checks import (
+from otx.api.utils.argument_checks import (
     DirectoryPathCheck,
     check_input_parameters_type,
 )

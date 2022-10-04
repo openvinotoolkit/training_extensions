@@ -15,7 +15,7 @@
 import cv2
 import numpy as np
 from typing import Any, Dict, Iterable, Union
-from ote_sdk.utils.argument_checks import check_input_parameters_type
+from otx.api.utils.argument_checks import check_input_parameters_type
 
 
 try:

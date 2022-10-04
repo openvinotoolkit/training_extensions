@@ -23,32 +23,32 @@ from typing import Dict, Optional
 import torch
 
 import torchreid
-from ote_sdk.configuration import cfg_helper
-from ote_sdk.configuration.helper.utils import ids_to_strings
-from ote_sdk.entities.datasets import DatasetEntity
-from ote_sdk.entities.inference_parameters import InferenceParameters
-from ote_sdk.entities.metadata import FloatMetadata, FloatType
-from ote_sdk.entities.model import (ModelEntity, ModelFormat, ModelOptimizationType,
+from otx.api.configuration import cfg_helper
+from otx.api.configuration.helper.utils import ids_to_strings
+from otx.api.entities.datasets import DatasetEntity
+from otx.api.entities.inference_parameters import InferenceParameters
+from otx.api.entities.metadata import FloatMetadata, FloatType
+from otx.api.entities.model import (ModelEntity, ModelFormat, ModelOptimizationType,
                                     ModelPrecision)
-from ote_sdk.entities.model import OptimizationMethod
-from ote_sdk.entities.result_media import ResultMediaEntity
-from ote_sdk.entities.resultset import ResultSetEntity
-from ote_sdk.entities.scored_label import ScoredLabel
-from ote_sdk.entities.task_environment import TaskEnvironment
-from ote_sdk.entities.tensor import TensorEntity
-from ote_sdk.entities.train_parameters import default_progress_callback
-from ote_sdk.serialization.label_mapper import label_schema_to_bytes
-from ote_sdk.usecases.evaluation.metrics_helper import MetricsHelper
-from ote_sdk.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
-from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType, IExportTask
-from ote_sdk.usecases.tasks.interfaces.inference_interface import IInferenceTask
-from ote_sdk.usecases.tasks.interfaces.unload_interface import IUnload
-from ote_sdk.utils.argument_checks import (
+from otx.api.entities.model import OptimizationMethod
+from otx.api.entities.result_media import ResultMediaEntity
+from otx.api.entities.resultset import ResultSetEntity
+from otx.api.entities.scored_label import ScoredLabel
+from otx.api.entities.task_environment import TaskEnvironment
+from otx.api.entities.tensor import TensorEntity
+from otx.api.entities.train_parameters import default_progress_callback
+from otx.api.serialization.label_mapper import label_schema_to_bytes
+from otx.api.usecases.evaluation.metrics_helper import MetricsHelper
+from otx.api.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
+from otx.api.usecases.tasks.interfaces.export_interface import ExportType, IExportTask
+from otx.api.usecases.tasks.interfaces.inference_interface import IInferenceTask
+from otx.api.usecases.tasks.interfaces.unload_interface import IUnload
+from otx.api.utils.argument_checks import (
     DatasetParamTypeCheck,
     check_input_parameters_type,
 )
-from ote_sdk.utils.labels_utils import get_empty_label
-from ote_sdk.utils.vis_utils import get_actmap
+from otx.api.utils.labels_utils import get_empty_label
+from otx.api.utils.vis_utils import get_actmap
 from scripts.default_config import (get_default_config, imagedata_kwargs,
                                     merge_from_files_with_base, model_kwargs)
 from torchreid.apis.export import export_ir, export_onnx

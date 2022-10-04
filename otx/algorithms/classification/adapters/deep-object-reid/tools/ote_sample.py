@@ -17,17 +17,17 @@ import os.path as osp
 import sys
 import time
 
-from ote_sdk.configuration.helper import create
-from ote_sdk.entities.datasets import Subset
-from ote_sdk.entities.inference_parameters import InferenceParameters
-from ote_sdk.entities.model import ModelEntity, ModelPrecision, ModelOptimizationType
-from ote_sdk.entities.model_template import parse_model_template
-from ote_sdk.entities.optimization_parameters import OptimizationParameters
-from ote_sdk.entities.resultset import ResultSetEntity
-from ote_sdk.entities.task_environment import TaskEnvironment
-from ote_sdk.usecases.adapters.model_adapter import ModelAdapter
-from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType
-from ote_sdk.usecases.tasks.interfaces.optimization_interface import OptimizationType
+from otx.api.configuration.helper import create
+from otx.api.entities.datasets import Subset
+from otx.api.entities.inference_parameters import InferenceParameters
+from otx.api.entities.model import ModelEntity, ModelPrecision, ModelOptimizationType
+from otx.api.entities.model_template import parse_model_template
+from otx.api.entities.optimization_parameters import OptimizationParameters
+from otx.api.entities.resultset import ResultSetEntity
+from otx.api.entities.task_environment import TaskEnvironment
+from otx.api.usecases.adapters.model_adapter import ModelAdapter
+from otx.api.usecases.tasks.interfaces.export_interface import ExportType
+from otx.api.usecases.tasks.interfaces.optimization_interface import OptimizationType
 
 from torchreid.integration.nncf.compression import is_nncf_checkpoint
 from torchreid_tasks.utils import (ClassificationDatasetAdapter,

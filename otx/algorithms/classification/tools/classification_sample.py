@@ -9,24 +9,24 @@ import sys
 import numpy as np
 import torch
 from mmcv.utils import get_logger
-from ote_sdk.configuration.helper import create
-from ote_sdk.entities.datasets import DatasetEntity
-from ote_sdk.entities.inference_parameters import InferenceParameters
-from ote_sdk.entities.label import Domain
-from ote_sdk.entities.label_schema import (
+from otx.api.configuration.helper import create
+from otx.api.entities.datasets import DatasetEntity
+from otx.api.entities.inference_parameters import InferenceParameters
+from otx.api.entities.label import Domain
+from otx.api.entities.label_schema import (
     LabelEntity,
     LabelGroup,
     LabelGroupType,
     LabelSchemaEntity,
 )
-from ote_sdk.entities.model import ModelEntity
-from ote_sdk.entities.model_template import parse_model_template
-from ote_sdk.entities.optimization_parameters import OptimizationParameters
-from ote_sdk.entities.resultset import ResultSetEntity
-from ote_sdk.entities.subset import Subset
-from ote_sdk.entities.task_environment import TaskEnvironment
-from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType
-from ote_sdk.usecases.tasks.interfaces.optimization_interface import OptimizationType
+from otx.api.entities.model import ModelEntity
+from otx.api.entities.model_template import parse_model_template
+from otx.api.entities.optimization_parameters import OptimizationParameters
+from otx.api.entities.resultset import ResultSetEntity
+from otx.api.entities.subset import Subset
+from otx.api.entities.task_environment import TaskEnvironment
+from otx.api.usecases.tasks.interfaces.export_interface import ExportType
+from otx.api.usecases.tasks.interfaces.optimization_interface import OptimizationType
 from torchreid_tasks.utils import get_task_class
 
 seed = 5
@@ -49,16 +49,16 @@ args = parser.parse_args()
 
 def load_test_dataset(data_type):
     import PIL
-    from ote_sdk.entities.annotation import (
+    from otx.api.entities.annotation import (
         Annotation,
         AnnotationSceneEntity,
         AnnotationSceneKind,
     )
-    from ote_sdk.entities.dataset_item import DatasetItemEntity
-    from ote_sdk.entities.image import Image
-    from ote_sdk.entities.scored_label import ScoredLabel
-    from ote_sdk.entities.shapes.rectangle import Rectangle
-    from ote_sdk.entities.subset import Subset
+    from otx.api.entities.dataset_item import DatasetItemEntity
+    from otx.api.entities.image import Image
+    from otx.api.entities.scored_label import ScoredLabel
+    from otx.api.entities.shapes.rectangle import Rectangle
+    from otx.api.entities.subset import Subset
 
     def gen_image(resolution, shape=None):
         image = PIL.Image.new("RGB", resolution, (255, 255, 255))
