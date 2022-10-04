@@ -26,7 +26,6 @@ from otx.api.entities.color import Color
 from otx.api.entities.id import ID
 from otx.api.entities.label import Domain, LabelEntity
 from otx.api.entities.label_schema import LabelGroup, LabelGroupType, LabelSchemaEntity
-from otx.api.entities.train_parameters import UpdateProgressCallback
 from otx.api.usecases.reporting.time_monitor_callback import TimeMonitorCallback
 from otx.api.utils.argument_checks import YamlFilePathCheck, check_input_parameters_type
 
@@ -182,7 +181,7 @@ class OptimizationProgressCallback(TrainingProgressCallback):
 
     def __init__(
         self,
-        update_progress_callback: UpdateProgressCallback,
+        update_progress_callback,
         loading_stage_progress_percentage: int = 5,
         initialization_stage_progress_percentage: int = 5,
     ):
