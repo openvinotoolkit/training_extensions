@@ -113,7 +113,7 @@ pip install --no-cache-dir mmcv-full==${MMCV_VERSION} || exit 1
 sed -i "s/force=False/force=True/g" "${venv_dir}"/lib/python"${PYTHON_VERSION}"/site-packages/mmcv/utils/registry.py  # Patch: remedy for MMCV registry collision from mmdet/mmseg
 
 # Install algo backend.
-pip install -e submodule/ || exit 1
+pip install -e ../../external/model-preparation-algorithm/submodule/ || exit 1
 
 # Install OTE SDK
 pip install -e ../../ote_sdk/ || exit 1
@@ -122,7 +122,7 @@ pip install -e ../../ote_sdk/ || exit 1
 pip install -e . || exit 1
 
 # Install MPA (to enable transfer learning feature)
-pip install -e ../model-preparation-algorithm/submodule || exit 1
+pip install -e ../model-preparation-algorithm/../../external/model-preparation-algorithm/submodule || exit 1
 pip install -e ../model-preparation-algorithm || exit 1
 
 deactivate

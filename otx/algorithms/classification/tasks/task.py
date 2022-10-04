@@ -15,8 +15,9 @@ from mpa import MPAConstants
 from mpa.stage import Stage
 from mpa.utils.config_utils import MPAConfig
 from mpa.utils.logger import get_logger
-from mpa_tasks.apis import BaseTask, TrainType
-from mpa_tasks.apis.classification import ClassificationConfig
+from otx.algorithms.common.tasks import BaseTask
+from otx.algorithms.common.configs import TrainType
+from otx.algorithms.classification.configs import ClassificationConfig
 from otx.api.configuration import cfg_helper
 from otx.api.configuration.helper.utils import ids_to_strings
 from otx.api.entities.datasets import DatasetEntity
@@ -314,11 +315,11 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         logger.info(f"train type = {train_type}")
 
         recipe = os.path.join(recipe_root, "class_incr.yaml")
-        if train_type == TrainType.SemiSupervised:
+        if train_type == TrainType.SEMISUPERVISED:
             raise NotImplementedError(f"train type {train_type} is not implemented yet.")
-        elif train_type == TrainType.SelfSupervised:
+        elif train_type == TrainType.SELFSUPERVISED:
             raise NotImplementedError(f"train type {train_type} is not implemented yet.")
-        elif train_type == TrainType.Incremental:
+        elif train_type == TrainType.INCREMENTAL:
             recipe = os.path.join(recipe_root, "class_incr.yaml")
         else:
             # raise NotImplementedError(f'train type {train_type} is not implemented yet.')

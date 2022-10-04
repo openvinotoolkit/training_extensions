@@ -3,7 +3,7 @@
 #
 
 from attr import attrs
-from mpa_tasks.apis import BaseConfig
+from otx.algorithms.common.configs import BaseConfig
 from otx.api.configuration.elements import add_parameter_group, string_attribute
 
 

@@ -12,9 +12,9 @@ framework: OTEClassification v1.2.3
 
 # Task implementations.
 entrypoints:
-  base: mpa_tasks.apis.classification.ClassificationTrainTask
+  base: otx.algorithms.classification.tasks.ClassificationTrainTask
   openvino: torchreid_tasks.openvino_task.OpenVINOClassificationTask
-  nncf: mpa_tasks.apis.classification.ClassificationNNCFTask
+  nncf: otx.algorithms.classification.tasks.ClassificationNNCFTask
 base_model_path: ../../../../deep-object-reid/configs/ote_custom_classification/efficientnet_v2_s/template_experimental.yaml
 
 # Capabilities.
