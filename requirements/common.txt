@@ -1,5 +1,3 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # Common Tasks Requirements.                                                       #
-numpy==1.21.4
-mmpycocotools
 -e otx/algorithms/common/adapters/mpa
