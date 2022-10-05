@@ -217,6 +217,7 @@ def main():
 
     logger.info("Create base Task")
     task_impl_path = model_template.entrypoints.base
+    print("Task impl path : ", task_impl_path)
     task_cls = get_task_class(task_impl_path)
     task = task_cls(task_environment=environment)
 

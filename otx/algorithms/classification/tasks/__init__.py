@@ -1,7 +1,9 @@
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
+import mpa.cls as MPAClassification
 
+from .datasets import MPAClsDataset
 from .task import (
     ClassificationInferenceTask,
     ClassificationNNCFTask,
@@ -9,7 +11,9 @@ from .task import (
 )
 
 __all__ = [
-    ClassificationInferenceTask,
-    ClassificationTrainTask,
-    ClassificationNNCFTask,
+    "MPAClassification",
+    "MPAClsDataset",
+    "ClassificationInferenceTask",
+    "ClassificationTrainTask",
+    "ClassificationNNCFTask",
 ]
