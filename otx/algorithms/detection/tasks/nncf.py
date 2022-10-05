@@ -84,6 +84,7 @@ from .inference import DetectionInferenceTask
 logger = get_logger()
 
 
+# pylint: disable=too-many-instance-attributes
 class DetectionNNCFTask(DetectionInferenceTask, IOptimizationTask):
     """Task for compressing detection models using NNCF."""
 
@@ -182,7 +183,7 @@ class DetectionNNCFTask(DetectionInferenceTask, IOptimizationTask):
         # NNCF parts
         nncf_config_path = os.path.join(self._base_dir, "compression_config.json")
 
-        with open(nncf_config_path) as nncf_config_file:
+        with open(nncf_config_path, encoding="UTF-8") as nncf_config_file:
             common_nncf_config = json.load(nncf_config_file)
 
         self._set_attributes_by_hyperparams()
@@ -350,7 +351,7 @@ class DetectionNNCFTask(DetectionInferenceTask, IOptimizationTask):
 
         if fp16 is not None:
             remove_from_config(training_config, "fp16")
-            logger.warn("fp16 option is not supported in NNCF. Switch to fp32.")
+            logger.warning("fp16 option is not supported in NNCF. Switch to fp32.")
 
         train_detector(
             model=self._model,

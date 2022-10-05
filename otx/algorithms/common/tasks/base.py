@@ -125,7 +125,7 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         logger.info(f"running task... kwargs = {kwargs}")
         if self._recipe_cfg is None:
             raise RuntimeError(
-                "'recipe_cfg' is not initialized yet." "call prepare() method before calling this method"
+                "'recipe_cfg' is not initialized yet. call prepare() method before calling this method"
             )
 
         if mode is not None:
@@ -339,7 +339,7 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         path = "/proc/self/cgroup"
         is_in_docker = False
         if os.path.isfile(path):
-            with open(path) as f:
+            with open(path, encoding="UTF-8") as f:
                 is_in_docker = is_in_docker or any("docker" in line for line in f)
         is_in_docker = is_in_docker or os.path.exists("/.dockerenv")
         return is_in_docker

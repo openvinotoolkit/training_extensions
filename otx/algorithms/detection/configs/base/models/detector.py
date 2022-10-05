@@ -20,4 +20,4 @@ _base_ = "./model.py"
 
 task = "detection"
 
-model = dict(train_cfg=dict(), test_cfg=dict())  # type: dict
+model = dict(train_cfg={}, test_cfg={})  # type: dict

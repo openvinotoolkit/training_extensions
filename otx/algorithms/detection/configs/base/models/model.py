@@ -16,7 +16,7 @@
 
 # pylint: disable=invalid-name
 
-model = dict()  # type: dict
+model = {}  # type: dict
 
 load_from = None
 

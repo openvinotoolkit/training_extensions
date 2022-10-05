@@ -32,7 +32,7 @@ from otx.api.utils.argument_checks import check_input_parameters_type
 logger = get_logger()
 
 
-# pylint: disable=too-many-instance-attributes, protected-access, too-many-arguments, unused-argument, no-self-use
+# pylint: disable=too-many-instance-attributes, protected-access, too-many-arguments, unused-argument
 @HOOKS.register_module()
 class CancelTrainingHook(Hook):
     """CancelTrainingHook for Training Stopping."""

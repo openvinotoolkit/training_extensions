@@ -49,7 +49,7 @@ from otx.api.utils.shape_factory import ShapeFactory
 @check_input_parameters_type({"path": JsonFilePathCheck})
 def get_classes_from_annotation(path):
     """Return classes from annotation."""
-    with open(path) as read_file:
+    with open(path, encoding="UTF-8") as read_file:
         content = json.load(read_file)
         categories = [v["name"] for v in sorted(content["categories"], key=lambda x: x["id"])]
     return categories
