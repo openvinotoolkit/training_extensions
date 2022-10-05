@@ -286,6 +286,7 @@ class BaseTask:
             saved_config = model_data.get('config')
             tiling_parameters = saved_config.get('tiling_parameters')
             if tiling_parameters and tiling_parameters['enable_tiling']['value']:
+                logger.info("Load tiling parameters")
                 self._hyperparams.tiling_parameters.enable_tiling = tiling_parameters['enable_tiling']['value']
                 self._hyperparams.tiling_parameters.tile_size = tiling_parameters['tile_size']['value']
                 self._hyperparams.tiling_parameters.tile_overlap = tiling_parameters['tile_overlap']['value']

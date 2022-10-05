@@ -189,6 +189,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         """ Overwrite config parameters with TaskEnvironment hyper-parameters and config tiling parameters. """
         super()._overwrite_parameters()
         if bool(self._hyperparams.tiling_parameters.enable_tiling):
+            logger.info("Tiling Enabled")
             tile_params = ConfigDict(
                 data=ConfigDict(
                     train=ConfigDict(
