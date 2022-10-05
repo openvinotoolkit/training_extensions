@@ -68,7 +68,9 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
     def __init__(self, task_config, task_environment: TaskEnvironment):
         self._task_config = task_config
         self._task_environment = task_environment
-        self._hyperparams = task_environment.get_hyper_parameters(self._task_config)  # type: ConfigDict
+        self._hyperparams = task_environment.get_hyper_parameters(
+            self._task_config
+        )  # type: ConfigDict
         self._model_name = task_environment.model_template.name
         self._task_type = task_environment.model_template.task_type
         self._labels = task_environment.get_labels(include_empty=False)
@@ -88,7 +90,9 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
                 if os.path.exists(self._model_ckpt):
                     os.remove(self._model_ckpt)
                 torch.save(state_dict, self._model_ckpt)
-                self._model_label_schema = self._load_model_label_schema(self._task_environment.model)
+                self._model_label_schema = self._load_model_label_schema(
+                    self._task_environment.model
+                )
 
         # property below will be initialized by initialize()
         self._recipe_cfg = None
@@ -134,7 +138,9 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         common_cfg = ConfigDict(dict(output_path=self._output_path))
 
         # build workflow using recipe configuration
-        workflow = build(self._recipe_cfg, self._mode, stage_type=stage_module, common_cfg=common_cfg)
+        workflow = build(
+            self._recipe_cfg, self._mode, stage_type=stage_module, common_cfg=common_cfg
+        )
 
         # run workflow with task specific model config and data config
         output = workflow.run(
@@ -182,7 +188,11 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
 
     @property
     def _precision_from_config(self):
-        return [ModelPrecision.FP16] if self._config.get("fp16", None) else [ModelPrecision.FP32]
+        return (
+            [ModelPrecision.FP16]
+            if self._config.get("fp16", None)
+            else [ModelPrecision.FP32]
+        )
 
     def _initialize(self, export=False):
         """Prepare configurations to run a task through MPA's stage."""
@@ -197,7 +207,9 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         if "custom_hooks" in self.override_configs:
             override_custom_hooks = self.override_configs.pop("custom_hooks")
             for override_custom_hook in override_custom_hooks:
-                update_or_add_custom_hook(self._recipe_cfg, ConfigDict(override_custom_hook))
+                update_or_add_custom_hook(
+                    self._recipe_cfg, ConfigDict(override_custom_hook)
+                )
         if len(self.override_configs) > 0:
             logger.info(f"before override configs merging = {self._recipe_cfg}")
             self._recipe_cfg.merge_from_dict(self.override_configs)
@@ -229,7 +241,9 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         # add Cancel tranining hook
         update_or_add_custom_hook(
             self._recipe_cfg,
-            ConfigDict(type="CancelInterfaceHook", init_callback=self.on_hook_initialized),
+            ConfigDict(
+                type="CancelInterfaceHook", init_callback=self.on_hook_initialized
+            ),
         )
         if self._time_monitor is not None:
             update_or_add_custom_hook(
@@ -241,7 +255,9 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
                     priority=71,
                 ),
             )
-        self._recipe_cfg.log_config.hooks.append({"type": "OTELoggerHook", "curves": self._learning_curves})
+        self._recipe_cfg.log_config.hooks.append(
+            {"type": "OTELoggerHook", "curves": self._learning_curves}
+        )
 
         logger.info("initialized.")
 
@@ -299,7 +315,9 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
             model_data = torch.load(buffer, map_location=torch.device("cpu"))
 
             # set confidence_threshold as well
-            self.confidence_threshold = model_data.get("confidence_threshold", self.confidence_threshold)
+            self.confidence_threshold = model_data.get(
+                "confidence_threshold", self.confidence_threshold
+            )
             if model_data.get("anchors"):
                 self._anchors = model_data["anchors"]
 
@@ -326,7 +344,9 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
     @staticmethod
     def _get_confidence_threshold(hyperparams):
         confidence_threshold = 0.3
-        if hasattr(hyperparams, "postprocessing") and hasattr(hyperparams.postprocessing, "confidence_threshold"):
+        if hasattr(hyperparams, "postprocessing") and hasattr(
+            hyperparams.postprocessing, "confidence_threshold"
+        ):
             confidence_threshold = hyperparams.postprocessing.confidence_threshold
         return confidence_threshold
 
@@ -355,15 +375,20 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         """Unload the task."""
         self._delete_scratch_space()
         if self._is_docker():
-            logger.warning("Got unload request. Unloading models. Throwing Segmentation Fault on purpose")
+            logger.warning(
+                "Got unload request. Unloading models. Throwing Segmentation Fault on purpose"
+            )
             import ctypes
 
             ctypes.string_at(0)
         else:
-            logger.warning("Got unload request, but not on Docker. Only clearing CUDA cache")
+            logger.warning(
+                "Got unload request, but not on Docker. Only clearing CUDA cache"
+            )
             torch.cuda.empty_cache()
             logger.warning(
-                f"Done unloading. " f"Torch is still occupying {torch.cuda.memory_allocated()} bytes of GPU memory"
+                f"Done unloading. "
+                f"Torch is still occupying {torch.cuda.memory_allocated()} bytes of GPU memory"
             )
 
     class OnHookInitialized:
