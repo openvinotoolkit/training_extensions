@@ -167,9 +167,18 @@ def load_test_dataset(data_type):
 
 def get_label_schema(labels, multilabel=False, hierarchical=False):
     label_schema = LabelSchemaEntity()
+
+    emptylabel = LabelEntity(
+        id=-1, name="Empty label", is_empty=True, domain=Domain.CLASSIFICATION
+    )
+    empty_group = LabelGroup(
+        name="empty", labels=[emptylabel], group_type=LabelGroupType.EMPTY_LABEL
+    )
+
     if multilabel:
         for label in labels:
             label_schema.add_group(LabelGroup(name=label.name, labels=[label], group_type=LabelGroupType.EXCLUSIVE))
+        label_schema.add_group(empty_group)
     elif hierarchical:
         single_label_classes = ["pieslice", "circle"]
         multi_label_classes = ["rectangle", "triangle", "text"]

@@ -278,7 +278,7 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
                 dataset_item.append_metadata_item(saliency_map_media, model=self._task_environment.model)
 
             update_progress_callback(int(i / dataset_size * 100))
-
+            
     def _init_recipe_hparam(self) -> dict:
         warmup_iters = int(self._hyperparams.learning_parameters.learning_rate_warmup_iters)
         lr_config = (

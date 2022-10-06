@@ -52,8 +52,6 @@ from ote_sdk.utils.argument_checks import (
 )
 from torch.nn.modules import Module
 
-from torchreid.utils import set_model_attr, get_model_attr
-
 
 class ClassificationType(Enum):
     MULTICLASS = auto()
@@ -403,17 +401,6 @@ def set_values_as_default(parameters: dict):
         elif isinstance(v, dict) and 'value' in v:
             if v['value'] != v['default_value']:
                 v['value'] = v['default_value']
-
-
-@contextmanager
-@check_input_parameters_type()
-def force_fp32(model: Module):
-    mix_precision_status = get_model_attr(model, 'mix_precision')
-    set_model_attr(model, 'mix_precision', False)
-    try:
-        yield model
-    finally:
-        set_model_attr(model, 'mix_precision', mix_precision_status)
 
 
 class TrainingProgressCallback(TimeMonitorCallback):
