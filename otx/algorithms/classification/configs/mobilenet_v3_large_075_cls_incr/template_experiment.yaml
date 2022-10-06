@@ -13,9 +13,9 @@ framework: OTEClassification v1.2.3
 # Task implementations.
 entrypoints:
   base: otx.algorithms.classification.tasks.ClassificationTrainTask
-  openvino: torchreid_tasks.openvino_task.OpenVINOClassificationTask
+  openvino: otx.algorithms.classification.tasks.ClassificationOpenVINOTask
   nncf: otx.algorithms.classification.tasks.ClassificationNNCFTask
-base_model_path: ../../../../deep-object-reid/configs/ote_custom_classification/mobilenet_v3_large_075/template_experimental.yaml
+base_model_path: ../../adapters/dor/configs/ote_custom_classification/mobilenet_v3_large_075/template_experimental.yaml
 
 # Capabilities.
 capabilities:

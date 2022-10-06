@@ -61,11 +61,11 @@ from otx.api.usecases.tasks.interfaces.unload_interface import IUnload
 from otx.api.utils.argument_checks import check_input_parameters_type
 from otx.api.utils.labels_utils import get_empty_label
 from otx.api.utils.vis_utils import get_actmap
-from torchreid_tasks.nncf_task import OTEClassificationNNCFTask
+from otx.algorithms.classification.adapters.dor.torchreid_tasks.nncf_task import OTEClassificationNNCFTask
 
-# from torchreid_tasks.utils import TrainingProgressCallback
-from torchreid_tasks.utils import OTELoggerHook
-from torchreid_tasks.utils import get_multihead_class_info as get_hierarchical_info
+# from otx.algorithms.classification.adapters.dor.torchreid_tasks.utils import TrainingProgressCallback
+from otx.algorithms.classification.adapters.dor.torchreid_tasks.utils import OTELoggerHook
+from otx.algorithms.classification.adapters.dor.torchreid_tasks.utils import get_multihead_class_info as get_hierarchical_info
 
 logger = get_logger()
 

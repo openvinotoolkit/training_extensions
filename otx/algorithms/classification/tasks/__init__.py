@@ -4,6 +4,7 @@
 import mpa.cls as MPAClassification
 
 from .datasets import MPAClsDataset
+from .openvino_task import ClassificationOpenVINOTask
 from .task import (
     ClassificationInferenceTask,
     ClassificationNNCFTask,
@@ -13,6 +14,7 @@ from .task import (
 __all__ = [
     "MPAClassification",
     "MPAClsDataset",
+    "ClassificationOpenVINOTask",
     "ClassificationInferenceTask",
     "ClassificationTrainTask",
     "ClassificationNNCFTask",

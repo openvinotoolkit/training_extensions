@@ -27,7 +27,7 @@ from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType
 from otx.api.usecases.tasks.interfaces.optimization_interface import OptimizationType
-from torchreid_tasks.utils import get_task_class
+from otx.algorithms.classification.adapters.dor.torchreid_tasks.utils import get_task_class
 
 seed = 5
 random.seed(seed)
@@ -217,7 +217,6 @@ def main():
 
     logger.info("Create base Task")
     task_impl_path = model_template.entrypoints.base
-    print("Task impl path : ", task_impl_path)
     task_cls = get_task_class(task_impl_path)
     task = task_cls(task_environment=environment)
 
@@ -312,6 +311,9 @@ def main():
         openvino_task.optimize(
             OptimizationType.POT, dataset.get_subset(Subset.TRAINING), optimized_model, OptimizationParameters()
         )
+
+        logger.info("Run POT deploy")
+        openvino_task.deploy(optimized_model)
 
         logger.info("Get predictions on the validation set")
         predicted_validation_dataset = openvino_task.infer(

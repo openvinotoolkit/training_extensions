@@ -4,40 +4,39 @@ name: MobileNet-V3-large-1x
 task_type: CLASSIFICATION
 task_family: VISION
 instantiation: "CLASS"
-summary: Class-Incremental Image Classification for MobileNet-V3-large-1x
-application: ~
+summary: Custom Image Classification MobileNet-V3-large-1x
+application:
+  ~
 
 # Algo backend.
 framework: OTEClassification v1.2.3
 
 # Task implementations.
 entrypoints:
-  base: otx.algorithms.classification.tasks.ClassificationTrainTask
-  openvino: otx.algorithms.classification.tasks.ClassificationOpenVINOTask
-  nncf: otx.algorithms.classification.tasks.ClassificationNNCFTask
-base_model_path: ../../adapters/dor/configs/ote_custom_classification/mobilenet_v3_large_1/template_experimental.yaml
+  base: otx.algorithms.classification.adapters.dor.torchreid_tasks.train_task.OTEClassificationTrainingTask
+  openvino: otx.algorithms.classification.adapters.dor.torchreid_tasks.openvino_task.OpenVINOClassificationTask
+  nncf: otx.algorithms.classification.adapters.dor.torchreid_tasks.nncf_task.OTEClassificationNNCFTask
 
 # Capabilities.
 capabilities:
   - compute_representations
+  - compute_uncertainty_score
 
 # Hyperparameters.
 hyper_parameters:
-  base_path: ../configuration.yaml
+  base_path: "../../../torchreid_tasks/configuration.yaml"
   parameter_overrides:
     learning_parameters:
       batch_size:
-        default_value: 64
+        default_value: 32
         auto_hpo_state: POSSIBLE
-      num_workers:
-        default_value: 0
+      max_num_epochs:
+        default_value: 200
       learning_rate:
-        default_value: 0.0058
+        default_value: 0.016
         auto_hpo_state: POSSIBLE
-      learning_rate_warmup_iters:
-        default_value: 10
-      num_iters:
-        default_value: 90
+      enable_early_stopping:
+        default_value: true
     nncf_optimization:
       enable_quantization:
         default_value: true
@@ -47,9 +46,7 @@ hyper_parameters:
         default_value: true
       maximal_accuracy_degradation:
         default_value: 1.0
-    algo_backend:
-      train_type:
-        default_value: Incremental
+
 
 # Training resources.
 max_nodes: 1
