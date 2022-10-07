@@ -1,21 +1,25 @@
+"""
+This module implements activation map
+"""
 # Copyright (C) 2021-2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-from typing import Union, Iterable
+from typing import Union
 
 import cv2
 import numpy as np
 
 
-def get_actmap(saliency_map: Union[np.ndarray, Iterable, int, float], output_res: Union[tuple, list]) -> np.ndarray:
-    """ Get activation map (heatmap)  from saliency map
+def get_actmap(
+    saliency_map: np.ndarray,
+    output_res: Union[tuple, list],
+) -> np.ndarray:
+    """
+    Get activation map (heatmap)  from saliency map
 
-    Args:
-        saliency_map (Union[np.ndarray, Iterable, int, float]): Saliency map with pixel values from 0-255
-        output_res (Union[tuple, list]): Output resolution
-
-    Returns:
-        np.ndarray: activation map (heatmap)
+    :param saliency_map: Saliency map with pixel values from 0-255 (np.ndarray)
+    :param output_res: Output resolution (Union[tuple, list])
+    :return: activation map, heatmap (np.ndarray)
     """
     if len(saliency_map.shape) == 3:
         saliency_map = saliency_map[0]

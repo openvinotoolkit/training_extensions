@@ -177,7 +177,11 @@ def get_cuda_device_list():
 
 
 def run_hpo_trainer(
-    hp_config, hyper_parameters, model_template, dataset_paths, task_type,
+    hp_config,
+    hyper_parameters,
+    model_template,
+    dataset_paths,
+    task_type,
 ):
     """Run each training of each trial with given hyper parameters"""
     if dataset_paths is None:
@@ -286,7 +290,10 @@ def run_hpo_trainer(
 
     dataset = HpoDataset(dataset, hp_config)
 
-    output_model = ModelEntity(dataset, train_env.get_model_configuration(),)
+    output_model = ModelEntity(
+        dataset,
+        train_env.get_model_configuration(),
+    )
 
     # make callback to report score to hpopt every epoch
     train_param = TrainParameters(
@@ -510,7 +517,10 @@ class HpoManager:
             if _is_anomaly_framework_task(task_type):
                 impl_class = get_impl_class(environment.model_template.entrypoints.base)
                 task = impl_class(task_environment=environment)
-                model = ModelEntity(dataset, environment.get_model_configuration(),)
+                model = ModelEntity(
+                    dataset,
+                    environment.get_model_configuration(),
+                )
                 task.save_model(model)
                 save_model_data(model, self.work_dir)
         else:
@@ -728,7 +738,11 @@ class HpoManager:
                 alloc_gpus = self.__alloc_gpus(gpu_alloc_list)
 
                 p = multiprocessing.Process(
-                    target=exec_hpo_trainer, args=(pickle_path, alloc_gpus,),
+                    target=exec_hpo_trainer,
+                    args=(
+                        pickle_path,
+                        alloc_gpus,
+                    ),
                 )
                 proc_list.append(p)
                 gpu_alloc_list.append(alloc_gpus)
@@ -896,10 +910,20 @@ class HpoUnpickler(pickle.Unpickler):
     __safe_collections = {"OrderedDict", "defaultdict"}
 
     __allowed_classes = {
-        "datetime": {"datetime", "timezone", "timedelta",},
-        "networkx.classes.graph": {"Graph",},
-        "networkx.classes.multidigraph": {"MultiDiGraph",},
-        "ote_sdk.configuration.enums.config_element_type": {"ConfigElementType",},
+        "datetime": {
+            "datetime",
+            "timezone",
+            "timedelta",
+        },
+        "networkx.classes.graph": {
+            "Graph",
+        },
+        "networkx.classes.multidigraph": {
+            "MultiDiGraph",
+        },
+        "ote_sdk.configuration.enums.config_element_type": {
+            "ConfigElementType",
+        },
         "ote_sdk.entities.label_schema": {
             "LabelTree",
             "LabelGroup",
@@ -907,9 +931,16 @@ class HpoUnpickler(pickle.Unpickler):
             "LabelSchemaEntity",
             "LabelGraph",
         },
-        "ote_sdk.entities.id": {"ID",},
-        "ote_sdk.entities.label": {"Domain", "LabelEntity",},
-        "ote_sdk.entities.color": {"Color",},
+        "ote_sdk.entities.id": {
+            "ID",
+        },
+        "ote_sdk.entities.label": {
+            "Domain",
+            "LabelEntity",
+        },
+        "ote_sdk.entities.color": {
+            "Color",
+        },
         "ote_sdk.entities.model_template": {
             "ModelTemplate",
             "TaskFamily",

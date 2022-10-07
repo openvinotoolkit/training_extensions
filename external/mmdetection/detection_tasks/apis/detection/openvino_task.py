@@ -16,6 +16,7 @@ import attr
 import copy
 import io
 import json
+import multiprocessing
 import numpy as np
 import os
 import ote_sdk.usecases.exportable_code.demo as demo
@@ -584,7 +585,8 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
             optimization_parameters.update_progress(10)
 
         engine_config = ADDict({
-            'device': 'CPU'
+            'device': 'CPU',
+            'stat_requests_number': min(self.hparams.pot_parameters.stat_requests_number, multiprocessing.cpu_count()),
         })
 
         stat_subset_size = self.hparams.pot_parameters.stat_subset_size

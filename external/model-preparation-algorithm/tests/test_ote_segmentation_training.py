@@ -40,9 +40,7 @@ def ote_test_domain_fx():
     return "custom-segmentation-cls-incr"
 
 
-class SegmentationClsIncrTrainingTestParameters(
-    DefaultOTETestCreationParametersInterface
-):
+class SegmentationClsIncrTrainingTestParameters(DefaultOTETestCreationParametersInterface):
     def test_case_class(self) -> Type[OTETestCaseInterface]:
         return generate_ote_integration_test_case_class(get_test_action_classes())
 
@@ -111,25 +109,17 @@ class TestOTEReallifeMPASeg(OTETrainingTestInterface):
             num_training_iters = test_parameters["num_training_iters"]
             batch_size = test_parameters["batch_size"]
 
-            dataset_params = _get_dataset_params_from_dataset_definitions(
-                dataset_definitions, dataset_name
-            )
+            dataset_params = _get_dataset_params_from_dataset_definitions(dataset_definitions, dataset_name)
 
             if model_name not in template_paths:
                 raise ValueError(
                     f"Model {model_name} is absent in template_paths, "
                     f"template_paths.keys={list(template_paths.keys())}"
                 )
-            template_path = make_path_be_abs(
-                template_paths[model_name], template_paths[ROOT_PATH_KEY]
-            )
+            template_path = make_path_be_abs(template_paths[model_name], template_paths[ROOT_PATH_KEY])
 
-            logger.debug(
-                "training params factory: Before creating dataset and labels_schema"
-            )
-            dataset, labels_schema = _create_segmentation_dataset_and_labels_schema(
-                dataset_params
-            )
+            logger.debug("training params factory: Before creating dataset and labels_schema")
+            dataset, labels_schema = _create_segmentation_dataset_and_labels_schema(dataset_params)
             import os.path as osp
 
             ckpt_path = None
@@ -138,9 +128,7 @@ class TestOTEReallifeMPASeg(OTETrainingTestInterface):
                     osp.join(dataset_params.pre_trained_model, model_name),
                     "weights.pth",
                 )
-            logger.debug(
-                "training params factory: After creating dataset and labels_schema"
-            )
+            logger.debug("training params factory: After creating dataset and labels_schema")
 
             return {
                 "dataset": dataset,
@@ -158,9 +146,7 @@ class TestOTEReallifeMPASeg(OTETrainingTestInterface):
         return params_factories_for_test_actions
 
     @pytest.fixture
-    def test_case_fx(
-        self, current_test_parameters_fx, params_factories_for_test_actions_fx
-    ):
+    def test_case_fx(self, current_test_parameters_fx, params_factories_for_test_actions_fx):
         """
         This fixture returns the test case class OTEIntegrationTestCase that should be used for the current test.
         Note that the cache from the test helper allows to store the instance of the class
@@ -172,9 +158,7 @@ class TestOTEReallifeMPASeg(OTETrainingTestInterface):
         If the main parameters used for this test differs w.r.t. the previous test, a new instance of
         test case class will be created.
         """
-        test_case = type(self).helper.get_test_case(
-            current_test_parameters_fx, params_factories_for_test_actions_fx
-        )
+        test_case = type(self).helper.get_test_case(current_test_parameters_fx, params_factories_for_test_actions_fx)
         return test_case
 
     # TODO: move to common fixtures
@@ -182,9 +166,7 @@ class TestOTEReallifeMPASeg(OTETrainingTestInterface):
     def data_collector_fx(self, request) -> DataCollector:
         setup = deepcopy(request.node.callspec.params)
         setup["environment_name"] = os.environ.get("TT_ENVIRONMENT_NAME", "no-env")
-        setup["test_type"] = os.environ.get(
-            "TT_TEST_TYPE", "no-test-type"
-        )  # TODO: get from e2e test type
+        setup["test_type"] = os.environ.get("TT_TEST_TYPE", "no-test-type")  # TODO: get from e2e test type
         setup["scenario"] = "api"  # TODO: get from a fixture!
         setup["test"] = request.node.name
         setup["subject"] = "custom-segmentation-cls-incr"
