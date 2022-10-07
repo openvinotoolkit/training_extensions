@@ -98,7 +98,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
             self.confidence_threshold = self._hyperparams.postprocessing.confidence_threshold
         logger.info(f"Confidence threshold {self.confidence_threshold}")
 
-        prediction_results, _ = self._infer_detector(dataset, inference_parameters, **kwargs)
+        prediction_results, _ = self._infer_detector(dataset, inference_parameters)
         self._add_predictions_to_dataset(prediction_results, dataset, self.confidence_threshold)
         logger.info("Inference completed")
         return dataset
