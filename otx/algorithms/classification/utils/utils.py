@@ -30,22 +30,22 @@ from typing import Iterable, List, Union
 import cv2 as cv
 import numpy as np
 
-from ote_sdk.entities.annotation import (Annotation, AnnotationSceneEntity,
+from otx.api.entities.annotation import (Annotation, AnnotationSceneEntity,
                                          AnnotationSceneKind)
-from ote_sdk.entities.dataset_item import DatasetItemEntity
-from ote_sdk.entities.datasets import DatasetEntity
-from ote_sdk.entities.id import ID
-from ote_sdk.entities.image import Image
-from ote_sdk.entities.label import Domain, LabelEntity
-from ote_sdk.entities.label_schema import (LabelGroup, LabelGroupType,
+from otx.api.entities.dataset_item import DatasetItemEntity
+from otx.api.entities.datasets import DatasetEntity
+from otx.api.entities.id import ID
+from otx.api.entities.image import Image
+from otx.api.entities.label import Domain, LabelEntity
+from otx.api.entities.label_schema import (LabelGroup, LabelGroupType,
                                            LabelSchemaEntity)
-from ote_sdk.entities.model_template import ModelTemplate
-from ote_sdk.entities.scored_label import ScoredLabel
-from ote_sdk.entities.shapes.rectangle import Rectangle
-from ote_sdk.entities.subset import Subset
-from ote_sdk.entities.train_parameters import UpdateProgressCallback
-from ote_sdk.usecases.reporting.time_monitor_callback import TimeMonitorCallback
-from ote_sdk.utils.argument_checks import (
+from otx.api.entities.model_template import ModelTemplate
+from otx.api.entities.scored_label import ScoredLabel
+from otx.api.entities.shapes.rectangle import Rectangle
+from otx.api.entities.subset import Subset
+from otx.api.entities.train_parameters import UpdateProgressCallback
+from otx.api.usecases.reporting.time_monitor_callback import TimeMonitorCallback
+from otx.api.utils.argument_checks import (
     DatasetParamTypeCheck,
     OptionalDirectoryPathCheck,
     check_input_parameters_type,
@@ -556,60 +556,3 @@ def get_hierarchical_predictions(logits: np.ndarray, labels: List[LabelEntity],
                 predicted_labels.append(ScoredLabel(label=ote_label, probability=float(head_logits[i])))
 
     return label_schema.resolve_labels_probabilistic(predicted_labels)
-
-
-# Temp copy from detection_tasks
-# TODO: refactoring to somewhere
-from typing import Any, Dict, Optional
-from mmcv.runner.hooks import HOOKS, Hook, LoggerHook
-from mmcv.runner import BaseRunner, EpochBasedRunner
-from mmcv.runner.dist_utils import master_only
-from ote_sdk.utils.argument_checks import check_input_parameters_type
-@HOOKS.register_module()
-class OTELoggerHook(LoggerHook):
-
-    class Curve:
-        def __init__(self):
-            self.x = []
-            self.y = []
-
-        def __repr__(self):
-            points = []
-            for x, y in zip(self.x, self.y):
-                points.append(f'({x},{y})')
-            return 'curve[' + ','.join(points) + ']'
-
-    @check_input_parameters_type()
-    def __init__(self,
-                 curves: Optional[Dict[Any, Curve]] = None,
-                 interval: int = 10,
-                 ignore_last: bool = True,
-                 reset_flag: bool = True,
-                 by_epoch: bool = True):
-        super().__init__(interval, ignore_last, reset_flag, by_epoch)
-        self.curves = curves if curves is not None else defaultdict(self.Curve)
-
-    @master_only
-    @check_input_parameters_type()
-    def log(self, runner: BaseRunner):
-        tags = self.get_loggable_tags(runner, allow_text=False, tags_to_skip=())
-        if runner.max_epochs is not None:
-            normalized_iter = self.get_iter(runner) / runner.max_iters * runner.max_epochs
-        else:
-            normalized_iter = self.get_iter(runner)
-        for tag, value in tags.items():
-            curve = self.curves[tag]
-            # Remove duplicates.
-            if len(curve.x) > 0 and curve.x[-1] == normalized_iter:
-                curve.x.pop()
-                curve.y.pop()
-            curve.x.append(normalized_iter)
-            curve.y.append(value)
-
-    @check_input_parameters_type()
-    def after_train_epoch(self, runner: BaseRunner):
-        # Iteration counter is increased right after the last iteration in the epoch,
-        # temporarily decrease it back.
-        runner._iter -= 1
-        super().after_train_epoch(runner)
-        runner._iter += 1
