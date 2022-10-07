@@ -63,7 +63,6 @@ from otx.api.utils.labels_utils import get_empty_label
 from otx.api.utils.vis_utils import get_actmap
 from otx.algorithms.classification.adapters.dor.torchreid_tasks.nncf_task import OTEClassificationNNCFTask
 
-# from otx.algorithms.classification.adapters.dor.torchreid_tasks.utils import TrainingProgressCallback
 from otx.algorithms.common.utils.hooks import OTELoggerHook
 from otx.algorithms.classification.utils.utils import get_multihead_class_info as get_hierarchical_info
 
