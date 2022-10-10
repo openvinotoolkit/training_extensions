@@ -643,8 +643,7 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
             dataset (ObjectDetectionDataset): OTX customized object detection dataset
         """
         if bool(self._hyperparams.tiling_parameters.enable_adaptive_params):
-            adaptive_object_tile_ratio = float(self._hyperparams.tiling_parameters.adaptive_object_tile_ratio)
-            tile_cfg = adaptive_tile_params(dataset, adaptive_object_tile_ratio)
+            tile_cfg = adaptive_tile_params(dataset)
             if tile_cfg.get('tile_size'):
                 self._hyperparams.tiling_parameters.tile_size = tile_cfg.get('tile_size')
             if tile_cfg.get('tile_overlap'):

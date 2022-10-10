@@ -396,9 +396,25 @@ tiling_parameters:
   description: Crop dataset to tiles
 
   enable_tiling:
-    header: Enable tiling on training dataset
-    description: Enable tiling on training dataset
+    header: Enable tiling
+    description: Set to True to allow tiny objects to be better detected.
     default_value: false
+    editable: true
+    affects_outcome_of: TRAINING
+    type: BOOLEAN
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: true
+    visible_in_ui: true
+    warning: Tiling trades off speed for accuracy as it increases the number of images to be processed.
+
+  enable_adaptive_params:
+    header: Enable adaptive tiling parameters
+    description: Config tile size and tile overlap adaptively based on annotated dataset statistic
+    default_value: True
     editable: true
     affects_outcome_of: TRAINING
     type: BOOLEAN
@@ -412,8 +428,8 @@ tiling_parameters:
     warning: null
 
   tile_size:
-    header: Tile Dimension
-    description: Tile Dimension
+    header: Tile Image Size
+    description: Tile Image Size
     affects_outcome_of: TRAINING
     default_value: 400
     min_value: 100
@@ -431,7 +447,7 @@ tiling_parameters:
 
   tile_overlap:
     header: Tile Overlap
-    description: Tile Overlap
+    description: Overlap between each two neighboring tiles.
     affects_outcome_of: TRAINING
     default_value: 0.2
     min_value: 0.0
@@ -462,40 +478,6 @@ tiling_parameters:
       rules: []
       type: UI_RULES
     value: 1500
-    visible_in_ui: true
-    warning: null
-
-  enable_adaptive_params:
-    header: Enable adaptive tiling parameters
-    description: Config tiling parameters adaptively based on annotated dataset statistic
-    default_value: false
-    editable: true
-    affects_outcome_of: TRAINING
-    type: BOOLEAN
-    ui_rules:
-      action: DISABLE_EDITING
-      operator: AND
-      rules: []
-      type: UI_RULES
-    value: true
-    visible_in_ui: true
-    warning: null
-
-  adaptive_object_tile_ratio:
-    header: Object Tile Ratio
-    description: Filter empty tile in training
-    affects_outcome_of: TRAINING
-    default_value: 0.01
-    min_value: 0.0
-    max_value: 1.0
-    type: FLOAT
-    editable: true
-    ui_rules:
-      action: DISABLE_EDITING
-      operator: AND
-      rules: []
-      type: UI_RULES
-    value: 0.01
     visible_in_ui: true
     warning: null
 
