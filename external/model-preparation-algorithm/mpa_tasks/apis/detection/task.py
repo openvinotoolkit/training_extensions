@@ -223,6 +223,9 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
                     ),
                 )
             )
+            self._recipe_cfg.merge_from_dict(
+                dict(use_adaptive_interval=self._hyperparams.learning_parameters.use_adaptive_interval)
+            )
             self._recipe_cfg.merge_from_dict(dict(evaluation=dict(iou_thr=[0.5])))
             self._recipe_cfg.merge_from_dict(tile_params)
 
