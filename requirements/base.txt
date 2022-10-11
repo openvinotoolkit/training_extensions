@@ -14,3 +14,4 @@ torchvision>=0.9.1, <=0.10.1
 scikit-learn==0.24.*
 Shapely>=1.7.1,<=1.8.0
 hpopt@git+https://github.com/openvinotoolkit/hyper_parameter_optimization@develop
+mpa@git+https://github.com/openvinotoolkit/model_preparation_algorithm@otx

@@ -14,7 +14,7 @@ framework: OTEDetection v2.9.1
 entrypoints:
   base: otx.algorithms.detection.tasks.DetectionTrainTask
   openvino: otx.algorithms.detection.tasks.OpenVINODetectionTask
-  nncf: otx.algorithms.detection.tasks.OTXDetectionNNCFTask
+  nncf: otx.algorithms.detection.tasks.DetectionNNCFTask
 base_model_path: ../../../../mmdetection/configs/custom-object-detection/gen3_mobilenetV2_ATSS/template_experimental.yaml
 
 # Capabilities.

@@ -107,7 +107,7 @@ def generate_label_schema(label_names: Sequence[str], label_domain: Domain = Dom
 @check_input_parameters_type({"path": YamlFilePathCheck})
 def load_template(path):
     """Loading model template function."""
-    with open(path) as f:
+    with open(path, encoding="UTF-8") as f:
         template = yaml.safe_load(f)
     return template
 

@@ -323,7 +323,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
             cfg = config.data.get(subset, None)
             if not cfg:
                 continue
-            if cfg.type == "RepeatDataset" or cfg.type == "MultiImageMixDataset":
+            if cfg.type in ("RepeatDataset", "MultiImageMixDataset"):
                 cfg = cfg.dataset
             cfg.type = "MPADetDataset"
             cfg.domain = domain

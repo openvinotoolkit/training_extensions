@@ -1,14 +1,29 @@
+"""NNCF Task of OTX Detection."""
+
+# Copyright (C) 2022 Intel Corporation
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions
+# and limitations under the License.
+
 import copy
 import io
 import json
 import os
 import tempfile
-from typing import List, Optional, DefaultDict
+from typing import DefaultDict, List, Optional
 
 import torch
 from mmcv.runner import load_checkpoint, load_state_dict
 from mmcv.utils import Config, ConfigDict
-from mpa.utils.config_utils import remove_custom_hook
 from mmdet.apis import train_detector
 from mmdet.apis.fake_input import get_fake_input
 from mmdet.apis.train import build_val_dataloader
@@ -21,9 +36,10 @@ from mmdet.integration.nncf import (
 )
 from mmdet.integration.nncf.config import compose_nncf_config
 from mmdet.models import build_detector
+from mpa.utils.config_utils import remove_custom_hook
 from mpa.utils.logger import get_logger
 
-from otx.algorithms.common.utils.hooks import OTELoggerHook
+from otx.algorithms.common.adapters.mmcv.hooks import OTELoggerHook
 from otx.algorithms.detection.configs.base import DetectionConfig
 from otx.algorithms.detection.utils.config_utils import (
     patch_config,
@@ -68,12 +84,12 @@ from .inference import DetectionInferenceTask
 logger = get_logger()
 
 
-class OTXDetectionNNCFTask(DetectionInferenceTask, IOptimizationTask):
+# pylint: disable=too-many-instance-attributes
+class DetectionNNCFTask(DetectionInferenceTask, IOptimizationTask):
+    """Task for compressing detection models using NNCF."""
+
     @check_input_parameters_type()
     def __init__(self, task_environment: TaskEnvironment):
-        """ "
-        Task for compressing detection models using NNCF.
-        """
         # TODO: OTENNCFTASK + MPANNCFTASK, need to check base_model_path
         super().__init__(task_environment)
         curr_model_path = task_environment.model_template.model_template_path
@@ -127,7 +143,6 @@ class OTXDetectionNNCFTask(DetectionInferenceTask, IOptimizationTask):
         # Set default model attributes.
         self._optimization_methods = []  # type: List
         self._precision = self._precision_from_config
-        self._optimization_type = ModelOptimizationType.MO
 
         # Create and initialize PyTorch model.
         logger.info("Loading the model")
@@ -167,18 +182,14 @@ class OTXDetectionNNCFTask(DetectionInferenceTask, IOptimizationTask):
         # NNCF parts
         nncf_config_path = os.path.join(self._base_dir, "compression_config.json")
 
-        with open(nncf_config_path) as nncf_config_file:
+        with open(nncf_config_path, encoding="UTF-8") as nncf_config_file:
             common_nncf_config = json.load(nncf_config_file)
 
         self._set_attributes_by_hyperparams()
 
-        optimization_config = compose_nncf_config(
-            common_nncf_config, [self._nncf_preset]
-        )
+        optimization_config = compose_nncf_config(common_nncf_config, [self._nncf_preset])
 
-        max_acc_drop = (
-            self._hyperparams.nncf_optimization.maximal_accuracy_degradation / 100
-        )
+        max_acc_drop = self._hyperparams.nncf_optimization.maximal_accuracy_degradation / 100
         if "accuracy_aware_training" in optimization_config["nncf_config"]:
             # Update maximal_absolute_accuracy_degradation
             (
@@ -205,9 +216,7 @@ class OTXDetectionNNCFTask(DetectionInferenceTask, IOptimizationTask):
             )
             if model_data.get("anchors"):
                 anchors = model_data["anchors"]
-                self._config.model.bbox_head.anchor_generator.heights = anchors[
-                    "heights"
-                ]
+                self._config.model.bbox_head.anchor_generator.heights = anchors["heights"]
                 self._config.model.bbox_head.anchor_generator.widths = anchors["widths"]
 
             model = self._create_model(self._config, from_scratch=True)
@@ -219,42 +228,28 @@ class OTXDetectionNNCFTask(DetectionInferenceTask, IOptimizationTask):
                         init_state_dict=model_data,
                         get_fake_input_func=get_fake_input,
                     )
-                    logger.info(
-                        "Loaded model weights from Task Environment and wrapped by NNCF"
-                    )
+                    logger.info("Loaded model weights from Task Environment and wrapped by NNCF")
                 else:
                     try:
                         load_state_dict(model, model_data["model"])
-
-                        # It prevent model from being overwritten
-                        # if "load_from" in self._config:
-                        #    self._config.load_from = None
-
                         logger.info("Loaded model weights from Task Environment")
                         logger.info(f"Model architecture: {self._model_name}")
                     except BaseException as ex:
-                        raise ValueError(
-                            "Could not load the saved model. The model file structure is invalid."
-                        ) from ex
+                        raise ValueError("Could not load the saved model. The model file structure is invalid.") from ex
 
                 logger.info("Loaded model weights from Task Environment")
                 logger.info(f"Model architecture: {self._model_name}")
             except BaseException as ex:
-                raise ValueError(
-                    "Could not load the saved model. The model file structure is invalid."
-                ) from ex
+                raise ValueError("Could not load the saved model. The model file structure is invalid.") from ex
         else:
-            raise ValueError(
-                "No trained model in project. NNCF require pretrained weights to compress the model"
-            )
+            raise ValueError("No trained model in project. NNCF require pretrained weights to compress the model")
 
         self._compression_ctrl = compression_ctrl
         return model
 
     @staticmethod
     def _create_model(config: Config, from_scratch: bool = False):
-        """
-        Creates a model, based on the configuration in config
+        """Creates a model, based on the configuration in config.
 
         :param config: mmdetection configuration from which the model has to be built
         :param from_scratch: bool, if True does not load any weights
@@ -287,9 +282,7 @@ class OTXDetectionNNCFTask(DetectionInferenceTask, IOptimizationTask):
             dist=False,
             seed=config.seed,
         )
-        is_acc_aware_training_set = is_accuracy_aware_training_set(
-            config.get("nncf_config")
-        )
+        is_acc_aware_training_set = is_accuracy_aware_training_set(config.get("nncf_config"))
 
         if is_acc_aware_training_set:
             self._val_dataloader = build_val_dataloader(config, False)
@@ -311,6 +304,7 @@ class OTXDetectionNNCFTask(DetectionInferenceTask, IOptimizationTask):
         output_model: ModelEntity,
         optimization_parameters: Optional[OptimizationParameters] = None,
     ):
+        """NNCF Optimization."""
         if optimization_type is not OptimizationType.NNCF:
             raise RuntimeError("NNCF is the only supported optimization")
 
@@ -330,9 +324,7 @@ class OTXDetectionNNCFTask(DetectionInferenceTask, IOptimizationTask):
             initialization_stage_progress_percentage=5,
         )
         learning_curves = DefaultDict(OTELoggerHook.Curve)  # type: DefaultDict
-        training_config = prepare_for_training(
-            config, train_dataset, val_dataset, time_monitor, learning_curves
-        )
+        training_config = prepare_for_training(config, train_dataset, val_dataset, time_monitor, learning_curves)
         mm_train_dataset = build_dataset(training_config.data.train)
 
         if torch.cuda.is_available():
@@ -353,7 +345,7 @@ class OTXDetectionNNCFTask(DetectionInferenceTask, IOptimizationTask):
 
         if fp16 is not None:
             remove_from_config(training_config, "fp16")
-            logger.warn("fp16 option is not supported in NNCF. Switch to fp32.")
+            logger.warning("fp16 option is not supported in NNCF. Switch to fp32.")
 
         train_detector(
             model=self._model,
@@ -382,6 +374,7 @@ class OTXDetectionNNCFTask(DetectionInferenceTask, IOptimizationTask):
 
     @check_input_parameters_type()
     def export(self, export_type: ExportType, output_model: ModelEntity):
+        """NNCF Export Function."""
         if self._compression_ctrl is None:
             super().export(export_type, output_model)
         else:
@@ -392,11 +385,10 @@ class OTXDetectionNNCFTask(DetectionInferenceTask, IOptimizationTask):
 
     @check_input_parameters_type()
     def save_model(self, output_model: ModelEntity):
+        """Saving model function for NNCF Task."""
         buffer = io.BytesIO()
         hyperparams = self._task_environment.get_hyper_parameters(DetectionConfig)  # type: ConfigDict
-        hyperparams_str = ids_to_strings(
-            cfg_helper.convert(hyperparams, dict, enum_to_str=True)
-        )
+        hyperparams_str = ids_to_strings(cfg_helper.convert(hyperparams, dict, enum_to_str=True))
         labels = {label.name: label.color.rgb_tuple for label in self._labels}
         # WA for scheduler resetting in NNCF
         if not self._compression_ctrl:
@@ -407,7 +399,10 @@ class OTXDetectionNNCFTask(DetectionInferenceTask, IOptimizationTask):
                 algo_state["scheduler_state"] = {"current_step": 0, "current_epoch": 0}
         modelinfo = {
             "compression_state": compression_state,
-            "meta": {"config": self._config, "nncf_enable_compression": True,},
+            "meta": {
+                "config": self._config,
+                "nncf_enable_compression": True,
+            },
             "model": self._model.state_dict(),
             "config": hyperparams_str,
             "labels": labels,
@@ -415,9 +410,7 @@ class OTXDetectionNNCFTask(DetectionInferenceTask, IOptimizationTask):
             "VERSION": 1,
         }
 
-        if hasattr(self._config.model, "bbox_head") and hasattr(
-            self._config.model.bbox_head, "anchor_generator"
-        ):
+        if hasattr(self._config.model, "bbox_head") and hasattr(self._config.model.bbox_head, "anchor_generator"):
             if getattr(
                 self._config.model.bbox_head.anchor_generator,
                 "reclustering_anchors",

@@ -112,7 +112,7 @@ class IterBasedRunnerWithCancel(IterBasedRunner):
                 self._inner_iter = 0
                 mode, iters = flow
                 if not isinstance(mode, str) or not hasattr(self, mode):
-                    raise ValueError('runner has no method named "{}" to run a workflow'.format(mode))
+                    raise ValueError(f'runner has no method named "{mode}" to run a workflow')
                 iter_runner = getattr(self, mode)
                 for _ in range(iters):
                     if mode == "train" and self.iter >= self._max_iters:
@@ -129,7 +129,7 @@ class IterBasedRunnerWithCancel(IterBasedRunner):
         assert len(data_loaders) == len(workflow)
         if max_iters is not None:
             warnings.warn(
-                "setting max_iters in run is deprecated, " "please set max_iters in runner_config",
+                "setting max_iters in run is deprecated, please set max_iters in runner_config",
                 DeprecationWarning,
             )
             self._max_iters = max_iters

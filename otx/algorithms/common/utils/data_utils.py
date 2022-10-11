@@ -26,7 +26,7 @@ def get_cls_img_indices(labels, dataset):
         labels (List[LabelEntity]): List of labels
         dataset(DatasetEntity): dataset entity
     """
-    img_indices = {label.name: list() for label in labels}
+    img_indices = {label.name: [] for label in labels}
     for i, item in enumerate(dataset):
         item_labels = item.annotation_scene.get_labels()
         for i_l in item_labels:

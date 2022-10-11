@@ -22,7 +22,7 @@ import torch
 from mmcv.utils import ConfigDict
 from mpa.utils.logger import get_logger
 
-from otx.algorithms.common.utils.hooks import OTELoggerHook
+from otx.algorithms.common.adapters.mmcv.hooks import OTELoggerHook
 from otx.algorithms.detection.utils.otx_utils import TrainingProgressCallback
 from otx.api.configuration import cfg_helper
 from otx.api.configuration.helper.utils import ids_to_strings
