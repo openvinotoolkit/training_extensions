@@ -40,13 +40,13 @@ from mpa.utils.config_utils import remove_custom_hook
 from mpa.utils.logger import get_logger
 
 from otx.algorithms.common.adapters.mmcv.hooks import OTELoggerHook
-from otx.algorithms.detection.configs.base import DetectionConfig
-from otx.algorithms.detection.utils.config_utils import (
+from otx.algorithms.detection.adapters.mmdet.config_utils import (
     patch_config,
     prepare_for_training,
     remove_from_config,
     set_hyperparams,
 )
+from otx.algorithms.detection.configs.base import DetectionConfig
 from otx.algorithms.detection.utils.otx_utils import OptimizationProgressCallback
 from otx.api.configuration import cfg_helper
 from otx.api.configuration.helper.utils import ids_to_strings

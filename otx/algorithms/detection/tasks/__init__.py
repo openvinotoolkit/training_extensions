@@ -16,7 +16,6 @@
 
 import mpa.det as MPADetection
 
-from .dataset import MPADetDataset
 from .inference import DetectionInferenceTask
 from .nncf import DetectionNNCFTask
 from .openvino import OpenVINODetectionTask
@@ -28,5 +27,4 @@ __all__ = [
     "DetectionNNCFTask",
     "OpenVINODetectionTask",
     "MPADetection",
-    "MPADetDataset",
 ]

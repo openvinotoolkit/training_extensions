@@ -26,8 +26,8 @@ from mpa.utils.logger import get_logger
 
 from otx.algorithms.common.configs.base import TrainType
 from otx.algorithms.common.tasks.base import BaseTask
+from otx.algorithms.detection.adapters.mmdet.config_utils import remove_from_config
 from otx.algorithms.detection.configs.base import DetectionConfig
-from otx.algorithms.detection.utils.config_utils import remove_from_config
 from otx.algorithms.detection.utils.otx_utils import InferenceProgressCallback
 from otx.api.entities.annotation import Annotation
 from otx.api.entities.datasets import DatasetEntity

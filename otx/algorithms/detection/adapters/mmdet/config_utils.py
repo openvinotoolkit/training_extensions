@@ -28,6 +28,11 @@ from mmdet.models.detectors import BaseDetector
 from mpa.utils.logger import get_logger
 
 from otx.algorithms.detection.configs.base import DetectionConfig
+from otx.algorithms.detection.utils.data_utils import (
+    format_list_to_str,
+    get_anchor_boxes,
+    get_sizes_from_dataset_entity,
+)
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label import Domain, LabelEntity
 from otx.api.usecases.reporting.time_monitor_callback import TimeMonitorCallback
@@ -35,12 +40,6 @@ from otx.api.utils.argument_checks import (
     DatasetParamTypeCheck,
     DirectoryPathCheck,
     check_input_parameters_type,
-)
-
-from .data_utils import (
-    format_list_to_str,
-    get_anchor_boxes,
-    get_sizes_from_dataset_entity,
 )
 
 try:

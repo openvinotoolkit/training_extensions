@@ -1,4 +1,4 @@
-"""OTX Algorithms."""
+"""Model configurations."""
 
 # Copyright (C) 2022 Intel Corporation
 #
