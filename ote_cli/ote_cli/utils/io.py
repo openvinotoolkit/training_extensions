@@ -68,7 +68,7 @@ def read_model(model_configuration, path, train_dataset):
         "pixel_threshold",
         "min",
         "max",
-        "config.json"
+        "config.json",
     )
 
     if path.endswith(".bin") or path.endswith(".xml"):

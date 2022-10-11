@@ -17,10 +17,8 @@ from detection_tasks.apis.detection.ote_utils import (
     InferenceProgressCallback,
     TrainingProgressCallback,
 )
-from detection_tasks.extension.utils.hooks import OTELoggerHook
 from detection_tasks.extension.datasets import adaptive_tile_params
-from mpa_tasks.apis import BaseTask, TrainType
-from mpa_tasks.apis.detection import DetectionConfig
+from detection_tasks.extension.utils.hooks import OTELoggerHook
 from mmcv.utils import ConfigDict
 from mpa import MPAConstants
 from mpa.utils.config_utils import MPAConfig
@@ -28,7 +26,7 @@ from mpa.utils.logger import get_logger
 from mpa_tasks.apis import BaseTask, TrainType
 from mpa_tasks.apis.detection import DetectionConfig
 from ote_sdk.configuration import cfg_helper
-from ote_sdk.configuration.helper.utils import ids_to_strings, config_to_bytes
+from ote_sdk.configuration.helper.utils import config_to_bytes, ids_to_strings
 from ote_sdk.entities.annotation import Annotation
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.id import ID
@@ -199,10 +197,10 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
             output_model.optimization_methods = self._optimization_methods
             output_model.set_data("label_schema.json", label_schema_to_bytes(self._task_environment.label_schema))
             output_model.set_data("config.json", config_to_bytes(self._hyperparams))
-        logger.info('Exporting completed')
+        logger.info("Exporting completed")
 
     def _overwrite_parameters(self):
-        """ Overwrite config parameters with TaskEnvironment hyper-parameters and config tiling parameters. """
+        """Overwrite config parameters with TaskEnvironment hyper-parameters and config tiling parameters."""
         super()._overwrite_parameters()
         if bool(self._hyperparams.tiling_parameters.enable_tiling):
             logger.info("Tiling Enabled")
@@ -211,18 +209,18 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
                     train=ConfigDict(
                         tile_size=int(self._hyperparams.tiling_parameters.tile_size),
                         overlap_ratio=float(self._hyperparams.tiling_parameters.tile_overlap),
-                        max_per_img=int(self._hyperparams.tiling_parameters.tile_max_number)
+                        max_per_img=int(self._hyperparams.tiling_parameters.tile_max_number),
                     ),
                     val=ConfigDict(
                         tile_size=int(self._hyperparams.tiling_parameters.tile_size),
                         overlap_ratio=float(self._hyperparams.tiling_parameters.tile_overlap),
-                        max_per_img=int(self._hyperparams.tiling_parameters.tile_max_number)
+                        max_per_img=int(self._hyperparams.tiling_parameters.tile_max_number),
                     ),
                     test=ConfigDict(
                         tile_size=int(self._hyperparams.tiling_parameters.tile_size),
                         overlap_ratio=float(self._hyperparams.tiling_parameters.tile_overlap),
-                        max_per_img=int(self._hyperparams.tiling_parameters.tile_max_number)
-                    )
+                        max_per_img=int(self._hyperparams.tiling_parameters.tile_max_number),
+                    ),
                 )
             )
             self._recipe_cfg.merge_from_dict(dict(evaluation=dict(iou_thr=[0.5])))
@@ -321,7 +319,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         if bool(self._hyperparams.tiling_parameters.enable_tiling):
             data_pipeline_path = os.path.join(base_dir, "tile_pipeline.py")
         else:
-            data_pipeline_path = os.path.join(base_dir, 'data_pipeline.py')
+            data_pipeline_path = os.path.join(base_dir, "data_pipeline.py")
         if os.path.exists(data_pipeline_path):
             data_pipeline_cfg = MPAConfig.fromfile(data_pipeline_path)
             self._recipe_cfg.merge_from_dict(data_pipeline_cfg)
@@ -342,17 +340,18 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
                     pipeline_step.to_rgb = to_rgb
                 elif pipeline_step.type == "MultiScaleFlipAug":
                     patch_color_conversion(pipeline_step.transforms)
+
         # remove redundant parameters introduced in self._recipe_cfg.merge_from_dict
-        remove_from_config(config, 'ann_file')
-        remove_from_config(config, 'img_prefix')
-        assert 'data' in config
-        for subset in ('train', 'val', 'test', 'unlabeled'):
+        remove_from_config(config, "ann_file")
+        remove_from_config(config, "img_prefix")
+        assert "data" in config
+        for subset in ("train", "val", "test", "unlabeled"):
             cfg = config.data.get(subset, None)
             if not cfg:
                 continue
             # remove redundant parameters introduced in self._recipe_cfg.merge_from_dict
-            remove_from_config(cfg, 'ann_file')
-            remove_from_config(cfg, 'img_prefix')
+            remove_from_config(cfg, "ann_file")
+            remove_from_config(cfg, "img_prefix")
             if cfg.type in ["RepeatDataset", "MultiImageMixDataset", "ImageTilingDataset"]:
                 cfg = cfg.dataset
             cfg.type = "MPADetDataset"
@@ -516,7 +515,7 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
         self._data_cfg = self._init_train_data_cfg(dataset)
         self._is_training = True
         self._adapt_tiling_parameters(dataset)
-        results = self._run_task(stage_module, mode='train', dataset=dataset, parameters=train_parameters)
+        results = self._run_task(stage_module, mode="train", dataset=dataset, parameters=train_parameters)
 
         # Check for stop signal when training has stopped. If should_stop is true, training was cancelled and no new
         if self._should_stop:
@@ -637,19 +636,19 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
         return output
 
     def _adapt_tiling_parameters(self, dataset):
-        """ Adapt tile size, overlap and max number of output based on training annotation statistics
+        """Adapt tile size, overlap and max number of output based on training annotation statistics
 
         Args:
             dataset (ObjectDetectionDataset): OTX customized object detection dataset
         """
         if bool(self._hyperparams.tiling_parameters.enable_adaptive_params):
             tile_cfg = adaptive_tile_params(dataset)
-            if tile_cfg.get('tile_size'):
-                self._hyperparams.tiling_parameters.tile_size = tile_cfg.get('tile_size')
-            if tile_cfg.get('tile_overlap'):
-                self._hyperparams.tiling_parameters.tile_overlap = tile_cfg.get('tile_overlap')
-            if tile_cfg.get('tile_max_number'):
-                self._hyperparams.tiling_parameters.tile_max_number = tile_cfg.get('tile_max_number')
+            if tile_cfg.get("tile_size"):
+                self._hyperparams.tiling_parameters.tile_size = tile_cfg.get("tile_size")
+            if tile_cfg.get("tile_overlap"):
+                self._hyperparams.tiling_parameters.tile_overlap = tile_cfg.get("tile_overlap")
+            if tile_cfg.get("tile_max_number"):
+                self._hyperparams.tiling_parameters.tile_max_number = tile_cfg.get("tile_max_number")
 
 
 class DetectionNNCFTask(OTEDetectionNNCFTask):

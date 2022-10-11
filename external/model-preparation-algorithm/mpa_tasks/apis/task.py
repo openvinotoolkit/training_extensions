@@ -90,7 +90,7 @@ class BaseTask:
         self._model_cfg["model_classes"] = model_classes
         if dataset is not None:
             train_data_cfg = Stage.get_data_cfg(self._data_cfg, "train")
-            train_data_cfg['data_classes'] = data_classes
+            train_data_cfg["data_classes"] = data_classes
             new_classes = np.setdiff1d(data_classes, model_classes).tolist()
             train_data_cfg["new_classes"] = new_classes
 
@@ -260,7 +260,7 @@ class BaseTask:
         return None
 
     def _overwrite_parameters(self):
-        """ Overwrite mmX config parameters with TaskEnvironment hyperparameters.
+        """Overwrite mmX config parameters with TaskEnvironment hyperparameters.
 
         Hyper Parameters defined in TaskEnvironment will overwrite the below mmX config parameters.
 
@@ -272,8 +272,11 @@ class BaseTask:
         """
 
         warmup_iters = int(self._hyperparams.learning_parameters.learning_rate_warmup_iters)
-        lr_config = ConfigDict(warmup_iters=warmup_iters) if warmup_iters > 0 \
+        lr_config = (
+            ConfigDict(warmup_iters=warmup_iters)
+            if warmup_iters > 0
             else ConfigDict(warmup_iters=warmup_iters, warmup=None)
+        )
 
         if self._hyperparams.learning_parameters.enable_early_stopping:
             early_stop = ConfigDict(
@@ -308,16 +311,16 @@ class BaseTask:
             if model_data.get("anchors"):
                 self._anchors = model_data["anchors"]
 
-            saved_config = model_data.get('config')
-            tiling_parameters = saved_config.get('tiling_parameters')
-            if tiling_parameters and tiling_parameters['enable_tiling']['value']:
+            saved_config = model_data.get("config")
+            tiling_parameters = saved_config.get("tiling_parameters")
+            if tiling_parameters and tiling_parameters["enable_tiling"]["value"]:
                 logger.info("Load tiling parameters")
-                self._hyperparams.tiling_parameters.enable_tiling = tiling_parameters['enable_tiling']['value']
-                self._hyperparams.tiling_parameters.tile_size = tiling_parameters['tile_size']['value']
-                self._hyperparams.tiling_parameters.tile_overlap = tiling_parameters['tile_overlap']['value']
-                self._hyperparams.tiling_parameters.tile_max_number = tiling_parameters['tile_max_number']['value']
+                self._hyperparams.tiling_parameters.enable_tiling = tiling_parameters["enable_tiling"]["value"]
+                self._hyperparams.tiling_parameters.tile_size = tiling_parameters["tile_size"]["value"]
+                self._hyperparams.tiling_parameters.tile_overlap = tiling_parameters["tile_overlap"]["value"]
+                self._hyperparams.tiling_parameters.tile_max_number = tiling_parameters["tile_max_number"]["value"]
 
-            return model_data.get('model', model_data.get('state_dict', None))
+            return model_data.get("model", model_data.get("state_dict", None))
         else:
             return None
 

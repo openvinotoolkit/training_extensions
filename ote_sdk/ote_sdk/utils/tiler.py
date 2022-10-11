@@ -38,9 +38,17 @@ class Tiler:
         height, width = image.shape[:2]
 
         tiles, offsets = [], []
-        for (loc_i, loc_j) in product(range(0, height - self.tile_size + 1, self.stride),
-                                      range(0, width - self.tile_size + 1, self.stride)):
-            tiles.append(image[loc_i : (loc_i + self.tile_size), loc_j : (loc_j + self.tile_size), ...])
+        for (loc_i, loc_j) in product(
+            range(0, height - self.tile_size + 1, self.stride),
+            range(0, width - self.tile_size + 1, self.stride),
+        ):
+            tiles.append(
+                image[
+                    loc_i : (loc_i + self.tile_size),
+                    loc_j : (loc_j + self.tile_size),
+                    ...,
+                ]
+            )
             offsets.append((loc_i, loc_j))  # offset y, offset x
             if len(tiles) == self.batch_size:
                 yield tiles, offsets

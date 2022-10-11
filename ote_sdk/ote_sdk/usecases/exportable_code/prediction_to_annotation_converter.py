@@ -19,7 +19,7 @@ from ote_sdk.entities.annotation import (
     AnnotationSceneKind,
 )
 from ote_sdk.entities.id import ID
-from ote_sdk.entities.label import Domain, LabelEntity
+from ote_sdk.entities.label import Domain
 from ote_sdk.entities.label_schema import LabelSchemaEntity
 from ote_sdk.entities.scored_label import ScoredLabel
 from ote_sdk.entities.shapes.polygon import Point, Polygon
@@ -58,7 +58,7 @@ class DetectionToAnnotationConverter(IPredictionToAnnotationConverter):
         self.label_map = dict(enumerate(labels.get_labels(include_empty=False)))
 
     def convert_to_annotation(
-        self, predictions: np.ndarray, metadata: Optional[Dict] = None
+        self, predictions: np.ndarray, metadata: Dict[str, Any]
     ) -> AnnotationSceneEntity:
         """
         Converts a set of predictions into an AnnotationScene object
@@ -90,7 +90,9 @@ class DetectionToAnnotationConverter(IPredictionToAnnotationConverter):
 
         return annotation_scene
 
-    def __convert_to_annotations(self, predictions: np.ndarray, metadata: Dict[str, Any]) -> List[Annotation]:
+    def __convert_to_annotations(
+        self, predictions: np.ndarray, metadata: Dict[str, Any]
+    ) -> List[Annotation]:
         """
         Converts a list of Detections to OTE SDK Annotation objects
 
@@ -103,7 +105,11 @@ class DetectionToAnnotationConverter(IPredictionToAnnotationConverter):
                             (n, 7) or (n, 6)
         """
         annotations = []
-        if len(predictions) and predictions.shape[1:] < (6,) or predictions.shape[1:] > (7,):
+        if (
+            len(predictions)
+            and predictions.shape[1:] < (6,)
+            or predictions.shape[1:] > (7,)
+        ):
             raise ValueError(
                 f"Shape of prediction is not expected, expected (n, 7) or (n, 6) "
                 f"got {predictions.shape}"

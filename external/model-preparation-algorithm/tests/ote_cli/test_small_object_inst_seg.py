@@ -26,34 +26,34 @@ from ote_cli.utils.tests import (
     nncf_eval_testing,
     nncf_eval_openvino_testing,
     pot_optimize_testing,
-    pot_eval_testing
+    pot_eval_testing,
 )
 
 args = {
-    '--train-ann-file': 'data/small_objects/annotations/instances_train.json',
-    '--train-data-roots': 'data/small_objects/images/train',
-    '--val-ann-file': 'data/small_objects/annotations/instances_val.json',
-    '--val-data-roots': 'data/small_objects/images/val',
-    '--test-ann-files': 'data/small_objects/annotations/instances_test.json',
-    '--test-data-roots': 'data/small_objects/images/test',
-    '--input': 'data/small_objects/images/train',
-    'train_params': [
-        'params',
-        '--learning_parameters.num_iters',
-        '2',
-        '--learning_parameters.batch_size',
-        '4',
-        '--tiling_parameters.enable_tiling',
-        '1',
-        '--tiling_parameters.enable_adaptive_params',
-        '1',
-    ]
+    "--train-ann-file": "data/small_objects/annotations/instances_train.json",
+    "--train-data-roots": "data/small_objects/images/train",
+    "--val-ann-file": "data/small_objects/annotations/instances_val.json",
+    "--val-data-roots": "data/small_objects/images/val",
+    "--test-ann-files": "data/small_objects/annotations/instances_test.json",
+    "--test-data-roots": "data/small_objects/images/test",
+    "--input": "data/small_objects/images/train",
+    "train_params": [
+        "params",
+        "--learning_parameters.num_iters",
+        "2",
+        "--learning_parameters.batch_size",
+        "4",
+        "--tiling_parameters.enable_tiling",
+        "1",
+        "--tiling_parameters.enable_adaptive_params",
+        "1",
+    ],
 }
 
-root = '/tmp/ote_cli/'
+root = "/tmp/ote_cli/"
 ote_dir = os.getcwd()
 
-templates = Registry('external/model-preparation-algorithm').filter(task_type='INSTANCE_SEGMENTATION').templates
+templates = Registry("external/model-preparation-algorithm").filter(task_type="INSTANCE_SEGMENTATION").templates
 templates_ids = [template.model_template_id for template in templates]
 
 

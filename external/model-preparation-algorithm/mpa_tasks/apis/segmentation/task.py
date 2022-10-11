@@ -289,7 +289,6 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         config.early_stop_metric = "mDice"
 
 
-
 class SegmentationTrainTask(SegmentationInferenceTask, ITrainingTask):
     def save_model(self, output_model: ModelEntity):
         logger.info(f"called save_model: {self._model_ckpt}")

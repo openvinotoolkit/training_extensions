@@ -411,7 +411,7 @@ class ModelEntity:
         """
         return self.__exportable_code_adapter
 
-    def get_data(self, key: str) -> bytes:
+    def get_data(self, key: str) -> Optional[bytes]:
         """
         Fetches byte data for a certain model.
         :param key: key to fetch data for
