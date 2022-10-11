@@ -133,7 +133,6 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         logger.info("called infer()")
         stage_module = "ClsInferrer"
         self._data_cfg = self._init_test_data_cfg(dataset)
-        dataset = dataset.with_empty_annotations()
 
         dump_features = True
         dump_saliency_map = not inference_parameters.is_evaluation if inference_parameters else True
