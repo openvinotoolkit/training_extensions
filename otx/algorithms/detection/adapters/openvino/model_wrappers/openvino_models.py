@@ -27,10 +27,10 @@ except ImportError as e:
     warnings.warn(f"{e}: ModelAPI was not found.")
 
 
-class OTEMaskRCNNModel(MaskRCNNModel):
-    """OpenVINO model wrapper for OTE MaskRCNN model."""
+class OTXMaskRCNNModel(MaskRCNNModel):
+    """OpenVINO model wrapper for OTX MaskRCNN model."""
 
-    __model__ = "OTE_MaskRCNN"
+    __model__ = "OTX_MaskRCNN"
 
     def _get_outputs(self):
         output_match_dict = {}
@@ -61,7 +61,7 @@ class OTEMaskRCNNModel(MaskRCNNModel):
             classes = outputs[self.output_blob_name["labels"]].astype(np.uint32) + 1
 
         # Filter out detections with low confidence.
-        detections_filter = scores > self.confidence_threshold
+        detections_filter = scores > self.confidence_threshold  # pylint: disable=no-member
         scores = scores[detections_filter]
         boxes = boxes[detections_filter]
         masks = masks[detections_filter]
@@ -80,10 +80,10 @@ class OTEMaskRCNNModel(MaskRCNNModel):
         return scores, classes, boxes, resized_masks
 
 
-class OTESSDModel(SSD):
-    """OpenVINO model wrapper for OTE SSD model."""
+class OTXSSDModel(SSD):
+    """OpenVINO model wrapper for OTX SSD model."""
 
-    __model__ = "OTE_SSD"
+    __model__ = "OTX_SSD"
 
     def _get_outputs(self) -> Dict:
         """Match the output names with graph node index."""
