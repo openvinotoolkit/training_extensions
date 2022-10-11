@@ -4,7 +4,13 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from .pipelines import LoadImageFromOTEDataset
+from .cli_utils import ClassificationDatasetAdapter
+from .label_utils import generate_label_schema, get_multihead_class_info, get_task_class
 
 __all__ = [
-    "LoadImageFromOTEDataset"
+    "LoadImageFromOTEDataset",
+    "ClassificationDatasetAdapter",
+    "generate_label_schema",
+    "get_multihead_class_info",
+    "get_task_class"
 ]

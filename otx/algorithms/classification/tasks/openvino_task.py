@@ -69,7 +69,7 @@ except ImportError:
     import warnings
     warnings.warn("ModelAPI was not found.")
 from otx.algorithms.classification.configs.config import ClassificationConfig
-from otx.algorithms.classification.utils.utils import get_multihead_class_info
+from otx.algorithms.classification.utils import get_multihead_class_info
 
 from zipfile import ZipFile
 

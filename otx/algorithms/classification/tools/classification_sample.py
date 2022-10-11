@@ -27,7 +27,7 @@ from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType
 from otx.api.usecases.tasks.interfaces.optimization_interface import OptimizationType
-from otx.algorithms.classification.utils.utils import get_task_class
+from otx.algorithms.classification.utils import get_task_class
 
 seed = 5
 random.seed(seed)
