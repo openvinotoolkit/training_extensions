@@ -31,7 +31,8 @@ from mpa.stage import Stage
 from mpa.utils.config_utils import remove_custom_hook, update_or_add_custom_hook
 from mpa.utils.logger import get_logger
 
-from otx.algorithms.common.adapters.mmcv.hooks import OTELoggerHook
+from otx.algorithms.common.adapters.mmcv import OTELoggerHook
+from otx.algorithms.common.adapters.mmcv import OTEProgressHook
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label import LabelEntity
 from otx.api.entities.model import ModelEntity, ModelPrecision, OptimizationMethod
