@@ -1,3 +1,0 @@
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# Common Tasks Requirements.                                                       #
--e otx/algorithms/common/adapters/mpa

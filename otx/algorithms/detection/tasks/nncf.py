@@ -39,7 +39,7 @@ from mmdet.models import build_detector
 from mpa.utils.config_utils import remove_custom_hook
 from mpa.utils.logger import get_logger
 
-from otx.algorithms.common.utils.hooks import OTELoggerHook
+from otx.algorithms.common.adapters.mmcv.hooks import OTELoggerHook
 from otx.algorithms.detection.configs.base import DetectionConfig
 from otx.algorithms.detection.utils.config_utils import (
     patch_config,
@@ -143,7 +143,6 @@ class DetectionNNCFTask(DetectionInferenceTask, IOptimizationTask):
         # Set default model attributes.
         self._optimization_methods = []  # type: List
         self._precision = self._precision_from_config
-        self._optimization_type = ModelOptimizationType.MO
 
         # Create and initialize PyTorch model.
         logger.info("Loading the model")
@@ -233,11 +232,6 @@ class DetectionNNCFTask(DetectionInferenceTask, IOptimizationTask):
                 else:
                     try:
                         load_state_dict(model, model_data["model"])
-
-                        # It prevent model from being overwritten
-                        # if "load_from" in self._config:
-                        #    self._config.load_from = None
-
                         logger.info("Loaded model weights from Task Environment")
                         logger.info(f"Model architecture: {self._model_name}")
                     except BaseException as ex:
