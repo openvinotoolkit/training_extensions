@@ -1,19 +1,18 @@
-"""OTEMaskRCNNModel & OTESSDModel of OTX Detection.
+"""OTXMaskRCNNModel & OTXSSDModel of OTX Detection."""
 
-Copyright (c) 2022 Intel Corporation
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-"""
+# Copyright (C) 2022 Intel Corporation
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions
+# and limitations under the License.
 
 from typing import Dict
 
@@ -28,10 +27,10 @@ except ImportError as e:
     warnings.warn(f"{e}: ModelAPI was not found.")
 
 
-class OTEMaskRCNNModel(MaskRCNNModel):
-    """OpenVINO model wrapper for OTE MaskRCNN model."""
+class OTXMaskRCNNModel(MaskRCNNModel):
+    """OpenVINO model wrapper for OTX MaskRCNN model."""
 
-    __model__ = "OTE_MaskRCNN"
+    __model__ = "OTX_MaskRCNN"
 
     def _get_outputs(self):
         output_match_dict = {}
@@ -44,7 +43,7 @@ class OTEMaskRCNNModel(MaskRCNNModel):
         return output_match_dict
 
     def postprocess(self, outputs, meta):
-        """Post process function for OTE MaskRCNN model."""
+        """Post process function for OTX MaskRCNN model."""
         boxes = (
             outputs[self.output_blob_name["boxes"]]
             if self.is_segmentoly
@@ -62,7 +61,7 @@ class OTEMaskRCNNModel(MaskRCNNModel):
             classes = outputs[self.output_blob_name["labels"]].astype(np.uint32) + 1
 
         # Filter out detections with low confidence.
-        detections_filter = scores > self.confidence_threshold
+        detections_filter = scores > self.confidence_threshold  # pylint: disable=no-member
         scores = scores[detections_filter]
         boxes = boxes[detections_filter]
         masks = masks[detections_filter]
@@ -81,10 +80,10 @@ class OTEMaskRCNNModel(MaskRCNNModel):
         return scores, classes, boxes, resized_masks
 
 
-class OTESSDModel(SSD):
-    """OpenVINO model wrapper for OTE SSD model."""
+class OTXSSDModel(SSD):
+    """OpenVINO model wrapper for OTX SSD model."""
 
-    __model__ = "OTE_SSD"
+    __model__ = "OTX_SSD"
 
     def _get_outputs(self) -> Dict:
         """Match the output names with graph node index."""

@@ -28,6 +28,11 @@ from mmdet.models.detectors import BaseDetector
 from mpa.utils.logger import get_logger
 
 from otx.algorithms.detection.configs.base import DetectionConfig
+from otx.algorithms.detection.utils.data_utils import (
+    format_list_to_str,
+    get_anchor_boxes,
+    get_sizes_from_dataset_entity,
+)
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label import Domain, LabelEntity
 from otx.api.usecases.reporting.time_monitor_callback import TimeMonitorCallback
@@ -35,12 +40,6 @@ from otx.api.utils.argument_checks import (
     DatasetParamTypeCheck,
     DirectoryPathCheck,
     check_input_parameters_type,
-)
-
-from .data_utils import (
-    format_list_to_str,
-    get_anchor_boxes,
-    get_sizes_from_dataset_entity,
 )
 
 try:
@@ -103,7 +102,7 @@ def patch_config(
     # Remove high level data pipelines definition leaving them only inside `data` section.
     remove_from_config(config, "train_pipeline")
     remove_from_config(config, "test_pipeline")
-    # Patch data pipeline, making it OTE-compatible.
+    # Patch data pipeline, making it OTX-compatible.
     patch_datasets(config, domain)
 
     # Remove FP16 config if running on CPU device and revert to FP32
@@ -184,7 +183,7 @@ def prepare_for_testing(config: Union[Config, ConfigDict], dataset: DatasetEntit
     """Prepare configs for testing phase."""
     config = copy.deepcopy(config)
     # FIXME. Should working directories be modified here?
-    config.data.test.ote_dataset = dataset
+    config.data.test.otx_dataset = dataset
     return config
 
 
@@ -200,11 +199,11 @@ def prepare_for_training(
     config = copy.deepcopy(config)
     prepare_work_dir(config)
     data_train = get_data_cfg(config)
-    data_train.ote_dataset = train_dataset
-    config.data.val.ote_dataset = val_dataset
+    data_train.otx_dataset = train_dataset
+    config.data.val.otx_dataset = val_dataset
     patch_adaptive_repeat_dataset(config, len(train_dataset))
-    config.custom_hooks.append({"type": "OTEProgressHook", "time_monitor": time_monitor, "verbose": True})
-    config.log_config.hooks.append({"type": "OTELoggerHook", "curves": learning_curves})
+    config.custom_hooks.append({"type": "OTXProgressHook", "time_monitor": time_monitor, "verbose": True})
+    config.log_config.hooks.append({"type": "OTXLoggerHook", "curves": learning_curves})
     return config
 
 
@@ -217,12 +216,12 @@ def config_to_string(config: Union[Config, ConfigDict]) -> str:
     """
     config_copy = copy.deepcopy(config)
     # Clean config up by removing dataset as this causes the pretty text parsing to fail.
-    config_copy.data.test.ote_dataset = None
+    config_copy.data.test.otx_dataset = None
     config_copy.data.test.labels = None
-    config_copy.data.val.ote_dataset = None
+    config_copy.data.val.otx_dataset = None
     config_copy.data.val.labels = None
     data_train = get_data_cfg(config_copy)
-    data_train.ote_dataset = None
+    data_train.otx_dataset = None
     data_train.labels = None
     return Config(config_copy).pretty_text
 
@@ -299,7 +298,7 @@ def patch_datasets(config: Config, domain: Domain):
     """Update dataset configs."""
 
     def patch_color_conversion(pipeline):
-        # Default data format for OTE is RGB, while mmdet uses BGR, so negate the color conversion flag.
+        # Default data format for OTX is RGB, while mmdet uses BGR, so negate the color conversion flag.
         for pipeline_step in pipeline:
             if pipeline_step.type == "Normalize":
                 to_rgb = False
@@ -313,17 +312,17 @@ def patch_datasets(config: Config, domain: Domain):
     assert "data" in config
     for subset in ("train", "val", "test"):
         cfg = get_data_cfg(config, subset)
-        cfg.type = "OTEDataset"
+        cfg.type = "OTXDataset"
         cfg.domain = domain
-        cfg.ote_dataset = None
+        cfg.otx_dataset = None
         cfg.labels = None
         remove_from_config(cfg, "ann_file")
         remove_from_config(cfg, "img_prefix")
         for pipeline_step in cfg.pipeline:
             if pipeline_step.type == "LoadImageFromFile":
-                pipeline_step.type = "LoadImageFromOTEDataset"
+                pipeline_step.type = "LoadImageFromOTXDataset"
             if pipeline_step.type == "LoadAnnotations":
-                pipeline_step.type = "LoadAnnotationFromOTEDataset"
+                pipeline_step.type = "LoadAnnotationFromOTXDataset"
                 pipeline_step.domain = domain
                 pipeline_step.min_size = cfg.pop("min_size", -1)
         patch_color_conversion(cfg.pipeline)

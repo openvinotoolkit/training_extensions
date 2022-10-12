@@ -19,15 +19,17 @@ from typing import Any, Dict, Optional
 import numpy as np
 from mmdet.datasets.builder import PIPELINES
 
-from otx.algorithms.detection.tasks.dataset.mmdataset import get_annotation_mmdet_format
+from otx.algorithms.detection.adapters.mmdet.dataset.mmdataset import (
+    get_annotation_mmdet_format,
+)
 from otx.api.entities.label import Domain
 from otx.api.utils.argument_checks import check_input_parameters_type
 
 
 # pylint: disable=too-many-instance-attributes, too-many-arguments
 @PIPELINES.register_module()
-class LoadImageFromOTEDataset:
-    """Pipeline element that loads an image from a OTE Dataset on the fly. Can do conversion to float 32 if needed.
+class LoadImageFromOTXDataset:
+    """Pipeline element that loads an image from a OTX Dataset on the fly. Can do conversion to float 32 if needed.
 
     Expected entries in the 'results' dict that should be passed to this pipeline element are:
         results['dataset_item']: dataset_item from which to load the image
@@ -43,7 +45,7 @@ class LoadImageFromOTEDataset:
 
     @check_input_parameters_type()
     def __call__(self, results: Dict[str, Any]):
-        """Callback function LoadImageFromOTEDataset."""
+        """Callback function LoadImageFromOTXDataset."""
         dataset_item = results["dataset_item"]
         img = dataset_item.numpy
         shape = img.shape
@@ -74,8 +76,8 @@ class LoadImageFromOTEDataset:
 
 
 @PIPELINES.register_module()
-class LoadAnnotationFromOTEDataset:
-    """Pipeline element that loads an annotation from a OTE Dataset on the fly.
+class LoadAnnotationFromOTXDataset:
+    """Pipeline element that loads an annotation from a OTX Dataset on the fly.
 
     Expected entries in the 'results' dict that should be passed to this pipeline element are:
         results['dataset_item']: dataset_item from which to load the annotation
@@ -122,7 +124,7 @@ class LoadAnnotationFromOTEDataset:
 
     @check_input_parameters_type()
     def __call__(self, results: Dict[str, Any]):
-        """Callback function of LoadAnnotationFromOTEDataset."""
+        """Callback function of LoadAnnotationFromOTXDataset."""
         dataset_item = results["dataset_item"]
         label_list = results["ann_info"]["label_list"]
         ann_info = get_annotation_mmdet_format(dataset_item, label_list, self.domain, self.min_size)

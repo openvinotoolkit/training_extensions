@@ -10,9 +10,3 @@
 [submodule "external/model-preparation-algorithm/submodule"]
 	path = external/model-preparation-algorithm/submodule
 	url = https://github.com/openvinotoolkit/model_preparation_algorithm
-[submodule "otx/algorithms/common/adapters/mpa"]
-	path = otx/algorithms/common/adapters/mpa
-	url = https://github.com/openvinotoolkit/model_preparation_algorithm
-[submodule "otx/algorithms/detection/adapters/mmdet"]
-	path = otx/algorithms/detection/adapters/mmdet
-	url = https://github.com/openvinotoolkit/mmdetection.git

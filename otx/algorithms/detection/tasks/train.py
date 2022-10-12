@@ -22,7 +22,7 @@ import torch
 from mmcv.utils import ConfigDict
 from mpa.utils.logger import get_logger
 
-from otx.algorithms.common.adapters.mmcv.hooks import OTELoggerHook
+from otx.algorithms.common.adapters.mmcv.hooks import OTXLoggerHook
 from otx.algorithms.detection.utils.otx_utils import TrainingProgressCallback
 from otx.api.configuration import cfg_helper
 from otx.api.configuration.helper.utils import ids_to_strings
@@ -131,7 +131,7 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
         else:
             update_progress_callback = default_progress_callback
         self._time_monitor = TrainingProgressCallback(update_progress_callback)
-        self._learning_curves = DefaultDict(OTELoggerHook.Curve)
+        self._learning_curves = DefaultDict(OTXLoggerHook.Curve)
 
         self._data_cfg = self._init_train_data_cfg(dataset)
         self._is_training = True
@@ -211,15 +211,15 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
         data_cfg = ConfigDict(
             data=ConfigDict(
                 train=ConfigDict(
-                    ote_dataset=dataset.get_subset(Subset.TRAINING),
+                    otx_dataset=dataset.get_subset(Subset.TRAINING),
                     labels=self._labels,
                 ),
                 val=ConfigDict(
-                    ote_dataset=dataset.get_subset(Subset.VALIDATION),
+                    otx_dataset=dataset.get_subset(Subset.VALIDATION),
                     labels=self._labels,
                 ),
                 unlabeled=ConfigDict(
-                    ote_dataset=dataset.get_subset(Subset.UNLABELED),
+                    otx_dataset=dataset.get_subset(Subset.UNLABELED),
                     labels=self._labels,
                 ),
             )
