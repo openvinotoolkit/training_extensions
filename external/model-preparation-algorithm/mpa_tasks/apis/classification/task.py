@@ -317,18 +317,18 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         recipe_root = os.path.join(MPAConstants.RECIPES_PATH, "stages/classification")
         train_type = self._hyperparams.algo_backend.train_type
         logger.info(f"train type = {train_type}")
+        recipe = os.path.join(recipe_root, "class_incr.yaml")
 
         if train_type == TrainType.SemiSupervised:
             raise NotImplementedError(f"train type {train_type} is not implemented yet.")
         elif train_type == TrainType.SelfSupervised:
             raise NotImplementedError(f"train type {train_type} is not implemented yet.")
-        elif train_type == TrainType.Incremental:
-            recipe = os.path.join(recipe_root, "class_incr_multilabel.yaml")  if self._multilabel \
-            else os.path.join(recipe_root, "class_incr.yaml")
+        elif train_type == TrainType.Incremental and self._multilabel:
+            recipe = os.path.join(recipe_root, "class_incr_multilabel.yaml")
         else:
             # raise NotImplementedError(f'train type {train_type} is not implemented yet.')
             # FIXME: Temporary remedy for CVS-88098
-            logger.warning(f"train type {train_type} is not implemented yet.")
+            logger.warning(f"train type {train_type} is not implemented yet. Running incremental training.")
 
         self._recipe_cfg = MPAConfig.fromfile(recipe)
         self._patch_datasets(self._recipe_cfg)  # for OTE compatibility
