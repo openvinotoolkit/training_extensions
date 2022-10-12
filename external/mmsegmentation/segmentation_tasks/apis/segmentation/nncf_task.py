@@ -149,6 +149,9 @@ class OTESegmentationNNCFTask(OTESegmentationInferenceTask, IOptimizationTask):
             raise ValueError(f"No trained model in project. NNCF require pretrained weights to compress the model")
 
         self._compression_ctrl = compression_ctrl
+
+        if torch.cuda.is_available():
+            model.cuda()
         return model
 
 
