@@ -118,8 +118,9 @@ optimizer = dict(
     weight_decay=0.0
 )
 optimizer_config = dict(
+    type='Fp16OptimizerHook',
+    loss_scale=512.,
     grad_clip=dict(
-        method='default',
         max_norm=40,
         norm_type=2
     )

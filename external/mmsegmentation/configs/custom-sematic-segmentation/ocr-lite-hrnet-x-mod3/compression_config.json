@@ -26,7 +26,8 @@
       "fixed_iters": 0,
       "warmup": null,
       "warmup_iters": 0,
-      "step": [20]
+      "step": [20],
+      "by_epoch": true
     },
     "nncf_config": {
       "compression": [
