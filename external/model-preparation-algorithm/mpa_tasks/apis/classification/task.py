@@ -337,7 +337,8 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         if self._multilabel:
             # hack to use 1cycle policy
             self._recipe_cfg.lr_config = ConfigDict(
-                max_lr=self._hyperparams.learning_parameters.learning_rate, warmup=None)
+                max_lr=self._hyperparams.learning_parameters.learning_rate, warmup=None
+            )
 
     def _patch_datasets(self, config: MPAConfig, domain=Domain.CLASSIFICATION):
         def patch_color_conversion(pipeline):
