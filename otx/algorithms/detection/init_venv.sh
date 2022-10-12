@@ -113,13 +113,15 @@ pip install --no-cache-dir mmcv-full==${MMCV_VERSION} || exit 1
 sed -i "s/force=False/force=True/g" "${venv_dir}"/lib/python"${PYTHON_VERSION}"/site-packages/mmcv/utils/registry.py  # Patch: remedy for MMCV registry collision from mmdet/mmseg
 
 # Install requirements
-pip install numpy==1.21.4
-pip install --no-cache-dir --no-binary=mmpycocotools mmpycocotools || exit 1
 pip install -r ../../../requirements/base.txt || exit 1
 pip install -r ../../../requirements/openvino.txt || exit 1
 
 # Install OTX
+pip install --no-cache-dir --no-binary=mmpycocotools mmpycocotools || exit 1
 pip install -e ../../../ || exit 1
+pip install numpy==1.21.4
+pip install mmdet@git+https://github.com/openvinotoolkit/mmdetection@ote
+pip install mpa@git+https://github.com/openvinotoolkit/model_preparation_algorithm@otx
 
 # Build NNCF extensions
 echo "Build NNCF extensions ..."
