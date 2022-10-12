@@ -336,8 +336,10 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         super()._overwrite_parameters()
         if self._multilabel:
             # hack to use 1cycle policy
-            self._recipe_cfg.lr_config = ConfigDict(
-                max_lr=self._hyperparams.learning_parameters.learning_rate, warmup=None
+            self._recipe_cfg.merge_from_dict(
+                ConfigDict(
+                    lr_config=ConfigDict(max_lr=self._hyperparams.learning_parameters.learning_rate, warmup=None)
+                )
             )
 
     def _patch_datasets(self, config: MPAConfig, domain=Domain.CLASSIFICATION):
