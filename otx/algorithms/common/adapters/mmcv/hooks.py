@@ -84,8 +84,8 @@ class EnsureCorrectBestCheckpointHook(Hook):
 
 
 @HOOKS.register_module()
-class OTELoggerHook(LoggerHook):
-    """OTELoggerHook for Logging."""
+class OTXLoggerHook(LoggerHook):
+    """OTXLoggerHook for Logging."""
 
     class Curve:
         """Curve with x (epochs) & y (scores)."""
@@ -116,7 +116,7 @@ class OTELoggerHook(LoggerHook):
     @master_only
     @check_input_parameters_type()
     def log(self, runner: BaseRunner):
-        """Log function for OTELoggerHook."""
+        """Log function for OTXLoggerHook."""
         tags = self.get_loggable_tags(runner, allow_text=False)
         if runner.max_epochs is not None:
             normalized_iter = self.get_iter(runner) / runner.max_iters * runner.max_epochs
@@ -133,7 +133,7 @@ class OTELoggerHook(LoggerHook):
 
     @check_input_parameters_type()
     def after_train_epoch(self, runner: BaseRunner):
-        """Called after_train_epoch in OTELoggerHook."""
+        """Called after_train_epoch in OTXLoggerHook."""
         # Iteration counter is increased right after the last iteration in the epoch,
         # temporarily decrease it back.
         runner._iter -= 1
@@ -142,8 +142,8 @@ class OTELoggerHook(LoggerHook):
 
 
 @HOOKS.register_module()
-class OTEProgressHook(Hook):
-    """OTEProgressHook for getting progress."""
+class OTXProgressHook(Hook):
+    """OTXProgressHook for getting progress."""
 
     @check_input_parameters_type()
     def __init__(self, time_monitor: TimeMonitorCallback, verbose: bool = False):
@@ -154,7 +154,7 @@ class OTEProgressHook(Hook):
 
     @check_input_parameters_type()
     def before_run(self, runner: BaseRunner):
-        """Called before_run in OTEProgressHook."""
+        """Called before_run in OTXProgressHook."""
         total_epochs = runner.max_epochs if runner.max_epochs is not None else 1
         self.time_monitor.total_epochs = total_epochs
         self.time_monitor.train_steps = runner.max_iters // total_epochs if total_epochs else 1
@@ -166,24 +166,24 @@ class OTEProgressHook(Hook):
 
     @check_input_parameters_type()
     def before_epoch(self, runner: BaseRunner):
-        """Called before_epoch in OTEProgressHook."""
+        """Called before_epoch in OTXProgressHook."""
         self.time_monitor.on_epoch_begin(runner.epoch)
 
     @check_input_parameters_type()
     def after_epoch(self, runner: BaseRunner):
-        """Called after_epoch in OTEProgressHook."""
+        """Called after_epoch in OTXProgressHook."""
         # put some runner's training status to use on the other hooks
         runner.log_buffer.output["current_iters"] = runner.iter
         self.time_monitor.on_epoch_end(runner.epoch, runner.log_buffer.output)
 
     @check_input_parameters_type()
     def before_iter(self, runner: BaseRunner):
-        """Called before_iter in OTEProgressHook."""
+        """Called before_iter in OTXProgressHook."""
         self.time_monitor.on_train_batch_begin(1)
 
     @check_input_parameters_type()
     def after_iter(self, runner: BaseRunner):
-        """Called after_iter in OTEProgressHook."""
+        """Called after_iter in OTXProgressHook."""
         # put some runner's training status to use on the other hooks
         runner.log_buffer.output["current_iters"] = runner.iter
         self.time_monitor.on_train_batch_end(1)
@@ -195,17 +195,17 @@ class OTEProgressHook(Hook):
 
     @check_input_parameters_type()
     def before_val_iter(self, runner: BaseRunner):
-        """Called before_val_iter in OTEProgressHook."""
+        """Called before_val_iter in OTXProgressHook."""
         self.time_monitor.on_test_batch_begin(1, logger)
 
     @check_input_parameters_type()
     def after_val_iter(self, runner: BaseRunner):
-        """Called after_val_iter in OTEProgressHook."""
+        """Called after_val_iter in OTXProgressHook."""
         self.time_monitor.on_test_batch_end(1, logger)
 
     @check_input_parameters_type()
     def after_run(self, runner: BaseRunner):
-        """Called after_run in OTEProgressHook."""
+        """Called after_run in OTXProgressHook."""
         self.time_monitor.on_train_end(1)
         if self.time_monitor.update_progress_callback:
             self.time_monitor.update_progress_callback(int(self.time_monitor.get_progress()))

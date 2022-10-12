@@ -39,7 +39,7 @@ from mmdet.models import build_detector
 from mpa.utils.config_utils import remove_custom_hook
 from mpa.utils.logger import get_logger
 
-from otx.algorithms.common.adapters.mmcv.hooks import OTELoggerHook
+from otx.algorithms.common.adapters.mmcv.hooks import OTXLoggerHook
 from otx.algorithms.detection.adapters.mmdet.config_utils import (
     patch_config,
     prepare_for_training,
@@ -323,7 +323,7 @@ class DetectionNNCFTask(DetectionInferenceTask, IOptimizationTask):
             loading_stage_progress_percentage=5,
             initialization_stage_progress_percentage=5,
         )
-        learning_curves = DefaultDict(OTELoggerHook.Curve)  # type: DefaultDict
+        learning_curves = DefaultDict(OTXLoggerHook.Curve)  # type: DefaultDict
         training_config = prepare_for_training(config, train_dataset, val_dataset, time_monitor, learning_curves)
         mm_train_dataset = build_dataset(training_config.data.train)
 

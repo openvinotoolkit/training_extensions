@@ -167,7 +167,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
     @check_input_parameters_type()
     def export(self, export_type: ExportType, output_model: ModelEntity):
         """Export function of OTX Detection Task."""
-        # copied from OTE inference_task.py
+        # copied from OTX inference_task.py
         logger.info("Exporting the model")
         if export_type != ExportType.OPENVINO:
             raise RuntimeError(f"not supported export type {export_type}")
@@ -234,8 +234,8 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
 
         self._recipe_cfg = MPAConfig.fromfile(recipe)
         self._patch_data_pipeline()
-        self._patch_datasets(self._recipe_cfg, self._task_type.domain)  # for OTE compatibility
-        self._patch_evaluation(self._recipe_cfg)  # for OTE compatibility
+        self._patch_datasets(self._recipe_cfg, self._task_type.domain)  # for OTX compatibility
+        self._patch_evaluation(self._recipe_cfg)  # for OTX compatibility
         logger.info(f"initialized recipe = {recipe}")
 
     def _init_model_cfg(self):
@@ -249,11 +249,11 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         data_cfg = ConfigDict(
             data=ConfigDict(
                 train=ConfigDict(
-                    ote_dataset=None,
+                    otx_dataset=None,
                     labels=self._labels,
                 ),
                 test=ConfigDict(
-                    ote_dataset=dataset,
+                    otx_dataset=dataset,
                     labels=self._labels,
                 ),
             )
@@ -261,7 +261,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         return data_cfg
 
     def _add_predictions_to_dataset(self, prediction_results, dataset, confidence_threshold=0.0):
-        """Loop over dataset again to assign predictions. Convert from MMDetection format to OTE format."""
+        """Loop over dataset again to assign predictions. Convert from MMDetection format to OTX format."""
         for dataset_item, (all_results, feature_vector, saliency_map) in zip(dataset, prediction_results):
             width = dataset_item.width
             height = dataset_item.height
@@ -303,11 +303,11 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
 
     @staticmethod
     def _patch_datasets(config: MPAConfig, domain=Domain.DETECTION):
-        # Copied from ote/apis/detection/config_utils.py
+        # Copied from otx/apis/detection/config_utils.py
         # Added 'unlabeled' data support
 
         def patch_color_conversion(pipeline):
-            # Default data format for OTE is RGB, while mmdet uses BGR, so negate the color conversion flag.
+            # Default data format for OTX is RGB, while mmdet uses BGR, so negate the color conversion flag.
             for pipeline_step in pipeline:
                 if pipeline_step.type == "Normalize":
                     to_rgb = False
@@ -327,16 +327,16 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
                 cfg = cfg.dataset
             cfg.type = "MPADetDataset"
             cfg.domain = domain
-            cfg.ote_dataset = None
+            cfg.otx_dataset = None
             cfg.labels = None
             remove_from_config(cfg, "ann_file")
             remove_from_config(cfg, "img_prefix")
             remove_from_config(cfg, "classes")  # Get from DatasetEntity
             for pipeline_step in cfg.pipeline:
                 if pipeline_step.type == "LoadImageFromFile":
-                    pipeline_step.type = "LoadImageFromOTEDataset"
+                    pipeline_step.type = "LoadImageFromOTXDataset"
                 if pipeline_step.type == "LoadAnnotations":
-                    pipeline_step.type = "LoadAnnotationFromOTEDataset"
+                    pipeline_step.type = "LoadAnnotationFromOTXDataset"
                     pipeline_step.domain = domain
                     pipeline_step.min_size = cfg.pop("min_size", -1)
                 if subset == "train" and pipeline_step.type == "Collect":

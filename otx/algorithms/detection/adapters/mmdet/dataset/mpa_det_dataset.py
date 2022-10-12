@@ -19,13 +19,13 @@ from mpa.utils.logger import get_logger
 
 from otx.algorithms.common.utils.data_utils import get_old_new_img_indices
 
-from .mmdataset import OTEDataset
+from .mmdataset import OTXDataset
 
 logger = get_logger()
 
 
 @DATASETS.register_module()
-class MPADetDataset(OTEDataset):
+class MPADetDataset(OTXDataset):
     """MPADetDataset for Class-Incremental Learning."""
 
     def __init__(self, **kwargs):
@@ -36,7 +36,7 @@ class MPADetDataset(OTEDataset):
 
         test_mode = kwargs.get("test_mode", False)
         if test_mode is False:
-            self.img_indices = get_old_new_img_indices(self.labels, new_classes, self.ote_dataset)
+            self.img_indices = get_old_new_img_indices(self.labels, new_classes, self.otx_dataset)
 
     def get_cat_ids(self, idx):
         """Get category ids by index.

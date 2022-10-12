@@ -136,7 +136,7 @@ class BaseInferencerWithConverter(BaseInferencer):
 
 
 class OpenVINODetectionInferencer(BaseInferencerWithConverter):
-    """Inferencer implementation for OTEDetection using OpenVINO backend."""
+    """Inferencer implementation for OTXDetection using OpenVINO backend."""
 
     @check_input_parameters_type()
     def __init__(
@@ -171,14 +171,14 @@ class OpenVINODetectionInferencer(BaseInferencerWithConverter):
                 filter=lambda attr, value: attr.name not in ["header", "description", "type", "visible_in_ui"],
             )
         }
-        model = Model.create_model("OTE_SSD", model_adapter, configuration, preload=True)
+        model = Model.create_model("OTX_SSD", model_adapter, configuration, preload=True)
         converter = DetectionBoxToAnnotationConverter(label_schema)
 
         super().__init__(configuration, model, converter)
 
 
 class OpenVINOMaskInferencer(BaseInferencerWithConverter):
-    """Mask Inferencer implementation for OTEDetection using OpenVINO backend."""
+    """Mask Inferencer implementation for OTXDetection using OpenVINO backend."""
 
     @check_input_parameters_type()
     def __init__(
@@ -205,7 +205,7 @@ class OpenVINOMaskInferencer(BaseInferencerWithConverter):
             )
         }
 
-        model = Model.create_model("ote_maskrcnn", model_adapter, configuration, preload=True)
+        model = Model.create_model("otx_maskrcnn", model_adapter, configuration, preload=True)
 
         converter = MaskToAnnotationConverter(label_schema)
 
@@ -213,7 +213,7 @@ class OpenVINOMaskInferencer(BaseInferencerWithConverter):
 
 
 class OpenVINORotatedRectInferencer(BaseInferencerWithConverter):
-    """Rotated Rect Inferencer implementation for OTEDetection using OpenVINO backend."""
+    """Rotated Rect Inferencer implementation for OTXDetection using OpenVINO backend."""
 
     @check_input_parameters_type()
     def __init__(
@@ -240,15 +240,15 @@ class OpenVINORotatedRectInferencer(BaseInferencerWithConverter):
             )
         }
 
-        model = Model.create_model("ote_maskrcnn", model_adapter, configuration, preload=True)
+        model = Model.create_model("otx_maskrcnn", model_adapter, configuration, preload=True)
 
         converter = RotatedRectToAnnotationConverter(label_schema)
 
         super().__init__(configuration, model, converter)
 
 
-class OTEOpenVinoDataLoader(DataLoader):
-    """Data loader for OTEDetection using OpenVINO backend."""
+class OTXOpenVinoDataLoader(DataLoader):
+    """Data loader for OTXDetection using OpenVINO backend."""
 
     @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def __init__(self, dataset: DatasetEntity, inferencer: BaseInferencer):
@@ -265,16 +265,16 @@ class OTEOpenVinoDataLoader(DataLoader):
         return (index, annotation), inputs, metadata
 
     def __len__(self):
-        """Length of OTEOpenVinoDataLoader."""
+        """Length of OTXOpenVinoDataLoader."""
         return len(self.dataset)
 
 
 class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IOptimizationTask):
-    """Task implementation for OTEDetection using OpenVINO backend."""
+    """Task implementation for OTXDetection using OpenVINO backend."""
 
     @check_input_parameters_type()
     def __init__(self, task_environment: TaskEnvironment):
-        logger.info("Loading OpenVINO OTEDetectionTask")
+        logger.info("Loading OpenVINO OTXDetectionTask")
         self.task_environment = task_environment
         self.model = self.task_environment.model
         self.task_type = self.task_environment.model_template.task_type
@@ -427,7 +427,7 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
         if self.model is None:
             raise RuntimeError("Optimize failed, model is None")
 
-        data_loader = OTEOpenVinoDataLoader(dataset, self.inferencer)
+        data_loader = OTXOpenVinoDataLoader(dataset, self.inferencer)
 
         with tempfile.TemporaryDirectory() as tempdir:
             xml_path = os.path.join(tempdir, "model.xml")

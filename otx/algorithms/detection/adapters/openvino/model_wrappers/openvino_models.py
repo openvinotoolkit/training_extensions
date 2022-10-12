@@ -1,4 +1,4 @@
-"""OTEMaskRCNNModel & OTESSDModel of OTX Detection."""
+"""OTXMaskRCNNModel & OTXSSDModel of OTX Detection."""
 
 # Copyright (C) 2022 Intel Corporation
 #
@@ -43,7 +43,7 @@ class OTXMaskRCNNModel(MaskRCNNModel):
         return output_match_dict
 
     def postprocess(self, outputs, meta):
-        """Post process function for OTE MaskRCNN model."""
+        """Post process function for OTX MaskRCNN model."""
         boxes = (
             outputs[self.output_blob_name["boxes"]]
             if self.is_segmentoly

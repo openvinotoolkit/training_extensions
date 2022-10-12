@@ -23,7 +23,7 @@ from .config_utils import (
     set_hyperparams,
 )
 from .dataset import MPADetDataset
-from .pipelines import LoadAnnotationFromOTEDataset, LoadImageFromOTEDataset
+from .pipelines import LoadAnnotationFromOTXDataset, LoadImageFromOTXDataset
 
 __all__ = [
     "MPADetDataset",
@@ -33,6 +33,6 @@ __all__ = [
     "prepare_for_testing",
     "prepare_for_training",
     "set_hyperparams",
-    "LoadAnnotationFromOTEDataset",
-    "LoadImageFromOTEDataset",
+    "LoadAnnotationFromOTXDataset",
+    "LoadImageFromOTXDataset",
 ]

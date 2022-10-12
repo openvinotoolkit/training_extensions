@@ -31,7 +31,7 @@ from mpa.stage import Stage
 from mpa.utils.config_utils import remove_custom_hook, update_or_add_custom_hook
 from mpa.utils.logger import get_logger
 
-from otx.algorithms.common.adapters.mmcv.hooks import OTELoggerHook
+from otx.algorithms.common.adapters.mmcv.hooks import OTXLoggerHook
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label import LabelEntity
 from otx.api.entities.model import ModelEntity, ModelPrecision, OptimizationMethod
@@ -98,7 +98,7 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         self._data_cfg = None
         self._mode = None
         self._time_monitor = None  # type: Optional[TimeMonitorCallback]
-        self._learning_curves = DefaultDict(OTELoggerHook.Curve)  # type: DefaultDict
+        self._learning_curves = DefaultDict(OTXLoggerHook.Curve)  # type: DefaultDict
         self._is_training = False
         self._should_stop = False
         self.cancel_interface = None
@@ -233,13 +233,13 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
             update_or_add_custom_hook(
                 self._recipe_cfg,
                 ConfigDict(
-                    type="OTEProgressHook",
+                    type="OTXProgressHook",
                     time_monitor=self._time_monitor,
                     verbose=True,
                     priority=71,
                 ),
             )
-        self._recipe_cfg.log_config.hooks.append({"type": "OTELoggerHook", "curves": self._learning_curves})
+        self._recipe_cfg.log_config.hooks.append({"type": "OTXLoggerHook", "curves": self._learning_curves})
 
         logger.info("initialized.")
 
