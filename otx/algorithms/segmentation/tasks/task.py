@@ -67,6 +67,7 @@ from otx.algorithms.segmentation.utils import (
     get_activation_map,
 )
 from otx.algorithms.common.adapters.mmcv import OTELoggerHook, OTEProgressHook
+from otx.algorithms.segmentation.utils import LoadImageFromOTEDataset
 
 logger = get_logger()
 
