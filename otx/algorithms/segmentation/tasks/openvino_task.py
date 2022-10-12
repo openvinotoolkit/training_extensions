@@ -60,10 +60,10 @@ from compression.graph.model_utils import compress_model_weights, get_nodes_by_t
 from compression.pipeline.initializer import create_pipeline
 from otx.api.serialization.label_mapper import LabelSchemaMapper, label_schema_to_bytes
 
-from .configuration import OTESegmentationConfig
+from otx.algorithms.segmentation.configs import SegmentationConfig
 from openvino.model_zoo.model_api.models import Model
 from openvino.model_zoo.model_api.adapters import create_core, OpenvinoAdapter
-from .ote_utils import get_activation_map
+from otx.algorithms.segmentation.utils import get_activation_map
 from . import model_wrappers
 
 
@@ -74,7 +74,7 @@ class OpenVINOSegmentationInferencer(BaseInferencer):
     @check_input_parameters_type()
     def __init__(
         self,
-        hparams: OTESegmentationConfig,
+        hparams: SegmentationConfig,
         label_schema: LabelSchemaEntity,
         model_file: Union[str, bytes],
         weight_file: Union[str, bytes, None] = None,
@@ -150,7 +150,7 @@ class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask,
 
     @property
     def hparams(self):
-        return self.task_environment.get_hyper_parameters(OTESegmentationConfig)
+        return self.task_environment.get_hyper_parameters(SegmentationConfig)
 
     def load_inferencer(self) -> OpenVINOSegmentationInferencer:
         return OpenVINOSegmentationInferencer(self.hparams,

@@ -13,7 +13,7 @@ framework: OTESegmentation v0.14.0
 # Task implementations.
 entrypoints:
   base: otx.algorithms.segmentation.tasks.SegmentationTrainTask
-  openvino: segmentation_tasks.apis.segmentation.OpenVINOSegmentationTask
+  openvino: otx.algorithms.segmentation.tasks.OpenVINOSegmentationTask
   nncf: otx.algorithms.segmentation.tasks.SegmentationNNCFTask
 base_model_path: ../../../../mmsegmentation/configs/custom-sematic-segmentation/ocr-lite-hrnet-x-mod3/template_experimental.yaml
 
