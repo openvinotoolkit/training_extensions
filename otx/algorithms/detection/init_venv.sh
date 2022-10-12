@@ -5,6 +5,17 @@
 set -v
 set -x
 
+work_dir=$(realpath "$(dirname "$0")")
+
+venv_dir=$1
+PYTHON_NAME=$2
+
+if [ -z "$venv_dir" ]; then
+  venv_dir=$(realpath -m "${work_dir}"/venv)
+else
+  venv_dir=$(realpath -m "$venv_dir")
+fi
+
 if [[ -z $PYTHON_NAME ]]; then
   # the default option -- note that the minimal version of
   # python that is suitable for this repo is python3.7,
@@ -17,6 +28,26 @@ if [[ $PYTHON_VERSION != "3.7" && $PYTHON_VERSION != "3.8" && $PYTHON_VERSION !=
   echo "Wrong version of python: '$PYTHON_VERSION'"
   exit 1
 fi
+
+cd "${work_dir}" || exit
+
+if [[ -e ${venv_dir} ]]; then
+  echo
+  echo "Virtualenv already exists. Use command to start working:"
+  echo "$ . ${venv_dir}/bin/activate"
+  exit
+fi
+
+# Create virtual environment
+$PYTHON_NAME -m venv "${venv_dir}" --prompt="mpa"
+
+if ! [ -e "${venv_dir}/bin/activate" ]; then
+  echo "The virtual environment was not created."
+  exit
+fi
+
+# shellcheck source=/dev/null
+. "${venv_dir}"/bin/activate
 
 # Get CUDA version.
 CUDA_HOME_CANDIDATE=/usr/local/cuda
@@ -52,7 +83,7 @@ else
     echo "CUDA version must be either 11.1 or 10.2"
     exit 1
   fi
-  echo "export CUDA_HOME=${CUDA_HOME}"
+  echo "export CUDA_HOME=${CUDA_HOME}" >> "${venv_dir}"/bin/activate
 fi
 
 CONSTRAINTS_FILE=$(mktemp)
@@ -79,19 +110,25 @@ pip install torch=="${TORCH_VERSION}" torchvision=="${TORCHVISION_VERSION}" -f h
 
 # Install mmcv
 pip install --no-cache-dir mmcv-full==${MMCV_VERSION} || exit 1
+sed -i "s/force=False/force=True/g" "${venv_dir}"/lib/python"${PYTHON_VERSION}"/site-packages/mmcv/utils/registry.py  # Patch: remedy for MMCV registry collision from mmdet/mmseg
 
-# Install Base requirements
-pip install -r requirements/base.txt || exit 1
-pip install -r requirements/openvino.txt || exit 1
+# Install requirements
+pip install -r ../../../requirements/base.txt || exit 1
+pip install -r ../../../requirements/openvino.txt || exit 1
 
-# Install backends
-pip install numpy==1.21.4
+# Install OTX
 pip install --no-cache-dir --no-binary=mmpycocotools mmpycocotools || exit 1
-pip install -e .
-# pip install mmdet@git+https://github.com/openvinotoolkit/mmdetection@ote || exit 1
-# pip install mpa@git+https://github.com/openvinotoolkit/model_preparation_algorithm@develop || exit 1
-
+pip install -e ../../../ || exit 1
+pip install numpy==1.21.4
+pip install mmdet@git+https://github.com/openvinotoolkit/mmdetection@ote
+pip install mpa@git+https://github.com/openvinotoolkit/model_preparation_algorithm@otx
 
 # Build NNCF extensions
 echo "Build NNCF extensions ..."
 python -c "import nncf"
+
+deactivate
+
+echo
+echo "Activate a virtual environment to start working:"
+echo "$ . ${venv_dir}/bin/activate"

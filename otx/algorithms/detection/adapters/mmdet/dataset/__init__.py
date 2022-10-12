@@ -1,4 +1,4 @@
-"""OTX Algorithms."""
+"""OTX Algorithms - Detection Dataset."""
 
 # Copyright (C) 2022 Intel Corporation
 #
@@ -13,3 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions
 # and limitations under the License.
+
+from .mpa_det_dataset import MPADetDataset
+
+__all__ = ["MPADetDataset"]
