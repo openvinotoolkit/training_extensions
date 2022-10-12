@@ -52,9 +52,9 @@ from otx.api.utils.vis_utils import get_actmap
 from scripts.default_config import (get_default_config, imagedata_kwargs,
                                     merge_from_files_with_base, model_kwargs)
 from torchreid.apis.export import export_ir, export_onnx
-from otx.algorithms.classification.adapters.dor.torchreid_tasks.monitors import DefaultMetricsMonitor, StopCallback
-from otx.algorithms.classification.adapters.dor.torchreid_tasks.parameters import OTEClassificationParameters
-from otx.algorithms.classification.adapters.dor.torchreid_tasks.utils import (active_score_from_probs, force_fp32, get_multiclass_predictions,
+from otx.algorithms.classification.adapters.dor.utils.monitors import DefaultMetricsMonitor, StopCallback
+from otx.algorithms.classification.adapters.dor.utils.parameters import OTEClassificationParameters
+from otx.algorithms.classification.adapters.dor.utils.utils import (active_score_from_probs, force_fp32, get_multiclass_predictions,
                                    get_multilabel_predictions, InferenceProgressCallback,
                                    OTEClassificationDataset, sigmoid_numpy, softmax_numpy,
                                    get_multihead_class_info, get_hierarchical_predictions)

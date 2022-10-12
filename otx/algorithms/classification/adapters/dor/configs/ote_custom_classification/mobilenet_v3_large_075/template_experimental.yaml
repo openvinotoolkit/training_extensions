@@ -13,9 +13,9 @@ framework: OTEClassification v1.2.3
 
 # Task implementations.
 entrypoints:
-  base: otx.algorithms.classification.adapters.dor.torchreid_tasks.train_task.OTEClassificationTrainingTask
-  openvino: otx.algorithms.classification.adapters.dor.torchreid_tasks.openvino_task.OpenVINOClassificationTask
-  nncf: otx.algorithms.classification.adapters.dor.torchreid_tasks.nncf_task.OTEClassificationNNCFTask
+  base: torchreid_tasks.train_task.OTEClassificationTrainingTask
+  openvino: torchreid_tasks.openvino_task.OpenVINOClassificationTask
+  nncf: torchreid_tasks.nncf_task.OTEClassificationNNCFTask
 
 # Capabilities.
 capabilities:

@@ -44,6 +44,7 @@ parser.add_argument("template_file_path", help="path to template file")
 parser.add_argument("--export", action="store_true")
 parser.add_argument("--multilabel", action="store_true")
 parser.add_argument("--hierarchical", action="store_true")
+
 args = parser.parse_args()
 
 
@@ -200,6 +201,19 @@ def get_label_schema(labels, multilabel=False, hierarchical=False):
 
     return label_schema
 
+def validate(task, validation_dataset, model):
+    print('Get predictions on the validation set')
+    predicted_validation_dataset = task.infer(
+        validation_dataset.with_empty_annotations(),
+        InferenceParameters(is_evaluation=True))
+    resultset = ResultSetEntity(
+        model=model,
+        ground_truth_dataset=validation_dataset,
+        prediction_dataset=predicted_validation_dataset,
+    )
+    print('Estimate quality on validation set')
+    task.evaluate(resultset)
+    print(str(resultset.performance))
 
 def main():
     logger.info("Train initial model with OLD dataset")
@@ -284,7 +298,7 @@ def main():
     task.evaluate(resultset)
     logger.info(str(resultset.performance))
 
-    if args.export:
+    if args.export or args.multilabel or args.hierarchical:
         logger.info("Export model")
         exported_model = ModelEntity(
             dataset,
@@ -312,6 +326,7 @@ def main():
         openvino_task.evaluate(resultset)
         logger.info(str(resultset.performance))
 
+        # POT test
         logger.info("Run POT optimization")
         optimized_model = ModelEntity(
             dataset,
@@ -320,23 +335,28 @@ def main():
         openvino_task.optimize(
             OptimizationType.POT, dataset.get_subset(Subset.TRAINING), optimized_model, OptimizationParameters()
         )
-
         logger.info("Run POT deploy")
         openvino_task.deploy(optimized_model)
+        validate(task, validation_dataset, optimized_model)
 
-        logger.info("Get predictions on the validation set")
-        predicted_validation_dataset = openvino_task.infer(
-            validation_dataset.with_empty_annotations(), InferenceParameters(is_evaluation=True)
-        )
-        resultset = ResultSetEntity(
-            model=optimized_model,
-            ground_truth_dataset=validation_dataset,
-            prediction_dataset=predicted_validation_dataset,
-        )
-        logger.info("Performance of optimized model:")
-        openvino_task.evaluate(resultset)
-        logger.info(str(resultset.performance))
+        # NNCF test
+        task_impl_path = model_template.entrypoints.nncf
+        nncf_task_cls = get_task_class(task_impl_path)
 
+        print('Create NNCF Task')
+        environment.model = output_model
+        task = nncf_task_cls(task_environment=environment)
+
+        validate(task, validation_dataset, output_model)
+
+        print('Optimize model by NNCF')
+        optimized_model = ModelEntity(
+            dataset,
+            environment.get_model_configuration(),
+        )
+        task.optimize(OptimizationType.NNCF, dataset, optimized_model, None)
+
+        validate(task, validation_dataset, output_model)
 
 if __name__ == "__main__":
     sys.exit(main() or 0)

@@ -61,9 +61,9 @@ from otx.api.usecases.tasks.interfaces.unload_interface import IUnload
 from otx.api.utils.argument_checks import check_input_parameters_type
 from otx.api.utils.labels_utils import get_empty_label
 from otx.api.utils.vis_utils import get_actmap
-from otx.algorithms.classification.adapters.dor.torchreid_tasks.nncf_task import OTEClassificationNNCFTask
+from otx.algorithms.classification.adapters.dor.tasks.nncf_task import OTEClassificationNNCFTask
 
-from otx.algorithms.common.adapters.mmcv import OTELoggerHook
+from otx.algorithms.common.adapters.mmcv import OTXLoggerHook
 from otx.algorithms.classification.utils import get_multihead_class_info as get_hierarchical_info
 
 logger = get_logger()
@@ -449,7 +449,7 @@ class ClassificationTrainTask(ClassificationInferenceTask):
         if train_parameters is not None:
             update_progress_callback = train_parameters.update_progress
         self._time_monitor = TrainingProgressCallback(update_progress_callback)
-        self._learning_curves = defaultdict(OTELoggerHook.Curve)
+        self._learning_curves = defaultdict(OTXLoggerHook.Curve)
 
         stage_module = "ClsTrainer"
         self._data_cfg = self._init_train_data_cfg(dataset)

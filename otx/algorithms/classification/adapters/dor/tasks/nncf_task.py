@@ -40,9 +40,9 @@ from torchreid.apis.training import run_training
 from torchreid.integration.nncf.compression import check_nncf_is_enabled, is_nncf_state, wrap_nncf_model
 from torchreid.integration.nncf.compression_script_utils import (calculate_lr_for_nncf_training,
                                                                  patch_config)
-from otx.algorithms.classification.adapters.dor.torchreid_tasks.inference_task import OTEClassificationInferenceTask
-from otx.algorithms.classification.adapters.dor.torchreid_tasks.monitors import DefaultMetricsMonitor
-from otx.algorithms.classification.adapters.dor.torchreid_tasks.utils import OTEClassificationDataset, OptimizationProgressCallback
+from otx.algorithms.classification.adapters.dor.tasks.inference_task import OTEClassificationInferenceTask
+from otx.algorithms.classification.adapters.dor.utils.monitors import DefaultMetricsMonitor
+from otx.algorithms.classification.adapters.dor.utils.utils import OTEClassificationDataset, OptimizationProgressCallback
 from torchreid.ops import DataParallel
 from torchreid.utils import set_random_seed, set_model_attr
 
