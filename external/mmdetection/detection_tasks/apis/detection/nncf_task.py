@@ -230,12 +230,6 @@ class OTEDetectionNNCFTask(OTEDetectionInferenceTask, IOptimizationTask):
         self._is_training = True
         self._model.train()
 
-        fp16 = training_config.get("fp16", None)
-
-        if fp16 is not None:
-            remove_from_config(training_config, "fp16")
-            logger.warn("fp16 option is not supported in NNCF. Switch to fp32.")
-
         train_detector(model=self._model,
                        dataset=mm_train_dataset,
                        cfg=training_config,
