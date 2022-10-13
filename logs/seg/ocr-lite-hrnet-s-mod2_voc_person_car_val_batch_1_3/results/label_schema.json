@@ -1,0 +1,35 @@
+{
+    "label_tree": {
+        "type": "tree",
+        "directed": true,
+        "nodes": [],
+        "edges": []
+    },
+    "label_groups": [
+        {
+            "_id": "63475f0cfc78617d0e06221c",
+            "name": "from_label_list",
+            "label_ids": [
+                "00000001"
+            ],
+            "relation_type": "EXCLUSIVE"
+        }
+    ],
+    "all_labels": {
+        "00000001": {
+            "_id": "00000001",
+            "name": "person",
+            "color": {
+                "red": 225,
+                "green": 214,
+                "blue": 231,
+                "alpha": 255
+            },
+            "hotkey": "a",
+            "domain": "SEGMENTATION",
+            "creation_date": "2022-10-13T00:42:52.262000",
+            "is_empty": false,
+            "is_anomalous": false
+        }
+    }
+}

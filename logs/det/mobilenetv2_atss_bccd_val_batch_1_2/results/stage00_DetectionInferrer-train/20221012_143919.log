@@ -1,0 +1,29 @@
+2022-10-12 14:39:19,530 | INFO : configured logger at /home/sungmanc/scripts/ote-master/training_extensions/logs/mobilenetv2_atss_bccd_val_batch_1_2/results/stage00_DetectionInferrer-train with named 20221012_143919.log
+2022-10-12 14:39:19,530 | INFO : configure!: training=False
+2022-10-12 14:39:19,552 | INFO : configure_data()
+2022-10-12 14:39:19,562 | INFO : task config!!!!: training=False
+2022-10-12 14:39:19,581 | INFO : configure_hook() [{'type': 'LazyEarlyStoppingHook', 'start': 3, 'patience': 10, 'iteration_patience': 0, 'metric': 'mAP', 'interval': 1, 'priority': 75}, {'type': 'CancelInterfaceHook', 'init_callback': 'mpa_tasks.apis.task.OnHookInitialized'}, {'type': 'OTEProgressHook', 'time_monitor': <detection_tasks.apis.detection.ote_utils.TrainingProgressCallback object at 0x7f9e1f1e3e80>, 'verbose': True, 'priority': 71}, {'type': 'LoggerReplaceHook'}, {'type': 'TaskAdaptHook', 'src_classes': ['Platelets', 'RBC', 'WBC'], 'dst_classes': ['Platelets', 'RBC', 'WBC'], 'model_type': 'CustomATSS', 'sampler_flag': False, 'efficient_mode': False}, {'type': 'EMAHook', 'priority': 'ABOVE_NORMAL', 'resume_from': None, 'momentum': 0.1}, {'type': 'AdaptiveTrainSchedulingHook', 'max_interval': 5}] <- {}
+2022-10-12 14:39:19,679 | INFO : ----------------- CustomATSS.load_state_dict_pre_hook() called w/ prefix: 
+2022-10-12 14:39:19,679 | INFO : ['Platelets', 'RBC', 'WBC'] -> ['Platelets', 'RBC', 'WBC'] ([0, 1, 2])
+2022-10-12 14:39:22,476 | INFO : run task done.
+2022-10-12 14:39:23,255 | INFO : Adjusting the confidence threshold
+2022-10-12 14:39:23,873 | INFO : Setting confidence threshold to 0.35000000000000003 based on results
+2022-10-12 14:39:23,873 | INFO : Final model performance: Performance(score: 0.8042381432896064, dashboard: (15 metric groups))
+2022-10-12 14:39:23,874 | INFO : called save_model
+2022-10-12 14:39:23,927 | INFO : train done.
+2022-10-12 14:39:23,941 | INFO : infer()
+2022-10-12 14:39:23,941 | INFO : Confidence threshold 0.35000000000000003
+2022-10-12 14:39:23,941 | INFO : initializing....
+2022-10-12 14:39:23,941 | INFO : called _init_recipe()
+2022-10-12 14:39:23,941 | INFO : train type = Incremental
+2022-10-12 14:39:23,964 | WARNING : Duplicate key is detected among bases [{'data', 'data_root_path'}]
+2022-10-12 14:39:23,965 | INFO : initialized recipe = /home/sungmanc/scripts/ote-master/training_extensions/external/model-preparation-algorithm/submodule/recipes/stages/detection/imbalance.py
+2022-10-12 14:39:23,970 | WARNING : Duplicate key is detected among bases [{'model'}]
+2022-10-12 14:39:23,970 | INFO : initialized.
+2022-10-12 14:39:23,970 | INFO : running task... kwargs = {'eval': True, 'dump_features': True, 'dump_saliency_map': False}
+2022-10-12 14:39:23,970 | INFO : called build_recipe()
+2022-10-12 14:39:23,971 | INFO : seems to be passed stage yaml...
+2022-10-12 14:39:23,971 | INFO : build_stage()
+2022-10-12 14:39:23,973 | INFO : Training seed was set to 5 w/ deterministic=True.
+2022-10-12 14:39:23,973 | INFO : work dir = /home/sungmanc/scripts/ote-master/training_extensions/logs/mobilenetv2_atss_bccd_val_batch_1_2/results/stage00_DetectionInferrer-train
+2022-10-12 14:39:23,974 | INFO : CUDA_VISIBLE_DEVICES = 0
