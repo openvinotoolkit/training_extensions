@@ -142,6 +142,7 @@ def main():
         hyper_parameters=hyper_parameters,
         label_schema=generate_label_schema(dataset, template.task_type),
         model_template=template,
+        output_path=args.save_model_to,
     )
 
     if args.load_weights:
@@ -171,8 +172,10 @@ def main():
         task = task_class(task_environment=environment)
 
     output_model = ModelEntity(dataset, environment.get_model_configuration())
-
+    import time
+    start_time = time.time()
     task.train(dataset, output_model, train_parameters=TrainParameters())
+    elapsed_time = time.time() - start_time
 
     save_model_data(output_model, args.save_model_to)
 
@@ -191,6 +194,9 @@ def main():
     assert resultset.performance is not None
     print(resultset.performance)
 
+    with open(osp.join(args.save_model_to, 'results.txt'), 'w') as f:
+        f.write('result: {}'.format(resultset.performance.score.value))
+        f.write('elapsed_time: {}'.format(elapsed_time))
 
 if __name__ == "__main__":
     main()
