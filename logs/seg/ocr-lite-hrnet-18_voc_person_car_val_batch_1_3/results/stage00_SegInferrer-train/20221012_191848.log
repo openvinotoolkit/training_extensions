@@ -1,7 +1,0 @@
-2022-10-12 19:18:48,453 | INFO : configured logger at /home/sungmanc/scripts/ote-master/training_extensions/logs/seg/ocr-lite-hrnet-18_voc_person_car_val_batch_1_3/results/stage00_SegInferrer-train with named 20221012_191848.log
-2022-10-12 19:18:48,453 | INFO : configure!: training=False
-2022-10-12 19:18:48,562 | INFO : test_mode : False
-2022-10-12 19:18:50,944 | INFO : run task done.
-2022-10-12 19:18:51,384 | INFO : called evaluate()
-2022-10-12 19:18:51,385 | INFO : Computing mDice
-2022-10-12 19:18:51,645 | INFO : mDice after evaluation: 0.859075511168095
