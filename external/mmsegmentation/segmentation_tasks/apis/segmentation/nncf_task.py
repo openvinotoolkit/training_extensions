@@ -210,11 +210,13 @@ class OTESegmentationNNCFTask(OTESegmentationInferenceTask, IOptimizationTask):
         self._is_training = True
         self._model.train()
 
+        meta = dict()
         train_segmentor(model=self._model,
                         dataset=mm_train_dataset,
                         cfg=training_config,
                         validate=True,
-                        compression_ctrl=self._compression_ctrl)
+                        compression_ctrl=self._compression_ctrl,
+                        meta=meta)
 
         self.save_model(output_model)
 
