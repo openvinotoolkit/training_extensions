@@ -14,10 +14,6 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from mpa.utils.logger import get_logger
-
-logger = get_logger()
-
 
 def get_cls_img_indices(labels, dataset):
     """Function for getting image indices per class.

@@ -74,7 +74,7 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
             and hasattr(self._model_cfg.model, "bbox_head")
             and hasattr(self._model_cfg.model.bbox_head, "anchor_generator")
         ):
-            if getattr(
+            if hasattr(
                 self._model_cfg.model.bbox_head.anchor_generator,
                 "reclustering_anchors",
                 False,
@@ -159,7 +159,7 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
             and hasattr(self._model_cfg.model, "bbox_head")
             and hasattr(self._model_cfg.model.bbox_head, "anchor_generator")
         ):
-            if getattr(
+            if hasattr(
                 self._model_cfg.model.bbox_head.anchor_generator,
                 "reclustering_anchors",
                 False,
