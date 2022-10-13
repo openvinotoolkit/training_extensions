@@ -19,11 +19,10 @@ from typing import Any, Dict, Optional
 import numpy as np
 from mmdet.datasets.builder import PIPELINES
 
-from otx.algorithms.detection.adapters.mmdet.dataset.mmdataset import (
-    get_annotation_mmdet_format,
-)
 from otx.api.entities.label import Domain
 from otx.api.utils.argument_checks import check_input_parameters_type
+
+from .dataset import get_annotation_mmdet_format
 
 
 # pylint: disable=too-many-instance-attributes, too-many-arguments
