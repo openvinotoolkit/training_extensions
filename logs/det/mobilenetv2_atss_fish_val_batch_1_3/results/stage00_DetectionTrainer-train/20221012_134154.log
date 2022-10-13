@@ -1,0 +1,278 @@
+2022-10-12 13:41:54,680 | INFO : configured logger at /home/sungmanc/scripts/ote-master/training_extensions/logs/mobilenetv2_atss_fish_val_batch_1_3/results/stage00_DetectionTrainer-train with named 20221012_134154.log
+2022-10-12 13:41:54,680 | INFO : configure!: training=True
+2022-10-12 13:41:54,681 | INFO : configure_data()
+2022-10-12 13:41:56,293 | INFO : task config!!!!: training=True
+2022-10-12 13:41:56,304 | INFO : configure_hook() [{'type': 'LazyEarlyStoppingHook', 'start': 3, 'patience': 10, 'iteration_patience': 0, 'metric': 'mAP', 'interval': 1, 'priority': 75}, {'type': 'CancelInterfaceHook', 'init_callback': 'mpa_tasks.apis.task.OnHookInitialized'}, {'type': 'OTEProgressHook', 'time_monitor': <detection_tasks.apis.detection.ote_utils.TrainingProgressCallback object at 0x7f8fe2f69970>, 'verbose': True, 'priority': 71}, {'type': 'LoggerReplaceHook'}, {'type': 'TaskAdaptHook', 'src_classes': [], 'dst_classes': ['fish'], 'model_type': 'CustomATSS', 'sampler_flag': False, 'efficient_mode': False}, {'type': 'EMAHook', 'priority': 'ABOVE_NORMAL', 'resume_from': None, 'momentum': 0.1}, {'type': 'AdaptiveTrainSchedulingHook', 'max_interval': 5}] <- {}
+2022-10-12 13:41:56,304 | INFO : train!
+2022-10-12 13:41:56,304 | INFO : cfg.gpu_ids = range(0, 1), distributed = False
+2022-10-12 13:41:56,411 | INFO : Environment info:
+------------------------------------------------------------
+sys.platform: linux
+Python: 3.8.10 (default, Jun 22 2022, 20:18:18) [GCC 9.4.0]
+CUDA available: True
+GPU 0: NVIDIA GeForce RTX 3090
+CUDA_HOME: /usr/local/cuda
+NVCC: Build cuda_11.1.TC455_06.29069683_0
+GCC: gcc (Ubuntu 9.4.0-1ubuntu1~20.04.1) 9.4.0
+PyTorch: 1.8.2+cu111
+PyTorch compiling details: PyTorch built with:
+  - GCC 7.3
+  - C++ Version: 201402
+  - Intel(R) Math Kernel Library Version 2020.0.0 Product Build 20191122 for Intel(R) 64 architecture applications
+  - Intel(R) MKL-DNN v1.7.0 (Git Hash 7aed236906b1f7a05c0917e5257a1af05e9ff683)
+  - OpenMP 201511 (a.k.a. OpenMP 4.5)
+  - NNPACK is enabled
+  - CPU capability usage: AVX2
+  - CUDA Runtime 11.1
+  - NVCC architecture flags: -gencode;arch=compute_37,code=sm_37;-gencode;arch=compute_50,code=sm_50;-gencode;arch=compute_60,code=sm_60;-gencode;arch=compute_70,code=sm_70;-gencode;arch=compute_75,code=sm_75;-gencode;arch=compute_80,code=sm_80;-gencode;arch=compute_86,code=sm_86
+  - CuDNN 8.0.5
+  - Magma 2.5.2
+  - Build settings: BLAS_INFO=mkl, BUILD_TYPE=Release, CUDA_VERSION=11.1, CUDNN_VERSION=8.0.5, CXX_COMPILER=/opt/rh/devtoolset-7/root/usr/bin/c++, CXX_FLAGS= -Wno-deprecated -fvisibility-inlines-hidden -DUSE_PTHREADPOOL -fopenmp -DNDEBUG -DUSE_KINETO -DUSE_FBGEMM -DUSE_QNNPACK -DUSE_PYTORCH_QNNPACK -DUSE_XNNPACK -O2 -fPIC -Wno-narrowing -Wall -Wextra -Werror=return-type -Wno-missing-field-initializers -Wno-type-limits -Wno-array-bounds -Wno-unknown-pragmas -Wno-sign-compare -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -Wno-unused-result -Wno-unused-local-typedefs -Wno-strict-overflow -Wno-strict-aliasing -Wno-error=deprecated-declarations -Wno-stringop-overflow -Wno-psabi -Wno-error=pedantic -Wno-error=redundant-decls -Wno-error=old-style-cast -fdiagnostics-color=always -faligned-new -Wno-unused-but-set-variable -Wno-maybe-uninitialized -fno-math-errno -fno-trapping-math -Werror=format -Wno-stringop-overflow, LAPACK_INFO=mkl, PERF_WITH_AVX=1, PERF_WITH_AVX2=1, PERF_WITH_AVX512=1, TORCH_VERSION=1.8.2, USE_CUDA=ON, USE_CUDNN=ON, USE_EXCEPTION_PTR=1, USE_GFLAGS=OFF, USE_GLOG=OFF, USE_MKL=ON, USE_MKLDNN=ON, USE_MPI=OFF, USE_NCCL=ON, USE_NNPACK=ON, USE_OPENMP=ON, 
+
+TorchVision: 0.9.2+cu111
+OpenCV: 4.5.5
+MMCV: 1.3.14
+MMCV Compiler: GCC 9.4
+MMCV CUDA Compiler: 11.1
+MMDetection: 2.9.0+a77583e
+MMDetection Compiler: GCC 9.4
+MMDetection CUDA Compiler: 11.1
+NNCF: 2.1.0
+ONNX: 1.12.0
+ONNXRuntime: 1.12.1
+OpenVINO MO: None
+OpenVINO IE: 2022.1.0-7019-cdb9bec7210-releases/2022/1
+------------------------------------------------------------
+
+2022-10-12 13:41:59,043 | INFO : ----------------- CustomATSS.load_state_dict_pre_hook() called w/ prefix: 
+2022-10-12 13:41:59,044 | INFO : [] -> ['fish'] ([-1])
+2022-10-12 13:41:59,071 | INFO : Task Adaptation: [] => ['fish']
+2022-10-12 13:41:59,071 | INFO : - Efficient Mode: False
+2022-10-12 13:41:59,071 | INFO : - Sampler type: cls_incr
+2022-10-12 13:41:59,071 | INFO : - Sampler flag: False
+2022-10-12 13:41:59,076 | INFO : cancel hook is initialized
+2022-10-12 13:41:59,076 | INFO : logger in the runner is replaced to the MPA logger
+2022-10-12 13:41:59,114 | INFO : Update Lr patience: 2
+2022-10-12 13:41:59,114 | INFO : Update Validation Interval: 5
+2022-10-12 13:41:59,115 | INFO : Update Early-Stop patience: 3
+2022-10-12 13:42:02,956 | INFO : Epoch [1][1/2]	lr: 1.333e-03, eta: 1 day, 18:34:05, time: 3.841, data_time: 0.247, memory: 4665, current_iters: 0, loss_cls: 1.1693, loss_bbox: 0.7032, loss_centerness: 0.6194, loss: 2.4919, grad_norm: 11.3262
+2022-10-12 13:42:03,644 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/mobilenetv2_atss_fish_val_batch_1_3/results/stage00_DetectionTrainer-train
+2022-10-12 13:42:03,644 | INFO : Epoch [1][2/2]	lr: 2.222e-03, eta: 1 day, 9:44:47, time: 2.264, data_time: 0.232, memory: 4685, current_iters: 1, loss_cls: 1.1617, loss_bbox: 0.6287, loss_centerness: 0.6237, loss: 2.4140, grad_norm: 10.6901
+2022-10-12 13:42:04,344 | INFO : Epoch [2][1/2]	lr: 3.111e-03, eta: 1 day, 0:57:42, time: 0.686, data_time: 0.204, memory: 4685, current_iters: 2, loss_cls: 1.1252, loss_bbox: 0.4811, loss_centerness: 0.6259, loss: 2.2322, grad_norm: 13.5076
+2022-10-12 13:42:04,965 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/mobilenetv2_atss_fish_val_batch_1_3/results/stage00_DetectionTrainer-train
+2022-10-12 13:42:04,965 | INFO : Epoch [2][2/2]	lr: 4.000e-03, eta: 20:28:13, time: 0.653, data_time: 0.207, memory: 4685, current_iters: 3, loss_cls: 1.0986, loss_bbox: 0.5429, loss_centerness: 0.6220, loss: 2.2635, grad_norm: 13.3707
+2022-10-12 13:42:05,644 | INFO : Epoch [3][1/2]	lr: 4.000e-03, eta: 17:47:44, time: 0.666, data_time: 0.191, memory: 4685, current_iters: 4, loss_cls: 0.9956, loss_bbox: 0.5333, loss_centerness: 0.6325, loss: 2.1614, grad_norm: 16.0185
+2022-10-12 13:42:06,337 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/mobilenetv2_atss_fish_val_batch_1_3/results/stage00_DetectionTrainer-train
+2022-10-12 13:42:06,337 | INFO : Epoch [3][2/2]	lr: 4.000e-03, eta: 16:01:52, time: 0.679, data_time: 0.206, memory: 4685, current_iters: 5, loss_cls: 0.9423, loss_bbox: 0.5779, loss_centerness: 0.6314, loss: 2.1516, grad_norm: 15.5167
+2022-10-12 13:42:07,030 | INFO : Epoch [4][1/2]	lr: 4.000e-03, eta: 14:45:50, time: 0.678, data_time: 0.206, memory: 4685, current_iters: 6, loss_cls: 0.8318, loss_bbox: 0.4268, loss_centerness: 0.6274, loss: 1.8860, grad_norm: 14.0404
+2022-10-12 13:42:07,659 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/mobilenetv2_atss_fish_val_batch_1_3/results/stage00_DetectionTrainer-train
+2022-10-12 13:42:07,659 | INFO : Epoch [4][2/2]	lr: 4.000e-03, eta: 13:46:32, time: 0.654, data_time: 0.210, memory: 4685, current_iters: 7, loss_cls: 0.8102, loss_bbox: 0.5063, loss_centerness: 0.6230, loss: 1.9396, grad_norm: 13.7458
+2022-10-12 13:42:08,296 | INFO : Epoch [5][1/2]	lr: 4.000e-03, eta: 12:56:55, time: 0.609, data_time: 0.196, memory: 4685, current_iters: 8, loss_cls: 0.7804, loss_bbox: 0.4962, loss_centerness: 0.6162, loss: 1.8929, grad_norm: 15.2270
+2022-10-12 13:42:08,985 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/mobilenetv2_atss_fish_val_batch_1_3/results/stage00_DetectionTrainer-train
+2022-10-12 13:42:08,985 | INFO : Epoch [5][2/2]	lr: 4.000e-03, eta: 12:19:38, time: 0.649, data_time: 0.207, memory: 4685, current_iters: 9, loss_cls: 0.7141, loss_bbox: 0.4688, loss_centerness: 0.6189, loss: 1.8018, grad_norm: 13.8167
+2022-10-12 13:42:08,990 | INFO : Saving checkpoint at 5 epochs
+2022-10-12 13:42:14,367 | INFO : 
++-------+-----+------+--------+-------+
+| class | gts | dets | recall | ap    |
++-------+-----+------+--------+-------+
+| fish  | 107 | 0    | 0.000  | 0.000 |
++-------+-----+------+--------+-------+
+| mAP   |     |      |        | 0.000 |
++-------+-----+------+--------+-------+
+2022-10-12 13:42:14,522 | INFO : Now best checkpoint is saved as best_mAP_epoch_5.pth.
+2022-10-12 13:42:14,523 | INFO : Best mAP is 0.0000 at 5 epoch.
+2022-10-12 13:42:14,523 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/mobilenetv2_atss_fish_val_batch_1_3/results/stage00_DetectionTrainer-train
+2022-10-12 13:42:14,523 | INFO : Epoch(val) [5][100]	AP50: 0.0000, mAP: 0.0000, current_iters: 10
+2022-10-12 13:42:15,200 | INFO : Epoch [6][1/2]	lr: 4.000e-03, eta: 11:49:57, time: 0.666, data_time: 0.195, memory: 4685, current_iters: 10, loss_cls: 0.4609, loss_bbox: 0.3787, loss_centerness: 0.6035, loss: 1.4430, grad_norm: 10.7164
+2022-10-12 13:42:15,876 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/mobilenetv2_atss_fish_val_batch_1_3/results/stage00_DetectionTrainer-train
+2022-10-12 13:42:15,876 | INFO : Epoch [6][2/2]	lr: 4.000e-03, eta: 11:25:17, time: 0.671, data_time: 0.196, memory: 4685, current_iters: 11, loss_cls: 0.4928, loss_bbox: 0.4388, loss_centerness: 0.6165, loss: 1.5481, grad_norm: 12.7569
+2022-10-12 13:42:16,586 | INFO : Epoch [7][1/2]	lr: 4.000e-03, eta: 11:05:28, time: 0.696, data_time: 0.227, memory: 4685, current_iters: 12, loss_cls: 0.3611, loss_bbox: 0.5374, loss_centerness: 0.6201, loss: 1.5186, grad_norm: 13.8695
+2022-10-12 13:42:17,213 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/mobilenetv2_atss_fish_val_batch_1_3/results/stage00_DetectionTrainer-train
+2022-10-12 13:42:17,213 | INFO : Epoch [7][2/2]	lr: 4.000e-03, eta: 10:46:43, time: 0.661, data_time: 0.218, memory: 4685, current_iters: 13, loss_cls: 0.3595, loss_bbox: 0.4581, loss_centerness: 0.6178, loss: 1.4354, grad_norm: 16.2975
+2022-10-12 13:42:17,921 | INFO : Epoch [8][1/2]	lr: 4.000e-03, eta: 10:31:43, time: 0.694, data_time: 0.222, memory: 4685, current_iters: 14, loss_cls: 0.2759, loss_bbox: 0.3393, loss_centerness: 0.6111, loss: 1.2263, grad_norm: 11.8299
+2022-10-12 13:42:18,534 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/mobilenetv2_atss_fish_val_batch_1_3/results/stage00_DetectionTrainer-train
+2022-10-12 13:42:18,534 | INFO : Epoch [8][2/2]	lr: 4.000e-03, eta: 10:16:50, time: 0.653, data_time: 0.213, memory: 4685, current_iters: 15, loss_cls: 0.3225, loss_bbox: 0.4329, loss_centerness: 0.6153, loss: 1.3706, grad_norm: 12.1806
+2022-10-12 13:42:19,151 | INFO : Epoch [9][1/2]	lr: 4.000e-03, eta: 10:01:41, time: 0.603, data_time: 0.192, memory: 4685, current_iters: 16, loss_cls: 0.4510, loss_bbox: 0.5577, loss_centerness: 0.6128, loss: 1.6214, grad_norm: 18.5565
+2022-10-12 13:42:19,829 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/mobilenetv2_atss_fish_val_batch_1_3/results/stage00_DetectionTrainer-train
+2022-10-12 13:42:19,829 | INFO : Epoch [9][2/2]	lr: 4.000e-03, eta: 9:49:26, time: 0.641, data_time: 0.199, memory: 4685, current_iters: 17, loss_cls: 0.3688, loss_bbox: 0.4644, loss_centerness: 0.6221, loss: 1.4553, grad_norm: 15.2829
+2022-10-12 13:42:19,839 | INFO : 
+Best Score: -inf, Current Score: 0.0, Patience: 2 Count: 0
+2022-10-12 13:42:20,453 | INFO : Epoch [10][1/2]	lr: 4.000e-03, eta: 9:37:20, time: 0.610, data_time: 0.196, memory: 4685, current_iters: 18, loss_cls: 0.4837, loss_bbox: 0.5215, loss_centerness: 0.6322, loss: 1.6374, grad_norm: 14.3030
+2022-10-12 13:42:21,138 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/mobilenetv2_atss_fish_val_batch_1_3/results/stage00_DetectionTrainer-train
+2022-10-12 13:42:21,138 | INFO : Epoch [10][2/2]	lr: 4.000e-03, eta: 9:27:31, time: 0.647, data_time: 0.203, memory: 4685, current_iters: 19, loss_cls: 0.4270, loss_bbox: 0.4745, loss_centerness: 0.6112, loss: 1.5128, grad_norm: 13.5388
+2022-10-12 13:42:21,143 | INFO : Saving checkpoint at 10 epochs
+2022-10-12 13:42:26,396 | INFO : 
++-------+-----+------+--------+-------+
+| class | gts | dets | recall | ap    |
++-------+-----+------+--------+-------+
+| fish  | 107 | 310  | 0.720  | 0.561 |
++-------+-----+------+--------+-------+
+| mAP   |     |      |        | 0.561 |
++-------+-----+------+--------+-------+
+2022-10-12 13:42:26,556 | INFO : Now best checkpoint is saved as best_mAP_epoch_10.pth.
+2022-10-12 13:42:26,557 | INFO : Best mAP is 0.5614 at 10 epoch.
+2022-10-12 13:42:26,557 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/mobilenetv2_atss_fish_val_batch_1_3/results/stage00_DetectionTrainer-train
+2022-10-12 13:42:26,557 | INFO : Epoch(val) [10][100]	AP50: 0.5610, mAP: 0.5614, current_iters: 20
+2022-10-12 13:42:27,241 | INFO : Epoch [11][1/2]	lr: 4.000e-03, eta: 9:19:18, time: 0.673, data_time: 0.207, memory: 4685, current_iters: 20, loss_cls: 0.3851, loss_bbox: 0.4934, loss_centerness: 0.6047, loss: 1.4831, grad_norm: 12.2954
+2022-10-12 13:42:27,788 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/mobilenetv2_atss_fish_val_batch_1_3/results/stage00_DetectionTrainer-train
+2022-10-12 13:42:27,788 | INFO : Epoch [11][2/2]	lr: 4.000e-03, eta: 9:09:57, time: 0.610, data_time: 0.215, memory: 4685, current_iters: 21, loss_cls: 0.3661, loss_bbox: 0.4483, loss_centerness: 0.6073, loss: 1.4218, grad_norm: 11.2163
+2022-10-12 13:42:28,496 | INFO : Epoch [12][1/2]	lr: 4.000e-03, eta: 9:03:37, time: 0.695, data_time: 0.216, memory: 4685, current_iters: 22, loss_cls: 0.1793, loss_bbox: 0.3218, loss_centerness: 0.6053, loss: 1.1064, grad_norm: 6.3731
+2022-10-12 13:42:29,034 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/mobilenetv2_atss_fish_val_batch_1_3/results/stage00_DetectionTrainer-train
+2022-10-12 13:42:29,034 | INFO : Epoch [12][2/2]	lr: 4.000e-03, eta: 8:55:40, time: 0.616, data_time: 0.216, memory: 4685, current_iters: 23, loss_cls: 0.2174, loss_bbox: 0.4035, loss_centerness: 0.5996, loss: 1.2205, grad_norm: 6.7123
+2022-10-12 13:42:29,732 | INFO : Epoch [13][1/2]	lr: 4.000e-03, eta: 8:49:58, time: 0.684, data_time: 0.210, memory: 4685, current_iters: 24, loss_cls: 0.2809, loss_bbox: 0.5230, loss_centerness: 0.6169, loss: 1.4208, grad_norm: 10.0880
+2022-10-12 13:42:30,270 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/mobilenetv2_atss_fish_val_batch_1_3/results/stage00_DetectionTrainer-train
+2022-10-12 13:42:30,271 | INFO : Epoch [13][2/2]	lr: 4.000e-03, eta: 8:42:53, time: 0.611, data_time: 0.210, memory: 4685, current_iters: 25, loss_cls: 0.2492, loss_bbox: 0.4677, loss_centerness: 0.6184, loss: 1.3353, grad_norm: 8.5205
+2022-10-12 13:42:30,969 | INFO : Epoch [14][1/2]	lr: 4.000e-03, eta: 8:37:55, time: 0.684, data_time: 0.211, memory: 4685, current_iters: 26, loss_cls: 0.2787, loss_bbox: 0.3647, loss_centerness: 0.5967, loss: 1.2400, grad_norm: 9.1756
+2022-10-12 13:42:31,646 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/mobilenetv2_atss_fish_val_batch_1_3/results/stage00_DetectionTrainer-train
+2022-10-12 13:42:31,646 | INFO : Epoch [14][2/2]	lr: 4.000e-03, eta: 8:33:10, time: 0.681, data_time: 0.206, memory: 4685, current_iters: 27, loss_cls: 0.2475, loss_bbox: 0.3487, loss_centerness: 0.5990, loss: 1.1953, grad_norm: 8.0654
+2022-10-12 13:42:31,656 | INFO : 
+Best Score: 0.0, Current Score: 0.5613768696784973, Patience: 2 Count: 0
+2022-10-12 13:42:32,316 | INFO : Epoch [15][1/2]	lr: 4.000e-03, eta: 8:28:06, time: 0.655, data_time: 0.176, memory: 4685, current_iters: 28, loss_cls: 0.2163, loss_bbox: 0.3561, loss_centerness: 0.5996, loss: 1.1720, grad_norm: 7.7710
+2022-10-12 13:42:32,986 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/mobilenetv2_atss_fish_val_batch_1_3/results/stage00_DetectionTrainer-train
+2022-10-12 13:42:32,986 | INFO : Epoch [15][2/2]	lr: 4.000e-03, eta: 8:23:28, time: 0.663, data_time: 0.186, memory: 4685, current_iters: 29, loss_cls: 0.2334, loss_bbox: 0.3986, loss_centerness: 0.5993, loss: 1.2313, grad_norm: 8.7011
+2022-10-12 13:42:32,991 | INFO : Saving checkpoint at 15 epochs
+2022-10-12 13:42:38,247 | INFO : 
++-------+-----+------+--------+-------+
+| class | gts | dets | recall | ap    |
++-------+-----+------+--------+-------+
+| fish  | 107 | 1605 | 0.850  | 0.580 |
++-------+-----+------+--------+-------+
+| mAP   |     |      |        | 0.580 |
++-------+-----+------+--------+-------+
+2022-10-12 13:42:38,412 | INFO : Now best checkpoint is saved as best_mAP_epoch_15.pth.
+2022-10-12 13:42:38,412 | INFO : Best mAP is 0.5800 at 15 epoch.
+2022-10-12 13:42:38,412 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/mobilenetv2_atss_fish_val_batch_1_3/results/stage00_DetectionTrainer-train
+2022-10-12 13:42:38,413 | INFO : Epoch(val) [15][100]	AP50: 0.5800, mAP: 0.5800, current_iters: 30
+2022-10-12 13:42:39,068 | INFO : Epoch [16][1/2]	lr: 4.000e-03, eta: 8:18:42, time: 0.645, data_time: 0.210, memory: 4685, current_iters: 30, loss_cls: 0.1789, loss_bbox: 0.2603, loss_centerness: 0.5890, loss: 1.0282, grad_norm: 6.9820
+2022-10-12 13:42:39,763 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/mobilenetv2_atss_fish_val_batch_1_3/results/stage00_DetectionTrainer-train
+2022-10-12 13:42:39,763 | INFO : Epoch [16][2/2]	lr: 4.000e-03, eta: 8:14:39, time: 0.670, data_time: 0.215, memory: 4685, current_iters: 31, loss_cls: 0.1952, loss_bbox: 0.2955, loss_centerness: 0.5876, loss: 1.0783, grad_norm: 8.2682
+2022-10-12 13:42:40,388 | INFO : Epoch [17][1/2]	lr: 4.000e-03, eta: 8:09:40, time: 0.610, data_time: 0.195, memory: 4685, current_iters: 32, loss_cls: 0.2647, loss_bbox: 0.3784, loss_centerness: 0.6159, loss: 1.2589, grad_norm: 9.9159
+2022-10-12 13:42:41,064 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/mobilenetv2_atss_fish_val_batch_1_3/results/stage00_DetectionTrainer-train
+2022-10-12 13:42:41,064 | INFO : Epoch [17][2/2]	lr: 4.000e-03, eta: 8:05:30, time: 0.643, data_time: 0.200, memory: 4685, current_iters: 33, loss_cls: 0.2436, loss_bbox: 0.4002, loss_centerness: 0.6118, loss: 1.2556, grad_norm: 9.1519
+2022-10-12 13:42:41,601 | INFO : Epoch [18][1/2]	lr: 4.000e-03, eta: 7:59:25, time: 0.522, data_time: 0.194, memory: 4685, current_iters: 34, loss_cls: 0.1834, loss_bbox: 0.3390, loss_centerness: 0.6113, loss: 1.1337, grad_norm: 8.6567
+2022-10-12 13:42:42,280 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/mobilenetv2_atss_fish_val_batch_1_3/results/stage00_DetectionTrainer-train
+2022-10-12 13:42:42,280 | INFO : Epoch [18][2/2]	lr: 4.000e-03, eta: 7:54:57, time: 0.601, data_time: 0.199, memory: 4685, current_iters: 35, loss_cls: 0.1763, loss_bbox: 0.3758, loss_centerness: 0.6093, loss: 1.1614, grad_norm: 8.2985
+2022-10-12 13:42:42,895 | INFO : Epoch [19][1/2]	lr: 4.000e-03, eta: 7:50:40, time: 0.600, data_time: 0.188, memory: 4685, current_iters: 36, loss_cls: 0.3291, loss_bbox: 0.4361, loss_centerness: 0.5877, loss: 1.3530, grad_norm: 13.9456
+2022-10-12 13:42:43,581 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/mobilenetv2_atss_fish_val_batch_1_3/results/stage00_DetectionTrainer-train
+2022-10-12 13:42:43,581 | INFO : Epoch [19][2/2]	lr: 4.000e-03, eta: 7:47:13, time: 0.643, data_time: 0.199, memory: 4685, current_iters: 37, loss_cls: 0.2326, loss_bbox: 0.3648, loss_centerness: 0.5928, loss: 1.1902, grad_norm: 10.7177
+2022-10-12 13:42:43,591 | INFO : 
+Best Score: 0.5613768696784973, Current Score: 0.5799571871757507, Patience: 2 Count: 0
+2022-10-12 13:42:44,126 | INFO : Epoch [20][1/2]	lr: 4.000e-03, eta: 7:42:10, time: 0.530, data_time: 0.198, memory: 4685, current_iters: 38, loss_cls: 0.2577, loss_bbox: 0.4363, loss_centerness: 0.6146, loss: 1.3086, grad_norm: 9.4670
+2022-10-12 13:42:44,821 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/mobilenetv2_atss_fish_val_batch_1_3/results/stage00_DetectionTrainer-train
+2022-10-12 13:42:44,821 | INFO : Epoch [20][2/2]	lr: 4.000e-03, eta: 7:38:34, time: 0.613, data_time: 0.208, memory: 4685, current_iters: 39, loss_cls: 0.2527, loss_bbox: 0.4101, loss_centerness: 0.6082, loss: 1.2710, grad_norm: 8.8653
+2022-10-12 13:42:44,827 | INFO : Saving checkpoint at 20 epochs
+2022-10-12 13:42:50,083 | INFO : 
++-------+-----+------+--------+-------+
+| class | gts | dets | recall | ap    |
++-------+-----+------+--------+-------+
+| fish  | 107 | 1619 | 0.869  | 0.658 |
++-------+-----+------+--------+-------+
+| mAP   |     |      |        | 0.658 |
++-------+-----+------+--------+-------+
+2022-10-12 13:42:50,247 | INFO : Now best checkpoint is saved as best_mAP_epoch_20.pth.
+2022-10-12 13:42:50,248 | INFO : Best mAP is 0.6577 at 20 epoch.
+2022-10-12 13:42:50,248 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/mobilenetv2_atss_fish_val_batch_1_3/results/stage00_DetectionTrainer-train
+2022-10-12 13:42:50,248 | INFO : Epoch(val) [20][100]	AP50: 0.6580, mAP: 0.6577, current_iters: 40
+2022-10-12 13:42:50,800 | INFO : Epoch [21][1/2]	lr: 4.000e-03, eta: 7:34:02, time: 0.542, data_time: 0.204, memory: 4685, current_iters: 40, loss_cls: 0.1379, loss_bbox: 0.3028, loss_centerness: 0.6049, loss: 1.0457, grad_norm: 5.1749
+2022-10-12 13:42:51,511 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/mobilenetv2_atss_fish_val_batch_1_3/results/stage00_DetectionTrainer-train
+2022-10-12 13:42:51,511 | INFO : Epoch [21][2/2]	lr: 4.000e-03, eta: 7:30:53, time: 0.626, data_time: 0.222, memory: 4685, current_iters: 41, loss_cls: 0.1863, loss_bbox: 0.2965, loss_centerness: 0.6029, loss: 1.0858, grad_norm: 8.1191
+2022-10-12 13:42:52,211 | INFO : Epoch [22][1/2]	lr: 4.000e-03, eta: 7:28:40, time: 0.686, data_time: 0.212, memory: 4685, current_iters: 42, loss_cls: 0.1505, loss_bbox: 0.2873, loss_centerness: 0.5818, loss: 1.0196, grad_norm: 6.4765
+2022-10-12 13:42:52,875 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/mobilenetv2_atss_fish_val_batch_1_3/results/stage00_DetectionTrainer-train
+2022-10-12 13:42:52,875 | INFO : Epoch [22][2/2]	lr: 4.000e-03, eta: 7:26:20, time: 0.675, data_time: 0.204, memory: 4685, current_iters: 43, loss_cls: 0.1646, loss_bbox: 0.3299, loss_centerness: 0.5873, loss: 1.0818, grad_norm: 6.7601
+2022-10-12 13:42:53,551 | INFO : Epoch [23][1/2]	lr: 4.000e-03, eta: 7:23:54, time: 0.662, data_time: 0.191, memory: 4685, current_iters: 44, loss_cls: 0.1751, loss_bbox: 0.3090, loss_centerness: 0.6007, loss: 1.0848, grad_norm: 6.9274
+2022-10-12 13:42:54,238 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/mobilenetv2_atss_fish_val_batch_1_3/results/stage00_DetectionTrainer-train
+2022-10-12 13:42:54,238 | INFO : Epoch [23][2/2]	lr: 4.000e-03, eta: 7:21:40, time: 0.674, data_time: 0.200, memory: 4685, current_iters: 45, loss_cls: 0.1681, loss_bbox: 0.3381, loss_centerness: 0.5960, loss: 1.1022, grad_norm: 6.5942
+2022-10-12 13:42:54,936 | INFO : Epoch [24][1/2]	lr: 4.000e-03, eta: 7:19:36, time: 0.683, data_time: 0.214, memory: 4685, current_iters: 46, loss_cls: 0.2755, loss_bbox: 0.4214, loss_centerness: 0.6117, loss: 1.3086, grad_norm: 10.1639
+2022-10-12 13:42:55,615 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/mobilenetv2_atss_fish_val_batch_1_3/results/stage00_DetectionTrainer-train
+2022-10-12 13:42:55,615 | INFO : Epoch [24][2/2]	lr: 4.000e-03, eta: 7:17:33, time: 0.681, data_time: 0.212, memory: 4685, current_iters: 47, loss_cls: 0.2151, loss_bbox: 0.3925, loss_centerness: 0.6052, loss: 1.2129, grad_norm: 9.0803
+2022-10-12 13:42:55,625 | INFO : 
+Best Score: 0.5799571871757507, Current Score: 0.6577368974685669, Patience: 2 Count: 0
+2022-10-12 13:42:56,310 | INFO : Epoch [25][1/2]	lr: 4.000e-03, eta: 7:15:32, time: 0.681, data_time: 0.206, memory: 4685, current_iters: 48, loss_cls: 0.1711, loss_bbox: 0.3171, loss_centerness: 0.5863, loss: 1.0745, grad_norm: 8.2198
+2022-10-12 13:42:56,936 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/mobilenetv2_atss_fish_val_batch_1_3/results/stage00_DetectionTrainer-train
+2022-10-12 13:42:56,937 | INFO : Epoch [25][2/2]	lr: 4.000e-03, eta: 7:13:14, time: 0.654, data_time: 0.208, memory: 4685, current_iters: 49, loss_cls: 0.1534, loss_bbox: 0.3092, loss_centerness: 0.5928, loss: 1.0555, grad_norm: 7.0291
+2022-10-12 13:42:56,942 | INFO : Saving checkpoint at 25 epochs
+2022-10-12 13:43:02,198 | INFO : 
++-------+-----+------+--------+-------+
+| class | gts | dets | recall | ap    |
++-------+-----+------+--------+-------+
+| fish  | 107 | 1296 | 0.850  | 0.610 |
++-------+-----+------+--------+-------+
+| mAP   |     |      |        | 0.610 |
++-------+-----+------+--------+-------+
+2022-10-12 13:43:02,288 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/mobilenetv2_atss_fish_val_batch_1_3/results/stage00_DetectionTrainer-train
+2022-10-12 13:43:02,289 | INFO : Epoch(val) [25][100]	AP50: 0.6100, mAP: 0.6104, current_iters: 50
+2022-10-12 13:43:02,994 | INFO : Epoch [26][1/2]	lr: 4.000e-03, eta: 7:11:27, time: 0.695, data_time: 0.209, memory: 4685, current_iters: 50, loss_cls: 0.1786, loss_bbox: 0.3709, loss_centerness: 0.6058, loss: 1.1553, grad_norm: 10.4488
+2022-10-12 13:43:03,692 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/mobilenetv2_atss_fish_val_batch_1_3/results/stage00_DetectionTrainer-train
+2022-10-12 13:43:03,692 | INFO : Epoch [26][2/2]	lr: 4.000e-03, eta: 7:09:43, time: 0.696, data_time: 0.217, memory: 4685, current_iters: 51, loss_cls: 0.1370, loss_bbox: 0.3099, loss_centerness: 0.6038, loss: 1.0508, grad_norm: 7.7438
+2022-10-12 13:43:04,231 | INFO : Epoch [27][1/2]	lr: 4.000e-03, eta: 7:06:07, time: 0.525, data_time: 0.207, memory: 4685, current_iters: 52, loss_cls: 0.1797, loss_bbox: 0.3205, loss_centerness: 0.5853, loss: 1.0855, grad_norm: 6.8516
+2022-10-12 13:43:04,923 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/mobilenetv2_atss_fish_val_batch_1_3/results/stage00_DetectionTrainer-train
+2022-10-12 13:43:04,923 | INFO : Epoch [27][2/2]	lr: 4.000e-03, eta: 7:03:31, time: 0.608, data_time: 0.212, memory: 4685, current_iters: 53, loss_cls: 0.1587, loss_bbox: 0.2954, loss_centerness: 0.5890, loss: 1.0432, grad_norm: 6.0061
+2022-10-12 13:43:05,624 | INFO : Epoch [28][1/2]	lr: 4.000e-03, eta: 7:01:48, time: 0.687, data_time: 0.217, memory: 4685, current_iters: 54, loss_cls: 0.1850, loss_bbox: 0.3053, loss_centerness: 0.5994, loss: 1.0897, grad_norm: 6.3905
+2022-10-12 13:43:06,155 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/mobilenetv2_atss_fish_val_batch_1_3/results/stage00_DetectionTrainer-train
+2022-10-12 13:43:06,155 | INFO : Epoch [28][2/2]	lr: 4.000e-03, eta: 6:59:18, time: 0.609, data_time: 0.209, memory: 4685, current_iters: 55, loss_cls: 0.1534, loss_bbox: 0.3095, loss_centerness: 0.6035, loss: 1.0665, grad_norm: 6.0837
+2022-10-12 13:43:06,838 | INFO : Epoch [29][1/2]	lr: 4.000e-03, eta: 6:57:25, time: 0.665, data_time: 0.199, memory: 4685, current_iters: 56, loss_cls: 0.1100, loss_bbox: 0.2892, loss_centerness: 0.6013, loss: 1.0006, grad_norm: 5.2461
+2022-10-12 13:43:07,518 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/mobilenetv2_atss_fish_val_batch_1_3/results/stage00_DetectionTrainer-train
+2022-10-12 13:43:07,518 | INFO : Epoch [29][2/2]	lr: 4.000e-03, eta: 6:55:38, time: 0.673, data_time: 0.204, memory: 4685, current_iters: 57, loss_cls: 0.1082, loss_bbox: 0.2756, loss_centerness: 0.6029, loss: 0.9866, grad_norm: 5.5444
+2022-10-12 13:43:07,528 | INFO : 
+Best Score: 0.6577368974685669, Current Score: 0.6104304790496826, Patience: 2 Count: 0
+2022-10-12 13:43:08,147 | INFO : Epoch [30][1/2]	lr: 4.000e-03, eta: 6:53:19, time: 0.614, data_time: 0.205, memory: 4685, current_iters: 58, loss_cls: 0.1471, loss_bbox: 0.3193, loss_centerness: 0.5859, loss: 1.0522, grad_norm: 6.7976
+2022-10-12 13:43:08,820 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/mobilenetv2_atss_fish_val_batch_1_3/results/stage00_DetectionTrainer-train
+2022-10-12 13:43:08,820 | INFO : Epoch [30][2/2]	lr: 4.000e-03, eta: 6:51:19, time: 0.644, data_time: 0.202, memory: 4685, current_iters: 59, loss_cls: 0.2012, loss_bbox: 0.3400, loss_centerness: 0.5871, loss: 1.1283, grad_norm: 7.7177
+2022-10-12 13:43:08,825 | INFO : Saving checkpoint at 30 epochs
+2022-10-12 13:43:14,075 | INFO : 
++-------+-----+------+--------+-------+
+| class | gts | dets | recall | ap    |
++-------+-----+------+--------+-------+
+| fish  | 107 | 1015 | 0.841  | 0.590 |
++-------+-----+------+--------+-------+
+| mAP   |     |      |        | 0.590 |
++-------+-----+------+--------+-------+
+2022-10-12 13:43:14,180 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/mobilenetv2_atss_fish_val_batch_1_3/results/stage00_DetectionTrainer-train
+2022-10-12 13:43:14,180 | INFO : Epoch(val) [30][100]	AP50: 0.5900, mAP: 0.5897, current_iters: 60
+2022-10-12 13:43:14,734 | INFO : Epoch [31][1/2]	lr: 4.000e-03, eta: 6:48:25, time: 0.543, data_time: 0.211, memory: 4685, current_iters: 60, loss_cls: 0.2386, loss_bbox: 0.3641, loss_centerness: 0.6016, loss: 1.2044, grad_norm: 7.9766
+2022-10-12 13:43:15,425 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/mobilenetv2_atss_fish_val_batch_1_3/results/stage00_DetectionTrainer-train
+2022-10-12 13:43:15,425 | INFO : Epoch [31][2/2]	lr: 4.000e-03, eta: 6:46:15, time: 0.617, data_time: 0.212, memory: 4685, current_iters: 61, loss_cls: 0.1954, loss_bbox: 0.3247, loss_centerness: 0.6002, loss: 1.1203, grad_norm: 7.0003
+2022-10-12 13:43:16,135 | INFO : Epoch [32][1/2]	lr: 4.000e-03, eta: 6:44:48, time: 0.695, data_time: 0.217, memory: 4685, current_iters: 62, loss_cls: 0.2349, loss_bbox: 0.3352, loss_centerness: 0.5866, loss: 1.1567, grad_norm: 9.3996
+2022-10-12 13:43:16,835 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/mobilenetv2_atss_fish_val_batch_1_3/results/stage00_DetectionTrainer-train
+2022-10-12 13:43:16,835 | INFO : Epoch [32][2/2]	lr: 4.000e-03, eta: 6:43:24, time: 0.698, data_time: 0.221, memory: 4685, current_iters: 63, loss_cls: 0.1669, loss_bbox: 0.3171, loss_centerness: 0.5855, loss: 1.0694, grad_norm: 7.0100
+2022-10-12 13:43:17,525 | INFO : Epoch [33][1/2]	lr: 4.000e-03, eta: 6:41:49, time: 0.676, data_time: 0.206, memory: 4685, current_iters: 64, loss_cls: 0.2176, loss_bbox: 0.3572, loss_centerness: 0.5933, loss: 1.1681, grad_norm: 5.4715
+2022-10-12 13:43:18,145 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/mobilenetv2_atss_fish_val_batch_1_3/results/stage00_DetectionTrainer-train
+2022-10-12 13:43:18,145 | INFO : Epoch [33][2/2]	lr: 4.000e-03, eta: 6:40:01, time: 0.648, data_time: 0.207, memory: 4685, current_iters: 65, loss_cls: 0.1906, loss_bbox: 0.3531, loss_centerness: 0.6045, loss: 1.1482, grad_norm: 6.5019
+2022-10-12 13:43:18,825 | INFO : Epoch [34][1/2]	lr: 4.000e-03, eta: 6:38:23, time: 0.667, data_time: 0.192, memory: 4685, current_iters: 66, loss_cls: 0.1494, loss_bbox: 0.2682, loss_centerness: 0.5990, loss: 1.0166, grad_norm: 6.0478
+2022-10-12 13:43:19,504 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/mobilenetv2_atss_fish_val_batch_1_3/results/stage00_DetectionTrainer-train
+2022-10-12 13:43:19,504 | INFO : Epoch [34][2/2]	lr: 4.000e-03, eta: 6:36:49, time: 0.672, data_time: 0.199, memory: 4685, current_iters: 67, loss_cls: 0.1527, loss_bbox: 0.3054, loss_centerness: 0.5956, loss: 1.0537, grad_norm: 5.8275
+2022-10-12 13:43:19,514 | INFO : 
+Best Score: 0.6577368974685669, Current Score: 0.5897026658058167, Patience: 2 Count: 1
+2022-10-12 13:43:19,514 | INFO : 
+Drop LR from: 0.004, to: 0.0004
+2022-10-12 13:43:20,177 | INFO : Epoch [35][1/2]	lr: 4.000e-04, eta: 6:35:10, time: 0.659, data_time: 0.191, memory: 4685, current_iters: 68, loss_cls: 0.1202, loss_bbox: 0.2965, loss_centerness: 0.5978, loss: 1.0145, grad_norm: 5.1864
+2022-10-12 13:43:20,707 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/mobilenetv2_atss_fish_val_batch_1_3/results/stage00_DetectionTrainer-train
+2022-10-12 13:43:20,707 | INFO : Epoch [35][2/2]	lr: 4.000e-04, eta: 6:33:01, time: 0.594, data_time: 0.193, memory: 4685, current_iters: 69, loss_cls: 0.1322, loss_bbox: 0.2824, loss_centerness: 0.5879, loss: 1.0026, grad_norm: 5.5467
+2022-10-12 13:43:20,712 | INFO : Saving checkpoint at 35 epochs
+2022-10-12 13:43:25,980 | INFO : 
++-------+-----+------+--------+-------+
+| class | gts | dets | recall | ap    |
++-------+-----+------+--------+-------+
+| fish  | 107 | 905  | 0.841  | 0.652 |
++-------+-----+------+--------+-------+
+| mAP   |     |      |        | 0.652 |
++-------+-----+------+--------+-------+
+2022-10-12 13:43:26,087 | INFO : 
+Early Stopping at :34 with best mAP: 0.6577368974685669
+2022-10-12 13:43:26,087 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/mobilenetv2_atss_fish_val_batch_1_3/results/stage00_DetectionTrainer-train
+2022-10-12 13:43:26,087 | INFO : Epoch(val) [35][100]	AP50: 0.6520, mAP: 0.6516, current_iters: 70
+2022-10-12 13:43:27,095 | INFO : run task done.
+2022-10-12 13:43:27,096 | INFO : initializing....
+2022-10-12 13:43:27,096 | INFO : called _init_recipe()
+2022-10-12 13:43:27,097 | INFO : train type = Incremental
+2022-10-12 13:43:27,137 | WARNING : Duplicate key is detected among bases [{'data', 'data_root_path'}]
+2022-10-12 13:43:27,139 | INFO : initialized recipe = /home/sungmanc/scripts/ote-master/training_extensions/external/model-preparation-algorithm/submodule/recipes/stages/detection/imbalance.py
+2022-10-12 13:43:27,146 | WARNING : Duplicate key is detected among bases [{'model'}]
+2022-10-12 13:43:27,146 | INFO : initialized.
+2022-10-12 13:43:27,147 | INFO : running task... kwargs = {'eval': True, 'dump_features': True, 'dump_saliency_map': False}
+2022-10-12 13:43:27,147 | INFO : called build_recipe()
+2022-10-12 13:43:27,147 | INFO : seems to be passed stage yaml...
+2022-10-12 13:43:27,147 | INFO : build_stage()
+2022-10-12 13:43:27,149 | INFO : Training seed was set to 5 w/ deterministic=True.
+2022-10-12 13:43:27,149 | INFO : work dir = /home/sungmanc/scripts/ote-master/training_extensions/logs/mobilenetv2_atss_fish_val_batch_1_3/results/stage00_DetectionInferrer-train
+2022-10-12 13:43:27,149 | INFO : CUDA_VISIBLE_DEVICES = 0

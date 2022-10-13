@@ -1,0 +1,28 @@
+2022-10-12 15:16:50,388 | INFO : configured logger at /home/sungmanc/scripts/ote-master/training_extensions/logs/cspdarknet_yolox_bccd_val_batch_8_1/results/stage00_DetectionInferrer-train with named 20221012_151650.log
+2022-10-12 15:16:50,388 | INFO : configure!: training=False
+2022-10-12 15:16:50,429 | INFO : configure_data()
+2022-10-12 15:16:50,439 | INFO : task config!!!!: training=False
+2022-10-12 15:16:50,470 | INFO : configure_hook() [{'type': 'LazyEarlyStoppingHook', 'start': 3, 'patience': 10, 'iteration_patience': 0, 'metric': 'mAP', 'interval': 1, 'priority': 75}, {'type': 'CancelInterfaceHook', 'init_callback': 'mpa_tasks.apis.task.OnHookInitialized'}, {'type': 'OTEProgressHook', 'time_monitor': <detection_tasks.apis.detection.ote_utils.TrainingProgressCallback object at 0x7f0797e649a0>, 'verbose': True, 'priority': 71}, {'type': 'LoggerReplaceHook'}, {'type': 'TaskAdaptHook', 'src_classes': ['Platelets', 'RBC', 'WBC'], 'dst_classes': ['Platelets', 'RBC', 'WBC'], 'model_type': 'CustomYOLOX', 'sampler_flag': False, 'efficient_mode': False}, {'type': 'YOLOXModeSwitchHook', 'num_last_epochs': 15, 'priority': 48}, {'type': 'SyncRandomSizeHook', 'ratio_range': (10, 20), 'img_scale': (640, 640), 'interval': 1, 'priority': 48, 'device': 'cuda'}, {'type': 'SyncNormHook', 'num_last_epochs': 15, 'interval': 1, 'priority': 48}, {'type': 'EMAHook', 'priority': 'ABOVE_NORMAL', 'resume_from': None, 'momentum': 0.1}, {'type': 'AdaptiveTrainSchedulingHook', 'max_interval': 5}] <- {}
+2022-10-12 15:16:50,587 | INFO : ----------------- CustomYOLOX.load_state_dict_pre_hook() called w/ prefix: 
+2022-10-12 15:16:50,587 | INFO : ['Platelets', 'RBC', 'WBC'] -> ['Platelets', 'RBC', 'WBC'] ([0, 1, 2])
+2022-10-12 15:16:52,823 | INFO : run task done.
+2022-10-12 15:16:53,331 | INFO : Adjusting the confidence threshold
+2022-10-12 15:16:53,886 | INFO : Setting confidence threshold to 0.47500000000000003 based on results
+2022-10-12 15:16:53,887 | INFO : Final model performance: Performance(score: 0.7123583378305449, dashboard: (15 metric groups))
+2022-10-12 15:16:53,887 | INFO : called save_model
+2022-10-12 15:16:53,988 | INFO : train done.
+2022-10-12 15:16:54,010 | INFO : infer()
+2022-10-12 15:16:54,010 | INFO : Confidence threshold 0.47500000000000003
+2022-10-12 15:16:54,010 | INFO : initializing....
+2022-10-12 15:16:54,010 | INFO : called _init_recipe()
+2022-10-12 15:16:54,010 | INFO : train type = Incremental
+2022-10-12 15:16:54,046 | WARNING : Duplicate key is detected among bases [{'data_root_path', 'data'}]
+2022-10-12 15:16:54,050 | INFO : initialized recipe = /home/sungmanc/scripts/ote-master/training_extensions/external/model-preparation-algorithm/submodule/recipes/stages/detection/imbalance.py
+2022-10-12 15:16:54,055 | INFO : initialized.
+2022-10-12 15:16:54,055 | INFO : running task... kwargs = {'eval': True, 'dump_features': True, 'dump_saliency_map': False}
+2022-10-12 15:16:54,055 | INFO : called build_recipe()
+2022-10-12 15:16:54,056 | INFO : seems to be passed stage yaml...
+2022-10-12 15:16:54,056 | INFO : build_stage()
+2022-10-12 15:16:54,058 | INFO : Training seed was set to 5 w/ deterministic=True.
+2022-10-12 15:16:54,058 | INFO : work dir = /home/sungmanc/scripts/ote-master/training_extensions/logs/cspdarknet_yolox_bccd_val_batch_8_1/results/stage00_DetectionInferrer-train
+2022-10-12 15:16:54,059 | INFO : CUDA_VISIBLE_DEVICES = 0
