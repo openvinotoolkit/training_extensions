@@ -230,12 +230,14 @@ class OTEDetectionNNCFTask(OTEDetectionInferenceTask, IOptimizationTask):
         self._is_training = True
         self._model.train()
 
+        meta = dict()
         train_detector(model=self._model,
                        dataset=mm_train_dataset,
                        cfg=training_config,
                        validate=True,
                        val_dataloader=self._val_dataloader,
-                       compression_ctrl=self._compression_ctrl)
+                       compression_ctrl=self._compression_ctrl,
+                       meta=meta)
 
         # Check for stop signal when training has stopped. If should_stop is true, training was cancelled
         if self._should_stop:
