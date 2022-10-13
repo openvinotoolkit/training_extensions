@@ -1,0 +1,544 @@
+2022-10-13 09:42:53,019 | INFO : configured logger at /home/sungmanc/scripts/ote-master/training_extensions/logs/seg/ocr-lite-hrnet-s-mod2_voc_person_car_val_batch_1_3/results/stage00_SegTrainer-train with named 20221013_094253.log
+2022-10-13 09:42:53,019 | INFO : configure!: training=True
+2022-10-13 09:42:53,099 | INFO : train!
+2022-10-13 09:42:53,099 | INFO : cfg.gpu_ids = range(0, 1), distributed = False
+2022-10-13 09:42:53,204 | INFO : Environment info:
+------------------------------------------------------------
+sys.platform: linux
+Python: 3.8.10 (default, Jun 22 2022, 20:18:18) [GCC 9.4.0]
+CUDA available: True
+GPU 0: NVIDIA GeForce RTX 3090
+CUDA_HOME: /usr/local/cuda
+NVCC: Build cuda_11.1.TC455_06.29069683_0
+GCC: gcc (Ubuntu 9.4.0-1ubuntu1~20.04.1) 9.4.0
+PyTorch: 1.8.2+cu111
+PyTorch compiling details: PyTorch built with:
+  - GCC 7.3
+  - C++ Version: 201402
+  - Intel(R) Math Kernel Library Version 2020.0.0 Product Build 20191122 for Intel(R) 64 architecture applications
+  - Intel(R) MKL-DNN v1.7.0 (Git Hash 7aed236906b1f7a05c0917e5257a1af05e9ff683)
+  - OpenMP 201511 (a.k.a. OpenMP 4.5)
+  - NNPACK is enabled
+  - CPU capability usage: AVX2
+  - CUDA Runtime 11.1
+  - NVCC architecture flags: -gencode;arch=compute_37,code=sm_37;-gencode;arch=compute_50,code=sm_50;-gencode;arch=compute_60,code=sm_60;-gencode;arch=compute_70,code=sm_70;-gencode;arch=compute_75,code=sm_75;-gencode;arch=compute_80,code=sm_80;-gencode;arch=compute_86,code=sm_86
+  - CuDNN 8.0.5
+  - Magma 2.5.2
+  - Build settings: BLAS_INFO=mkl, BUILD_TYPE=Release, CUDA_VERSION=11.1, CUDNN_VERSION=8.0.5, CXX_COMPILER=/opt/rh/devtoolset-7/root/usr/bin/c++, CXX_FLAGS= -Wno-deprecated -fvisibility-inlines-hidden -DUSE_PTHREADPOOL -fopenmp -DNDEBUG -DUSE_KINETO -DUSE_FBGEMM -DUSE_QNNPACK -DUSE_PYTORCH_QNNPACK -DUSE_XNNPACK -O2 -fPIC -Wno-narrowing -Wall -Wextra -Werror=return-type -Wno-missing-field-initializers -Wno-type-limits -Wno-array-bounds -Wno-unknown-pragmas -Wno-sign-compare -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -Wno-unused-result -Wno-unused-local-typedefs -Wno-strict-overflow -Wno-strict-aliasing -Wno-error=deprecated-declarations -Wno-stringop-overflow -Wno-psabi -Wno-error=pedantic -Wno-error=redundant-decls -Wno-error=old-style-cast -fdiagnostics-color=always -faligned-new -Wno-unused-but-set-variable -Wno-maybe-uninitialized -fno-math-errno -fno-trapping-math -Werror=format -Wno-stringop-overflow, LAPACK_INFO=mkl, PERF_WITH_AVX=1, PERF_WITH_AVX2=1, PERF_WITH_AVX512=1, TORCH_VERSION=1.8.2, USE_CUDA=ON, USE_CUDNN=ON, USE_EXCEPTION_PTR=1, USE_GFLAGS=OFF, USE_GLOG=OFF, USE_MKL=ON, USE_MKLDNN=ON, USE_MPI=OFF, USE_NCCL=ON, USE_NNPACK=ON, USE_OPENMP=ON, 
+
+TorchVision: 0.9.2+cu111
+OpenCV: 4.5.5
+MMCV: 1.3.14
+MMCV Compiler: GCC 9.4
+MMCV CUDA Compiler: 11.1
+MMSegmentation: 0.14.0+a77583e
+------------------------------------------------------------
+
+2022-10-13 09:42:53,205 | INFO : test_mode : False
+2022-10-13 09:42:56,086 | INFO : Task Adaptation: ['background', 'tench, Tinca tinca', 'goldfish, Carassius auratus', 'great white shark, white shark, man-eater, man-eating shark, Carcharodon carcharias', 'tiger shark, Galeocerdo cuvieri', 'hammerhead, hammerhead shark', 'electric ray, crampfish, numbfish, torpedo', 'stingray', 'cock', 'hen', 'ostrich, Struthio camelus', 'brambling, Fringilla montifringilla', 'goldfinch, Carduelis carduelis', 'house finch, linnet, Carpodacus mexicanus', 'junco, snowbird', 'indigo bunting, indigo finch, indigo bird, Passerina cyanea', 'robin, American robin, Turdus migratorius', 'bulbul', 'jay', 'magpie', 'chickadee', 'water ouzel, dipper', 'kite', 'bald eagle, American eagle, Haliaeetus leucocephalus', 'vulture', 'great grey owl, great gray owl, Strix nebulosa', 'European fire salamander, Salamandra salamandra', 'common newt, Triturus vulgaris', 'eft', 'spotted salamander, Ambystoma maculatum', 'axolotl, mud puppy, Ambystoma mexicanum', 'bullfrog, Rana catesbeiana', 'tree frog, tree-frog', 'tailed frog, bell toad, ribbed toad, tailed toad, Ascaphus trui', 'loggerhead, loggerhead turtle, Caretta caretta', 'leatherback turtle, leatherback, leathery turtle, Dermochelys coriacea', 'mud turtle', 'terrapin', 'box turtle, box tortoise', 'banded gecko', 'common iguana, iguana, Iguana iguana', 'American chameleon, anole, Anolis carolinensis', 'whiptail, whiptail lizard', 'agama', 'frilled lizard, Chlamydosaurus kingi', 'alligator lizard', 'Gila monster, Heloderma suspectum', 'green lizard, Lacerta viridis', 'African chameleon, Chamaeleo chamaeleon', 'Komodo dragon, Komodo lizard, dragon lizard, giant lizard, Varanus komodoensis', 'African crocodile, Nile crocodile, Crocodylus niloticus', 'American alligator, Alligator mississipiensis', 'triceratops', 'thunder snake, worm snake, Carphophis amoenus', 'ringneck snake, ring-necked snake, ring snake', 'hognose snake, puff adder, sand viper', 'green snake, grass snake', 'king snake, kingsnake', 'garter snake, grass snake', 'water snake', 'vine snake', 'night snake, Hypsiglena torquata', 'boa constrictor, Constrictor constrictor', 'rock python, rock snake, Python sebae', 'Indian cobra, Naja naja', 'green mamba', 'sea snake', 'horned viper, cerastes, sand viper, horned asp, Cerastes cornutus', 'diamondback, diamondback rattlesnake, Crotalus adamanteus', 'sidewinder, horned rattlesnake, Crotalus cerastes', 'trilobite', 'harvestman, daddy longlegs, Phalangium opilio', 'scorpion', 'black and gold garden spider, Argiope aurantia', 'barn spider, Araneus cavaticus', 'garden spider, Aranea diademata', 'black widow, Latrodectus mactans', 'tarantula', 'wolf spider, hunting spider', 'tick', 'centipede', 'black grouse', 'ptarmigan', 'ruffed grouse, partridge, Bonasa umbellus', 'prairie chicken, prairie grouse, prairie fowl', 'peacock', 'quail', 'partridge', 'African grey, African gray, Psittacus erithacus', 'macaw', 'sulphur-crested cockatoo, Kakatoe galerita, Cacatua galerita', 'lorikeet', 'coucal', 'bee eater', 'hornbill', 'hummingbird', 'jacamar', 'toucan', 'drake', 'red-breasted merganser, Mergus serrator', 'goose', 'black swan, Cygnus atratus', 'tusker', 'echidna, spiny anteater, anteater', 'platypus, duckbill, duckbilled platypus, duck-billed platypus, Ornithorhynchus anatinus', 'wallaby, brush kangaroo', 'koala, koala bear, kangaroo bear, native bear, Phascolarctos cinereus', 'wombat', 'jellyfish', 'sea anemone, anemone', 'brain coral', 'flatworm, platyhelminth', 'nematode, nematode worm, roundworm', 'conch', 'snail', 'slug', 'sea slug, nudibranch', 'chiton, coat-of-mail shell, sea cradle, polyplacophore', 'chambered nautilus, pearly nautilus, nautilus', 'Dungeness crab, Cancer magister', 'rock crab, Cancer irroratus', 'fiddler crab', 'king crab, Alaska crab, Alaskan king crab, Alaska king crab, Paralithodes camtschatica', 'American lobster, Northern lobster, Maine lobster, Homarus americanus', 'spiny lobster, langouste, rock lobster, crawfish, crayfish, sea crawfish', 'crayfish, crawfish, crawdad, crawdaddy', 'hermit crab', 'isopod', 'white stork, Ciconia ciconia', 'black stork, Ciconia nigra', 'spoonbill', 'flamingo', 'little blue heron, Egretta caerulea', 'American egret, great white heron, Egretta albus', 'bittern', 'crane', 'limpkin, Aramus pictus', 'European gallinule, Porphyrio porphyrio', 'American coot, marsh hen, mud hen, water hen, Fulica americana', 'bustard', 'ruddy turnstone, Arenaria interpres', 'red-backed sandpiper, dunlin, Erolia alpina', 'redshank, Tringa totanus', 'dowitcher', 'oystercatcher, oyster catcher', 'pelican', 'king penguin, Aptenodytes patagonica', 'albatross, mollymawk', 'grey whale, gray whale, devilfish, Eschrichtius gibbosus, Eschrichtius robustus', 'killer whale, killer, orca, grampus, sea wolf, Orcinus orca', 'dugong, Dugong dugon', 'sea lion', 'Chihuahua', 'Japanese spaniel', 'Maltese dog, Maltese terrier, Maltese', 'Pekinese, Pekingese, Peke', 'Shih-Tzu', 'Blenheim spaniel', 'papillon', 'toy terrier', 'Rhodesian ridgeback', 'Afghan hound, Afghan', 'basset, basset hound', 'beagle', 'bloodhound, sleuthhound', 'bluetick', 'black-and-tan coonhound', 'Walker hound, Walker foxhound', 'English foxhound', 'redbone', 'borzoi, Russian wolfhound', 'Irish wolfhound', 'Italian greyhound', 'whippet', 'Ibizan hound, Ibizan Podenco', 'Norwegian elkhound, elkhound', 'otterhound, otter hound', 'Saluki, gazelle hound', 'Scottish deerhound, deerhound', 'Weimaraner', 'Staffordshire bullterrier, Staffordshire bull terrier', 'American Staffordshire terrier, Staffordshire terrier, American pit bull terrier, pit bull terrier', 'Bedlington terrier', 'Border terrier', 'Kerry blue terrier', 'Irish terrier', 'Norfolk terrier', 'Norwich terrier', 'Yorkshire terrier', 'wire-haired fox terrier', 'Lakeland terrier', 'Sealyham terrier, Sealyham', 'Airedale, Airedale terrier', 'cairn, cairn terrier', 'Australian terrier', 'Dandie Dinmont, Dandie Dinmont terrier', 'Boston bull, Boston terrier', 'miniature schnauzer', 'giant schnauzer', 'standard schnauzer', 'Scotch terrier, Scottish terrier, Scottie', 'Tibetan terrier, chrysanthemum dog', 'silky terrier, Sydney silky', 'soft-coated wheaten terrier', 'West Highland white terrier', 'Lhasa, Lhasa apso', 'flat-coated retriever', 'curly-coated retriever', 'golden retriever', 'Labrador retriever', 'Chesapeake Bay retriever', 'German short-haired pointer', 'vizsla, Hungarian pointer', 'English setter', 'Irish setter, red setter', 'Gordon setter', 'Brittany spaniel', 'clumber, clumber spaniel', 'English springer, English springer spaniel', 'Welsh springer spaniel', 'cocker spaniel, English cocker spaniel, cocker', 'Sussex spaniel', 'Irish water spaniel', 'kuvasz', 'schipperke', 'groenendael', 'malinois', 'briard', 'kelpie', 'komondor', 'Old English sheepdog, bobtail', 'Shetland sheepdog, Shetland sheep dog, Shetland', 'collie', 'Border collie', 'Bouvier des Flandres, Bouviers des Flandres', 'Rottweiler', 'German shepherd, German shepherd dog, German police dog, alsatian', 'Doberman, Doberman pinscher', 'miniature pinscher', 'Greater Swiss Mountain dog', 'Bernese mountain dog', 'Appenzeller', 'EntleBucher', 'boxer', 'bull mastiff', 'Tibetan mastiff', 'French bulldog', 'Great Dane', 'Saint Bernard, St Bernard', 'Eskimo dog, husky', 'malamute, malemute, Alaskan malamute', 'Siberian husky', 'dalmatian, coach dog, carriage dog', 'affenpinscher, monkey pinscher, monkey dog', 'basenji', 'pug, pug-dog', 'Leonberg', 'Newfoundland, Newfoundland dog', 'Great Pyrenees', 'Samoyed, Samoyede', 'Pomeranian', 'chow, chow chow', 'keeshond', 'Brabancon griffon', 'Pembroke, Pembroke Welsh corgi', 'Cardigan, Cardigan Welsh corgi', 'toy poodle', 'miniature poodle', 'standard poodle', 'Mexican hairless', 'timber wolf, grey wolf, gray wolf, Canis lupus', 'white wolf, Arctic wolf, Canis lupus tundrarum', 'red wolf, maned wolf, Canis rufus, Canis niger', 'coyote, prairie wolf, brush wolf, Canis latrans', 'dingo, warrigal, warragal, Canis dingo', 'dhole, Cuon alpinus', 'African hunting dog, hyena dog, Cape hunting dog, Lycaon pictus', 'hyena, hyaena', 'red fox, Vulpes vulpes', 'kit fox, Vulpes macrotis', 'Arctic fox, white fox, Alopex lagopus', 'grey fox, gray fox, Urocyon cinereoargenteus', 'tabby, tabby cat', 'tiger cat', 'Persian cat', 'Siamese cat, Siamese', 'Egyptian cat', 'cougar, puma, catamount, mountain lion, painter, panther, Felis concolor', 'lynx, catamount', 'leopard, Panthera pardus', 'snow leopard, ounce, Panthera uncia', 'jaguar, panther, Panthera onca, Felis onca', 'lion, king of beasts, Panthera leo', 'tiger, Panthera tigris', 'cheetah, chetah, Acinonyx jubatus', 'brown bear, bruin, Ursus arctos', 'American black bear, black bear, Ursus americanus, Euarctos americanus', 'ice bear, polar bear, Ursus Maritimus, Thalarctos maritimus', 'sloth bear, Melursus ursinus, Ursus ursinus', 'mongoose', 'meerkat, mierkat', 'tiger beetle', 'ladybug, ladybeetle, lady beetle, ladybird, ladybird beetle', 'ground beetle, carabid beetle', 'long-horned beetle, longicorn, longicorn beetle', 'leaf beetle, chrysomelid', 'dung beetle', 'rhinoceros beetle', 'weevil', 'fly', 'bee', 'ant, emmet, pismire', 'grasshopper, hopper', 'cricket', 'walking stick, walkingstick, stick insect', 'cockroach, roach', 'mantis, mantid', 'cicada, cicala', 'leafhopper', 'lacewing, lacewing fly', "dragonfly, darning needle, devil's darning needle, sewing needle, snake feeder, snake doctor, mosquito hawk, skeeter hawk", 'damselfly', 'admiral', 'ringlet, ringlet butterfly', 'monarch, monarch butterfly, milkweed butterfly, Danaus plexippus', 'cabbage butterfly', 'sulphur butterfly, sulfur butterfly', 'lycaenid, lycaenid butterfly', 'starfish, sea star', 'sea urchin', 'sea cucumber, holothurian', 'wood rabbit, cottontail, cottontail rabbit', 'hare', 'Angora, Angora rabbit', 'hamster', 'porcupine, hedgehog', 'fox squirrel, eastern fox squirrel, Sciurus niger', 'marmot', 'beaver', 'guinea pig, Cavia cobaya', 'sorrel', 'zebra', 'hog, pig, grunter, squealer, Sus scrofa', 'wild boar, boar, Sus scrofa', 'warthog', 'hippopotamus, hippo, river horse, Hippopotamus amphibius', 'ox', 'water buffalo, water ox, Asiatic buffalo, Bubalus bubalis', 'bison', 'ram, tup', 'bighorn, bighorn sheep, cimarron, Rocky Mountain bighorn, Rocky Mountain sheep, Ovis canadensis', 'ibex, Capra ibex', 'hartebeest', 'impala, Aepyceros melampus', 'gazelle', 'Arabian camel, dromedary, Camelus dromedarius', 'llama', 'weasel', 'mink', 'polecat, fitch, foulmart, foumart, Mustela putorius', 'black-footed ferret, ferret, Mustela nigripes', 'otter', 'skunk, polecat, wood pussy', 'badger', 'armadillo', 'three-toed sloth, ai, Bradypus tridactylus', 'orangutan, orang, orangutang, Pongo pygmaeus', 'gorilla, Gorilla gorilla', 'chimpanzee, chimp, Pan troglodytes', 'gibbon, Hylobates lar', 'siamang, Hylobates syndactylus, Symphalangus syndactylus', 'guenon, guenon monkey', 'patas, hussar monkey, Erythrocebus patas', 'baboon', 'macaque', 'langur', 'colobus, colobus monkey', 'proboscis monkey, Nasalis larvatus', 'marmoset', 'capuchin, ringtail, Cebus capucinus', 'howler monkey, howler', 'titi, titi monkey', 'spider monkey, Ateles geoffroyi', 'squirrel monkey, Saimiri sciureus', 'Madagascar cat, ring-tailed lemur, Lemur catta', 'indri, indris, Indri indri, Indri brevicaudatus', 'Indian elephant, Elephas maximus', 'African elephant, Loxodonta africana', 'lesser panda, red panda, panda, bear cat, cat bear, Ailurus fulgens', 'giant panda, panda, panda bear, coon bear, Ailuropoda melanoleuca', 'barracouta, snoek', 'eel', 'coho, cohoe, coho salmon, blue jack, silver salmon, Oncorhynchus kisutch', 'rock beauty, Holocanthus tricolor', 'anemone fish', 'sturgeon', 'gar, garfish, garpike, billfish, Lepisosteus osseus', 'lionfish', 'puffer, pufferfish, blowfish, globefish', 'abacus', 'abaya', "academic gown, academic robe, judge's robe", 'accordion, piano accordion, squeeze box', 'acoustic guitar', 'aircraft carrier, carrier, flattop, attack aircraft carrier', 'airliner', 'airship, dirigible', 'altar', 'ambulance', 'amphibian, amphibious vehicle', 'analog clock', 'apiary, bee house', 'apron', 'ashcan, trash can, garbage can, wastebin, ash bin, ash-bin, ashbin, dustbin, trash barrel, trash bin', 'assault rifle, assault gun', 'backpack, back pack, knapsack, packsack, rucksack, haversack', 'bakery, bakeshop, bakehouse', 'balance beam, beam', 'balloon', 'ballpoint, ballpoint pen, ballpen, Biro', 'Band Aid', 'banjo', 'bannister, banister, balustrade, balusters, handrail', 'barbell', 'barber chair', 'barbershop', 'barn', 'barometer', 'barrel, cask', 'barrow, garden cart, lawn cart, wheelbarrow', 'baseball', 'basketball', 'bassinet', 'bassoon', 'bathing cap, swimming cap', 'bath towel', 'bathtub, bathing tub, bath, tub', 'beach wagon, station wagon, wagon, estate car, beach waggon, station waggon, waggon', 'beacon, lighthouse, beacon light, pharos', 'beaker', 'bearskin, busby, shako', 'beer bottle', 'beer glass', 'bell cote, bell cot', 'bib', 'bicycle-built-for-two, tandem bicycle, tandem', 'bikini, two-piece', 'binder, ring-binder', 'binoculars, field glasses, opera glasses', 'birdhouse', 'boathouse', 'bobsled, bobsleigh, bob', 'bolo tie, bolo, bola tie, bola', 'bonnet, poke bonnet', 'bookcase', 'bookshop, bookstore, bookstall', 'bottlecap', 'bow', 'bow tie, bow-tie, bowtie', 'brass, memorial tablet, plaque', 'brassiere, bra, bandeau', 'breakwater, groin, groyne, mole, bulwark, seawall, jetty', 'breastplate, aegis, egis', 'broom', 'bucket, pail', 'buckle', 'bulletproof vest', 'bullet train, bullet', 'butcher shop, meat market', 'cab, hack, taxi, taxicab', 'caldron, cauldron', 'candle, taper, wax light', 'cannon', 'canoe', 'can opener, tin opener', 'cardigan', 'car mirror', 'carousel, carrousel, merry-go-round, roundabout, whirligig', "carpenter's kit, tool kit", 'carton', 'car wheel', 'cash machine, cash dispenser, automated teller machine, automatic teller machine, automated teller, automatic teller, ATM', 'cassette', 'cassette player', 'castle', 'catamaran', 'CD player', 'cello, violoncello', 'cellular telephone, cellular phone, cellphone, cell, mobile phone', 'chain', 'chainlink fence', 'chain mail, ring mail, mail, chain armor, chain armour, ring armor, ring armour', 'chain saw, chainsaw', 'chest', 'chiffonier, commode', 'chime, bell, gong', 'china cabinet, china closet', 'Christmas stocking', 'church, church building', 'cinema, movie theater, movie theatre, movie house, picture palace', 'cleaver, meat cleaver, chopper', 'cliff dwelling', 'cloak', 'clog, geta, patten, sabot', 'cocktail shaker', 'coffee mug', 'coffeepot', 'coil, spiral, volute, whorl, helix', 'combination lock', 'computer keyboard, keypad', 'confectionery, confectionary, candy store', 'container ship, containership, container vessel', 'convertible', 'corkscrew, bottle screw', 'cornet, horn, trumpet, trump', 'cowboy boot', 'cowboy hat, ten-gallon hat', 'cradle', 'crane', 'crash helmet', 'crate', 'crib, cot', 'Crock Pot', 'croquet ball', 'crutch', 'cuirass', 'dam, dike, dyke', 'desk', 'desktop computer', 'dial telephone, dial phone', 'diaper, nappy, napkin', 'digital clock', 'digital watch', 'dining table, board', 'dishrag, dishcloth', 'dishwasher, dish washer, dishwashing machine', 'disk brake, disc brake', 'dock, dockage, docking facility', 'dogsled, dog sled, dog sleigh', 'dome', 'doormat, welcome mat', 'drilling platform, offshore rig', 'drum, membranophone, tympan', 'drumstick', 'dumbbell', 'Dutch oven', 'electric fan, blower', 'electric guitar', 'electric locomotive', 'entertainment center', 'envelope', 'espresso maker', 'face powder', 'feather boa, boa', 'file, file cabinet, filing cabinet', 'fireboat', 'fire engine, fire truck', 'fire screen, fireguard', 'flagpole, flagstaff', 'flute, transverse flute', 'folding chair', 'football helmet', 'forklift', 'fountain', 'fountain pen', 'four-poster', 'freight car', 'French horn, horn', 'frying pan, frypan, skillet', 'fur coat', 'garbage truck, dustcart', 'gasmask, respirator, gas helmet', 'gas pump, gasoline pump, petrol pump, island dispenser', 'goblet', 'go-kart', 'golf ball', 'golfcart, golf cart', 'gondola', 'gong, tam-tam', 'gown', 'grand piano, grand', 'greenhouse, nursery, glasshouse', 'grille, radiator grille', 'grocery store, grocery, food market, market', 'guillotine', 'hair slide', 'hair spray', 'half track', 'hammer', 'hamper', 'hand blower, blow dryer, blow drier, hair dryer, hair drier', 'hand-held computer, hand-held microcomputer', 'handkerchief, hankie, hanky, hankey', 'hard disc, hard disk, fixed disk', 'harmonica, mouth organ, harp, mouth harp', 'harp', 'harvester, reaper', 'hatchet', 'holster', 'home theater, home theatre', 'honeycomb', 'hook, claw', 'hoopskirt, crinoline', 'horizontal bar, high bar', 'horse cart, horse-cart', 'hourglass', 'iPod', 'iron, smoothing iron', "jack-o'-lantern", 'jean, blue jean, denim', 'jeep, landrover', 'jersey, T-shirt, tee shirt', 'jigsaw puzzle', 'jinrikisha, ricksha, rickshaw', 'joystick', 'kimono', 'knee pad', 'knot', 'lab coat, laboratory coat', 'ladle', 'lampshade, lamp shade', 'laptop, laptop computer', 'lawn mower, mower', 'lens cap, lens cover', 'letter opener, paper knife, paperknife', 'library', 'lifeboat', 'lighter, light, igniter, ignitor', 'limousine, limo', 'liner, ocean liner', 'lipstick, lip rouge', 'Loafer', 'lotion', 'loudspeaker, speaker, speaker unit, loudspeaker system, speaker system', "loupe, jeweler's loupe", 'lumbermill, sawmill', 'magnetic compass', 'mailbag, postbag', 'mailbox, letter box', 'maillot', 'maillot, tank suit', 'manhole cover', 'maraca', 'marimba, xylophone', 'mask', 'matchstick', 'maypole', 'maze, labyrinth', 'measuring cup', 'medicine chest, medicine cabinet', 'megalith, megalithic structure', 'microphone, mike', 'microwave, microwave oven', 'military uniform', 'milk can', 'minibus', 'miniskirt, mini', 'minivan', 'missile', 'mitten', 'mixing bowl', 'mobile home, manufactured home', 'Model T', 'modem', 'monastery', 'monitor', 'moped', 'mortar', 'mortarboard', 'mosque', 'mosquito net', 'motor scooter, scooter', 'mountain bike, all-terrain bike, off-roader', 'mountain tent', 'mouse, computer mouse', 'mousetrap', 'moving van', 'muzzle', 'nail', 'neck brace', 'necklace', 'nipple', 'notebook, notebook computer', 'obelisk', 'oboe, hautboy, hautbois', 'ocarina, sweet potato', 'odometer, hodometer, mileometer, milometer', 'oil filter', 'organ, pipe organ', 'oscilloscope, scope, cathode-ray oscilloscope, CRO', 'overskirt', 'oxcart', 'oxygen mask', 'packet', 'paddle, boat paddle', 'paddlewheel, paddle wheel', 'padlock', 'paintbrush', "pajama, pyjama, pj's, jammies", 'palace', 'panpipe, pandean pipe, syrinx', 'paper towel', 'parachute, chute', 'parallel bars, bars', 'park bench', 'parking meter', 'passenger car, coach, carriage', 'patio, terrace', 'pay-phone, pay-station', 'pedestal, plinth, footstall', 'pencil box, pencil case', 'pencil sharpener', 'perfume, essence', 'Petri dish', 'photocopier', 'pick, plectrum, plectron', 'pickelhaube', 'picket fence, paling', 'pickup, pickup truck', 'pier', 'piggy bank, penny bank', 'pill bottle', 'pillow', 'ping-pong ball', 'pinwheel', 'pirate, pirate ship', 'pitcher, ewer', "plane, carpenter's plane, woodworking plane", 'planetarium', 'plastic bag', 'plate rack', 'plow, plough', "plunger, plumber's helper", 'Polaroid camera, Polaroid Land camera', 'pole', 'police van, police wagon, paddy wagon, patrol wagon, wagon, black Maria', 'poncho', 'pool table, billiard table, snooker table', 'pop bottle, soda bottle', 'pot, flowerpot', "potter's wheel", 'power drill', 'prayer rug, prayer mat', 'printer', 'prison, prison house', 'projectile, missile', 'projector', 'puck, hockey puck', 'punching bag, punch bag, punching ball, punchball', 'purse', 'quill, quill pen', 'quilt, comforter, comfort, puff', 'racer, race car, racing car', 'racket, racquet', 'radiator', 'radio, wireless', 'radio telescope, radio reflector', 'rain barrel', 'recreational vehicle, RV, R.V.', 'reel', 'reflex camera', 'refrigerator, icebox', 'remote control, remote', 'restaurant, eating house, eating place, eatery', 'revolver, six-gun, six-shooter', 'rifle', 'rocking chair, rocker', 'rotisserie', 'rubber eraser, rubber, pencil eraser', 'rugby ball', 'rule, ruler', 'running shoe', 'safe', 'safety pin', 'saltshaker, salt shaker', 'sandal', 'sarong', 'sax, saxophone', 'scabbard', 'scale, weighing machine', 'school bus', 'schooner', 'scoreboard', 'screen, CRT screen', 'screw', 'screwdriver', 'seat belt, seatbelt', 'sewing machine', 'shield, buckler', 'shoe shop, shoe-shop, shoe store', 'shoji', 'shopping basket', 'shopping cart', 'shovel', 'shower cap', 'shower curtain', 'ski', 'ski mask', 'sleeping bag', 'slide rule, slipstick', 'sliding door', 'slot, one-armed bandit', 'snorkel', 'snowmobile', 'snowplow, snowplough', 'soap dispenser', 'soccer ball', 'sock', 'solar dish, solar collector, solar furnace', 'sombrero', 'soup bowl', 'space bar', 'space heater', 'space shuttle', 'spatula', 'speedboat', "spider web, spider's web", 'spindle', 'sports car, sport car', 'spotlight, spot', 'stage', 'steam locomotive', 'steel arch bridge', 'steel drum', 'stethoscope', 'stole', 'stone wall', 'stopwatch, stop watch', 'stove', 'strainer', 'streetcar, tram, tramcar, trolley, trolley car', 'stretcher', 'studio couch, day bed', 'stupa, tope', 'submarine, pigboat, sub, U-boat', 'suit, suit of clothes', 'sundial', 'sunglass', 'sunglasses, dark glasses, shades', 'sunscreen, sunblock, sun blocker', 'suspension bridge', 'swab, swob, mop', 'sweatshirt', 'swimming trunks, bathing trunks', 'swing', 'switch, electric switch, electrical switch', 'syringe', 'table lamp', 'tank, army tank, armored combat vehicle, armoured combat vehicle', 'tape player', 'teapot', 'teddy, teddy bear', 'television, television system', 'tennis ball', 'thatch, thatched roof', 'theater curtain, theatre curtain', 'thimble', 'thresher, thrasher, threshing machine', 'throne', 'tile roof', 'toaster', 'tobacco shop, tobacconist shop, tobacconist', 'toilet seat', 'torch', 'totem pole', 'tow truck, tow car, wrecker', 'toyshop', 'tractor', 'trailer truck, tractor trailer, trucking rig, rig, articulated lorry, semi', 'tray', 'trench coat', 'tricycle, trike, velocipede', 'trimaran', 'tripod', 'triumphal arch', 'trolleybus, trolley coach, trackless trolley', 'trombone', 'tub, vat', 'turnstile', 'typewriter keyboard', 'umbrella', 'unicycle, monocycle', 'upright, upright piano', 'vacuum, vacuum cleaner', 'vase', 'vault', 'velvet', 'vending machine', 'vestment', 'viaduct', 'violin, fiddle', 'volleyball', 'waffle iron', 'wall clock', 'wallet, billfold, notecase, pocketbook', 'wardrobe, closet, press', 'warplane, military plane', 'washbasin, handbasin, washbowl, lavabo, wash-hand basin', 'washer, automatic washer, washing machine', 'water bottle', 'water jug', 'water tower', 'whiskey jug', 'whistle', 'wig', 'window screen', 'window shade', 'Windsor tie', 'wine bottle', 'wing', 'wok', 'wooden spoon', 'wool, woolen, woollen', 'worm fence, snake fence, snake-rail fence, Virginia fence', 'wreck', 'yawl', 'yurt', 'web site, website, internet site, site', 'comic book', 'crossword puzzle, crossword', 'street sign', 'traffic light, traffic signal, stoplight', 'book jacket, dust cover, dust jacket, dust wrapper', 'menu', 'plate', 'guacamole', 'consomme', 'hot pot, hotpot', 'trifle', 'ice cream, icecream', 'ice lolly, lolly, lollipop, popsicle', 'French loaf', 'bagel, beigel', 'pretzel', 'cheeseburger', 'hotdog, hot dog, red hot', 'mashed potato', 'head cabbage', 'broccoli', 'cauliflower', 'zucchini, courgette', 'spaghetti squash', 'acorn squash', 'butternut squash', 'cucumber, cuke', 'artichoke, globe artichoke', 'bell pepper', 'cardoon', 'mushroom', 'Granny Smith', 'strawberry', 'orange', 'lemon', 'fig', 'pineapple, ananas', 'banana', 'jackfruit, jak, jack', 'custard apple', 'pomegranate', 'hay', 'carbonara', 'chocolate sauce, chocolate syrup', 'dough', 'meat loaf, meatloaf', 'pizza, pizza pie', 'potpie', 'burrito', 'red wine', 'espresso', 'cup', 'eggnog', 'alp', 'bubble', 'cliff, drop, drop-off', 'coral reef', 'geyser', 'lakeside, lakeshore', 'promontory, headland, head, foreland', 'sandbar, sand bar', 'seashore, coast, seacoast, sea-coast', 'valley, vale', 'volcano', 'ballplayer, baseball player', 'groom, bridegroom', 'scuba diver', 'rapeseed', 'daisy', "yellow lady's slipper, yellow lady-slipper, Cypripedium calceolus, Cypripedium parviflorum", 'corn', 'acorn', 'hip, rose hip, rosehip', 'buckeye, horse chestnut, conker', 'coral fungus', 'agaric', 'gyromitra', 'stinkhorn, carrion fungus', 'earthstar', 'hen-of-the-woods, hen of the woods, Polyporus frondosus, Grifola frondosa', 'bolete', 'ear, spike, capitulum', 'toilet tissue, toilet paper, bathroom tissue'] => ['background', 'person']
+2022-10-13 09:42:56,089 | INFO : - Efficient Mode: False
+2022-10-13 09:42:56,089 | INFO : - Sampler type: cls_incr
+2022-10-13 09:42:56,089 | INFO : - Sampler flag: True
+2022-10-13 09:42:56,089 | INFO : test_mode : True
+2022-10-13 09:42:56,268 | INFO : cancel hook is initialized
+2022-10-13 09:42:56,268 | INFO : logger in the runner is replaced to the MPA logger
+2022-10-13 09:43:03,313 | INFO : Epoch [1][10/13]	lr: 3.933e-04, eta: 0:45:39, time: 0.704, data_time: 0.384, memory: 1003, current_iters: 9, decode.ce_with_ignore-0.weight: 0.9000, decode.ce_with_ignore-0.reg_weight: 0.0000, decode.ce_with_ignore-0.scale: 1.0000, decode.ce_with_ignore-0.raw_sparsity: 0.0000, decode.ce_with_ignore-0.weight_sparsity: 0.0000, decode.ce_with_ignore-0.invalid_ratio: 0.9641, decode.ce_with_ignore-0: 0.6021, decode.loss_seg: 0.6021, decode.acc_seg: 58.4163, loss: 0.6021, grad_norm: 0.6381
+2022-10-13 09:43:05,229 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/seg/ocr-lite-hrnet-s-mod2_voc_person_car_val_batch_1_3/results/stage00_SegTrainer-train
+2022-10-13 09:43:05,229 | INFO : Epoch [1][13/13]	lr: 4.133e-04, eta: 1:07:39, time: 0.654, data_time: 0.377, memory: 1003, current_iters: 12, decode.ce_with_ignore-0.weight: 1.0000, decode.ce_with_ignore-0.reg_weight: 0.0000, decode.ce_with_ignore-0.scale: 1.0000, decode.ce_with_ignore-0.raw_sparsity: 0.0000, decode.ce_with_ignore-0.weight_sparsity: 0.0000, decode.ce_with_ignore-0.invalid_ratio: 0.9627, decode.ce_with_ignore-0: 0.5862, decode.loss_seg: 0.5862, decode.acc_seg: 64.1351, loss: 0.5862, grad_norm: 0.6813
+2022-10-13 09:43:05,230 | INFO : Saving checkpoint at 1 epochs
+2022-10-13 09:43:07,328 | INFO : 
+Per class results:
+2022-10-13 09:43:07,328 | INFO : +------------+-------+-------+
+|   Class    |  Dice |  Acc  |
++------------+-------+-------+
+| background | 87.44 | 80.79 |
+|   person   | 39.63 | 65.62 |
++------------+-------+-------+
+2022-10-13 09:43:07,328 | INFO : 
+Summary:
+2022-10-13 09:43:07,328 | INFO : +-------+-------+------+
+|  aAcc | mDice | mAcc |
++-------+-------+------+
+| 79.21 | 63.54 | 73.2 |
++-------+-------+------+
+2022-10-13 09:43:07,410 | INFO : Now best checkpoint is saved as best_mDice_epoch_1.pth.
+2022-10-13 09:43:07,410 | INFO : Best mDice is 0.6354 at 1 epoch.
+2022-10-13 09:43:07,411 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/seg/ocr-lite-hrnet-s-mod2_voc_person_car_val_batch_1_3/results/stage00_SegTrainer-train
+2022-10-13 09:43:07,411 | INFO : Epoch(val) [1][30]	aAcc: 0.7921, mDice: 0.6354, mAcc: 0.7320, Dice.background: 0.8744, Dice.person: 0.3963, Acc.background: 0.8079, Acc.person: 0.6562, current_iters: 13
+2022-10-13 09:43:14,054 | INFO : Epoch [2][10/13]	lr: 4.800e-04, eta: 0:56:48, time: 0.664, data_time: 0.381, memory: 1003, current_iters: 22, decode.ce_with_ignore-0.weight: 1.0000, decode.ce_with_ignore-0.reg_weight: 0.0000, decode.ce_with_ignore-0.scale: 1.0000, decode.ce_with_ignore-0.raw_sparsity: 0.0000, decode.ce_with_ignore-0.weight_sparsity: 0.0000, decode.ce_with_ignore-0.invalid_ratio: 0.9474, decode.ce_with_ignore-0: 0.5189, decode.loss_seg: 0.5189, decode.acc_seg: 69.1497, loss: 0.5189, grad_norm: 0.8523
+2022-10-13 09:43:16,038 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/seg/ocr-lite-hrnet-s-mod2_voc_person_car_val_batch_1_3/results/stage00_SegTrainer-train
+2022-10-13 09:43:16,038 | INFO : Epoch [2][13/13]	lr: 5.000e-04, eta: 1:06:46, time: 0.667, data_time: 0.385, memory: 1003, current_iters: 25, decode.ce_with_ignore-0.weight: 1.0000, decode.ce_with_ignore-0.reg_weight: 0.0000, decode.ce_with_ignore-0.scale: 1.0000, decode.ce_with_ignore-0.raw_sparsity: 0.0000, decode.ce_with_ignore-0.weight_sparsity: 0.0000, decode.ce_with_ignore-0.invalid_ratio: 0.9378, decode.ce_with_ignore-0: 0.5105, decode.loss_seg: 0.5105, decode.acc_seg: 71.0062, loss: 0.5105, grad_norm: 0.8784
+2022-10-13 09:43:16,039 | INFO : Saving checkpoint at 2 epochs
+2022-10-13 09:43:18,074 | INFO : 
+Per class results:
+2022-10-13 09:43:18,074 | INFO : +------------+-------+-------+
+|   Class    |  Dice |  Acc  |
++------------+-------+-------+
+| background | 96.29 | 96.99 |
+|   person   |  65.6 | 61.47 |
++------------+-------+-------+
+2022-10-13 09:43:18,074 | INFO : 
+Summary:
+2022-10-13 09:43:18,074 | INFO : +------+-------+-------+
+| aAcc | mDice |  mAcc |
++------+-------+-------+
+| 93.3 | 80.95 | 79.23 |
++------+-------+-------+
+2022-10-13 09:43:18,164 | INFO : Now best checkpoint is saved as best_mDice_epoch_2.pth.
+2022-10-13 09:43:18,164 | INFO : Best mDice is 0.8095 at 2 epoch.
+2022-10-13 09:43:18,164 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/seg/ocr-lite-hrnet-s-mod2_voc_person_car_val_batch_1_3/results/stage00_SegTrainer-train
+2022-10-13 09:43:18,165 | INFO : Epoch(val) [2][30]	aAcc: 0.9330, mDice: 0.8095, mAcc: 0.7923, Dice.background: 0.9629, Dice.person: 0.6560, Acc.background: 0.9699, Acc.person: 0.6147, current_iters: 26
+2022-10-13 09:43:24,469 | INFO : Epoch [3][10/13]	lr: 5.667e-04, eta: 0:59:22, time: 0.630, data_time: 0.341, memory: 1005, current_iters: 35, decode.ce_with_ignore-0.weight: 1.0000, decode.ce_with_ignore-0.reg_weight: 0.0000, decode.ce_with_ignore-0.scale: 1.0000, decode.ce_with_ignore-0.raw_sparsity: 0.0000, decode.ce_with_ignore-0.weight_sparsity: 0.0000, decode.ce_with_ignore-0.invalid_ratio: 0.9338, decode.ce_with_ignore-0: 0.4861, decode.loss_seg: 0.4861, decode.acc_seg: 75.4278, loss: 0.4861, grad_norm: 0.8599
+2022-10-13 09:43:26,485 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/seg/ocr-lite-hrnet-s-mod2_voc_person_car_val_batch_1_3/results/stage00_SegTrainer-train
+2022-10-13 09:43:26,485 | INFO : Epoch [3][13/13]	lr: 5.867e-04, eta: 1:05:27, time: 0.648, data_time: 0.362, memory: 1005, current_iters: 38, decode.ce_with_ignore-0.weight: 1.0000, decode.ce_with_ignore-0.reg_weight: 0.0000, decode.ce_with_ignore-0.scale: 1.0000, decode.ce_with_ignore-0.raw_sparsity: 0.0000, decode.ce_with_ignore-0.weight_sparsity: 0.0000, decode.ce_with_ignore-0.invalid_ratio: 0.9412, decode.ce_with_ignore-0: 0.4804, decode.loss_seg: 0.4804, decode.acc_seg: 76.4501, loss: 0.4804, grad_norm: 0.9190
+2022-10-13 09:43:26,485 | INFO : Saving checkpoint at 3 epochs
+2022-10-13 09:43:28,474 | INFO : 
+Per class results:
+2022-10-13 09:43:28,474 | INFO : +------------+-------+-------+
+|   Class    |  Dice |  Acc  |
++------------+-------+-------+
+| background |  97.0 | 98.43 |
+|   person   | 69.91 |  61.0 |
++------------+-------+-------+
+2022-10-13 09:43:28,474 | INFO : 
+Summary:
+2022-10-13 09:43:28,475 | INFO : +-------+-------+-------+
+|  aAcc | mDice |  mAcc |
++-------+-------+-------+
+| 94.54 | 83.45 | 79.72 |
++-------+-------+-------+
+2022-10-13 09:43:28,558 | INFO : Now best checkpoint is saved as best_mDice_epoch_3.pth.
+2022-10-13 09:43:28,559 | INFO : Best mDice is 0.8345 at 3 epoch.
+2022-10-13 09:43:28,559 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/seg/ocr-lite-hrnet-s-mod2_voc_person_car_val_batch_1_3/results/stage00_SegTrainer-train
+2022-10-13 09:43:28,559 | INFO : Epoch(val) [3][30]	aAcc: 0.9454, mDice: 0.8345, mAcc: 0.7972, Dice.background: 0.9700, Dice.person: 0.6991, Acc.background: 0.9843, Acc.person: 0.6100, current_iters: 39
+2022-10-13 09:43:35,151 | INFO : Epoch [4][10/13]	lr: 6.533e-04, eta: 1:00:35, time: 0.659, data_time: 0.380, memory: 1005, current_iters: 48, decode.ce_with_ignore-0.weight: 1.0000, decode.ce_with_ignore-0.reg_weight: 0.0000, decode.ce_with_ignore-0.scale: 1.0000, decode.ce_with_ignore-0.raw_sparsity: 0.0000, decode.ce_with_ignore-0.weight_sparsity: 0.0000, decode.ce_with_ignore-0.invalid_ratio: 0.9236, decode.ce_with_ignore-0: 0.4338, decode.loss_seg: 0.4338, decode.acc_seg: 77.1284, loss: 0.4338, grad_norm: 0.8942
+2022-10-13 09:43:37,265 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/seg/ocr-lite-hrnet-s-mod2_voc_person_car_val_batch_1_3/results/stage00_SegTrainer-train
+2022-10-13 09:43:37,265 | INFO : Epoch [4][13/13]	lr: 6.733e-04, eta: 1:05:18, time: 0.669, data_time: 0.392, memory: 1005, current_iters: 51, decode.ce_with_ignore-0.weight: 1.0000, decode.ce_with_ignore-0.reg_weight: 0.0000, decode.ce_with_ignore-0.scale: 1.0000, decode.ce_with_ignore-0.raw_sparsity: 0.0000, decode.ce_with_ignore-0.weight_sparsity: 0.0000, decode.ce_with_ignore-0.invalid_ratio: 0.9277, decode.ce_with_ignore-0: 0.4283, decode.loss_seg: 0.4283, decode.acc_seg: 77.7240, loss: 0.4283, grad_norm: 0.9254
+2022-10-13 09:43:37,266 | INFO : Saving checkpoint at 4 epochs
+2022-10-13 09:43:39,305 | INFO : 
+Per class results:
+2022-10-13 09:43:39,305 | INFO : +------------+-------+-------+
+|   Class    |  Dice |  Acc  |
++------------+-------+-------+
+| background | 96.99 | 97.43 |
+|   person   | 72.89 | 70.03 |
++------------+-------+-------+
+2022-10-13 09:43:39,306 | INFO : 
+Summary:
+2022-10-13 09:43:39,306 | INFO : +-------+-------+-------+
+|  aAcc | mDice |  mAcc |
++-------+-------+-------+
+| 94.58 | 84.94 | 83.73 |
++-------+-------+-------+
+2022-10-13 09:43:39,395 | INFO : Now best checkpoint is saved as best_mDice_epoch_4.pth.
+2022-10-13 09:43:39,395 | INFO : Best mDice is 0.8494 at 4 epoch.
+2022-10-13 09:43:39,395 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/seg/ocr-lite-hrnet-s-mod2_voc_person_car_val_batch_1_3/results/stage00_SegTrainer-train
+2022-10-13 09:43:39,396 | INFO : Epoch(val) [4][30]	aAcc: 0.9458, mDice: 0.8494, mAcc: 0.8373, Dice.background: 0.9699, Dice.person: 0.7289, Acc.background: 0.9743, Acc.person: 0.7003, current_iters: 52
+2022-10-13 09:43:45,870 | INFO : Epoch [5][10/13]	lr: 7.400e-04, eta: 1:01:18, time: 0.647, data_time: 0.363, memory: 1005, current_iters: 61, decode.ce_with_ignore-0.weight: 1.0000, decode.ce_with_ignore-0.reg_weight: 0.0000, decode.ce_with_ignore-0.scale: 1.0000, decode.ce_with_ignore-0.raw_sparsity: 0.0000, decode.ce_with_ignore-0.weight_sparsity: 0.0000, decode.ce_with_ignore-0.invalid_ratio: 0.9345, decode.ce_with_ignore-0: 0.3736, decode.loss_seg: 0.3736, decode.acc_seg: 76.6872, loss: 0.3736, grad_norm: 1.0158
+2022-10-13 09:43:47,973 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/seg/ocr-lite-hrnet-s-mod2_voc_person_car_val_batch_1_3/results/stage00_SegTrainer-train
+2022-10-13 09:43:47,974 | INFO : Epoch [5][13/13]	lr: 7.600e-04, eta: 1:04:57, time: 0.665, data_time: 0.386, memory: 1005, current_iters: 64, decode.ce_with_ignore-0.weight: 1.0000, decode.ce_with_ignore-0.reg_weight: 0.0000, decode.ce_with_ignore-0.scale: 1.0000, decode.ce_with_ignore-0.raw_sparsity: 0.0000, decode.ce_with_ignore-0.weight_sparsity: 0.0000, decode.ce_with_ignore-0.invalid_ratio: 0.9349, decode.ce_with_ignore-0: 0.3818, decode.loss_seg: 0.3818, decode.acc_seg: 76.9527, loss: 0.3818, grad_norm: 1.0056
+2022-10-13 09:43:47,974 | INFO : Saving checkpoint at 5 epochs
+2022-10-13 09:43:50,024 | INFO : 
+Per class results:
+2022-10-13 09:43:50,024 | INFO : +------------+-------+-------+
+|   Class    |  Dice |  Acc  |
++------------+-------+-------+
+| background | 96.25 |  95.0 |
+|   person   |  71.3 | 79.25 |
++------------+-------+-------+
+2022-10-13 09:43:50,025 | INFO : 
+Summary:
+2022-10-13 09:43:50,025 | INFO : +-------+-------+-------+
+|  aAcc | mDice |  mAcc |
++-------+-------+-------+
+| 93.36 | 83.77 | 87.13 |
++-------+-------+-------+
+2022-10-13 09:43:50,025 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/seg/ocr-lite-hrnet-s-mod2_voc_person_car_val_batch_1_3/results/stage00_SegTrainer-train
+2022-10-13 09:43:50,025 | INFO : Epoch(val) [5][30]	aAcc: 0.9336, mDice: 0.8377, mAcc: 0.8713, Dice.background: 0.9625, Dice.person: 0.7130, Acc.background: 0.9500, Acc.person: 0.7925, current_iters: 65
+2022-10-13 09:43:56,650 | INFO : Epoch [6][10/13]	lr: 8.267e-04, eta: 1:01:46, time: 0.662, data_time: 0.390, memory: 1005, current_iters: 74, decode.ce_with_ignore-0.weight: 1.0000, decode.ce_with_ignore-0.reg_weight: 0.0000, decode.ce_with_ignore-0.scale: 1.0000, decode.ce_with_ignore-0.raw_sparsity: 0.0000, decode.ce_with_ignore-0.weight_sparsity: 0.0000, decode.ce_with_ignore-0.invalid_ratio: 0.9163, decode.ce_with_ignore-0: 0.3725, decode.loss_seg: 0.3725, decode.acc_seg: 80.1259, loss: 0.3725, grad_norm: 1.1549
+2022-10-13 09:43:58,525 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/seg/ocr-lite-hrnet-s-mod2_voc_person_car_val_batch_1_3/results/stage00_SegTrainer-train
+2022-10-13 09:43:58,525 | INFO : Epoch [6][13/13]	lr: 8.467e-04, eta: 1:04:36, time: 0.644, data_time: 0.372, memory: 1005, current_iters: 77, decode.ce_with_ignore-0.weight: 1.0000, decode.ce_with_ignore-0.reg_weight: 0.0000, decode.ce_with_ignore-0.scale: 1.0000, decode.ce_with_ignore-0.raw_sparsity: 0.0000, decode.ce_with_ignore-0.weight_sparsity: 0.0000, decode.ce_with_ignore-0.invalid_ratio: 0.8999, decode.ce_with_ignore-0: 0.3427, decode.loss_seg: 0.3427, decode.acc_seg: 77.8297, loss: 0.3427, grad_norm: 1.1275
+2022-10-13 09:43:58,526 | INFO : Saving checkpoint at 6 epochs
+2022-10-13 09:44:00,551 | INFO : 
+Per class results:
+2022-10-13 09:44:00,552 | INFO : +------------+-------+-------+
+|   Class    |  Dice |  Acc  |
++------------+-------+-------+
+| background | 95.61 | 99.89 |
+|   person   |  35.7 | 21.93 |
++------------+-------+-------+
+2022-10-13 09:44:00,552 | INFO : 
+Summary:
+2022-10-13 09:44:00,552 | INFO : +-------+-------+-------+
+|  aAcc | mDice |  mAcc |
++-------+-------+-------+
+| 91.78 | 65.66 | 60.91 |
++-------+-------+-------+
+2022-10-13 09:44:00,552 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/seg/ocr-lite-hrnet-s-mod2_voc_person_car_val_batch_1_3/results/stage00_SegTrainer-train
+2022-10-13 09:44:00,553 | INFO : Epoch(val) [6][30]	aAcc: 0.9178, mDice: 0.6566, mAcc: 0.6091, Dice.background: 0.9561, Dice.person: 0.3570, Acc.background: 0.9989, Acc.person: 0.2193, current_iters: 78
+2022-10-13 09:44:07,041 | INFO : Epoch [7][10/13]	lr: 9.133e-04, eta: 1:01:48, time: 0.648, data_time: 0.377, memory: 1005, current_iters: 87, decode.ce_with_ignore-0.weight: 1.0000, decode.ce_with_ignore-0.reg_weight: 0.0000, decode.ce_with_ignore-0.scale: 1.0000, decode.ce_with_ignore-0.raw_sparsity: 0.0000, decode.ce_with_ignore-0.weight_sparsity: 0.0000, decode.ce_with_ignore-0.invalid_ratio: 0.9281, decode.ce_with_ignore-0: 0.4129, decode.loss_seg: 0.4129, decode.acc_seg: 77.5445, loss: 0.4129, grad_norm: 1.3513
+2022-10-13 09:44:09,214 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/seg/ocr-lite-hrnet-s-mod2_voc_person_car_val_batch_1_3/results/stage00_SegTrainer-train
+2022-10-13 09:44:09,214 | INFO : Epoch [7][13/13]	lr: 9.333e-04, eta: 1:04:27, time: 0.679, data_time: 0.402, memory: 1005, current_iters: 90, decode.ce_with_ignore-0.weight: 1.0000, decode.ce_with_ignore-0.reg_weight: 0.0000, decode.ce_with_ignore-0.scale: 1.0000, decode.ce_with_ignore-0.raw_sparsity: 0.0000, decode.ce_with_ignore-0.weight_sparsity: 0.0000, decode.ce_with_ignore-0.invalid_ratio: 0.9048, decode.ce_with_ignore-0: 0.3461, decode.loss_seg: 0.3461, decode.acc_seg: 80.9965, loss: 0.3461, grad_norm: 1.0432
+2022-10-13 09:44:09,214 | INFO : Saving checkpoint at 7 epochs
+2022-10-13 09:44:11,278 | INFO : 
+Per class results:
+2022-10-13 09:44:11,279 | INFO : +------------+-------+-------+
+|   Class    |  Dice |  Acc  |
++------------+-------+-------+
+| background | 96.65 |  97.2 |
+|   person   | 69.46 | 66.06 |
++------------+-------+-------+
+2022-10-13 09:44:11,279 | INFO : 
+Summary:
+2022-10-13 09:44:11,279 | INFO : +-------+-------+-------+
+|  aAcc | mDice |  mAcc |
++-------+-------+-------+
+| 93.96 | 83.05 | 81.63 |
++-------+-------+-------+
+2022-10-13 09:44:11,280 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/seg/ocr-lite-hrnet-s-mod2_voc_person_car_val_batch_1_3/results/stage00_SegTrainer-train
+2022-10-13 09:44:11,280 | INFO : Epoch(val) [7][30]	aAcc: 0.9396, mDice: 0.8305, mAcc: 0.8163, Dice.background: 0.9665, Dice.person: 0.6946, Acc.background: 0.9720, Acc.person: 0.6606, current_iters: 91
+2022-10-13 09:44:18,267 | INFO : Epoch [8][10/13]	lr: 1.000e-03, eta: 1:02:18, time: 0.698, data_time: 0.407, memory: 1005, current_iters: 100, decode.ce_with_ignore-0.weight: 1.0000, decode.ce_with_ignore-0.reg_weight: 0.0000, decode.ce_with_ignore-0.scale: 1.0000, decode.ce_with_ignore-0.raw_sparsity: 0.0000, decode.ce_with_ignore-0.weight_sparsity: 0.0000, decode.ce_with_ignore-0.invalid_ratio: 0.8958, decode.ce_with_ignore-0: 0.3516, decode.loss_seg: 0.3516, decode.acc_seg: 77.1543, loss: 0.3516, grad_norm: 0.8988
+2022-10-13 09:44:20,343 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/seg/ocr-lite-hrnet-s-mod2_voc_person_car_val_batch_1_3/results/stage00_SegTrainer-train
+2022-10-13 09:44:20,344 | INFO : Epoch [8][13/13]	lr: 1.000e-03, eta: 1:04:43, time: 0.702, data_time: 0.408, memory: 1005, current_iters: 103, decode.ce_with_ignore-0.weight: 1.0000, decode.ce_with_ignore-0.reg_weight: 0.0000, decode.ce_with_ignore-0.scale: 1.0000, decode.ce_with_ignore-0.raw_sparsity: 0.0000, decode.ce_with_ignore-0.weight_sparsity: 0.0000, decode.ce_with_ignore-0.invalid_ratio: 0.9399, decode.ce_with_ignore-0: 0.3613, decode.loss_seg: 0.3613, decode.acc_seg: 76.1171, loss: 0.3613, grad_norm: 0.9405
+2022-10-13 09:44:20,344 | INFO : Saving checkpoint at 8 epochs
+2022-10-13 09:44:22,414 | INFO : 
+Per class results:
+2022-10-13 09:44:22,415 | INFO : +------------+-------+-------+
+|   Class    |  Dice |  Acc  |
++------------+-------+-------+
+| background | 96.33 | 95.28 |
+|   person   | 71.37 | 78.02 |
++------------+-------+-------+
+2022-10-13 09:44:22,415 | INFO : 
+Summary:
+2022-10-13 09:44:22,415 | INFO : +-------+-------+-------+
+|  aAcc | mDice |  mAcc |
++-------+-------+-------+
+| 93.49 | 83.85 | 86.65 |
++-------+-------+-------+
+2022-10-13 09:44:22,415 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/seg/ocr-lite-hrnet-s-mod2_voc_person_car_val_batch_1_3/results/stage00_SegTrainer-train
+2022-10-13 09:44:22,415 | INFO : Epoch(val) [8][30]	aAcc: 0.9349, mDice: 0.8385, mAcc: 0.8665, Dice.background: 0.9633, Dice.person: 0.7137, Acc.background: 0.9528, Acc.person: 0.7802, current_iters: 104
+2022-10-13 09:44:22,418 | INFO : 
+Best Score: -inf, Current Score: 0.8384999999999999, Patience: 5 Count: 0
+2022-10-13 09:44:28,868 | INFO : Epoch [9][10/13]	lr: 1.000e-03, eta: 1:02:28, time: 0.645, data_time: 0.364, memory: 1005, current_iters: 113, decode.ce_with_ignore-0.weight: 1.0000, decode.ce_with_ignore-0.reg_weight: 0.0000, decode.ce_with_ignore-0.scale: 1.0000, decode.ce_with_ignore-0.raw_sparsity: 0.0002, decode.ce_with_ignore-0.weight_sparsity: 0.0002, decode.ce_with_ignore-0.invalid_ratio: 0.9372, decode.ce_with_ignore-0: 0.4859, decode.loss_seg: 0.4859, decode.acc_seg: 80.9261, loss: 0.4859, grad_norm: 2.1812
+2022-10-13 09:44:30,958 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/seg/ocr-lite-hrnet-s-mod2_voc_person_car_val_batch_1_3/results/stage00_SegTrainer-train
+2022-10-13 09:44:30,958 | INFO : Epoch [9][13/13]	lr: 1.000e-03, eta: 1:04:19, time: 0.651, data_time: 0.378, memory: 1005, current_iters: 116, decode.ce_with_ignore-0.weight: 1.0000, decode.ce_with_ignore-0.reg_weight: 0.0000, decode.ce_with_ignore-0.scale: 1.0000, decode.ce_with_ignore-0.raw_sparsity: 0.0000, decode.ce_with_ignore-0.weight_sparsity: 0.0000, decode.ce_with_ignore-0.invalid_ratio: 0.9330, decode.ce_with_ignore-0: 0.3971, decode.loss_seg: 0.3971, decode.acc_seg: 80.3461, loss: 0.3971, grad_norm: 1.1493
+2022-10-13 09:44:30,958 | INFO : Saving checkpoint at 9 epochs
+2022-10-13 09:44:32,980 | INFO : 
+Per class results:
+2022-10-13 09:44:32,980 | INFO : +------------+-------+-------+
+|   Class    |  Dice |  Acc  |
++------------+-------+-------+
+| background | 96.57 | 98.06 |
+|   person   | 65.35 | 56.67 |
++------------+-------+-------+
+2022-10-13 09:44:32,980 | INFO : 
+Summary:
+2022-10-13 09:44:32,980 | INFO : +-------+-------+-------+
+|  aAcc | mDice |  mAcc |
++-------+-------+-------+
+| 93.75 | 80.96 | 77.36 |
++-------+-------+-------+
+2022-10-13 09:44:32,981 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/seg/ocr-lite-hrnet-s-mod2_voc_person_car_val_batch_1_3/results/stage00_SegTrainer-train
+2022-10-13 09:44:32,981 | INFO : Epoch(val) [9][30]	aAcc: 0.9375, mDice: 0.8096, mAcc: 0.7736, Dice.background: 0.9657, Dice.person: 0.6535, Acc.background: 0.9806, Acc.person: 0.5667, current_iters: 117
+2022-10-13 09:44:32,983 | INFO : 
+Best Score: 0.8384999999999999, Current Score: 0.8096, Patience: 5 Count: 0
+2022-10-13 09:44:39,407 | INFO : Epoch [10][10/13]	lr: 1.000e-03, eta: 1:02:17, time: 0.642, data_time: 0.367, memory: 1005, current_iters: 126, decode.ce_with_ignore-0.weight: 1.0000, decode.ce_with_ignore-0.reg_weight: 0.0000, decode.ce_with_ignore-0.scale: 1.0000, decode.ce_with_ignore-0.raw_sparsity: 0.0000, decode.ce_with_ignore-0.weight_sparsity: 0.0000, decode.ce_with_ignore-0.invalid_ratio: 0.9114, decode.ce_with_ignore-0: 0.3366, decode.loss_seg: 0.3366, decode.acc_seg: 77.4415, loss: 0.3366, grad_norm: 0.9361
+2022-10-13 09:44:41,278 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/seg/ocr-lite-hrnet-s-mod2_voc_person_car_val_batch_1_3/results/stage00_SegTrainer-train
+2022-10-13 09:44:41,279 | INFO : Epoch [10][13/13]	lr: 1.000e-03, eta: 1:03:51, time: 0.634, data_time: 0.367, memory: 1005, current_iters: 129, decode.ce_with_ignore-0.weight: 1.0000, decode.ce_with_ignore-0.reg_weight: 0.0000, decode.ce_with_ignore-0.scale: 1.0000, decode.ce_with_ignore-0.raw_sparsity: 0.0000, decode.ce_with_ignore-0.weight_sparsity: 0.0000, decode.ce_with_ignore-0.invalid_ratio: 0.9082, decode.ce_with_ignore-0: 0.3399, decode.loss_seg: 0.3399, decode.acc_seg: 77.0045, loss: 0.3399, grad_norm: 0.9938
+2022-10-13 09:44:41,279 | INFO : Saving checkpoint at 10 epochs
+2022-10-13 09:44:43,377 | INFO : 
+Per class results:
+2022-10-13 09:44:43,378 | INFO : +------------+-------+-------+
+|   Class    |  Dice |  Acc  |
++------------+-------+-------+
+| background | 96.28 | 95.83 |
+|   person   | 69.32 | 72.11 |
++------------+-------+-------+
+2022-10-13 09:44:43,378 | INFO : 
+Summary:
+2022-10-13 09:44:43,378 | INFO : +-------+-------+-------+
+|  aAcc | mDice |  mAcc |
++-------+-------+-------+
+| 93.36 |  82.8 | 83.97 |
++-------+-------+-------+
+2022-10-13 09:44:43,378 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/seg/ocr-lite-hrnet-s-mod2_voc_person_car_val_batch_1_3/results/stage00_SegTrainer-train
+2022-10-13 09:44:43,378 | INFO : Epoch(val) [10][30]	aAcc: 0.9336, mDice: 0.8280, mAcc: 0.8397, Dice.background: 0.9628, Dice.person: 0.6932, Acc.background: 0.9583, Acc.person: 0.7211, current_iters: 130
+2022-10-13 09:44:43,381 | INFO : 
+Best Score: 0.8384999999999999, Current Score: 0.828, Patience: 5 Count: 1
+2022-10-13 09:44:50,135 | INFO : Epoch [11][10/13]	lr: 1.000e-03, eta: 1:02:09, time: 0.675, data_time: 0.391, memory: 1005, current_iters: 139, decode.ce_with_ignore-0.weight: 1.0000, decode.ce_with_ignore-0.reg_weight: 0.0000, decode.ce_with_ignore-0.scale: 1.0000, decode.ce_with_ignore-0.raw_sparsity: 0.0000, decode.ce_with_ignore-0.weight_sparsity: 0.0000, decode.ce_with_ignore-0.invalid_ratio: 0.8908, decode.ce_with_ignore-0: 0.3958, decode.loss_seg: 0.3958, decode.acc_seg: 81.0762, loss: 0.3958, grad_norm: 1.3668
+2022-10-13 09:44:52,154 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/seg/ocr-lite-hrnet-s-mod2_voc_person_car_val_batch_1_3/results/stage00_SegTrainer-train
+2022-10-13 09:44:52,154 | INFO : Epoch [11][13/13]	lr: 1.000e-03, eta: 1:03:42, time: 0.662, data_time: 0.383, memory: 1005, current_iters: 142, decode.ce_with_ignore-0.weight: 1.0000, decode.ce_with_ignore-0.reg_weight: 0.0000, decode.ce_with_ignore-0.scale: 1.0000, decode.ce_with_ignore-0.raw_sparsity: 0.0000, decode.ce_with_ignore-0.weight_sparsity: 0.0000, decode.ce_with_ignore-0.invalid_ratio: 0.8873, decode.ce_with_ignore-0: 0.3896, decode.loss_seg: 0.3896, decode.acc_seg: 80.8290, loss: 0.3896, grad_norm: 1.2378
+2022-10-13 09:44:52,154 | INFO : Saving checkpoint at 11 epochs
+2022-10-13 09:44:54,177 | INFO : 
+Per class results:
+2022-10-13 09:44:54,177 | INFO : +------------+-------+-------+
+|   Class    |  Dice |  Acc  |
++------------+-------+-------+
+| background | 96.74 | 96.41 |
+|   person   | 72.79 | 74.89 |
++------------+-------+-------+
+2022-10-13 09:44:54,177 | INFO : 
+Summary:
+2022-10-13 09:44:54,177 | INFO : +-------+-------+-------+
+|  aAcc | mDice |  mAcc |
++-------+-------+-------+
+| 94.18 | 84.76 | 85.65 |
++-------+-------+-------+
+2022-10-13 09:44:54,178 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/seg/ocr-lite-hrnet-s-mod2_voc_person_car_val_batch_1_3/results/stage00_SegTrainer-train
+2022-10-13 09:44:54,178 | INFO : Epoch(val) [11][30]	aAcc: 0.9418, mDice: 0.8476, mAcc: 0.8565, Dice.background: 0.9674, Dice.person: 0.7279, Acc.background: 0.9641, Acc.person: 0.7489, current_iters: 143
+2022-10-13 09:44:54,180 | INFO : 
+Best Score: 0.8384999999999999, Current Score: 0.8476, Patience: 5 Count: 2
+2022-10-13 09:45:00,708 | INFO : Epoch [12][10/13]	lr: 1.000e-03, eta: 1:02:03, time: 0.653, data_time: 0.364, memory: 1005, current_iters: 152, decode.ce_with_ignore-0.weight: 1.0000, decode.ce_with_ignore-0.reg_weight: 0.0000, decode.ce_with_ignore-0.scale: 1.0000, decode.ce_with_ignore-0.raw_sparsity: 0.0000, decode.ce_with_ignore-0.weight_sparsity: 0.0000, decode.ce_with_ignore-0.invalid_ratio: 0.9046, decode.ce_with_ignore-0: 0.3389, decode.loss_seg: 0.3389, decode.acc_seg: 75.5047, loss: 0.3389, grad_norm: 1.4522
+2022-10-13 09:45:02,750 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/seg/ocr-lite-hrnet-s-mod2_voc_person_car_val_batch_1_3/results/stage00_SegTrainer-train
+2022-10-13 09:45:02,751 | INFO : Epoch [12][13/13]	lr: 1.000e-03, eta: 1:03:26, time: 0.657, data_time: 0.366, memory: 1005, current_iters: 155, decode.ce_with_ignore-0.weight: 1.0000, decode.ce_with_ignore-0.reg_weight: 0.0000, decode.ce_with_ignore-0.scale: 1.0000, decode.ce_with_ignore-0.raw_sparsity: 0.0000, decode.ce_with_ignore-0.weight_sparsity: 0.0000, decode.ce_with_ignore-0.invalid_ratio: 0.8842, decode.ce_with_ignore-0: 0.3235, decode.loss_seg: 0.3235, decode.acc_seg: 78.1286, loss: 0.3235, grad_norm: 1.3065
+2022-10-13 09:45:02,751 | INFO : Saving checkpoint at 12 epochs
+2022-10-13 09:45:04,960 | INFO : 
+Per class results:
+2022-10-13 09:45:04,960 | INFO : +------------+-------+-------+
+|   Class    |  Dice |  Acc  |
++------------+-------+-------+
+| background | 97.47 | 98.99 |
+|   person   | 74.46 | 64.47 |
++------------+-------+-------+
+2022-10-13 09:45:04,960 | INFO : 
+Summary:
+2022-10-13 09:45:04,960 | INFO : +------+-------+-------+
+| aAcc | mDice |  mAcc |
++------+-------+-------+
+| 95.4 | 85.97 | 81.73 |
++------+-------+-------+
+2022-10-13 09:45:05,059 | INFO : Now best checkpoint is saved as best_mDice_epoch_12.pth.
+2022-10-13 09:45:05,059 | INFO : Best mDice is 0.8597 at 12 epoch.
+2022-10-13 09:45:05,059 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/seg/ocr-lite-hrnet-s-mod2_voc_person_car_val_batch_1_3/results/stage00_SegTrainer-train
+2022-10-13 09:45:05,059 | INFO : Epoch(val) [12][30]	aAcc: 0.9540, mDice: 0.8597, mAcc: 0.8173, Dice.background: 0.9747, Dice.person: 0.7446, Acc.background: 0.9899, Acc.person: 0.6447, current_iters: 156
+2022-10-13 09:45:05,062 | INFO : 
+Best Score: 0.8476, Current Score: 0.8597, Patience: 5 Count: 0
+2022-10-13 09:45:11,627 | INFO : Epoch [13][10/13]	lr: 1.000e-03, eta: 1:01:55, time: 0.656, data_time: 0.379, memory: 1005, current_iters: 165, decode.ce_with_ignore-0.weight: 1.0000, decode.ce_with_ignore-0.reg_weight: 0.0000, decode.ce_with_ignore-0.scale: 1.0000, decode.ce_with_ignore-0.raw_sparsity: 0.0000, decode.ce_with_ignore-0.weight_sparsity: 0.0000, decode.ce_with_ignore-0.invalid_ratio: 0.8800, decode.ce_with_ignore-0: 0.3028, decode.loss_seg: 0.3028, decode.acc_seg: 75.4564, loss: 0.3028, grad_norm: 1.5426
+2022-10-13 09:45:13,570 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/seg/ocr-lite-hrnet-s-mod2_voc_person_car_val_batch_1_3/results/stage00_SegTrainer-train
+2022-10-13 09:45:13,570 | INFO : Epoch [13][13/13]	lr: 1.000e-03, eta: 1:03:10, time: 0.652, data_time: 0.376, memory: 1005, current_iters: 168, decode.ce_with_ignore-0.weight: 1.0000, decode.ce_with_ignore-0.reg_weight: 0.0000, decode.ce_with_ignore-0.scale: 1.0000, decode.ce_with_ignore-0.raw_sparsity: 0.0000, decode.ce_with_ignore-0.weight_sparsity: 0.0000, decode.ce_with_ignore-0.invalid_ratio: 0.9017, decode.ce_with_ignore-0: 0.2997, decode.loss_seg: 0.2997, decode.acc_seg: 77.0295, loss: 0.2997, grad_norm: 0.7986
+2022-10-13 09:45:13,571 | INFO : Saving checkpoint at 13 epochs
+2022-10-13 09:45:15,643 | INFO : 
+Per class results:
+2022-10-13 09:45:15,644 | INFO : +------------+-------+-------+
+|   Class    |  Dice |  Acc  |
++------------+-------+-------+
+| background | 97.55 | 97.23 |
+|   person   | 79.58 | 81.86 |
++------------+-------+-------+
+2022-10-13 09:45:15,644 | INFO : 
+Summary:
+2022-10-13 09:45:15,645 | INFO : +-------+-------+-------+
+|  aAcc | mDice |  mAcc |
++-------+-------+-------+
+| 95.63 | 88.57 | 89.55 |
++-------+-------+-------+
+2022-10-13 09:45:15,739 | INFO : Now best checkpoint is saved as best_mDice_epoch_13.pth.
+2022-10-13 09:45:15,740 | INFO : Best mDice is 0.8857 at 13 epoch.
+2022-10-13 09:45:15,740 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/seg/ocr-lite-hrnet-s-mod2_voc_person_car_val_batch_1_3/results/stage00_SegTrainer-train
+2022-10-13 09:45:15,740 | INFO : Epoch(val) [13][30]	aAcc: 0.9563, mDice: 0.8857, mAcc: 0.8955, Dice.background: 0.9755, Dice.person: 0.7958, Acc.background: 0.9723, Acc.person: 0.8186, current_iters: 169
+2022-10-13 09:45:15,743 | INFO : 
+Best Score: 0.8597, Current Score: 0.8856999999999999, Patience: 5 Count: 0
+2022-10-13 09:45:22,529 | INFO : Epoch [14][10/13]	lr: 1.000e-03, eta: 1:01:49, time: 0.678, data_time: 0.393, memory: 1005, current_iters: 178, decode.ce_with_ignore-0.weight: 1.0000, decode.ce_with_ignore-0.reg_weight: 0.0000, decode.ce_with_ignore-0.scale: 1.0000, decode.ce_with_ignore-0.raw_sparsity: 0.0000, decode.ce_with_ignore-0.weight_sparsity: 0.0000, decode.ce_with_ignore-0.invalid_ratio: 0.9125, decode.ce_with_ignore-0: 0.3250, decode.loss_seg: 0.3250, decode.acc_seg: 78.6137, loss: 0.3250, grad_norm: 1.5965
+2022-10-13 09:45:24,659 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/seg/ocr-lite-hrnet-s-mod2_voc_person_car_val_batch_1_3/results/stage00_SegTrainer-train
+2022-10-13 09:45:24,659 | INFO : Epoch [14][13/13]	lr: 1.000e-03, eta: 1:03:08, time: 0.697, data_time: 0.410, memory: 1005, current_iters: 181, decode.ce_with_ignore-0.weight: 1.0000, decode.ce_with_ignore-0.reg_weight: 0.0000, decode.ce_with_ignore-0.scale: 1.0000, decode.ce_with_ignore-0.raw_sparsity: 0.0000, decode.ce_with_ignore-0.weight_sparsity: 0.0000, decode.ce_with_ignore-0.invalid_ratio: 0.9238, decode.ce_with_ignore-0: 0.3143, decode.loss_seg: 0.3143, decode.acc_seg: 78.2434, loss: 0.3143, grad_norm: 1.5801
+2022-10-13 09:45:24,660 | INFO : Saving checkpoint at 14 epochs
+2022-10-13 09:45:26,723 | INFO : 
+Per class results:
+2022-10-13 09:45:26,723 | INFO : +------------+-------+-------+
+|   Class    |  Dice |  Acc  |
++------------+-------+-------+
+| background | 96.33 | 99.59 |
+|   person   | 53.82 | 38.13 |
++------------+-------+-------+
+2022-10-13 09:45:26,723 | INFO : 
+Summary:
+2022-10-13 09:45:26,723 | INFO : +-------+-------+-------+
+|  aAcc | mDice |  mAcc |
++-------+-------+-------+
+| 93.19 | 75.07 | 68.86 |
++-------+-------+-------+
+2022-10-13 09:45:26,724 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/seg/ocr-lite-hrnet-s-mod2_voc_person_car_val_batch_1_3/results/stage00_SegTrainer-train
+2022-10-13 09:45:26,724 | INFO : Epoch(val) [14][30]	aAcc: 0.9319, mDice: 0.7507, mAcc: 0.6886, Dice.background: 0.9633, Dice.person: 0.5382, Acc.background: 0.9959, Acc.person: 0.3813, current_iters: 182
+2022-10-13 09:45:26,727 | INFO : 
+Best Score: 0.8856999999999999, Current Score: 0.7506999999999999, Patience: 5 Count: 0
+2022-10-13 09:45:33,464 | INFO : Epoch [15][10/13]	lr: 1.000e-03, eta: 1:01:51, time: 0.674, data_time: 0.387, memory: 1005, current_iters: 191, decode.ce_with_ignore-0.weight: 1.0000, decode.ce_with_ignore-0.reg_weight: 0.0000, decode.ce_with_ignore-0.scale: 1.0000, decode.ce_with_ignore-0.raw_sparsity: 0.0000, decode.ce_with_ignore-0.weight_sparsity: 0.0000, decode.ce_with_ignore-0.invalid_ratio: 0.9117, decode.ce_with_ignore-0: 0.3167, decode.loss_seg: 0.3167, decode.acc_seg: 77.8318, loss: 0.3167, grad_norm: 0.8060
+2022-10-13 09:45:35,455 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/seg/ocr-lite-hrnet-s-mod2_voc_person_car_val_batch_1_3/results/stage00_SegTrainer-train
+2022-10-13 09:45:35,456 | INFO : Epoch [15][13/13]	lr: 1.000e-03, eta: 1:02:58, time: 0.670, data_time: 0.387, memory: 1005, current_iters: 194, decode.ce_with_ignore-0.weight: 1.0000, decode.ce_with_ignore-0.reg_weight: 0.0000, decode.ce_with_ignore-0.scale: 1.0000, decode.ce_with_ignore-0.raw_sparsity: 0.0000, decode.ce_with_ignore-0.weight_sparsity: 0.0000, decode.ce_with_ignore-0.invalid_ratio: 0.8977, decode.ce_with_ignore-0: 0.2849, decode.loss_seg: 0.2849, decode.acc_seg: 81.6189, loss: 0.2849, grad_norm: 0.6880
+2022-10-13 09:45:35,456 | INFO : Saving checkpoint at 15 epochs
+2022-10-13 09:45:37,557 | INFO : 
+Per class results:
+2022-10-13 09:45:37,557 | INFO : +------------+-------+-------+
+|   Class    |  Dice |  Acc  |
++------------+-------+-------+
+| background | 96.88 | 96.23 |
+|   person   | 74.78 | 79.09 |
++------------+-------+-------+
+2022-10-13 09:45:37,557 | INFO : 
+Summary:
+2022-10-13 09:45:37,557 | INFO : +-------+-------+-------+
+|  aAcc | mDice |  mAcc |
++-------+-------+-------+
+| 94.45 | 85.83 | 87.66 |
++-------+-------+-------+
+2022-10-13 09:45:37,558 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/seg/ocr-lite-hrnet-s-mod2_voc_person_car_val_batch_1_3/results/stage00_SegTrainer-train
+2022-10-13 09:45:37,558 | INFO : Epoch(val) [15][30]	aAcc: 0.9445, mDice: 0.8583, mAcc: 0.8766, Dice.background: 0.9688, Dice.person: 0.7478, Acc.background: 0.9623, Acc.person: 0.7909, current_iters: 195
+2022-10-13 09:45:37,560 | INFO : 
+Best Score: 0.8856999999999999, Current Score: 0.8583, Patience: 5 Count: 1
+2022-10-13 09:45:44,094 | INFO : Epoch [16][10/13]	lr: 1.000e-03, eta: 1:01:42, time: 0.653, data_time: 0.371, memory: 1005, current_iters: 204, decode.ce_with_ignore-0.weight: 1.0000, decode.ce_with_ignore-0.reg_weight: 0.0000, decode.ce_with_ignore-0.scale: 1.0000, decode.ce_with_ignore-0.raw_sparsity: 0.0000, decode.ce_with_ignore-0.weight_sparsity: 0.0000, decode.ce_with_ignore-0.invalid_ratio: 0.8797, decode.ce_with_ignore-0: 0.3325, decode.loss_seg: 0.3325, decode.acc_seg: 75.2190, loss: 0.3325, grad_norm: 2.6715
+2022-10-13 09:45:46,070 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/seg/ocr-lite-hrnet-s-mod2_voc_person_car_val_batch_1_3/results/stage00_SegTrainer-train
+2022-10-13 09:45:46,070 | INFO : Epoch [16][13/13]	lr: 1.000e-03, eta: 1:02:43, time: 0.662, data_time: 0.378, memory: 1005, current_iters: 207, decode.ce_with_ignore-0.weight: 1.0000, decode.ce_with_ignore-0.reg_weight: 0.0000, decode.ce_with_ignore-0.scale: 1.0000, decode.ce_with_ignore-0.raw_sparsity: 0.0000, decode.ce_with_ignore-0.weight_sparsity: 0.0000, decode.ce_with_ignore-0.invalid_ratio: 0.9009, decode.ce_with_ignore-0: 0.3660, decode.loss_seg: 0.3660, decode.acc_seg: 80.6576, loss: 0.3660, grad_norm: 2.7222
+2022-10-13 09:45:46,071 | INFO : Saving checkpoint at 16 epochs
+2022-10-13 09:45:48,182 | INFO : 
+Per class results:
+2022-10-13 09:45:48,182 | INFO : +------------+-------+-------+
+|   Class    |  Dice |  Acc  |
++------------+-------+-------+
+| background | 97.16 | 99.53 |
+|   person   | 68.29 | 53.94 |
++------------+-------+-------+
+2022-10-13 09:45:48,182 | INFO : 
+Summary:
+2022-10-13 09:45:48,182 | INFO : +-------+-------+-------+
+|  aAcc | mDice |  mAcc |
++-------+-------+-------+
+| 94.79 | 82.72 | 76.74 |
++-------+-------+-------+
+2022-10-13 09:45:48,183 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/seg/ocr-lite-hrnet-s-mod2_voc_person_car_val_batch_1_3/results/stage00_SegTrainer-train
+2022-10-13 09:45:48,183 | INFO : Epoch(val) [16][30]	aAcc: 0.9479, mDice: 0.8272, mAcc: 0.7674, Dice.background: 0.9716, Dice.person: 0.6829, Acc.background: 0.9953, Acc.person: 0.5394, current_iters: 208
+2022-10-13 09:45:48,189 | INFO : 
+Best Score: 0.8856999999999999, Current Score: 0.8271999999999999, Patience: 5 Count: 2
+2022-10-13 09:45:55,090 | INFO : Epoch [17][10/13]	lr: 1.000e-03, eta: 1:01:37, time: 0.690, data_time: 0.404, memory: 1005, current_iters: 217, decode.ce_with_ignore-0.weight: 1.0000, decode.ce_with_ignore-0.reg_weight: 0.0000, decode.ce_with_ignore-0.scale: 1.0000, decode.ce_with_ignore-0.raw_sparsity: 0.0000, decode.ce_with_ignore-0.weight_sparsity: 0.0000, decode.ce_with_ignore-0.invalid_ratio: 0.8679, decode.ce_with_ignore-0: 0.3481, decode.loss_seg: 0.3481, decode.acc_seg: 80.2638, loss: 0.3481, grad_norm: 0.7369
+2022-10-13 09:45:57,305 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/seg/ocr-lite-hrnet-s-mod2_voc_person_car_val_batch_1_3/results/stage00_SegTrainer-train
+2022-10-13 09:45:57,306 | INFO : Epoch [17][13/13]	lr: 1.000e-03, eta: 1:02:40, time: 0.696, data_time: 0.411, memory: 1005, current_iters: 220, decode.ce_with_ignore-0.weight: 1.0000, decode.ce_with_ignore-0.reg_weight: 0.0000, decode.ce_with_ignore-0.scale: 1.0000, decode.ce_with_ignore-0.raw_sparsity: 0.0000, decode.ce_with_ignore-0.weight_sparsity: 0.0000, decode.ce_with_ignore-0.invalid_ratio: 0.8763, decode.ce_with_ignore-0: 0.3236, decode.loss_seg: 0.3236, decode.acc_seg: 79.7787, loss: 0.3236, grad_norm: 0.7224
+2022-10-13 09:45:57,306 | INFO : Saving checkpoint at 17 epochs
+2022-10-13 09:45:59,404 | INFO : 
+Per class results:
+2022-10-13 09:45:59,404 | INFO : +------------+-------+-------+
+|   Class    |  Dice |  Acc  |
++------------+-------+-------+
+| background | 96.86 | 95.64 |
+|   person   | 75.88 | 84.12 |
++------------+-------+-------+
+2022-10-13 09:45:59,404 | INFO : 
+Summary:
+2022-10-13 09:45:59,405 | INFO : +-------+-------+-------+
+|  aAcc | mDice |  mAcc |
++-------+-------+-------+
+| 94.44 | 86.37 | 89.88 |
++-------+-------+-------+
+2022-10-13 09:45:59,405 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/seg/ocr-lite-hrnet-s-mod2_voc_person_car_val_batch_1_3/results/stage00_SegTrainer-train
+2022-10-13 09:45:59,405 | INFO : Epoch(val) [17][30]	aAcc: 0.9444, mDice: 0.8637, mAcc: 0.8988, Dice.background: 0.9686, Dice.person: 0.7588, Acc.background: 0.9564, Acc.person: 0.8412, current_iters: 221
+2022-10-13 09:45:59,408 | INFO : 
+Best Score: 0.8856999999999999, Current Score: 0.8637, Patience: 5 Count: 3
+2022-10-13 09:46:06,031 | INFO : Epoch [18][10/13]	lr: 1.000e-03, eta: 1:01:32, time: 0.662, data_time: 0.385, memory: 1005, current_iters: 230, decode.ce_with_ignore-0.weight: 1.0000, decode.ce_with_ignore-0.reg_weight: 0.0000, decode.ce_with_ignore-0.scale: 1.0000, decode.ce_with_ignore-0.raw_sparsity: 0.0000, decode.ce_with_ignore-0.weight_sparsity: 0.0000, decode.ce_with_ignore-0.invalid_ratio: 0.8603, decode.ce_with_ignore-0: 0.2855, decode.loss_seg: 0.2855, decode.acc_seg: 80.1288, loss: 0.2855, grad_norm: 0.8168
+2022-10-13 09:46:07,914 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/seg/ocr-lite-hrnet-s-mod2_voc_person_car_val_batch_1_3/results/stage00_SegTrainer-train
+2022-10-13 09:46:07,914 | INFO : Epoch [18][13/13]	lr: 1.000e-03, eta: 1:02:24, time: 0.649, data_time: 0.374, memory: 1005, current_iters: 233, decode.ce_with_ignore-0.weight: 1.0000, decode.ce_with_ignore-0.reg_weight: 0.0000, decode.ce_with_ignore-0.scale: 1.0000, decode.ce_with_ignore-0.raw_sparsity: 0.0000, decode.ce_with_ignore-0.weight_sparsity: 0.0000, decode.ce_with_ignore-0.invalid_ratio: 0.8587, decode.ce_with_ignore-0: 0.2518, decode.loss_seg: 0.2518, decode.acc_seg: 78.9129, loss: 0.2518, grad_norm: 0.6302
+2022-10-13 09:46:07,915 | INFO : Saving checkpoint at 18 epochs
+2022-10-13 09:46:10,008 | INFO : 
+Per class results:
+2022-10-13 09:46:10,009 | INFO : +------------+-------+-------+
+|   Class    |  Dice |  Acc  |
++------------+-------+-------+
+| background | 96.39 | 99.22 |
+|   person   | 57.16 | 42.72 |
++------------+-------+-------+
+2022-10-13 09:46:10,009 | INFO : 
+Summary:
+2022-10-13 09:46:10,009 | INFO : +-------+-------+-------+
+|  aAcc | mDice |  mAcc |
++-------+-------+-------+
+| 93.34 | 76.78 | 70.97 |
++-------+-------+-------+
+2022-10-13 09:46:10,010 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/seg/ocr-lite-hrnet-s-mod2_voc_person_car_val_batch_1_3/results/stage00_SegTrainer-train
+2022-10-13 09:46:10,010 | INFO : Epoch(val) [18][30]	aAcc: 0.9334, mDice: 0.7678, mAcc: 0.7097, Dice.background: 0.9639, Dice.person: 0.5716, Acc.background: 0.9922, Acc.person: 0.4272, current_iters: 234
+2022-10-13 09:46:10,016 | INFO : 
+Best Score: 0.8856999999999999, Current Score: 0.7678, Patience: 5 Count: 4
+2022-10-13 09:46:10,016 | INFO : 
+Drop LR from: 0.001, to: 0.0001
+2022-10-13 09:46:16,622 | INFO : Epoch [19][10/13]	lr: 1.000e-04, eta: 1:01:19, time: 0.661, data_time: 0.380, memory: 1005, current_iters: 243, decode.ce_with_ignore-0.weight: 1.0000, decode.ce_with_ignore-0.reg_weight: 0.0000, decode.ce_with_ignore-0.scale: 1.0000, decode.ce_with_ignore-0.raw_sparsity: 0.0000, decode.ce_with_ignore-0.weight_sparsity: 0.0000, decode.ce_with_ignore-0.invalid_ratio: 0.8662, decode.ce_with_ignore-0: 0.3483, decode.loss_seg: 0.3483, decode.acc_seg: 79.5950, loss: 0.3483, grad_norm: 0.9086
+2022-10-13 09:46:18,694 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/seg/ocr-lite-hrnet-s-mod2_voc_person_car_val_batch_1_3/results/stage00_SegTrainer-train
+2022-10-13 09:46:18,694 | INFO : Epoch [19][13/13]	lr: 1.000e-04, eta: 1:02:10, time: 0.666, data_time: 0.385, memory: 1005, current_iters: 246, decode.ce_with_ignore-0.weight: 1.0000, decode.ce_with_ignore-0.reg_weight: 0.0000, decode.ce_with_ignore-0.scale: 1.0000, decode.ce_with_ignore-0.raw_sparsity: 0.0000, decode.ce_with_ignore-0.weight_sparsity: 0.0000, decode.ce_with_ignore-0.invalid_ratio: 0.8494, decode.ce_with_ignore-0: 0.3186, decode.loss_seg: 0.3186, decode.acc_seg: 79.2504, loss: 0.3186, grad_norm: 0.8104
+2022-10-13 09:46:18,695 | INFO : Saving checkpoint at 19 epochs
+2022-10-13 09:46:20,827 | INFO : 
+Per class results:
+2022-10-13 09:46:20,828 | INFO : +------------+-------+-------+
+|   Class    |  Dice |  Acc  |
++------------+-------+-------+
+| background | 96.58 | 99.41 |
+|   person   | 59.46 | 44.46 |
++------------+-------+-------+
+2022-10-13 09:46:20,828 | INFO : 
+Summary:
+2022-10-13 09:46:20,828 | INFO : +-------+-------+-------+
+|  aAcc | mDice |  mAcc |
++-------+-------+-------+
+| 93.69 | 78.02 | 71.94 |
++-------+-------+-------+
+2022-10-13 09:46:20,829 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/seg/ocr-lite-hrnet-s-mod2_voc_person_car_val_batch_1_3/results/stage00_SegTrainer-train
+2022-10-13 09:46:20,829 | INFO : Epoch(val) [19][30]	aAcc: 0.9369, mDice: 0.7802, mAcc: 0.7194, Dice.background: 0.9658, Dice.person: 0.5946, Acc.background: 0.9941, Acc.person: 0.4446, current_iters: 247
+2022-10-13 09:46:20,833 | INFO : 
+Best Score: 0.8856999999999999, Current Score: 0.7802, Patience: 5 Count: 0
+2022-10-13 09:46:27,262 | INFO : Epoch [20][10/13]	lr: 1.000e-04, eta: 1:01:06, time: 0.643, data_time: 0.370, memory: 1005, current_iters: 256, decode.ce_with_ignore-0.weight: 1.0000, decode.ce_with_ignore-0.reg_weight: 0.0000, decode.ce_with_ignore-0.scale: 1.0000, decode.ce_with_ignore-0.raw_sparsity: 0.0000, decode.ce_with_ignore-0.weight_sparsity: 0.0000, decode.ce_with_ignore-0.invalid_ratio: 0.8745, decode.ce_with_ignore-0: 0.2645, decode.loss_seg: 0.2645, decode.acc_seg: 78.3646, loss: 0.2645, grad_norm: 0.7377
+2022-10-13 09:46:29,269 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/seg/ocr-lite-hrnet-s-mod2_voc_person_car_val_batch_1_3/results/stage00_SegTrainer-train
+2022-10-13 09:46:29,269 | INFO : Epoch [20][13/13]	lr: 1.000e-04, eta: 1:01:53, time: 0.654, data_time: 0.382, memory: 1005, current_iters: 259, decode.ce_with_ignore-0.weight: 1.0000, decode.ce_with_ignore-0.reg_weight: 0.0000, decode.ce_with_ignore-0.scale: 1.0000, decode.ce_with_ignore-0.raw_sparsity: 0.0000, decode.ce_with_ignore-0.weight_sparsity: 0.0000, decode.ce_with_ignore-0.invalid_ratio: 0.8934, decode.ce_with_ignore-0: 0.3048, decode.loss_seg: 0.3048, decode.acc_seg: 80.0256, loss: 0.3048, grad_norm: 0.7248
+2022-10-13 09:46:29,270 | INFO : Saving checkpoint at 20 epochs
+2022-10-13 09:46:31,287 | INFO : 
+Per class results:
+2022-10-13 09:46:31,288 | INFO : +------------+-------+-------+
+|   Class    |  Dice |  Acc  |
++------------+-------+-------+
+| background | 96.95 | 99.43 |
+|   person   | 65.49 | 51.08 |
++------------+-------+-------+
+2022-10-13 09:46:31,288 | INFO : 
+Summary:
+2022-10-13 09:46:31,288 | INFO : +------+-------+-------+
+| aAcc | mDice |  mAcc |
++------+-------+-------+
+| 94.4 | 81.22 | 75.26 |
++------+-------+-------+
+2022-10-13 09:46:31,289 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/seg/ocr-lite-hrnet-s-mod2_voc_person_car_val_batch_1_3/results/stage00_SegTrainer-train
+2022-10-13 09:46:31,289 | INFO : Epoch(val) [20][30]	aAcc: 0.9440, mDice: 0.8122, mAcc: 0.7526, Dice.background: 0.9695, Dice.person: 0.6549, Acc.background: 0.9943, Acc.person: 0.5108, current_iters: 260
+2022-10-13 09:46:31,291 | INFO : 
+Best Score: 0.8856999999999999, Current Score: 0.8122, Patience: 5 Count: 1
+2022-10-13 09:46:38,016 | INFO : Epoch [21][10/13]	lr: 1.000e-04, eta: 1:00:56, time: 0.672, data_time: 0.396, memory: 1005, current_iters: 269, decode.ce_with_ignore-0.weight: 1.0000, decode.ce_with_ignore-0.reg_weight: 0.0000, decode.ce_with_ignore-0.scale: 1.0000, decode.ce_with_ignore-0.raw_sparsity: 0.0000, decode.ce_with_ignore-0.weight_sparsity: 0.0000, decode.ce_with_ignore-0.invalid_ratio: 0.8982, decode.ce_with_ignore-0: 0.3066, decode.loss_seg: 0.3066, decode.acc_seg: 80.6706, loss: 0.3066, grad_norm: 2.3824
+2022-10-13 09:46:40,052 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/seg/ocr-lite-hrnet-s-mod2_voc_person_car_val_batch_1_3/results/stage00_SegTrainer-train
+2022-10-13 09:46:40,052 | INFO : Epoch [21][13/13]	lr: 1.000e-04, eta: 1:01:40, time: 0.659, data_time: 0.381, memory: 1005, current_iters: 272, decode.ce_with_ignore-0.weight: 1.0000, decode.ce_with_ignore-0.reg_weight: 0.0000, decode.ce_with_ignore-0.scale: 1.0000, decode.ce_with_ignore-0.raw_sparsity: 0.0000, decode.ce_with_ignore-0.weight_sparsity: 0.0000, decode.ce_with_ignore-0.invalid_ratio: 0.9127, decode.ce_with_ignore-0: 0.3112, decode.loss_seg: 0.3112, decode.acc_seg: 79.3664, loss: 0.3112, grad_norm: 2.4665
+2022-10-13 09:46:40,053 | INFO : Saving checkpoint at 21 epochs
+2022-10-13 09:46:42,174 | INFO : 
+Per class results:
+2022-10-13 09:46:42,175 | INFO : +------------+-------+-------+
+|   Class    |  Dice |  Acc  |
++------------+-------+-------+
+| background | 97.54 | 99.07 |
+|   person   | 75.09 | 64.93 |
++------------+-------+-------+
+2022-10-13 09:46:42,175 | INFO : 
+Summary:
+2022-10-13 09:46:42,175 | INFO : +-------+-------+------+
+|  aAcc | mDice | mAcc |
++-------+-------+------+
+| 95.52 | 86.32 | 82.0 |
++-------+-------+------+
+2022-10-13 09:46:42,176 | INFO : 
+Early Stopping at :20 with best mDice: 0.8856999999999999
+2022-10-13 09:46:42,176 | INFO : Exp name: /home/sungmanc/scripts/ote-master/training_extensions/logs/seg/ocr-lite-hrnet-s-mod2_voc_person_car_val_batch_1_3/results/stage00_SegTrainer-train
+2022-10-13 09:46:42,176 | INFO : Epoch(val) [21][30]	aAcc: 0.9552, mDice: 0.8632, mAcc: 0.8200, Dice.background: 0.9754, Dice.person: 0.7509, Acc.background: 0.9907, Acc.person: 0.6493, current_iters: 273
+2022-10-13 09:46:43,179 | INFO : run task done.
+2022-10-13 09:46:43,179 | INFO : Final model performance: Performance(score: 0.8856999999999999, dashboard: (23 metric groups))
+2022-10-13 09:46:43,180 | INFO : called save_model: /home/sungmanc/scripts/ote-master/training_extensions/logs/seg/ocr-lite-hrnet-s-mod2_voc_person_car_val_batch_1_3/results/stage00_SegTrainer-train/best_mDice_epoch_13.pth
+2022-10-13 09:46:43,299 | INFO : train done.
+2022-10-13 09:46:43,302 | INFO : infer()
+2022-10-13 09:46:43,302 | INFO : initializing....
+2022-10-13 09:46:43,302 | INFO : called _init_recipe()
+2022-10-13 09:46:43,302 | INFO : train type = Incremental
+2022-10-13 09:46:43,318 | INFO : initialized recipe = /home/sungmanc/scripts/ote-master/training_extensions/external/model-preparation-algorithm/submodule/recipes/stages/segmentation/class_incr.py
+2022-10-13 09:46:43,321 | INFO : initialized.
+2022-10-13 09:46:43,322 | INFO : running task... kwargs = {'dump_features': True}
+2022-10-13 09:46:43,322 | INFO : called build_recipe()
+2022-10-13 09:46:43,323 | INFO : seems to be passed stage yaml...
+2022-10-13 09:46:43,323 | INFO : build_stage()
+2022-10-13 09:46:43,324 | INFO : Training seed was set to 42 w/ deterministic=True.
+2022-10-13 09:46:43,325 | INFO : work dir = /home/sungmanc/scripts/ote-master/training_extensions/logs/seg/ocr-lite-hrnet-s-mod2_voc_person_car_val_batch_1_3/results/stage00_SegInferrer-train
+2022-10-13 09:46:43,325 | INFO : CUDA_VISIBLE_DEVICES = 0

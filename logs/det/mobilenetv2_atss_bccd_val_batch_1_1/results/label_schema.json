@@ -1,0 +1,67 @@
+{
+    "label_tree": {
+        "type": "tree",
+        "directed": true,
+        "nodes": [],
+        "edges": []
+    },
+    "label_groups": [
+        {
+            "_id": "634652021742d31c1ee0ffe1",
+            "name": "from_label_list",
+            "label_ids": [
+                "1",
+                "2",
+                "3"
+            ],
+            "relation_type": "EXCLUSIVE"
+        }
+    ],
+    "all_labels": {
+        "1": {
+            "_id": "1",
+            "name": "Platelets",
+            "color": {
+                "red": 231,
+                "green": 6,
+                "blue": 188,
+                "alpha": 255
+            },
+            "hotkey": "a",
+            "domain": "DETECTION",
+            "creation_date": "2022-10-12T05:34:58.514000",
+            "is_empty": false,
+            "is_anomalous": false
+        },
+        "2": {
+            "_id": "2",
+            "name": "RBC",
+            "color": {
+                "red": 154,
+                "green": 229,
+                "blue": 106,
+                "alpha": 255
+            },
+            "hotkey": "a",
+            "domain": "DETECTION",
+            "creation_date": "2022-10-12T05:34:58.514000",
+            "is_empty": false,
+            "is_anomalous": false
+        },
+        "3": {
+            "_id": "3",
+            "name": "WBC",
+            "color": {
+                "red": 16,
+                "green": 148,
+                "blue": 33,
+                "alpha": 255
+            },
+            "hotkey": "a",
+            "domain": "DETECTION",
+            "creation_date": "2022-10-12T05:34:58.514000",
+            "is_empty": false,
+            "is_anomalous": false
+        }
+    }
+}
