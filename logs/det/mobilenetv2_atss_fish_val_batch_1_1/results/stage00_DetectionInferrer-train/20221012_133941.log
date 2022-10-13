@@ -1,0 +1,12 @@
+2022-10-12 13:39:41,037 | INFO : configured logger at /home/sungmanc/scripts/ote-master/training_extensions/logs/mobilenetv2_atss_fish_val_batch_1_1/results/stage00_DetectionInferrer-train with named 20221012_133941.log
+2022-10-12 13:39:41,037 | INFO : configure!: training=False
+2022-10-12 13:39:41,055 | INFO : configure_data()
+2022-10-12 13:39:41,056 | INFO : task config!!!!: training=False
+2022-10-12 13:39:41,074 | INFO : configure_hook() [{'type': 'LazyEarlyStoppingHook', 'start': 3, 'patience': 10, 'iteration_patience': 0, 'metric': 'mAP', 'interval': 1, 'priority': 75}, {'type': 'CancelInterfaceHook', 'init_callback': 'mpa_tasks.apis.task.OnHookInitialized'}, {'type': 'OTEProgressHook', 'time_monitor': <detection_tasks.apis.detection.ote_utils.InferenceProgressCallback object at 0x7f9988241880>, 'verbose': True, 'priority': 71}, {'type': 'LoggerReplaceHook'}, {'type': 'TaskAdaptHook', 'src_classes': ['fish'], 'dst_classes': ['fish'], 'model_type': 'CustomATSS', 'sampler_flag': False, 'efficient_mode': False}, {'type': 'EMAHook', 'priority': 'ABOVE_NORMAL', 'resume_from': None, 'momentum': 0.1}, {'type': 'AdaptiveTrainSchedulingHook', 'max_interval': 5}] <- {}
+2022-10-12 13:39:41,169 | INFO : ----------------- CustomATSS.load_state_dict_pre_hook() called w/ prefix: 
+2022-10-12 13:39:41,169 | INFO : ['fish'] -> ['fish'] ([0])
+2022-10-12 13:39:45,751 | INFO : run task done.
+2022-10-12 13:39:46,015 | INFO : Inference completed
+2022-10-12 13:39:46,015 | INFO : called evaluate()
+2022-10-12 13:39:46,040 | INFO : F-measure after evaluation: 0.6451612903225805
+2022-10-12 13:39:46,040 | INFO : Evaluation completed
