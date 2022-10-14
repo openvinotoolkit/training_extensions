@@ -23,7 +23,7 @@ from mmcv.utils import ConfigDict
 from mpa.utils.logger import get_logger
 
 from otx.algorithms.common.adapters.mmcv.hooks import OTXLoggerHook
-from otx.algorithms.detection.utils.otx_utils import TrainingProgressCallback
+from otx.algorithms.detection.utils.utils import TrainingProgressCallback
 from otx.api.configuration import cfg_helper
 from otx.api.configuration.helper.utils import ids_to_strings
 from otx.api.entities.datasets import DatasetEntity
@@ -73,17 +73,13 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
             self._model_cfg
             and hasattr(self._model_cfg.model, "bbox_head")
             and hasattr(self._model_cfg.model.bbox_head, "anchor_generator")
+            and hasattr(self._model_cfg.model.bbox_head.anchor_generator, "reclustering_anchors")
         ):
-            if hasattr(
+            modelinfo["anchors"] = {}
+            self._update_anchors(
+                modelinfo["anchors"],
                 self._model_cfg.model.bbox_head.anchor_generator,
-                "reclustering_anchors",
-                False,
-            ):
-                modelinfo["anchors"] = {}
-                self._update_anchors(
-                    modelinfo["anchors"],
-                    self._model_cfg.model.bbox_head.anchor_generator,
-                )
+            )
 
         torch.save(modelinfo, buffer)
         output_model.set_data("weights.pth", buffer.getvalue())
@@ -158,13 +154,9 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
             self._model_cfg
             and hasattr(self._model_cfg.model, "bbox_head")
             and hasattr(self._model_cfg.model.bbox_head, "anchor_generator")
+            and hasattr(self._model_cfg.model.bbox_head.anchor_generator, "reclustering_anchors")
         ):
-            if hasattr(
-                self._model_cfg.model.bbox_head.anchor_generator,
-                "reclustering_anchors",
-                False,
-            ):
-                self._update_anchors(self._anchors, self._model_cfg.model.bbox_head.anchor_generator)
+            self._update_anchors(self._anchors, self._model_cfg.model.bbox_head.anchor_generator)
 
         # get prediction on validation set
         val_dataset = dataset.get_subset(Subset.VALIDATION)

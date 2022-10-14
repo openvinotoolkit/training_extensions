@@ -28,7 +28,7 @@ from mmdet.models.detectors import BaseDetector
 from mpa.utils.logger import get_logger
 
 from otx.algorithms.detection.configs.base import DetectionConfig
-from otx.algorithms.detection.utils.data_utils import (
+from otx.algorithms.detection.utils.data import (
     format_list_to_str,
     get_anchor_boxes,
     get_sizes_from_dataset_entity,

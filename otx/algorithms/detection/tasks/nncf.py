@@ -47,7 +47,7 @@ from otx.algorithms.detection.adapters.mmdet.utils.config_utils import (
     set_hyperparams,
 )
 from otx.algorithms.detection.configs.base import DetectionConfig
-from otx.algorithms.detection.utils.otx_utils import OptimizationProgressCallback
+from otx.algorithms.detection.utils.utils import OptimizationProgressCallback
 from otx.api.configuration import cfg_helper
 from otx.api.configuration.helper.utils import ids_to_strings
 from otx.api.entities.datasets import DatasetEntity

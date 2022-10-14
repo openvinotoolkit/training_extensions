@@ -24,13 +24,13 @@ from mpa import MPAConstants
 from mpa.utils.config_utils import MPAConfig
 from mpa.utils.logger import get_logger
 
-from otx.algorithms.common.configs.base import TrainType
-from otx.algorithms.common.tasks.base import BaseTask
+from otx.algorithms.common.configs.training_base import TrainType
+from otx.algorithms.common.tasks.training_base import BaseTask
 from otx.algorithms.detection.adapters.mmdet.utils.config_utils import (
     remove_from_config,
 )
 from otx.algorithms.detection.configs.base import DetectionConfig
-from otx.algorithms.detection.utils.otx_utils import InferenceProgressCallback
+from otx.algorithms.detection.utils.utils import InferenceProgressCallback
 from otx.api.entities.annotation import Annotation
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.id import ID
