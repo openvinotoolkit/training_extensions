@@ -3,12 +3,12 @@
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-from .pipelines import LoadImageFromOTEDataset
+from .pipelines import LoadImageFromOTXDataset
 from .cli_utils import ClassificationDatasetAdapter
 from .label_utils import generate_label_schema, get_multihead_class_info, get_task_class
 
 __all__ = [
-    "LoadImageFromOTEDataset",
+    "LoadImageFromOTXDataset",
     "ClassificationDatasetAdapter",
     "generate_label_schema",
     "get_multihead_class_info",

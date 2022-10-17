@@ -10,7 +10,7 @@ from mmcls.datasets.pipelines import Compose
 from mmcv.utils.registry import build_from_cfg
 from mpa.utils.logger import get_logger
 from otx.algorithms.common.utils.data_utils import get_cls_img_indices, get_old_new_img_indices
-from otx.algorithms.classification.utils import LoadImageFromOTEDataset
+from otx.algorithms.classification.utils import LoadImageFromOTXDataset
 from sklearn.metrics import confusion_matrix as sklearn_confusion_matrix
 
 logger = get_logger()
@@ -38,13 +38,13 @@ class MPAClsDataset(BaseDataset):
         if isinstance(pipeline, dict):
             self.pipeline = {}
             for k, v in pipeline.items():
-                _pipeline = [dict(type="LoadImageFromOTEDataset"), *v]
+                _pipeline = [dict(type="LoadImageFromOTXDataset"), *v]
                 _pipeline = [build_from_cfg(p, PIPELINES) for p in _pipeline]
                 self.pipeline[k] = Compose(_pipeline)
             self.num_pipes = len(pipeline)
         elif isinstance(pipeline, list):
             self.num_pipes = 1
-            _pipeline = [dict(type="LoadImageFromOTEDataset"), *pipeline]
+            _pipeline = [dict(type="LoadImageFromOTXDataset"), *pipeline]
             self.pipeline = Compose([build_from_cfg(p, PIPELINES) for p in _pipeline])
         self.load_annotations()
 

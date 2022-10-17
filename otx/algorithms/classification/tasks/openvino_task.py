@@ -90,7 +90,7 @@ class ClassificationOpenVINOInferencer(BaseInferencer):
         num_requests: int = 1,
     ):
         """
-        Inferencer implementation for OTEDetection using OpenVINO backend.
+        Inferencer implementation for OTXDetection using OpenVINO backend.
         :param model: Path to model to load, `.xml`, `.bin` or `.onnx` file.
         :param hparams: Hyper parameters that the model should use.
         :param num_requests: Maximum number of requests that the inferencer can make.
@@ -140,7 +140,7 @@ class ClassificationOpenVINOInferencer(BaseInferencer):
         return self.model.infer_sync(inputs)
 
 
-class OTEOpenVinoDataLoader(DataLoader):
+class OTXOpenVinoDataLoader(DataLoader):
     @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def __init__(self, dataset: DatasetEntity, inferencer: BaseInferencer):
         super().__init__(config=None)
@@ -253,7 +253,7 @@ class ClassificationOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTas
         if optimization_type is not OptimizationType.POT:
             raise ValueError("POT is the only supported optimization type for OpenVino models")
 
-        data_loader = OTEOpenVinoDataLoader(dataset, self.inferencer)
+        data_loader = OTXOpenVinoDataLoader(dataset, self.inferencer)
 
         with tempfile.TemporaryDirectory() as tempdir:
             xml_path = os.path.join(tempdir, "model.xml")
