@@ -27,7 +27,15 @@ from otx.api.configuration.elements import (ParameterGroup,
 from otx.api.configuration.configurable_parameters import ConfigurableParameters
 from otx.api.configuration.enums import ModelLifecycle, AutoHPOState
 
-from .parameters_enums import POTQuantizationPreset
+from otx.api.configuration import ConfigurableEnum
+
+
+class POTQuantizationPreset(ConfigurableEnum):
+    """
+    This Enum represents the quantization preset for post training optimization
+    """
+    PERFORMANCE = 'Performance'
+    MIXED = 'Mixed'
 
 @attrs
 class OTEClassificationParameters(ConfigurableParameters):

@@ -75,24 +75,6 @@ class StopCallback(IStopCallback):
         self.stop_flag = False
 
 
-class MetricsMonitor(IMetricsMonitor):
-    @check_input_parameters_type({"log_dir": DirectoryPathCheck})
-    def __init__(self, log_dir):
-        self.log_dir = log_dir
-        self.tb = None
-
-    @check_input_parameters_type()
-    def add_scalar(self, capture: str, value: float, timestamp: int):
-        if not self.tb:
-            self.tb = SummaryWriter(self.log_dir)
-        self.tb.add_scalar(capture, value, timestamp)
-
-    def close(self):
-        if self.tb:
-            self.tb.close()
-            self.tb = None
-
-
 class DefaultStopCallback(IStopCallback):
     def stop(self):
         pass
