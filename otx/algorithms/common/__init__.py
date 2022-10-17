@@ -1,4 +1,4 @@
-"""OTX Algorithms."""
+"""OTX Algorithms - Common."""
 
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
