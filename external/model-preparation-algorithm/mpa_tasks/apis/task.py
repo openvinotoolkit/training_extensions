@@ -21,7 +21,6 @@ from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.model import ModelEntity, ModelPrecision
 from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.serialization.label_mapper import LabelSchemaMapper
-import pathlib
 
 logger = get_logger()
 DEFAULT_META_KEYS = (
@@ -45,9 +44,7 @@ class BaseTask:
         self._model_name = task_environment.model_template.name
         self._task_type = task_environment.model_template.task_type
         self._labels = task_environment.get_labels(include_empty=False)
-        #self._output_path = tempfile.mkdtemp(prefix="MPA-task-")
-        self._output_path = os.path.abspath(task_environment.output_path)
-        pathlib.Path(self._output_path).mkdir(parents=True, exist_ok=True)
+        self._output_path = tempfile.mkdtemp(prefix="MPA-task-")
         logger.info(f"created output path at {self._output_path}")
         self.confidence_threshold = self._get_confidence_threshold(self._hyperparams)
         # Set default model attributes.
