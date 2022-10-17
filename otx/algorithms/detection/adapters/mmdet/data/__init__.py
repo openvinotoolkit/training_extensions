@@ -1,4 +1,4 @@
-"""Task Initialization of OTX Common Algorithms."""
+"""OTX Algorithms - Detection Dataset."""
 
 # Copyright (C) 2022 Intel Corporation
 #
@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .training_base import BaseTask
+from .dataset import MPADetDataset
+from .pipelines import LoadAnnotationFromOTXDataset, LoadImageFromOTXDataset
 
-__all__ = ["BaseTask"]
+__all__ = ["MPADetDataset", "LoadAnnotationFromOTXDataset", "LoadImageFromOTXDataset"]
