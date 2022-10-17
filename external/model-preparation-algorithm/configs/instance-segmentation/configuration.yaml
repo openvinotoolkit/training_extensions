@@ -433,7 +433,7 @@ tiling_parameters:
     affects_outcome_of: TRAINING
     default_value: 400
     min_value: 100
-    max_value: 9223372036854775807
+    max_value: 1024
     type: INTEGER
     editable: true
     ui_rules:
@@ -468,8 +468,8 @@ tiling_parameters:
     description: Max object per image
     affects_outcome_of: TRAINING
     default_value: 1500
-    min_value: 0
-    max_value: 9223372036854775807
+    min_value: 1
+    max_value: 10000
     type: INTEGER
     editable: true
     ui_rules:

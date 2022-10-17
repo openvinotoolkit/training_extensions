@@ -200,7 +200,7 @@ class OTEDetectionConfig(ConfigurableParameters):
             header="Tile Image Size",
             description="Tile Image Size",
             default_value=400,
-            min_value=100,
+            min_value=1024,
             max_value=maxsize,
             affects_outcome_of=ModelLifecycle.NONE
         )
@@ -218,8 +218,8 @@ class OTEDetectionConfig(ConfigurableParameters):
             header="Max object per image",
             description="Max object per image",
             default_value=1500,
-            min_value=0,
-            max_value=maxsize,
+            min_value=1,
+            max_value=10000,
             affects_outcome_of=ModelLifecycle.NONE
         )
 
