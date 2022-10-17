@@ -17,7 +17,7 @@
 # pylint: disable=invalid-name
 
 _base_ = [
-    "../../base/models/backbones/mobilenet_v2_w1.yaml",
+    "../../../../common/adapters/mmcv/configs/backbones/mobilenet_v2_w1.yaml",
     "../../base/models/single_stage_detector.py",
 ]
 

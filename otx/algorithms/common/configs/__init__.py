@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .base import BaseConfig, LearningRateSchedule, TrainType
 from .configuration_enums import POTQuantizationPreset
+from .training_base import BaseConfig, LearningRateSchedule, TrainType
 
 __all__ = ["BaseConfig", "TrainType", "LearningRateSchedule", "POTQuantizationPreset"]

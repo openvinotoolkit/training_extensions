@@ -1,0 +1,13 @@
+_base_: "./resnet18.yaml"
+
+model:
+  pretrained: torchvision://resnet50
+  backbone:
+    depth: 50
+    out_indices: !!python/tuple [0, 1, 2, 3]
+    frozen_stages: 1
+    norm_cfg:
+      type: BN
+      requires_grad: true
+    norm_eval: true
+    style: pytorch

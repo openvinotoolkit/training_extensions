@@ -116,8 +116,8 @@ class OTXLoggerHook(LoggerHook):
     @master_only
     @check_input_parameters_type()
     def log(self, runner: BaseRunner):
-        """Log function for OTELoggerHook."""
-        tags = self.get_loggable_tags(runner, allow_text=False, tags_to_skip=())
+        """Log function for OTXLoggerHook."""
+        tags = self.get_loggable_tags(runner, allow_text=False)
         if runner.max_epochs is not None:
             normalized_iter = self.get_iter(runner) / runner.max_iters * runner.max_epochs
         else:

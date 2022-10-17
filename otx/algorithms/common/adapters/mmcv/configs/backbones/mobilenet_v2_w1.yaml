@@ -1,0 +1,7 @@
+model:
+  backbone:
+    type: mobilenetv2_w1
+    out_indices: !!python/tuple [4, 5]
+    frozen_stages: -1
+    norm_eval: false
+    pretrained: true

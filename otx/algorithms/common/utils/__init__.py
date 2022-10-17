@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .data_utils import get_cls_img_indices, get_old_new_img_indices
+from .data import get_cls_img_indices, get_old_new_img_indices
 
 __all__ = [
     "get_cls_img_indices",

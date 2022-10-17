@@ -14,13 +14,13 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .data_utils import (
+from .data import (
     format_list_to_str,
     get_anchor_boxes,
     get_sizes_from_dataset_entity,
     load_dataset_items_coco_format,
 )
-from .otx_utils import (
+from .utils import (
     InferenceProgressCallback,
     OptimizationProgressCallback,
     TrainingProgressCallback,

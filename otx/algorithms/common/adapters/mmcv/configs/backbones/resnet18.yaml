@@ -1,0 +1,10 @@
+model:
+  pretrained: torchvision://resnet18
+  backbone:
+    type: ResNet
+    depth: 18
+    num_stages: 4
+    out_indices: !!python/tuple [3]
+    style: pytorch
+  # head:
+  #     in_channels: 512
