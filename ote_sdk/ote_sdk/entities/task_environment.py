@@ -33,14 +33,12 @@ class TaskEnvironment:
         model: Optional[ModelEntity],
         hyper_parameters: ConfigurableParameters,
         label_schema: LabelSchemaEntity,
-        output_path: str
     ):
 
         self.model_template = model_template
         self.model = model
         self.__hyper_parameters = hyper_parameters
         self.label_schema = label_schema
-        self.output_path = output_path
 
     def __repr__(self):
         return (
