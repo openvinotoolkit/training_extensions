@@ -29,8 +29,6 @@ hyper_parameters:
       batch_size:
         default_value: 32
         auto_hpo_state: POSSIBLE
-      num_workers:
-        default_value: 4
       learning_rate:
         default_value: 0.016
         auto_hpo_state: POSSIBLE
