@@ -433,7 +433,7 @@ tiling_parameters:
     affects_outcome_of: TRAINING
     default_value: 400
     min_value: 100
-    max_value: 9223372036854775807
+    max_value: 1024
     type: INTEGER
     editable: true
     ui_rules:
