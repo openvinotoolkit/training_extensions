@@ -66,8 +66,7 @@ from otx.algorithms.segmentation.utils import (
     TrainingProgressCallback,
     get_activation_map,
 )
-from otx.algorithms.common.adapters.mmcv import OTXLoggerHook, OTXProgressHook
-from otx.algorithms.segmentation.utils import LoadImageFromOTXDataset
+from otx.algorithms.common.adapters.mmcv import OTXLoggerHook
 
 logger = get_logger()
 

@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from .ote_utils import (
+from .utils import (
     get_task_class,
     load_template,
     get_activation_map,
@@ -11,13 +11,10 @@ from .ote_utils import (
     OptimizationProgressCallback
 )
 
-from .config_utils import remove_from_config
-from .data_utils import get_annotation_mmseg_format
-from .pipelines import LoadImageFromOTXDataset, LoadAnnotationFromOTXDataset
+from .config import remove_from_config
+from .data import get_annotation_mmseg_format
 
 __all__ = [
-    "LoadImageFromOTXDataset",
-    "LoadAnnotationFromOTXDataset",
     'get_task_class',
     'load_template',
     'get_activation_map',
