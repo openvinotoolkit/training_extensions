@@ -53,10 +53,10 @@ from scripts.default_config import (get_default_config, imagedata_kwargs,
                                     merge_from_files_with_base, model_kwargs)
 from torchreid.apis.export import export_ir, export_onnx
 from otx.algorithms.classification.adapters.dor.utils.monitors import DefaultMetricsMonitor, StopCallback
-from otx.algorithms.classification.adapters.dor.utils.parameters import OTEClassificationParameters
+from otx.algorithms.classification.adapters.dor.utils.parameters import OTXClassificationParameters
 from otx.algorithms.classification.adapters.dor.utils.utils import (active_score_from_probs, force_fp32, get_multiclass_predictions,
                                    get_multilabel_predictions, InferenceProgressCallback,
-                                   OTEClassificationDataset, sigmoid_numpy, softmax_numpy,
+                                   OTXClassificationDataset, sigmoid_numpy, softmax_numpy,
                                    get_multihead_class_info, get_hierarchical_predictions)
 from torchreid.metrics.classification import score_extraction
 from torchreid.utils import load_pretrained_weights
@@ -64,13 +64,13 @@ from torchreid.utils import load_pretrained_weights
 logger = logging.getLogger(__name__)
 
 
-class OTEClassificationInferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
+class OTXClassificationInferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
 
     task_environment: TaskEnvironment
 
     @check_input_parameters_type()
     def __init__(self, task_environment: TaskEnvironment):
-        logger.info("Loading OTEClassificationTask.")
+        logger.info("Loading OTXClassificationTask.")
         self._scratch_space = tempfile.mkdtemp(prefix="ote-cls-scratch-")
         logger.info(f"Scratch space created at {self._scratch_space}")
 
@@ -120,7 +120,7 @@ class OTEClassificationInferenceTask(IInferenceTask, IEvaluationTask, IExportTas
 
     @property
     def _hyperparams(self):
-        return self._task_environment.get_hyper_parameters(OTEClassificationParameters)
+        return self._task_environment.get_hyper_parameters(OTXClassificationParameters)
 
     def _load_model(self, model: ModelEntity, device: torch.device, pretrained_dict: Optional[Dict] = None):
         if model is not None:
@@ -217,7 +217,7 @@ class OTEClassificationInferenceTask(IInferenceTask, IEvaluationTask, IExportTas
         time_monitor = InferenceProgressCallback(math.ceil(len(dataset) / self._cfg.test.batch_size),
                                                  update_progress_callback)
 
-        data = OTEClassificationDataset(dataset, self._labels, self._multilabel,
+        data = OTXClassificationDataset(dataset, self._labels, self._multilabel,
                                         self._hierarchical, self._multihead_class_info,
                                         keep_empty_label=self._empty_label in self._labels)
         self._cfg.custom_datasets.roots = [data, data]
@@ -358,7 +358,7 @@ class OTEClassificationInferenceTask(IInferenceTask, IEvaluationTask, IExportTas
         Save model
         """
         buffer = io.BytesIO()
-        hyperparams = self._task_environment.get_hyper_parameters(OTEClassificationParameters)
+        hyperparams = self._task_environment.get_hyper_parameters(OTXClassificationParameters)
         hyperparams_str = ids_to_strings(cfg_helper.convert(hyperparams, dict, enum_to_str=True))
         modelinfo = {
             'model': self._model.state_dict(),

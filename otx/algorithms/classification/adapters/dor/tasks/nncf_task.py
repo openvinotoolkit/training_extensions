@@ -40,23 +40,23 @@ from torchreid.apis.training import run_training
 from torchreid.integration.nncf.compression import check_nncf_is_enabled, is_nncf_state, wrap_nncf_model
 from torchreid.integration.nncf.compression_script_utils import (calculate_lr_for_nncf_training,
                                                                  patch_config)
-from otx.algorithms.classification.adapters.dor.tasks.inference_task import OTEClassificationInferenceTask
+from otx.algorithms.classification.adapters.dor.tasks.inference_task import OTXClassificationInferenceTask
 from otx.algorithms.classification.adapters.dor.utils.monitors import DefaultMetricsMonitor
-from otx.algorithms.classification.adapters.dor.utils.utils import OTEClassificationDataset, OptimizationProgressCallback
+from otx.algorithms.classification.adapters.dor.utils.utils import OTXClassificationDataset, OptimizationProgressCallback
 from torchreid.ops import DataParallel
 from torchreid.utils import set_random_seed, set_model_attr
 
 logger = logging.getLogger(__name__)
 
 
-class OTEClassificationNNCFTask(OTEClassificationInferenceTask, IOptimizationTask):
+class OTXClassificationNNCFTask(OTXClassificationInferenceTask, IOptimizationTask):
 
     @check_input_parameters_type()
     def __init__(self, task_environment: TaskEnvironment):
         """"
         Task for compressing classification models using NNCF.
         """
-        logger.info('Loading OTEClassificationNNCFTask.')
+        logger.info('Loading OTXClassificationNNCFTask.')
         super().__init__(task_environment)
 
         check_nncf_is_enabled()
@@ -81,7 +81,7 @@ class OTEClassificationNNCFTask(OTEClassificationInferenceTask, IOptimizationTas
 
         # Set default model attributes.
         self._optimization_type = ModelOptimizationType.NNCF
-        logger.info('OTEClassificationNNCFTask initialization completed')
+        logger.info('OTXClassificationNNCFTask initialization completed')
         set_model_attr(self._model, 'mix_precision', self._cfg.train.mix_precision)
 
     @property
@@ -200,10 +200,10 @@ class OTEClassificationNNCFTask(OTEClassificationInferenceTask, IOptimizationTas
 
         set_random_seed(self._cfg.train.seed)
         val_subset = dataset.get_subset(Subset.VALIDATION)
-        self._cfg.custom_datasets.roots = [OTEClassificationDataset(train_subset, self._labels, self._multilabel,
+        self._cfg.custom_datasets.roots = [OTXClassificationDataset(train_subset, self._labels, self._multilabel,
                                                                     self._hierarchical, self._multihead_class_info,
                                                                     keep_empty_label=self._empty_label in self._labels),
-                                           OTEClassificationDataset(val_subset, self._labels, self._multilabel,
+                                           OTXClassificationDataset(val_subset, self._labels, self._multilabel,
                                                                     self._hierarchical, self._multihead_class_info,
                                                                     keep_empty_label=self._empty_label in self._labels)]
         datamanager = torchreid.data.ImageDataManager(**imagedata_kwargs(self._cfg))

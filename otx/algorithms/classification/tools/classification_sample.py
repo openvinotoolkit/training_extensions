@@ -318,7 +318,7 @@ def main():
         )
 
         resultset = ResultSetEntity(
-            model=output_model,
+            model=exported_model,
             ground_truth_dataset=validation_dataset,
             prediction_dataset=predicted_validation_dataset,
         )

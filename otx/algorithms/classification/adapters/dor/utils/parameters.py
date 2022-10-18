@@ -38,7 +38,7 @@ class POTQuantizationPreset(ConfigurableEnum):
     MIXED = 'Mixed'
 
 @attrs
-class OTEClassificationParameters(ConfigurableParameters):
+class OTXClassificationParameters(ConfigurableParameters):
     header = string_attribute("Configuration for an image classification task")
     description = header
 

@@ -105,7 +105,7 @@ def get_multihead_class_info(label_schema: LabelSchemaEntity):
     return mixed_cls_heads_info
 
 
-class OTEClassificationDataset:
+class OTXClassificationDataset:
     @check_input_parameters_type({"ote_dataset": DatasetParamTypeCheck})
     def __init__(self, ote_dataset: DatasetEntity, labels: List[LabelEntity], multilabel: bool = False,
                  hierarchical: bool = False, mixed_cls_heads_info: dict = {}, keep_empty_label: bool = False):
