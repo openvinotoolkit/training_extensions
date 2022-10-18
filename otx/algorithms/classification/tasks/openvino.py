@@ -68,12 +68,12 @@ try:
 except ImportError:
     import warnings
     warnings.warn("ModelAPI was not found.")
-from otx.algorithms.classification.configs.config import ClassificationConfig
+from otx.algorithms.classification.configs import ClassificationConfig
 from otx.algorithms.classification.utils import get_multihead_class_info
 
 from zipfile import ZipFile
 
-from . import model_wrappers
+from otx.algorithms.classification.adapters.openvino import model_wrappers
 
 logger = logging.getLogger(__name__)
 

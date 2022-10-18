@@ -3,19 +3,13 @@
 #
 import mpa.cls as MPAClassification
 
-from .datasets import MPAClsDataset
-from .openvino_task import ClassificationOpenVINOTask
-from .task import (
-    ClassificationInferenceTask,
-    ClassificationNNCFTask,
-    ClassificationTrainTask,
-)
+from .openvino import ClassificationOpenVINOTask
+from .inference import ClassificationInferenceTask
+from .train import ClassificationTrainTask
 
 __all__ = [
     "MPAClassification",
-    "MPAClsDataset",
     "ClassificationOpenVINOTask",
     "ClassificationInferenceTask",
     "ClassificationTrainTask",
-    "ClassificationNNCFTask",
 ]

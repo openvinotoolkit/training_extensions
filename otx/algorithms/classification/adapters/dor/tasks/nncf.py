@@ -31,6 +31,8 @@ from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.entities.train_parameters import default_progress_callback
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType
 from otx.api.usecases.tasks.interfaces.optimization_interface import IOptimizationTask, OptimizationType
+from otx.api.entities.model_template import parse_model_template
+
 from otx.api.utils.argument_checks import (
     DatasetParamTypeCheck,
     check_input_parameters_type,
@@ -40,7 +42,7 @@ from torchreid.apis.training import run_training
 from torchreid.integration.nncf.compression import check_nncf_is_enabled, is_nncf_state, wrap_nncf_model
 from torchreid.integration.nncf.compression_script_utils import (calculate_lr_for_nncf_training,
                                                                  patch_config)
-from otx.algorithms.classification.adapters.dor.tasks.inference_task import OTXClassificationInferenceTask
+from otx.algorithms.classification.adapters.dor.tasks.inference import OTXClassificationInferenceTask
 from otx.algorithms.classification.adapters.dor.utils.monitors import DefaultMetricsMonitor
 from otx.algorithms.classification.adapters.dor.utils.utils import OTXClassificationDataset, OptimizationProgressCallback
 from torchreid.ops import DataParallel
@@ -280,3 +282,21 @@ class OTXClassificationNNCFTask(OTXClassificationInferenceTask, IOptimizationTas
     def _load_model_data(model, data_name):
         buffer = io.BytesIO(model.get_data(data_name))
         return torch.load(buffer, map_location=torch.device('cpu'))
+
+
+class ClassificationNNCFTask(OTXClassificationNNCFTask):
+    @check_input_parameters_type()
+    def __init__(self, task_environment: TaskEnvironment):
+        """ "
+        Task for compressing classification models using NNCF.
+        """
+        curr_model_path = task_environment.model_template.model_template_path
+        base_model_path = os.path.join(
+            os.path.dirname(os.path.abspath(curr_model_path)),
+            task_environment.model_template.base_model_path,
+        )
+        if os.path.isfile(base_model_path):
+            logger.info(f"Base model for NNCF: {base_model_path}")
+            # Redirect to base model
+            task_environment.model_template = parse_model_template(base_model_path)
+        super().__init__(task_environment)

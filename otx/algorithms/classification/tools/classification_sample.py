@@ -49,6 +49,7 @@ args = parser.parse_args()
 
 
 def load_test_dataset(data_type):
+    from PIL import ImageDraw
     import PIL
     from otx.api.entities.annotation import (
         Annotation,
