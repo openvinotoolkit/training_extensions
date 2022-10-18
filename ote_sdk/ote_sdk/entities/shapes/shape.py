@@ -150,24 +150,5 @@ class Shape(ShapeEntity):
         polygon_shape = other._as_shapely_polygon()
         return polygon_roi.contains(polygon_shape.centroid)
 
-    def _validate_coordinates(self, x: float, y: float) -> bool:
-        """
-        Checks whether the values for a given x,y coordinate pair lie within the range of (0,1) that is expected for
-        the normalized coordinate system. Issues a warning if the coordinates are out of bounds.
-
-        :param x: x-coordinate to validate
-        :param y: y-coordinate to validate
-
-        :return: ``True`` if coordinates are within expected range, ``False`` otherwise
-        """
-        if not ((0.0 <= x <= 1.0) and (0.0 <= y <= 1.0)):
-            warnings.warn(
-                f"{type(self).__name__} coordinates (x={x}, y={y}) are out of bounds, a normalized "
-                f"coordinate system is assumed. All coordinates are expected to be in range (0,1).",
-                UserWarning,
-            )
-            return False
-        return True
-
     def __hash__(self):
         return hash(str(self))

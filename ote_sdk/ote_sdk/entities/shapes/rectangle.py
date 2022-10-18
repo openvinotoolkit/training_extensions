@@ -53,15 +53,6 @@ class Rectangle(Shape):
             modification_date=modification_date,
         )
 
-        is_valid = True
-        for (x, y) in [(x1, y1), (x2, y2)]:
-            is_valid = is_valid and self._validate_coordinates(x, y)
-        if not is_valid:
-            warnings.warn(
-                f"{type(self).__name__} coordinates are invalid : x1={x1}, y1={y1}, x2={x2}, y2={y2}",
-                UserWarning,
-            )
-
         self.x1 = x1
         self.y1 = y1
         self.x2 = x2
