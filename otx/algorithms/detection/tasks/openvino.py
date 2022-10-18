@@ -448,10 +448,14 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
         if optimization_parameters:
             optimization_parameters.update_progress(10, None)
 
-        engine_config = ADDict({
-            "device": "CPU",
-            'stat_requests_number': min(self.hparams.pot_parameters.stat_requests_number, multiprocessing.cpu_count())
-        })
+        engine_config = ADDict(
+            {
+                "device": "CPU",
+                "stat_requests_number": min(
+                    self.hparams.pot_parameters.stat_requests_number, multiprocessing.cpu_count()
+                ),
+            }
+        )
 
         stat_subset_size = self.hparams.pot_parameters.stat_subset_size
         preset = self.hparams.pot_parameters.preset.name.lower()
