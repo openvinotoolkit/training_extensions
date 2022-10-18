@@ -108,19 +108,11 @@ echo torch=="${TORCH_VERSION}" >> "${CONSTRAINTS_FILE}"
 echo torchvision=="${TORCHVISION_VERSION}" >> "${CONSTRAINTS_FILE}"
 pip install torch=="${TORCH_VERSION}" torchvision=="${TORCHVISION_VERSION}" -f https://download.pytorch.org/whl/lts/1.8/torch_lts.html || exit 1
 
-# Install mmcv
-pip install --no-cache-dir mmcv-full==${MMCV_VERSION} || exit 1
-sed -i "s/force=False/force=True/g" "${venv_dir}"/lib/python"${PYTHON_VERSION}"/site-packages/mmcv/utils/registry.py  # Patch: remedy for MMCV registry collision from mmdet/mmseg
-
-pip install mmdet@git+https://github.com/openvinotoolkit/mmdetection@ote
-pip install mpa@git+https://github.com/openvinotoolkit/model_preparation_algorithm@otx
-
 # Install OTX
 pip install -e ../../../ || exit 1
 
-# Re-install mmpycocotools for numpy version update
-pip uninstall -y mmpycocotools
-pip install --no-cache-dir --no-binary=mmpycocotools mmpycocotools || exit 1
+# Install mmdetection & MPA for detection training
+pip install --no-cache-dir -r ../../../requirements/detection.txt
 
 # Build NNCF extensions
 echo "Build NNCF extensions ..."
