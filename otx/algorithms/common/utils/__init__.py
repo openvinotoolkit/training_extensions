@@ -1,3 +1,4 @@
+"""Collection of utils to run common OTX algorithms."""
 
 # Copyright (C) 2022 Intel Corporation
 #
@@ -13,8 +14,9 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .config import ClassificationConfig
+from .data import get_cls_img_indices, get_old_new_img_indices
 
 __all__ = [
-    ClassificationConfig
+    "get_cls_img_indices",
+    "get_old_new_img_indices",
 ]

@@ -1,3 +1,4 @@
+"""Task Initialization of OTX Common Algorithms."""
 
 # Copyright (C) 2022 Intel Corporation
 #
@@ -13,8 +14,6 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .config import ClassificationConfig
+from .training_base import BaseTask
 
-__all__ = [
-    ClassificationConfig
-]
+__all__ = ["BaseTask"]

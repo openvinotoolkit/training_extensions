@@ -1,3 +1,4 @@
+"""Configs Initialization of OTX Common Algorithms."""
 
 # Copyright (C) 2022 Intel Corporation
 #
@@ -13,8 +14,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .config import ClassificationConfig
+from .configuration_enums import POTQuantizationPreset
+from .training_base import BaseConfig, LearningRateSchedule, TrainType
 
-__all__ = [
-    ClassificationConfig
-]
+__all__ = ["BaseConfig", "TrainType", "LearningRateSchedule", "POTQuantizationPreset"]

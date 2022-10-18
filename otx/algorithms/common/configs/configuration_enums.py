@@ -1,5 +1,6 @@
+"""Quantization preset Enums for post training optimization."""
 
-# Copyright (C) 2022 Intel Corporation
+# Copyright (C) 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,8 +14,11 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .config import ClassificationConfig
+from otx.api.configuration import ConfigurableEnum
 
-__all__ = [
-    ClassificationConfig
-]
+
+class POTQuantizationPreset(ConfigurableEnum):
+    """This Enum represents the quantization preset for post training optimization."""
+
+    PERFORMANCE = "Performance"
+    MIXED = "Mixed"

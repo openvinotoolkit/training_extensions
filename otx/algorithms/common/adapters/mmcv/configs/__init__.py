@@ -1,5 +1,6 @@
+"""MMCV model configs for OTX Common Algorithms."""
 
-# Copyright (C) 2022 Intel Corporation
+# Copyright (C) 2021-2022 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,9 +13,3 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions
 # and limitations under the License.
-
-from .config import ClassificationConfig
-
-__all__ = [
-    ClassificationConfig
-]
