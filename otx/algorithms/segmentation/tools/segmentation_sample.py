@@ -166,7 +166,7 @@ def main(args):
 
     logger.info("Set hyperparameters")
     params = create(model_template.hyper_parameters.data)
-    params.learning_parameters.num_iters = 10
+    params.learning_parameters.num_iters = 5
     params.learning_parameters.batch_size = 8
 
     logger.info("Setup environment")
@@ -199,7 +199,7 @@ def main(args):
 
     logger.info("Set hyperparameters")
     params = create(model_template.hyper_parameters.data)
-    params.learning_parameters.num_iters = 10
+    params.learning_parameters.num_iters = 5
     params.learning_parameters.batch_size = 8
 
     logger.info("Setup environment")
@@ -258,7 +258,7 @@ def main(args):
             validation_dataset.with_empty_annotations(), InferenceParameters(is_evaluation=True)
         )
         resultset = ResultSetEntity(
-            model=output_model,
+            model=exported_model,
             ground_truth_dataset=validation_dataset,
             prediction_dataset=predicted_validation_dataset,
         )
@@ -275,34 +275,6 @@ def main(args):
             OptimizationType.POT, dataset.get_subset(Subset.TRAINING), optimized_model, OptimizationParameters()
         )
 
-        # NNCF test
-        task_impl_path = model_template.entrypoints.nncf
-        nncf_task_cls = get_task_class(task_impl_path)
-
-        print('Create NNCF Task')
-        environment.model = output_model
-        task = nncf_task_cls(task_environment=environment)
-
-        logger.info("Get predictions on the validation set")
-        predicted_validation_dataset = openvino_task.infer(
-            validation_dataset.with_empty_annotations(), InferenceParameters(is_evaluation=True)
-        )
-        resultset = ResultSetEntity(
-            model=output_model,
-            ground_truth_dataset=validation_dataset,
-            prediction_dataset=predicted_validation_dataset,
-        )
-        logger.info("Estimate quality on validation set")
-        openvino_task.evaluate(resultset)
-        logger.info(str(resultset.performance))
-
-        print('Optimize model by NNCF')
-        optimized_model = ModelEntity(
-            dataset,
-            environment.get_model_configuration(),
-        )
-        task.optimize(OptimizationType.NNCF, dataset, optimized_model, None)
-
         logger.info("Get predictions on the validation set")
         predicted_validation_dataset = openvino_task.infer(
             validation_dataset.with_empty_annotations(), InferenceParameters(is_evaluation=True)
@@ -312,8 +284,68 @@ def main(args):
             ground_truth_dataset=validation_dataset,
             prediction_dataset=predicted_validation_dataset,
         )
-        logger.info("Estimate quality on validation set")
+        logger.info("Performance of optimized model:")
         openvino_task.evaluate(resultset)
+        logger.info(str(resultset.performance))
+    
+        # NNCF test
+        task_impl_path = model_template.entrypoints.nncf
+        nncf_task_cls = get_task_class(task_impl_path)
+
+        print('Create NNCF Task')
+        environment.model = output_model
+        nncf_task_impl_path = model_template.entrypoints.nncf
+        nncf_task_cls = get_task_class(nncf_task_impl_path)
+        nncf_task = nncf_task_cls(environment)
+
+        optimized_model = ModelEntity(
+            dataset,
+            configuration=environment.get_model_configuration(),
+        )
+        nncf_task.optimize(OptimizationType.NNCF, dataset, optimized_model)
+
+        logger.info("Inferring the optimised model on the validation set.")
+        predicted_validation_dataset = nncf_task.infer(
+            validation_dataset.with_empty_annotations(),
+            InferenceParameters(is_evaluation=True),
+        )
+        resultset = ResultSetEntity(
+            model=optimized_model,
+            ground_truth_dataset=validation_dataset,
+            prediction_dataset=predicted_validation_dataset,
+        )
+
+        logger.info("Evaluating the optimized model on the validation set.")
+        nncf_task.evaluate(resultset)
+        logger.info(str(resultset.performance))
+
+        logger.info("Exporting the model.")
+        exported_model = ModelEntity(
+            train_dataset=dataset,
+            configuration=environment.get_model_configuration(),
+        )
+        nncf_task.export(ExportType.OPENVINO, exported_model)
+        environment.model = exported_model
+
+        logger.info("Creating the OpenVINO Task.")
+        environment.model = exported_model
+        openvino_task_impl_path = model_template.entrypoints.openvino
+        nncf_openvino_task_cls = get_task_class(openvino_task_impl_path)
+        nncf_openvino_task = nncf_openvino_task_cls(environment)
+
+        logger.info("Inferring the exported model on the validation set.")
+        predicted_validation_dataset = nncf_openvino_task.infer(
+            validation_dataset.with_empty_annotations(),
+            InferenceParameters(is_evaluation=True),
+        )
+
+        logger.info("Evaluating the exported model on the validation set.")
+        resultset = ResultSetEntity(
+            model=exported_model,
+            ground_truth_dataset=validation_dataset,
+            prediction_dataset=predicted_validation_dataset,
+        )
+        nncf_openvino_task.evaluate(resultset)
         logger.info(str(resultset.performance))
 
 

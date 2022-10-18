@@ -3,7 +3,6 @@
 #
 import mpa.seg as MPASegmentation
 
-from .datasets import MPASegIncrDataset
 from .openvino_task import OpenVINOSegmentationTask
 from .task import (
     SegmentationInferenceTask,
@@ -13,7 +12,6 @@ from .task import (
 
 __all__ = [
     "MPASegmentation",
-    "MPASegIncrDataset",
     "SegmentationInferenceTask",
     "SegmentationTrainTask",
     "SegmentationNNCFTask",

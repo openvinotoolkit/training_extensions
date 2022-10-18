@@ -64,7 +64,7 @@ from otx.algorithms.segmentation.configs import SegmentationConfig
 from openvino.model_zoo.model_api.models import Model
 from openvino.model_zoo.model_api.adapters import create_core, OpenvinoAdapter
 from otx.algorithms.segmentation.utils import get_activation_map
-from . import model_wrappers
+from otx.algorithms.segmentation.adapters.openvino import model_wrappers
 
 
 logger = logging.getLogger(__name__)
@@ -82,7 +82,7 @@ class OpenVINOSegmentationInferencer(BaseInferencer):
         num_requests: int = 1,
     ):
         """
-        Inferencer implementation for OTESegmentation using OpenVINO backend.
+        Inferencer implementation for OTXSegmentation using OpenVINO backend.
 
         :param hparams: Hyper parameters that the model should use.
         :param label_schema: LabelSchemaEntity that was used during model training.
@@ -116,7 +116,7 @@ class OpenVINOSegmentationInferencer(BaseInferencer):
         return self.model.infer_sync(inputs)
 
 
-class OTEOpenVinoDataLoader(DataLoader):
+class OTXOpenVinoDataLoader(DataLoader):
     @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def __init__(self, dataset: DatasetEntity, inferencer: BaseInferencer):
         self.dataset = dataset
@@ -252,7 +252,7 @@ class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask,
         if optimization_type is not OptimizationType.POT:
             raise ValueError("POT is the only supported optimization type for OpenVino models")
 
-        data_loader = OTEOpenVinoDataLoader(dataset, self.inferencer)
+        data_loader = OTXOpenVinoDataLoader(dataset, self.inferencer)
 
         with tempfile.TemporaryDirectory() as tempdir:
             xml_path = os.path.join(tempdir, "model.xml")

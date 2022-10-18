@@ -13,11 +13,11 @@ from .ote_utils import (
 
 from .config_utils import remove_from_config
 from .data_utils import get_annotation_mmseg_format
-from .pipelines import LoadImageFromOTEDataset, LoadAnnotationFromOTEDataset
+from .pipelines import LoadImageFromOTXDataset, LoadAnnotationFromOTXDataset
 
 __all__ = [
-    "LoadImageFromOTEDataset",
-    "LoadAnnotationFromOTEDataset",
+    "LoadImageFromOTXDataset",
+    "LoadAnnotationFromOTXDataset",
     'get_task_class',
     'load_template',
     'get_activation_map',

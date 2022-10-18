@@ -59,15 +59,15 @@ from otx.api.utils.segmentation_utils import (
     create_annotation_from_segmentation_map,
     create_hard_prediction_from_soft_prediction,
 )
-from segmentation_tasks.apis.segmentation import OTESegmentationNNCFTask
+from otx.algorithms.segmentation.adapters.mmseg.tasks.nncf_task import OTXSegmentationNNCFTask
 from otx.algorithms.segmentation.utils import remove_from_config
 from otx.algorithms.segmentation.utils import (
     InferenceProgressCallback,
     TrainingProgressCallback,
     get_activation_map,
 )
-from otx.algorithms.common.adapters.mmcv import OTELoggerHook, OTEProgressHook
-from otx.algorithms.segmentation.utils import LoadImageFromOTEDataset
+from otx.algorithms.common.adapters.mmcv import OTXLoggerHook, OTXProgressHook
+from otx.algorithms.segmentation.utils import LoadImageFromOTXDataset
 
 logger = get_logger()
 
@@ -125,7 +125,7 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         self.finalize()
 
     def export(self, export_type: ExportType, output_model: ModelEntity):
-        # copied from OTE inference_task.py
+        # copied from OTX inference_task.py
         logger.info("Exporting the model")
         if export_type != ExportType.OPENVINO:
             raise RuntimeError(f"not supported export type {export_type}")
@@ -202,8 +202,8 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
             logger.warning(f"train type {train_type} is not implemented yet.")
 
         self._recipe_cfg = MPAConfig.fromfile(recipe)
-        self._patch_datasets(self._recipe_cfg)  # for OTE compatibility
-        self._patch_evaluation(self._recipe_cfg)  # for OTE compatibility
+        self._patch_datasets(self._recipe_cfg)  # for OTX compatibility
+        self._patch_evaluation(self._recipe_cfg)  # for OTX compatibility
         self.metric = self._recipe_cfg.evaluation.metric
         if not self.freeze:
             remove_from_config(self._recipe_cfg, "params_config")
@@ -231,7 +231,7 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         return data_cfg
 
     def _add_predictions_to_dataset(self, prediction_results, dataset, dump_soft_prediction):
-        """Loop over dataset again to assign predictions. Convert from MMSegmentation format to OTE format."""
+        """Loop over dataset again to assign predictions. Convert from MMSegmentation format to OTX format."""
 
         for dataset_item, (prediction, feature_vector) in zip(dataset, prediction_results):
             soft_prediction = np.transpose(prediction[0], axes=(1, 2, 0))
@@ -270,7 +270,7 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
     @staticmethod
     def _patch_datasets(config: MPAConfig, domain=Domain.SEGMENTATION):
         def patch_color_conversion(pipeline):
-            # Default data format for OTE is RGB, while mmdet uses BGR, so negate the color conversion flag.
+            # Default data format for OTX is RGB, while mmdet uses BGR, so negate the color conversion flag.
             for pipeline_step in pipeline:
                 if pipeline_step.type == "Normalize":
                     to_rgb = False
@@ -300,9 +300,9 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
 
             for pipeline_step in cfg.pipeline:
                 if pipeline_step.type == "LoadImageFromFile":
-                    pipeline_step.type = "LoadImageFromOTEDataset"
+                    pipeline_step.type = "LoadImageFromOTXDataset"
                 elif pipeline_step.type == "LoadAnnotations":
-                    pipeline_step.type = "LoadAnnotationFromOTEDataset"
+                    pipeline_step.type = "LoadAnnotationFromOTXDataset"
                     pipeline_step.domain = domain
                 if subset == "train" and pipeline_step.type == "Collect":
                     pipeline_step = BaseTask._get_meta_keys(pipeline_step)
@@ -362,15 +362,15 @@ class SegmentationTrainTask(SegmentationInferenceTask, ITrainingTask):
             self._is_training = False
             return
 
-        # Set OTE LoggerHook & Time Monitor
+        # Set OTX LoggerHook & Time Monitor
         if train_parameters is not None:
             update_progress_callback = train_parameters.update_progress
         else:
             update_progress_callback = default_progress_callback
         self._time_monitor = TrainingProgressCallback(update_progress_callback)
-        self._learning_curves = defaultdict(OTELoggerHook.Curve)
+        self._learning_curves = defaultdict(OTXLoggerHook.Curve)
 
-        # learning_curves = defaultdict(OTELoggerHook.Curve)
+        # learning_curves = defaultdict(OTXLoggerHook.Curve)
         stage_module = "SegTrainer"
         self._data_cfg = self._init_train_data_cfg(dataset)
         self._is_training = True
@@ -453,7 +453,7 @@ class SegmentationTrainTask(SegmentationInferenceTask, ITrainingTask):
         return output, best_score
 
 
-class SegmentationNNCFTask(OTESegmentationNNCFTask):
+class SegmentationNNCFTask(OTXSegmentationNNCFTask):
     @check_input_parameters_type()
     def __init__(self, task_environment: TaskEnvironment):
         """ "
