@@ -208,7 +208,7 @@ class BaseConfig(ConfigurableParameters):
             description="Number of requests during statistics collection",
             default_value=0,
             min_value=0,
-            max_value=maxsize
+            max_value=maxsize,
         )
 
     @attrs

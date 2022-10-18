@@ -281,14 +281,10 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         warmup_iters = int(self._hyperparams.learning_parameters.learning_rate_warmup_iters)
         if self._multilabel:
             # hack to use 1cycle policy
-            lr_config = (
-                ConfigDict(max_lr=self._hyperparams.learning_parameters.learning_rate, warmup=None)
-            )
+            lr_config = ConfigDict(max_lr=self._hyperparams.learning_parameters.learning_rate, warmup=None)
         else:
             lr_config = (
-                ConfigDict(warmup_iters=warmup_iters)
-                if warmup_iters > 0
-                else ConfigDict(warmup_iters=0, warmup=None)
+                ConfigDict(warmup_iters=warmup_iters) if warmup_iters > 0 else ConfigDict(warmup_iters=0, warmup=None)
             )
 
         if self._hyperparams.learning_parameters.enable_early_stopping:
