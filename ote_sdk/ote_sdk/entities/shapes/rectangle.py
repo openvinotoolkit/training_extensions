@@ -85,12 +85,12 @@ class Rectangle(Shape):
 
     def clip_to_visible_region(self) -> "Rectangle":
         """
-        Clip the rectangle to the [0, 1] visible region of an image.
+        Clip the rectangle to the visible region of an image.
         """
-        x1 = min(max(0.0, self.x1), 1.0)
-        y1 = min(max(0.0, self.y1), 1.0)
-        x2 = min(max(0.0, self.x2), 1.0)
-        y2 = min(max(0.0, self.y2), 1.0)
+        x1 = min(max(0.0, self.x1), self.width)
+        y1 = min(max(0.0, self.y1), self.height)
+        x2 = min(max(0.0, self.x2), self.width)
+        y2 = min(max(0.0, self.y2), self.height)
 
         return Rectangle(
             x1=x1, y1=y1, x2=x2, y2=y2, modification_date=self.modification_date

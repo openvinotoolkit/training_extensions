@@ -297,13 +297,13 @@ class TestRectangle:
         Test passes if clip_to_visible_region method return correct value
 
         <b>Steps</b>
-        1. Check values returned by clip_to_visible_region method for 0<x1<x2, 0<y1<y2, x1<x2<1, y1<y2<1
-        2. Check values returned by clip_to_visible_region method for x1<0, y1<0, x2>1, y2>1
-        3. Check values returned by clip_to_visible_region method for x1=0, y1=0, x2=1, y2=1
+        1. Check values returned by clip_to_visible_region method for 0<x1<x2, 0<y1<y2, x1<x2<w, y1<y2<h
+        2. Check values returned by clip_to_visible_region method for x1<0, y1<0, x2>w, y2>h
+        3. Check values returned by clip_to_visible_region method for x1=0, y1=0, x2=w, y2=h
         4. Check ValueError exception raised if x1<0 and x1<x2<0: clipped Rectangle width will be equal 0
-        5. Check ValueError exception raised if 1<x1<x2 and x2>1: clipped Rectangle width will be equal 0
+        5. Check ValueError exception raised if w<x1<x2 and x2>w: clipped Rectangle width will be equal 0
         6. Check ValueError exception raised if y1<0 and y1<y2<0: clipped Rectangle height will be equal 0
-        7. Check ValueError exception raised if 1<y1<y2 and y2>1: clipped Rectangle height will be equal 0
+        7. Check ValueError exception raised if w<y1<y2 and y2>h: clipped Rectangle height will be equal 0
         """
         positive_scenarios = [
             {
