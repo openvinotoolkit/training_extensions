@@ -139,7 +139,7 @@ class OTELoggerHook(LoggerHook):
         runner._iter += 1
 
 
-# @HOOKS.register_module()
+@HOOKS.register_module()
 class OTEProgressHook(Hook):
     @check_input_parameters_type()
     def __init__(self, time_monitor: TimeMonitorCallback, verbose: bool = False):

@@ -21,7 +21,7 @@ from mmseg.datasets.builder import PIPELINES
 from ..datasets import get_annotation_mmseg_format
 
 
-# @PIPELINES.register_module()
+@PIPELINES.register_module()
 class LoadImageFromOTEDataset:
     """
     Pipeline element that loads an image from a OTE Dataset on the fly. Can do conversion to float 32 if needed.
