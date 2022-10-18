@@ -89,7 +89,7 @@ class BaseTask:
         model_classes = [label.name for label in self._model_label_schema]
         self._model_cfg["model_classes"] = model_classes
         if dataset is not None:
-            train_data_cfg = Stage.get_train_data_cfg(self._data_cfg)
+            train_data_cfg = Stage.get_data_cfg(self._data_cfg, "train")
             train_data_cfg["data_classes"] = data_classes
             new_classes = np.setdiff1d(data_classes, model_classes).tolist()
             train_data_cfg["new_classes"] = new_classes
@@ -162,10 +162,7 @@ class BaseTask:
         self._init_recipe()
 
         if not export:
-            recipe_hparams = self._init_recipe_hparam()
-            if len(recipe_hparams) > 0:
-                self._recipe_cfg.merge_from_dict(recipe_hparams)
-
+            self._overwrite_parameters()
         if "custom_hooks" in self.override_configs:
             override_custom_hooks = self.override_configs.pop("custom_hooks")
             for override_custom_hook in override_custom_hooks:
@@ -262,11 +259,46 @@ class BaseTask:
         """
         return None
 
-    def _init_recipe_hparam(self) -> dict:
+    def _overwrite_parameters(self):
+        """Overwrite mmX config parameters with TaskEnvironment hyperparameters.
+
+        Hyper Parameters defined in TaskEnvironment will overwrite the below mmX config parameters.
+
+        * lr_config.warmup_iters <- learning_parameters.learning_rate_warmup_iters
+        * optimizer.lr <- learning_parameters.learning_rate
+        * data.samples_per_gpu <- learning_parameters.batch_size
+        * data.workers_per_gpu <- learning_parameters.num_workers
+        * runner.max_epochs <- learning_parameters.num_iters
         """
-        initialize recipe hyperparamter as dict.
-        """
-        return dict()
+
+        warmup_iters = int(self._hyperparams.learning_parameters.learning_rate_warmup_iters)
+        lr_config = (
+            ConfigDict(warmup_iters=warmup_iters)
+            if warmup_iters > 0
+            else ConfigDict(warmup_iters=warmup_iters, warmup=None)
+        )
+
+        if self._hyperparams.learning_parameters.enable_early_stopping:
+            early_stop = ConfigDict(
+                start=int(self._hyperparams.learning_parameters.early_stop_start),
+                patience=int(self._hyperparams.learning_parameters.early_stop_patience),
+                iteration_patience=int(self._hyperparams.learning_parameters.early_stop_iteration_patience),
+            )
+        else:
+            early_stop = False
+
+        new_params = ConfigDict(
+            optimizer=ConfigDict(lr=self._hyperparams.learning_parameters.learning_rate),
+            lr_config=lr_config,
+            early_stop=early_stop,
+            data=ConfigDict(
+                samples_per_gpu=int(self._hyperparams.learning_parameters.batch_size),
+                workers_per_gpu=int(self._hyperparams.learning_parameters.num_workers),
+            ),
+            runner=ConfigDict(max_epochs=int(self._hyperparams.learning_parameters.num_iters)),
+        )
+
+        self._recipe_cfg.merge_from_dict(new_params)
 
     def _load_model_state_dict(self, model: ModelEntity):
         if "weights.pth" in model.model_adapters:
@@ -278,6 +310,15 @@ class BaseTask:
             self.confidence_threshold = model_data.get("confidence_threshold", self.confidence_threshold)
             if model_data.get("anchors"):
                 self._anchors = model_data["anchors"]
+
+            saved_config = model_data.get("config")
+            tiling_parameters = saved_config.get("tiling_parameters")
+            if tiling_parameters and tiling_parameters["enable_tiling"]["value"]:
+                logger.info("Load tiling parameters")
+                self._hyperparams.tiling_parameters.enable_tiling = tiling_parameters["enable_tiling"]["value"]
+                self._hyperparams.tiling_parameters.tile_size = tiling_parameters["tile_size"]["value"]
+                self._hyperparams.tiling_parameters.tile_overlap = tiling_parameters["tile_overlap"]["value"]
+                self._hyperparams.tiling_parameters.tile_max_number = tiling_parameters["tile_max_number"]["value"]
 
             return model_data.get("model", model_data.get("state_dict", None))
         else:

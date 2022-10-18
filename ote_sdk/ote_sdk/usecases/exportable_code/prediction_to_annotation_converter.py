@@ -19,7 +19,7 @@ from ote_sdk.entities.annotation import (
     AnnotationSceneKind,
 )
 from ote_sdk.entities.id import ID
-from ote_sdk.entities.label import Domain, LabelEntity
+from ote_sdk.entities.label import Domain
 from ote_sdk.entities.label_schema import LabelSchemaEntity
 from ote_sdk.entities.scored_label import ScoredLabel
 from ote_sdk.entities.shapes.polygon import Point, Polygon
@@ -54,11 +54,11 @@ class DetectionToAnnotationConverter(IPredictionToAnnotationConverter):
     Converts Object Detections to Annotations
     """
 
-    def __init__(self, labels: List[LabelEntity]):
-        self.label_map = dict(enumerate(labels))
+    def __init__(self, labels: LabelSchemaEntity):
+        self.label_map = dict(enumerate(labels.get_labels(include_empty=False)))
 
     def convert_to_annotation(
-        self, predictions: np.ndarray, metadata: Optional[Dict] = None
+        self, predictions: np.ndarray, metadata: Dict[str, Any]
     ) -> AnnotationSceneEntity:
         """
         Converts a set of predictions into an AnnotationScene object
@@ -78,7 +78,7 @@ class DetectionToAnnotationConverter(IPredictionToAnnotationConverter):
         :returns AnnotationScene: AnnotationScene Object containing the boxes
                                   obtained from the prediction
         """
-        annotations = self.__convert_to_annotations(predictions)
+        annotations = self.__convert_to_annotations(predictions, metadata)
         # media_identifier = ImageIdentifier(image_id=ID())
         annotation_scene = AnnotationSceneEntity(
             id=ID(),
@@ -90,7 +90,9 @@ class DetectionToAnnotationConverter(IPredictionToAnnotationConverter):
 
         return annotation_scene
 
-    def __convert_to_annotations(self, predictions: np.ndarray) -> List[Annotation]:
+    def __convert_to_annotations(
+        self, predictions: np.ndarray, metadata: Dict[str, Any]
+    ) -> List[Annotation]:
         """
         Converts a list of Detections to OTE SDK Annotation objects
 
@@ -103,14 +105,18 @@ class DetectionToAnnotationConverter(IPredictionToAnnotationConverter):
                             (n, 7) or (n, 6)
         """
         annotations = []
-        if predictions.shape[1:] < (6,) or predictions.shape[1:] > (7,):
+        if (
+            len(predictions)
+            and predictions.shape[1:] < (6,)
+            or predictions.shape[1:] > (7,)
+        ):
             raise ValueError(
                 f"Shape of prediction is not expected, expected (n, 7) or (n, 6) "
                 f"got {predictions.shape}"
             )
 
+        image_size = metadata["original_shape"][1::-1]
         for prediction in predictions:
-
             if prediction.shape == (7,):
                 # Some OpenVINO models use an output shape of [7,]
                 # If this is the case, skip the first value as it is not used
@@ -119,11 +125,10 @@ class DetectionToAnnotationConverter(IPredictionToAnnotationConverter):
             label = int(prediction[0])
             confidence = prediction[1]
             scored_label = ScoredLabel(self.label_map[label], confidence)
+            coords = prediction[2:] / np.tile(image_size, 2)
             annotations.append(
                 Annotation(
-                    Rectangle(
-                        prediction[2], prediction[3], prediction[4], prediction[5]
-                    ),
+                    Rectangle(coords[0], coords[1], coords[2], coords[3]),
                     labels=[scored_label],
                 )
             )

@@ -42,11 +42,13 @@ class OTEMaskRCNNModel(MaskRCNNModel):
         return output_match_dict
 
     def postprocess(self, outputs, meta):
+        resize_mask = meta.get('resize_mask', True)
+
         boxes = outputs[self.output_blob_name['boxes']] if self.is_segmentoly else \
             outputs[self.output_blob_name['boxes']][:, :4]
         scores = outputs[self.output_blob_name['scores']] if self.is_segmentoly else \
             outputs[self.output_blob_name['boxes']][:, 4]
-        masks= outputs[self.output_blob_name['masks']]
+        masks = outputs[self.output_blob_name['masks']]
         if self.is_segmentoly:
             classes = outputs[self.output_blob_name['labels']].astype(np.uint32)
         else:
@@ -63,13 +65,17 @@ class OTEMaskRCNNModel(MaskRCNNModel):
         scale_y = meta['resized_shape'][0] / meta['original_shape'][0]
         boxes[:, 0::2] /= scale_x
         boxes[:, 1::2] /= scale_y
-        
+
         resized_masks = []
         for box, cls, raw_mask in zip(boxes, classes, masks):
             raw_cls_mask = raw_mask[cls, ...] if self.is_segmentoly else raw_mask
-            resized_masks.append(self._segm_postprocess(box, raw_cls_mask, *meta['original_shape'][:-1]))
-        
+            if resize_mask:
+                resized_masks.append(self._segm_postprocess(box, raw_cls_mask, *meta['original_shape'][:-1]))
+            else:
+                resized_masks.append(raw_cls_mask)
+
         return scores, classes, boxes, resized_masks
+
 
 class OTESSDModel(SSD):
     """OpenVINO model wrapper for OTE SSD model"""
