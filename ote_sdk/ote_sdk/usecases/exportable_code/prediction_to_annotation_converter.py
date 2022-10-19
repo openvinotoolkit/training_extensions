@@ -387,9 +387,9 @@ class MaskToAnnotationConverter(IPredictionToAnnotationConverter):
             for contour, hierarchy in zip(contours, hierarchies[0]):
                 if hierarchy[3] != -1:
                     continue
-                contour = list(contour)
                 if len(contour) <= 2 or cv2.contourArea(contour) < 1.0:
                     continue
+                contour = list(contour)
                 points = [
                     Point(
                         x=point[0][0] / metadata["original_shape"][1],
