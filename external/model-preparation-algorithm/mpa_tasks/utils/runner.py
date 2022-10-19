@@ -24,7 +24,6 @@ class EpochRunnerWithCancel(EpochBasedRunner):
         self.should_stop = False
         _, world_size = get_dist_info()
         self.distributed = True if world_size > 1 else False
-        self.save_ema_model = False
 
     def stop(self) -> bool:
         """Returning a boolean to break the training loop
@@ -40,6 +39,52 @@ class EpochRunnerWithCancel(EpochBasedRunner):
         if broadcast_obj[0]:
             self._max_epochs = self.epoch
         return broadcast_obj[0]
+
+    @check_input_parameters_type()
+    def train(self, data_loader: DataLoader, **kwargs):
+        self.model.train()
+        self.mode = "train"
+        self.data_loader = data_loader
+        self._max_iters = self._max_epochs * len(self.data_loader)
+        self.call_hook("before_train_epoch")
+        # TODO: uncomment below line or resolve root cause of deadlock issue if multi-GPUs need to be supported.
+        # time.sleep(2)  # Prevent possible multi-gpu deadlock during epoch transition
+        for i, data_batch in enumerate(self.data_loader):
+            self._inner_iter = i
+            self.call_hook("before_train_iter")
+            self.run_iter(data_batch, train_mode=True, **kwargs)
+            self.call_hook("after_train_iter")
+            if self.stop():
+                break
+            self._iter += 1
+        self.call_hook("after_train_epoch")
+        self.stop()
+        self._epoch += 1
+
+
+@RUNNERS.register_module()
+class DetEpochRunnerWithCancel(EpochRunnerWithCancel):
+    """
+    Detection runner based on EpochRunnerWithCancel
+    """
+
+
+@RUNNERS.register_module()
+class SegEpochRunnerWithCancel(EpochRunnerWithCancel):
+    """
+    Detection runner based on EpochRunnerWithCancel
+    """
+
+
+@RUNNERS.register_module()
+class ClsEpochRunnerWithCancel(EpochRunnerWithCancel):
+    """
+    Classification runner based on EpochRunnerWithCancel
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.save_ema_model = False
 
     @check_input_parameters_type()
     def train(self, data_loader: DataLoader, **kwargs):

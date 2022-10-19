@@ -2,6 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from .runner import EpochRunnerWithCancel
+from .runner import ClsEpochRunnerWithCancel, DetEpochRunnerWithCancel, SegEpochRunnerWithCancel
 
-__all__ = [EpochRunnerWithCancel]
+__all__ = [ClsEpochRunnerWithCancel, DetEpochRunnerWithCancel, SegEpochRunnerWithCancel]
