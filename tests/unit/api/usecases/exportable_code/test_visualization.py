@@ -181,6 +181,7 @@ class TestVisualizer:
         <b>Expected results:</b>
         Test passes if no exception is occured
         """
+        self.annotation_scene()
         image = self.image
         visualizer = Visualizer(no_show=True)
         visualizer.show(image)

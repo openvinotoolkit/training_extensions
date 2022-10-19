@@ -26,7 +26,8 @@
       "fixed_iters": 0,
       "warmup": null,
       "warmup_iters": 0,
-      "step": [20]
+      "by_epoch": true,
+      "step": [90]
     },
     "nncf_config": {
       "compression": [
@@ -51,7 +52,7 @@
         "mode": "early_exit",
         "params": {
           "maximal_absolute_accuracy_degradation": 1.0,
-          "maximal_total_epochs": 40
+          "maximal_total_epochs": 180
         }
       }
     }

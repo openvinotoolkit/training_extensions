@@ -18,7 +18,7 @@ repos:
         files: '^ote_sdk/.*\.py'
       - id: isort
         alias: isort_rest
-        name: "isort - legacy (ote_cli|external)"
+        name: "isort (ote_cli|external)"
         files: '^(ote_cli|external/anomaly|external/model-preparation-algorithm)/.*\.py'
         exclude: "tests/"
 
@@ -45,17 +45,7 @@ repos:
     rev: "5.0.3"
     hooks:
       - id: flake8
-        args:
-          - "--max-line-length=120"
-          - "--max-complexity=20"
-          - "--exclude=.venv"
-          - "--ignore=E203,W503"
-        exclude: "data|external|ote_cli|ote_sdk|tests/ote_cli|.*/protobuf"
-
-      # NOTE: ote-sdk and ote-cli will be deprecated. The following config
-      # is to be removed.
-      - id: flake8
-        name: "flake8 - legacy "
+        name: "flake8"
         files: '^(ote_sdk|ote_cli|external/anomaly|external/model-preparation-algorithm)/.*\.py'
         args: ["--config", ".flake8", "--max-complexity", "20"]
         exclude: ".*/protobuf"
@@ -106,8 +96,8 @@ repos:
         files: '^ote_cli/.*\.py'
         additional_dependencies: [types-PyYAML]
       - id: mypy
-        alias: mypy_external
-        name: "mypy - legacy (external)"
+        alias: mypy_anomaly
+        name: "mypy (anomaly)"
         files: '^external/anomaly/.*\.py'
         additional_dependencies: [attrs==21.2.*, types-PyYAML]
         exclude: "^external/anomaly/tests"
