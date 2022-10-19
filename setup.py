@@ -71,7 +71,7 @@ def get_cuda_version() -> Optional[str]:
         cuda_version = str(output).split("release ")[-1][:4]
     except subprocess.CalledProcessError:
         # 2. Try with CUDA_HOME/version.txt
-        cuda_home_path=os.environ.get("CUDA_HOME", "/usr/local/cuda")
+        cuda_home_path = os.environ.get("CUDA_HOME", "/usr/local/cuda")
         cuda_version_file = os.path.join(cuda_home_path, "version.txt")
         if os.path.exists(cuda_version_file):
             f = open(cuda_version_file, "r")
@@ -241,7 +241,6 @@ def get_requirements(requirement_files: Union[str, List[str]]) -> List[str]:
                     requirements.append(package)
 
     return requirements
-
 
 
 REQUIRED_PACKAGES = get_requirements(requirement_files=["base", "dev", "openvino", "detection"])
