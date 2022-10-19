@@ -644,14 +644,17 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
         Args:
             dataset (ObjectDetectionDataset): OTX customized object detection dataset
         """
-        if bool(self._hyperparams.tiling_parameters.enable_adaptive_params):
+        tiling_parameters = self._hyperparams.tiling_parameters
+        if bool(tiling_parameters.enable_tiling) and bool(tiling_parameters.enable_adaptive_params):
+            # min_value and max_value are only accessible from model template
+            tplt_tile_params = self._task_environment.model_template.hyper_parameters.data.get("tiling_parameters")
             tile_cfg = adaptive_tile_params(dataset)
-            if tile_cfg.get("tile_size"):
-                self._hyperparams.tiling_parameters.tile_size = tile_cfg.get("tile_size")
-            if tile_cfg.get("tile_overlap"):
-                self._hyperparams.tiling_parameters.tile_overlap = tile_cfg.get("tile_overlap")
-            if tile_cfg.get("tile_max_number"):
-                self._hyperparams.tiling_parameters.tile_max_number = tile_cfg.get("tile_max_number")
+            for key in ("tile_size", "tile_overlap", "tile_max_number"):
+                if tile_cfg.get(key):
+                    min_value, max_value = tplt_tile_params[key]["min_value"], tplt_tile_params[key]["max_value"]
+                    value = min(tile_cfg.get(key), max_value)
+                    value = max(value, min_value)
+                    tiling_parameters.__setattr__(key, value)
 
 
 class DetectionNNCFTask(OTEDetectionNNCFTask):
