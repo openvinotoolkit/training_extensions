@@ -258,8 +258,7 @@ setup(
     install_requires=REQUIRED_PACKAGES,
     extras_require=EXTRAS_REQUIRE,
     dependency_links=[
-        "https://download.pytorch.org/whl/lts/1.8/torch_lts.html",  # For torch == 1.8
-        "https://download.pytorch.org/whl/torch_stable.html"  # For torch >= 1.9
+        "https://download.pytorch.org/whl/torch_stable.html"
     ],
     entry_points={
         "console_scripts": [
