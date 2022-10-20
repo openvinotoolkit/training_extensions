@@ -76,8 +76,10 @@ otx train <data.yaml> <task.yaml>
 
 <a name="#note2"><sup>2</sup></a>For more information on optimization types, refer to [OpenVINO Model Optimization Guide](https://docs.openvino.ai/latest/openvino_docs_model_optimization_guide.html).
 
-## `otx build` is all you need (recipe auto-configurator)
-One of unique characteristics of OTX features is recipe auto-configurator. Unlike other AI training toolkits, OTX provides an automated way of setting training-related stuffs by analyzing users' dataset. This includes task type, model architecture, learning method and hyper-parameters. Among them, hyper-parameters are tuned further by automatic hyper-parameter optimization module in later stages of training. Users can directly edit recipe.yaml file for customization. This auto-configurator also provides estimated times for training and inference so that users can review the configuration before triggering actual jobs.
+## `otx build` is all you need (task auto-configurator)
+One of unique features of OTX is task auto-configurator. Unlike other AI training toolkits, OTX provides an automated way of setting training-related stuffs by analyzing users' dataset. This includes task type, model architecture, learning method and hyper-parameters. Among them, hyper-parameters could be tuned further by automatic hyper-parameter optimization module in later stages of training. Users can directly edit task.yaml file for customization. This auto-configurator also provides estimated times for training and inference so that users can review the configuration before triggering actual jobs.
+
+**_NOTE:_** Not all task types can be autoconfigured correctly since the same data can be mapped to different tasks. For example, a dataset having no annotation can be mapped into either unsupervised representational learning or anomaly detection. In such cases, we will recommend one of them based on the task type popularity.
 
 <figure>
 <img src="docs/source/_images/autoconfig.png" width="800px">
