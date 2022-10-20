@@ -66,7 +66,11 @@ if TT_STABILITY_TESTS:
     templates = [default_template] * 100
     templates_ids = [template.model_template_id + f"-{i+1}" for i, template in enumerate(templates)]
 else:
-    templates = Registry("otx/algorithms/detection").filter(task_type="DETECTION").templates
+    default_template = parse_model_template(
+        os.path.join("otx/algorithms/detection/configs", "detection", "cspdarknet_yolox", "template.yaml")
+    )
+    templates = [default_template]
+    # templates = Registry("otx/algorithms/detection").filter(task_type="DETECTION").templates
     templates_ids = [template.model_template_id for template in templates]
 
 
