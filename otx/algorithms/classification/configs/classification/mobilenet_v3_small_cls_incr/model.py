@@ -1,3 +1,7 @@
-_base_ = [
-    "../../../../../../external/model-preparation-algorithm/submodule/models/classification/ote_mobilenet_v3_small.yaml",
-]
+
+_base_='../../base/models/mobilenet_v3.py'
+
+model=dict(
+    type='SAMImageClassifier',
+    task='classification',
+)

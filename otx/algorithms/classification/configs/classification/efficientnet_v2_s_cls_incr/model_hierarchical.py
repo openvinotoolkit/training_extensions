@@ -1,3 +1,17 @@
-_base_ = [
-    "../../../../../../external/model-preparation-algorithm/submodule/models/classification/ote_efficientnet_v2_s_hierarchical.yaml",
-]
+_base_='../../base/models/efficientnet_v2.py'
+
+model=dict(
+    type='SAMImageClassifier',
+    task='classification',
+    backbone=dict(
+        version='s_21k'
+    ),
+    head=dict(
+        type='CustomHierarchicalLinearClsHead',
+        multilabel_loss=dict(
+            type='AsymmetricLossWithIgnore',
+            gamma_pos=0.0,
+            gamma_neg=4.0,
+        )
+    )
+)

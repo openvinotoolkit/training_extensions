@@ -1,5 +1,18 @@
-_base_ = [
-    "../../../../../../external/model-preparation-algorithm/submodule/models/classification/ote_efficientnet_b0.yaml",
-]
+_base_ = "../../base/models/efficientnet.py"
+
+model=dict(
+    type='SAMImageClassifier',
+    task='classification',
+    backbone=dict(
+        version='b0',
+    ),
+    head=dict(
+        type='CustomLinearClsHead',
+        loss=dict(
+            type='CrossEntropyLoss',
+            loss_weight=1.0,
+        )
+    )
+)
 
 fp16 = dict(loss_scale=512.0)
