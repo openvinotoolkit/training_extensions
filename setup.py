@@ -74,7 +74,7 @@ def get_cuda_version() -> Optional[str]:
         cuda_home_path = os.environ.get("CUDA_HOME", "/usr/local/cuda")
         cuda_version_file = os.path.join(cuda_home_path, "version.txt")
         if os.path.exists(cuda_version_file):
-            f = open(cuda_version_file, "r")
+            f = open(cuda_version_file, "r", encoding="UTF-8")
             cuda_version = f.readline().strip().split()[-1]
         else:
             warnings.warn(f"CUDA is not installed on this {sys.platform} machine.")
@@ -231,7 +231,7 @@ def get_requirements(requirement_files: Union[str, List[str]]) -> List[str]:
 
     requirements: List[str] = []
     for requirement_file in requirement_files:
-        with open(f"requirements/{requirement_file}.txt", "r", encoding="utf8") as file:
+        with open(f"requirements/{requirement_file}.txt", "r", encoding="UTF-8") as file:
             for line in file:
                 package = line.strip()
                 if package and not package.startswith(("#", "-f")):

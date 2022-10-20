@@ -225,10 +225,16 @@ def otx_deploy_openvino_testing(template, root, otx_dir, args):
         ).returncode
         == 0
     )
-
     assert (
         run(
             ["python3", "-m", "pip", "install", "pip", "--upgrade"],
+            cwd=os.path.join(deployment_dir, "python"),
+        ).returncode
+        == 0
+    )
+    assert (
+        run(
+            ["python3", "-m", "pip", "install", "torch>=1.8.1, <=1.9.1"],
             cwd=os.path.join(deployment_dir, "python"),
         ).returncode
         == 0
@@ -247,7 +253,6 @@ def otx_deploy_openvino_testing(template, root, otx_dir, args):
         ).returncode
         == 0
     )
-
     assert (
         run(
             [
