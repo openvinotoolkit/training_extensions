@@ -112,11 +112,11 @@ pip install torch=="${TORCH_VERSION}" torchvision=="${TORCHVISION_VERSION}" -f h
 pip install --no-cache-dir mmcv-full==${MMCV_VERSION} || exit 1
 sed -i "s/force=False/force=True/g" "${venv_dir}"/lib/python"${PYTHON_VERSION}"/site-packages/mmcv/utils/registry.py  # Patch: remedy for MMCV registry collision from mmdet/mmseg
 
-#deep-object-reid and mpa
-pip install git+https://github.com/openvinotoolkit/deep-object-reid@ote
+# Install deep-object-reid and mpa
+pip install torchreid@git+https://github.com/openvinotoolkit/deep-object-reid@otx
 pip install mpa@git+https://github.com/openvinotoolkit/model_preparation_algorithm@otx
 
-#ote
+# Install ote
 pip install -e ../../../ || exit 1
 
 # Re-install mmpycocotools for numpy version update
