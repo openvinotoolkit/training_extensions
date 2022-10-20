@@ -46,9 +46,7 @@ def eval(task: BaseTask, model: ModelEntity, dataset: DatasetEntity) -> Performa
     result_dataset = task.infer(dataset.with_empty_annotations())
     end_time = time.time()
     print(f"{len(dataset)} analysed in {end_time - start_time} seconds")
-    result_set = ResultSetEntity(
-        model=model, ground_truth_dataset=dataset, prediction_dataset=result_dataset
-    )
+    result_set = ResultSetEntity(model=model, ground_truth_dataset=dataset, prediction_dataset=result_dataset)
     task.evaluate(result_set)
     assert result_set.performance is not None
     return result_set.performance
@@ -56,25 +54,19 @@ def eval(task: BaseTask, model: ModelEntity, dataset: DatasetEntity) -> Performa
 
 class TestDetectionTaskAPI:
     """
-    Collection of tests for OTE API and OTE Model Templates
+    Collection of tests for OTX API and OTX Model Templates
     """
 
     @e2e_pytest_api
     def test_reading_detection_cls_incr_model_template(self):
         detection_template = ["mobilenetv2_atss_cls_incr"]
         for model_template in detection_template:
-            parse_model_template(
-                osp.join("configs", "detection", model_template, "template.yaml")
-            )
+            parse_model_template(osp.join("configs", "detection", model_template, "template.yaml"))
 
-    def init_environment(
-        self, params, model_template, number_of_images=500, task_type=TaskType.DETECTION
-    ):
+    def init_environment(self, params, model_template, number_of_images=500, task_type=TaskType.DETECTION):
 
         labels_names = ("rectangle", "ellipse", "triangle")
-        labels_schema = generate_label_schema(
-            labels_names, task_type_to_label_domain(task_type)
-        )
+        labels_schema = generate_label_schema(labels_names, task_type_to_label_domain(task_type))
         labels_list = labels_schema.get_labels(False)
         environment = TaskEnvironment(
             model=None,
@@ -83,9 +75,7 @@ class TestDetectionTaskAPI:
             model_template=model_template,
         )
 
-        warnings.filterwarnings(
-            "ignore", message=".* coordinates .* are out of bounds.*"
-        )
+        warnings.filterwarnings("ignore", message=".* coordinates .* are out of bounds.*")
         items = []
         for i in range(0, number_of_images):
             image_numpy, annos = generate_random_annotated_image(
@@ -105,12 +95,8 @@ class TestDetectionTaskAPI:
                     anno.shape = ShapeFactory.shape_as_rectangle(anno.shape)
 
             image = Image(data=image_numpy)
-            annotation_scene = AnnotationSceneEntity(
-                kind=AnnotationSceneKind.ANNOTATION, annotations=annos
-            )
-            items.append(
-                DatasetItemEntity(media=image, annotation_scene=annotation_scene)
-            )
+            annotation_scene = AnnotationSceneEntity(kind=AnnotationSceneKind.ANNOTATION, annotations=annos)
+            items.append(DatasetItemEntity(media=image, annotation_scene=annotation_scene))
         warnings.resetwarnings()
 
         rng = random.Random()
@@ -156,19 +142,16 @@ class TestDetectionTaskAPI:
 
         This test should be finished in under one minute on a workstation.
         """
-        hyper_parameters, model_template = self.setup_configurable_parameters(
-            DEFAULT_DET_TEMPLATE_DIR, num_iters=500
-        )
-        detection_environment, dataset = self.init_environment(
-            hyper_parameters, model_template, 64
-        )
+        hyper_parameters, model_template = self.setup_configurable_parameters(DEFAULT_DET_TEMPLATE_DIR, num_iters=500)
+        detection_environment, dataset = self.init_environment(hyper_parameters, model_template, 64)
 
         detection_task = DetectionTrainTask(task_environment=detection_environment)
 
         executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="train_thread")
 
         output_model = ModelEntity(
-            dataset, detection_environment.get_model_configuration(),
+            dataset,
+            detection_environment.get_model_configuration(),
         )
 
         training_progress_curve = []
@@ -181,9 +164,7 @@ class TestDetectionTaskAPI:
 
         # Test stopping after some time
         start_time = time.time()
-        train_future = executor.submit(
-            detection_task.train, dataset, output_model, train_parameters
-        )
+        train_future = executor.submit(detection_task.train, dataset, output_model, train_parameters)
         # give train_thread some time to initialize the model
         while not detection_task._is_training:
             time.sleep(10)
@@ -200,18 +181,12 @@ class TestDetectionTaskAPI:
         detection_task.cancel_training()
 
         train_future.result()
-        assert (
-            time.time() - start_time < 25
-        )  # stopping process has to happen in less than 25 seconds
+        assert time.time() - start_time < 25  # stopping process has to happen in less than 25 seconds
 
     @e2e_pytest_api
     def test_training_progress_tracking(self):
-        hyper_parameters, model_template = self.setup_configurable_parameters(
-            DEFAULT_DET_TEMPLATE_DIR, num_iters=5
-        )
-        detection_environment, dataset = self.init_environment(
-            hyper_parameters, model_template, 50
-        )
+        hyper_parameters, model_template = self.setup_configurable_parameters(DEFAULT_DET_TEMPLATE_DIR, num_iters=5)
+        detection_environment, dataset = self.init_environment(hyper_parameters, model_template, 50)
 
         task = DetectionTrainTask(task_environment=detection_environment)
         print("Task initialized, model training starts.")
@@ -224,7 +199,8 @@ class TestDetectionTaskAPI:
         train_parameters = TrainParameters
         train_parameters.update_progress = progress_callback
         output_model = ModelEntity(
-            dataset, detection_environment.get_model_configuration(),
+            dataset,
+            detection_environment.get_model_configuration(),
         )
         task.train(dataset, output_model, train_parameters)
 
@@ -233,12 +209,8 @@ class TestDetectionTaskAPI:
 
     @e2e_pytest_api
     def test_inference_progress_tracking(self):
-        hyper_parameters, model_template = self.setup_configurable_parameters(
-            DEFAULT_DET_TEMPLATE_DIR, num_iters=10
-        )
-        detection_environment, dataset = self.init_environment(
-            hyper_parameters, model_template, 50
-        )
+        hyper_parameters, model_template = self.setup_configurable_parameters(DEFAULT_DET_TEMPLATE_DIR, num_iters=10)
+        detection_environment, dataset = self.init_environment(hyper_parameters, model_template, 50)
 
         task = DetectionInferenceTask(task_environment=detection_environment)
         print("Task initialized, model inference starts.")
@@ -258,12 +230,8 @@ class TestDetectionTaskAPI:
     @e2e_pytest_api
     def test_inference_task(self):
         # Prepare pretrained weights
-        hyper_parameters, model_template = self.setup_configurable_parameters(
-            DEFAULT_DET_TEMPLATE_DIR, num_iters=2
-        )
-        detection_environment, dataset = self.init_environment(
-            hyper_parameters, model_template, 50
-        )
+        hyper_parameters, model_template = self.setup_configurable_parameters(DEFAULT_DET_TEMPLATE_DIR, num_iters=2)
+        detection_environment, dataset = self.init_environment(hyper_parameters, model_template, 50)
         val_dataset = dataset.get_subset(Subset.VALIDATION)
 
         train_task = DetectionTrainTask(task_environment=detection_environment)
@@ -276,7 +244,8 @@ class TestDetectionTaskAPI:
         train_parameters = TrainParameters
         train_parameters.update_progress = progress_callback
         trained_model = ModelEntity(
-            dataset, detection_environment.get_model_configuration(),
+            dataset,
+            detection_environment.get_model_configuration(),
         )
         train_task.train(dataset, trained_model, train_parameters)
         performance_after_train = eval(train_task, trained_model, val_dataset)
@@ -290,7 +259,5 @@ class TestDetectionTaskAPI:
         assert performance_after_train == performance_after_load
 
         # Export
-        exported_model = ModelEntity(
-            dataset, detection_environment.get_model_configuration()
-        )
+        exported_model = ModelEntity(dataset, detection_environment.get_model_configuration())
         inference_task.export(ExportType.OPENVINO, exported_model)
