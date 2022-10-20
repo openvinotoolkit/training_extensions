@@ -264,6 +264,37 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
 
             update_progress_callback(int(i / dataset_size * 100))
 
+
+    def _init_recipe_hparam(self) -> dict:
+        warmup_iters = int(self._hyperparams.learning_parameters.learning_rate_warmup_iters)
+        if self._multilabel:
+            # hack to use 1cycle policy
+            lr_config = ConfigDict(max_lr=self._hyperparams.learning_parameters.learning_rate, warmup=None)
+        else:
+            lr_config = (
+                ConfigDict(warmup_iters=warmup_iters) if warmup_iters > 0 else ConfigDict(warmup_iters=0, warmup=None)
+            )
+
+        if self._hyperparams.learning_parameters.enable_early_stopping:
+            early_stop = ConfigDict(
+                start=int(self._hyperparams.learning_parameters.early_stop_start),
+                patience=int(self._hyperparams.learning_parameters.early_stop_patience),
+                iteration_patience=int(self._hyperparams.learning_parameters.early_stop_iteration_patience),
+            )
+        else:
+            early_stop = False
+
+        return ConfigDict(
+            optimizer=ConfigDict(lr=self._hyperparams.learning_parameters.learning_rate),
+            lr_config=lr_config,
+            early_stop=early_stop,
+            data=ConfigDict(
+                samples_per_gpu=int(self._hyperparams.learning_parameters.batch_size),
+                workers_per_gpu=int(self._hyperparams.learning_parameters.num_workers),
+            ),
+            runner=ConfigDict(max_epochs=int(self._hyperparams.learning_parameters.num_iters)),
+        )
+
     def _init_recipe(self):
         logger.info("called _init_recipe()")
 

@@ -49,7 +49,7 @@ class EpochRunnerWithCancel(EpochBasedRunner):
         self.should_stop = False
         _, world_size = get_dist_info()
         self.distributed = world_size > 1
-        self.data_loader = None
+        self.save_ema_model = False
 
     def stop(self) -> bool:
         """Returning a boolean to break the training loop.
