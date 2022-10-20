@@ -18,9 +18,4 @@
 from .cli import ClassificationDatasetAdapter
 from .label import generate_label_schema, get_multihead_class_info, get_task_class
 
-__all__ = [
-    "ClassificationDatasetAdapter",
-    "generate_label_schema",
-    "get_multihead_class_info",
-    "get_task_class"
-]
+__all__ = ["ClassificationDatasetAdapter", "generate_label_schema", "get_multihead_class_info", "get_task_class"]

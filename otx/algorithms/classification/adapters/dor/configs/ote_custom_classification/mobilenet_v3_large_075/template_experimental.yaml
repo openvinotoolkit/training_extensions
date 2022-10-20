@@ -5,8 +5,7 @@ task_type: CLASSIFICATION
 task_family: VISION
 instantiation: "CLASS"
 summary: Provides stable training and fast inference, but may be not as accurate as larger models, especially on large datasets.
-application:
-  ~
+application: ~
 
 # Algo backend.
 framework: OTEClassification v1.2.3

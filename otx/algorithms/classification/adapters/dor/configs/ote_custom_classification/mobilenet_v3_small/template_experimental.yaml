@@ -5,8 +5,7 @@ task_type: CLASSIFICATION
 task_family: VISION
 instantiation: "CLASS"
 summary: Custom Image Classification MobileNet-V3-small
-application:
-  ~
+application: ~
 
 # Algo backend.
 framework: OTEClassification v1.2.3

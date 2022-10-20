@@ -1,4 +1,3 @@
-
 # Copyright (C) 2022 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,8 +14,8 @@
 
 import mpa.cls as MPAClassification
 
-from .openvino import ClassificationOpenVINOTask
 from .inference import ClassificationInferenceTask
+from .openvino import ClassificationOpenVINOTask
 from .train import ClassificationTrainTask
 
 __all__ = [

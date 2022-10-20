@@ -16,11 +16,7 @@
 
 import abc
 
-from torch.utils.tensorboard import SummaryWriter
-from otx.api.utils.argument_checks import (
-    DirectoryPathCheck,
-    check_input_parameters_type,
-)
+from otx.api.utils.argument_checks import check_input_parameters_type
 
 
 class IMetricsMonitor(metaclass=abc.ABCMeta):
@@ -61,6 +57,7 @@ class IStopCallback(metaclass=abc.ABCMeta):
         Method resets the internal state of the object to permissive
         """
 
+
 class StopCallback(IStopCallback):
     def __init__(self):
         self.stop_flag = False
@@ -95,7 +92,9 @@ class DefaultMetricsMonitor(IMetricsMonitor):
         if capture in self.metrics_dict:
             self.metrics_dict[capture].append((timestamp, value))
         else:
-            self.metrics_dict[capture] = [(timestamp, value),]
+            self.metrics_dict[capture] = [
+                (timestamp, value),
+            ]
 
     def get_metric_keys(self):
         return self.metrics_dict.keys()

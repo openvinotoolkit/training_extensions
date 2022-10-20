@@ -15,19 +15,12 @@
 # pylint: disable=too-many-nested-blocks
 
 import importlib
-from os import path as osp
 from operator import itemgetter
-from typing import Iterable, List, Union
-
-import cv2 as cv
-import numpy as np
+from typing import List
 
 from otx.api.entities.label import Domain, LabelEntity
-from otx.api.entities.label_schema import (LabelGroup, LabelGroupType,
-                                           LabelSchemaEntity)
-from otx.api.utils.argument_checks import (
-    check_input_parameters_type,
-)
+from otx.api.entities.label_schema import LabelGroup, LabelGroupType, LabelSchemaEntity
+from otx.api.utils.argument_checks import check_input_parameters_type
 
 
 @check_input_parameters_type()
@@ -78,19 +71,19 @@ def get_multihead_class_info(label_schema: LabelSchemaEntity):
     label_to_idx = {lbl.name: i for i, lbl in enumerate(all_labels)}
 
     mixed_cls_heads_info = {
-                            'num_multiclass_heads': len(exclusive_groups),
-                            'num_multilabel_classes': len(single_label_groups),
-                            'head_idx_to_logits_range': head_idx_to_logits_range,
-                            'num_single_label_classes': num_single_label_classes,
-                            'class_to_group_idx': class_to_idx,
-                            'all_groups': exclusive_groups + single_label_groups,
-                            'label_to_idx': label_to_idx
-                            }
+        "num_multiclass_heads": len(exclusive_groups),
+        "num_multilabel_classes": len(single_label_groups),
+        "head_idx_to_logits_range": head_idx_to_logits_range,
+        "num_single_label_classes": num_single_label_classes,
+        "class_to_group_idx": class_to_idx,
+        "all_groups": exclusive_groups + single_label_groups,
+        "label_to_idx": label_to_idx,
+    }
     return mixed_cls_heads_info
 
 
 @check_input_parameters_type()
 def get_task_class(path: str):
-    module_name, class_name = path.rsplit('.', 1)
+    module_name, class_name = path.rsplit(".", 1)
     module = importlib.import_module(module_name)
     return getattr(module, class_name)

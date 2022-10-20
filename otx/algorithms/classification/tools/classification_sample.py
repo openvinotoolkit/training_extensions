@@ -9,6 +9,8 @@ import sys
 import numpy as np
 import torch
 from mmcv.utils import get_logger
+
+from otx.algorithms.classification.utils import get_task_class
 from otx.api.configuration.helper import create
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.inference_parameters import InferenceParameters
@@ -27,7 +29,6 @@ from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType
 from otx.api.usecases.tasks.interfaces.optimization_interface import OptimizationType
-from otx.algorithms.classification.utils import get_task_class
 
 seed = 5
 random.seed(seed)
@@ -49,8 +50,9 @@ args = parser.parse_args()
 
 
 def load_test_dataset(data_type):
-    from PIL import ImageDraw
     import PIL
+    from PIL import ImageDraw
+
     from otx.api.entities.annotation import (
         Annotation,
         AnnotationSceneEntity,
@@ -170,12 +172,8 @@ def load_test_dataset(data_type):
 def get_label_schema(labels, multilabel=False, hierarchical=False):
     label_schema = LabelSchemaEntity()
 
-    emptylabel = LabelEntity(
-        id=-1, name="Empty label", is_empty=True, domain=Domain.CLASSIFICATION
-    )
-    empty_group = LabelGroup(
-        name="empty", labels=[emptylabel], group_type=LabelGroupType.EMPTY_LABEL
-    )
+    emptylabel = LabelEntity(id=-1, name="Empty label", is_empty=True, domain=Domain.CLASSIFICATION)
+    empty_group = LabelGroup(name="empty", labels=[emptylabel], group_type=LabelGroupType.EMPTY_LABEL)
 
     if multilabel:
         for label in labels:
@@ -202,19 +200,21 @@ def get_label_schema(labels, multilabel=False, hierarchical=False):
 
     return label_schema
 
+
 def validate(task, validation_dataset, model):
-    print('Get predictions on the validation set')
+    print("Get predictions on the validation set")
     predicted_validation_dataset = task.infer(
-        validation_dataset.with_empty_annotations(),
-        InferenceParameters(is_evaluation=True))
+        validation_dataset.with_empty_annotations(), InferenceParameters(is_evaluation=True)
+    )
     resultset = ResultSetEntity(
         model=model,
         ground_truth_dataset=validation_dataset,
         prediction_dataset=predicted_validation_dataset,
     )
-    print('Estimate quality on validation set')
+    print("Estimate quality on validation set")
     task.evaluate(resultset)
     print(str(resultset.performance))
+
 
 def main():
     logger.info("Train initial model with OLD dataset")
@@ -344,13 +344,13 @@ def main():
         task_impl_path = model_template.entrypoints.nncf
         nncf_task_cls = get_task_class(task_impl_path)
 
-        print('Create NNCF Task')
+        print("Create NNCF Task")
         environment.model = output_model
         task = nncf_task_cls(task_environment=environment)
 
         validate(task, validation_dataset, output_model)
 
-        print('Optimize model by NNCF')
+        print("Optimize model by NNCF")
         optimized_model = ModelEntity(
             dataset,
             environment.get_model_configuration(),
@@ -358,6 +358,7 @@ def main():
         task.optimize(OptimizationType.NNCF, dataset, optimized_model, None)
 
         validate(task, validation_dataset, output_model)
+
 
 if __name__ == "__main__":
     sys.exit(main() or 0)

@@ -5,8 +5,7 @@ task_type: CLASSIFICATION
 task_family: VISION
 instantiation: "CLASS"
 summary: Custom Image Classification MobileNet-V3-large-1x
-application:
-  ~
+application: ~
 
 # Algo backend.
 framework: OTEClassification v1.2.3
@@ -46,7 +45,6 @@ hyper_parameters:
         default_value: true
       maximal_accuracy_degradation:
         default_value: 1.0
-
 
 # Training resources.
 max_nodes: 1

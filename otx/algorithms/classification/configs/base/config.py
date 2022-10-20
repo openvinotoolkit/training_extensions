@@ -3,8 +3,13 @@
 #
 
 from attr import attrs
+
 from otx.algorithms.common.configs import BaseConfig
-from otx.api.configuration.elements import add_parameter_group, string_attribute, boolean_attribute
+from otx.api.configuration.elements import (
+    add_parameter_group,
+    boolean_attribute,
+    string_attribute,
+)
 
 
 @attrs

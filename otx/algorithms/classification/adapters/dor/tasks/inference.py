@@ -21,16 +21,48 @@ import tempfile
 from typing import Dict, Optional
 
 import torch
-
 import torchreid
+from scripts.default_config import (
+    get_default_config,
+    imagedata_kwargs,
+    merge_from_files_with_base,
+    model_kwargs,
+)
+from torchreid.apis.export import export_ir, export_onnx
+from torchreid.metrics.classification import score_extraction
+from torchreid.utils import load_pretrained_weights
+
+from otx.algorithms.classification.adapters.dor.utils.monitors import (
+    DefaultMetricsMonitor,
+    StopCallback,
+)
+from otx.algorithms.classification.adapters.dor.utils.parameters import (
+    OTXClassificationParameters,
+)
+from otx.algorithms.classification.adapters.dor.utils.utils import (
+    InferenceProgressCallback,
+    OTXClassificationDataset,
+    active_score_from_probs,
+    force_fp32,
+    get_hierarchical_predictions,
+    get_multiclass_predictions,
+    get_multihead_class_info,
+    get_multilabel_predictions,
+    sigmoid_numpy,
+    softmax_numpy,
+)
 from otx.api.configuration import cfg_helper
 from otx.api.configuration.helper.utils import ids_to_strings
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.metadata import FloatMetadata, FloatType
-from otx.api.entities.model import (ModelEntity, ModelFormat, ModelOptimizationType,
-                                    ModelPrecision)
-from otx.api.entities.model import OptimizationMethod
+from otx.api.entities.model import (
+    ModelEntity,
+    ModelFormat,
+    ModelOptimizationType,
+    ModelPrecision,
+    OptimizationMethod,
+)
 from otx.api.entities.result_media import ResultMediaEntity
 from otx.api.entities.resultset import ResultSetEntity
 from otx.api.entities.scored_label import ScoredLabel
@@ -49,17 +81,6 @@ from otx.api.utils.argument_checks import (
 )
 from otx.api.utils.labels_utils import get_empty_label
 from otx.api.utils.vis_utils import get_actmap
-from scripts.default_config import (get_default_config, imagedata_kwargs,
-                                    merge_from_files_with_base, model_kwargs)
-from torchreid.apis.export import export_ir, export_onnx
-from otx.algorithms.classification.adapters.dor.utils.monitors import DefaultMetricsMonitor, StopCallback
-from otx.algorithms.classification.adapters.dor.utils.parameters import OTXClassificationParameters
-from otx.algorithms.classification.adapters.dor.utils.utils import (active_score_from_probs, force_fp32, get_multiclass_predictions,
-                                   get_multilabel_predictions, InferenceProgressCallback,
-                                   OTXClassificationDataset, sigmoid_numpy, softmax_numpy,
-                                   get_multihead_class_info, get_hierarchical_predictions)
-from torchreid.metrics.classification import score_extraction
-from torchreid.utils import load_pretrained_weights
 
 logger = logging.getLogger(__name__)
 
@@ -80,9 +101,9 @@ class OTXClassificationInferenceTask(IInferenceTask, IEvaluationTask, IExportTas
         else:
             self._labels = task_environment.get_labels(include_empty=False)
         self._empty_label = get_empty_label(task_environment.label_schema)
-        self._multilabel = len(task_environment.label_schema.get_groups(False)) > 1 and \
-                len(task_environment.label_schema.get_groups(False)) == \
-                len(task_environment.get_labels(include_empty=False))
+        self._multilabel = len(task_environment.label_schema.get_groups(False)) > 1 and len(
+            task_environment.label_schema.get_groups(False)
+        ) == len(task_environment.get_labels(include_empty=False))
 
         self._multihead_class_info = {}
         self._hierarchical = False
@@ -98,14 +119,20 @@ class OTXClassificationInferenceTask(IInferenceTask, IEvaluationTask, IExportTas
         self._patch_config(self._base_dir)
 
         if self._multilabel:
-            assert self._cfg.model.type == 'multilabel', task_environment.model_template.model_template_path + \
-                ' model template does not support multilabel classification'
+            assert self._cfg.model.type == "multilabel", (
+                task_environment.model_template.model_template_path
+                + " model template does not support multilabel classification"
+            )
         elif self._hierarchical:
-            assert self._cfg.model.type == 'multihead', task_environment.model_template.model_template_path + \
-                ' model template does not support hierarchical classification'
+            assert self._cfg.model.type == "multihead", (
+                task_environment.model_template.model_template_path
+                + " model template does not support hierarchical classification"
+            )
         else:
-            assert self._cfg.model.type == 'classification', task_environment.model_template.model_template_path + \
-                ' model template does not support multiclass classification'
+            assert self._cfg.model.type == "classification", (
+                task_environment.model_template.model_template_path
+                + " model template does not support multiclass classification"
+            )
 
         self.device = torch.device("cuda:0") if torch.cuda.device_count() else torch.device("cpu")
         self._model = self._load_model(task_environment.model, device=self.device)
@@ -127,7 +154,7 @@ class OTXClassificationInferenceTask(IInferenceTask, IEvaluationTask, IExportTas
             # If a model has been trained and saved for the task already, create empty model and load weights here
             if pretrained_dict is None:
                 buffer = io.BytesIO(model.get_data("weights.pth"))
-                model_data = torch.load(buffer, map_location=torch.device('cpu'))
+                model_data = torch.load(buffer, map_location=torch.device("cpu"))
             else:
                 model_data = pretrained_dict
 
@@ -137,8 +164,7 @@ class OTXClassificationInferenceTask(IInferenceTask, IEvaluationTask, IExportTas
                 load_pretrained_weights(model, pretrained_dict=model_data)
                 logger.info("Loaded model weights from Task Environment")
             except BaseException as ex:
-                raise ValueError("Could not load the saved model. The model file structure is invalid.") \
-                    from ex
+                raise ValueError("Could not load the saved model. The model file structure is invalid.") from ex
         else:
             # If there is no trained model yet, create model with pretrained weights as defined in the model config
             # file.
@@ -162,19 +188,19 @@ class OTXClassificationInferenceTask(IInferenceTask, IEvaluationTask, IExportTas
     def _patch_config(self, base_dir: str):
         self._cfg = get_default_config()
         if self._multilabel:
-            config_file_path = os.path.join(base_dir, 'main_model_multilabel.yaml')
+            config_file_path = os.path.join(base_dir, "main_model_multilabel.yaml")
         elif self._hierarchical:
-            config_file_path = os.path.join(base_dir, 'main_model_multihead.yaml')
+            config_file_path = os.path.join(base_dir, "main_model_multihead.yaml")
         else:
-            config_file_path = os.path.join(base_dir, 'main_model.yaml')
+            config_file_path = os.path.join(base_dir, "main_model.yaml")
         merge_from_files_with_base(self._cfg, config_file_path)
         self._cfg.use_gpu = torch.cuda.device_count() > 0
         self.num_devices = 1 if self._cfg.use_gpu else 0
         if not self._cfg.use_gpu:
             self._cfg.train.mix_precision = False
 
-        self._cfg.custom_datasets.types = ['external_classification_wrapper', 'external_classification_wrapper']
-        self._cfg.custom_datasets.roots = ['']*2
+        self._cfg.custom_datasets.types = ["external_classification_wrapper", "external_classification_wrapper"]
+        self._cfg.custom_datasets.roots = [""] * 2
         self._cfg.data.save_dir = self._scratch_space
 
         self._cfg.test.test_before_train = False
@@ -192,8 +218,9 @@ class OTXClassificationInferenceTask(IInferenceTask, IEvaluationTask, IExportTas
         self._cfg.train.early_stopping = self._hyperparams.learning_parameters.enable_early_stopping
 
     @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
-    def infer(self, dataset: DatasetEntity,
-              inference_parameters: Optional[InferenceParameters] = None) -> DatasetEntity:
+    def infer(
+        self, dataset: DatasetEntity, inference_parameters: Optional[InferenceParameters] = None
+    ) -> DatasetEntity:
         """
         Perform inference on the given dataset.
 
@@ -214,22 +241,31 @@ class OTXClassificationInferenceTask(IInferenceTask, IEvaluationTask, IExportTas
         self._cfg.test.batch_size = max(1, self._hyperparams.learning_parameters.batch_size // 2)
         self._cfg.data.workers = max(min(self._cfg.data.workers, len(dataset) - 1), 0)
 
-        time_monitor = InferenceProgressCallback(math.ceil(len(dataset) / self._cfg.test.batch_size),
-                                                 update_progress_callback)
+        time_monitor = InferenceProgressCallback(
+            math.ceil(len(dataset) / self._cfg.test.batch_size), update_progress_callback
+        )
 
-        data = OTXClassificationDataset(dataset, self._labels, self._multilabel,
-                                        self._hierarchical, self._multihead_class_info,
-                                        keep_empty_label=self._empty_label in self._labels)
+        data = OTXClassificationDataset(
+            dataset,
+            self._labels,
+            self._multilabel,
+            self._hierarchical,
+            self._multihead_class_info,
+            keep_empty_label=self._empty_label in self._labels,
+        )
         self._cfg.custom_datasets.roots = [data, data]
         datamanager = torchreid.data.ImageDataManager(**imagedata_kwargs(self._cfg))
         with force_fp32(self._model):
             self._model.eval()
             self._model.to(self.device)
             dump_features = not inference_parameters.is_evaluation
-            inference_results, _ = score_extraction(datamanager.test_loader,
-                                                    self._model, self._cfg.use_gpu,
-                                                    perf_monitor=time_monitor,
-                                                    feature_dump_mode='all' if dump_features else 'vecs')
+            inference_results, _ = score_extraction(
+                datamanager.test_loader,
+                self._model,
+                self._cfg.use_gpu,
+                perf_monitor=time_monitor,
+                feature_dump_mode="all" if dump_features else "vecs",
+            )
         if dump_features:
             scores, saliency_maps, feature_vecs = inference_results
         else:
@@ -244,36 +280,45 @@ class OTXClassificationInferenceTask(IInferenceTask, IEvaluationTask, IExportTas
             if self._multilabel:
                 item_labels = get_multilabel_predictions(scores[i], self._labels, activate=False)
             elif self._hierarchical:
-                item_labels = get_hierarchical_predictions(scores[i], self._labels, self._task_environment.label_schema,
-                                                           self._multihead_class_info, activate=True)
+                item_labels = get_hierarchical_predictions(
+                    scores[i],
+                    self._labels,
+                    self._task_environment.label_schema,
+                    self._multihead_class_info,
+                    activate=True,
+                )
             else:
                 scores[i] = softmax_numpy(scores[i])
                 item_labels = get_multiclass_predictions(scores[i], self._labels, activate=False)
 
             if not item_labels:
-                item_labels = [ScoredLabel(self._empty_label, probability=1.)]
+                item_labels = [ScoredLabel(self._empty_label, probability=1.0)]
 
             dataset_item.append_labels(item_labels)
             active_score = active_score_from_probs(scores[i])
-            active_score_media = FloatMetadata(name="active_score", value=active_score,
-                                               float_type=FloatType.ACTIVE_SCORE)
+            active_score_media = FloatMetadata(
+                name="active_score", value=active_score, float_type=FloatType.ACTIVE_SCORE
+            )
             dataset_item.append_metadata_item(active_score_media, model=self._task_environment.model)
             feature_vec_media = TensorEntity(name="representation_vector", numpy=feature_vecs[i].reshape(-1))
             dataset_item.append_metadata_item(feature_vec_media, model=self._task_environment.model)
 
             if dump_features:
                 actmap = get_actmap(saliency_maps[i], (dataset_item.width, dataset_item.height))
-                saliency_media = ResultMediaEntity(name="Saliency Map", type="saliency_map",
-                                                   annotation_scene=dataset_item.annotation_scene,
-                                                   numpy=actmap, roi=dataset_item.roi, label=item_labels[0].label)
+                saliency_media = ResultMediaEntity(
+                    name="Saliency Map",
+                    type="saliency_map",
+                    annotation_scene=dataset_item.annotation_scene,
+                    numpy=actmap,
+                    roi=dataset_item.roi,
+                    label=item_labels[0].label,
+                )
                 dataset_item.append_metadata_item(saliency_media, model=self._task_environment.model)
 
         return dataset
 
     @check_input_parameters_type()
-    def evaluate(
-        self, output_resultset: ResultSetEntity, evaluation_metric: Optional[str] = None
-    ):
+    def evaluate(self, output_resultset: ResultSetEntity, evaluation_metric: Optional[str] = None):
         performance = MetricsHelper.compute_accuracy(output_resultset).get_performance()
         logger.info(f"Computes performance of {performance}")
         output_resultset.performance = performance
@@ -289,21 +334,30 @@ class OTXClassificationInferenceTask(IInferenceTask, IEvaluationTask, IExportTas
             logger.info(f'Optimized model will be temporarily saved to "{optimized_model_dir}"')
             os.makedirs(optimized_model_dir, exist_ok=True)
             try:
-                onnx_model_path = os.path.join(optimized_model_dir, 'model.onnx')
+                onnx_model_path = os.path.join(optimized_model_dir, "model.onnx")
                 with force_fp32(self._model):
                     self._model.old_forward = self._model.forward
                     self._model.forward = lambda x: self._model.old_forward(x, return_all=True, apply_scale=True)
-                    export_onnx(self._model.eval(), self._cfg, onnx_model_path,
-                                opset=self._cfg.model.export_onnx_opset, output_names=[
-                                  'logits', 'saliency_map', 'feature_vector'])
+                    export_onnx(
+                        self._model.eval(),
+                        self._cfg,
+                        onnx_model_path,
+                        opset=self._cfg.model.export_onnx_opset,
+                        output_names=["logits", "saliency_map", "feature_vector"],
+                    )
                     self._model.forward = self._model.old_forward
                     del self._model.old_forward
                 pruning_transformation = OptimizationMethod.FILTER_PRUNING in self._optimization_methods
-                export_ir(onnx_model_path, self._cfg.data.norm_mean, self._cfg.data.norm_std,
-                          optimized_model_dir=optimized_model_dir, pruning_transformation=pruning_transformation)
+                export_ir(
+                    onnx_model_path,
+                    self._cfg.data.norm_mean,
+                    self._cfg.data.norm_std,
+                    optimized_model_dir=optimized_model_dir,
+                    pruning_transformation=pruning_transformation,
+                )
 
-                bin_file = [f for f in os.listdir(optimized_model_dir) if f.endswith('.bin')][0]
-                xml_file = [f for f in os.listdir(optimized_model_dir) if f.endswith('.xml')][0]
+                bin_file = [f for f in os.listdir(optimized_model_dir) if f.endswith(".bin")][0]
+                xml_file = [f for f in os.listdir(optimized_model_dir) if f.endswith(".xml")][0]
                 with open(os.path.join(optimized_model_dir, bin_file), "rb") as f:
                     output_model.set_data("openvino.bin", f.read())
                 with open(os.path.join(optimized_model_dir, xml_file), "rb") as f:
@@ -311,10 +365,10 @@ class OTXClassificationInferenceTask(IInferenceTask, IEvaluationTask, IExportTas
                 output_model.precision = self._precision
                 output_model.optimization_methods = self._optimization_methods
             except Exception as ex:
-                raise RuntimeError('Optimization was unsuccessful.') from ex
+                raise RuntimeError("Optimization was unsuccessful.") from ex
 
         output_model.set_data("label_schema.json", label_schema_to_bytes(self._task_environment.label_schema))
-        logger.info('Exporting completed.')
+        logger.info("Exporting completed.")
 
     @staticmethod
     def _is_docker():
@@ -322,12 +376,12 @@ class OTXClassificationInferenceTask(IInferenceTask, IEvaluationTask, IExportTas
         Checks whether the task runs in docker container
         :return bool: True if task runs in docker
         """
-        path = '/proc/self/cgroup'
+        path = "/proc/self/cgroup"
         is_in_docker = False
         if os.path.isfile(path):
             with open(path) as f:
-                is_in_docker = is_in_docker or any('docker' in line for line in f)
-        is_in_docker = is_in_docker or os.path.exists('/.dockerenv')
+                is_in_docker = is_in_docker or any("docker" in line for line in f)
+        is_in_docker = is_in_docker or os.path.exists("/.dockerenv")
         return is_in_docker
 
     def _delete_scratch_space(self):
@@ -343,15 +397,16 @@ class OTXClassificationInferenceTask(IInferenceTask, IEvaluationTask, IExportTas
         """
         self._delete_scratch_space()
         if self._is_docker():
-            logger.warning(
-                "Got unload request. Unloading models. Throwing Segmentation Fault on purpose")
+            logger.warning("Got unload request. Unloading models. Throwing Segmentation Fault on purpose")
             import ctypes
+
             ctypes.string_at(0)
         else:
             logger.warning("Got unload request, but not on Docker. Only clearing CUDA cache")
             torch.cuda.empty_cache()
-            logger.warning(f"Done unloading. "
-                           f"Torch is still occupying {torch.cuda.memory_allocated()} bytes of GPU memory")
+            logger.warning(
+                f"Done unloading. " f"Torch is still occupying {torch.cuda.memory_allocated()} bytes of GPU memory"
+            )
 
     def _save_model(self, output_model: ModelEntity, state_dict: Optional[Dict] = None):
         """
@@ -360,15 +415,11 @@ class OTXClassificationInferenceTask(IInferenceTask, IEvaluationTask, IExportTas
         buffer = io.BytesIO()
         hyperparams = self._task_environment.get_hyper_parameters(OTXClassificationParameters)
         hyperparams_str = ids_to_strings(cfg_helper.convert(hyperparams, dict, enum_to_str=True))
-        modelinfo = {
-            'model': self._model.state_dict(),
-            'config': hyperparams_str,
-            'VERSION': 1
-        }
+        modelinfo = {"model": self._model.state_dict(), "config": hyperparams_str, "VERSION": 1}
 
         if state_dict is not None:
             modelinfo.update(state_dict)
 
         torch.save(modelinfo, buffer)
-        output_model.set_data('weights.pth', buffer.getvalue())
-        output_model.set_data('label_schema.json', label_schema_to_bytes(self._task_environment.label_schema))
+        output_model.set_data("weights.pth", buffer.getvalue())
+        output_model.set_data("label_schema.json", label_schema_to_bytes(self._task_environment.label_schema))

@@ -12,30 +12,33 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from attr import attrs
 from sys import maxsize
 
-from otx.api.configuration.elements import (ParameterGroup,
-                                            add_parameter_group,
-                                            boolean_attribute,
-                                            configurable_boolean,
-                                            configurable_float,
-                                            configurable_integer,
-                                            selectable,
-                                            string_attribute,
-                                            )
-from otx.api.configuration.configurable_parameters import ConfigurableParameters
-from otx.api.configuration.enums import ModelLifecycle, AutoHPOState
+from attr import attrs
 
 from otx.api.configuration import ConfigurableEnum
+from otx.api.configuration.configurable_parameters import ConfigurableParameters
+from otx.api.configuration.elements import (
+    ParameterGroup,
+    add_parameter_group,
+    boolean_attribute,
+    configurable_boolean,
+    configurable_float,
+    configurable_integer,
+    selectable,
+    string_attribute,
+)
+from otx.api.configuration.enums import AutoHPOState, ModelLifecycle
 
 
 class POTQuantizationPreset(ConfigurableEnum):
     """
     This Enum represents the quantization preset for post training optimization
     """
-    PERFORMANCE = 'Performance'
-    MIXED = 'Mixed'
+
+    PERFORMANCE = "Performance"
+    MIXED = "Mixed"
+
 
 @attrs
 class OTXClassificationParameters(ConfigurableParameters):
@@ -58,7 +61,7 @@ class OTXClassificationParameters(ConfigurableParameters):
             warning="Increasing this value may cause the system to use more memory than available, "
             "potentially causing out of memory errors, please update with caution.",
             affects_outcome_of=ModelLifecycle.TRAINING,
-            auto_hpo_state=AutoHPOState.NOT_POSSIBLE
+            auto_hpo_state=AutoHPOState.NOT_POSSIBLE,
         )
 
         max_num_epochs = configurable_integer(
@@ -68,7 +71,7 @@ class OTXClassificationParameters(ConfigurableParameters):
             header="Maximum number of training epochs",
             description="Increasing this value causes the results to be more robust but training time "
             "will be longer.",
-            affects_outcome_of=ModelLifecycle.TRAINING
+            affects_outcome_of=ModelLifecycle.TRAINING,
         )
 
         learning_rate = configurable_float(
@@ -79,14 +82,14 @@ class OTXClassificationParameters(ConfigurableParameters):
             description="Increasing this value will speed up training \
                          convergence but might make it unstable.",
             affects_outcome_of=ModelLifecycle.TRAINING,
-            auto_hpo_state=AutoHPOState.NOT_POSSIBLE
+            auto_hpo_state=AutoHPOState.NOT_POSSIBLE,
         )
 
         enable_lr_finder = configurable_boolean(
             default_value=False,
             header="Enable automatic learing rate estimation",
             description="Learning rate parameter value will be ignored if enabled.",
-            affects_outcome_of=ModelLifecycle.TRAINING
+            affects_outcome_of=ModelLifecycle.TRAINING,
         )
 
         enable_early_stopping = configurable_boolean(
@@ -94,7 +97,7 @@ class OTXClassificationParameters(ConfigurableParameters):
             header="Enable adaptive early stopping of the training",
             description="Adaptive early exit from training when accuracy isn't \
                          changed or decreased for several epochs.",
-            affects_outcome_of=ModelLifecycle.TRAINING
+            affects_outcome_of=ModelLifecycle.TRAINING,
         )
 
     @attrs
@@ -107,21 +110,21 @@ class OTXClassificationParameters(ConfigurableParameters):
             default_value=True,
             header="Enable quantization algorithm",
             description="Enable quantization algorithm",
-            affects_outcome_of=ModelLifecycle.TRAINING
+            affects_outcome_of=ModelLifecycle.TRAINING,
         )
 
         enable_pruning = configurable_boolean(
             default_value=False,
             header="Enable filter pruning algorithm",
             description="Enable filter pruning algorithm",
-            affects_outcome_of=ModelLifecycle.TRAINING
+            affects_outcome_of=ModelLifecycle.TRAINING,
         )
 
         pruning_supported = configurable_boolean(
             default_value=False,
             header="Whether filter pruning is supported",
             description="Whether filter pruning is supported",
-            affects_outcome_of=ModelLifecycle.TRAINING
+            affects_outcome_of=ModelLifecycle.TRAINING,
         )
 
         maximal_accuracy_degradation = configurable_float(
@@ -130,7 +133,7 @@ class OTXClassificationParameters(ConfigurableParameters):
             max_value=100.0,
             header="Maximum accuracy degradation",
             description="The maximal allowed accuracy metric drop",
-            affects_outcome_of=ModelLifecycle.TRAINING
+            affects_outcome_of=ModelLifecycle.TRAINING,
         )
 
     @attrs
@@ -144,12 +147,16 @@ class OTXClassificationParameters(ConfigurableParameters):
             description="Number of data samples used for post-training optimization",
             default_value=300,
             min_value=1,
-            max_value=maxsize
+            max_value=maxsize,
         )
 
-        preset = selectable(default_value=POTQuantizationPreset.PERFORMANCE, header="Preset",
-                            description="Quantization preset that defines quantization scheme",
-                            editable=False, visible_in_ui=False)
+        preset = selectable(
+            default_value=POTQuantizationPreset.PERFORMANCE,
+            header="Preset",
+            description="Quantization preset that defines quantization scheme",
+            editable=False,
+            visible_in_ui=False,
+        )
 
     learning_parameters = add_parameter_group(__LearningParameters)
     nncf_optimization = add_parameter_group(__NNCFOptimization)

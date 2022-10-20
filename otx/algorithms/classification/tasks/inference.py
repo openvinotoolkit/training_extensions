@@ -2,54 +2,43 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import io
 import os
 import time
-from collections import defaultdict
 from typing import List, Optional
 
 import numpy as np
-import torch
 from mmcv.utils import ConfigDict
 from mpa import MPAConstants
 from mpa.stage import Stage
 from mpa.utils.config_utils import MPAConfig
 from mpa.utils.logger import get_logger
-from otx.algorithms.common.tasks import BaseTask
-from otx.algorithms.common.configs import TrainType
+
 from otx.algorithms.classification.configs import ClassificationConfig
-from otx.api.configuration import cfg_helper
-from otx.api.configuration.helper.utils import ids_to_strings
+from otx.algorithms.classification.utils import (
+    get_multihead_class_info as get_hierarchical_info,
+)
+from otx.algorithms.common.configs import TrainType
+from otx.algorithms.common.tasks import BaseTask
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.inference_parameters import (
     InferenceParameters,
     default_progress_callback,
 )
 from otx.api.entities.label import Domain
-from otx.api.entities.metrics import (
-    CurveMetric,
-    LineChartInfo,
-    LineMetricsGroup,
-    MetricsGroup,
-    Performance,
-    ScoreMetric,
-)
 from otx.api.entities.model import (  # ModelStatus
     ModelEntity,
     ModelFormat,
     ModelOptimizationType,
     ModelPrecision,
 )
-from otx.api.entities.model_template import parse_model_template
 from otx.api.entities.result_media import ResultMediaEntity
 from otx.api.entities.resultset import ResultSetEntity
 from otx.api.entities.scored_label import ScoredLabel
-from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.entities.tensor import TensorEntity
-from otx.api.entities.train_parameters import TrainParameters, UpdateProgressCallback
 from otx.api.entities.train_parameters import (
-    default_progress_callback as train_default_progress_callback,
+    UpdateProgressCallback,
+    default_progress_callback,
 )
 from otx.api.serialization.label_mapper import label_schema_to_bytes
 from otx.api.usecases.evaluation.metrics_helper import MetricsHelper
@@ -58,13 +47,10 @@ from otx.api.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType, IExportTask
 from otx.api.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from otx.api.usecases.tasks.interfaces.unload_interface import IUnload
-from otx.api.utils.argument_checks import check_input_parameters_type
 from otx.api.utils.labels_utils import get_empty_label
 from otx.api.utils.vis_utils import get_actmap
-from otx.algorithms.classification.adapters.dor.tasks.nncf import OTXClassificationNNCFTask
 
-from otx.algorithms.common.adapters.mmcv import OTXLoggerHook
-from otx.algorithms.classification.utils import get_multihead_class_info as get_hierarchical_info
+from otx.algorithms.classification.adapters.dor import MPAClsDataset
 
 logger = get_logger()
 
@@ -390,4 +376,3 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         else:
             cfg.metric = ["accuracy", "class_accuracy"]
             config.early_stop_metric = "accuracy"
-

@@ -5,14 +5,14 @@ lr_finder:
   num_epochs: 6
   step: 1e-5
   epochs_warmup: 1
-  path_to_savefig: 'lr_finder.jpg'
+  path_to_savefig: "lr_finder.jpg"
   max_lr: 1e-3
   min_lr: 1e-5
   n_trials: 15
 
 model:
-  name: 'efficientnetv2_s_21k'
-  type: 'multihead'
+  name: "efficientnetv2_s_21k"
+  type: "multihead"
   pretrained: True
   save_all_chkpts: False
   dropout_cls:
@@ -20,16 +20,16 @@ model:
   export_onnx_opset: 11
 
 custom_datasets:
-  roots: ['datasets/coco/train.json', 'datasets/coco/val.json']
-  types: ['multihead_classification', 'multihead_classification']
+  roots: ["datasets/coco/train.json", "datasets/coco/val.json"]
+  types: ["multihead_classification", "multihead_classification"]
 
 data:
-  root: './'
+  root: "./"
   height: 224
   width: 224
   norm_mean: [0.5, 0.5, 0.5]
   norm_std: [0.5, 0.5, 0.5]
-  save_dir: 'experiments/efficientv2'
+  save_dir: "experiments/efficientv2"
   workers: 6
   transforms:
     random_flip:
@@ -43,7 +43,7 @@ data:
       p: 0.35
 
 loss:
-  name: 'softmax,asl'
+  name: "softmax,asl"
   softmax:
     s: 1.0
     compute_s: False
@@ -52,16 +52,16 @@ loss:
     gamma_neg: 4.
 
 sampler:
-  train_sampler: 'RandomSampler'
+  train_sampler: "RandomSampler"
 
 train:
-  optim: 'sgd'
+  optim: "sgd"
   lr: 0.007
   nbd: True
   max_epoch: 60
   weight_decay: 1e-4
   batch_size: 48
-  lr_scheduler: 'onecycle'
+  lr_scheduler: "onecycle"
   pct_start: 0.1
   early_stopping: True
   lr_decay_factor: 1000

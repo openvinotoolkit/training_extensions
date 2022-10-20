@@ -6,6 +6,7 @@ from typing import Any, Dict
 
 import numpy as np
 from mmcls.datasets import PIPELINES
+
 from otx.api.utils.argument_checks import check_input_parameters_type
 
 

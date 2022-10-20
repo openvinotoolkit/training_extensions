@@ -5,8 +5,7 @@ task_type: CLASSIFICATION
 task_family: VISION
 instantiation: "CLASS"
 summary: This model is quite slow, but provides superior single and multi label classification performance.
-application:
-  ~
+application: ~
 
 # Algo backend.
 framework: OTEClassification v1.2.3
