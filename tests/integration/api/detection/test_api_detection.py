@@ -35,6 +35,7 @@ from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.entities.train_parameters import TrainParameters
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType
 from otx.api.utils.shape_factory import ShapeFactory
+from tests.test_suite.e2e_test_system import e2e_pytest_api
 from tests.unit.api.test_helpers import generate_random_annotated_image
 
 DEFAULT_DET_TEMPLATE_DIR = osp.join("otx/algorithms/detection/configs", "detection", "mobilenetv2_atss")
@@ -56,6 +57,7 @@ class TestDetectionTaskAPI:
     Collection of tests for OTX API and OTX Model Templates
     """
 
+    @e2e_pytest_api
     def test_reading_detection_cls_incr_model_template(self):
         detection_template = ["mobilenetv2_atss", "mobilenetv2_ssd", "cspdarknet_yolox"]
         for model_template in detection_template:
@@ -128,6 +130,7 @@ class TestDetectionTaskAPI:
         hyper_parameters.postprocessing.confidence_threshold = 0.1
         return hyper_parameters, model_template
 
+    @e2e_pytest_api
     def test_cancel_training_detection(self):
         """
         Tests starting and cancelling training.
@@ -182,6 +185,7 @@ class TestDetectionTaskAPI:
         train_future.result()
         assert time.time() - start_time < 25  # stopping process has to happen in less than 25 seconds
 
+    @e2e_pytest_api
     def test_training_progress_tracking(self):
         hyper_parameters, model_template = self.setup_configurable_parameters(DEFAULT_DET_TEMPLATE_DIR, num_iters=5)
         detection_environment, dataset = self.init_environment(hyper_parameters, model_template, 50)
@@ -205,6 +209,7 @@ class TestDetectionTaskAPI:
         assert len(training_progress_curve) > 0
         assert np.all(training_progress_curve[1:] >= training_progress_curve[:-1])
 
+    @e2e_pytest_api
     def test_inference_progress_tracking(self):
         hyper_parameters, model_template = self.setup_configurable_parameters(DEFAULT_DET_TEMPLATE_DIR, num_iters=10)
         detection_environment, dataset = self.init_environment(hyper_parameters, model_template, 50)
@@ -224,6 +229,7 @@ class TestDetectionTaskAPI:
         assert len(inference_progress_curve) > 0
         assert np.all(inference_progress_curve[1:] >= inference_progress_curve[:-1])
 
+    @e2e_pytest_api
     def test_inference_task(self):
         # Prepare pretrained weights
         hyper_parameters, model_template = self.setup_configurable_parameters(DEFAULT_DET_TEMPLATE_DIR, num_iters=2)
