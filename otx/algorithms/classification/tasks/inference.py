@@ -1,3 +1,5 @@
+"""Inference Task of OTX Classification."""
+
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -12,7 +14,7 @@ from mpa.stage import Stage
 from mpa.utils.config_utils import MPAConfig
 from mpa.utils.logger import get_logger
 
-from otx.algorithms.classification.adapters.dor import MPAClsDataset
+from otx.algorithms.classification.adapters.mmcls import MPAClsDataset
 from otx.algorithms.classification.configs import ClassificationConfig
 from otx.algorithms.classification.utils import (
     get_multihead_class_info as get_hierarchical_info,
@@ -55,6 +57,8 @@ TASK_CONFIG = ClassificationConfig
 
 
 class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask, IUnload):
+    """Inference Task Implementation of OTX Classification."""
+
     def __init__(self, task_environment: TaskEnvironment):
         self._should_stop = False
         super().__init__(TASK_CONFIG, task_environment)
@@ -84,6 +88,8 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         dataset: DatasetEntity,
         inference_parameters: Optional[InferenceParameters] = None,
     ) -> DatasetEntity:
+        """Main infer function of OTX Classification."""
+
         logger.info("called infer()")
         stage_module = "ClsInferrer"
         self._data_cfg = self._init_test_data_cfg(dataset)
@@ -118,6 +124,8 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         output_result_set: ResultSetEntity,
         evaluation_metric: Optional[str] = None,
     ):
+        """Evaluate function of OTX Classification Task."""
+
         logger.info("called evaluate()")
         metric = MetricsHelper.compute_accuracy(output_result_set)
         logger.info(f"Accuracy after evaluation: {metric.accuracy.value}")
@@ -125,10 +133,14 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         logger.info("Evaluation completed")
 
     def unload(self):
+        """Unload function of OTX Classification Task."""
+
         logger.info("called unload()")
         self.finalize()
 
     def export(self, export_type: ExportType, output_model: ModelEntity):
+        """Export function of OTX Classification Task."""
+
         logger.info("Exporting the model")
         if export_type != ExportType.OPENVINO:
             raise RuntimeError(f"not supported export type {export_type}")
@@ -159,7 +171,8 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         logger.info("Exporting completed")
 
     def _add_predictions_to_dataset(self, prediction_results, dataset, update_progress_callback):
-        """Loop over dataset again to assign predictions. Convert from MMClassification format to OTX format."""
+        """Loop over dataset again to assign predictions.Convert from MMClassification format to OTX format."""
+
         dataset_size = len(dataset)
         for i, (dataset_item, prediction_items) in enumerate(zip(dataset, prediction_results)):
             item_labels = []

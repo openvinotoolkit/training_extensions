@@ -39,14 +39,14 @@ from torchreid.ops import DataParallel
 from torchreid.utils import set_model_attr, set_random_seed
 
 from otx.algorithms.classification.adapters.dor.tasks.inference import (
-    OTXClassificationInferenceTask,
+    DORClassificationInferenceTask,
 )
 from otx.algorithms.classification.adapters.dor.utils.monitors import (
     DefaultMetricsMonitor,
 )
 from otx.algorithms.classification.adapters.dor.utils.utils import (
+    DORClassificationDataset,
     OptimizationProgressCallback,
-    OTXClassificationDataset,
 )
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.model import (
@@ -74,13 +74,21 @@ from otx.api.utils.argument_checks import (
 logger = logging.getLogger(__name__)
 
 
-class OTXClassificationNNCFTask(OTXClassificationInferenceTask, IOptimizationTask):
-    @check_input_parameters_type()
+class ClassificationNNCFTask(DORClassificationInferenceTask, IOptimizationTask):
     def __init__(self, task_environment: TaskEnvironment):
         """ "
         Task for compressing classification models using NNCF.
         """
-        logger.info("Loading OTXClassificationNNCFTask.")
+        curr_model_path = task_environment.model_template.model_template_path
+        base_model_path = os.path.join(
+            os.path.dirname(os.path.abspath(curr_model_path)),
+            task_environment.model_template.base_model_path,
+        )
+        if os.path.isfile(base_model_path):
+            logger.info(f"Base model for NNCF: {base_model_path}")
+            # Redirect to base model
+            task_environment.model_template = parse_model_template(base_model_path)
+        logger.info("Loading ClassificationNNCFTask.")
         super().__init__(task_environment)
 
         check_nncf_is_enabled()
@@ -105,7 +113,7 @@ class OTXClassificationNNCFTask(OTXClassificationInferenceTask, IOptimizationTas
 
         # Set default model attributes.
         self._optimization_type = ModelOptimizationType.NNCF
-        logger.info("OTXClassificationNNCFTask initialization completed")
+        logger.info("ClassificationNNCFTask initialization completed")
         set_model_attr(self._model, "mix_precision", self._cfg.train.mix_precision)
 
     @property
@@ -228,7 +236,7 @@ class OTXClassificationNNCFTask(OTXClassificationInferenceTask, IOptimizationTas
         set_random_seed(self._cfg.train.seed)
         val_subset = dataset.get_subset(Subset.VALIDATION)
         self._cfg.custom_datasets.roots = [
-            OTXClassificationDataset(
+            DORClassificationDataset(
                 train_subset,
                 self._labels,
                 self._multilabel,
@@ -236,7 +244,7 @@ class OTXClassificationNNCFTask(OTXClassificationInferenceTask, IOptimizationTas
                 self._multihead_class_info,
                 keep_empty_label=self._empty_label in self._labels,
             ),
-            OTXClassificationDataset(
+            DORClassificationDataset(
                 val_subset,
                 self._labels,
                 self._multilabel,
@@ -329,21 +337,3 @@ class OTXClassificationNNCFTask(OTXClassificationInferenceTask, IOptimizationTas
     def _load_model_data(model, data_name):
         buffer = io.BytesIO(model.get_data(data_name))
         return torch.load(buffer, map_location=torch.device("cpu"))
-
-
-class ClassificationNNCFTask(OTXClassificationNNCFTask):
-    @check_input_parameters_type()
-    def __init__(self, task_environment: TaskEnvironment):
-        """ "
-        Task for compressing classification models using NNCF.
-        """
-        curr_model_path = task_environment.model_template.model_template_path
-        base_model_path = os.path.join(
-            os.path.dirname(os.path.abspath(curr_model_path)),
-            task_environment.model_template.base_model_path,
-        )
-        if os.path.isfile(base_model_path):
-            logger.info(f"Base model for NNCF: {base_model_path}")
-            # Redirect to base model
-            task_environment.model_template = parse_model_template(base_model_path)
-        super().__init__(task_environment)

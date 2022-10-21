@@ -1,3 +1,5 @@
+"""EfficientNet-V2 for multi-class config."""
+
 _base_ = "../../base/models/efficientnet_v2.py"
 
 model = dict(

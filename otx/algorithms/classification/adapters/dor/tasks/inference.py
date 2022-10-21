@@ -37,11 +37,11 @@ from otx.algorithms.classification.adapters.dor.utils.monitors import (
     StopCallback,
 )
 from otx.algorithms.classification.adapters.dor.utils.parameters import (
-    OTXClassificationParameters,
+    DORClassificationParameters,
 )
 from otx.algorithms.classification.adapters.dor.utils.utils import (
+    DORClassificationDataset,
     InferenceProgressCallback,
-    OTXClassificationDataset,
     active_score_from_probs,
     force_fp32,
     get_hierarchical_predictions,
@@ -85,13 +85,13 @@ from otx.api.utils.vis_utils import get_actmap
 logger = logging.getLogger(__name__)
 
 
-class OTXClassificationInferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
+class DORClassificationInferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
 
     task_environment: TaskEnvironment
 
     @check_input_parameters_type()
     def __init__(self, task_environment: TaskEnvironment):
-        logger.info("Loading OTXClassificationTask.")
+        logger.info("Loading DORClassificationTask.")
         self._scratch_space = tempfile.mkdtemp(prefix="ote-cls-scratch-")
         logger.info(f"Scratch space created at {self._scratch_space}")
 
@@ -147,7 +147,7 @@ class OTXClassificationInferenceTask(IInferenceTask, IEvaluationTask, IExportTas
 
     @property
     def _hyperparams(self):
-        return self._task_environment.get_hyper_parameters(OTXClassificationParameters)
+        return self._task_environment.get_hyper_parameters(DORClassificationParameters)
 
     def _load_model(self, model: ModelEntity, device: torch.device, pretrained_dict: Optional[Dict] = None):
         if model is not None:
@@ -174,7 +174,8 @@ class OTXClassificationInferenceTask(IInferenceTask, IEvaluationTask, IExportTas
 
     def _create_model(self, config, from_scratch: bool = False):
         """
-        Creates a model, based on the configuration in config
+        Creates a model, based on the configuration in config.
+
         :param config: deep-object-reid configuration from which the model has to be built
         :param from_scratch: bool, if True does not load any weights
         :return model: Model in training mode
@@ -245,7 +246,7 @@ class OTXClassificationInferenceTask(IInferenceTask, IEvaluationTask, IExportTas
             math.ceil(len(dataset) / self._cfg.test.batch_size), update_progress_callback
         )
 
-        data = OTXClassificationDataset(
+        data = DORClassificationDataset(
             dataset,
             self._labels,
             self._multilabel,
@@ -319,12 +320,14 @@ class OTXClassificationInferenceTask(IInferenceTask, IEvaluationTask, IExportTas
 
     @check_input_parameters_type()
     def evaluate(self, output_resultset: ResultSetEntity, evaluation_metric: Optional[str] = None):
+        """Evaluate."""
         performance = MetricsHelper.compute_accuracy(output_resultset).get_performance()
         logger.info(f"Computes performance of {performance}")
         output_resultset.performance = performance
 
     @check_input_parameters_type()
     def export(self, export_type: ExportType, output_model: ModelEntity):
+        """Export."""
         assert export_type == ExportType.OPENVINO
         output_model.model_format = ModelFormat.OPENVINO
         output_model.optimization_type = self._optimization_type
@@ -372,8 +375,8 @@ class OTXClassificationInferenceTask(IInferenceTask, IEvaluationTask, IExportTas
 
     @staticmethod
     def _is_docker():
-        """
-        Checks whether the task runs in docker container
+        """Checks whether the task runs in docker container.
+
         :return bool: True if task runs in docker
         """
         path = "/proc/self/cgroup"
@@ -385,16 +388,12 @@ class OTXClassificationInferenceTask(IInferenceTask, IEvaluationTask, IExportTas
         return is_in_docker
 
     def _delete_scratch_space(self):
-        """
-        Remove model checkpoints and logs
-        """
+        """Remove model checkpoints and logs."""
         if os.path.exists(self._scratch_space):
             shutil.rmtree(self._scratch_space, ignore_errors=False)
 
     def unload(self):
-        """
-        Unload the task
-        """
+        """Unload the task."""
         self._delete_scratch_space()
         if self._is_docker():
             logger.warning("Got unload request. Unloading models. Throwing Segmentation Fault on purpose")
@@ -409,11 +408,9 @@ class OTXClassificationInferenceTask(IInferenceTask, IEvaluationTask, IExportTas
             )
 
     def _save_model(self, output_model: ModelEntity, state_dict: Optional[Dict] = None):
-        """
-        Save model
-        """
+        """Save model."""
         buffer = io.BytesIO()
-        hyperparams = self._task_environment.get_hyper_parameters(OTXClassificationParameters)
+        hyperparams = self._task_environment.get_hyper_parameters(DORClassificationParameters)
         hyperparams_str = ids_to_strings(cfg_helper.convert(hyperparams, dict, enum_to_str=True))
         modelinfo = {"model": self._model.state_dict(), "config": hyperparams_str, "VERSION": 1}
 

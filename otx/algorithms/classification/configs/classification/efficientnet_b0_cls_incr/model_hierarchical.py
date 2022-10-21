@@ -1,3 +1,5 @@
+"""EfficientNet-B0 for hierarchical config."""
+
 _base_ = "../../base/models/efficientnet.py"
 
 model = dict(

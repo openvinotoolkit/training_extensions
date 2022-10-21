@@ -1,3 +1,5 @@
+"""MobileNet-V3-large-1 for multi-label config."""
+
 _base_ = "../../base/models/mobilenet_v3.py"
 
 model = dict(

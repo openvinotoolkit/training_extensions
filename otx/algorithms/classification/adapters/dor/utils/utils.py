@@ -99,7 +99,7 @@ def get_multihead_class_info(label_schema: LabelSchemaEntity):
     return mixed_cls_heads_info
 
 
-class OTXClassificationDataset:
+class DORClassificationDataset:
     @check_input_parameters_type({"ote_dataset": DatasetParamTypeCheck})
     def __init__(
         self,

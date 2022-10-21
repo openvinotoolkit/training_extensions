@@ -41,7 +41,7 @@ class POTQuantizationPreset(ConfigurableEnum):
 
 
 @attrs
-class OTXClassificationParameters(ConfigurableParameters):
+class DORClassificationParameters(ConfigurableParameters):
     header = string_attribute("Configuration for an image classification task")
     description = header
 
