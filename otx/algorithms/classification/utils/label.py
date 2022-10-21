@@ -1,3 +1,5 @@
+"""Collection of utils about labels in Classifation Task."""
+
 # Copyright (C) 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,6 +27,7 @@ from otx.api.utils.argument_checks import check_input_parameters_type
 
 @check_input_parameters_type()
 def generate_label_schema(not_empty_labels: List[LabelEntity], multilabel: bool = False):
+    """Generate label schema."""
     assert len(not_empty_labels) > 1
 
     label_schema = LabelSchemaEntity()
@@ -42,6 +45,7 @@ def generate_label_schema(not_empty_labels: List[LabelEntity], multilabel: bool 
 
 @check_input_parameters_type()
 def get_multihead_class_info(label_schema: LabelSchemaEntity):
+    """Get multihead info by label schema."""
     all_groups = label_schema.get_groups(include_empty=False)
     all_groups_str = []
     for g in all_groups:
@@ -84,6 +88,7 @@ def get_multihead_class_info(label_schema: LabelSchemaEntity):
 
 @check_input_parameters_type()
 def get_task_class(path: str):
+    """Get task class by folder name."""
     module_name, class_name = path.rsplit(".", 1)
     module = importlib.import_module(module_name)
     return getattr(module, class_name)

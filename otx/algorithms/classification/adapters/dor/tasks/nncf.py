@@ -1,3 +1,5 @@
+"""NNCF Task for OTX Classification."""
+
 # Copyright (C) 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
@@ -75,10 +77,8 @@ logger = logging.getLogger(__name__)
 
 
 class ClassificationNNCFTask(DORClassificationInferenceTask, IOptimizationTask):
+    """Task for compressing classification models using NNCF."""
     def __init__(self, task_environment: TaskEnvironment):
-        """ "
-        Task for compressing classification models using NNCF.
-        """
         curr_model_path = task_environment.model_template.model_template_path
         base_model_path = os.path.join(
             os.path.dirname(os.path.abspath(curr_model_path)),
@@ -199,7 +199,7 @@ class ClassificationNNCFTask(DORClassificationInferenceTask, IOptimizationTask):
         output_model: ModelEntity,
         optimization_parameters: Optional[OptimizationParameters] = None,
     ):
-        """Optimize a model on a dataset"""
+        """Optimize a model on a dataset."""
         if optimization_type is not OptimizationType.NNCF:
             raise RuntimeError("NNCF is the only supported optimization")
         if self._compression_ctrl:
@@ -315,6 +315,7 @@ class ClassificationNNCFTask(DORClassificationInferenceTask, IOptimizationTask):
 
     @check_input_parameters_type()
     def save_model(self, output_model: ModelEntity):
+        """Save model."""
         state_dict = None
         if self._compression_ctrl is not None:
             state_dict = {
@@ -325,6 +326,7 @@ class ClassificationNNCFTask(DORClassificationInferenceTask, IOptimizationTask):
 
     @check_input_parameters_type()
     def export(self, export_type: ExportType, output_model: ModelEntity):
+        """Export."""
         if self._compression_ctrl is None:
             super().export(export_type, output_model)
         else:

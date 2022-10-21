@@ -1,3 +1,5 @@
+"""Base Dataset for Classification Task."""
+
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -18,6 +20,8 @@ logger = get_logger()
 
 @DATASETS.register_module()
 class MPAClsDataset(BaseDataset):
+    """Multi-class classification dataset class."""
+
     def __init__(self, ote_dataset=None, labels=None, empty_label=None, **kwargs):
         self.ote_dataset = ote_dataset
         self.labels = labels
@@ -49,9 +53,11 @@ class MPAClsDataset(BaseDataset):
         self.load_annotations()
 
     def get_indices(self, *args):
+        """Get indices."""
         return get_cls_img_indices(self.labels, self.ote_dataset)
 
     def load_annotations(self):
+        """Load annotations."""
         include_empty = self.empty_label in self.labels
         for i, _ in enumerate(self.ote_dataset):
             class_indices = []
@@ -69,6 +75,7 @@ class MPAClsDataset(BaseDataset):
         self.gt_labels = np.array(self.gt_labels)
 
     def __getitem__(self, index):
+        """Get item from dataset."""
         dataset = self.ote_dataset
         item = dataset[index]
         ignored_labels = np.array([self.label_idx[lbs.id] for lbs in item.ignored_labels])
@@ -99,10 +106,11 @@ class MPAClsDataset(BaseDataset):
         return self.gt_labels
 
     def __len__(self):
+        """Get dataset length."""
         return len(self.ote_dataset)
 
     def evaluate(self, results, metric="accuracy", metric_options=None, logger=None):
-        """Evaluate the dataset with new metric 'class_accuracy'
+        """Evaluate the dataset with new metric class_accuracy.
 
         Args:
             results (list): Testing results of the dataset.
@@ -114,6 +122,7 @@ class MPAClsDataset(BaseDataset):
                 Defaults to None.
             logger (logging.Logger | str, optional): Logger used for printing
                 related information during evaluation. Defaults to None.
+
         Returns:
             dict: evaluation results
         """
@@ -148,6 +157,7 @@ class MPAClsDataset(BaseDataset):
         return eval_results
 
     def class_accuracy(self, results, gt_labels):
+        """Return per-class accuracy."""
         accracies = []
         pred_label = results.argsort(axis=1)[:, -1:][:, ::-1]
         for i in range(self.num_classes):
@@ -160,10 +170,14 @@ class MPAClsDataset(BaseDataset):
 
 @DATASETS.register_module()
 class MPAMultilabelClsDataset(MPAClsDataset):
+    """Multi-label classification dataset class."""
+
     def get_indices(self, new_classes):
+        """Get indices."""
         return get_old_new_img_indices(self.labels, new_classes, self.ote_dataset)
 
     def load_annotations(self):
+        """Load annotations."""
         include_empty = self.empty_label in self.labels
         for i, _ in enumerate(self.ote_dataset):
             class_indices = []
@@ -186,6 +200,7 @@ class MPAMultilabelClsDataset(MPAClsDataset):
 
     def evaluate(self, results, metric="mAP", metric_options=None, indices=None, logger=None):
         """Evaluate the dataset.
+
         Args:
             results (list): Testing results of the dataset.
             metric (str | list[str]): Metrics to be evaluated.
@@ -195,6 +210,7 @@ class MPAMultilabelClsDataset(MPAClsDataset):
                 Allowed keys are 'k' and 'thr'. Defaults to None
             logger (logging.Logger | str, optional): Logger used for printing
                 related information during evaluation. Defaults to None.
+
         Returns:
             dict: evaluation results
         """
@@ -261,11 +277,14 @@ class MPAMultilabelClsDataset(MPAClsDataset):
 
 @DATASETS.register_module()
 class MPAHierarchicalClsDataset(MPAMultilabelClsDataset):
+    """Hierarchical classification dataset class."""
+
     def __init__(self, **kwargs):
         self.hierarchical_info = kwargs.pop("hierarchical_info", None)
         super().__init__(**kwargs)
 
     def load_annotations(self):
+        """Load annotations."""
         include_empty = self.empty_label in self.labels
         for i, _ in enumerate(self.ote_dataset):
             class_indices = []
@@ -296,6 +315,7 @@ class MPAHierarchicalClsDataset(MPAMultilabelClsDataset):
 
     @staticmethod
     def mean_top_k_accuracy(scores, labels, k=1):
+        """Return mean of top-k accuracy."""
         idx = np.argsort(-scores, axis=-1)[:, :k]
         labels = np.array(labels)
         matches = np.any(idx == labels.reshape([-1, 1]), axis=-1)
@@ -315,6 +335,7 @@ class MPAHierarchicalClsDataset(MPAMultilabelClsDataset):
 
     def evaluate(self, results, metric="MHAcc", metric_options=None, indices=None, logger=None):
         """Evaluate the dataset.
+
         Args:
             results (list): Testing results of the dataset.
             metric (str | list[str]): Metrics to be evaluated.
@@ -324,6 +345,7 @@ class MPAHierarchicalClsDataset(MPAMultilabelClsDataset):
                 Allowed keys are 'k' and 'thr'. Defaults to None
             logger (logging.Logger | str, optional): Logger used for printing
                 related information during evaluation. Defaults to None.
+
         Returns:
             dict: evaluation results
         """

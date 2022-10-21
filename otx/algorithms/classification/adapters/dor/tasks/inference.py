@@ -1,3 +1,5 @@
+"""Inference running through deep-object-reid to enable nncf task."""
+
 # Copyright (C) 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -86,6 +88,7 @@ logger = logging.getLogger(__name__)
 
 
 class DORClassificationInferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
+    """Inference task running through deep-object-reid."""
 
     task_environment: TaskEnvironment
 
@@ -173,8 +176,7 @@ class DORClassificationInferenceTask(IInferenceTask, IEvaluationTask, IExportTas
         return model.to(device)
 
     def _create_model(self, config, from_scratch: bool = False):
-        """
-        Creates a model, based on the configuration in config.
+        """Creates a model, based on the configuration in config.
 
         :param config: deep-object-reid configuration from which the model has to be built
         :param from_scratch: bool, if True does not load any weights
@@ -222,8 +224,7 @@ class DORClassificationInferenceTask(IInferenceTask, IEvaluationTask, IExportTas
     def infer(
         self, dataset: DatasetEntity, inference_parameters: Optional[InferenceParameters] = None
     ) -> DatasetEntity:
-        """
-        Perform inference on the given dataset.
+        """Perform inference on the given dataset.
 
         :param dataset: Dataset entity to analyse
         :param inference_parameters: Additional parameters for inference.

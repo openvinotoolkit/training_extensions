@@ -1,3 +1,5 @@
+"""Utils for dor tasks."""
+
 # Copyright (C) 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -42,6 +44,7 @@ from otx.api.utils.argument_checks import (
 
 @check_input_parameters_type()
 def generate_label_schema(not_empty_labels: List[LabelEntity], multilabel: bool = False):
+    """Generate label schema."""
     assert len(not_empty_labels) > 1
 
     label_schema = LabelSchemaEntity()
@@ -59,6 +62,7 @@ def generate_label_schema(not_empty_labels: List[LabelEntity], multilabel: bool 
 
 @check_input_parameters_type()
 def get_multihead_class_info(label_schema: LabelSchemaEntity):
+    """Get multihead class info by label schema."""
     all_groups = label_schema.get_groups(include_empty=False)
     all_groups_str = []
     for g in all_groups:
@@ -100,6 +104,8 @@ def get_multihead_class_info(label_schema: LabelSchemaEntity):
 
 
 class DORClassificationDataset:
+    """Dataset used in DOR tasks."""
+
     @check_input_parameters_type({"ote_dataset": DatasetParamTypeCheck})
     def __init__(
         self,
@@ -166,22 +172,27 @@ class DORClassificationDataset:
 
     @check_input_parameters_type()
     def __getitem__(self, idx: int):
+        """Get item from dataset."""
         sample = self.ote_dataset[idx].numpy  # This returns 8-bit numpy array of shape (height, width, RGB)
         label = self.annotation[idx]["label"]
         return {"img": sample, "label": label}
 
     def __len__(self):
+        """Get annotation length."""
         return len(self.annotation)
 
     def get_annotation(self):
+        """Get annotation."""
         return self.annotation
 
     def get_classes(self):
+        """Get classes' name."""
         return self.label_names
 
 
 @check_input_parameters_type()
 def get_task_class(path: str):
+    """Get task class."""
     module_name, class_name = path.rsplit(".", 1)
     module = importlib.import_module(module_name)
     return getattr(module, class_name)
@@ -189,7 +200,9 @@ def get_task_class(path: str):
 
 @check_input_parameters_type()
 def reload_hyper_parameters(model_template: ModelTemplate):
-    """This function copies template.yaml file and its configuration.yaml dependency to temporal folder.
+    """Reload hyper-parameters function.
+
+    This function copies template.yaml file and its configuration.yaml dependency to temporal folder.
     Then it re-loads hyper parameters from copied template.yaml file.
     This function should not be used in general case, it is assumed that
     the 'configuration.yaml' should be in the same folder as 'template.yaml' file.
@@ -212,6 +225,7 @@ def reload_hyper_parameters(model_template: ModelTemplate):
 
 @check_input_parameters_type()
 def set_values_as_default(parameters: dict):
+    """Set values as default."""
     for v in parameters.values():
         if isinstance(v, dict) and "value" not in v:
             set_values_as_default(v)
@@ -223,6 +237,7 @@ def set_values_as_default(parameters: dict):
 @contextmanager
 @check_input_parameters_type()
 def force_fp32(model: Module):
+    """Force fp32."""
     mix_precision_status = get_model_attr(model, "mix_precision")
     set_model_attr(model, "mix_precision", False)
     try:
@@ -232,6 +247,14 @@ def force_fp32(model: Module):
 
 
 class InferenceProgressCallback(TimeMonitorCallback):
+    """Progress callback used for inference.
+
+    There are three stages to the progress bar:
+       - 5 % model is loaded
+       - 10 % compressed model is initialized
+       - 10-100 % compressed model is being fine-tuned
+    """
+
     def __init__(self, num_test_steps, update_progress_callback: UpdateProgressCallback):
         super().__init__(
             num_epoch=0,
@@ -242,12 +265,14 @@ class InferenceProgressCallback(TimeMonitorCallback):
         )
 
     def on_test_batch_end(self, batch=None, logs=None):
+        """Callback when batch-test ended."""
         super().on_test_batch_end(batch, logs)
         self.update_progress_callback(self.get_progress())
 
 
 class OptimizationProgressCallback(TimeMonitorCallback):
-    """Progress callback used for optimization using NNCF
+    """Progress callback used for optimization using NNCF.
+
     There are three stages to the progress bar:
        - 5 % model is loaded
        - 10 % compressed model is initialized
@@ -275,20 +300,24 @@ class OptimizationProgressCallback(TimeMonitorCallback):
         self.update_progress_callback(self.get_progress())
 
     def on_train_batch_end(self, batch, logs=None):
+        """Callback when batch-train ended."""
         super().on_train_batch_end(batch, logs)
         self.update_progress_callback(self.get_progress(), score=logs)
 
     def on_train_end(self, logs=None):
+        """Callback when train ended."""
         super(OptimizationProgressCallback, self).on_train_end(logs)
         self.update_progress_callback(self.get_progress(), score=logs)
 
     def on_initialization_end(self):
+        """Callback when init ended."""
         self.current_step += self.initialization_stage_steps
         self.update_progress_callback(self.get_progress())
 
 
 @check_input_parameters_type()
 def active_score_from_probs(predictions: Union[np.ndarray, Iterable, int, float]):
+    """Active score form probs."""
     top_idxs = np.argpartition(predictions, -2)[-2:]
     top_probs = predictions[top_idxs]
     return np.max(top_probs) - np.min(top_probs)
@@ -296,11 +325,13 @@ def active_score_from_probs(predictions: Union[np.ndarray, Iterable, int, float]
 
 @check_input_parameters_type()
 def sigmoid_numpy(x: np.ndarray):
+    """Sigmoid numpy."""
     return 1.0 / (1.0 + np.exp(-1.0 * x))
 
 
 @check_input_parameters_type()
 def softmax_numpy(x: np.ndarray):
+    """Softmax numpy."""
     x = np.exp(x - np.max(x))
     x /= np.sum(x)
     return x
@@ -310,6 +341,7 @@ def softmax_numpy(x: np.ndarray):
 def get_multiclass_predictions(
     logits: np.ndarray, labels: List[LabelEntity], activate: bool = True
 ) -> List[ScoredLabel]:
+    """Get multiclass predictions."""
     i = np.argmax(logits)
     if activate:
         logits = softmax_numpy(logits)
@@ -322,6 +354,7 @@ def get_multiclass_predictions(
 def get_multilabel_predictions(
     logits: np.ndarray, labels: List[LabelEntity], pos_thr: float = 0.5, activate: bool = True
 ) -> List[ScoredLabel]:
+    """Get multilabel predictions."""
     if activate:
         logits = sigmoid_numpy(logits)
     item_labels = []
@@ -342,6 +375,7 @@ def get_hierarchical_predictions(
     pos_thr: float = 0.5,
     activate: bool = True,
 ) -> List[ScoredLabel]:
+    """Get hierarchical predictions."""
     predicted_labels = []
     for i in range(multihead_class_info["num_multiclass_heads"]):
         logits_begin, logits_end = multihead_class_info["head_idx_to_logits_range"][i]

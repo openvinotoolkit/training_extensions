@@ -1,3 +1,5 @@
+"""Base EfficientNet-V2."""
+
 # model settings
 model = dict(
     type="ImageClassifier",

@@ -1,4 +1,4 @@
-"""Config Initialization for OTX Classification"""
+"""Config Initialization for OTX Classification."""
 
 # Copyright (C) 2022 Intel Corporation
 #

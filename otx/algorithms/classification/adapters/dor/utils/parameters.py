@@ -1,3 +1,5 @@
+"""Parameters for dor tasks."""
+
 # Copyright (C) 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -32,9 +34,7 @@ from otx.api.configuration.enums import AutoHPOState, ModelLifecycle
 
 
 class POTQuantizationPreset(ConfigurableEnum):
-    """
-    This Enum represents the quantization preset for post training optimization
-    """
+    """This Enum represents the quantization preset for post training optimization."""
 
     PERFORMANCE = "Performance"
     MIXED = "Mixed"

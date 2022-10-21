@@ -1,3 +1,5 @@
+"""Base MobileNet-V3."""
+
 # model settings
 model = dict(
     type="ImageClassifier",

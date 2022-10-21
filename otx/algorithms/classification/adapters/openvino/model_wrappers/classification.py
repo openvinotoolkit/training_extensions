@@ -116,6 +116,7 @@ class OteClassification(Classification):
 
 @check_input_parameters_type()
 def get_actmap(features: Union[np.ndarray, Iterable, int, float], output_res: Union[tuple, list]):
+    """Get actmap."""
     am = cv2.resize(features, output_res)
     am = cv2.applyColorMap(am, cv2.COLORMAP_JET)
     am = cv2.cvtColor(am, cv2.COLOR_BGR2RGB)
@@ -124,11 +125,13 @@ def get_actmap(features: Union[np.ndarray, Iterable, int, float], output_res: Un
 
 @check_input_parameters_type()
 def sigmoid_numpy(x: np.ndarray):
+    """Sigmoid numpy."""
     return 1.0 / (1.0 + np.exp(-1.0 * x))
 
 
 @check_input_parameters_type()
 def softmax_numpy(x: np.ndarray):
+    """Softmax numpy."""
     x = np.exp(x)
     x /= np.sum(x)
     return x
@@ -138,6 +141,7 @@ def softmax_numpy(x: np.ndarray):
 def get_hierarchical_predictions(
     logits: np.ndarray, multihead_class_info: dict, pos_thr: float = 0.5, activate: bool = True
 ):
+    """Get hierarchical predictions."""
     predicted_labels = []
     logits_range_dict = multihead_class_info.get("head_idx_to_logits_range", False)
     if logits_range_dict:  #  json allows only string key, revert to integer.
@@ -176,6 +180,7 @@ def get_multiclass_predictions(logits: np.ndarray, activate: bool = True):
 
 @check_input_parameters_type()
 def get_multilabel_predictions(logits: np.ndarray, pos_thr: float = 0.5, activate: bool = True):
+    """Get multilabel predictions."""
     if activate:
         logits = sigmoid_numpy(logits)
     scores = []

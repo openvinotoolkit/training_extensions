@@ -1,3 +1,5 @@
+"""Sample Code of otx training for classification."""
+
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -50,6 +52,7 @@ args = parser.parse_args()
 
 
 def load_test_dataset(data_type):
+    """Load test dataset."""
     import PIL
     from PIL import ImageDraw
 
@@ -170,6 +173,7 @@ def load_test_dataset(data_type):
 
 
 def get_label_schema(labels, multilabel=False, hierarchical=False):
+    """Get label schema."""
     label_schema = LabelSchemaEntity()
 
     emptylabel = LabelEntity(id=-1, name="Empty label", is_empty=True, domain=Domain.CLASSIFICATION)
@@ -202,6 +206,7 @@ def get_label_schema(labels, multilabel=False, hierarchical=False):
 
 
 def validate(task, validation_dataset, model):
+    """Validate."""
     print("Get predictions on the validation set")
     predicted_validation_dataset = task.infer(
         validation_dataset.with_empty_annotations(), InferenceParameters(is_evaluation=True)
@@ -217,6 +222,8 @@ def validate(task, validation_dataset, model):
 
 
 def main():
+    """Main of Classification Sample Test."""
+
     logger.info("Train initial model with OLD dataset")
     dataset, labels_list = load_test_dataset("old")
     labels_schema = get_label_schema(labels_list, multilabel=args.multilabel, hierarchical=args.hierarchical)

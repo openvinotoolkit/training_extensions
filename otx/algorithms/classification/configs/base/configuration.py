@@ -1,3 +1,5 @@
+"""Configuration file of OTX Classification."""
+
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -14,18 +16,26 @@ from otx.api.configuration.elements import (
 
 @attrs
 class ClassificationConfig(BaseConfig):
+    """Configurations of classification task."""
+
     @attrs
     class __LearningParameters(BaseConfig.BaseLearningParameters):
+        """Learning parameter configurations."""
+
         header = string_attribute("Learning Parameters")
         description = header
 
     @attrs
     class __AlgoBackend(BaseConfig.BaseAlgoBackendParameters):
+        """Algorithm backend configurations."""
+
         header = string_attribute("Parameters for the MPA algo-backend")
         description = header
 
     @attrs
     class __POTParameter(BaseConfig.BasePOTParameter):
+        """POT-related parameter configurations."""
+
         header = string_attribute("POT Parameters")
         description = header
         visible_in_ui = boolean_attribute(False)

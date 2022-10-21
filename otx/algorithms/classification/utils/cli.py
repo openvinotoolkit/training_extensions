@@ -1,3 +1,5 @@
+"""Data adapter from otx cli in Classifation Task."""
+
 # Copyright (C) 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -40,12 +42,15 @@ from otx.api.utils.argument_checks import (
 
 
 class ClassificationType(Enum):
+    """Classification Type."""
     MULTICLASS = auto()
     MULTILABEL = auto()
     MULTIHEAD = auto()
 
 
 class ClassificationDatasetAdapter(DatasetEntity):
+    """Classification Dataset Adapter from OTX CLI."""
+
     @check_input_parameters_type(
         {
             "train_ann_file": OptionalDirectoryPathCheck,
@@ -205,18 +210,24 @@ class ClassificationDatasetAdapter(DatasetEntity):
         assert self.labels is not None
 
     def label_name_to_project_label(self, label_name):
+        """Return lists of project labels converted from label name."""
         return [label for label in self.project_labels if label.name == label_name][0]
 
     def is_multiclass(self):
+        """Check if multi-class."""
+
         return self.data_type == ClassificationType.MULTICLASS
 
     def is_multilabel(self):
+        """Check if multi-label."""
         return self.data_type == ClassificationType.MULTILABEL
 
     def is_multihead(self):
+        """Check if multi-head."""
         return self.data_type == ClassificationType.MULTIHEAD
 
     def generate_label_schema(self):
+        """Generate label schema."""
         label_schema = LabelSchemaEntity()
         if self.data_type == ClassificationType.MULTICLASS:
             main_group = LabelGroup(name="labels", labels=self.project_labels, group_type=LabelGroupType.EXCLUSIVE)
