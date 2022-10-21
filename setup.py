@@ -3,9 +3,9 @@
 # Copyright (C) 2021-2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
+import os
 import subprocess
 import sys
-import os
 import warnings
 from importlib.util import module_from_spec, spec_from_file_location
 from pathlib import Path
@@ -243,10 +243,11 @@ def get_requirements(requirement_files: Union[str, List[str]]) -> List[str]:
     return requirements
 
 
-REQUIRED_PACKAGES = get_requirements(requirement_files=["base", "dev", "openvino", "detection"])
+REQUIRED_PACKAGES = get_requirements(requirement_files=["base", "dev", "openvino"])
 EXTRAS_REQUIRE = {
     "anomaly": get_requirements(requirement_files="anomaly"),
-    "full": get_requirements(requirement_files=["anomaly"]),
+    "detection": get_requirements(requirement_files="detection"),
+    "full": get_requirements(requirement_files=["anomaly", "detection"]),
 }
 DEPENDENCY_LINKS = ["https://download.pytorch.org/whl/torch_stable.html"]
 
