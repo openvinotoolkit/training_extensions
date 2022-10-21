@@ -272,7 +272,6 @@ class BaseTask:
         * data.workers_per_gpu <- learning_parameters.num_workers
         * runner.max_epochs <- learning_parameters.num_iters
         """
-
         warmup_iters = int(self._hyperparams.learning_parameters.learning_rate_warmup_iters)
         lr_config = (
             ConfigDict(warmup_iters=warmup_iters)
@@ -321,7 +320,6 @@ class BaseTask:
                 self._hyperparams.tiling_parameters.tile_size = tiling_parameters["tile_size"]["value"]
                 self._hyperparams.tiling_parameters.tile_overlap = tiling_parameters["tile_overlap"]["value"]
                 self._hyperparams.tiling_parameters.tile_max_number = tiling_parameters["tile_max_number"]["value"]
-
             return model_data
         else:
             return None
