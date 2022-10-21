@@ -3,7 +3,6 @@
 #
 
 import os
-import time
 from typing import List, Optional
 
 import numpy as np
@@ -13,6 +12,7 @@ from mpa.stage import Stage
 from mpa.utils.config_utils import MPAConfig
 from mpa.utils.logger import get_logger
 
+from otx.algorithms.classification.adapters.dor import MPAClsDataset
 from otx.algorithms.classification.configs import ClassificationConfig
 from otx.algorithms.classification.utils import (
     get_multihead_class_info as get_hierarchical_info,
@@ -42,7 +42,6 @@ from otx.api.entities.train_parameters import (
 )
 from otx.api.serialization.label_mapper import label_schema_to_bytes
 from otx.api.usecases.evaluation.metrics_helper import MetricsHelper
-from otx.api.usecases.reporting.time_monitor_callback import TimeMonitorCallback
 from otx.api.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType, IExportTask
 from otx.api.usecases.tasks.interfaces.inference_interface import IInferenceTask
@@ -50,40 +49,9 @@ from otx.api.usecases.tasks.interfaces.unload_interface import IUnload
 from otx.api.utils.labels_utils import get_empty_label
 from otx.api.utils.vis_utils import get_actmap
 
-from otx.algorithms.classification.adapters.dor import MPAClsDataset
-
 logger = get_logger()
 
 TASK_CONFIG = ClassificationConfig
-
-
-class TrainingProgressCallback(TimeMonitorCallback):
-    def __init__(self, update_progress_callback: UpdateProgressCallback):
-        super().__init__(0, 0, 0, 0, update_progress_callback=update_progress_callback)
-
-    def on_train_batch_end(self, batch, logs=None):
-        super().on_train_batch_end(batch, logs)
-        self.update_progress_callback(self.get_progress())
-
-    def on_epoch_end(self, epoch, logs=None):
-        self.past_epoch_duration.append(time.time() - self.start_epoch_time)
-        self._calculate_average_epoch()
-        score = None
-        if hasattr(self.update_progress_callback, "metric") and isinstance(logs, dict):
-            score = logs.get(self.update_progress_callback.metric, None)
-            logger.info(f"logged score for metric {self.update_progress_callback.metric} = {score}")
-            score = 0.01 * float(score) if score is not None else None
-            if score is not None:
-                iter_num = logs.get("current_iters", None)
-                if iter_num is not None:
-                    logger.info(f"score = {score} at epoch {epoch} / {int(iter_num)}")
-                    # as a trick, score (at least if it's accuracy not the loss) and iteration number
-                    # could be assembled just using summation and then disassembeled.
-                    if 1.0 > score:
-                        score = score + int(iter_num)
-                    else:
-                        score = -(score + int(iter_num))
-        self.update_progress_callback(self.get_progress(), score=score)
 
 
 class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask, IUnload):
@@ -263,7 +231,6 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
                 dataset_item.append_metadata_item(saliency_map_media, model=self._task_environment.model)
 
             update_progress_callback(int(i / dataset_size * 100))
-
 
     def _init_recipe_hparam(self) -> dict:
         warmup_iters = int(self._hyperparams.learning_parameters.learning_rate_warmup_iters)

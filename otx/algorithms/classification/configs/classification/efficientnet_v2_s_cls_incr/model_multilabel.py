@@ -1,22 +1,17 @@
-_base_='../../base/models/efficientnet_v2.py'
+_base_ = "../../base/models/efficientnet_v2.py"
 
-model=dict(
-    type='SAMImageClassifier',
-    task='classification',
+model = dict(
+    type="SAMImageClassifier",
+    task="classification",
     backbone=dict(
-        version='s_21k',
+        version="s_21k",
     ),
     head=dict(
-        type='CustomMultiLabelLinearClsHead',
+        type="CustomMultiLabelLinearClsHead",
         normalized=True,
         scale=7.0,
-        loss=dict(
-            type='AsymmetricAngularLossWithIgnore',
-            gamma_pos=0.0,
-            gamma_neg=1.0,
-            reduction='sum'
-        )
-    )
+        loss=dict(type="AsymmetricAngularLossWithIgnore", gamma_pos=0.0, gamma_neg=1.0, reduction="sum"),
+    ),
 )
 
 fp16 = dict(loss_scale=512.0)

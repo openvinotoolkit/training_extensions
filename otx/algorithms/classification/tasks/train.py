@@ -1,3 +1,5 @@
+"""Train Task of OTX Classification."""
+
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -44,14 +46,18 @@ TASK_CONFIG = ClassificationConfig
 
 
 class TrainingProgressCallback(TimeMonitorCallback):
+    """TrainingProgressCallback class for time monitoring."""
+
     def __init__(self, update_progress_callback: UpdateProgressCallback):
         super().__init__(0, 0, 0, 0, update_progress_callback=update_progress_callback)
 
     def on_train_batch_end(self, batch, logs=None):
+        """Callback function on training batch ended."""
         super().on_train_batch_end(batch, logs)
         self.update_progress_callback(self.get_progress())
 
     def on_epoch_end(self, epoch, logs=None):
+        """Callback function on epoch ended."""
         self.past_epoch_duration.append(time.time() - self.start_epoch_time)
         self._calculate_average_epoch()
         score = None
@@ -73,7 +79,10 @@ class TrainingProgressCallback(TimeMonitorCallback):
 
 
 class ClassificationTrainTask(ClassificationInferenceTask):
+    """Train Task Implementation of OTX Classification."""
+
     def save_model(self, output_model: ModelEntity):
+        """Save best model weights in ClassificationTrainTask."""
         logger.info("called save_model")
         buffer = io.BytesIO()
         hyperparams_str = ids_to_strings(cfg_helper.convert(self._hyperparams, dict, enum_to_str=True))
@@ -95,11 +104,13 @@ class ClassificationTrainTask(ClassificationInferenceTask):
         output_model.precision = self._precision
 
     def cancel_training(self):
-        """
-        Sends a cancel training signal to gracefully stop the optimizer. The signal consists of creating a
-        '.stop_training' file in the current work_dir. The runner checks for this file periodically.
-        The stopping mechanism allows stopping after each iteration, but validation will still be carried out. Stopping
-        will therefore take some time.
+        """Cancel training function in ClassificationTrainTask.
+
+        Sends a cancel training signal to gracefully stop the optimizer.
+        The signal consists of creating a '.stop_training' file in the current work_dir.
+        The runner checks for this file periodically.
+        The stopping mechanism allows stopping after each iteration, but validation will still be carried out.
+        Stopping will therefore take some time.
         """
         self._should_stop = True
         logger.info("Cancel training requested.")
@@ -115,6 +126,7 @@ class ClassificationTrainTask(ClassificationInferenceTask):
         output_model: ModelEntity,
         train_parameters: Optional[TrainParameters] = None,
     ):
+        """Train function in ClassificationTrainTask."""
         logger.info("train()")
         # Check for stop signal between pre-eval and training.
         # If training is cancelled at this point,
@@ -187,8 +199,8 @@ class ClassificationTrainTask(ClassificationInferenceTask):
         return data_cfg
 
     def _generate_training_metrics_group(self, learning_curves) -> Optional[List[MetricsGroup]]:
-        """
-        Parses the classification logs to get metrics from the latest training run
+        """Parses the classification logs to get metrics from the latest training run.
+
         :return output List[MetricsGroup]
         """
         output: List[MetricsGroup] = []

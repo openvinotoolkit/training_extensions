@@ -1,20 +1,18 @@
-_base_='../../base/models/mobilenet_v3.py'
+_base_ = "../../base/models/mobilenet_v3.py"
 
-model=dict(
-    type='SAMImageClassifier',
-    task='classification',
-    backbone=dict(
-        mode='large'
-    ),
+model = dict(
+    type="SAMImageClassifier",
+    task="classification",
+    backbone=dict(mode="large"),
     head=dict(
-        type='CustomNonLinearClsHead',
+        type="CustomNonLinearClsHead",
         in_channels=960,
         hid_channels=1280,
         loss=dict(
-            type='CrossEntropyLoss',
+            type="CrossEntropyLoss",
             loss_weight=1.0,
-        )
-    )
+        ),
+    ),
 )
 
 fp16 = dict(loss_scale=512.0)

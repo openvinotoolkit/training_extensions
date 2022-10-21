@@ -1,18 +1,12 @@
-_base_='../../base/models/efficientnet_v2.py'
+_base_ = "../../base/models/efficientnet_v2.py"
 
-model=dict(
-    type='SAMImageClassifier',
-    task='classification',
+model = dict(
+    type="SAMImageClassifier",
+    task="classification",
     backbone=dict(
-        version='s_21k',
+        version="s_21k",
     ),
-    head=dict(
-        type='CustomLinearClsHead',
-        loss=dict(
-            type='CrossEntropyLoss',
-            loss_weight=1.0
-        )
-    )
+    head=dict(type="CustomLinearClsHead", loss=dict(type="CrossEntropyLoss", loss_weight=1.0)),
 )
 
 fp16 = dict(loss_scale=512.0)

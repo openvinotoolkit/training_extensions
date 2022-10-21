@@ -1,19 +1,17 @@
-_base_='../../base/models/mobilenet_v3.py'
+_base_ = "../../base/models/mobilenet_v3.py"
 
-model=dict(
-    type='SAMImageClassifier',
-    task='classification',
-    backbone=dict(
-        mode='large'
-    ),
+model = dict(
+    type="SAMImageClassifier",
+    task="classification",
+    backbone=dict(mode="large"),
     head=dict(
-        type='CustomHierarchicalNonLinearClsHead',
+        type="CustomHierarchicalNonLinearClsHead",
         in_channels=960,
         hid_channels=1280,
         multilabel_loss=dict(
-            type='AsymmetricLossWithIgnore',
+            type="AsymmetricLossWithIgnore",
             gamma_pos=0.0,
             gamma_neg=4.0,
-        )
-    )
+        ),
+    ),
 )
