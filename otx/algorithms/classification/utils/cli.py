@@ -43,6 +43,7 @@ from otx.api.utils.argument_checks import (
 
 class ClassificationType(Enum):
     """Classification Type."""
+
     MULTICLASS = auto()
     MULTILABEL = auto()
     MULTIHEAD = auto()

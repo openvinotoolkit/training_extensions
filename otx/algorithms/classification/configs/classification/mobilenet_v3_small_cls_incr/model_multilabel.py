@@ -1,5 +1,7 @@
 """MobileNet-V3-Small for multi-label config."""
 
+# pylint: disable=invalid-name
+
 _base_ = "../../base/models/mobilenet_v3.py"
 
 model = dict(

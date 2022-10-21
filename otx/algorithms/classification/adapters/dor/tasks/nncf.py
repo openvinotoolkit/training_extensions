@@ -78,6 +78,7 @@ logger = logging.getLogger(__name__)
 
 class ClassificationNNCFTask(DORClassificationInferenceTask, IOptimizationTask):
     """Task for compressing classification models using NNCF."""
+
     def __init__(self, task_environment: TaskEnvironment):
         curr_model_path = task_environment.model_template.model_template_path
         base_model_path = os.path.join(

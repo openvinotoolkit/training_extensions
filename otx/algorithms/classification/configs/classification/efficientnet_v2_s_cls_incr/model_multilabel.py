@@ -1,5 +1,7 @@
 """EfficientNet-V2 for multi-label config."""
 
+# pylint: disable=invalid-name
+
 _base_ = "../../base/models/efficientnet_v2.py"
 
 model = dict(

@@ -14,6 +14,8 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+# pylint: disable=invalid-name
+
 from sys import maxsize
 
 from attr import attrs
@@ -42,6 +44,8 @@ class POTQuantizationPreset(ConfigurableEnum):
 
 @attrs
 class DORClassificationParameters(ConfigurableParameters):
+    """Configurations for DOR tasks."""
+
     header = string_attribute("Configuration for an image classification task")
     description = header
 

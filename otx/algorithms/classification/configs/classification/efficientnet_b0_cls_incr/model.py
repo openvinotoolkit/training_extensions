@@ -1,5 +1,7 @@
 """EfficientNet-B0 for multi-class config."""
 
+# pylint: disable=invalid-name
+
 _base_ = "../../base/models/efficientnet.py"
 
 model = dict(

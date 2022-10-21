@@ -1,3 +1,5 @@
+"""Model wrapper file for openvino."""
+
 # Copyright (C) 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -30,10 +32,13 @@ except ImportError as e:
 
 
 class OteClassification(Classification):
+    """Ote classification class for openvino."""
+
     __model__ = "ote_classification"
 
     @classmethod
     def parameters(cls):
+        """Parameters."""
         parameters = super().parameters()
         parameters["resize_type"].update_default_value("standard")
         parameters.update(
@@ -70,12 +75,13 @@ class OteClassification(Classification):
             if layer_shape[1] != len(self.labels):
                 raise RuntimeError(
                     "Model's number of classes and parsed "
-                    "labels must match ({} != {})".format(layer_shape[1], len(self.labels))
+                    f"labels must match ({layer_shape[1]} != {len(self.labels)})"
                 )
         return layer_name
 
     @check_input_parameters_type()
     def preprocess(self, image: np.ndarray):
+        """Pre-process."""
         meta = {"original_shape": image.shape}
         resized_image = self.resize(image, (self.w, self.h))
         resized_image = cv2.cvtColor(resized_image, cv2.COLOR_RGB2BGR)
@@ -89,6 +95,7 @@ class OteClassification(Classification):
 
     @check_input_parameters_type()
     def postprocess(self, outputs: Dict[str, np.ndarray], metadata: Dict[str, Any]):
+        """Post-process."""
         logits = outputs[self.out_layer_name].squeeze()
         if self.multilabel:
             return get_multilabel_predictions(logits)
@@ -99,6 +106,7 @@ class OteClassification(Classification):
 
     @check_input_parameters_type()
     def postprocess_aux_outputs(self, outputs: Dict[str, np.ndarray], metadata: Dict[str, Any]):
+        """Postprocess for aux outputs."""
         actmap = get_actmap(outputs["saliency_map"][0], (metadata["original_shape"][1], metadata["original_shape"][0]))
         repr_vector = outputs["feature_vector"].reshape(-1)
 
@@ -171,7 +179,7 @@ def get_hierarchical_predictions(
 
 @check_input_parameters_type()
 def get_multiclass_predictions(logits: np.ndarray, activate: bool = True):
-
+    """Get multiclass predictions."""
     index = np.argmax(logits)
     if activate:
         logits = softmax_numpy(logits)

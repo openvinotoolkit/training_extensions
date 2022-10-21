@@ -16,4 +16,6 @@
 
 from .configuration import ClassificationConfig
 
-__all__ = [ClassificationConfig]
+__all__ = [
+    "ClassificationConfig",
+]

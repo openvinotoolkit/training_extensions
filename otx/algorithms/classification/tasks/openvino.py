@@ -20,6 +20,7 @@ import logging
 import os
 import tempfile
 from typing import Any, Dict, Optional, Tuple, Union
+from zipfile import ZipFile
 
 import numpy as np
 from addict import Dict as ADDict
@@ -29,6 +30,9 @@ from compression.graph import load_model, save_model
 from compression.graph.model_utils import compress_model_weights, get_nodes_by_type
 from compression.pipeline.initializer import create_pipeline
 
+from otx.algorithms.classification.adapters.openvino import model_wrappers
+from otx.algorithms.classification.configs import ClassificationConfig
+from otx.algorithms.classification.utils import get_multihead_class_info
 from otx.api.entities.annotation import AnnotationSceneEntity
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.inference_parameters import (
@@ -75,11 +79,6 @@ except ImportError:
     import warnings
 
     warnings.warn("ModelAPI was not found.")
-from zipfile import ZipFile
-
-from otx.algorithms.classification.adapters.openvino import model_wrappers
-from otx.algorithms.classification.configs import ClassificationConfig
-from otx.algorithms.classification.utils import get_multihead_class_info
 
 logger = logging.getLogger(__name__)
 
@@ -270,7 +269,7 @@ class ClassificationOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTas
             arch.writestr(os.path.join("model", "model.bin"), self.model.get_data("openvino.bin"))
             arch.writestr(os.path.join("model", "config.json"), json.dumps(parameters, ensure_ascii=False, indent=4))
             # model_wrappers files
-            for root, dirs, files in os.walk(os.path.dirname(model_wrappers.__file__)):
+            for root, _, files in os.walk(os.path.dirname(model_wrappers.__file__)):
                 for file in files:
                     file_path = os.path.join(root, file)
                     arch.write(
