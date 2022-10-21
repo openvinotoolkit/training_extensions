@@ -55,8 +55,9 @@ def make_paths_be_abs(some_dict, root_path):
     ), f"Wrong input dict {some_dict}"
 
     for k in list(some_dict.keys()):
+        breakpoint()
         # Note that os.path.join(a, b) == b if b is an absolute path
-        some_dict[k] = osp.join(root_path, some_dict[k])
+        some_dict[k] = osp.abspath(some_dict[k])
     return some_dict
 
 
