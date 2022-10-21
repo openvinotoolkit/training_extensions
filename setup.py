@@ -248,6 +248,7 @@ EXTRAS_REQUIRE = {
     "anomaly": get_requirements(requirement_files="anomaly"),
     "full": get_requirements(requirement_files=["anomaly"]),
 }
+DEPENDENCY_LINKS = ["https://download.pytorch.org/whl/torch_stable.html"]
 
 
 setup(
@@ -257,9 +258,7 @@ setup(
     package_data={"": ["requirements.txt", "README.md", "LICENSE"]},  # Needed for exportable code
     install_requires=REQUIRED_PACKAGES,
     extras_require=EXTRAS_REQUIRE,
-    dependency_links=[
-        "https://download.pytorch.org/whl/torch_stable.html"
-    ],
+    dependency_links=DEPENDENCY_LINKS,
     entry_points={
         "console_scripts": [
             "otx=otx.cli.tools.cli:main",
