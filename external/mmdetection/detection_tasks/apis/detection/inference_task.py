@@ -28,6 +28,7 @@ import torch
 from mmcv.parallel import MMDataParallel
 from mmcv.runner import load_checkpoint, load_state_dict
 from mmcv.utils import Config
+from ote_sdk.configuration.helper.utils import config_to_bytes
 from ote_sdk.entities.annotation import Annotation
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.id import ID
@@ -449,6 +450,7 @@ class OTEDetectionInferenceTask(IInferenceTask, IExportTask, IEvaluationTask, IU
                 with open(os.path.join(tempdir, xml_file), "rb") as f:
                     output_model.set_data('openvino.xml', f.read())
                 output_model.set_data('confidence_threshold', np.array([self.confidence_threshold], dtype=np.float32).tobytes())
+                output_model.set_data("config.json", config_to_bytes(self._hyperparams))
                 output_model.precision = self._precision
                 output_model.optimization_methods = self._optimization_methods
             except Exception as ex:
