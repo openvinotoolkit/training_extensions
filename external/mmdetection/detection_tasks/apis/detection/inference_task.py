@@ -275,7 +275,7 @@ class OTEDetectionInferenceTask(IInferenceTask, IExportTask, IEvaluationTask, IU
             self.confidence_threshold = self._hyperparams.postprocessing.confidence_threshold
 
         update_progress_callback = default_progress_callback
-        dump_saliency_map = True
+        dump_saliency_map = False
         if inference_parameters is not None:
             update_progress_callback = inference_parameters.update_progress
             dump_saliency_map = not inference_parameters.is_evaluation
@@ -291,7 +291,7 @@ class OTEDetectionInferenceTask(IInferenceTask, IExportTask, IEvaluationTask, IU
         logger.info(f'Confidence threshold {self.confidence_threshold}')
         model = self._model
         with model.register_forward_pre_hook(pre_hook), model.register_forward_hook(hook):
-            prediction_results, _ = self._infer_detector(model, self._config, dataset, dump_features=True, eval=False,
+            prediction_results, _ = self._infer_detector(model, self._config, dataset, dump_features=False, eval=False,
                                                          dump_saliency_map=dump_saliency_map)
         self._add_predictions_to_dataset(prediction_results, dataset, self.confidence_threshold)
 
