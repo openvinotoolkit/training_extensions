@@ -69,8 +69,6 @@ def ote_current_reference_dir_fx(ote_reference_root_dir_fx, current_test_paramet
     path = os.path.join(
         ote_reference_root_dir_fx, current_test_parameters_fx["model_name"]
     )
-    if not os.path.isdir(path):
-        return None
     return path
 
 
