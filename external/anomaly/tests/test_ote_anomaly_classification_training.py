@@ -206,6 +206,22 @@ class AnomalyDetectionTestTrainingAction(OTETestTrainingAction):
         return results
 
 
+def get_dummy_compressed_model(task):
+    """
+    Return compressed model without initialization
+    """
+    # pylint:disable=protected-access
+    from anomalib.utils.callbacks.nncf.utils import wrap_nncf_model
+
+    # Disable quantaizers initialization
+    for compression in task.optimization_config["nncf_config"]["compression"]:
+        if compression["algorithm"] == "quantization":
+            compression["initializer"] = {"batchnorm_adaptation": {"num_bn_adaptation_samples": 0}}
+
+    _, compressed_model = wrap_nncf_model(task.model, task.optimization_config["nncf_config"])
+    return compressed_model
+
+
 class TestOTEReallifeAnomalyClassification(OTETrainingTestInterface):
     """
     The main class of running test in this file.
@@ -287,7 +303,7 @@ class TestOTEReallifeAnomalyClassification(OTETrainingTestInterface):
                 "labels_schema": labels_schema,
                 "template_path": template_path,
                 "reference_dir": ote_current_reference_dir_fx,
-                "fn_get_compressed_model": None,  # NNCF not yet implemented in Anomaly
+                "fn_get_compressed_model": get_dummy_compressed_model,
             }
 
         params_factories_for_test_actions = {

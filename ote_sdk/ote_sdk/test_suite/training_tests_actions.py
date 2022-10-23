@@ -562,14 +562,22 @@ class OTETestNNCFAction(BaseOTETestAction):
 
 
 # TODO: think about move to special file
-def check_nncf_model_graph(model, path_to_dot):
+def check_nncf_model_graph(model, path_to_dot, force_regen_dot=False):
     import networkx as nx
-
-    logger.info(f"Reference graph: {path_to_dot}")
-    load_graph = nx.drawing.nx_pydot.read_dot(path_to_dot)
 
     graph = model.get_graph()
     nx_graph = graph.get_graph_for_structure_analysis()
+
+    if force_regen_dot:
+        # Generate and rewrite reference graph
+        dir_path = os.path.dirname(path_to_dot)
+        if not os.path.exists(dir_path):
+            os.makedirs(dir_path)
+        nx.drawing.nx_pydot.write_dot(nx_graph, path_to_dot)
+        logger.warning(f"Reference graph was generated: {path_to_dot}")
+
+    logger.info(f"Reference graph: {path_to_dot}")
+    load_graph = nx.drawing.nx_pydot.read_dot(path_to_dot)
 
     for _, node in nx_graph.nodes(data=True):
         if "scope" in node:
@@ -592,6 +600,7 @@ def check_nncf_model_graph(model, path_to_dot):
 
 class OTETestNNCFGraphAction(BaseOTETestAction):
     _name = "nncf_graph"
+    _VAR_REGEN_DOT = "NNCF_TEST_REGEN_DOT"
 
     def __init__(
         self,
@@ -619,8 +628,13 @@ class OTETestNNCFGraphAction(BaseOTETestAction):
         if not is_nncf_enabled():
             pytest.skip("NNCF is not installed")
 
-        if not os.path.exists(self.reference_dir):
-            pytest.skip("Reference directory does not exist")
+        force_regen_dot = os.getenv(self._VAR_REGEN_DOT) is not None
+        if not force_regen_dot:
+            if self.reference_dir is None or not os.path.exists(self.reference_dir):
+                pytest.skip(
+                    f"Reference directory does not exist: {self.reference_dir}.\n"
+                    f"To generate reference graph set the global variable {self._VAR_REGEN_DOT}."
+                )
 
         params = ote_sdk_configuration_helper_create(
             model_template.hyper_parameters.data
@@ -650,16 +664,22 @@ class OTETestNNCFGraphAction(BaseOTETestAction):
         nncf_task_cls = get_impl_class(nncf_task_class_impl_path)
         nncf_task = nncf_task_cls(task_environment=environment_for_nncf)
 
-        path_to_ref_dot = os.path.join(
-            self.reference_dir, "nncf", f"{nncf_task._nncf_preset}.dot"
+        nncf_preset = (
+            nncf_task.nncf_preset
+            if hasattr(nncf_task, "nncf_preset")
+            else nncf_task._nncf_preset
         )
-        if not os.path.exists(path_to_ref_dot):
-            pytest.skip("Reference file does not exist: {}".format(path_to_ref_dot))
+        path_to_ref_dot = os.path.join(self.reference_dir, "nncf", f"{nncf_preset}.dot")
+        if not os.path.exists(path_to_ref_dot) and not force_regen_dot:
+            pytest.skip(
+                f"Reference file does not exist: {path_to_ref_dot}.\n"
+                f"To generate reference graph set the global variable {self._VAR_REGEN_DOT}."
+            )
 
         compressed_model = self.fn_get_compressed_model(nncf_task)
 
         assert check_nncf_model_graph(
-            compressed_model, path_to_ref_dot
+            compressed_model, path_to_ref_dot, force_regen_dot
         ), "Compressed model differs from the reference"
 
     def __call__(self, data_collector: DataCollector, results_prev_stages: OrderedDict):
