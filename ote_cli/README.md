@@ -13,6 +13,7 @@
 - `ote export` - export trained model to the OpenVINO format in order to efficiently run it on Intel hardware.
 - `ote demo` - run model inference on images, videos, webcam in order to see how it works on user's data.
 - `ote deploy` - create openvino.zip with self-contained python package, demo application and exported model.
+- `ote explain` - run model's explanation and save saliency map for feature vector to the dump path.
 
 ### Jupyter notebooks
 
