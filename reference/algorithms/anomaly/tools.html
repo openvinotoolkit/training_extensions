@@ -245,6 +245,132 @@
 <h1>Tools<a class="headerlink" href="#tools" title="Permalink to this headline">¶</a></h1>
 <div class="toctree-wrapper compound">
 </div>
+<span class="target" id="module-otx.algorithms.anomaly.tools.sample"></span><p><cite>sample.py</cite>.</p>
+<p>This is a sample python script showing how to train an end-to-end OTX Anomaly Classification Task.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.algorithms.anomaly.tools.sample.OtxAnomalyTask">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.anomaly.tools.sample.</span></span><span class="sig-name descname"><span class="pre">OtxAnomalyTask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_subset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_subset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_subset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_template_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.anomaly.tools.sample.OtxAnomalyTask" title="Permalink to this definition">¶</a></dt>
+<dd><p>OTX Anomaly Classification Task.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.anomaly.tools.sample.OtxAnomalyTask.clean_up">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">clean_up</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#otx.algorithms.anomaly.tools.sample.OtxAnomalyTask.clean_up" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clean up the <cite>results</cite> directory used by <cite>anomalib</cite>.</p>
+</dd></dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.anomaly.tools.sample.OtxAnomalyTask.create_task">
+<span class="sig-name descname"><span class="pre">create_task</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">task</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="headerlink" href="#otx.algorithms.anomaly.tools.sample.OtxAnomalyTask.create_task" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create base torch or openvino task.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>task</strong> (<em>str</em>) – task type. Either base or openvino.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Base Torch or OpenVINO Task Class.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Any</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="bp">self</span><span class="o">.</span><span class="n">create_task</span><span class="p">(</span><span class="n">task</span><span class="o">=</span><span class="s2">"base"</span><span class="p">)</span>
+<span class="go">&lt;anomaly_classification.torch_task.AnomalyClassificationTask&gt;</span>
+</pre></div>
+</div>
+</dd></dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.anomaly.tools.sample.OtxAnomalyTask.create_task_environment">
+<span class="sig-name descname"><span class="pre">create_task_environment</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.task_environment.TaskEnvironment" title="otx.api.entities.task_environment.TaskEnvironment"><span class="pre">otx.api.entities.task_environment.TaskEnvironment</span></a></span></span><a class="headerlink" href="#otx.algorithms.anomaly.tools.sample.OtxAnomalyTask.create_task_environment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create task environment.</p>
+</dd></dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.anomaly.tools.sample.OtxAnomalyTask.evaluate">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">evaluate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">task</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">otx.api.usecases.tasks.interfaces.evaluate_interface.IEvaluationTask</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">result_set</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.resultset.ResultSetEntity" title="otx.api.entities.resultset.ResultSetEntity"><span class="pre">otx.api.entities.resultset.ResultSetEntity</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#otx.algorithms.anomaly.tools.sample.OtxAnomalyTask.evaluate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluate the performance of the model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>task</strong> (<em>IEvaluationTask</em>) – Task to evaluate the performance. Either torch or openvino.</p></li>
+<li><p><strong>result_set</strong> (<a class="reference internal" href="../../api/entities/general.html#otx.api.entities.resultset.ResultSetEntity" title="otx.api.entities.resultset.ResultSetEntity"><em>ResultSetEntity</em></a>) – Results set containing the true and pred datasets.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.anomaly.tools.sample.OtxAnomalyTask.export">
+<span class="sig-name descname"><span class="pre">export</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.model.ModelEntity" title="otx.api.entities.model.ModelEntity"><span class="pre">otx.api.entities.model.ModelEntity</span></a></span></span><a class="headerlink" href="#otx.algorithms.anomaly.tools.sample.OtxAnomalyTask.export" title="Permalink to this definition">¶</a></dt>
+<dd><p>Export the model via openvino.</p>
+</dd></dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.anomaly.tools.sample.OtxAnomalyTask.export_nncf">
+<span class="sig-name descname"><span class="pre">export_nncf</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.model.ModelEntity" title="otx.api.entities.model.ModelEntity"><span class="pre">otx.api.entities.model.ModelEntity</span></a></span></span><a class="headerlink" href="#otx.algorithms.anomaly.tools.sample.OtxAnomalyTask.export_nncf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Export NNCF model via openvino.</p>
+</dd></dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.anomaly.tools.sample.OtxAnomalyTask.get_dataclass">
+<span class="sig-name descname"><span class="pre">get_dataclass</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">otx.algorithms.anomaly.adapters.anomalib.data.dataset.AnomalyDetectionDataset</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">otx.algorithms.anomaly.adapters.anomalib.data.dataset.AnomalySegmentationDataset</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">otx.algorithms.anomaly.adapters.anomalib.data.dataset.AnomalyClassificationDataset</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#otx.algorithms.anomaly.tools.sample.OtxAnomalyTask.get_dataclass" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the dataloader based on the task type.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><strong>ValueError</strong> – Validates task type.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Dataloader</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.anomaly.tools.sample.OtxAnomalyTask.infer">
+<span class="sig-name descname"><span class="pre">infer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">task</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">otx.api.usecases.tasks.interfaces.inference_interface.IInferenceTask</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.model.ModelEntity" title="otx.api.entities.model.ModelEntity"><span class="pre">otx.api.entities.model.ModelEntity</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.resultset.ResultSetEntity" title="otx.api.entities.resultset.ResultSetEntity"><span class="pre">otx.api.entities.resultset.ResultSetEntity</span></a></span></span><a class="headerlink" href="#otx.algorithms.anomaly.tools.sample.OtxAnomalyTask.infer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the predictions using the base Torch or OpenVINO tasks and models.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>task</strong> (<em>IInferenceTask</em>) – Task to infer. Either torch or openvino.</p></li>
+<li><p><strong>output_model</strong> (<a class="reference internal" href="../../api/entities/general.html#otx.api.entities.model.ModelEntity" title="otx.api.entities.model.ModelEntity"><em>ModelEntity</em></a>) – Output model on which the weights are saved.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Results set containing the true and pred datasets.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.resultset.ResultSetEntity" title="otx.api.entities.resultset.ResultSetEntity">ResultSetEntity</a></p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.anomaly.tools.sample.OtxAnomalyTask.optimize">
+<span class="sig-name descname"><span class="pre">optimize</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#otx.algorithms.anomaly.tools.sample.OtxAnomalyTask.optimize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Optimize the model via POT.</p>
+</dd></dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.anomaly.tools.sample.OtxAnomalyTask.optimize_nncf">
+<span class="sig-name descname"><span class="pre">optimize_nncf</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#otx.algorithms.anomaly.tools.sample.OtxAnomalyTask.optimize_nncf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Optimize the model via NNCF.</p>
+</dd></dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="otx.algorithms.anomaly.tools.sample.OtxAnomalyTask.train">
+<span class="sig-name descname"><span class="pre">train</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.model.ModelEntity" title="otx.api.entities.model.ModelEntity"><span class="pre">otx.api.entities.model.ModelEntity</span></a></span></span><a class="headerlink" href="#otx.algorithms.anomaly.tools.sample.OtxAnomalyTask.train" title="Permalink to this definition">¶</a></dt>
+<dd><p>Train the base Torch model.</p>
+</dd></dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.algorithms.anomaly.tools.sample.main">
+<span class="sig-prename descclassname"><span class="pre">otx.algorithms.anomaly.tools.sample.</span></span><span class="sig-name descname"><span class="pre">main</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#otx.algorithms.anomaly.tools.sample.main" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run <cite>sample.py</cite> with given CLI arguments.</p>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="otx.algorithms.anomaly.tools.sample.parse_args">
+<span class="sig-prename descclassname"><span class="pre">otx.algorithms.anomaly.tools.sample.</span></span><span class="sig-name descname"><span class="pre">parse_args</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><span class="pre">argparse.Namespace</span></span></span><a class="headerlink" href="#otx.algorithms.anomaly.tools.sample.parse_args" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse CLI arguments.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>CLI arguments.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>(Namespace)</p>
+</dd>
+</dl>
+</dd></dl>
 </section>
 
       </article>
