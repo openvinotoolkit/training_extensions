@@ -53,6 +53,7 @@ from tests.anomaly_common import (
     _create_anomaly_dataset_and_labels_schema,
     _get_dataset_params_from_dataset_definitions,
     get_anomaly_domain_test_action_classes,
+    get_dummy_compressed_model,
 )
 
 logger = logging.getLogger(__name__)
@@ -350,22 +351,6 @@ class AnomalySegmentationTestTrainingAction(OTETestTrainingAction):
             "output_model": self.output_model,
         }
         return results
-
-
-def get_dummy_compressed_model(task):
-    """
-    Return compressed model without initialization
-    """
-    # pylint:disable=protected-access
-    from anomalib.utils.callbacks.nncf.utils import wrap_nncf_model
-
-    # Disable quantaizers initialization
-    for compression in task.optimization_config["nncf_config"]["compression"]:
-        if compression["algorithm"] == "quantization":
-            compression["initializer"] = {"batchnorm_adaptation": {"num_bn_adaptation_samples": 0}}
-
-    _, compressed_model = wrap_nncf_model(task.model, task.optimization_config["nncf_config"])
-    return compressed_model
 
 
 class TestOTEReallifeAnomalySegmentation(OTETrainingTestInterface):
