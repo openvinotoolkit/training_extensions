@@ -20,7 +20,7 @@ import math
 import os
 import shutil
 import tempfile
-from typing import Dict, Optional
+from typing import Any, Dict, List, Optional
 
 import torch
 import torchreid
@@ -141,12 +141,13 @@ class DORClassificationInferenceTask(
 
         self.device = torch.device("cuda:0") if torch.cuda.device_count() else torch.device("cpu")
         self._model = self._load_model(task_environment.model, device=self.device)
+        self._model.to(self.device)
 
         self.stop_callback = StopCallback()
         self.metrics_monitor = DefaultMetricsMonitor()
 
         # Set default model attributes.
-        self._optimization_methods = []
+        self._optimization_methods = []  # type: List[Any]
         self._precision = [ModelPrecision.FP32]
         self._optimization_type = ModelOptimizationType.MO
 
@@ -154,7 +155,9 @@ class DORClassificationInferenceTask(
     def _hyperparams(self):
         return self._task_environment.get_hyper_parameters(DORClassificationParameters)
 
-    def _load_model(self, model: ModelEntity, device: torch.device, pretrained_dict: Optional[Dict] = None):
+    def _load_model(
+        self, model: Optional[ModelEntity], device: torch.device, pretrained_dict: Optional[Dict] = None
+    ):  # pylint: disable=unused-argument
         if model is not None:
             # If a model has been trained and saved for the task already, create empty model and load weights here
             if pretrained_dict is None:
@@ -175,7 +178,8 @@ class DORClassificationInferenceTask(
             # file.
             model = self._create_model(self._cfg, from_scratch=False)
             logger.info("No trained model in project yet. Created new model with general-purpose pretrained weights.")
-        return model.to(device)
+
+        return model
 
     def _create_model(self, config, from_scratch: bool = False):
         """Creates a model, based on the configuration in config.
@@ -222,7 +226,7 @@ class DORClassificationInferenceTask(
         self._cfg.lr_finder.enable = self._hyperparams.learning_parameters.enable_lr_finder
         self._cfg.train.early_stopping = self._hyperparams.learning_parameters.enable_early_stopping
 
-    # pylint: disable=too-many-locals
+    # pylint: disable=too-many-locals, too-many-branches
     @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def infer(
         self, dataset: DatasetEntity, inference_parameters: Optional[InferenceParameters] = None
@@ -263,7 +267,8 @@ class DORClassificationInferenceTask(
         with force_fp32(self._model):
             self._model.eval()
             self._model.to(self.device)
-            dump_features = not inference_parameters.is_evaluation
+            if inference_parameters is not None:
+                dump_features = not inference_parameters.is_evaluation
             inference_results, _ = score_extraction(
                 datamanager.test_loader,
                 self._model,
@@ -297,7 +302,8 @@ class DORClassificationInferenceTask(
                 item_labels = get_multiclass_predictions(scores[i], self._labels, activate=False)
 
             if not item_labels:
-                item_labels = [ScoredLabel(self._empty_label, probability=1.0)]
+                if self._empty_label is not None:
+                    item_labels = [ScoredLabel(self._empty_label, probability=1.0)]
 
             dataset_item.append_labels(item_labels)
             active_score = active_score_from_probs(scores[i])

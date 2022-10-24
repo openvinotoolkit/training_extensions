@@ -22,7 +22,7 @@ import tempfile
 from contextlib import contextmanager
 from operator import itemgetter
 from os import path as osp
-from typing import Iterable, List, Union
+from typing import List
 
 import numpy as np
 from torch.nn.modules import Module
@@ -33,7 +33,6 @@ from otx.api.entities.label import Domain, LabelEntity
 from otx.api.entities.label_schema import LabelGroup, LabelGroupType, LabelSchemaEntity
 from otx.api.entities.model_template import ModelTemplate
 from otx.api.entities.scored_label import ScoredLabel
-from otx.api.entities.train_parameters import UpdateProgressCallback
 from otx.api.usecases.reporting.time_monitor_callback import TimeMonitorCallback
 from otx.api.utils.argument_checks import (
     DatasetParamTypeCheck,
@@ -77,16 +76,16 @@ def get_multihead_class_info(label_schema: LabelSchemaEntity):
     head_idx_to_logits_range = {}
     num_single_label_classes = 0
     last_logits_pos = 0
-    for i, g in enumerate(exclusive_groups):
-        head_idx_to_logits_range[i] = (last_logits_pos, last_logits_pos + len(g))
-        last_logits_pos += len(g)
-        for j, c in enumerate(g):
-            class_to_idx[c] = (i, j)  # group idx and idx inside group
+    for i, group in enumerate(exclusive_groups):
+        head_idx_to_logits_range[i] = (last_logits_pos, last_logits_pos + len(group))
+        last_logits_pos += len(group)
+        for j, cls in enumerate(group):
+            class_to_idx[cls] = (i, j)  # group idx and idx inside group
             num_single_label_classes += 1
 
     # other labels are in multilabel group
-    for j, g in enumerate(single_label_groups):
-        class_to_idx[g[0]] = (len(exclusive_groups), j)
+    for j, group in enumerate(single_label_groups):
+        class_to_idx[group[0]] = (len(exclusive_groups), j)
 
     all_labels = label_schema.get_labels(include_empty=False)
     label_to_idx = {lbl.name: i for i, lbl in enumerate(all_labels)}
@@ -139,6 +138,8 @@ class DORClassificationDataset:
                         else:
                             class_indices.append(-1)
                 else:
+                    if self.mixed_cls_heads_info is None:
+                        raise TypeError("mixed_cls_heads_info is NoneType.")
                     num_cls_heads = self.mixed_cls_heads_info["num_multiclass_heads"]
 
                     class_indices = [0] * (
@@ -169,7 +170,7 @@ class DORClassificationDataset:
             if self.multilabel or self.hierarchical:
                 self.annotation.append({"label": tuple(class_indices)})
             else:
-                self.annotation.append({"label": class_indices[0]})
+                self.annotation.append({"label": class_indices[0]})  # type: ignore
 
     @check_input_parameters_type()
     def __getitem__(self, idx: int):
@@ -248,7 +249,7 @@ class InferenceProgressCallback(TimeMonitorCallback):
        - 10-100 % compressed model is being fine-tuned
     """
 
-    def __init__(self, num_test_steps, update_progress_callback: UpdateProgressCallback):
+    def __init__(self, num_test_steps, update_progress_callback):
         super().__init__(
             num_epoch=0,
             num_train_steps=0,
@@ -274,7 +275,7 @@ class OptimizationProgressCallback(TimeMonitorCallback):
 
     def __init__(
         self,
-        update_progress_callback: UpdateProgressCallback,
+        update_progress_callback,
         loading_stage_progress_percentage: int = 5,
         initialization_stage_progress_percentage: int = 5,
         **kwargs
@@ -286,11 +287,11 @@ class OptimizationProgressCallback(TimeMonitorCallback):
         train_percentage = 100 - loading_stage_progress_percentage - initialization_stage_progress_percentage
         self.loading_stage_steps = self.total_steps * loading_stage_progress_percentage / train_percentage
         self.initialization_stage_steps = self.total_steps * initialization_stage_progress_percentage / train_percentage
-        self.total_steps += self.loading_stage_steps + self.initialization_stage_steps
+        self.total_steps += self.loading_stage_steps + self.initialization_stage_steps  # type: ignore
 
         # set loading_stage_steps from the start as the model is already loaded at this point
-        self.current_step = self.loading_stage_steps
-        self.update_progress_callback(self.get_progress())
+        self.current_step = self.loading_stage_steps  # type: ignore
+        self.update_progress_callback(self.get_progress())  # type: ignore
 
     def on_train_batch_end(self, batch, logs=None):
         """Callback when batch-train ended."""
@@ -309,7 +310,7 @@ class OptimizationProgressCallback(TimeMonitorCallback):
 
 
 @check_input_parameters_type()
-def active_score_from_probs(predictions: Union[np.ndarray, Iterable, int, float]):
+def active_score_from_probs(predictions):
     """Active score form probs."""
     top_idxs = np.argpartition(predictions, -2)[-2:]
     top_probs = predictions[top_idxs]

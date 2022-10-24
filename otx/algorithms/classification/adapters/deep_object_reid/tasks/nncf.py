@@ -109,6 +109,8 @@ class ClassificationNNCFTask(
         self._compression_ctrl = None
         self._nncf_metainfo = None
 
+        if task_environment.model is None:
+            raise TypeError("Model is NoneType.")
         # Load NNCF model.
         if task_environment.model.optimization_type == ModelOptimizationType.NNCF:
             logger.info("Loading the NNCF model")
@@ -154,7 +156,7 @@ class ClassificationNNCFTask(
             return
         raise RuntimeError("Not selected optimization algorithm")
 
-    def _load_model(self, model: ModelEntity, device: torch.device, pretrained_dict: Optional[Dict] = None):
+    def _load_model(self, model: Optional[ModelEntity], device: torch.device, pretrained_dict: Optional[Dict] = None):
         if model is None:
             raise ValueError("No trained model in the project. NNCF require pretrained weights to compress the model")
 
@@ -170,7 +172,7 @@ class ClassificationNNCFTask(
 
         return super()._load_model(model, device, pretrained_dict=model_data)
 
-    def _load_nncf_model(self, model: ModelEntity):
+    def _load_nncf_model(self, model: Optional[ModelEntity]):
         if model is None:
             raise ValueError("No NNCF trained model in project.")
 
@@ -183,9 +185,11 @@ class ClassificationNNCFTask(
         logger.info("Loaded NNCF model weights from Task Environment.")
         return compression_ctrl, model, nncf_metainfo
 
-    def _load_aux_models_data(self, model: ModelEntity):
+    def _load_aux_models_data(self, model: Optional[ModelEntity]):
         aux_models_data = []
         num_aux_models = len(self._cfg.mutual_learning.aux_configs)
+        if model is None:
+            raise TypeError("Model is NoneType.")
         for idx in range(num_aux_models):
             data_name = f"aux_model_{idx + 1}.pth"
             if data_name not in model.model_adapters:
@@ -274,7 +278,7 @@ class ClassificationNNCFTask(
                 main_device_ids[0]
             )
         else:
-            extra_device_ids = [None for _ in range(num_aux_models)]
+            extra_device_ids = [None for _ in range(num_aux_models)]  # type: ignore
 
         optimizer = torchreid.optim.build_optimizer(train_model, **optimizer_kwargs(self._cfg))
 
