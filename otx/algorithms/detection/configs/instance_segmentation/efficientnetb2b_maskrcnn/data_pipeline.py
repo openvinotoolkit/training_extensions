@@ -19,6 +19,7 @@
 dataset_type = "CocoDataset"
 img_size = (1024, 1024)
 
+# TODO: A comparison experiment is needed to determine which value is appropriate for to_rgb.
 img_norm_cfg = dict(mean=(103.53, 116.28, 123.675), std=(1.0, 1.0, 1.0), to_rgb=False)
 
 train_pipeline = [
