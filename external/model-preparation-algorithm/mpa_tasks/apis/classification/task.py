@@ -158,6 +158,35 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         self._add_predictions_to_dataset(prediction_results, dataset, update_progress_callback)
         return dataset
 
+    def explain(
+        self,
+        dataset: DatasetEntity,
+        explain_parameters: Optional[InferenceParameters] = None,
+    ) -> DatasetEntity:
+        logger.info("called explain()")
+        stage_module = "ClsExplainer"
+        self._data_cfg = self._init_test_data_cfg(dataset)
+        dataset = dataset.with_empty_annotations()
+
+        results = self._run_task(
+            stage_module,
+            mode="train",
+            dataset=dataset
+        )
+        logger.debug(f"result of run_task {stage_module} module = {results}")
+        activations = results["outputs"]
+        activation_results = zip(
+            activations["feature_vectors"],
+            activations["saliency_maps"],
+        )
+
+        update_progress_callback = default_progress_callback
+        if explain_parameters is not None:
+            update_progress_callback = explain_parameters.update_progress
+
+        self._add_act_maps_to_dataset(activation_results, dataset, update_progress_callback)
+        return dataset
+
     def evaluate(
         self,
         output_result_set: ResultSetEntity,
@@ -277,6 +306,28 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
 
             update_progress_callback(int(i / dataset_size * 100))
 
+    def _add_act_maps_to_dataset(self, activation_results, dataset, update_progress_callback):
+        """Loop over dataset again and assign activation maps"""
+        dataset_size = len(dataset)
+        for i, (dataset_item, prediction_items) in enumerate(zip(dataset, activation_results)):
+            feature_vector, saliency_map = prediction_items
+
+            # add feature map
+            active_score = TensorEntity(name="representation_vector", numpy=feature_vector.reshape(-1))
+            dataset_item.append_metadata_item(active_score, model=self._task_environment.model)
+
+            # add saliency map
+            saliency_map = get_actmap(saliency_map, (dataset_item.width, dataset_item.height))
+            saliency_map_media = ResultMediaEntity(
+                name="Saliency Map",
+                type="saliency_map",
+                annotation_scene=dataset_item.annotation_scene,
+                numpy=saliency_map,
+                roi=dataset_item.roi,
+            )
+            dataset_item.append_metadata_item(saliency_map_media, model=self._task_environment.model)
+            update_progress_callback(int(i / dataset_size * 100))
+            
     def _init_recipe(self):
         logger.info("called _init_recipe()")
 

@@ -35,6 +35,7 @@ __all__ = [
     "ote_find",
     "ote_train",
     "ote_optimize",
+    "ote_explain"
 ]
 
 
@@ -59,6 +60,7 @@ def main():
       - find
       - train
       - optimize
+      - explain
     """
 
     name = parse_args().operation
