@@ -109,12 +109,11 @@ class ClassificationNNCFTask(
         self._compression_ctrl = None
         self._nncf_metainfo = None
 
-        if task_environment.model is None:
-            raise TypeError("Model is NoneType.")
         # Load NNCF model.
-        if task_environment.model.optimization_type == ModelOptimizationType.NNCF:
-            logger.info("Loading the NNCF model")
-            self._compression_ctrl, self._model, self._nncf_metainfo = self._load_nncf_model(task_environment.model)
+        if task_environment.model is not None:
+            if task_environment.model.optimization_type == ModelOptimizationType.NNCF:
+                logger.info("Loading the NNCF model")
+                self._compression_ctrl, self._model, self._nncf_metainfo = self._load_nncf_model(task_environment.model)
 
         # Set default model attributes.
         self._optimization_type = ModelOptimizationType.NNCF
