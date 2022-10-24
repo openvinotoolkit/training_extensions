@@ -15,7 +15,6 @@ entrypoints:
   base: otx.algorithms.detection.tasks.DetectionTrainTask
   openvino: otx.algorithms.detection.tasks.OpenVINODetectionTask
   nncf: otx.algorithms.detection.tasks.DetectionNNCFTask
-base_model_path: ../../../../mmdetection/configs/custom-object-detection/gen3_mobilenetV2_SSD/template_experimental.yaml
 
 # Capabilities.
 capabilities:

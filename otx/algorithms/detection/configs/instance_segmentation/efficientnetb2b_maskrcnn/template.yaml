@@ -1,10 +1,10 @@
 # Description.
-model_template_id: Custom_Object_Detection_YOLOX
-name: YOLOX
-task_type: DETECTION
+model_template_id: Custom_Counting_Instance_Segmentation_MaskRCNN_EfficientNetB2B
+name: MaskRCNN-EfficientNetB2B
+task_type: INSTANCE_SEGMENTATION
 task_family: VISION
 instantiation: "CLASS"
-summary: Class-Incremental Object Detection for YOLOX
+summary: Class-Incremental Instance Segmentation for MaskRCNN-EfficientNetB2B
 application: ~
 
 # Algo backend.
@@ -26,15 +26,18 @@ hyper_parameters:
   parameter_overrides:
     learning_parameters:
       batch_size:
-        default_value: 8
+        default_value: 4
         auto_hpo_state: POSSIBLE
       learning_rate:
-        default_value: 0.0002
+        default_value: 0.015
         auto_hpo_state: POSSIBLE
       learning_rate_warmup_iters:
-        default_value: 3
+        default_value: 100
       num_iters:
-        default_value: 200
+        default_value: 100
+    pot_parameters:
+      stat_requests_number:
+        default_value: 2
     nncf_optimization:
       enable_quantization:
         default_value: true
@@ -55,10 +58,5 @@ training_targets:
   - CPU
 
 # Stats.
-gigaflops: 6.5
-size: 20.4
-# # Inference options. Defined by OpenVINO capabilities, not Algo Backend or Platform.
-# inference_targets:
-#   - CPU
-#   - GPU
-#   - VPU
+gigaflops: 68.48
+size: 13.27
