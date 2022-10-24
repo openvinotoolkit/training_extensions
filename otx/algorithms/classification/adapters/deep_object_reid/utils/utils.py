@@ -1,6 +1,6 @@
-"""Utils for dor tasks."""
+"""Utils for deep_object_reid tasks."""
 
-# Copyright (C) 2021 Intel Corporation
+# Copyright (C) 2022 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 
 # pylint: disable=too-many-nested-blocks, invalid-name
 
-import importlib
 import math
 import shutil
 import tempfile
@@ -106,12 +105,12 @@ def get_multihead_class_info(label_schema: LabelSchemaEntity):
 
 # pylint: disable=too-many-instance-attributes
 class DORClassificationDataset:
-    """Dataset used in DOR tasks."""
+    """Dataset used in deep_object_reid tasks."""
 
-    @check_input_parameters_type({"ote_dataset": DatasetParamTypeCheck})
+    @check_input_parameters_type({"otx_dataset": DatasetParamTypeCheck})
     def __init__(
         self,
-        ote_dataset: DatasetEntity,
+        otx_dataset: DatasetEntity,
         labels: List[LabelEntity],
         multilabel: bool = False,
         hierarchical: bool = False,
@@ -119,7 +118,7 @@ class DORClassificationDataset:
         keep_empty_label: bool = False,
     ):  # pylint: disable=too-many-branches, too-many-locals
         super().__init__()
-        self.ote_dataset = ote_dataset
+        self.otx_dataset = otx_dataset
         self.multilabel = multilabel
         self.mixed_cls_heads_info = mixed_cls_heads_info
         self.hierarchical = hierarchical
@@ -128,15 +127,15 @@ class DORClassificationDataset:
         self.keep_empty_label = keep_empty_label
         self.label_names = [label.name for label in self.labels]
 
-        for i, _ in enumerate(self.ote_dataset):
+        for i, _ in enumerate(self.otx_dataset):
             class_indices = []
-            item_labels = self.ote_dataset[i].get_roi_labels(self.labels, include_empty=self.keep_empty_label)
-            ignored_labels = self.ote_dataset[i].ignored_labels
+            item_labels = self.otx_dataset[i].get_roi_labels(self.labels, include_empty=self.keep_empty_label)
+            ignored_labels = self.otx_dataset[i].ignored_labels
             if item_labels:
                 if not self.hierarchical:
-                    for ote_lbl in item_labels:
-                        if ote_lbl not in ignored_labels:
-                            class_indices.append(self.label_names.index(ote_lbl.name))
+                    for otx_lbl in item_labels:
+                        if otx_lbl not in ignored_labels:
+                            class_indices.append(self.label_names.index(otx_lbl.name))
                         else:
                             class_indices.append(-1)
                 else:
@@ -148,12 +147,12 @@ class DORClassificationDataset:
                     )
                     for j in range(num_cls_heads):
                         class_indices[j] = -1
-                    for ote_lbl in item_labels:
-                        group_idx, in_group_idx = self.mixed_cls_heads_info["class_to_group_idx"][ote_lbl.name]
+                    for otx_lbl in item_labels:
+                        group_idx, in_group_idx = self.mixed_cls_heads_info["class_to_group_idx"][otx_lbl.name]
                         if group_idx < num_cls_heads:
                             class_indices[group_idx] = in_group_idx
                         else:
-                            if ote_lbl not in ignored_labels:
+                            if otx_lbl not in ignored_labels:
                                 class_indices[num_cls_heads + in_group_idx] = 1
                             else:
                                 class_indices[num_cls_heads + in_group_idx] = -1
@@ -175,7 +174,7 @@ class DORClassificationDataset:
     @check_input_parameters_type()
     def __getitem__(self, idx: int):
         """Get item from dataset."""
-        sample = self.ote_dataset[idx].numpy  # This returns 8-bit numpy array of shape (height, width, RGB)
+        sample = self.otx_dataset[idx].numpy  # This returns 8-bit numpy array of shape (height, width, RGB)
         label = self.annotation[idx]["label"]
         return {"img": sample, "label": label}
 
@@ -190,14 +189,6 @@ class DORClassificationDataset:
     def get_classes(self):
         """Get classes' name."""
         return self.label_names
-
-
-@check_input_parameters_type()
-def get_task_class(path: str):
-    """Get task class."""
-    module_name, class_name = path.rsplit(".", 1)
-    module = importlib.import_module(module_name)
-    return getattr(module, class_name)
 
 
 @check_input_parameters_type()
@@ -386,8 +377,8 @@ def get_hierarchical_predictions(
             head_logits = softmax_numpy(head_logits)
         j = np.argmax(head_logits)
         label_str = multihead_class_info["all_groups"][i][j]
-        ote_label = next(x for x in labels if x.name == label_str)
-        predicted_labels.append(ScoredLabel(label=ote_label, probability=float(head_logits[j])))
+        otx_label = next(x for x in labels if x.name == label_str)
+        predicted_labels.append(ScoredLabel(label=otx_label, probability=float(head_logits[j])))
 
     if multihead_class_info["num_multilabel_classes"]:
         logits_begin, logits_end = multihead_class_info["num_single_label_classes"], -1
@@ -398,7 +389,7 @@ def get_hierarchical_predictions(
         for i in range(head_logits.shape[0]):
             if head_logits[i] > pos_thr:
                 label_str = multihead_class_info["all_groups"][multihead_class_info["num_multiclass_heads"] + i][0]
-                ote_label = next(x for x in labels if x.name == label_str)
-                predicted_labels.append(ScoredLabel(label=ote_label, probability=float(head_logits[i])))
+                otx_label = next(x for x in labels if x.name == label_str)
+                predicted_labels.append(ScoredLabel(label=otx_label, probability=float(head_logits[i])))
 
     return label_schema.resolve_labels_probabilistic(predicted_labels)

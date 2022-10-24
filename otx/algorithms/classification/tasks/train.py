@@ -7,7 +7,6 @@
 # pylint: disable=invalid-name
 
 import io
-import time
 from collections import defaultdict
 from typing import List, Optional
 
@@ -17,6 +16,7 @@ from mpa.utils.logger import get_logger
 
 from otx.algorithms.classification.configs import ClassificationConfig
 from otx.algorithms.common.adapters.mmcv import OTXLoggerHook
+from otx.algorithms.common.utils import TrainingProgressCallback
 from otx.api.configuration import cfg_helper
 from otx.api.configuration.helper.utils import ids_to_strings
 from otx.api.entities.datasets import DatasetEntity
@@ -30,51 +30,17 @@ from otx.api.entities.metrics import (
 )
 from otx.api.entities.model import ModelEntity  # ModelStatus
 from otx.api.entities.subset import Subset
-from otx.api.entities.train_parameters import TrainParameters, UpdateProgressCallback
+from otx.api.entities.train_parameters import TrainParameters
 from otx.api.entities.train_parameters import (
     default_progress_callback as train_default_progress_callback,
 )
 from otx.api.serialization.label_mapper import label_schema_to_bytes
-from otx.api.usecases.reporting.time_monitor_callback import TimeMonitorCallback
 
 from .inference import ClassificationInferenceTask
 
 logger = get_logger()
 
 TASK_CONFIG = ClassificationConfig
-
-
-class TrainingProgressCallback(TimeMonitorCallback):
-    """TrainingProgressCallback class for time monitoring."""
-
-    def __init__(self, update_progress_callback: UpdateProgressCallback):
-        super().__init__(0, 0, 0, 0, update_progress_callback=update_progress_callback)
-
-    def on_train_batch_end(self, batch, logs=None):
-        """Callback function on training batch ended."""
-        super().on_train_batch_end(batch, logs)
-        self.update_progress_callback(self.get_progress())
-
-    def on_epoch_end(self, epoch, logs=None):
-        """Callback function on epoch ended."""
-        self.past_epoch_duration.append(time.time() - self.start_epoch_time)
-        self._calculate_average_epoch()
-        score = None
-        if hasattr(self.update_progress_callback, "metric") and isinstance(logs, dict):
-            score = logs.get(self.update_progress_callback.metric, None)
-            logger.info(f"logged score for metric {self.update_progress_callback.metric} = {score}")
-            score = 0.01 * float(score) if score is not None else None
-            if score is not None:
-                iter_num = logs.get("current_iters", None)
-                if iter_num is not None:
-                    logger.info(f"score = {score} at epoch {epoch} / {int(iter_num)}")
-                    # as a trick, score (at least if it's accuracy not the loss) and iteration number
-                    # could be assembled just using summation and then disassembeled.
-                    if 1.0 > score:
-                        score = score + int(iter_num)
-                    else:
-                        score = -(score + int(iter_num))
-        self.update_progress_callback(self.get_progress(), score=score)
 
 
 class ClassificationTrainTask(ClassificationInferenceTask):
@@ -138,7 +104,7 @@ class ClassificationTrainTask(ClassificationInferenceTask):
         # Set OTX LoggerHook & Time Monitor
         update_progress_callback = train_default_progress_callback
         if train_parameters is not None:
-            update_progress_callback = train_parameters.update_progress
+            update_progress_callback = train_parameters.update_progress  # type: ignore
         self._time_monitor = TrainingProgressCallback(update_progress_callback)
         self._learning_curves = defaultdict(OTXLoggerHook.Curve)
 
@@ -181,12 +147,12 @@ class ClassificationTrainTask(ClassificationInferenceTask):
         data_cfg = ConfigDict(
             data=ConfigDict(
                 train=ConfigDict(
-                    ote_dataset=dataset.get_subset(Subset.TRAINING),
+                    otx_dataset=dataset.get_subset(Subset.TRAINING),
                     labels=self._labels,
                     label_names=list(label.name for label in self._labels),
                 ),
                 val=ConfigDict(
-                    ote_dataset=dataset.get_subset(Subset.VALIDATION),
+                    otx_dataset=dataset.get_subset(Subset.VALIDATION),
                     labels=self._labels,
                 ),
             )
@@ -196,7 +162,7 @@ class ClassificationTrainTask(ClassificationInferenceTask):
             label.hotkey = "a"
         return data_cfg
 
-    def _generate_training_metrics_group(self, learning_curves) -> Optional[List[MetricsGroup]]:
+    def _generate_training_metrics_group(self, learning_curves):
         """Parses the classification logs to get metrics from the latest training run.
 
         :return output List[MetricsGroup]

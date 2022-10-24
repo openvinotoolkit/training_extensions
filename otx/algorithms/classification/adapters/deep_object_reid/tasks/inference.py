@@ -1,6 +1,6 @@
 """Inference running through deep-object-reid to enable nncf task."""
 
-# Copyright (C) 2021 Intel Corporation
+# Copyright (C) 2022 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -34,14 +34,14 @@ from torchreid.apis.export import export_ir, export_onnx
 from torchreid.metrics.classification import score_extraction
 from torchreid.utils import load_pretrained_weights
 
-from otx.algorithms.classification.adapters.dor.utils.monitors import (
+from otx.algorithms.classification.adapters.deep_object_reid.utils.monitors import (
     DefaultMetricsMonitor,
     StopCallback,
 )
-from otx.algorithms.classification.adapters.dor.utils.parameters import (
+from otx.algorithms.classification.adapters.deep_object_reid.utils.parameters import (
     DORClassificationParameters,
 )
-from otx.algorithms.classification.adapters.dor.utils.utils import (
+from otx.algorithms.classification.adapters.deep_object_reid.utils.utils import (
     DORClassificationDataset,
     InferenceProgressCallback,
     active_score_from_probs,
@@ -97,7 +97,7 @@ class DORClassificationInferenceTask(
     @check_input_parameters_type()
     def __init__(self, task_environment: TaskEnvironment):
         logger.info("Loading DORClassificationTask.")
-        self._scratch_space = tempfile.mkdtemp(prefix="ote-cls-scratch-")
+        self._scratch_space = tempfile.mkdtemp(prefix="otx-cls-scratch-")
         logger.info(f"Scratch space created at {self._scratch_space}")
 
         self._task_environment = task_environment
@@ -337,7 +337,7 @@ class DORClassificationInferenceTask(
         output_model.optimization_type = self._optimization_type
 
         with tempfile.TemporaryDirectory() as tempdir:
-            optimized_model_dir = os.path.join(tempdir, "dor")
+            optimized_model_dir = os.path.join(tempdir, "deep_object_reid")
             logger.info(f'Optimized model will be temporarily saved to "{optimized_model_dir}"')
             os.makedirs(optimized_model_dir, exist_ok=True)
             try:

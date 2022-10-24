@@ -14,8 +14,8 @@ framework: OTEClassification v1.2.3
 entrypoints:
   base: otx.algorithms.classification.tasks.ClassificationTrainTask
   openvino: otx.algorithms.classification.tasks.ClassificationOpenVINOTask
-  nncf: otx.algorithms.classification.adapters.dor.tasks.ClassificationNNCFTask
-base_model_path: ../../../adapters/dor/configs/ote_custom_classification/efficientnet_v2_s/template_experimental.yaml
+  nncf: otx.algorithms.classification.adapters.deep_object_reid.tasks.ClassificationNNCFTask
+base_model_path: ../../../adapters/deep_object_reid/configs/classification/efficientnet_v2_s/template_experimental.yaml
 
 # Capabilities.
 capabilities:

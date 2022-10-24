@@ -1,4 +1,4 @@
-"""Adapters of classification - dor (deep-object-reid)."""
+"""Initialization of MobileNet-V3-large-1 model for Classification Task."""
 
 # Copyright (C) 2022 Intel Corporation
 #

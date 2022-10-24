@@ -5,7 +5,7 @@
 #
 
 import os
-from typing import List, Optional
+from typing import Optional
 
 import numpy as np
 from mmcv.utils import ConfigDict
@@ -113,7 +113,7 @@ class ClassificationInferenceTask(
 
         update_progress_callback = default_progress_callback
         if inference_parameters is not None:
-            update_progress_callback = inference_parameters.update_progress
+            update_progress_callback = inference_parameters.update_progress  # type: ignore
 
         self._add_predictions_to_dataset(prediction_results, dataset, update_progress_callback)
         return dataset
@@ -152,7 +152,7 @@ class ClassificationInferenceTask(
         results = results.get("outputs")
         logger.debug(f"results of run_task = {results}")
         if results is None:
-            logger.error(f"error while exporting model {results.get('msg')}")
+            logger.error("Error while exporting model. Result is NoneType.")
         else:
             bin_file = results.get("bin")
             xml_file = results.get("xml")
@@ -197,8 +197,8 @@ class ClassificationInferenceTask(
                     head_logits = prediction_item[logits_begin:logits_end]
                     head_pred = np.argmax(head_logits)  # Assume logits already passed softmax
                     label_str = self._hierarchical_info["all_groups"][head_idx][head_pred]
-                    ote_label = next(x for x in self._labels if x.name == label_str)
-                    item_labels.append(ScoredLabel(label=ote_label, probability=float(head_logits[head_pred])))
+                    otx_label = next(x for x in self._labels if x.name == label_str)
+                    item_labels.append(ScoredLabel(label=otx_label, probability=float(head_logits[head_pred])))
 
                 if self._hierarchical_info["num_multilabel_classes"]:
                     logits_begin, logits_end = (
@@ -210,8 +210,8 @@ class ClassificationInferenceTask(
                         if logit > pos_thr:  # Assume logits already passed sigmoid
                             label_str_idx = self._hierarchical_info["num_multiclass_heads"] + logit_idx
                             label_str = self._hierarchical_info["all_groups"][label_str_idx][0]
-                            ote_label = next(x for x in self._labels if x.name == label_str)
-                            item_labels.append(ScoredLabel(label=ote_label, probability=float(logit)))
+                            otx_label = next(x for x in self._labels if x.name == label_str)
+                            item_labels.append(ScoredLabel(label=otx_label, probability=float(logit)))
                 item_labels = self._task_environment.label_schema.resolve_labels_probabilistic(item_labels)
                 if not item_labels:
                     logger.info("item_labels is empty.")
@@ -321,11 +321,11 @@ class ClassificationInferenceTask(
         data_cfg = ConfigDict(
             data=ConfigDict(
                 train=ConfigDict(
-                    ote_dataset=dataset,
+                    otx_dataset=dataset,
                     labels=self._labels,
                 ),
                 test=ConfigDict(
-                    ote_dataset=dataset,
+                    otx_dataset=dataset,
                     labels=self._labels,
                 ),
             )
@@ -366,11 +366,11 @@ class ClassificationInferenceTask(
             # In train dataset, when sample size is smaller than batch size
             if subset == "train" and self._data_cfg:
                 train_data_cfg = Stage.get_train_data_cfg(self._data_cfg)
-                if len(train_data_cfg.get("ote_dataset", [])) < self._recipe_cfg.data.get("samples_per_gpu", 2):
+                if len(train_data_cfg.get("otx_dataset", [])) < self._recipe_cfg.data.get("samples_per_gpu", 2):
                     cfg.drop_last = False
 
             cfg.domain = domain
-            cfg.ote_dataset = None
+            cfg.otx_dataset = None
             cfg.labels = None
             cfg.empty_label = self._empty_label
             for pipeline_step in cfg.pipeline:

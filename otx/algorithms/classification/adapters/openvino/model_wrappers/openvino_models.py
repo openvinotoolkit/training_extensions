@@ -1,6 +1,6 @@
 """Model wrapper file for openvino."""
 
-# Copyright (C) 2021 Intel Corporation
+# Copyright (C) 2022 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -33,10 +33,10 @@ except ImportError as e:
     warnings.warn("ModelAPI was not found.")
 
 
-class OteClassification(Classification):
-    """Ote classification class for openvino."""
+class OTXClassification(Classification):
+    """OTX classification class for openvino."""
 
-    __model__ = "ote_classification"
+    __model__ = "otx_classification"
 
     @classmethod
     def parameters(cls):

@@ -1,6 +1,6 @@
 """Collection of utils about labels in Classifation Task."""
 
-# Copyright (C) 2021 Intel Corporation
+# Copyright (C) 2022 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 
 # pylint: disable=too-many-nested-blocks, invalid-name
 
-import importlib
 from operator import itemgetter
 from typing import List
 
@@ -60,16 +59,16 @@ def get_multihead_class_info(label_schema: LabelSchemaEntity):  # pylint: disabl
     head_idx_to_logits_range = {}
     num_single_label_classes = 0
     last_logits_pos = 0
-    for i, g in enumerate(exclusive_groups):
-        head_idx_to_logits_range[i] = (last_logits_pos, last_logits_pos + len(g))
-        last_logits_pos += len(g)
-        for j, c in enumerate(g):
+    for i, group in enumerate(exclusive_groups):
+        head_idx_to_logits_range[i] = (last_logits_pos, last_logits_pos + len(group))
+        last_logits_pos += len(group)
+        for j, c in enumerate(group):
             class_to_idx[c] = (i, j)  # group idx and idx inside group
             num_single_label_classes += 1
 
     # other labels are in multilabel group
-    for j, g in enumerate(single_label_groups):
-        class_to_idx[g[0]] = (len(exclusive_groups), j)
+    for j, group in enumerate(single_label_groups):
+        class_to_idx[group[0]] = (len(exclusive_groups), j)
 
     all_labels = label_schema.get_labels(include_empty=False)
     label_to_idx = {lbl.name: i for i, lbl in enumerate(all_labels)}
@@ -84,11 +83,3 @@ def get_multihead_class_info(label_schema: LabelSchemaEntity):  # pylint: disabl
         "label_to_idx": label_to_idx,
     }
     return mixed_cls_heads_info
-
-
-@check_input_parameters_type()
-def get_task_class(path: str):
-    """Get task class by folder name."""
-    module_name, class_name = path.rsplit(".", 1)
-    module = importlib.import_module(module_name)
-    return getattr(module, class_name)

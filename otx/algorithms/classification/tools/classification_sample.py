@@ -14,7 +14,7 @@ import numpy as np
 import torch
 from mmcv.utils import get_logger
 
-from otx.algorithms.classification.utils import get_task_class
+from otx.algorithms.common.utils import get_task_class
 from otx.api.configuration.helper import create
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.inference_parameters import InferenceParameters

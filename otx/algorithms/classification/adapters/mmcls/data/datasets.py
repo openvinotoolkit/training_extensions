@@ -25,9 +25,9 @@ class MPAClsDataset(BaseDataset):
     """Multi-class classification dataset class."""
 
     def __init__(
-        self, ote_dataset=None, labels=None, empty_label=None, **kwargs
+        self, otx_dataset=None, labels=None, empty_label=None, **kwargs
     ):  # pylint: disable=super-init-not-called
-        self.ote_dataset = ote_dataset
+        self.otx_dataset = otx_dataset
         self.labels = labels
         self.label_names = [label.name for label in self.labels]
         self.label_idx = {label.id: i for i, label in enumerate(labels)}
@@ -59,19 +59,19 @@ class MPAClsDataset(BaseDataset):
 
     def get_indices(self, *args):  # pylint: disable=unused-argument
         """Get indices."""
-        return get_cls_img_indices(self.labels, self.ote_dataset)
+        return get_cls_img_indices(self.labels, self.otx_dataset)
 
     def load_annotations(self):
         """Load annotations."""
         include_empty = self.empty_label in self.labels
-        for i, _ in enumerate(self.ote_dataset):
+        for i, _ in enumerate(self.otx_dataset):
             class_indices = []
-            item_labels = self.ote_dataset[i].get_roi_labels(self.labels, include_empty=include_empty)
-            ignored_labels = self.ote_dataset[i].ignored_labels
+            item_labels = self.otx_dataset[i].get_roi_labels(self.labels, include_empty=include_empty)
+            ignored_labels = self.otx_dataset[i].ignored_labels
             if item_labels:
-                for ote_lbl in item_labels:
-                    if ote_lbl not in ignored_labels:
-                        class_indices.append(self.label_names.index(ote_lbl.name))
+                for otx_lbl in item_labels:
+                    if otx_lbl not in ignored_labels:
+                        class_indices.append(self.label_names.index(otx_lbl.name))
                     else:
                         class_indices.append(-1)
             else:  # this supposed to happen only on inference stage
@@ -81,7 +81,7 @@ class MPAClsDataset(BaseDataset):
 
     def __getitem__(self, index):
         """Get item from dataset."""
-        dataset = self.ote_dataset
+        dataset = self.otx_dataset
         item = dataset[index]
         ignored_labels = np.array([self.label_idx[lbs.id] for lbs in item.ignored_labels])
 
@@ -111,7 +111,7 @@ class MPAClsDataset(BaseDataset):
 
     def __len__(self):
         """Get dataset length."""
-        return len(self.ote_dataset)
+        return len(self.otx_dataset)
 
     def evaluate(
         self, results, metric="accuracy", metric_options=None, logger=None
@@ -180,19 +180,19 @@ class MPAMultilabelClsDataset(MPAClsDataset):
 
     def get_indices(self, new_classes):
         """Get indices."""
-        return get_old_new_img_indices(self.labels, new_classes, self.ote_dataset)
+        return get_old_new_img_indices(self.labels, new_classes, self.otx_dataset)
 
     def load_annotations(self):
         """Load annotations."""
         include_empty = self.empty_label in self.labels
-        for i, _ in enumerate(self.ote_dataset):
+        for i, _ in enumerate(self.otx_dataset):
             class_indices = []
-            item_labels = self.ote_dataset[i].get_roi_labels(self.labels, include_empty=include_empty)
-            ignored_labels = self.ote_dataset[i].ignored_labels
+            item_labels = self.otx_dataset[i].get_roi_labels(self.labels, include_empty=include_empty)
+            ignored_labels = self.otx_dataset[i].ignored_labels
             if item_labels:
-                for ote_lbl in item_labels:
-                    if ote_lbl not in ignored_labels:
-                        class_indices.append(self.label_names.index(ote_lbl.name))
+                for otx_lbl in item_labels:
+                    if otx_lbl not in ignored_labels:
+                        class_indices.append(self.label_names.index(otx_lbl.name))
                     else:
                         class_indices.append(-1)
             else:  # this supposed to happen only on inference stage or if we have a negative in multilabel data
@@ -294,10 +294,10 @@ class MPAHierarchicalClsDataset(MPAMultilabelClsDataset):
     def load_annotations(self):
         """Load annotations."""
         include_empty = self.empty_label in self.labels
-        for i, _ in enumerate(self.ote_dataset):
+        for i, _ in enumerate(self.otx_dataset):
             class_indices = []
-            item_labels = self.ote_dataset[i].get_roi_labels(self.labels, include_empty=include_empty)
-            ignored_labels = self.ote_dataset[i].ignored_labels
+            item_labels = self.otx_dataset[i].get_roi_labels(self.labels, include_empty=include_empty)
+            ignored_labels = self.otx_dataset[i].ignored_labels
             if item_labels:
                 num_cls_heads = self.hierarchical_info["num_multiclass_heads"]
 
@@ -306,11 +306,11 @@ class MPAHierarchicalClsDataset(MPAMultilabelClsDataset):
                 )
                 for j in range(num_cls_heads):
                     class_indices[j] = -1
-                for ote_lbl in item_labels:
-                    group_idx, in_group_idx = self.hierarchical_info["class_to_group_idx"][ote_lbl.name]
+                for otx_lbl in item_labels:
+                    group_idx, in_group_idx = self.hierarchical_info["class_to_group_idx"][otx_lbl.name]
                     if group_idx < num_cls_heads:
                         class_indices[group_idx] = in_group_idx
-                    elif ote_lbl not in ignored_labels:
+                    elif otx_lbl not in ignored_labels:
                         class_indices[num_cls_heads + in_group_idx] = 1
                     else:
                         class_indices[num_cls_heads + in_group_idx] = -1

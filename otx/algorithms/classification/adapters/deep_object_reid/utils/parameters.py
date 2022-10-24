@@ -1,6 +1,6 @@
-"""Parameters for dor tasks."""
+"""Parameters for deep_object_reid tasks."""
 
-# Copyright (C) 2021 Intel Corporation
+# Copyright (C) 2022 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -44,7 +44,7 @@ class POTQuantizationPreset(ConfigurableEnum):
 
 @attrs
 class DORClassificationParameters(ConfigurableParameters):
-    """Configurations for DOR tasks."""
+    """Configurations for deep_object_reid tasks."""
 
     header = string_attribute("Configuration for an image classification task")
     description = header

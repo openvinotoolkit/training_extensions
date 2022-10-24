@@ -116,7 +116,7 @@ sed -i "s/force=False/force=True/g" "${venv_dir}"/lib/python"${PYTHON_VERSION}"/
 pip install torchreid@git+https://github.com/openvinotoolkit/deep-object-reid@otx
 pip install mpa@git+https://github.com/openvinotoolkit/model_preparation_algorithm@otx
 
-# Install ote
+# Install otx
 pip install -e ../../../ || exit 1
 
 # Re-install mmpycocotools for numpy version update

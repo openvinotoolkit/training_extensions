@@ -1,6 +1,6 @@
 """Openvino Task of OTX Classification."""
 
-# Copyright (C) 2021 Intel Corporation
+# Copyright (C) 2022 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -123,7 +123,7 @@ class ClassificationOpenVINOInferencer(BaseInferencer):
             "hierarchical": hierarchical,
             "multihead_class_info": multihead_class_info,
         }
-        self.model = Model.create_model("ote_classification", model_adapter, self.configuration, preload=True)
+        self.model = Model.create_model("otx_classification", model_adapter, self.configuration, preload=True)
 
         self.converter = ClassificationToAnnotationConverter(self.label_schema)
 
@@ -134,16 +134,14 @@ class ClassificationOpenVINOInferencer(BaseInferencer):
         return self.model.preprocess(image)
 
     @check_input_parameters_type()
-    def post_process(
-        self, prediction: Dict[str, np.ndarray], metadata: Dict[str, Any]
-    ) -> Tuple[AnnotationSceneEntity, np.ndarray, np.ndarray]:
+    def post_process(self, prediction, metadata: Dict[str, Any]) -> Optional[AnnotationSceneEntity]:
         """Post-process function of OpenVINO Classification Inferencer."""
 
         prediction = self.model.postprocess(prediction, metadata)
         return self.converter.convert_to_annotation(prediction, metadata)
 
     @check_input_parameters_type()
-    def predict(self, image: np.ndarray) -> Tuple[AnnotationSceneEntity, np.ndarray, np.ndarray]:
+    def predict(self, image: np.ndarray) -> Tuple[AnnotationSceneEntity, np.ndarray, np.ndarray, Any]:
         """Predict function of OpenVINO Classification Inferencer."""
 
         image, metadata = self.pre_process(image)
@@ -198,6 +196,9 @@ class ClassificationOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTas
     def load_inferencer(self) -> ClassificationOpenVINOInferencer:
         """load_inferencer function of ClassificationOpenVINOTask."""
 
+        if self.model is None:
+            raise RuntimeError("load_inferencer failed, model is None")
+
         return ClassificationOpenVINOInferencer(
             self.hparams,
             self.task_environment.label_schema,
@@ -213,7 +214,7 @@ class ClassificationOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTas
 
         update_progress_callback = default_progress_callback
         if inference_parameters is not None:
-            update_progress_callback = inference_parameters.update_progress
+            update_progress_callback = inference_parameters.update_progress  # type: ignore
         dump_features = False
         if inference_parameters is not None:
             dump_features = not inference_parameters.is_evaluation
@@ -256,11 +257,14 @@ class ClassificationOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTas
         logger.info("Deploying the model")
 
         work_dir = os.path.dirname(demo.__file__)
-        parameters = {}
-        parameters["type_of_model"] = "ote_classification"
+        parameters = {}  # type: Dict[Any, Any]
+        parameters["type_of_model"] = "otx_classification"
         parameters["converter_type"] = "CLASSIFICATION"
         parameters["model_parameters"] = self.inferencer.configuration
         parameters["model_parameters"]["labels"] = LabelSchemaMapper.forward(self.task_environment.label_schema)
+
+        if self.model is None:
+            raise RuntimeError("deploy failed, model is None")
 
         zip_buffer = io.BytesIO()
         with ZipFile(zip_buffer, "w") as arch:
@@ -298,6 +302,9 @@ class ClassificationOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTas
 
         data_loader = OTXOpenVinoDataLoader(dataset, self.inferencer)
 
+        if self.model is None:
+            raise RuntimeError("optimize failed, model is None")
+
         with tempfile.TemporaryDirectory() as tempdir:
             xml_path = os.path.join(tempdir, "model.xml")
             bin_path = os.path.join(tempdir, "model.bin")
@@ -314,7 +321,7 @@ class ClassificationOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTas
                 raise RuntimeError("Model is already optimized by POT")
 
         if optimization_parameters is not None:
-            optimization_parameters.update_progress(10)
+            optimization_parameters.update_progress(10, None)
 
         engine_config = ADDict({"device": "CPU"})
 
@@ -342,7 +349,7 @@ class ClassificationOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTas
         compress_model_weights(compressed_model)
 
         if optimization_parameters is not None:
-            optimization_parameters.update_progress(90)
+            optimization_parameters.update_progress(90, None)
 
         with tempfile.TemporaryDirectory() as tempdir:
             save_model(compressed_model, tempdir, model_name="model")
@@ -363,5 +370,5 @@ class ClassificationOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTas
         self.inferencer = self.load_inferencer()
 
         if optimization_parameters is not None:
-            optimization_parameters.update_progress(100)
+            optimization_parameters.update_progress(100, None)
         logger.info("POT optimization completed")

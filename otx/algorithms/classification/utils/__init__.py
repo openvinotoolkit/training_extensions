@@ -15,7 +15,7 @@
 # and limitations under the License.
 
 
-from .cli import ClassificationDatasetAdapter
-from .label import generate_label_schema, get_multihead_class_info, get_task_class
+from .data import ClassificationDatasetAdapter
+from .utils import generate_label_schema, get_multihead_class_info
 
-__all__ = ["ClassificationDatasetAdapter", "generate_label_schema", "get_multihead_class_info", "get_task_class"]
+__all__ = ["ClassificationDatasetAdapter", "generate_label_schema", "get_multihead_class_info"]

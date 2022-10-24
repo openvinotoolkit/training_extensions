@@ -1,4 +1,4 @@
-"""Collection of utils to run common OTX algorithms."""
+"""OTX Adapters - deep_object_reid.utils."""
 
 # Copyright (C) 2022 Intel Corporation
 #
@@ -13,8 +13,3 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions
 # and limitations under the License.
-
-from .data import get_cls_img_indices, get_old_new_img_indices
-from .utils import TrainingProgressCallback, get_task_class
-
-__all__ = ["get_cls_img_indices", "get_old_new_img_indices", "get_task_class", "TrainingProgressCallback"]

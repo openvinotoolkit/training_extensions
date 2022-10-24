@@ -1,6 +1,6 @@
 """NNCF Task for OTX Classification."""
 
-# Copyright (C) 2021 Intel Corporation
+# Copyright (C) 2022 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -40,13 +40,13 @@ from torchreid.integration.nncf.compression_script_utils import (
 from torchreid.ops import DataParallel
 from torchreid.utils import set_model_attr, set_random_seed
 
-from otx.algorithms.classification.adapters.dor.tasks.inference import (
+from otx.algorithms.classification.adapters.deep_object_reid.tasks.inference import (
     DORClassificationInferenceTask,
 )
-from otx.algorithms.classification.adapters.dor.utils.monitors import (
+from otx.algorithms.classification.adapters.deep_object_reid.utils.monitors import (
     DefaultMetricsMonitor,
 )
-from otx.algorithms.classification.adapters.dor.utils.utils import (
+from otx.algorithms.classification.adapters.deep_object_reid.utils.utils import (
     DORClassificationDataset,
     OptimizationProgressCallback,
 )

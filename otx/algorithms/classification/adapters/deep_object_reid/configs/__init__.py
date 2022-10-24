@@ -1,4 +1,4 @@
-"""OTX Adapters - dor.configs."""
+"""OTX Adapters - deep_object_reid.configs."""
 
 # Copyright (C) 2022 Intel Corporation
 #
