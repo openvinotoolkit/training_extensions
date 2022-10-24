@@ -87,7 +87,9 @@ from otx.api.utils.vis_utils import get_actmap
 logger = logging.getLogger(__name__)
 
 
-class DORClassificationInferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
+class DORClassificationInferenceTask(
+    IInferenceTask, IEvaluationTask, IExportTask, IUnload
+):  # pylint: disable=too-many-instance-attributes
     """Inference task running through deep-object-reid."""
 
     task_environment: TaskEnvironment
@@ -220,6 +222,7 @@ class DORClassificationInferenceTask(IInferenceTask, IEvaluationTask, IExportTas
         self._cfg.lr_finder.enable = self._hyperparams.learning_parameters.enable_lr_finder
         self._cfg.train.early_stopping = self._hyperparams.learning_parameters.enable_early_stopping
 
+    # pylint: disable=too-many-locals
     @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def infer(
         self, dataset: DatasetEntity, inference_parameters: Optional[InferenceParameters] = None
@@ -383,7 +386,7 @@ class DORClassificationInferenceTask(IInferenceTask, IEvaluationTask, IExportTas
         path = "/proc/self/cgroup"
         is_in_docker = False
         if os.path.isfile(path):
-            with open(path) as f:
+            with open(path, "rb") as f:
                 is_in_docker = is_in_docker or any("docker" in line for line in f)
         is_in_docker = is_in_docker or os.path.exists("/.dockerenv")
         return is_in_docker

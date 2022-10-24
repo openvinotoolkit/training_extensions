@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-# pylint: disable=too-many-nested-blocks
+# pylint: disable=too-many-nested-blocks, invalid-name
 
 import importlib
 from operator import itemgetter
@@ -44,7 +44,7 @@ def generate_label_schema(not_empty_labels: List[LabelEntity], multilabel: bool 
 
 
 @check_input_parameters_type()
-def get_multihead_class_info(label_schema: LabelSchemaEntity):
+def get_multihead_class_info(label_schema: LabelSchemaEntity):  # pylint: disable=too-many-locals
     """Get multihead info by label schema."""
     all_groups = label_schema.get_groups(include_empty=False)
     all_groups_str = []

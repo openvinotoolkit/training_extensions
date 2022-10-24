@@ -4,6 +4,8 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+# pylint: disable=too-many-locals, invalid-name, too-many-statements
+
 import argparse
 import random
 import sys
@@ -65,11 +67,10 @@ def load_test_dataset(data_type):
     from otx.api.entities.image import Image
     from otx.api.entities.scored_label import ScoredLabel
     from otx.api.entities.shapes.rectangle import Rectangle
-    from otx.api.entities.subset import Subset
 
     def gen_image(resolution, shape=None):
         image = PIL.Image.new("RGB", resolution, (255, 255, 255))
-        draw = PIL.ImageDraw.Draw(image)
+        draw = ImageDraw.Draw(image)
         h, w = image.size
         shape = shape.split("+") if "+" in shape else [shape]
         for s in shape:
@@ -164,12 +165,11 @@ def load_test_dataset(data_type):
     if not args.hierarchical:
         labels = [labels["rectangle"], labels["triangle"], labels["pieslice"]]
     else:
-        labels = [i for i in labels.values()]
+        labels = list(labels.values())
 
     if data_type == "old":
         return DatasetEntity(old), labels[:-1]
-    else:
-        return DatasetEntity(old + new), labels
+    return DatasetEntity(old + new), labels
 
 
 def get_label_schema(labels, multilabel=False, hierarchical=False):

@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-# pylint: disable=too-many-nested-blocks
+# pylint: disable=too-many-nested-blocks, invalid-name, too-many-locals
 
 import json
 import os
@@ -120,7 +120,7 @@ class ClassificationDatasetAdapter(DatasetEntity):
     @staticmethod
     def _load_text_annotation(annot_path, data_dir):
         out_data = []
-        with open(annot_path) as f:
+        with open(annot_path, "rb") as f:
             annotation = json.load(f)
             if "hierarchy" not in annotation:
                 all_classes = sorted(annotation["classes"])

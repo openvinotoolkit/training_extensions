@@ -14,6 +14,8 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+# pylint: disable=invalid-name
+
 from typing import Any, Dict, Iterable, Union
 
 import cv2
@@ -51,7 +53,7 @@ class OteClassification(Classification):
 
         return parameters
 
-    def _check_io_number(self, inp, outp):
+    def _check_io_number(self, number_of_inputs, number_of_outputs):
         pass
 
     def _get_outputs(self):
@@ -80,10 +82,10 @@ class OteClassification(Classification):
         return layer_name
 
     @check_input_parameters_type()
-    def preprocess(self, image: np.ndarray):
+    def preprocess(self, inputs: np.ndarray):
         """Pre-process."""
-        meta = {"original_shape": image.shape}
-        resized_image = self.resize(image, (self.w, self.h))
+        meta = {"original_shape": inputs.shape}
+        resized_image = self.resize(inputs, (self.w, self.h))
         resized_image = cv2.cvtColor(resized_image, cv2.COLOR_RGB2BGR)
         meta.update({"resized_shape": resized_image.shape})
         if self.resize_type == "fit_to_window":
@@ -94,7 +96,7 @@ class OteClassification(Classification):
         return dict_inputs, meta
 
     @check_input_parameters_type()
-    def postprocess(self, outputs: Dict[str, np.ndarray], metadata: Dict[str, Any]):
+    def postprocess(self, outputs: Dict[str, np.ndarray], meta: Dict[str, Any]):  # pylint: disable=unused-argument
         """Post-process."""
         logits = outputs[self.out_layer_name].squeeze()
         if self.multilabel:

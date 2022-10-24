@@ -95,7 +95,7 @@ class ClassificationOpenVINOInferencer(BaseInferencer):
         weight_file: Union[str, bytes, None] = None,
         device: str = "CPU",
         num_requests: int = 1,
-    ):
+    ):  # pylint: disable=unused-argument
         """Inferencer implementation for OTXDetection using OpenVINO backend.
 
         :param model: Path to model to load, `.xml`, `.bin` or `.onnx` file.
@@ -154,10 +154,10 @@ class ClassificationOpenVINOInferencer(BaseInferencer):
         return predictions, actmap, repr_vectors, act_score
 
     @check_input_parameters_type()
-    def forward(self, inputs: Dict[str, np.ndarray]) -> Dict[str, np.ndarray]:
+    def forward(self, image: Dict[str, np.ndarray]) -> Dict[str, np.ndarray]:
         """Forward function of OpenVINO Classification Inferencer."""
 
-        return self.model.infer_sync(inputs)
+        return self.model.infer_sync(image)
 
 
 class OTXOpenVinoDataLoader(DataLoader):
@@ -240,14 +240,14 @@ class ClassificationOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTas
         return dataset
 
     @check_input_parameters_type()
-    def evaluate(self, output_result_set: ResultSetEntity, evaluation_metric: Optional[str] = None):
+    def evaluate(self, output_resultset: ResultSetEntity, evaluation_metric: Optional[str] = None):
         """Evaluate function of ClassificationOpenVINOTask."""
 
         if evaluation_metric is not None:
             logger.warning(
                 f"Requested to use {evaluation_metric} metric," "but parameter is ignored. Use accuracy instead."
             )
-        output_result_set.performance = MetricsHelper.compute_accuracy(output_result_set).get_performance()
+        output_resultset.performance = MetricsHelper.compute_accuracy(output_resultset).get_performance()
 
     @check_input_parameters_type()
     def deploy(self, output_model: ModelEntity) -> None:
@@ -290,7 +290,7 @@ class ClassificationOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTas
         dataset: DatasetEntity,
         output_model: ModelEntity,
         optimization_parameters: Optional[OptimizationParameters] = None,
-    ):
+    ):  # pylint: disable=too-many-locals
         """Optimize function of ClassificationOpenVINOTask."""
 
         if optimization_type is not OptimizationType.POT:

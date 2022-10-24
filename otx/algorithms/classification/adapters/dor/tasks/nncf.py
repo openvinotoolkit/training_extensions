@@ -76,7 +76,9 @@ from otx.api.utils.argument_checks import (
 logger = logging.getLogger(__name__)
 
 
-class ClassificationNNCFTask(DORClassificationInferenceTask, IOptimizationTask):
+class ClassificationNNCFTask(
+    DORClassificationInferenceTask, IOptimizationTask
+):  # pylint: disable=too-many-instance-attributes
     """Task for compressing classification models using NNCF."""
 
     def __init__(self, task_environment: TaskEnvironment):
@@ -199,7 +201,7 @@ class ClassificationNNCFTask(DORClassificationInferenceTask, IOptimizationTask):
         dataset: DatasetEntity,
         output_model: ModelEntity,
         optimization_parameters: Optional[OptimizationParameters] = None,
-    ):
+    ):  # pylint: disable=too-many-locals
         """Optimize a model on a dataset."""
         if optimization_type is not OptimizationType.NNCF:
             raise RuntimeError("NNCF is the only supported optimization")

@@ -14,7 +14,6 @@ from mpa.stage import Stage
 from mpa.utils.config_utils import MPAConfig
 from mpa.utils.logger import get_logger
 
-from otx.algorithms.classification.adapters.mmcls import MPAClsDataset
 from otx.algorithms.classification.configs import ClassificationConfig
 from otx.algorithms.classification.utils import (
     get_multihead_class_info as get_hierarchical_info,
@@ -38,10 +37,6 @@ from otx.api.entities.resultset import ResultSetEntity
 from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.entities.tensor import TensorEntity
-from otx.api.entities.train_parameters import (
-    UpdateProgressCallback,
-    default_progress_callback,
-)
 from otx.api.serialization.label_mapper import label_schema_to_bytes
 from otx.api.usecases.evaluation.metrics_helper import MetricsHelper
 from otx.api.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
@@ -51,12 +46,16 @@ from otx.api.usecases.tasks.interfaces.unload_interface import IUnload
 from otx.api.utils.labels_utils import get_empty_label
 from otx.api.utils.vis_utils import get_actmap
 
+# pylint: disable=invalid-name
+
 logger = get_logger()
 
 TASK_CONFIG = ClassificationConfig
 
 
-class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask, IUnload):
+class ClassificationInferenceTask(
+    BaseTask, IInferenceTask, IExportTask, IEvaluationTask, IUnload
+):  # pylint: disable=too-many-instance-attributes
     """Inference Task Implementation of OTX Classification."""
 
     def __init__(self, task_environment: TaskEnvironment):
@@ -121,15 +120,15 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
 
     def evaluate(
         self,
-        output_result_set: ResultSetEntity,
+        output_resultset: ResultSetEntity,
         evaluation_metric: Optional[str] = None,
     ):
         """Evaluate function of OTX Classification Task."""
 
         logger.info("called evaluate()")
-        metric = MetricsHelper.compute_accuracy(output_result_set)
+        metric = MetricsHelper.compute_accuracy(output_resultset)
         logger.info(f"Accuracy after evaluation: {metric.accuracy.value}")
-        output_result_set.performance = metric.get_performance()
+        output_resultset.performance = metric.get_performance()
         logger.info("Evaluation completed")
 
     def unload(self):
@@ -170,6 +169,7 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         )
         logger.info("Exporting completed")
 
+    # pylint: disable=too-many-branches, too-many-locals
     def _add_predictions_to_dataset(self, prediction_results, dataset, update_progress_callback):
         """Loop over dataset again to assign predictions.Convert from MMClassification format to OTX format."""
 
@@ -281,17 +281,19 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         recipe_root = os.path.join(MPAConstants.RECIPES_PATH, "stages/classification")
         train_type = self._hyperparams.algo_backend.train_type
         logger.info(f"train type = {train_type}")
-        recipe = os.path.join(recipe_root, "class_incr.yaml")
 
-        if train_type == TrainType.SEMISUPERVISED:
-            raise NotImplementedError(f"train type {train_type} is not implemented yet.")
-        elif train_type == TrainType.SELFSUPERVISED:
-            raise NotImplementedError(f"train type {train_type} is not implemented yet.")
-        elif train_type == TrainType.INCREMENTAL and self._multilabel:
+        if train_type == TrainType.INCREMENTAL:
+            recipe = os.path.join(recipe_root, "class_incr.yaml")
+        if train_type == TrainType.INCREMENTAL and self._multilabel:
             recipe = os.path.join(recipe_root, "class_incr_multilabel.yaml")
         else:
+            if train_type == TrainType.SEMISUPERVISED:
+                raise NotImplementedError(f"train type {train_type} is not implemented yet.")
+            if train_type == TrainType.SELFSUPERVISED:
+                raise NotImplementedError(f"train type {train_type} is not implemented yet.")
             # raise NotImplementedError(f'train type {train_type} is not implemented yet.')
             # FIXME: Temporary remedy for CVS-88098
+            recipe = os.path.join(recipe_root, "class_incr.yaml")
             logger.warning(f"train type {train_type} is not implemented yet. Running incremental training.")
 
         self._recipe_cfg = MPAConfig.fromfile(recipe)

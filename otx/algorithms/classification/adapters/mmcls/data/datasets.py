@@ -4,6 +4,8 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+# pylint: disable=invalid-name, too-many-locals, no-member
+
 import numpy as np
 from mmcls.core import average_performance, mAP
 from mmcls.datasets.base_dataset import BaseDataset
@@ -17,17 +19,20 @@ from otx.algorithms.common.utils import get_cls_img_indices, get_old_new_img_ind
 
 logger = get_logger()
 
-
+# pylint: disable=too-many-instance-attributes
 @DATASETS.register_module()
 class MPAClsDataset(BaseDataset):
     """Multi-class classification dataset class."""
 
-    def __init__(self, ote_dataset=None, labels=None, empty_label=None, **kwargs):
+    def __init__(
+        self, ote_dataset=None, labels=None, empty_label=None, **kwargs
+    ):  # pylint: disable=super-init-not-called
         self.ote_dataset = ote_dataset
         self.labels = labels
         self.label_names = [label.name for label in self.labels]
         self.label_idx = {label.id: i for i, label in enumerate(labels)}
         self.empty_label = empty_label
+        self.class_acc = False
 
         self.CLASSES = list(label.name for label in labels)
         self.gt_labels = []
@@ -52,7 +57,7 @@ class MPAClsDataset(BaseDataset):
             self.pipeline = Compose([build_from_cfg(p, PIPELINES) for p in _pipeline])
         self.load_annotations()
 
-    def get_indices(self, *args):
+    def get_indices(self, *args):  # pylint: disable=unused-argument
         """Get indices."""
         return get_cls_img_indices(self.labels, self.ote_dataset)
 
@@ -93,8 +98,7 @@ class MPAClsDataset(BaseDataset):
 
         if self.pipeline is None:
             return data_info
-        else:
-            return self.pipeline(data_info)
+        return self.pipeline(data_info)
 
     def get_gt_labels(self):
         """Get all ground-truth labels (categories).
@@ -109,7 +113,9 @@ class MPAClsDataset(BaseDataset):
         """Get dataset length."""
         return len(self.ote_dataset)
 
-    def evaluate(self, results, metric="accuracy", metric_options=None, logger=None):
+    def evaluate(
+        self, results, metric="accuracy", metric_options=None, logger=None
+    ):  # pylint: disable=redefined-outer-name
         """Evaluate the dataset with new metric class_accuracy.
 
         Args:
@@ -198,7 +204,9 @@ class MPAMultilabelClsDataset(MPAClsDataset):
             self.gt_labels.append(onehot_indices)
         self.gt_labels = np.array(self.gt_labels)
 
-    def evaluate(self, results, metric="mAP", metric_options=None, indices=None, logger=None):
+    def evaluate(
+        self, results, metric="mAP", metric_options=None, indices=None, logger=None
+    ):  # pylint: disable=unused-argument, redefined-outer-name, arguments-renamed
         """Evaluate the dataset.
 
         Args:
@@ -333,7 +341,9 @@ class MPAHierarchicalClsDataset(MPAMultilabelClsDataset):
 
         return np.mean(accuracy_values) * 100 if len(accuracy_values) > 0 else 1.0
 
-    def evaluate(self, results, metric="MHAcc", metric_options=None, indices=None, logger=None):
+    def evaluate(
+        self, results, metric="MHAcc", metric_options=None, indices=None, logger=None
+    ):  # pylint: disable=unused-argument, redefined-outer-name
         """Evaluate the dataset.
 
         Args:

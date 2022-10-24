@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-# pylint: disable=too-many-nested-blocks
+# pylint: disable=too-many-nested-blocks, invalid-name
 
 import importlib
 import math
@@ -60,6 +60,7 @@ def generate_label_schema(not_empty_labels: List[LabelEntity], multilabel: bool 
     return label_schema
 
 
+# pylint: disable=invalid-name, too-many-locals
 @check_input_parameters_type()
 def get_multihead_class_info(label_schema: LabelSchemaEntity):
     """Get multihead class info by label schema."""
@@ -103,6 +104,7 @@ def get_multihead_class_info(label_schema: LabelSchemaEntity):
     return mixed_cls_heads_info
 
 
+# pylint: disable=too-many-instance-attributes
 class DORClassificationDataset:
     """Dataset used in DOR tasks."""
 
@@ -113,9 +115,9 @@ class DORClassificationDataset:
         labels: List[LabelEntity],
         multilabel: bool = False,
         hierarchical: bool = False,
-        mixed_cls_heads_info: dict = {},
+        mixed_cls_heads_info: dict = None,
         keep_empty_label: bool = False,
-    ):
+    ):  # pylint: disable=too-many-branches, too-many-locals
         super().__init__()
         self.ote_dataset = ote_dataset
         self.multilabel = multilabel
@@ -306,7 +308,7 @@ class OptimizationProgressCallback(TimeMonitorCallback):
 
     def on_train_end(self, logs=None):
         """Callback when train ended."""
-        super(OptimizationProgressCallback, self).on_train_end(logs)
+        super().on_train_end(logs)
         self.update_progress_callback(self.get_progress(), score=logs)
 
     def on_initialization_end(self):

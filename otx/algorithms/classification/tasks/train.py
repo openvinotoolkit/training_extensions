@@ -4,6 +4,8 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+# pylint: disable=invalid-name
+
 import io
 import time
 from collections import defaultdict
@@ -11,9 +13,6 @@ from typing import List, Optional
 
 import torch
 from mmcv.utils import ConfigDict
-from mpa import MPAConstants
-from mpa.stage import Stage
-from mpa.utils.config_utils import MPAConfig
 from mpa.utils.logger import get_logger
 
 from otx.algorithms.classification.configs import ClassificationConfig
@@ -161,9 +160,8 @@ class ClassificationTrainTask(ClassificationInferenceTask):
         if model_ckpt is None:
             logger.error("cannot find final checkpoint from the results.")
             return
-        else:
-            # update checkpoint to the newly trained model
-            self._model_ckpt = model_ckpt
+        # update checkpoint to the newly trained model
+        self._model_ckpt = model_ckpt
 
         # compose performance statistics
         training_metrics, final_acc = self._generate_training_metrics_group(self._learning_curves)

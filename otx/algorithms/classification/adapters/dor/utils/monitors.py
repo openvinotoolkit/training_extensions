@@ -28,7 +28,7 @@ class IMetricsMonitor(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def close(self):
-        """Flushes the collected scalar values to log, closes corresponding file, then resets the monitor to default state."""
+        """Flushes the collected scalar values to log, and resets the monitor to default state."""
 
 
 class IStopCallback(metaclass=abc.ABCMeta):
@@ -97,4 +97,4 @@ class DefaultMetricsMonitor(IMetricsMonitor):
 
     def close(self):
         """Close."""
-        pass
+        pass  # pylint: disable=unnecessary-pass
