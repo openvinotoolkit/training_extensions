@@ -43,7 +43,7 @@ class POTQuantizationPreset(ConfigurableEnum):
 
 
 @attrs
-class DORClassificationParameters(ConfigurableParameters):
+class ClassificationParameters(ConfigurableParameters):
     """Configurations for deep_object_reid tasks."""
 
     header = string_attribute("Configuration for an image classification task")

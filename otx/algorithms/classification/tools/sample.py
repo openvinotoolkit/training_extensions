@@ -1,4 +1,4 @@
-"""Sample Code of otx training for classification."""
+"""Sample code of otx training for classification."""
 
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0

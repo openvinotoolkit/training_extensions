@@ -1,10 +1,10 @@
 # Description.
-model_template_id: Custom_Image_Classification_EfficientNet-V2-S
-name: EfficientNet-V2-S
+model_template_id: Custom_Image_Classification_MobileNet-V3-large-1x
+name: MobileNet-V3-large-1x
 task_type: CLASSIFICATION
 task_family: VISION
 instantiation: "CLASS"
-summary: This model is quite slow, but provides superior single and multi label classification performance.
+summary: Custom Image Classification MobileNet-V3-large-1x
 application: ~
 
 # Algo backend.
@@ -23,7 +23,7 @@ capabilities:
 
 # Hyperparameters.
 hyper_parameters:
-  base_path: "../../configuration.yaml"
+  base_path: "../configuration.yaml"
   parameter_overrides:
     learning_parameters:
       batch_size:
@@ -32,7 +32,7 @@ hyper_parameters:
       max_num_epochs:
         default_value: 200
       learning_rate:
-        default_value: 0.007
+        default_value: 0.016
         auto_hpo_state: POSSIBLE
       enable_early_stopping:
         default_value: true
@@ -42,7 +42,7 @@ hyper_parameters:
       enable_pruning:
         default_value: false
       pruning_supported:
-        default_value: false
+        default_value: true
       maximal_accuracy_degradation:
         default_value: 1.0
 
@@ -53,5 +53,5 @@ training_targets:
   - CPU
 
 # Stats.
-gigaflops: 5.76
-size: 20.23
+gigaflops: 0.44
+size: 4.29

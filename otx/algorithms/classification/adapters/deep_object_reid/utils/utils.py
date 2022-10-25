@@ -103,7 +103,7 @@ def get_multihead_class_info(label_schema: LabelSchemaEntity):
 
 
 # pylint: disable=too-many-instance-attributes
-class DORClassificationDataset:
+class ClassificationDataset:
     """Dataset used in deep_object_reid tasks."""
 
     @check_input_parameters_type({"otx_dataset": DatasetParamTypeCheck})

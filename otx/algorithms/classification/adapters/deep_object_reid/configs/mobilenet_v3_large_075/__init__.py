@@ -1,4 +1,4 @@
-"""Model template configurations."""
+"""Initialization of MobileNet-V3-large-075 model for Deep-Object-Reid Task."""
 
 # Copyright (C) 2022 Intel Corporation
 #
