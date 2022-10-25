@@ -1,5 +1,3 @@
-
-
 from .config import (
     get_default_config,
     imagedata_kwargs,

@@ -3,6 +3,8 @@
 #
 
 # flake8: noqa
-from . import custom_multiclass_cls_head
-from . import custom_hierarchical_cls_head
-from . import custom_multilabel_cls_head
+from . import (
+    custom_hierarchical_cls_head,
+    custom_multiclass_cls_head,
+    custom_multilabel_cls_head,
+)

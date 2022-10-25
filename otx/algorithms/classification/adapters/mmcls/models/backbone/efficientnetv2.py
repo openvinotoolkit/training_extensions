@@ -29,38 +29,31 @@ pretrained_urls = {
 }
 
 NAME_DICT = {
-                'mobilenetv3_large_21k': 'mobilenetv3_large_100_miil_in21k',
-                'mobilenetv3_large_1k': 'mobilenetv3_large_100_miil',
-                'tresnet': 'tresnet_m',
-                'efficientnetv2_s_21k': 'tf_efficientnetv2_s_in21k',
-                'efficientnetv2_s_1k': 'tf_efficientnetv2_s_in21ft1k',
-                'efficientnetv2_m_21k': 'tf_efficientnetv2_m_in21k',
-                'efficientnetv2_m_1k': 'tf_efficientnetv2_m_in21ft1k',
-                'efficientnetv2_b0': 'tf_efficientnetv2_b0',
-            }
+    "mobilenetv3_large_21k": "mobilenetv3_large_100_miil_in21k",
+    "mobilenetv3_large_1k": "mobilenetv3_large_100_miil",
+    "tresnet": "tresnet_m",
+    "efficientnetv2_s_21k": "tf_efficientnetv2_s_in21k",
+    "efficientnetv2_s_1k": "tf_efficientnetv2_s_in21ft1k",
+    "efficientnetv2_m_21k": "tf_efficientnetv2_m_in21k",
+    "efficientnetv2_m_1k": "tf_efficientnetv2_m_in21ft1k",
+    "efficientnetv2_b0": "tf_efficientnetv2_b0",
+}
 
 
 class TimmModelsWrapper(nn.Module):
-    def __init__(self,
-                 model_name,
-                 pretrained=False,
-                 pooling_type='avg',
-                 **kwargs):
+    def __init__(self, model_name, pretrained=False, pooling_type="avg", **kwargs):
         super().__init__(**kwargs)
         self.model_name = model_name
         self.pretrained = pretrained
-        self.is_mobilenet = True if model_name in [
-                "mobilenetv3_large_100_miil_in21k", "mobilenetv3_large_100_miil"
-            ] else False
-        self.model = timm.create_model(NAME_DICT[self.model_name],
-                                       pretrained=pretrained,
-                                       num_classes=1000)
+        self.is_mobilenet = (
+            True if model_name in ["mobilenetv3_large_100_miil_in21k", "mobilenetv3_large_100_miil"] else False
+        )
+        self.model = timm.create_model(NAME_DICT[self.model_name], pretrained=pretrained, num_classes=1000)
         if self.pretrained:
             logger.info(f"init weight - {pretrained_urls[self.model_name]}")
         self.model.classifier = None  # Detach classifier. Only use 'backbone' part in mpa.
         self.num_head_features = self.model.num_features
-        self.num_features = (self.model.conv_head.in_channels if self.is_mobilenet
-                             else self.model.num_features)
+        self.num_features = self.model.conv_head.in_channels if self.is_mobilenet else self.model.num_features
         self.pooling_type = pooling_type
 
     def forward(self, x, **kwargs):
@@ -78,16 +71,16 @@ class TimmModelsWrapper(nn.Module):
 
     def get_config_optim(self, lrs):
         parameters = [
-            {'params': self.model.named_parameters()},
+            {"params": self.model.named_parameters()},
         ]
         if isinstance(lrs, list):
             assert len(lrs) == len(parameters)
             for lr, param_dict in zip(lrs, parameters):
-                param_dict['lr'] = lr
+                param_dict["lr"] = lr
         else:
             assert isinstance(lrs, float)
             for param_dict in parameters:
-                param_dict['lr'] = lrs
+                param_dict["lr"] = lrs
 
         return parameters
 

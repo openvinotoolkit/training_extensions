@@ -2,15 +2,13 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from mmcls.models.builder import HEADS
-from mmcls.models.heads import LinearClsHead
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from mmcv.cnn import normal_init, constant_init, build_activation_layer
-
 from mmcls.models.builder import HEADS
+from mmcls.models.heads import LinearClsHead
 from mmcls.models.heads.cls_head import ClsHead
+from mmcv.cnn import build_activation_layer, constant_init, normal_init
 
 
 @HEADS.register_module()
@@ -27,15 +25,17 @@ class NonLinearClsHead(ClsHead):
         topk (int | tuple): Top-k accuracy.
     """  # noqa: W605
 
-    def __init__(self,
-                 num_classes,
-                 in_channels,
-                 hid_channels=1280,
-                 act_cfg=dict(type='ReLU'),
-                 loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
-                 topk=(1, ),
-                 dropout=False):
-        topk = (1, ) if num_classes < 5 else (1, 5)
+    def __init__(
+        self,
+        num_classes,
+        in_channels,
+        hid_channels=1280,
+        act_cfg=dict(type="ReLU"),
+        loss=dict(type="CrossEntropyLoss", loss_weight=1.0),
+        topk=(1,),
+        dropout=False,
+    ):
+        topk = (1,) if num_classes < 5 else (1, 5)
         super(NonLinearClsHead, self).__init__(loss=loss, topk=topk)
         self.in_channels = in_channels
         self.hid_channels = hid_channels
@@ -44,8 +44,7 @@ class NonLinearClsHead(ClsHead):
         self.dropout = dropout
 
         if self.num_classes <= 0:
-            raise ValueError(
-                f'num_classes={num_classes} must be a positive integer')
+            raise ValueError(f"num_classes={num_classes} must be a positive integer")
 
         self._init_layers()
 
@@ -56,14 +55,14 @@ class NonLinearClsHead(ClsHead):
                 nn.BatchNorm1d(self.hid_channels),
                 self.act,
                 nn.Dropout(p=0.2),
-                nn.Linear(self.hid_channels, self.num_classes)
+                nn.Linear(self.hid_channels, self.num_classes),
             )
         else:
             self.classifier = nn.Sequential(
                 nn.Linear(self.in_channels, self.hid_channels),
                 nn.BatchNorm1d(self.hid_channels),
                 self.act,
-                nn.Linear(self.hid_channels, self.num_classes)
+                nn.Linear(self.hid_channels, self.num_classes),
             )
 
     def init_weights(self):
@@ -89,19 +88,20 @@ class NonLinearClsHead(ClsHead):
         losses = self.loss(cls_score, gt_label)
         return losses
 
+
 @HEADS.register_module()
 class CustomNonLinearClsHead(NonLinearClsHead):
-    """Custom Nonlinear classifier head.
-    """
+    """Custom Nonlinear classifier head."""
+
     def __init__(self, *args, **kwargs):
         super(CustomNonLinearClsHead, self).__init__(*args, **kwargs)
-        self.loss_type = kwargs.get('loss', dict(type='CrossEntropyLoss'))['type']
+        self.loss_type = kwargs.get("loss", dict(type="CrossEntropyLoss"))["type"]
 
     def loss(self, cls_score, gt_label, feature=None):
         num_samples = len(cls_score)
         losses = dict()
         # compute loss
-        if self.loss_type == 'IBLoss':
+        if self.loss_type == "IBLoss":
             loss = self.compute_loss(cls_score, gt_label, feature=feature)
         else:
             loss = self.compute_loss(cls_score, gt_label, avg_factor=num_samples)
@@ -109,11 +109,8 @@ class CustomNonLinearClsHead(NonLinearClsHead):
             # compute accuracy
             acc = self.compute_accuracy(cls_score, gt_label)
             assert len(acc) == len(self.topk)
-            losses['accuracy'] = {
-                f'top-{k}': a
-                for k, a in zip(self.topk, acc)
-            }
-        losses['loss'] = loss
+            losses["accuracy"] = {f"top-{k}": a for k, a in zip(self.topk, acc)}
+        losses["loss"] = loss
         return losses
 
     def forward_train(self, x, gt_label):
@@ -133,24 +130,18 @@ class CustomLinearClsHead(LinearClsHead):
         init_cfg (dict | optional): The extra init config of layers.
             Defaults to use dict(type='Normal', layer='Linear', std=0.01).
     """
-    def __init__(self,
-                 num_classes,
-                 in_channels,
-                 init_cfg=dict(type='Normal', layer='Linear', std=0.01),
-                 *args,
-                 **kwargs):
-        self.loss_type = kwargs.get('loss', dict(type='CrossEntropyLoss'))['type']
-        super(CustomLinearClsHead, self).__init__(num_classes,
-                                                  in_channels,
-                                                  init_cfg=init_cfg,
-                                                  *args,
-                                                  **kwargs)
+
+    def __init__(
+        self, num_classes, in_channels, init_cfg=dict(type="Normal", layer="Linear", std=0.01), *args, **kwargs
+    ):
+        self.loss_type = kwargs.get("loss", dict(type="CrossEntropyLoss"))["type"]
+        super(CustomLinearClsHead, self).__init__(num_classes, in_channels, init_cfg=init_cfg, *args, **kwargs)
 
     def loss(self, cls_score, gt_label, feature=None):
         num_samples = len(cls_score)
         losses = dict()
         # compute loss
-        if self.loss_type == 'IBLoss':
+        if self.loss_type == "IBLoss":
             loss = self.compute_loss(cls_score, gt_label, feature=feature)
         else:
             loss = self.compute_loss(cls_score, gt_label, avg_factor=num_samples)
@@ -158,11 +149,8 @@ class CustomLinearClsHead(LinearClsHead):
             # compute accuracy
             acc = self.compute_accuracy(cls_score, gt_label)
             assert len(acc) == len(self.topk)
-            losses['accuracy'] = {
-                f'top-{k}': a
-                for k, a in zip(self.topk, acc)
-            }
-        losses['loss'] = loss
+            losses["accuracy"] = {f"top-{k}": a for k, a in zip(self.topk, acc)}
+        losses["loss"] = loss
         return losses
 
     def forward_train(self, x, gt_label):

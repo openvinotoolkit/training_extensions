@@ -5,6 +5,4 @@
 # flake8: noqa
 from .sam_classifier import SAMImageClassifier
 
-__all__ = [
-    "SAMImageClassifier"
-]
+__all__ = ["SAMImageClassifier"]
