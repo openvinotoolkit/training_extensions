@@ -114,6 +114,9 @@ pip install -e ../../../ || exit 1
 # Install mmdetection & MPA for detection training
 pip install --no-cache-dir -r ../../../requirements/detection.txt
 
+# Temp install MPA from submodule
+pip install -e ../../../external/model-preparation-algorithm/submodule
+
 # Build NNCF extensions
 echo "Build NNCF extensions ..."
 python -c "import nncf"

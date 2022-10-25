@@ -18,7 +18,7 @@ import torch
 from mmcv.parallel import collate, scatter
 
 from mmdet.datasets.pipelines import Compose
-from .data_cpu import scatter_cpu
+from ..data.data_cpu import scatter_cpu
 from mmdet.apis.inference import LoadImage
 
 

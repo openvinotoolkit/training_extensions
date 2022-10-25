@@ -378,10 +378,6 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
             """Function repr in OnHookInitialized."""
             return f"'{__name__}.OnHookInitialized'"
 
-        def __reduce__(self):
-            """Function reduce in OnHookInitialized."""
-            return (self.__class__, (id(self.task_instance),))
-
     def update_override_configurations(self, config):
         """Update override_configs."""
         logger.info(f"update override config with: {config}")

@@ -9,7 +9,7 @@ import torch
 
 from mmcv.parallel import MMDataParallel
 from mmcv.parallel import MMDistributedDataParallel
-from ..utils import MMDataCPU
+from ..data.data_cpu import MMDataCPU
 from mmdet.datasets import (build_dataloader, build_dataset,
                             replace_ImageToTensor)
 

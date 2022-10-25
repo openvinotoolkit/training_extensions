@@ -77,7 +77,6 @@ data = dict(
             ],
         ),
         pipeline=train_pipeline,
-        dynamic_scale=img_scale,
     ),
     val=dict(
         type=dataset_type,

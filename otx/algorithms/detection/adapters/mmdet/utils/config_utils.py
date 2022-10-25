@@ -376,12 +376,12 @@ def cluster_anchors(config: Config, dataset: DatasetEntity, model: BaseDetector)
     config_generator = config.model.bbox_head.anchor_generator
     config_generator.widths, config_generator.heights = widths, heights
 
-    model_generator = model.bbox_head.anchor_generator
+    model_generator = model.bbox_head.prior_generator
     model_generator.widths, model_generator.heights = widths, heights
     model_generator.base_anchors = model_generator.gen_base_anchors()
 
     config.model.bbox_head.anchor_generator = config_generator
-    model.bbox_head.anchor_generator = model_generator
+    model.bbox_head.prior_generator = model_generator
     return config, model
 
 

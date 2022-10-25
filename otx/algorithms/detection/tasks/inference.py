@@ -123,8 +123,9 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         """
         stage_module = "DetectionInferrer"
         self._data_cfg = self._init_test_data_cfg(dataset)
-        dump_features = True
-        dump_saliency_map = not inference_parameters.is_evaluation if inference_parameters else True
+        # Temporary disable dump (will be handled by 'otx explain')
+        dump_features = False
+        dump_saliency_map = False # not inference_parameters.is_evaluation if inference_parameters else True
         results = self._run_task(
             stage_module,
             mode="train",

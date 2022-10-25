@@ -25,20 +25,20 @@ import torch
 from mmcv.runner import load_checkpoint, load_state_dict
 from mmcv.utils import Config, ConfigDict
 from mmdet.apis import train_detector
-from mmdet.apis.fake_input import get_fake_input
-from mmdet.apis.train import build_val_dataloader
 from mmdet.datasets import build_dataloader, build_dataset
-from mmdet.integration.nncf import (
+from mmdet.models import build_detector
+from mpa.utils.config_utils import remove_custom_hook
+from mpa.utils.logger import get_logger
+
+from otx.algorithms.detection.adapters.mmdet.nncf import (
     check_nncf_is_enabled,
     is_accuracy_aware_training_set,
     is_state_nncf,
     wrap_nncf_model,
 )
-from mmdet.integration.nncf.config import compose_nncf_config
-from mmdet.models import build_detector
-from mpa.utils.config_utils import remove_custom_hook
-from mpa.utils.logger import get_logger
-
+from otx.algorithms.detection.adapters.mmdet.nncf.config import compose_nncf_config
+from otx.algorithms.detection.adapters.mmdet.nncf.utils import build_val_dataloader
+from otx.algorithms.detection.adapters.mmdet.utils.fake_input import get_fake_input
 from otx.algorithms.common.adapters.mmcv.hooks import OTXLoggerHook
 from otx.algorithms.detection.adapters.mmdet.utils.config_utils import (
     patch_config,
