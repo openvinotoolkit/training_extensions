@@ -1,5 +1,5 @@
-description: Configuration for an object detection task
-header: Configuration for an object detection task
+description: Configuration for an instance segmentation task
+header: Configuration for an instance segmentation task
 learning_parameters:
   batch_size:
     affects_outcome_of: TRAINING
