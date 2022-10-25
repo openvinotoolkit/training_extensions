@@ -121,7 +121,7 @@ class BaseTask:
         return output
 
     def finalize(self):
-        if self._recipe_cfg is not None:
+        if hasattr(self, "_recipe_cfg") and self._recipe_cfg is not None:
             if self._recipe_cfg.get("cleanup_outputs", False):
                 if os.path.exists(self._output_path):
                     shutil.rmtree(self._output_path, ignore_errors=False)
@@ -312,13 +312,14 @@ class BaseTask:
                 self._anchors = model_data["anchors"]
 
             saved_config = model_data.get("config")
-            tiling_parameters = saved_config.get("tiling_parameters")
-            if tiling_parameters and tiling_parameters["enable_tiling"]["value"]:
-                logger.info("Load tiling parameters")
-                self._hyperparams.tiling_parameters.enable_tiling = tiling_parameters["enable_tiling"]["value"]
-                self._hyperparams.tiling_parameters.tile_size = tiling_parameters["tile_size"]["value"]
-                self._hyperparams.tiling_parameters.tile_overlap = tiling_parameters["tile_overlap"]["value"]
-                self._hyperparams.tiling_parameters.tile_max_number = tiling_parameters["tile_max_number"]["value"]
+            if saved_config:
+                tiling_parameters = saved_config.get("tiling_parameters")
+                if tiling_parameters and tiling_parameters["enable_tiling"]["value"]:
+                    logger.info("Load tiling parameters")
+                    self._hyperparams.tiling_parameters.enable_tiling = tiling_parameters["enable_tiling"]["value"]
+                    self._hyperparams.tiling_parameters.tile_size = tiling_parameters["tile_size"]["value"]
+                    self._hyperparams.tiling_parameters.tile_overlap = tiling_parameters["tile_overlap"]["value"]
+                    self._hyperparams.tiling_parameters.tile_max_number = tiling_parameters["tile_max_number"]["value"]
 
             return model_data.get("model", model_data.get("state_dict", None))
         else:

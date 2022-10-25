@@ -63,20 +63,6 @@ class EpochRunnerWithCancel(EpochBasedRunner):
 
 
 @RUNNERS.register_module()
-class DetEpochRunnerWithCancel(EpochRunnerWithCancel):
-    """
-    Detection runner based on EpochRunnerWithCancel
-    """
-
-
-@RUNNERS.register_module()
-class SegEpochRunnerWithCancel(EpochRunnerWithCancel):
-    """
-    Detection runner based on EpochRunnerWithCancel
-    """
-
-
-@RUNNERS.register_module()
 class ClsEpochRunnerWithCancel(EpochRunnerWithCancel):
     """
     Classification runner based on EpochRunnerWithCancel
