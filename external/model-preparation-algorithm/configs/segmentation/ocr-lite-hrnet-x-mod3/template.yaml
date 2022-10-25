@@ -39,8 +39,9 @@ hyper_parameters:
       num_iters:
         default_value: 300
     nncf_optimization:
+      visible_in_ui: false
       enable_quantization:
-        default_value: true
+        default_value: false
       enable_pruning:
         default_value: false
       pruning_supported:
