@@ -203,6 +203,14 @@ class BaseConfig(ConfigurableParameters):
             max_value=maxsize,
         )
 
+        stat_requests_number = configurable_integer(
+            header="Number of requests",
+            description="Number of requests during statistics collection",
+            default_value=0,
+            min_value=0,
+            max_value=maxsize,
+        )
+
     @attrs
     class BaseAlgoBackendParameters(ParameterGroup):
         train_type = selectable(

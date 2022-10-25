@@ -34,7 +34,7 @@ from otx.api.utils.argument_checks import (
 from otx.api.utils.shape_factory import ShapeFactory
 
 
-# pylint: disable=invalid-name, too-many-locals, too-many-instance-attributes
+# pylint: disable=invalid-name, too-many-locals, too-many-instance-attributes, super-init-not-called
 @check_input_parameters_type()
 def get_annotation_mmdet_format(
     dataset_item: DatasetItemEntity,

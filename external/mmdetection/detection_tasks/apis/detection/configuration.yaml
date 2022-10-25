@@ -184,6 +184,23 @@ pot_parameters:
     value: 300
     visible_in_ui: true
     warning: null
+  stat_requests_number:
+    affects_outcome_of: NONE
+    default_value: 0
+    description: Number of requests during statistics collection
+    editable: true
+    header: Number of requests
+    max_value: 9223372036854775807
+    min_value: 0
+    type: INTEGER
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    value: 0
+    visible_in_ui: false
+    warning: null
   type: PARAMETER_GROUP
   visible_in_ui: false
 nncf_optimization:
