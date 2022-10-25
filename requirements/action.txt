@@ -1,0 +1,1 @@
+mmdet@git+https://github.com/openvinotoolkit/mmdetection@ote
