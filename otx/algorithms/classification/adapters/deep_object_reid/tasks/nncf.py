@@ -39,7 +39,7 @@ from torchreid.metrics.classification import score_extraction
 from torchreid.ops import DataParallel
 from torchreid.utils import load_pretrained_weights, set_model_attr, set_random_seed
 
-from otx.algorithms.classification.adapters.deep_object_reid.scripts import (
+from scripts.default_config import (
     get_default_config,
     imagedata_kwargs,
     lr_scheduler_kwargs,
@@ -47,6 +47,7 @@ from otx.algorithms.classification.adapters.deep_object_reid.scripts import (
     model_kwargs,
     optimizer_kwargs,
 )
+
 from otx.algorithms.classification.adapters.deep_object_reid.utils.monitors import (
     DefaultMetricsMonitor,
     StopCallback,
