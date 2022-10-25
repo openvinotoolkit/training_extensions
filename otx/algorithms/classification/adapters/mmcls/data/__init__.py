@@ -1,4 +1,4 @@
-"""OTX Algorithms - Clasification Dataset."""
+"""OTX Algorithms - Classification Dataset."""
 
 # Copyright (C) 2022 Intel Corporation
 #
