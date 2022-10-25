@@ -2,12 +2,24 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 import time
+import copy
 
 from mmcv.runner import EpochBasedRunner
 from mmcv.runner import RUNNERS
 from mmcv.runner.utils import get_host_info
 
 from .utils import check_nncf_is_enabled
+
+
+# Try monkey patching to steal validation result
+#from mmcv.runner.hooks import EvalHook
+import mmcv.runner.hooks
+old_evaluate = mmcv.runner.EvalHook.evaluate
+def new_evaluate(self, runner, result):
+    ret = old_evaluate(self, runner, result)
+    setattr(runner, "all_metrics", copy.deepcopy(runner.log_buffer.output))
+    return ret
+mmcv.runner.EvalHook.evaluate = new_evaluate
 
 
 @RUNNERS.register_module()
@@ -66,9 +78,7 @@ class AccuracyAwareRunner(EpochBasedRunner):
         Train the model for a single epoch.
         This method is used in NNCF-based accuracy-aware training.
         """
-        print('----------------> train')
         self.train(self.train_data_loader)
-        print('----------------> train end')
 
     def validation_fn(self, *args, **kwargs):
         """
@@ -76,13 +86,15 @@ class AccuracyAwareRunner(EpochBasedRunner):
         Evaluation is assumed to be already done at this point since EvalHook was called.
         This method is used in NNCF-based accuracy-aware training.
         """
-        print('----------------> val')
-        ## Get metric from runner's attributes that set in EvalHook.evaluate() function
-        #metric = getattr(self, self.target_metric_name, None)
-        #if metric is None:
-        #    raise RuntimeError(f'Could not find the {self.target_metric_name} key')
-        #return metric
-        return 1.0
+        # Get metric from runner's attributes that set in EvalHook.evaluate() function
+        # metric = getattr(self, self.target_metric_name, None)
+        all_metrics = getattr(self, "all_metrics", {})
+        if len(all_metrics) == 0:
+            return 0.0
+        metric = all_metrics.get(self.target_metric_name, None)
+        if metric is None:
+            raise RuntimeError(f'Could not find the {self.target_metric_name} key')
+        return metric
 
     def configure_optimizers_fn(self):
         return self.optimizer, None
