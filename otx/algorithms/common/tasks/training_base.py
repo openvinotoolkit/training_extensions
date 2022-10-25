@@ -62,7 +62,8 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         self._model_name = task_environment.model_template.name
         self._task_type = task_environment.model_template.task_type
         self._labels = task_environment.get_labels(include_empty=False)
-        self._output_path = tempfile.mkdtemp(prefix="OTX-task-")
+        output_path = getattr(task_environment, "work_dir", None)
+        self._output_path = tempfile.mkdtemp(prefix="OTX-task-") if output_path is None else output_path
         logger.info(f"created output path at {self._output_path}")
         self.confidence_threshold = self._get_confidence_threshold(self._hyperparams)
         # Set default model attributes.

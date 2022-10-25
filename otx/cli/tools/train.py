@@ -197,6 +197,7 @@ def main():
             print("cannot run HPO for this task. will train a model without HPO.")
             task = task_class(task_environment=environment)
     else:
+        environment.work_dir = osp.dirname(args.save_model_to)
         task = task_class(task_environment=environment)
 
     output_model = ModelEntity(dataset, environment.get_model_configuration())
