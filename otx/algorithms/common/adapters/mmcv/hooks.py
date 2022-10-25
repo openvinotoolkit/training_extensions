@@ -384,7 +384,7 @@ class EarlyStoppingHook(Hook):
         return True
 
 
-@HOOKS.register_module()
+@HOOKS.register_module(force=True)
 class ReduceLROnPlateauLrUpdaterHook(LrUpdaterHook):
     """Reduce learning rate when a metric has stopped improving.
 
@@ -557,7 +557,7 @@ class ReduceLROnPlateauLrUpdaterHook(LrUpdaterHook):
         self.best_score = self.init_value_map[self.rule]
 
 
-@HOOKS.register_module()
+@HOOKS.register_module(force=True)
 class StopLossNanTrainingHook(Hook):
     """StopLossNanTrainingHook."""
 

@@ -3,6 +3,7 @@
 # Copyright (C) 2021-2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
+import os
 import subprocess
 import sys
 import warnings
@@ -65,11 +66,18 @@ def get_cuda_version() -> Optional[str]:
     cuda_version: Optional[str] = None
 
     try:
+        # 1. Try with nvcc
         output = subprocess.check_output("nvcc --version", shell=True)
         cuda_version = str(output).split("release ")[-1][:4]
     except subprocess.CalledProcessError:
-        warnings.warn(f"CUDA is not installed on this {sys.platform} machine.")
-
+        # 2. Try with CUDA_HOME/version.txt
+        cuda_home_path = os.environ.get("CUDA_HOME", "/usr/local/cuda")
+        cuda_version_file = os.path.join(cuda_home_path, "version.txt")
+        if os.path.exists(cuda_version_file):
+            with open(cuda_version_file, "r", encoding="UTF-8") as f:
+                cuda_version = f.readline().strip().split()[-1]
+        else:
+            warnings.warn(f"CUDA is not installed on this {sys.platform} machine.")
     return cuda_version
 
 
@@ -129,9 +137,11 @@ def update_version_with_cuda_suffix(name: str, version: str) -> str:
         # ``get_cuda version()`` returns the exact version such as 11.2. Here
         # we only need the major CUDA version such as 10 or 11, not the minor
         # version. That's why we use [:2] to get the major version.
-        cuda = get_cuda_version()[:2]
+        cuda = get_cuda_version()
         if cuda is not None:
-            suffix = f"+cu{supported_torch_cuda_versions[name][version][cuda]}"
+            suffix = f"+cu{supported_torch_cuda_versions[name][version][cuda[:2]]}"
+        else:
+            suffix = "+cpu"
 
     return f"{version}{suffix}"
 
@@ -221,10 +231,13 @@ def get_requirements(requirement_files: Union[str, List[str]]) -> List[str]:
 
     requirements: List[str] = []
     for requirement_file in requirement_files:
-        with open(f"requirements/{requirement_file}.txt", "r", encoding="utf8") as file:
+        with open(f"requirements/{requirement_file}.txt", "r", encoding="UTF-8") as file:
             for line in file:
                 package = line.strip()
                 if package and not package.startswith(("#", "-f")):
+                    requirement = Requirement.parse(package)
+                    if requirement.name in ("torch", "torchvision"):
+                        package = update_torch_requirement(requirement)
                     requirements.append(package)
 
     return requirements
@@ -233,8 +246,10 @@ def get_requirements(requirement_files: Union[str, List[str]]) -> List[str]:
 REQUIRED_PACKAGES = get_requirements(requirement_files=["base", "dev", "openvino"])
 EXTRAS_REQUIRE = {
     "anomaly": get_requirements(requirement_files="anomaly"),
-    "full": get_requirements(requirement_files=["anomaly"]),
+    "detection": get_requirements(requirement_files="detection"),
+    "full": get_requirements(requirement_files=["anomaly", "detection"]),
 }
+DEPENDENCY_LINKS = ["https://download.pytorch.org/whl/torch_stable.html"]
 
 
 setup(
@@ -244,6 +259,7 @@ setup(
     package_data={"": ["requirements.txt", "README.md", "LICENSE"]},  # Needed for exportable code
     install_requires=REQUIRED_PACKAGES,
     extras_require=EXTRAS_REQUIRE,
+    dependency_links=DEPENDENCY_LINKS,
     entry_points={
         "console_scripts": [
             "otx=otx.cli.tools.cli:main",
