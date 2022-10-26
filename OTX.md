@@ -24,7 +24,7 @@ The diagram below illustrates key components in a high-level design (the colors 
 </figure>
 
 # Architecturally-significant use cases
-The diagram below shows architecturally-significant use cases. OTX use cases cover from model building to final deployment. Users can use OTX CLI for finding and building models and recipes, training with dataset, and optimizing model performance for final deployment. Users also can generate a self-contained package for exportable codes with a single command. API users can customize the built-in workflow for their purpose. For example, new learning methods can be registered or users can extend core APIs for supporting other backends like TensorFlow or ONNX.
+The diagram below shows architecturally-significant use cases. OTX use cases cover from model building to final deployment. Users can use OTX CLI for finding and building models and tasks, training with dataset, and optimizing model performance for final deployment. Users also can generate a self-contained package for exportable codes with a single command. API users can customize the built-in workflow for their purpose. For example, new learning methods can be registered or users can extend core APIs for supporting other backends like TensorFlow or ONNX.
 
 <figure>
 <img src="docs/source/_images/uc.png" width="550px">
@@ -60,9 +60,9 @@ otx train <data.yaml> <task.yaml>
 |   |`--model <task.yaml>`|`Registry.find_models(task)`|list of models for the given task (e.g. resnet18-atss-det)|
 |   |`--backbone <model.yaml>`|`Registry.find_backbones(model)`|list of backbones for the given model (e.g. resnet18)|
 |   |`--all`|`Registry.find_*()`|recursive call of all above|
-|`otx build`|`--model <model.yaml> --backbone <backbone.yaml>`|`Builder.build_model(model, backbone)`|<*(backbone)*_model.yaml> will be saved to user’s workspace after replacing model.backbone attribute to the given *backbone*|
-|   |`--task <task.yaml> --data <data.yaml>`|`Builder.build_task(data)`|analyze data and generate <task.yaml> automatically and dump it to user’s workspace|
-|   |`--task <task.yaml> --model <model.yaml>`|`Builder.build_task(task(old), model)`|<*(model)*_task.yaml> will be added to user’s workspace after updating task.model attribute to the given *model*|
+|`otx build`|`--model <model.yaml> --backbone <backbone.yaml>`|`Builder.build_model_config(model, backbone)`|<*(backbone)*_model.yaml> will be saved to user’s workspace after replacing model.backbone attribute to the given *backbone*|
+|   |`--task <task.yaml> --data <data.yaml>`|`Builder.build_task_config(data)`|analyze data and generate <task.yaml> automatically and dump it to user’s workspace|
+|   |`--task <task.yaml> --model <model.yaml>`|`Builder.build_task_config(task(old), model)`|<*(model)*_task.yaml> will be added to user’s workspace after updating task.model attribute to the given *model*|
 |`otx train`|`<data.yaml> <task.yaml>`|`Task.train(data)`|path to model ckpt trained on *data*|
 |`otx eval`|`<path-to-ckpt> <data.yaml>`<sup>[1](#note1)</sup>|`Task.eval(data)`|evaluation (if there is ground-truth) and/or prediction result on *data*|
 |   |`<path-to-ckpt> <path-to-input>`|`Task.eval(input)`|prediction result on a single image or video *input*|
@@ -72,7 +72,7 @@ otx train <data.yaml> <task.yaml>
 |~~`otx demo`(deprecated)~~|   |  |  |
 |`otx deploy`|`<path-to-ckpt>`|`Task.deploy()`|create a zip file containing all exportable codes in a self-contained manner. This includes both PyTorch and OpenVINO inferences|
 
-<a name="#note1"><sup>1</sup></a>ckpt file has a metadata for recipe information. For more information, refer to sequence diagram in OTX API.
+<a name="#note1"><sup>1</sup></a>ckpt file has a metadata for task information. For more information, refer to sequence diagram in OTX API.
 
 <a name="#note2"><sup>2</sup></a>For more information on optimization types, refer to [OpenVINO Model Optimization Guide](https://docs.openvino.ai/latest/openvino_docs_model_optimization_guide.html).
 
@@ -81,6 +81,8 @@ One of unique features of OTX is task auto-configurator. Unlike other AI trainin
 
 **_NOTE:_** Not all task types can be autoconfigured correctly since the same data can be mapped to different tasks. For example, a dataset having no annotation can be mapped into either unsupervised representational learning or anomaly detection. In such cases, we will recommend one of them based on the task type popularity.
 
+**_NOTE2:_** OTX will use label and data statistics computed in Datumaro.
+
 <figure>
 <img src="docs/source/_images/autoconfig.png" width="800px">
 <figcaption></figcaption>
@@ -88,37 +90,37 @@ One of unique features of OTX is task auto-configurator. Unlike other AI trainin
 
 # OTX API
 
-OTX API consists of three component groups. The first group defines entities for constructing CLIs, registration of models and recipes, and classes for dataset, which could be used and/or modified by users. The second group is for core components like defining jobs and model architecture, which are intended for internal execution. And the third group specifies actual backend implementations that depend on platforms like PyTorch, MMCV, and OpenVINO. The figure below illustrates class diagram, which partially shows backend implementations.
+OTX API consists of three component groups. The first group defines entities for constructing CLIs, registration of models and tasks, and interfaces for dataset, which could be used or modified by users. The second group is for core components like defining jobs and model architecture, which are intended for internal execution. And the third group specifies backend implementations that depend on platforms like PyTorch, MMCV, and OpenVINO. The figure below illustrates class diagram, which partially shows backend implementations.
 <figure>
-<img src="docs/source/_images/class.png" width="800px">
+<img src="docs/source/_images/class.png" width="1000px">
 <figcaption></figcaption>
 </figure>
 
-- Dataset class inherits datumaro.components.Dataset and works as a base class for other dataset classes from PyTorch and MMCV. For example, MMClsDataset is an adapter for dataset in MMClssification framework. Dataset class provides a rich interface for many task types like classification, detection, segmentation, and so on with widely-used formats like MS-COCO, LabelMe, Open Images, and ImageNet.
-- Registry class is designed for managing recipes and models either from built-in or user workspace. When initialization, it retrieves all recipes and models from YAML repo and user workspace and loads them into memory. In Registry, there are two resident types, models and recipes. Models are grouped by recipe specification and recipes are grouped by task specification. New models and recipes can be automatically (de)registered if there are untracked changes in user workspace.
-- core.IModel provides a basic interface for creating a model from model configration file, which defines backbone, neck, (task-specific) head, and their names, connections, and parameters. To support jobs with specific checkpoints, this class has checkpoint as a member variable.
-- core.IJob provides a set of interfaces for computational workloads like training and inference. It defines a minimal executable unit in AI workflow. The purpose of job is specified within the class. Every job must implement `run()` method for execution. When model instance is required for specific job, the caller (*Recipe*) will pass the information as an argument. core.IJob depends on core.IModel and api.Dataset.
-- Backends is a set of components that depend on specific ML framework. OTX API uses Pytorch, MMCV, and OpenVINO as main backends for implementing actual models and recipes. For example, OpenVINO jobs can be implemented in its corresponding backend as below.
-    - OpenVINO backends: OpenVINOJob provides a base class for all OpenVINO-related jobs, and OpenVINOInference and OpenVINOExporter classes provides actual implementations. Since OpenVINOOptimizer requires not only OpenVINO but also AI training framework like Pytorch, it inherits both OpenVINOJob and TorchJob simultaneously.
+- `api.Dataset` class inherits datumaro.components.Dataset and works as a base class for other dataset classes from PyTorch and MMCV. For example, MMClsDataset is an adapter for dataset in MMClassification framework. Dataset class provides rich interfaces for many task types like classification, detection, segmentation, and so on with widely-used formats like MS-COCO, LabelMe, Open Images, and ImageNet.
+- `api.Registry` class is designed for managing tasks and models either from built-in or user workspace. When initialization, it retrieves all tasks and models from YAML repo and user workspace and loads them into memory. In Registry, there are two resident types, models and tasks. Models are grouped by task specification, and tasks are grouped by task type specification. New models and tasks can be automatically (de)registered if there are untracked changes in user workspace.
+- `api.Task` class is the main interface for algorithm implementation of specific task type. Actual algorithm implementation should inherit this class and provide a combination of model and job for the task type. Implemented task configuration can be stored as a config file in the registry, and later instantiated from it. The following figure shows examples on algorithm implementation with this api.
 <figure>
-<img src="docs/source/_images/backend-ov.png" width="500px">
+<img src="docs/source/_images/algo.png" width="600px">
 <figcaption></figcaption>
 </figure>
 
-## API sequence for training
+- `core.IModel` provides a basic interface for creating a model from model configuration, which defines backbone, neck, (task-specific) head. Their names, connections, and parameters are used to concretize a specific model. To support jobs with specific checkpoints, this class has checkpoint as a member variable.
+- `core.IJob` provides a set of interfaces for computational workloads like training and inference. It defines a minimal executable unit in AI workflow. The purpose of job is specified within the class. Every job must implement `run()` method for execution. When model instance is required for specific job, the caller (*Task*) will pass the information as an argument. core.IJob depends on core.IModel and api.Dataset.
+- `backends` is a set of components that depend on specific ML frameworks. OTX API uses Pytorch, MMCV, and OpenVINO as main backends for implementing actual models and jobs. For example, OpenVINO jobs can be implemented in their corresponding backend as below.
+    - OpenVINO backends: OpenVINOJob provides a base class for all OpenVINO-related jobs, and OpenVINOInference and OpenVINOExporter classes provides actual implementations. Since OpenVINOOptimizer requires not only OpenVINO but also AI training framework like PyTorch, it inherits both OpenVINOJob and TorchJob simultaneously.
 <figure>
-<img src="docs/source/_images/seq-train.png" width="1200px">
+<img src="docs/source/_images/backend-ov.png" width="600px">
 <figcaption></figcaption>
 </figure>
 
-## API sequence for evaluation (or inference)
+## API sequence for training and evaluation
 <figure>
-<img src="docs/source/_images/seq-eval.png" width="1200px">
+<img src="docs/source/_images/seq-traineval.png" width="1200px">
 <figcaption></figcaption>
 </figure>
 
-## API sequence for model and recipe building
+## API sequence for model and task building
 <figure>
-<img src="docs/source/_images/seq-build.png" width="800px">
+<img src="docs/source/_images/seq-build.png" width="850px">
 <figcaption></figcaption>
 </figure>
