@@ -38,6 +38,8 @@ from otx.api.utils.argument_checks import (
     DatasetParamTypeCheck,
     check_input_parameters_type,
 )
+
+
 # pylint: disable=too-many-instance-attributes
 class ClassificationDataset:
     """Dataset used in deep_object_reid tasks."""

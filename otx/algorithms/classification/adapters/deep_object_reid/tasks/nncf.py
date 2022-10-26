@@ -24,6 +24,14 @@ from typing import Any, Dict, List, Optional
 
 import torch
 import torchreid
+from scripts.default_config import (
+    get_default_config,
+    imagedata_kwargs,
+    lr_scheduler_kwargs,
+    merge_from_files_with_base,
+    model_kwargs,
+    optimizer_kwargs,
+)
 from torchreid.apis.export import export_ir, export_onnx
 from torchreid.apis.training import run_training
 from torchreid.integration.nncf.compression import (
@@ -39,23 +47,17 @@ from torchreid.metrics.classification import score_extraction
 from torchreid.ops import DataParallel
 from torchreid.utils import load_pretrained_weights, set_model_attr, set_random_seed
 
-from scripts.default_config import (
-    get_default_config,
-    imagedata_kwargs,
-    lr_scheduler_kwargs,
-    merge_from_files_with_base,
-    model_kwargs,
-    optimizer_kwargs,
+from otx.algorithms.classification.adapters.deep_object_reid.configs import (
+    ClassificationParameters,
 )
-
-from otx.algorithms.classification.adapters.deep_object_reid.configs import ClassificationParameters
-
-from otx.algorithms.classification.adapters.deep_object_reid.data import ClassificationDataset
+from otx.algorithms.classification.adapters.deep_object_reid.data import (
+    ClassificationDataset,
+)
 from otx.algorithms.classification.adapters.deep_object_reid.utils import (
     DefaultMetricsMonitor,
-    StopCallback,
     InferenceProgressCallback,
     OptimizationProgressCallback,
+    StopCallback,
     active_score_from_probs,
     force_fp32,
     get_hierarchical_predictions,

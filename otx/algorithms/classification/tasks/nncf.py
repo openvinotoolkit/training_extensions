@@ -14,12 +14,13 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+from otx.algorithms.classification.adapters.deep_object_reid.tasks import (
+    ClassificationNNCFTask,
+)
 from otx.api.entities.task_environment import TaskEnvironment
-from otx.algorithms.classification.adapters.deep_object_reid.tasks import ClassificationNNCFTask
 
-class OTXClassificationNNCFTask(
-    ClassificationNNCFTask
-):  # pylint: disable=too-many-instance-attributes
+
+class OTXClassificationNNCFTask(ClassificationNNCFTask):  # pylint: disable=too-many-instance-attributes
     """Task for compressing classification models using NNCF."""
 
     def __init__(self, task_environment: TaskEnvironment):

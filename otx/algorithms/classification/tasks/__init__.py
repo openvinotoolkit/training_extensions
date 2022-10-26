@@ -19,9 +19,9 @@ import mpa.cls as MPAClassification
 from otx.algorithms.classification.adapters.mmcls import MPAData
 
 from .inference import ClassificationInferenceTask
+from .nncf import OTXClassificationNNCFTask
 from .openvino import ClassificationOpenVINOTask
 from .train import ClassificationTrainTask
-from .nncf import OTXClassificationNNCFTask
 
 __all__ = [
     "MPAClassification",
