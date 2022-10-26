@@ -182,9 +182,9 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
 
         stage_module = "ClsExporter"
         results = self._run_task(stage_module, mode="train", precision="FP32", export=True)
-
         logger.debug(f"results of run_task = {results}")
         results = results.get("outputs")
+        logger.debug(f"results of run_task = {results}")
         if results is None:
             logger.error(f"error while exporting model {results.get('msg')}")
         else:
