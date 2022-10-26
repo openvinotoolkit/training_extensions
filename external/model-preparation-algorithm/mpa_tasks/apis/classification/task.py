@@ -56,6 +56,7 @@ from ote_sdk.usecases.reporting.time_monitor_callback import TimeMonitorCallback
 from ote_sdk.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
 from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType, IExportTask
 from ote_sdk.usecases.tasks.interfaces.inference_interface import IInferenceTask
+from ote_sdk.usecases.tasks.interfaces.explain_interface import IExplainTask
 from ote_sdk.usecases.tasks.interfaces.unload_interface import IUnload
 from ote_sdk.utils.argument_checks import check_input_parameters_type
 from ote_sdk.utils.labels_utils import get_empty_label
@@ -100,7 +101,7 @@ class TrainingProgressCallback(TimeMonitorCallback):
         self.update_progress_callback(self.get_progress(), score=score)
 
 
-class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask, IUnload):
+class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask, IExplainTask, IUnload):
     def __init__(self, task_environment: TaskEnvironment):
         self._should_stop = False
         super().__init__(TASK_CONFIG, task_environment)
