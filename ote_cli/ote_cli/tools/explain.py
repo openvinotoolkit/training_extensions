@@ -17,9 +17,9 @@ Model inference demonstration tool.
 # and limitations under the License.
 
 import argparse
+import os
 import time
 from collections import deque
-import os
 
 import cv2
 import numpy as np
@@ -34,14 +34,15 @@ from ote_cli.registry import find_and_parse_model_template
 from ote_cli.tools.utils.demo.images_capture import open_images_capture
 from ote_cli.utils.config import override_parameters
 from ote_cli.utils.importing import get_impl_class
-from ote_cli.utils.io import read_label_schema, read_model, get_image_files
+from ote_cli.utils.io import get_image_files, read_label_schema, read_model
 from ote_cli.utils.parser import (
     add_hyper_parameters_sub_parser,
     gen_params_dict_from_args,
 )
 
 ESC_BUTTON = 27
-SUPPORTED_XAI_MODELS = ['EigenCAM']
+SUPPORTED_XAI_MODELS = ["CAM", "EigenCAM"]
+
 
 def parse_args():
     """
@@ -68,7 +69,7 @@ def parse_args():
     parser.add_argument(
         "-o",
         "--output",
-        default='saliency_dump',
+        default="saliency_dump",
         help="Output path for explanation images.",
     )
     parser.add_argument(
@@ -79,7 +80,7 @@ def parse_args():
     parser.add_argument(
         "--explain-model",
         default="EigenCAM",
-        help=f"XAI model name, currently support {SUPPORTED_XAI_MODELS}"
+        help=f"XAI model name, currently support {SUPPORTED_XAI_MODELS}",
     )
     add_hyper_parameters_sub_parser(parser, hyper_parameters, modes=("INFERENCE",))
 
@@ -154,18 +155,22 @@ def main():
 
     elapsed_times = deque(maxlen=10)
 
-    for (root_dir, filename) in imgs:
+    for i, (root_dir, filename) in enumerate(imgs):
         frame = cv2.imread(os.path.join(root_dir, filename))
         saliency_map, elapsed_time = get_explain_map(task, frame)
         elapsed_times.append(elapsed_time)
         elapsed_time = np.mean(elapsed_times)
 
         overlay = cv2.addWeighted(frame, 0.7, saliency_map.numpy, 0.3, 0)
-        filename = filename.split('.')[0]
-        cv2.imwrite(f'{os.path.join(args.output, filename)}_saliency_map.png', saliency_map.numpy)
-        cv2.imwrite(f'{os.path.join(args.output, filename)}_overlay_img.png', overlay)
-    
-    print(f'saliency maps saved to {args.output}...')
+        filename = filename.split(".")[0]
+        cv2.imwrite(
+            f"{os.path.join(args.output, filename)}_saliency_map.png",
+            saliency_map.numpy,
+        )
+        cv2.imwrite(f"{os.path.join(args.output, filename)}_overlay_img.png", overlay)
+
+    print(f"saliency maps saved to {args.output}...")
+
 
 if __name__ == "__main__":
     main()

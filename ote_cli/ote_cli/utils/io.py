@@ -21,8 +21,8 @@ import os
 import re
 import struct
 import tempfile
-from zipfile import ZipFile
 from pathlib import Path
+from zipfile import ZipFile
 
 from ote_sdk.entities.label import Domain, LabelEntity
 from ote_sdk.entities.label_schema import LabelGroup, LabelGroupType, LabelSchemaEntity
@@ -238,11 +238,23 @@ def generate_label_schema(dataset, task_type):
 
     return LabelSchemaEntity.from_labels(dataset.get_labels())
 
+
 def get_image_files(root_dir):
     # recursively get all image file paths from given root_dir
-    img_data_formats = ['.jpg', '.jpeg', '.JPEG', '.gif', '.bmp', '.tif', '.tiff', '.png']
+    img_data_formats = [
+        ".jpg",
+        ".jpeg",
+        ".JPEG",
+        ".gif",
+        ".bmp",
+        ".tif",
+        ".tiff",
+        ".png",
+    ]
     img_files = []
     for root, _, _ in os.walk(root_dir):
-        for format in img_data_formats:
-            img_files.extend([(root, file.name) for file in Path(root).glob(f'*{format}')])
+        for format_ in img_data_formats:
+            img_files.extend(
+                [(root, file.name) for file in Path(root).glob(f"*{format_}")]
+            )
     return img_files if img_files else None

@@ -22,11 +22,11 @@ import sys
 from .demo import main as ote_demo
 from .deploy import main as ote_deploy
 from .eval import main as ote_eval
+from .explain import main as ote_explain
 from .export import main as ote_export
 from .find import main as ote_find
 from .optimize import main as ote_optimize
 from .train import main as ote_train
-from .explain import main as ote_explain
 
 __all__ = [
     "ote_demo",
@@ -36,7 +36,7 @@ __all__ = [
     "ote_find",
     "ote_train",
     "ote_optimize",
-    "ote_explain"
+    "ote_explain",
 ]
 
 

@@ -566,3 +566,19 @@ def xfail_templates(templates, xfail_template_ids_reasons):
                 "More than one reason for template. If you have more than one Jira tickets, list them in one reason."
             )
     return xfailed_templates
+
+
+def ote_explain_testing(template, root, ote_dir, args):
+    work_dir, template_work_dir, _ = get_some_vars(template, root)
+    command_line = [
+        "ote",
+        "explain",
+        template.model_template_path,
+        "--load-weights",
+        f"{template_work_dir}/trained_{template.model_template_id}/weights.pth",
+        "--input",
+        os.path.join(ote_dir, args["--input"]),
+        "--output",
+        "./explain_example",
+    ]
+    assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
