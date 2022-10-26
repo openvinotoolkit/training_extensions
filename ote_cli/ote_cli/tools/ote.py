@@ -26,6 +26,7 @@ from .export import main as ote_export
 from .find import main as ote_find
 from .optimize import main as ote_optimize
 from .train import main as ote_train
+from .explain import main as ote_explain
 
 __all__ = [
     "ote_demo",
