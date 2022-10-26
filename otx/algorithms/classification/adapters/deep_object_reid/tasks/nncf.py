@@ -47,8 +47,8 @@ from torchreid.metrics.classification import score_extraction
 from torchreid.ops import DataParallel
 from torchreid.utils import load_pretrained_weights, set_model_attr, set_random_seed
 
-from otx.algorithms.classification.adapters.deep_object_reid.configs import (
-    ClassificationParameters,
+from otx.algorithms.classification.configs import (
+    ClassificationConfig,
 )
 from otx.algorithms.classification.adapters.deep_object_reid.data import (
     ClassificationDataset,
@@ -173,7 +173,7 @@ class ClassificationInferenceTask(
 
     @property
     def _hyperparams(self):
-        return self._task_environment.get_hyper_parameters(ClassificationParameters)
+        return self._task_environment.get_hyper_parameters(ClassificationConfig)
 
     def _load_model(
         self, model: Optional[ModelEntity], device: torch.device, pretrained_dict: Optional[Dict] = None
@@ -440,7 +440,7 @@ class ClassificationInferenceTask(
     def _save_model(self, output_model: ModelEntity, state_dict: Optional[Dict] = None):
         """Save model."""
         buffer = io.BytesIO()
-        hyperparams = self._task_environment.get_hyper_parameters(ClassificationParameters)
+        hyperparams = self._task_environment.get_hyper_parameters(ClassificationConfig)
         hyperparams_str = ids_to_strings(cfg_helper.convert(hyperparams, dict, enum_to_str=True))
         modelinfo = {"model": self._model.state_dict(), "config": hyperparams_str, "VERSION": 1}
 

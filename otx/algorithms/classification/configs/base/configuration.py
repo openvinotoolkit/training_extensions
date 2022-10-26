@@ -12,8 +12,10 @@ from otx.api.configuration.elements import (
     add_parameter_group,
     boolean_attribute,
     string_attribute,
+    configurable_integer,
+    configurable_boolean,
 )
-
+from otx.api.configuration.enums import ModelLifecycle
 
 @attrs
 class ClassificationConfig(BaseConfig):
@@ -25,6 +27,23 @@ class ClassificationConfig(BaseConfig):
 
         header = string_attribute("Learning Parameters")
         description = header
+
+        max_num_epochs = configurable_integer(
+            default_value=200,
+            min_value=1,
+            max_value=1000,
+            header="Maximum number of training epochs",
+            description="Increasing this value causes the results to be more robust but training time "
+            "will be longer.",
+            affects_outcome_of=ModelLifecycle.TRAINING,
+        )
+        
+        enable_lr_finder = configurable_boolean(
+            default_value=False,
+            header="Enable automatic learing rate estimation",
+            description="Learning rate parameter value will be ignored if enabled.",
+            affects_outcome_of=ModelLifecycle.TRAINING,
+        )
 
     @attrs
     class __AlgoBackend(BaseConfig.BaseAlgoBackendParameters):
@@ -41,6 +60,13 @@ class ClassificationConfig(BaseConfig):
         description = header
         visible_in_ui = boolean_attribute(False)
 
+    @attrs
+    class __NNCFOptimization(BaseConfig.BaseNNCFOptimization):
+        header = string_attribute("Optimization by NNCF")
+        description = header
+        visible_in_ui = boolean_attribute(False)
+
     learning_parameters = add_parameter_group(__LearningParameters)
     algo_backend = add_parameter_group(__AlgoBackend)
     pot_parameters = add_parameter_group(__POTParameter)
+    nncf_optimization = add_parameter_group(__NNCFOptimization)

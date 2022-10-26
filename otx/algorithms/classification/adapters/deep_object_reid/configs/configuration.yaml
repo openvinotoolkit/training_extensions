@@ -92,47 +92,6 @@ learning_parameters:
     warning: null
   type: PARAMETER_GROUP
   visible_in_ui: true
-pot_parameters:
-  description: POT Parameters
-  header: POT Parameters
-  preset:
-    affects_outcome_of: NONE
-    default_value: Performance
-    description: Quantization preset that defines quantization scheme
-    editable: false
-    enum_name: POTQuantizationPreset
-    header: Preset
-    options:
-      MIXED: Mixed
-      PERFORMANCE: Performance
-    type: SELECTABLE
-    ui_rules:
-      action: DISABLE_EDITING
-      operator: AND
-      rules: []
-      type: UI_RULES
-    visible_in_ui: false
-    warning: null
-  stat_subset_size:
-    affects_outcome_of: NONE
-    default_value: 300
-    description: Number of data samples used for post-training optimization
-    editable: true
-    header: Number of data samples
-    max_value: 9223372036854775807
-    min_value: 1
-    type: INTEGER
-    ui_rules:
-      action: DISABLE_EDITING
-      operator: AND
-      rules: []
-      type: UI_RULES
-    visible_in_ui: true
-    warning: null
-  type: PARAMETER_GROUP
-  visible_in_ui: false
-type: CONFIGURABLE_PARAMETERS
-visible_in_ui: true
 nncf_optimization:
   description: Optimization by NNCF
   header: Optimization by NNCF
