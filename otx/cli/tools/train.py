@@ -122,6 +122,7 @@ def main():
     # Get classes for Task, ConfigurableParameters and Dataset.
     task_class = get_impl_class(template.entrypoints.base)
     dataset_class = get_dataset_class(template.task_type)
+    breakpoint()
 
     # Create instances of Task, ConfigurableParameters and Dataset.
     dataset = dataset_class(
