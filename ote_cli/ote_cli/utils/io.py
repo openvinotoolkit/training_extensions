@@ -22,6 +22,7 @@ import re
 import struct
 import tempfile
 from zipfile import ZipFile
+from pathlib import Path
 
 from ote_sdk.entities.label import Domain, LabelEntity
 from ote_sdk.entities.label_schema import LabelGroup, LabelGroupType, LabelSchemaEntity
