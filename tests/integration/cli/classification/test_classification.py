@@ -6,31 +6,31 @@
 import os
 from pathlib import Path
 from tempfile import TemporaryDirectory
+
 import pytest
 
-from tests.test_suite.e2e_test_system import e2e_pytest_component
 from otx.api.entities.model_template import parse_model_template
-
 from otx.cli.registry import Registry
 from otx.cli.utils.tests import (
     get_template_dir,
+    nncf_eval_openvino_testing,
+    nncf_eval_testing,
+    nncf_export_testing,
+    nncf_optimize_testing,
     otx_demo_deployment_testing,
-    otx_demo_testing,
     otx_demo_openvino_testing,
+    otx_demo_testing,
     otx_deploy_openvino_testing,
     otx_eval_deployment_testing,
     otx_eval_openvino_testing,
     otx_eval_testing,
+    otx_export_testing,
     otx_hpo_testing,
     otx_train_testing,
-    otx_export_testing,
-    pot_optimize_testing,
     pot_eval_testing,
-    nncf_optimize_testing,
-    nncf_export_testing,
-    nncf_eval_testing,
-    nncf_eval_openvino_testing,
+    pot_optimize_testing,
 )
+from tests.test_suite.e2e_test_system import e2e_pytest_component
 
 # Pre-train w/ 'intel', 'openvino' classes
 args0 = {
@@ -70,10 +70,12 @@ args = {
 
 otx_dir = os.getcwd()
 
+
 @pytest.fixture(scope="session")
 def tmp_dir_path():
     with TemporaryDirectory() as tmp_dir:
         yield Path(tmp_dir)
+
 
 TT_STABILITY_TESTS = os.environ.get("TT_STABILITY_TESTS", False)
 if TT_STABILITY_TESTS:

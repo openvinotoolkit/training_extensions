@@ -11,10 +11,12 @@ import cv2 as cv
 import numpy as np
 import pytest
 from bson import ObjectId
+
 from otx.algorithms.classification.tasks import (
     ClassificationInferenceTask,
     ClassificationTrainTask,
 )
+from otx.algorithms.common.tasks.training_base import BaseTask
 from otx.api.configuration.helper import create
 from otx.api.entities.annotation import (
     Annotation,
@@ -28,20 +30,22 @@ from otx.api.entities.image import Image
 from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.label import Domain, LabelEntity
 from otx.api.entities.label_schema import LabelGroup, LabelGroupType, LabelSchemaEntity
+from otx.api.entities.metrics import Performance
 from otx.api.entities.model import ModelEntity
 from otx.api.entities.model_template import parse_model_template
+from otx.api.entities.resultset import ResultSetEntity
 from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.shapes.rectangle import Rectangle
 from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.entities.train_parameters import TrainParameters
-from tests.test_suite.e2e_test_system import e2e_pytest_api
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType
-from otx.algorithms.common.tasks.training_base import BaseTask
-from otx.api.entities.metrics import Performance
-from otx.api.entities.resultset import ResultSetEntity
+from tests.test_suite.e2e_test_system import e2e_pytest_api
 
-DEFAULT_CLS_TEMPLATE_DIR = osp.join("otx/algorithms/classification/configs", "classification", "efficientnet_b0_cls_incr")
+DEFAULT_CLS_TEMPLATE_DIR = osp.join(
+    "otx/algorithms/classification/configs", "classification", "efficientnet_b0_cls_incr"
+)
+
 
 def eval(task: BaseTask, model: ModelEntity, dataset: DatasetEntity) -> Performance:
     start_time = time.time()
@@ -53,6 +57,7 @@ def eval(task: BaseTask, model: ModelEntity, dataset: DatasetEntity) -> Performa
     assert result_set.performance is not None
     return result_set.performance
 
+
 class TestMPAClsAPI:
     @e2e_pytest_api
     def test_reading_classification_cls_incr_model_template(self):
@@ -62,7 +67,9 @@ class TestMPAClsAPI:
             "mobilenet_v3_large_1_cls_incr",
         ]
         for model_template in classification_template:
-            parse_model_template(osp.join("otx/algorithms/classification/configs", "classification", model_template, "template.yaml"))
+            parse_model_template(
+                osp.join("otx/algorithms/classification/configs", "classification", model_template, "template.yaml")
+            )
 
     @staticmethod
     def generate_label_schema(not_empty_labels, multilabel=False, hierarchical=False):
