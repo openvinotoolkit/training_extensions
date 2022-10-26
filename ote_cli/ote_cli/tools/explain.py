@@ -34,7 +34,7 @@ from ote_cli.registry import find_and_parse_model_template
 from ote_cli.tools.utils.demo.images_capture import open_images_capture
 from ote_cli.utils.config import override_parameters
 from ote_cli.utils.importing import get_impl_class
-from ote_cli.utils.io import get_image_files, read_label_schema, read_model
+from ote_cli.utils.io import get_image_files, read_label_schema, read_model, save_saliency_output
 from ote_cli.utils.parser import (
     add_hyper_parameters_sub_parser,
     gen_params_dict_from_args,
@@ -148,26 +148,18 @@ def main():
 
     imgs = get_image_files(args.input)
     if imgs is None:
-        raise ValueError(f"No images found in {args.input}")
+        raise ValueError(f"No image found in {args.input}")
 
     if not os.path.exists(args.output):
         os.makedirs(args.output)
 
     elapsed_times = deque(maxlen=10)
 
-    for i, (root_dir, filename) in enumerate(imgs):
-        frame = cv2.imread(os.path.join(root_dir, filename))
-        saliency_map, elapsed_time = get_explain_map(task, frame)
+    for _, (root_dir, filename) in enumerate(imgs):
+        img = cv2.imread(os.path.join(root_dir, filename))
+        saliency_map, elapsed_time = get_explain_map(task, img)
         elapsed_times.append(elapsed_time)
-        elapsed_time = np.mean(elapsed_times)
-
-        overlay = cv2.addWeighted(frame, 0.7, saliency_map.numpy, 0.3, 0)
-        filename = filename.split(".")[0]
-        cv2.imwrite(
-            f"{os.path.join(args.output, filename)}_saliency_map.png",
-            saliency_map.numpy,
-        )
-        cv2.imwrite(f"{os.path.join(args.output, filename)}_overlay_img.png", overlay)
+        save_saliency_output(img, saliency_map.numpy, root_dir, filename.split[0])
 
     print(f"saliency maps saved to {args.output}...")
 

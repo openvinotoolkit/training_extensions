@@ -21,6 +21,7 @@ import os
 import re
 import struct
 import tempfile
+import cv2
 from pathlib import Path
 from zipfile import ZipFile
 
@@ -258,3 +259,8 @@ def get_image_files(root_dir):
                 [(root, file.name) for file in Path(root).glob(f"*{format_}")]
             )
     return img_files if img_files else None
+
+def save_saliency_output(img: np.array, saliency_map: np.array, root: str, fname: str) -> None:
+    overlay = cv2.addWeighted(frame, 0.7, saliency_map, 0.3, 0)
+    cv2.imwrite(f"{os.path.join(args.output, filename)}_saliency_map.png", saliency_map)
+    cv2.imwrite(f"{os.path.join(args.output, filename)}_overlay_img.png", overlay)
