@@ -1,4 +1,4 @@
-"""OTX Adapters - deep_object_reid.configs."""
+"""OTX Adapters - deep_object_reid.configs.base."""
 
 # Copyright (C) 2022 Intel Corporation
 #
@@ -14,6 +14,6 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .base import ClassificationParameters
+from .parameters import ClassificationParameters
 
 __all__ = ["ClassificationParameters"]

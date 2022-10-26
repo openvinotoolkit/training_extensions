@@ -10,11 +10,10 @@ application: ~
 # Algo backend.
 framework: OTEClassification v1.2.3
 
-# Task implementations.
+# Task implementations. deep-object-reid only runs nncf task.
 entrypoints:
-  base: torchreid_tasks.train_task.OTXClassificationTrainingTask
-  openvino: torchreid_tasks.openvino_task.OpenVINOClassificationTask
-  nncf: torchreid_tasks.nncf_task.ClassificationNNCFTask
+  base: otx.algorithms.classification.adapters.deep_object_reid.tasks.ClassificationNNCFTask
+  nncf: otx.algorithms.classification.adapters.deep_object_reid.tasks.ClassificationNNCFTask
 
 # Capabilities.
 capabilities:

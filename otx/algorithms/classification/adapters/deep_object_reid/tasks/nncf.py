@@ -48,15 +48,12 @@ from scripts.default_config import (
     optimizer_kwargs,
 )
 
-from otx.algorithms.classification.adapters.deep_object_reid.utils.monitors import (
+from otx.algorithms.classification.adapters.deep_object_reid.configs import ClassificationParameters
+
+from otx.algorithms.classification.adapters.deep_object_reid.data import ClassificationDataset
+from otx.algorithms.classification.adapters.deep_object_reid.utils import (
     DefaultMetricsMonitor,
     StopCallback,
-)
-from otx.algorithms.classification.adapters.deep_object_reid.utils.parameters import (
-    ClassificationParameters,
-)
-from otx.algorithms.classification.adapters.deep_object_reid.utils.utils import (
-    ClassificationDataset,
     InferenceProgressCallback,
     OptimizationProgressCallback,
     active_score_from_probs,
@@ -163,7 +160,6 @@ class ClassificationInferenceTask(
 
         self.device = torch.device("cuda:0") if torch.cuda.device_count() else torch.device("cpu")
         self._model = self._load_model(task_environment.model, device=self.device)
-        self._model.to(self.device)
 
         self.stop_callback = StopCallback()
         self.metrics_monitor = DefaultMetricsMonitor()
@@ -201,7 +197,7 @@ class ClassificationInferenceTask(
             model = self._create_model(self._cfg, from_scratch=False)
             logger.info("No trained model in project yet. Created new model with general-purpose pretrained weights.")
 
-        return model
+        return model.to(device)
 
     def _create_model(self, config, from_scratch: bool = False):
         """Creates a model, based on the configuration in config.
