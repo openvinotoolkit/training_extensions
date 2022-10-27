@@ -255,7 +255,7 @@ def wrap_nncf_model(model,
             if is_alt_ssd_export:
                 img = img[0]
                 img_metas = img_metas[0]
-            ctx = model.forward_export_context(img_metas)
+            ctx = model.nncf_trace_context(img_metas)
             logger.debug(f"NNCF will compress a postprocessing part of the model")
         else:
             ctx = model.forward_dummy_context(img_metas)
