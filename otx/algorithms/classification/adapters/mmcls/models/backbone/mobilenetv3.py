@@ -1,24 +1,25 @@
 """Implementation of MobileNetV3.
 
-    Original papers:
-    - 'Searching for MobileNetV3,' https://arxiv.org/abs/1905.02244.
+Original papers:
+- 'Searching for MobileNetV3,' https://arxiv.org/abs/1905.02244.
 """
-# Copyright (C) 2018-2022 Kaiyang Zhou
-# SPDX-License-Identifier: MIT
-#
+
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 
+# pylint: disable=invalid-name, too-many-arguments, unused-argument
+# pylint: disable=too-many-locals, too-many-instance-attributes, abstract-method
+
 import math
 import os
 
-import torch.nn as nn
 import torch.nn.functional as F
 from mmcls.models.builder import BACKBONES
 from mmcls.models.utils import make_divisible
 from mmcv.runner import load_checkpoint
 from mpa.utils.logger import get_logger
+from torch import nn
 
 logger = get_logger()
 
@@ -49,7 +50,10 @@ class ModelInterface(nn.Module):
         self.classification_classes = {}
         self.loss = loss
         self.is_ie_model = False
-        self.use_angle_simple_linear = True if loss == "am_softmax" else False
+        if loss == "am_softmax":
+            self.use_angle_simple_linear = True
+        else:
+            self.use_angle_simple_linear = False
 
     @staticmethod
     def _glob_feature_vector(x, mode, reduce_dims=True):
@@ -90,7 +94,7 @@ class HSwish(nn.Module):
     """
 
     def __init__(self, inplace=False):
-        super(HSwish, self).__init__()
+        super().__init__()
         self.inplace = inplace
 
     def forward(self, x):
@@ -102,7 +106,7 @@ class SELayer(nn.Module):
     """SE layer."""
 
     def __init__(self, channel, reduction=4):
-        super(SELayer, self).__init__()
+        super().__init__()
         self.avg_pool = nn.AdaptiveAvgPool2d(1)
         self.fc = nn.Sequential(
             nn.Linear(channel, make_divisible(channel // reduction, 8)),
@@ -145,7 +149,7 @@ class InvertedResidual(nn.Module):
     """Inverted residual."""
 
     def __init__(self, inp, hidden_dim, oup, kernel_size, stride, use_se, use_hs):
-        super(InvertedResidual, self).__init__()
+        super().__init__()
         assert stride in [1, 2]
 
         self.identity = stride == 1 and inp == oup
@@ -200,8 +204,7 @@ class InvertedResidual(nn.Module):
 
         if self.identity:
             return x + self.conv(x)
-        else:
-            return self.conv(x)
+        return self.conv(x)
 
 
 class MobileNetV3Base(ModelInterface):
@@ -244,11 +247,13 @@ class MobileNetV3Base(ModelInterface):
     def forward(self, x, return_featuremaps=False, get_embeddings=False, gt_labels=None):
         """Forward."""
         if self.input_IN is not None:
-            x = self.input_IN(x)
+            x = self.input_IN(x)  # pylint: disable=not-callable
 
         y = self.extract_features(x)
         if return_featuremaps:
             return y
+        # should be checked
+        return y
 
 
 class MobileNetV3(MobileNetV3Base):
@@ -361,7 +366,7 @@ class OTXMobileNetV3(MobileNetV3):
         super().__init__(self.cfgs[mode], mode=mode, width_mult=width_mult, **kwargs)
         self.key = "mobilenetv3_" + mode
         if width_mult != 1.0:
-            self.key = self.key + "_{:03d}".format(int(width_mult * 100))
+            self.key = self.key + "_{:03d}".format(int(width_mult * 100))  # pylint: disable=consider-using-f-string
         self.init_weights(self.pretrained)
 
     def forward(self, x):

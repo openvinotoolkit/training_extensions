@@ -16,7 +16,8 @@
 
 import mpa.cls as MPAClassification
 
-import otx.algorithms.classification.adapters.mmcls
+import otx.algorithms.classification.adapters.mmcls as MMClsModules
+
 from .inference import ClassificationInferenceTask
 from .nncf import OTXClassificationNNCFTask
 from .openvino import ClassificationOpenVINOTask
@@ -24,7 +25,7 @@ from .train import ClassificationTrainTask
 
 __all__ = [
     "MPAClassification",
-    "otx.algorithms.classification.adapters.mmcls",
+    "MMClsModules",
     "ClassificationOpenVINOTask",
     "ClassificationInferenceTask",
     "ClassificationTrainTask",

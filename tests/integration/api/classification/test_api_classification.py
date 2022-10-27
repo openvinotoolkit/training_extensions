@@ -42,9 +42,7 @@ from otx.api.entities.train_parameters import TrainParameters
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType
 from tests.test_suite.e2e_test_system import e2e_pytest_api
 
-DEFAULT_CLS_TEMPLATE_DIR = osp.join(
-    "otx/algorithms/classification/configs", "classification", "efficientnet_b0_cls_incr"
-)
+DEFAULT_CLS_TEMPLATE_DIR = osp.join("otx/algorithms/classification", "configs", "efficientnet_b0_cls_incr")
 
 
 def eval(task: BaseTask, model: ModelEntity, dataset: DatasetEntity) -> Performance:
@@ -67,9 +65,7 @@ class TestMPAClsAPI:
             "mobilenet_v3_large_1_cls_incr",
         ]
         for model_template in classification_template:
-            parse_model_template(
-                osp.join("otx/algorithms/classification/configs", "classification", model_template, "template.yaml")
-            )
+            parse_model_template(osp.join("otx/algorithms/classification", "configs", model_template, "template.yaml"))
 
     @staticmethod
     def generate_label_schema(not_empty_labels, multilabel=False, hierarchical=False):

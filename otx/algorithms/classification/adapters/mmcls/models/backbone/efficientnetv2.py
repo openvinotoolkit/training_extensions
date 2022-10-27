@@ -1,30 +1,30 @@
 """Implementation of EfficientNetV2.
 
-    Original papers:
-    - 'EfficientNetV2: Smaller Models and Faster Training,' https://arxiv.org/abs/2104.00298,
-    - 'Adversarial Examples Improve Image Recognition,' https://arxiv.org/abs/1911.09665.
+Original papers:
+- 'EfficientNetV2: Smaller Models and Faster Training,' https://arxiv.org/abs/2104.00298,
+- 'Adversarial Examples Improve Image Recognition,' https://arxiv.org/abs/1911.09665.
 """
-# Copyright (C) 2018-2022 Kaiyang Zhou
-# SPDX-License-Identifier: MIT
-#
+
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 
+# pylint: disable=unused-argument, invalid-name
+
 import os
 
 import timm
-import torch.nn as nn
 from mmcls.models.builder import BACKBONES
 from mmcv.runner import load_checkpoint
 from mpa.utils.logger import get_logger
+from torch import nn
 
 logger = get_logger()
 
-pretrained_root = "https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-effv2-weights/"
+PRETRAINED_ROOT = "https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-effv2-weights/"
 pretrained_urls = {
-    "efficientnetv2_s_21k": pretrained_root + "tf_efficientnetv2_s_21k-6337ad01.pth",
-    "efficientnetv2_s_1k": pretrained_root + "tf_efficientnetv2_s_21ft1k-d7dafa41.pth",
+    "efficientnetv2_s_21k": PRETRAINED_ROOT + "tf_efficientnetv2_s_21k-6337ad01.pth",
+    "efficientnetv2_s_1k": PRETRAINED_ROOT + "tf_efficientnetv2_s_21ft1k-d7dafa41.pth",
 }
 
 NAME_DICT = {
@@ -46,9 +46,11 @@ class TimmModelsWrapper(nn.Module):
         super().__init__(**kwargs)
         self.model_name = model_name
         self.pretrained = pretrained
-        self.is_mobilenet = (
-            True if model_name in ["mobilenetv3_large_100_miil_in21k", "mobilenetv3_large_100_miil"] else False
-        )
+        if model_name in ["mobilenetv3_large_100_miil_in21k", "mobilenetv3_large_100_miil"]:
+            self.is_mobilenet = True
+        else:
+            self.is_mobilenet = False
+
         self.model = timm.create_model(NAME_DICT[self.model_name], pretrained=pretrained, num_classes=1000)
         if self.pretrained:
             logger.info(f"init weight - {pretrained_urls[self.model_name]}")

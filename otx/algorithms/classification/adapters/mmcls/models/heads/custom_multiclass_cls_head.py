@@ -1,14 +1,18 @@
+"""Implementation of model heads for multi-class classification."""
+
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 
+# pylint: disable=too-many-arguments, arguments-renamed, invalid-name, abstract-method
+
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
 from mmcls.models.builder import HEADS
 from mmcls.models.heads import LinearClsHead
 from mmcls.models.heads.cls_head import ClsHead
 from mmcv.cnn import build_activation_layer, constant_init, normal_init
+from torch import nn
 
 
 @HEADS.register_module()
@@ -25,7 +29,7 @@ class NonLinearClsHead(ClsHead):
         topk (int | tuple): Top-k accuracy.
     """  # noqa: W605
 
-    def __init__(
+    def __init__(  # pylint: disable=dangerous-default-value
         self,
         num_classes,
         in_channels,
@@ -36,7 +40,7 @@ class NonLinearClsHead(ClsHead):
         dropout=False,
     ):
         topk = (1,) if num_classes < 5 else (1, 5)
-        super(NonLinearClsHead, self).__init__(loss=loss, topk=topk)
+        super().__init__(loss=loss, topk=topk)
         self.in_channels = in_channels
         self.hid_channels = hid_channels
         self.num_classes = num_classes
@@ -66,6 +70,7 @@ class NonLinearClsHead(ClsHead):
             )
 
     def init_weights(self):
+        """Initialize weights."""
         for m in self.classifier:
             if isinstance(m, nn.Linear):
                 normal_init(m, mean=0, std=0.01, bias=0)
@@ -84,6 +89,7 @@ class NonLinearClsHead(ClsHead):
         return pred
 
     def forward_train(self, x, gt_label):
+        """Forward."""
         cls_score = self.classifier(x)
         losses = self.loss(cls_score, gt_label)
         return losses
@@ -94,12 +100,13 @@ class CustomNonLinearClsHead(NonLinearClsHead):
     """Custom Nonlinear classifier head."""
 
     def __init__(self, *args, **kwargs):
-        super(CustomNonLinearClsHead, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.loss_type = kwargs.get("loss", dict(type="CrossEntropyLoss"))["type"]
 
     def loss(self, cls_score, gt_label, feature=None):
+        """Compute loss."""
         num_samples = len(cls_score)
-        losses = dict()
+        losses = {}
         # compute loss
         if self.loss_type == "IBLoss":
             loss = self.compute_loss(cls_score, gt_label, feature=feature)
@@ -114,6 +121,7 @@ class CustomNonLinearClsHead(NonLinearClsHead):
         return losses
 
     def forward_train(self, x, gt_label):
+        """Forward."""
         cls_score = self.classifier(x)
         losses = self.loss(cls_score, gt_label, feature=x)
         return losses
@@ -131,15 +139,16 @@ class CustomLinearClsHead(LinearClsHead):
             Defaults to use dict(type='Normal', layer='Linear', std=0.01).
     """
 
-    def __init__(
+    def __init__(  # pylint: disable=dangerous-default-value, keyword-arg-before-vararg
         self, num_classes, in_channels, init_cfg=dict(type="Normal", layer="Linear", std=0.01), *args, **kwargs
     ):
         self.loss_type = kwargs.get("loss", dict(type="CrossEntropyLoss"))["type"]
-        super(CustomLinearClsHead, self).__init__(num_classes, in_channels, init_cfg=init_cfg, *args, **kwargs)
+        super().__init__(num_classes, in_channels, init_cfg=init_cfg, *args, **kwargs)
 
     def loss(self, cls_score, gt_label, feature=None):
+        """Compute loss."""
         num_samples = len(cls_score)
-        losses = dict()
+        losses = {}
         # compute loss
         if self.loss_type == "IBLoss":
             loss = self.compute_loss(cls_score, gt_label, feature=feature)
@@ -154,6 +163,7 @@ class CustomLinearClsHead(LinearClsHead):
         return losses
 
     def forward_train(self, x, gt_label):
+        """Forward."""
         cls_score = self.fc(x)
         losses = self.loss(cls_score, gt_label, feature=x)
         return losses

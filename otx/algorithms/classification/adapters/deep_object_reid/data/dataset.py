@@ -16,24 +16,10 @@
 
 # pylint: disable=too-many-nested-blocks, invalid-name
 
-import math
-import shutil
-import tempfile
-from contextlib import contextmanager
-from operator import itemgetter
-from os import path as osp
 from typing import List
 
-import numpy as np
-from torch.nn.modules import Module
-from torchreid.utils import get_model_attr, set_model_attr
-
 from otx.api.entities.datasets import DatasetEntity
-from otx.api.entities.label import Domain, LabelEntity
-from otx.api.entities.label_schema import LabelGroup, LabelGroupType, LabelSchemaEntity
-from otx.api.entities.model_template import ModelTemplate
-from otx.api.entities.scored_label import ScoredLabel
-from otx.api.usecases.reporting.time_monitor_callback import TimeMonitorCallback
+from otx.api.entities.label import LabelEntity
 from otx.api.utils.argument_checks import (
     DatasetParamTypeCheck,
     check_input_parameters_type,

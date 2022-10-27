@@ -81,8 +81,8 @@ TT_STABILITY_TESTS = os.environ.get("TT_STABILITY_TESTS", False)
 if TT_STABILITY_TESTS:
     default_template = parse_model_template(
         os.path.join(
-            "otx/algorithms/classification/configs",
-            "classification",
+            "otx/algorithms/classification",
+            "configs",
             "efficientnet_b0_cls_incr",
             "template.yaml",
         )
@@ -374,7 +374,7 @@ args_h = {
         "--learning_parameters.num_iters",
         "2",
         "--learning_parameters.batch_size",
-        "4",
+        "12",
     ],
 }
 

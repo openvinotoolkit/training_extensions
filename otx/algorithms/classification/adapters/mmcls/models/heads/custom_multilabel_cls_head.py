@@ -4,12 +4,14 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+# pylint: disable=invalid-name, unused-variable, arguments-renamed, too-many-instance-attributes, abstract-method
+
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
 from mmcls.models.builder import HEADS
 from mmcls.models.heads import MultiLabelClsHead
 from mmcv.cnn import build_activation_layer, constant_init, normal_init
+from torch import nn
 
 
 class AnglularLinear(nn.Module):
@@ -45,7 +47,7 @@ class CustomMultiLabelLinearClsHead(MultiLabelClsHead):
         loss (dict): Config of classification loss.
     """
 
-    def __init__(
+    def __init__(  # pylint: disable=dangerous-default-value
         self,
         num_classes,
         in_channels,
@@ -53,7 +55,7 @@ class CustomMultiLabelLinearClsHead(MultiLabelClsHead):
         scale=1.0,
         loss=dict(type="CrossEntropyLoss", use_sigmoid=True, reduction="mean", loss_weight=1.0),
     ):
-        super(CustomMultiLabelLinearClsHead, self).__init__(loss=loss)
+        super().__init__(loss=loss)
         if num_classes <= 0:
             raise ValueError(f"num_classes={num_classes} must be a positive integer")
 
@@ -78,7 +80,7 @@ class CustomMultiLabelLinearClsHead(MultiLabelClsHead):
         """Compute loss."""
         gt_label = gt_label.type_as(cls_score)
         num_samples = len(cls_score)
-        losses = dict()
+        losses = {}
 
         # map difficult examples to positive ones
         _gt_label = torch.abs(gt_label)
@@ -137,7 +139,7 @@ class CustomMultiLabelNonLinearClsHead(MultiLabelClsHead):
         normalized (bool): Normalize input features and weights in the last linar layer.
     """
 
-    def __init__(
+    def __init__(  # pylint: disable=dangerous-default-value
         self,
         num_classes,
         in_channels,
@@ -147,9 +149,9 @@ class CustomMultiLabelNonLinearClsHead(MultiLabelClsHead):
         loss=dict(type="CrossEntropyLoss", use_sigmoid=True, reduction="mean", loss_weight=1.0),
         dropout=False,
         normalized=False,
-    ):
+    ):  # pylint: disable=too-many-arguments
 
-        super(CustomMultiLabelNonLinearClsHead, self).__init__(loss=loss)
+        super().__init__(loss=loss)
 
         self.in_channels = in_channels
         self.num_classes = num_classes
@@ -187,7 +189,7 @@ class CustomMultiLabelNonLinearClsHead(MultiLabelClsHead):
         """Compute loss."""
         gt_label = gt_label.type_as(cls_score)
         num_samples = len(cls_score)
-        losses = dict()
+        losses = {}
 
         # map difficult examples to positive ones
         _gt_label = torch.abs(gt_label)

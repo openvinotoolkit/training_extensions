@@ -197,7 +197,7 @@ class ClassificationInferenceTask(
             model = self._create_model(self._cfg, from_scratch=False)
             logger.info("No trained model in project yet. Created new model with general-purpose pretrained weights.")
 
-        return model.to(device)
+        return model.to(device)  # type: ignore
 
     def _create_model(self, config, from_scratch: bool = False):
         """Creates a model, based on the configuration in config.

@@ -14,8 +14,8 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .data import MPAClsDataset
 from . import models as MPAModels
+from .data import MPAClsDataset
 
 __all__ = [
     "MPAClsDataset",

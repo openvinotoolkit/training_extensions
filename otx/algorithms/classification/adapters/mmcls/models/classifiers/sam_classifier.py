@@ -1,12 +1,15 @@
 """SAM Classifier.
 
-    Original paper:
-    - 'Sharpness-Aware Minimization for Efficiently Improving Generalization,' https://arxiv.org/abs/2010.01412.
+Original paper:
+- 'Sharpness-Aware Minimization for Efficiently Improving Generalization,' https://arxiv.org/abs/2010.01412.
 """
 
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
+
+# pylint: disable=unused-argument, too-many-branches, invalid-name
+# pylint: disable=too-many-locals, too-many-nested-blocks, abstract-method
 
 import functools
 from collections import OrderedDict
@@ -30,7 +33,7 @@ class SAMClassifier(BaseClassifier):
         """Train batch and save current batch data to compute SAM gradient."""
 
         # Rest of SAM logics are implented in SAMOptimizerHook
-        self.current_batch = data
+        self.current_batch = data  # pylint: disable=attribute-defined-outside-init
 
         return super().train_step(data, optimizer)
 
@@ -47,6 +50,7 @@ class SAMImageClassifier(ImageClassifier):
         super().__init__(**kwargs)
         self.is_export = False
         self.featuremap = None
+        self.current_batch = None
         # Hooks for redirect state_dict load/save
         self._register_state_dict_hook(self.state_dict_hook)
         self._register_load_state_dict_pre_hook(functools.partial(self.load_state_dict_pre_hook, self))
@@ -88,7 +92,7 @@ class SAMImageClassifier(ImageClassifier):
 
         x = self.extract_feat(img)
 
-        losses = dict()
+        losses = {}
 
         if self.multilabel or self.hierarchical:
             loss = self.head.forward_train(x, gt_label, **kwargs)
@@ -106,7 +110,7 @@ class SAMImageClassifier(ImageClassifier):
 
         backbone_type = type(module.backbone).__name__
         if backbone_type not in ["OTXMobileNetV3", "OTXEfficientNet", "OTXEfficientNetV2"]:
-            return
+            return None
 
         output = OrderedDict()
         if backbone_type == "OTXMobileNetV3":
@@ -282,5 +286,4 @@ class SAMImageClassifier(ImageClassifier):
             saliency_map = SaliencyMapHook.func(self.featuremap)
             feature_vector = FeatureVectorHook.func(self.featuremap)
             return logits, feature_vector, saliency_map
-        else:
-            return logits
+        return logits
