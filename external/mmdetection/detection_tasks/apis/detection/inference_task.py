@@ -60,6 +60,7 @@ from detection_tasks.apis.detection.ote_utils import InferenceProgressCallback
 from mmdet.datasets import build_dataloader, build_dataset
 from mmdet.models import build_detector
 #from mmdet.parallel import MMDataCPU
+from otx.algorithms.detection.adapters.mmdet.data.data_cpu import MMDataCPU
 from mmdet.utils.collect_env import collect_env
 #from mmdet.utils.deployment import get_saliency_map, get_feature_vector
 from mmdet.utils.logger import get_root_logger

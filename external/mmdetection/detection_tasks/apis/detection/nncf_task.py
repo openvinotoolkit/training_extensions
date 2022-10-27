@@ -43,19 +43,25 @@ from ote_sdk.utils.argument_checks import (
 )
 
 from mmdet.apis import train_detector
-from detection_tasks.extension.utils.fake_input import get_fake_input
+#  from detection_tasks.extension.utils.fake_input import get_fake_input
+from otx.algorithms.detection.adapters.mmdet.utils.fake_input import get_fake_input
 from detection_tasks.apis.detection.config_utils import prepare_for_training, remove_from_config
 from detection_tasks.apis.detection.configuration import OTEDetectionConfig
 from detection_tasks.apis.detection.inference_task import OTEDetectionInferenceTask
 from detection_tasks.apis.detection.ote_utils import OptimizationProgressCallback
 from detection_tasks.extension.utils.hooks import OTELoggerHook
-from detection_tasks.extension.nncf.utils import build_val_dataloader
+#  from detection_tasks.extension.nncf.utils import build_val_dataloader
+from otx.algorithms.detection.adapters.mmdet.nncf.utils import build_val_dataloader
 from mmdet.datasets import build_dataloader, build_dataset
-from detection_tasks.extension.nncf import check_nncf_is_enabled
-from detection_tasks.extension.nncf import is_state_nncf
-from detection_tasks.extension.nncf import wrap_nncf_model
-from detection_tasks.extension.nncf import is_accuracy_aware_training_set
-from detection_tasks.extension.nncf.config import compose_nncf_config
+#  from detection_tasks.extension.nncf import check_nncf_is_enabled
+#  from detection_tasks.extension.nncf import is_state_nncf
+#  from detection_tasks.extension.nncf import wrap_nncf_model
+#  from detection_tasks.extension.nncf import is_accuracy_aware_training_set
+#  from detection_tasks.extension.nncf.config import compose_nncf_config
+from otx.algorithms.detection.adapters.mmdet.nncf import (
+    check_nncf_is_enabled, is_state_nncf, wrap_nncf_model, is_accuracy_aware_training_set
+)
+from otx.algorithms.detection.adapters.mmdet.nncf.config import compose_nncf_config
 from mmdet.utils.logger import get_root_logger
 
 
