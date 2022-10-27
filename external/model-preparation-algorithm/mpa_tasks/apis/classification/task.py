@@ -54,9 +54,9 @@ from ote_sdk.serialization.label_mapper import label_schema_to_bytes
 from ote_sdk.usecases.evaluation.metrics_helper import MetricsHelper
 from ote_sdk.usecases.reporting.time_monitor_callback import TimeMonitorCallback
 from ote_sdk.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
+from ote_sdk.usecases.tasks.interfaces.explain_interface import IExplainTask
 from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType, IExportTask
 from ote_sdk.usecases.tasks.interfaces.inference_interface import IInferenceTask
-from ote_sdk.usecases.tasks.interfaces.explain_interface import IExplainTask
 from ote_sdk.usecases.tasks.interfaces.unload_interface import IUnload
 from ote_sdk.utils.argument_checks import check_input_parameters_type
 from ote_sdk.utils.labels_utils import get_empty_label
@@ -169,15 +169,10 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         self._data_cfg = self._init_test_data_cfg(dataset)
         dataset = dataset.with_empty_annotations()
 
-        results = self._run_task(
-            stage_module,
-            mode="train",
-            dataset=dataset
-        )
+        results = self._run_task(stage_module, mode="train", dataset=dataset)
         logger.debug(f"result of run_task {stage_module} module = {results}")
         activations = results["outputs"]
         activation_results = zip(
-            activations["feature_vectors"],
             activations["saliency_maps"],
         )
 
@@ -311,13 +306,7 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         """Loop over dataset again and assign activation maps"""
         dataset_size = len(dataset)
         for i, (dataset_item, prediction_items) in enumerate(zip(dataset, activation_results)):
-            feature_vector, saliency_map = prediction_items
-
-            # add feature map
-            active_score = TensorEntity(name="representation_vector", numpy=feature_vector.reshape(-1))
-            dataset_item.append_metadata_item(active_score, model=self._task_environment.model)
-
-            # add saliency map
+            saliency_map = prediction_items[0]
             saliency_map = get_actmap(saliency_map, (dataset_item.width, dataset_item.height))
             saliency_map_media = ResultMediaEntity(
                 name="Saliency Map",
@@ -328,7 +317,7 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
             )
             dataset_item.append_metadata_item(saliency_map_media, model=self._task_environment.model)
             update_progress_callback(int(i / dataset_size * 100))
-            
+
     def _init_recipe(self):
         logger.info("called _init_recipe()")
 
