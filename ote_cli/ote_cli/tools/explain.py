@@ -91,16 +91,6 @@ def parse_args():
     return parser.parse_args(), template, hyper_parameters
 
 
-def get_explain_map(task, explain_dataset, explain_algorithm):
-    start_time = time.perf_counter()
-    saliency_maps = task.explain(
-        explain_dataset,
-        InferenceParameters(is_evaluation=True),
-    )
-    elapsed_time = time.perf_counter() - start_time
-    return saliency_maps, elapsed_time
-
-
 def main():
     """
     Main function that is used for model demonstration.
@@ -147,8 +137,14 @@ def main():
 
     if not os.path.exists(args.output):
         os.makedirs(args.output)
-
-    saliency_maps, elapsed_time = get_explain_map(task, explain_dataset, args.explain_algorithm)
+    
+    start_time = time.perf_counter()
+    saliency_maps = task.explain(
+        explain_dataset.with_empty_annotations(),
+        InferenceParameters(is_evaluation=True),
+    )
+    elapsed_time = time.perf_counter() - start_time
+    
     for img, saliency_map, (_, fname) in zip(explain_dataset, saliency_maps, image_files):
         save_saliency_output(img.numpy, saliency_map.numpy, args.output, \
             os.path.splitext(fname)[0], weight=args.weight)
