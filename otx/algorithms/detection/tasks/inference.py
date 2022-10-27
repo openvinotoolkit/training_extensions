@@ -15,6 +15,7 @@
 # and limitations under the License.
 
 import os
+from collections.abc import Mapping
 from typing import Iterable, Optional, Tuple
 
 import cv2
@@ -321,30 +322,58 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
                 elif pipeline_step.type == "MultiScaleFlipAug":
                     patch_color_conversion(pipeline_step.transforms)
 
+        def get_data_cfgs(cfg):
+
+            def get_datasets(cfg, key=None):
+                if key == "dataset":
+                    return [cfg]
+                elif key == "datasets":
+                    assert isinstance(cfg, list)
+                out = []
+                if isinstance(cfg, Mapping):
+                    for key, value in cfg.items():
+                        if isinstance(value, (Mapping, list)):
+                            out += get_datasets(value, key)
+                elif isinstance(cfg, list):
+                    for value in cfg:
+                        if isinstance(value, (Mapping, list)):
+                            out_ = get_datasets(value)
+                            out += value if not out_ and key == "datasets" else out_
+                return out
+
+            data_cfgs = get_datasets(cfg)
+            return data_cfgs if data_cfgs else [cfg]
+
+
         assert "data" in config
         for subset in ("train", "val", "test", "unlabeled"):
             cfg = config.data.get(subset, None)
             if not cfg:
                 continue
-            if cfg.type in ("RepeatDataset", "MultiImageMixDataset"):
-                cfg = cfg.dataset
-            cfg.type = "MPADetDataset"
-            cfg.domain = domain
-            cfg.otx_dataset = None
-            cfg.labels = None
+
+            cfgs = get_data_cfgs(cfg)
             remove_from_config(cfg, "ann_file")
             remove_from_config(cfg, "img_prefix")
             remove_from_config(cfg, "classes")  # Get from DatasetEntity
-            for pipeline_step in cfg.pipeline:
-                if pipeline_step.type == "LoadImageFromFile":
-                    pipeline_step.type = "LoadImageFromOTXDataset"
-                if pipeline_step.type == "LoadAnnotations":
-                    pipeline_step.type = "LoadAnnotationFromOTXDataset"
-                    pipeline_step.domain = domain
-                    pipeline_step.min_size = cfg.pop("min_size", -1)
-                if subset == "train" and pipeline_step.type == "Collect":
-                    pipeline_step = BaseTask._get_meta_keys(pipeline_step)
-            patch_color_conversion(cfg.pipeline)
+
+            for cfg in cfgs:
+                cfg.type = "MPADetDataset"
+                cfg.domain = domain
+                cfg.otx_dataset = None
+                cfg.labels = None
+                remove_from_config(cfg, "ann_file")
+                remove_from_config(cfg, "img_prefix")
+                remove_from_config(cfg, "classes")  # Get from DatasetEntity
+                for pipeline_step in cfg.pipeline:
+                    if pipeline_step.type == "LoadImageFromFile":
+                        pipeline_step.type = "LoadImageFromOTXDataset"
+                    if pipeline_step.type == "LoadAnnotations":
+                        pipeline_step.type = "LoadAnnotationFromOTXDataset"
+                        pipeline_step.domain = domain
+                        pipeline_step.min_size = cfg.pop("min_size", -1)
+                    if subset == "train" and pipeline_step.type == "Collect":
+                        pipeline_step = BaseTask._get_meta_keys(pipeline_step)
+                patch_color_conversion(cfg.pipeline)
 
     @staticmethod
     def _patch_evaluation(config: MPAConfig):
