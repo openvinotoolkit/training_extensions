@@ -446,6 +446,7 @@ optional arguments:
   --save-model-to SAVE_MODEL_TO
                         Location where openvino.zip will be stored.
 ```
+
 ### ote explain
 
 `ote explain` runs explanation of a trained model on a particular dataset.
@@ -472,8 +473,7 @@ positional arguments:
 optional arguments:
   -h, --help            show this help message and exit
   -i INPUT, --input INPUT
-                        Source of input data: images folder, image, webcam and
-                        video.
+                        Source of input data: images folder or single image
   -o OUTPUT, --output OUTPUT
                         Root path for image dump. Will save saliency map
                         or overlay images to this folder
@@ -481,6 +481,7 @@ optional arguments:
   --xai-model XAI_MODEL_NAME
                         xai model name. Currently only support EigenCAM
 ```
+
 ---
 
 \* Other names and brands may be claimed as the property of others.
