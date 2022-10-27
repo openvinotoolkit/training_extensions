@@ -41,7 +41,7 @@ from ote_cli.utils.parser import (
 )
 
 ESC_BUTTON = 27
-SUPPORTED_XAI_MODELS = ["CAM", "EigenCAM"]
+SUPPORTED_EXPLAIN_ALGORITHMS = ["CAM", "EigenCAM"]
 
 
 def parse_args():
@@ -80,7 +80,7 @@ def parse_args():
     parser.add_argument(
         "--explain-model",
         default="EigenCAM",
-        help=f"XAI model name, currently support {SUPPORTED_XAI_MODELS}",
+        help=f"XAI model name, currently support {SUPPORTED_EXPLAIN_ALGORITHMS}",
     )
     add_hyper_parameters_sub_parser(parser, hyper_parameters, modes=("INFERENCE",))
 
