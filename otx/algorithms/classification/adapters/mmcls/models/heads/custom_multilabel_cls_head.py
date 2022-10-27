@@ -1,3 +1,5 @@
+"""Implementation of model heads for multi-label classification."""
+
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -11,7 +13,8 @@ from mmcv.cnn import build_activation_layer, constant_init, normal_init
 
 
 class AnglularLinear(nn.Module):
-    """Computes cos of angles between input vectors and weights vectors
+    """Computes cos of angles between input vectors and weights vectors.
+
     Args:
         in_features (int): Number of input features.
         out_features (int): Number of output cosine logits.
@@ -25,6 +28,7 @@ class AnglularLinear(nn.Module):
         self.weight.data.normal_().renorm_(2, 0, 1e-5).mul_(1e5)
 
     def forward(self, x):
+        """Forward."""
         cos_theta = F.normalize(x.view(x.shape[0], -1), dim=1).mm(F.normalize(self.weight.t(), p=2, dim=0))
         return cos_theta.clamp(-1, 1)
 
@@ -32,6 +36,7 @@ class AnglularLinear(nn.Module):
 @HEADS.register_module()
 class CustomMultiLabelLinearClsHead(MultiLabelClsHead):
     """Custom Linear classification head for multilabel task.
+
     Args:
         num_classes (int): Number of categories.
         in_channels (int): Number of channels in the input feature map.
@@ -65,10 +70,12 @@ class CustomMultiLabelLinearClsHead(MultiLabelClsHead):
             self.fc = nn.Linear(self.in_channels, self.num_classes)
 
     def init_weights(self):
+        """Initialize weights."""
         if isinstance(self.fc, nn.Linear):
             normal_init(self.fc, mean=0, std=0.01, bias=0)
 
     def loss(self, cls_score, gt_label, valid_label_mask=None):
+        """Compute loss."""
         gt_label = gt_label.type_as(cls_score)
         num_samples = len(cls_score)
         losses = dict()
@@ -81,6 +88,7 @@ class CustomMultiLabelLinearClsHead(MultiLabelClsHead):
         return losses
 
     def forward_train(self, x, gt_label, **kwargs):
+        """Forward."""
         img_metas = kwargs.get("img_metas", False)
         gt_label = gt_label.type_as(x)
         cls_score = self.fc(x) * self.scale
@@ -103,6 +111,7 @@ class CustomMultiLabelLinearClsHead(MultiLabelClsHead):
         return pred
 
     def get_valid_label_mask(self, img_metas):
+        """Get valid label mask."""
         valid_label_mask = []
         for i, meta in enumerate(img_metas):
             mask = torch.Tensor([1 for _ in range(self.num_classes)])
@@ -117,6 +126,7 @@ class CustomMultiLabelLinearClsHead(MultiLabelClsHead):
 @HEADS.register_module()
 class CustomMultiLabelNonLinearClsHead(MultiLabelClsHead):
     """Non-linear classification head for multilabel task.
+
     Args:
         num_classes (int): Number of categories.
         in_channels (int): Number of channels in the input feature map.
@@ -166,6 +176,7 @@ class CustomMultiLabelNonLinearClsHead(MultiLabelClsHead):
         self.classifier = nn.Sequential(*modules)
 
     def init_weights(self):
+        """Initialize weights."""
         for m in self.classifier:
             if isinstance(m, nn.Linear):
                 normal_init(m, mean=0, std=0.01, bias=0)
@@ -173,6 +184,7 @@ class CustomMultiLabelNonLinearClsHead(MultiLabelClsHead):
                 constant_init(m, 1)
 
     def loss(self, cls_score, gt_label, valid_label_mask=None):
+        """Compute loss."""
         gt_label = gt_label.type_as(cls_score)
         num_samples = len(cls_score)
         losses = dict()
@@ -185,6 +197,7 @@ class CustomMultiLabelNonLinearClsHead(MultiLabelClsHead):
         return losses
 
     def forward_train(self, x, gt_label, **kwargs):
+        """Forward."""
         img_metas = kwargs.get("img_metas", False)
         gt_label = gt_label.type_as(x)
         cls_score = self.classifier(x) * self.scale
@@ -207,6 +220,7 @@ class CustomMultiLabelNonLinearClsHead(MultiLabelClsHead):
         return pred
 
     def get_valid_label_mask(self, img_metas):
+        """Get valid label mask."""
         valid_label_mask = []
         for i, meta in enumerate(img_metas):
             mask = torch.Tensor([1 for _ in range(self.num_classes)])

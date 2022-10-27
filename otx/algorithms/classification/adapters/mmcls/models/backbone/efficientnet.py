@@ -1,16 +1,15 @@
-# Copyright (c) 2018-2022 Kaiyang Zhou
+"""Implementation of EfficientNet.
+
+    Original papers:
+    - 'EfficientNet: Rethinking Model Scaling for Convolutional Neural Networks,' https://arxiv.org/abs/1905.11946,
+    - 'Adversarial Examples Improve Image Recognition,' https://arxiv.org/abs/1911.09665.
+"""
+# Copyright (C) 2018-2022 Kaiyang Zhou
 # SPDX-License-Identifier: MIT
 #
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-
-"""
-    EfficientNet for ImageNet-1K, implemented in PyTorch.
-    Original papers:
-    - 'EfficientNet: Rethinking Model Scaling for Convolutional Neural Networks,' https://arxiv.org/abs/1905.11946,
-    - 'Adversarial Examples Improve Image Recognition,' https://arxiv.org/abs/1911.09665.
-"""
 
 import math
 import os

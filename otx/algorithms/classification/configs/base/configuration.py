@@ -11,11 +11,12 @@ from otx.algorithms.common.configs import BaseConfig
 from otx.api.configuration.elements import (
     add_parameter_group,
     boolean_attribute,
-    string_attribute,
-    configurable_integer,
     configurable_boolean,
+    configurable_integer,
+    string_attribute,
 )
 from otx.api.configuration.enums import ModelLifecycle
+
 
 @attrs
 class ClassificationConfig(BaseConfig):
@@ -37,7 +38,7 @@ class ClassificationConfig(BaseConfig):
             "will be longer.",
             affects_outcome_of=ModelLifecycle.TRAINING,
         )
-        
+
         enable_lr_finder = configurable_boolean(
             default_value=False,
             header="Enable automatic learing rate estimation",

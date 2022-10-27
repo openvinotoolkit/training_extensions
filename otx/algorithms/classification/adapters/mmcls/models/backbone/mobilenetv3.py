@@ -1,4 +1,9 @@
-# Copyright (c) 2018-2022 Kaiyang Zhou
+"""Implementation of MobileNetV3.
+
+    Original papers:
+    - 'Searching for MobileNetV3,' https://arxiv.org/abs/1905.02244.
+"""
+# Copyright (C) 2018-2022 Kaiyang Zhou
 # SPDX-License-Identifier: MIT
 #
 # Copyright (C) 2022 Intel Corporation
@@ -26,6 +31,8 @@ pretrained_urls = {
 
 
 class ModelInterface(nn.Module):
+    """Model Interface."""
+
     def __init__(
         self,
         classification=False,
@@ -63,22 +70,23 @@ class ModelInterface(nn.Module):
 
 
 class HSigmoid(nn.Module):
-    """
-    Approximated sigmoid function, so-called hard-version of sigmoid from 'Searching for MobileNetV3,'
+    """Approximated sigmoid function, so-called hard-version of sigmoid from 'Searching for MobileNetV3,'.
+
     https://arxiv.org/abs/1905.02244.
     """
 
     def forward(self, x):
+        """Forward."""
         return F.relu6(x + 3.0, inplace=True) / 6.0
 
 
 class HSwish(nn.Module):
-    """
-    H-Swish activation function from 'Searching for MobileNetV3,' https://arxiv.org/abs/1905.02244.
+    """H-Swish activation function from 'Searching for MobileNetV3,'.
+
+    https://arxiv.org/abs/1905.02244.
+
     Parameters:
-    ----------
-    inplace : bool
-        Whether to use inplace version of the module.
+        inplace : bool, Whether to use inplace version of the module.
     """
 
     def __init__(self, inplace=False):
@@ -86,10 +94,13 @@ class HSwish(nn.Module):
         self.inplace = inplace
 
     def forward(self, x):
+        """Forward."""
         return x * F.relu6(x + 3.0, inplace=self.inplace) / 6.0
 
 
 class SELayer(nn.Module):
+    """SE layer."""
+
     def __init__(self, channel, reduction=4):
         super(SELayer, self).__init__()
         self.avg_pool = nn.AdaptiveAvgPool2d(1)
@@ -101,6 +112,8 @@ class SELayer(nn.Module):
         )
 
     def forward(self, x):
+        """Forward."""
+
         # with no_nncf_se_layer_context():
         b, c, _, _ = x.size()
         y = self.avg_pool(x).view(b, c)
@@ -109,6 +122,8 @@ class SELayer(nn.Module):
 
 
 def conv_3x3_bn(inp, oup, stride, IN_conv1=False):
+    """Conv 3x3 layer with batch-norm."""
+
     return nn.Sequential(
         nn.Conv2d(inp, oup, 3, stride, 1, bias=False),
         nn.BatchNorm2d(oup) if not IN_conv1 else nn.InstanceNorm2d(oup, affine=True),
@@ -117,6 +132,8 @@ def conv_3x3_bn(inp, oup, stride, IN_conv1=False):
 
 
 def conv_1x1_bn(inp, oup, loss="softmax"):
+    """Conv 1x1 layer with batch-norm."""
+
     return nn.Sequential(
         nn.Conv2d(inp, oup, 1, 1, 0, bias=False),
         nn.BatchNorm2d(oup),
@@ -125,6 +142,8 @@ def conv_1x1_bn(inp, oup, loss="softmax"):
 
 
 class InvertedResidual(nn.Module):
+    """Inverted residual."""
+
     def __init__(self, inp, hidden_dim, oup, kernel_size, stride, use_se, use_hs):
         super(InvertedResidual, self).__init__()
         assert stride in [1, 2]
@@ -177,6 +196,8 @@ class InvertedResidual(nn.Module):
             )
 
     def forward(self, x):
+        """Forward."""
+
         if self.identity:
             return x + self.conv(x)
         else:
@@ -184,6 +205,8 @@ class InvertedResidual(nn.Module):
 
 
 class MobileNetV3Base(ModelInterface):
+    """Base model of MobileNetV3."""
+
     def __init__(
         self,
         num_classes=1000,
@@ -211,12 +234,15 @@ class MobileNetV3Base(ModelInterface):
         self.feature_dim = feature_dim
 
     def infer_head(self, x, skip_pool=False):
+        """Inference head."""
         raise NotImplementedError
 
     def extract_features(self, x):
+        """Extract features."""
         raise NotImplementedError
 
     def forward(self, x, return_featuremaps=False, get_embeddings=False, gt_labels=None):
+        """Forward."""
         if self.input_IN is not None:
             x = self.input_IN(x)
 
@@ -226,8 +252,9 @@ class MobileNetV3Base(ModelInterface):
 
 
 class MobileNetV3(MobileNetV3Base):
-    def __init__(self, cfgs, mode, IN_conv1=False, **kwargs):
+    """MobileNetV3."""
 
+    def __init__(self, cfgs, mode, IN_conv1=False, **kwargs):
         super().__init__(**kwargs)
         # setting of inverted residual blocks
         self.cfgs = cfgs
@@ -257,10 +284,14 @@ class MobileNetV3(MobileNetV3Base):
         self._initialize_weights()
 
     def extract_features(self, x):
+        """Extract features."""
+
         y = self.conv(self.features(x))
         return y
 
     def infer_head(self, x, skip_pool=False):
+        """Inference head."""
+
         if not skip_pool:
             glob_features = self._glob_feature_vector(x, self.pooling_type, reduce_dims=False)
         else:
@@ -270,6 +301,8 @@ class MobileNetV3(MobileNetV3Base):
         return glob_features, logits
 
     def _initialize_weights(self):
+        """Initialize weights."""
+
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
                 n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
@@ -287,6 +320,8 @@ class MobileNetV3(MobileNetV3Base):
 
 @BACKBONES.register_module()
 class OTXMobileNetV3(MobileNetV3):
+    """MobileNetV3 model for OTX."""
+
     cfgs = dict(
         small=[
             # k, t, c, SE, HS, s
@@ -330,9 +365,13 @@ class OTXMobileNetV3(MobileNetV3):
         self.init_weights(self.pretrained)
 
     def forward(self, x):
+        """Forward."""
+
         return super().forward(x, return_featuremaps=True)
 
     def init_weights(self, pretrained=None):
+        """Initialize weights."""
+
         if isinstance(pretrained, str) and os.path.exists(pretrained):
             load_checkpoint(self, pretrained)
             logger.info(f"init weight - {pretrained}")

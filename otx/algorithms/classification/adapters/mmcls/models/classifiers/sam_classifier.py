@@ -1,3 +1,9 @@
+"""SAM Classifier.
+
+    Original paper:
+    - 'Sharpness-Aware Minimization for Efficiently Improving Generalization,' https://arxiv.org/abs/2010.01412.
+"""
+
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -18,10 +24,11 @@ logger = get_logger()
 
 @CLASSIFIERS.register_module()
 class SAMClassifier(BaseClassifier):
-    """SAM-enabled BaseClassifier"""
+    """SAM-enabled BaseClassifier."""
 
     def train_step(self, data, optimizer):
-        # Saving current batch data to compute SAM gradient
+        """Train batch and save current batch data to compute SAM gradient."""
+
         # Rest of SAM logics are implented in SAMOptimizerHook
         self.current_batch = data
 
@@ -30,7 +37,7 @@ class SAMClassifier(BaseClassifier):
 
 @CLASSIFIERS.register_module()
 class SAMImageClassifier(ImageClassifier):
-    """SAM-enabled ImageClassifier"""
+    """SAM-enabled ImageClassifier."""
 
     def __init__(self, task_adapt=None, **kwargs):
         if "multilabel" in kwargs:
@@ -54,7 +61,8 @@ class SAMImageClassifier(ImageClassifier):
             )
 
     def train_step(self, data, optimizer):
-        # Saving current batch data to compute SAM gradient
+        """Train batch and save current batch data to compute SAM gradient."""
+
         # Rest of SAM logics are implented in SAMOptimizerHook
         self.current_batch = data
 
@@ -94,7 +102,8 @@ class SAMImageClassifier(ImageClassifier):
 
     @staticmethod
     def state_dict_hook(module, state_dict, *args, **kwargs):
-        """Redirect model as output state_dict for OTX model compatibility"""
+        """Redirect model as output state_dict for OTX model compatibility."""
+
         backbone_type = type(module.backbone).__name__
         if backbone_type not in ["OTXMobileNetV3", "OTXEfficientNet", "OTXEfficientNetV2"]:
             return
@@ -137,7 +146,8 @@ class SAMImageClassifier(ImageClassifier):
 
     @staticmethod
     def load_state_dict_pre_hook(module, state_dict, *args, **kwargs):
-        """Redirect input state_dict to model for OTX model compatibility"""
+        """Redirect input state_dict to model for OTX model compatibility."""
+
         backbone_type = type(module.backbone).__name__
         if backbone_type not in ["OTXMobileNetV3", "OTXEfficientNet", "OTXEfficientNetV2"]:
             return
@@ -183,7 +193,8 @@ class SAMImageClassifier(ImageClassifier):
 
     @staticmethod
     def load_state_dict_mixing_hook(model, model_classes, chkpt_classes, chkpt_dict, prefix, *args, **kwargs):
-        """Modify input state_dict according to class name matching before weight loading"""
+        """Modify input state_dict according to class name matching before weight loading."""
+
         backbone_type = type(model.backbone).__name__
         if backbone_type not in ["OTXMobileNetV3", "OTXEfficientNet", "OTXEfficientNetV2"]:
             return
@@ -248,8 +259,9 @@ class SAMImageClassifier(ImageClassifier):
             chkpt_dict[chkpt_name] = model_param
 
     def extract_feat(self, img):
-        """Directly extract features from the backbone + neck
-        Overriding for OpenVINO export with features
+        """Directly extract features from the backbone + neck.
+
+        Overriding for OpenVINO export with features.
         """
         x = self.backbone(img)
         if torch.onnx.is_in_onnx_export():
@@ -261,6 +273,7 @@ class SAMImageClassifier(ImageClassifier):
 
     def simple_test(self, img, img_metas):
         """Test without augmentation.
+
         Overriding for OpenVINO export with features
         """
         x = self.extract_feat(img)

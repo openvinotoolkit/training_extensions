@@ -1,10 +1,10 @@
 # Description.
-model_template_id: Custom_Image_Classification_MobileNet-V3-large-1x
-name: MobileNet-V3-large-1x
+model_template_id: Custom_Image_Classification_MobileNet-V3-small
+name: MobileNet-V3-small
 task_type: CLASSIFICATION
 task_family: VISION
 instantiation: "CLASS"
-summary: Class-Incremental Image Classification for MobileNet-V3-large-1x
+summary: Class-Incremental Image Classification for MobileNet-V3-small
 application: ~
 
 # Algo backend.
@@ -15,7 +15,7 @@ entrypoints:
   base: otx.algorithms.classification.tasks.ClassificationTrainTask
   openvino: otx.algorithms.classification.tasks.ClassificationOpenVINOTask
   nncf: otx.algorithms.classification.tasks.nncf.OTXClassificationNNCFTask
-base_model_path: ../../../adapters/deep_object_reid/configs/mobilenet_v3_large_1/template_experimental.yaml
+base_model_path: ../../adapters/deep_object_reid/configs/mobilenet_v3_small/template_experimental.yaml
 
 # Capabilities.
 capabilities:
@@ -27,26 +27,17 @@ hyper_parameters:
   parameter_overrides:
     learning_parameters:
       batch_size:
-        default_value: 64
+        default_value: 32
         auto_hpo_state: POSSIBLE
       num_workers:
-        default_value: 0
+        default_value: 4
       learning_rate:
-        default_value: 0.0058
+        default_value: 0.016
         auto_hpo_state: POSSIBLE
       learning_rate_warmup_iters:
-        default_value: 10
+        default_value: 100
       num_iters:
-        default_value: 90
-    nncf_optimization:
-      enable_quantization:
-        default_value: true
-      enable_pruning:
-        default_value: false
-      pruning_supported:
-        default_value: true
-      maximal_accuracy_degradation:
-        default_value: 1.0
+        default_value: 20
     algo_backend:
       train_type:
         default_value: INCREMENTAL
@@ -58,5 +49,5 @@ training_targets:
   - CPU
 
 # Stats.
-gigaflops: 0.44
-size: 4.29
+gigaflops: 0.12
+size: 1.56

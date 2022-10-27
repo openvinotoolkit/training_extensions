@@ -2,7 +2,7 @@
 
 # pylint: disable=invalid-name
 
-_base_ = "../../base/models/mobilenet_v3.py"
+_base_ = "../base/models/mobilenet_v3.py"
 
 model = dict(
     type="SAMImageClassifier",

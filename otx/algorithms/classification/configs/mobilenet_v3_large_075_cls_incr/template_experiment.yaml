@@ -1,10 +1,10 @@
 # Description.
-model_template_id: Custom_Image_Classification_MobileNet-V3-small
-name: MobileNet-V3-small
+model_template_id: Custom_Image_Classification_MobileNet-V3-large-0.75x
+name: MobileNet-V3-large-0.75x
 task_type: CLASSIFICATION
 task_family: VISION
 instantiation: "CLASS"
-summary: Class-Incremental Image Classification for MobileNet-V3-small
+summary: Class-Incremental Image Classification for MobileNet-V3-learge-0.75x
 application: ~
 
 # Algo backend.
@@ -15,7 +15,7 @@ entrypoints:
   base: otx.algorithms.classification.tasks.ClassificationTrainTask
   openvino: otx.algorithms.classification.tasks.ClassificationOpenVINOTask
   nncf: otx.algorithms.classification.tasks.nncf.OTXClassificationNNCFTask
-base_model_path: ../../../adapters/deep_object_reid/configs/mobilenet_v3_small/template_experimental.yaml
+base_model_path: ../../adapters/deep_object_reid/configs/mobilenet_v3_large_075/template_experimental.yaml
 
 # Capabilities.
 capabilities:
@@ -49,5 +49,5 @@ training_targets:
   - CPU
 
 # Stats.
-gigaflops: 0.12
-size: 1.56
+gigaflops: 0.32
+size: 2.76

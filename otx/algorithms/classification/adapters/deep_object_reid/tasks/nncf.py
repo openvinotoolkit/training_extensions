@@ -47,9 +47,6 @@ from torchreid.metrics.classification import score_extraction
 from torchreid.ops import DataParallel
 from torchreid.utils import load_pretrained_weights, set_model_attr, set_random_seed
 
-from otx.algorithms.classification.configs import (
-    ClassificationConfig,
-)
 from otx.algorithms.classification.adapters.deep_object_reid.data import (
     ClassificationDataset,
 )
@@ -67,6 +64,7 @@ from otx.algorithms.classification.adapters.deep_object_reid.utils import (
     sigmoid_numpy,
     softmax_numpy,
 )
+from otx.algorithms.classification.configs import ClassificationConfig
 from otx.api.configuration import cfg_helper
 from otx.api.configuration.helper.utils import ids_to_strings
 from otx.api.entities.datasets import DatasetEntity

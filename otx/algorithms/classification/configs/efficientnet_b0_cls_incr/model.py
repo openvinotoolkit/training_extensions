@@ -1,17 +1,17 @@
-"""MobileNet-V3-large-1 for multi-class config."""
+"""EfficientNet-B0 for multi-class config."""
 
 # pylint: disable=invalid-name
 
-_base_ = "../../base/models/mobilenet_v3.py"
+_base_ = "../base/models/efficientnet.py"
 
 model = dict(
     type="SAMImageClassifier",
     task="classification",
-    backbone=dict(mode="large"),
+    backbone=dict(
+        version="b0",
+    ),
     head=dict(
-        type="CustomNonLinearClsHead",
-        in_channels=960,
-        hid_channels=1280,
+        type="CustomLinearClsHead",
         loss=dict(
             type="CrossEntropyLoss",
             loss_weight=1.0,

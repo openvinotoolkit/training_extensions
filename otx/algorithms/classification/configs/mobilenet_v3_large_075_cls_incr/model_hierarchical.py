@@ -1,17 +1,20 @@
-"""EfficientNet-B0 for hierarchical config."""
+"""MobileNet-V3-large-075 for hierarchical config."""
 
 # pylint: disable=invalid-name
 
-_base_ = "../../base/models/efficientnet.py"
+_base_ = "../base/models/mobilenet_v3.py"
 
 model = dict(
     type="SAMImageClassifier",
     task="classification",
     backbone=dict(
-        version="b0",
+        mode="large",
+        width_mult=0.75,
     ),
     head=dict(
-        type="CustomHierarchicalLinearClsHead",
+        type="CustomHierarchicalNonLinearClsHead",
+        in_channels=720,
+        hid_channels=1280,
         multilabel_loss=dict(
             type="AsymmetricLossWithIgnore",
             gamma_pos=0.0,

@@ -1,10 +1,10 @@
 # Description.
-model_template_id: Custom_Image_Classification_EfficinetNet-B0
-name: EfficientNet-B0
+model_template_id: Custom_Image_Classification_EfficientNet-V2-S
+name: EfficientNet-V2-S
 task_type: CLASSIFICATION
 task_family: VISION
 instantiation: "CLASS"
-summary: Class-Incremental Image Classification for EfficientNet-B0
+summary: Class-Incremental Image Classification for EfficientNet-V2-S
 application: ~
 
 # Algo backend.
@@ -15,7 +15,7 @@ entrypoints:
   base: otx.algorithms.classification.tasks.ClassificationTrainTask
   openvino: otx.algorithms.classification.tasks.ClassificationOpenVINOTask
   nncf: otx.algorithms.classification.tasks.nncf.OTXClassificationNNCFTask
-base_model_path: ../../../adapters/deep_object_reid/configs/efficientnet_b0/template_experimental.yaml
+base_model_path: ../../adapters/deep_object_reid/configs/efficientnet_v2_s/template_experimental.yaml
 
 # Capabilities.
 capabilities:
@@ -32,7 +32,7 @@ hyper_parameters:
       num_workers:
         default_value: 0
       learning_rate:
-        default_value: 0.0049
+        default_value: 0.0071
         auto_hpo_state: POSSIBLE
       learning_rate_warmup_iters:
         default_value: 0
@@ -44,7 +44,7 @@ hyper_parameters:
       enable_pruning:
         default_value: false
       pruning_supported:
-        default_value: true
+        default_value: false
       maximal_accuracy_degradation:
         default_value: 1.0
     algo_backend:
@@ -58,5 +58,5 @@ training_targets:
   - CPU
 
 # Stats.
-gigaflops: 0.81
-size: 4.09
+gigaflops: 5.76
+size: 20.23

@@ -1,16 +1,15 @@
-# Copyright (c) 2018-2022 Kaiyang Zhou
+"""Implementation of EfficientNetV2.
+
+    Original papers:
+    - 'EfficientNetV2: Smaller Models and Faster Training,' https://arxiv.org/abs/2104.00298,
+    - 'Adversarial Examples Improve Image Recognition,' https://arxiv.org/abs/1911.09665.
+"""
+# Copyright (C) 2018-2022 Kaiyang Zhou
 # SPDX-License-Identifier: MIT
 #
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-
-"""
-    EfficientNet for ImageNet-1K, implemented in PyTorch.
-    Original papers:
-    - 'EfficientNet: Rethinking Model Scaling for Convolutional Neural Networks,' https://arxiv.org/abs/1905.11946,
-    - 'Adversarial Examples Improve Image Recognition,' https://arxiv.org/abs/1911.09665.
-"""
 
 import os
 
@@ -41,6 +40,8 @@ NAME_DICT = {
 
 
 class TimmModelsWrapper(nn.Module):
+    """Timm model wrapper."""
+
     def __init__(self, model_name, pretrained=False, pooling_type="avg", **kwargs):
         super().__init__(**kwargs)
         self.model_name = model_name
@@ -57,10 +58,12 @@ class TimmModelsWrapper(nn.Module):
         self.pooling_type = pooling_type
 
     def forward(self, x, **kwargs):
+        """Forward."""
         y = self.extract_features(x)
         return y
 
     def extract_features(self, x):
+        """Extract features."""
         if self.is_mobilenet:
             x = self.model.conv_stem(x)
             x = self.model.bn1(x)
@@ -70,6 +73,7 @@ class TimmModelsWrapper(nn.Module):
         return self.model.forward_features(x)
 
     def get_config_optim(self, lrs):
+        """Get optimizer configs."""
         parameters = [
             {"params": self.model.named_parameters()},
         ]
@@ -87,11 +91,14 @@ class TimmModelsWrapper(nn.Module):
 
 @BACKBONES.register_module()
 class OTXEfficientNetV2(TimmModelsWrapper):
+    """EfficientNetV2 for OTX."""
+
     def __init__(self, version="s_21k", **kwargs):
         self.model_name = "efficientnetv2_" + version
         super().__init__(model_name=self.model_name, **kwargs)
 
     def init_weights(self, pretrained=None):
+        """Initialize weights."""
         if isinstance(pretrained, str) and os.path.exists(pretrained):
             load_checkpoint(self, pretrained)
             logger.info(f"init weight - {pretrained}")

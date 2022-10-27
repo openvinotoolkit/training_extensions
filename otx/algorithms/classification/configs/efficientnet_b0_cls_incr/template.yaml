@@ -1,10 +1,10 @@
 # Description.
-model_template_id: Custom_Image_Classification_MobileNet-V3-large-0.75x
-name: MobileNet-V3-large-0.75x
+model_template_id: Custom_Image_Classification_EfficinetNet-B0
+name: EfficientNet-B0
 task_type: CLASSIFICATION
 task_family: VISION
 instantiation: "CLASS"
-summary: Class-Incremental Image Classification for MobileNet-V3-learge-0.75x
+summary: Class-Incremental Image Classification for EfficientNet-B0
 application: ~
 
 # Algo backend.
@@ -15,7 +15,7 @@ entrypoints:
   base: otx.algorithms.classification.tasks.ClassificationTrainTask
   openvino: otx.algorithms.classification.tasks.ClassificationOpenVINOTask
   nncf: otx.algorithms.classification.tasks.nncf.OTXClassificationNNCFTask
-base_model_path: ../../../adapters/deep_object_reid/configs/mobilenet_v3_large_075/template_experimental.yaml
+base_model_path: ../../adapters/deep_object_reid/configs/efficientnet_b0/template_experimental.yaml
 
 # Capabilities.
 capabilities:
@@ -27,17 +27,26 @@ hyper_parameters:
   parameter_overrides:
     learning_parameters:
       batch_size:
-        default_value: 32
+        default_value: 64
         auto_hpo_state: POSSIBLE
       num_workers:
-        default_value: 4
+        default_value: 0
       learning_rate:
-        default_value: 0.016
+        default_value: 0.0049
         auto_hpo_state: POSSIBLE
       learning_rate_warmup_iters:
-        default_value: 100
+        default_value: 0
       num_iters:
-        default_value: 20
+        default_value: 90
+    nncf_optimization:
+      enable_quantization:
+        default_value: true
+      enable_pruning:
+        default_value: false
+      pruning_supported:
+        default_value: true
+      maximal_accuracy_degradation:
+        default_value: 1.0
     algo_backend:
       train_type:
         default_value: INCREMENTAL
@@ -49,5 +58,5 @@ training_targets:
   - CPU
 
 # Stats.
-gigaflops: 0.32
-size: 2.76
+gigaflops: 0.81
+size: 4.09

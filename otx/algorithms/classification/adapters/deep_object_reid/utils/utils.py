@@ -34,10 +34,7 @@ from otx.api.entities.label_schema import LabelGroup, LabelGroupType, LabelSchem
 from otx.api.entities.model_template import ModelTemplate
 from otx.api.entities.scored_label import ScoredLabel
 from otx.api.usecases.reporting.time_monitor_callback import TimeMonitorCallback
-from otx.api.utils.argument_checks import (
-    DatasetParamTypeCheck,
-    check_input_parameters_type,
-)
+from otx.api.utils.argument_checks import check_input_parameters_type
 
 
 @check_input_parameters_type()

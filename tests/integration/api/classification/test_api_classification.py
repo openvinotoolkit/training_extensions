@@ -2,8 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-# test
-
 import os.path as osp
 import random
 import time
