@@ -1,3 +1,5 @@
+"""Openvino Task of Segmentation."""
+
 # Copyright (C) 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,7 +15,6 @@
 # and limitations under the License.
 
 import attr
-import logging
 import io
 import json
 import os
@@ -60,17 +61,20 @@ from compression.graph.model_utils import compress_model_weights, get_nodes_by_t
 from compression.pipeline.initializer import create_pipeline
 from otx.api.serialization.label_mapper import LabelSchemaMapper, label_schema_to_bytes
 
-from otx.algorithms.segmentation.configs import SegmentationConfig
+from otx.algorithms.segmentation.configs.base import SegmentationConfig
 from openvino.model_zoo.model_api.models import Model
 from openvino.model_zoo.model_api.adapters import create_core, OpenvinoAdapter
-from otx.algorithms.segmentation.utils import get_activation_map
+from otx.algorithms.segmentation.adapters.openvino.model_wrappers.blur import get_activation_map
 from otx.algorithms.segmentation.adapters.openvino import model_wrappers
+from mpa.utils.logger import get_logger
+
+logger = get_logger()
 
 
-logger = logging.getLogger(__name__)
-
-
+# pylint: disable=too-many-locals
 class OpenVINOSegmentationInferencer(BaseInferencer):
+    """Inferencer implementation for Segmentation using OpenVINO backend."""
+
     @check_input_parameters_type()
     def __init__(
         self,
@@ -81,8 +85,7 @@ class OpenVINOSegmentationInferencer(BaseInferencer):
         device: str = "CPU",
         num_requests: int = 1,
     ):
-        """
-        Inferencer implementation for OTXSegmentation using OpenVINO backend.
+        """Inferencer implementation for Segmentation using OpenVINO backend.
 
         :param hparams: Hyper parameters that the model should use.
         :param label_schema: LabelSchemaEntity that was used during model training.
@@ -100,10 +103,12 @@ class OpenVINOSegmentationInferencer(BaseInferencer):
 
     @check_input_parameters_type()
     def pre_process(self, image: np.ndarray) -> Tuple[Dict[str, np.ndarray], Dict[str, Any]]:
+        """Pre-process function of OpenVINO Segmentation Inferencer."""
         return self.model.preprocess(image)
 
     @check_input_parameters_type()
-    def post_process(self, prediction: Dict[str, np.ndarray], metadata: Dict[str, Any]) -> AnnotationSceneEntity:
+    def post_process(self, prediction: Dict[str, np.ndarray], metadata: Dict[str, Any]) -> Tuple[AnnotationSceneEntity, Any, Any]:
+        """Post-process function of OpenVINO Segmentation Inferencer."""
         hard_prediction = self.model.postprocess(prediction, metadata)
         soft_prediction = metadata['soft_prediction']
         feature_vector = metadata['feature_vector']
@@ -112,11 +117,22 @@ class OpenVINOSegmentationInferencer(BaseInferencer):
         return predicted_scene, feature_vector, soft_prediction
 
     @check_input_parameters_type()
+    def predict(self, image: np.ndarray) -> Tuple[AnnotationSceneEntity, Any, Any]:
+        """Perform a prediction for a given input image."""
+        image, metadata = self.pre_process(image)
+        predictions = self.forward(image)
+        predictions = self.post_process(predictions, metadata)
+        return predictions
+
+    @check_input_parameters_type()
     def forward(self, inputs: Dict[str, np.ndarray]) -> Dict[str, np.ndarray]:
+        """Forward function of OpenVINO Segmentation Inferencer."""
         return self.model.infer_sync(inputs)
 
 
 class OTXOpenVinoDataLoader(DataLoader):
+    """Data loader for OTXDetection using OpenVINO backend."""
+
     @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def __init__(self, dataset: DatasetEntity, inferencer: BaseInferencer):
         self.dataset = dataset
@@ -124,6 +140,7 @@ class OTXOpenVinoDataLoader(DataLoader):
 
     @check_input_parameters_type()
     def __getitem__(self, index: int):
+        """Return dataset item from index."""
         image = self.dataset[index].numpy
         annotation = self.dataset[index].annotation_scene
         inputs, metadata = self.inferencer.pre_process(image)
@@ -131,10 +148,13 @@ class OTXOpenVinoDataLoader(DataLoader):
         return (index, annotation), inputs, metadata
 
     def __len__(self):
+        """Length of OTXOpenVinoDataLoader."""
         return len(self.dataset)
 
 
 class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IOptimizationTask):
+    """Task implementation for Segmentation using OpenVINO backend."""
+
     @check_input_parameters_type()
     def __init__(self,
                  task_environment: TaskEnvironment):
@@ -150,9 +170,13 @@ class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask,
 
     @property
     def hparams(self):
+        """Hparams of OpenVINO Segmentation Task."""
         return self.task_environment.get_hyper_parameters(SegmentationConfig)
 
     def load_inferencer(self) -> OpenVINOSegmentationInferencer:
+        """load_inferencer function of OpenVINO Segmentation Task."""
+        if self.model is None:
+            raise RuntimeError("load_inferencer failed, model is None")
         return OpenVINOSegmentationInferencer(self.hparams,
                                               self.task_environment.label_schema,
                                               self.model.get_data("openvino.xml"),
@@ -162,6 +186,7 @@ class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask,
     def infer(self,
               dataset: DatasetEntity,
               inference_parameters: Optional[InferenceParameters] = None) -> DatasetEntity:
+        """Infer function of OpenVINOSegmentationTask."""
         if inference_parameters is not None:
             update_progress_callback = inference_parameters.update_progress
             dump_soft_prediction = not inference_parameters.is_evaluation
@@ -192,7 +217,7 @@ class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask,
                                                      numpy=class_act_map)
                     dataset_item.append_metadata_item(result_media, model=self.model)
 
-            update_progress_callback(int(i / dataset_size * 100))
+            update_progress_callback(int(i / dataset_size * 100), None)
 
         return dataset
 
@@ -200,6 +225,7 @@ class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask,
     def evaluate(self,
                  output_result_set: ResultSetEntity,
                  evaluation_metric: Optional[str] = None):
+        """Evaluate function of OpenVINOSegmentationTask."""
         logger.info('Computing mDice')
         metrics = MetricsHelper.compute_dice_averaged_over_pixels(
             output_result_set
@@ -211,7 +237,10 @@ class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask,
     @check_input_parameters_type()
     def deploy(self,
                output_model: ModelEntity) -> None:
+        """Deploy function of OpenVINOSegmentationTask."""
         logger.info('Deploying the model')
+        if self.model is None:
+            raise RuntimeError("deploy failed, model is None")
 
         work_dir = os.path.dirname(demo.__file__)
         parameters = {}
@@ -247,7 +276,10 @@ class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask,
                  dataset: DatasetEntity,
                  output_model: ModelEntity,
                  optimization_parameters: Optional[OptimizationParameters] = None):
+        """Optimize function of OpenVINOSegmentationTask."""
         logger.info('Start POT optimization')
+        if self.model is None:
+            raise RuntimeError("POT optimize failed, model is None")
 
         if optimization_type is not OptimizationType.POT:
             raise ValueError("POT is the only supported optimization type for OpenVino models")
@@ -274,7 +306,7 @@ class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask,
                 raise RuntimeError("Model is already optimized by POT")
 
         if optimization_parameters is not None:
-            optimization_parameters.update_progress(10)
+            optimization_parameters.update_progress(10, None)
 
         engine_config = ADDict({
             'device': 'CPU'
@@ -308,7 +340,7 @@ class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask,
         compress_model_weights(compressed_model)
 
         if optimization_parameters is not None:
-            optimization_parameters.update_progress(90)
+            optimization_parameters.update_progress(90, None)
 
         with tempfile.TemporaryDirectory() as tempdir:
             save_model(compressed_model, tempdir, model_name="model")
@@ -329,5 +361,5 @@ class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask,
         self.inferencer = self.load_inferencer()
 
         if optimization_parameters is not None:
-            optimization_parameters.update_progress(100)
+            optimization_parameters.update_progress(100, None)
         logger.info('POT optimization completed')

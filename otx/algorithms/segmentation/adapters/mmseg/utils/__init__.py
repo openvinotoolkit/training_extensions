@@ -1,12 +1,10 @@
-"""OTX Adapters - openvino.utils."""
+"""OTX Adapters - mmseg.utils."""
 
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
 from .config_utils import (
-    cluster_anchors,
     patch_config,
-    patch_data_pipeline,
     patch_datasets,
     patch_evaluation,
     prepare_for_training,

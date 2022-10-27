@@ -3,6 +3,6 @@
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-from .data import MPASegIncrDataset
+from .data import MPASegDataset
 
-__all__ = ["MPASegIncrDataset"]
+__all__ = ["MPASegDataset"]

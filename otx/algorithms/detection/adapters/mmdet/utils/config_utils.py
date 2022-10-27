@@ -18,7 +18,6 @@ import copy
 import glob
 import math
 import os
-import tempfile
 from collections import defaultdict
 from typing import List, Optional, Union
 
@@ -27,6 +26,12 @@ from mmcv import Config, ConfigDict
 from mmdet.models.detectors import BaseDetector
 from mpa.utils.logger import get_logger
 
+from otx.algorithms.common.adapters.mmcv.utils import (
+    get_meta_keys,
+    is_epoch_based_runner,
+    patch_color_conversion,
+    remove_from_config,
+)
 from otx.algorithms.detection.configs.base import DetectionConfig
 from otx.algorithms.detection.utils.data import (
     format_list_to_str,
@@ -53,12 +58,6 @@ except ImportError:
 
 
 logger = get_logger()
-
-
-@check_input_parameters_type()
-def is_epoch_based_runner(runner_config: ConfigDict):
-    """Check Epoch based or Iter based runner."""
-    return "Epoch" in runner_config.type
 
 
 @check_input_parameters_type({"work_dir": DirectoryPathCheck})
@@ -178,15 +177,6 @@ def patch_adaptive_repeat_dataset(
             data_train.times = new_repeat
 
 
-@check_input_parameters_type({"dataset": DatasetParamTypeCheck})
-def prepare_for_testing(config: Union[Config, ConfigDict], dataset: DatasetEntity) -> Config:
-    """Prepare configs for testing phase."""
-    config = copy.deepcopy(config)
-    # FIXME. Should working directories be modified here?
-    config.data.test.otx_dataset = dataset
-    return config
-
-
 @check_input_parameters_type({"train_dataset": DatasetParamTypeCheck, "val_dataset": DatasetParamTypeCheck})
 def prepare_for_training(
     config: Union[Config, ConfigDict],
@@ -205,47 +195,6 @@ def prepare_for_training(
     config.custom_hooks.append({"type": "OTXProgressHook", "time_monitor": time_monitor, "verbose": True})
     config.log_config.hooks.append({"type": "OTXLoggerHook", "curves": learning_curves})
     return config
-
-
-@check_input_parameters_type()
-def config_to_string(config: Union[Config, ConfigDict]) -> str:
-    """Convert a full mmdetection config to a string.
-
-    :param config: configuration object to convert
-    :return str: string representation of the configuration
-    """
-    config_copy = copy.deepcopy(config)
-    # Clean config up by removing dataset as this causes the pretty text parsing to fail.
-    config_copy.data.test.otx_dataset = None
-    config_copy.data.test.labels = None
-    config_copy.data.val.otx_dataset = None
-    config_copy.data.val.labels = None
-    data_train = get_data_cfg(config_copy)
-    data_train.otx_dataset = None
-    data_train.labels = None
-    return Config(config_copy).pretty_text
-
-
-@check_input_parameters_type()
-def config_from_string(config_string: str) -> Config:
-    """Generate an mmdetection config dict object from a string.
-
-    :param config_string: string to parse
-    :return config: configuration object
-    """
-    with tempfile.NamedTemporaryFile("w", suffix=".py") as temp_file:
-        temp_file.write(config_string)
-        temp_file.flush()
-        return Config.fromfile(temp_file.name)
-
-
-@check_input_parameters_type()
-def save_config_to_file(config: Config):
-    """Dump the full config to a file. Filename is 'config.py', it is saved in the current work_dir."""
-    filepath = os.path.join(config.work_dir, "config.py")
-    config_string = config_to_string(config)
-    with open(filepath, "w", encoding="UTF-8") as f:
-        f.write(config_string)
 
 
 @check_input_parameters_type()
@@ -297,27 +246,20 @@ def set_data_classes(config: Config, labels: List[LabelEntity]):
 def patch_datasets(config: Config, domain: Domain):
     """Update dataset configs."""
 
-    def patch_color_conversion(pipeline):
-        # Default data format for OTX is RGB, while mmdet uses BGR, so negate the color conversion flag.
-        for pipeline_step in pipeline:
-            if pipeline_step.type == "Normalize":
-                to_rgb = False
-                if "to_rgb" in pipeline_step:
-                    to_rgb = pipeline_step.to_rgb
-                to_rgb = not bool(to_rgb)
-                pipeline_step.to_rgb = to_rgb
-            elif pipeline_step.type == "MultiScaleFlipAug":
-                patch_color_conversion(pipeline_step.transforms)
-
     assert "data" in config
     for subset in ("train", "val", "test"):
-        cfg = get_data_cfg(config, subset)
-        cfg.type = "OTXDataset"
+        cfg = config.data.get(subset, None)
+        if not cfg:
+            continue
+        if cfg.type in ("RepeatDataset", "MultiImageMixDataset"):
+            cfg = cfg.dataset
+        cfg.type = "MPADetDataset"
         cfg.domain = domain
         cfg.otx_dataset = None
         cfg.labels = None
         remove_from_config(cfg, "ann_file")
         remove_from_config(cfg, "img_prefix")
+        remove_from_config(cfg, "classes")  # Get from DatasetEntity
         for pipeline_step in cfg.pipeline:
             if pipeline_step.type == "LoadImageFromFile":
                 pipeline_step.type = "LoadImageFromOTXDataset"
@@ -325,19 +267,29 @@ def patch_datasets(config: Config, domain: Domain):
                 pipeline_step.type = "LoadAnnotationFromOTXDataset"
                 pipeline_step.domain = domain
                 pipeline_step.min_size = cfg.pop("min_size", -1)
+            if subset == "train" and pipeline_step.type == "Collect":
+                pipeline_step = get_meta_keys(pipeline_step)
         patch_color_conversion(cfg.pipeline)
 
 
-@check_input_parameters_type()
-def remove_from_config(config: Union[Config, ConfigDict], key: str):
-    """Update & Remove configs."""
-    if key in config:
-        if isinstance(config, Config):
-            del config._cfg_dict[key]  # pylint: disable=protected-access
-        elif isinstance(config, ConfigDict):
-            del config[key]
-        else:
-            raise ValueError(f"Unknown config type {type(config)}")
+def patch_evaluation(config: Config):
+    """Update evaluation configs."""
+    cfg = config.evaluation
+    # CocoDataset.evaluate -> CustomDataset.evaluate
+    cfg.pop("classwise", None)
+    cfg.metric = "mAP"
+    cfg.save_best = "mAP"
+    # EarlyStoppingHook
+    config.early_stop_metric = "mAP"
+
+
+def patch_data_pipeline(config: Config, template_file_path: str):
+    """Update data_pipeline configs."""
+    base_dir = os.path.abspath(os.path.dirname(template_file_path))
+    data_pipeline_path = os.path.join(base_dir, "data_pipeline.py")
+    if os.path.exists(data_pipeline_path):
+        data_pipeline_cfg = Config.fromfile(data_pipeline_path)
+        config.merge_from_dict(data_pipeline_cfg)
 
 
 @check_input_parameters_type({"dataset": DatasetParamTypeCheck})

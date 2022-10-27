@@ -45,17 +45,6 @@ from otx.api.usecases.tasks.interfaces.unload_interface import IUnload
 from otx.api.utils.argument_checks import check_input_parameters_type
 
 logger = get_logger()
-DEFAULT_META_KEYS = (
-    "filename",
-    "ori_filename",
-    "ori_shape",
-    "img_shape",
-    "pad_shape",
-    "scale_factor",
-    "flip",
-    "flip_direction",
-    "img_norm_cfg",
-)
 
 
 # pylint: disable=too-many-instance-attributes, protected-access
@@ -313,13 +302,6 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
             model_label_schema = LabelSchemaMapper().backward(buffer)
             return model_label_schema.get_labels(include_empty=False)
         return self._labels
-
-    @staticmethod
-    def _get_meta_keys(pipeline_step):
-        meta_keys = list(pipeline_step.get("meta_keys", DEFAULT_META_KEYS))
-        meta_keys.append("ignored_labels")
-        pipeline_step["meta_keys"] = set(meta_keys)
-        return pipeline_step
 
     @staticmethod
     def _get_confidence_threshold(hyperparams):

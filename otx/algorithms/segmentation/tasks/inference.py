@@ -1,38 +1,36 @@
-# Copyright (C) 2022 Intel Corporation
-# SPDX-License-Identifier: Apache-2.0
-#
+"""Inference Task of OTX Segmentation."""
 
-import io
+# Copyright (C) 2022 Intel Corporation
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions
+# and limitations under the License.
+
 import os
-from collections import defaultdict
-from typing import List, Optional
+from typing import Optional
 
 import numpy as np
-import torch
 from mmcv.utils import ConfigDict
 from mpa import MPAConstants
 from mpa.utils.config_utils import MPAConfig
 from mpa.utils.logger import get_logger
+from otx.algorithms.common.adapters.mmcv.utils import remove_from_config
+from otx.algorithms.segmentation.adapters.mmseg.utils import patch_datasets, patch_evaluation
 from otx.algorithms.common.tasks import BaseTask
 from otx.algorithms.common.configs import TrainType
-from otx.algorithms.segmentation.configs import SegmentationConfig
-from otx.api.configuration import cfg_helper
-from otx.api.configuration.helper.utils import ids_to_strings
+from otx.algorithms.segmentation.configs.base import SegmentationConfig
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.inference_parameters import (
     default_progress_callback as default_infer_progress_callback,
-)
-from otx.api.entities.label import Domain
-from otx.api.entities.metrics import (
-    CurveMetric,
-    InfoMetric,
-    LineChartInfo,
-    MetricsGroup,
-    Performance,
-    ScoreMetric,
-    VisualizationInfo,
-    VisualizationType,
 )
 from otx.api.entities.model import (
     ModelEntity,
@@ -40,40 +38,36 @@ from otx.api.entities.model import (
     ModelOptimizationType,
     ModelPrecision,
 )
-from otx.api.entities.model_template import parse_model_template
 from otx.api.entities.result_media import ResultMediaEntity
 from otx.api.entities.resultset import ResultSetEntity
-from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.entities.tensor import TensorEntity
-from otx.api.entities.train_parameters import TrainParameters, default_progress_callback
 from otx.api.serialization.label_mapper import label_schema_to_bytes
 from otx.api.usecases.evaluation.metrics_helper import MetricsHelper
 from otx.api.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType, IExportTask
 from otx.api.usecases.tasks.interfaces.inference_interface import IInferenceTask
-from otx.api.usecases.tasks.interfaces.training_interface import ITrainingTask
 from otx.api.usecases.tasks.interfaces.unload_interface import IUnload
 from otx.api.utils.argument_checks import check_input_parameters_type
 from otx.api.utils.segmentation_utils import (
     create_annotation_from_segmentation_map,
     create_hard_prediction_from_soft_prediction,
 )
-from otx.algorithms.segmentation.adapters.mmseg.tasks.nncf_task import OTXSegmentationNNCFTask
-from otx.algorithms.segmentation.utils import remove_from_config
-from otx.algorithms.segmentation.utils import (
-    InferenceProgressCallback,
-    TrainingProgressCallback,
+from otx.algorithms.segmentation.adapters.openvino.model_wrappers.blur import (
     get_activation_map,
 )
-from otx.algorithms.common.adapters.mmcv import OTXLoggerHook
+from otx.algorithms.common.utils.callback import InferenceProgressCallback
 
 logger = get_logger()
 
 TASK_CONFIG = SegmentationConfig
 
 
+# pylint: disable=too-many-locals
 class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask, IUnload):
+    """Inference Task Implementation of OTX Segmentation."""
+
+    @check_input_parameters_type()
     def __init__(self, task_environment: TaskEnvironment):
         # self._should_stop = False
         self.freeze = True
@@ -83,6 +77,7 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
     def infer(
         self, dataset: DatasetEntity, inference_parameters: Optional[InferenceParameters] = None
     ) -> DatasetEntity:
+        """Main infer function of OTX Segmentation."""
         logger.info("infer()")
         dump_features = True
 
@@ -106,6 +101,7 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         return dataset
 
     def evaluate(self, output_result_set: ResultSetEntity, evaluation_metric: Optional[str] = None):
+        """Evaluate function of OTX Segmentation Task."""
         logger.info("called evaluate()")
 
         if evaluation_metric is not None:
@@ -118,13 +114,11 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         output_result_set.performance = metrics.get_performance()
 
     def unload(self):
-        """
-        Unload the task
-        """
+        """Unload the task."""
         self.finalize()
 
     def export(self, export_type: ExportType, output_model: ModelEntity):
-        # copied from OTX inference_task.py
+        """Export function of OTX Detection Task."""
         logger.info("Exporting the model")
         if export_type != ExportType.OPENVINO:
             raise RuntimeError(f"not supported export type {export_type}")
@@ -136,7 +130,7 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         results = results.get("outputs")
         logger.debug(f"results of run_task = {results}")
         if results is None:
-            logger.error(f"error while exporting model {results.get('msg')}")
+            logger.error("error while exporting model result is None")
             # output_model.model_status = ModelStatus.FAILED
         else:
             bin_file = results.get("bin")
@@ -201,8 +195,8 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
             logger.warning(f"train type {train_type} is not implemented yet.")
 
         self._recipe_cfg = MPAConfig.fromfile(recipe)
-        self._patch_datasets(self._recipe_cfg)  # for OTX compatibility
-        self._patch_evaluation(self._recipe_cfg)  # for OTX compatibility
+        patch_datasets(self._recipe_cfg)  # for OTX compatibility
+        patch_evaluation(self._recipe_cfg)  # for OTX compatibility
         self.metric = self._recipe_cfg.evaluation.metric
         if not self.freeze:
             remove_from_config(self._recipe_cfg, "params_config")
@@ -265,205 +259,3 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
                         numpy=class_act_map,
                     )
                     dataset_item.append_metadata_item(result_media, model=self._task_environment.model)
-
-    @staticmethod
-    def _patch_datasets(config: MPAConfig, domain=Domain.SEGMENTATION):
-        def patch_color_conversion(pipeline):
-            # Default data format for OTX is RGB, while mmdet uses BGR, so negate the color conversion flag.
-            for pipeline_step in pipeline:
-                if pipeline_step.type == "Normalize":
-                    to_rgb = False
-                    if "to_rgb" in pipeline_step:
-                        to_rgb = pipeline_step.to_rgb
-                    to_rgb = not bool(to_rgb)
-                    pipeline_step.to_rgb = to_rgb
-                elif pipeline_step.type == "MultiScaleFlipAug":
-                    patch_color_conversion(pipeline_step.transforms)
-
-        assert "data" in config
-        for subset in ("train", "val", "test"):
-            cfg = config.data.get(subset, None)
-            if not cfg:
-                continue
-            if cfg.type == "RepeatDataset":
-                cfg = cfg.dataset
-            cfg.type = "MPASegIncrDataset"
-            cfg.domain = domain
-            cfg.ote_dataset = None
-            cfg.labels = None
-            remove_from_config(cfg, "ann_dir")
-            remove_from_config(cfg, "img_dir")
-            remove_from_config(cfg, "data_root")
-            remove_from_config(cfg, "split")
-            remove_from_config(cfg, "classes")
-
-            for pipeline_step in cfg.pipeline:
-                if pipeline_step.type == "LoadImageFromFile":
-                    pipeline_step.type = "LoadImageFromOTXDataset"
-                elif pipeline_step.type == "LoadAnnotations":
-                    pipeline_step.type = "LoadAnnotationFromOTXDataset"
-                    pipeline_step.domain = domain
-                if subset == "train" and pipeline_step.type == "Collect":
-                    pipeline_step = BaseTask._get_meta_keys(pipeline_step)
-            patch_color_conversion(cfg.pipeline)
-
-    @staticmethod
-    def _patch_evaluation(config: MPAConfig):
-        cfg = config.evaluation
-        cfg.pop("classwise", None)
-        cfg.metric = "mDice"
-        cfg.save_best = "mDice"
-        cfg.rule = "greater"
-        # EarlyStoppingHook
-        config.early_stop_metric = "mDice"
-
-
-class SegmentationTrainTask(SegmentationInferenceTask, ITrainingTask):
-    def save_model(self, output_model: ModelEntity):
-        logger.info(f"called save_model: {self._model_ckpt}")
-        buffer = io.BytesIO()
-        hyperparams_str = ids_to_strings(cfg_helper.convert(self._hyperparams, dict, enum_to_str=True))
-        labels = {label.name: label.color.rgb_tuple for label in self._labels}
-        model_ckpt = torch.load(self._model_ckpt)
-        modelinfo = {"model": model_ckpt["state_dict"], "config": hyperparams_str, "labels": labels, "VERSION": 1}
-
-        torch.save(modelinfo, buffer)
-        output_model.set_data("weights.pth", buffer.getvalue())
-        output_model.set_data("label_schema.json", label_schema_to_bytes(self._task_environment.label_schema))
-        output_model.precision = self._precision
-
-    def cancel_training(self):
-        """
-        Sends a cancel training signal to gracefully stop the optimizer. The signal consists of creating a
-        '.stop_training' file in the current work_dir. The runner checks for this file periodically.
-        The stopping mechanism allows stopping after each iteration, but validation will still be carried out. Stopping
-        will therefore take some time.
-        """
-        logger.info("Cancel training requested.")
-        self._should_stop = True
-        # stop_training_filepath = os.path.join(self._training_work_dir, '.stop_training')
-        # open(stop_training_filepath, 'a').close()
-        if self.cancel_interface is not None:
-            self.cancel_interface.cancel()
-        else:
-            logger.info("but training was not started yet. reserved it to cancel")
-            self.reserved_cancel = True
-
-    def train(
-        self, dataset: DatasetEntity, output_model: ModelEntity, train_parameters: Optional[TrainParameters] = None
-    ):
-        logger.info("train()")
-        # Check for stop signal between pre-eval and training.
-        # If training is cancelled at this point,
-        if self._should_stop:
-            logger.info("Training cancelled.")
-            self._should_stop = False
-            self._is_training = False
-            return
-
-        # Set OTX LoggerHook & Time Monitor
-        if train_parameters is not None:
-            update_progress_callback = train_parameters.update_progress
-        else:
-            update_progress_callback = default_progress_callback
-        self._time_monitor = TrainingProgressCallback(update_progress_callback)
-        self._learning_curves = defaultdict(OTXLoggerHook.Curve)
-
-        # learning_curves = defaultdict(OTXLoggerHook.Curve)
-        stage_module = "SegTrainer"
-        self._data_cfg = self._init_train_data_cfg(dataset)
-        self._is_training = True
-        results = self._run_task(stage_module, mode="train", dataset=dataset, parameters=train_parameters)
-
-        # Check for stop signal when training has stopped.
-        # If should_stop is true, training was cancelled and no new
-        if self._should_stop:
-            logger.info("Training cancelled.")
-            self._should_stop = False
-            self._is_training = False
-            return
-
-        # get output model
-        model_ckpt = results.get("final_ckpt")
-        if model_ckpt is None:
-            logger.error("cannot find final checkpoint from the results.")
-            # output_model.model_status = ModelStatus.FAILED
-            return
-        else:
-            # update checkpoint to the newly trained model
-            self._model_ckpt = model_ckpt
-
-        # Get training metrics group from learning curves
-        training_metrics, best_score = self._generate_training_metrics_group(self._learning_curves)
-        performance = Performance(
-            score=ScoreMetric(value=best_score, name=self.metric), dashboard_metrics=training_metrics
-        )
-
-        logger.info(f"Final model performance: {str(performance)}")
-        # save resulting model
-        self.save_model(output_model)
-        output_model.performance = performance
-        # output_model.model_status = ModelStatus.SUCCESS
-        self._is_training = False
-        logger.info("train done.")
-
-    def _init_train_data_cfg(self, dataset: DatasetEntity):
-        logger.info("init data cfg.")
-        data_cfg = ConfigDict(
-            data=ConfigDict(
-                train=ConfigDict(
-                    dataset=ConfigDict(
-                        ote_dataset=dataset.get_subset(Subset.TRAINING),
-                        labels=self._labels,
-                    )
-                ),
-                val=ConfigDict(
-                    ote_dataset=dataset.get_subset(Subset.VALIDATION),
-                    labels=self._labels,
-                ),
-            )
-        )
-
-        # Temparory remedy for cfg.pretty_text error
-        for label in self._labels:
-            label.hotkey = "a"
-        return data_cfg
-
-    def _generate_training_metrics_group(self, learning_curves) -> Optional[List[MetricsGroup]]:
-        """
-        Parses the mmsegmentation logs to get metrics from the latest training run
-        :return output List[MetricsGroup]
-        """
-        output: List[MetricsGroup] = []
-        # Model architecture
-        architecture = InfoMetric(name="Model architecture", value=self._model_name)
-        visualization_info_architecture = VisualizationInfo(
-            name="Model architecture", visualisation_type=VisualizationType.TEXT
-        )
-        output.append(MetricsGroup(metrics=[architecture], visualization_info=visualization_info_architecture))
-        # Learning curves
-        best_score = -1
-        for key, curve in learning_curves.items():
-            metric_curve = CurveMetric(xs=curve.x, ys=curve.y, name=key)
-            if key == f"val/{self.metric}":
-                best_score = max(curve.y)
-            visualization_info = LineChartInfo(name=key, x_axis_label="Epoch", y_axis_label=key)
-            output.append(MetricsGroup(metrics=[metric_curve], visualization_info=visualization_info))
-        return output, best_score
-
-
-class SegmentationNNCFTask(OTXSegmentationNNCFTask):
-    @check_input_parameters_type()
-    def __init__(self, task_environment: TaskEnvironment):
-        """ "
-        Task for compressing segmentation models using NNCF.
-        """
-        curr_model_path = task_environment.model_template.model_template_path
-        base_model_path = os.path.join(
-            os.path.dirname(os.path.abspath(curr_model_path)), task_environment.model_template.base_model_path
-        )
-        if os.path.isfile(base_model_path):
-            logger.info(f"Base model for NNCF: {base_model_path}")
-            # Redirect to base model
-            task_environment.model_template = parse_model_template(base_model_path)
-        super().__init__(task_environment)

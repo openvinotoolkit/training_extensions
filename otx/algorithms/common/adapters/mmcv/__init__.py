@@ -24,6 +24,7 @@ from .hooks import (
     StopLossNanTrainingHook,
 )
 from .runner import EpochRunnerWithCancel, IterBasedRunnerWithCancel
+from .utils import remove_from_config
 
 __all__ = [
     "EpochRunnerWithCancel",
@@ -35,4 +36,5 @@ __all__ = [
     "ReduceLROnPlateauLrUpdaterHook",
     "EnsureCorrectBestCheckpointHook",
     "StopLossNanTrainingHook",
+    "remove_from_config",
 ]

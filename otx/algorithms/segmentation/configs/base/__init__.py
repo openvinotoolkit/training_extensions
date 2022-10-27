@@ -1,4 +1,6 @@
-# Copyright (C) 2021 Intel Corporation
+"""Configs Initialization of OTX Segmentation."""
+
+# Copyright (C) 2022 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,19 +14,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from otx.api.configuration import ConfigurableEnum
+from .configuration import SegmentationConfig
+from .configuration_enums import Models
 
-class Models(ConfigurableEnum):
-    """
-    This Enum represents the types of models for inference
-    """
-    Segmentation = 'segmentation'
-    BlurSegmentation = 'blur_segmentation'
-
-class POTQuantizationPreset(ConfigurableEnum):
-    """
-    This Enum represents the quantization preset for post training optimization
-    """
-
-    PERFORMANCE = 'Performance'
-    MIXED = 'Mixed'
+__all__ = ["SegmentationConfig", "Models"]

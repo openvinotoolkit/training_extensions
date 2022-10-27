@@ -247,7 +247,9 @@ REQUIRED_PACKAGES = get_requirements(requirement_files=["base", "dev", "openvino
 EXTRAS_REQUIRE = {
     "anomaly": get_requirements(requirement_files="anomaly"),
     "detection": get_requirements(requirement_files="detection"),
-    "full": get_requirements(requirement_files=["anomaly", "detection"]),
+    "segmentation": get_requirements(requirement_files="segmentation"),
+    "training": get_requirements(requirement_files=["detection", "segmentation"]),
+    "full": get_requirements(requirement_files=["anomaly", "detection", "segmentation"]),
 }
 DEPENDENCY_LINKS = ["https://download.pytorch.org/whl/torch_stable.html"]
 

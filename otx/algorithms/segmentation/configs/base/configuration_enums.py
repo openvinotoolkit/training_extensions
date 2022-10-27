@@ -1,4 +1,6 @@
-# Copyright (C) 2021 Intel Corporation
+"""Collection of utils for task implementation in Segmentation Task."""
+
+# Copyright (C) 2022 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,11 +19,9 @@ import glob
 import logging
 import math
 import os
-import tempfile
 from collections import defaultdict
 from typing import List, Optional, Sequence, Union
 
-from mmcv import Config, ConfigDict
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label import LabelEntity
 from otx.api.usecases.reporting.time_monitor_callback import TimeMonitorCallback
@@ -42,21 +42,3 @@ class Models(ConfigurableEnum):
     """
     Segmentation = 'segmentation'
     BlurSegmentation = 'blur_segmentation'
-
-class POTQuantizationPreset(ConfigurableEnum):
-    """
-    This Enum represents the quantization preset for post training optimization
-    """
-
-    PERFORMANCE = 'Performance'
-    MIXED = 'Mixed'
-
-@check_input_parameters_type()
-def remove_from_config(config: Union[Config, ConfigDict], key: str):
-    if key in config:
-        if isinstance(config, Config):
-            del config._cfg_dict[key]
-        elif isinstance(config, ConfigDict):
-            del config[key]
-        else:
-            raise ValueError(f'Unknown config type {type(config)}')
