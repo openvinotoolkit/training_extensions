@@ -73,6 +73,12 @@ def parse_args():
         help="Output path for explanation images.",
     )
     parser.add_argument(
+        "-w",
+        "--weight",
+        default=0.5,
+        help="weight of the saliency map when overlaying the saliency map",
+    )
+    parser.add_argument(
         "--load-weights",
         required=True,
         help="Load only weights from previously saved checkpoint",
@@ -159,7 +165,8 @@ def main():
         img = cv2.imread(os.path.join(root_dir, fname))
         saliency_map, elapsed_time = get_explain_map(task, img)
         elapsed_times.append(elapsed_time)
-        save_saliency_output(img, saliency_map.numpy, args.output, os.path.splitext(fname)[0])
+        save_saliency_output(img, saliency_map.numpy, args.output, \
+            os.path.splitext(fname)[0], weight=args.weight)
 
     print(f"saliency maps saved to {args.output}...")
 
