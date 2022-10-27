@@ -517,6 +517,7 @@ class HpoManager:
             if _is_anomaly_framework_task(task_type):
                 impl_class = get_impl_class(environment.model_template.entrypoints.base)
                 task = impl_class(task_environment=environment)
+                os.makedirs(self.work_dir, exist_ok=True)
                 torch.save(task.model_info(), osp.join(self.work_dir, "weights.pth"))
         else:
             save_model_data(environment.model, self.work_dir)
