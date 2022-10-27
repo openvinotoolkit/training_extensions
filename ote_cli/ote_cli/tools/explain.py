@@ -155,11 +155,11 @@ def main():
 
     elapsed_times = deque(maxlen=10)
 
-    for _, (root_dir, filename) in enumerate(imgs):
-        img = cv2.imread(os.path.join(root_dir, filename))
+    for _, (root_dir, fname) in enumerate(imgs):
+        img = cv2.imread(os.path.join(root_dir, fname))
         saliency_map, elapsed_time = get_explain_map(task, img)
         elapsed_times.append(elapsed_time)
-        save_saliency_output(img, saliency_map.numpy, root_dir, filename.split[0])
+        save_saliency_output(img, saliency_map.numpy, args.output, os.path.splitext(fname)[0])
 
     print(f"saliency maps saved to {args.output}...")
 

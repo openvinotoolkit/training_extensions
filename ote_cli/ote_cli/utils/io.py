@@ -267,7 +267,13 @@ def get_image_files(root_dir):
             )
     return img_files if img_files else None
 
-def save_saliency_output(img: np.array, saliency_map: np.array, root: str, fname: str) -> None:
-    overlay = cv2.addWeighted(img, 0.7, saliency_map, 0.3, 0)
-    cv2.imwrite(f"{os.path.join(root, fname)}_saliency_map.png", saliency_map)
-    cv2.imwrite(f"{os.path.join(root, fname)}_overlay_img.png", overlay)
+def save_saliency_output(img: np.array, saliency_map: np.array, save_dir: str,
+                         fname: str, weight: float = 0.5) -> None:
+    
+    # GRAY to RGB
+    heatmap = cv2.applyColorMap(np.uint8(saliency_map), cv2.COLORMAP_JET)
+    overlay = (1-weight) * img + weight * heatmap
+    overlay /= np.max(overlay)
+    overlay = np.uint8(255 * overlay)
+    cv2.imwrite(f"{os.path.join(save_dir, fname)}_saliency_map.png", heatmap)
+    cv2.imwrite(f"{os.path.join(save_dir, fname)}_overlay_img.png", overlay)
