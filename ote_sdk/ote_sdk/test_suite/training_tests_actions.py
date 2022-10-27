@@ -9,7 +9,10 @@ import os.path as osp
 from abc import ABC, abstractmethod
 from collections import OrderedDict
 from copy import deepcopy
-from typing import List, Optional, Type
+from typing import TYPE_CHECKING, List, Optional, Type
+
+if TYPE_CHECKING:
+    from nncf.torch.nncf_network import NNCFNetwork
 
 import pytest
 
@@ -562,7 +565,9 @@ class OTETestNNCFAction(BaseOTETestAction):
 
 
 # TODO: think about move to special file
-def check_nncf_model_graph(model, path_to_dot, force_regen_dot=False):
+def check_nncf_model_graph(
+    model: "NNCFNetwork", path_to_dot: str, force_regen_dot: bool = False
+):
     import networkx as nx
 
     graph = model.get_graph()

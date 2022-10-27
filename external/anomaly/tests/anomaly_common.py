@@ -18,6 +18,10 @@ import os
 from collections import namedtuple
 from copy import deepcopy
 from typing import List, Type
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from nncf.torch.nncf_network import NNCFNetwork
 
 from adapters.anomalib.data.mvtec import OteMvtecDataset
 from ote_sdk.entities.datasets import DatasetEntity
@@ -38,6 +42,7 @@ from ote_sdk.test_suite.training_tests_actions import (
     OTETestTrainingEvaluationAction,
 )
 from ote_sdk.test_suite.training_tests_common import ROOT_PATH_KEY, make_paths_be_abs
+from tasks import NNCFTask
 
 logger = logging.getLogger(__name__)
 
@@ -109,11 +114,10 @@ def get_anomaly_domain_test_action_classes(
     ]
 
 
-def get_dummy_compressed_model(task):
+def get_dummy_compressed_model(task: NNCFTask) -> "NNCFNetwork":
     """
     Return compressed model without initialization
     """
-    # pylint:disable=protected-access
     from anomalib.utils.callbacks.nncf.utils import wrap_nncf_model
 
     # Disable quantaizers initialization
