@@ -84,16 +84,16 @@ def parse_args():
         help="Load only weights from previously saved checkpoint",
     )
     parser.add_argument(
-        "--explain-model",
+        "--explain-algorithm",
         default="EigenCAM",
-        help=f"XAI model name, currently support {SUPPORTED_EXPLAIN_ALGORITHMS}",
+        help=f"Explain algorithm name, currently support {SUPPORTED_EXPLAIN_ALGORITHMS}",
     )
     add_hyper_parameters_sub_parser(parser, hyper_parameters, modes=("INFERENCE",))
 
     return parser.parse_args(), template, hyper_parameters
 
 
-def get_explain_map(task, frame):
+def get_explain_map(task, frames, explain_algorithm):
     """
     Returns list of explanations made by task on frame and time spent on doing explanation.
     """
@@ -102,21 +102,23 @@ def get_explain_map(task, frame):
         annotations=[], kind=AnnotationSceneKind.PREDICTION
     )
 
-    item = DatasetItemEntity(
-        media=Image(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)),
-        annotation_scene=empty_annotation,
-    )
+    items = []
+    for frame in frames:
+        item = DatasetItemEntity(
+            media=Image(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)),
+            annotation_scene=empty_annotation,
+        )
+        items.append(item)
 
-    dataset = DatasetEntity(items=[item])
+    dataset = DatasetEntity(items=items)
 
     start_time = time.perf_counter()
-    explain_map = task.explain(
+    saliency_maps = task.explain(
         dataset,
         InferenceParameters(is_evaluation=True),
     )
     elapsed_time = time.perf_counter() - start_time
-    saliency_map = explain_map[0]
-    return saliency_map, elapsed_time
+    return saliency_maps, elapsed_time
 
 
 def main():
@@ -151,20 +153,21 @@ def main():
     )
 
     task = task_class(task_environment=environment)
+    
+    if args.explain_algorithm not in SUPPORTED_EXPLAIN_ALGORITHMS:
+        raise NotImplementedError(f"{args.explain_algorithm} currently not supported. \
+            Currently only supporting {SUPPORTED_EXPLAIN_ALGORITHMS}")
 
-    imgs = get_image_files(args.input)
-    if imgs is None:
+    image_files = get_image_files(args.input)
+    if image_files is None:
         raise ValueError(f"No image found in {args.input}")
+    imgs = [cv2.imread(os.path.join(root_dir, fname)) for root_dir, fname in image_files]
 
     if not os.path.exists(args.output):
         os.makedirs(args.output)
 
-    elapsed_times = deque(maxlen=10)
-
-    for _, (root_dir, fname) in enumerate(imgs):
-        img = cv2.imread(os.path.join(root_dir, fname))
-        saliency_map, elapsed_time = get_explain_map(task, img)
-        elapsed_times.append(elapsed_time)
+    saliency_maps, _ = get_explain_map(task, imgs, args.explain_algorithm)
+    for img, saliency_map, (_, fname) in zip(imgs, saliency_maps, image_files):
         save_saliency_output(img, saliency_map.numpy, args.output, \
             os.path.splitext(fname)[0], weight=args.weight)
 
