@@ -20,6 +20,8 @@ from .utils import (
     no_nncf_trace,
 )
 
+from .monkey_patch import *
+
 __all__ = [
     'AccuracyAwareRunner',
     'AccuracyAwareLrUpdater',
