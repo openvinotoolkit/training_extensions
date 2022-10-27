@@ -18,6 +18,7 @@ import copy
 import math
 import os
 from collections import defaultdict
+from collections.abc import Mapping
 from typing import List, Optional, Union
 
 import torch
@@ -204,7 +205,7 @@ def set_data_classes(config: Config, labels: List[LabelEntity]):
     for subset in ("train", "val", "test"):
         cfg = get_data_cfg(config, subset)
         cfg.labels = labels
-        config.data[subset].labels = labels
+        #  config.data[subset].labels = labels
 
     # Set proper number of classes in model's detection heads.
     head_names = ("mask_head", "bbox_head", "segm_head")
@@ -229,20 +230,7 @@ def set_data_classes(config: Config, labels: List[LabelEntity]):
 def patch_datasets(config: Config, domain: Domain):
     """Update dataset configs."""
 
-    assert "data" in config
-    for subset in ("train", "val", "test"):
-        cfg = config.data.get(subset, None)
-        if not cfg:
-            continue
-        if cfg.type in ("RepeatDataset", "MultiImageMixDataset"):
-            cfg = cfg.dataset
-        cfg.type = "MPADetDataset"
-        cfg.domain = domain
-        cfg.otx_dataset = None
-        cfg.labels = None
-        remove_from_config(cfg, "ann_file")
-        remove_from_config(cfg, "img_prefix")
-        remove_from_config(cfg, "classes")  # Get from DatasetEntity
+    def update_pipeline(cfg):
         for pipeline_step in cfg.pipeline:
             if pipeline_step.type == "LoadImageFromFile":
                 pipeline_step.type = "LoadImageFromOTXDataset"
@@ -253,6 +241,24 @@ def patch_datasets(config: Config, domain: Domain):
             if subset == "train" and pipeline_step.type == "Collect":
                 pipeline_step = get_meta_keys(pipeline_step)
         patch_color_conversion(cfg.pipeline)
+
+    assert "data" in config
+    for subset in ("train", "val", "test"):
+        cfgs = get_data_cfgs(config, subset)
+
+        for cfg in cfgs:
+            cfg.type = "MPADetDataset"
+            cfg.domain = domain
+            cfg.otx_dataset = None
+            cfg.labels = None
+            remove_from_config(cfg, "ann_file")
+            remove_from_config(cfg, "img_prefix")
+            remove_from_config(cfg, "classes")  # Get from DatasetEntity
+            update_pipeline(cfg)
+
+        # deal with MultiImageMixDataset pipeline
+        if len(cfgs) and config[subset].type == "MultiImageMixDataset":
+            update_pipeline(config[subset])
 
 
 def patch_evaluation(config: Config):
@@ -327,3 +333,35 @@ def get_data_cfg(config: Union[Config, ConfigDict], subset: str = "train") -> Co
     while "dataset" in data_cfg:
         data_cfg = data_cfg.dataset
     return data_cfg
+
+
+@check_input_parameters_type()
+def get_data_cfgs(  # noqa: C901
+    config: Union[Config, ConfigDict], subset: str = "train"
+) -> List[Config]:
+    """Return a list of dataset configs."""
+
+    if config.data.get(subset, None) is None:
+        return []
+
+    data_cfg = config.data[subset]
+
+    def get_datasets(cfg, key=None):
+        if key == "dataset":
+            return [cfg]
+        elif key == "datasets":
+            assert isinstance(cfg, list)
+        out = []
+        if isinstance(cfg, Mapping):
+            for key, value in cfg.items():
+                if isinstance(value, (Mapping, list)):
+                    out += get_datasets(value, key)
+        elif isinstance(cfg, list):
+            for value in cfg:
+                if isinstance(value, (Mapping, list)):
+                    out_ = get_datasets(value)
+                    out += value if not out_ and key == "datasets" else out_
+        return out
+
+    data_cfgs = get_datasets(data_cfg)
+    return data_cfgs if data_cfgs else [data_cfg]

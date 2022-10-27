@@ -15,6 +15,7 @@
 # and limitations under the License.
 
 import os
+from collections.abc import Mapping
 from typing import Iterable, Optional, Tuple
 
 import cv2
