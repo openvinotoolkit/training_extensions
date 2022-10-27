@@ -253,6 +253,12 @@ def get_image_files(root_dir):
         ".tiff",
         ".png",
     ]
+
+    for format_ in img_data_formats:
+        # single image path
+        if root_dir.endswith(format_):
+            return [os.path.dirname(root_dir), os.path.basename(root_dir)]
+
     img_files = []
     for root, _, _ in os.walk(root_dir):
         for format_ in img_data_formats:
