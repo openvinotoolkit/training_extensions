@@ -1,3 +1,7 @@
+# Copyright (C) 2022 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
+
 from contextlib import contextmanager
 from functools import partial, partialmethod
 
@@ -60,30 +64,30 @@ def nncf_trace_context(self, img_metas):
     """
 
     assert (
-        getattr(self, "img_metas", None) is None
-        and getattr(self, "forward_backup", None) is None
+        getattr(self, "forward_backup", None) is None
     ), "Error: one forward context inside another forward context"
 
     if is_nncf_enabled():
         from nncf.torch.nncf_network import NNCFNetwork
 
         if isinstance(self, NNCFNetwork):
-            self.get_nncf_wrapped_model().img_metas = img_metas
             self.get_nncf_wrapped_model().forward_backup = self.forward
 
     def forward_nncf_trace(self, img, img_metas, **kwargs):
         return self.onnx_export(img[0], img_metas[0])
 
-    self.img_metas = img_metas
+    # onnx_export in mmdet head has a bug with cuda
+    self.device_backup = next(self.parameters()).device
     self.forward_backup = self.forward
+    self = self.to("cpu")
     self.forward = partialmethod(forward_nncf_trace, img_metas=img_metas).__get__(self)
     yield
+    self = self.to(self.device_backup)
+    delattr(self, "device_backup")
     self.forward = self.forward_backup
     delattr(self, "forward_backup")
-    delattr(self, "img_metas")
 
     if is_nncf_enabled() and isinstance(self, NNCFNetwork):
-        self.get_nncf_wrapped_model().img_metas = None
         self.get_nncf_wrapped_model().forward_backup = None
 
 
