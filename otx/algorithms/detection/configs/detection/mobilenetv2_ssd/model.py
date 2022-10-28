@@ -23,16 +23,27 @@ _base_ = [
 
 __width_mult = 1.0
 
+runner = dict(max_epochs=20)
+
 model = dict(
     type="CustomSingleStageDetector",
     bbox_head=dict(
         type="CustomSSDHead",
         num_classes=80,
         in_channels=(int(__width_mult * 96), int(__width_mult * 320)),
+        use_depthwise=True,
+        norm_cfg=dict(type="BN", eps=0.001, momentum=0.03),
+        act_cfg=dict(type="ReLU"),
+        init_cfg=dict(type="Normal", layer="Conv2d", std=0.001),
         anchor_generator=dict(
             type="SSDAnchorGeneratorClustered",
             strides=(16, 32),
-            reclustering_anchors=True,
+            # FIXME: Add this feature to mpa.det.inferrer
+            # This feature is implemented in mpa.det.trainer but not in mpa.det.inferrer
+            # To fix this, we need DetectionInferenceTask.infer in otx
+            # to take whole dataset, not validation subset only.
+            # This fix could impact other tasks infer method
+            reclustering_anchors=False,
             widths=[
                 [
                     38.641007923271076,
@@ -69,9 +80,6 @@ model = dict(
             target_means=(0.0, 0.0, 0.0, 0.0),
             target_stds=(0.1, 0.1, 0.2, 0.2),
         ),
-        depthwise_heads=True,
-        depthwise_heads_activations="relu",
-        loss_balancing=False,
     ),
     train_cfg=dict(
         assigner=dict(
