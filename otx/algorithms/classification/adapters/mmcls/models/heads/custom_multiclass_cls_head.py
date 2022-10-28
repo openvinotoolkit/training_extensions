@@ -15,7 +15,7 @@ from mmcv.cnn import build_activation_layer, constant_init, normal_init
 from torch import nn
 
 
-@HEADS.register_module()
+@HEADS.register_module(force=True)
 class NonLinearClsHead(ClsHead):
     """Nonlinear classifier head.
 
@@ -95,7 +95,7 @@ class NonLinearClsHead(ClsHead):
         return losses
 
 
-@HEADS.register_module()
+@HEADS.register_module(force=True)
 class CustomNonLinearClsHead(NonLinearClsHead):
     """Custom Nonlinear classifier head."""
 
@@ -127,7 +127,7 @@ class CustomNonLinearClsHead(NonLinearClsHead):
         return losses
 
 
-@HEADS.register_module()
+@HEADS.register_module(force=True)
 class CustomLinearClsHead(LinearClsHead):
     """Custom linear classifier head.
 

@@ -38,7 +38,7 @@ class SAMClassifier(BaseClassifier):
         return super().train_step(data, optimizer)
 
 
-@CLASSIFIERS.register_module()
+@CLASSIFIERS.register_module(force=True)
 class SAMImageClassifier(ImageClassifier):
     """SAM-enabled ImageClassifier."""
 

@@ -248,7 +248,7 @@ EXTRAS_REQUIRE = {
     "anomaly": get_requirements(requirement_files="anomaly"),
     "classification": get_requirements(requirement_files="classification"),
     "detection": get_requirements(requirement_files="detection"),
-    "training": get_requirements(requirement_files=["classification", "detection"]),
+    "mpa": get_requirements(requirement_files=["classification", "detection"]),
     "full": get_requirements(requirement_files=["anomaly", "classification", "detection"]),
 }
 DEPENDENCY_LINKS = ["https://download.pytorch.org/whl/torch_stable.html"]

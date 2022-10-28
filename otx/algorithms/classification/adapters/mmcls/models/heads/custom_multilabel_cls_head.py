@@ -35,7 +35,7 @@ class AnglularLinear(nn.Module):
         return cos_theta.clamp(-1, 1)
 
 
-@HEADS.register_module()
+@HEADS.register_module(force=True)
 class CustomMultiLabelLinearClsHead(MultiLabelClsHead):
     """Custom Linear classification head for multilabel task.
 
@@ -125,7 +125,7 @@ class CustomMultiLabelLinearClsHead(MultiLabelClsHead):
         return valid_label_mask
 
 
-@HEADS.register_module()
+@HEADS.register_module(force=True)
 class CustomMultiLabelNonLinearClsHead(MultiLabelClsHead):
     """Non-linear classification head for multilabel task.
 

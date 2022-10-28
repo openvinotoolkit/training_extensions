@@ -14,7 +14,7 @@ from mmcv.cnn import build_activation_layer, constant_init, normal_init
 from torch import nn
 
 
-@HEADS.register_module()
+@HEADS.register_module(force=True)
 class CustomHierarchicalLinearClsHead(MultiLabelClsHead):
     """Custom Linear classification head for hierarchical classification task.
 
@@ -153,7 +153,7 @@ class CustomHierarchicalLinearClsHead(MultiLabelClsHead):
         return valid_label_mask
 
 
-@HEADS.register_module()
+@HEADS.register_module(force=True)
 class CustomHierarchicalNonLinearClsHead(MultiLabelClsHead):
     """Custom NonLinear classification head for hierarchical classification task.
 
