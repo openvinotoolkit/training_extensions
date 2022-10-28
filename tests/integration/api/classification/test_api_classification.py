@@ -45,7 +45,7 @@ from tests.test_suite.e2e_test_system import e2e_pytest_api
 DEFAULT_CLS_TEMPLATE_DIR = osp.join("otx/algorithms/classification", "configs", "efficientnet_b0_cls_incr")
 
 
-def eval(task: BaseTask, model: ModelEntity, dataset: DatasetEntity) -> Performance:
+def task_eval(task: BaseTask, model: ModelEntity, dataset: DatasetEntity) -> Performance:
     start_time = time.time()
     result_dataset = task.infer(dataset.with_empty_annotations())
     end_time = time.time()
@@ -273,13 +273,13 @@ class TestMPAClsAPI:
             classification_environment.get_model_configuration(),
         )
         train_task.train(dataset, trained_model, train_parameters)
-        performance_after_train = eval(train_task, trained_model, val_dataset)
+        performance_after_train = task_eval(train_task, trained_model, val_dataset)
 
         # Create InferenceTask
         classification_environment.model = trained_model
         inference_task = ClassificationInferenceTask(task_environment=classification_environment)
 
-        performance_after_load = eval(inference_task, trained_model, val_dataset)
+        performance_after_load = task_eval(inference_task, trained_model, val_dataset)
 
         assert performance_after_train == performance_after_load
 

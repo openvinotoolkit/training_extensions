@@ -28,7 +28,6 @@ import numpy as np
 from torch.nn.modules import Module
 from torchreid.utils import get_model_attr, set_model_attr
 
-from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label import Domain, LabelEntity
 from otx.api.entities.label_schema import LabelGroup, LabelGroupType, LabelSchemaEntity
 from otx.api.entities.model_template import ModelTemplate
