@@ -68,7 +68,7 @@ class LoadImageFromOTEDataset:
         return results
 
 
-# @PIPELINES.register_module()
+@PIPELINES.register_module()
 class LoadAnnotationFromOTEDataset:
     """
     Pipeline element that loads an annotation from a OTE Dataset on the fly.
