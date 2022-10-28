@@ -106,10 +106,12 @@ def main():
     hyper_parameters = create(hyper_parameters)
 
     # Get classes for Task, ConfigurableParameters and Dataset.
-    if args.load_weights.endswith(".pth"):
+    if any(args.load_weights.endswith(x) for x in (".bin", ".xml", ".zip")):
+        task_class = get_impl_class(template.entrypoints.openvino)
+    elif args.load_weights.endswith(".pth"):
         task_class = get_impl_class(template.entrypoints.base)
     else:
-        raise ValueError(f"Unsupported file: {args.load_weights}.")
+        raise ValueError(f"Unsupported file: {args.load_weights}")
 
     environment = TaskEnvironment(
         model=None,
@@ -123,13 +125,14 @@ def main():
     )
 
     task = task_class(task_environment=environment)
-    
+    image_files = get_image_files(args.input)
+
     if args.explain_algorithm not in SUPPORTED_EXPLAIN_ALGORITHMS:
         raise NotImplementedError(f"{args.explain_algorithm} currently not supported. \
             Currently only supporting {SUPPORTED_EXPLAIN_ALGORITHMS}")
-    image_files = get_image_files(args.input)
+
     if image_files is None:
-        raise ValueError(f"No image found in {args.input}")
+        raise ValueError(f"No image found in {args.input}!")
 
     dataset_class = get_dataset_class(template.task_type)
     dataset = dataset_class(test_subset={"data_root": args.input})
