@@ -112,11 +112,9 @@ pip install torch=="${TORCH_VERSION}" torchvision=="${TORCHVISION_VERSION}" -f h
 pip install --no-cache-dir mmcv-full==${MMCV_VERSION} || exit 1
 sed -i "s/force=False/force=True/g" "${venv_dir}"/lib/python"${PYTHON_VERSION}"/site-packages/mmcv/utils/registry.py  # Patch: remedy for MMCV registry collision from mmdet/mmseg
 
-pip install mmsegmentation@git+https://github.com/openvinotoolkit/mmsegmentation@ote
-pip install mpa@git+https://github.com/openvinotoolkit/model_preparation_algorithm@otx
-
 # Install OTX
 pip install -e ../../../ || exit 1
+pip install -e ../../../[segmentation] || exit 1
 
 # Build NNCF extensions
 echo "Build NNCF extensions ..."
