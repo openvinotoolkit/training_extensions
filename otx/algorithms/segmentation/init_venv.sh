@@ -114,7 +114,7 @@ sed -i "s/force=False/force=True/g" "${venv_dir}"/lib/python"${PYTHON_VERSION}"/
 
 # Install OTX
 pip install -e ../../../ || exit 1
-pip install -e ../../../[segmentation] || exit 1
+pip install -e ../../../[segmentation]
 
 # Build NNCF extensions
 echo "Build NNCF extensions ..."
