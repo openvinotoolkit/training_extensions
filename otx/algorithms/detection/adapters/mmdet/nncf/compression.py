@@ -261,6 +261,8 @@ def wrap_nncf_model(model,
             ctx = model.forward_dummy_context(img_metas)
             logger.debug(f"NNCF will NOT compress a postprocessing part of the model")
         with ctx:
+            # The device where model is could be changed under this context
+            img = [i.to(next(model.parameters()).device) for i in img]
             model(img)
 
     def wrap_inputs(args, kwargs):
