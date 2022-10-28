@@ -16,8 +16,8 @@
 
 model = dict(
     backbone=dict(
-        type='LiteHRNet',
-        norm_cfg=dict(type='BN', requires_grad=True),
+        type="LiteHRNet",
+        norm_cfg=dict(type="BN", requires_grad=True),
         norm_eval=False,
         extra=dict(
             stem=dict(
@@ -33,34 +33,27 @@ model = dict(
                 num_modules=(2, 4, 2),
                 num_branches=(2, 3, 4),
                 num_blocks=(2, 2, 2),
-                module_type=('LITE', 'LITE', 'LITE'),
+                module_type=("LITE", "LITE", "LITE"),
                 with_fuse=(True, True, True),
                 reduce_ratios=(8, 8, 8),
                 num_channels=(
                     (40, 80),
                     (40, 80, 160),
                     (40, 80, 160, 320),
-                )
+                ),
             ),
             out_modules=dict(
-                conv=dict(
-                    enable=False,
-                    channels=320
-                ),
+                conv=dict(enable=False, channels=320),
                 position_att=dict(
                     enable=False,
                     key_channels=128,
                     value_channels=320,
                     psp_size=(1, 3, 6, 8),
                 ),
-                local_att=dict(
-                    enable=False
-                )
+                local_att=dict(enable=False),
             ),
-            out_aggregator=dict(
-                enable=False
-            ),
-            add_input=False
-        )
+            out_aggregator=dict(enable=False),
+            add_input=False,
+        ),
     ),
 )

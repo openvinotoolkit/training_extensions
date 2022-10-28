@@ -17,27 +17,28 @@
 from typing import Any, Dict, List, Optional, Sequence
 
 import numpy as np
+from mmseg.datasets.builder import DATASETS
+from mmseg.datasets.custom import CustomDataset
+from mmseg.datasets.pipelines import Compose
+
 from otx.algorithms.common.utils.data import get_old_new_img_indices
+from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label import LabelEntity
 from otx.api.utils.argument_checks import (
     DatasetParamTypeCheck,
     check_input_parameters_type,
 )
-from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.utils.segmentation_utils import mask_from_dataset_item
-from mmseg.datasets.builder import DATASETS
-from mmseg.datasets.custom import CustomDataset
-from mmseg.datasets.pipelines import Compose
 
 
 # pylint: disable=invalid-name, too-many-locals, too-many-instance-attributes, super-init-not-called
 @check_input_parameters_type()
 def get_annotation_mmseg_format(dataset_item: DatasetItemEntity, labels: List[LabelEntity]) -> dict:
-    """
-    Function to convert a OTX annotation to mmsegmentation format. This is used both
-    in the OTXDataset class defined in this file as in the custom pipeline
-    element 'LoadAnnotationFromOTXDataset'
+    """Function to convert a OTX annotation to mmsegmentation format.
+
+    This is used both in the OTXDataset class defined in this file
+    as in the custom pipeline element 'LoadAnnotationFromOTXDataset'
 
     :param dataset_item: DatasetItem for which to get annotations
     :param labels: List of labels in the project
@@ -74,6 +75,7 @@ class OTXSegDataset(CustomDataset):
         forwards data access operations to otx_dataset and converts the dataset items to the view
         convenient for mmsegmentation.
         """
+
         def __init__(self, otx_dataset, labels=None):
             self.otx_dataset = otx_dataset
             self.labels = labels
@@ -92,18 +94,25 @@ class OTXSegDataset(CustomDataset):
             item = dataset[index]
             ignored_labels = np.array([self.label_idx[lbs.id] + 1 for lbs in item.ignored_labels])
 
-            data_info = dict(dataset_item=item,
-                             width=item.width,
-                             height=item.height,
-                             index=index,
-                             ann_info=dict(labels=self.labels),
-                             ignored_labels=ignored_labels)
+            data_info = dict(
+                dataset_item=item,
+                width=item.width,
+                height=item.height,
+                index=index,
+                ann_info=dict(labels=self.labels),
+                ignored_labels=ignored_labels,
+            )
 
             return data_info
 
     @check_input_parameters_type({"otx_dataset": DatasetParamTypeCheck})
-    def __init__(self, otx_dataset: DatasetEntity, pipeline: Sequence[dict], classes: Optional[List[str]] = None,
-                 test_mode: bool = False):
+    def __init__(
+        self,
+        otx_dataset: DatasetEntity,
+        pipeline: Sequence[dict],
+        classes: Optional[List[str]] = None,
+        test_mode: bool = False,
+    ):
         self.otx_dataset = otx_dataset
         self.test_mode = test_mode
 
@@ -152,7 +161,7 @@ class OTXSegDataset(CustomDataset):
     def pre_pipeline(self, results: Dict[str, Any]):
         """Prepare results dict for pipeline."""
 
-        results['seg_fields'] = []
+        results["seg_fields"] = []
 
     @check_input_parameters_type()
     def prepare_train_img(self, idx: int) -> dict:
@@ -213,13 +222,17 @@ class OTXSegDataset(CustomDataset):
         gt_seg_maps = []
         for item_id in range(len(self)):
             ann_info = self.get_ann_info(item_id)
-            gt_seg_maps.append(ann_info['gt_semantic_seg'])
+            gt_seg_maps.append(ann_info["gt_semantic_seg"])
+        if efficient_test:
+            pass
 
         return gt_seg_maps
 
 
 @DATASETS.register_module()
 class MPASegDataset(OTXSegDataset):
+    """Wrapper dataset that allows using a OTX dataset to train models."""
+
     def __init__(self, **kwargs):
         pipeline = []
         test_mode = kwargs.get("test_mode", False)

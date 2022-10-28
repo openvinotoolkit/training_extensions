@@ -1,4 +1,6 @@
-# Copyright (C) 2021 Intel Corporation
+"""NNCF Task of OTX Segmentation."""
+
+# Copyright (C) 2022 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,17 +14,39 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+import copy
 import io
+import json
 import logging
 import os
-import copy
-import json
 import tempfile
-from typing import Optional, List, DefaultDict
+from typing import DefaultDict, List, Optional
 
 import torch
-from mmcv.utils import Config, ConfigDict
 from mmcv.runner import load_checkpoint, load_state_dict
+from mmcv.utils import Config, ConfigDict
+from mmseg.apis import train_segmentor
+from mmseg.apis.train import build_val_dataloader
+from mmseg.datasets import build_dataloader, build_dataset
+from mmseg.integration.nncf import (
+    check_nncf_is_enabled,
+    is_accuracy_aware_training_set,
+    is_state_nncf,
+    wrap_nncf_model,
+)
+from mmseg.integration.nncf.config import compose_nncf_config
+from mmseg.models import build_segmentor
+from mpa.utils.config_utils import remove_custom_hook
+
+from otx.algorithms.common.adapters.mmcv.hooks import OTXLoggerHook
+from otx.algorithms.common.utils.callback import OptimizationProgressCallback
+from otx.algorithms.segmentation.adapters.mmseg.utils.config_utils import (
+    patch_config,
+    prepare_for_training,
+    set_hyperparams,
+)
+from otx.algorithms.segmentation.configs.base import SegmentationConfig
+from otx.algorithms.segmentation.tasks import SegmentationInferenceTask
 from otx.api.configuration import cfg_helper
 from otx.api.configuration.helper.utils import ids_to_strings
 from otx.api.entities.datasets import DatasetEntity
@@ -30,57 +54,34 @@ from otx.api.entities.model import (
     ModelEntity,
     ModelFormat,
     ModelOptimizationType,
-    OptimizationMethod,
     ModelPrecision,
+    OptimizationMethod,
 )
 from otx.api.entities.optimization_parameters import default_progress_callback
 from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.serialization.label_mapper import label_schema_to_bytes
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType
-from otx.api.usecases.tasks.interfaces.optimization_interface import IOptimizationTask
-from otx.api.usecases.tasks.interfaces.optimization_interface import OptimizationParameters
-from otx.api.usecases.tasks.interfaces.optimization_interface import OptimizationType
+from otx.api.usecases.tasks.interfaces.optimization_interface import (
+    IOptimizationTask,
+    OptimizationParameters,
+    OptimizationType,
+)
 from otx.api.utils.argument_checks import (
     DatasetParamTypeCheck,
     check_input_parameters_type,
 )
-from otx.algorithms.segmentation.adapters.mmseg.utils.config_utils import (patch_config, set_hyperparams)
-
-from mpa.utils.config_utils import remove_custom_hook
-from mmseg.apis import train_segmentor
-from mmseg.models import build_segmentor
-from otx.algorithms.segmentation.tasks import SegmentationInferenceTask
-from otx.algorithms.segmentation.adapters.mmseg.utils.config_utils import prepare_for_training
-from otx.algorithms.segmentation.configs.base import SegmentationConfig
-from otx.algorithms.common.utils.callback import OptimizationProgressCallback
-from otx.algorithms.common.adapters.mmcv.hooks import OTXLoggerHook
-from mmseg.apis.train import build_val_dataloader
-from mmseg.datasets import build_dataloader, build_dataset
-from mmseg.integration.nncf import check_nncf_is_enabled
-from mmseg.integration.nncf import is_accuracy_aware_training_set
-from mmseg.integration.nncf import is_state_nncf
-from mmseg.integration.nncf import wrap_nncf_model
-from mmseg.integration.nncf.config import compose_nncf_config
 
 logger = logging.getLogger(__name__)
 
 
+# pylint: disable=too-many-instance-attributes
 class SegmentationNNCFTask(SegmentationInferenceTask, IOptimizationTask):
+    """Task for compressing object detection models using NNCF."""
+
     @check_input_parameters_type()
     def __init__(self, task_environment: TaskEnvironment):
-        """"
-        Task for compressing object detection models using NNCF.
-        """
         super().__init__(task_environment)
-        # curr_model_path = task_environment.model_template.model_template_path
-        # base_model_path = os.path.join(
-        #     os.path.dirname(os.path.abspath(curr_model_path)), task_environment.model_template.base_model_path
-        # )
-        # if os.path.isfile(base_model_path):
-        #     logger.info(f"Base model for NNCF: {base_model_path}")
-        #     # Redirect to base model
-        #     task_environment.model_template = parse_model_template(base_model_path)
 
         self._val_dataloader = None
         self._compression_ctrl = None
@@ -115,11 +116,10 @@ class SegmentationNNCFTask(SegmentationInferenceTask, IOptimizationTask):
             self._config = Config.fromfile(config_file_path)
         # Disable task adaptation in NNCF task
         if hasattr(self._config.model, "is_task_adapt"):
-            self._config.model.is_task_adapt=False
+            self._config.model.is_task_adapt = False
 
         distributed = torch.distributed.is_initialized()
-        patch_config(self._config, self._scratch_space, self._labels,
-                     random_seed=42, distributed=distributed)
+        patch_config(self._config, self._scratch_space, self._labels, random_seed=42, distributed=distributed)
         set_hyperparams(self._config, self._hyperparams)
 
         # Set default model attributes.
@@ -155,13 +155,13 @@ class SegmentationNNCFTask(SegmentationInferenceTask, IOptimizationTask):
             self._optimization_methods = [OptimizationMethod.FILTER_PRUNING]
             self._precision = [ModelPrecision.FP32]
             return
-        raise RuntimeError('Not selected optimization algorithm')
+        raise RuntimeError("Not selected optimization algorithm")
 
     def _load_model(self, model: Optional[ModelEntity]):
         # NNCF parts
         nncf_config_path = os.path.join(self._base_dir, "compression_config.json")
 
-        with open(nncf_config_path) as nncf_config_file:
+        with open(nncf_config_path, encoding="UTF-8") as nncf_config_file:
             common_nncf_config = json.load(nncf_config_file)
 
         self._set_attributes_by_hyperparams()
@@ -171,8 +171,11 @@ class SegmentationNNCFTask(SegmentationInferenceTask, IOptimizationTask):
         max_acc_drop = self._hyperparams.nncf_optimization.maximal_accuracy_degradation / 100
         if "accuracy_aware_training" in optimization_config["nncf_config"]:
             # Update maximal_absolute_accuracy_degradation
-            (optimization_config["nncf_config"]["accuracy_aware_training"]
-                                ["params"]["maximal_absolute_accuracy_degradation"]) = max_acc_drop
+            (
+                optimization_config["nncf_config"]["accuracy_aware_training"]["params"][
+                    "maximal_absolute_accuracy_degradation"
+                ]
+            ) = max_acc_drop
             # Force evaluation interval
             self._config.evaluation.interval = 1
         else:
@@ -184,37 +187,30 @@ class SegmentationNNCFTask(SegmentationInferenceTask, IOptimizationTask):
         if model is not None:
             # If a model has been trained and saved for the task already, create empty model and load weights here
             buffer = io.BytesIO(model.get_data("weights.pth"))
-            model_data = torch.load(buffer, map_location=torch.device('cpu'))
+            model_data = torch.load(buffer, map_location=torch.device("cpu"))
 
             model = self._create_model(self._config, from_scratch=True)
             try:
                 if is_state_nncf(model_data):
-                    compression_ctrl, model = wrap_nncf_model(
-                        model,
-                        self._config,
-                        init_state_dict=model_data
-                    )
+                    compression_ctrl, model = wrap_nncf_model(model, self._config, init_state_dict=model_data)
                     logger.info("Loaded model weights from Task Environment and wrapped by NNCF")
                 else:
                     try:
-                        load_state_dict(model, model_data['model'])
-                        logger.info(f"Loaded model weights from Task Environment")
+                        load_state_dict(model, model_data["model"])
+                        logger.info("Loaded model weights from Task Environment")
                         logger.info(f"Model architecture: {self._model_name}")
                     except BaseException as ex:
-                        raise ValueError("Could not load the saved model. The model file structure is invalid.") \
-                            from ex
+                        raise ValueError("Could not load the saved model. The model file structure is invalid.") from ex
 
-                logger.info(f"Loaded model weights from Task Environment")
+                logger.info("Loaded model weights from Task Environment")
                 logger.info(f"Model architecture: {self._model_name}")
             except BaseException as ex:
-                raise ValueError("Could not load the saved model. The model file structure is invalid.") \
-                    from ex
+                raise ValueError("Could not load the saved model. The model file structure is invalid.") from ex
         else:
-            raise ValueError(f"No trained model in project. NNCF require pretrained weights to compress the model")
+            raise ValueError("No trained model in project. NNCF require pretrained weights to compress the model")
 
         self._compression_ctrl = compression_ctrl
         return model
-
 
     def _create_compressed_model(self, dataset, config):
         init_dataloader = build_dataloader(
@@ -223,7 +219,8 @@ class SegmentationNNCFTask(SegmentationInferenceTask, IOptimizationTask):
             config.data.workers_per_gpu,
             len(config.gpu_ids),
             dist=False,
-            seed=config.seed)
+            seed=config.seed,
+        )
         is_acc_aware_training_set = is_accuracy_aware_training_set(config.get("nncf_config"))
 
         if is_acc_aware_training_set:
@@ -234,7 +231,8 @@ class SegmentationNNCFTask(SegmentationInferenceTask, IOptimizationTask):
             config,
             val_dataloader=self._val_dataloader,
             dataloader_for_init=init_dataloader,
-            is_accuracy_aware=is_acc_aware_training_set)
+            is_accuracy_aware=is_acc_aware_training_set,
+        )
 
     @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def optimize(
@@ -244,6 +242,7 @@ class SegmentationNNCFTask(SegmentationInferenceTask, IOptimizationTask):
         output_model: ModelEntity,
         optimization_parameters: Optional[OptimizationParameters] = None,
     ):
+        """NNCF Optimization."""
         if optimization_type is not OptimizationType.NNCF:
             raise RuntimeError("NNCF is the only supported optimization")
 
@@ -256,9 +255,9 @@ class SegmentationNNCFTask(SegmentationInferenceTask, IOptimizationTask):
         else:
             update_progress_callback = default_progress_callback
 
-        time_monitor = OptimizationProgressCallback(update_progress_callback,
-                                                    loading_stage_progress_percentage=5,
-                                                    initialization_stage_progress_percentage=5)
+        time_monitor = OptimizationProgressCallback(
+            update_progress_callback, loading_stage_progress_percentage=5, initialization_stage_progress_percentage=5
+        )
         learning_curves = DefaultDict(OTXLoggerHook.Curve)  # type: DefaultDict
         training_config = prepare_for_training(config, train_dataset, val_dataset, time_monitor, learning_curves)
 
@@ -267,18 +266,20 @@ class SegmentationNNCFTask(SegmentationInferenceTask, IOptimizationTask):
 
         # Initialize NNCF parts if start from not compressed model
         if not self._compression_ctrl:
-             self._create_compressed_model(mm_train_dataset, training_config)
+            self._create_compressed_model(mm_train_dataset, training_config)
 
         time_monitor.on_initialization_end()
 
         self._is_training = True
         self._model.train()
 
-        train_segmentor(model=self._model,
-                        dataset=mm_train_dataset,
-                        cfg=training_config,
-                        validate=True,
-                        compression_ctrl=self._compression_ctrl)
+        train_segmentor(
+            model=self._model,
+            dataset=mm_train_dataset,
+            cfg=training_config,
+            validate=True,
+            compression_ctrl=self._compression_ctrl,
+        )
 
         self.save_model(output_model)
 
@@ -291,6 +292,7 @@ class SegmentationNNCFTask(SegmentationInferenceTask, IOptimizationTask):
 
     @check_input_parameters_type()
     def export(self, export_type: ExportType, output_model: ModelEntity):
+        """NNCF Export Function."""
         if self._compression_ctrl is None:
             super().export(export_type, output_model)
         else:
@@ -301,6 +303,7 @@ class SegmentationNNCFTask(SegmentationInferenceTask, IOptimizationTask):
 
     @check_input_parameters_type()
     def save_model(self, output_model: ModelEntity):
+        """Save a model function."""
         buffer = io.BytesIO()
         hyperparams = self._task_environment.get_hyper_parameters(SegmentationConfig)  # type: ConfigDict
         hyperparams_str = ids_to_strings(cfg_helper.convert(hyperparams, dict, enum_to_str=True))
@@ -308,15 +311,15 @@ class SegmentationNNCFTask(SegmentationInferenceTask, IOptimizationTask):
         if not self._compression_ctrl:
             raise RuntimeError("Not found _compression_ctrl")
         modelinfo = {
-            'compression_state': self._compression_ctrl.get_compression_state(),
-            'meta': {
-                'config': self._config,
-                'nncf_enable_compression': True,
+            "compression_state": self._compression_ctrl.get_compression_state(),
+            "meta": {
+                "config": self._config,
+                "nncf_enable_compression": True,
             },
-            'model': self._model.state_dict(),
-            'config': hyperparams_str,
-            'labels': labels,
-            'VERSION': 1,
+            "model": self._model.state_dict(),
+            "config": hyperparams_str,
+            "labels": labels,
+            "VERSION": 1,
         }
 
         torch.save(modelinfo, buffer)
@@ -325,8 +328,7 @@ class SegmentationNNCFTask(SegmentationInferenceTask, IOptimizationTask):
 
     @staticmethod
     def _create_model(config: Config, from_scratch: bool = False):
-        """
-        Creates a model, based on the configuration in config
+        """Creates a model, based on the configuration in config.
 
         :param config: mmsegmentation configuration from which the model has to be built
         :param from_scratch: bool, if True does not load any weights
@@ -336,20 +338,20 @@ class SegmentationNNCFTask(SegmentationInferenceTask, IOptimizationTask):
 
         model_cfg = copy.deepcopy(config.model)
 
-        init_from = None if from_scratch else config.get('load_from', None)
+        init_from = None if from_scratch else config.get("load_from", None)
         logger.warning(f"Init from: {init_from}")
 
         if init_from is not None:
             # No need to initialize backbone separately, if all weights are provided.
             model_cfg.pretrained = None
-            logger.warning('build segmentor')
+            logger.warning("build segmentor")
             model = build_segmentor(model_cfg)
 
             # Load all weights.
-            logger.warning('load checkpoint')
-            load_checkpoint(model, init_from, map_location='cpu', strict=False)
+            logger.warning("load checkpoint")
+            load_checkpoint(model, init_from, map_location="cpu", strict=False)
         else:
-            logger.warning('build segmentor')
+            logger.warning("build segmentor")
             model = build_segmentor(model_cfg)
 
         return model

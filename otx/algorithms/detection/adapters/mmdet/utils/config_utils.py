@@ -215,6 +215,39 @@ def prepare_work_dir(config: Union[Config, ConfigDict]) -> str:
 
 
 @check_input_parameters_type()
+def config_to_string(config: Union[Config, ConfigDict]) -> str:
+    """Convert a full mmcv config to a string.
+
+    :param config: configuration object to convert
+    :return str: string representation of the configuration
+    """
+
+    config_copy = copy.deepcopy(config)
+    # Clean config up by removing dataset as this causes the pretty text parsing to fail.
+    config_copy.data.test.otx_dataset = None
+    config_copy.data.test.labels = None
+    config_copy.data.val.otx_dataset = None
+    config_copy.data.val.labels = None
+    if "otx_dataset" in config_copy.data.train:
+        config_copy.data.train.otx_dataset = None
+        config_copy.data.train.labels = None
+    else:
+        config_copy.data.train.dataset.otx_dataset = None
+        config_copy.data.train.dataset.labels = None
+    return Config(config_copy).pretty_text
+
+
+@check_input_parameters_type()
+def save_config_to_file(config: Union[Config, ConfigDict]):
+    """Dump the full config to a file. Filename is 'config.py', it is saved in the current work_dir."""
+
+    filepath = os.path.join(config.work_dir, "config.py")
+    config_string = config_to_string(config)
+    with open(filepath, "w", encoding="UTF-8") as f:
+        f.write(config_string)
+
+
+@check_input_parameters_type()
 def set_data_classes(config: Config, labels: List[LabelEntity]):
     """Setter data classes into config."""
     # Save labels in data configs.

@@ -15,11 +15,15 @@
 # and limitations under the License.
 
 import io
-from typing import List, Optional, DefaultDict
+from typing import DefaultDict, List, Optional
 
 import torch
 from mmcv.utils import ConfigDict
 from mpa.utils.logger import get_logger
+
+from otx.algorithms.common.adapters.mmcv import OTXLoggerHook
+from otx.algorithms.common.utils.callback import TrainingProgressCallback
+from otx.algorithms.segmentation.tasks import SegmentationInferenceTask
 from otx.api.configuration import cfg_helper
 from otx.api.configuration.helper.utils import ids_to_strings
 from otx.api.entities.datasets import DatasetEntity
@@ -33,16 +37,11 @@ from otx.api.entities.metrics import (
     VisualizationInfo,
     VisualizationType,
 )
-from otx.api.entities.model import (
-    ModelEntity,
-)
+from otx.api.entities.model import ModelEntity
 from otx.api.entities.subset import Subset
 from otx.api.entities.train_parameters import TrainParameters, default_progress_callback
 from otx.api.serialization.label_mapper import label_schema_to_bytes
 from otx.api.usecases.tasks.interfaces.training_interface import ITrainingTask
-from otx.algorithms.common.utils.callback import TrainingProgressCallback
-from otx.algorithms.common.adapters.mmcv import OTXLoggerHook
-from otx.algorithms.segmentation.tasks import SegmentationInferenceTask
 
 logger = get_logger()
 
@@ -120,9 +119,8 @@ class SegmentationTrainTask(SegmentationInferenceTask, ITrainingTask):
             logger.error("cannot find final checkpoint from the results.")
             # output_model.model_status = ModelStatus.FAILED
             return
-        else:
-            # update checkpoint to the newly trained model
-            self._model_ckpt = model_ckpt
+        # update checkpoint to the newly trained model
+        self._model_ckpt = model_ckpt
 
         # Get training metrics group from learning curves
         training_metrics, best_score = self._generate_training_metrics_group(self._learning_curves)

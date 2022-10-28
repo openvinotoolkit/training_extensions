@@ -14,16 +14,18 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import os
 import copy
 import tempfile
-from typing import Union, Sequence
+from typing import Union
+
 from mmcv import Config, ConfigDict
+
+from otx.api.entities.datasets import DatasetEntity
 from otx.api.utils.argument_checks import (
     DatasetParamTypeCheck,
     check_input_parameters_type,
 )
-from otx.api.entities.datasets import DatasetEntity
+
 
 @check_input_parameters_type()
 def remove_from_config(config: Union[Config, ConfigDict], key: str):
@@ -36,6 +38,7 @@ def remove_from_config(config: Union[Config, ConfigDict], key: str):
         else:
             raise ValueError(f"Unknown config type {type(config)}")
 
+
 @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
 def prepare_for_testing(config: Union[Config, ConfigDict], dataset: DatasetEntity) -> Config:
     """Prepare configs for testing phase."""
@@ -44,32 +47,12 @@ def prepare_for_testing(config: Union[Config, ConfigDict], dataset: DatasetEntit
     config.data.test.otx_dataset = dataset
     return config
 
+
 @check_input_parameters_type()
 def is_epoch_based_runner(runner_config: ConfigDict):
     """Check Epoch based or Iter based runner."""
     return "Epoch" in runner_config.type
 
-@check_input_parameters_type()
-def config_to_string(config: Union[Config, ConfigDict]) -> str:
-    """Convert a full mmcv config to a string.
-
-    :param config: configuration object to convert
-    :return str: string representation of the configuration
-    """
-
-    config_copy = copy.deepcopy(config)
-    # Clean config up by removing dataset as this causes the pretty text parsing to fail.
-    config_copy.data.test.otx_dataset = None
-    config_copy.data.test.labels = None
-    config_copy.data.val.otx_dataset = None
-    config_copy.data.val.labels = None
-    if 'otx_dataset' in config_copy.data.train:
-        config_copy.data.train.otx_dataset = None
-        config_copy.data.train.labels = None
-    else:
-        config_copy.data.train.dataset.otx_dataset = None
-        config_copy.data.train.dataset.labels = None
-    return Config(config_copy).pretty_text
 
 @check_input_parameters_type()
 def config_from_string(config_string: str) -> Config:
@@ -83,26 +66,19 @@ def config_from_string(config_string: str) -> Config:
         temp_file.flush()
         return Config.fromfile(temp_file.name)
 
-@check_input_parameters_type()
-def save_config_to_file(config: Union[Config, ConfigDict]):
-    """ Dump the full config to a file. Filename is 'config.py', it is saved in the current work_dir. """
-
-    filepath = os.path.join(config.work_dir, 'config.py')
-    config_string = config_to_string(config)
-    with open(filepath, 'w') as f:
-        f.write(config_string)
 
 def patch_color_conversion(pipeline):
-    # Default data format for OTX is RGB, while mmx uses BGR, so negate the color conversion flag.
+    """Default data format for OTX is RGB, while mmx uses BGR, so negate the color conversion flag."""
     for pipeline_step in pipeline:
-        if pipeline_step.type == 'Normalize':
+        if pipeline_step.type == "Normalize":
             to_rgb = False
-            if 'to_rgb' in pipeline_step:
+            if "to_rgb" in pipeline_step:
                 to_rgb = pipeline_step.to_rgb
             to_rgb = not bool(to_rgb)
             pipeline_step.to_rgb = to_rgb
-        elif pipeline_step.type == 'MultiScaleFlipAug':
+        elif pipeline_step.type == "MultiScaleFlipAug":
             patch_color_conversion(pipeline_step.transforms)
+
 
 DEFAULT_META_KEYS = (
     "filename",
@@ -116,7 +92,9 @@ DEFAULT_META_KEYS = (
     "img_norm_cfg",
 )
 
+
 def get_meta_keys(pipeline_step):
+    """Update meta_keys for ignore_labels."""
     meta_keys = list(pipeline_step.get("meta_keys", DEFAULT_META_KEYS))
     meta_keys.append("ignored_labels")
     pipeline_step["meta_keys"] = set(meta_keys)

@@ -15,17 +15,25 @@
 # and limitations under the License.
 
 import os
-from typing import Optional
+from typing import Dict, Optional
 
 import numpy as np
 from mmcv.utils import ConfigDict
 from mpa import MPAConstants
 from mpa.utils.config_utils import MPAConfig
 from mpa.utils.logger import get_logger
+
 from otx.algorithms.common.adapters.mmcv.utils import remove_from_config
-from otx.algorithms.segmentation.adapters.mmseg.utils import patch_datasets, patch_evaluation
-from otx.algorithms.common.tasks import BaseTask
 from otx.algorithms.common.configs import TrainType
+from otx.algorithms.common.tasks import BaseTask
+from otx.algorithms.common.utils.callback import InferenceProgressCallback
+from otx.algorithms.segmentation.adapters.mmseg.utils import (
+    patch_datasets,
+    patch_evaluation,
+)
+from otx.algorithms.segmentation.adapters.openvino.model_wrappers.blur import (
+    get_activation_map,
+)
 from otx.algorithms.segmentation.configs.base import SegmentationConfig
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.inference_parameters import InferenceParameters
@@ -53,14 +61,8 @@ from otx.api.utils.segmentation_utils import (
     create_annotation_from_segmentation_map,
     create_hard_prediction_from_soft_prediction,
 )
-from otx.algorithms.segmentation.adapters.openvino.model_wrappers.blur import (
-    get_activation_map,
-)
-from otx.algorithms.common.utils.callback import InferenceProgressCallback
 
 logger = get_logger()
-
-TASK_CONFIG = SegmentationConfig
 
 
 # pylint: disable=too-many-locals
@@ -72,7 +74,8 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         # self._should_stop = False
         self.freeze = True
         self.metric = "mDice"
-        super().__init__(TASK_CONFIG, task_environment)
+        self._label_dictionary = {}  # type: Dict
+        super().__init__(SegmentationConfig, task_environment)
 
     def infer(
         self, dataset: DatasetEntity, inference_parameters: Optional[InferenceParameters] = None
@@ -100,7 +103,7 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         self._add_predictions_to_dataset(prediction_results, dataset, dump_soft_prediction=not is_evaluation)
         return dataset
 
-    def evaluate(self, output_result_set: ResultSetEntity, evaluation_metric: Optional[str] = None):
+    def evaluate(self, output_resultset: ResultSetEntity, evaluation_metric: Optional[str] = None):
         """Evaluate function of OTX Segmentation Task."""
         logger.info("called evaluate()")
 
@@ -109,13 +112,13 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
                 f"Requested to use {evaluation_metric} metric, " "but parameter is ignored. Use mDice instead."
             )
         logger.info("Computing mDice")
-        metrics = MetricsHelper.compute_dice_averaged_over_pixels(output_result_set)
+        metrics = MetricsHelper.compute_dice_averaged_over_pixels(output_resultset)
         logger.info(f"mDice after evaluation: {metrics.overall_dice.value}")
-        output_result_set.performance = metrics.get_performance()
+        output_resultset.performance = metrics.get_performance()
 
     def unload(self):
         """Unload the task."""
-        self.finalize()
+        self._delete_scratch_space()
 
     def export(self, export_type: ExportType, output_model: ModelEntity):
         """Export function of OTX Detection Task."""
@@ -211,12 +214,12 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
             data=ConfigDict(
                 train=ConfigDict(
                     dataset=ConfigDict(
-                        ote_dataset=None,
+                        otx_dataset=None,
                         labels=self._labels,
                     )
                 ),
                 test=ConfigDict(
-                    ote_dataset=dataset,
+                    otx_dataset=dataset,
                     labels=self._labels,
                 ),
             )

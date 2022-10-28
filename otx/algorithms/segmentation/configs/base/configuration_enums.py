@@ -14,31 +14,16 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import copy
-import glob
 import logging
-import math
-import os
-from collections import defaultdict
-from typing import List, Optional, Sequence, Union
 
-from otx.api.entities.datasets import DatasetEntity
-from otx.api.entities.label import LabelEntity
-from otx.api.usecases.reporting.time_monitor_callback import TimeMonitorCallback
-from otx.api.utils.argument_checks import (
-    DatasetParamTypeCheck,
-    DirectoryPathCheck,
-    check_input_parameters_type,
-)
 from otx.api.configuration import ConfigurableEnum
-
 
 logger = logging.getLogger(__name__)
 
 
+# pylint: disable=invalid-name
 class Models(ConfigurableEnum):
-    """
-    This Enum represents the types of models for inference
-    """
-    Segmentation = 'segmentation'
-    BlurSegmentation = 'blur_segmentation'
+    """This Enum represents the types of models for inference."""
+
+    Segmentation = "segmentation"
+    BlurSegmentation = "blur_segmentation"

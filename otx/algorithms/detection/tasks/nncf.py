@@ -88,14 +88,6 @@ class DetectionNNCFTask(DetectionInferenceTask, IOptimizationTask):
     @check_input_parameters_type()
     def __init__(self, task_environment: TaskEnvironment):
         super().__init__(task_environment)
-        # curr_model_path = task_environment.model_template.model_template_path
-        # base_model_path = os.path.join(
-        #     os.path.dirname(os.path.abspath(curr_model_path)),
-        #     task_environment.model_template.base_model_path,
-        # )
-        # if os.path.isfile(base_model_path):
-        #     logger.info(f"Base model for NNCF: {base_model_path}")
-        #     task_environment.model_template = parse_model_template(base_model_path)
         self._val_dataloader = None
         self._compression_ctrl = None
         self._nncf_preset = "nncf_quantization"

@@ -15,23 +15,30 @@
 # and limitations under the License.
 
 
-from attr import attrs
 from sys import maxsize
-from otx.algorithms.common.configs import BaseConfig, LearningRateSchedule, POTQuantizationPreset
 
+from attr import attrs
+
+from otx.algorithms.common.configs import (
+    BaseConfig,
+    LearningRateSchedule,
+    POTQuantizationPreset,
+)
+from otx.api.configuration.elements import (
+    add_parameter_group,
+    boolean_attribute,
+    configurable_boolean,
+    configurable_float,
+    configurable_integer,
+    selectable,
+    string_attribute,
+)
 from otx.api.configuration.model_lifecycle import ModelLifecycle
+
 from .configuration_enums import Models
 
-from otx.api.configuration.elements import (ParameterGroup,
-                                            add_parameter_group,
-                                            boolean_attribute,
-                                            configurable_boolean,
-                                            configurable_float,
-                                            configurable_integer,
-                                            selectable,
-                                            string_attribute)
-
 # pylint: disable=invalid-name
+
 
 @attrs
 class SegmentationConfig(BaseConfig):
@@ -51,7 +58,7 @@ class SegmentationConfig(BaseConfig):
             max_value=5000,
             header="Number of iterations for fixed learning rate",
             description="",
-            affects_outcome_of=ModelLifecycle.TRAINING
+            affects_outcome_of=ModelLifecycle.TRAINING,
         )
 
         learning_rate_schedule = selectable(
@@ -77,27 +84,29 @@ class SegmentationConfig(BaseConfig):
         header = string_attribute("Postprocessing")
         description = header
 
-        class_name = selectable(default_value=Models.BlurSegmentation,
-                                header="Model class for inference",
-                                description="Model classes with defined pre- and postprocessing",
-                                editable=False,
-                                visible_in_ui=True)
+        class_name = selectable(
+            default_value=Models.BlurSegmentation,
+            header="Model class for inference",
+            description="Model classes with defined pre- and postprocessing",
+            editable=False,
+            visible_in_ui=True,
+        )
         blur_strength = configurable_integer(
             header="Blur strength",
             description="With a higher value, the segmentation output will be smoother, but less accurate.",
             default_value=1,
             min_value=1,
             max_value=25,
-            affects_outcome_of=ModelLifecycle.INFERENCE
+            affects_outcome_of=ModelLifecycle.INFERENCE,
         )
         soft_threshold = configurable_float(
             default_value=0.5,
             header="Soft threshold",
             description="The threshold to apply to the probability output of the model, for each pixel. A higher value "
-                        "means a stricter segmentation prediction.",
+            "means a stricter segmentation prediction.",
             min_value=0.0,
             max_value=1.0,
-            affects_outcome_of=ModelLifecycle.INFERENCE
+            affects_outcome_of=ModelLifecycle.INFERENCE,
         )
 
     @attrs
@@ -111,14 +120,16 @@ class SegmentationConfig(BaseConfig):
             description="Number of data samples used for post-training optimization",
             default_value=300,
             min_value=1,
-            max_value=maxsize
+            max_value=maxsize,
         )
 
-        preset = selectable(default_value=POTQuantizationPreset.PERFORMANCE,
-                            header="Preset",
-                            description="Quantization preset that defines quantization scheme",
-                            editable=False,
-                            visible_in_ui=False)
+        preset = selectable(
+            default_value=POTQuantizationPreset.PERFORMANCE,
+            header="Preset",
+            description="Quantization preset that defines quantization scheme",
+            editable=False,
+            visible_in_ui=False,
+        )
 
     @attrs
     class __NNCFOptimization(BaseConfig.BaseNNCFOptimization):
@@ -130,21 +141,21 @@ class SegmentationConfig(BaseConfig):
             default_value=True,
             header="Enable quantization algorithm",
             description="Enable quantization algorithm",
-            affects_outcome_of=ModelLifecycle.TRAINING
+            affects_outcome_of=ModelLifecycle.TRAINING,
         )
 
         enable_pruning = configurable_boolean(
             default_value=False,
             header="Enable filter pruning algorithm",
             description="Enable filter pruning algorithm",
-            affects_outcome_of=ModelLifecycle.TRAINING
+            affects_outcome_of=ModelLifecycle.TRAINING,
         )
 
         pruning_supported = configurable_boolean(
             default_value=False,
             header="Whether filter pruning is supported",
             description="Whether filter pruning is supported",
-            affects_outcome_of=ModelLifecycle.TRAINING
+            affects_outcome_of=ModelLifecycle.TRAINING,
         )
 
         maximal_accuracy_degradation = configurable_float(
@@ -153,7 +164,7 @@ class SegmentationConfig(BaseConfig):
             max_value=100.0,
             header="Maximum accuracy degradation",
             description="The maximal allowed accuracy metric drop",
-            affects_outcome_of=ModelLifecycle.TRAINING
+            affects_outcome_of=ModelLifecycle.TRAINING,
         )
 
     learning_parameters = add_parameter_group(__LearningParameters)

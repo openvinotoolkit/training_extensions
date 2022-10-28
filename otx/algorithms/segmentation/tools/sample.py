@@ -20,30 +20,30 @@ import sys
 import cv2
 import numpy as np
 from mmcv.utils import get_logger
+
+from otx.algorithms.common.utils import get_task_class
 from otx.api.configuration.helper import create
+from otx.api.entities.annotation import (
+    Annotation,
+    AnnotationSceneEntity,
+    AnnotationSceneKind,
+)
+from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.datasets import DatasetEntity
+from otx.api.entities.image import Image
 from otx.api.entities.inference_parameters import InferenceParameters
-from otx.api.entities.label import Domain
+from otx.api.entities.label import Domain, LabelEntity
 from otx.api.entities.label_schema import LabelSchemaEntity
 from otx.api.entities.model import ModelEntity
 from otx.api.entities.model_template import parse_model_template
 from otx.api.entities.optimization_parameters import OptimizationParameters
 from otx.api.entities.resultset import ResultSetEntity
+from otx.api.entities.scored_label import ScoredLabel
+from otx.api.entities.shapes.polygon import Point, Polygon
 from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType
 from otx.api.usecases.tasks.interfaces.optimization_interface import OptimizationType
-from otx.algorithms.common.utils import get_task_class
-from otx.api.entities.annotation import (
-        Annotation,
-        AnnotationSceneEntity,
-        AnnotationSceneKind,
-    )
-from otx.api.entities.dataset_item import DatasetItemEntity
-from otx.api.entities.image import Image
-from otx.api.entities.label import LabelEntity
-from otx.api.entities.scored_label import ScoredLabel
-from otx.api.entities.shapes.polygon import Point, Polygon
 
 logger = get_logger(name="sample")
 
@@ -63,37 +63,37 @@ def load_test_dataset(data_type):
     """Load Sample dataset for detection."""
 
     def gen_circle_image(resolution):
-        w, h = resolution
-        image = np.full([h, w, 3], fill_value=128, dtype=np.uint8)
-        gt = np.full([h, w, 1], fill_value=0, dtype=np.uint8)
-        cv2.circle(image, (int(h / 2), int(w / 2)), 90, (0, 0, 255), -1)
-        cv2.circle(gt, (int(h / 2), int(w / 2)), 90, 1, -1)
-        return (image, gt)
+        width, height = resolution
+        image = np.full([height, width, 3], fill_value=128, dtype=np.uint8)
+        true_labels = np.full([height, width, 1], fill_value=0, dtype=np.uint8)
+        cv2.circle(image, (int(height / 2), int(width / 2)), 90, (0, 0, 255), -1)
+        cv2.circle(true_labels, (int(height / 2), int(width / 2)), 90, 1, -1)
+        return (image, true_labels)
 
     def gen_rect_image(resolution):
-        w, h = resolution
-        image = np.full([h, w, 3], fill_value=128, dtype=np.uint8)
-        gt = np.full([h, w, 1], fill_value=0, dtype=np.uint8)
-        cv2.rectangle(image, (int(h * 0.1), int(w * 0.1)), (int(h / 2), int(w / 2)), (0, 255, 0), -1)
-        cv2.rectangle(gt, (int(h * 0.1), int(w * 0.1)), (int(h / 2), int(w / 2)), 2, -1)
-        return (image, gt)
+        width, height = resolution
+        image = np.full([height, width, 3], fill_value=128, dtype=np.uint8)
+        true_labels = np.full([height, width, 1], fill_value=0, dtype=np.uint8)
+        cv2.rectangle(image, (int(height * 0.1), int(width * 0.1)), (int(height / 2), int(width / 2)), (0, 255, 0), -1)
+        cv2.rectangle(true_labels, (int(height * 0.1), int(width * 0.1)), (int(height / 2), int(width / 2)), 2, -1)
+        return (image, true_labels)
 
     labels = [
         LabelEntity(name="circle", domain=Domain.SEGMENTATION, id=1),  # OLD class
         LabelEntity(name="rect", domain=Domain.SEGMENTATION, id=2),
     ]
 
-    def get_image(type, subset, label_id):
+    def get_image(data_type, subset, label_id):
         ignored_labels = []
         if label_id == 1:
-            image, gt = gen_circle_image((640, 480))
-            if type == "new" and subset == Subset.TRAINING:
+            image, true_label = gen_circle_image((640, 480))
+            if data_type == "new" and subset == Subset.TRAINING:
                 ignored_labels = [LabelEntity(name="rect", domain=Domain.SEGMENTATION, id=2)]
         else:
-            image, gt = gen_rect_image((640, 480))
+            image, true_label = gen_rect_image((640, 480))
 
-        height, width = gt.shape[:2]
-        label_mask = gt == label_id
+        height, width = true_label.shape[:2]
+        label_mask = true_label == label_id
         label_index_map = label_mask.astype(np.uint8)
         contours, hierarchies = cv2.findContours(label_index_map, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
         for contour, hierarchy in zip(contours, hierarchies[0]):
@@ -162,8 +162,7 @@ def load_test_dataset(data_type):
     new = new_train + new_val
     if data_type == "old":
         return DatasetEntity(old * 3), [labels[0]]
-    else:
-        return DatasetEntity((old * 3 + new * 2)), labels
+    return DatasetEntity((old * 3 + new * 2)), labels
 
 
 # pylint: disable=too-many-locals, too-many-statements
@@ -307,7 +306,7 @@ def main(args):
             openvino_task.evaluate(resultset)
             logger.info(str(resultset.performance))
             pot_check = "PASSED"
-        except:
+        except Exception:  # pylint: disable=broad-except
             logger.warning("POT is not working..")
 
         nncf_check = "FAILED"
@@ -316,7 +315,7 @@ def main(args):
             task_impl_path = model_template.entrypoints.nncf
             nncf_task_cls = get_task_class(task_impl_path)
 
-            print('Create NNCF Task')
+            print("Create NNCF Task")
             environment.model = output_model
             nncf_task_impl_path = model_template.entrypoints.nncf
             nncf_task_cls = get_task_class(nncf_task_impl_path)
@@ -372,7 +371,7 @@ def main(args):
             nncf_openvino_task.evaluate(resultset)
             logger.info(str(resultset.performance))
             nncf_check = "PASSED"
-        except:
+        except Exception:  # pylint: disable=broad-except
             logger.warning("NNCF is not working")
 
         logger.info("train: PASSED")

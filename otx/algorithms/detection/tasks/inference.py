@@ -166,7 +166,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
 
     def unload(self):
         """Unload the task."""
-        self.finalize()
+        self._delete_scratch_space()
 
     @check_input_parameters_type()
     def export(self, export_type: ExportType, output_model: ModelEntity):

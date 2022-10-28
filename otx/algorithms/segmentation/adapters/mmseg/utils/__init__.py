@@ -10,13 +10,13 @@ from .config_utils import (
     prepare_for_training,
     set_hyperparams,
 )
+from .data_utils import load_dataset_items
 
 __all__ = [
-    "cluster_anchors",
     "patch_config",
     "patch_datasets",
     "patch_evaluation",
-    "patch_data_pipeline",
     "prepare_for_training",
     "set_hyperparams",
+    "load_dataset_items",
 ]

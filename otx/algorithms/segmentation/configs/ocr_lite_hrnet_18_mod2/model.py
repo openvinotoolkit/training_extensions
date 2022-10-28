@@ -21,31 +21,34 @@ _base_ = [
 ]
 
 model = dict(
-    type='ClassIncrSegmentor',
+    type="ClassIncrSegmentor",
     is_task_adapt=True,
     pretrained=None,
     decode_head=dict(
-        type='FCNHead',
+        type="FCNHead",
         in_channels=[40, 80, 160, 320],
         in_index=[0, 1, 2, 3],
-        input_transform='multiple_select',
+        input_transform="multiple_select",
         channels=40,
         kernel_size=1,
         num_convs=1,
         concat_input=False,
         dropout_ratio=-1,
         num_classes=2,
-        norm_cfg=dict(type='BN', requires_grad=True),
+        norm_cfg=dict(type="BN", requires_grad=True),
         align_corners=False,
         enable_aggregator=True,
         enable_out_norm=False,
         loss_decode=[
-            dict(type='CrossEntropyLoss',
-                 use_sigmoid=False,
-                 sampler=dict(type='MaxPoolingPixelSampler', ratio=0.25, p=1.7),
-                 loss_weight=1.0),
-        ]),
-    )
+            dict(
+                type="CrossEntropyLoss",
+                use_sigmoid=False,
+                sampler=dict(type="MaxPoolingPixelSampler", ratio=0.25, p=1.7),
+                loss_weight=1.0,
+            ),
+        ],
+    ),
+)
 
 load_from = "https://storage.openvinotoolkit.org/repositories/openvino_training_extensions\
 /models/custom_semantic_segmentation/litehrnet18_imagenet1k_rsc.pth"

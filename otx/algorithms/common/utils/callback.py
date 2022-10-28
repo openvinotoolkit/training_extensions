@@ -18,6 +18,7 @@ import time
 
 from otx.api.usecases.reporting.time_monitor_callback import TimeMonitorCallback
 
+
 class TrainingProgressCallback(TimeMonitorCallback):
     """TrainingProgressCallback class for time monitoring."""
 

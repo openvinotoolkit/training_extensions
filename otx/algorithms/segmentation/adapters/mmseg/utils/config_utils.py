@@ -235,10 +235,13 @@ def prepare_for_training(
     prepare_work_dir(config)
 
     config.data.val.otx_dataset = val_dataset
+    config.data.val.labels = val_dataset.get_labels()
     if "otx_dataset" in config.data.train:
         config.data.train.otx_dataset = train_dataset
+        config.data.train.labels = train_dataset.get_labels()
     else:
         config.data.train.dataset.otx_dataset = train_dataset
+        config.data.train.dataset.labels = train_dataset.get_labels()
 
     train_num_samples = len(train_dataset)
     patch_adaptive_repeat_dataset(config, train_num_samples)
@@ -324,6 +327,35 @@ def set_num_classes(config: Config, num_classes: int):
                 head.num_classes = num_classes
         elif isinstance(heads, dict):
             heads["num_classes"] = num_classes
+
+
+@check_input_parameters_type()
+def config_to_string(config: Union[Config, ConfigDict]) -> str:
+    """Convert a full mmsegmentation config to a string.
+
+    :param config: configuration object to convert
+    :return str: string representation of the configuration
+    """
+
+    config_copy = copy.deepcopy(config)
+    # Clean config up by removing dataset as this causes the pretty text parsing to fail.
+    config_copy.data.test.ote_dataset = None
+    config_copy.data.val.ote_dataset = None
+    if "ote_dataset" in config_copy.data.train:
+        config_copy.data.train.ote_dataset = None
+    else:
+        config_copy.data.train.dataset.ote_dataset = None
+    return Config(config_copy).pretty_text
+
+
+@check_input_parameters_type()
+def save_config_to_file(config: Union[Config, ConfigDict]):
+    """Dump the full config to a file. Filename is 'config.py', it is saved in the current work_dir."""
+
+    filepath = os.path.join(config.work_dir, "config.py")
+    config_string = config_to_string(config)
+    with open(filepath, "w", encoding="UTF-8") as f:
+        f.write(config_string)
 
 
 @check_input_parameters_type()

@@ -13,10 +13,12 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import yaml
 import importlib
 
+import yaml
+
 from otx.api.utils.argument_checks import YamlFilePathCheck, check_input_parameters_type
+
 
 @check_input_parameters_type({"path": YamlFilePathCheck})
 def load_template(path):
@@ -24,6 +26,7 @@ def load_template(path):
     with open(path, encoding="UTF-8") as f:
         template = yaml.safe_load(f)
     return template
+
 
 @check_input_parameters_type()
 def get_task_class(path: str):
