@@ -25,7 +25,7 @@ from mpa.utils.logger import get_logger
 logger = get_logger()
 
 
-@CLASSIFIERS.register_module()
+@CLASSIFIERS.register_module(force=True)
 class SAMClassifier(BaseClassifier):
     """SAM-enabled BaseClassifier."""
 
