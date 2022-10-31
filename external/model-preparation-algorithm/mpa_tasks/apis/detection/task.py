@@ -354,7 +354,9 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
                         pipeline_step.type = "LoadAnnotationFromOTEDataset"
                         pipeline_step.domain = domain
                         pipeline_step.min_size = cfg.pop("min_size", -1)
-                    if subset == "train" and pipeline_step.type == "Collect":
+                    if (subset == "train" and
+                        pipeline_step.type == "Collect" and
+                        cfg.type not in ["ImageTilingDataset"]):
                         pipeline_step = BaseTask._get_meta_keys(pipeline_step)
                 patch_color_conversion(cfg.pipeline)
 
