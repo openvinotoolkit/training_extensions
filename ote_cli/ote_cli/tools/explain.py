@@ -59,14 +59,12 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("template")
     parser.add_argument(
-        "-i",
-        "--input",
+        "--explain-data-root",
         required=True,
         help="Source of input data: images folder, image, webcam and video.",
     )
     parser.add_argument(
-        "-o",
-        "--output",
+        "--save-explanation-to",
         default="saliency_dump",
         help="Output path for explanation images.",
     )
@@ -125,21 +123,21 @@ def main():
     )
 
     task = task_class(task_environment=environment)
-    image_files = get_image_files(args.input)
+    image_files = get_image_files(args.explain_data_root)
 
     if args.explain_algorithm not in SUPPORTED_EXPLAIN_ALGORITHMS:
         raise NotImplementedError(f"{args.explain_algorithm} currently not supported. \
             Currently only supporting {SUPPORTED_EXPLAIN_ALGORITHMS}")
 
     if image_files is None:
-        raise ValueError(f"No image found in {args.input}!")
+        raise ValueError(f"No image found in {args.explain_data_root}!")
 
     dataset_class = get_dataset_class(template.task_type)
-    dataset = dataset_class(test_subset={"data_root": args.input})
+    dataset = dataset_class(test_subset={"data_root": args.explain_data_root})
     explain_dataset = dataset.get_subset(Subset.TESTING)
 
-    if not os.path.exists(args.output):
-        os.makedirs(args.output)
+    if not os.path.exists(args.save_explanation_to):
+        os.makedirs(args.save_explanation_to)
     
     start_time = time.perf_counter()
     saliency_maps = task.explain(
@@ -149,10 +147,10 @@ def main():
     elapsed_time = time.perf_counter() - start_time
     
     for img, saliency_map, (_, fname) in zip(explain_dataset, saliency_maps, image_files):
-        save_saliency_output(img.numpy, saliency_map.numpy, args.output, \
+        save_saliency_output(img.numpy, saliency_map.numpy, args.save_explanation_to, \
             os.path.splitext(fname)[0], weight=args.weight)
 
-    print(f"saliency maps saved to {args.output}...")
+    print(f"saliency maps saved to {args.save_explanation_to}...")
     print(f"total elapsed_time: {elapsed_time:.3f} for {len(image_files)} images")
 
 

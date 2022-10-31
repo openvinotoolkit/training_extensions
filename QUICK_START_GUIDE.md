@@ -472,14 +472,14 @@ positional arguments:
 
 optional arguments:
   -h, --help            show this help message and exit
-  -i INPUT, --input INPUT
-                        Source of input data: images folder or single image
-  -o OUTPUT, --output OUTPUT
+  --explain-data-root EXPLAIN_DATA_ROOT
+                        paths to explain data roots
+  --save-explanation-to SAVE_EXPLANATION_TO
                         Root path for image dump. Will save saliency map
-                        or overlay images to this folder
+                        and overlay images to this folder
   --load-weights WEIGHT_PATHS
-  --xai-model XAI_MODEL_NAME
-                        xai model name. Currently only support EigenCAM
+  --explain-algorithm EXPLAIN_ALGORITHM
+                        explain algirhtm name. Currently only support EigenCAM and CAM
 ```
 
 ---
