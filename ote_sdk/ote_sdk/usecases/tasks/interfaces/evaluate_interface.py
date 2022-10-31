@@ -27,6 +27,8 @@ class IEvaluationTask(metaclass=abc.ABCMeta):
         The performance will be stored directly to output_resultset.performance
 
         :param output_resultset: The set of results which must be evaluated.
-        :param evaluation_metric: the evaluation metric used to compute the performance
+        :param evaluatio
+        n_metric: the evaluation metric used to compute the performance
         """
+        
         raise NotImplementedError

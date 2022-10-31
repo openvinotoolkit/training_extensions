@@ -56,4 +56,5 @@ class IRawInference(metaclass=abc.ABCMeta):
         :param input_tensors: Dictionary containing the input tensors.
         :param output_tensors: Dictionary to be filled by the task with the output tensors.
         """
+        
         raise NotImplementedError

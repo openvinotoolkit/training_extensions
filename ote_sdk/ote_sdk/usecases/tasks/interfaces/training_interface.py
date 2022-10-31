@@ -27,6 +27,7 @@ class ITrainingTask(metaclass=abc.ABCMeta):
 
         :param output_model: Output model where the weights should be stored
         """
+
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -51,6 +52,7 @@ class ITrainingTask(metaclass=abc.ABCMeta):
         :param output_model: Output model where the weights should be stored
         :param train_parameters: Training parameters
         """
+
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -59,4 +61,5 @@ class ITrainingTask(metaclass=abc.ABCMeta):
         Cancels the currently running training process.
         If training is not running, do nothing.
         """
+        
         raise NotImplementedError
