@@ -1,6 +1,6 @@
 """Collection of utils for task implementation in Detection Task."""
 
-# Copyright (C) 2021 Intel Corporation
+# Copyright (C) 2022 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ from mmcv import Config, ConfigDict
 from mmdet.models.detectors import BaseDetector
 from mpa.utils.logger import get_logger
 
+from otx.algorithms.common.adapters.mmcv.config_utils import remove_from_config
 from otx.algorithms.detection.configs.base import DetectionConfig
 from otx.algorithms.detection.utils.data import (
     format_list_to_str,
@@ -331,18 +332,6 @@ def patch_datasets(config: Config, domain: Domain):
                     pipeline_step.domain = domain
                     pipeline_step.min_size = cfg.pop("min_size", -1)
             patch_color_conversion(cfg.pipeline)
-
-
-@check_input_parameters_type()
-def remove_from_config(config: Union[Config, ConfigDict], key: str):
-    """Update & Remove configs."""
-    if key in config:
-        if isinstance(config, Config):
-            del config._cfg_dict[key]  # pylint: disable=protected-access
-        elif isinstance(config, ConfigDict):
-            del config[key]
-        else:
-            raise ValueError(f"Unknown config type {type(config)}")
 
 
 @check_input_parameters_type({"dataset": DatasetParamTypeCheck})

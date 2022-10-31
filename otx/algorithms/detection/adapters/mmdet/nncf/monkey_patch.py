@@ -14,7 +14,7 @@ from mmdet.models.detectors.base import BaseDetector
 from mmdet.models.roi_heads.base_roi_head import BaseRoIHead
 from mmdet.models.roi_heads.roi_extractors import SingleRoIExtractor
 
-from .utils import is_nncf_enabled, no_nncf_trace
+from otx.algorithms.common.adapters.nncf.utils import is_nncf_enabled, no_nncf_trace
 
 
 #  from nncf.torch.dynamic_graph.context import get_current_context

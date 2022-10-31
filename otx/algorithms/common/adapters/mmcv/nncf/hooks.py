@@ -1,12 +1,12 @@
-# Copyright (C) 2021 Intel Corporation
+# Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-from mmcv.runner.hooks.hook import HOOKS, Hook
+
 from mmcv.runner.dist_utils import master_only
+from mmcv.runner.hooks.hook import HOOKS, Hook
 
 
-# Argument 'force' used to work with mmdetection and mmsegmentation repositories in one environment.
-@HOOKS.register_module(force=True)
+@HOOKS.register_module()
 class CompressionHook(Hook):
     def __init__(self, compression_ctrl=None):
         self.compression_ctrl = compression_ctrl
@@ -24,7 +24,7 @@ class CompressionHook(Hook):
             runner.logger.info(self.compression_ctrl.statistics().to_str())
 
 
-@HOOKS.register_module(force=True)
+@HOOKS.register_module()
 class CheckpointHookBeforeTraining(Hook):
     """Save checkpoints before training.
 
@@ -36,18 +36,19 @@ class CheckpointHookBeforeTraining(Hook):
             specified, ``runner.work_dir`` will be used by default.
     """
 
-    def __init__(self,
-                 save_optimizer=True,
-                 out_dir=None,
-                 **kwargs):
+    def __init__(self, save_optimizer=True, out_dir=None, **kwargs):
         self.save_optimizer = save_optimizer
         self.out_dir = out_dir
         self.args = kwargs
 
     @master_only
     def before_run(self, runner):
-        runner.logger.info(f'Saving checkpoint before training')
+        runner.logger.info(f"Saving checkpoint before training")
         if not self.out_dir:
             self.out_dir = runner.work_dir
         runner.save_checkpoint(
-            self.out_dir, filename_tmpl='before_training.pth', save_optimizer=self.save_optimizer, **self.args)
+            self.out_dir,
+            filename_tmpl="before_training.pth",
+            save_optimizer=self.save_optimizer,
+            **self.args,
+        )

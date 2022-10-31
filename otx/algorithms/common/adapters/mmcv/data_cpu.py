@@ -7,6 +7,7 @@
 # Copyright (C) 2020-2021 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
+
 import torch
 from mmcv.parallel.data_container import DataContainer
 from mmcv.parallel import MMDataParallel
@@ -73,5 +74,3 @@ class MMDataCPU(MMDataParallel):
     def forward(self, *inputs, **kwargs):
         inputs, kwargs = self.scatter(inputs, kwargs)
         return self.module(*inputs[0], **kwargs[0])
-
-

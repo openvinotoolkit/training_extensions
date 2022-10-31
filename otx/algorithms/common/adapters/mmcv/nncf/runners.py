@@ -1,6 +1,7 @@
-# Copyright (C) 2021 Intel Corporation
+# Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
+
 import time
 import copy
 
@@ -8,7 +9,7 @@ from mmcv.runner import EpochBasedRunner
 from mmcv.runner import RUNNERS
 from mmcv.runner.utils import get_host_info
 
-from .utils import check_nncf_is_enabled
+from otx.algorithms.common.adapters.nncf.utils import check_nncf_is_enabled
 
 
 # Try monkey patching to steal validation result
@@ -25,7 +26,7 @@ mmcv.runner.EvalHook.evaluate = new_evaluate
 @RUNNERS.register_module()
 class AccuracyAwareRunner(EpochBasedRunner):
     """
-    An mmdet training runner to be used with NNCF-based accuracy-aware training.
+    An mmcv training runner to be used with NNCF-based accuracy-aware training.
     Inherited from the standard EpochBasedRunner with the overridden "run" method.
     This runner does not use the "workflow" and "max_epochs" parameters that are
     used by the EpochBasedRunner since the training is controlled by NNCF's
@@ -98,4 +99,3 @@ class AccuracyAwareRunner(EpochBasedRunner):
 
     def configure_optimizers_fn(self):
         return self.optimizer, None
-
