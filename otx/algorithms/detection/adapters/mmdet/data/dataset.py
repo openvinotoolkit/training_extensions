@@ -14,16 +14,19 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+from collections import OrderedDict
 from copy import copy
 from typing import Any, Dict, List, Sequence
 
 import numpy as np
-from mmdet.core import PolygonMasks
+from mmcv.utils import print_log
+from mmdet.core import PolygonMasks, eval_map, eval_recalls
 from mmdet.datasets.builder import DATASETS
 from mmdet.datasets.custom import CustomDataset
 from mmdet.datasets.pipelines import Compose
 
 from otx.algorithms.common.utils.data import get_old_new_img_indices
+from otx.algorithms.detection.adapters.mmdet.evaluation import CustomMAE, eval_segm
 from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label import Domain, LabelEntity
@@ -68,14 +71,27 @@ def get_annotation_mmdet_format(
             continue
 
         class_indices = [
-            label_idx[label.id] for label in annotation.get_labels(include_empty=False) if label.domain == domain
+            label_idx[label.id]
+            for label in annotation.get_labels(include_empty=False)
+            if label.domain == domain
         ]
 
         n = len(class_indices)
-        gt_bboxes.extend([[box.x1 * width, box.y1 * height, box.x2 * width, box.y2 * height] for _ in range(n)])
+        gt_bboxes.extend(
+            [
+                [box.x1 * width, box.y1 * height, box.x2 * width, box.y2 * height]
+                for _ in range(n)
+            ]
+        )
         if domain != Domain.DETECTION:
             polygon = ShapeFactory.shape_as_polygon(annotation.shape)
-            polygon = np.array([p for point in polygon.points for p in [point.x * width, point.y * height]])
+            polygon = np.array(
+                [
+                    p
+                    for point in polygon.points
+                    for p in [point.x * width, point.y * height]
+                ]
+            )
             gt_polygons.extend([[polygon] for _ in range(n)])
         gt_labels.extend(class_indices)
 
@@ -83,7 +99,9 @@ def get_annotation_mmdet_format(
         ann_info = dict(
             bboxes=np.array(gt_bboxes, dtype=np.float32).reshape(-1, 4),
             labels=np.array(gt_labels, dtype=int),
-            masks=PolygonMasks(gt_polygons, height=height, width=width) if gt_polygons else [],
+            masks=PolygonMasks(gt_polygons, height=height, width=width)
+            if gt_polygons
+            else [],
         )
     else:
         ann_info = dict(
@@ -134,7 +152,9 @@ class OTXDataset(CustomDataset):
 
             dataset = self.otx_dataset
             item = dataset[index]
-            ignored_labels = np.array([self.label_idx[lbs.id] for lbs in item.ignored_labels])
+            ignored_labels = np.array(
+                [self.label_idx[lbs.id] for lbs in item.ignored_labels]
+            )
 
             height, width = item.height, item.width
 
@@ -174,7 +194,9 @@ class OTXDataset(CustomDataset):
         # small image size, since otherwise reading the whole dataset during initialization will be required.
         self.data_infos = OTXDataset._DataInfoProxy(otx_dataset, labels)
 
-        self.proposals = None  # Attribute expected by mmdet but not used for OTX datasets
+        self.proposals = (
+            None  # Attribute expected by mmdet but not used for OTX datasets
+        )
 
         if not test_mode:
             self._set_group_flag()
@@ -238,6 +260,124 @@ class OTXDataset(CustomDataset):
         labels = self.labels
         return get_annotation_mmdet_format(dataset_item, labels, self.domain)
 
+    def evaluate(
+        self,
+        results,
+        metric="mAP",
+        logger=None,
+        proposal_nums=(100, 300, 1000),
+        iou_thr=0.5,
+        scale_ranges=None,
+    ):
+        """Evaluate the dataset.
+
+        Args:
+            results (list): Testing results of the dataset.
+            metric (str | list[str]): Metrics to be evaluated.
+            logger (logging.Logger | None | str): Logger used for printing
+                related information during evaluation. Default: None.
+            proposal_nums (Sequence[int]): Proposal number used for evaluating
+                recalls, such as recall@100, recall@1000.
+                Default: (100, 300, 1000).
+            iou_thr (float | list[float]): IoU threshold. Default: 0.5.
+            scale_ranges (list[tuple] | None): Scale ranges for evaluating mAP.
+                Default: None.
+        """
+        metrics = metric if isinstance(metric, list) else [metric]
+        allowed_metrics = ["mAP", "recall", "mIoU", "mae", "mae%"]
+        eval_results = OrderedDict()
+        for metric in metrics:
+            if metric not in allowed_metrics:
+                raise KeyError(f"metric {metric} is not supported")
+            annotations = [self.get_ann_info(i) for i in range(len(self))]
+            iou_thrs = [iou_thr] if isinstance(iou_thr, float) else iou_thr
+            if metric == "mAP":
+                assert isinstance(iou_thrs, list)
+                mean_aps = []
+                for iou_thr in iou_thrs:
+                    print_log(f'\n{"-" * 15}iou_thr: {iou_thr}{"-" * 15}')
+                    if isinstance(results[0], tuple):
+                        mean_ap, _ = eval_segm(
+                            results,
+                            annotations,
+                            iou_thr=iou_thr,
+                            dataset=self.CLASSES,
+                            logger=logger,
+                            metric=metric,
+                        )
+                    else:
+                        mean_ap, _ = eval_map(
+                            results,
+                            annotations,
+                            scale_ranges=scale_ranges,
+                            iou_thr=iou_thr,
+                            dataset=self.CLASSES,
+                            logger=logger,
+                        )
+                    mean_aps.append(mean_ap)
+                    eval_results[f"AP{int(iou_thr * 100):02d}"] = round(mean_ap, 3)
+                eval_results["mAP"] = sum(mean_aps) / len(mean_aps)
+            elif metric == "recall":
+                gt_bboxes = [ann["bboxes"] for ann in annotations]
+                recalls = eval_recalls(
+                    gt_bboxes, results, proposal_nums, iou_thr, logger=logger
+                )
+                for i, num in enumerate(proposal_nums):
+                    for j, iou in enumerate(iou_thrs):
+                        eval_results[f"recall@{num}@{iou}"] = recalls[i, j]
+                if recalls.shape[1] > 1:
+                    ar = recalls.mean(axis=1)
+                    for i, num in enumerate(proposal_nums):
+                        eval_results[f"AR@{num}"] = ar[i]
+            elif metric == "mIoU":
+                assert isinstance(results[0], tuple), "Result format not supported"
+                mean_mious = []
+                for iou_thr in iou_thrs:
+                    print_log(f'\n{"-" * 15}iou_thr: {iou_thr}{"-" * 15}')
+                    mean_iou, _ = eval_segm(
+                        results,
+                        annotations,
+                        iou_thr=iou_thr,
+                        dataset=self.CLASSES,
+                        logger=logger,
+                        metric=metric,
+                    )
+                    mean_mious.append(mean_iou)
+                    eval_results[f"mIoU{int(iou_thr * 100):02d}"] = round(mean_iou, 3)
+                eval_results["mIoU"] = sum(mean_mious) / len(mean_mious)
+            elif metric == "mae":
+                mae = CustomMAE(
+                    self.otx_dataset,
+                    results,
+                    annotations,
+                    vary_confidence_threshold=True,
+                    labels=self.CLASSES,
+                )
+                eval_results["MAE best score"] = float(f"{mae.mae.value:.3f}")
+                eval_results["MAE conf thres"] = float(
+                    f"{mae.best_confidence_threshold.value:.3f}"
+                )
+                print(f"MAE best score = {mae.mae.value:.3f}")
+                print(f"MAE conf thres = {mae.best_confidence_threshold.value:.3f}")
+                for class_name, score_metric in mae.mae_per_label.items():
+                    eval_results[f"MAE:{class_name}"] = float(
+                        f"{score_metric.value:.3f}"
+                    )
+                    print(f"MAE:{class_name} = {score_metric.value:.3f}")
+
+                eval_results["Relative MAE best score"] = float(
+                    f"{mae.relative_mae.value:.3f}"
+                )
+                print(f"Relative MAE best score = {mae.relative_mae.value:.3f}")
+                for class_name, score_metric in mae.relative_mae_per_label.items():
+                    eval_results[f"Relative MAE:{class_name}"] = float(
+                        f"{score_metric.value:.3f}"
+                    )
+                    print(f"Relative MAE:{class_name} = {score_metric.value:.3f}")
+                eval_results["mae"] = eval_results["MAE best score"]
+                eval_results["mae%"] = eval_results["Relative MAE best score"]
+        return eval_results
+
 
 @DATASETS.register_module()
 class MPADetDataset(OTXDataset):
@@ -251,7 +391,9 @@ class MPADetDataset(OTXDataset):
 
         test_mode = kwargs.get("test_mode", False)
         if test_mode is False:
-            self.img_indices = get_old_new_img_indices(self.labels, new_classes, self.otx_dataset)
+            self.img_indices = get_old_new_img_indices(
+                self.labels, new_classes, self.otx_dataset
+            )
 
     def get_cat_ids(self, idx):
         """Get category ids by index.

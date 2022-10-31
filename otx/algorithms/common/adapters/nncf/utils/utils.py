@@ -78,6 +78,18 @@ def no_nncf_trace():
     return nullcontext()
 
 
+@contextmanager
+def nncf_trace():
+    from nncf.torch.dynamic_graph.context import get_current_context
+    ctx = get_current_context()
+    if ctx is not None and not ctx.is_tracing:
+        ctx.enable_tracing()
+        yield
+        ctx.disable_tracing()
+    else:
+        yield
+
+
 def is_in_nncf_tracing():
     if not is_nncf_enabled():
         return False

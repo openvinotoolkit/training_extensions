@@ -6,44 +6,85 @@ from contextlib import contextmanager
 from functools import partial, partialmethod
 
 from mmdet import core
+from mmdet.core.bbox.assigners.base_assigner import BaseAssigner
+from mmdet.core.bbox.builder import BBOX_ASSIGNERS, BBOX_SAMPLERS
 from mmdet.core.bbox.samplers import BaseSampler
 from mmdet.models.builder import HEADS
 from mmdet.models.dense_heads.base_dense_head import BaseDenseHead
 from mmdet.models.dense_heads.base_mask_head import BaseMaskHead
 from mmdet.models.detectors.base import BaseDetector
 from mmdet.models.roi_heads.base_roi_head import BaseRoIHead
+from mmdet.models.roi_heads.mask_heads.fcn_mask_head import FCNMaskHead
 from mmdet.models.roi_heads.roi_extractors import SingleRoIExtractor
 
-from otx.algorithms.common.adapters.nncf.utils import is_nncf_enabled, no_nncf_trace
+from otx.algorithms.common.adapters.nncf.utils import (
+    is_nncf_enabled,
+    nncf_trace,
+    no_nncf_trace,
+)
 
 
 #  from nncf.torch.dynamic_graph.context import get_current_context
-#  print(get_current_context().is_tracing)
+#  if get_current_context() is not None and get_current_context().is_tracing:
+#      __import__('ipdb').set_trace()
 
 
-def nncf_wrapper(self, *args, **kwargs):
+def no_nncf_trace_wrapper(*args, **kwargs):
     """
-    A wrapper function for nncf no tracing.
+    A wrapper function not to trace in NNCF.
     """
 
     in_fn = kwargs.pop("in_fn")
     with no_nncf_trace():
-        return in_fn(self, *args, **kwargs)
+        return in_fn(*args, **kwargs)
+
+
+def nncf_trace_wrapper(*args, **kwargs):
+    """
+    A wrapper function to trace in NNCF.
+    """
+
+    in_fn = kwargs.pop("in_fn")
+    with nncf_trace():
+        return in_fn(*args, **kwargs)
+
+
+def conditioned_wrapper(target_cls, wrapper, methods, subclasses=(object,)):
+    """
+    A function to wrap all the given methods under given subclasses.
+    """
+
+    if issubclass(target_cls, subclasses):
+        for func_name in methods:
+            func = getattr(target_cls, func_name, None)
+            if func is not None and "_partialmethod" not in func.__dict__:
+                #  print(target_cls, func_name)
+                setattr(target_cls, func_name, partialmethod(wrapper, in_fn=func))
 
 
 def wrap_mmdet_head(head_cls):
-    """
-    A function to wrap all the possible mmdet heads.
-    """
-    TARGET_CLS = (BaseDenseHead, BaseMaskHead, BaseRoIHead)
-    TARGET_FNS = ("loss", "onnx_export", "get_bboxes")
+    TARGET_CLS = (BaseDenseHead, BaseMaskHead, BaseRoIHead, FCNMaskHead)
+    TARGET_FNS = ("loss", "onnx_export", "get_bboxes", "get_seg_masks")
 
-    if issubclass(head_cls, TARGET_CLS):
-        for func_name in TARGET_FNS:
-            func = getattr(head_cls, func_name, None)
-            if func is not None and "_partialmethod" not in func.__dict__:
-                #  print(head_cls, func_name)
-                setattr(head_cls, func_name, partialmethod(nncf_wrapper, in_fn=func))
+    conditioned_wrapper(head_cls, no_nncf_trace_wrapper, TARGET_FNS, TARGET_CLS)
+    # 'onnx_export' method calls 'forward' method which need to be traced
+    conditioned_wrapper(head_cls, nncf_trace_wrapper, ("forward",), TARGET_CLS)
+
+
+def wrap_mmdet_bbox_assigner(bbox_assigner_cls):
+    TARGET_CLS = (BaseAssigner,)
+    TARGET_FNS = ("assign",)
+
+    conditioned_wrapper(
+        bbox_assigner_cls, no_nncf_trace_wrapper, TARGET_FNS, TARGET_CLS
+    )
+
+
+def wrap_mmdet_sampler(sampler_cls):
+    TARGET_CLS = (BaseSampler,)
+    TARGET_FNS = ("sample",)
+
+    conditioned_wrapper(sampler_cls, no_nncf_trace_wrapper, TARGET_FNS, TARGET_CLS)
 
 
 def wrap_register_module(self, *args, **kwargs):
@@ -54,6 +95,8 @@ def wrap_register_module(self, *args, **kwargs):
     in_fn = kwargs.pop("in_fn")
     module = kwargs["module"]
     wrap_mmdet_head(module)
+    wrap_mmdet_bbox_assigner(module)
+    wrap_mmdet_sampler(module)
     return in_fn(*args, **kwargs)
 
 
@@ -75,6 +118,7 @@ def nncf_trace_context(self, img_metas):
 
     def forward_nncf_trace(self, img, img_metas, **kwargs):
         return self.onnx_export(img[0], img_metas[0])
+        #  return self.simple_test(img[0], img_metas[0])
 
     # onnx_export in mmdet head has a bug with cuda
     self.device_backup = next(self.parameters()).device
@@ -95,27 +139,46 @@ def nncf_trace_context(self, img_metas):
 BaseDetector.nncf_trace_context = nncf_trace_context
 
 
-# wrap mmdet defined heads
+# for mmdet defined heads
 for head_cls in [BaseDenseHead, BaseMaskHead, BaseRoIHead] + list(
     HEADS.module_dict.values()
 ):
     wrap_mmdet_head(head_cls)
 
 
-# wrap register_module for mmdet's HEAD register
+# for custom defined heads
 HEADS._register_module = partialmethod(
     wrap_register_module, in_fn=HEADS._register_module
 ).__get__(HEADS)
 
 
+# for mmdet defined bbox assigners
+for bbox_assigner_cls in [BaseAssigner] + list(BBOX_ASSIGNERS.module_dict.values()):
+    wrap_mmdet_bbox_assigner(bbox_assigner_cls)
+
+
+# for custom defined bbox assigners
+BBOX_ASSIGNERS._register_module = partialmethod(
+    wrap_register_module, in_fn=BBOX_ASSIGNERS._register_module
+).__get__(BBOX_ASSIGNERS)
+
+
+# for mmdet defined samplers
 # NNCF can not trace this part with torch older 1.11.0
-BaseSampler.sample = partialmethod(nncf_wrapper, in_fn=BaseSampler.sample)
+for sampler_cls in [BaseSampler] + list(BBOX_SAMPLERS.module_dict.values()):
+    wrap_mmdet_sampler(sampler_cls)
 
 
-core.bbox2result = partial(nncf_wrapper, in_fn=core.bbox2result)
-core.bbox2roi = partial(nncf_wrapper, in_fn=core.bbox2roi)
+# for custom defined samplers
+BBOX_SAMPLERS._register_module = partialmethod(
+    wrap_register_module, in_fn=BBOX_SAMPLERS._register_module
+).__get__(BBOX_SAMPLERS)
+
+
+core.bbox2result = partial(no_nncf_trace_wrapper, in_fn=core.bbox2result)
+core.bbox2roi = partial(no_nncf_trace_wrapper, in_fn=core.bbox2roi)
 
 
 SingleRoIExtractor.map_roi_levels = partialmethod(
-    nncf_wrapper, in_fn=SingleRoIExtractor.map_roi_levels
+    no_nncf_trace_wrapper, in_fn=SingleRoIExtractor.map_roi_levels
 )
