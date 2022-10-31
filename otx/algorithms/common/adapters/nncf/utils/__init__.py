@@ -8,6 +8,7 @@ from .utils import (
     get_nncf_version,
     load_checkpoint,
     no_nncf_trace,
+    nncf_trace,
     is_in_nncf_tracing,
     is_accuracy_aware_training_set,
 )
@@ -18,6 +19,7 @@ __all__ = [
     "get_nncf_version",
     "load_checkpoint",
     "no_nncf_trace",
+    "nncf_trace",
     "is_in_nncf_tracing",
     "is_accuracy_aware_training_set",
 ]
