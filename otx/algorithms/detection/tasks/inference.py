@@ -33,6 +33,7 @@ from otx.algorithms.detection.adapters.mmdet.utils import (
     patch_datasets,
     patch_evaluation,
 )
+from otx.algorithms.common.adapters.mmcv.config_utils import remove_from_config
 from otx.algorithms.detection.configs.base import DetectionConfig
 from otx.api.entities.annotation import Annotation
 from otx.api.entities.datasets import DatasetEntity

@@ -1,4 +1,4 @@
-# Copyright (C) 2020 Intel Corporation
+# Copyright (C) 2022 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,8 +18,9 @@ import torch
 from mmcv.parallel import collate, scatter
 
 from mmdet.datasets.pipelines import Compose
-from ..data.data_cpu import scatter_cpu
 from mmdet.apis.inference import LoadImage
+
+from otx.algorithms.common.adapters.mmcv.data_cpu import scatter_cpu
 
 
 def get_fake_input(cfg, orig_img_shape=(128, 128, 3), device='cuda'):

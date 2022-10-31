@@ -30,15 +30,12 @@ from mmdet.models import build_detector
 from mpa.utils.config_utils import remove_custom_hook
 from mpa.utils.logger import get_logger
 
-from otx.algorithms.detection.adapters.mmdet.nncf import (
+from otx.algorithms.common.adapters.nncf import (
     check_nncf_is_enabled,
     is_accuracy_aware_training_set,
     is_state_nncf,
-    wrap_nncf_model,
 )
-from otx.algorithms.detection.adapters.mmdet.nncf.config import compose_nncf_config
-from otx.algorithms.detection.adapters.mmdet.nncf.utils import build_val_dataloader
-from otx.algorithms.detection.adapters.mmdet.utils.fake_input import get_fake_input
+from otx.algorithms.common.adapters.nncf.config import compose_nncf_config
 from otx.algorithms.common.adapters.mmcv.hooks import OTXLoggerHook
 from otx.algorithms.common.adapters.mmcv.utils import remove_from_config
 from otx.algorithms.common.utils.callback import OptimizationProgressCallback
@@ -46,6 +43,13 @@ from otx.algorithms.detection.adapters.mmdet.utils.config_utils import (
     patch_config,
     prepare_for_training,
     set_hyperparams,
+)
+from otx.algorithms.detection.adapters.mmdet.nncf import (
+    wrap_nncf_model,
+)
+from otx.algorithms.detection.adapters.mmdet.nncf.utils import (
+    build_val_dataloader,
+    get_fake_input,
 )
 from otx.algorithms.detection.configs.base import DetectionConfig
 from otx.api.configuration import cfg_helper
