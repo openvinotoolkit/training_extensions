@@ -88,9 +88,10 @@ class OpenVINOClassificationInferencer(BaseInferencer):
         weight_file: Union[str, bytes, None] = None,
         device: str = "CPU",
         num_requests: int = 1,
+        explainer: str = None,
     ):
         """
-        Inferencer implementation for OTEDetection using OpenVINO backend.
+        Inferencer implementation for OTEClassification using OpenVINO backend.
         :param model: Path to model to load, `.xml`, `.bin` or `.onnx` file.
         :param hparams: Hyper parameters that the model should use.
         :param num_requests: Maximum number of requests that the inferencer can make.
@@ -106,14 +107,13 @@ class OpenVINOClassificationInferencer(BaseInferencer):
             multihead_class_info = get_multihead_class_info(label_schema)
 
         self.label_schema = label_schema
-
         model_adapter = OpenvinoAdapter(create_core(), model_file, weight_file,
                                         device=device, max_num_requests=num_requests)
         self.configuration = {'multilabel': multilabel, 'hierarchical': hierarchical,
                               'multihead_class_info': multihead_class_info}
         self.model = Model.create_model("ote_classification", model_adapter, self.configuration, preload=True)
-
         self.converter = ClassificationToAnnotationConverter(self.label_schema)
+        self.explainer = explainer
 
     @check_input_parameters_type()
     def pre_process(self, image: np.ndarray) -> Tuple[Dict[str, np.ndarray], Dict[str, Any]]:
@@ -131,12 +131,15 @@ class OpenVINOClassificationInferencer(BaseInferencer):
         image, metadata = self.pre_process(image)
         raw_predictions = self.forward(image)
         predictions = self.post_process(raw_predictions, metadata)
-        actmap, repr_vectors, act_score = self.model.postprocess_aux_outputs(raw_predictions, metadata)
+        actmap, repr_vectors, act_score = self.model.postprocess_aux_outputs(
+            raw_predictions, metadata, explainer=self.explainer
+        )
 
         return predictions, actmap, repr_vectors, act_score
 
     @check_input_parameters_type()
     def forward(self, inputs: Dict[str, np.ndarray]) -> Dict[str, np.ndarray]:
+
         return self.model.infer_sync(inputs)
 
 

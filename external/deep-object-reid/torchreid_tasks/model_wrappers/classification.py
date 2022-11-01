@@ -14,6 +14,7 @@
 
 import cv2
 import numpy as np
+import torch
 from typing import Any, Dict, Iterable, Union
 from ote_sdk.utils.argument_checks import check_input_parameters_type
 
@@ -90,17 +91,23 @@ class OteClassification(Classification):
         return get_multiclass_predictions(logits)
 
     @check_input_parameters_type()
-    def postprocess_aux_outputs(self, outputs: Dict[str, np.ndarray], metadata: Dict[str, Any]):
-        actmap = get_actmap(outputs['saliency_map'][0], (metadata['original_shape'][1], metadata['original_shape'][0]))
-        repr_vector = outputs['feature_vector'].reshape(-1)
-
-        logits = outputs[self.out_layer_name].squeeze()
-
+    def postprocess_aux_outputs(
+        self,
+        predictions: Dict[str, np.ndarray],
+        metadata: Dict[str, Any],
+        explainer: str = None,
+    ):
+        actmap = get_actmap(
+            predictions['saliency_map'][0],
+            (metadata['original_shape'][1], metadata['original_shape'][0]),
+            explainer=explainer,
+        )
+        repr_vector = predictions['feature_vector'].reshape(-1)
+        logits = predictions[self.out_layer_name].squeeze()
         if self.multilabel:
             probs = sigmoid_numpy(logits)
         else:
             probs = softmax_numpy(logits)
-
         act_score = float(np.max(probs) - np.min(probs))
 
         return actmap, repr_vector, act_score
@@ -108,11 +115,62 @@ class OteClassification(Classification):
 
 @check_input_parameters_type()
 def get_actmap(features: Union[np.ndarray, Iterable, int, float],
-               output_res: Union[tuple, list]):
-    am = cv2.resize(features, output_res)
+               output_res: Union[tuple, list],
+               explainer: str = None):
+    if explainer is None:
+        am = features
+    else:
+        am = torch.Tensor(am)
+        am = am.unsqueeze(0).unsqueeze(0).unsqueeze(0)
+        if explainer.lower() == 'eigencam':
+            am = eigen_cam(features)
+        elif explainer.lower() == 'cam':
+            am = cam(features)
+        else:
+            raise NotImplementedError(f"explain algorithm {explainer} not supported!")
+        am = am.squeeze(0).squeeze(0)
+        am = am.numpy().astype(np.uint8)
+
+    am = cv2.resize(am, output_res)
     am = cv2.applyColorMap(am, cv2.COLORMAP_JET)
     am = cv2.cvtColor(am, cv2.COLOR_BGR2RGB)
     return am
+
+
+@check_input_parameters_type()
+def eigen_cam(x: torch.Tensor) -> torch.Tensor:
+    bs, c, h, w = x.size()
+    reshaped_fmap = x.reshape((bs, c, h * w)).transpose(1, 2)
+    reshaped_fmap = reshaped_fmap - reshaped_fmap.mean(1)[:, None, :]
+    U, S, V = torch.linalg.svd(reshaped_fmap, full_matrices=True)
+    saliency_map = (reshaped_fmap @ V[:, 0][:, :, None]).squeeze(-1)
+    max_values, _ = torch.max(saliency_map, -1)
+    min_values, _ = torch.min(saliency_map, -1)
+    saliency_map = (
+        255
+        * (saliency_map - min_values[:, None])
+        / ((max_values - min_values + 1e-12)[:, None])
+    )
+    saliency_map = saliency_map.reshape((bs, h, w))
+    saliency_map = saliency_map.to(torch.uint8)
+    return saliency_map
+
+
+@check_input_parameters_type()
+def cam(feature_map: torch.Tensor) -> torch.Tensor:
+    bs, c, h, w = feature_map.size()
+    activation_map = torch.mean(feature_map, dim=1)
+    activation_map = activation_map.reshape((bs, h * w))
+    max_values, _ = torch.max(activation_map, -1)
+    min_values, _ = torch.min(activation_map, -1)
+    activation_map = (
+        255
+        * (activation_map - min_values[:, None])
+        / (max_values - min_values + 1e-12)[:, None]
+    )
+    activation_map = activation_map.reshape((bs, h, w))
+    activation_map = activation_map.to(torch.uint8)
+    return activation_map
 
 
 @check_input_parameters_type()
