@@ -1,0 +1,39 @@
+model:
+  name: "mobilenetv3_large"
+  type: "classification"
+  pretrained: True
+  feature_dim: 1280
+  dropout_cls:
+    p: 0.2
+    dist: "bernoulli"
+
+loss:
+  name: "am_softmax"
+  softmax:
+    s: 1.0
+    compute_s: False
+
+sampler:
+  train_sampler: "RandomSampler"
+
+train:
+  optim: "sam"
+  lr: 0.013
+  nbd: True
+  weight_decay: 5e-4
+  lr_scheduler: "warmup"
+  warmup: 15
+  base_scheduler: "reduce_on_plateau"
+  early_stopping: True
+  train_patience: 5
+  lr_decay_factor: 200
+  deterministic: True
+  patience: 5
+  gamma: 0.1
+  sam:
+    rho: 0.2
+
+test:
+  batch_size: 128
+  evaluate: False
+  eval_freq: 1

@@ -39,7 +39,7 @@ if [[ -e ${venv_dir} ]]; then
 fi
 
 # Create virtual environment
-$PYTHON_NAME -m venv "${venv_dir}" --prompt="classification"
+$PYTHON_NAME -m venv "${venv_dir}" --prompt="mpa"
 
 if ! [ -e "${venv_dir}/bin/activate" ]; then
   echo "The virtual environment was not created."
@@ -112,18 +112,20 @@ pip install torch=="${TORCH_VERSION}" torchvision=="${TORCHVISION_VERSION}" -f h
 pip install --no-cache-dir mmcv-full==${MMCV_VERSION} || exit 1
 sed -i "s/force=False/force=True/g" "${venv_dir}"/lib/python"${PYTHON_VERSION}"/site-packages/mmcv/utils/registry.py  # Patch: remedy for MMCV registry collision from mmdet/mmseg
 
-# Install algo backend.
-pip install -e submodule/ || exit 1
+# Install deep-object-reid and mpa
+pip install torchreid@git+https://github.com/openvinotoolkit/deep-object-reid@otx
+pip install mpa@git+https://github.com/openvinotoolkit/model_preparation_algorithm@otx
 
-# Install OTE SDK
-pip install -e ../../ote_sdk/ || exit 1
+# Install otx
+pip install -e ../../../ || exit 1
 
-# Install tasks.
-pip install -e . || exit 1
+# Re-install mmpycocotools for numpy version update
+pip uninstall -y mmpycocotools
+pip install --no-cache-dir --no-binary=mmpycocotools mmpycocotools || exit 1
 
-# Install MPA (to enable transfer learning feature)
-pip install -e ../model-preparation-algorithm/submodule || exit 1
-pip install -e ../model-preparation-algorithm || exit 1
+# Build NNCF extensions
+echo "Build NNCF extensions ..."
+python -c "import nncf"
 
 deactivate
 

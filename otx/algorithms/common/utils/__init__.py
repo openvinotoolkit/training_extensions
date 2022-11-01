@@ -15,8 +15,6 @@
 # and limitations under the License.
 
 from .data import get_cls_img_indices, get_old_new_img_indices
+from .utils import TrainingProgressCallback, get_task_class
 
-__all__ = [
-    "get_cls_img_indices",
-    "get_old_new_img_indices",
-]
+__all__ = ["get_cls_img_indices", "get_old_new_img_indices", "get_task_class", "TrainingProgressCallback"]

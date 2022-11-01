@@ -23,9 +23,7 @@ from .data import (
 from .utils import (
     InferenceProgressCallback,
     OptimizationProgressCallback,
-    TrainingProgressCallback,
     generate_label_schema,
-    get_task_class,
     load_template,
 )
 
@@ -36,8 +34,6 @@ __all__ = [
     "format_list_to_str",
     "generate_label_schema",
     "load_template",
-    "get_task_class",
-    "TrainingProgressCallback",
     "InferenceProgressCallback",
     "OptimizationProgressCallback",
 ]

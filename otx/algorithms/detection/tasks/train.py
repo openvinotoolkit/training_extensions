@@ -23,7 +23,7 @@ from mmcv.utils import ConfigDict
 from mpa.utils.logger import get_logger
 
 from otx.algorithms.common.adapters.mmcv.hooks import OTXLoggerHook
-from otx.algorithms.detection.utils.utils import TrainingProgressCallback
+from otx.algorithms.common.utils import TrainingProgressCallback
 from otx.api.configuration import cfg_helper
 from otx.api.configuration.helper.utils import ids_to_strings
 from otx.api.entities.datasets import DatasetEntity
