@@ -260,7 +260,6 @@ def wrap_nncf_model(model,
         return args, kwargs
 
     model.dummy_forward_fn = dummy_forward
-    export_method = type(model).onnx_export
 
     if 'log_dir' in nncf_config:
         os.makedirs(nncf_config['log_dir'], exist_ok=True)
@@ -272,6 +271,5 @@ def wrap_nncf_model(model,
                                                       compression_state=compression_state)
     if resuming_state_dict:
         load_state(model, resuming_state_dict, is_resume=True)
-    model.onnx_export = export_method.__get__(model)
 
     return compression_ctrl, model
