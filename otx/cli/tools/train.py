@@ -17,6 +17,11 @@
 import argparse
 import os
 import shutil
+import os.path as osp
+
+import torch
+import torch.distributed as dist
+import torch.multiprocessing as mp
 
 from otx.api.configuration.helper import create
 from otx.api.entities.inference_parameters import InferenceParameters
@@ -134,8 +139,20 @@ def parse_args():
     return parser.parse_args(), template, hyper_parameters
 
 
-def main():
+def main(gpu=None, world_size=None):
     """Main function that is used for model training."""
+
+    num_gpus = len(os.environ["CUDA_VISIBLE_DEVICES"].split(','))
+    if gpu is not None:
+        torch.cuda.set_device(gpu)
+        dist.init_process_group(backend='nccl',
+                                world_size=world_size, rank=gpu)
+        print(f'dist info world_size = {dist.get_world_size()}, rank = {dist.get_rank()}')
+    elif num_gpus > 1:
+        os.environ['MASTER_ADDR'] = 'localhost'
+        os.environ['MASTER_PORT'] = '29500'
+        mp.spawn(main, nprocs=num_gpus, args=[num_gpus])
+        return
 
     # Dynamically create an argument parser based on override parameters.
     args, template, hyper_parameters = parse_args()
@@ -232,4 +249,10 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    num_gpus = len(os.environ["CUDA_VISIBLE_DEVICES"].split(','))
+    if num_gpus > 1:
+        os.environ['MASTER_ADDR'] = 'localhost'
+        os.environ['MASTER_PORT'] = '29500'
+        mp.spawn(main, nprocs=num_gpus, args=num_gpus)
+    else:
+        main()
