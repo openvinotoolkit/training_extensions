@@ -1,0 +1,73 @@
+{
+    "train": {
+        "train_data": "test_data/phase1data/train/cbis_sample/train",
+        "test_data": "test_data/phase1data/train/cbis_sample/test",
+        "batch_size": 10,
+        "epochs": 5,
+        "gpu": "True",
+        "interval": 3,
+        "subset_size": 5,
+        "model_file_name": "model_weights/cbis_a1_b1.model",
+        "randomize_subset": "True",
+        "depth": 3,
+        "width": 64,
+        "alpha": 1,
+        "phi": 1,
+        "phase": 1,
+        "class_count": 3,
+        "efficient_net": "True",
+        "iterate": 0,
+        "lr": 1e-8,
+        "checkpoint": "model_weights/cbis_a1_b1.model",
+        "device": "cuda",
+        "max_epoch": 3,
+        "n_digestunits": 3,
+        "savepath": "model_weights/",
+        "default_image_path": "test_data/phase1data/train/cbis_sample/train/",
+        "image_path": "test_data/phase1data/train/cbis_sample/train/"
+    },
+    "inference": {
+        "model_file": "model_weights/cbis_a1_b1.model",
+        "inferdata": "test_data/phase1data/test/images",
+        "bit_depth": 8,
+        "gpu": "True",
+        "with_aac": "True",
+        "produce_latent_code": "True",
+        "produce_decompressed_image": "True",
+        "out_latent": "True",
+        "out_decom": "True",
+        "plot_json": "False",
+        "depth": 3,
+        "width": 64,
+        "max_samples": 10,
+        "phase": 1,
+        "checkpoint": "model_weights/cbis_a1_b1.model",
+        "class_count": 3,
+        "target_metric": 0.55,
+        "model_name_onnx": "cbis_a1_b1.onnx",
+        "input_shape": [
+            1,
+            1,
+            1024,
+            1024
+        ],
+        "default_image_path": "test_data/phase1data/train/cbis_sample/test/",
+        "image_path": "test_data/phase1data/train/cbis_sample/test/"
+    },
+    "export": {
+        "checkpoint": "model_weights/cbis_a1_b1.model",
+        "input_shape": [
+            1,
+            1,
+            1024,
+            1024
+        ],
+        "model_name_onnx": "cbis_a1_b1.onnx",
+        "model_name": "cbis_a1_b1",
+        "alpha": 1,
+        "beta": 1,
+        "phi": 1,
+        "phase": 1,
+        "class_count": 3
+    }
+}
