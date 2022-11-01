@@ -169,7 +169,12 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         self._data_cfg = self._init_test_data_cfg(dataset)
         dataset = dataset.with_empty_annotations()
 
-        results = self._run_task(stage_module, mode="train", dataset=dataset)
+        results = self._run_task(
+            stage_module,
+            mode="train",
+            dataset=dataset,
+            explainer=explain_parameters.explainer,
+        )
         logger.debug(f"result of run_task {stage_module} module = {results}")
         activations = results["outputs"]
         activation_results = zip(

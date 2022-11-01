@@ -203,10 +203,10 @@ class OpenVINOClassificationTask(IDeploymentTask, IInferenceTask, IEvaluationTas
 
     @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def explain(self, dataset: DatasetEntity,
-              inference_parameters: Optional[InferenceParameters] = None) -> DatasetEntity:
+              explain_parameters: Optional[InferenceParameters] = None) -> DatasetEntity:
         update_progress_callback = default_progress_callback
-        if inference_parameters is not None:
-            update_progress_callback = inference_parameters.update_progress
+        if explain_parameters is not None:
+            update_progress_callback = explain_parameters.update_progress
         dataset_size = len(dataset)
         for i, dataset_item in enumerate(dataset, 1):
             predicted_scene, actmap, repr_vector, act_score = self.inferencer.predict(dataset_item.numpy)

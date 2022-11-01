@@ -19,10 +19,7 @@ Model inference demonstration tool.
 import argparse
 import os
 import time
-from collections import deque
 
-import cv2
-import numpy as np
 from ote_sdk.configuration.helper import create
 from ote_sdk.entities.subset import Subset
 from ote_sdk.entities.inference_parameters import InferenceParameters
@@ -142,7 +139,10 @@ def main():
     start_time = time.perf_counter()
     saliency_maps = task.explain(
         explain_dataset.with_empty_annotations(),
-        InferenceParameters(is_evaluation=True),
+        InferenceParameters(
+            is_evaluation=True,
+            explainer=args.explain_algorithm,
+        ),
     )
     elapsed_time = time.perf_counter() - start_time
     

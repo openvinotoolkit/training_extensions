@@ -28,3 +28,4 @@ class InferenceParameters:
 
     is_evaluation: bool = False
     update_progress: Callable[[int], None] = default_progress_callback
+    explainer: str = None
