@@ -19,7 +19,10 @@ Model inference demonstration tool.
 import argparse
 import os
 import time
+from collections import deque
 
+import cv2
+import numpy as np
 from ote_sdk.configuration.helper import create
 from ote_sdk.entities.subset import Subset
 from ote_sdk.entities.inference_parameters import InferenceParameters
@@ -101,7 +104,9 @@ def main():
     hyper_parameters = create(hyper_parameters)
 
     # Get classes for Task, ConfigurableParameters and Dataset.
-    if args.load_weights.endswith(".pth"):
+    if any(args.load_weights.endswith(x) for x in (".bin", ".xml", ".zip")):
+        task_class = get_impl_class(template.entrypoints.openvino)
+    elif args.load_weights.endswith(".pth"):
         task_class = get_impl_class(template.entrypoints.base)
     else:
         raise ValueError(f"Unsupported file: {args.load_weights}")
@@ -137,10 +142,7 @@ def main():
     start_time = time.perf_counter()
     saliency_maps = task.explain(
         explain_dataset.with_empty_annotations(),
-        InferenceParameters(
-            is_evaluation=True,
-            explainer=args.explain_algorithm,
-        ),
+        InferenceParameters(is_evaluation=True),
     )
     elapsed_time = time.perf_counter() - start_time
     
