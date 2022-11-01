@@ -122,7 +122,6 @@ def main():
     # Get classes for Task, ConfigurableParameters and Dataset.
     task_class = get_impl_class(template.entrypoints.base)
     dataset_class = get_dataset_class(template.task_type)
-    breakpoint()
 
     # Create instances of Task, ConfigurableParameters and Dataset.
     dataset = dataset_class(
@@ -171,7 +170,7 @@ def main():
     validation_dataset = dataset.get_subset(Subset.VALIDATION)
     predicted_validation_dataset = task.infer(
         validation_dataset.with_empty_annotations(),
-        InferenceParameters(is_evaluation=True),
+        InferenceParameters(is_evaluation=False),
     )
 
     resultset = ResultSetEntity(

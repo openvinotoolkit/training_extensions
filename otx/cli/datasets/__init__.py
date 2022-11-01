@@ -64,5 +64,9 @@ def get_dataset_class(task_type):
         from .semantic_segmentation.dataset import SemanticSegmentationDataset
 
         return SemanticSegmentationDataset
+    if task_type == TaskType.ACTION_CLASSIFICATION:
+        from .action_classification.dataset import ActionClassificationDataset
+
+        return ActionClassificationDataset
 
     raise ValueError(f"Invalid task type: {task_type}")
