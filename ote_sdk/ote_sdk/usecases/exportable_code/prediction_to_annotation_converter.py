@@ -394,9 +394,7 @@ class MaskToAnnotationConverter(IPredictionToAnnotationConverter):
                     Annotation(
                         polygon,
                         labels=[
-                            ScoredLabel(
-                                self.labels[int(class_idx) - 1], float(score)
-                            )
+                            ScoredLabel(self.labels[int(class_idx) - 1], float(score))
                         ],
                     )
                 )
@@ -443,9 +441,7 @@ class RotatedRectToAnnotationConverter(IPredictionToAnnotationConverter):
                     Annotation(
                         polygon,
                         labels=[
-                            ScoredLabel(
-                                self.labels[int(class_idx) - 1], float(score)
-                            )
+                            ScoredLabel(self.labels[int(class_idx) - 1], float(score))
                         ],
                     )
                 )
