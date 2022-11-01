@@ -1,4 +1,4 @@
-"""OTX Algorithms - Classification Models."""
+"""Adapters for OTX Common Algorithm. - mmcls."""
 
 # Copyright (C) 2022 Intel Corporation
 #
@@ -14,4 +14,6 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from . import backbone, classifiers, heads
+from .models import OTXEfficientNet, OTXEfficientNetV2, OTXMobileNetV3
+
+__all__ = ["OTXEfficientNet", "OTXEfficientNetV2", "OTXMobileNetV3"]

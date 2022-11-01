@@ -82,7 +82,7 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
-
+# TODO: refactoring to Sphinx style.
 class ClassificationOpenVINOInferencer(BaseInferencer):
     """ClassificationOpenVINOInferencer class in OpenVINO task."""
 

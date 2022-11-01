@@ -14,6 +14,7 @@ from otx.api.utils.argument_checks import check_input_parameters_type
 
 # Temporary copy from detection_tasks
 # TODO: refactoring to common modules
+# TODO: refactoring to Sphinx style.
 @PIPELINES.register_module()
 class LoadImageFromOTXDataset:
     """Pipeline element that loads an image from a OTX Dataset on the fly.

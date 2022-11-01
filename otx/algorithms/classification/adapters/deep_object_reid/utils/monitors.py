@@ -14,39 +14,10 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import abc
-
 from otx.api.utils.argument_checks import check_input_parameters_type
 
 
-class IMetricsMonitor(metaclass=abc.ABCMeta):
-    """Interface for providing Tensorboard-style logging."""
-
-    @abc.abstractmethod
-    def add_scalar(self, capture: str, value: float, timestamp: int):
-        """Similar to Tensorboard method that allows to log values of named scalar variables."""
-
-    @abc.abstractmethod
-    def close(self):
-        """Flushes the collected scalar values to log, and resets the monitor to default state."""
-
-
-class IStopCallback(metaclass=abc.ABCMeta):
-    """Interface for wrapping a stop signal.
-
-    By default an object implementing this interface should be in permissive state
-    """
-
-    @abc.abstractmethod
-    def check_stop(self) -> bool:
-        """Method returns True if the object of this class is in stopping state, otherwise it returns False."""
-
-    @abc.abstractmethod
-    def reset(self):
-        """Method resets the internal state of the object to permissive."""
-
-
-class StopCallback(IStopCallback):
+class StopCallback:
     """Stop callback class."""
 
     def __init__(self):
@@ -65,7 +36,7 @@ class StopCallback(IStopCallback):
         self.stop_flag = False
 
 
-class DefaultMetricsMonitor(IMetricsMonitor):
+class DefaultMetricsMonitor:
     """Default metric monitor class."""
 
     def __init__(self):

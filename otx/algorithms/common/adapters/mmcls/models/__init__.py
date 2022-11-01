@@ -1,4 +1,4 @@
-"""Classification heads."""
+"""Adapters for OTX Common Algorithm. - mmcls.model."""
 
 # Copyright (C) 2022 Intel Corporation
 #
@@ -14,8 +14,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from . import (
-    custom_hierarchical_cls_head,
-    custom_multiclass_cls_head,
-    custom_multilabel_cls_head,
-)
+
+from .backbones import OTXEfficientNet, OTXEfficientNetV2, OTXMobileNetV3
+
+__all__ = ["OTXEfficientNet", "OTXEfficientNetV2", "OTXMobileNetV3"]
