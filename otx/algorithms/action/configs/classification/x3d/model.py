@@ -52,19 +52,21 @@ val_pipeline = [
     dict(type="Collect", keys=["imgs", "label"], meta_keys=[]),
     dict(type="ToTensor", keys=["imgs"]),
 ]
-test_pipeline = [
+# TODO Delete label in meta key in test pipeline
+test_pipeline  = [
     dict(type="SampleFrames", clip_len=clip_len, frame_interval=frame_interval, num_clips=1, test_mode=True),
     dict(type="RawFrameDecode"),
     dict(type="Resize", scale=(-1, 256)),
-    dict(type="ThreeCrop", crop_size=256),
+    dict(type="CenterCrop", crop_size=224),
     dict(type="Normalize", **img_norm_cfg),
     dict(type="FormatShape", input_format="NCTHW"),
-    dict(type="Collect", keys=["imgs", "label"], meta_keys=[]),
+    dict(type="Collect", keys=["imgs"], meta_keys=[]),
     dict(type="ToTensor", keys=["imgs"]),
 ]
+
 data = dict(
     videos_per_gpu=10,
-    workers_per_gpu=8,
+    workers_per_gpu=0,
     test_dataloader=dict(videos_per_gpu=1),
     train=dict(
         type=dataset_type,
@@ -88,7 +90,10 @@ data = dict(
         pipeline=test_pipeline,
     ),
 )
-evaluation = dict(interval=1, metrics=["top_k_accuracy", "mean_class_accuracy"])
+evaluation = dict(
+            interval=1,
+            metrics=["top_k_accuracy", "mean_class_accuracy"],
+            final_metric="mean_class_accuracy")
 
 optimizer = dict(
     type="AdamW",
@@ -98,7 +103,7 @@ optimizer = dict(
 
 optimizer_config = dict(grad_clip=dict(max_norm=40.0, norm_type=2))
 lr_config = dict(policy="step", step=5)
-total_epochs = 15
+total_epochs = 5
 
 # runtime settings
 checkpoint_config = dict(interval=1)
@@ -111,8 +116,6 @@ log_config = dict(
 # runtime settings
 log_level = "INFO"
 workflow = [("train", 1)]
-
-dist_params = dict(backend="nccl")
 
 find_unused_parameters = False
 gpu_ids = range(0, 1)
