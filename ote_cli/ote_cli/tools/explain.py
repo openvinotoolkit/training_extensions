@@ -142,7 +142,10 @@ def main():
     start_time = time.perf_counter()
     saliency_maps = task.explain(
         explain_dataset.with_empty_annotations(),
-        InferenceParameters(is_evaluation=True),
+        InferenceParameters(
+            is_evaluation=True,
+            explainer=args.explain_algorithm,
+        ),
     )
     elapsed_time = time.perf_counter() - start_time
     
@@ -152,7 +155,7 @@ def main():
 
     print(f"saliency maps saved to {args.save_explanation_to}...")
     print(f"total elapsed_time: {elapsed_time:.3f} for {len(image_files)} images")
-
+    
 
 if __name__ == "__main__":
     main()

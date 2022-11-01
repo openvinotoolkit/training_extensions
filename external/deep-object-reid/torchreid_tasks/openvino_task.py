@@ -88,7 +88,7 @@ class OpenVINOClassificationInferencer(BaseInferencer):
         weight_file: Union[str, bytes, None] = None,
         device: str = "CPU",
         num_requests: int = 1,
-        explainer: str = None,
+        explainer: str = '',
     ):
         """
         Inferencer implementation for OTEClassification using OpenVINO backend.
@@ -113,7 +113,6 @@ class OpenVINOClassificationInferencer(BaseInferencer):
                               'multihead_class_info': multihead_class_info}
         self.model = Model.create_model("ote_classification", model_adapter, self.configuration, preload=True)
         self.converter = ClassificationToAnnotationConverter(self.label_schema)
-        self.explainer = explainer
 
     @check_input_parameters_type()
     def pre_process(self, image: np.ndarray) -> Tuple[Dict[str, np.ndarray], Dict[str, Any]]:
@@ -127,12 +126,12 @@ class OpenVINOClassificationInferencer(BaseInferencer):
         return self.converter.convert_to_annotation(prediction, metadata)
 
     @check_input_parameters_type()
-    def predict(self, image: np.ndarray) -> Tuple[AnnotationSceneEntity, np.ndarray, np.ndarray]:
+    def predict(self, image: np.ndarray, explainer: str) -> Tuple[AnnotationSceneEntity, np.ndarray, np.ndarray]:
         image, metadata = self.pre_process(image)
         raw_predictions = self.forward(image)
         predictions = self.post_process(raw_predictions, metadata)
         actmap, repr_vectors, act_score = self.model.postprocess_aux_outputs(
-            raw_predictions, metadata, explainer=self.explainer
+            raw_predictions, metadata, explainer
         )
 
         return predictions, actmap, repr_vectors, act_score
@@ -174,7 +173,7 @@ class OpenVINOClassificationTask(IDeploymentTask, IInferenceTask, IEvaluationTas
         return OpenVINOClassificationInferencer(self.hparams,
                                                 self.task_environment.label_schema,
                                                 self.model.get_data("openvino.xml"),
-                                                self.model.get_data("openvino.bin"))
+                                                self.model.get_data("openvino.bin"),)
 
     @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def infer(self, dataset: DatasetEntity,
@@ -187,7 +186,9 @@ class OpenVINOClassificationTask(IDeploymentTask, IInferenceTask, IEvaluationTas
             dump_features = not inference_parameters.is_evaluation
         dataset_size = len(dataset)
         for i, dataset_item in enumerate(dataset, 1):
-            predicted_scene, actmap, repr_vector, act_score = self.inferencer.predict(dataset_item.numpy)
+            predicted_scene, actmap, repr_vector, act_score = self.inferencer.predict(
+                dataset_item.numpy, explainer=inference_parameters.explainer
+            )
             dataset_item.append_labels(predicted_scene.annotations[0].get_labels())
             active_score_media = FloatMetadata(name="active_score", value=act_score,
                                                float_type=FloatType.ACTIVE_SCORE)
@@ -212,7 +213,9 @@ class OpenVINOClassificationTask(IDeploymentTask, IInferenceTask, IEvaluationTas
             update_progress_callback = explain_parameters.update_progress
         dataset_size = len(dataset)
         for i, dataset_item in enumerate(dataset, 1):
-            predicted_scene, actmap, repr_vector, act_score = self.inferencer.predict(dataset_item.numpy)
+            predicted_scene, actmap, repr_vector, act_score = self.inferencer.predict(
+                dataset_item.numpy, explain_parameters.explainer
+            )
             dataset_item.append_labels(predicted_scene.annotations[0].get_labels())
             active_score_media = FloatMetadata(name="active_score", value=act_score,
                                                float_type=FloatType.ACTIVE_SCORE)

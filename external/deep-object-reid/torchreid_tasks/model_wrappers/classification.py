@@ -95,7 +95,7 @@ class OteClassification(Classification):
         self,
         predictions: Dict[str, np.ndarray],
         metadata: Dict[str, Any],
-        explainer: str = None,
+        explainer: str,
     ):
         actmap = get_actmap(
             predictions['saliency_map'][0],
@@ -116,21 +116,20 @@ class OteClassification(Classification):
 @check_input_parameters_type()
 def get_actmap(features: Union[np.ndarray, Iterable, int, float],
                output_res: Union[tuple, list],
-               explainer: str = None):
-    if explainer is None:
+               explainer: str):
+    if not explainer:
         am = features
     else:
-        am = torch.Tensor(am)
-        am = am.unsqueeze(0).unsqueeze(0).unsqueeze(0)
+        am = torch.Tensor(features)
+        am = am.unsqueeze(0).unsqueeze(0)
         if explainer.lower() == 'eigencam':
-            am = eigen_cam(features)
+            am = eigen_cam(am)
         elif explainer.lower() == 'cam':
-            am = cam(features)
+            am = cam(am)
         else:
             raise NotImplementedError(f"explain algorithm {explainer} not supported!")
         am = am.squeeze(0).squeeze(0)
         am = am.numpy().astype(np.uint8)
-
     am = cv2.resize(am, output_res)
     am = cv2.applyColorMap(am, cv2.COLORMAP_JET)
     am = cv2.cvtColor(am, cv2.COLOR_BGR2RGB)
