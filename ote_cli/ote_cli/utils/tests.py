@@ -568,7 +568,7 @@ def xfail_templates(templates, xfail_template_ids_reasons):
     return xfailed_templates
 
 
-def ote_torch_explain_testing(template, root, ote_dir, args):
+def ote_explain_testing(template, root, ote_dir, args):
     work_dir, template_work_dir, _ = get_some_vars(template, root)
     command_line = [
         "ote",
