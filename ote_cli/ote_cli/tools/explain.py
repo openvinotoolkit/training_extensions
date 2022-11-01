@@ -101,9 +101,7 @@ def main():
     hyper_parameters = create(hyper_parameters)
 
     # Get classes for Task, ConfigurableParameters and Dataset.
-    if any(args.load_weights.endswith(x) for x in (".bin", ".xml", ".zip")):
-        task_class = get_impl_class(template.entrypoints.openvino)
-    elif args.load_weights.endswith(".pth"):
+    if args.load_weights.endswith(".pth"):
         task_class = get_impl_class(template.entrypoints.base)
     else:
         raise ValueError(f"Unsupported file: {args.load_weights}")
