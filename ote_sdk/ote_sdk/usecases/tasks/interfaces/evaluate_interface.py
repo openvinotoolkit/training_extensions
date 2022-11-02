@@ -30,5 +30,5 @@ class IEvaluationTask(metaclass=abc.ABCMeta):
         :param evaluatio
         n_metric: the evaluation metric used to compute the performance
         """
-        
+
         raise NotImplementedError

@@ -21,11 +21,11 @@ import os
 import re
 import struct
 import tempfile
-import cv2
-import numpy as np
 from pathlib import Path
 from zipfile import ZipFile
 
+import cv2
+import numpy as np
 from ote_sdk.entities.label import Domain, LabelEntity
 from ote_sdk.entities.label_schema import LabelGroup, LabelGroupType, LabelSchemaEntity
 from ote_sdk.entities.model import ModelEntity, ModelOptimizationType
@@ -267,12 +267,18 @@ def get_image_files(root_dir):
             )
     return img_files if img_files else None
 
-def save_saliency_output(img: np.array, saliency_map: np.array, save_dir: str,
-                         fname: str, weight: float = 0.5) -> None:
-    
+
+def save_saliency_output(
+    img: np.array,
+    saliency_map: np.array,
+    save_dir: str,
+    fname: str,
+    weight: float = 0.5,
+) -> None:
+
     # GRAY to RGB
     heatmap = cv2.applyColorMap(np.uint8(saliency_map), cv2.COLORMAP_JET)
-    overlay = (1-weight) * img + weight * heatmap
+    overlay = (1 - weight) * img + weight * heatmap
     overlay /= np.max(overlay)
     overlay = np.uint8(255 * overlay)
     cv2.imwrite(f"{os.path.join(save_dir, fname)}_saliency_map.png", heatmap)

@@ -31,5 +31,5 @@ class IExportTask(metaclass=abc.ABCMeta):
         :param export_type: The type of optimization
         :param output_model: Output model
         """
-        
+
         raise NotImplementedError

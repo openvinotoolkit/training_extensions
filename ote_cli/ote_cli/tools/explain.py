@@ -21,19 +21,25 @@ import os
 import time
 
 from ote_sdk.configuration.helper import create
-from ote_sdk.entities.subset import Subset
 from ote_sdk.entities.inference_parameters import InferenceParameters
+from ote_sdk.entities.subset import Subset
 from ote_sdk.entities.task_environment import TaskEnvironment
 
 from ote_cli.datasets import get_dataset_class
 from ote_cli.registry import find_and_parse_model_template
 from ote_cli.utils.config import override_parameters
 from ote_cli.utils.importing import get_impl_class
-from ote_cli.utils.io import get_image_files, read_label_schema, read_model, save_saliency_output
+from ote_cli.utils.io import (
+    get_image_files,
+    read_label_schema,
+    read_model,
+    save_saliency_output,
+)
 from ote_cli.utils.parser import (
     add_hyper_parameters_sub_parser,
     gen_params_dict_from_args,
 )
+from ote_cli.utils.nncf import is_checkpoint_nncf
 
 ESC_BUTTON = 27
 SUPPORTED_EXPLAIN_ALGORITHMS = ["CAM", "EigenCAM"]
@@ -101,8 +107,13 @@ def main():
     hyper_parameters = create(hyper_parameters)
 
     # Get classes for Task, ConfigurableParameters and Dataset.
-    if args.load_weights.endswith(".pth"):
-        task_class = get_impl_class(template.entrypoints.base)
+    if any(args.load_weights.endswith(x) for x in (".bin", ".xml", ".zip")):
+        task_class = get_impl_class(template.entrypoints.openvino)
+    elif args.load_weights.endswith(".pth"):
+        if is_checkpoint_nncf(args.load_weights):
+            task_class = get_impl_class(template.entrypoints.nncf)
+        else:
+            task_class = get_impl_class(template.entrypoints.base)
     else:
         raise ValueError(f"Unsupported file: {args.load_weights}")
 
@@ -121,8 +132,10 @@ def main():
     image_files = get_image_files(args.explain_data_root)
 
     if args.explain_algorithm not in SUPPORTED_EXPLAIN_ALGORITHMS:
-        raise NotImplementedError(f"{args.explain_algorithm} currently not supported. \
-            Currently only supporting {SUPPORTED_EXPLAIN_ALGORITHMS}")
+        raise NotImplementedError(
+            f"{args.explain_algorithm} currently not supported. \
+            Currently only supporting {SUPPORTED_EXPLAIN_ALGORITHMS}"
+        )
 
     if image_files is None:
         raise ValueError(f"No image found in {args.explain_data_root}!")
@@ -133,7 +146,7 @@ def main():
 
     if not os.path.exists(args.save_explanation_to):
         os.makedirs(args.save_explanation_to)
-    
+
     start_time = time.perf_counter()
     saliency_maps = task.explain(
         explain_dataset.with_empty_annotations(),
@@ -143,10 +156,17 @@ def main():
         ),
     )
     elapsed_time = time.perf_counter() - start_time
-    
-    for img, saliency_map, (_, fname) in zip(explain_dataset, saliency_maps, image_files):
-        save_saliency_output(img.numpy, saliency_map.numpy, args.save_explanation_to, \
-            os.path.splitext(fname)[0], weight=args.weight)
+
+    for img, saliency_map, (_, fname) in zip(
+        explain_dataset, saliency_maps, image_files
+    ):
+        save_saliency_output(
+            img.numpy,
+            saliency_map.numpy,
+            args.save_explanation_to,
+            os.path.splitext(fname)[0],
+            weight=args.weight,
+        )
 
     print(f"saliency maps saved to {args.save_explanation_to}...")
     print(f"total elapsed_time: {elapsed_time:.3f} for {len(image_files)} images")
