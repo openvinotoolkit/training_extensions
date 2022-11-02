@@ -246,18 +246,18 @@ def get_image_files(root_dir):
     img_data_formats = [
         ".jpg",
         ".jpeg",
-        ".JPEG",
         ".gif",
         ".bmp",
         ".tif",
         ".tiff",
         ".png",
     ]
+    img_data_formats.extend([x.upper() for x in img_data_formats])
+    img_data_formats = tuple(img_data_formats)
 
-    for format_ in img_data_formats:
-        # single image path
-        if root_dir.endswith(format_):
-            return [os.path.dirname(root_dir), os.path.basename(root_dir)]
+    # single image path
+    if root_dir.endswith(img_data_formats):
+        return [os.path.dirname(root_dir), os.path.basename(root_dir)]
 
     img_files = []
     for root, _, _ in os.walk(root_dir):
