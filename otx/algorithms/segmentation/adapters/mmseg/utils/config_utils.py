@@ -16,10 +16,8 @@
 
 
 import copy
-import glob
 import logging
 import math
-import os
 from collections import defaultdict
 from typing import List, Optional, Union
 
@@ -29,6 +27,7 @@ from otx.algorithms.common.adapters.mmcv.utils import (
     get_meta_keys,
     is_epoch_based_runner,
     patch_color_conversion,
+    prepare_work_dir,
     remove_from_config,
 )
 from otx.algorithms.segmentation.configs.base import SegmentationConfig
@@ -253,23 +252,6 @@ def prepare_for_training(
 
 
 @check_input_parameters_type()
-def prepare_work_dir(config: Union[Config, ConfigDict]) -> str:
-    """Prepare configs of working directory."""
-    base_work_dir = config.work_dir
-    checkpoint_dirs = glob.glob(os.path.join(base_work_dir, "checkpoints_round_*"))
-    train_round_checkpoint_dir = os.path.join(base_work_dir, f"checkpoints_round_{len(checkpoint_dirs)}")
-    os.makedirs(train_round_checkpoint_dir)
-    logger.info(f"Checkpoints and logs for this training run are stored in {train_round_checkpoint_dir}")
-    config.work_dir = train_round_checkpoint_dir
-    if "meta" not in config.runner:
-        config.runner.meta = ConfigDict()
-    config.runner.meta.exp_name = f"train_round_{len(checkpoint_dirs)}"
-    # Save training config for debugging. It is saved in the checkpoint dir for this training round.
-    # save_config_to_file(config)
-    return train_round_checkpoint_dir
-
-
-@check_input_parameters_type()
 def set_distributed_mode(config: Config, distributed: bool):
     """Setter distributed into config."""
     if distributed:
@@ -327,35 +309,6 @@ def set_num_classes(config: Config, num_classes: int):
                 head.num_classes = num_classes
         elif isinstance(heads, dict):
             heads["num_classes"] = num_classes
-
-
-@check_input_parameters_type()
-def config_to_string(config: Union[Config, ConfigDict]) -> str:
-    """Convert a full mmsegmentation config to a string.
-
-    :param config: configuration object to convert
-    :return str: string representation of the configuration
-    """
-
-    config_copy = copy.deepcopy(config)
-    # Clean config up by removing dataset as this causes the pretty text parsing to fail.
-    config_copy.data.test.ote_dataset = None
-    config_copy.data.val.ote_dataset = None
-    if "ote_dataset" in config_copy.data.train:
-        config_copy.data.train.ote_dataset = None
-    else:
-        config_copy.data.train.dataset.ote_dataset = None
-    return Config(config_copy).pretty_text
-
-
-@check_input_parameters_type()
-def save_config_to_file(config: Union[Config, ConfigDict]):
-    """Dump the full config to a file. Filename is 'config.py', it is saved in the current work_dir."""
-
-    filepath = os.path.join(config.work_dir, "config.py")
-    config_string = config_to_string(config)
-    with open(filepath, "w", encoding="UTF-8") as f:
-        f.write(config_string)
 
 
 @check_input_parameters_type()

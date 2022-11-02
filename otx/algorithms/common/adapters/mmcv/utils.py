@@ -15,6 +15,8 @@
 # and limitations under the License.
 
 import copy
+import glob
+import os
 import tempfile
 from typing import Union
 
@@ -99,3 +101,17 @@ def get_meta_keys(pipeline_step):
     meta_keys.append("ignored_labels")
     pipeline_step["meta_keys"] = set(meta_keys)
     return pipeline_step
+
+
+@check_input_parameters_type()
+def prepare_work_dir(config: Union[Config, ConfigDict]) -> str:
+    """Prepare configs of working directory."""
+    base_work_dir = config.work_dir
+    checkpoint_dirs = glob.glob(os.path.join(base_work_dir, "checkpoints_round_*"))
+    train_round_checkpoint_dir = os.path.join(base_work_dir, f"checkpoints_round_{len(checkpoint_dirs)}")
+    os.makedirs(train_round_checkpoint_dir)
+    config.work_dir = train_round_checkpoint_dir
+    if "meta" not in config.runner:
+        config.runner.meta = ConfigDict()
+    config.runner.meta.exp_name = f"train_round_{len(checkpoint_dirs)}"
+    return train_round_checkpoint_dir

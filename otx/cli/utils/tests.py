@@ -160,7 +160,7 @@ def otx_eval_openvino_testing(template, root, otx_dir, args, threshold):
 
     for k in trained_performance.keys():
         assert (
-            exported_performance[k] > trained_performance[k]
+            exported_performance[k] >= trained_performance[k]
             or abs(trained_performance[k] - exported_performance[k]) / (trained_performance[k] + 1e-10) <= threshold
         ), f"{trained_performance[k]=}, {exported_performance[k]=}"
 
@@ -295,7 +295,8 @@ def otx_eval_deployment_testing(template, root, otx_dir, args, threshold):
 
     for k in exported_performance.keys():
         assert (
-            abs(exported_performance[k] - deployed_performance[k]) / (exported_performance[k] + 1e-10) <= threshold
+            deployed_performance[k] >= exported_performance[k]
+            or abs(exported_performance[k] - deployed_performance[k]) / (exported_performance[k] + 1e-10) <= threshold
         ), f"{exported_performance[k]=}, {deployed_performance[k]=}"
 
 
@@ -432,7 +433,8 @@ def nncf_eval_testing(template, root, otx_dir, args, threshold):
 
     for k in trained_performance.keys():
         assert (
-            abs(trained_performance[k] - evaluated_performance[k]) / (trained_performance[k] + 1e-10) <= threshold
+            evaluated_performance[k] >= trained_performance[k]
+            or abs(trained_performance[k] - evaluated_performance[k]) / (trained_performance[k] + 1e-10) <= threshold
         ), f"{trained_performance[k]=}, {evaluated_performance[k]=}"
 
 
