@@ -24,6 +24,7 @@ from ote_cli.utils.tests import (
     ote_train_testing,
     ote_export_testing,
     ote_explain_testing,
+    ote_explain_openvino_testing,
     pot_optimize_testing,
     pot_eval_testing,
     nncf_optimize_testing,
