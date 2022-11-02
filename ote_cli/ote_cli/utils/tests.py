@@ -570,6 +570,7 @@ def xfail_templates(templates, xfail_template_ids_reasons):
 
 def ote_explain_testing(template, root, ote_dir, args):
     work_dir, template_work_dir, _ = get_some_vars(template, root)
+    output_dir = f"{template_work_dir}/explain_{template.model_template_id}_output/"
     command_line = [
         "ote",
         "explain",
@@ -579,9 +580,8 @@ def ote_explain_testing(template, root, ote_dir, args):
         "--explain-data-root",
         os.path.join(ote_dir, args["--input"]),
         "--save-explanation-to",
-        f"{template_work_dir}/explain_{template.model_template_id}_output/",
+        output_dir,
     ]
-    output_dir = f"{template_work_dir}/explain_{template.model_template_id}_output/"
     assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
     assert os.path.exists(output_dir)
     assert len(os.listdir(output_dir)) > 0
