@@ -107,7 +107,7 @@ class TestVisualizer:
             expected_delay: int,
             expected_show_count: bool,
             expected_is_one_label: bool,
-            expected_no_show: bool
+            expected_no_show: bool,
         ):
             assert actual_visualizer.window_name == expected_name
             assert actual_visualizer.delay == expected_delay
@@ -169,7 +169,6 @@ class TestVisualizer:
         actual_image = Visualizer().draw(image=image, annotation=annotation_scene)
         assert np.array_equal(actual_image, expected_image)
 
-
     @pytest.mark.priority_medium
     @pytest.mark.unit
     @pytest.mark.reqids(Requirements.REQ_1)
@@ -189,4 +188,3 @@ class TestVisualizer:
         visualizer = Visualizer(no_show=True)
         visualizer.show(image)
         visualizer.is_quit()
-
