@@ -1,4 +1,4 @@
-"""Train Task of OTX Detection."""
+"""Train Task of OTX Action Classification."""
 
 # Copyright (C) 2022 Intel Corporation
 #
@@ -53,17 +53,17 @@ from otx.api.serialization.label_mapper import label_schema_to_bytes
 from otx.api.usecases.evaluation.metrics_helper import MetricsHelper
 from otx.api.usecases.tasks.interfaces.training_interface import ITrainingTask
 
-from .inference import DetectionInferenceTask
+from .inference import ActionClsInferenceTask
 
 logger = get_root_logger()
 
 
 # pylint: disable=too-many-locals, too-many-instance-attributes
-class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
-    """Train Task Implementation of OTX Detection."""
+class ActionClsTrainTask(ActionClsInferenceTask, ITrainingTask):
+    """Train Task Implementation of OTX Action Classification."""
 
     def save_model(self, output_model: ModelEntity):
-        """Save best model weights in DetectionTrainTask."""
+        """Save best model weights in ActionClsTrainTask."""
         logger.info("called save_model")
         buffer = io.BytesIO()
         hyperparams_str = ids_to_strings(cfg_helper.convert(self._hyperparams, dict, enum_to_str=True))
@@ -86,7 +86,7 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
         output_model.precision = self._precision
 
     def cancel_training(self):
-        """Cancel training function in DetectionTrainTask.
+        """Cancel training function in ActionClsTrainTask.
 
         Sends a cancel training signal to gracefully stop the optimizer. The signal consists of creating a
         '.stop_training' file in the current work_dir. The runner checks for this file periodically.
@@ -107,7 +107,7 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
         output_model: ModelEntity,
         train_parameters: Optional[TrainParameters] = None,
     ):
-        """Train function in DetectionTrainTask."""
+        """Train function in ActionClsTrainTask."""
         logger.info("train()")
         # Check for stop signal when training has stopped.
         # If should_stop is true, training was cancelled and no new
@@ -237,7 +237,7 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
         performance = metric.get_performance()
         metric_name = self._recipe_cfg.evaluation.final_metric
         performance.dashboard_metrics.extend(
-            DetectionTrainTask._generate_training_metrics(self._learning_curves, val_map, metric_name)
+            ActionClsTrainTask._generate_training_metrics(self._learning_curves, val_map, metric_name)
         )
         logger.info(f"Final model performance: {str(performance)}")
         return performance
