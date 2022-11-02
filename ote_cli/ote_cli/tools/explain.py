@@ -20,9 +20,14 @@ import argparse
 import os
 import time
 
+import cv2
+import numpy as np
 from ote_sdk.configuration.helper import create
-from ote_sdk.entities.inference_parameters import InferenceParameters
+from ote_sdk.entities.annotation import AnnotationSceneEntity, AnnotationSceneKind
+from ote_sdk.entities.datasets import DatasetEntity, DatasetItemEntity
+from ote_sdk.entities.image import Image
 from ote_sdk.entities.subset import Subset
+from ote_sdk.entities.inference_parameters import InferenceParameters
 from ote_sdk.entities.task_environment import TaskEnvironment
 
 from ote_cli.datasets import get_dataset_class
@@ -61,20 +66,14 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("template")
     parser.add_argument(
-        "--explain-data-root",
+        "--explain-data-roots",
         required=True,
-        help="Source of input data: images folder, image, webcam and video.",
+        help="Comma-separated paths to explain data folders.",
     )
     parser.add_argument(
         "--save-explanation-to",
         default="saliency_dump",
         help="Output path for explanation images.",
-    )
-    parser.add_argument(
-        "-w",
-        "--weight",
-        default=0.5,
-        help="weight of the saliency map when overlaying the saliency map",
     )
     parser.add_argument(
         "--load-weights",
@@ -85,6 +84,12 @@ def parse_args():
         "--explain-algorithm",
         default="EigenCAM",
         help=f"Explain algorithm name, currently support {SUPPORTED_EXPLAIN_ALGORITHMS}",
+    )
+    parser.add_argument(
+        "-w",
+        "--weight",
+        default=0.5,
+        help="weight of the saliency map when overlaying the saliency map",
     )
     add_hyper_parameters_sub_parser(parser, hyper_parameters, modes=("INFERENCE",))
 
@@ -106,9 +111,7 @@ def main():
     hyper_parameters = create(hyper_parameters)
 
     # Get classes for Task, ConfigurableParameters and Dataset.
-    if any(args.load_weights.endswith(x) for x in (".bin", ".xml", ".zip")):
-        task_class = get_impl_class(template.entrypoints.openvino)
-    elif args.load_weights.endswith(".pth"):
+    if args.load_weights.endswith(".pth"):
         if is_checkpoint_nncf(args.load_weights):
             task_class = get_impl_class(template.entrypoints.nncf)
         else:
@@ -135,9 +138,20 @@ def main():
             Currently only supporting {SUPPORTED_EXPLAIN_ALGORITHMS}"
         )
 
-    dataset_class = get_dataset_class(template.task_type)
-    dataset = dataset_class(test_subset={"data_root": args.explain_data_root})
-    explain_dataset = dataset.get_subset(Subset.TESTING)
+    empty_annotation = AnnotationSceneEntity(
+        annotations=[], kind=AnnotationSceneKind.PREDICTION
+    )
+    
+    image_files = get_image_files(args.explain_data_roots)
+    items = []
+    for root_dir, filename in image_files:
+        frame = cv2.imread(os.path.join(root_dir, filename))
+        item = DatasetItemEntity(
+            media=Image(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)),
+            annotation_scene=empty_annotation,
+        )
+        items.append(item)
+    explain_dataset = DatasetEntity(items=items)
 
     if not os.path.exists(args.save_explanation_to):
         os.makedirs(args.save_explanation_to)
@@ -152,13 +166,13 @@ def main():
     )
     elapsed_time = time.perf_counter() - start_time
 
-    for img, saliency_map in zip(explain_dataset, saliency_maps):
-        file_path = img.media.filepath
+    for img, saliency_map, (_, fname) in zip(explain_dataset, saliency_maps, image_files):
+        # file_path = img.media.filepath
         save_saliency_output(
             img.numpy,
             saliency_map.numpy,
             args.save_explanation_to,
-            os.path.splitext(file_path)[0],
+            os.path.splitext(fname)[0],
             weight=args.weight,
         )
 
