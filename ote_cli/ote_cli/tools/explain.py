@@ -19,10 +19,7 @@ Model inference demonstration tool.
 import argparse
 import os
 import time
-from collections import deque
 
-import cv2
-import numpy as np
 from ote_sdk.configuration.helper import create
 from ote_sdk.entities.inference_parameters import InferenceParameters
 from ote_sdk.entities.subset import Subset
@@ -33,7 +30,6 @@ from ote_cli.registry import find_and_parse_model_template
 from ote_cli.utils.config import override_parameters
 from ote_cli.utils.importing import get_impl_class
 from ote_cli.utils.io import (
-    get_image_files,
     read_label_schema,
     read_model,
     save_saliency_output,
@@ -132,16 +128,12 @@ def main():
     )
 
     task = task_class(task_environment=environment)
-    image_files = get_image_files(args.explain_data_root)
 
     if args.explain_algorithm not in SUPPORTED_EXPLAIN_ALGORITHMS:
         raise NotImplementedError(
             f"{args.explain_algorithm} currently not supported. \
             Currently only supporting {SUPPORTED_EXPLAIN_ALGORITHMS}"
         )
-
-    if image_files is None:
-        raise ValueError(f"No image found in {args.explain_data_root}!")
 
     dataset_class = get_dataset_class(template.task_type)
     dataset = dataset_class(test_subset={"data_root": args.explain_data_root})
@@ -160,20 +152,19 @@ def main():
     )
     elapsed_time = time.perf_counter() - start_time
 
-    for img, saliency_map, (_, fname) in zip(
-        explain_dataset, saliency_maps, image_files
-    ):
+    for img, saliency_map in zip(explain_dataset, saliency_maps):
+        file_path = img.media.filepath
         save_saliency_output(
             img.numpy,
             saliency_map.numpy,
             args.save_explanation_to,
-            os.path.splitext(fname)[0],
+            os.path.splitext(file_path)[0],
             weight=args.weight,
         )
 
     print(f"saliency maps saved to {args.save_explanation_to}...")
-    print(f"total elapsed_time: {elapsed_time:.3f} for {len(image_files)} images")
-    
+    print(f"total elapsed_time: {elapsed_time:.3f} for {len(explain_dataset)} images")
+
 
 if __name__ == "__main__":
     main()
