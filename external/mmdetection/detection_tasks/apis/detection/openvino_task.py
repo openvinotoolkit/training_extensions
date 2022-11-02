@@ -128,15 +128,16 @@ class BaseInferencerWithConverter(BaseInferencer):
         Returns:
             np.ndarray: numpy array with [label, confidence, x1, y1, x2, y2]
         """
-        scores, labels, boxes = [], [], []
+        scores = np.empty((0, 1), dtype=np.float32)
+        labels = np.empty((0, 1), dtype=np.uint32)
+        boxes = np.empty((0, 4), dtype=np.float32)
         for det in detections:
-            scores.append(det.score)
-            labels.append(det.id)
-            boxes.append([float(det.xmin) , float(det.ymin) , float(det.xmax) , float(det.ymax)])
-        scores = np.asarray(scores, dtype=np.float32)
-        labels = np.asarray(labels, dtype=np.uint32)
-        boxes = np.asarray(boxes, dtype=np.float32)
-        detections = np.concatenate((labels[:, np.newaxis], scores[:, np.newaxis], boxes), axis=-1)
+            if (det.xmax - det.xmin) * (det.ymax - det.ymin) < 1.0:
+                continue
+            scores = np.append(scores, [[det.score]], axis=0)
+            labels = np.append(labels, [[det.id]], axis=0)
+            boxes = np.append(boxes, [[float(det.xmin) , float(det.ymin), float(det.xmax) , float(det.ymax)]], axis=0)
+        detections = np.concatenate((labels, scores, boxes), -1)
         return detections
 
     @check_input_parameters_type()
@@ -146,7 +147,10 @@ class BaseInferencerWithConverter(BaseInferencer):
             detections = self.convert2array(detections)
         if not isinstance(detections, np.ndarray) and isinstance(self, OpenVINODetectionInferencer):
             detections = np.array(detections)
-        return self.converter.convert_to_annotation(detections, metadata)
+        if isinstance(self.converter, MaskToAnnotationConverter):
+            return self.converter.convert_to_annotation(detections, metadata)
+        detections[:, 2:] /= np.tile(metadata["original_shape"][1::-1], 2)
+        return self.converter.convert_to_annotation(detections)
 
     @check_input_parameters_type()
     def predict(self, image: np.ndarray) -> Tuple[AnnotationSceneEntity, np.ndarray, np.ndarray]:
@@ -255,9 +259,9 @@ class OpenVINODetectionInferencer(BaseInferencerWithConverter):
         labels = labels[keep]
         scores = scores[keep]
 
-        metadata["original_shape"] = original_shape
         detections = np.concatenate((labels[:, np.newaxis], scores[:, np.newaxis], boxes), axis=-1)
-        detections = self.converter.convert_to_annotation(detections, metadata)
+        detections[:, 2:] /= np.tile(original_shape[1::-1], 2)
+        detections = self.converter.convert_to_annotation(detections)
         return detections
 
 

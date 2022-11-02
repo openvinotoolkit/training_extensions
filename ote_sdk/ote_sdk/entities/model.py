@@ -411,14 +411,12 @@ class ModelEntity:
         """
         return self.__exportable_code_adapter
 
-    def get_data(self, key: str) -> Optional[bytes]:
+    def get_data(self, key: str) -> bytes:
         """
         Fetches byte data for a certain model.
         :param key: key to fetch data for
         :return:
         """
-        if key not in self.__model_adapters:
-            return None
         return self.__model_adapters[key].data
 
     def set_data(self, key: str, data: Union[bytes, IDataSource], skip_deletion=False):
