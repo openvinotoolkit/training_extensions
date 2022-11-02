@@ -118,14 +118,14 @@ class TestToolsMPAClassification:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_ote_explain(self, template):
-        ote_explain_testing(template, root, ote_dir, args)
+    def test_ote_eval_openvino(self, template):
+        ote_eval_openvino_testing(template, root, ote_dir, args, threshold=0.0)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_ote_eval_openvino(self, template):
-        ote_eval_openvino_testing(template, root, ote_dir, args, threshold=0.0)
+    def test_ote_explain(self, template):
+        ote_explain_testing(template, root, ote_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
@@ -279,14 +279,14 @@ class TestToolsMPAMultilabelClassification:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_ote_explain(self, template):
-        ote_explain_testing(template, root, ote_dir, args_m)
-
+    def test_ote_eval_openvino(self, template):
+        ote_eval_openvino_testing(template, root, ote_dir, args_m, threshold=0.0)
+    
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_ote_eval_openvino(self, template):
-        ote_eval_openvino_testing(template, root, ote_dir, args_m, threshold=0.0)
+    def test_ote_explain(self, template):
+        ote_explain_testing(template, root, ote_dir, args_m)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
@@ -421,18 +421,22 @@ class TestToolsMPAHierarchicalClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_ote_eval(self, template):
         ote_eval_testing(template, root, ote_dir, args_h)
-    
-    @e2e_pytest_component
-    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_ote_explain(self, template):
-        ote_explain_testing(template, root, ote_dir, args_h)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_ote_eval_openvino(self, template):
         ote_eval_openvino_testing(template, root, ote_dir, args_h, threshold=0.02)
+    
+    @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_ote_explain(self, template):
+        ote_explain_testing(template, root, ote_dir, args_h)
+    
+    @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
