@@ -89,6 +89,7 @@ def parse_args():
     parser.add_argument(
         "-w",
         "--weight",
+        type=float,
         default=0.5,
         help="weight of the saliency map when overlaying the saliency map",
     )
@@ -170,7 +171,7 @@ def main():
     for img, saliency_map, (_, fname) in zip(explain_dataset, saliency_maps, image_files):
         # file_path = img.media.filepath
         save_saliency_output(
-            img.numpy,
+            cv2.cvtColor(img.numpy, cv2.COLOR_BGR2RGB),
             saliency_map.numpy,
             args.save_explanation_to,
             os.path.splitext(fname)[0],

@@ -252,7 +252,6 @@ def get_image_files(root_dir):
         ".tif",
         ".tiff",
         ".png",
-        ".PNG",
     ]
 
     for format_ in img_data_formats:
