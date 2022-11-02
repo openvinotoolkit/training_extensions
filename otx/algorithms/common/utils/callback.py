@@ -22,8 +22,8 @@ from otx.api.usecases.reporting.time_monitor_callback import TimeMonitorCallback
 class TrainingProgressCallback(TimeMonitorCallback):
     """TrainingProgressCallback class for time monitoring."""
 
-    def __init__(self, update_progress_callback):
-        super().__init__(0, 0, 0, 0, update_progress_callback=update_progress_callback)
+    def __init__(self, update_progress_callback, **kwargs):
+        super().__init__(update_progress_callback=update_progress_callback, **kwargs)
 
     def on_train_batch_end(self, batch, logs=None):
         """Callback function on training batch ended."""
@@ -54,13 +54,14 @@ class TrainingProgressCallback(TimeMonitorCallback):
 class InferenceProgressCallback(TimeMonitorCallback):
     """InferenceProgressCallback class for time monitoring."""
 
-    def __init__(self, num_test_steps, update_progress_callback):
+    def __init__(self, num_test_steps, update_progress_callback, **kwargs):
         super().__init__(
             num_epoch=0,
             num_train_steps=0,
             num_val_steps=0,
             num_test_steps=num_test_steps,
             update_progress_callback=update_progress_callback,
+            **kwargs,
         )
 
     def on_test_batch_end(self, batch=None, logs=None):
@@ -83,8 +84,9 @@ class OptimizationProgressCallback(TrainingProgressCallback):
         update_progress_callback,
         loading_stage_progress_percentage: int = 5,
         initialization_stage_progress_percentage: int = 5,
+        **kwargs,
     ):
-        super().__init__(update_progress_callback=update_progress_callback)
+        super().__init__(update_progress_callback=update_progress_callback, **kwargs)
         if loading_stage_progress_percentage + initialization_stage_progress_percentage >= 100:
             raise RuntimeError("Total optimization progress percentage is more than 100%")
 
