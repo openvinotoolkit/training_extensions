@@ -576,9 +576,13 @@ def ote_explain_testing(template, root, ote_dir, args):
         template.model_template_path,
         "--load-weights",
         f"{template_work_dir}/trained_{template.model_template_id}/weights.pth",
-        "--input",
+        "--explain-data-root",
         os.path.join(ote_dir, args["--input"]),
-        "--output",
-        "./explain_example",
+        "--save-explanation-to",
+        f"{template_work_dir}/explain_{template.model_template_id}_output/",
     ]
     assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
+    assert os.path.exists(
+        f"{template_work_dir}/explain_{template.model_template_id}_output/"
+    )
+    assert len(os.listdir(f"{template_work_dir}/explain_{template.model_template_id}_output/")) > 0

@@ -44,5 +44,5 @@ class IOptimizationTask(metaclass=abc.ABCMeta):
         :param output_model: Output model
         :param optimization_parameters: Additional optimization parameters
         """
-        
+
         raise NotImplementedError

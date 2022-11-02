@@ -21,5 +21,5 @@ class IDeploymentTask(metaclass=abc.ABCMeta):
 
         :param output_model: Output model
         """
-        
+
         raise NotImplementedError

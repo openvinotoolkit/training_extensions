@@ -61,5 +61,5 @@ class ITrainingTask(metaclass=abc.ABCMeta):
         Cancels the currently running training process.
         If training is not running, do nothing.
         """
-        
+
         raise NotImplementedError
