@@ -295,7 +295,9 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
             output_model.set_data("min", self.model.min_max.min.cpu().numpy().tobytes())
             output_model.set_data("max", self.model.min_max.max.cpu().numpy().tobytes())
         else:
-            logger.warning("Model saved without min_max")
+            logger.warning(
+                "The model was not trained before saving. This will lead to incorrect normalization of the heatmaps."
+            )
 
     @staticmethod
     def _is_docker() -> bool:

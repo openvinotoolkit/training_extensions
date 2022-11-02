@@ -568,6 +568,9 @@ class OTETestNNCFAction(BaseOTETestAction):
 def check_nncf_model_graph(
     model: "NNCFNetwork", path_to_dot: str, force_regen_dot: bool = False
 ):
+    """
+    Compare graph of compressed model with reference.
+    """
     import networkx as nx
 
     graph = model.get_graph()
