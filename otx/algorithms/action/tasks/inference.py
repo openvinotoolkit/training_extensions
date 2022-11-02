@@ -74,8 +74,8 @@ logger = get_root_logger()
 
 
 # pylint: disable=too-many-locals
-class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask, IUnload):
-    """Inference Task Implementation of OTX Detection."""
+class ActionClsInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask, IUnload):
+    """Inference Task Implementation of OTX Action Classification."""
 
     @check_input_parameters_type()
     def __init__(self, task_environment: TaskEnvironment):
@@ -90,7 +90,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         dataset: DatasetEntity,
         inference_parameters: Optional[InferenceParameters] = None,
     ) -> DatasetEntity:
-        """Main infer function of OTX Detection."""
+        """Main infer function of OTX Action Classification."""
         logger.info("infer()")
 
         if inference_parameters:
@@ -262,7 +262,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
     def _create_model(config: Config, from_scratch: bool = False):
         """Creates a model, based on the configuration in config.
 
-        :param config: mmdetection configuration from which the model has to be built
+        :param config: mmaction configuration from which the model has to be built
         :param from_scratch: bool, if True does not load any weights
 
         :return model: ModelEntity in training mode
@@ -290,7 +290,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         output_resultset: ResultSetEntity,
         evaluation_metric: Optional[str] = None,
     ):
-        """Evaluate function of OTX Detection Task."""
+        """Evaluate function of OTX Action Classification Task."""
         logger.info("called evaluate()")
         if evaluation_metric is not None:
             logger.warning(
@@ -307,7 +307,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
 
     @check_input_parameters_type()
     def export(self, export_type: ExportType, output_model: ModelEntity):
-        """Export function of OTX Detection Task."""
+        """Export function of OTX Action Classification Task."""
         # copied from OTX inference_task.py
         logger.info("Exporting the model")
         if export_type != ExportType.OPENVINO:
@@ -352,9 +352,9 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         recipe_root = os.path.abspath(os.path.dirname(self.template_file_path))
         recipe = os.path.join(recipe_root, "model.py")
         self._recipe_cfg = Config.fromfile(recipe)
-        # TODO Unify these patch procedure through patch_config function
+        # TODO Unify these patch procedure something like patch_config function
         self._patch_data_pipeline()
-        self._patch_datasets(self._recipe_cfg, self._task_type.domain)  # for OTX compatibility
+        self._patch_datasets(self._recipe_cfg)  # for OTX compatibility
         # TODO Handle runner through patch_config function
         self._recipe_cfg.work_dir = self._output_path
         set_data_classes(self._recipe_cfg, self._labels)
@@ -385,7 +385,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         return data_cfg
 
     def _add_predictions_to_dataset(self, prediction_results, dataset, confidence_threshold=0.0):
-        """Loop over dataset again to assign predictions. Convert from MMDetection format to OTX format."""
+        """Loop over dataset again to assign predictions. Convert from MM format to OTX format."""
         for dataset_item, (all_results, feature_vector, saliency_map) in zip(dataset, prediction_results):
             item_labels = []
             # TODO Check proper label assignment method
@@ -418,7 +418,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
             self._recipe_cfg.merge_from_dict(data_pipeline_cfg)
 
     @staticmethod
-    def _patch_datasets(config: Config, domain=Domain.DETECTION):
+    def _patch_datasets(config: Config):
         # Copied from otx/apis/detection/config_utils.py
         # Added 'unlabeled' data support
 
@@ -440,9 +440,5 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
             if not cfg:
                 continue
             cfg.type = "OTXRawframeDataset"
-            cfg.domain = domain
             cfg.otx_dataset = None
             cfg.labels = None
-            remove_from_config(cfg, "ann_file")
-            remove_from_config(cfg, "img_prefix")
-            remove_from_config(cfg, "classes")  # Get from DatasetEntity

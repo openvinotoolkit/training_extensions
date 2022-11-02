@@ -122,4 +122,7 @@ gpu_ids = range(0, 1)
 
 dist_params = dict(backend="nccl")
 resume_from = None
-load_from = "/home/jaeguk/.cache/torch/hub/checkpoints/x3d_m_facebook_16x5x1_kinetics400_rgb_20201027-3f42382a.pth"
+load_from = (
+    "https://download.openmmlab.com/mmaction/recognition/x3d/facebook/"
+    "x3d_m_facebook_16x5x1_kinetics400_rgb_20201027-3f42382a.pth"
+)
