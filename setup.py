@@ -246,10 +246,11 @@ def get_requirements(requirement_files: Union[str, List[str]]) -> List[str]:
 REQUIRED_PACKAGES = get_requirements(requirement_files=["base", "dev", "openvino"])
 EXTRAS_REQUIRE = {
     "anomaly": get_requirements(requirement_files="anomaly"),
+    "classification": get_requirements(requirement_files="classification"),
     "detection": get_requirements(requirement_files="detection"),
     "segmentation": get_requirements(requirement_files="segmentation"),
-    "training": get_requirements(requirement_files=["detection", "segmentation"]),
-    "full": get_requirements(requirement_files=["anomaly", "detection", "segmentation"]),
+    "mpa": get_requirements(requirement_files=["classification", "detection", "segmentation"]),
+    "full": get_requirements(requirement_files=["anomaly", "classification", "detection", "segmentation"]),
 }
 DEPENDENCY_LINKS = ["https://download.pytorch.org/whl/torch_stable.html"]
 

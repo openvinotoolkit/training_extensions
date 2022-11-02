@@ -1,0 +1,3 @@
+mmcv-full==1.3.14
+torchreid@git+https://github.com/openvinotoolkit/deep-object-reid@otx
+mpa@git+https://github.com/openvinotoolkit/model_preparation_algorithm@otx
