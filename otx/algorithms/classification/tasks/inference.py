@@ -18,6 +18,7 @@ from otx.algorithms.classification.configs import ClassificationConfig
 from otx.algorithms.classification.utils import (
     get_multihead_class_info as get_hierarchical_info,
 )
+from otx.algorithms.common.adapters.mmcv.utils import get_meta_keys
 from otx.algorithms.common.configs import TrainType
 from otx.algorithms.common.tasks import BaseTask
 from otx.api.entities.datasets import DatasetEntity
@@ -375,7 +376,7 @@ class ClassificationInferenceTask(
             cfg.empty_label = self._empty_label
             for pipeline_step in cfg.pipeline:
                 if subset == "train" and pipeline_step.type == "Collect":
-                    pipeline_step = BaseTask._get_meta_keys(pipeline_step)
+                    pipeline_step = get_meta_keys(pipeline_step)
             patch_color_conversion(cfg.pipeline)
 
     def _patch_evaluation(self, config: MPAConfig):
