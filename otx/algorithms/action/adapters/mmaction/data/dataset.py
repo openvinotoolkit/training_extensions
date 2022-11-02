@@ -23,7 +23,7 @@ from mmaction.datasets.pipelines import Compose
 from mmaction.datasets.rawframe_dataset import RawframeDataset
 
 from otx.api.entities.datasets import DatasetEntity
-from otx.api.entities.label import Domain, LabelEntity
+from otx.api.entities.label import LabelEntity
 from otx.api.utils.argument_checks import (
     DatasetParamTypeCheck,
     check_input_parameters_type,
@@ -76,7 +76,6 @@ class OTXRawframeDataset(RawframeDataset):
         otx_dataset: DatasetEntity,
         labels: List[LabelEntity],
         pipeline: Sequence[dict],
-        domain: Domain,
         data_prefix=str,
         test_mode: bool = False,
         filename_tmpl: str = "img_{:05}.jpg",
@@ -85,8 +84,6 @@ class OTXRawframeDataset(RawframeDataset):
     ):
         self.otx_dataset = otx_dataset
         self.labels = labels
-        self.CLASSES = list(label.name for label in labels)
-        self.domain = domain
         self.data_prefix = data_prefix
         self.test_mode = test_mode
         self.filename_tmpl = filename_tmpl
@@ -95,30 +92,12 @@ class OTXRawframeDataset(RawframeDataset):
 
         self.data_infos = OTXRawframeDataset._DataInfoProxy(otx_dataset, labels)
 
-        self.proposals = None  # Attribute expected by mmdet but not used for OTX datasets
-
-        if not test_mode:
-            self._set_group_flag()
-
         self.pipeline = Compose(pipeline)
         self.make_video_infos()
-
-    def _set_group_flag(self):
-        """Set flag for grouping images.
-
-        Originally, in Custom dataset, images with aspect ratio greater than 1 will be set as group 1,
-        otherwise group 0.
-        This implementation will set group 0 for every image.
-        """
-        self.flag = np.zeros(len(self), dtype=np.uint8)
 
     def __len__(self):
         """Return length of dataset."""
         return len(self.data_infos)
-
-    def _rand_another(self, idx):
-        _ = idx
-        return np.random.choice(len(self))
 
     @check_input_parameters_type()
     def prepare_train_frames(self, idx: int) -> dict:

@@ -1,4 +1,4 @@
-"""OTX Algorithms - Detection Dataset."""
+"""OTX Algorithms - Action Classification Dataset."""
 
 # Copyright (C) 2022 Intel Corporation
 #

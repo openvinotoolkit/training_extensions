@@ -1,4 +1,4 @@
-"""Task Initialization of OTX Detection."""
+"""Task Initialization of OTX Action Classification."""
 
 # Copyright (C) 2022 Intel Corporation
 #
@@ -16,10 +16,10 @@
 
 # import mpa.det as MPADetection
 
-from .inference import DetectionInferenceTask
-from .train import DetectionTrainTask
+from .inference import ActionClsInferenceTask
+from .train import ActionClsTrainTask
 
 __all__ = [
-    "DetectionInferenceTask",
-    "DetectionTrainTask",
+    "ActionClsInferenceTask",
+    "ActionClsTrainTask",
 ]
