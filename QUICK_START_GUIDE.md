@@ -479,7 +479,7 @@ optional arguments:
                         and overlay images to this folder
   --load-weights WEIGHT_PATHS
   --explain-algorithm EXPLAIN_ALGORITHM
-                        explain algirhtm name. Currently only support EigenCAM and CAM
+                        explain algirhtm name. Currently only support EigenCAM and ActivationMap
 ```
 
 ---

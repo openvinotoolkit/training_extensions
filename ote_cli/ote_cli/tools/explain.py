@@ -47,7 +47,7 @@ from ote_cli.utils.parser import (
 from ote_cli.utils.nncf import is_checkpoint_nncf
 
 ESC_BUTTON = 27
-SUPPORTED_EXPLAIN_ALGORITHMS = ["CAM", "EigenCAM"]
+SUPPORTED_EXPLAIN_ALGORITHMS = ["ActivationMap", "EigenCAM"]
 
 
 def parse_args():
