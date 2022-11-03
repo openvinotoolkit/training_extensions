@@ -361,12 +361,6 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
             else:
                 cfg.type = 'MPAClsDataset'
 
-            # In train dataset, when sample size is smaller than batch size
-            if subset == 'train' and self._data_cfg:
-                train_data_cfg = Stage.get_train_data_cfg(self._data_cfg)
-                if (len(train_data_cfg.get('ote_dataset', [])) < self._recipe_cfg.data.get('samples_per_gpu', 2)):
-                    cfg.drop_last = False
-
             cfg.domain = domain
             cfg.ote_dataset = None
             cfg.labels = None
