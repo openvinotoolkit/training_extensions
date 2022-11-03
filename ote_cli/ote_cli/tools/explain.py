@@ -169,7 +169,6 @@ def main():
     elapsed_time = time.perf_counter() - start_time
 
     for img, saliency_map, (_, fname) in zip(explain_dataset, saliency_maps, image_files):
-        # file_path = img.media.filepath
         save_saliency_output(
             cv2.cvtColor(img.numpy, cv2.COLOR_BGR2RGB),
             saliency_map.numpy,
