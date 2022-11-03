@@ -16,7 +16,7 @@
 
 # pylint: disable=invalid-name
 
-num_classes = 3
+num_classes = 400
 num_samples = 12
 model = dict(
     type="Recognizer3D",

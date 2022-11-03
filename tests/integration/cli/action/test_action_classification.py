@@ -57,6 +57,7 @@ else:
     templates = Registry("otx/algorithms").filter(task_type="ACTION_CLASSIFICATION").templates
     templates_ids = [template.model_template_id for template in templates]
 
+
 @pytest.fixture(scope="session")
 def tmp_dir_path():
     with TemporaryDirectory() as tmp_dir:

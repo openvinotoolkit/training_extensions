@@ -17,6 +17,7 @@
 import os.path as osp
 from typing import List, Optional
 
+# TODO Move find_label_by_name to common
 from otx.algorithms.detection.utils.data import find_label_by_name
 from otx.api.entities.annotation import (
     Annotation,
