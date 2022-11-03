@@ -585,22 +585,3 @@ def ote_explain_testing(template, root, ote_dir, args):
     assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
     assert os.path.exists(output_dir)
     assert len(os.listdir(output_dir)) > 0
-
-
-def ote_eval_openvino_testing(template, root, ote_dir, args):
-    work_dir, template_work_dir, _ = get_some_vars(template, root)
-    output_dir = f"{template_work_dir}/explain_{template.model_template_id}_output/"
-    command_line = [
-        "ote",
-        "explain",
-        template.model_template_path,
-        "--load-weights",
-        f"{template_work_dir}/exported_{template.model_template_id}/openvino.xml",
-        "--explain-data-root",
-        os.path.join(ote_dir, args["--input"]),
-        "--save-explanation-to",
-        output_dir,
-    ]
-    assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
-    assert os.path.exists(output_dir)
-    assert len(os.listdir(output_dir)) > 0

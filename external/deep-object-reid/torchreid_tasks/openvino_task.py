@@ -48,7 +48,6 @@ from ote_sdk.usecases.evaluation.metrics_helper import MetricsHelper
 from ote_sdk.usecases.tasks.interfaces.deployment_interface import IDeploymentTask
 from ote_sdk.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
 from ote_sdk.usecases.tasks.interfaces.inference_interface import IInferenceTask
-from ote_sdk.usecases.tasks.interfaces.explain_interface import IExplainTask
 from ote_sdk.usecases.tasks.interfaces.optimization_interface import (
     IOptimizationTask,
     OptimizationType,
@@ -159,7 +158,7 @@ class OTEOpenVinoDataLoader(DataLoader):
         return len(self.dataset)
 
 
-class OpenVINOClassificationTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IExplainTask, IOptimizationTask):
+class OpenVINOClassificationTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IOptimizationTask):
     @check_input_parameters_type()
     def __init__(self, task_environment: TaskEnvironment):
         self.task_environment = task_environment
@@ -197,28 +196,6 @@ class OpenVINOClassificationTask(IDeploymentTask, IInferenceTask, IEvaluationTas
                                                    numpy=actmap, roi=dataset_item.roi,
                                                    label=predicted_scene.annotations[0].get_labels()[0].label)
                 dataset_item.append_metadata_item(saliency_media, model=self.model)
-
-            update_progress_callback(int(i / dataset_size * 100))
-        return dataset
-
-    @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
-    def explain(self, dataset: DatasetEntity,
-              explain_parameters: Optional[InferenceParameters] = None) -> DatasetEntity:
-        update_progress_callback = default_progress_callback
-        if explain_parameters is not None:
-            update_progress_callback = explain_parameters.update_progress
-        dataset_size = len(dataset)
-        for i, dataset_item in enumerate(dataset, 1):
-            predicted_scene, actmap, repr_vector, act_score = self.inferencer.predict(dataset_item.numpy)
-            dataset_item.append_labels(predicted_scene.annotations[0].get_labels())
-            active_score_media = FloatMetadata(name="active_score", value=act_score,
-                                               float_type=FloatType.ACTIVE_SCORE)
-            dataset_item.append_metadata_item(active_score_media, model=self.model)
-            saliency_media = ResultMediaEntity(name="Saliency Map", type="saliency_map",
-                                                annotation_scene=dataset_item.annotation_scene,
-                                                numpy=actmap, roi=dataset_item.roi,
-                                                label=predicted_scene.annotations[0].get_labels()[0].label)
-            dataset_item.append_metadata_item(saliency_media, model=self.model)
 
             update_progress_callback(int(i / dataset_size * 100))
         return dataset
