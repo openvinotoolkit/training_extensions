@@ -63,12 +63,8 @@ def get_uncompressed_model(module):
 
 
 class AccuracyAwareLrUpdater:
-    def __init__(self, lr_hook, runner, optimizer=None):
+    def __init__(self, lr_hook):
         self._lr_hook = lr_hook
-        self._runner = runner
-        if optimizer:
-            runner.optimizer = optimizer
-        self._lr_hook.before_run(runner)
         self._lr_hook.warmup_iters = 0
 
     def step(self, *args, **kwargs):
