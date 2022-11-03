@@ -20,6 +20,7 @@ class CompressionHook(Hook):
             runner.logger.info(self.compression_ctrl.statistics().to_str())
 
     def before_run(self, runner):
+        runner.compression_ctrl = self.compression_ctrl
         if runner.rank == 0:
             runner.logger.info(self.compression_ctrl.statistics().to_str())
 
