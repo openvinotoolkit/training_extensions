@@ -100,7 +100,7 @@ def parse_args():
 
 def main():
     """
-    Main function that is used for model demonstration.
+    Main function that is used for model explanation.
     """
 
     # Dynamically create an argument parser based on override parameters.
