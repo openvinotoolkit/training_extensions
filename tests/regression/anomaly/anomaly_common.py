@@ -17,11 +17,12 @@ import logging
 import os
 from collections import namedtuple
 from copy import deepcopy
-from typing import List, Type
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List, Type
 
 if TYPE_CHECKING:
     from nncf.torch.nncf_network import NNCFNetwork
+
+from tasks import NNCFTask
 
 from otx.algorithms.anomaly.adapters.anomalib.data.mvtec import OtxMvtecDataset
 from otx.api.entities.datasets import DatasetEntity
@@ -42,7 +43,6 @@ from tests.test_suite.training_tests_actions import (
     OTXTestTrainingEvaluationAction,
 )
 from tests.test_suite.training_tests_common import ROOT_PATH_KEY, make_paths_be_abs
-from tasks import NNCFTask
 
 logger = logging.getLogger(__name__)
 
