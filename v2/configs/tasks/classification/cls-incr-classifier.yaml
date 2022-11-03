@@ -1,0 +1,50 @@
+algo:
+  impl: otx.algorithms.classification.task.ClsIncrClassification
+  task_type: classification
+  train_type: class-incr
+
+jobs:
+  - adapter: otx.backends.torch.mmcv.mmcls.trainer.MMClsTrainer
+    spec:
+      - train
+  - adapter: otx.backends.torch.mmcv.evaluator.MMEvaluator
+    spec:
+      - eval
+      - infer
+  - adapter: otx.backends.ov.exporter.OpenVINOExporter
+    spec:
+      - export
+
+train:
+  max_epochs: 20
+  optimizer: SGD
+  lr: 0.01
+  momentum: 0.9
+  weight_decay: 0.0005
+  metric: ['accuracy', 'class_accuracy']
+
+infer:
+  heat_map: false
+
+eval:
+  metric: ['accuracy', 'class_accuracy']
+
+export:
+  type: mo
+
+optimize:
+  nncf:
+    enable_pruning: false
+    enable_quantization: true
+    pruning_supported: false
+  pot:
+    preset: Performance
+    stat_subset_size: 300
+
+model:
+  default: configs/models/classification/image_classifier.yaml
+  adapter: otx.backends.torch.mmcv.mmcls.ModelAdapter
+
+data:
+  default: configs/data/anomaly/default.yaml
+  adapter: otx.backends.torch.mmcv.mmcls.MMClsDataAdapter

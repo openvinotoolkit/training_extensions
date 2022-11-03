@@ -1,0 +1,3 @@
+backbone: resnet18
+neck: None
+head: linear_head
