@@ -226,7 +226,7 @@ class TestTaskType:
         2. Check TaskType elements value attribute
         3. Check TaskType str method
         """
-        assert len(TaskType) == 13
+        assert len(TaskType) == 14
         assert TaskType.NULL.value == 1
         assert TaskType.DATASET.value == 2
         assert TaskType.CLASSIFICATION.value == 3
@@ -240,6 +240,7 @@ class TestTaskType:
         assert TaskType.ANOMALY_SEGMENTATION.value == 11
         assert TaskType.ANOMALY_CLASSIFICATION.value == 12
         assert TaskType.ROTATED_DETECTION.value == 13
+        assert TaskType.ACTION_CLASSIFICATION.value == 14
         assert str(TaskType.NULL) == "NULL"
         assert str(TaskType.DATASET) == "DATASET"
         assert str(TaskType.CLASSIFICATION) == "CLASSIFICATION"
@@ -253,6 +254,7 @@ class TestTaskType:
         assert str(TaskType.ANOMALY_SEGMENTATION) == "ANOMALY_SEGMENTATION"
         assert str(TaskType.ANOMALY_CLASSIFICATION) == "ANOMALY_CLASSIFICATION"
         assert str(TaskType.ROTATED_DETECTION) == "ROTATED_DETECTION"
+        assert str(TaskType.ACTION_CLASSIFICATION) == "ACTION_CLASSIFICATION"
 
     @pytest.mark.priority_medium
     @pytest.mark.unit
@@ -984,6 +986,7 @@ class TestTaskTypesConstants:
             TaskType.ANOMALY_CLASSIFICATION,
             TaskType.ANOMALY_SEGMENTATION,
             TaskType.ROTATED_DETECTION,
+            TaskType.ACTION_CLASSIFICATION,
         )
 
 
