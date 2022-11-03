@@ -574,7 +574,7 @@ def ote_explain_testing(template, root, ote_dir, args):
     work_dir, template_work_dir, _ = get_some_vars(template, root)
     test_algorithms = ['ActivationMap', 'EigenCAM']
     for test_algorithm in test_algorithms:
-        output_dir = f"{template_work_dir}/{test_algorithm}/explain_{template.model_template_id}_output/"
+        output_dir = f"{template_work_dir}/{test_algorithm}/explain_{template.model_template_id}/"
         command_line = [
             "ote",
             "explain",
@@ -588,9 +588,9 @@ def ote_explain_testing(template, root, ote_dir, args):
             "--explain-algorithm",
             test_algorithm,
         ]
-        compare_dir = f"{ote_dir}/data/explain_samples/{test_algorithm}/explain_{template.model_template_id}_output/"
-        for fname in os.listdir(compare_dir):
+        assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
+        compare_dir = f"{ote_dir}/data/explain_samples/{test_algorithm}/explain_{template.model_template_id}/"
+        for fname in os.listdir(output_dir):
             compare_image = cv2.imread(os.path.join(compare_dir, fname))
             output_image = cv2.imread(os.path.join(output_dir, fname))
             assert np.sum((compare_image - output_image)**2) == 0, 'explain output image is not same as sample one!'
-        assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
