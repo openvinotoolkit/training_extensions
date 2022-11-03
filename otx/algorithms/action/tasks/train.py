@@ -27,10 +27,10 @@ from mmaction.utils import get_root_logger
 from mmcv.utils import ConfigDict
 
 from otx.algorithms.common.adapters.mmcv.hooks import OTXLoggerHook
+from otx.algorithms.common.utils import TrainingProgressCallback
 from otx.algorithms.detection.adapters.mmdet.utils.config_utils import (
     prepare_for_training,
 )
-from otx.algorithms.detection.utils.utils import TrainingProgressCallback
 from otx.api.configuration import cfg_helper
 from otx.api.configuration.helper.utils import ids_to_strings
 from otx.api.entities.datasets import DatasetEntity

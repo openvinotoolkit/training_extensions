@@ -14,7 +14,6 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import copy
 import math
 import os
 from collections import defaultdict
@@ -186,7 +185,6 @@ def prepare_for_training(
     learning_curves: defaultdict,
 ) -> Config:
     """Prepare configs for training phase."""
-    # config = copy.deepcopy(config)
     prepare_work_dir(config)
     data_train = get_data_cfg(config)
     data_train.otx_dataset = train_dataset
