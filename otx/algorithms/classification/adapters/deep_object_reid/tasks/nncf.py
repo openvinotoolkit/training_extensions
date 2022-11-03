@@ -52,8 +52,6 @@ from otx.algorithms.classification.adapters.deep_object_reid.data import (
 )
 from otx.algorithms.classification.adapters.deep_object_reid.utils import (
     DefaultMetricsMonitor,
-    InferenceProgressCallback,
-    OptimizationProgressCallback,
     StopCallback,
     active_score_from_probs,
     force_fp32,
@@ -65,6 +63,10 @@ from otx.algorithms.classification.adapters.deep_object_reid.utils import (
     softmax_numpy,
 )
 from otx.algorithms.classification.configs import ClassificationConfig
+from otx.algorithms.common.utils.callback import (
+    InferenceProgressCallback,
+    OptimizationProgressCallback,
+)
 from otx.api.configuration import cfg_helper
 from otx.api.configuration.helper.utils import ids_to_strings
 from otx.api.entities.datasets import DatasetEntity

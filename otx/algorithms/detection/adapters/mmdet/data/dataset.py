@@ -95,7 +95,7 @@ def get_annotation_mmdet_format(
 
 
 @DATASETS.register_module()
-class OTXDataset(CustomDataset):
+class MPADetDataset(CustomDataset):
     """Wrapper that allows using a OTX dataset to train mmdetection models.
 
     This wrapper is not based on the filesystem,
@@ -157,7 +157,11 @@ class OTXDataset(CustomDataset):
         pipeline: Sequence[dict],
         domain: Domain,
         test_mode: bool = False,
+        **kwargs,
     ):
+        dataset_cfg = kwargs.copy()
+        _ = dataset_cfg.pop("org_type", None)
+        new_classes = dataset_cfg.pop("new_classes", [])
         self.otx_dataset = otx_dataset
         self.labels = labels
         self.CLASSES = list(label.name for label in labels)
@@ -172,12 +176,13 @@ class OTXDataset(CustomDataset):
         # even if we need only checking aspect ratio of the image; due to it
         # this implementation of dataset does not uses such tricks as skipping images with wrong aspect ratios or
         # small image size, since otherwise reading the whole dataset during initialization will be required.
-        self.data_infos = OTXDataset._DataInfoProxy(otx_dataset, labels)
+        self.data_infos = MPADetDataset._DataInfoProxy(otx_dataset, labels)
 
         self.proposals = None  # Attribute expected by mmdet but not used for OTX datasets
 
         if not test_mode:
             self._set_group_flag()
+            self.img_indices = get_old_new_img_indices(self.labels, new_classes, self.otx_dataset)
 
         self.pipeline = Compose(pipeline)
 
@@ -237,30 +242,3 @@ class OTXDataset(CustomDataset):
         dataset_item = self.otx_dataset[idx]
         labels = self.labels
         return get_annotation_mmdet_format(dataset_item, labels, self.domain)
-
-
-@DATASETS.register_module()
-class MPADetDataset(OTXDataset):
-    """MPADetDataset for Class-Incremental Learning."""
-
-    def __init__(self, **kwargs):
-        dataset_cfg = kwargs.copy()
-        _ = dataset_cfg.pop("org_type", None)
-        new_classes = dataset_cfg.pop("new_classes", [])
-        super().__init__(**dataset_cfg)
-
-        test_mode = kwargs.get("test_mode", False)
-        if test_mode is False:
-            self.img_indices = get_old_new_img_indices(self.labels, new_classes, self.otx_dataset)
-
-    def get_cat_ids(self, idx):
-        """Get category ids by index.
-
-        Args:
-            idx (int): Index of data.
-
-        Returns:
-            list[int]: All categories in the image of specified index.
-        """
-
-        return self.get_ann_info(idx)["labels"].astype(int).tolist()

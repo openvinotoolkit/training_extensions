@@ -40,14 +40,14 @@ from mpa.utils.config_utils import remove_custom_hook
 from mpa.utils.logger import get_logger
 
 from otx.algorithms.common.adapters.mmcv.hooks import OTXLoggerHook
+from otx.algorithms.common.adapters.mmcv.utils import remove_from_config
+from otx.algorithms.common.utils.callback import OptimizationProgressCallback
 from otx.algorithms.detection.adapters.mmdet.utils.config_utils import (
     patch_config,
     prepare_for_training,
-    remove_from_config,
     set_hyperparams,
 )
 from otx.algorithms.detection.configs.base import DetectionConfig
-from otx.algorithms.detection.utils.utils import OptimizationProgressCallback
 from otx.api.configuration import cfg_helper
 from otx.api.configuration.helper.utils import ids_to_strings
 from otx.api.entities.datasets import DatasetEntity
@@ -58,10 +58,7 @@ from otx.api.entities.model import (
     ModelPrecision,
     OptimizationMethod,
 )
-from otx.api.entities.model_template import (
-    parse_model_template,
-    task_type_to_label_domain,
-)
+from otx.api.entities.model_template import task_type_to_label_domain
 from otx.api.entities.optimization_parameters import (
     OptimizationParameters,
     default_progress_callback,
@@ -90,16 +87,7 @@ class DetectionNNCFTask(DetectionInferenceTask, IOptimizationTask):
 
     @check_input_parameters_type()
     def __init__(self, task_environment: TaskEnvironment):
-        # TODO: OTENNCFTASK + MPANNCFTASK, need to check base_model_path
         super().__init__(task_environment)
-        curr_model_path = task_environment.model_template.model_template_path
-        base_model_path = os.path.join(
-            os.path.dirname(os.path.abspath(curr_model_path)),
-            task_environment.model_template.base_model_path,
-        )
-        if os.path.isfile(base_model_path):
-            logger.info(f"Base model for NNCF: {base_model_path}")
-            task_environment.model_template = parse_model_template(base_model_path)
         self._val_dataloader = None
         self._compression_ctrl = None
         self._nncf_preset = "nncf_quantization"

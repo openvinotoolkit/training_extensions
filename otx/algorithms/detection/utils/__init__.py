@@ -20,12 +20,7 @@ from .data import (
     get_sizes_from_dataset_entity,
     load_dataset_items_coco_format,
 )
-from .utils import (
-    InferenceProgressCallback,
-    OptimizationProgressCallback,
-    generate_label_schema,
-    load_template,
-)
+from .utils import generate_label_schema
 
 __all__ = [
     "load_dataset_items_coco_format",
@@ -33,7 +28,4 @@ __all__ = [
     "get_anchor_boxes",
     "format_list_to_str",
     "generate_label_schema",
-    "load_template",
-    "InferenceProgressCallback",
-    "OptimizationProgressCallback",
 ]

@@ -18,15 +18,12 @@ import random
 from typing import Optional, Sequence
 
 import numpy as np
-import yaml
 
-from otx.algorithms.common.utils import TrainingProgressCallback
 from otx.api.entities.color import Color
 from otx.api.entities.id import ID
 from otx.api.entities.label import Domain, LabelEntity
 from otx.api.entities.label_schema import LabelGroup, LabelGroupType, LabelSchemaEntity
-from otx.api.usecases.reporting.time_monitor_callback import TimeMonitorCallback
-from otx.api.utils.argument_checks import YamlFilePathCheck, check_input_parameters_type
+from otx.api.utils.argument_checks import check_input_parameters_type
 
 # pylint: disable=invalid-name
 
@@ -101,79 +98,3 @@ def generate_label_schema(label_names: Sequence[str], label_domain: Domain = Dom
     label_schema.add_group(exclusive_group)
     label_schema.add_group(empty_group)
     return label_schema
-
-
-@check_input_parameters_type({"path": YamlFilePathCheck})
-def load_template(path):
-    """Loading model template function."""
-    with open(path, encoding="UTF-8") as f:
-        template = yaml.safe_load(f)
-    return template
-
-
-class InferenceProgressCallback(TimeMonitorCallback):
-    """InferenceProgressCallback class for time monitoring."""
-
-    def __init__(self, num_test_steps, update_progress_callback):
-        super().__init__(
-            num_epoch=0,
-            num_train_steps=0,
-            num_val_steps=0,
-            num_test_steps=num_test_steps,
-            update_progress_callback=update_progress_callback,
-        )
-
-    def on_test_batch_end(self, batch=None, logs=None):
-        """Callback function on testing batch ended."""
-        super().on_test_batch_end(batch, logs)
-        self.update_progress_callback(int(self.get_progress()))
-
-
-class OptimizationProgressCallback(TrainingProgressCallback):
-    """Progress callback used for optimization using NNCF.
-
-    There are three stages to the progress bar:
-       - 5 % model is loaded
-       - 10 % compressed model is initialized
-       - 10-100 % compressed model is being fine-tuned
-    """
-
-    def __init__(
-        self,
-        update_progress_callback,
-        loading_stage_progress_percentage: int = 5,
-        initialization_stage_progress_percentage: int = 5,
-    ):
-        super().__init__(update_progress_callback=update_progress_callback)
-        if loading_stage_progress_percentage + initialization_stage_progress_percentage >= 100:
-            raise RuntimeError("Total optimization progress percentage is more than 100%")
-
-        self.loading_stage_progress_percentage = loading_stage_progress_percentage
-        self.initialization_stage_progress_percentage = initialization_stage_progress_percentage
-
-        # set loading_stage_progress_percentage from the start as the model is already loaded at this point
-        if self.update_progress_callback:
-            self.update_progress_callback(loading_stage_progress_percentage)
-
-    def on_train_begin(self, logs=None):
-        """Callback function when training beginning."""
-        super().on_train_begin(logs)
-        # Callback initialization takes place here after OTXProgressHook.before_run() is called
-        train_percentage = 100 - self.loading_stage_progress_percentage - self.initialization_stage_progress_percentage
-        loading_stage_steps = self.total_steps * self.loading_stage_progress_percentage / train_percentage
-        initialization_stage_steps = self.total_steps * self.initialization_stage_progress_percentage / train_percentage
-        self.total_steps += loading_stage_steps + initialization_stage_steps
-
-        self.current_step = loading_stage_steps + initialization_stage_steps
-        self.update_progress_callback(self.get_progress())
-
-    def on_train_end(self, logs=None):
-        """Callback function on training ended."""
-        super().on_train_end(logs)
-        self.update_progress_callback(self.get_progress(), score=logs)
-
-    def on_initialization_end(self):
-        """on_initialization_end callback for optimization using NNCF."""
-        self.update_progress_callback(
-            self.loading_stage_progress_percentage + self.initialization_stage_progress_percentage
-        )

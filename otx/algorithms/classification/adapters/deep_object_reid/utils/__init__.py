@@ -16,8 +16,6 @@
 
 from .monitors import DefaultMetricsMonitor, StopCallback
 from .utils import (
-    InferenceProgressCallback,
-    OptimizationProgressCallback,
     active_score_from_probs,
     force_fp32,
     get_hierarchical_predictions,
@@ -31,8 +29,6 @@ from .utils import (
 __all__ = [
     "DefaultMetricsMonitor",
     "StopCallback",
-    "InferenceProgressCallback",
-    "OptimizationProgressCallback",
     "active_score_from_probs",
     "force_fp32",
     "get_hierarchical_predictions",

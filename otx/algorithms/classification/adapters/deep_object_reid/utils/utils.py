@@ -32,7 +32,6 @@ from otx.api.entities.label import Domain, LabelEntity
 from otx.api.entities.label_schema import LabelGroup, LabelGroupType, LabelSchemaEntity
 from otx.api.entities.model_template import ModelTemplate
 from otx.api.entities.scored_label import ScoredLabel
-from otx.api.usecases.reporting.time_monitor_callback import TimeMonitorCallback
 from otx.api.utils.argument_checks import check_input_parameters_type
 
 
@@ -144,75 +143,6 @@ def force_fp32(model: Module):
         yield model
     finally:
         set_model_attr(model, "mix_precision", mix_precision_status)
-
-
-class InferenceProgressCallback(TimeMonitorCallback):
-    """Progress callback used for inference.
-
-    There are three stages to the progress bar:
-       - 5 % model is loaded
-       - 10 % compressed model is initialized
-       - 10-100 % compressed model is being fine-tuned
-    """
-
-    def __init__(self, num_test_steps, update_progress_callback):
-        super().__init__(
-            num_epoch=0,
-            num_train_steps=0,
-            num_val_steps=0,
-            num_test_steps=num_test_steps,
-            update_progress_callback=update_progress_callback,
-        )
-
-    def on_test_batch_end(self, batch=None, logs=None):
-        """Callback when batch-test ended."""
-        super().on_test_batch_end(batch, logs)
-        self.update_progress_callback(self.get_progress())
-
-
-class OptimizationProgressCallback(TimeMonitorCallback):
-    """Progress callback used for optimization using NNCF.
-
-    There are three stages to the progress bar:
-       - 5 % model is loaded
-       - 10 % compressed model is initialized
-       - 10-100 % compressed model is being fine-tuned
-    """
-
-    def __init__(
-        self,
-        update_progress_callback,
-        loading_stage_progress_percentage: int = 5,
-        initialization_stage_progress_percentage: int = 5,
-        **kwargs
-    ):
-        super().__init__(update_progress_callback=update_progress_callback, **kwargs)
-        if loading_stage_progress_percentage + initialization_stage_progress_percentage >= 100:
-            raise RuntimeError("Total optimization progress percentage is more than 100%")
-
-        train_percentage = 100 - loading_stage_progress_percentage - initialization_stage_progress_percentage
-        self.loading_stage_steps = self.total_steps * loading_stage_progress_percentage / train_percentage
-        self.initialization_stage_steps = self.total_steps * initialization_stage_progress_percentage / train_percentage
-        self.total_steps += self.loading_stage_steps + self.initialization_stage_steps  # type: ignore
-
-        # set loading_stage_steps from the start as the model is already loaded at this point
-        self.current_step = self.loading_stage_steps  # type: ignore
-        self.update_progress_callback(self.get_progress())  # type: ignore
-
-    def on_train_batch_end(self, batch, logs=None):
-        """Callback when batch-train ended."""
-        super().on_train_batch_end(batch, logs)
-        self.update_progress_callback(self.get_progress(), score=logs)
-
-    def on_train_end(self, logs=None):
-        """Callback when train ended."""
-        super().on_train_end(logs)
-        self.update_progress_callback(self.get_progress(), score=logs)
-
-    def on_initialization_end(self):
-        """Callback when init ended."""
-        self.current_step += self.initialization_stage_steps
-        self.update_progress_callback(self.get_progress())
 
 
 @check_input_parameters_type()
