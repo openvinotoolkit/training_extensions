@@ -137,7 +137,7 @@ def main():
     if args.explain_algorithm not in SUPPORTED_EXPLAIN_ALGORITHMS:
         raise NotImplementedError(
             f"{args.explain_algorithm} currently not supported. \
-            Currently only supporting {SUPPORTED_EXPLAIN_ALGORITHMS}"
+            Currently only support {SUPPORTED_EXPLAIN_ALGORITHMS}"
         )
 
     empty_annotation = AnnotationSceneEntity(
