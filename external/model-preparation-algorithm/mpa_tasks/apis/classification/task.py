@@ -177,7 +177,7 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         )
         logger.debug(f"result of run_task {stage_module} module = {results}")
         activations = results["outputs"]
-        activation_results = zip(
+        saliency_maps = zip(
             activations["saliency_maps"],
         )
 
@@ -185,7 +185,7 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         if explain_parameters is not None:
             update_progress_callback = explain_parameters.update_progress
 
-        self._add_saliency_maps_to_dataset(activation_results, dataset, update_progress_callback)
+        self._add_saliency_maps_to_dataset(saliency_maps, dataset, update_progress_callback)
         return dataset
 
     def evaluate(
@@ -307,10 +307,10 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
 
             update_progress_callback(int(i / dataset_size * 100))
 
-    def _add_saliency_maps_to_dataset(self, activation_results, dataset, update_progress_callback):
+    def _add_saliency_maps_to_dataset(self, saliency_maps, dataset, update_progress_callback):
         """Loop over dataset again and assign activation maps"""
         dataset_size = len(dataset)
-        for i, (dataset_item, prediction_items) in enumerate(zip(dataset, activation_results)):
+        for i, (dataset_item, prediction_items) in enumerate(zip(dataset, saliency_maps)):
             saliency_map = prediction_items[0]
             saliency_map = get_actmap(saliency_map, (dataset_item.width, dataset_item.height))
             saliency_map_media = ResultMediaEntity(
