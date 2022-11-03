@@ -183,7 +183,7 @@ class TestMPAClsAPI:
         ids=["multiclass", "multilabel", "hierarchical"],
     )
     def test_training_progress_tracking(self, multilabel, hierarchical):
-        hyper_parameters, model_template = self.setup_configurable_parameters(DEFAULT_CLS_TEMPLATE_DIR, num_iters=5)
+        hyper_parameters, model_template = self.setup_configurable_parameters(DEFAULT_CLS_TEMPLATE_DIR, num_iters=10)
         task_environment, dataset = self.init_environment(
             hyper_parameters, model_template, multilabel, hierarchical, 20
         )
