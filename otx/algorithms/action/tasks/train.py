@@ -132,7 +132,7 @@ class ActionClsTrainTask(ActionClsInferenceTask, ITrainingTask):
         if self._recipe_cfg is None:
             raise Exception("Recipe config is not initialized properly")
 
-        results = self._train_detector(dataset)
+        results = self._train_model(dataset)
 
         # Check for stop signal when training has stopped. If should_stop is true, training was cancelled and no new
         if self._should_stop:
@@ -150,7 +150,7 @@ class ActionClsTrainTask(ActionClsInferenceTask, ITrainingTask):
         self._is_training = False
         logger.info("train done.")
 
-    def _train_detector(self, dataset: DatasetEntity):
+    def _train_model(self, dataset: DatasetEntity):
         if self._recipe_cfg is None:
             raise Exception("Recipe config does not initialize properly!")
         train_dataset = dataset.get_subset(Subset.TRAINING)
@@ -208,7 +208,7 @@ class ActionClsTrainTask(ActionClsInferenceTask, ITrainingTask):
     def _get_final_eval_results(self, dataset, output_model):
         logger.info("Final Evaluation")
         val_dataset = dataset.get_subset(Subset.VALIDATION)
-        val_preds, val_map = self._infer_detector(val_dataset, InferenceParameters(is_evaluation=True))
+        val_preds, val_map = self._infer_model(val_dataset, InferenceParameters(is_evaluation=True))
 
         preds_val_dataset = val_dataset.with_empty_annotations()
         self._add_predictions_to_dataset(val_preds, preds_val_dataset, 0.0)
@@ -246,7 +246,7 @@ class ActionClsTrainTask(ActionClsInferenceTask, ITrainingTask):
     def _generate_training_metrics(learning_curves, scores, metric_name) -> Iterable[MetricsGroup[Any, Any]]:
         """Get Training metrics (epochs & scores).
 
-        Parses the mmdetection logs to get metrics from the latest training run
+        Parses the mmaction logs to get metrics from the latest training run
         :return output List[MetricsGroup]
         """
         output: List[MetricsGroup] = []

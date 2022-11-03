@@ -105,32 +105,12 @@ class ActionClsInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
             self.confidence_threshold = self._hyperparams.postprocessing.confidence_threshold
         logger.info(f"Confidence threshold {self.confidence_threshold}")
 
-        prediction_results, _ = self._infer_detector(dataset, inference_parameters)
+        prediction_results, _ = self._infer_model(dataset, inference_parameters)
         self._add_predictions_to_dataset(prediction_results, dataset, self.confidence_threshold)
         logger.info("Inference completed")
         return dataset
 
-    def _init_task(self, dataset=None, **kwargs):
-        # FIXME: Temporary remedy for CVS-88098
-        export = kwargs.get("export", False)
-        self._initialize(export=export)
-        # update model config -> model label schema
-        data_classes = [label.name for label in self._labels]
-        model_classes = [label.name for label in self._model_label_schema]
-        self._model_cfg["model_classes"] = model_classes
-        if dataset is not None:
-            train_data_cfg = get_data_cfg(self._data_cfg)
-            train_data_cfg["data_classes"] = data_classes
-            new_classes = np.setdiff1d(data_classes, model_classes).tolist()
-            train_data_cfg["new_classes"] = new_classes
-
-        logger.info(f"running task... kwargs = {kwargs}")
-        if self._recipe_cfg is None:
-            raise RuntimeError("'config' is not initialized yet. call prepare() method before calling this method")
-
-        self._model = self._load_model(self.task_environment.model)
-
-    def _infer_detector(
+    def _infer_model(
         self, dataset: DatasetEntity, inference_parameters: Optional[InferenceParameters] = None
     ) -> Tuple[Iterable, float]:
         """Inference wrapper.
@@ -220,6 +200,26 @@ class ActionClsInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
 
         return predictions, metric
 
+    def _init_task(self, dataset=None, **kwargs):
+        # FIXME: Temporary remedy for CVS-88098
+        export = kwargs.get("export", False)
+        self._initialize(export=export)
+        # update model config -> model label schema
+        data_classes = [label.name for label in self._labels]
+        model_classes = [label.name for label in self._model_label_schema]
+        self._model_cfg["model_classes"] = model_classes
+        if dataset is not None:
+            train_data_cfg = get_data_cfg(self._data_cfg)
+            train_data_cfg["data_classes"] = data_classes
+            new_classes = np.setdiff1d(data_classes, model_classes).tolist()
+            train_data_cfg["new_classes"] = new_classes
+
+        logger.info(f"running task... kwargs = {kwargs}")
+        if self._recipe_cfg is None:
+            raise RuntimeError("'config' is not initialized yet. call prepare() method before calling this method")
+
+        self._model = self._load_model(self.task_environment.model)
+
     def _load_model(self, model: ModelEntity):
         if self._recipe_cfg is None:
             raise Exception("Recipe config is not initialized properly")
@@ -274,13 +274,13 @@ class ActionClsInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         if init_from is not None:
             # No need to initialize backbone separately, if all weights are provided.
             # model_cfg.pretrained = None
-            logger.warning("build detector")
+            logger.warning("build model")
             model = build_model(model_cfg)
             # Load all weights.
             logger.warning("load checkpoint")
             load_checkpoint(model, init_from, map_location="cpu")
         else:
-            logger.warning("build detector")
+            logger.warning("build model")
             model = build_model(model_cfg)
         return model
 
