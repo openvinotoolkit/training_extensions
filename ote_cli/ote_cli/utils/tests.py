@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+import cv2
+import numpy as np
 import json
 import os
 import shutil
@@ -570,18 +572,25 @@ def xfail_templates(templates, xfail_template_ids_reasons):
 
 def ote_explain_testing(template, root, ote_dir, args):
     work_dir, template_work_dir, _ = get_some_vars(template, root)
-    output_dir = f"{template_work_dir}/explain_{template.model_template_id}_output/"
-    command_line = [
-        "ote",
-        "explain",
-        template.model_template_path,
-        "--load-weights",
-        f"{template_work_dir}/trained_{template.model_template_id}/weights.pth",
-        "--explain-data-root",
-        os.path.join(ote_dir, args["--input"]),
-        "--save-explanation-to",
-        output_dir,
-    ]
-    assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
-    assert os.path.exists(output_dir)
-    assert len(os.listdir(output_dir)) > 0
+    test_algorithms = ['ActivationMap', 'EigenCAM']
+    for test_algorithm in test_algorithms:
+        output_dir = f"{template_work_dir}/{test_algorithm}/explain_{template.model_template_id}_output/"
+        command_line = [
+            "ote",
+            "explain",
+            template.model_template_path,
+            "--load-weights",
+            f"{template_work_dir}/trained_{template.model_template_id}/weights.pth",
+            "--explain-data-root",
+            os.path.join(ote_dir, args["--input"]),
+            "--save-explanation-to",
+            output_dir,
+            "--explain-algorithm",
+            test_algorithm,
+        ]
+        compare_dir = f"{ote_dir}/data/explain_samples/{test_algorithm}/explain_{template.model_template_id}_output/"
+        for fname in os.listdir(compare_dir):
+            compare_image = cv2.imread(os.path.join(compare_dir, fname))
+            output_image = cv2.imread(os.path.join(output_dir, fname))
+            assert np.sum((compare_image - output_image)**2) == 0, 'explain output image is not same as sample one!'
+        assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
