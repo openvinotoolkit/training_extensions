@@ -24,8 +24,9 @@ class InferenceParameters:
         In this scenario, any postprocessing filtering (such as thresholding and NMS) should be disabled to avoid
         interfering with algorithms such as NMS.
     :var update_progress: Callback which can be used to provide updates about the progress of a task.
+    :var explainer: Explain algorithm to be used in explanation mode. Converted automatically to lowercase
     """
 
     is_evaluation: bool = False
     update_progress: Callable[[int], None] = default_progress_callback
-    explainer: str = None
+    explainer: str = ""
