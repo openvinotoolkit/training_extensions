@@ -49,7 +49,7 @@ class OTXRawframeDataset(RawframeDataset):
             return len(self.otx_dataset)
 
         def __getitem__(self, index):
-            """Prepare a dict 'data_info' that is expected by the mmdet pipeline to handle images and annotations.
+            """Prepare a dict 'data_info' that is expected by the mmaction pipeline to handle images and annotations.
 
             :return data_info: dictionary that contains the image and image metadata, as well as the labels of
             the objects in the image

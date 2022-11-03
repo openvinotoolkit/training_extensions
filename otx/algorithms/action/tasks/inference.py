@@ -31,21 +31,13 @@ from mmcv.utils import Config, ConfigDict
 # TODO Replace this by mmaction
 from mmdet.parallel import MMDataCPU
 
-# FIXME This is for initialize mmaction adapter
-# pylint: disable=unused-import
-from otx.algorithms.action.adapters import mmaction as mmaction_adapter
+from otx.algorithms.action.adapters.mmaction import patch_config, set_data_classes
+from otx.algorithms.common.adapters.mmcv.utils import get_data_cfg, prepare_for_testing
 from otx.algorithms.common.tasks.training_base import BaseTask
-from otx.algorithms.detection.adapters.mmdet.utils.config_utils import (
-    get_data_cfg,
-    prepare_for_testing,
-    remove_from_config,
-    set_data_classes,
-)
+from otx.algorithms.common.utils.callback import InferenceProgressCallback
 from otx.algorithms.detection.configs.base import DetectionConfig
-from otx.algorithms.detection.utils.utils import InferenceProgressCallback
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.inference_parameters import InferenceParameters
-from otx.api.entities.label import Domain
 from otx.api.entities.model import (
     ModelEntity,
     ModelFormat,
@@ -352,16 +344,8 @@ class ActionClsInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         recipe_root = os.path.abspath(os.path.dirname(self.template_file_path))
         recipe = os.path.join(recipe_root, "model.py")
         self._recipe_cfg = Config.fromfile(recipe)
-        # TODO Unify these patch procedure something like patch_config function
-        self._patch_data_pipeline()
-        self._patch_datasets(self._recipe_cfg)  # for OTX compatibility
-        # TODO Handle runner through patch_config function
-        self._recipe_cfg.work_dir = self._output_path
+        patch_config(self._recipe_cfg, self.template_file_path, self._output_path)
         set_data_classes(self._recipe_cfg, self._labels)
-        # FIXME This is temporaray solution
-        self._recipe_cfg.omnisource = None
-        self._recipe_cfg.data.train.start_index = 1
-        self._recipe_cfg.data.train.modality = "RGB"
         logger.info(f"initialized recipe = {recipe}")
 
     def _init_model_cfg(self):
@@ -409,36 +393,3 @@ class ActionClsInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
                     roi=dataset_item.roi,
                 )
                 dataset_item.append_metadata_item(saliency_map_media, model=self._task_environment.model)
-
-    def _patch_data_pipeline(self):
-        base_dir = os.path.abspath(os.path.dirname(self.template_file_path))
-        data_pipeline_path = os.path.join(base_dir, "data_pipeline.py")
-        if os.path.exists(data_pipeline_path):
-            data_pipeline_cfg = Config.fromfile(data_pipeline_path)
-            self._recipe_cfg.merge_from_dict(data_pipeline_cfg)
-
-    @staticmethod
-    def _patch_datasets(config: Config):
-        # Copied from otx/apis/detection/config_utils.py
-        # Added 'unlabeled' data support
-
-        def patch_color_conversion(pipeline):
-            # Default data format for OTX is RGB, while mmdet uses BGR, so negate the color conversion flag.
-            for pipeline_step in pipeline:
-                if pipeline_step.type == "Normalize":
-                    to_rgb = False
-                    if "to_rgb" in pipeline_step:
-                        to_rgb = pipeline_step.to_rgb
-                    to_rgb = not bool(to_rgb)
-                    pipeline_step.to_rgb = to_rgb
-                elif pipeline_step.type == "MultiScaleFlipAug":
-                    patch_color_conversion(pipeline_step.transforms)
-
-        assert "data" in config
-        for subset in ("train", "val", "test", "unlabeled"):
-            cfg = config.data.get(subset, None)
-            if not cfg:
-                continue
-            cfg.type = "OTXRawframeDataset"
-            cfg.otx_dataset = None
-            cfg.labels = None

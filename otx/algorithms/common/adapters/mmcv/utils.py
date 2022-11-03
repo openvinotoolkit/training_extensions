@@ -115,3 +115,12 @@ def prepare_work_dir(config: Union[Config, ConfigDict]) -> str:
         config.runner.meta = ConfigDict()
     config.runner.meta.exp_name = f"train_round_{len(checkpoint_dirs)}"
     return train_round_checkpoint_dir
+
+
+@check_input_parameters_type()
+def get_data_cfg(config: Union[Config, ConfigDict], subset: str = "train") -> Config:
+    """Return dataset configs."""
+    data_cfg = config.data[subset]
+    while "dataset" in data_cfg:
+        data_cfg = data_cfg.dataset
+    return data_cfg
