@@ -32,6 +32,7 @@ from tests.regression.anomaly.anomaly_common import (
     _create_anomaly_dataset_and_labels_schema,
     _get_dataset_params_from_dataset_definitions,
     get_anomaly_domain_test_action_classes,
+    get_dummy_compressed_model,
 )
 from tests.test_suite.e2e_test_system import DataCollector, e2e_pytest_performance
 from tests.test_suite.training_test_case import (
@@ -433,7 +434,7 @@ class TestOTXReallifeAnomalySegmentation(OTXTrainingTestInterface):
                 "labels_schema": labels_schema,
                 "template_path": template_path,
                 "reference_dir": otx_current_reference_dir_fx,
-                "fn_get_compressed_model": None,  # NNCF not yet implemented in Anomaly
+                "fn_get_compressed_model": get_dummy_compressed_model,
             }
 
         params_factories_for_test_actions = {
