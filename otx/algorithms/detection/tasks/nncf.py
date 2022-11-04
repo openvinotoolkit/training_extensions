@@ -327,8 +327,7 @@ class DetectionNNCFTask(DetectionInferenceTask, IOptimizationTask):
             loading_stage_progress_percentage=5,
             initialization_stage_progress_percentage=5,
         )
-        learning_curves = DefaultDict(OTXLoggerHook.Curve)  # type: DefaultDict
-        training_config = prepare_for_training(config, train_dataset, val_dataset, time_monitor, learning_curves)
+        training_config = prepare_for_training(config, train_dataset, val_dataset, time_monitor)
         mm_train_dataset = build_dataset(training_config.data.train)
 
         if torch.cuda.is_available():

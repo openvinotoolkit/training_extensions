@@ -6,7 +6,7 @@ from .compression import (
     wrap_nncf_model,
 )
 
-from .monkey_patch import *
+from .patches import *
 
 __all__ = [
     "get_nncf_config_from_meta",

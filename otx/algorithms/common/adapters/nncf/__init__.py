@@ -18,6 +18,8 @@ from .utils import (
     no_nncf_trace,
 )
 
+from .patches import *
+
 
 __all__ = [
     "extract_model_and_compression_states",
