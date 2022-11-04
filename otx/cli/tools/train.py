@@ -125,17 +125,26 @@ def parse_args():
 def main(gpu=None, world_size=None):
     """Main function that is used for model training."""
 
-    num_gpus = len(os.environ["CUDA_VISIBLE_DEVICES"].split(','))
+    gpu_ids = os.environ["CUDA_VISIBLE_DEVICES"].split(',')
+    if len(gpu_ids) > 1 and gpu is None:
+        processes= []
+        spawned_mp = mp.get_context("spawn")
+        for rank in gpu_ids[1:]:
+            task_p = spawned_mp.Process(
+                target=main,
+                args=(int(rank), len(gpu_ids))
+            )
+            task_p.start()
+            processes.append(task_p)
+        gpu = int(gpu_ids[0])
+        world_size = len(gpu_ids)
     if gpu is not None:
+        os.environ['MASTER_ADDR'] = 'localhost'
+        os.environ['MASTER_PORT'] = '29500'
         torch.cuda.set_device(gpu)
         dist.init_process_group(backend='nccl',
                                 world_size=world_size, rank=gpu)
         print(f'dist info world_size = {dist.get_world_size()}, rank = {dist.get_rank()}')
-    elif num_gpus > 1:
-        os.environ['MASTER_ADDR'] = 'localhost'
-        os.environ['MASTER_PORT'] = '29500'
-        mp.spawn(main, nprocs=num_gpus, args=[num_gpus])
-        return
 
     # Dynamically create an argument parser based on override parameters.
     args, template, hyper_parameters = parse_args()
@@ -217,12 +226,9 @@ def main(gpu=None, world_size=None):
     assert resultset.performance is not None
     print(resultset.performance)
 
+    for p_to_join in processes:
+        p_to_join.join()
+
 
 if __name__ == "__main__":
-    num_gpus = len(os.environ["CUDA_VISIBLE_DEVICES"].split(','))
-    if num_gpus > 1:
-        os.environ['MASTER_ADDR'] = 'localhost'
-        os.environ['MASTER_PORT'] = '29500'
-        mp.spawn(main, nprocs=num_gpus, args=num_gpus)
-    else:
-        main()
+    main()
