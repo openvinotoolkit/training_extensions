@@ -15,13 +15,19 @@
 # and limitations under the License.
 
 import os
-from typing import List
+from collections import defaultdict
+from typing import List, Union
 
-from mmcv.utils import Config
+from mmcv.utils import Config, ConfigDict
 
-from otx.algorithms.common.adapters.mmcv.utils import get_data_cfg
+from otx.algorithms.common.adapters.mmcv.utils import get_data_cfg, prepare_work_dir
+from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label import LabelEntity
-from otx.api.utils.argument_checks import check_input_parameters_type
+from otx.api.usecases.reporting.time_monitor_callback import TimeMonitorCallback
+from otx.api.utils.argument_checks import (
+    DatasetParamTypeCheck,
+    check_input_parameters_type,
+)
 
 
 @check_input_parameters_type()
@@ -82,3 +88,22 @@ def set_data_classes(config: Config, labels: List[LabelEntity]):
 
     # FIXME classification head name is hard-coded
     config.model["cls_head"].num_classes = len(labels)
+
+
+@check_input_parameters_type({"train_dataset": DatasetParamTypeCheck, "val_dataset": DatasetParamTypeCheck})
+def prepare_for_training(
+    config: Union[Config, ConfigDict],
+    train_dataset: DatasetEntity,
+    val_dataset: DatasetEntity,
+    time_monitor: TimeMonitorCallback,
+    learning_curves: defaultdict,
+) -> Config:
+    """Prepare configs for training phase."""
+    prepare_work_dir(config)
+    data_train = get_data_cfg(config)
+    data_train.otx_dataset = train_dataset
+    config.data.val.otx_dataset = val_dataset
+    config.custom_hooks.append({"type": "OTXProgressHook", "time_monitor": time_monitor, "verbose": True})
+    config.log_config.hooks.append({"type": "OTXLoggerHook", "curves": learning_curves})
+
+    return config

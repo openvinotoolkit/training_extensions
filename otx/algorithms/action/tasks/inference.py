@@ -29,10 +29,10 @@ from mmcv.runner import load_checkpoint, load_state_dict
 from mmcv.utils import Config, ConfigDict
 
 from otx.algorithms.action.adapters.mmaction import patch_config, set_data_classes
+from otx.algorithms.action.configs.classification.base import ActionClsConfig
 from otx.algorithms.common.adapters.mmcv.utils import get_data_cfg, prepare_for_testing
 from otx.algorithms.common.tasks.training_base import BaseTask
 from otx.algorithms.common.utils.callback import InferenceProgressCallback
-from otx.algorithms.detection.configs.base import DetectionConfig
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.model import (
@@ -71,7 +71,7 @@ class ActionClsInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         # self._should_stop = False
         self._model = None
         self.task_environment = task_environment
-        super().__init__(DetectionConfig, task_environment)
+        super().__init__(ActionClsConfig, task_environment)
 
     @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def infer(
