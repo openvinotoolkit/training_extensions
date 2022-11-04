@@ -1,6 +1,6 @@
 mmpycocotools
 mmcv-full==1.3.14
-mmaction2
+mmaction2==0.24.1
 mmdet@git+https://github.com/openvinotoolkit/mmdetection@ote
 mpa@git+https://github.com/openvinotoolkit/model_preparation_algorithm@otx
 numpy==1.21.0
