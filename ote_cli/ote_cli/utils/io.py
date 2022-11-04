@@ -26,6 +26,9 @@ from zipfile import ZipFile
 
 import cv2
 import numpy as np
+from ote_sdk.entities.annotation import AnnotationSceneEntity, AnnotationSceneKind
+from ote_sdk.entities.datasets import DatasetEntity, DatasetItemEntity
+from ote_sdk.entities.image import Image
 from ote_sdk.entities.label import Domain, LabelEntity
 from ote_sdk.entities.label_schema import LabelGroup, LabelGroupType, LabelSchemaEntity
 from ote_sdk.entities.model import ModelEntity, ModelOptimizationType
@@ -242,7 +245,9 @@ def generate_label_schema(dataset, task_type):
 
 
 def get_image_files(root_dir):
-    # recursively get all image file paths from given root_dir
+    """
+    recursively get all image file paths from given root_dir
+    """
     img_data_formats = [
         ".jpg",
         ".jpeg",
@@ -275,11 +280,31 @@ def save_saliency_output(
     fname: str,
     weight: float = 0.5,
 ) -> None:
-
-    # GRAY to RGB
+    """
+    receive img and saliency map, then convert to colormap image and save images
+    """
     heatmap = cv2.applyColorMap(np.uint8(saliency_map), cv2.COLORMAP_JET)
     overlay = (1 - weight) * img + weight * heatmap
     overlay /= np.max(overlay)
     overlay = np.uint8(255 * overlay)
     cv2.imwrite(f"{os.path.join(save_dir, fname)}_saliency_map.jpg", heatmap)
     cv2.imwrite(f"{os.path.join(save_dir, fname)}_overlay_img.jpg", overlay)
+
+
+def get_explain_dataset_from_filelist(image_files: list):
+    """
+    get explain dataset with empty annotation
+    """
+    empty_annotation = AnnotationSceneEntity(
+        annotations=[], kind=AnnotationSceneKind.PREDICTION
+    )
+    items = []
+    for root_dir, filename in image_files:
+        frame = cv2.imread(os.path.join(root_dir, filename))
+        item = DatasetItemEntity(
+            media=Image(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)),
+            annotation_scene=empty_annotation,
+        )
+        items.append(item)
+    explain_dataset = DatasetEntity(items=items)
+    return explain_dataset

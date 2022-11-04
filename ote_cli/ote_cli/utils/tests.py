@@ -591,7 +591,7 @@ def ote_explain_testing(template, root, ote_dir, args):
         assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
         compare_dir = f"{ote_dir}/data/explain_samples/explain_{template.model_template_id}/{test_algorithm}/"
         for fname in os.listdir(output_dir):
-            if 'intel' not in fname or 'saliency' not in fname:
+            if "intel" not in fname or "saliency" not in fname:
                 continue
             compare_image = cv2.imread(os.path.join(compare_dir, fname))
             output_image = cv2.imread(os.path.join(output_dir, fname))

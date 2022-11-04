@@ -18,13 +18,9 @@ Model inference demonstration tool.
 
 import argparse
 import os
-import time
 
 import cv2
 from ote_sdk.configuration.helper import create
-from ote_sdk.entities.annotation import AnnotationSceneEntity, AnnotationSceneKind
-from ote_sdk.entities.datasets import DatasetEntity, DatasetItemEntity
-from ote_sdk.entities.image import Image
 from ote_sdk.entities.inference_parameters import InferenceParameters
 from ote_sdk.entities.task_environment import TaskEnvironment
 
@@ -32,6 +28,7 @@ from ote_cli.registry import find_and_parse_model_template
 from ote_cli.utils.config import override_parameters
 from ote_cli.utils.importing import get_impl_class
 from ote_cli.utils.io import (
+    get_explain_dataset_from_filelist,
     get_image_files,
     read_label_schema,
     read_model,
@@ -137,25 +134,12 @@ def main():
             Currently only support {SUPPORTED_EXPLAIN_ALGORITHMS}"
         )
 
-    empty_annotation = AnnotationSceneEntity(
-        annotations=[], kind=AnnotationSceneKind.PREDICTION
-    )
-
     image_files = get_image_files(args.explain_data_roots)
-    items = []
-    for root_dir, filename in image_files:
-        frame = cv2.imread(os.path.join(root_dir, filename))
-        item = DatasetItemEntity(
-            media=Image(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)),
-            annotation_scene=empty_annotation,
-        )
-        items.append(item)
-    explain_dataset = DatasetEntity(items=items)
+    explain_dataset = get_explain_dataset_from_filelist(image_files)
 
     if not os.path.exists(args.save_explanation_to):
         os.makedirs(args.save_explanation_to)
 
-    start_time = time.perf_counter()
     saliency_maps = task.explain(
         explain_dataset.with_empty_annotations(),
         InferenceParameters(
@@ -163,7 +147,6 @@ def main():
             explainer=args.explain_algorithm,
         ),
     )
-    elapsed_time = time.perf_counter() - start_time
 
     for img, saliency_map, (_, fname) in zip(
         explain_dataset, saliency_maps, image_files
@@ -177,7 +160,6 @@ def main():
         )
 
     print(f"saliency maps saved to {args.save_explanation_to}...")
-    print(f"total elapsed_time: {elapsed_time:.3f} for {len(explain_dataset)} images")
 
 
 if __name__ == "__main__":
