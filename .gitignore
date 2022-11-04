@@ -1,5 +1,4 @@
 *.pyc
-*.sh
 __pycache__
 .idea/
 .vscode/
