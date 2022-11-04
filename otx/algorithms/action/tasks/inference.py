@@ -28,9 +28,6 @@ from mmcv.parallel import MMDataParallel
 from mmcv.runner import load_checkpoint, load_state_dict
 from mmcv.utils import Config, ConfigDict
 
-# TODO Replace this by mmaction
-from mmdet.parallel import MMDataCPU
-
 from otx.algorithms.action.adapters.mmaction import patch_config, set_data_classes
 from otx.algorithms.common.adapters.mmcv.utils import get_data_cfg, prepare_for_testing
 from otx.algorithms.common.tasks.training_base import BaseTask
@@ -146,7 +143,7 @@ class ActionClsInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         if torch.cuda.is_available():
             eval_model = MMDataParallel(self._model.cuda(test_config.gpu_ids[0]), device_ids=test_config.gpu_ids)
         else:
-            eval_model = MMDataCPU(self._model)
+            eval_model = MMDataParallel(self._model)
 
         eval_predictions = []
         feature_vectors = []
@@ -336,6 +333,8 @@ class ActionClsInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
 
     def _init_recipe_hparam(self) -> dict:
         configs = super()._init_recipe_hparam()
+        configs.data.videos_per_gpu = configs.data.pop("samples_per_gpu", None)  # type: ignore[attr-defined]
+        self._recipe_cfg.total_epochs = configs.runner.max_epochs  # type: ignore[attr-defined]
         configs["use_adaptive_interval"] = self._hyperparams.learning_parameters.use_adaptive_interval
         return configs
 

@@ -186,7 +186,7 @@ learning_parameters:
     warning: This is applied exclusively when early stopping is enabled.
   use_adaptive_interval:
     affects_outcome_of: TRAINING
-    default_value: true
+    default_value: false
     description: Depending on the size of iteration per epoch, adaptively update the validation interval and related values.
     editable: true
     header: Use adaptive validation interval

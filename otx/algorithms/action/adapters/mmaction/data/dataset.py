@@ -141,6 +141,6 @@ class OTXRawframeDataset(RawframeDataset):
             if len(annotation) == 0:
                 label = None
             else:
-                label = int(data_info["dataset_item"].get_annotations()[0].get_label_ids().pop())
+                label = int(data_info["dataset_item"].get_roi_labels(self.labels)[0].id)
             media["label"] = label
             self.video_infos.append(media)
