@@ -26,11 +26,11 @@ from mmaction.models import build_model
 from mmaction.utils import get_root_logger
 from mmcv.parallel import MMDataParallel
 from mmcv.runner import load_checkpoint, load_state_dict
-from mmcv.utils import Config, ConfigDict
+from mmcv.utils import Config
 
 from otx.algorithms.action.adapters.mmaction import patch_config, set_data_classes
 from otx.algorithms.action.configs.base import ActionClsConfig
-from otx.algorithms.common.adapters.mmcv.utils import get_data_cfg, prepare_for_testing
+from otx.algorithms.common.adapters.mmcv.utils import prepare_for_testing
 from otx.algorithms.common.tasks.training_base import BaseTask
 from otx.algorithms.common.utils.callback import InferenceProgressCallback
 from otx.api.entities.datasets import DatasetEntity
@@ -88,14 +88,9 @@ class ActionClsInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
             update_progress_callback = default_progress_callback
 
         self._time_monitor = InferenceProgressCallback(len(dataset), update_progress_callback)
-        # If confidence threshold is adaptive then up-to-date value should be stored in the model
-        # and should not be changed during inference. Otherwise user-specified value should be taken.
-        if not self._hyperparams.postprocessing.result_based_confidence_threshold:
-            self.confidence_threshold = self._hyperparams.postprocessing.confidence_threshold
-        logger.info(f"Confidence threshold {self.confidence_threshold}")
 
         prediction_results, _ = self._infer_model(dataset, inference_parameters)
-        self._add_predictions_to_dataset(prediction_results, dataset, self.confidence_threshold)
+        self._add_predictions_to_dataset(prediction_results, dataset)
         logger.info("Inference completed")
         return dataset
 
@@ -117,9 +112,8 @@ class ActionClsInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         Returns:
             Tuple[Iterable, float]: Iterable prediction results for each sample and metric for on the given dataset
         """
-        self._data_cfg = self._init_test_data_cfg(dataset)
         if self._recipe_cfg is None:
-            self._init_task(dataset)
+            self._init_task()
         if self._recipe_cfg is None:
             raise Exception("Recipe config is not initialized properly")
 
@@ -189,20 +183,10 @@ class ActionClsInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
 
         return predictions, metric
 
-    def _init_task(self, dataset=None, **kwargs):
+    def _init_task(self, **kwargs):
         # FIXME: Temporary remedy for CVS-88098
         export = kwargs.get("export", False)
         self._initialize(export=export)
-        # update model config -> model label schema
-        data_classes = [label.name for label in self._labels]
-        model_classes = [label.name for label in self._model_label_schema]
-        self._model_cfg["model_classes"] = model_classes
-        if dataset is not None:
-            train_data_cfg = get_data_cfg(self._data_cfg)
-            train_data_cfg["data_classes"] = data_classes
-            new_classes = np.setdiff1d(data_classes, model_classes).tolist()
-            train_data_cfg["new_classes"] = new_classes
-
         logger.info(f"running task... kwargs = {kwargs}")
         if self._recipe_cfg is None:
             raise RuntimeError("'config' is not initialized yet. call prepare() method before calling this method")
@@ -285,8 +269,8 @@ class ActionClsInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
             logger.warning(
                 f"Requested to use {evaluation_metric} metric, " "but parameter is ignored. Use F-measure instead."
             )
-        metric = MetricsHelper.compute_f_measure(output_resultset)
-        logger.info(f"F-measure after evaluation: {metric.f_measure.value}")
+        metric = MetricsHelper.compute_accuracy(output_resultset)
+        logger.info(f"Accuracy after evaluation: {metric.accuracy.value}")
         output_resultset.performance = metric.get_performance()
         logger.info("Evaluation completed")
 
@@ -352,30 +336,12 @@ class ActionClsInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         model_cfg = Config.fromfile(os.path.join(base_dir, "model.py"))
         return model_cfg
 
-    def _init_test_data_cfg(self, dataset: DatasetEntity):
-        data_cfg = ConfigDict(
-            data=ConfigDict(
-                train=ConfigDict(
-                    otx_dataset=None,
-                    labels=self._labels,
-                ),
-                test=ConfigDict(
-                    otx_dataset=dataset,
-                    labels=self._labels,
-                ),
-            )
-        )
-        return data_cfg
-
-    def _add_predictions_to_dataset(self, prediction_results, dataset, confidence_threshold=0.0):
+    def _add_predictions_to_dataset(self, prediction_results, dataset):
         """Loop over dataset again to assign predictions. Convert from MM format to OTX format."""
         for dataset_item, (all_results, feature_vector, saliency_map) in zip(dataset, prediction_results):
             item_labels = []
-            # TODO Check proper label assignment method
-            for i, logit in enumerate(all_results):
-                if logit > confidence_threshold:
-                    label = ScoredLabel(label=self._labels[i], probability=float(logit))
-                    item_labels.append(label)
+            label = ScoredLabel(label=self._labels[all_results.argmax()], probability=all_results.max())
+            item_labels.append(label)
             dataset_item.append_labels(item_labels)
 
             if feature_vector is not None:

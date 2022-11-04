@@ -198,12 +198,6 @@ def prepare_for_training(
 @check_input_parameters_type()
 def set_data_classes(config: Config, labels: List[LabelEntity]):
     """Setter data classes into config."""
-    # Save labels in data configs.
-    for subset in ("train", "val", "test"):
-        cfg = get_data_cfg(config, subset)
-        cfg.labels = labels
-        config.data[subset].labels = labels
-
     # Set proper number of classes in model's detection heads.
     head_names = ("mask_head", "bbox_head", "segm_head")
     num_classes = len(labels)
