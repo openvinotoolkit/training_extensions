@@ -281,5 +281,5 @@ def save_saliency_output(
     overlay = (1 - weight) * img + weight * heatmap
     overlay /= np.max(overlay)
     overlay = np.uint8(255 * overlay)
-    cv2.imwrite(f"{os.path.join(save_dir, fname)}_saliency_map.png", heatmap)
-    cv2.imwrite(f"{os.path.join(save_dir, fname)}_overlay_img.png", overlay)
+    cv2.imwrite(f"{os.path.join(save_dir, fname)}_saliency_map.jpg", heatmap)
+    cv2.imwrite(f"{os.path.join(save_dir, fname)}_overlay_img.jpg", overlay)

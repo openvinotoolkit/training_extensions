@@ -21,16 +21,13 @@ import os
 import time
 
 import cv2
-import numpy as np
 from ote_sdk.configuration.helper import create
 from ote_sdk.entities.annotation import AnnotationSceneEntity, AnnotationSceneKind
 from ote_sdk.entities.datasets import DatasetEntity, DatasetItemEntity
 from ote_sdk.entities.image import Image
-from ote_sdk.entities.subset import Subset
 from ote_sdk.entities.inference_parameters import InferenceParameters
 from ote_sdk.entities.task_environment import TaskEnvironment
 
-from ote_cli.datasets import get_dataset_class
 from ote_cli.registry import find_and_parse_model_template
 from ote_cli.utils.config import override_parameters
 from ote_cli.utils.importing import get_impl_class
@@ -40,11 +37,11 @@ from ote_cli.utils.io import (
     read_model,
     save_saliency_output,
 )
+from ote_cli.utils.nncf import is_checkpoint_nncf
 from ote_cli.utils.parser import (
     add_hyper_parameters_sub_parser,
     gen_params_dict_from_args,
 )
-from ote_cli.utils.nncf import is_checkpoint_nncf
 
 ESC_BUTTON = 27
 SUPPORTED_EXPLAIN_ALGORITHMS = ["ActivationMap", "EigenCAM"]
@@ -143,7 +140,7 @@ def main():
     empty_annotation = AnnotationSceneEntity(
         annotations=[], kind=AnnotationSceneKind.PREDICTION
     )
-    
+
     image_files = get_image_files(args.explain_data_roots)
     items = []
     for root_dir, filename in image_files:
@@ -168,7 +165,9 @@ def main():
     )
     elapsed_time = time.perf_counter() - start_time
 
-    for img, saliency_map, (_, fname) in zip(explain_dataset, saliency_maps, image_files):
+    for img, saliency_map, (_, fname) in zip(
+        explain_dataset, saliency_maps, image_files
+    ):
         save_saliency_output(
             cv2.cvtColor(img.numpy, cv2.COLOR_BGR2RGB),
             saliency_map.numpy,
