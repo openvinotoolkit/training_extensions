@@ -160,6 +160,8 @@ class ActionClsTrainTask(ActionClsInferenceTask, ITrainingTask):
         )
         mm_train_dataset = build_dataset(training_config.data.train)
         logger.info("Start training")
+        self._model.train()
+        # FIXME runner is built inside of train_model funciton, it is hard to change runner's type
         train_model(model=self._model, dataset=mm_train_dataset, cfg=training_config, validate=True)
         checkpoint_file_path = glob(os.path.join(self._recipe_cfg.work_dir, "best*pth"))
         if len(checkpoint_file_path) == 0:
