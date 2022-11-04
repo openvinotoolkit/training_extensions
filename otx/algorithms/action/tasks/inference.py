@@ -1,4 +1,4 @@
-"""Inference Task of OTX ActionClassification."""
+"""Inference Task of OTX Action Classification."""
 
 # Copyright (C) 2022 Intel Corporation
 #
@@ -319,6 +319,10 @@ class ActionClsInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         configs = super()._init_recipe_hparam()
         configs.data.videos_per_gpu = configs.data.pop("samples_per_gpu", None)  # type: ignore[attr-defined]
         self._recipe_cfg.total_epochs = configs.runner.max_epochs  # type: ignore[attr-defined]
+        # FIXME lr_config variables are hard-coded
+        if hasattr(configs, "lr_config") and hasattr(configs["lr_config"], "warmup_iters"):
+            self._recipe_cfg.lr_config.warmup = "linear"  # type: ignore[attr-defined]
+            self._recipe_cfg.lr_config.warmup_by_epoch = True  # type: ignore[attr-defined]
         configs["use_adaptive_interval"] = self._hyperparams.learning_parameters.use_adaptive_interval
         return configs
 
