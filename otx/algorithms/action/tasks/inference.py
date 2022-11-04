@@ -29,7 +29,7 @@ from mmcv.runner import load_checkpoint, load_state_dict
 from mmcv.utils import Config, ConfigDict
 
 from otx.algorithms.action.adapters.mmaction import patch_config, set_data_classes
-from otx.algorithms.action.configs.classification.base import ActionClsConfig
+from otx.algorithms.action.configs.base import ActionClsConfig
 from otx.algorithms.common.adapters.mmcv.utils import get_data_cfg, prepare_for_testing
 from otx.algorithms.common.tasks.training_base import BaseTask
 from otx.algorithms.common.utils.callback import InferenceProgressCallback
