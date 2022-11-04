@@ -38,12 +38,7 @@ model = dict(
         anchor_generator=dict(
             type="SSDAnchorGeneratorClustered",
             strides=(16, 32),
-            # FIXME: Add this feature to mpa.det.inferrer
-            # This feature is implemented in mpa.det.trainer but not in mpa.det.inferrer
-            # To fix this, we need DetectionInferenceTask.infer in otx
-            # to take whole dataset, not validation subset only.
-            # This fix could impact other tasks infer method
-            reclustering_anchors=False,
+            reclustering_anchors=True,
             widths=[
                 [
                     38.641007923271076,

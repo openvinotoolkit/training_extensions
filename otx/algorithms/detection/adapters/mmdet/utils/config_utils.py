@@ -280,8 +280,22 @@ def patch_data_pipeline(config: Config, template_file_path: str):
         config.merge_from_dict(data_pipeline_cfg)
 
 
+def should_cluster_anchors(model_cfg: Config):
+    if (
+        hasattr(model_cfg.model, "bbox_head")
+        and hasattr(model_cfg.model.bbox_head, "anchor_generator")
+        and getattr(
+            model_cfg.model.bbox_head.anchor_generator,
+            "reclustering_anchors",
+            False,
+        )
+    ):
+        return True
+    return False
+
+
 @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
-def cluster_anchors(config: Config, dataset: DatasetEntity, model: BaseDetector):
+def cluster_anchors(model_config: Config, data_config: Config, dataset: DatasetEntity):
     """Update configs for cluster_anchors."""
     if not KMEANS_IMPORT:
         raise ImportError(
@@ -291,9 +305,9 @@ def cluster_anchors(config: Config, dataset: DatasetEntity, model: BaseDetector)
 
     logger.info("Collecting statistics from training dataset to cluster anchor boxes...")
     [target_wh] = [
-        transforms.img_scale for transforms in config.data.test.pipeline if transforms.type == "MultiScaleFlipAug"
+        transforms.img_scale for transforms in data_config.data.test.pipeline if transforms.type == "MultiScaleFlipAug"
     ]
-    prev_generator = config.model.bbox_head.anchor_generator
+    prev_generator = model_config.model.bbox_head.anchor_generator
     group_as = [len(width) for width in prev_generator.widths]
     wh_stats = get_sizes_from_dataset_entity(dataset, list(target_wh))
 
@@ -302,7 +316,7 @@ def cluster_anchors(config: Config, dataset: DatasetEntity, model: BaseDetector)
             f"There are not enough objects to cluster: {len(wh_stats)} were detected, while it should be "
             f"at least {sum(group_as)}. Anchor box clustering was skipped."
         )
-        return config, model
+        return
 
     widths, heights = get_anchor_boxes(wh_stats, group_as)
     logger.info(
@@ -313,16 +327,10 @@ def cluster_anchors(config: Config, dataset: DatasetEntity, model: BaseDetector)
         f"Anchor boxes heights have been updated from {format_list_to_str(prev_generator.heights)} "
         f"to {format_list_to_str(heights)}"
     )
-    config_generator = config.model.bbox_head.anchor_generator
+    config_generator = model_config.model.bbox_head.anchor_generator
     config_generator.widths, config_generator.heights = widths, heights
 
-    model_generator = model.bbox_head.prior_generator
-    model_generator.widths, model_generator.heights = widths, heights
-    model_generator.base_anchors = model_generator.gen_base_anchors()
-
-    config.model.bbox_head.anchor_generator = config_generator
-    model.bbox_head.prior_generator = model_generator
-    return config, model
+    model_config.model.bbox_head.anchor_generator = config_generator
 
 
 @check_input_parameters_type()
