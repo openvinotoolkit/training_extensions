@@ -24,7 +24,6 @@ import torch
 from mmaction.apis import train_model
 from mmaction.datasets import build_dataset
 from mmaction.utils import get_root_logger
-from mmcv.utils import ConfigDict
 
 from otx.algorithms.action.adapters.mmaction.utils import prepare_for_training
 from otx.algorithms.common.adapters.mmcv.hooks import OTXLoggerHook
@@ -123,9 +122,8 @@ class ActionClsTrainTask(ActionClsInferenceTask, ITrainingTask):
         self._time_monitor = TrainingProgressCallback(update_progress_callback)
         self._learning_curves = DefaultDict(OTXLoggerHook.Curve)
 
-        self._data_cfg = self._init_train_data_cfg(dataset)
         self._is_training = True
-        self._init_task(dataset=dataset)
+        self._init_task()
 
         if self._recipe_cfg is None:
             raise Exception("Recipe config is not initialized properly")
@@ -173,29 +171,6 @@ class ActionClsTrainTask(ActionClsInferenceTask, ITrainingTask):
 
         return {"final_ckpt": checkpoint_file_path}
 
-    def _init_train_data_cfg(self, dataset: DatasetEntity):
-        logger.info("init data cfg.")
-        data_cfg = ConfigDict(
-            data=ConfigDict(
-                train=ConfigDict(
-                    otx_dataset=dataset.get_subset(Subset.TRAINING),
-                    labels=self._labels,
-                ),
-                val=ConfigDict(
-                    otx_dataset=dataset.get_subset(Subset.VALIDATION),
-                    labels=self._labels,
-                ),
-                unlabeled=ConfigDict(
-                    otx_dataset=dataset.get_subset(Subset.UNLABELED),
-                    labels=self._labels,
-                ),
-            )
-        )
-        # Temparory remedy for cfg.pretty_text error
-        for label in self._labels:
-            label.hotkey = "a"
-        return data_cfg
-
     def _get_output_model(self, results):
         model_ckpt = results.get("final_ckpt")
         if model_ckpt is None:
@@ -211,7 +186,7 @@ class ActionClsTrainTask(ActionClsInferenceTask, ITrainingTask):
         val_preds, val_map = self._infer_model(val_dataset, InferenceParameters(is_evaluation=True))
 
         preds_val_dataset = val_dataset.with_empty_annotations()
-        self._add_predictions_to_dataset(val_preds, preds_val_dataset, 0.0)
+        self._add_predictions_to_dataset(val_preds, preds_val_dataset)
 
         result_set = ResultSetEntity(
             model=output_model,
@@ -219,19 +194,7 @@ class ActionClsTrainTask(ActionClsInferenceTask, ITrainingTask):
             prediction_dataset=preds_val_dataset,
         )
 
-        # adjust confidence threshold
-        if self._hyperparams.postprocessing.result_based_confidence_threshold:
-            best_confidence_threshold = None
-            logger.info("Adjusting the confidence threshold")
-            metric = MetricsHelper.compute_f_measure(result_set, vary_confidence_threshold=True)
-            if metric.best_confidence_threshold:
-                best_confidence_threshold = metric.best_confidence_threshold.value
-            if best_confidence_threshold is None:
-                raise ValueError("Cannot compute metrics: Invalid confidence threshold!")
-            logger.info(f"Setting confidence threshold to {best_confidence_threshold} based on results")
-            self.confidence_threshold = best_confidence_threshold
-        else:
-            metric = MetricsHelper.compute_f_measure(result_set, vary_confidence_threshold=False)
+        metric = MetricsHelper.compute_accuracy(result_set)
 
         # compose performance statistics
         performance = metric.get_performance()

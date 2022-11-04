@@ -84,7 +84,6 @@ def set_data_classes(config: Config, labels: List[LabelEntity]):
     for subset in ("train", "val", "test"):
         cfg = get_data_cfg(config, subset)
         cfg.labels = labels
-        config.data[subset].labels = labels
 
     # FIXME classification head name is hard-coded
     config.model["cls_head"].num_classes = len(labels)
