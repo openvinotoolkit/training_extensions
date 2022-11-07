@@ -85,7 +85,9 @@ class BaseTask:
         if dataset is not None:
             train_data_cfg = Stage.get_train_data_cfg(self._data_cfg)
             # if dataset size is smaller than batch size
-            if (len(train_data_cfg.get('ote_dataset', [])) < self._recipe_cfg.data.get('samples_per_gpu', 2)):
+            dataset = train_data_cfg.get('ote_dataset', None)
+            dataset_len = len(dataset) if dataset else 0
+            if 0 < dataset_len < self._recipe_cfg.data.get('samples_per_gpu', 2):
                 train_data_cfg.drop_last = False
             train_data_cfg['data_classes'] = data_classes
             new_classes = np.setdiff1d(data_classes, model_classes).tolist()
