@@ -28,6 +28,7 @@ class InstanceSegmentationDataset(DatasetEntity):
         train_subset=None,
         val_subset=None,
         test_subset=None,
+        ul_subset=None,
     ):
 
         labels_list = []
@@ -69,4 +70,15 @@ class InstanceSegmentationDataset(DatasetEntity):
                 )
             )
 
+        if ul_subset is not None:
+            items.extend(
+                load_dataset_items_coco_format(
+                    ann_file_path=None,
+                    data_root_dir=ul_subset["data_root"],
+                    domain=Domain.INSTANCE_SEGMENTATION,
+                    subset=Subset.UNLABELED,
+                    labels_list=labels_list,
+                    with_mask=True,
+                )
+            )
         super().__init__(items=items)

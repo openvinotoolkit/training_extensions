@@ -2,8 +2,15 @@
 
 # pylint: disable=invalid-name
 
-_base_ = "../base/models/efficientnet.py"
+#_base_ = "../base/models/efficientnet.py"
 
+model = dict(
+    backbone=dict(type="OTXEfficientNet", pretrained=True, version="b0"),
+    neck=dict(type="GlobalAveragePooling"),
+)
+
+# cls should use SemiClassifier for semi-sl
+"""
 model = dict(
     type="SAMImageClassifier",
     task="classification",
@@ -18,5 +25,5 @@ model = dict(
         ),
     ),
 )
-
+"""
 fp16 = dict(loss_scale=512.0)

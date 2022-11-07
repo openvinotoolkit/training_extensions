@@ -18,6 +18,7 @@
 
 import json
 import os
+import glob
 from enum import Enum, auto
 from os import path as osp
 
@@ -25,6 +26,7 @@ from otx.api.entities.annotation import (
     Annotation,
     AnnotationSceneEntity,
     AnnotationSceneKind,
+    NullAnnotationSceneEntity
 )
 from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.datasets import DatasetEntity
@@ -60,6 +62,7 @@ class ClassificationDatasetAdapter(DatasetEntity):
             "val_data_root": OptionalDirectoryPathCheck,
             "test_ann_file": OptionalDirectoryPathCheck,
             "test_data_root": OptionalDirectoryPathCheck,
+            "ul_data_root" : OptionalDirectoryPathCheck,
         }
     )
     def __init__(
@@ -70,6 +73,7 @@ class ClassificationDatasetAdapter(DatasetEntity):
         val_data_root=None,
         test_ann_file=None,
         test_data_root=None,
+        ul_data_root=None,
         **kwargs,
     ):
         self.data_roots = {}
@@ -84,17 +88,22 @@ class ClassificationDatasetAdapter(DatasetEntity):
         if test_data_root:
             self.data_roots[Subset.TESTING] = test_data_root
             self.ann_files[Subset.TESTING] = test_ann_file
+        if ul_data_root:
+            self.data_roots[Subset.UNLABELED] = ul_data_root
+            self.ann_files[Subset.UNLABELED] = None
         self.annotations = {}
         for k, v in self.data_roots.items():
             if v:
                 self.data_roots[k] = osp.abspath(v)
-                if self.ann_files[k] and ".json" in self.ann_files[k] and osp.isfile(self.ann_files[k]):
+                if k == Subset.UNLABELED:
+                    self.annotations[k], self.data_type = self._load_annotation(self.data_roots[k], unlabeled=True)
+                elif self.ann_files[k] and ".json" in self.ann_files[k] and osp.isfile(self.ann_files[k]):
                     self.annotations[k], self.data_type = self._load_text_annotation(
                         self.ann_files[k], self.data_roots[k]
                     )
                 else:
                     self.annotations[k], self.data_type = self._load_annotation(self.data_roots[k])
-
+                print(k, self.annotations[k])
         self.labels = None
         self._set_labels_obtained_from_annotation()
         self.project_labels = [
@@ -105,13 +114,18 @@ class ClassificationDatasetAdapter(DatasetEntity):
         dataset_items = []
         for subset, subset_data in self.annotations.items():
             for data_info in subset_data[0]:
+                
                 image = Image(file_path=data_info[0])
-                labels = [
-                    ScoredLabel(label=self.label_name_to_project_label(label_name), probability=1.0)
-                    for label_name in data_info[1]
-                ]
-                shapes = [Annotation(Rectangle.generate_full_box(), labels)]
-                annotation_scene = AnnotationSceneEntity(kind=AnnotationSceneKind.ANNOTATION, annotations=shapes)
+                if subset == Subset.UNLABELED:
+                    labels = None
+                    annotation_scene = NullAnnotationSceneEntity()
+                else:
+                    labels = [
+                        ScoredLabel(label=self.label_name_to_project_label(label_name), probability=1.0)
+                        for label_name in data_info[1]
+                    ]
+                    shapes = [Annotation(Rectangle.generate_full_box(), labels)]
+                    annotation_scene = AnnotationSceneEntity(kind=AnnotationSceneKind.ANNOTATION, annotations=shapes)
                 dataset_item = DatasetItemEntity(image, annotation_scene, subset=subset)
                 dataset_items.append(dataset_item)
 
@@ -166,7 +180,7 @@ class ClassificationDatasetAdapter(DatasetEntity):
         return (out_data, all_classes, groups), annotation_type
 
     @staticmethod
-    def _load_annotation(data_dir, filter_classes=None):
+    def _load_annotation(data_dir, unlabeled=False, filter_classes=None):
         ALLOWED_EXTS = (".jpg", ".jpeg", ".png", ".gif")
 
         def is_valid(filename):
@@ -181,29 +195,38 @@ class ClassificationDatasetAdapter(DatasetEntity):
             class_to_idx = {classes[i]: i for i in range(len(classes))}
             return class_to_idx
 
-        class_to_idx = find_classes(data_dir, filter_classes)
-
         out_data = []
-        for target_class in sorted(class_to_idx.keys()):
-            # class_index = class_to_idx[target_class]
-            target_dir = osp.join(data_dir, target_class)
-            if not osp.isdir(target_dir):
-                continue
-            for root, _, fnames in sorted(os.walk(target_dir, followlinks=True)):
-                for fname in sorted(fnames):
-                    path = osp.join(root, fname)
-                    if is_valid(path):
-                        out_data.append((path, (target_class,), 0, 0, "", -1, -1))
 
-        if not out_data:
-            print("Failed to locate images in folder " + data_dir + f" with extensions {ALLOWED_EXTS}")
+        if unlabeled is True:
+            data_list = []
+            for fm in ALLOWED_EXTS:
+                data_list.extend(glob.glob(f'{data_dir}/**/*{fm}', recursive=True))
+            for data_ in data_list:
+                out_data.append((data_, None, 0, 0, "", -1, -1))
+            all_classes=[]        
+        else:
+            class_to_idx = find_classes(data_dir, filter_classes)
+            for target_class in sorted(class_to_idx.keys()):
+                # class_index = class_to_idx[target_class]
+                target_dir = osp.join(data_dir, target_class)
+                if not osp.isdir(target_dir):
+                    continue
+                for root, _, fnames in sorted(os.walk(target_dir, followlinks=True)):
+                    for fname in sorted(fnames):
+                        path = osp.join(root, fname)
+                        if is_valid(path):
+                            out_data.append((path, (target_class,), 0, 0, "", -1, -1))
+            if not out_data:
+                print("Failed to locate images in folder " + data_dir + f" with extensions {ALLOWED_EXTS}")
 
-        all_classes = list(class_to_idx.keys())
+            all_classes = list(class_to_idx.keys())
         return (out_data, all_classes, [all_classes]), ClassificationType.MULTICLASS
 
     def _set_labels_obtained_from_annotation(self):
         self.labels = None
         for subset in self.data_roots:
+            if subset == Subset.UNLABELED:
+                continue
             labels = self.annotations[subset][1]
             if self.labels and self.labels != labels:
                 raise RuntimeError("Labels are different from annotation file to annotation file.")

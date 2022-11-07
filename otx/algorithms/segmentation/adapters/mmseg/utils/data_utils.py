@@ -171,7 +171,8 @@ def load_dataset_items(
     else:
         check_labels(labels_list, annot_labels)
 
-    test_mode = subset in {Subset.VALIDATION, Subset.TESTING}
+    test_mode = subset in {Subset.VALIDATION, Subset.TESTING, Subset.UNLABELED} # wanna create unlabeled mode but has to create other CustomDataset,, 
+
     pipeline = [dict(type="LoadAnnotations")]
     dataset = CustomDataset(
         img_dir=img_dir,

@@ -27,6 +27,7 @@ class SemanticSegmentationDataset(DatasetEntity):
         train_subset=None,
         val_subset=None,
         test_subset=None,
+        ul_subset=None,
     ):
 
         labels_list = []
@@ -62,4 +63,13 @@ class SemanticSegmentationDataset(DatasetEntity):
                 )
             )
 
+        if ul_subset is not None:
+            items.extend(
+                load_dataset_items(
+                    ann_file_path=None,
+                    data_root_dir=ul_subset["data_root"],
+                    subset=Subset.UNLABELED,
+                    labels_list=labels_list,
+                )
+            )
         super().__init__(items=items)

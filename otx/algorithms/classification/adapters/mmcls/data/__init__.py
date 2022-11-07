@@ -15,6 +15,7 @@
 # and limitations under the License.
 
 from .datasets import MPAClsDataset, MPAHierarchicalClsDataset, MPAMultilabelClsDataset
+from .semi_datasets import MPAClsUnlabelDataset
 from .pipelines import LoadImageFromOTXDataset
 
-__all__ = ["MPAClsDataset", "MPAMultilabelClsDataset", "MPAHierarchicalClsDataset", "LoadImageFromOTXDataset"]
+__all__ = ["MPAClsDataset", "MPAClsUnlabelDataset", "MPAMultilabelClsDataset", "MPAHierarchicalClsDataset", "LoadImageFromOTXDataset"]

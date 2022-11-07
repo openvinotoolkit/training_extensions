@@ -116,11 +116,12 @@ class CocoDataset:
     @check_input_parameters_type({"ann_file": JsonFilePathCheck, "data_root": OptionalDirectoryPathCheck})
     def __init__(
         self,
-        ann_file: str,
+        ann_file: Optional[str] = None,
         classes: Optional[Sequence[str]] = None,
         data_root: Optional[str] = None,
         img_prefix: str = "",
         test_mode: bool = False,
+        unlabeled_mode: bool = False,
         filter_empty_gt: bool = True,
         min_size: Optional[int] = None,
         with_mask: bool = False,
@@ -140,9 +141,10 @@ class CocoDataset:
             if not (self.img_prefix is None or osp.isabs(self.img_prefix)):
                 self.img_prefix = osp.join(self.data_root, self.img_prefix)
 
-        self.data_infos = self.load_annotations(self.ann_file)
+        if self.ann_file is not None:
+            self.data_infos = self.load_annotations(self.ann_file)
 
-        if not test_mode:
+        if test_mode is False or unlabeled_mode is False:
             valid_inds = self._filter_imgs()
             self.data_infos = [self.data_infos[i] for i in valid_inds]
 
@@ -325,12 +327,14 @@ def load_dataset_items_coco_format(
 ):  # pylint: disable=too-many-locals
     """Load dataset from CocoDataset."""
     test_mode = subset in {Subset.VALIDATION, Subset.TESTING}
+    unlabeled_mode = True if Subset.UNLABELED else False
 
     coco_dataset = CocoDataset(
         ann_file=ann_file_path,
         data_root=data_root_dir,
         classes=None,
         test_mode=test_mode,
+        unlabeled_mode=unlabeled_mode,
         with_mask=with_mask,
     )
     coco_dataset.test_mode = False

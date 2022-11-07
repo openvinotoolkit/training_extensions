@@ -28,6 +28,7 @@ class ObjectDetectionDataset(DatasetEntity):
         train_subset=None,
         val_subset=None,
         test_subset=None,
+        ul_subset=None,
     ):
 
         labels_list = []
@@ -66,4 +67,14 @@ class ObjectDetectionDataset(DatasetEntity):
                 )
             )
 
+        if ul_subset is not None:
+            items.extend(
+                load_dataset_items_coco_format(
+                    ann_file_path=None,
+                    data_root_dir=ul_subset["data_root"],
+                    domain=Domain.DETECTION,
+                    subset=Subset.UNLABELED,
+                    labels_list=labels_list,
+                )
+            )
         super().__init__(items=items)
