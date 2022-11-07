@@ -118,3 +118,10 @@ class Image(IMedia2DEntity):
         if self.__width is None:
             self.__height, self.__width = self.__get_size()
         return self.__width
+
+    @property
+    def filepath(self) -> int:
+        """
+        Returns the filepath of the image.
+        """
+        return self.__file_path

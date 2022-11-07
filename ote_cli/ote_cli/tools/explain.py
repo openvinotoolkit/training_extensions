@@ -1,5 +1,5 @@
 """
-Model inference demonstration tool.
+Model explain demonstration tool.
 """
 
 # Copyright (C) 2021 Intel Corporation
@@ -19,7 +19,6 @@ Model inference demonstration tool.
 import argparse
 import os
 
-import cv2
 from ote_sdk.configuration.helper import create
 from ote_sdk.entities.inference_parameters import InferenceParameters
 from ote_sdk.entities.task_environment import TaskEnvironment
@@ -133,33 +132,29 @@ def main():
             f"{args.explain_algorithm} currently not supported. \
             Currently only support {SUPPORTED_EXPLAIN_ALGORITHMS}"
         )
-
-    image_files = get_image_files(args.explain_data_roots)
-    explain_dataset = get_explain_dataset_from_filelist(image_files)
-
     if not os.path.exists(args.save_explanation_to):
         os.makedirs(args.save_explanation_to)
 
-    saliency_maps = task.explain(
-        explain_dataset.with_empty_annotations(),
+    image_files = get_image_files(args.explain_data_roots)
+    dataset_to_explain = get_explain_dataset_from_filelist(image_files)
+    explained_dataset = task.explain(
+        dataset_to_explain.with_empty_annotations(),
         InferenceParameters(
             is_evaluation=True,
             explainer=args.explain_algorithm,
         ),
     )
 
-    for img, saliency_map, (_, fname) in zip(
-        explain_dataset, saliency_maps, image_files
-    ):
+    for explain_output in explained_dataset:
         save_saliency_output(
-            cv2.cvtColor(img.numpy, cv2.COLOR_BGR2RGB),
-            saliency_map.numpy,
+            explain_output.numpy,
+            explain_output.get_metadata()[0].data.numpy,
             args.save_explanation_to,
-            os.path.splitext(fname)[0],
+            os.path.splitext(os.path.basename(explain_output.filepath))[0],
             weight=args.weight,
         )
 
-    print(f"saliency maps saved to {args.save_explanation_to}...")
+    print(f"saliency maps saved to {args.save_explanation_to} for {len(image_files)} images...")
 
 
 if __name__ == "__main__":

@@ -176,11 +176,7 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
             explainer=explain_parameters.explainer,
         )
         logger.debug(f"result of run_task {stage_module} module = {results}")
-        outputs = results["outputs"]
-        saliency_maps = zip(
-            outputs["saliency_maps"],
-        )
-
+        saliency_maps = results["outputs"]["saliency_maps"]
         update_progress_callback = default_progress_callback
         if explain_parameters is not None:
             update_progress_callback = explain_parameters.update_progress
