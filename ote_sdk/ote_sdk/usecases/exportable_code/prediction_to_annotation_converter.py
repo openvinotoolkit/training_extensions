@@ -181,6 +181,9 @@ class DetectionBoxToAnnotationConverter(IPredictionToAnnotationConverter):
         image_size = metadata["original_shape"][1::-1]
         for box in predictions:
             scored_label = ScoredLabel(self.labels[int(box.id)], float(box.score))
+            coords = box.get_coords()
+            if (coords[2] - coords[0]) * (coords[3] - coords[1]) < 1.0:
+                continue
             coords = np.array(box.get_coords(), dtype=float) / np.tile(image_size, 2)
             annotations.append(
                 Annotation(
@@ -380,9 +383,9 @@ class MaskToAnnotationConverter(IPredictionToAnnotationConverter):
             for contour, hierarchy in zip(contours, hierarchies[0]):
                 if hierarchy[3] != -1:
                     continue
-                contour = list(contour)
-                if len(contour) <= 2:
+                if len(contour) <= 2 or cv2.contourArea(contour) < 1.0:
                     continue
+                contour = list(contour)
                 points = [
                     Point(
                         x=point[0][0] / metadata["original_shape"][1],
@@ -391,17 +394,14 @@ class MaskToAnnotationConverter(IPredictionToAnnotationConverter):
                     for point in contour
                 ]
                 polygon = Polygon(points=points)
-                if polygon.get_area() > 1e-12:
-                    annotations.append(
-                        Annotation(
-                            polygon,
-                            labels=[
-                                ScoredLabel(
-                                    self.labels[int(class_idx) - 1], float(score)
-                                )
-                            ],
-                        )
+                annotations.append(
+                    Annotation(
+                        polygon,
+                        labels=[
+                            ScoredLabel(self.labels[int(class_idx) - 1], float(score))
+                        ],
                     )
+                )
         annotation_scene = AnnotationSceneEntity(
             kind=AnnotationSceneKind.PREDICTION,
             annotations=annotations,
@@ -431,7 +431,7 @@ class RotatedRectToAnnotationConverter(IPredictionToAnnotationConverter):
             for contour, hierarchy in zip(contours, hierarchies[0]):
                 if hierarchy[3] != -1:
                     continue
-                if len(contour) <= 2:
+                if len(contour) <= 2 or cv2.contourArea(contour) < 1.0:
                     continue
                 points = [
                     Point(
@@ -441,17 +441,14 @@ class RotatedRectToAnnotationConverter(IPredictionToAnnotationConverter):
                     for point in cv2.boxPoints(cv2.minAreaRect(contour))
                 ]
                 polygon = Polygon(points=points)
-                if polygon.get_area() > 1e-12:
-                    annotations.append(
-                        Annotation(
-                            polygon,
-                            labels=[
-                                ScoredLabel(
-                                    self.labels[int(class_idx) - 1], float(score)
-                                )
-                            ],
-                        )
+                annotations.append(
+                    Annotation(
+                        polygon,
+                        labels=[
+                            ScoredLabel(self.labels[int(class_idx) - 1], float(score))
+                        ],
                     )
+                )
         annotation_scene = AnnotationSceneEntity(
             kind=AnnotationSceneKind.PREDICTION,
             annotations=annotations,

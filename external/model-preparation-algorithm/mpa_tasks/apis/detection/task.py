@@ -391,16 +391,13 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
             for i in range(detections.shape[0]):
                 probability = float(detections[i, 4])
                 coords = detections[i, :4].astype(float).copy()
+
+                if probability < confidence_threshold or (coords[2] - coords[0]) * (coords[3] - coords[1]) < 1.0:
+                    continue
+
                 coords /= np.array([width, height, width, height], dtype=float)
                 coords = np.clip(coords, 0, 1)
-
-                if probability < confidence_threshold:
-                    continue
-
                 assigned_label = [ScoredLabel(self._labels[label_idx], probability=probability)]
-                if coords[3] - coords[1] <= 0 or coords[2] - coords[0] <= 0:
-                    continue
-
                 shapes.append(
                     Annotation(
                         Rectangle(x1=coords[0], y1=coords[1], x2=coords[2], y2=coords[3]),
@@ -423,7 +420,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
                 for contour, hierarchy in zip(contours, hierarchies[0]):
                     if hierarchy[3] != -1:
                         continue
-                    if len(contour) <= 2 or probability < confidence_threshold:
+                    if len(contour) <= 2 or probability < confidence_threshold or cv2.contourArea(contour) < 1.0:
                         continue
                     if self._task_type == TaskType.INSTANCE_SEGMENTATION:
                         points = [Point(x=point[0][0] / width, y=point[0][1] / height) for point in contour]
@@ -432,8 +429,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
                         points = [Point(x=point[0] / width, y=point[1] / height) for point in box_points]
                     labels = [ScoredLabel(self._labels[label_idx], probability=probability)]
                     polygon = Polygon(points=points)
-                    if cv2.contourArea(contour) > 0 and polygon.get_area() > 1e-12:
-                        shapes.append(Annotation(polygon, labels=labels, id=ID(f"{label_idx:08}")))
+                    shapes.append(Annotation(polygon, labels=labels, id=ID(f"{label_idx:08}")))
         return shapes
 
     @staticmethod
