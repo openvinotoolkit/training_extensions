@@ -573,7 +573,7 @@ def xfail_templates(templates, xfail_template_ids_reasons):
 def ote_explain_testing(template, root, ote_dir, args):
     work_dir, template_work_dir, _ = get_some_vars(template, root)
     test_algorithms = ["ActivationMap", "EigenCAM"]
-    check_files = ('Slide1_', 'Slide2_', 'Slide3_')
+    check_files = ("Slide1_", "Slide2_", "Slide3_")
     for test_algorithm in test_algorithms:
         output_dir = f"{template_work_dir}/explain_{template.model_template_id}/{test_algorithm}/"
         command_line = [
