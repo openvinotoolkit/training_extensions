@@ -13,7 +13,7 @@ repos:
       - id: isort
         alias: isort_rest
         name: "isort (ote_cli|external)"
-        files: '^(ote_cli|external/anomaly)/.*\.py'
+        files: '^(ote_cli|external/anomaly|external/model-preparation-algorithm)/.*\.py'
         exclude: "tests/"
 
   - repo: https://github.com/psf/black
@@ -26,14 +26,14 @@ repos:
       - id: black
         name: "black (rest)"
         args: [--line-length, "120"]
-        files: '^external/anomaly/.*\.py'
+        files: '^(external/anomaly|external/model-preparation-algorithm)/.*\.py'
 
   - repo: https://github.com/PyCQA/flake8
     rev: "5.0.3"
     hooks:
       - id: flake8
         name: "flake8"
-        files: '^(ote_sdk|ote_cli|external/anomaly)/.*\.py'
+        files: '^(ote_sdk|ote_cli|external/anomaly|external/model-preparation-algorithm)/.*\.py'
         args: ["--config", ".flake8", "--max-complexity", "20"]
         exclude: ".*/protobuf"
 
@@ -68,8 +68,8 @@ repos:
         files: '^ote_cli/.*\.py'
         additional_dependencies: [types-PyYAML]
       - id: mypy
-        alias: mypy_external
-        name: "mypy (external)"
+        alias: mypy_anomaly
+        name: "mypy (anomaly)"
         files: '^external/anomaly/.*\.py'
         additional_dependencies: [attrs==21.2.*]
         exclude: "^external/anomaly/tests"

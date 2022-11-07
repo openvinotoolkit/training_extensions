@@ -6,13 +6,10 @@
 # * https://github.com/open-mmlab/mmcv/blob/master/mmcv/runner/epoch_based_runner.py
 # * https://github.com/open-mmlab/mmcv/blob/master/mmcv/runner/iter_based_runner.py
 
-import time
-
 import torch.distributed as dist
 from mmcv.runner import RUNNERS, EpochBasedRunner, get_dist_info
-from torch.utils.data.dataloader import DataLoader
-
 from ote_sdk.utils.argument_checks import check_input_parameters_type
+from torch.utils.data.dataloader import DataLoader
 
 
 @RUNNERS.register_module()
@@ -29,7 +26,7 @@ class EpochRunnerWithCancel(EpochBasedRunner):
         self.distributed = True if world_size > 1 else False
 
     def stop(self) -> bool:
-        """ Returning a boolean to break the training loop
+        """Returning a boolean to break the training loop
         This method supports distributed training by broadcasting should_stop to other ranks
         :return: a cancellation bool
         """
@@ -46,20 +43,20 @@ class EpochRunnerWithCancel(EpochBasedRunner):
     @check_input_parameters_type()
     def train(self, data_loader: DataLoader, **kwargs):
         self.model.train()
-        self.mode = 'train'
+        self.mode = "train"
         self.data_loader = data_loader
         self._max_iters = self._max_epochs * len(self.data_loader)
-        self.call_hook('before_train_epoch')
+        self.call_hook("before_train_epoch")
         # TODO: uncomment below line or resolve root cause of deadlock issue if multi-GPUs need to be supported.
         # time.sleep(2)  # Prevent possible multi-gpu deadlock during epoch transition
         for i, data_batch in enumerate(self.data_loader):
             self._inner_iter = i
-            self.call_hook('before_train_iter')
+            self.call_hook("before_train_iter")
             self.run_iter(data_batch, train_mode=True, **kwargs)
-            self.call_hook('after_train_iter')
+            self.call_hook("after_train_iter")
             if self.stop():
                 break
             self._iter += 1
-        self.call_hook('after_train_epoch')
+        self.call_hook("after_train_epoch")
         self.stop()
         self._epoch += 1

@@ -64,10 +64,11 @@ args = {
 root = '/tmp/ote_cli/'
 ote_dir = os.getcwd()
 
-templates = Registry('external/mmdetection').filter(task_type='DETECTION').templates
+templates = Registry('external/mmdetection', experimental=True).filter(task_type='DETECTION').templates
 templates_ids = [template.model_template_id for template in templates]
 
 
+@pytest.mark.skip(reason="This test case will be deprecated soon")
 class TestToolsDetection:
     @e2e_pytest_component
     def test_create_venv(self):

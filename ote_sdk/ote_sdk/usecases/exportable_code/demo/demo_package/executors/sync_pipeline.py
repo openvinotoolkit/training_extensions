@@ -99,7 +99,7 @@ class ChainExecutor:
         for frame in streamer:
             # getting result for single image
             annotation_scene = self.single_run(frame)
-            output = self.visualizer.draw(frame, annotation_scene)
+            output = self.visualizer.draw(frame, annotation_scene, {})
             self.visualizer.show(output)
             if self.visualizer.is_quit():
                 break

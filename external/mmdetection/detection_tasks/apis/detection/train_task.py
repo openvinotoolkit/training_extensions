@@ -183,7 +183,7 @@ class OTEDetectionTrainingTask(OTEDetectionInferenceTask, ITrainingTask):
             metric = MetricsHelper.compute_f_measure(resultset, vary_confidence_threshold=False)
 
         # Compose performance statistics.
-        # TODO[EUGENE]: ADD MAE CURVE FOR TaskType.COUNTING
+        # TODO[EUGENE]: HOW TO ADD A MAE CURVE FOR TaskType.COUNTING?
         performance = metric.get_performance()
         performance.dashboard_metrics.extend(self._generate_training_metrics(learning_curves, val_map))
         logger.info(f'Final model performance: {str(performance)}')

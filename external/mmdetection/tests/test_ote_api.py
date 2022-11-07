@@ -56,6 +56,7 @@ from mmdet.integration.nncf.utils import is_nncf_enabled
 
 DEFAULT_TEMPLATE_DIR = osp.join('configs', 'custom-object-detection', 'gen3_mobilenetV2_ATSS')
 
+@pytest.mark.skip(reason="This test case will be deprecated soon")
 class ModelTemplate(unittest.TestCase):
     def check_capabilities(self, template):
         self.assertTrue(template.computes_representations())
@@ -86,6 +87,7 @@ class ModelTemplate(unittest.TestCase):
 
 
 @e2e_pytest_api
+@pytest.mark.skip(reason="This test case will be deprecated soon")
 def test_configuration_yaml():
     configuration = OTEDetectionConfig()
     configuration_yaml_str = convert(configuration, str)
@@ -94,6 +96,7 @@ def test_configuration_yaml():
     assert configuration_yaml_converted == configuration_yaml_loaded
 
 
+@pytest.mark.skip(reason="This test case will be deprecated soon")
 class Sample(unittest.TestCase):
     template = osp.join(DEFAULT_TEMPLATE_DIR, 'template_experimental.yaml')
 
@@ -113,6 +116,7 @@ class Sample(unittest.TestCase):
         assert output.returncode == 0
 
 
+@pytest.mark.skip(reason="This test case will be deprecated soon")
 class API(unittest.TestCase):
     """
     Collection of tests for OTE API and OTE Model Templates

@@ -7,7 +7,7 @@ Converters for output of inferencers
 #
 
 import abc
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import cv2
 import numpy as np
@@ -19,7 +19,7 @@ from ote_sdk.entities.annotation import (
     AnnotationSceneKind,
 )
 from ote_sdk.entities.id import ID
-from ote_sdk.entities.label import Domain, LabelEntity
+from ote_sdk.entities.label import Domain
 from ote_sdk.entities.label_schema import LabelSchemaEntity
 from ote_sdk.entities.scored_label import ScoredLabel
 from ote_sdk.entities.shapes.polygon import Point, Polygon
@@ -54,7 +54,9 @@ class DetectionToAnnotationConverter(IPredictionToAnnotationConverter):
     Converts Object Detections to Annotations
     """
 
-    def __init__(self, labels: List[LabelEntity]):
+    def __init__(self, labels: Union[LabelSchemaEntity, List]):
+        if isinstance(labels, LabelSchemaEntity):
+            labels = labels.get_labels(include_empty=False)
         self.label_map = dict(enumerate(labels))
 
     def convert_to_annotation(
@@ -103,14 +105,17 @@ class DetectionToAnnotationConverter(IPredictionToAnnotationConverter):
                             (n, 7) or (n, 6)
         """
         annotations = []
-        if predictions.shape[1:] < (6,) or predictions.shape[1:] > (7,):
+        if (
+            len(predictions)
+            and predictions.shape[1:] < (6,)
+            or predictions.shape[1:] > (7,)
+        ):
             raise ValueError(
                 f"Shape of prediction is not expected, expected (n, 7) or (n, 6) "
                 f"got {predictions.shape}"
             )
 
         for prediction in predictions:
-
             if prediction.shape == (7,):
                 # Some OpenVINO models use an output shape of [7,]
                 # If this is the case, skip the first value as it is not used
@@ -119,11 +124,10 @@ class DetectionToAnnotationConverter(IPredictionToAnnotationConverter):
             label = int(prediction[0])
             confidence = prediction[1]
             scored_label = ScoredLabel(self.label_map[label], confidence)
+            coords = prediction[2:]
             annotations.append(
                 Annotation(
-                    Rectangle(
-                        prediction[2], prediction[3], prediction[4], prediction[5]
-                    ),
+                    Rectangle(coords[0], coords[1], coords[2], coords[3]),
                     labels=[scored_label],
                 )
             )
