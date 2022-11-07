@@ -120,7 +120,7 @@ class Image(IMedia2DEntity):
         return self.__width
 
     @property
-    def filepath(self) -> int:
+    def filepath(self) -> str:
         """
         Returns the filepath of the image.
         """
