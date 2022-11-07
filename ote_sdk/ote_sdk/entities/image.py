@@ -59,8 +59,8 @@ class Image(IMedia2DEntity):
             return self.__data.shape[0], self.__data.shape[1]
         try:
             width, height = imagesize.get(self.__file_path)
-            if width <= 0 or height <=0:
-                raise ValueError('Invalide image size')
+            if width <= 0 or height <= 0:
+                raise ValueError("Invalide image size")
         except ValueError:
             image = cv2.imread(self.__file_path)
             height, width = image.shape[:2]
