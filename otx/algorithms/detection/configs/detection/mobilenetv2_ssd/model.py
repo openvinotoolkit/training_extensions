@@ -23,8 +23,6 @@ _base_ = [
 
 __width_mult = 1.0
 
-runner = dict(max_epochs=20)
-
 model = dict(
     type="CustomSingleStageDetector",
     bbox_head=dict(
@@ -32,9 +30,10 @@ model = dict(
         num_classes=80,
         in_channels=(int(__width_mult * 96), int(__width_mult * 320)),
         use_depthwise=True,
-        norm_cfg=dict(type="BN", eps=0.001, momentum=0.03),
+        norm_cfg=dict(type="BN"),
         act_cfg=dict(type="ReLU"),
-        init_cfg=dict(type="Normal", layer="Conv2d", std=0.001),
+        init_cfg=dict(type="Xavier", layer="Conv2d", distribution="uniform"),
+        loss_balancing=False,
         anchor_generator=dict(
             type="SSDAnchorGeneratorClustered",
             strides=(16, 32),
