@@ -221,12 +221,13 @@ def wrap_nncf_model(model,
     def dummy_forward(model):
         fake_data = _get_fake_data_for_forward(cfg, nncf_config, get_fake_input_func)
         img, img_metas = fake_data["img"], fake_data["img_metas"]
-        img[0] = nncf_model_input(img[0])
 
         ctx = model.nncf_trace_context(img_metas, nncf_compress_postprocessing)
         with ctx:
             # The device where model is could be changed under this context
             img = [i.to(next(model.parameters()).device) for i in img]
+            # Marking data as NNCF network input must be after device movement
+            img = [nncf_model_input(i) for i in img]
             if nncf_compress_postprocessing:
                 logger.debug("NNCF will try to compress a postprocessing part of the model")
             else:
