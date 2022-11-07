@@ -145,9 +145,7 @@ def main():
         ),
     )
 
-    for explained_data, (_, fname) in zip(
-        explained_dataset, image_files
-    ):
+    for explained_data, (_, fname) in zip(explained_dataset, image_files):
         save_saliency_output(
             explained_data.numpy,
             explained_data.get_metadata()[0].data.numpy,
@@ -156,7 +154,9 @@ def main():
             weight=args.weight,
         )
 
-    print(f"saliency maps saved to {args.save_explanation_to} for {len(image_files)} images...")
+    print(
+        f"saliency maps saved to {args.save_explanation_to} for {len(image_files)} images..."
+    )
 
 
 if __name__ == "__main__":
