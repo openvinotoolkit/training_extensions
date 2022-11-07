@@ -14,13 +14,16 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import os
 from collections import defaultdict
 from typing import List, Union
 
 from mmcv.utils import Config, ConfigDict
 
-from otx.algorithms.common.adapters.mmcv.utils import get_data_cfg, prepare_work_dir
+from otx.algorithms.common.adapters.mmcv.utils import (
+    get_data_cfg,
+    patch_data_pipeline,
+    prepare_work_dir,
+)
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label import LabelEntity
 from otx.api.usecases.reporting.time_monitor_callback import TimeMonitorCallback
@@ -41,29 +44,8 @@ def patch_config(config: Config, base_dir: str, work_dir: str):
 
 
 @check_input_parameters_type()
-def patch_data_pipeline(config: Config, base_dir: str):
-    """Replace data pipeline to data_pipeline.py if it exist."""
-    data_pipeline_path = os.path.join(base_dir, "data_pipelne.py")
-    if os.path.exists(data_pipeline_path):
-        data_pipeline_cfg = Config.fromfile(data_pipeline_path)
-        config.merge_from_dcit(data_pipeline_cfg)
-
-
-@check_input_parameters_type()
 def patch_datasets(config: Config):
     """Patch dataset config suitable to mmaction."""
-
-    def patch_color_conversion(pipeline):
-        # Default data format for OTX is RGB, while mmdet uses BGR, so negate the color conversion flag.
-        for pipeline_step in pipeline:
-            if pipeline_step.type == "Normalize":
-                to_rgb = False
-                if "to_rgb" in pipeline_step:
-                    to_rgb = pipeline_step.to_rgb
-                to_rgb = not bool(to_rgb)
-                pipeline_step.to_rgb = to_rgb
-            elif pipeline_step.type == "MultiScaleFlipAug":
-                patch_color_conversion(pipeline_step.transforms)
 
     # FIXME start_index and modality is hard-coded
     assert "data" in config
