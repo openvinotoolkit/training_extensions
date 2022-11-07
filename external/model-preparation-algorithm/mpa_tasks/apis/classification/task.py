@@ -306,8 +306,7 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
     def _add_saliency_maps_to_dataset(self, saliency_maps, dataset, update_progress_callback):
         """Loop over dataset again and assign activation maps"""
         dataset_size = len(dataset)
-        for i, (dataset_item, prediction_items) in enumerate(zip(dataset, saliency_maps)):
-            saliency_map = prediction_items[0]
+        for i, (dataset_item, saliency_map) in enumerate(zip(dataset, saliency_maps)):
             saliency_map = get_actmap(saliency_map, (dataset_item.width, dataset_item.height))
             saliency_map_media = ResultMediaEntity(
                 name="Saliency Map",
