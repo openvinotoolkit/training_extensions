@@ -145,12 +145,14 @@ def main():
         ),
     )
 
-    for explain_output in explained_dataset:
+    for explain_output, (_, fname) in zip(
+        explained_dataset, image_files
+    ):
         save_saliency_output(
             explain_output.numpy,
             explain_output.get_metadata()[0].data.numpy,
             args.save_explanation_to,
-            os.path.splitext(os.path.basename(explain_output.filepath))[0],
+            os.path.splitext(os.path.basename(fname))[0],
             weight=args.weight,
         )
 
