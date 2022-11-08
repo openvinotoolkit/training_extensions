@@ -155,11 +155,12 @@ class ClassificationTrainTask(ClassificationInferenceTask):
                     otx_dataset=dataset.get_subset(Subset.VALIDATION),
                     labels=self._labels,
                 ),
-                unlabeled=ConfigDict(
-                    otx_dataset=dataset.get_subset(Subset.UNLABELED),
-                )
             )
         )
+        if len(dataset.get_subset(Subset.UNLABELED)):
+            data_cfg.data.unlabeled=ConfigDict(
+                    otx_dataset=dataset.get_subset(Subset.UNLABELED),
+            )
 
         for label in self._labels:
             label.hotkey = "a"

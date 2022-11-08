@@ -2,15 +2,11 @@
 
 # pylint: disable=invalid-name
 
-#_base_ = "../base/models/efficientnet.py"
+_base_ = "../base/models/efficientnet.py"
 
-model = dict(
-    backbone=dict(type="OTXEfficientNet", pretrained=True, version="b0"),
-    neck=dict(type="GlobalAveragePooling"),
-)
-
+# TODO: remove model head cfg in model.py
 # cls should use SemiClassifier for semi-sl
-"""
+# error log : ValueError: Unexpected type of 'data_loader' parameter
 model = dict(
     type="SAMImageClassifier",
     task="classification",
@@ -25,5 +21,5 @@ model = dict(
         ),
     ),
 )
-"""
+
 fp16 = dict(loss_scale=512.0)

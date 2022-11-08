@@ -91,6 +91,7 @@ class ClassificationDatasetAdapter(DatasetEntity):
         if ul_data_root:
             self.data_roots[Subset.UNLABELED] = ul_data_root
             self.ann_files[Subset.UNLABELED] = None
+        print("DATA ROOTS", ul_data_root, self.data_roots)
         self.annotations = {}
         for k, v in self.data_roots.items():
             if v:
