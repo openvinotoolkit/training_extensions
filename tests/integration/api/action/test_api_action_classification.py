@@ -59,10 +59,10 @@ class TestActionTaskAPI:
     Collection of tests for OTX API and OTX Model Templates
     """
 
-    train_ann_files = "../data/jester/SC_jester_3cls_12_samples_seed_2/train_list_rawframes.txt"
-    train_data_roots = "../data/jester/SC_jester_3cls_12_samples_seed_2/rawframes_train"
-    val_ann_files = "../data/jester/SC_jester_3cls_12_samples_seed_2/val_list_rawframes.txt"
-    val_data_roots = "../data/jester/SC_jester_3cls_12_samples_seed_2/rawframes_val"
+    train_ann_files = "data/custom_action_recognition/custom_dataset/train_list_rawframes.txt"
+    train_data_roots = "data/custom_action_recognition/custom_dataset/rawframes"
+    val_ann_files = "data/custom_action_recognition/custom_dataset/train_list_rawframes.txt"
+    val_data_roots = "data/custom_action_recognition/custom_dataset/rawframes"
 
     @e2e_pytest_api
     def test_reading_action_model_template(self):

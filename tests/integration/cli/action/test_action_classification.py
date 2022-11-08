@@ -16,12 +16,12 @@ from tests.test_suite.e2e_test_system import e2e_pytest_component
 
 # Finetuning arguments
 args = {
-    "--train-ann-file": "../data/jester/SC_jester_3cls_12_samples_seed_2/train_list_rawframes.txt",
-    "--train-data-roots": "../data/jester/SC_jester_3cls_12_samples_seed_2/rawframes_train",
-    "--val-ann-file": "../data/jester/SC_jester_3cls_12_samples_seed_2/val_list_rawframes.txt",
-    "--val-data-roots": "../data/jester/SC_jester_3cls_12_samples_seed_2/rawframes_val",
-    "--test-ann-files": "../data/jester/SC_jester_3cls_12_samples_seed_2/val_list_rawframes.txt",
-    "--test-data-roots": "../data/jester/SC_jester_3cls_12_samples_seed_2/rawframes_val",
+    "--train-ann-file": "data/custom_action_recognition/custom_dataset/train_list_rawframes.txt",
+    "--train-data-roots": "data/custom_action_recognition/custom_dataset/rawframes",
+    "--val-ann-file": "data/custom_action_recognition/custom_dataset/train_list_rawframes.txt",
+    "--val-data-roots": "data/custom_action_recognition/custom_dataset/rawframes",
+    "--test-ann-files": "data/custom_action_recognition/custom_dataset/train_list_rawframes.txt",
+    "--test-data-roots": "data/custom_action_recognition/custom_dataset/rawframes",
     "train_params": ["params", "--learning_parameters.num_iters", "2", "--learning_parameters.batch_size", "4"],
 }
 
