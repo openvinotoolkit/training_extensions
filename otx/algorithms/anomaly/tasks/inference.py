@@ -308,6 +308,10 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         if hasattr(self.model, "normalization_metrics"):
             output_model.set_data("min", self.model.normalization_metrics.state_dict()["min"].cpu().numpy().tobytes())
             output_model.set_data("max", self.model.normalization_metrics.state_dict()["max"].cpu().numpy().tobytes())
+        else:
+            logger.warning(
+                "The model was not trained before saving. This will lead to incorrect normalization of the heatmaps."
+            )
 
     @staticmethod
     def _is_docker() -> bool:
