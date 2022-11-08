@@ -431,7 +431,7 @@ class RotatedRectToAnnotationConverter(IPredictionToAnnotationConverter):
             for contour, hierarchy in zip(contours, hierarchies[0]):
                 if hierarchy[3] != -1:
                     continue
-                if len(contour) <= 2 or cv2.contourArea(contour):
+                if len(contour) <= 2 or cv2.contourArea(contour) < 1.0:
                     continue
                 points = [
                     Point(

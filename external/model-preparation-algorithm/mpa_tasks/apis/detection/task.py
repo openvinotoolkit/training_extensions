@@ -397,11 +397,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
 
                 coords /= np.array([width, height, width, height], dtype=float)
                 coords = np.clip(coords, 0, 1)
-
                 assigned_label = [ScoredLabel(self._labels[label_idx], probability=probability)]
-                if coords[3] - coords[1] <= 0 or coords[2] - coords[0] <= 0:
-                    continue
-
                 shapes.append(
                     Annotation(
                         Rectangle(x1=coords[0], y1=coords[1], x2=coords[2], y2=coords[3]),
