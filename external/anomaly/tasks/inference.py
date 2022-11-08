@@ -263,7 +263,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         output_model.set_data("label_schema.json", label_schema_to_bytes(self.task_environment.label_schema))
         self._set_metadata(output_model)
 
-    def model_info(self) -> Dict:
+    def _model_info(self) -> Dict:
         """Return model info to save the model weights.
 
         Returns:
@@ -282,7 +282,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
             output_model (ModelEntity): Output model onto which the weights are saved.
         """
         logger.info("Saving the model weights.")
-        model_info = self.model_info()
+        model_info = self._model_info()
         buffer = io.BytesIO()
         torch.save(model_info, buffer)
         output_model.set_data("weights.pth", buffer.getvalue())
