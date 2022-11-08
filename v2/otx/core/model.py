@@ -1,12 +1,13 @@
 import os
-from typing import Union, Dict
 from abc import abstractmethod
 from enum import IntEnum
+from typing import Dict, Union
 
 from otx.utils.config import Config
 from otx.utils.logger import get_logger
 
 logger = get_logger()
+
 
 class ModelStatus(IntEnum):
     CONFIGURED = 0
@@ -33,20 +34,21 @@ class IModel:
                 raise RuntimeError(f"Cannot find configuration file {model_config}")
         else:
             raise RuntimeError(f"Not supported model configuration type [{type(model_config)}]")
+        self.spec = self._config.pop("spec")
         self._ckpt = None
 
     @abstractmethod
-    def save(self):
+    def save(self, model, path, **kwargs):
         """"""
         raise NotImplementedError()
 
     @abstractmethod
-    def export(self, type="openvino"):
+    def export(self, model, path, exp_type="openvion"):
         """"""
         raise NotImplementedError()
 
     @abstractmethod
-    def build(self):
+    def build(self, **kwargs):
         raise NotImplementedError
 
     @abstractmethod
@@ -63,3 +65,7 @@ class IModel:
             if not os.path.exists(self._ckpt):
                 logger.warning(f"invalid model checkpoint path: {self._ckpt}")
         return self._ckpt
+
+    @ckpt.setter
+    def ckpt(self, value):
+        self._ckpt = value

@@ -1,79 +1,58 @@
 from otx.algorithms.base import BaseTask
+from otx.api.dataset import Dataset
+from otx.core.model import ModelStatus
 from otx.utils.logger import get_logger
 
 logger = get_logger()
 
 
 class ClsTask(BaseTask):
-    def eval(self, dataset, metric, **kwargs):
-        logger.info("*** task.eval() ***")
+    def eval(self, dataset: Dataset, metric: str, **kwargs):
+        logger.info(f"dataset = {dataset}, metric = {metric}, kwargs = {kwargs}")
         spec = kwargs.get("spec", "eval")
-
-        logger.info("=== configure task ===")
-        self.jobs[spec].configure(self.config,
-            model_cfg=self.adapters["model"].config,
-            data_cfg=self.adapters["data"].config,
-            training=False,
-            model_ckpt=self.adapters["model"].ckpt,
-        )
-
-        logger.info("=== update config ===")
-        self.update_model_cfg(self.config.model, overwrite=True)
-        self.update_data_cfg(self.config.data, overwrite=True)
-
         logger.info("=== prepare model ===")
-        self.model = self._get_model()
-        dataset = kwargs.get("dataset", self.adapters["data"].get_subset("test"))
+        model = self.model_adapter.build() if self.model is None else self.model
         infer_results = self.infer(dataset, **kwargs)
-        return self._run_job("eval", metric, infer_results, **kwargs, **self.config[spec])
+        return self._run_job(spec, model, metric=metric, infer_results=infer_results, **kwargs)
 
-    def infer(self, dataset, **kwargs):
+    def infer(self, dataset: Dataset, **kwargs):
         logger.info("*** task.infer() ***")
         spec = kwargs.get("spec", "infer")
-        self.model = self._get_model()
-        dataset = kwargs.get("dataset", self.adapters["data"].get_test_dataset())
-        return self._run_job("infer", model, dataset, **kwargs, **self.config[spec])
+        model = self.model_adapter.build() if self.model is None else self.model
+        dataset = self.dataset_adapter.build(dataset.get_subset("test"), "test")
+        return self._run_job(spec, model, dataset=dataset, **kwargs)
 
-    def export(self, type, **kwargs):
+    def export(self, ex_type, **kwargs):
         logger.info("*** task.export() ***")
         spec = kwargs.get("spec", "export")
-        model = self._get_model()
-        return self._run_job("export", model, **kwargs, **self.config[spec])
+        model = self.model_adapter.build() if self.model is None else self.model
+        return self._run_job(spec, model, ex_type, **kwargs)
 
-    def optimize(self, type, **kwargs):
+    def optimize(self, opt_type, **kwargs):
         logger.info("*** task.optimize() ***")
         spec = kwargs.get("spec", "optimize")
-        self.optimized_model = "optimized model"
-        self.model_status = ModelStatus.OPTIMIZED
-        return True
+        model = self.model_adapter.build() if self.model is None else self.model
+        ret = self._run_job(spec, model, opt_type, **kwargs)
+        if ret is not None:
+            self.model_status = ModelStatus.OPTIMIZED
+        return ret
 
 
 class ClsIncrClassification(ClsTask):
-    def train(self, dataset, **kwargs):
-        logger.info("*** task.train() ***")
+    def train(self, dataset: Dataset, **kwargs):
+        logger.info(f"dataset = {dataset}, kwargs = {kwargs}")
         spec = kwargs.get("spec", "train")
 
-        logger.info("=== configure task ===")
-        self.jobs[spec].configure(self.config,
-            model_cfg=self.model_adapter.config,
-            data_cfg=self.dataset_adapter.config,
-        )
-
-        logger.info("=== update config ===")
-        self.update_model_cfg(self.config.model, overwrite=True)
-        self.update_data_cfg(self.config.data, overwrite=True)
-
         logger.info("=== prepare model ===")
-        self.model = self._get_model()
+        self.model = self.model_adapter.build()
         logger.info("=== prepare dataset ===")
-        train_dataset = kwargs.pop("train_dataset", self.dataset_adapter.get_subset("train"))
-        val_dataset = kwargs.pop("val_dataset", self.dataset_adapter.get_subset("val"))
         datasets = dict(
-            train=train_dataset,
-            val=val_dataset,
+            train=self.dataset_adapter.build(dataset, "train"),
+            val=self.dataset_adapter.build(dataset, "val"),
         )
-        results = self._run_job(spec, self.model, datasets, **kwargs, **self.config[spec])
+        results = self._run_job(spec, self.model, datasets, **kwargs)
         ckpt = results.get("final_ckpt")
         if ckpt is not None:
-            self.adapters["model"].ckpt = ckpt
+            self.model_adapter.ckpt = ckpt
             self.model_status = ModelStatus.TRAINED
+        return results

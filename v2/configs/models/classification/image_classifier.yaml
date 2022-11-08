@@ -1,3 +1,12 @@
-backbone: resnet18
-neck: None
-head: linear_head
+_base_: ../backbones/efficientnet.yaml
+
+type: ImageClassifier
+neck:
+  type: GlobalAveragePooling
+head:
+  type: LinearClsHead
+  num_classes: 10
+  in_channels: 1280
+  loss:
+    type: CrossEntropyLoss
+    loss_weight: 1.0

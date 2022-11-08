@@ -8,10 +8,8 @@ from otx.utils.logger import get_logger
 
 logger = get_logger()
 
-class TorchJob(IJob):
-    def __init__(self, spec, **kwargs):
-        super().__init__(spec)
 
+class TorchJob(IJob):
     @staticmethod
     def _set_random_seed(seed, deterministic=False):
         """Set random seed.
@@ -34,8 +32,15 @@ class TorchJob(IJob):
 
     @staticmethod
     def is_gpu_available():
+        logger.info(f"cuda available = {torch.cuda.is_available()}")
         return torch.cuda.is_available()
 
     @staticmethod
     def get_current_device():
+        logger.info(f"current device = {torch.cuda.current_device()}")
         return torch.cuda.current_device()
+
+    @staticmethod
+    def get_torch_version():
+        logger.info(f"torch version = {torch.version.__version__}")
+        return torch.version.__version__

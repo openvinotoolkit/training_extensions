@@ -6,17 +6,29 @@ logger = get_logger()
 
 
 class MMEvaluator(MMJob):
-    def __init__(self, spec, **kwargs):
-        super().__init__(spec, **kwargs)
-        logger.info(f"{__name__} __init__({spec}, {kwargs})")
+    def configure(self, task_config: Config, **kwargs):
+        logger.info(f"task_config = {task_config}, kwargs = {kwargs}")
+        return task_config
 
-    def configure(self, cfg: Config, model_cfg=None, data_cfg=None, **kwargs):
-        logger.info(f"configure({cfg})")
-        training = kwargs.get("training", True)
-        return cfg
+    def run(self, model, task_config=None, **kwargs):
+        logger.info(f"model = {model}, task_config = {task_config}, kwargs = {kwargs}")
+        if task_config is not None:
+            task_config = self.configure(task_config)
+        if self.spec == "eval":
+            infer_results = kwargs.get("infer_results")
+            metric = kwargs.get("metric")
+            return self.eval(infer_results, metric)
+        dataset = kwargs.get("dataset")
+        return self.infer(dataset)
 
-    def run(self, model, data, task_config, **kwargs):
-        logger.info(f"{__name__} run(model = {model}, datasets = {data}, config = {task_config}, others = {kwargs})")
-        task_config = self.configure(task_config)
-        metric = kwargs.get("metric", "top-1")
-        return dict(result=None)
+    def infer(self, dataset):
+        logger.info(f"dataset = {dataset}")
+        return dict(
+            infer="result"
+        )
+
+    def eval(self, results, metric):
+        logger.info(f"results = {results}, metric = {metric}")
+        return dict(
+            metric="good"
+        )

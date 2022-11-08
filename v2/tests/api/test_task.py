@@ -2,6 +2,8 @@ import pytest
 
 from otx.api.task import Task
 from otx.api.registry import find_task_types, find_tasks
+from otx.api.dataset import Dataset
+
 
 def test_task_create():
     task_types = find_task_types()
@@ -18,6 +20,7 @@ def test_task_create():
     print(f"selected task yaml = {task_yaml}")
     task = Task.create(task_yaml)
     assert isinstance(task, Task)
+
 
 @pytest.fixture(scope="session")
 def fixture_task():
@@ -37,5 +40,22 @@ def fixture_task():
     assert isinstance(task, Task)
     return task
 
+
 def test_task_apis(fixture_task):
-    fixture_task.train(None)
+    dataset = Dataset.create("/home/yunchu/data/cifar10", "cifar")
+    assert isinstance(dataset, Dataset)
+
+    ret = fixture_task.train(dataset)
+    assert isinstance(ret, dict)
+
+    ret = fixture_task.infer(dataset)
+    assert isinstance(ret, dict)
+
+    ret = fixture_task.eval(dataset, "top-1")
+    assert isinstance(ret, dict)
+
+    ret = fixture_task.optimize("pot")
+    assert isinstance(ret, dict)
+
+    ret = fixture_task.export("mo")
+    assert isinstance(ret, dict)

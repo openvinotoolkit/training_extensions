@@ -1,0 +1,6 @@
+spec:
+  - classification
+backbone:
+  type: OTEEfficientNet
+  pretrained: True
+  version: b0

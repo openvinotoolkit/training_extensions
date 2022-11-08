@@ -4,8 +4,9 @@ from otx.utils.logger import get_logger
 
 logger = get_logger()
 
+
 class AnomalibJob(TorchJob):
     def configure(self, config: Config, **kwargs):
         """ job specific configuration update
         """
-        logger.info("[{__file__}] configure()")
+        logger.info(f"config = {config}, kwargs = {kwargs}")

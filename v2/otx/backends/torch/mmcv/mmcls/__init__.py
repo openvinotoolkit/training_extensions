@@ -1,9 +1,9 @@
-from .model import ModelAdapter
-from .dataset import MMClsDataAdapter
+from .model import MMClsModelAdapter
+from .dataset import MMClsDatasetAdapter
 from .trainer import MMClsTrainer
 
 __all__ = [
-    "ModelAdapter",
-    "MMClsDataAdapter",
+    "MMClsModelAdapter",
+    "MMClsDatasetAdapter",
     "MMClsTrainer",
 ]

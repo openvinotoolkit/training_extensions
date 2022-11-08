@@ -16,4 +16,3 @@ class BaseTask(Task):
     def _init_dataset_adapter(self, data_cfg):
         clz = import_and_get_class_from_path(data_cfg.adapter)
         self.dataset_adapter = clz(data_cfg.default)
-

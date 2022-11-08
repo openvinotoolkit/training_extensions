@@ -1,0 +1,3 @@
+train: train-cfg
+val: val-cfg
+test: test-cfg

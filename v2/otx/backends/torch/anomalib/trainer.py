@@ -1,10 +1,14 @@
-from otx.backends.torch.anomalib.job import AnomalibJob
-
 from anomalib.utils.callbacks import (
     MetricsConfigurationCallback,
     MinMaxNormalizationCallback,
 )
-from pytorch_lightning import Trainer, seed_everything
+from pytorch_lightning import Trainer
+
+from otx.backends.torch.anomalib.job import AnomalibJob
+from otx.utils.logger import get_logger
+
+logger = get_logger()
+
 
 class AnomalibTrainer(AnomalibJob):
     def init_callbacks(self, config):
@@ -17,11 +21,10 @@ class AnomalibTrainer(AnomalibJob):
                 image_metric_names=config.metrics.image,
                 pixel_metric_names=config.metrics.pixel,
             ),
-
         ]
 
     def run(self, model, dataset, config, **kwargs):
-        logger.info("[{__file__}] run()")
+        logger.info(f"model = {model}, dataset =  {dataset}, config = {config}, kwargs = {kwargs}")
         self.init_callbacks(config)
         trainer_config = dict(
             cfg0="value0",

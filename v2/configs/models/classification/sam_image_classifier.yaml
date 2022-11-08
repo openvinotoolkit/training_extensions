@@ -1,0 +1,12 @@
+_base_: ../backbones/efficientnet.yaml
+
+type: SAMImageClassifier
+neck:
+  type: GlobalAveragePooling
+head:
+  type: NonLinearClsHead
+  num_classes: 10
+  in_channels: 1280
+  loss:
+    type: CrossEntropyLoss
+    loss_weight: 1.0

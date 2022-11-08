@@ -1,5 +1,4 @@
-import os
-
+from mmcls.version import __version__
 
 from otx.backends.torch.mmcv.job import MMJob
 from otx.utils.config import Config
@@ -9,7 +8,11 @@ logger = get_logger()
 
 
 class MMClsJob(MMJob):
-    def configure(self, cfg: Config, model_cfg=None, data_cfg=None, **kwargs):
-        logger.info(f"configure({cfg})")
-        training = kwargs.get("training", True)
-        return cfg
+    def configure(self, task_config: Config, **kwargs):
+        logger.info(f"task_config = {task_config}")
+        return task_config
+
+    @staticmethod
+    def get_mmcls_version():
+        logger.info(f"mmcls version = {__version__}")
+        return __version__

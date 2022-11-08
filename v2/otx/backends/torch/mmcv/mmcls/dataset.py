@@ -1,10 +1,13 @@
 from otx.api.dataset import Dataset
-from otx.backends.torch.dataset import DatasetAdapter
+from otx.backends.torch.mmcv.dataset import MMDatasetAdapter
+from otx.utils.config import Config
 from otx.utils.logger import get_logger
 
 logger = get_logger()
 
-class MMClsDataAdapter(DatasetAdapter):
-    def convert(self, dataset: Dataset, ):
-        self.source = dataset
-        logger.info(f"[{__file__}] convert({dataset}) to mmcls dataset")
+
+class MMClsDatasetAdapter(MMDatasetAdapter):
+    def convert(self, src_dataset):
+        logger.info(f"src dataset = {src_dataset}")
+        dataset = None
+        return dataset
