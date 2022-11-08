@@ -18,5 +18,5 @@ class Dataset(datumaro.Dataset):
     @staticmethod
     def create(path: str, format: str, **kwargs):
         logger.info(f"path = {path}, format = {format}, kwargs = {kwargs}")
-        dm = datumaro.Dataset.import_from(path, format)
-        return Dataset(dm, **kwargs)
+        dm = datumaro.Dataset.import_from(path, format, **kwargs)
+        return Dataset(dm)

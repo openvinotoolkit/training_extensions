@@ -16,3 +16,9 @@ class BaseTask(Task):
     def _init_dataset_adapter(self, data_cfg):
         clz = import_and_get_class_from_path(data_cfg.adapter)
         self.dataset_adapter = clz(data_cfg.default)
+
+    def export(self, ex_type, **kwargs):
+        logger.info(f"ex_type = {ex_type}, kwargs = {kwargs}")
+        spec = kwargs.get("spec", "export")
+        model = self.model_adapter.build() if self.model is None else self.model
+        return self._run_job(spec, model, ex_type, **kwargs)

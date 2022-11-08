@@ -16,20 +16,14 @@ class ClsTask(BaseTask):
         return self._run_job(spec, model, metric=metric, infer_results=infer_results, **kwargs)
 
     def infer(self, dataset: Dataset, **kwargs):
-        logger.info("*** task.infer() ***")
+        logger.info(f"dataset = {dataset}, kwargs = {kwargs}")
         spec = kwargs.get("spec", "infer")
         model = self.model_adapter.build() if self.model is None else self.model
         dataset = self.dataset_adapter.build(dataset.get_subset("test"), "test")
         return self._run_job(spec, model, dataset=dataset, **kwargs)
 
-    def export(self, ex_type, **kwargs):
-        logger.info("*** task.export() ***")
-        spec = kwargs.get("spec", "export")
-        model = self.model_adapter.build() if self.model is None else self.model
-        return self._run_job(spec, model, ex_type, **kwargs)
-
     def optimize(self, opt_type, **kwargs):
-        logger.info("*** task.optimize() ***")
+        logger.info(f"opt_type = {opt_type}, kwargs = {kwargs}")
         spec = kwargs.get("spec", "optimize")
         model = self.model_adapter.build() if self.model is None else self.model
         ret = self._run_job(spec, model, opt_type, **kwargs)

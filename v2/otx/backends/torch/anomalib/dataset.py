@@ -1,10 +1,10 @@
 from otx.api.dataset import Dataset
-from otx.backends.torch.data import DatasetAdapter
+from otx.backends.torch.dataset import TorchDatasetAdapter
 from otx.utils.logger import get_logger
 
 logger = get_logger()
 
-class AnomalibDataAdapter(DatasetAdapter):
+class AnomalibDatasetAdapter(TorchDatasetAdapter):
     def build(self, dataset: Dataset, subset: str):
         """ build dataset for backend by converting from given datumaro dataset
         """

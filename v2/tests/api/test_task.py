@@ -1,8 +1,11 @@
+import os
+
 import pytest
 
-from otx.api.task import Task
-from otx.api.registry import find_task_types, find_tasks
+from otx import OTXConstants
 from otx.api.dataset import Dataset
+from otx.api.registry import find_task_types, find_tasks
+from otx.api.task import Task
 
 
 def test_task_create():
@@ -40,18 +43,30 @@ def fixture_task():
     assert isinstance(task, Task)
     return task
 
-
-def test_task_apis(fixture_task):
-    dataset = Dataset.create("/home/yunchu/data/cifar10", "cifar")
+@pytest.fixture(scope="session")
+def fixture_dataset():
+    data_path = os.path.join(OTXConstants.PACKAGE_ROOT, "..", "data")
+    dataset = Dataset.create(os.path.join(data_path, "classification/train"), "imagenet", subset="train")
     assert isinstance(dataset, Dataset)
+    print(dataset.categories())
+    dataset_val = Dataset.create(os.path.join(data_path, "classification/val"), "imagenet", subset="val")
+    assert isinstance(dataset_val, Dataset)
 
-    ret = fixture_task.train(dataset)
+    dataset = dataset.update(dataset_val)
+    print(f"categories = {dataset.categories()}")
+    print(f"subsets = {dataset.subsets()}")
+
+    return dataset
+
+
+def test_task_apis(fixture_task, fixture_dataset):
+    ret = fixture_task.train(fixture_dataset)
     assert isinstance(ret, dict)
 
-    ret = fixture_task.infer(dataset)
+    ret = fixture_task.infer(fixture_dataset)
     assert isinstance(ret, dict)
 
-    ret = fixture_task.eval(dataset, "top-1")
+    ret = fixture_task.eval(fixture_dataset, "top-1")
     assert isinstance(ret, dict)
 
     ret = fixture_task.optimize("pot")
