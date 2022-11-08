@@ -1,4 +1,4 @@
-"""API Tests for detection training"""
+"""API Tests for Action Classification training"""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -12,10 +12,10 @@ from concurrent.futures import ThreadPoolExecutor
 from typing import Optional
 
 import numpy as np
+import pytest
 
+from otx.algorithms.action.tasks import ActionClsInferenceTask, ActionClsTrainTask
 from otx.algorithms.common.tasks.training_base import BaseTask
-from otx.algorithms.detection.tasks import DetectionInferenceTask, DetectionTrainTask
-from otx.algorithms.detection.utils import generate_label_schema
 from otx.api.configuration.helper import create
 from otx.api.entities.annotation import AnnotationSceneEntity, AnnotationSceneKind
 from otx.api.entities.dataset_item import DatasetItemEntity
@@ -35,10 +35,12 @@ from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.entities.train_parameters import TrainParameters
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType
 from otx.api.utils.shape_factory import ShapeFactory
+from otx.cli.datasets import get_dataset_class
+from otx.cli.utils.io import generate_label_schema
 from tests.test_suite.e2e_test_system import e2e_pytest_api
 from tests.unit.api.test_helpers import generate_random_annotated_image
 
-DEFAULT_DET_TEMPLATE_DIR = osp.join("otx/algorithms/action/configs", "action_classification", "x3d")
+DEFAULT_ACTION_TEMPLATE_DIR = osp.join("otx/algorithms/action/configs", "classification", "x3d")
 
 
 def task_eval(task: BaseTask, model: ModelEntity, dataset: DatasetEntity) -> Performance:
@@ -52,68 +54,37 @@ def task_eval(task: BaseTask, model: ModelEntity, dataset: DatasetEntity) -> Per
     return result_set.performance
 
 
-class TestDetectionTaskAPI:
+class TestActionTaskAPI:
     """
     Collection of tests for OTX API and OTX Model Templates
     """
 
+    train_ann_files = "../data/jester/SC_jester_3cls_12_samples_seed_2/train_list_rawframes.txt"
+    train_data_roots = "../data/jester/SC_jester_3cls_12_samples_seed_2/rawframes_train"
+    val_ann_files = "../data/jester/SC_jester_3cls_12_samples_seed_2/val_list_rawframes.txt"
+    val_data_roots = "../data/jester/SC_jester_3cls_12_samples_seed_2/rawframes_val"
+
     @e2e_pytest_api
-    def test_reading_detection_cls_incr_model_template(self):
+    def test_reading_action_model_template(self):
         model_templates = ["x3d"]
         for model_template in model_templates:
             parse_model_template(
-                osp.join("otx/algorithms/action/configs", "action_classification", model_template, "template.yaml")
+                osp.join("otx/algorithms/action/configs", "classification", model_template, "template.yaml")
             )
 
-    def init_environment(self, params, model_template, number_of_images=500, task_type=TaskType.DETECTION):
-
-        labels_names = ("rectangle", "ellipse", "triangle")
-        labels_schema = generate_label_schema(labels_names, task_type_to_label_domain(task_type))
-        labels_list = labels_schema.get_labels(False)
+    def init_environment(self, params, model_template):
+        dataset_class = get_dataset_class(model_template.task_type)
+        dataset = dataset_class(
+            train_subset={"ann_file": self.train_ann_files, "data_root": self.train_data_roots},
+            val_subset={"ann_file": self.val_ann_files, "data_root": self.val_data_roots},
+        )
+        labels_schema = generate_label_schema(dataset, model_template.task_type)
         environment = TaskEnvironment(
             model=None,
             hyper_parameters=params,
             label_schema=labels_schema,
             model_template=model_template,
         )
-
-        warnings.filterwarnings("ignore", message=".* coordinates .* are out of bounds.*")
-        items = []
-        for i in range(0, number_of_images):
-            image_numpy, annos = generate_random_annotated_image(
-                image_width=640,
-                image_height=480,
-                labels=labels_list,
-                max_shapes=20,
-                min_size=50,
-                max_size=100,
-                random_seed=None,
-            )
-            # Convert shapes according to task
-            for anno in annos:
-                if task_type == TaskType.INSTANCE_SEGMENTATION:
-                    anno.shape = ShapeFactory.shape_as_polygon(anno.shape)
-                else:
-                    anno.shape = ShapeFactory.shape_as_rectangle(anno.shape)
-
-            image = Image(data=image_numpy)
-            annotation_scene = AnnotationSceneEntity(kind=AnnotationSceneKind.ANNOTATION, annotations=annos)
-            items.append(DatasetItemEntity(media=image, annotation_scene=annotation_scene))
-        warnings.resetwarnings()
-
-        rng = random.Random()
-        rng.shuffle(items)
-        for i, _ in enumerate(items):
-            subset_region = i / number_of_images
-            if subset_region >= 0.8:
-                subset = Subset.TESTING
-            elif subset_region >= 0.6:
-                subset = Subset.VALIDATION
-            else:
-                subset = Subset.TRAINING
-            items[i].subset = subset
-
-        dataset = DatasetEntity(items)
         return environment, dataset
 
     @staticmethod
@@ -131,7 +102,8 @@ class TestDetectionTaskAPI:
         return hyper_parameters, model_template
 
     @e2e_pytest_api
-    def test_cancel_training_detection(self):
+    @pytest.mark.skip(reason="mmaction does not support EpochRunnerWithCancel")
+    def test_cancel_training_action(self):
         """
         Tests starting and cancelling training.
 
@@ -144,16 +116,18 @@ class TestDetectionTaskAPI:
 
         This test should be finished in under one minute on a workstation.
         """
-        hyper_parameters, model_template = self.setup_configurable_parameters(DEFAULT_DET_TEMPLATE_DIR, num_iters=500)
-        detection_environment, dataset = self.init_environment(hyper_parameters, model_template, 64)
+        hyper_parameters, model_template = self.setup_configurable_parameters(
+            DEFAULT_ACTION_TEMPLATE_DIR, num_iters=500
+        )
+        action_environment, dataset = self.init_environment(hyper_parameters, model_template)
 
-        detection_task = DetectionTrainTask(task_environment=detection_environment)
+        action_task = ActionClsTrainTask(task_environment=action_environment)
 
         executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="train_thread")
 
         output_model = ModelEntity(
             dataset,
-            detection_environment.get_model_configuration(),
+            action_environment.get_model_configuration(),
         )
 
         training_progress_curve = []
@@ -166,11 +140,11 @@ class TestDetectionTaskAPI:
 
         # Test stopping after some time
         start_time = time.time()
-        train_future = executor.submit(detection_task.train, dataset, output_model, train_parameters)
+        train_future = executor.submit(action_task.train, dataset, output_model, train_parameters)
         # give train_thread some time to initialize the model
-        while not detection_task._is_training:
+        while not action_task._is_training:
             time.sleep(10)
-        detection_task.cancel_training()
+        action_task.cancel_training()
 
         # stopping process has to happen in less than 35 seconds
         train_future.result()
@@ -179,18 +153,17 @@ class TestDetectionTaskAPI:
 
         # Test stopping immediately
         start_time = time.time()
-        train_future = executor.submit(detection_task.train, dataset, output_model)
-        detection_task.cancel_training()
+        train_future = executor.submit(action_task.train, dataset, output_model)
+        action_task.cancel_training()
 
         train_future.result()
         assert time.time() - start_time < 25  # stopping process has to happen in less than 25 seconds
 
     @e2e_pytest_api
     def test_training_progress_tracking(self):
-        hyper_parameters, model_template = self.setup_configurable_parameters(DEFAULT_DET_TEMPLATE_DIR, num_iters=5)
-        detection_environment, dataset = self.init_environment(hyper_parameters, model_template, 50)
-
-        task = DetectionTrainTask(task_environment=detection_environment)
+        hyper_parameters, model_template = self.setup_configurable_parameters(DEFAULT_ACTION_TEMPLATE_DIR, num_iters=5)
+        action_environment, dataset = self.init_environment(hyper_parameters, model_template)
+        task = ActionClsTrainTask(task_environment=action_environment)
         print("Task initialized, model training starts.")
 
         training_progress_curve = []
@@ -202,7 +175,7 @@ class TestDetectionTaskAPI:
         train_parameters.update_progress = progress_callback
         output_model = ModelEntity(
             dataset,
-            detection_environment.get_model_configuration(),
+            action_environment.get_model_configuration(),
         )
         task.train(dataset, output_model, train_parameters)
 
@@ -211,10 +184,10 @@ class TestDetectionTaskAPI:
 
     @e2e_pytest_api
     def test_inference_progress_tracking(self):
-        hyper_parameters, model_template = self.setup_configurable_parameters(DEFAULT_DET_TEMPLATE_DIR, num_iters=10)
-        detection_environment, dataset = self.init_environment(hyper_parameters, model_template, 50)
+        hyper_parameters, model_template = self.setup_configurable_parameters(DEFAULT_ACTION_TEMPLATE_DIR, num_iters=10)
+        action_environment, dataset = self.init_environment(hyper_parameters, model_template)
 
-        task = DetectionInferenceTask(task_environment=detection_environment)
+        task = ActionClsInferenceTask(task_environment=action_environment)
         print("Task initialized, model inference starts.")
         inference_progress_curve = []
 
@@ -232,11 +205,11 @@ class TestDetectionTaskAPI:
     @e2e_pytest_api
     def test_inference_task(self):
         # Prepare pretrained weights
-        hyper_parameters, model_template = self.setup_configurable_parameters(DEFAULT_DET_TEMPLATE_DIR, num_iters=2)
-        detection_environment, dataset = self.init_environment(hyper_parameters, model_template, 50)
+        hyper_parameters, model_template = self.setup_configurable_parameters(DEFAULT_ACTION_TEMPLATE_DIR, num_iters=2)
+        action_environment, dataset = self.init_environment(hyper_parameters, model_template)
         val_dataset = dataset.get_subset(Subset.VALIDATION)
 
-        train_task = DetectionTrainTask(task_environment=detection_environment)
+        train_task = ActionClsTrainTask(task_environment=action_environment)
 
         training_progress_curve = []
 
@@ -247,19 +220,20 @@ class TestDetectionTaskAPI:
         train_parameters.update_progress = progress_callback
         trained_model = ModelEntity(
             dataset,
-            detection_environment.get_model_configuration(),
+            action_environment.get_model_configuration(),
         )
         train_task.train(dataset, trained_model, train_parameters)
         performance_after_train = task_eval(train_task, trained_model, val_dataset)
 
         # Create InferenceTask
-        detection_environment.model = trained_model
-        inference_task = DetectionInferenceTask(task_environment=detection_environment)
+        action_environment.model = trained_model
+        inference_task = ActionClsInferenceTask(task_environment=action_environment)
 
         performance_after_load = task_eval(inference_task, trained_model, val_dataset)
 
         assert performance_after_train == performance_after_load
 
         # Export
-        exported_model = ModelEntity(dataset, detection_environment.get_model_configuration())
-        inference_task.export(ExportType.OPENVINO, exported_model)
+        # TODO Implement export task
+        # exported_model = ModelEntity(dataset, action_environment.get_model_configuration())
+        # inference_task.export(ExportType.OPENVINO, exported_model)
