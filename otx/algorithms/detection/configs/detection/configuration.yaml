@@ -245,20 +245,20 @@ algo_backend:
   header: Algo backend parameters
   train_type:
     affects_outcome_of: NONE
-    default_value: Incremental
+    default_value: INCREMENTAL
     description: Quantization preset that defines quantization scheme
     editable: false
     enum_name: TrainType
     header: Train type
     options:
-      Incremental: "Incremental"
+      INCREMENTAL: "INCREMENTAL"
     type: SELECTABLE
     ui_rules:
       action: DISABLE_EDITING
       operator: AND
       rules: []
       type: UI_RULES
-    value: Incremental
+    value: INCREMENTAL
     visible_in_ui: True
     warning: null
   type: PARAMETER_GROUP

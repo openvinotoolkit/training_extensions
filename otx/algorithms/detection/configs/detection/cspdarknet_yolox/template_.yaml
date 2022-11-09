@@ -15,7 +15,6 @@ entrypoints:
   base: otx.algorithms.detection.tasks.DetectionTrainTask
   openvino: otx.algorithms.detection.tasks.OpenVINODetectionTask
   nncf: otx.algorithms.detection.tasks.DetectionNNCFTask
-base_model_path: ../../../../mmdetection/configs/custom-object-detection/cspdarknet_YOLOX/template_experimental.yaml
 
 # Capabilities.
 capabilities:
@@ -47,7 +46,7 @@ hyper_parameters:
         default_value: 1.0
     algo_backend:
       train_type:
-        default_value: Incremental
+        default_value: INCREMENTAL
 
 # Training resources.
 max_nodes: 1

@@ -26,11 +26,13 @@ from mpa.utils.logger import get_logger
 
 from otx.algorithms.common.configs.training_base import TrainType
 from otx.algorithms.common.tasks.training_base import BaseTask
-from otx.algorithms.detection.adapters.mmdet.utils.config_utils import (
-    remove_from_config,
+from otx.algorithms.common.utils.callback import InferenceProgressCallback
+from otx.algorithms.detection.adapters.mmdet.utils import (
+    patch_data_pipeline,
+    patch_datasets,
+    patch_evaluation,
 )
 from otx.algorithms.detection.configs.base import DetectionConfig
-from otx.algorithms.detection.utils.utils import InferenceProgressCallback
 from otx.api.entities.annotation import Annotation
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.id import ID
@@ -165,7 +167,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
 
     def unload(self):
         """Unload the task."""
-        self.finalize()
+        self._delete_scratch_space()
 
     @check_input_parameters_type()
     def export(self, export_type: ExportType, output_model: ModelEntity):
@@ -236,9 +238,9 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
             logger.warning(f"train type {train_type} is not implemented yet.")
 
         self._recipe_cfg = MPAConfig.fromfile(recipe)
-        self._patch_data_pipeline()
-        self._patch_datasets(self._recipe_cfg, self._task_type.domain)  # for OTX compatibility
-        self._patch_evaluation(self._recipe_cfg)  # for OTX compatibility
+        patch_data_pipeline(self._recipe_cfg, self.template_file_path)
+        patch_datasets(self._recipe_cfg, self._task_type.domain)  # for OTX compatibility
+        patch_evaluation(self._recipe_cfg)  # for OTX compatibility
         logger.info(f"initialized recipe = {recipe}")
 
     def _init_model_cfg(self):
@@ -296,65 +298,6 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
                     roi=dataset_item.roi,
                 )
                 dataset_item.append_metadata_item(saliency_map_media, model=self._task_environment.model)
-
-    def _patch_data_pipeline(self):
-        base_dir = os.path.abspath(os.path.dirname(self.template_file_path))
-        data_pipeline_path = os.path.join(base_dir, "data_pipeline.py")
-        if os.path.exists(data_pipeline_path):
-            data_pipeline_cfg = MPAConfig.fromfile(data_pipeline_path)
-            self._recipe_cfg.merge_from_dict(data_pipeline_cfg)
-
-    @staticmethod
-    def _patch_datasets(config: MPAConfig, domain=Domain.DETECTION):
-        # Copied from otx/apis/detection/config_utils.py
-        # Added 'unlabeled' data support
-
-        def patch_color_conversion(pipeline):
-            # Default data format for OTX is RGB, while mmdet uses BGR, so negate the color conversion flag.
-            for pipeline_step in pipeline:
-                if pipeline_step.type == "Normalize":
-                    to_rgb = False
-                    if "to_rgb" in pipeline_step:
-                        to_rgb = pipeline_step.to_rgb
-                    to_rgb = not bool(to_rgb)
-                    pipeline_step.to_rgb = to_rgb
-                elif pipeline_step.type == "MultiScaleFlipAug":
-                    patch_color_conversion(pipeline_step.transforms)
-
-        assert "data" in config
-        for subset in ("train", "val", "test", "unlabeled"):
-            cfg = config.data.get(subset, None)
-            if not cfg:
-                continue
-            if cfg.type in ("RepeatDataset", "MultiImageMixDataset"):
-                cfg = cfg.dataset
-            cfg.type = "MPADetDataset"
-            cfg.domain = domain
-            cfg.otx_dataset = None
-            cfg.labels = None
-            remove_from_config(cfg, "ann_file")
-            remove_from_config(cfg, "img_prefix")
-            remove_from_config(cfg, "classes")  # Get from DatasetEntity
-            for pipeline_step in cfg.pipeline:
-                if pipeline_step.type == "LoadImageFromFile":
-                    pipeline_step.type = "LoadImageFromOTXDataset"
-                if pipeline_step.type == "LoadAnnotations":
-                    pipeline_step.type = "LoadAnnotationFromOTXDataset"
-                    pipeline_step.domain = domain
-                    pipeline_step.min_size = cfg.pop("min_size", -1)
-                if subset == "train" and pipeline_step.type == "Collect":
-                    pipeline_step = BaseTask._get_meta_keys(pipeline_step)
-            patch_color_conversion(cfg.pipeline)
-
-    @staticmethod
-    def _patch_evaluation(config: MPAConfig):
-        cfg = config.evaluation
-        # CocoDataset.evaluate -> CustomDataset.evaluate
-        cfg.pop("classwise", None)
-        cfg.metric = "mAP"
-        cfg.save_best = "mAP"
-        # EarlyStoppingHook
-        config.early_stop_metric = "mAP"
 
     def _det_add_predictions_to_dataset(self, all_results, width, height, confidence_threshold):
         shapes = []

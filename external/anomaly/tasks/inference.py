@@ -291,8 +291,13 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
     def _set_metadata(self, output_model: ModelEntity):
         output_model.set_data("image_threshold", self.model.image_threshold.value.cpu().numpy().tobytes())
         output_model.set_data("pixel_threshold", self.model.pixel_threshold.value.cpu().numpy().tobytes())
-        output_model.set_data("min", self.model.min_max.min.cpu().numpy().tobytes())
-        output_model.set_data("max", self.model.min_max.max.cpu().numpy().tobytes())
+        if hasattr(self.model, "min_max"):
+            output_model.set_data("min", self.model.min_max.min.cpu().numpy().tobytes())
+            output_model.set_data("max", self.model.min_max.max.cpu().numpy().tobytes())
+        else:
+            logger.warning(
+                "The model was not trained before saving. This will lead to incorrect normalization of the heatmaps."
+            )
 
     @staticmethod
     def _is_docker() -> bool:
