@@ -89,7 +89,7 @@ class BaseTask:
         model_classes = [label.name for label in self._model_label_schema]
         self._model_cfg["model_classes"] = model_classes
         if dataset is not None:
-            train_data_cfg = Stage.get_train_data_cfg(self._data_cfg)
+            train_data_cfg = Stage.get_data_cfg(self._data_cfg, "train")
             # if dataset size is smaller than batch size
             if 0 < len(dataset) < self._recipe_cfg.data.get('samples_per_gpu', 2):
                 train_data_cfg.drop_last = False
