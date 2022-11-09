@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from otx.algorithms.detection.utils.data import load_dataset_items_coco_format
+from otx.algorithms.detection.utils.data import load_dataset_items_coco_format, load_unlabeled_dataset_items
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label import Domain
 from otx.api.entities.subset import Subset
@@ -68,9 +68,9 @@ class ObjectDetectionDataset(DatasetEntity):
             )
 
         if ul_subset is not None:
+            print(ul_subset)
             items.extend(
-                load_dataset_items_coco_format(
-                    ann_file_path=None,
+                load_unlabeled_dataset_items(
                     data_root_dir=ul_subset["data_root"],
                     domain=Domain.DETECTION,
                     subset=Subset.UNLABELED,

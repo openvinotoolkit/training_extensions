@@ -128,6 +128,7 @@ class ClassificationDatasetAdapter(DatasetEntity):
                     shapes = [Annotation(Rectangle.generate_full_box(), labels)]
                     annotation_scene = AnnotationSceneEntity(kind=AnnotationSceneKind.ANNOTATION, annotations=shapes)
                 dataset_item = DatasetItemEntity(image, annotation_scene, subset=subset)
+                print(dataset_item)
                 dataset_items.append(dataset_item)
 
         super().__init__(items=dataset_items, **kwargs)

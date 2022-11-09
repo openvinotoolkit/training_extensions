@@ -129,14 +129,19 @@ def main():
     dataset_class = get_dataset_class(template.task_type)
 
     # Create instances of Task, ConfigurableParameters and Dataset.
-    dataset = dataset_class(
+
+    data_roots = dict(
         train_subset={
             "ann_file": args.train_ann_files,
             "data_root": args.train_data_roots,
         },
         val_subset={"ann_file": args.val_ann_files, "data_root": args.val_data_roots},
-        ul_subset={"data_root": args.unlabeled_data_roots},
     )
+    if args.unlabeled_data_roots:
+        data_roots['ul_subset'] = {"data_root": args.unlabeled_data_roots}
+    
+    print(data_roots)
+    dataset = dataset_class(**data_roots)
 
     environment = TaskEnvironment(
         model=None,
