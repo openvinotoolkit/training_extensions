@@ -201,7 +201,7 @@ class NNCFTask(InferenceTask, IOptimizationTask):
 
         logger.info("Training completed.")
 
-    def model_info(self) -> Dict:
+    def _model_info(self) -> Dict:
         """Return model info to save the model weights.
 
         Returns:
