@@ -17,7 +17,12 @@ import logging
 import os
 from collections import namedtuple
 from copy import deepcopy
-from typing import List, Type
+from typing import TYPE_CHECKING, List, Type
+
+if TYPE_CHECKING:
+    from nncf.torch.nncf_network import NNCFNetwork
+
+from tasks import NNCFTask
 
 from otx.algorithms.anomaly.adapters.anomalib.data.mvtec import OtxMvtecDataset
 from otx.api.entities.datasets import DatasetEntity
@@ -107,3 +112,18 @@ def get_anomaly_domain_test_action_classes(
         OTXTestNNCFExportEvaluationAction,
         OTXTestNNCFGraphAction,
     ]
+
+
+def get_dummy_compressed_model(task: NNCFTask) -> "NNCFNetwork":
+    """
+    Return compressed model without initialization
+    """
+    from anomalib.utils.callbacks.nncf.utils import wrap_nncf_model
+
+    # Disable quantaizers initialization
+    for compression in task.optimization_config["nncf_config"]["compression"]:
+        if compression["algorithm"] == "quantization":
+            compression["initializer"] = {"batchnorm_adaptation": {"num_bn_adaptation_samples": 0}}
+
+    _, compressed_model = wrap_nncf_model(task.model, task.optimization_config["nncf_config"])
+    return compressed_model
