@@ -21,6 +21,7 @@ from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.model import ModelEntity, ModelPrecision
 from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.serialization.label_mapper import LabelSchemaMapper
+from ote_sdk.entities.subset import Subset
 
 logger = get_logger()
 DEFAULT_META_KEYS = (
@@ -91,7 +92,8 @@ class BaseTask:
         if dataset is not None:
             train_data_cfg = Stage.get_data_cfg(self._data_cfg, "train")
             # if dataset size is smaller than batch size
-            if 0 < len(dataset) < self._recipe_cfg.data.get('samples_per_gpu', 2):
+            train_dataset = dataset.get_subset(Subset.TRAINING)
+            if 0 < len(train_dataset) < self._recipe_cfg.data.get('samples_per_gpu', 2):
                 train_data_cfg.drop_last = False
             train_data_cfg["data_classes"] = data_classes
             new_classes = np.setdiff1d(data_classes, model_classes).tolist()
