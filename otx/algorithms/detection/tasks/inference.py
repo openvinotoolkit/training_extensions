@@ -222,7 +222,11 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
 
         train_type = self._hyperparams.algo_backend.train_type
         logger.info(f"train type = {train_type}")
-        train_type = TrainType.SEMISUPERVISED
+
+        if self._data_cfg.get('data', None):
+            if self._data_cfg.data.get('unlabeled', None):
+                train_type = TrainType.SEMISUPERVISED
+                logger.info(f"Unlabeled data detected - convert to {train_type} mode...")
         recipe = os.path.join(recipe_root, "imbalance.py")
         if train_type == TrainType.SEMISUPERVISED:
             recipe = os.path.join(recipe_root, "unbiased_teacher.py")
@@ -235,6 +239,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
             # raise NotImplementedError(f'train type {train_type} is not implemented yet.')
             # FIXME: Temporary remedy for CVS-88098
             logger.warning(f"train type {train_type} is not implemented yet.")
+        logger.info(f"train type = {train_type, recipe}")
 
         self._recipe_cfg = MPAConfig.fromfile(recipe)
         patch_data_pipeline(self._recipe_cfg, self.template_file_path)

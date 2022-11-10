@@ -160,6 +160,7 @@ class ClassificationTrainTask(ClassificationInferenceTask):
         if len(dataset.get_subset(Subset.UNLABELED)):
             data_cfg.data.unlabeled=ConfigDict(
                     otx_dataset=dataset.get_subset(Subset.UNLABELED),
+                    labels=self._labels,
             )
 
         for label in self._labels:

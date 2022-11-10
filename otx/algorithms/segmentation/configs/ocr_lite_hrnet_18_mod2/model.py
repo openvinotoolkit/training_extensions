@@ -19,7 +19,7 @@
 _base_ = [
     "../../../common/adapters/mmcv/configs/backbones/lite_hrnet_18.py",
 ]
-
+"""
 model = dict(
     type="ClassIncrSegmentor",
     is_task_adapt=True,
@@ -49,6 +49,7 @@ model = dict(
         ],
     ),
 )
+"""
 
 load_from = "https://storage.openvinotoolkit.org/repositories/openvino_training_extensions\
 /models/custom_semantic_segmentation/litehrnet18_imagenet1k_rsc.pth"

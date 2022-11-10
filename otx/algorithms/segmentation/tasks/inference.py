@@ -183,6 +183,11 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         recipe_root = os.path.join(MPAConstants.RECIPES_PATH, "stages/segmentation")
         train_type = self._hyperparams.algo_backend.train_type
         logger.info(f"train type = {train_type}")
+        # train_type = TrainType.SEMISUPERVISED
+        if self._data_cfg.get('data', None):
+            if self._data_cfg.data.get('unlabeled', None):
+                train_type = TrainType.SEMISUPERVISED
+                logger.info(f"Unlabeled data detected - convert to {train_type} mode...")
 
         recipe = os.path.join(recipe_root, "class_incr.py")
         if train_type == TrainType.SEMISUPERVISED:

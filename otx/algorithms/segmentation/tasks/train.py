@@ -152,6 +152,11 @@ class SegmentationTrainTask(SegmentationInferenceTask, ITrainingTask):
                 ),
             )
         )
+        if len(dataset.get_subset(Subset.UNLABELED)):
+            data_cfg.data.unlabeled=ConfigDict(
+                    otx_dataset=dataset.get_subset(Subset.UNLABELED),
+                    labels=self._labels,
+            )
 
         # Temparory remedy for cfg.pretty_text error
         for label in self._labels:

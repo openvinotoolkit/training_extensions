@@ -21,11 +21,13 @@ from typing import List, Optional
 import cv2
 import numpy as np
 from mmseg.datasets.custom import CustomDataset
+import glob
 
 from otx.api.entities.annotation import (
     Annotation,
     AnnotationSceneEntity,
     AnnotationSceneKind,
+    NullAnnotationSceneEntity
 )
 from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.id import ID
@@ -150,6 +152,32 @@ def get_extended_label_names(labels: List[LabelEntity]):
     all_labels = ["background"] + target_labels
     return all_labels
 
+
+def load_unlabeled_dataset_items(
+    data_root_dir: str,
+    subset: Subset = Subset.UNLABELED,
+    labels_list: Optional[List[LabelEntity]] = None,
+):  # pylint: disable=too-many-locals
+    ALLOWED_EXTS = (".jpg", ".jpeg", ".png", ".gif")
+    data_list = []
+    dataset_items = []
+
+    for fm in ALLOWED_EXTS:
+        data_list.extend(glob.glob(f'{data_root_dir}/**/*{fm}', recursive=True))
+    
+    print(data_list)
+
+    for filename in data_list:
+        print(filename)
+        dataset_item = DatasetItemEntity(
+            media=Image(file_path=filename),
+            annotation_scene=NullAnnotationSceneEntity(),
+            subset=subset,
+        )
+        print(dataset_item)
+        dataset_items.append(dataset_item)
+    print(dataset_items[0])
+    return dataset_items
 
 @check_input_parameters_type({"ann_file_path": DirectoryPathCheck, "data_root_dir": DirectoryPathCheck})
 def load_dataset_items(
