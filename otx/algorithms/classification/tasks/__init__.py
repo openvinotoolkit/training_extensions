@@ -20,7 +20,7 @@ import otx.algorithms.classification.adapters.mmcls as MPAData
 import otx.algorithms.common.adapters.mmcls as MPABackbones
 
 from .inference import ClassificationInferenceTask
-from .nncf import OTXClassificationNNCFTask
+# from .nncf import OTXClassificationNNCFTask
 from .openvino import ClassificationOpenVINOTask
 from .train import ClassificationTrainTask
 
@@ -31,5 +31,5 @@ __all__ = [
     "ClassificationOpenVINOTask",
     "ClassificationInferenceTask",
     "ClassificationTrainTask",
-    "OTXClassificationNNCFTask",
+    # "OTXClassificationNNCFTask",
 ]
