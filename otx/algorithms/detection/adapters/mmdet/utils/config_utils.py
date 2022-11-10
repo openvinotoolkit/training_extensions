@@ -184,8 +184,7 @@ def prepare_for_training(
     train_dataset: DatasetEntity,
     val_dataset: DatasetEntity,
     time_monitor: TimeMonitorCallback,
-    learning_curves: defaultdict,
-) -> Config:
+) -> Union[Config, ConfigDict]:
     """Prepare configs for training phase."""
     config = copy.deepcopy(config)
     prepare_work_dir(config)
@@ -194,7 +193,6 @@ def prepare_for_training(
     config.data.val.otx_dataset = val_dataset
     patch_adaptive_repeat_dataset(config, len(train_dataset))
     config.custom_hooks.append({"type": "OTXProgressHook", "time_monitor": time_monitor, "verbose": True})
-    config.log_config.hooks.append({"type": "OTXLoggerHook", "curves": learning_curves})
     return config
 
 
