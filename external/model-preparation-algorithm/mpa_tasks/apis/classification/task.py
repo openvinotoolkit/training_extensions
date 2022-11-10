@@ -356,8 +356,6 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
             elif self._hierarchical:
                 cfg.type = 'MPAHierarchicalClsDataset'
                 cfg.hierarchical_info = self._hierarchical_info
-                if subset == 'train':
-                    cfg.drop_last = True  # For stable hierarchical information indexing
             else:
                 cfg.type = 'MPAClsDataset'
 
