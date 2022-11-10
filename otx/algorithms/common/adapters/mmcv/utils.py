@@ -69,6 +69,15 @@ def config_from_string(config_string: str) -> Config:
         return Config.fromfile(temp_file.name)
 
 
+@check_input_parameters_type()
+def patch_data_pipeline(config: Config, base_dir: str):
+    """Replace data pipeline to data_pipeline.py if it exist."""
+    data_pipeline_path = os.path.join(base_dir, "data_pipelne.py")
+    if os.path.exists(data_pipeline_path):
+        data_pipeline_cfg = Config.fromfile(data_pipeline_path)
+        config.merge_from_dcit(data_pipeline_cfg)
+
+
 def patch_color_conversion(pipeline):
     """Default data format for OTX is RGB, while mmx uses BGR, so negate the color conversion flag."""
     for pipeline_step in pipeline:
@@ -115,3 +124,12 @@ def prepare_work_dir(config: Union[Config, ConfigDict]) -> str:
         config.runner.meta = ConfigDict()
     config.runner.meta.exp_name = f"train_round_{len(checkpoint_dirs)}"
     return train_round_checkpoint_dir
+
+
+@check_input_parameters_type()
+def get_data_cfg(config: Union[Config, ConfigDict], subset: str = "train") -> Config:
+    """Return dataset configs."""
+    data_cfg = config.data[subset]
+    while "dataset" in data_cfg:
+        data_cfg = data_cfg.dataset
+    return data_cfg
