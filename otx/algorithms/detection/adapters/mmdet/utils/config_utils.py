@@ -254,9 +254,11 @@ def patch_datasets(config: Config, domain: Domain):
             remove_from_config(cfg, "classes")  # Get from DatasetEntity
             update_pipeline(cfg)
 
-        # deal with MultiImageMixDataset pipeline
-        if len(cfgs) and config[subset].type == "MultiImageMixDataset":
-            update_pipeline(config[subset])
+        # 'MultiImageMixDataset' wrapper dataset has pipeline as well
+        # which we should update
+        if len(cfgs) and config.data[subset].type == "MultiImageMixDataset":
+            update_pipeline(config.data[subset])
+
 
 def patch_evaluation(config: Config):
     """Update evaluation configs."""
