@@ -124,7 +124,7 @@ def parse_args():
 
 def main(gpu=None, world_size=None):
     """Main function that is used for model training."""
-
+    processes = None
     gpu_ids = os.environ["CUDA_VISIBLE_DEVICES"].split(',')
     if len(gpu_ids) > 1 and gpu is None:
         processes= []
@@ -226,8 +226,9 @@ def main(gpu=None, world_size=None):
     assert resultset.performance is not None
     print(resultset.performance)
 
-    for p_to_join in processes:
-        p_to_join.join()
+    if processes is not None:
+        for p_to_join in processes:
+            p_to_join.join()
 
 
 if __name__ == "__main__":
