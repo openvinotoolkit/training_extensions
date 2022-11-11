@@ -82,7 +82,12 @@ class OTEDataset(CustomDataset):
         forwards data access operations to ote_dataset and converts the dataset items to the view
         convenient for mmsegmentation.
         """
-        def __init__(self, ote_dataset, labels=None):
+        def __init__(
+            self,
+            ote_dataset,
+            labels=None,
+            **kwargs,
+        ):
             self.ote_dataset = ote_dataset
             self.labels = labels
             self.label_idx = {label.id: i for i, label in enumerate(labels)}
