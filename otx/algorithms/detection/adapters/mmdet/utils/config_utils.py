@@ -31,7 +31,7 @@ from otx.algorithms.common.adapters.mmcv.utils import (
     patch_color_conversion,
     prepare_work_dir,
 )
-from otx.algorithms.common.adapters.mmcv.config_utils import remove_from_config
+from otx.algorithms.common.adapters.mmcv.utils import remove_from_config
 from otx.algorithms.detection.configs.base import DetectionConfig
 from otx.algorithms.detection.utils.data import (
     format_list_to_str,

@@ -16,19 +16,18 @@
 import numpy as np
 import torch
 from mmcv.parallel import collate, scatter
-
-from mmdet.datasets.pipelines import Compose
 from mmdet.apis.inference import LoadImage
+from mmdet.datasets.pipelines import Compose
 
 from otx.algorithms.common.adapters.mmcv.data_cpu import scatter_cpu
 
 
-def get_fake_input(cfg, orig_img_shape=(128, 128, 3), device='cuda'):
+def get_fake_input(cfg, orig_img_shape=(128, 128, 3), device="cuda"):
     test_pipeline = [LoadImage()] + cfg.data.test.pipeline[1:]
     test_pipeline = Compose(test_pipeline)
     data = dict(img=np.zeros(orig_img_shape, dtype=np.uint8))
     data = test_pipeline(data)
-    if device == torch.device('cpu'):
+    if device == torch.device("cpu"):
         data = scatter_cpu(collate([data], samples_per_gpu=1))[0]
     else:
         data = scatter(collate([data], samples_per_gpu=1), [device.index])[0]
