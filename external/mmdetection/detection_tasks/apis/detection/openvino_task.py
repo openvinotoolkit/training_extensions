@@ -149,7 +149,8 @@ class BaseInferencerWithConverter(BaseInferencer):
             detections = np.array(detections)
         if isinstance(self.converter, MaskToAnnotationConverter):
             return self.converter.convert_to_annotation(detections, metadata)
-        detections[:, 2:] /= np.tile(metadata["original_shape"][1::-1], 2)
+        if len(detections):
+            detections[:, 2:] /= np.tile(metadata["original_shape"][1::-1], 2)
         return self.converter.convert_to_annotation(detections)
 
     @check_input_parameters_type()
