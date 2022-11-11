@@ -91,7 +91,7 @@ class OteClassification(Classification):
 
     @check_input_parameters_type()
     def postprocess_aux_outputs(self, outputs: Dict[str, np.ndarray], metadata: Dict[str, Any]):
-        actmap = get_actmap(outputs['saliency_map'][0], (metadata['original_shape'][1], metadata['original_shape'][0]))
+        saliency_map = outputs['saliency_map'][0]
         repr_vector = outputs['feature_vector'].reshape(-1)
 
         logits = outputs[self.out_layer_name].squeeze()
@@ -103,16 +103,7 @@ class OteClassification(Classification):
 
         act_score = float(np.max(probs) - np.min(probs))
 
-        return actmap, repr_vector, act_score
-
-
-@check_input_parameters_type()
-def get_actmap(features: Union[np.ndarray, Iterable, int, float],
-               output_res: Union[tuple, list]):
-    am = cv2.resize(features, output_res)
-    am = cv2.applyColorMap(am, cv2.COLORMAP_JET)
-    am = cv2.cvtColor(am, cv2.COLOR_BGR2RGB)
-    return am
+        return saliency_map, repr_vector, act_score
 
 
 @check_input_parameters_type()

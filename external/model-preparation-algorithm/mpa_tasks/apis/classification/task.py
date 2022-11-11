@@ -263,16 +263,35 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
                 dataset_item.append_metadata_item(active_score, model=self._task_environment.model)
 
             if saliency_map is not None:
-                saliency_map = get_actmap(saliency_map, (dataset_item.width, dataset_item.height))
-                saliency_map_media = ResultMediaEntity(
-                    name="Saliency Map",
-                    type="saliency_map",
-                    annotation_scene=dataset_item.annotation_scene,
-                    numpy=saliency_map,
-                    roi=dataset_item.roi,
-                    label=item_labels[0].label,
-                )
-                dataset_item.append_metadata_item(saliency_map_media, model=self._task_environment.model)
+                if saliency_map.ndim == 2:
+                    # Single saliency map per image, support e.g. EigenCAM use case
+                    saliency_map = get_actmap(saliency_map, (dataset_item.width, dataset_item.height))
+                    saliency_map_media = ResultMediaEntity(
+                        name="Saliency Map",
+                        type="saliency_map",
+                        annotation_scene=dataset_item.annotation_scene,
+                        numpy=saliency_map,
+                        roi=dataset_item.roi,
+                        label=item_labels[0].label,
+                    )
+                    dataset_item.append_metadata_item(saliency_map_media, model=self._task_environment.model)
+                elif saliency_map.ndim == 3:
+                    # Multiple saliency maps per image (class-wise saliency map), support e.g. Recipro-CAM use case
+                    for class_id, class_wise_saliency_map in enumerate(saliency_map):
+                        class_wise_saliency_map = get_actmap(class_wise_saliency_map,
+                                                             (dataset_item.width, dataset_item.height))
+                        saliency_map_media = ResultMediaEntity(
+                            name=self._labels[class_id].name,
+                            type="saliency_map",
+                            annotation_scene=dataset_item.annotation_scene,
+                            numpy=class_wise_saliency_map,
+                            roi=dataset_item.roi,
+                            label=item_labels[0].label,
+                        )
+                        dataset_item.append_metadata_item(saliency_map_media, model=self._task_environment.model)
+                else:
+                    raise RuntimeError(f'Single saliency map has to be 2 or 3-dimensional, '
+                                       f'but got {saliency_map.ndim} dims')
 
             update_progress_callback(int(i / dataset_size * 100))
 
