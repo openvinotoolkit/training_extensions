@@ -141,7 +141,7 @@ def parse_args():
 
 def main(gpu=None, world_size=None):
     """Main function that is used for model training."""
-
+    processes = None
     gpu_ids = os.environ["CUDA_VISIBLE_DEVICES"].split(',')
     if len(gpu_ids) > 1 and gpu is None:
         processes= []
@@ -255,8 +255,10 @@ def main(gpu=None, world_size=None):
         logs_path = os.path.join(args.save_logs_to, tmp_path.split("/")[-1])
         shutil.copytree(tmp_path, logs_path)
         print(f"Save logs: {logs_path}")
-    for p_to_join in processes:
-        p_to_join.join()
+
+    if processes is not None:
+        for p_to_join in processes:
+            p_to_join.join()
 
 
 if __name__ == "__main__":
