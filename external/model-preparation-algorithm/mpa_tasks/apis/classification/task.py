@@ -12,7 +12,6 @@ import numpy as np
 import torch
 from mmcv.utils import ConfigDict
 from mpa import MPAConstants
-from mpa.stage import Stage
 from mpa.utils.config_utils import MPAConfig
 from mpa.utils.logger import get_logger
 from mpa_tasks.apis import BaseTask, TrainType

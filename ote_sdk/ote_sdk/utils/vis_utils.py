@@ -4,14 +4,14 @@ This module implements activation map
 # Copyright (C) 2021-2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-from typing import Iterable, Union
+from typing import Union
 
 import cv2
 import numpy as np
 
 
 def get_actmap(
-    saliency_map: Union[np.ndarray, Iterable, int, float],
+    saliency_map: np.ndarray,
     output_res: Union[tuple, list],
 ) -> np.ndarray:
     """Get activation map (heatmap)  from saliency map
