@@ -130,7 +130,7 @@ def main():
     validation_dataset = dataset.get_subset(Subset.TESTING)
     predicted_validation_dataset = task.infer(
         validation_dataset.with_empty_annotations(),
-        InferenceParameters(is_evaluation=True),
+        InferenceParameters(is_evaluation=False),
     )
 
     resultset = ResultSetEntity(
