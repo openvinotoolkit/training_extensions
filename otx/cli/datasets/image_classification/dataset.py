@@ -35,4 +35,5 @@ class ImageClassificationDataset(ClassificationDatasetAdapter):
             test_subset.get("ann_file", None) if test_subset else None,
             test_subset.get("data_root", None) if test_subset else None,
             ul_subset.get("data_root", None) if ul_subset else None,
+            ul_subset.get("file_list", None) if ul_subset else None,
         )

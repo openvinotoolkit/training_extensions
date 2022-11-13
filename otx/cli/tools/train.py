@@ -86,6 +86,11 @@ def parse_args():
         help="Comma-separated paths to unlabeled data folders",
     )
     parser.add_argument(
+        "--unlabeled-file-list",
+        required=False,
+        help="Comma-separated paths to unlabeled file list",
+    )
+    parser.add_argument(
         "--load-weights",
         required=False,
         help="Load only weights from previously saved checkpoint",
@@ -138,7 +143,8 @@ def main():
         val_subset={"ann_file": args.val_ann_files, "data_root": args.val_data_roots},
     )
     if args.unlabeled_data_roots:
-        data_roots['ul_subset'] = {"data_root": args.unlabeled_data_roots}
+        data_roots['ul_subset'] = {"data_root": args.unlabeled_data_roots,
+        "file_list" : args.unlabeled_file_list,}
     
     print(data_roots)
     dataset = dataset_class(**data_roots)
