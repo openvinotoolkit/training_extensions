@@ -183,24 +183,27 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         recipe_root = os.path.join(MPAConstants.RECIPES_PATH, "stages/segmentation")
         train_type = self._hyperparams.algo_backend.train_type
         logger.info(f"train type = {train_type}")
-        # train_type = TrainType.SEMISUPERVISED
-        if self._data_cfg.get('data', None):
-            if self._data_cfg.data.get('unlabeled', None):
-                train_type = TrainType.SEMISUPERVISED
-                logger.info(f"Unlabeled data detected - convert to {train_type} mode...")
 
+        # load INCREMENTAL recipe file first. (default train type)
         recipe = os.path.join(recipe_root, "class_incr.py")
-        if train_type == TrainType.SEMISUPERVISED:
-            recipe = os.path.join(recipe_root, "cutmix_seg.py")
-        elif train_type == TrainType.SELFSUPERVISED:
-            # recipe = os.path.join(recipe_root, 'pretrain.yaml')
-            raise NotImplementedError(f"train type {train_type} is not implemented yet.")
-        elif train_type == TrainType.INCREMENTAL:
-            recipe = os.path.join(recipe_root, "class_incr.py")
-        else:
-            # raise NotImplementedError(f'train type {train_type} is not implemented yet.')
-            # FIXME: Temporary remedy for CVS-88098
-            logger.warning(f"train type {train_type} is not implemented yet.")
+        
+        if train_type != TrainType.INCREMENTAL:
+            if train_type == TrainType.SEMISUPERVISED:
+                if self._data_cfg.get('data', None) and self._data_cfg.data.get('unlabeled', None):
+                    recipe = os.path.join(recipe_root, "cutmix_seg.py")
+                else:
+                    logger.warning(f"Cannot find unlabeled data.. convert to INCREMENTAL.")
+                    train_type = TrainType.INCREMENTAL
+            elif train_type == TrainType.SELFSUPERVISED:
+                # recipe = os.path.join(recipe_root, 'pretrain.yaml')
+                raise NotImplementedError(f"Train type {train_type} is not implemented yet.")
+            else:
+                # raise NotImplementedError(f'train type {train_type} is not implemented yet.')
+                # FIXME: Temporary remedy for CVS-88098
+                logger.warning(f"Train type {train_type} is not implemented yet.. convert to INCREMENTAL.")
+                train_type = TrainType.INCREMENTAL
+
+        logger.info(f"train type = {train_type} - loading {recipe}")
 
         self._recipe_cfg = MPAConfig.fromfile(recipe)
         patch_datasets(self._recipe_cfg)  # for OTX compatibility
