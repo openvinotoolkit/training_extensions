@@ -39,7 +39,7 @@ if [[ -e ${venv_dir} ]]; then
 fi
 
 # Create virtual environment
-$PYTHON_NAME -m venv "${venv_dir}" --prompt="mpa"
+$PYTHON_NAME -m venv "${venv_dir}" --prompt="detection"
 
 if ! [ -e "${venv_dir}/bin/activate" ]; then
   echo "The virtual environment was not created."
@@ -113,6 +113,11 @@ pip install -e ../../../ || exit 1
 
 # Install mmdetection & MPA for detection training
 pip install --no-cache-dir -r ../../../requirements/detection.txt
+
+# Remedy solution for numpy lib conflict
+pip install numpy==1.21.0
+pip uninstall -y mmpycocotools
+pip install mmpycocotools
 
 # Build NNCF extensions
 echo "Build NNCF extensions ..."

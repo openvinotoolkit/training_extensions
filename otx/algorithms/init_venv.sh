@@ -39,7 +39,7 @@ if [[ -e ${venv_dir} ]]; then
 fi
 
 # Create virtual environment
-$PYTHON_NAME -m venv "${venv_dir}" --prompt="segmentation"
+$PYTHON_NAME -m venv "${venv_dir}" --prompt="otx"
 
 if ! [ -e "${venv_dir}/bin/activate" ]; then
   echo "The virtual environment was not created."
@@ -103,18 +103,21 @@ else
   export TORCHVISION_VERSION=${TORCHVISION_VERSION}+cu${CUDA_VERSION_CODE}
 fi
 
+# Requirements
+pip install -r ../../requirements/base.txt -r ../../requirements/anomaly.txt -r ../../requirements/openvino.txt
+
 # Install pytorch
 echo torch=="${TORCH_VERSION}" >> "${CONSTRAINTS_FILE}"
 echo torchvision=="${TORCHVISION_VERSION}" >> "${CONSTRAINTS_FILE}"
 pip install torch=="${TORCH_VERSION}" torchvision=="${TORCHVISION_VERSION}" -f https://download.pytorch.org/whl/lts/1.8/torch_lts.html || exit 1
 
-# Install mmcv
-pip install --no-cache-dir mmcv-full==${MMCV_VERSION} || exit 1
-sed -i "s/force=False/force=True/g" "${venv_dir}"/lib/python"${PYTHON_VERSION}"/site-packages/mmcv/utils/registry.py  # Patch: remedy for MMCV registry collision from mmdet/mmseg
-
 # Install OTX
-pip install -e ../../../ || exit 1
-pip install -r ../../../requirements/segmentation.txt
+pip install -e ../../ || exit 1
+
+# Install MPA for training
+pip install -r ../../requirements/classification.txt
+pip install -r ../../requirements/segmentation.txt
+pip install --no-cache-dir -r ../../requirements/detection.txt
 
 # Remedy solution for numpy lib conflict
 pip install numpy==1.21.0
