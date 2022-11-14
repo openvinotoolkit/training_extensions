@@ -139,12 +139,13 @@ class OTEDataset(CustomDataset):
 
     @check_input_parameters_type({"ote_dataset": DatasetParamTypeCheck})
     def __init__(
-            self,
-            ote_dataset: DatasetEntity,
-            labels: List[LabelEntity],
-            pipeline: Sequence[dict],
-            domain: Domain,
-            test_mode: bool = False,
+        self,
+        ote_dataset: DatasetEntity,
+        labels: List[LabelEntity],
+        pipeline: Sequence[dict],
+        domain: Domain,
+        test_mode: bool = False,
+        **kwargs,
     ):
         self.ote_dataset = ote_dataset
         self.labels = labels

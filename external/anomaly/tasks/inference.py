@@ -263,7 +263,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         output_model.set_data("label_schema.json", label_schema_to_bytes(self.task_environment.label_schema))
         self._set_metadata(output_model)
 
-    def _model_info(self) -> Dict:
+    def model_info(self) -> Dict:
         """Return model info to save the model weights.
 
         Returns:
@@ -282,7 +282,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
             output_model (ModelEntity): Output model onto which the weights are saved.
         """
         logger.info("Saving the model weights.")
-        model_info = self._model_info()
+        model_info = self.model_info()
         buffer = io.BytesIO()
         torch.save(model_info, buffer)
         output_model.set_data("weights.pth", buffer.getvalue())
@@ -298,10 +298,13 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         output_model.optimization_methods = self.optimization_methods
 
     def _set_metadata(self, output_model: ModelEntity):
-        output_model.set_data("image_threshold", self.model.image_threshold.value.cpu().numpy().tobytes())
-        output_model.set_data("pixel_threshold", self.model.pixel_threshold.value.cpu().numpy().tobytes())
-        output_model.set_data("min", self.model.normalization_metrics.state_dict()["min"].cpu().numpy().tobytes())
-        output_model.set_data("max", self.model.normalization_metrics.state_dict()["max"].cpu().numpy().tobytes())
+        if hasattr(self.model, "image_threshold"):
+            output_model.set_data("image_threshold", self.model.image_threshold.value.cpu().numpy().tobytes())
+        if hasattr(self.model, "pixel_threshold"):
+            output_model.set_data("pixel_threshold", self.model.pixel_threshold.value.cpu().numpy().tobytes())
+        if hasattr(self.model, "normalization_metrics"):
+            output_model.set_data("min", self.model.normalization_metrics.state_dict()["min"].cpu().numpy().tobytes())
+            output_model.set_data("max", self.model.normalization_metrics.state_dict()["max"].cpu().numpy().tobytes())
 
     @staticmethod
     def _is_docker() -> bool:
