@@ -19,9 +19,9 @@ from ote_sdk.utils.argument_checks import check_input_parameters_type
 
 
 try:
-    from openvino.model_zoo.model_api.models.classification import Classification
-    from openvino.model_zoo.model_api.models.types import BooleanValue, DictValue
-    from openvino.model_zoo.model_api.models.utils import pad_image
+    from ote_sdk.usecases.model_api.models.classification import Classification
+    from ote_sdk.usecases.model_api.models.types import BooleanValue, DictValue
+    from ote_sdk.usecases.model_api.models.utils import pad_image
 except ImportError as e:
     import warnings
     warnings.warn("ModelAPI was not found.")

@@ -18,9 +18,9 @@ import warnings
 import cv2
 import numpy as np
 
-from openvino.model_zoo.model_api.models import SegmentationModel
-from openvino.model_zoo.model_api.models.types import NumericalValue
-from openvino.model_zoo.model_api.adapters.model_adapter import ModelAdapter
+from ote_sdk.usecases.model_api.models import SegmentationModel
+from ote_sdk.usecases.model_api.models.types import NumericalValue
+from ote_sdk.usecases.model_api.adapters.model_adapter import ModelAdapter
 from ote_sdk.utils.argument_checks import check_input_parameters_type
 from ote_sdk.utils.segmentation_utils import create_hard_prediction_from_soft_prediction
 

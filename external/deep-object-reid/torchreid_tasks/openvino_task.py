@@ -64,8 +64,8 @@ from compression.graph.model_utils import compress_model_weights, get_nodes_by_t
 from compression.pipeline.initializer import create_pipeline
 
 try:
-    from openvino.model_zoo.model_api.models import Model
-    from openvino.model_zoo.model_api.adapters import create_core, OpenvinoAdapter
+    from ote_sdk.usecases.model_api.models import Model
+    from ote_sdk.usecases.model_api.adapters import create_core, OpenvinoAdapter
 except ImportError:
     import warnings
     warnings.warn("ModelAPI was not found.")

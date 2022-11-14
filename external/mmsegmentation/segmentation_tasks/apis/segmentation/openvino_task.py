@@ -61,8 +61,8 @@ from compression.pipeline.initializer import create_pipeline
 from ote_sdk.serialization.label_mapper import LabelSchemaMapper, label_schema_to_bytes
 
 from .configuration import OTESegmentationConfig
-from openvino.model_zoo.model_api.models import Model
-from openvino.model_zoo.model_api.adapters import create_core, OpenvinoAdapter
+from ote_sdk.usecases.model_api.models import Model
+from ote_sdk.usecases.model_api.adapters import create_core, OpenvinoAdapter
 from .ote_utils import get_activation_map
 from . import model_wrappers
 

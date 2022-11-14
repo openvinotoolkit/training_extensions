@@ -8,8 +8,8 @@ from pathlib import Path
 from typing import Any, Tuple
 
 import numpy as np
-from openvino.model_zoo.model_api.adapters import OpenvinoAdapter, create_core
-from openvino.model_zoo.model_api.models import Model
+from otx.api.usecases.model_api.adapters import OpenvinoAdapter, create_core
+from otx.api.usecases.model_api.models import Model
 
 from otx.api.entities.label_schema import LabelSchemaEntity
 from otx.api.entities.model_template import TaskType

@@ -8,7 +8,7 @@ Async executor based on ModelAPI
 from typing import Any, Tuple, Union
 
 import numpy as np
-from openvino.model_zoo.model_api.pipelines import AsyncPipeline
+from ote_sdk.usecases.model_api.pipelines import AsyncPipeline
 
 from ote_sdk.usecases.exportable_code.demo.demo_package.model_container import (
     ModelContainer,

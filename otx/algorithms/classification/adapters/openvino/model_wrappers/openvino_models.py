@@ -24,9 +24,9 @@ import numpy as np
 from otx.api.utils.argument_checks import check_input_parameters_type
 
 try:
-    from openvino.model_zoo.model_api.models.classification import Classification
-    from openvino.model_zoo.model_api.models.types import BooleanValue, DictValue
-    from openvino.model_zoo.model_api.models.utils import pad_image
+    from otx.api.usecases.model_api.models.classification import Classification
+    from otx.api.usecases.model_api.models.types import BooleanValue, DictValue
+    from otx.api.usecases.model_api.models.utils import pad_image
 except ImportError as e:
     import warnings
 

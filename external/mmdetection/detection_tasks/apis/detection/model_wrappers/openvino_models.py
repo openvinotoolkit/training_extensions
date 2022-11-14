@@ -18,8 +18,8 @@ from typing import Dict
 import numpy as np
 
 try:
-    from openvino.model_zoo.model_api.models.instance_segmentation import MaskRCNNModel
-    from openvino.model_zoo.model_api.models.ssd import SSD
+    from ote_sdk.usecases.model_api.models.instance_segmentation import MaskRCNNModel
+    from ote_sdk.usecases.model_api.models.ssd import SSD
 except ImportError as e:
     import warnings
 

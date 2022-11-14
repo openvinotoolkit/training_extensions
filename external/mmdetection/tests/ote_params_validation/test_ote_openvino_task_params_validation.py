@@ -13,7 +13,7 @@ from detection_tasks.apis.detection.openvino_task import (
     OpenVINORotatedRectInferencer,
     OTEOpenVinoDataLoader,
 )
-from openvino.model_zoo.model_api.models import Model
+from ote_sdk.usecases.model_api.models import Model
 from ote_sdk.configuration.configurable_parameters import ConfigurableParameters
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.label import Domain, LabelEntity

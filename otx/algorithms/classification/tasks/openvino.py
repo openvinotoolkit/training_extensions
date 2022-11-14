@@ -73,8 +73,8 @@ from otx.api.utils.argument_checks import (
 )
 
 try:
-    from openvino.model_zoo.model_api.adapters import OpenvinoAdapter, create_core
-    from openvino.model_zoo.model_api.models import Model
+    from otx.api.usecases.model_api.adapters import OpenvinoAdapter, create_core
+    from otx.api.usecases.model_api.models import Model
 except ImportError:
     import warnings
 
