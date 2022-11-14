@@ -24,7 +24,7 @@ from otx.api.entities.annotation import (
 )
 from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.subset import Subset
-from otx.api.entities.label import Domain, LabelEntity
+from otx.api.entities.label import LabelEntity
 from otx.api.entities.image import Image
 
 def get_unlabeled_filename(base: str, file_list_path: str):

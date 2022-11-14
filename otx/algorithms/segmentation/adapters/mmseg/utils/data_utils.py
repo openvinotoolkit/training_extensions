@@ -21,13 +21,11 @@ from typing import List, Optional
 import cv2
 import numpy as np
 from mmseg.datasets.custom import CustomDataset
-import glob
 
 from otx.api.entities.annotation import (
     Annotation,
     AnnotationSceneEntity,
     AnnotationSceneKind,
-    NullAnnotationSceneEntity
 )
 from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.id import ID
@@ -152,48 +150,6 @@ def get_extended_label_names(labels: List[LabelEntity]):
     all_labels = ["background"] + target_labels
     return all_labels
 
-def get_unlabeled_filename(base: str, file_list_path: str):
-    file_names = open(file_list_path).read().splitlines()
-    print(file_names)
-    unlabeled_files = []
-    for i, fn in enumerate(file_names):
-        file_path = os.path.join(base, fn)
-        if os.path.isfile(file_path):
-            unlabeled_files.append(file_path)
-    print(unlabeled_files)
-    return unlabeled_files
-
-def load_unlabeled_dataset_items(
-    data_root_dir: str,
-    file_list_path: Optional[str] = None,
-    subset: Subset = Subset.UNLABELED,
-    labels_list: Optional[List[LabelEntity]] = None,
-):  # pylint: disable=too-many-locals
-
-    if file_list_path is not None:
-        data_list = get_unlabeled_filename(data_root_dir, file_list_path)
-    
-    else:
-        ALLOWED_EXTS = (".jpg", ".jpeg", ".png", ".gif")
-        data_list = []
-
-        for fm in ALLOWED_EXTS:
-            data_list.extend(glob.glob(f'{data_root_dir}/**/*{fm}', recursive=True))
-    
-    print(data_list)
-    dataset_items = []
-
-    for filename in data_list:
-        print(filename)
-        dataset_item = DatasetItemEntity(
-            media=Image(file_path=filename),
-            annotation_scene=NullAnnotationSceneEntity(),
-            subset=subset,
-        )
-        print(dataset_item)
-        dataset_items.append(dataset_item)
-    print(dataset_items[0])
-    return dataset_items
 
 @check_input_parameters_type({"ann_file_path": DirectoryPathCheck, "data_root_dir": DirectoryPathCheck})
 def load_dataset_items(
@@ -215,8 +171,7 @@ def load_dataset_items(
     else:
         check_labels(labels_list, annot_labels)
 
-    test_mode = subset in {Subset.VALIDATION, Subset.TESTING, Subset.UNLABELED} # wanna create unlabeled mode but has to create other CustomDataset,, 
-
+    test_mode = subset in {Subset.VALIDATION, Subset.TESTING}
     pipeline = [dict(type="LoadAnnotations")]
     dataset = CustomDataset(
         img_dir=img_dir,

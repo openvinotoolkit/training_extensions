@@ -282,7 +282,6 @@ class ClassificationInferenceTask(
         recipe_root = os.path.join(MPAConstants.RECIPES_PATH, "stages/classification")
         train_type = self._hyperparams.algo_backend.train_type
         logger.info(f"train type = {train_type}")
-        # train_type = TrainType.SEMISUPERVISED
         if self._data_cfg.get('data', None):
             if self._data_cfg.data.get('unlabeled', None):
                 train_type = TrainType.SEMISUPERVISED
@@ -362,8 +361,8 @@ class ClassificationInferenceTask(
                 continue
             if cfg.type == "RepeatDataset":
                 cfg = cfg.dataset
-            if subset == "unlabeled":
-                cfg.type = "MPAClsUnlabelDataset"
+            #if subset == "unlabeled":
+            #    cfg.type = "MPAClsUnlabelDataset"
 
             else:
                 if self._multilabel:

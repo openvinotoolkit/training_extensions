@@ -18,7 +18,6 @@ import json
 import os.path as osp
 from typing import Any, Dict, List, Optional, Sequence
 
-import glob
 import numpy as np
 from pycocotools.coco import COCO
 
@@ -26,7 +25,6 @@ from otx.api.entities.annotation import (
     Annotation,
     AnnotationSceneEntity,
     AnnotationSceneKind,
-    NullAnnotationSceneEntity
 )
 from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.datasets import DatasetEntity
@@ -315,31 +313,6 @@ def find_label_by_name(labels: List[LabelEntity], name: str, domain: Domain):
         return label
     raise ValueError("Found multiple matching labels")
 
-
-def load_unlabeled_dataset_items(
-    data_root_dir: str,
-    domain: Domain,
-    subset: Subset = Subset.UNLABELED,
-    labels_list: Optional[List[LabelEntity]] = None,
-):  # pylint: disable=too-many-locals
-    ALLOWED_EXTS = (".jpg", ".jpeg", ".png", ".gif")
-    data_list = []
-    dataset_items = []
-
-    for fm in ALLOWED_EXTS:
-        data_list.extend(glob.glob(f'{data_root_dir}/**/*{fm}', recursive=True))
-    
-    print(data_list)
-
-    for filename in data_list:
-        dataset_item = DatasetItemEntity(
-            media=Image(file_path=filename),
-            annotation_scene=NullAnnotationSceneEntity(),
-            subset=subset,
-        )
-        print(dataset_item)
-        dataset_items.append(dataset_item)
-    return dataset_items
 
 @check_input_parameters_type({"ann_file_path": JsonFilePathCheck, "data_root_dir": DirectoryPathCheck})
 def load_dataset_items_coco_format(

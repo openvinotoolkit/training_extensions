@@ -10,7 +10,7 @@ from .config_utils import (
     prepare_for_training,
     set_hyperparams,
 )
-from .data_utils import load_dataset_items, load_unlabeled_dataset_items
+from .data_utils import load_dataset_items
 
 __all__ = [
     "patch_config",
@@ -19,5 +19,4 @@ __all__ = [
     "prepare_for_training",
     "set_hyperparams",
     "load_dataset_items",
-    "load_unlabeled_dataset_items",
 ]
