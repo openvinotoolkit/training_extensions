@@ -291,11 +291,9 @@ class ClassificationInferenceTask(
             if train_type == TrainType.SEMISUPERVISED:
                 raise NotImplementedError(f"train type {train_type} is not implemented yet.")
             if train_type == TrainType.SELFSUPERVISED:
-                raise NotImplementedError(f"train type {train_type} is not implemented yet.")
-            # raise NotImplementedError(f'train type {train_type} is not implemented yet.')
-            # FIXME: Temporary remedy for CVS-88098
-            recipe = os.path.join(recipe_root, "class_incr.yaml")
-            logger.warning(f"train type {train_type} is not implemented yet. Running incremental training.")
+                recipe = self.template_file_path.replace(os.path.basename(self.template_file_path), "class_selfsl.yaml")
+            else:
+                logger.warning(f"train type {train_type} is not implemented yet. Running incremental training.")
 
         self._recipe_cfg = MPAConfig.fromfile(recipe)
         self._patch_datasets(self._recipe_cfg)  # for OTX compatibility
@@ -310,6 +308,9 @@ class ClassificationInferenceTask(
             cfg_path = os.path.join(base_dir, "model_hierarchical.py")
         else:
             cfg_path = os.path.join(base_dir, "model.py")
+        # Override the model configuration if we are in SELFSUPERVISED mode
+        if self._hyperparams.algo_backend.train_type == TrainType.SELFSUPERVISED:
+            cfg_path = os.path.join(base_dir, "model_selfsl.py")
         cfg = MPAConfig.fromfile(cfg_path)
 
         cfg.model.multilabel = self._multilabel
