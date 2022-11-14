@@ -18,7 +18,7 @@ import copy
 import glob
 import os
 import tempfile
-from typing import Union
+from typing import Union, List
 
 from mmcv import Config, ConfigDict
 
@@ -39,6 +39,29 @@ def remove_from_config(config: Union[Config, ConfigDict], key: str):
             del config[key]
         else:
             raise ValueError(f"Unknown config type {type(config)}")
+
+
+def get_configs_by_type(
+    configs: List[ConfigDict],
+    key: str
+) -> List[Union[Config, ConfigDict]]:
+    found = []
+    for config in configs:
+        type = config.get("type", None)
+        if type == key:
+            found.append(config)
+    return found
+
+
+def remove_configs_by_type(configs: List[ConfigDict], key: str):
+    """Update & remove by type"""
+    indices = []
+    for i, config in enumerate(configs):
+        type = config.get("type", None)
+        if type == key:
+            indices.append(i)
+    for i in reversed(indices):
+        configs.pop(i)
 
 
 @check_input_parameters_type({"dataset": DatasetParamTypeCheck})

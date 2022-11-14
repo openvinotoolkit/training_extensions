@@ -230,6 +230,16 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
             )
         self._recipe_cfg.log_config.hooks.append({"type": "OTXLoggerHook", "curves": self._learning_curves})
 
+        # if num_workers is 0, persistent_workers must be False
+        data_cfg = self._recipe_cfg.data
+        if data_cfg.get("workers_per_gpu", 0) == 0:
+            for subset in ["train", "val", "test"]:
+                dataloader_cfg = data_cfg.get(
+                    f"{subset}_dataloader", ConfigDict()
+                )
+                dataloader_cfg["persistent_workers"] = False
+                data_cfg[f"{subset}_dataloader"] = dataloader_cfg
+
         self._initialize_post_hook()
 
         logger.info("initialized.")

@@ -23,7 +23,7 @@ from mpa import MPAConstants
 from mpa.utils.config_utils import MPAConfig
 from mpa.utils.logger import get_logger
 
-from otx.algorithms.common.adapters.mmcv.utils import remove_from_config
+from otx.algorithms.common.adapters.mmcv.utils import remove_configs_by_type
 from otx.algorithms.common.configs import TrainType
 from otx.algorithms.common.tasks import BaseTask
 from otx.algorithms.common.utils.callback import InferenceProgressCallback
@@ -203,7 +203,7 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         patch_evaluation(self._recipe_cfg)  # for OTX compatibility
         self.metric = self._recipe_cfg.evaluation.metric
         if not self.freeze:
-            remove_from_config(self._recipe_cfg, "params_config")
+            remove_configs_by_type(self._recipe_cfg.custom_hooks, "FreezeLayers")
         logger.info(f"initialized recipe = {recipe}")
 
     # TODO: make cfg_path loaded from custom model cfg file corresponding to train_type

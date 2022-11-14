@@ -71,7 +71,7 @@ fi
 # install PyTorch and MMCV.
 export TORCH_VERSION=1.8.2
 export TORCHVISION_VERSION=0.9.2
-export MMCV_VERSION=1.3.14
+export MMCV_VERSION=1.6.1
 
 if [[ -z ${CUDA_VERSION} ]]; then
   echo "CUDA was not found, installing dependencies in CPU-only mode. If you want to use CUDA, set CUDA_HOME and CUDA_VERSION beforehand."
@@ -107,6 +107,10 @@ fi
 echo torch=="${TORCH_VERSION}" >> "${CONSTRAINTS_FILE}"
 echo torchvision=="${TORCHVISION_VERSION}" >> "${CONSTRAINTS_FILE}"
 pip install torch=="${TORCH_VERSION}" torchvision=="${TORCHVISION_VERSION}" -f https://download.pytorch.org/whl/lts/1.8/torch_lts.html || exit 1
+
+# Install mmcv
+pip install --no-cache-dir mmcv-full==${MMCV_VERSION} || exit 1
+sed -i "s/force=False/force=True/g" "${venv_dir}"/lib/python"${PYTHON_VERSION}"/site-packages/mmcv/utils/registry.py  # Patch: remedy for MMCV registry collision from mmdet/mmseg
 
 # Install OTX
 pip install -e ../../../ || exit 1
