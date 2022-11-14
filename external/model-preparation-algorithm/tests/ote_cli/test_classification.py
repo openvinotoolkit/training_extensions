@@ -46,6 +46,8 @@ args0 = {
         "2",
         "--learning_parameters.batch_size",
         "4",
+        "--learning_parameters.num_workers",
+        "0",
     ],
 }
 
@@ -64,6 +66,8 @@ args = {
         "2",
         "--learning_parameters.batch_size",
         "4",
+        "--learning_parameters.num_workers",
+        "0",
     ],
 }
 
@@ -220,6 +224,8 @@ args0_m = {
         "2",
         "--learning_parameters.batch_size",
         "4",
+        "--learning_parameters.num_workers",
+        "0",
     ],
 }
 
@@ -238,6 +244,8 @@ args_m = {
         "2",
         "--learning_parameters.batch_size",
         "4",
+        "--learning_parameters.num_workers",
+        "0",
     ],
 }
 
@@ -378,6 +386,8 @@ args_h = {
         "2",
         "--learning_parameters.batch_size",
         "4",
+        "--learning_parameters.num_workers",
+        "0",
     ],
 }
 
