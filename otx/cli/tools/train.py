@@ -182,7 +182,7 @@ def main():
     # Datumaro 
     datumaro_handler = DatumaroHandler()
     datumaro_dataset = datumaro_handler.import_dataset(
-        train_ann_files=args.train_ann_files
+        train_data_roots=args.train_data_roots
     )
     dataset = datumaro_handler.convert_to_otx_format(datumaro_dataset)
 
