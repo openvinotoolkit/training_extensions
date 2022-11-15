@@ -17,6 +17,8 @@
 
 import importlib
 
+# pylint: disable=protected-access
+
 
 def get_impl_class(impl_path):
     """Returns a class by its path in package."""
@@ -26,3 +28,51 @@ def get_impl_class(impl_path):
     task_impl_class = getattr(task_impl_module, task_impl_class_name)
 
     return task_impl_class
+
+
+def get_backbone_list(backend):
+    """Gather backbone list from backends."""
+    if backend in ("otx", "custom"):
+        otx_backbones = importlib.import_module("otx.algorithms.common.adapters.mmcv.models.backbones")
+        return otx_backbones.__all__
+    if backend in ("mmcls", "mmdet", "mmseg"):
+        if importlib.util.find_spec(backend):
+            mm_backbones = importlib.import_module(f"{backend}.models.backbones")
+            return mm_backbones.__all__
+    if backend == "pytorchcv":
+        if importlib.util.find_spec(backend):
+            pytorchcv_backbones = importlib.import_module(f"{backend}.model_provider")
+            return pytorchcv_backbones._models
+    if backend == "torchvision":
+        torchvision_backbone_module = "otx.algorithms.common.adapters.mmcv.models.backbones.torchvision_backbones"
+        torchvision_backbones = importlib.import_module(torchvision_backbone_module)
+        return [f"{backbone}" for backbone in torchvision_backbones.TORCHVISION_MODELS.keys()]
+    raise ValueError(f"{backend} cannot be imported.")
+
+
+def get_backbone_registry(backends=None):
+    """Gather backbone list from backends."""
+
+    custom_imports = []
+    # Get OTX Custom + Torchvision registry
+    otx_backend_path = "otx.algorithms.common.adapters.mmcv.models"
+    otx_backbones = importlib.import_module(otx_backend_path)
+    otx_registry = otx_backbones.BACKBONES
+    custom_imports.append(otx_backend_path)
+
+    if backends is None:
+        backend_list = ["mmcls", "mmdet", "mmseg"]
+    elif backends in ("otx", "torchvision"):
+        backend_list = []
+    elif backends in ("mmdet", "pytorchcv"):
+        backend_list = ["mmdet"]
+    else:
+        backend_list = [backends]
+
+    for backend in backend_list:
+        if importlib.util.find_spec(backend):
+            mm_backbones = importlib.import_module(f"{backend}.models")
+            mm_registry = mm_backbones.BACKBONES
+            otx_registry._add_children(mm_registry)
+            custom_imports.append(f"{backend}.models")
+    return otx_registry, custom_imports

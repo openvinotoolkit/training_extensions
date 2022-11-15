@@ -15,11 +15,12 @@ import math
 import os
 
 import torch.nn.functional as F
-from mmcls.models.builder import BACKBONES
 from mmcls.models.utils import make_divisible
 from mmcv.runner import load_checkpoint
 from mpa.utils.logger import get_logger
 from torch import nn
+
+from ..builder import BACKBONES
 
 logger = get_logger()
 

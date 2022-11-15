@@ -1,4 +1,4 @@
-"""Classification backbones."""
+"""OTX Custom backbones."""
 
 # Copyright (C) 2022 Intel Corporation
 #
@@ -17,5 +17,6 @@
 from .efficientnet import OTXEfficientNet
 from .efficientnetv2 import OTXEfficientNetV2
 from .mobilenetv3 import OTXMobileNetV3
+from .torchvision_backbones import *
 
 __all__ = ["OTXEfficientNet", "OTXEfficientNetV2", "OTXMobileNetV3"]

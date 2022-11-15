@@ -1,4 +1,4 @@
-"""Adapters for OTX Common Algorithm. - mmcls."""
+"""Adapters for OTX Common Algorithm. - mmcv.model."""
 
 # Copyright (C) 2022 Intel Corporation
 #
@@ -14,6 +14,8 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .models import OTXEfficientNet, OTXEfficientNetV2, OTXMobileNetV3
 
-__all__ = ["OTXEfficientNet", "OTXEfficientNetV2", "OTXMobileNetV3"]
+from .backbones import OTXEfficientNet, OTXEfficientNetV2, OTXMobileNetV3
+from .builder import BACKBONES, TORCHVISION_BACKBONES
+
+__all__ = ["OTXEfficientNet", "OTXEfficientNetV2", "OTXMobileNetV3", "BACKBONES", "TORCHVISION_BACKBONES"]

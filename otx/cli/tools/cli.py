@@ -17,6 +17,7 @@
 import argparse
 import sys
 
+from .build import main as otx_build
 from .demo import main as otx_demo
 from .deploy import main as otx_deploy
 from .eval import main as otx_eval
@@ -35,6 +36,7 @@ __all__ = [
     "otx_find",
     "otx_train",
     "otx_optimize",
+    "otx_build",
 ]
 
 
