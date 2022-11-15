@@ -179,10 +179,10 @@ class DatumaroHandler:
                                 shapes.append(
                                     Annotation(
                                         Rectangle(
-                                            x1=ann.points[0], 
-                                            y1=ann.points[1],
-                                            x2=ann.points[2],
-                                            y2=ann.points[3]),
+                                            x1=ann.points[0]/image.width, 
+                                            y1=ann.points[1]/image.height,
+                                            x2=ann.points[2]/image.width,
+                                            y2=ann.points[3]/image.height),
                                         labels = [
                                             ScoredLabel(
                                                 label=label_entities[ann.label]
