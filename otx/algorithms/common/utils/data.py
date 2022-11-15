@@ -22,6 +22,7 @@ from typing import Optional
 
 from otx.api.entities.annotation import NullAnnotationSceneEntity
 from otx.api.entities.dataset_item import DatasetItemEntity
+from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.image import Image
 from otx.api.entities.subset import Subset
 from otx.api.utils.argument_checks import (
@@ -93,6 +94,12 @@ def load_unlabeled_dataset_items(
         )
         dataset_items.append(dataset_item)
     return dataset_items
+
+
+def get_unlabeled_dataset(dataset: DatasetEntity):
+    """Get unlabeled dataset from otx dataset."""
+    unlabeled_data = dataset.get_subset(Subset.UNLABELED)
+    return unlabeled_data if len(unlabeled_data) > 0 else None
 
 
 def get_cls_img_indices(labels, dataset):
