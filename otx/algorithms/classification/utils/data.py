@@ -126,7 +126,6 @@ class ClassificationDatasetAdapter(DatasetEntity):
                     load_unlabeled_dataset_items(
                         file_list_path=unlabeled_file_list,
                         data_root_dir=unlabeled_data_root,
-                        subset=Subset.UNLABELED,
                     )
                 )
         super().__init__(items=dataset_items, **kwargs)

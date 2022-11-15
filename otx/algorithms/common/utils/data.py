@@ -64,7 +64,6 @@ def get_unlabeled_filename(base_root: str, file_list_path: str):
 def load_unlabeled_dataset_items(
     data_root_dir: str,
     file_list_path: Optional[str] = None,
-    subset: Subset = Subset.UNLABELED,
 ):
     """This method loads unlabeled dataset items from images in data_root_dir.
 
@@ -90,7 +89,7 @@ def load_unlabeled_dataset_items(
         dataset_item = DatasetItemEntity(
             media=Image(file_path=filename),
             annotation_scene=NullAnnotationSceneEntity(),
-            subset=subset,
+            subset=Subset.UNLABELED,
         )
         dataset_items.append(dataset_item)
     return dataset_items

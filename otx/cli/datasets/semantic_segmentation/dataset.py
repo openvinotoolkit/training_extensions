@@ -69,7 +69,6 @@ class SemanticSegmentationDataset(DatasetEntity):
                 load_unlabeled_dataset_items(
                     file_list_path=unlabeled_subset["file_list"],
                     data_root_dir=unlabeled_subset["data_root"],
-                    subset=Subset.UNLABELED,
                 )
             )
         super().__init__(items=items)
