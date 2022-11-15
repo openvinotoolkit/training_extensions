@@ -9,7 +9,6 @@ env
 .env
 .tox
 
-data/*
 .coverage
 results/
 
