@@ -76,13 +76,17 @@ class DatumaroHandler:
         """ Import dataset by using Datumaro."""
         # Find self.data_type and task_type
         data_type_candidates = self._detect_dataset_format(path=train_data_roots)
-        print('data_type_candidates: ', data_type_candidates)
+        print('[*] data_type_candidates: ', data_type_candidates)
+        
+        #TODO: more better way for classification
         if 'imagenet' in data_type_candidates:
             self.data_type = 'imagenet'
         else:
             self.data_type = data_type_candidates[0]
+        print('[*] selected data type: ', self.data_type)
+        
         self.task_type = self._find_task_type(self.data_type)
-        print('task_type: ', self.task_type)
+        print('[*] task_type: ', self.task_type)
         self._set_domain(self.task_type)
 
         # Construct dataset for training, validation, unlabeled
@@ -96,7 +100,6 @@ class DatumaroHandler:
 
         # Prepare subsets by using Datumaro dataset
         for k, v in datumaro_dataset.subsets().items():
-            print(k, v)
             if 'train' in k or 'default' in k:
                 self.dataset[Subset.TRAINING] = v
             elif 'val' in k or 'test' in k:
@@ -156,10 +159,9 @@ class DatumaroHandler:
             class_name_items = list(subset_data.categories().values())[-1].items
             label_entities = [LabelEntity(name=class_name.name, domain=self.domain,
                                 is_empty=False, id=ID(i)) for i, class_name in enumerate(class_name_items)]
-            print('label_entities: ', label_entities)
             for phase, datumaro_items in subset_data.subsets().items():
                 for datumaro_item in datumaro_items:
-                    print(datumaro_item)
+                    print('[*] datumaro_item: ', datumaro_item)
                     image = Image(data=datumaro_item.media.data)
                     if self.domain == Domain.CLASSIFICATION:
                         labels = [
