@@ -29,9 +29,6 @@ ann_file_val = None
 anno_root = "/home/jaeguk/workspace/data/ava/annotations"
 exclude_file_train = f"{anno_root}/ava_train_excluded_timestamps_v2.2.csv"
 exclude_file_val = f"{anno_root}/ava_val_excluded_timestamps_v2.2.csv"
-
-label_file = f"{anno_root}/ava_action_list_v2.2_for_activitynet_2019.pbtxt"
-
 proposal_file_train = f"{anno_root}/ava_dense_proposals_train.FAIR." "recall_93.9.pkl"
 proposal_file_val = f"{anno_root}/ava_dense_proposals_val.FAIR.recall_93.9.pkl"
 
@@ -78,7 +75,6 @@ data = dict(
         exclude_file=exclude_file_train,
         pipeline=train_pipeline,
         proposal_file=proposal_file_train,
-        label_file=label_file,
         person_det_score_thr=0.9,
     ),
     val=dict(
@@ -86,7 +82,6 @@ data = dict(
         exclude_file=exclude_file_val,
         pipeline=val_pipeline,
         proposal_file=proposal_file_val,
-        label_file=label_file,
         person_det_score_thr=0.9,
     ),
 )

@@ -84,7 +84,6 @@ class OTXAVADataset(AVADataset):
         pipeline: Sequence[dict],
         exclude_file: str,
         proposal_file: str,
-        label_file: str,
         test_mode: bool = False,
         person_det_score_thr: float = 0.9,
         num_max_proposals: int = 1000,
@@ -118,7 +117,6 @@ class OTXAVADataset(AVADataset):
             self.proposals = mmcv.load(self.proposal_file)
         else:
             self.proposals = None
-        self.label_file = label_file
 
         self.pipeline = Compose(pipeline)
         self.make_video_infos()
