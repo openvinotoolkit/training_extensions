@@ -25,7 +25,7 @@ class ImageClassificationDataset(ClassificationDatasetAdapter):
         train_subset=None,
         val_subset=None,
         test_subset=None,
-        ul_subset=None,
+        unlabeled_subset=None,
     ):
         super().__init__(
             train_subset.get("ann_file", None) if train_subset else None,
@@ -34,6 +34,6 @@ class ImageClassificationDataset(ClassificationDatasetAdapter):
             val_subset.get("data_root", None) if val_subset else None,
             test_subset.get("ann_file", None) if test_subset else None,
             test_subset.get("data_root", None) if test_subset else None,
-            ul_subset.get("data_root", None) if ul_subset else None,
-            ul_subset.get("file_list", None) if ul_subset else None,
+            unlabeled_subset.get("data_root", None) if unlabeled_subset else None,
+            unlabeled_subset.get("file_list", None) if unlabeled_subset else None,
         )

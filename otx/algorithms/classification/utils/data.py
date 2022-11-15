@@ -61,8 +61,8 @@ class ClassificationDatasetAdapter(DatasetEntity):
             "val_data_root": OptionalDirectoryPathCheck,
             "test_ann_file": OptionalDirectoryPathCheck,
             "test_data_root": OptionalDirectoryPathCheck,
-            "ul_data_root": OptionalDirectoryPathCheck,
-            "ul_file_list": OptionalDirectoryPathCheck,
+            "unlabeled_data_root": OptionalDirectoryPathCheck,
+            "unlabeled_file_list": OptionalDirectoryPathCheck,
         }
     )
     def __init__(
@@ -73,8 +73,8 @@ class ClassificationDatasetAdapter(DatasetEntity):
         val_data_root=None,
         test_ann_file=None,
         test_data_root=None,
-        ul_data_root=None,
-        ul_file_list=None,
+        unlabeled_data_root=None,
+        unlabeled_file_list=None,
         **kwargs,
     ):  # pylint: disable=too-many-arguments
         self.data_roots = {}
@@ -120,12 +120,12 @@ class ClassificationDatasetAdapter(DatasetEntity):
                 dataset_item = DatasetItemEntity(image, annotation_scene, subset=subset)
                 dataset_items.append(dataset_item)
 
-        if ul_data_root is not None:
+        if unlabeled_data_root is not None:
             if not self.data_type == ClassificationType.MULTIHEAD:
                 dataset_items.extend(
                     load_unlabeled_dataset_items(
-                        file_list_path=ul_file_list,
-                        data_root_dir=ul_data_root,
+                        file_list_path=unlabeled_file_list,
+                        data_root_dir=unlabeled_data_root,
                         subset=Subset.UNLABELED,
                     )
                 )

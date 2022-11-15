@@ -29,7 +29,7 @@ class ObjectDetectionDataset(DatasetEntity):
         train_subset=None,
         val_subset=None,
         test_subset=None,
-        ul_subset=None,
+        unlabeled_subset=None,
     ):
 
         labels_list = []
@@ -68,11 +68,11 @@ class ObjectDetectionDataset(DatasetEntity):
                 )
             )
 
-        if ul_subset is not None:
+        if unlabeled_subset is not None:
             items.extend(
                 load_unlabeled_dataset_items(
-                    file_list_path=ul_subset["file_list"],
-                    data_root_dir=ul_subset["data_root"],
+                    file_list_path=unlabeled_subset["file_list"],
+                    data_root_dir=unlabeled_subset["data_root"],
                     subset=Subset.UNLABELED,
                 )
             )
