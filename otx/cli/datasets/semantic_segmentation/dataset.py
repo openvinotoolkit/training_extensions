@@ -65,7 +65,6 @@ class SemanticSegmentationDataset(DatasetEntity):
             )
 
         if ul_subset is not None:
-            print(ul_subset)
             items.extend(
                 load_unlabeled_dataset_items(
                     file_list_path=ul_subset["file_list"],

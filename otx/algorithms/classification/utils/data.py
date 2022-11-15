@@ -16,7 +16,6 @@
 
 # pylint: disable=too-many-nested-blocks, invalid-name, too-many-locals
 
-import glob
 import json
 import os
 from enum import Enum, auto
@@ -27,7 +26,6 @@ from otx.api.entities.annotation import (
     Annotation,
     AnnotationSceneEntity,
     AnnotationSceneKind,
-    NullAnnotationSceneEntity,
 )
 from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.datasets import DatasetEntity
@@ -64,7 +62,7 @@ class ClassificationDatasetAdapter(DatasetEntity):
             "test_ann_file": OptionalDirectoryPathCheck,
             "test_data_root": OptionalDirectoryPathCheck,
             "ul_data_root": OptionalDirectoryPathCheck,
-            "ul_data_root": OptionalDirectoryPathCheck,
+            "ul_file_list": OptionalDirectoryPathCheck,
         }
     )
     def __init__(
@@ -78,7 +76,7 @@ class ClassificationDatasetAdapter(DatasetEntity):
         ul_data_root=None,
         ul_file_list=None,
         **kwargs,
-    ):
+    ):  # pylint: disable=too-many-arguments
         self.data_roots = {}
         self.ann_files = {}
         self.data_type = ClassificationType.MULTICLASS

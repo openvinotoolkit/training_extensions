@@ -134,7 +134,6 @@ def main():
     dataset_class = get_dataset_class(template.task_type)
 
     # Create instances of Task, ConfigurableParameters and Dataset.
-
     data_roots = dict(
         train_subset={
             "ann_file": args.train_ann_files,

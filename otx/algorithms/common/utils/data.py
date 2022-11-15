@@ -14,9 +14,11 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+# pylint: disable=invalid-name
+
 import glob
 import os
-from typing import List, Optional
+from typing import Optional
 
 from otx.api.entities.annotation import NullAnnotationSceneEntity
 from otx.api.entities.dataset_item import DatasetItemEntity
@@ -31,26 +33,26 @@ from otx.api.utils.argument_checks import (
 
 @check_input_parameters_type({"file_list_path": DirectoryPathCheck})
 def get_unlabeled_filename(base_root: str, file_list_path: str):
-    """
-    This method checks and gets image file paths, which are listed in file_list_path.
-    It returns the list of image filenames only which will consists unlabeled dataset.
-    Since it checks the relative path from base_root, the contents of file_list_path is expected to be:
-    e.g)
-    xxxxx.jpg
-    yyyyy.jpg
-    zzzzz.jpg
-    ...
+    """This method checks and gets image file paths, which are listed in file_list_path.
 
-    {base_root}/xxxxx.jpg should be
+    The content of file_list_path is expected to specify relative paths of each image file to base_root line by line.
+    It returns the list of image filenames only which will compose unlabeled dataset.
 
+    Args:
+        base_root (str): path of base root dir where unlabeled images are.
+        file_list_path (str) : path of file which contains relative paths of unlabeled data to base_root.
+
+    Returns:
+        List[str]: a list of existing image file paths which will be unlabeled data items.
     """
 
     def is_valid(file_path):
         return file_path.lower().endswith(tuple(IMAGE_FILE_EXTENSIONS))
 
-    file_names = open(file_list_path).read().splitlines()
+    with open(file_list_path, "r", encoding="UTF-8") as f:
+        file_names = f.read().splitlines()
     unlabeled_files = []
-    for i, fn in enumerate(file_names):
+    for fn in file_names:
         file_path = os.path.join(base_root, fn.strip())
         if is_valid(file_path) and os.path.isfile(file_path):
             unlabeled_files.append(file_path)
@@ -63,15 +65,23 @@ def load_unlabeled_dataset_items(
     file_list_path: Optional[str] = None,
     subset: Subset = Subset.UNLABELED,
 ):
+    """This method loads unlabeled dataset items from images in data_root_dir.
 
+    Args:
+        data_root_dir (str): path of base root directory where unlabeled images are.
+        file_list_path (str) : path of a file which contains relative paths of unlabeled data to base_root.
+        subset (Subset) : Entity subset category
+    Returns:
+        List[DatasetItemEntity]: a list of unlabeled dataset item entity.
+    """
     if file_list_path is not None:
         data_list = get_unlabeled_filename(data_root_dir, file_list_path)
 
     else:
         data_list = []
 
-        for fm in IMAGE_FILE_EXTENSIONS:
-            data_list.extend(glob.glob(f"{data_root_dir}/**/*{fm}", recursive=True))
+        for ext in IMAGE_FILE_EXTENSIONS:
+            data_list.extend(glob.glob(f"{data_root_dir}/**/*{ext}", recursive=True))
 
     dataset_items = []
 

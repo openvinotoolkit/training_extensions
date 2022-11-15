@@ -198,6 +198,30 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
         self._is_training = False
         logger.info("train done.")
 
+    def _init_train_data_cfg(self, dataset: DatasetEntity):
+        logger.info("init data cfg.")
+        data_cfg = ConfigDict(
+            data=ConfigDict(
+                train=ConfigDict(
+                    otx_dataset=dataset.get_subset(Subset.TRAINING),
+                    labels=self._labels,
+                ),
+                val=ConfigDict(
+                    otx_dataset=dataset.get_subset(Subset.VALIDATION),
+                    labels=self._labels,
+                ),
+            )
+        )
+        if len(dataset.get_subset(Subset.UNLABELED)):
+            data_cfg.data.unlabeled = ConfigDict(
+                otx_dataset=dataset.get_subset(Subset.UNLABELED),
+                labels=self._labels,
+            )
+        # Temparory remedy for cfg.pretty_text error
+        for label in self._labels:
+            label.hotkey = "a"
+        return data_cfg
+
     @staticmethod
     def _generate_training_metrics(learning_curves, scores) -> Iterable[MetricsGroup[Any, Any]]:
         """Get Training metrics (epochs & scores).

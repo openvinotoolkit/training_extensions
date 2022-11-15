@@ -192,7 +192,7 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
                 if self._data_cfg.get("data", None) and self._data_cfg.data.get("unlabeled", None):
                     recipe = os.path.join(recipe_root, "cutmix_seg.py")
                 else:
-                    logger.warning(f"Cannot find unlabeled data.. convert to INCREMENTAL.")
+                    logger.warning("Cannot find unlabeled data.. convert to INCREMENTAL.")
                     train_type = TrainType.INCREMENTAL
             elif train_type == TrainType.SELFSUPERVISED:
                 # recipe = os.path.join(recipe_root, 'pretrain.yaml')

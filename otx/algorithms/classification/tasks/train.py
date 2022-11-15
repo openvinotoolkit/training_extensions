@@ -143,9 +143,28 @@ class ClassificationTrainTask(ClassificationInferenceTask):
         logger.info("train done.")
 
     def _init_train_data_cfg(self, dataset: DatasetEntity):
-        data_cfg = super()._init_train_data_cfg(dataset)
-        data_cfg.train.label_names = list(label.name for label in self._labels)
+        logger.info("init data cfg.")
+        data_cfg = ConfigDict(
+            data=ConfigDict(
+                train=ConfigDict(
+                    otx_dataset=dataset.get_subset(Subset.TRAINING),
+                    labels=self._labels,
+                    label_names=list(label.name for label in self._labels),
+                ),
+                val=ConfigDict(
+                    otx_dataset=dataset.get_subset(Subset.VALIDATION),
+                    labels=self._labels,
+                ),
+            )
+        )
+        if len(dataset.get_subset(Subset.UNLABELED)):
+            data_cfg.data.unlabeled = ConfigDict(
+                otx_dataset=dataset.get_subset(Subset.UNLABELED),
+                labels=self._labels,
+            )
 
+        for label in self._labels:
+            label.hotkey = "a"
         return data_cfg
 
     def _generate_training_metrics_group(self, learning_curves):
