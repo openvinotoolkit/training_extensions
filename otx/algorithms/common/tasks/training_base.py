@@ -35,6 +35,7 @@ from otx.algorithms.common.adapters.mmcv.hooks import OTXLoggerHook
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label import LabelEntity
 from otx.api.entities.model import ModelEntity, ModelPrecision, OptimizationMethod
+from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.serialization.label_mapper import LabelSchemaMapper
 from otx.api.usecases.reporting.time_monitor_callback import TimeMonitorCallback
@@ -242,8 +243,29 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         raise NotImplementedError("this method should be implemented")
 
     def _init_train_data_cfg(self, dataset: DatasetEntity) -> Union[Config, None]:
-        """Initialize data_cfg for override recipe's data configuration."""
-        return ConfigDict(data=dataset) if dataset else self._data_cfg
+        """Initialize train_data_cfg as ConfigDict."""
+        logger.info("init data cfg.")
+        data_cfg = ConfigDict(
+            data=ConfigDict(
+                train=ConfigDict(
+                    otx_dataset=dataset.get_subset(Subset.TRAINING),
+                    labels=self._labels,
+                ),
+                val=ConfigDict(
+                    otx_dataset=dataset.get_subset(Subset.VALIDATION),
+                    labels=self._labels,
+                ),
+            )
+        )
+        if len(dataset.get_subset(Subset.UNLABELED)):
+            data_cfg.data.unlabeled = ConfigDict(
+                otx_dataset=dataset.get_subset(Subset.UNLABELED),
+                labels=self._labels,
+            )
+        # Temparory remedy for cfg.pretty_text error
+        for label in self._labels:
+            label.hotkey = "a"
+        return data_cfg
 
     def _init_test_data_cfg(self, dataset: DatasetEntity) -> Union[Config, None]:
         """Initialize data_cfg for override recipe's data configuration."""

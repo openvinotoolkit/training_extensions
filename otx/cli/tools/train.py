@@ -143,10 +143,11 @@ def main():
         val_subset={"ann_file": args.val_ann_files, "data_root": args.val_data_roots},
     )
     if args.unlabeled_data_roots:
-        data_roots['ul_subset'] = {"data_root": args.unlabeled_data_roots,
-        "file_list" : args.unlabeled_file_list,}
-    
-    print(data_roots)
+        data_roots["ul_subset"] = {
+            "data_root": args.unlabeled_data_roots,
+            "file_list": args.unlabeled_file_list,
+        }
+
     dataset = dataset_class(**data_roots)
 
     environment = TaskEnvironment(

@@ -16,17 +16,18 @@
 
 # pylint: disable=too-many-nested-blocks, invalid-name, too-many-locals
 
+import glob
 import json
 import os
-import glob
 from enum import Enum, auto
 from os import path as osp
 
+from otx.algorithms.common.utils.data import load_unlabeled_dataset_items
 from otx.api.entities.annotation import (
     Annotation,
     AnnotationSceneEntity,
     AnnotationSceneKind,
-    NullAnnotationSceneEntity
+    NullAnnotationSceneEntity,
 )
 from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.datasets import DatasetEntity
@@ -42,7 +43,6 @@ from otx.api.utils.argument_checks import (
     check_input_parameters_type,
 )
 
-from otx.algorithms.common.utils.data import load_unlabeled_dataset_items
 
 class ClassificationType(Enum):
     """Classification Type."""
@@ -63,8 +63,8 @@ class ClassificationDatasetAdapter(DatasetEntity):
             "val_data_root": OptionalDirectoryPathCheck,
             "test_ann_file": OptionalDirectoryPathCheck,
             "test_data_root": OptionalDirectoryPathCheck,
-            "ul_data_root" : OptionalDirectoryPathCheck,
-            "ul_data_root" : OptionalDirectoryPathCheck,
+            "ul_data_root": OptionalDirectoryPathCheck,
+            "ul_data_root": OptionalDirectoryPathCheck,
         }
     )
     def __init__(
@@ -121,7 +121,7 @@ class ClassificationDatasetAdapter(DatasetEntity):
                 annotation_scene = AnnotationSceneEntity(kind=AnnotationSceneKind.ANNOTATION, annotations=shapes)
                 dataset_item = DatasetItemEntity(image, annotation_scene, subset=subset)
                 dataset_items.append(dataset_item)
-        
+
         if ul_data_root is not None:
             if not self.data_type == ClassificationType.MULTIHEAD:
                 dataset_items.extend(

@@ -20,8 +20,6 @@ _base_ = [
     "../../../common/adapters/mmcv/configs/backbones/lite_hrnet_18.py",
 ]
 
-# TODO: remove model segmenter/head cfg in model.py
-# error log : TypeError: list indices must be integers or slices, not str
 model = dict(
     type="ClassIncrSegmentor",
     is_task_adapt=True,

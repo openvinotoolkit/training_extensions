@@ -14,61 +14,76 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+import glob
 import os
 from typing import List, Optional
 
-import glob
-
-from otx.api.entities.annotation import (
-    NullAnnotationSceneEntity
-)
+from otx.api.entities.annotation import NullAnnotationSceneEntity
 from otx.api.entities.dataset_item import DatasetItemEntity
-from otx.api.entities.subset import Subset
-from otx.api.entities.label import LabelEntity
 from otx.api.entities.image import Image
+from otx.api.entities.subset import Subset
+from otx.api.utils.argument_checks import (
+    IMAGE_FILE_EXTENSIONS,
+    DirectoryPathCheck,
+    check_input_parameters_type,
+)
 
-def get_unlabeled_filename(base: str, file_list_path: str):
+
+@check_input_parameters_type({"file_list_path": DirectoryPathCheck})
+def get_unlabeled_filename(base_root: str, file_list_path: str):
+    """
+    This method checks and gets image file paths, which are listed in file_list_path.
+    It returns the list of image filenames only which will consists unlabeled dataset.
+    Since it checks the relative path from base_root, the contents of file_list_path is expected to be:
+    e.g)
+    xxxxx.jpg
+    yyyyy.jpg
+    zzzzz.jpg
+    ...
+
+    {base_root}/xxxxx.jpg should be
+
+    """
+
+    def is_valid(file_path):
+        return file_path.lower().endswith(tuple(IMAGE_FILE_EXTENSIONS))
+
     file_names = open(file_list_path).read().splitlines()
-    print(file_names)
     unlabeled_files = []
     for i, fn in enumerate(file_names):
-        file_path = os.path.join(base, fn)
-        if os.path.isfile(file_path):
+        file_path = os.path.join(base_root, fn.strip())
+        if is_valid(file_path) and os.path.isfile(file_path):
             unlabeled_files.append(file_path)
-    print(unlabeled_files)
     return unlabeled_files
 
+
+@check_input_parameters_type({"data_root_dir": DirectoryPathCheck})
 def load_unlabeled_dataset_items(
     data_root_dir: str,
     file_list_path: Optional[str] = None,
     subset: Subset = Subset.UNLABELED,
-    labels_list: Optional[List[LabelEntity]] = None,
-):  # pylint: disable=too-many-locals
+):
 
     if file_list_path is not None:
         data_list = get_unlabeled_filename(data_root_dir, file_list_path)
-    
+
     else:
-        ALLOWED_EXTS = (".jpg", ".jpeg", ".png", ".gif")
         data_list = []
 
-        for fm in ALLOWED_EXTS:
-            data_list.extend(glob.glob(f'{data_root_dir}/**/*{fm}', recursive=True))
-    
-    print(data_list)
+        for fm in IMAGE_FILE_EXTENSIONS:
+            data_list.extend(glob.glob(f"{data_root_dir}/**/*{fm}", recursive=True))
+
     dataset_items = []
 
     for filename in data_list:
-        print(filename)
         dataset_item = DatasetItemEntity(
             media=Image(file_path=filename),
             annotation_scene=NullAnnotationSceneEntity(),
             subset=subset,
         )
-        print(dataset_item)
         dataset_items.append(dataset_item)
-    print(dataset_items[0])
     return dataset_items
+
 
 def get_cls_img_indices(labels, dataset):
     """Function for getting image indices per class.

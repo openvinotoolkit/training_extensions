@@ -288,13 +288,13 @@ class ClassificationInferenceTask(
             recipe = os.path.join(recipe_root, "class_incr_multilabel.yaml")
         else:
             recipe = os.path.join(recipe_root, "class_incr.yaml")
-        
+
         if train_type != TrainType.INCREMENTAL:
             if train_type == TrainType.SEMISUPERVISED:
-                if self._data_cfg.get('data', None) and self._data_cfg.data.get('unlabeled', None):
+                if self._data_cfg.get("data", None) and self._data_cfg.data.get("unlabeled", None):
                     recipe = os.path.join(recipe_root, "semisl.yaml")
                 else:
-                    logger.warning(f"Cannot find unlabeled data.. convert to INCREMENTAL.")
+                    logger.warning("Cannot find unlabeled data.. convert to INCREMENTAL.")
                     train_type = TrainType.INCREMENTAL
             elif train_type == TrainType.SELFSUPERVISED:
                 raise NotImplementedError(f"Train type {train_type} is not implemented yet.")
@@ -313,6 +313,9 @@ class ClassificationInferenceTask(
         self._patch_evaluation(self._recipe_cfg)  # for OTX compatibility
         logger.info(f"initialized recipe = {recipe}")
 
+    # TODO: make cfg_path loaded from custom model cfg file corresponding to train_type
+    # model.py contains heads/classifier only for INCREMENTAL setting
+    # error log : ValueError: Unexpected type of 'data_loader' parameter
     def _init_model_cfg(self):
         base_dir = os.path.abspath(os.path.dirname(self.template_file_path))
         if self._multilabel:
@@ -360,14 +363,10 @@ class ClassificationInferenceTask(
         assert "data" in config
         for subset in ("train", "val", "test", "unlabeled"):
             cfg = config.data.get(subset, None)
-            print(cfg, subset)
-
             if not cfg:
                 continue
             if cfg.type == "RepeatDataset":
                 cfg = cfg.dataset
-            #if subset == "unlabeled":
-            #    cfg.type = "MPAClsUnlabelDataset"
 
             else:
                 if self._multilabel:

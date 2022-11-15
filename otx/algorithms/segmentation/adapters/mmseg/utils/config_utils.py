@@ -314,7 +314,6 @@ def set_num_classes(config: Config, num_classes: int):
 @check_input_parameters_type()
 def patch_datasets(config: Config, domain=Domain.SEGMENTATION):
     """Update dataset configs."""
-    print(config)
     assert "data" in config
     for subset in ("train", "val", "test", "unlabeled"):
         cfg = config.data.get(subset, None)

@@ -186,10 +186,10 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
 
         # load INCREMENTAL recipe file first. (default train type)
         recipe = os.path.join(recipe_root, "class_incr.py")
-        
+
         if train_type != TrainType.INCREMENTAL:
             if train_type == TrainType.SEMISUPERVISED:
-                if self._data_cfg.get('data', None) and self._data_cfg.data.get('unlabeled', None):
+                if self._data_cfg.get("data", None) and self._data_cfg.data.get("unlabeled", None):
                     recipe = os.path.join(recipe_root, "cutmix_seg.py")
                 else:
                     logger.warning(f"Cannot find unlabeled data.. convert to INCREMENTAL.")
@@ -213,6 +213,9 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
             remove_from_config(self._recipe_cfg, "params_config")
         logger.info(f"initialized recipe = {recipe}")
 
+    # TODO: make cfg_path loaded from custom model cfg file corresponding to train_type
+    # model.py contains heads/segmentor cfg only for INCREMENTAL setting
+    # error log : b[k]=v. TypeError: list indices must be integers or slices, not str
     def _init_model_cfg(self):
         base_dir = os.path.abspath(os.path.dirname(self.template_file_path))
         return MPAConfig.fromfile(os.path.join(base_dir, "model.py"))

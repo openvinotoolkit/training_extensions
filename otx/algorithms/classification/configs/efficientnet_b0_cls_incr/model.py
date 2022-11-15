@@ -4,9 +4,6 @@
 
 _base_ = "../base/models/efficientnet.py"
 
-# TODO: remove model head cfg in model.py
-# cls should use SemiClassifier for semi-sl
-# error log : ValueError: Unexpected type of 'data_loader' parameter
 model = dict(
     type="SAMImageClassifier",
     task="classification",

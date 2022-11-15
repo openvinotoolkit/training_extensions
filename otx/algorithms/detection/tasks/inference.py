@@ -225,10 +225,10 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
 
         # load INCREMENTAL recipe file first. (default train type)
         recipe = os.path.join(recipe_root, "imbalance.py")
-        
+
         if train_type != TrainType.INCREMENTAL:
             if train_type == TrainType.SEMISUPERVISED:
-                if self._data_cfg.get('data', None) and self._data_cfg.data.get('unlabeled', None):
+                if self._data_cfg.get("data", None) and self._data_cfg.data.get("unlabeled", None):
                     recipe = os.path.join(recipe_root, "unbiased_teacher.py")
                 else:
                     logger.warning(f"Cannot find unlabeled data.. convert to INCREMENTAL.")
@@ -241,7 +241,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
                 # FIXME: Temporary remedy for CVS-88098
                 logger.warning(f"Train type {train_type} is not implemented yet.. convert to INCREMENTAL.")
                 train_type = TrainType.INCREMENTAL
-        
+
         logger.info(f"train type = {train_type} - loading {recipe}")
 
         self._recipe_cfg = MPAConfig.fromfile(recipe)
@@ -250,6 +250,8 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         patch_evaluation(self._recipe_cfg)  # for OTX compatibility
         logger.info(f"initialized recipe = {recipe}")
 
+    # TODO: make cfg_path loaded from custom model cfg file corresponding to train_type
+    # model.py contains head cfg only for INCREMENTAL setting
     def _init_model_cfg(self):
         base_dir = os.path.abspath(os.path.dirname(self.template_file_path))
         model_cfg = MPAConfig.fromfile(os.path.join(base_dir, "model.py"))

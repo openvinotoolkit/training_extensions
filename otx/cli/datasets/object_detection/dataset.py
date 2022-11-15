@@ -14,9 +14,8 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from otx.algorithms.detection.utils.data import load_dataset_items_coco_format
 from otx.algorithms.common.utils.data import load_unlabeled_dataset_items
-
+from otx.algorithms.detection.utils.data import load_dataset_items_coco_format
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label import Domain
 from otx.api.entities.subset import Subset
