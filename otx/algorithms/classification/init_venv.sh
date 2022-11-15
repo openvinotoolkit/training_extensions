@@ -39,7 +39,7 @@ if [[ -e ${venv_dir} ]]; then
 fi
 
 # Create virtual environment
-$PYTHON_NAME -m venv "${venv_dir}" --prompt="mpa"
+$PYTHON_NAME -m venv "${venv_dir}" --prompt="classification"
 
 if ! [ -e "${venv_dir}/bin/activate" ]; then
   echo "The virtual environment was not created."
@@ -119,9 +119,10 @@ pip install mpa@git+https://github.com/openvinotoolkit/model_preparation_algorit
 # Install otx
 pip install -e ../../../ || exit 1
 
-# Re-install mmpycocotools for numpy version update
+# Remedy solution for numpy lib conflict
+pip install numpy==1.21.0
 pip uninstall -y mmpycocotools
-pip install --no-cache-dir --no-binary=mmpycocotools mmpycocotools || exit 1
+pip install mmpycocotools
 
 # Build NNCF extensions
 echo "Build NNCF extensions ..."
