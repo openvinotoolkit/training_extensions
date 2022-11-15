@@ -1,4 +1,4 @@
-"""OTX Algorithms - Action Classification Dataset."""
+"""Initialization of X3D model for Action Classification Task."""
 
 # Copyright (C) 2022 Intel Corporation
 #
@@ -13,8 +13,3 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions
 # and limitations under the License.
-
-from .ava_dataset import OTXAVADataset
-from .dataset import OTXRawframeDataset
-
-__all__ = ["OTXRawframeDataset", "OTXAVADataset"]

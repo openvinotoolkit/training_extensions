@@ -33,6 +33,7 @@ from otx.algorithms.action.configs.base import ActionClsConfig
 from otx.algorithms.common.adapters.mmcv.utils import prepare_for_testing
 from otx.algorithms.common.tasks.training_base import BaseTask
 from otx.algorithms.common.utils.callback import InferenceProgressCallback
+from otx.api.entities.annotation import Annotation
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.model import (
@@ -41,9 +42,11 @@ from otx.api.entities.model import (
     ModelOptimizationType,
     ModelPrecision,
 )
+from otx.api.entities.model_template import TaskType
 from otx.api.entities.result_media import ResultMediaEntity
 from otx.api.entities.resultset import ResultSetEntity
 from otx.api.entities.scored_label import ScoredLabel
+from otx.api.entities.shapes.rectangle import Rectangle
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.entities.tensor import TensorEntity
 from otx.api.entities.train_parameters import default_progress_callback
@@ -100,7 +103,11 @@ class ActionClsInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         if self._model:
             with self._model.register_forward_pre_hook(pre_hook), self._model.register_forward_hook(hook):
                 prediction_results, _ = self._infer_model(dataset, inference_parameters)
-            self._add_predictions_to_dataset(prediction_results, dataset)
+            # TODO Load _add_predictions_to_dataset function from self._task_type
+            if self._task_type == TaskType.ACTION_CLASSIFICATION:
+                self._add_predictions_to_dataset(prediction_results, dataset)
+            elif self._task_type == TaskType.ACTION_DETECTION:
+                self._add_det_predictions_to_dataset(prediction_results, dataset)
             logger.info("Inference completed")
         else:
             raise Exception("Model initialization is failed")
@@ -132,6 +139,7 @@ class ActionClsInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
 
         test_config = prepare_for_testing(self._recipe_cfg, dataset)
         mm_test_dataset = build_dataset(test_config.data.test)
+        mm_test_dataset.test_mode = True
         # TODO Get batch size and num_gpus autometically
         batch_size = 1
         mm_test_dataloader = build_dataloader(
@@ -271,18 +279,21 @@ class ActionClsInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
     def evaluate(
         self,
         output_resultset: ResultSetEntity,
-        evaluation_metric: Optional[str] = None,
     ):
         """Evaluate function of OTX Action Classification Task."""
         logger.info("called evaluate()")
-        if evaluation_metric is not None:
-            logger.warning(
-                f"Requested to use {evaluation_metric} metric, " "but parameter is ignored. Use F-measure instead."
-            )
-        metric = MetricsHelper.compute_accuracy(output_resultset)
-        logger.info(f"Accuracy after evaluation: {metric.accuracy.value}")
+        metric = self._get_metric(output_resultset)
+        performance = metric.get_performance()
+        logger.info(f"Final model performance: {str(performance)}")
         output_resultset.performance = metric.get_performance()
         logger.info("Evaluation completed")
+
+    def _get_metric(self, output_resultset):
+        if self._task_type == TaskType.ACTION_CLASSIFICATION:
+            return MetricsHelper.compute_accuracy(output_resultset)
+        if self._task_type == TaskType.ACTION_DETECTION:
+            return MetricsHelper.compute_f_measure(output_resultset)
+        raise NotImplementedError(f"{self._task_type} is not supported in action task")
 
     def unload(self):
         """Unload the task."""
@@ -341,8 +352,8 @@ class ActionClsInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         recipe_root = os.path.abspath(os.path.dirname(self.template_file_path))
         recipe = os.path.join(recipe_root, "model.py")
         self._recipe_cfg = Config.fromfile(recipe)
-        patch_config(self._recipe_cfg, self.template_file_path, self._output_path)
-        set_data_classes(self._recipe_cfg, self._labels)
+        patch_config(self._recipe_cfg, self.template_file_path, self._output_path, self._task_type)
+        set_data_classes(self._recipe_cfg, self._labels, self._task_type)
         logger.info(f"initialized recipe = {recipe}")
 
     def _init_model_cfg(self):
@@ -357,6 +368,44 @@ class ActionClsInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
             label = ScoredLabel(label=self._labels[all_results.argmax()], probability=all_results.max())
             item_labels.append(label)
             dataset_item.append_labels(item_labels)
+
+            if feature_vector is not None:
+                active_score = TensorEntity(name="representation_vector", numpy=feature_vector.reshape(-1))
+                dataset_item.append_metadata_item(active_score, model=self._task_environment.model)
+
+            if saliency_map is not None:
+                saliency_map = get_actmap(saliency_map, (dataset_item.width, dataset_item.height))
+                saliency_map_media = ResultMediaEntity(
+                    name="Saliency Map",
+                    type="saliency_map",
+                    annotation_scene=dataset_item.annotation_scene,
+                    numpy=saliency_map,
+                    roi=dataset_item.roi,
+                )
+                dataset_item.append_metadata_item(saliency_map_media, model=self._task_environment.model)
+
+    def _add_det_predictions_to_dataset(self, prediction_results, dataset):
+        confidence_threshold = 0.05
+        for dataset_item, (all_results, feature_vector, saliency_map) in zip(dataset, prediction_results):
+            shapes = []
+            for label_idx, detections in enumerate(all_results):
+                for i in range(detections.shape[0]):
+                    probability = float(detections[i, 4])
+                    coords = detections[i, :4]
+
+                    if probability < confidence_threshold:
+                        continue
+                    if coords[3] - coords[1] <= 0 or coords[2] - coords[0] <= 0:
+                        continue
+
+                    assigned_label = [ScoredLabel(self._labels[label_idx], probability=probability)]
+                    shapes.append(
+                        Annotation(
+                            Rectangle(x1=coords[0], y1=coords[1], x2=coords[2], y2=coords[3]),
+                            labels=assigned_label,
+                        )
+                    )
+            dataset_item.append_annotations(shapes)
 
             if feature_vector is not None:
                 active_score = TensorEntity(name="representation_vector", numpy=feature_vector.reshape(-1))
