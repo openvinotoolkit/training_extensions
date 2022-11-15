@@ -27,7 +27,6 @@ from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.entities.train_parameters import TrainParameters
 from otx.api.serialization.label_mapper import label_schema_to_bytes
 from otx.api.usecases.adapters.model_adapter import ModelAdapter
-from otx.cli.datasets import get_dataset_class
 from otx.cli.registry import find_and_parse_model_template
 from otx.cli.utils.config import configure_dataset, override_parameters
 from otx.cli.utils.hpo import run_hpo
@@ -180,7 +179,12 @@ def main():
             "file_list": data_config["data"]["unlabeled"]["file-list"],
         }
 
-    dataset = dataset_class(**data_roots)
+    # Datumaro 
+    datumaro_handler = DatumaroHandler()
+    datumaro_dataset = datumaro_handler.import_dataset(
+        train_ann_files=args.train_ann_files
+    )
+    dataset = datumaro_handler.convert_to_otx_format(datumaro_dataset)
 
     environment = TaskEnvironment(
         model=None,
