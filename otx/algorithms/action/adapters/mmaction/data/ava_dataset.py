@@ -18,7 +18,7 @@ import copy
 import json
 import os
 from datetime import datetime
-from typing import List, Optional, Sequence, Union
+from typing import Any, Dict, List, Optional, Sequence, Union
 
 import mmcv
 import numpy as np
@@ -131,52 +131,29 @@ class OTXAVADataset(AVADataset):
             self.proposals = None
 
         self.pipeline = Compose(pipeline)
+        self.video_infos: List[Dict[Any, Any]] = []
         self.make_video_infos()
+
+        if not test_mode:
+            valid_indexes = self.filter_exclude_file()
+            self.video_infos = [self.video_infos[i] for i in valid_indexes]
 
     def __len__(self):
         """Return length of dataset."""
         return len(self.data_infos)
 
-    # FIXME This is very similar with mmation's ava_dataset
     def prepare_train_frames(self, idx):
         """Prepare the frames for training given the index."""
-        results = copy.deepcopy(self.video_infos[idx])
-        img_key = results["img_key"]
-        video_id = results["video_id"]
-
-        results["filename_tmpl"] = self.get_filename_tmpl(img_key)
-        results["modality"] = self.modality
-        results["start_index"] = self.start_index
-        results["timestamp_start"] = self.get_timestamp("start", video_id)
-        results["timestamp_end"] = self.get_timestamp("end", video_id)
-
-        if self.proposals is not None:
-            if img_key not in self.proposals:
-                results["proposals"] = np.array([[0, 0, 1, 1]])
-                results["scores"] = np.array([1])
-            else:
-                proposals = self.proposals[img_key]
-                assert proposals.shape[-1] in [4, 5]
-                if proposals.shape[-1] == 5:
-                    thr = min(self.person_det_score_thr, max(proposals[:, 4]))
-                    positive_inds = proposals[:, 4] >= thr
-                    proposals = proposals[positive_inds]
-                    proposals = proposals[: self.num_max_proposals]
-                    results["proposals"] = proposals[:, :4]
-                    results["scores"] = proposals[:, 4]
-                else:
-                    proposals = proposals[: self.num_max_proposals]
-                    results["proposals"] = proposals
-
-        ann = results.pop("ann")
-        if ann is not None:
-            results["gt_bboxes"] = ann["gt_bboxes"]
-            results["gt_labels"] = ann["gt_labels"]
-            results["entity_ids"] = ann["entity_ids"]
+        results = self.pre_pipeline(idx)
         return self.pipeline(results)
 
     def prepare_test_frames(self, idx):
         """Prepare the frames for testing given the index."""
+        results = self.pre_pipeline(idx)
+        return self.pipeline(results)
+
+    def pre_pipeline(self, idx):
+        """Prepare proper data for mmaction pipeline."""
         results = copy.deepcopy(self.video_infos[idx])
         img_key = results["img_key"]
         video_id = results["video_id"]
@@ -213,7 +190,7 @@ class OTXAVADataset(AVADataset):
         else:
             # This is for RawFrameDecode pipeline
             results["gt_bboxes"] = np.zeros((1, 4))
-        return self.pipeline(results)
+        return results
 
     def get_timestamp(self, key, video_id=None):
         """Get start or end timestamp for video."""
@@ -234,7 +211,6 @@ class OTXAVADataset(AVADataset):
 
     def make_video_infos(self):
         """Make mmaction style video infos."""
-        self.video_infos = []
         for data_info in self.data_infos:
             media = data_info["dataset_item"].media
             media["fps"] = self._FPS
