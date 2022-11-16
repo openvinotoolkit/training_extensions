@@ -62,7 +62,7 @@ from otx.api.utils.vis_utils import get_actmap
 logger = get_root_logger()
 
 
-# pylint: disable=too-many-locals
+# pylint: disable=too-many-locals, unused-argument
 class ActionClsInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask, IUnload):
     """Inference Task Implementation of OTX Action Classification."""
 
@@ -89,9 +89,21 @@ class ActionClsInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
 
         self._time_monitor = InferenceProgressCallback(len(dataset), update_progress_callback)
 
-        prediction_results, _ = self._infer_model(dataset, inference_parameters)
-        self._add_predictions_to_dataset(prediction_results, dataset)
-        logger.info("Inference completed")
+        def pre_hook(module, inp):
+            self._time_monitor.on_test_batch_begin(None, None)
+
+        def hook(module, inp, out):
+            self._time_monitor.on_test_batch_end(None, None)
+
+        if self._recipe_cfg is None:
+            self._init_task()
+        if self._model:
+            with self._model.register_forward_pre_hook(pre_hook), self._model.register_forward_hook(hook):
+                prediction_results, _ = self._infer_model(dataset, inference_parameters)
+            self._add_predictions_to_dataset(prediction_results, dataset)
+            logger.info("Inference completed")
+        else:
+            raise Exception("Model initialization is failed")
         return dataset
 
     def _infer_model(
@@ -112,8 +124,6 @@ class ActionClsInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         Returns:
             Tuple[Iterable, float]: Iterable prediction results for each sample and metric for on the given dataset
         """
-        if self._recipe_cfg is None:
-            self._init_task()
         if self._recipe_cfg is None:
             raise Exception("Recipe config is not initialized properly")
 
@@ -174,8 +184,9 @@ class ActionClsInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
 
         metric = None
         metric_name = self._recipe_cfg.evaluation.final_metric
-        if inference_parameters.is_evaluation:
-            metric = mm_test_dataset.evaluate(eval_predictions, **self._recipe_cfg.evaluation)[metric_name]
+        if inference_parameters:
+            if inference_parameters.is_evaluation:
+                metric = mm_test_dataset.evaluate(eval_predictions, **self._recipe_cfg.evaluation)[metric_name]
 
         assert len(eval_predictions) == len(feature_vectors), f"{len(eval_predictions)} != {len(feature_vectors)}"
         assert len(eval_predictions) == len(saliency_maps), f"{len(eval_predictions)} != {len(saliency_maps)}"

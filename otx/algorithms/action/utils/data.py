@@ -40,6 +40,8 @@ def load_annotations(ann_file, data_root):
             video_info = {}
             idx = 0
             # idx for frame_dir
+            if line_split[0] == "#":
+                continue
             frame_dir = line_split[idx]
             if data_root is not None:
                 frame_dir = osp.join(data_root, frame_dir)
