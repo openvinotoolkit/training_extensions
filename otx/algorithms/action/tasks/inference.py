@@ -192,8 +192,9 @@ class ActionClsInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
 
         metric = None
         metric_name = self._recipe_cfg.evaluation.final_metric
-        if inference_parameters and inference_parameters.is_evaluation:
-            metric = mm_test_dataset.evaluate(eval_predictions, **self._recipe_cfg.evaluation)[metric_name]
+        if inference_parameters:
+            if inference_parameters.is_evaluation:
+                metric = mm_test_dataset.evaluate(eval_predictions, **self._recipe_cfg.evaluation)[metric_name]
 
         assert len(eval_predictions) == len(feature_vectors), f"{len(eval_predictions)} != {len(feature_vectors)}"
         assert len(eval_predictions) == len(saliency_maps), f"{len(eval_predictions)} != {len(saliency_maps)}"
