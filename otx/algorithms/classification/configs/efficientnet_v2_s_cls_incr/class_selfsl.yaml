@@ -1,0 +1,26 @@
+_base_: [
+    "../../../../../venv/lib/python3.8/site-packages/recipes/stages/classification/train.yaml",
+    # "../../../../../venv/lib/python3.8/site-packages/recipes/stages/_base_/data/cls_data.py",
+    # "../../../../../venv/lib/python3.8/site-packages/recipes/stages/_base_/models/classifiers/classifier.py",
+    "../../adapters/mmcls/data/twocrop_data.py",
+    "./model_selfsl.py"
+]
+
+runner:
+    max_epochs: 20
+
+optimizer_config:
+    type: SAMOptimizerHook
+
+optimizer:
+    type: SGD
+    lr: 0.01
+    momentum: 0.9
+    weight_decay: 0.0005
+
+evaluation:
+    metric: ["accuracy", "class_accuracy"]
+
+# task_adapt:
+#     type: "mpa"
+#     op: "REPLACE"
