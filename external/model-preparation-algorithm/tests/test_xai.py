@@ -38,14 +38,14 @@ class TestExplainMethods:
 
     def test_recipro_cam(self):
         model = self.get_model()
-        img = torch.rand(1, 3, 224, 224) - 0.5
+        img = torch.rand(2, 3, 224, 224) - 0.5
         data = {'img_metas': {}, 'img': img}
 
         with ReciproCAMHook(model) as rcam_hook:
             _ = model(return_loss=False, **data)
         saliency_maps = rcam_hook.records
 
-        assert len(saliency_maps) == 1
+        assert len(saliency_maps) == 2
         assert saliency_maps[0].ndim == 3
         assert saliency_maps[0].shape == (2, 7, 7)
 
