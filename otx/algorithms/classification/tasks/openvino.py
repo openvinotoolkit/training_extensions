@@ -233,7 +233,6 @@ class ClassificationOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTas
                     annotation_scene=dataset_item.annotation_scene,
                     numpy=actmap,
                     roi=dataset_item.roi,
-                    label=predicted_scene.annotations[0].get_labels()[0].label,
                 )
                 dataset_item.append_metadata_item(saliency_media, model=self.model)
 
