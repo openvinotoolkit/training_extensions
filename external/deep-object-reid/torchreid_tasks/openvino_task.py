@@ -204,7 +204,8 @@ class OpenVINOClassificationTask(IDeploymentTask, IInferenceTask, IEvaluationTas
                     for class_id, class_wise_saliency_map in enumerate(saliency_map):
                         actmap = get_actmap(class_wise_saliency_map, (dataset_item.width, dataset_item.height))
                         class_name_str = self.task_environment.get_labels(include_empty=True)[class_id].name
-                        saliency_media = ResultMediaEntity(name=class_name_str, type="saliency_map",
+                        saliency_media = ResultMediaEntity(name=f"Saliency Map: {class_name_str}",
+                                                           type="saliency_map",
                                                            annotation_scene=dataset_item.annotation_scene,
                                                            numpy=actmap, roi=dataset_item.roi,
                                                            label=predicted_scene.annotations[0].get_labels()[0].label)
