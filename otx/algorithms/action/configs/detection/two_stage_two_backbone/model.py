@@ -16,7 +16,7 @@
 
 # pylint: disable=invalid-name
 
-_base_ = ["../base/ava.py"]
+_base_ = ["../base/data.py"]
 # model setting
 model = dict(
     type="FastRCNN",
@@ -26,7 +26,7 @@ model = dict(
         bbox_roi_extractor=dict(
             type="SingleRoIExtractor3D", roi_layer_type="RoIAlign", output_size=8, with_temporal_pool=True
         ),
-        bbox_head=dict(type="BBoxHeadAVA", in_channels=432, num_classes=81, multilabel=True, dropout_ratio=0.5),
+        bbox_head=dict(type="BBoxHeadAVA", in_channels=432, num_classes=81, multilabel=False, dropout_ratio=0.5),
     ),
     train_cfg=dict(
         rcnn=dict(
@@ -51,12 +51,11 @@ lr_config = dict(
     warmup_iters=2,
     warmup_ratio=0.1,
 )
-total_epochs = 20
 checkpoint_config = dict(interval=1)
 workflow = [("train", 1)]
 evaluation = dict(interval=1, save_best="mAP@0.5IOU", final_metric="mAP@0.5IOU")
 log_config = dict(
-    interval=20,
+    interval=10,
     hooks=[
         dict(type="TextLoggerHook"),
     ],

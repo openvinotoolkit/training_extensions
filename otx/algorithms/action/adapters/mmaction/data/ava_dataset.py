@@ -15,9 +15,10 @@
 # and limitations under the License.
 
 import copy
+import json
 import os
 from datetime import datetime
-from typing import List, Sequence
+from typing import List, Optional, Sequence, Union
 
 import mmcv
 import numpy as np
@@ -82,16 +83,16 @@ class OTXAVADataset(AVADataset):
         otx_dataset: DatasetEntity,
         labels: List[LabelEntity],
         pipeline: Sequence[dict],
-        exclude_file: str,
-        proposal_file: str,
+        exclude_file: Optional[str],
+        proposal_file: Optional[str],
+        timestamp_start: Union[int, str],
+        timestamp_end: Union[int, str],
         test_mode: bool = False,
         person_det_score_thr: float = 0.9,
         num_max_proposals: int = 1000,
         filename_tmpl: str = "_{:06}.jpg",
         start_index: int = 1,
         modality: str = "RGB",
-        timestamp_start: int = 900,
-        timestamp_end: int = 1800,
         fps: int = 30,
     ):
         self.otx_dataset = otx_dataset
@@ -105,8 +106,19 @@ class OTXAVADataset(AVADataset):
         self.proposal_file = proposal_file
         self.person_det_score_thr = person_det_score_thr
         self.num_max_proposals = num_max_proposals
-        self.timestamp_start = timestamp_start
-        self.timestamp_end = timestamp_end
+
+        # Load start and end frame index
+        # This will be changed with CVAT annotation
+        if isinstance(timestamp_start, int):
+            self.timestamp_start = timestamp_start
+        else:
+            with open(timestamp_start, encoding="utf-8") as time_file:
+                self.timestamp_start = json.load(time_file)
+        if isinstance(timestamp_end, int):
+            self.timestamp_end = timestamp_end
+        else:
+            with open(timestamp_end, encoding="utf-8") as time_file:
+                self.timestamp_end = json.load(time_file)
 
         # OTX does not support custom_classes
         self.custom_classes = None
@@ -130,12 +142,13 @@ class OTXAVADataset(AVADataset):
         """Prepare the frames for training given the index."""
         results = copy.deepcopy(self.video_infos[idx])
         img_key = results["img_key"]
+        video_id = results["video_id"]
 
         results["filename_tmpl"] = self.get_filename_tmpl(img_key)
         results["modality"] = self.modality
         results["start_index"] = self.start_index
-        results["timestamp_start"] = self.timestamp_start
-        results["timestamp_end"] = self.timestamp_end
+        results["timestamp_start"] = self.get_timestamp("start", video_id)
+        results["timestamp_end"] = self.get_timestamp("end", video_id)
 
         if self.proposals is not None:
             if img_key not in self.proposals:
@@ -166,12 +179,13 @@ class OTXAVADataset(AVADataset):
         """Prepare the frames for testing given the index."""
         results = copy.deepcopy(self.video_infos[idx])
         img_key = results["img_key"]
+        video_id = results["video_id"]
 
         results["filename_tmpl"] = self.get_filename_tmpl(img_key)
         results["modality"] = self.modality
         results["start_index"] = self.start_index
-        results["timestamp_start"] = self.timestamp_start
-        results["timestamp_end"] = self.timestamp_end
+        results["timestamp_start"] = self.get_timestamp("start", video_id)
+        results["timestamp_end"] = self.get_timestamp("end", video_id)
 
         if self.proposals is not None:
             if img_key not in self.proposals:
@@ -201,9 +215,22 @@ class OTXAVADataset(AVADataset):
             results["gt_bboxes"] = np.zeros((1, 4))
         return self.pipeline(results)
 
+    def get_timestamp(self, key, video_id=None):
+        """Get start or end timestamp for video."""
+        if key == "start":
+            timestamp = self.timestamp_start
+        else:
+            timestamp = self.timestamp_end
+        if isinstance(timestamp, int):
+            return timestamp
+        return timestamp[video_id]
+
     def get_filename_tmpl(self, img_key):
         """Get dataset's own filename template."""
-        return img_key.split(",")[0] + self.filename_tmpl
+        # FIXME This is very heuristic way. CVAT format may change this
+        if self.filename_tmpl[0] == "_":
+            return img_key.split(",")[0] + self.filename_tmpl
+        return self.filename_tmpl
 
     def make_video_infos(self):
         """Make mmaction style video infos."""
@@ -211,11 +238,14 @@ class OTXAVADataset(AVADataset):
         for data_info in self.data_infos:
             media = data_info["dataset_item"].media
             media["fps"] = self._FPS
+            video_id = media["video_id"]
+            timestamp_start = self.get_timestamp("start", video_id)
+            timestamp_end = self.get_timestamp("end", video_id)
+            shot_info = (0, timestamp_end - timestamp_start) * self._FPS
             anns = data_info["dataset_item"].get_annotations()
-            if len(anns) == 0:
-                media["ann"] = None
-                media["shot_info"] = (0, (self.timestamp_end - self.timestamp_start) * self._FPS)
-            else:
+            media["ann"] = None
+            media["shot_info"] = shot_info
+            if len(anns) > 0:
                 bboxes, labels = [], []
                 for ann in anns:
                     bbox = np.asarray([ann.shape.x1, ann.shape.y1, ann.shape.x2, ann.shape.y2])
@@ -227,9 +257,8 @@ class OTXAVADataset(AVADataset):
                 bboxes = np.stack(bboxes)
                 labels = np.stack(labels)
                 media["ann"] = {"gt_bboxes": bboxes, "gt_labels": labels, "entity_ids": []}
-                media["shot_info"] = (0, (self.timestamp_end - self.timestamp_start) * self._FPS)
-            media["timestamp_start"] = self.timestamp_start
-            media["timestamp_end"] = self.timestamp_end
+            media["timestamp_start"] = timestamp_start
+            media["timestamp_end"] = timestamp_end
             self.video_infos.append(media)
 
         if not self.test_mode:

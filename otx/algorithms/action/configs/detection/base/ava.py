@@ -17,15 +17,9 @@
 # pylint: disable=invalid-name
 
 
-dataset_type = "AVADataset"
-
-# These will be assigned through otx cli
-data_root = None
-ann_file_train = None
-ann_file_val = None
-
-# These also should be assigned otx cli, but harded-coded
-# These wii be changed when annotation format is CVAT
+_base_ = ["./data.py"]
+# These should be assigned otx cli, but harded-coded
+# These wii be changed when annotation format is changed to CVAT
 anno_root = "/home/jaeguk/workspace/data/ava/annotations"
 exclude_file_train = f"{anno_root}/ava_train_excluded_timestamps_v2.2.csv"
 exclude_file_val = f"{anno_root}/ava_val_excluded_timestamps_v2.2.csv"
@@ -35,54 +29,33 @@ proposal_file_val = f"{anno_root}/ava_dense_proposals_val.FAIR.recall_93.9.pkl"
 # Data pipeline
 img_norm_cfg = dict(mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_bgr=False)
 
-train_pipeline = [
-    dict(type="SampleAVAFrames", clip_len=32, frame_interval=2),
-    dict(type="RawFrameDecode"),
-    dict(type="RandomRescale", scale_range=(256, 320)),
-    dict(type="RandomCrop", size=256),
-    dict(type="Flip", flip_ratio=0.5),
-    dict(type="Normalize", **img_norm_cfg),
-    dict(type="FormatShape", input_format="NCTHW", collapse=True),
-    # Rename is needed to use mmdet detectors
-    dict(type="Rename", mapping=dict(imgs="img")),
-    dict(type="ToTensor", keys=["img", "proposals", "gt_bboxes", "gt_labels"]),
-    dict(type="ToDataContainer", fields=[dict(key=["proposals", "gt_bboxes", "gt_labels"], stack=False)]),
-    dict(type="Collect", keys=["img", "proposals", "gt_bboxes", "gt_labels"], meta_keys=["scores", "entity_ids"]),
-]
-# The testing is w/o. any cropping / flipping
-val_pipeline = [
-    dict(type="SampleAVAFrames", clip_len=32, frame_interval=2, test_mode=True),
-    dict(type="RawFrameDecode"),
-    dict(type="Resize", scale=(-1, 256)),
-    dict(type="Normalize", **img_norm_cfg),
-    dict(type="FormatShape", input_format="NCTHW", collapse=True),
-    # Rename is needed to use mmdet detectors
-    dict(type="Rename", mapping=dict(imgs="img")),
-    dict(type="ToTensor", keys=["img", "proposals"]),
-    dict(type="ToDataContainer", fields=[dict(key="proposals", stack=False)]),
-    dict(type="Collect", keys=["img", "proposals"], meta_keys=["scores", "img_shape"], nested=True),
-]
-
 # Dataset structure
 # TODO Sync with latest mmaction2
+# pylint: disable=unhashable-member, no-member
 data = dict(
     videos_per_gpu=8,
     workers_per_gpu=0,
     val_dataloader=dict(videos_per_gpu=1),
     test_dataloader=dict(videos_per_gpu=0),
     train=dict(
-        type=dataset_type,
         exclude_file=exclude_file_train,
-        pipeline=train_pipeline,
+        pipeline={{_base_.train_pipeline}},  # type: ignore[attr-defined]
         proposal_file=proposal_file_train,
+        filename_tmpl="_{:06}.jpg",
         person_det_score_thr=0.9,
+        timestamp_start=900,
+        timestamp_end=1800,
+        fps=30,
     ),
     val=dict(
-        type=dataset_type,
         exclude_file=exclude_file_val,
-        pipeline=val_pipeline,
+        pipeline={{_base_.val_pipeline}},  # type: ignore[attr-defined]
         proposal_file=proposal_file_val,
+        filename_tmpl="_{:06}.jpg",
         person_det_score_thr=0.9,
+        timestamp_start=900,
+        timestamp_end=1800,
+        fps=30,
     ),
 )
 data["test"] = data["val"]
