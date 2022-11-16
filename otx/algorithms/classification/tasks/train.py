@@ -158,7 +158,6 @@ class ClassificationTrainTask(ClassificationInferenceTask):
                 ),
             )
         )
-
         unlabeled_dataset = get_unlabeled_dataset(dataset)
         if unlabeled_dataset:
             data_cfg.data.unlabeled = ConfigDict(
