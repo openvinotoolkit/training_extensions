@@ -16,5 +16,12 @@
 
 from .datasets import MPAClsDataset, MPAHierarchicalClsDataset, MPAMultilabelClsDataset
 from .pipelines import LoadImageFromOTXDataset
+from .twocrop_transform import TwoCropTransform
 
-__all__ = ["MPAClsDataset", "MPAMultilabelClsDataset", "MPAHierarchicalClsDataset", "LoadImageFromOTXDataset"]
+__all__ = [
+    "MPAClsDataset",
+    "MPAMultilabelClsDataset",
+    "MPAHierarchicalClsDataset",
+    "LoadImageFromOTXDataset",
+    "TwoCropTransform",
+]

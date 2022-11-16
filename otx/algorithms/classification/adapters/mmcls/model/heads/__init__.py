@@ -1,4 +1,4 @@
-"""Adapters of classification - mmcls."""
+""" OTX Algorithms - Hybrid classifier head """
 
 # Copyright (C) 2022 Intel Corporation
 #
@@ -14,18 +14,6 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .data import MPAClsDataset
-from .data.twocrop_transform import ColorJitter, RandomAppliedTrans, TwoCropTransform
-from .model.heads.selfsl_cls_head import SelfSLClsHead
-from .model.losses.barlowtwins_loss import BarlowTwinsLoss
-from .model.selfsl_classifier import SelfSLClassifier
+from .selfsl_cls_head import SelfSLClsHead
 
-__all__ = [
-    "MPAClsDataset",
-    "TwoCropTransform",
-    "RandomAppliedTrans",
-    "ColorJitter",
-    "SelfSLClsHead",
-    "BarlowTwinsLoss",
-    "SelfSLClassifier"
-]
+__all__ = ["SelfSLClsHead"]
