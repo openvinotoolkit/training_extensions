@@ -154,14 +154,14 @@ class DatumaroHandler:
 
     def convert_to_otx_format(self, datumaro_dataset:dict) -> DatasetEntity:
         """ Convert Datumaro Datset to DatasetEntity(OTE_SDK)"""
+        class_name_items = list(datumaro_dataset[Subset.TRAINING].categories().values())[-1].items
+        label_entities = [LabelEntity(name=class_name.name, domain=self.domain,
+                            is_empty=False, id=ID(i)) for i, class_name in enumerate(class_name_items)]
+
         dataset_items = []
         for subset, subset_data in datumaro_dataset.items():
-            class_name_items = list(subset_data.categories().values())[-1].items
-            label_entities = [LabelEntity(name=class_name.name, domain=self.domain,
-                                is_empty=False, id=ID(i)) for i, class_name in enumerate(class_name_items)]
             for phase, datumaro_items in subset_data.subsets().items():
                 for datumaro_item in datumaro_items:
-                    print('[*] datumaro_item: ', datumaro_item)
                     image = Image(data=datumaro_item.media.data)
                     if self.domain == Domain.CLASSIFICATION:
                         labels = [
