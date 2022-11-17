@@ -240,7 +240,6 @@ class ClassificationInferenceTask(
                     annotation_scene=dataset_item.annotation_scene,
                     numpy=saliency_map,
                     roi=dataset_item.roi,
-                    label=item_labels[0].label,
                 )
                 dataset_item.append_metadata_item(saliency_map_media, model=self._task_environment.model)
 
@@ -283,25 +282,40 @@ class ClassificationInferenceTask(
         train_type = self._hyperparams.algo_backend.train_type
         logger.info(f"train type = {train_type}")
 
+        if train_type not in (TrainType.SEMISUPERVISED, TrainType.INCREMENTAL):
+            raise NotImplementedError(f"Train type {train_type} is not implemented yet.")
+        if train_type == TrainType.SEMISUPERVISED:
+            if not self._multilabel and not self._hierarchical:
+                if self._data_cfg.get("data", None) and self._data_cfg.data.get("unlabeled", None):
+                    recipe = os.path.join(recipe_root, "semisl.yaml")
+                else:
+                    logger.warning("Cannot find unlabeled data.. convert to INCREMENTAL.")
+                    train_type = TrainType.INCREMENTAL
+            else:
+                raise NotImplementedError(
+                    f"Train type {train_type} for multilabel and hierarchical is not implemented yet."
+                )
+
         if train_type == TrainType.INCREMENTAL:
-            recipe = os.path.join(recipe_root, "class_incr.yaml")
-        if train_type == TrainType.INCREMENTAL and self._multilabel:
-            recipe = os.path.join(recipe_root, "class_incr_multilabel.yaml")
-        else:
-            if train_type == TrainType.SEMISUPERVISED:
-                raise NotImplementedError(f"train type {train_type} is not implemented yet.")
-            if train_type == TrainType.SELFSUPERVISED:
-                raise NotImplementedError(f"train type {train_type} is not implemented yet.")
-            # raise NotImplementedError(f'train type {train_type} is not implemented yet.')
-            # FIXME: Temporary remedy for CVS-88098
-            recipe = os.path.join(recipe_root, "class_incr.yaml")
-            logger.warning(f"train type {train_type} is not implemented yet. Running incremental training.")
+            if self._multilabel:
+                recipe = os.path.join(recipe_root, "class_incr_multilabel.yaml")
+            else:
+                recipe = os.path.join(recipe_root, "class_incr.yaml")
+
+        logger.info(f"train type = {train_type} - loading {recipe}")
 
         self._recipe_cfg = MPAConfig.fromfile(recipe)
+
+        # FIXME[Soobee] : if train type is not in cfg, it raises an error in default INCREMENTAL mode.
+        # During semi-implementation, this line should be fixed to -> self._recipe_cfg.train_type = train_type
+        self._recipe_cfg.train_type = train_type.name
         self._patch_datasets(self._recipe_cfg)  # for OTX compatibility
         self._patch_evaluation(self._recipe_cfg)  # for OTX compatibility
         logger.info(f"initialized recipe = {recipe}")
 
+    # TODO: make cfg_path loaded from custom model cfg file corresponding to train_type
+    # model.py contains heads/classifier only for INCREMENTAL setting
+    # error log : ValueError: Unexpected type of 'data_loader' parameter
     def _init_model_cfg(self):
         base_dir = os.path.abspath(os.path.dirname(self.template_file_path))
         if self._multilabel:
@@ -347,22 +361,23 @@ class ClassificationInferenceTask(
                     patch_color_conversion(pipeline_step.transforms)
 
         assert "data" in config
-        for subset in ("train", "val", "test"):
+        for subset in ("train", "val", "test", "unlabeled"):
             cfg = config.data.get(subset, None)
             if not cfg:
                 continue
             if cfg.type == "RepeatDataset":
                 cfg = cfg.dataset
 
-            if self._multilabel:
-                cfg.type = "MPAMultilabelClsDataset"
-            elif self._hierarchical:
-                cfg.type = "MPAHierarchicalClsDataset"
-                cfg.hierarchical_info = self._hierarchical_info
-                if subset == "train":
-                    cfg.drop_last = True  # For stable hierarchical information indexing
             else:
-                cfg.type = "MPAClsDataset"
+                if self._multilabel:
+                    cfg.type = "MPAMultilabelClsDataset"
+                elif self._hierarchical:
+                    cfg.type = "MPAHierarchicalClsDataset"
+                    cfg.hierarchical_info = self._hierarchical_info
+                    if subset == "train":
+                        cfg.drop_last = True  # For stable hierarchical information indexing
+                else:
+                    cfg.type = "MPAClsDataset"
 
             # In train dataset, when sample size is smaller than batch size
             if subset == "train" and self._data_cfg:

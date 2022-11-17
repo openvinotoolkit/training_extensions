@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+from otx.algorithms.common.utils.data import load_unlabeled_dataset_items
 from otx.algorithms.segmentation.adapters.mmseg.utils import load_dataset_items
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.subset import Subset
@@ -27,6 +28,7 @@ class SemanticSegmentationDataset(DatasetEntity):
         train_subset=None,
         val_subset=None,
         test_subset=None,
+        unlabeled_subset=None,
     ):
 
         labels_list = []
@@ -62,4 +64,11 @@ class SemanticSegmentationDataset(DatasetEntity):
                 )
             )
 
+        if unlabeled_subset is not None:
+            items.extend(
+                load_unlabeled_dataset_items(
+                    file_list_path=unlabeled_subset["file_list"],
+                    data_root_dir=unlabeled_subset["data_root"],
+                )
+            )
         super().__init__(items=items)

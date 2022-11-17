@@ -223,18 +223,19 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         train_type = self._hyperparams.algo_backend.train_type
         logger.info(f"train type = {train_type}")
 
-        recipe = os.path.join(recipe_root, "imbalance.py")
+        if train_type not in (TrainType.SEMISUPERVISED, TrainType.INCREMENTAL):
+            raise NotImplementedError(f"Train type {train_type} is not implemented yet.")
         if train_type == TrainType.SEMISUPERVISED:
-            recipe = os.path.join(recipe_root, "unbiased_teacher.py")
-        elif train_type == TrainType.SELFSUPERVISED:
-            # recipe = os.path.join(recipe_root, 'pretrain.yaml')
-            raise NotImplementedError(f"train type {train_type} is not implemented yet.")
-        elif train_type == TrainType.INCREMENTAL:
+            if self._data_cfg.get("data", None) and self._data_cfg.data.get("unlabeled", None):
+                recipe = os.path.join(recipe_root, "unbiased_teacher.py")
+            else:
+                logger.warning("Cannot find unlabeled data.. convert to INCREMENTAL.")
+                train_type = TrainType.INCREMENTAL
+
+        if train_type == TrainType.INCREMENTAL:
             recipe = os.path.join(recipe_root, "imbalance.py")
-        else:
-            # raise NotImplementedError(f'train type {train_type} is not implemented yet.')
-            # FIXME: Temporary remedy for CVS-88098
-            logger.warning(f"train type {train_type} is not implemented yet.")
+
+        logger.info(f"train type = {train_type} - loading {recipe}")
 
         self._recipe_cfg = MPAConfig.fromfile(recipe)
         patch_data_pipeline(self._recipe_cfg, self.template_file_path)
@@ -242,6 +243,8 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         patch_evaluation(self._recipe_cfg)  # for OTX compatibility
         logger.info(f"initialized recipe = {recipe}")
 
+    # TODO: make cfg_path loaded from custom model cfg file corresponding to train_type
+    # model.py contains head cfg only for INCREMENTAL setting
     def _init_model_cfg(self):
         base_dir = os.path.abspath(os.path.dirname(self.template_file_path))
         model_cfg = MPAConfig.fromfile(os.path.join(base_dir, "model.py"))
