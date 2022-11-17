@@ -1,13 +1,11 @@
 _base_: [
-    '../../../../../venv/lib/python3.8/site-packages/recipes/stages/classification/train.yaml',
-    # '../../../../../venv/lib/python3.8/site-packages/recipes/stages/_base_/data/cls_data.py',
-    # '../../../../../venv/lib/python3.8/site-packages/recipes/stages/_base_/models/classifiers/classifier.py',
     '../../adapters/mmcls/data/twocrop_data.py',
     './model_selfsl.py'
 ]
 
 runner:
     max_epochs: 20
+    type: EpochRunnerWithCancel
 
 optimizer_config:
     type: SAMOptimizerHook
@@ -18,9 +16,24 @@ optimizer:
     momentum: 0.9
     weight_decay: 0.0005
 
+log_level: INFO
+
+log_config:
+    interval: 100
+    hooks:
+      - type: TextLoggerHook
+        ignore_last: false
+      - type: TensorboardLoggerHook
+
+workflow:
+- !!python/tuple
+  - train
+  - 1
+
+lr_config:
+    policy: CosineAnnealing
+    min_lr_ratio: 0.0001
+
 evaluation:
     metric: ['accuracy', 'class_accuracy']
 
-# task_adapt:
-#     type: 'mpa'
-#     op: 'REPLACE'
