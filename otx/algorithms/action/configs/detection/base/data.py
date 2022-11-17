@@ -18,11 +18,15 @@
 
 # These should be assigned otx cli, but harded-coded
 # These wii be changed when annotation format is changed to CVAT
-anno_root = "/home/jaeguk/workspace/data/jester/det_sc_sample/annotations"
+# anno_root = "/home/jaeguk/workspace/data/jester/det_sc_sample/annotations"
 exclude_file_train = None
 exclude_file_val = None
-proposal_file_train = f"{anno_root}/proposal_train.pkl"
-proposal_file_val = f"{anno_root}/proposal_valid.pkl"
+# proposal_file_train = f"{anno_root}/proposal_train.pkl"
+# proposal_file_val = f"{anno_root}/proposal_valid.pkl"
+
+anno_root = "data/custom_action_recognition/custom_dataset"
+proposal_file_train = f"{anno_root}/proposal_val.pkl"
+proposal_file_val = f"{anno_root}/proposal_val.pkl"
 
 img_norm_cfg = dict(mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_bgr=False)
 
@@ -64,7 +68,7 @@ data = dict(
         person_det_score_thr=0.5,
         filename_tmpl="{:05}.jpg",
         timestamp_start=1,
-        timestamp_end=f"{anno_root}/timestamp_train.json",
+        timestamp_end=f"{anno_root}/timestamp_val.json",
         start_index=1,
         fps=1,
     ),
@@ -75,7 +79,7 @@ data = dict(
         person_det_score_thr=0.5,
         filename_tmpl="{:05}.jpg",
         timestamp_start=1,
-        timestamp_end=f"{anno_root}/timestamp_valid.json",
+        timestamp_end=f"{anno_root}/timestamp_val.json",
         start_index=1,
         fps=1,
     ),

@@ -92,7 +92,7 @@ def load_det_annotations(ann_file, data_root):
             label = int(line_split[6])
             video_id = line_split[0]
             timestamp = int(line_split[1])
-            img_key = f"{video_id},{timestamp:04d}"
+            img_key = f"{video_id},{timestamp:05d}"
 
             entity_box = np.array(list(map(float, line_split[2:6])))
             entity_id = int(line_split[7])
