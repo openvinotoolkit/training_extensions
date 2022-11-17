@@ -240,7 +240,6 @@ class ClassificationInferenceTask(
                     annotation_scene=dataset_item.annotation_scene,
                     numpy=saliency_map,
                     roi=dataset_item.roi,
-                    label=item_labels[0].label,
                 )
                 dataset_item.append_metadata_item(saliency_map_media, model=self._task_environment.model)
 
