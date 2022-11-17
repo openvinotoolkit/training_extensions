@@ -18,5 +18,8 @@ model = dict(
 )
 
 checkpoint_config = dict(
-    type='CheckpointHookWithValResults'
+    type='CheckpointHookWithValResults',
+    interval=1,
+    max_keep_ckpts=1,
 )
+
