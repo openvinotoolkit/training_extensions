@@ -23,11 +23,11 @@ from mmaction.core.evaluation.ava_evaluation import (
     object_detection_evaluation as det_eval,
 )
 from mmaction.core.evaluation.ava_evaluation import standard_fields
-from mmaction.core.evaluation.ava_utils import print_time, read_csv, read_exclusions
+from mmaction.core.evaluation.ava_utils import print_time, read_exclusions
 
 
 # pylint: disable=too-many-locals, too-many-branches
-def ava_eval(result_file, result_type, labels, video_infos, exclude_file, verbose=True, custom_classes=None):
+def ava_eval(predictions, result_type, labels, video_infos, exclude_file, verbose=True, custom_classes=None):
     """Evaluation method for AVA Dataset."""
 
     assert result_type in ["mAP"]
@@ -52,8 +52,7 @@ def ava_eval(result_file, result_type, labels, video_infos, exclude_file, verbos
         excluded_keys = []
 
     start = time.time()
-    with open(result_file, encoding="utf-8") as res_file:
-        boxes, labels, scores = read_csv(res_file, class_whitelist)
+    boxes, labels, scores = predictions
     if verbose:
         print_time("Reading detection results", start)
 
@@ -116,14 +115,11 @@ def load_gt(video_infos):
     labels = defaultdict(list)
     for video_info in video_infos:
         img_key = video_info["img_key"]
-        # FIXME. This is very heuristic way to sync frame index format
-        img_key = img_key.split(",")[0] + "," + f"{int(img_key.split(',')[1]):04d}"
         gt_bboxes = video_info["ann"]["gt_bboxes"]
         gt_labels = video_info["ann"]["gt_labels"]
         for gt_label, gt_bbox in zip(gt_labels, gt_bboxes):
-            x1, y1, x2, y2 = gt_bbox
             for idx, val in enumerate(gt_label):
                 if val == 1:
-                    boxes[img_key].append([y1, x1, y2, x2])
+                    boxes[img_key].append(gt_bbox)
                     labels[img_key].append(idx)
     return boxes, labels

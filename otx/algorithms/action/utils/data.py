@@ -82,7 +82,6 @@ def load_cls_annotations(ann_file, data_root):
 # pylint: disable=too-many-locals
 def load_det_annotations(ann_file, data_root):
     """Load AVA annotations."""
-    print("Temporary Warning: We skipped FPS and shot_info at video_infos")
     video_infos = []
     records_dict_by_img = defaultdict(list)
     with open(ann_file, "r", encoding="utf-8") as fin:
@@ -92,7 +91,7 @@ def load_det_annotations(ann_file, data_root):
             label = int(line_split[6])
             video_id = line_split[0]
             timestamp = int(line_split[1])
-            img_key = f"{video_id},{timestamp:05d}"
+            img_key = f"{video_id},{timestamp}"
 
             entity_box = np.array(list(map(float, line_split[2:6])))
             entity_id = int(line_split[7])

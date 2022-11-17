@@ -16,16 +16,16 @@
 
 import copy
 import json
-import os
-from datetime import datetime
+from collections import defaultdict
 from typing import Any, Dict, List, Optional, Sequence, Union
 
 import mmcv
 import numpy as np
-from mmaction.core.evaluation.ava_utils import results2csv
+from mmaction.core.evaluation.ava_utils import det2csv
 from mmaction.datasets.ava_dataset import AVADataset
 from mmaction.datasets.builder import DATASETS
 from mmaction.datasets.pipelines import Compose
+from mmaction.utils import get_root_logger
 from mmcv.utils import print_log
 
 from otx.algorithms.action.adapters.mmaction.core.evaluation import ava_eval
@@ -35,6 +35,8 @@ from otx.api.utils.argument_checks import (
     DatasetParamTypeCheck,
     check_input_parameters_type,
 )
+
+root_logger = get_root_logger()
 
 
 # pylint: disable=too-many-instance-attributes
@@ -127,6 +129,7 @@ class OTXAVADataset(AVADataset):
 
         if self.proposal_file is not None:
             self.proposals = mmcv.load(self.proposal_file)
+            self.patch_proposals()
         else:
             self.proposals = None
 
@@ -141,6 +144,21 @@ class OTXAVADataset(AVADataset):
     def __len__(self):
         """Return length of dataset."""
         return len(self.data_infos)
+
+    def patch_proposals(self):
+        """Remove fixed string format.
+
+        AVA dataset pre-proposals have fixed string format.
+        Fixed string format have scalability issues so here we remove it
+        """
+        # TODO This may consume lots of time depends on size of proposals
+        # So handle proposals in offline or try remove this by using CVAT
+        root_logger.info("Patching pre proposals...")
+        for img_key in list(self.proposals):
+            proposal = self.proposals.pop(img_key)
+            new_img_key = img_key.split(",")[0] + "," + str(int(img_key.split(",")[1]))
+            self.proposals[f"{new_img_key}"] = proposal
+        root_logger.info("Done.")
 
     def prepare_train_frames(self, idx):
         """Prepare the frames for training given the index."""
@@ -249,9 +267,8 @@ class OTXAVADataset(AVADataset):
             "See https://github.com/open-mmlab/mmaction2/pull/567 "
             "for more info."
         )
-        time_now = datetime.now().strftime("%Y%m%d_%H%M%S")
-        temp_file = f"AVA_{time_now}_result.csv"
-        results2csv(self, results, temp_file, self.custom_classes)
+        csv_results = det2csv(self, results, self.custom_classes)
+        predictions = self.get_predictions(csv_results)
 
         ret = {}
         for metric in metrics:
@@ -261,7 +278,12 @@ class OTXAVADataset(AVADataset):
             print_log(msg, logger=logger)
 
             eval_result = ava_eval(
-                temp_file, metric, self.labels, self.video_infos, self.exclude_file, custom_classes=self.custom_classes
+                predictions,
+                metric,
+                self.labels,
+                self.video_infos,
+                self.exclude_file,
+                custom_classes=self.custom_classes,
             )
             log_msg = []
             for key, value in eval_result.items():
@@ -269,7 +291,26 @@ class OTXAVADataset(AVADataset):
             log_msg = "".join(log_msg)
             print_log(log_msg, logger=logger)
             ret.update(eval_result)
-
-        os.remove(temp_file)
-
         return ret
+
+    def get_predictions(self, csv_results):
+        """Convert model's inference results to predictions."""
+        csv_results = np.array(csv_results)
+        _img_keys = csv_results[:, :2]
+        _boxes = csv_results[:, 2:6]
+        _labels = csv_results[:, 6]
+        _scores = csv_results[:, 7]
+
+        boxes = defaultdict(list)
+        labels = defaultdict(list)
+        scores = defaultdict(list)
+
+        for _img_key, _box, _label, _score in zip(_img_keys, _boxes, _labels, _scores):
+            img_key = _img_key[0] + "," + _img_key[1]
+            box = _box.astype("float")
+            label = _label.astype("int")
+            score = _score.astype("float")
+            boxes[img_key].append(box)
+            labels[img_key].append(label)
+            scores[img_key].append(score)
+        return (boxes, labels, scores)
