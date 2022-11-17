@@ -3,19 +3,6 @@ _base_: [
     './model_selfsl.py'
 ]
 
-runner:
-    max_epochs: 20
-    type: EpochRunnerWithCancel
-
-optimizer_config:
-    type: SAMOptimizerHook
-
-optimizer:
-    type: SGD
-    lr: 0.01
-    momentum: 0.9
-    weight_decay: 0.0005
-
 log_level: INFO
 
 log_config:
@@ -29,6 +16,20 @@ workflow:
 - !!python/tuple
   - train
   - 1
+
+runner:
+    max_epochs: 20
+    type: EpochRunnerWithCancel
+
+optimizer_config:
+    type: SAMOptimizerHook
+    grad_clip: null
+
+optimizer:
+    type: SGD
+    lr: 0.01
+    momentum: 0.9
+    weight_decay: 0.0005
 
 lr_config:
     policy: CosineAnnealing
