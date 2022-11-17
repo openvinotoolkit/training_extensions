@@ -81,6 +81,16 @@ def parse_args():
         help="Comma-separated paths to validation data folders.",
     )
     parser.add_argument(
+        "--unlabeled-data-roots",
+        required=False,
+        help="Comma-separated paths to unlabeled data folders",
+    )
+    parser.add_argument(
+        "--unlabeled-file-list",
+        required=False,
+        help="Comma-separated paths to unlabeled file list",
+    )
+    parser.add_argument(
         "--load-weights",
         required=False,
         help="Load only weights from previously saved checkpoint",
@@ -124,13 +134,20 @@ def main():
     dataset_class = get_dataset_class(template.task_type)
 
     # Create instances of Task, ConfigurableParameters and Dataset.
-    dataset = dataset_class(
+    data_roots = dict(
         train_subset={
             "ann_file": args.train_ann_files,
             "data_root": args.train_data_roots,
         },
         val_subset={"ann_file": args.val_ann_files, "data_root": args.val_data_roots},
     )
+    if args.unlabeled_data_roots:
+        data_roots["unlabeled_subset"] = {
+            "data_root": args.unlabeled_data_roots,
+            "file_list": args.unlabeled_file_list,
+        }
+
+    dataset = dataset_class(**data_roots)
 
     environment = TaskEnvironment(
         model=None,
