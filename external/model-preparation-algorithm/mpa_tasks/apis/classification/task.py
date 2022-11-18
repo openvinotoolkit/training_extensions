@@ -12,7 +12,6 @@ import numpy as np
 import torch
 from mmcv.utils import ConfigDict
 from mpa import MPAConstants
-from mpa.stage import Stage
 from mpa.utils.config_utils import MPAConfig
 from mpa.utils.logger import get_logger
 from mpa_tasks.apis import BaseTask, TrainType
@@ -368,16 +367,8 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
             elif self._hierarchical:
                 cfg.type = "MPAHierarchicalClsDataset"
                 cfg.hierarchical_info = self._hierarchical_info
-                if subset == "train":
-                    cfg.drop_last = True  # For stable hierarchical information indexing
             else:
                 cfg.type = "MPAClsDataset"
-
-            # In train dataset, when sample size is smaller than batch size
-            if subset == "train" and self._data_cfg:
-                train_data_cfg = Stage.get_data_cfg(self._data_cfg, "train")
-                if len(train_data_cfg.get("ote_dataset", [])) < self._recipe_cfg.data.get("samples_per_gpu", 2):
-                    cfg.drop_last = False
 
             cfg.domain = domain
             cfg.ote_dataset = None
