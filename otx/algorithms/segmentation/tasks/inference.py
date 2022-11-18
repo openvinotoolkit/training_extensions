@@ -53,7 +53,6 @@ from otx.api.entities.tensor import TensorEntity
 from otx.api.serialization.label_mapper import label_schema_to_bytes
 from otx.api.usecases.evaluation.metrics_helper import MetricsHelper
 from otx.api.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
-from otx.api.usecases.tasks.interfaces.explain_interface import IExplainTask
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType, IExportTask
 from otx.api.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from otx.api.usecases.tasks.interfaces.unload_interface import IUnload
@@ -67,7 +66,7 @@ logger = get_logger()
 
 
 # pylint: disable=too-many-locals
-class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask, IExplainTask, IUnload):
+class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask, IUnload):
     """Inference Task Implementation of OTX Segmentation."""
 
     @check_input_parameters_type()
@@ -104,9 +103,6 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         self._add_predictions_to_dataset(prediction_results, dataset, dump_soft_prediction=not is_evaluation)
         return dataset
 
-    def explain(self, **kwargs):
-        raise NotImplementedError("Explain mode will not be supported for Segmentation.")
-
     def evaluate(self, output_resultset: ResultSetEntity, evaluation_metric: Optional[str] = None):
         """Evaluate function of OTX Segmentation Task."""
         logger.info("called evaluate()")
@@ -125,7 +121,7 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         self._delete_scratch_space()
 
     def export(self, export_type: ExportType, output_model: ModelEntity):
-        """Export function of OTX Detection Task."""
+        """Export function of OTX Segmentation Task."""
         logger.info("Exporting the model")
         if export_type != ExportType.OPENVINO:
             raise RuntimeError(f"not supported export type {export_type}")

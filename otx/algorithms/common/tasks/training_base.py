@@ -39,7 +39,6 @@ from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.serialization.label_mapper import LabelSchemaMapper
 from otx.api.usecases.reporting.time_monitor_callback import TimeMonitorCallback
 from otx.api.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
-from otx.api.usecases.tasks.interfaces.explain_interface import IExplainTask
 from otx.api.usecases.tasks.interfaces.export_interface import IExportTask
 from otx.api.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from otx.api.usecases.tasks.interfaces.unload_interface import IUnload
@@ -49,7 +48,7 @@ logger = get_logger()
 
 
 # pylint: disable=too-many-instance-attributes, protected-access
-class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IExplainTask, IUnload):
+class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
     """BaseTask for OTX Algorithms."""
 
     _task_environment: TaskEnvironment
