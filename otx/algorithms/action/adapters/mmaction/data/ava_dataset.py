@@ -293,7 +293,8 @@ class OTXAVADataset(AVADataset):
             ret.update(eval_result)
         return ret
 
-    def get_predictions(self, csv_results):
+    @staticmethod
+    def get_predictions(csv_results):
         """Convert model's inference results to predictions."""
         csv_results = np.array(csv_results)
         _img_keys = csv_results[:, :2]
