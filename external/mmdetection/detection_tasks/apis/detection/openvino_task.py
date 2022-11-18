@@ -32,7 +32,10 @@ from openvino.model_zoo.model_api.adapters import OpenvinoAdapter, create_core
 from openvino.model_zoo.model_api.models import Model, utils
 from ote_sdk.entities.annotation import AnnotationSceneEntity
 from ote_sdk.entities.datasets import DatasetEntity
-from ote_sdk.entities.inference_parameters import InferenceParameters, default_progress_callback
+from ote_sdk.entities.inference_parameters import (
+    InferenceParameters,
+    default_progress_callback,
+)
 from ote_sdk.entities.label_schema import LabelSchemaEntity
 from ote_sdk.entities.model import (
     ModelEntity,
@@ -60,7 +63,10 @@ from ote_sdk.usecases.exportable_code.prediction_to_annotation_converter import 
 from ote_sdk.usecases.tasks.interfaces.deployment_interface import IDeploymentTask
 from ote_sdk.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
 from ote_sdk.usecases.tasks.interfaces.inference_interface import IInferenceTask
-from ote_sdk.usecases.tasks.interfaces.optimization_interface import IOptimizationTask, OptimizationType
+from ote_sdk.usecases.tasks.interfaces.optimization_interface import (
+    IOptimizationTask,
+    OptimizationType,
+)
 from ote_sdk.utils.argument_checks import (
     DatasetParamTypeCheck,
     check_input_parameters_type,
@@ -79,7 +85,13 @@ from mmcv.ops import nms
 logger = get_root_logger()
 
 
-def multiclass_nms(scores: np.ndarray, labels: np.ndarray, boxes: np.ndarray, iou_threshold=0.45, max_num=200):
+def multiclass_nms(
+    scores: np.ndarray,
+    labels: np.ndarray,
+    boxes: np.ndarray,
+    iou_threshold=0.45,
+    max_num=200,
+):
     """ Multi-class NMS
 
     strategy: in order to perform NMS independently per class,
@@ -108,15 +120,21 @@ def multiclass_nms(scores: np.ndarray, labels: np.ndarray, boxes: np.ndarray, io
 
 
 class BaseInferencerWithConverter(BaseInferencer):
-
     @check_input_parameters_type()
-    def __init__(self, configuration: dict, model: Model, converter: IPredictionToAnnotationConverter) -> None:
+    def __init__(
+        self,
+        configuration: dict,
+        model: Model,
+        converter: IPredictionToAnnotationConverter,
+    ) -> None:
         self.configuration = configuration
         self.model = model
         self.converter = converter
 
     @check_input_parameters_type()
-    def pre_process(self, image: np.ndarray) -> Tuple[Dict[str, np.ndarray], Dict[str, Any]]:
+    def pre_process(
+        self, image: np.ndarray
+    ) -> Tuple[Dict[str, np.ndarray], Dict[str, Any]]:
         return self.model.preprocess(image)
 
     def convert2array(self, detections: List[utils.Detection]) -> np.ndarray:
@@ -136,36 +154,53 @@ class BaseInferencerWithConverter(BaseInferencer):
                 continue
             scores = np.append(scores, [[det.score]], axis=0)
             labels = np.append(labels, [[det.id]], axis=0)
-            boxes = np.append(boxes, [[float(det.xmin) , float(det.ymin), float(det.xmax) , float(det.ymax)]], axis=0)
+            boxes = np.append(
+                boxes,
+                [[float(det.xmin), float(det.ymin), float(det.xmax), float(det.ymax)]],
+                axis=0,
+            )
         detections = np.concatenate((labels, scores, boxes), -1)
         return detections
 
     @check_input_parameters_type()
-    def post_process(self, prediction: Dict[str, np.ndarray], metadata: Dict[str, Any]) -> AnnotationSceneEntity:
+    def post_process(
+        self, prediction: Dict[str, np.ndarray], metadata: Dict[str, Any]
+    ) -> AnnotationSceneEntity:
         detections = self.model.postprocess(prediction, metadata)
         if len(detections) and isinstance(detections[0], utils.Detection):
             detections = self.convert2array(detections)
-        if not isinstance(detections, np.ndarray) and isinstance(self, OpenVINODetectionInferencer):
+        if not isinstance(detections, np.ndarray) and isinstance(
+            self, OpenVINODetectionInferencer
+        ):
             detections = np.array(detections)
-        if isinstance(self.converter, MaskToAnnotationConverter):
+        if isinstance(self.converter, MaskToAnnotationConverter) or isinstance(
+            self.converter, RotatedRectToAnnotationConverter
+        ):
             return self.converter.convert_to_annotation(detections, metadata)
         if len(detections):
             detections[:, 2:] /= np.tile(metadata["original_shape"][1::-1], 2)
         return self.converter.convert_to_annotation(detections)
 
     @check_input_parameters_type()
-    def predict(self, image: np.ndarray) -> Tuple[AnnotationSceneEntity, np.ndarray, np.ndarray]:
+    def predict(
+        self, image: np.ndarray
+    ) -> Tuple[AnnotationSceneEntity, np.ndarray, np.ndarray]:
         image, metadata = self.pre_process(image)
         raw_predictions = self.forward(image)
         predictions = self.post_process(raw_predictions, metadata)
-        if 'feature_vector' not in raw_predictions or 'saliency_map' not in raw_predictions:
-            warnings.warn('Could not find Feature Vector and Saliency Map in OpenVINO output. '
-                          'Please rerun OpenVINO export or retrain the model.')
+        if (
+            "feature_vector" not in raw_predictions
+            or "saliency_map" not in raw_predictions
+        ):
+            warnings.warn(
+                "Could not find Feature Vector and Saliency Map in OpenVINO output. "
+                "Please rerun OpenVINO export or retrain the model."
+            )
             features = [None, None]
         else:
             features = [
-                raw_predictions['feature_vector'].reshape(-1),
-                raw_predictions['saliency_map']
+                raw_predictions["feature_vector"].reshape(-1),
+                raw_predictions["saliency_map"],
             ]
         return predictions, features
 
@@ -198,31 +233,47 @@ class OpenVINODetectionInferencer(BaseInferencerWithConverter):
         """
 
         model_adapter = OpenvinoAdapter(
-            create_core(), model_file, weight_file, device=device, max_num_requests=num_requests)
-        configuration = {**attr.asdict(
-                        hparams.postprocessing, filter=lambda attr, value: attr.name not in [
-                            'header', 'description', 'type', 'visible_in_ui'])}
-        model = Model.create_model('OTE_SSD', model_adapter, configuration, preload=True)
+            create_core(),
+            model_file,
+            weight_file,
+            device=device,
+            max_num_requests=num_requests,
+        )
+        configuration = {
+            **attr.asdict(
+                hparams.postprocessing,
+                filter=lambda attr, value: attr.name
+                not in ["header", "description", "type", "visible_in_ui"],
+            )
+        }
+        model = Model.create_model(
+            "OTE_SSD", model_adapter, configuration, preload=True
+        )
         converter = DetectionToAnnotationConverter(label_schema)
 
         super().__init__(configuration, model, converter)
 
-    def process_tile_prediction(self, predictions: List[utils.Detection], offset: Tuple[int, int]):
+    def process_tile_prediction(
+        self, predictions: List[utils.Detection], offset: Tuple[int, int]
+    ):
         scores, labels, boxes = [], [], []
         for det in predictions:
             y, x = offset[0]
             scores.append(det.score)
             labels.append(det.id)
-            box = [float(det.xmin + x) , float(det.ymin + y) , float(det.xmax + x) , float(det.ymax + y)]
+            box = [
+                float(det.xmin + x),
+                float(det.ymin + y),
+                float(det.xmax + x),
+                float(det.ymax + y),
+            ]
             boxes.append(box)
         return scores, labels, boxes
 
     @check_input_parameters_type()
-    def predict_tile(self,
-                     image: np.ndarray,
-                     tile_size: int,
-                     overlap: float,
-                     max_number: int) -> AnnotationSceneEntity:
+    def predict_tile(
+        self, image: np.ndarray, tile_size: int, overlap: float, max_number: int
+    ) -> AnnotationSceneEntity:
         """ Run prediction by tiling image to small patches
 
         Args:
@@ -260,7 +311,9 @@ class OpenVINODetectionInferencer(BaseInferencerWithConverter):
         labels = labels[keep]
         scores = scores[keep]
 
-        detections = np.concatenate((labels[:, np.newaxis], scores[:, np.newaxis], boxes), axis=-1)
+        detections = np.concatenate(
+            (labels[:, np.newaxis], scores[:, np.newaxis], boxes), axis=-1
+        )
         detections[:, 2:] /= np.tile(original_shape[1::-1], 2)
         detections = self.converter.convert_to_annotation(detections)
         return detections
@@ -278,23 +331,24 @@ class OpenVINOMaskInferencer(BaseInferencerWithConverter):
         num_requests: int = 1,
     ):
         model_adapter = OpenvinoAdapter(
-          create_core(),
-          model_file,
-          weight_file,
-          device=device,
-          max_num_requests=num_requests)
+            create_core(),
+            model_file,
+            weight_file,
+            device=device,
+            max_num_requests=num_requests,
+        )
 
         configuration = {
-          **attr.asdict(
-            hparams.postprocessing,
-            filter=lambda attr, value: attr.name not in [
-              'header', 'description', 'type', 'visible_in_ui'])}
+            **attr.asdict(
+                hparams.postprocessing,
+                filter=lambda attr, value: attr.name
+                not in ["header", "description", "type", "visible_in_ui"],
+            )
+        }
 
         model = Model.create_model(
-          'ote_maskrcnn',
-          model_adapter,
-          configuration,
-          preload=True)
+            "ote_maskrcnn", model_adapter, configuration, preload=True
+        )
 
         converter = MaskToAnnotationConverter(label_schema)
 
@@ -310,11 +364,9 @@ class OpenVINOMaskInferencer(BaseInferencerWithConverter):
         return tile_scores, tile_labels, tile_boxes, tile_masks
 
     @check_input_parameters_type()
-    def predict_tile(self,
-                     image: np.ndarray,
-                     tile_size: int,
-                     overlap: float,
-                     max_number: int) -> AnnotationSceneEntity:
+    def predict_tile(
+        self, image: np.ndarray, tile_size: int, overlap: float, max_number: int
+    ) -> AnnotationSceneEntity:
         """ Run prediction by tiling image to small patches
 
         Args:
@@ -331,7 +383,9 @@ class OpenVINOMaskInferencer(BaseInferencerWithConverter):
         boxes = []
         masks = []
 
-        detection_task = True if isinstance(self, OpenVINODetectionInferencer) else False
+        detection_task = (
+            True if isinstance(self, OpenVINODetectionInferencer) else False
+        )
 
         batch_size = 1
         tiler = Tiler(tile_size=tile_size, overlap=overlap, batch_size=batch_size)
@@ -341,7 +395,7 @@ class OpenVINOMaskInferencer(BaseInferencerWithConverter):
         for tile, offset in tiler.tile(image):
             tile_dict, metadata = self.model.preprocess(tile[0])
             if not detection_task:
-                metadata['resize_mask'] = False
+                metadata["resize_mask"] = False
             raw_predictions = self.model.infer_sync(tile_dict)
             detections = self.model.postprocess(raw_predictions, metadata)
             score, label, box, mask = self.process_tile_prediction(detections, offset)
@@ -361,7 +415,9 @@ class OpenVINOMaskInferencer(BaseInferencerWithConverter):
         masks = [masks[keep_idx] for keep_idx in keep]
 
         for i in range(len(boxes)):
-            masks[i] = self.model._segm_postprocess(boxes[i], masks[i], *original_shape[:-1])
+            masks[i] = self.model._segm_postprocess(
+                boxes[i], masks[i], *original_shape[:-1]
+            )
         metadata["original_shape"] = original_shape
         detections = scores, labels, boxes, masks
         detections = self.converter.convert_to_annotation(detections, metadata)
@@ -380,23 +436,24 @@ class OpenVINORotatedRectInferencer(BaseInferencerWithConverter):
         num_requests: int = 1,
     ):
         model_adapter = OpenvinoAdapter(
-          create_core(),
-          model_file,
-          weight_file,
-          device=device,
-          max_num_requests=num_requests)
+            create_core(),
+            model_file,
+            weight_file,
+            device=device,
+            max_num_requests=num_requests,
+        )
 
         configuration = {
-          **attr.asdict(
-            hparams.postprocessing,
-            filter=lambda attr, value: attr.name not in [
-              'header', 'description', 'type', 'visible_in_ui'])}
+            **attr.asdict(
+                hparams.postprocessing,
+                filter=lambda attr, value: attr.name
+                not in ["header", "description", "type", "visible_in_ui"],
+            )
+        }
 
         model = Model.create_model(
-          'ote_maskrcnn',
-          model_adapter,
-          configuration,
-          preload=True)
+            "ote_maskrcnn", model_adapter, configuration, preload=True
+        )
 
         converter = RotatedRectToAnnotationConverter(label_schema)
 
@@ -421,17 +478,19 @@ class OTEOpenVinoDataLoader(DataLoader):
         return len(self.dataset)
 
 
-class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IOptimizationTask):
+class OpenVINODetectionTask(
+    IDeploymentTask, IInferenceTask, IEvaluationTask, IOptimizationTask
+):
     @check_input_parameters_type()
     def __init__(self, task_environment: TaskEnvironment):
-        logger.info('Loading OpenVINO OTEDetectionTask')
+        logger.info("Loading OpenVINO OTEDetectionTask")
         self.task_environment = task_environment
         self.model = self.task_environment.model
         self.task_type = self.task_environment.model_template.task_type
         self.confidence_threshold: float = 0.0
         self.config = self.load_config()
         self.inferencer = self.load_inferencer()
-        logger.info('OpenVINO task initialization completed')
+        logger.info("OpenVINO task initialization completed")
 
     @property
     def hparams(self):
@@ -447,12 +506,19 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
             return json.loads(self.model.get_data("config.json"))
         return dict()
 
-    def load_inferencer(self) -> Union[OpenVINODetectionInferencer, OpenVINOMaskInferencer]:
+    def load_inferencer(
+        self,
+    ) -> Union[OpenVINODetectionInferencer, OpenVINOMaskInferencer]:
         _hparams = copy.deepcopy(self.hparams)
         self.confidence_threshold = float(
-            np.frombuffer(self.model.get_data("confidence_threshold"), dtype=np.float32)[0])
+            np.frombuffer(
+                self.model.get_data("confidence_threshold"), dtype=np.float32
+            )[0]
+        )
         _hparams.postprocessing.confidence_threshold = self.confidence_threshold
-        _hparams.tiling_parameters.enable_tiling = self.config['tiling_parameters']['enable_tiling']['value']
+        _hparams.tiling_parameters.enable_tiling = self.config["tiling_parameters"][
+            "enable_tiling"
+        ]["value"]
         args = [
             _hparams,
             self.task_environment.label_schema,
@@ -468,102 +534,148 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
         raise RuntimeError(f"Unknown OpenVINO Inferencer TaskType: {self.task_type}")
 
     @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
-    def infer(self,
-              dataset: DatasetEntity,
-              inference_parameters: Optional[InferenceParameters] = None) -> DatasetEntity:
-        logger.info('Start OpenVINO inference')
+    def infer(
+        self,
+        dataset: DatasetEntity,
+        inference_parameters: Optional[InferenceParameters] = None,
+    ) -> DatasetEntity:
+        logger.info("Start OpenVINO inference")
         update_progress_callback = default_progress_callback
         add_saliency_map = True
         if inference_parameters is not None:
             update_progress_callback = inference_parameters.update_progress
             add_saliency_map = not inference_parameters.is_evaluation
 
-        if self.config and self.config['tiling_parameters']['enable_tiling']['value']:
-            tile_size = self.config['tiling_parameters']['tile_size']['value']
-            tile_overlap = self.config['tiling_parameters']['tile_overlap']['value']
-            max_number = self.config['tiling_parameters']['tile_max_number']['value']
-            logger.info('Run inference with tiling')
+        if self.config and self.config["tiling_parameters"]["enable_tiling"]["value"]:
+            tile_size = self.config["tiling_parameters"]["tile_size"]["value"]
+            tile_overlap = self.config["tiling_parameters"]["tile_overlap"]["value"]
+            max_number = self.config["tiling_parameters"]["tile_max_number"]["value"]
+            logger.info("Run inference with tiling")
 
         dataset_size = len(dataset)
         for i, dataset_item in enumerate(dataset, 1):
             predicted_scene, features = self.inferencer.predict(dataset_item.numpy)
-            if self.config['tiling_parameters']['enable_tiling']['value']:
-                tile_predicted_scene = self.inferencer.predict_tile(dataset_item.numpy, tile_size=tile_size,
-                                                                    overlap=tile_overlap, max_number=max_number)
+            if self.config["tiling_parameters"]["enable_tiling"]["value"]:
+                tile_predicted_scene = self.inferencer.predict_tile(
+                    dataset_item.numpy,
+                    tile_size=tile_size,
+                    overlap=tile_overlap,
+                    max_number=max_number,
+                )
                 dataset_item.append_annotations(tile_predicted_scene.annotations)
 
             dataset_item.append_annotations(predicted_scene.annotations)
             update_progress_callback(int(i / dataset_size * 100))
             feature_vector, saliency_map = features
             if feature_vector is not None:
-                representation_vector = TensorEntity(name="representation_vector", numpy=feature_vector.reshape(-1))
-                dataset_item.append_metadata_item(representation_vector, model=self.model)
+                representation_vector = TensorEntity(
+                    name="representation_vector", numpy=feature_vector.reshape(-1)
+                )
+                dataset_item.append_metadata_item(
+                    representation_vector, model=self.model
+                )
 
             if add_saliency_map and saliency_map is not None:
-                saliency_map = get_actmap(saliency_map, (dataset_item.width, dataset_item.height))
-                saliency_map_media = ResultMediaEntity(name="Saliency Map", type="saliency_map",
-                                                       annotation_scene=dataset_item.annotation_scene,
-                                                       numpy=saliency_map, roi=dataset_item.roi)
+                saliency_map = get_actmap(
+                    saliency_map, (dataset_item.width, dataset_item.height)
+                )
+                saliency_map_media = ResultMediaEntity(
+                    name="Saliency Map",
+                    type="saliency_map",
+                    annotation_scene=dataset_item.annotation_scene,
+                    numpy=saliency_map,
+                    roi=dataset_item.roi,
+                )
                 dataset_item.append_metadata_item(saliency_map_media, model=self.model)
-        logger.info('OpenVINO inference completed')
+        logger.info("OpenVINO inference completed")
         return dataset
 
     @check_input_parameters_type()
-    def evaluate(self,
-                 output_result_set: ResultSetEntity,
-                 evaluation_metric: Optional[str] = None):
-        logger.info('Start OpenVINO metric evaluation')
+    def evaluate(
+        self,
+        output_result_set: ResultSetEntity,
+        evaluation_metric: Optional[str] = None,
+    ):
+        logger.info("Start OpenVINO metric evaluation")
         if evaluation_metric is not None:
             logger.warning(
-                f'Requested to use {evaluation_metric} metric, but parameter is ignored. Use F-measure instead.')
-        output_result_set.performance = MetricsHelper.compute_f_measure(output_result_set).get_performance()
-        logger.info('OpenVINO metric evaluation completed')
+                f"Requested to use {evaluation_metric} metric, but parameter is ignored. Use F-measure instead."
+            )
+        output_result_set.performance = MetricsHelper.compute_f_measure(
+            output_result_set
+        ).get_performance()
+        logger.info("OpenVINO metric evaluation completed")
 
     @check_input_parameters_type()
-    def deploy(self,
-               output_model: ModelEntity) -> None:
-        logger.info('Deploying the model')
+    def deploy(self, output_model: ModelEntity) -> None:
+        logger.info("Deploying the model")
 
         work_dir = os.path.dirname(demo.__file__)
         parameters = {}
-        parameters['type_of_model'] = self.inferencer.model.__model__
-        parameters['converter_type'] = str(self.task_type)
-        parameters['model_parameters'] = self.inferencer.configuration
-        parameters['model_parameters']['labels'] = LabelSchemaMapper.forward(self.task_environment.label_schema)
-        parameters['tiling_parameters'] = self.config['tiling_parameters']
+        parameters["type_of_model"] = self.inferencer.model.__model__
+        parameters["converter_type"] = str(self.task_type)
+        parameters["model_parameters"] = self.inferencer.configuration
+        parameters["model_parameters"]["labels"] = LabelSchemaMapper.forward(
+            self.task_environment.label_schema
+        )
+        parameters["tiling_parameters"] = self.config["tiling_parameters"]
 
         zip_buffer = io.BytesIO()
-        with ZipFile(zip_buffer, 'w') as arch:
+        with ZipFile(zip_buffer, "w") as arch:
             # model files
-            arch.writestr(os.path.join("model", "model.xml"), self.model.get_data("openvino.xml"))
-            arch.writestr(os.path.join("model", "model.bin"), self.model.get_data("openvino.bin"))
             arch.writestr(
-                os.path.join("model", "config.json"), json.dumps(parameters, ensure_ascii=False, indent=4)
+                os.path.join("model", "model.xml"), self.model.get_data("openvino.xml")
+            )
+            arch.writestr(
+                os.path.join("model", "model.bin"), self.model.get_data("openvino.bin")
+            )
+            arch.writestr(
+                os.path.join("model", "config.json"),
+                json.dumps(parameters, ensure_ascii=False, indent=4),
             )
             # model_wrappers files
             for root, dirs, files in os.walk(os.path.dirname(model_wrappers.__file__)):
                 for file in files:
                     file_path = os.path.join(root, file)
-                    arch.write(file_path,
-                               os.path.join("python", "model_wrappers", file_path.split("model_wrappers/")[1]))
+                    arch.write(
+                        file_path,
+                        os.path.join(
+                            "python",
+                            "model_wrappers",
+                            file_path.split("model_wrappers/")[1],
+                        ),
+                    )
             # python files
-            arch.write(os.path.join(work_dir, "requirements.txt"), os.path.join("python", "requirements.txt"))
-            arch.write(os.path.join(work_dir, "LICENSE"), os.path.join("python", "LICENSE"))
-            arch.write(os.path.join(work_dir, "README.md"), os.path.join("python", "README.md"))
-            arch.write(os.path.join(work_dir, "demo.py"), os.path.join("python", "demo.py"))
+            arch.write(
+                os.path.join(work_dir, "requirements.txt"),
+                os.path.join("python", "requirements.txt"),
+            )
+            arch.write(
+                os.path.join(work_dir, "LICENSE"), os.path.join("python", "LICENSE")
+            )
+            arch.write(
+                os.path.join(work_dir, "README.md"), os.path.join("python", "README.md")
+            )
+            arch.write(
+                os.path.join(work_dir, "demo.py"), os.path.join("python", "demo.py")
+            )
         output_model.exportable_code = zip_buffer.getvalue()
-        logger.info('Deploying completed')
+        logger.info("Deploying completed")
 
     @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
-    def optimize(self,
-                 optimization_type: OptimizationType,
-                 dataset: DatasetEntity,
-                 output_model: ModelEntity,
-                 optimization_parameters: Optional[OptimizationParameters] = None):
-        logger.info('Start POT optimization')
+    def optimize(
+        self,
+        optimization_type: OptimizationType,
+        dataset: DatasetEntity,
+        output_model: ModelEntity,
+        optimization_parameters: Optional[OptimizationParameters] = None,
+    ):
+        logger.info("Start POT optimization")
 
         if optimization_type is not OptimizationType.POT:
-            raise ValueError('POT is the only supported optimization type for OpenVino models')
+            raise ValueError(
+                "POT is the only supported optimization type for OpenVino models"
+            )
 
         data_loader = OTEOpenVinoDataLoader(dataset, self.inferencer)
 
@@ -575,37 +687,40 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
             with open(bin_path, "wb") as f:
                 f.write(self.model.get_data("openvino.bin"))
 
-            model_config = ADDict({
-                'model_name': 'openvino_model',
-                'model': xml_path,
-                'weights': bin_path
-            })
+            model_config = ADDict(
+                {"model_name": "openvino_model", "model": xml_path, "weights": bin_path}
+            )
 
             model = load_model(model_config)
 
-            if get_nodes_by_type(model, ['FakeQuantize']):
+            if get_nodes_by_type(model, ["FakeQuantize"]):
                 raise RuntimeError("Model is already optimized by POT")
 
         if optimization_parameters is not None:
             optimization_parameters.update_progress(10)
 
-        engine_config = ADDict({
-            'device': 'CPU',
-            'stat_requests_number': min(self.hparams.pot_parameters.stat_requests_number, multiprocessing.cpu_count()),
-        })
+        engine_config = ADDict(
+            {
+                "device": "CPU",
+                "stat_requests_number": min(
+                    self.hparams.pot_parameters.stat_requests_number,
+                    multiprocessing.cpu_count(),
+                ),
+            }
+        )
 
         stat_subset_size = self.hparams.pot_parameters.stat_subset_size
         preset = self.hparams.pot_parameters.preset.name.lower()
 
         algorithms = [
             {
-                'name': 'DefaultQuantization',
-                'params': {
-                    'target_device': 'ANY',
-                    'preset': preset,
-                    'stat_subset_size': min(stat_subset_size, len(data_loader)),
-                    'shuffle_data': True
-                }
+                "name": "DefaultQuantization",
+                "params": {
+                    "target_device": "ANY",
+                    "preset": preset,
+                    "stat_subset_size": min(stat_subset_size, len(data_loader)),
+                    "shuffle_data": True,
+                },
             }
         ]
 
@@ -627,9 +742,14 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
             with open(os.path.join(tempdir, "model.bin"), "rb") as f:
                 output_model.set_data("openvino.bin", f.read())
             output_model.set_data(
-                "confidence_threshold", np.array([self.confidence_threshold], dtype=np.float32).tobytes())
+                "confidence_threshold",
+                np.array([self.confidence_threshold], dtype=np.float32).tobytes(),
+            )
 
-        output_model.set_data("label_schema.json", label_schema_to_bytes(self.task_environment.label_schema))
+        output_model.set_data(
+            "label_schema.json",
+            label_schema_to_bytes(self.task_environment.label_schema),
+        )
         output_model.set_data("config.json", config_to_bytes(self.hparams))
 
         # set model attributes for quantized model
@@ -640,7 +760,7 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
 
         self.model = output_model
         self.inferencer = self.load_inferencer()
-        logger.info('POT optimization completed')
+        logger.info("POT optimization completed")
 
         if optimization_parameters is not None:
             optimization_parameters.update_progress(100)
