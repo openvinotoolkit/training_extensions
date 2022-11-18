@@ -10,6 +10,7 @@
 - `otx train` - run training of a particular model template.
 - `otx optimize` - run optimization of trained model.
 - `otx eval` - run evaluation of trained model on a particular dataset.
+- `otx explain` - run model's explanation and save saliency map for feature vector to the dump path.
 - `otx export` - export trained model to the OpenVINO format in order to efficiently run it on Intel hardware.
 - `otx demo` - run model inference on images, videos, webcam in order to see how it works on user's data.
 - `otx deploy` - create openvino.zip with self-contained python package, demo application and exported model.

@@ -339,12 +339,12 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
                 dataset_item.append_metadata_item(representation_vector, model=self.model)
 
             if add_saliency_map and saliency_map is not None:
-                saliency_map = get_actmap(saliency_map, (dataset_item.width, dataset_item.height))
+                actmap = get_actmap(saliency_map, (dataset_item.width, dataset_item.height))
                 saliency_map_media = ResultMediaEntity(
                     name="Saliency Map",
                     type="saliency_map",
                     annotation_scene=dataset_item.annotation_scene,
-                    numpy=saliency_map,
+                    numpy=actmap,
                     roi=dataset_item.roi,
                 )
                 dataset_item.append_metadata_item(saliency_map_media, model=self.model)

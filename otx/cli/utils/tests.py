@@ -17,7 +17,11 @@ import os
 import shutil
 from subprocess import run  # nosec
 
+import cv2
+import numpy as np
 import pytest
+
+from otx.api.utils.vis_utils import get_actmap
 
 
 def get_template_rel_dir(template):
@@ -472,3 +476,51 @@ def xfail_templates(templates, xfail_template_ids_reasons):
                 "More than one reason for template. If you have more than one Jira tickets, list them in one reason."
             )
     return xfailed_templates
+
+
+def otx_explain_testing(template, root, otx_dir, args):
+    template_work_dir = get_template_dir(template, root)
+    test_algorithms = ["ActivationMap", "EigenCAM"]
+    check_files = ("Slide1_", "Slide2_", "intel_1_")
+
+    train_ann_file = args.get("--train-ann-file", "")
+    if "hierarchical" in train_ann_file:
+        train_type = "hierarchical"
+    elif "multilabel" in train_ann_file:
+        train_type = "multilabel"
+    else:
+        train_type = "default"
+
+    for test_algorithm in test_algorithms:
+        save_dir = f"explain_{template.model_template_id}/{test_algorithm}/{train_type}/"
+        output_dir = os.path.join(template_work_dir, save_dir)
+        compare_dir = os.path.join(f"{otx_dir}/data/explain_samples/", save_dir)
+        command_line = [
+            "otx",
+            "explain",
+            template.model_template_path,
+            "--load-weights",
+            f"{template_work_dir}/trained_{template.model_template_id}/weights.pth",
+            "--explain-data-root",
+            os.path.join(otx_dir, args["--input"]),
+            "--save-explanation-to",
+            output_dir,
+            "--explain-algorithm",
+            test_algorithm,
+        ]
+        assert run(command_line).returncode == 0
+        for fname in os.listdir(output_dir):
+            if fname.startswith(check_files) and "saliency" in fname:
+                output_image = cv2.imread(os.path.join(output_dir, fname))
+                h, w, _ = output_image.shape
+                compare_image = cv2.imread(os.path.join(compare_dir, fname), 0)
+                compare_image = get_actmap(compare_image, (w, h))
+                diff = np.sum((compare_image - output_image) ** 2) == 0
+                assert diff == 0, f"saliency map output is not same as the sample one, with {diff}!"
+
+
+def otx_actmap_postprocess_test(otx_dir, raw_img_path, processed_img_path):
+    raw = cv2.imread(os.path.join(otx_dir, raw_img_path), 0)
+    processed = cv2.imread(os.path.join(otx_dir, processed_img_path))
+    diff = np.sum((get_actmap(raw, (50, 50)) - processed) ** 2)
+    assert diff == 0, f"post-processing equality is not the same"
