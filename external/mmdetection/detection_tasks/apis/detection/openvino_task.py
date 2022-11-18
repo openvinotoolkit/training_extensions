@@ -173,8 +173,9 @@ class BaseInferencerWithConverter(BaseInferencer):
             self, OpenVINODetectionInferencer
         ):
             detections = np.array(detections)
-        if isinstance(self.converter, MaskToAnnotationConverter) or isinstance(
-            self.converter, RotatedRectToAnnotationConverter
+        if isinstance(
+            self.converter,
+            (MaskToAnnotationConverter, RotatedRectToAnnotationConverter),
         ):
             return self.converter.convert_to_annotation(detections, metadata)
         if len(detections):
