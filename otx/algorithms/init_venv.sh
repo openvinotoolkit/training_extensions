@@ -16,6 +16,7 @@ else
   venv_dir=$(realpath -m "$venv_dir")
 fi
 
+# Check Python version
 if [[ -z $PYTHON_NAME ]]; then
   # the default option -- note that the minimal version of
   # python that is suitable for this repo is python3.7,
@@ -68,11 +69,6 @@ if [ -e "$CUDA_HOME" ]; then
   fi
 fi
 
-# install PyTorch and MMCV.
-export TORCH_VERSION=1.8.2
-export TORCHVISION_VERSION=0.9.2
-export MMCV_VERSION=1.3.14
-
 if [[ -z ${CUDA_VERSION} ]]; then
   echo "CUDA was not found, installing dependencies in CPU-only mode. If you want to use CUDA, set CUDA_HOME and CUDA_VERSION beforehand."
 else
@@ -86,43 +82,36 @@ else
   echo "export CUDA_HOME=${CUDA_HOME}" >> "${venv_dir}"/bin/activate
 fi
 
-CONSTRAINTS_FILE=$(mktemp)
-cat constraints.txt >> "${CONSTRAINTS_FILE}"
-export PIP_CONSTRAINT=${CONSTRAINTS_FILE}
-
 # Newer versions of pip have troubles with NNCF installation from the repo commit.
-pip install pip==21.2.1 || exit 1
-pip install wheel || exit 1
-pip install --upgrade setuptools || exit 1
+#pip install pip==21.2.1 || exit 1
+#pip install wheel || exit 1
+pip install --upgrade pip setuptools || exit 1
 
-if [[ -z $CUDA_VERSION_CODE ]]; then
-  export TORCH_VERSION=${TORCH_VERSION}+cpu
-  export TORCHVISION_VERSION=${TORCHVISION_VERSION}+cpu
-else
-  export TORCH_VERSION=${TORCH_VERSION}+cu${CUDA_VERSION_CODE}
-  export TORCHVISION_VERSION=${TORCHVISION_VERSION}+cu${CUDA_VERSION_CODE}
-fi
-
-# Requirements
-pip install -r ../../requirements/base.txt -r ../../requirements/anomaly.txt -r ../../requirements/openvino.txt
-
-# Install pytorch
-echo torch=="${TORCH_VERSION}" >> "${CONSTRAINTS_FILE}"
-echo torchvision=="${TORCHVISION_VERSION}" >> "${CONSTRAINTS_FILE}"
-pip install torch=="${TORCH_VERSION}" torchvision=="${TORCHVISION_VERSION}" -f https://download.pytorch.org/whl/lts/1.8/torch_lts.html || exit 1
+## Install PyTorch
+#export TORCH_VERSION=1.8.2
+#export TORCHVISION_VERSION=0.9.2
+#
+#if [[ -z $CUDA_VERSION_CODE ]]; then
+#  export TORCH_VERSION=${TORCH_VERSION}+cpu
+#  export TORCHVISION_VERSION=${TORCHVISION_VERSION}+cpu
+#else
+#  export TORCH_VERSION=${TORCH_VERSION}+cu${CUDA_VERSION_CODE}
+#  export TORCHVISION_VERSION=${TORCHVISION_VERSION}+cu${CUDA_VERSION_CODE}
+#fi
+#
+#echo torch=="${TORCH_VERSION}" >> "${CONSTRAINTS_FILE}"
+#echo torchvision=="${TORCHVISION_VERSION}" >> "${CONSTRAINTS_FILE}"
+#pip install torch=="${TORCH_VERSION}" torchvision=="${TORCHVISION_VERSION}" -f https://download.pytorch.org/whl/lts/1.8/torch_lts.html || exit 1
 
 # Install OTX
-pip install -e ../../ || exit 1
+pip install -e ../../[detection] || exit 1
+#pip install -e --use-deprecated=legacy-resolver ../../[detection] || exit 1
+#pip install -e --use-deprecated=legacy-resolver --no-cache-dir ../../[detection] || exit 1
 
-# Install MPA for training
-pip install -r ../../requirements/classification.txt
-pip install -r ../../requirements/segmentation.txt
-pip install --no-cache-dir -r ../../requirements/detection.txt
-
-# Remedy solution for numpy lib conflict
-pip install numpy==1.21.0
-pip uninstall -y mmpycocotools
-pip install mmpycocotools
+## Remedy solution for numpy lib conflict
+#pip install numpy==1.21.0
+#pip uninstall -y mmpycocotools
+#pip install mmpycocotools
 
 # Build NNCF extensions
 echo "Build NNCF extensions ..."
