@@ -27,14 +27,14 @@ class BarlowTwinsLoss(nn.Module):
         self.loss_weight = loss_weight
         self.criterion = CrossEntropyLoss()
 
-    def forward(self, features, labels=None, fc_feats=None):
+    def forward(self, fc_feats, gt_labels=None, aux_feats=None):
         """
         Compute Barlow Twins Loss and, if labels are not none,
         also the Cross-Entropy loss.
         Args:
-            features: hidden vector of shape [bsz, n_views, ...].
-            labels: ground truth of shape [bsz].
             fc_feats: tensor to train the linear classifier on
+            labels: ground truth of shape [bsz].
+            aux_feats: hidden vector of shape [bsz, n_views, ...].
         Returns:
             A dictionary containing the loss in the 'loss' key.
         """
@@ -42,30 +42,34 @@ class BarlowTwinsLoss(nn.Module):
         losses["loss"] = 0
 
         # Cross-Entropy loss: classification loss
-        if fc_feats is not None and labels is not None:
-            labels = labels.squeeze(dim=1)
-            if fc_feats.shape[0] == labels.shape[0] * 2:
+        if fc_feats is not None and gt_labels is not None:
+            gt_labels = gt_labels.squeeze(dim=1)
+            if fc_feats.shape[0] == gt_labels.shape[0] * 2:
                 losses["loss"] = self.criterion(
-                    fc_feats, torch.cat([labels, labels], dim=0)
+                    fc_feats, torch.cat([gt_labels, gt_labels], dim=0)
                 )
             else:
-                losses["loss"] = self.criterion(fc_feats, labels)
+                losses["loss"] = self.criterion(fc_feats, gt_labels)
 
-        if len(features.shape) < 3:
+        if aux_feats is None:
+            losses["loss"] *= self.loss_weight
+            return losses
+
+        if len(aux_feats.shape) < 3:
             raise ValueError(
-                "`features` needs to be [bsz, n_views, ...],"
+                "`aux_feats` needs to be [bsz, n_views, ...],"
                 "at least 3 dimensions are required"
             )
-        if len(features.shape) > 3:
-            features = features.view(features.shape[0], features.shape[1], -1)
+        if len(aux_feats.shape) > 3:
+            aux_feats = aux_feats.view(aux_feats.shape[0], aux_feats.shape[1], -1)
 
-        batch_size = features.shape[0]
-        dimensionality = features.shape[2]
+        batch_size = aux_feats.shape[0]
+        dimensionality = aux_feats.shape[2]
 
         # Barlow Twins loss: redundancy reduction
         bn = nn.BatchNorm1d(dimensionality, affine=False, track_running_stats=False)
         # empirical cross-correlation matrix
-        eccm = bn(features[:, 0, :]).T @ bn(features[:, 1, :])
+        eccm = bn(aux_feats[:, 0, :]).T @ bn(aux_feats[:, 1, :])
         eccm.div_(batch_size)
 
         # Compute the invariance term (diagonal) and redundacy term (off-diagonal)
