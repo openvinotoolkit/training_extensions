@@ -105,8 +105,7 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         return dataset
 
     def explain(self, **kwargs):
-        """Main explain function of OTX Segmentation."""
-        raise NotImplementedError("Explain mode will not be supported for Segmentation")
+        raise NotImplementedError("Explain mode will not be supported for Segmentation.")
 
     def evaluate(self, output_resultset: ResultSetEntity, evaluation_metric: Optional[str] = None):
         """Evaluate function of OTX Segmentation Task."""

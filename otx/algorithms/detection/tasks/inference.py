@@ -106,7 +106,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
 
     def explain(self, **kwargs):
         """Main explain function of OTX Detection."""
-        raise NotImplementedError("Explain mode currently not supported for Detection model")
+        raise NotImplementedError("Explain mode currently not supported for Detection model.")
 
     def _infer_detector(
         self,

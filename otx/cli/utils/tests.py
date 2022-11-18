@@ -517,10 +517,3 @@ def otx_explain_testing(template, root, otx_dir, args):
                 compare_image = get_actmap(compare_image, (w, h))
                 diff = np.sum((compare_image - output_image) ** 2) == 0
                 assert diff == 0, f"saliency map output is not same as the sample one, with {diff}!"
-
-
-def otx_actmap_postprocess_test(otx_dir, raw_img_path, processed_img_path):
-    raw = cv2.imread(os.path.join(otx_dir, raw_img_path), 0)
-    processed = cv2.imread(os.path.join(otx_dir, processed_img_path))
-    diff = np.sum((get_actmap(raw, (50, 50)) - processed) ** 2)
-    assert diff == 0, f"post-processing equality is not the same"
