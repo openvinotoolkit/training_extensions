@@ -24,6 +24,8 @@ class SelfSLClassifier(SAMImageClassifier):
             head=head,
             pretrained=pretrained,
         )
+        self.hierarchical = False
+        self.multilabel = False
 
     def forward_train(self, img, gt_label, **kwargs):
         img = [img[:, 0, :, :, :], img[:, 1, :, :, :]]
