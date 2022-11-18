@@ -20,8 +20,9 @@ from otx.algorithms.classification.adapters.deep_object_reid.tasks import (
 from otx.api.entities.task_environment import TaskEnvironment
 
 
+# pylint: disable=useless-parent-delegation, too-many-ancestors
 class OTXClassificationNNCFTask(ClassificationNNCFTask):
     """Task for compressing classification models using NNCF."""
 
-    def __init__(self, task_environment: TaskEnvironment):  # pylint: disable=useless-parent-delegation
+    def __init__(self, task_environment: TaskEnvironment):
         super().__init__(task_environment)

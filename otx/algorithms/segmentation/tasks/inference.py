@@ -103,6 +103,10 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         self._add_predictions_to_dataset(prediction_results, dataset, dump_soft_prediction=not is_evaluation)
         return dataset
 
+    def explain(self, **kwargs):
+        """Main explain function of OTX Segmentation."""
+        raise NotImplementedError("Explain mode will not be supported for Segmentation")
+
     def evaluate(self, output_resultset: ResultSetEntity, evaluation_metric: Optional[str] = None):
         """Evaluate function of OTX Segmentation Task."""
         logger.info("called evaluate()")
