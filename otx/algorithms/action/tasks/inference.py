@@ -17,6 +17,7 @@
 import copy
 import io
 import os
+import warnings
 from typing import Iterable, Optional, Tuple
 
 import numpy as np
@@ -28,7 +29,7 @@ from mmcv.parallel import MMDataParallel
 from mmcv.runner import load_checkpoint, load_state_dict
 from mmcv.utils import Config
 
-from otx.algorithms.action.adapters.mmaction import patch_config, set_data_classes
+from otx.algorithms.action.adapters.mmaction import patch_config, set_data_classes, export_model
 from otx.algorithms.action.configs.base import ActionClsConfig
 from otx.algorithms.common.adapters.mmcv.utils import prepare_for_testing
 from otx.algorithms.common.tasks.training_base import BaseTask
@@ -132,7 +133,7 @@ class ActionClsInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
 
         test_config = prepare_for_testing(self._recipe_cfg, dataset)
         mm_test_dataset = build_dataset(test_config.data.test)
-        # TODO Get batch size and num_gpus autometically
+        # TODO Get batch size and num_gpus automatically
         batch_size = 1
         mm_test_dataloader = build_dataloader(
             mm_test_dataset,
@@ -298,33 +299,28 @@ class ActionClsInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
             raise RuntimeError(f"not supported export type {export_type}")
         output_model.model_format = ModelFormat.OPENVINO
         output_model.optimization_type = ModelOptimizationType.MO
-
-        stage_module = "DetectionExporter"
-        results = self._run_task(stage_module, mode="train", precision="FP32", export=True)
-        results = results.get("outputs")
-        logger.debug(f"results of run_task = {results}")
-        if results is None:
-            logger.error("error while exporting model, result is None")
-        else:
-            bin_file = results.get("bin")
-            xml_file = results.get("xml")
-            if xml_file is None or bin_file is None:
-                raise RuntimeError("invalid status of exporting. bin and xml should not be None")
-            with open(bin_file, "rb") as f:
-                output_model.set_data("openvino.bin", f.read())
-            with open(xml_file, "rb") as f:
-                output_model.set_data("openvino.xml", f.read())
-            output_model.set_data(
-                "confidence_threshold",
-                np.array([self.confidence_threshold], dtype=np.float32).tobytes(),
-            )
-            output_model.precision = [ModelPrecision.FP32]
+        self._init_task()
+        
+        try:
+            from torch.jit._trace import TracerWarning
+            warnings.filterwarnings('ignore', category=TracerWarning)
+            export_model(self._model,
+                         self._recipe_cfg,
+                         onnx_model_path=f"{self._output_path}/model.onnx",
+                         output_dir_path=f"{self._output_path}")
+            bin_file = [f for f in os.listdir(self._output_path) if f.endswith('.bin')][0]
+            xml_file = [f for f in os.listdir(self._output_path) if f.endswith('.xml')][0]
+            with open(os.path.join(self._output_path, bin_file), "rb") as f:
+                output_model.set_data('openvino.bin', f.read())
+            with open(os.path.join(self._output_path, xml_file), "rb") as f:
+                output_model.set_data('openvino.xml', f.read())
+            output_model.set_data('confidence_threshold', np.array([self.confidence_threshold], dtype=np.float32).tobytes())
+            output_model.precision = self._precision
             output_model.optimization_methods = self._optimization_methods
-            output_model.set_data(
-                "label_schema.json",
-                label_schema_to_bytes(self._task_environment.label_schema),
-            )
-        logger.info("Exporting completed")
+        except Exception as ex:
+            raise RuntimeError('Optimization was unsuccessful.') from ex
+        output_model.set_data("label_schema.json", label_schema_to_bytes(self._task_environment.label_schema))
+        logger.info('Exporting completed')
 
     def _init_recipe_hparam(self) -> dict:
         configs = super()._init_recipe_hparam()
