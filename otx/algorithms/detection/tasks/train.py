@@ -24,6 +24,7 @@ from mpa.utils.logger import get_logger
 
 from otx.algorithms.common.adapters.mmcv.hooks import OTXLoggerHook
 from otx.algorithms.common.utils.callback import TrainingProgressCallback
+from otx.algorithms.common.utils.data import get_unlabeled_dataset
 from otx.algorithms.detection.adapters.mmdet.utils.config_utils import (
     cluster_anchors,
     should_cluster_anchors,
