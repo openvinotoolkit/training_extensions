@@ -15,6 +15,9 @@
 # and limitations under the License.
 
 # pylint: disable=too-many-nested-blocks, invalid-name
+
+from enum import Enum, auto
+
 import datumaro
 from datumaro.components.dataset import Dataset as DatumaroDataset
 from datumaro.components.annotation import Bbox as DatumaroBbox
@@ -33,10 +36,14 @@ from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.shapes.rectangle import Rectangle
 from otx.api.entities.shapes.polygon import Point, Polygon
 from otx.api.entities.subset import Subset
+from otx.api.entities.model_template import TaskType
+
 from otx.api.utils.argument_checks import (
     DatasetParamTypeCheck,
     check_input_parameters_type,
 )
+from mpa.utils.logger import get_logger
+logger = get_logger()
 
 ###### Procedure ######
 # 1. Find the type of dataset by using Datumaro.Environment.detection_datset()
@@ -52,15 +59,22 @@ from otx.api.utils.argument_checks import (
 # TODO1: Consider H-label, multi-label classification (need to more analysis about Datumaro)
 # TODO2: Consider auto-split by using Datumaro function
 # TODO3: Unlabeled support 
+
+
+class ClassificationType(Enum):
+    """Classification Type."""
+
+    MULTICLASS = auto()
+    MULTILABEL = auto()
+    MULTIHEAD = auto()
+
+
 class DatumaroHandler:
     """Handler to use Datumaro as a front-end dataset."""
-    def __init__(self):
-        self.supported_task_data_dict = {
-            'classification': ['imagenet'],
-            'detection': ['coco', 'voc'], 
-            'segmentation': ['common_semantic_segmentation', 'voc', 'cityscapes', 'ade20k2017', 'ade20k2020'],
-            'common': ['cvat'] #TODO: consider cvat for only video? 
-        }
+    def __init__(self, task_type:str):
+        self.task_type = task_type
+        logger.info('[*] Task type: {}'.format(self.task_type))
+        self.domain = task_type.domain
     
     def import_dataset(
             self,
@@ -76,21 +90,13 @@ class DatumaroHandler:
         """ Import dataset by using Datumaro."""
         # Find self.data_type and task_type
         data_type_candidates = self._detect_dataset_format(path=train_data_roots)
-        print('[*] data_type_candidates: ', data_type_candidates)
-        
-        #TODO: more better way for classification
-        if 'imagenet' in data_type_candidates:
-            self.data_type = 'imagenet'
-        else:
-            self.data_type = data_type_candidates[0]
-        print('[*] selected data type: ', self.data_type)
-        
-        self.task_type = self._find_task_type(self.data_type)
-        print('[*] task_type: ', self.task_type)
-        self._set_domain(self.task_type)
+        logger.info('[*] Data type candidates: {}'.format(data_type_candidates))
+        self.data_type = self._select_data_type(data_type_candidates) 
+        logger.info('[*] Selected data type: {}'.format(self.data_type))
 
         # Construct dataset for training, validation, unlabeled
         self.dataset = {}
+        logger.info('[*] Importing Datasets...')
         datumaro_dataset = DatumaroDataset.import_from(train_data_roots, format=self.data_type)
 
         # Annotation type filtering
@@ -102,13 +108,16 @@ class DatumaroHandler:
         for k, v in datumaro_dataset.subsets().items():
             if 'train' in k or 'default' in k:
                 self.dataset[Subset.TRAINING] = v
-            elif 'val' in k or 'test' in k:
+            elif 'val' in k:
                 self.dataset[Subset.VALIDATION] = v
         
         # If validation is manually defined --> set the validation data according to user's input
         if val_data_roots is not None:
-            val_data_type = self._detect_dataset_format(path=val_data_roots)
-            assert self.data_type == val_data_type, "The data types of training and validation must be same"
+            val_data_candidates = self._detect_dataset_format(path=val_data_roots)
+            val_data_type = self._select_data_type(val_data_candidates)
+            assert self.data_type == val_data_type, "The data types of training and validation must be same, the type of train:{} val:{}".format(
+               self.data_type, val_data_type 
+            )
             self.dataset[Subset.VALIDATION] = DatumaroDataset.import_from(val_data_roots, format=val_data_type)
 
         if Subset.VALIDATION not in self.dataset.keys():
@@ -121,13 +130,14 @@ class DatumaroHandler:
             #TODO: enable to read unlabeled file lists
         
         return self.dataset
-    
-    def _find_task_type(self, data_type:str ) -> str:
-        """ Find task type (cls, det, seg) by using data type. """
-        for k in self.supported_task_data_dict.keys():
-            if self.data_type in self.supported_task_data_dict[k]:
-                return k
-        return ValueError("{} is not supported data type, supported data type: {}".format(self.data_type, self.supported_task_data_dict.values()))
+
+    def _select_data_type(self, candidates:list):
+        #TODO: more better way for classification
+        if 'imagenet' in candidates:
+            data_type = 'imagenet'
+        else:
+            data_type = candidates[0]
+        return data_type
 
     def _auto_split(self): ## To be implemented
         """ Automatic train/val split."""
@@ -136,21 +146,6 @@ class DatumaroHandler:
     def _detect_dataset_format(self, path: str) -> str:
         """ Detection dataset format (ImageNet, COCO, Cityscapes, ...). """
         return datumaro.Environment().detect_dataset(path=path) 
-
-    def _set_domain(self, task_type: str) -> None:
-        """ Get domain type."""
-        if task_type == 'classification':
-            self.domain = Domain.CLASSIFICATION
-        elif task_type == 'detection':
-            self.domain = Domain.DETECTION
-        elif task_type == 'segmentation':
-            self.domain = Domain.SEGMENTATION
-        elif task_type == 'video':
-            raise NotImplementedError()
-        else:
-            raise ValueError("{} is not proper type of task, supported task type: {}".format(
-                task_type, self.supported_task_data_dict.keys()))
-    
 
     def convert_to_otx_format(self, datumaro_dataset:dict) -> DatasetEntity:
         """ Convert Datumaro Datset to DatasetEntity(OTE_SDK)"""
@@ -162,7 +157,8 @@ class DatumaroHandler:
         for subset, subset_data in datumaro_dataset.items():
             for phase, datumaro_items in subset_data.subsets().items():
                 for datumaro_item in datumaro_items:
-                    image = Image(data=datumaro_item.media.data)
+                    print('[*] datumaro item: ', datumaro_item)
+                    image = Image(file_path=datumaro_item.media.path)
                     if self.domain == Domain.CLASSIFICATION:
                         labels = [
                             ScoredLabel(
@@ -194,22 +190,35 @@ class DatumaroHandler:
                         shapes = []
                         for ann in datumaro_item.annotations:
                             if isinstance(ann, DatumaroMask):
-                                datumaro_polygons = MasksToPolygons.convert_mask(ann)
-                                for d_polygon in datumaro_polygons:
-                                    shapes.append(
-                                        Annotation(
-                                            Polygon(points=[Point(x=d_polygon.points[i]/image.width,y=d_polygon.points[i+1]/image.height) for i in range(len(d_polygon.points)-1)]),
-                                            labels=[
-                                                ScoredLabel(
-                                                    label=label_entities[d_polygon.label]
-                                                )
-                                            ]
+                                if ann.label > 0:
+                                    datumaro_polygons = MasksToPolygons.convert_mask(ann)
+                                    for d_polygon in datumaro_polygons:
+                                        shapes.append(
+                                            Annotation(
+                                                Polygon(points=[Point(x=d_polygon.points[i]/image.width,y=d_polygon.points[i+1]/image.height) for i in range(0,len(d_polygon.points),2)]),
+                                                labels=[
+                                                    ScoredLabel(
+                                                        label=label_entities[d_polygon.label-1]
+                                                    )
+                                                ]
+                                            )
                                         )
-                                    )
                     else : #Video
                         raise NotImplementedError()
                     annotation_scene = AnnotationSceneEntity(kind=AnnotationSceneKind.ANNOTATION, annotations=shapes)
                     dataset_item = DatasetItemEntity(image, annotation_scene, subset=subset)
                     dataset_items.append(dataset_item)
-
         return DatasetEntity(items=dataset_items)
+
+    def generate_label_schema(self, dataset:DatumaroDataset) -> LabelSchemaEntity:
+        """Generates label schema depending on task type.
+
+        Args:
+            dataset (DatumaroDataset): Task specific dataset.
+            task_type (TaskType): Task type used to call dataset specific functions and update label schema.
+
+        Returns:
+            LabelSchemaEntity: Label schema for the task.
+        """
+        if self.task_type == TaskType.CLASSIFICATION:
+            pass
