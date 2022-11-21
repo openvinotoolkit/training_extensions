@@ -28,8 +28,9 @@ class SelfSLClassifier(SAMImageClassifier):
         self.multilabel = False
 
     def forward_train(self, img, gt_label, **kwargs):
-        img = [img[:, 0, :, :, :], img[:, 1, :, :, :]]
-        img = torch.cat(img, dim=0)
+        # concatenate the different image views along the batch size
+        if len(img.shape) == 5:
+            img = torch.cat([img[:, d, :, :, :] for d in range(img.shape[1])], dim=0)
         x = self.extract_feat(img)
         losses = dict()
         loss = self.head.forward_train(x, gt_label)
