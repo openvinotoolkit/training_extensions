@@ -1,6 +1,6 @@
 """Collection of utils for task implementation in Detection Task."""
 
-# Copyright (C) 2021 Intel Corporation
+# Copyright (C) 2022 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ import copy
 import math
 import os
 from collections import defaultdict
+from collections.abc import Mapping
 from typing import List, Optional, Union
 
 import torch
@@ -30,8 +31,8 @@ from otx.algorithms.common.adapters.mmcv.utils import (
     is_epoch_based_runner,
     patch_color_conversion,
     prepare_work_dir,
-    remove_from_config,
 )
+from otx.algorithms.common.adapters.mmcv.config_utils import remove_from_config
 from otx.algorithms.detection.configs.base import DetectionConfig
 from otx.algorithms.detection.utils.data import (
     format_list_to_str,
@@ -183,8 +184,7 @@ def prepare_for_training(
     train_dataset: DatasetEntity,
     val_dataset: DatasetEntity,
     time_monitor: TimeMonitorCallback,
-    learning_curves: defaultdict,
-) -> Config:
+) -> Union[Config, ConfigDict]:
     """Prepare configs for training phase."""
     config = copy.deepcopy(config)
     prepare_work_dir(config)
@@ -193,7 +193,6 @@ def prepare_for_training(
     config.data.val.otx_dataset = val_dataset
     patch_adaptive_repeat_dataset(config, len(train_dataset))
     config.custom_hooks.append({"type": "OTXProgressHook", "time_monitor": time_monitor, "verbose": True})
-    config.log_config.hooks.append({"type": "OTXLoggerHook", "curves": learning_curves})
     return config
 
 
@@ -204,7 +203,7 @@ def set_data_classes(config: Config, labels: List[LabelEntity]):
     for subset in ("train", "val", "test"):
         cfg = get_data_cfg(config, subset)
         cfg.labels = labels
-        config.data[subset].labels = labels
+        #  config.data[subset].labels = labels
 
     # Set proper number of classes in model's detection heads.
     head_names = ("mask_head", "bbox_head", "segm_head")
@@ -229,20 +228,7 @@ def set_data_classes(config: Config, labels: List[LabelEntity]):
 def patch_datasets(config: Config, domain: Domain):
     """Update dataset configs."""
 
-    assert "data" in config
-    for subset in ("train", "val", "test"):
-        cfg = config.data.get(subset, None)
-        if not cfg:
-            continue
-        if cfg.type in ("RepeatDataset", "MultiImageMixDataset"):
-            cfg = cfg.dataset
-        cfg.type = "MPADetDataset"
-        cfg.domain = domain
-        cfg.otx_dataset = None
-        cfg.labels = None
-        remove_from_config(cfg, "ann_file")
-        remove_from_config(cfg, "img_prefix")
-        remove_from_config(cfg, "classes")  # Get from DatasetEntity
+    def update_pipeline(cfg):
         for pipeline_step in cfg.pipeline:
             if pipeline_step.type == "LoadImageFromFile":
                 pipeline_step.type = "LoadImageFromOTXDataset"
@@ -253,6 +239,25 @@ def patch_datasets(config: Config, domain: Domain):
             if subset == "train" and pipeline_step.type == "Collect":
                 pipeline_step = get_meta_keys(pipeline_step)
         patch_color_conversion(cfg.pipeline)
+
+    assert "data" in config
+    for subset in ("train", "val", "test"):
+        cfgs = get_data_cfgs(config, subset)
+
+        for cfg in cfgs:
+            cfg.type = "MPADetDataset"
+            cfg.domain = domain
+            cfg.otx_dataset = None
+            cfg.labels = None
+            remove_from_config(cfg, "ann_file")
+            remove_from_config(cfg, "img_prefix")
+            remove_from_config(cfg, "classes")  # Get from DatasetEntity
+            update_pipeline(cfg)
+
+        # 'MultiImageMixDataset' wrapper dataset has pipeline as well
+        # which we should update
+        if len(cfgs) and config.data[subset].type == "MultiImageMixDataset":
+            update_pipeline(config.data[subset])
 
 
 def patch_evaluation(config: Config):
@@ -275,8 +280,22 @@ def patch_data_pipeline(config: Config, template_file_path: str):
         config.merge_from_dict(data_pipeline_cfg)
 
 
+def should_cluster_anchors(model_cfg: Config):
+    if (
+        hasattr(model_cfg.model, "bbox_head")
+        and hasattr(model_cfg.model.bbox_head, "anchor_generator")
+        and getattr(
+            model_cfg.model.bbox_head.anchor_generator,
+            "reclustering_anchors",
+            False,
+        )
+    ):
+        return True
+    return False
+
+
 @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
-def cluster_anchors(config: Config, dataset: DatasetEntity, model: BaseDetector):
+def cluster_anchors(model_config: Config, data_config: Config, dataset: DatasetEntity):
     """Update configs for cluster_anchors."""
     if not KMEANS_IMPORT:
         raise ImportError(
@@ -286,9 +305,9 @@ def cluster_anchors(config: Config, dataset: DatasetEntity, model: BaseDetector)
 
     logger.info("Collecting statistics from training dataset to cluster anchor boxes...")
     [target_wh] = [
-        transforms.img_scale for transforms in config.data.test.pipeline if transforms.type == "MultiScaleFlipAug"
+        transforms.img_scale for transforms in data_config.data.test.pipeline if transforms.type == "MultiScaleFlipAug"
     ]
-    prev_generator = config.model.bbox_head.anchor_generator
+    prev_generator = model_config.model.bbox_head.anchor_generator
     group_as = [len(width) for width in prev_generator.widths]
     wh_stats = get_sizes_from_dataset_entity(dataset, list(target_wh))
 
@@ -297,7 +316,7 @@ def cluster_anchors(config: Config, dataset: DatasetEntity, model: BaseDetector)
             f"There are not enough objects to cluster: {len(wh_stats)} were detected, while it should be "
             f"at least {sum(group_as)}. Anchor box clustering was skipped."
         )
-        return config, model
+        return
 
     widths, heights = get_anchor_boxes(wh_stats, group_as)
     logger.info(
@@ -308,16 +327,10 @@ def cluster_anchors(config: Config, dataset: DatasetEntity, model: BaseDetector)
         f"Anchor boxes heights have been updated from {format_list_to_str(prev_generator.heights)} "
         f"to {format_list_to_str(heights)}"
     )
-    config_generator = config.model.bbox_head.anchor_generator
+    config_generator = model_config.model.bbox_head.anchor_generator
     config_generator.widths, config_generator.heights = widths, heights
 
-    model_generator = model.bbox_head.prior_generator
-    model_generator.widths, model_generator.heights = widths, heights
-    model_generator.base_anchors = model_generator.gen_base_anchors()
-
-    config.model.bbox_head.anchor_generator = config_generator
-    model.bbox_head.prior_generator = model_generator
-    return config, model
+    model_config.model.bbox_head.anchor_generator = config_generator
 
 
 @check_input_parameters_type()
@@ -327,3 +340,35 @@ def get_data_cfg(config: Union[Config, ConfigDict], subset: str = "train") -> Co
     while "dataset" in data_cfg:
         data_cfg = data_cfg.dataset
     return data_cfg
+
+
+@check_input_parameters_type()
+def get_data_cfgs(  # noqa: C901
+    config: Union[Config, ConfigDict], subset: str = "train"
+) -> List[Config]:
+    """Return a list of dataset configs."""
+
+    if config.data.get(subset, None) is None:
+        return []
+
+    data_cfg = config.data[subset]
+
+    def get_datasets(cfg, key=None):
+        if key == "dataset":
+            return [cfg]
+        elif key == "datasets":
+            assert isinstance(cfg, list)
+        out = []
+        if isinstance(cfg, Mapping):
+            for key, value in cfg.items():
+                if isinstance(value, (Mapping, list)):
+                    out += get_datasets(value, key)
+        elif isinstance(cfg, list):
+            for value in cfg:
+                if isinstance(value, (Mapping, list)):
+                    out_ = get_datasets(value)
+                    out += value if not out_ and key == "datasets" else out_
+        return out
+
+    data_cfgs = get_datasets(data_cfg)
+    return data_cfgs if data_cfgs else [data_cfg]

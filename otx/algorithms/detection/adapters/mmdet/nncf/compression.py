@@ -1,4 +1,4 @@
-# Copyright (C) 2021 Intel Corporation
+# Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 import os
@@ -7,42 +7,18 @@ import tempfile
 
 import mmcv
 import torch
-
 from mmdet.utils import get_root_logger
-from .utils import (check_nncf_is_enabled, get_nncf_version, is_nncf_enabled,
-                    load_checkpoint, no_nncf_trace, prepare_mmdet_model_for_execution)
 
+from otx.algorithms.common.adapters.nncf.utils import (
+    check_nncf_is_enabled,
+    load_checkpoint,
+    no_nncf_trace,
+)
+from otx.algorithms.common.adapters.nncf.compression import (
+    is_checkpoint_nncf,
+)
 
-def get_nncf_metadata():
-    """
-    The function returns NNCF metadata that should be stored into a checkpoint.
-    The metadata is used to check in wrap_nncf_model if the checkpoint should be used
-    to resume NNCF training or initialize NNCF fields of NNCF-wrapped model.
-    """
-    check_nncf_is_enabled()
-    return dict(nncf_enable_compression=True, nncf_version=get_nncf_version())
-
-
-def is_state_nncf(state):
-    """
-    The function uses metadata stored in a dict_state to check if the
-    checkpoint was the result of trainning of NNCF-compressed model.
-    See the function get_nncf_metadata above.
-    """
-    return bool(state.get('meta',{}).get('nncf_enable_compression', False))
-
-
-def is_checkpoint_nncf(path):
-    """
-    The function uses metadata stored in a checkpoint to check if the
-    checkpoint was the result of trainning of NNCF-compressed model.
-    See the function get_nncf_metadata above.
-    """
-    try:
-        checkpoint = torch.load(path, map_location='cpu')
-        return is_state_nncf(checkpoint)
-    except FileNotFoundError:
-        return False
+from .utils import prepare_mmdet_model_for_execution
 
 
 def get_nncf_config_from_meta(path):
@@ -87,17 +63,6 @@ def get_nncf_config_from_meta(path):
     return nncf_config_part
 
 
-def extract_model_and_compression_states(resuming_checkpoint):
-    """
-    The function return from checkpoint state_dict and compression_state.
-    """
-    if resuming_checkpoint is None:
-        return None, None
-    model_state_dict = resuming_checkpoint.get("model" if "model" in resuming_checkpoint else "state_dict")
-    compression_state = resuming_checkpoint.get("compression_state")
-    return model_state_dict, compression_state
-
-
 def wrap_nncf_model(model,
                     cfg,
                     distributed=False,
@@ -106,7 +71,11 @@ def wrap_nncf_model(model,
                     get_fake_input_func=None,
                     init_state_dict=None,
                     is_accuracy_aware=False,
-                    is_alt_ssd_export=False):
+                    is_alt_ssd_export=None):
+
+    # TODO
+    if is_alt_ssd_export is not None:
+        raise NotImplementedError
     """
     The function wraps mmdet model by NNCF
     Note that the parameter `get_fake_input_func` should be the function `get_fake_input`
@@ -236,6 +205,8 @@ def wrap_nncf_model(model,
         nncf_compress_postprocessing = cfg.get('nncf_compress_postprocessing')
         logger.debug('set should_compress_postprocessing='f'{nncf_compress_postprocessing}')
     else:
+        # TODO: Do we have to keep this configuration?
+        # This configuration is not enabled in forked mmdetection library in the first place
         nncf_compress_postprocessing = True
 
     def _get_fake_data_for_forward(cfg, nncf_config, get_fake_input_func):
@@ -250,38 +221,22 @@ def wrap_nncf_model(model,
     def dummy_forward(model):
         fake_data = _get_fake_data_for_forward(cfg, nncf_config, get_fake_input_func)
         img, img_metas = fake_data["img"], fake_data["img_metas"]
-        img[0] = nncf_model_input(img[0])
-        if nncf_compress_postprocessing:
-            if is_alt_ssd_export:
-                img = img[0]
-                img_metas = img_metas[0]
-            ctx = model.forward_export_context(img_metas)
-            logger.debug(f"NNCF will compress a postprocessing part of the model")
-        else:
-            ctx = model.forward_dummy_context(img_metas)
-            logger.debug(f"NNCF will NOT compress a postprocessing part of the model")
+
+        ctx = model.nncf_trace_context(img_metas, nncf_compress_postprocessing)
         with ctx:
+            # The device where model is could be changed under this context
+            img = [i.to(next(model.parameters()).device) for i in img]
+            # Marking data as NNCF network input must be after device movement
+            img = [nncf_model_input(i) for i in img]
+            if nncf_compress_postprocessing:
+                logger.debug("NNCF will try to compress a postprocessing part of the model")
+            else:
+                logger.debug("NNCF will NOT compress a postprocessing part of the model")
+                img = img[0]
             model(img)
 
     def wrap_inputs(args, kwargs):
-        # during dummy_forward
-        if not len(kwargs):
-            if is_alt_ssd_export:
-                if not isinstance(args[0], TracedTensor):
-                    nncf_input = nncf_model_input(args[0])
-                return (nncf_input,), kwargs
-            else:
-                if not isinstance(args[0][0], TracedTensor):
-                    args[0][0] = nncf_model_input(args[0][0])
-                return args, kwargs
-
-        # during building original graph
-        if not kwargs.get('return_loss') and kwargs.get('forward_export'):
-            return args, kwargs
-
-        # during model's forward in export
-        assert 'img' in kwargs, 'During model forward img must be in kwargs'
-        img = kwargs['img']
+        img = kwargs.get("img") if "img" in kwargs else args[0]
         if isinstance(img, list):
             assert len(img) == 1, 'Input list must have a length 1'
             assert torch.is_tensor(img[0]), 'Input for a model must be a tensor'
@@ -289,11 +244,11 @@ def wrap_nncf_model(model,
         else:
             assert torch.is_tensor(img), 'Input for a model must be a tensor'
             img = nncf_model_input(img)
-        kwargs['img'] = img
+        if "img" in kwargs:
+            kwargs['img'] = img
+        else:
+            args = (img, *args[1:])
         return args, kwargs
-
-    model.dummy_forward_fn = dummy_forward
-    export_method = type(model).onnx_export
 
     if 'log_dir' in nncf_config:
         os.makedirs(nncf_config['log_dir'], exist_ok=True)
@@ -305,36 +260,5 @@ def wrap_nncf_model(model,
                                                       compression_state=compression_state)
     if resuming_state_dict:
         load_state(model, resuming_state_dict, is_resume=True)
-    model.onnx_export = export_method.__get__(model)
 
     return compression_ctrl, model
-
-
-def get_uncompressed_model(module):
-    if not is_nncf_enabled():
-        return module
-    from nncf.torch.nncf_network import NNCFNetwork
-    if isinstance(module, NNCFNetwork):
-        return module.get_nncf_wrapped_model()
-    return module
-
-
-class AccuracyAwareLrUpdater:
-    def __init__(self, lr_hook, runner, optimizer=None):
-        self._lr_hook = lr_hook
-        self._runner = runner
-        if optimizer:
-            runner.optimizer = optimizer
-        self._lr_hook.before_run(runner)
-        self._lr_hook.warmup_iters = 0
-
-    def step(self, *args, **kwargs):
-        pass
-
-    @property
-    def base_lrs(self):
-        return self._lr_hook.base_lr
-
-    @base_lrs.setter
-    def base_lrs(self, value):
-        self._lr_hook.base_lr = value

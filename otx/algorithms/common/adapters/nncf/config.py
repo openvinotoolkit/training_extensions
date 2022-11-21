@@ -1,5 +1,5 @@
 """
- Copyright (c) 2021 Intel Corporation
+ Copyright (c) 2022 Intel Corporation
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
  You may obtain a copy of the License at
@@ -12,7 +12,6 @@
 """
 
 import json
-import os
 from copy import copy
 
 
@@ -20,7 +19,7 @@ def load_nncf_config(path):
     assert path.endswith('.json'), (
             f'Only json files are allowed as optimisation configs, provided {path}')
     with open(path) as f_src:
-        nncf_config  = json.load(f_src)
+        nncf_config = json.load(f_src)
     return nncf_config
 
 

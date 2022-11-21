@@ -37,7 +37,7 @@ train_pipeline = [
         hue_delta=18,
     ),
     dict(type="RandomFlip", flip_ratio=0.5),
-    dict(type="Resize", keep_ratio=True),
+    dict(type="Resize", img_scale=img_scale, keep_ratio=True),
     dict(type="Pad", pad_to_square=True, pad_val=114.0),
     dict(type="Normalize", **img_norm_cfg),
     dict(type="DefaultFormatBundle"),
@@ -66,6 +66,8 @@ data = dict(
     workers_per_gpu=4,
     num_classes=2,
     train=dict(
+        # make sure to clean up recipe dataset
+        _delete_=True,
         type="MultiImageMixDataset",
         dataset=dict(
             type=dataset_type,

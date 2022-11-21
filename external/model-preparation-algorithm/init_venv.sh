@@ -126,7 +126,7 @@ pip install -e . || exit 1
 pip install numpy==1.21.4 || exit 1
 #pip install --no-cache-dir --no-binary=mmpycocotools mmpycocotools || exit 1
 #pip install -e ../mmdetection/submodule || exit 1
-pip install mmdet==2.25.1 exit 1
+pip install mmdet==2.25.1 || exit 1
 #pip install -e ../mmsegmentation/submodule || exit 1
 pip install -e submodule || exit 1
 

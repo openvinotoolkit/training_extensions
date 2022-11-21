@@ -30,15 +30,12 @@ from mmdet.models import build_detector
 from mpa.utils.config_utils import remove_custom_hook
 from mpa.utils.logger import get_logger
 
-from otx.algorithms.detection.adapters.mmdet.nncf import (
+from otx.algorithms.common.adapters.nncf import (
     check_nncf_is_enabled,
     is_accuracy_aware_training_set,
     is_state_nncf,
-    wrap_nncf_model,
 )
-from otx.algorithms.detection.adapters.mmdet.nncf.config import compose_nncf_config
-from otx.algorithms.detection.adapters.mmdet.nncf.utils import build_val_dataloader
-from otx.algorithms.detection.adapters.mmdet.utils.fake_input import get_fake_input
+from otx.algorithms.common.adapters.nncf.config import compose_nncf_config
 from otx.algorithms.common.adapters.mmcv.hooks import OTXLoggerHook
 from otx.algorithms.common.adapters.mmcv.utils import remove_from_config
 from otx.algorithms.common.utils.callback import OptimizationProgressCallback
@@ -46,6 +43,13 @@ from otx.algorithms.detection.adapters.mmdet.utils.config_utils import (
     patch_config,
     prepare_for_training,
     set_hyperparams,
+)
+from otx.algorithms.detection.adapters.mmdet.nncf import (
+    wrap_nncf_model,
+)
+from otx.algorithms.detection.adapters.mmdet.nncf.utils import (
+    build_val_dataloader,
+    get_fake_input,
 )
 from otx.algorithms.detection.configs.base import DetectionConfig
 from otx.api.configuration import cfg_helper
@@ -311,8 +315,7 @@ class DetectionNNCFTask(DetectionInferenceTask, IOptimizationTask):
             loading_stage_progress_percentage=5,
             initialization_stage_progress_percentage=5,
         )
-        learning_curves = DefaultDict(OTXLoggerHook.Curve)  # type: DefaultDict
-        training_config = prepare_for_training(config, train_dataset, val_dataset, time_monitor, learning_curves)
+        training_config = prepare_for_training(config, train_dataset, val_dataset, time_monitor)
         mm_train_dataset = build_dataset(training_config.data.train)
 
         if torch.cuda.is_available():
@@ -338,7 +341,6 @@ class DetectionNNCFTask(DetectionInferenceTask, IOptimizationTask):
             remove_from_config(training_config, "fp16")
             logger.warning("fp16 option is not supported in NNCF. Switch to fp32.")
 
-        #---
         nncf_enable_compression = 'nncf_config' in training_config
         nncf_config = training_config.get('nncf_config', {})
         nncf_is_acc_aware_training_set = is_accuracy_aware_training_set(nncf_config)
@@ -348,23 +350,17 @@ class DetectionNNCFTask(DetectionInferenceTask, IOptimizationTask):
                 'type': 'AccuracyAwareRunner',
                 'target_metric_name': nncf_config['target_metric_name'],
                 'nncf_config': nncf_config,
-                'compression_ctrl': self._compression_ctrl,
             }
         if nncf_enable_compression:
             hooks = training_config.get('custom_hooks', [])
-            hooks.append(dict(type='CompressionHook', compression_ctrl=self._compression_ctrl))
+            hooks.append(
+                dict(
+                    type='CompressionHook',
+                    compression_ctrl=self._compression_ctrl
+                )
+            )
             hooks.append(dict(type='CheckpointHookBeforeTraining'))
-        # TODO: opt & lr sch
-        #if nncf_is_acc_aware_training_set:
-        #    def configure_optimizers_fn():
-        #        optimizer = build_optimizer(runner.model, cfg.optimizer)
-        #        lr_scheduler = AccuracyAwareLrUpdater(lr_updater_hook, runner, optimizer)
-        #        return optimizer, lr_scheduler
-        #    runner.run(data_loaders, cfg.workflow,
-        #               compression_ctrl=compression_ctrl,
-        #               configure_optimizers_fn=configure_optimizers_fn,
-        #               nncf_config=nncf_config)
-        #---
+
         train_detector(
             model=self._model,
             dataset=mm_train_dataset,
