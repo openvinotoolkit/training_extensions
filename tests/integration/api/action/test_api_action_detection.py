@@ -14,7 +14,7 @@ from typing import Optional
 import numpy as np
 import pytest
 
-from otx.algorithms.action.tasks import ActionClsInferenceTask, ActionClsTrainTask
+from otx.algorithms.action.tasks import ActionInferenceTask, ActionTrainTask
 from otx.algorithms.common.tasks.training_base import BaseTask
 from otx.api.configuration.helper import create
 from otx.api.entities.annotation import AnnotationSceneEntity, AnnotationSceneKind
@@ -121,7 +121,7 @@ class TestActionTaskAPI:
         )
         action_environment, dataset = self.init_environment(hyper_parameters, model_template)
 
-        action_task = ActionClsTrainTask(task_environment=action_environment)
+        action_task = ActionTrainTask(task_environment=action_environment)
 
         executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="train_thread")
 
@@ -163,7 +163,7 @@ class TestActionTaskAPI:
     def test_training_progress_tracking(self):
         hyper_parameters, model_template = self.setup_configurable_parameters(DEFAULT_ACTION_TEMPLATE_DIR, num_iters=5)
         action_environment, dataset = self.init_environment(hyper_parameters, model_template)
-        task = ActionClsTrainTask(task_environment=action_environment)
+        task = ActionTrainTask(task_environment=action_environment)
         print("Task initialized, model training starts.")
 
         training_progress_curve = []
@@ -187,7 +187,7 @@ class TestActionTaskAPI:
         hyper_parameters, model_template = self.setup_configurable_parameters(DEFAULT_ACTION_TEMPLATE_DIR, num_iters=10)
         action_environment, dataset = self.init_environment(hyper_parameters, model_template)
 
-        task = ActionClsInferenceTask(task_environment=action_environment)
+        task = ActionInferenceTask(task_environment=action_environment)
         print("Task initialized, model inference starts.")
         inference_progress_curve = []
 
@@ -209,7 +209,7 @@ class TestActionTaskAPI:
         action_environment, dataset = self.init_environment(hyper_parameters, model_template)
         val_dataset = dataset.get_subset(Subset.VALIDATION)
 
-        train_task = ActionClsTrainTask(task_environment=action_environment)
+        train_task = ActionTrainTask(task_environment=action_environment)
 
         training_progress_curve = []
 
@@ -227,7 +227,7 @@ class TestActionTaskAPI:
 
         # Create InferenceTask
         action_environment.model = trained_model
-        inference_task = ActionClsInferenceTask(task_environment=action_environment)
+        inference_task = ActionInferenceTask(task_environment=action_environment)
 
         performance_after_load = task_eval(inference_task, trained_model, val_dataset)
 

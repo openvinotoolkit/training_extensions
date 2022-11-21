@@ -1,4 +1,4 @@
-"""Inference Task of OTX Action Classification."""
+"""Inference Task of OTX Action Task."""
 
 # Copyright (C) 2022 Intel Corporation
 #
@@ -29,7 +29,7 @@ from mmcv.runner import load_checkpoint, load_state_dict
 from mmcv.utils import Config
 
 from otx.algorithms.action.adapters.mmaction import patch_config, set_data_classes
-from otx.algorithms.action.configs.base import ActionClsConfig
+from otx.algorithms.action.configs.base import ActionConfig
 from otx.algorithms.common.adapters.mmcv.utils import prepare_for_testing
 from otx.algorithms.common.tasks.training_base import BaseTask
 from otx.algorithms.common.utils.callback import InferenceProgressCallback
@@ -66,15 +66,15 @@ logger = get_root_logger()
 
 
 # pylint: disable=too-many-locals, unused-argument
-class ActionClsInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask, IUnload):
-    """Inference Task Implementation of OTX Action Classification."""
+class ActionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask, IUnload):
+    """Inference Task Implementation of OTX Action Task."""
 
     @check_input_parameters_type()
     def __init__(self, task_environment: TaskEnvironment):
         # self._should_stop = False
         self._model = None
         self.task_environment = task_environment
-        super().__init__(ActionClsConfig, task_environment)
+        super().__init__(ActionConfig, task_environment)
 
     @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def infer(
@@ -82,7 +82,7 @@ class ActionClsInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         dataset: DatasetEntity,
         inference_parameters: Optional[InferenceParameters] = None,
     ) -> DatasetEntity:
-        """Main infer function of OTX Action Classification."""
+        """Main infer function of OTX Action Task."""
         logger.info("infer()")
 
         if inference_parameters:
@@ -281,7 +281,7 @@ class ActionClsInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         self,
         output_resultset: ResultSetEntity,
     ):
-        """Evaluate function of OTX Action Classification Task."""
+        """Evaluate function of OTX Action Task."""
         logger.info("called evaluate()")
         metric = self._get_metric(output_resultset)
         performance = metric.get_performance()
@@ -302,7 +302,7 @@ class ActionClsInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
 
     @check_input_parameters_type()
     def export(self, export_type: ExportType, output_model: ModelEntity):
-        """Export function of OTX Action Classification Task."""
+        """Export function of OTX Action Task."""
         # copied from OTX inference_task.py
         logger.info("Exporting the model")
         if export_type != ExportType.OPENVINO:

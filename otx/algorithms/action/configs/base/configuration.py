@@ -1,4 +1,4 @@
-"""Configuration file of OTX Action Classification."""
+"""Configuration file of OTX Action Tasks."""
 
 # Copyright (C) 2022 Intel Corporation
 #
@@ -27,9 +27,10 @@ from otx.api.configuration.elements import (
 # pylint: disable=invalid-name
 
 
+# TODO Check action detection requires another config
 @attrs
-class ActionClsConfig(BaseConfig):
-    """Configurations of OTX Action Classification."""
+class ActionConfig(BaseConfig):
+    """Configurations of OTX Action Tasks."""
 
     header = string_attribute("Configuration for an action classification task of OTX")
     description = header
