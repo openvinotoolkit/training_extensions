@@ -5,7 +5,6 @@ from copy import deepcopy
 
 import numpy as np
 from mmcls.datasets.builder import PIPELINES
-from mmcls.datasets import PIPELINES as PIPES
 from mmcls.datasets.pipelines import Compose, to_tensor
 from torchvision import transforms as tvt
 from PIL import Image
@@ -44,8 +43,8 @@ class RandomAppliedTrans(object):
 class TwoCropTransform(object):
     """Generate two different cropped views of an image"""
     def __init__(self, pipeline):
-        self.pipeline1 = Compose([build_from_cfg(p, PIPES) for p in pipeline])
-        self.pipeline2 = Compose([build_from_cfg(p, PIPES) for p in pipeline])
+        self.pipeline1 = Compose([build_from_cfg(p, PIPELINES) for p in pipeline])
+        self.pipeline2 = Compose([build_from_cfg(p, PIPELINES) for p in pipeline])
 
     def __call__(self, data):
         data1 = self.pipeline1(deepcopy(data))
