@@ -6,7 +6,7 @@ from mmaction.models.builder import HEADS
 from mmaction.models.heads.base import BaseHead
 from mmcv.cnn import normal_init
 
-from ..backbones.movinet import ConvBlock3D, Swish
+from ..backbones.movinet import ConvBlock3D
 
 
 @HEADS.register_module()
@@ -43,7 +43,6 @@ class MoViNetHead(BaseHead):
         self.init_std = init_std
 
         self.classifier = nn.Sequential(
-            # dense9
             ConvBlock3D(
                 in_channels,
                 hidden_dim,
@@ -53,9 +52,8 @@ class MoViNetHead(BaseHead):
                 conv_type=conv_type,
                 bias=True,
             ),
-            Swish(),
+            nn.SiLU(),
             nn.Dropout(p=0.2, inplace=True),
-            # dense10d
             ConvBlock3D(
                 hidden_dim,
                 num_classes,

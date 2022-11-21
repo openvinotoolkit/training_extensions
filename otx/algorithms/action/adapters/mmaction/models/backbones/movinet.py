@@ -17,23 +17,6 @@ from torch.nn.modules.utils import _pair, _triple
 from yacs.config import CfgNode
 
 
-class Hardsigmoid(nn.Module):
-    def __init__(self) -> None:
-        super().__init__()
-
-    def forward(self, x: Tensor) -> Tensor:
-        x = (0.2 * x + 0.5).clamp(min=0.0, max=1.0)
-        return x
-
-
-class Swish(nn.Module):
-    def __init__(self) -> None:
-        super().__init__()
-
-    def forward(self, x: Tensor) -> Tensor:
-        return x * torch.sigmoid(x)
-
-
 class CausalModule(nn.Module):
     def __init__(self) -> None:
         super().__init__()
@@ -294,14 +277,10 @@ class ConvBlock3D(CausalModule):
         self.activation = torch.zeros(*input_shape[:2], self.dim_pad, *input_shape[3:])  # type: ignore
 
 
-# TODO add requirements
-# TODO create a train sample, just so that we can test the training
-
-
 class SqueezeExcitation(nn.Module):
     def __init__(
         self,
-        input_channels: int,  # TODO rename activations
+        input_channels: int,
         activation_2: nn.Module,
         activation_1: nn.Module,
         conv_type: str,
@@ -395,12 +374,6 @@ class tfAvgPool3D(nn.Module):
         self.avgf = nn.AvgPool3d((1, 3, 3), stride=(1, 2, 2))
 
     def forward(self, x: Tensor) -> Tensor:
-        # if x.shape[-1] != x.shape[-2]:
-        #     raise RuntimeError('only same shape for h and w ' +
-        #                        'are supported by avg with tf_like')
-        # if x.shape[-1] != x.shape[-2]:
-        #     raise RuntimeError('only same shape for h and w ' +
-        #                        'are supported by avg with tf_like')
         f1 = x.shape[-1] % 2 != 0
         if f1:
             padding_pad = (0, 0, 0, 0)
@@ -436,7 +409,6 @@ class BasicBneck(nn.Module):
 
         layers = []
         if cfg.expanded_channels != cfg.out_channels:
-            # expand
             self.expand = ConvBlock3D(
                 in_planes=cfg.input_channels,
                 out_planes=cfg.expanded_channels,
@@ -448,7 +420,6 @@ class BasicBneck(nn.Module):
                 norm_layer=norm_layer,
                 activation_layer=activation_layer,
             )
-        # deepwise
         self.deep = ConvBlock3D(
             in_planes=cfg.expanded_channels,
             out_planes=cfg.expanded_channels,
@@ -462,15 +433,13 @@ class BasicBneck(nn.Module):
             norm_layer=norm_layer,
             activation_layer=activation_layer,
         )
-        # SE
         self.se = SqueezeExcitation(
             cfg.expanded_channels,
             causal=causal,
             activation_1=activation_layer,
-            activation_2=(nn.Sigmoid if conv_type == "3d" else Hardsigmoid),
+            activation_2=(nn.Sigmoid if conv_type == "3d" else nn.Hardsigmoid),
             conv_type=conv_type,
         )
-        # project
         self.project = ConvBlock3D(
             cfg.expanded_channels,
             cfg.out_channels,
@@ -552,9 +521,8 @@ class MoViNet(nn.Module):
         blocks_dic = OrderedDict()
 
         norm_layer = nn.BatchNorm3d if conv_type == "3d" else nn.BatchNorm2d
-        activation_layer = Swish if conv_type == "3d" else nn.Hardswish
+        activation_layer = nn.SiLU if conv_type == "3d" else nn.Hardswish
 
-        # conv1
         self.conv1 = ConvBlock3D(
             in_planes=cfg.conv1.input_channels,
             out_planes=cfg.conv1.out_channels,
@@ -567,7 +535,6 @@ class MoViNet(nn.Module):
             norm_layer=norm_layer,
             activation_layer=activation_layer,
         )
-        # blocks
         for i, block in enumerate(cfg.blocks):
             for j, basicblock in enumerate(block):
                 blocks_dic[f"b{i}_l{j}"] = BasicBneck(
@@ -579,7 +546,6 @@ class MoViNet(nn.Module):
                     activation_layer=activation_layer,
                 )
         self.blocks = nn.Sequential(blocks_dic)
-        # conv7
         self.conv7 = ConvBlock3D(
             in_planes=cfg.conv7.input_channels,
             out_planes=cfg.conv7.out_channels,
@@ -654,7 +620,6 @@ class MoViNet(nn.Module):
 @BACKBONES.register_module()
 class MoViNetBase(MoViNet):
     def __init__(self, name: str = "MoViNetA0", num_classes: bool = -1, causal: bool = False, **kwargs):
-        # assert name in ["MoViNetA0", "MoViNetA1"]
 
         cfg = CfgNode()
         cfg.name = "A0"
@@ -670,7 +635,7 @@ class MoViNetBase(MoViNet):
                 [CfgNode() for _ in range(4)],
             ]
 
-            # Block2
+            # block 2
             MoViNetBase.fill_SE_config(cfg.blocks[0][0], 8, 8, 24, (1, 5, 5), (1, 2, 2), (0, 2, 2), (0, 1, 1))
 
             # block 3
@@ -714,7 +679,7 @@ class MoViNetBase(MoViNet):
                 [CfgNode() for _ in range(7)],
             ]
 
-            # Block2
+            # block 2
             MoViNetBase.fill_SE_config(cfg.blocks[0][0], 16, 16, 40, (1, 5, 5), (1, 2, 2), (0, 2, 2), (0, 1, 1))
             MoViNetBase.fill_SE_config(cfg.blocks[0][1], 16, 16, 40, (3, 3, 3), (1, 1, 1), (1, 1, 1), (0, 1, 1))
 
@@ -768,30 +733,30 @@ class MoViNetBase(MoViNet):
                 [CfgNode() for _ in range(7)],
             ]
 
-            # Block2
+            # block 2
             MoViNetBase.fill_SE_config(cfg.blocks[0][0], 16, 16, 40, (1, 5, 5), (1, 2, 2), (0, 2, 2), (0, 1, 1))
             MoViNetBase.fill_SE_config(cfg.blocks[0][1], 16, 16, 40, (3, 3, 3), (1, 1, 1), (1, 1, 1), (0, 1, 1))
 
-            # Block2
+            # block 3
             MoViNetBase.fill_SE_config(cfg.blocks[0][0], 16, 16, 40, (1, 5, 5), (1, 2, 2), (0, 2, 2), (0, 1, 1))
             MoViNetBase.fill_SE_config(cfg.blocks[0][1], 16, 16, 40, (3, 3, 3), (1, 1, 1), (1, 1, 1), (0, 1, 1))
             MoViNetBase.fill_SE_config(cfg.blocks[0][2], 16, 16, 64, (3, 3, 3), (1, 1, 1), (1, 1, 1), (0, 1, 1))
 
-            # block 3
+            # block 4
             MoViNetBase.fill_SE_config(cfg.blocks[1][0], 16, 40, 96, (3, 3, 3), (1, 2, 2), (1, 1, 1), (0, 1, 1))
             MoViNetBase.fill_SE_config(cfg.blocks[1][1], 40, 40, 120, (3, 3, 3), (1, 1, 1), (1, 1, 1), (0, 1, 1))
             MoViNetBase.fill_SE_config(cfg.blocks[1][2], 40, 40, 96, (3, 3, 3), (1, 1, 1), (1, 1, 1), (0, 1, 1))
             MoViNetBase.fill_SE_config(cfg.blocks[1][3], 40, 40, 96, (3, 3, 3), (1, 1, 1), (1, 1, 1), (0, 1, 1))
             MoViNetBase.fill_SE_config(cfg.blocks[1][4], 40, 40, 120, (3, 3, 3), (1, 1, 1), (1, 1, 1), (0, 1, 1))
 
-            # block 4
+            # block 5
             MoViNetBase.fill_SE_config(cfg.blocks[2][0], 40, 72, 240, (5, 3, 3), (1, 2, 2), (2, 1, 1), (0, 1, 1))
             MoViNetBase.fill_SE_config(cfg.blocks[2][1], 72, 72, 160, (3, 3, 3), (1, 1, 1), (1, 1, 1), (0, 1, 1))
             MoViNetBase.fill_SE_config(cfg.blocks[2][2], 72, 72, 240, (3, 3, 3), (1, 1, 1), (1, 1, 1), (0, 1, 1))
             MoViNetBase.fill_SE_config(cfg.blocks[2][3], 72, 72, 192, (3, 3, 3), (1, 1, 1), (1, 1, 1), (0, 1, 1))
             MoViNetBase.fill_SE_config(cfg.blocks[2][4], 72, 72, 240, (3, 3, 3), (1, 1, 1), (1, 1, 1), (0, 1, 1))
 
-            # block 5
+            # block 6
             MoViNetBase.fill_SE_config(cfg.blocks[3][0], 72, 72, 240, (5, 3, 3), (1, 1, 1), (2, 1, 1), (0, 1, 1))
             MoViNetBase.fill_SE_config(cfg.blocks[3][1], 72, 72, 240, (3, 3, 3), (1, 1, 1), (1, 1, 1), (0, 1, 1))
             MoViNetBase.fill_SE_config(cfg.blocks[3][2], 72, 72, 240, (3, 3, 3), (1, 1, 1), (1, 1, 1), (0, 1, 1))
@@ -799,7 +764,7 @@ class MoViNetBase(MoViNet):
             MoViNetBase.fill_SE_config(cfg.blocks[3][4], 72, 72, 144, (1, 5, 5), (1, 1, 1), (0, 2, 2), (0, 1, 1))
             MoViNetBase.fill_SE_config(cfg.blocks[3][5], 72, 72, 240, (3, 3, 3), (1, 1, 1), (1, 1, 1), (0, 1, 1))
 
-            # block 6
+            # block 7
             MoViNetBase.fill_SE_config(cfg.blocks[4][0], 72, 144, 480, (5, 3, 3), (1, 2, 2), (2, 1, 1), (0, 1, 1))
             MoViNetBase.fill_SE_config(cfg.blocks[4][1], 144, 144, 384, (1, 5, 5), (1, 1, 1), (0, 2, 2), (0, 1, 1))
             MoViNetBase.fill_SE_config(cfg.blocks[4][2], 144, 144, 384, (1, 5, 5), (1, 1, 1), (0, 2, 2), (0, 1, 1))
@@ -828,7 +793,7 @@ class MoViNetBase(MoViNet):
                 [CfgNode() for _ in range(10)],
             ]
 
-            # Block2
+            # block 2
             MoViNetBase.fill_SE_config(cfg.blocks[0][0], 16, 16, 40, (1, 5, 5), (1, 2, 2), (0, 2, 2), (0, 1, 1))
             MoViNetBase.fill_SE_config(cfg.blocks[0][1], 16, 16, 40, (3, 3, 3), (1, 1, 1), (1, 1, 1), (0, 1, 1))
             MoViNetBase.fill_SE_config(cfg.blocks[0][2], 16, 16, 64, (3, 3, 3), (1, 1, 1), (1, 1, 1), (0, 1, 1))
@@ -891,7 +856,7 @@ class MoViNetBase(MoViNet):
                 [CfgNode() for _ in range(13)],
             ]
 
-            # Block2
+            # block 2
             MoViNetBase.fill_SE_config(cfg.blocks[0][0], 24, 24, 64, (1, 5, 5), (1, 2, 2), (0, 1, 1), (0, 0, 0))
             MoViNetBase.fill_SE_config(cfg.blocks[0][1], 24, 24, 64, (3, 3, 3), (1, 1, 1), (1, 1, 1), (0, 1, 1))
             MoViNetBase.fill_SE_config(cfg.blocks[0][2], 24, 24, 96, (3, 3, 3), (1, 1, 1), (1, 1, 1), (0, 1, 1))
@@ -968,7 +933,7 @@ class MoViNetBase(MoViNet):
                 [CfgNode() for _ in range(18)],
             ]
 
-            # Block2
+            # block 2
             MoViNetBase.fill_SE_config(cfg.blocks[0][0], 24, 24, 64, (1, 5, 5), (1, 2, 2), (0, 2, 2), (0, 1, 1))
             MoViNetBase.fill_SE_config(cfg.blocks[0][1], 24, 24, 64, (1, 5, 5), (1, 1, 1), (0, 2, 2), (0, 1, 1))
             MoViNetBase.fill_SE_config(cfg.blocks[0][2], 24, 24, 96, (3, 3, 3), (1, 1, 1), (1, 1, 1), (0, 1, 1))
