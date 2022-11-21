@@ -81,9 +81,11 @@ class SelfSLClsHead(BaseHead):
         fc_feats = self.fc(x)
 
         bsz = gt_labels.shape[0]
-        # reshape aux_feats from [2 * bsz, dims] to [bs, 2, dims]
-        f1, f2 = torch.split(self.aux_head(x), [bsz, bsz], dim=0)
-        aux_feats = torch.cat([f1.unsqueeze(1), f2.unsqueeze(1)], dim=1)
+        aux_feats = None
+        if x.shape[0] == 2 * bsz:
+            # reshape aux_feats from [2 * bsz, dims] to [bs, 2, dims]
+            f1, f2 = torch.split(self.aux_head(x), [bsz, bsz], dim=0)
+            aux_feats = torch.cat([f1.unsqueeze(1), f2.unsqueeze(1)], dim=1)
         loss = self.compute_loss(fc_feats, gt_labels, aux_feats=aux_feats)
         losses.update(loss)
         return losses
