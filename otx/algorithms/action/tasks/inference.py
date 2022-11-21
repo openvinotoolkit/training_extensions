@@ -306,7 +306,7 @@ class ActionClsInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
             warnings.filterwarnings('ignore', category=TracerWarning)
             export_model(self._model,
                          self._recipe_cfg,
-                         onnx_model_path=f"{self._output_path}/model.onnx",
+                         onnx_model_path=f"{self._output_path}/openvino.onnx",
                          output_dir_path=f"{self._output_path}")
             bin_file = [f for f in os.listdir(self._output_path) if f.endswith('.bin')][0]
             xml_file = [f for f in os.listdir(self._output_path) if f.endswith('.xml')][0]
