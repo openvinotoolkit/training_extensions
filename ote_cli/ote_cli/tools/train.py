@@ -54,6 +54,17 @@ def parse_args():
 
     pre_parser = argparse.ArgumentParser(add_help=False)
     pre_parser.add_argument("template")
+    # WA: added all available args to correctly parsing "template" positional arg
+    # to get the available hyper-parameters
+    pre_parser.add_argument("--train-ann-files")
+    pre_parser.add_argument("--train-data-roots")
+    pre_parser.add_argument("--val-ann-files")
+    pre_parser.add_argument("--val-data-roots")
+    pre_parser.add_argument("--load-weights")
+    pre_parser.add_argument("--save-model-to")
+    pre_parser.add_argument("--enable-hpo")
+    pre_parser.add_argument("--hpo-time-ratio")
+
     parsed, _ = pre_parser.parse_known_args()
     # Load template.yaml file.
     template = find_and_parse_model_template(parsed.template)

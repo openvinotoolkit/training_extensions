@@ -44,6 +44,13 @@ def parse_args():
 
     pre_parser = argparse.ArgumentParser(add_help=False)
     pre_parser.add_argument("template")
+    # WA: added all available args to correctly parsing "template" positional arg
+    # to get the available hyper-parameters
+    pre_parser.add_argument("--test-ann-files")
+    pre_parser.add_argument("--test-data-roots")
+    pre_parser.add_argument("--load-weights")
+    pre_parser.add_argument("--save-performance")
+
     parsed, _ = pre_parser.parse_known_args()
     # Load template.yaml file.
     template = find_and_parse_model_template(parsed.template)
@@ -66,7 +73,7 @@ def parse_args():
     parser.add_argument(
         "--load-weights",
         required=True,
-        help="Load only weights from previously saved checkpoint",
+        help="Load weights to run the evaluation. It could be a trained/optimized model or exported model.",
     )
     parser.add_argument(
         "--save-performance",
