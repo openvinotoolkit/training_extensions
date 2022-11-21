@@ -6,7 +6,8 @@
 from .data import OTXRawframeDataset
 from .models.backbones import MoViNetBase
 from .models.heads import MoViNetHead
+from .models.recognizers import Recognizer3D
 from .utils import patch_config, set_data_classes
 
 __all__ = ["OTXRawframeDataset", "patch_config", "set_data_classes",
-           "MoViNetBase", "MoViNetHead"]
+           "MoViNetBase", "MoViNetHead", "Recognizer3D"]
