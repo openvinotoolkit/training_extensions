@@ -18,21 +18,20 @@
 
 num_classes = 400
 model = dict(
-    type='Recognizer3D',
-    backbone=dict(
-        type='MoViNetBase',
-        name="MoViNetA0",
-        num_classes=num_classes),
+    type="Recognizer3D",
+    backbone=dict(type="MoViNetBase", name="MoViNetA0", num_classes=num_classes),
     cls_head=dict(
-        type='MoViNetHead',
+        type="MoViNetHead",
         in_channels=480,  # A0: 480, A1: 600, A2: 640, A3: 744, A4: 856, A5: 992
         hidden_dim=2048,
         num_classes=num_classes,
-        spatial_type='avg',
-        dropout_ratio=0.5),
+        spatial_type="avg",
+        dropout_ratio=0.5,
+    ),
     # model training and testing settings
     train_cfg=None,
-    test_cfg=dict(average_clips='prob'))
+    test_cfg=dict(average_clips="prob"),
+)
 
 
 # dataset settings
@@ -105,7 +104,7 @@ optimizer = dict(
     weight_decay=0.0001,
 )
 
-lr_config = dict(policy='CosineAnnealing', min_lr=0)
+lr_config = dict(policy="CosineAnnealing", min_lr=0)
 optimizer_config = dict(grad_clip=dict(max_norm=40.0, norm_type=2))
 total_epochs = 5
 
@@ -125,4 +124,4 @@ seed = 2
 find_unused_parameters = False
 dist_params = dict(backend="nccl")
 resume_from = None
-load_from = "https://github.com/Atze00/MoViNet-pytorch/blob/main/weights/modelA0_statedict_v3?raw=true"  # TODO: dynamic convert for mm
+load_from = "https://github.com/Atze00/MoViNet-pytorch/blob/main/weights/modelA0_statedict_v3?raw=true"

@@ -3,6 +3,4 @@
 # SPDX-License-Identifier: Apache-2.0
 from .movinet import MoViNetBase
 
-__all__ = [
-    'MoViNetBase'
-]
+__all__ = ["MoViNetBase"]

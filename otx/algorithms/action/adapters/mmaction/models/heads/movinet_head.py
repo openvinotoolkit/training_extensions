@@ -2,9 +2,10 @@
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 import torch.nn as nn
-from mmcv.cnn import normal_init
 from mmaction.models.builder import HEADS
 from mmaction.models.heads.base import BaseHead
+from mmcv.cnn import normal_init
+
 from ..backbones.movinet import ConvBlock3D, Swish
 
 
@@ -22,17 +23,19 @@ class MoViNetHead(BaseHead):
         fc1_bias (bool): If the first fc layer has bias. Default: False.
     """
 
-    def __init__(self,
-                 num_classes: int,
-                 in_channels: int,
-                 hidden_dim: int,
-                 tf_like: bool = False,
-                 conv_type: str = '3d',
-                 loss_cls=dict(type='CrossEntropyLoss'),
-                 spatial_type: str = 'avg',
-                 dropout_ratio: float = 0.5,
-                 init_std: float = 0.1,
-                 causal: bool = False):
+    def __init__(
+        self,
+        num_classes: int,
+        in_channels: int,
+        hidden_dim: int,
+        tf_like: bool = False,
+        conv_type: str = "3d",
+        loss_cls=dict(type="CrossEntropyLoss"),
+        spatial_type: str = "avg",
+        dropout_ratio: float = 0.5,
+        init_std: float = 0.1,
+        causal: bool = False,
+    ):
         super().__init__(num_classes, in_channels, loss_cls)
 
         self.spatial_type = spatial_type
@@ -41,23 +44,27 @@ class MoViNetHead(BaseHead):
 
         self.classifier = nn.Sequential(
             # dense9
-            ConvBlock3D(in_channels,
-                        hidden_dim,
-                        kernel_size=(1, 1, 1),
-                        tf_like=tf_like,
-                        causal=causal,
-                        conv_type=conv_type,
-                        bias=True),
+            ConvBlock3D(
+                in_channels,
+                hidden_dim,
+                kernel_size=(1, 1, 1),
+                tf_like=tf_like,
+                causal=causal,
+                conv_type=conv_type,
+                bias=True,
+            ),
             Swish(),
             nn.Dropout(p=0.2, inplace=True),
             # dense10d
-            ConvBlock3D(hidden_dim,
-                        num_classes,
-                        kernel_size=(1, 1, 1),
-                        tf_like=tf_like,
-                        causal=causal,
-                        conv_type=conv_type,
-                        bias=True)
+            ConvBlock3D(
+                hidden_dim,
+                num_classes,
+                kernel_size=(1, 1, 1),
+                tf_like=tf_like,
+                causal=causal,
+                conv_type=conv_type,
+                bias=True,
+            ),
         )
 
     def init_weights(self):

@@ -3,6 +3,4 @@
 # SPDX-License-Identifier: Apache-2.0
 from .recognizer3d import Recognizer3D
 
-__all__ = [
-    'Recognizer3D'
-]
+__all__ = ["Recognizer3D"]
