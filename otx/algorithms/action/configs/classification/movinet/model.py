@@ -25,8 +25,8 @@ model = dict(
         num_classes=num_classes),
     cls_head=dict(
         type='MoViNetHead',
-        in_channels=480,
-        hidden_dim = 2048,
+        in_channels=480,  # A0: 480, A1: 600, A2: 640, A3: 744, A4: 856, A5: 992
+        hidden_dim=2048,
         num_classes=num_classes,
         spatial_type='avg',
         dropout_ratio=0.5),
@@ -64,6 +64,7 @@ val_pipeline = [
     dict(type="Collect", keys=["imgs", "label"], meta_keys=[]),
     dict(type="ToTensor", keys=["imgs"]),
 ]
+
 # TODO Delete label in meta key in test pipeline
 test_pipeline = [
     dict(type="SampleFrames", clip_len=clip_len, frame_interval=frame_interval, num_clips=1, test_mode=True),
@@ -124,5 +125,4 @@ seed = 2
 find_unused_parameters = False
 dist_params = dict(backend="nccl")
 resume_from = None
-load_from = None
-# load_from = "https://github.com/Atze00/MoViNet-pytorch/blob/main/weights/modelA0_statedict_v3.pth"  # TODO: load converted weights for mm
+load_from = "https://github.com/Atze00/MoViNet-pytorch/blob/main/weights/modelA0_statedict_v3?raw=true"  # TODO: dynamic convert for mm

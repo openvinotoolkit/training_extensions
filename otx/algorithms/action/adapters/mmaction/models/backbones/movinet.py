@@ -585,42 +585,6 @@ class MoViNet(nn.Module):
             activation_layer=activation_layer
             )
 
-        # if num_classes > 0:
-        #     # pool
-        #     self.classifier = nn.Sequential(
-        #         # dense9
-        #         ConvBlock3D(cfg.conv7.out_channels,
-        #                     cfg.dense9.hidden_dim,
-        #                     kernel_size=(1, 1, 1),
-        #                     tf_like=tf_like,
-        #                     causal=causal,
-        #                     conv_type=conv_type,
-        #                     bias=True),
-        #         Swish(),
-        #         nn.Dropout(p=0.2, inplace=True),
-        #         # dense10d
-        #         ConvBlock3D(cfg.dense9.hidden_dim,
-        #                     num_classes,
-        #                     kernel_size=(1, 1, 1),
-        #                     tf_like=tf_like,
-        #                     causal=causal,
-        #                     conv_type=conv_type,
-        #                     bias=True)
-        #     )
-        # else:
-        #     # pool
-        #     self.classifier = nn.Sequential(
-        #         # dense9
-        #         ConvBlock3D(cfg.conv7.out_channels,
-        #                     cfg.dense9.hidden_dim,
-        #                     kernel_size=(1, 1, 1),
-        #                     tf_like=tf_like,
-        #                     causal=causal,
-        #                     conv_type=conv_type,
-        #                     bias=True),
-        #         Swish(),
-        #         nn.Dropout(p=0.2, inplace=True),
-        #     )
         if causal:
             self.cgap = TemporalCGAvgPool3D()
         if pretrained:
@@ -633,8 +597,7 @@ class MoViNet(nn.Module):
             else:
                 state_dict = torch.hub.load_state_dict_from_url(cfg.weights)
             self.load_state_dict(state_dict)
-        else:
-            self.apply(self._weight_init)
+
         self.causal = causal
 
     def avg(self, x: Tensor) -> Tensor:
@@ -646,7 +609,7 @@ class MoViNet(nn.Module):
         return avg
 
     @staticmethod
-    def _weight_init(m):  # TODO check this
+    def _init_weights(m):
         if isinstance(m, nn.Conv3d):
             nn.init.kaiming_normal_(m.weight, mode='fan_out')
             if m.bias is not None:
@@ -663,8 +626,6 @@ class MoViNet(nn.Module):
         x = self.blocks(x)
         x = self.conv7(x)
         x = self.avg(x)
-        #x = self.classifier(x)
-        #x = x.flatten(1)
 
         return x
 
@@ -683,15 +644,6 @@ class MoViNet(nn.Module):
     def init_weights(self):
         self.apply(self._init_weights)
 
-    def _init_weights(self, m):
-        if isinstance(m, nn.Linear):
-            trunc_normal_(m.weight, std=.02)
-            if isinstance(m, nn.Linear) and m.bias is not None:
-                nn.init.constant_(m.bias, 0)
-        elif isinstance(m, nn.LayerNorm):
-            nn.init.constant_(m.bias, 0)
-            nn.init.constant_(m.weight, 1.0)
-
 
 @BACKBONES.register_module()
 class MoViNetBase(MoViNet):
@@ -700,13 +652,11 @@ class MoViNetBase(MoViNet):
                  num_classes: bool =-1,
                  causal: bool = False,
                  **kwargs):
-        assert name in ["MoViNetA0", "MoViNetA1"]
+        # assert name in ["MoViNetA0", "MoViNetA1"]
 
         cfg = CfgNode()
         cfg.name = "A0"
         if name.endswith("A0"):
-            #cfg.weights = "https://github.com/Atze00/MoViNet-pytorch/blob/main/weights/modelA0_statedict_v3?raw=true"
-            #cfg.stream_weights = "https://github.com/Atze00/MoViNet-pytorch/blob/main/weights/modelA0_stream_statedict_v3?raw=true"
             cfg.conv1 = CfgNode()
             MoViNetBase.fill_conv(cfg.conv1, 3, 8, (1, 3, 3), (1, 2, 2), (0, 1, 1))
 
@@ -753,8 +703,6 @@ class MoViNetBase(MoViNet):
 
             cfg = CfgNode()
             cfg.name = "A1"
-            cfg.weights = "https://github.com/Atze00/MoViNet-pytorch/blob/main/weights/modelA1_statedict_v3?raw=true"
-            cfg.stream_weights = "https://github.com/Atze00/MoViNet-pytorch/blob/main/weights/modelA1_stream_statedict_v3?raw=true"
             cfg.conv1 = CfgNode()
             MoViNetBase.fill_conv(cfg.conv1, 3, 16, (1, 3, 3), (1, 2, 2), (0, 1, 1))
 
@@ -800,6 +748,305 @@ class MoViNetBase(MoViNet):
 
             cfg.conv7 = CfgNode()
             MoViNetBase.fill_conv(cfg.conv7, 136, 600, (1, 1, 1), (1, 1, 1), (0, 0, 0))
+
+            cfg.dense9 = CfgNode()
+            cfg.dense9.hidden_dim = 2048
+
+        elif name.endswith("A2"):
+            ###################
+            #### MoViNetA2 ####
+            ###################
+
+            cfg = CfgNode()
+            cfg.name = "A2"
+            cfg.conv1 = CfgNode()
+            MoViNetBase.fill_conv(cfg.conv1, 3, 16, (1, 3, 3), (1, 2, 2), (0, 1, 1))
+
+            cfg.blocks = [[CfgNode() for _ in range(3)],
+                                         [CfgNode() for _ in range(5)],
+                                         [CfgNode() for _ in range(5)],
+                                         [CfgNode() for _ in range(6)],
+                                         [CfgNode() for _ in range(7)]]
+
+            # Block2
+            MoViNetBase.fill_SE_config(cfg.blocks[0][0], 16, 16, 40, (1, 5, 5), (1, 2, 2), (0, 2, 2), (0, 1, 1))
+            MoViNetBase.fill_SE_config(cfg.blocks[0][1], 16, 16, 40, (3, 3, 3), (1, 1, 1), (1, 1, 1), (0, 1, 1))
+
+            #Block2
+            MoViNetBase.fill_SE_config(cfg.blocks[0][0], 16, 16, 40, (1,5,5), (1,2,2), (0,2,2), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[0][1], 16, 16, 40, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[0][2], 16, 16, 64, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+
+            #block 3
+            MoViNetBase.fill_SE_config(cfg.blocks[1][0], 16, 40, 96, (3,3,3), (1,2,2), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[1][1], 40, 40, 120, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[1][2], 40, 40, 96, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[1][3], 40, 40, 96, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[1][4], 40, 40, 120, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+
+            #block 4
+            MoViNetBase.fill_SE_config(cfg.blocks[2][0], 40, 72, 240, (5,3,3), (1,2,2), (2,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[2][1], 72, 72, 160, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[2][2], 72, 72, 240, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[2][3], 72, 72, 192, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[2][4], 72, 72, 240, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+
+            #block 5
+            MoViNetBase.fill_SE_config(cfg.blocks[3][0], 72, 72, 240, (5,3,3), (1,1,1), (2,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[3][1], 72, 72, 240, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[3][2], 72, 72, 240, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[3][3], 72, 72, 240, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[3][4], 72, 72, 144, (1,5,5), (1,1,1), (0,2,2), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[3][5], 72, 72, 240, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+
+            #block 6
+            MoViNetBase.fill_SE_config(cfg.blocks[4][0], 72 , 144, 480, (5,3,3), (1,2,2), (2,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[4][1], 144, 144, 384, (1,5,5), (1,1,1), (0,2,2), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[4][2], 144, 144, 384, (1,5,5), (1,1,1), (0,2,2), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[4][3], 144, 144, 480, (1,5,5), (1,1,1), (0,2,2), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[4][4], 144, 144, 480, (1,5,5), (1,1,1), (0,2,2), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[4][5], 144, 144, 480, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[4][6], 144, 144, 576, (1,3,3), (1,1,1), (0,1,1), (0,1,1))
+
+
+            cfg.conv7 = CfgNode()
+            MoViNetBase.fill_conv(cfg.conv7, 144, 640, (1, 1, 1), (1, 1, 1), (0, 0, 0))
+
+            cfg.dense9 = CfgNode()
+            cfg.dense9.hidden_dim = 2048
+
+
+        elif name.endswith("A3"):
+            ###################
+            #### MoViNetA3 ####
+            ###################
+
+            cfg = CfgNode()
+            cfg.name = "A3"
+            cfg.conv1 = CfgNode()
+            MoViNetBase.fill_conv(cfg.conv1, 3, 16, (1, 3, 3), (1, 2, 2), (0, 1, 1))
+
+            cfg.blocks = [[CfgNode() for _ in range(4)],
+                                         [CfgNode() for _ in range(6)],
+                                         [CfgNode() for _ in range(5)],
+                                         [CfgNode() for _ in range(8)],
+                                         [CfgNode() for _ in range(10)]]
+
+            #Block2
+            MoViNetBase.fill_SE_config(cfg.blocks[0][0], 16, 16, 40, (1,5,5), (1,2,2), (0,2,2), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[0][1], 16, 16, 40, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[0][2], 16, 16, 64, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[0][3], 16, 16, 40, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+
+            #block 3
+            MoViNetBase.fill_SE_config(cfg.blocks[1][0], 16, 48, 112, (3,3,3), (1,2,2), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[1][1], 48, 48, 144, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[1][2], 48, 48, 112, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[1][3], 48, 48, 112, (1,5,5), (1,1,1), (0,2,2), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[1][4], 48, 48, 144, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[1][5], 48, 48, 144, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+
+            #block 4
+            MoViNetBase.fill_SE_config(cfg.blocks[2][0], 48, 80, 240, (5,3,3), (1,2,2), (2,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[2][1], 80, 80, 152, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[2][2], 80, 80, 240, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[2][3], 80, 80, 192, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[2][4], 80, 80, 240, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+
+            #block 5
+            MoViNetBase.fill_SE_config(cfg.blocks[3][0], 80, 88, 264, (5,3,3), (1,1,1), (2,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[3][1], 88, 88, 264, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[3][2], 88, 88, 264, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[3][3], 88, 88, 264, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[3][4], 88, 88, 160, (1,5,5), (1,1,1), (0,2,2), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[3][5], 88, 88, 264, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[3][6], 88, 88, 264, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[3][7], 88, 88, 264, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+
+            #block 6
+            MoViNetBase.fill_SE_config(cfg.blocks[4][0], 88 , 168, 560, (5,3,3), (1,2,2), (2,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[4][1], 168, 168, 448, (1,5,5), (1,1,1), (0,2,2), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[4][2], 168, 168, 448, (1,5,5), (1,1,1), (0,2,2), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[4][3], 168, 168, 560, (1,5,5), (1,1,1), (0,2,2), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[4][4], 168, 168, 560, (1,5,5), (1,1,1), (0,2,2), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[4][5], 168, 168, 560, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[4][6], 168, 168, 448, (1,5,5), (1,1,1), (0,2,2), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[4][7], 168, 168, 448, (1,5,5), (1,1,1), (0,2,2), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[4][8], 168, 168, 560, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[4][9], 168, 168, 672, (1,3,3), (1,1,1), (0,1,1), (0,1,1))
+
+            cfg.conv7 = CfgNode()
+            MoViNetBase.fill_conv(cfg.conv7, 168, 744, (1, 1, 1), (1, 1, 1), (0, 0, 0))
+
+            cfg.dense9 = CfgNode()
+            cfg.dense9.hidden_dim = 2048
+
+
+        elif name.endswith("A4"):
+            ###################
+            #### MoViNetA4 ####
+            ###################
+            cfg = CfgNode()
+            cfg.name = "A4"
+            cfg.conv1 = CfgNode()
+            MoViNetBase.fill_conv(cfg.conv1, 3, 24, (1, 3, 3), (1, 2, 2), (0, 1, 1))
+
+            cfg.blocks = [[CfgNode() for _ in range(6)],
+                                         [CfgNode() for _ in range(9)],
+                                         [CfgNode() for _ in range(9)],
+                                         [CfgNode() for _ in range(10)],
+                                         [CfgNode() for _ in range(13)]]
+            
+            #Block2
+            MoViNetBase.fill_SE_config(cfg.blocks[0][0], 24, 24, 64, (1,5,5), (1,2,2), (0,1,1), (0,0,0))
+            MoViNetBase.fill_SE_config(cfg.blocks[0][1], 24, 24, 64, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[0][2], 24, 24, 96, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[0][3], 24, 24, 64, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[0][4], 24, 24, 96, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[0][5], 24, 24, 64, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+
+            #block 3
+            MoViNetBase.fill_SE_config(cfg.blocks[1][0], 24, 56, 168, (3,3,3), (1,2,2), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[1][1], 56, 56, 168, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[1][2], 56, 56, 136, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[1][3], 56, 56, 136, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[1][4], 56, 56, 168, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[1][5], 56, 56, 168, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[1][6], 56, 56, 168, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[1][7], 56, 56, 136, (1,5,5), (1,1,1), (0,2,2), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[1][8], 56, 56, 136, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+
+            #block 4
+            MoViNetBase.fill_SE_config(cfg.blocks[2][0], 56, 96, 320, (5,3,3), (1,2,2), (2,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[2][1], 96, 96, 160, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[2][2], 96, 96, 320, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[2][3], 96, 96, 192, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[2][4], 96, 96, 320, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[2][5], 96, 96, 160, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[2][6], 96, 96, 320, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[2][7], 96, 96, 256, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[2][8], 96, 96, 320, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+
+            #block 5
+            MoViNetBase.fill_SE_config(cfg.blocks[3][0], 96, 96, 320, (5,3,3), (1,1,1), (2,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[3][1], 96, 96, 320, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[3][2], 96, 96, 320, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[3][3], 96, 96, 320, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[3][4], 96, 96, 192, (1,5,5), (1,1,1), (0,2,2), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[3][5], 96, 96, 320, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[3][6], 96, 96, 320, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[3][7], 96, 96, 192, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[3][8], 96, 96, 320, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[3][9], 96, 96, 320, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+
+            #block 6
+            MoViNetBase.fill_SE_config(cfg.blocks[4][0], 96 , 192, 640, (5,3,3), (1,2,2), (2,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[4][1], 192, 192, 512, (1,5,5), (1,1,1), (0,2,2), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[4][2], 192, 192, 512, (1,5,5), (1,1,1), (0,2,2), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[4][3], 192, 192, 640, (1,5,5), (1,1,1), (0,2,2), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[4][4], 192, 192, 640, (1,5,5), (1,1,1), (0,2,2), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[4][5], 192, 192, 640, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[4][6], 192, 192, 512, (1,5,5), (1,1,1), (0,2,2), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[4][7], 192, 192, 512, (1,5,5), (1,1,1), (0,2,2), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[4][8], 192, 192, 640, (1,5,5), (1,1,1), (0,2,2), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[4][9], 192, 192, 768, (1,5,5), (1,1,1), (0,2,2), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[4][10], 192, 192, 640, (1,5,5), (1,1,1), (0,2,2), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[4][11], 192, 192, 640, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[4][12], 192, 192, 768, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+
+            cfg.conv7 = CfgNode()
+            MoViNetBase.fill_conv(cfg.conv7, 192, 856, (1, 1, 1), (1, 1, 1), (0, 0, 0))
+
+            cfg.dense9 = CfgNode()
+            cfg.dense9.hidden_dim = 2048
+
+
+        elif name.endswith("A5"):
+            ###################
+            #### MoViNetA5 ####
+            ###################
+            cfg = CfgNode()
+            cfg.name = "A5"
+            cfg.conv1 = CfgNode()
+            MoViNetBase.fill_conv(cfg.conv1, 3, 24, (1, 3, 3), (1, 2, 2), (0, 1, 1))
+
+            cfg.blocks = [[CfgNode() for _ in range(6)],
+                                         [CfgNode() for _ in range(11)],
+                                         [CfgNode() for _ in range(13)],
+                                         [CfgNode() for _ in range(11)],
+                                         [CfgNode() for _ in range(18)]]
+
+            #Block2
+            MoViNetBase.fill_SE_config(cfg.blocks[0][0], 24, 24, 64, (1,5,5), (1,2,2), (0,2,2), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[0][1], 24, 24, 64, (1,5,5), (1,1,1), (0,2,2), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[0][2], 24, 24, 96, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[0][3], 24, 24, 64, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[0][4], 24, 24, 96, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[0][5], 24, 24, 64, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+
+            #block 3
+            MoViNetBase.fill_SE_config(cfg.blocks[1][0], 24, 64, 192, (5,3,3), (1,2,2), (2,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[1][1], 64, 64, 152, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[1][2], 64, 64, 152, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[1][3], 64, 64, 152, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[1][4], 64, 64, 192, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[1][5], 64, 64, 192, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[1][6], 64, 64, 192, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[1][7], 64, 64, 152, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[1][8], 64, 64, 152, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[1][9], 64, 64, 192, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[1][10], 64, 64, 192, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+
+            #block 4
+            MoViNetBase.fill_SE_config(cfg.blocks[2][0], 64, 112, 376, (5,3,3), (1,2,2), (2,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[2][1], 112, 112, 224, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[2][2], 112, 112, 376, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[2][3], 112, 112, 376, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[2][4], 112, 112, 296, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[2][5], 112, 112, 376, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[2][6], 112, 112, 224, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[2][7], 112, 112, 376, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[2][8], 112, 112, 376, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[2][9], 112, 112, 296, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[2][10], 112, 112, 376, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[2][11], 112, 112, 376, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[2][12], 112, 112, 376, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+
+            #block 5
+            MoViNetBase.fill_SE_config(cfg.blocks[3][0], 112, 120, 376, (5,3,3), (1,1,1), (2,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[3][1], 120, 120, 376, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[3][2], 120, 120, 376, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[3][3], 120, 120, 376, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[3][4], 120, 120, 224, (1,5,5), (1,1,1), (0,2,2), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[3][5], 120, 120, 376, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[3][6], 120, 120, 376, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[3][7], 120, 120, 224, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[3][8], 120, 120, 376, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[3][9], 120, 120, 376, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[3][10], 120, 120, 376, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+
+            #block 6
+            MoViNetBase.fill_SE_config(cfg.blocks[4][0], 120 , 224, 744, (5,3,3), (1,2,2), (2,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[4][1], 224, 224, 744, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[4][2], 224, 224, 600, (1,5,5), (1,1,1), (0,2,2), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[4][3], 224, 224, 600, (1,5,5), (1,1,1), (0,2,2), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[4][4], 224, 224, 744, (1,5,5), (1,1,1), (0,2,2), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[4][5], 224, 224, 744, (1,5,5), (1,1,1), (0,2,2), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[4][6], 224, 224, 744, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[4][7], 224, 224, 896, (1,5,5), (1,1,1), (0,2,2), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[4][8], 224, 224, 600, (1,5,5), (1,1,1), (0,2,2), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[4][9], 224, 224, 600, (1,5,5), (1,1,1), (0,2,2), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[4][10], 224, 224, 896, (1,5,5), (1,1,1), (0,2,2), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[4][11], 224, 224, 744, (1,5,5), (1,1,1), (0,2,2), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[4][12], 224, 224, 744, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[4][13], 224, 224, 896, (1,5,5), (1,1,1), (0,2,2), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[4][14], 224, 224, 600, (1,5,5), (1,1,1), (0,2,2), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[4][15], 224, 224, 600, (1,5,5), (1,1,1), (0,2,2), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[4][16], 224, 224, 744, (1,5,5), (1,1,1), (0,2,2), (0,1,1))
+            MoViNetBase.fill_SE_config(cfg.blocks[4][17], 224, 224, 744, (3,3,3), (1,1,1), (1,1,1), (0,1,1))
+
+            cfg.conv7 = CfgNode()
+            MoViNetBase.fill_conv(cfg.conv7, 224, 992, (1, 1, 1), (1, 1, 1), (0, 0, 0))
 
             cfg.dense9 = CfgNode()
             cfg.dense9.hidden_dim = 2048
