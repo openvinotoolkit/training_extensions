@@ -279,9 +279,9 @@ class ClassificationInferenceTask(
         logger.info("called _init_recipe()")
 
         if self._multilabel:
-            recipe_root = os.path.join(MPAConstants.RECIPES_PATH, "stages/classification")
-        else:
             recipe_root = os.path.join(MPAConstants.RECIPES_PATH, "stages/classification/multilabel")
+        else:
+            recipe_root = os.path.join(MPAConstants.RECIPES_PATH, "stages/classification")
 
         train_type = self._hyperparams.algo_backend.train_type
         logger.info(f"train type = {train_type}")
