@@ -181,9 +181,10 @@ def main():  # pylint: disable=too-many-branches
         }
 
     # Datumaro 
-    datumaro_handler = DatumaroHandler()
+    datumaro_handler = DatumaroHandler(template.task_type)
     datumaro_dataset = datumaro_handler.import_dataset(
-        train_data_roots=args.train_data_roots
+        train_data_roots=args.train_data_roots,
+        val_data_roots=args.val_data_roots
     )
     dataset = datumaro_handler.convert_to_otx_format(datumaro_dataset)
 
