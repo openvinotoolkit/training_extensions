@@ -32,12 +32,12 @@ fi
 
 cd "${work_dir}" || exit
 
-if [[ -e ${venv_dir} ]]; then
-  echo
-  echo "Virtualenv already exists. Use command to start working:"
-  echo "$ . ${venv_dir}/bin/activate"
-  exit
-fi
+#if [[ -e ${venv_dir} ]]; then
+#  echo
+#  echo "Virtualenv already exists. Use command to start working:"
+#  echo "$ . ${venv_dir}/bin/activate"
+#  exit
+#fi
 
 # Create virtual environment
 $PYTHON_NAME -m venv "${venv_dir}" --prompt="otx"
