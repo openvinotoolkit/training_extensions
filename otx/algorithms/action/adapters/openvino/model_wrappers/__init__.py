@@ -1,4 +1,4 @@
-"""Adapters for Action Recognition."""
+"""Model wrappers."""
 
 # Copyright (C) 2022 Intel Corporation
 #
@@ -14,6 +14,6 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .openvino.model_wrappers import OTXActionCls
+from .openvino_models import OTXActionCls
 
 __all__ = ["OTXActionCls"]
