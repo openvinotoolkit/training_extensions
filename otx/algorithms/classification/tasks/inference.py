@@ -278,7 +278,11 @@ class ClassificationInferenceTask(
     def _init_recipe(self):
         logger.info("called _init_recipe()")
 
-        recipe_root = os.path.join(MPAConstants.RECIPES_PATH, "stages/classification")
+        if self._multilabel:
+            recipe_root = os.path.join(MPAConstants.RECIPES_PATH, "stages/classification")
+        else:
+            recipe_root = os.path.join(MPAConstants.RECIPES_PATH, "stages/classification/multilabel")
+
         train_type = self._hyperparams.algo_backend.train_type
         logger.info(f"train type = {train_type}")
 
@@ -297,10 +301,7 @@ class ClassificationInferenceTask(
                 )
 
         if train_type == TrainType.INCREMENTAL:
-            if self._multilabel:
-                recipe = os.path.join(recipe_root, "class_incr_multilabel.yaml")
-            else:
-                recipe = os.path.join(recipe_root, "class_incr.yaml")
+            recipe = os.path.join(recipe_root, "incremental.yaml")
 
         logger.info(f"train type = {train_type} - loading {recipe}")
 
