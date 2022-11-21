@@ -14,8 +14,7 @@ from einops import rearrange
 from torch import nn, Tensor
 from yacs.config import CfgNode
 from mmaction.models.builder import BACKBONES
-from mmcv.cnn.utils.weight_init import trunc_normal_
-# TODO: remove yacs dependency
+
 
 class Hardsigmoid(nn.Module):
     def __init__(self) -> None:
