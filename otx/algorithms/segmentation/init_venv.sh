@@ -39,7 +39,7 @@ if [[ -e ${venv_dir} ]]; then
 fi
 
 # Create virtual environment
-$PYTHON_NAME -m venv "${venv_dir}" --prompt="mpa"
+$PYTHON_NAME -m venv "${venv_dir}" --prompt="segmentation"
 
 if ! [ -e "${venv_dir}/bin/activate" ]; then
   echo "The virtual environment was not created."
@@ -115,6 +115,11 @@ sed -i "s/force=False/force=True/g" "${venv_dir}"/lib/python"${PYTHON_VERSION}"/
 # Install OTX
 pip install -e ../../../ || exit 1
 pip install -r ../../../requirements/segmentation.txt
+
+# Remedy solution for numpy lib conflict
+pip install numpy==1.21.0
+pip uninstall -y mmpycocotools
+pip install mmpycocotools
 
 # Build NNCF extensions
 echo "Build NNCF extensions ..."

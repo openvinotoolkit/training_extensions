@@ -39,7 +39,7 @@ if [[ -e ${venv_dir} ]]; then
 fi
 
 # Create virtual environment
-$PYTHON_NAME -m venv "${venv_dir}" --prompt="mpa"
+$PYTHON_NAME -m venv "${venv_dir}" --prompt="detection"
 
 if ! [ -e "${venv_dir}/bin/activate" ]; then
   echo "The virtual environment was not created."
