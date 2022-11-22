@@ -66,7 +66,7 @@ class CustomDatasetPhase1(data.Dataset):
             return image256, image128
             
         else:
-            image = Image.open(os.path.join(self.path_to_dataset,self.test_files[i]))
+            image = Image.open(os.path.join(self.path_to_dataset, self.test_files[i]))
             # image = torch.Tensor(image)
             if self.transform_images is not None:
                 image = self.transform_images(image)

@@ -1,7 +1,7 @@
 {
     "train": {
-        "train_data": "test_data/phase2/train/images/",
-        "test_data": "test_data/phase2/test/images/",
+        "train_data": "test_data/phase2/train/",
+        "test_data": "test_data/phase2/test/",
         "batch_size": 10,
         "epochs": 5,
         "gpu": "True",
@@ -24,8 +24,8 @@
         "phi": 1,
         "n_digestunits": 3,
         "savepath": "model_weights/",
-        "default_image_path": "test_data/phase2/train/images/",
-        "image_path": "test_data/phase2/train/images/",
+        "default_image_path": "test_data/phase2/train/gd_truth/",
+        "image_path": "test_data/phase2/train/gd_truth/",
         "path_to_latent": "test_data/phase2/train/latent/",
         "path_to_gdtruth": "test_data/phase2/train/gd_truth/"
     },
@@ -56,8 +56,8 @@
             3,
             3
         ],
-        "default_image_path": "test_data/phase2/test/images/",
-        "image_path": "test_data/phase2/test/images/",
+        "default_image_path": "test_data/phase2/test/gd_truth/",
+        "image_path": "test_data/phase2/test/gd_truth/",
         "path_to_latent": "test_data/phase2/test/latent/",
         "path_to_gdtruth": "test_data/phase2/test/gd_truth/"
     },

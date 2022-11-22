@@ -1,21 +1,18 @@
 {
     "stage1": {
-        "url": "",
-        "dest_path_data": "test_data/phase1data/train/cbis_sample.zip",
-        "drive_url_data": "https://drive.google.com/file/d/19QMJB7dUws7Roi5E3e0x5Pz7psoajq1J/view?usp=sharing",
-        "drive_url_model": "https://drive.google.com/file/d/1g8onUzEjEUKwcWuzr85sAKN0DVthRXm5/view?usp=sharing",
+        "dest_path_data": "test_data/phase1.zip",
+        "url_data": "http://kliv.iitkgp.ac.in/projects/miriad/sample_data/bmi34/phase1/phase1.zip",
+        "url_model": "http://kliv.iitkgp.ac.in/projects/miriad/model_weights/bmi34/cbis_a1_b1.zip",
         "dest_path_model": "model_weights/cbis_a1_b1.zip"
     },
     "stage2": {
-        "url": "",
-        "dest_path_data": "test_data/phase2data/train/p2_data.zip",
-        "drive_url_data": "https://drive.google.com/file/d/1PuBbZNN3kET2chxNYsn1VSOZUvDMecNV/view?usp=sharing",
-        "drive_url_model": "https://drive.google.com/file/d/1zYcfphP1rkWiAGlNiDNM1QWOY-3p7kpZ/view?usp=sharing",
+        "dest_path_data": "test_data/phase2.zip",
+        "url_data": "http://kliv.iitkgp.ac.in/projects/miriad/sample_data/bmi34/phase2/phase2.zip",
+        "url_model": "http://kliv.iitkgp.ac.in/projects/miriad/model_weights/bmi34/final_d_3.zip",
         "dest_path_model": "model_weights/final_d_3.zip"
     },
     "test_data": {
-        "url": "http://miriad.digital-health.one/sample_data/bmi5/rbis_ddsm_sample.zip",
-        "dest_path": "test_data/rbis_ddsm_sample.zip",
-        "drive_url": "https://drive.google.com/file/d/14Go-4lbWj9RFGwsz1sBWBaveC0yJrHUd/view?usp=sharing"
+        "url": "http://kliv.iitkgp.ac.in/projects/miriad/sample_data/rbis_ddsm_sample.zip",
+        "dest_path": "test_data/rbis_ddsm_sample.zip"
     }
 }

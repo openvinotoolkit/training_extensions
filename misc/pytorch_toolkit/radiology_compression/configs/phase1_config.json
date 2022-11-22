@@ -51,8 +51,8 @@
             1024,
             1024
         ],
-        "default_image_path": "test_data/phase1/train/",
-        "image_path": "test_data/phase1/train/"
+        "default_image_path": "test_data/phase1/test/",
+        "image_path": "test_data/phase1/test/"
     },
     "export": {
         "checkpoint": "model_weights/cbis_a1_b1.model",
