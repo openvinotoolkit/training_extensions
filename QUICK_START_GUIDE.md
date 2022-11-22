@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-Current version of project was tested under following environments
+Current version of OTE was tested under following environments
 
 - Ubuntu 20.04
 - Python 3.8.x
