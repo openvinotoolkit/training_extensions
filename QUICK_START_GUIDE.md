@@ -58,8 +58,8 @@ Current version of OTE was tested under following environments
      - Classification
      - Detection
      - Segmantation
-     - Instance segmentation
-     - Rotated detection
+     - Instance_segmentation
+     - Rotated_detection
 
    - `external/anomaly/init_venv.sh` can be used to create a virtual environment for the following task types.
      - Anomaly_classification
@@ -90,12 +90,14 @@ Current version of OTE was tested under following environments
 `find` lists model templates available for the given virtual environment.
 
 ```
-usage: ote find [-h] [--root ROOT] [--task_type TASK_TYPE] [--experimental]
+(mpa) ...$ ote find --help
+usage: ote find [-h] [--root ROOT] [--task_type {classification,detection,segmentation,instance_segmantation,rotated_detection,anomaly_classification,anomaly_detection,anomaly_segmentation}]
+                [--experimental]
 
 optional arguments:
-  -h, --help              show this help message and exit
-  --root ROOT             A root dir where templates should be searched.
-  --task_type TASK_TYPE   filter with the task type (e.g., classification)
+  -h, --help            show this help message and exit
+  --root ROOT           A root dir where templates should be searched.
+  --task_type {classification,detection,segmentation,instance_segmantation,rotated_detection,anomaly_classification,anomaly_detection,anomaly_segmentation}
   --experimental
 ```
 
