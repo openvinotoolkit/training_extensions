@@ -5,10 +5,13 @@ OpenVINO Training Extensions -- OTX
    :maxdepth: 1
    :caption: Contents:
 
+   get_started/index
+   design/index
    tutorials/index
-   how_to_guides/index
+   additional_guidance/index
    reference/index
-   explanation/index
+   samples/index
+   release_notes/index
 
 
 Indices and tables
