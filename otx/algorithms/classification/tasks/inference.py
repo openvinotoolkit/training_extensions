@@ -286,7 +286,7 @@ class ClassificationInferenceTask(
         train_type = self._hyperparams.algo_backend.train_type
         logger.info(f"train type = {train_type}")
 
-        if train_type not in (TrainType.SEMISUPERVISED, TrainType.INCREMENTAL):
+        if train_type not in (TrainType.SEMISUPERVISED, TrainType.INCREMENTAL, TrainType.SELFSUPERVISED):
             raise NotImplementedError(f"Train type {train_type} is not implemented yet.")
         if train_type == TrainType.SEMISUPERVISED:
             if not self._multilabel and not self._hierarchical:
@@ -302,6 +302,9 @@ class ClassificationInferenceTask(
 
         if train_type == TrainType.INCREMENTAL:
             recipe = os.path.join(recipe_root, "incremental.yaml")
+        if train_type == TrainType.SELFSUPERVISED:
+            recipe = self.template_file_path.replace(os.path.basename(self.template_file_path), "class_selfsl.yaml")
+
 
         logger.info(f"train type = {train_type} - loading {recipe}")
 
