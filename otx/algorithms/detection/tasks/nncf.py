@@ -25,18 +25,15 @@ import torch
 from mmcv.runner import load_checkpoint, load_state_dict
 from mmcv.utils import Config, ConfigDict
 from mmdet.apis import train_detector
-from mmdet.apis.fake_input import get_fake_input
-from mmdet.apis.train import build_val_dataloader
 from mmdet.datasets import build_dataloader, build_dataset
-from mmdet.integration.nncf import (
+from mmdet.models import build_detector
+
+from otx.algorithms.common.adapters.nncf import (
     check_nncf_is_enabled,
     is_accuracy_aware_training_set,
     is_state_nncf,
-    wrap_nncf_model,
 )
-from mmdet.integration.nncf.config import compose_nncf_config
-from mmdet.models import build_detector
-
+from otx.algorithms.common.adapters.nncf.config import compose_nncf_config
 from otx.algorithms.common.adapters.mmcv.hooks import OTXLoggerHook
 from otx.algorithms.common.adapters.mmcv.utils import remove_from_config
 from otx.algorithms.common.utils.callback import OptimizationProgressCallback
@@ -44,6 +41,13 @@ from otx.algorithms.detection.adapters.mmdet.utils.config_utils import (
     patch_config,
     prepare_for_training,
     set_hyperparams,
+)
+from otx.algorithms.detection.adapters.mmdet.nncf import (
+    wrap_nncf_model,
+)
+from otx.algorithms.detection.adapters.mmdet.nncf.utils import (
+    build_val_dataloader,
+    get_fake_input,
 )
 from otx.algorithms.detection.configs.base import DetectionConfig
 from otx.api.configuration import cfg_helper
@@ -316,12 +320,14 @@ class DetectionNNCFTask(DetectionInferenceTask, IOptimizationTask):
             loading_stage_progress_percentage=5,
             initialization_stage_progress_percentage=5,
         )
-        learning_curves = DefaultDict(OTXLoggerHook.Curve)  # type: DefaultDict
-        training_config = prepare_for_training(config, train_dataset, val_dataset, time_monitor, learning_curves)
+        training_config = prepare_for_training(config, train_dataset, val_dataset, time_monitor)
         mm_train_dataset = build_dataset(training_config.data.train)
 
         if torch.cuda.is_available():
             self._model.cuda(training_config.gpu_ids[0])
+            training_config.device = 'cuda'
+        else:
+            training_config.device = 'cpu'
 
         # Initialize NNCF parts if start from not compressed model
         if not self._compression_ctrl:
@@ -340,13 +346,31 @@ class DetectionNNCFTask(DetectionInferenceTask, IOptimizationTask):
             remove_from_config(training_config, "fp16")
             logger.warning("fp16 option is not supported in NNCF. Switch to fp32.")
 
+        nncf_enable_compression = 'nncf_config' in training_config
+        nncf_config = training_config.get('nncf_config', {})
+        nncf_is_acc_aware_training_set = is_accuracy_aware_training_set(nncf_config)
+        if nncf_is_acc_aware_training_set:
+            # Prepare runner for Accuracy Aware
+            training_config.runner = {
+                'type': 'AccuracyAwareRunner',
+                'target_metric_name': nncf_config['target_metric_name'],
+                'nncf_config': nncf_config,
+            }
+        if nncf_enable_compression:
+            hooks = training_config.get('custom_hooks', [])
+            hooks.append(
+                dict(
+                    type='CompressionHook',
+                    compression_ctrl=self._compression_ctrl
+                )
+            )
+            hooks.append(dict(type='CheckpointHookBeforeTraining'))
+
         train_detector(
             model=self._model,
             dataset=mm_train_dataset,
             cfg=training_config,
             validate=True,
-            val_dataloader=self._val_dataloader,
-            compression_ctrl=self._compression_ctrl,
         )
 
         # Check for stop signal when training has stopped. If should_stop is true, training was cancelled

@@ -20,7 +20,8 @@ import os.path as osp
 from typing import Any, Dict, List, Optional, Sequence
 
 import numpy as np
-from pycocotools.coco import COCO
+# from pycocotools.coco import COCO
+from mmdet.datasets.api_wrappers.coco_api import COCO
 
 from otx.algorithms.detection.adapters.mmdet.data.dataset import (
     get_annotation_mmdet_format,
@@ -448,6 +449,8 @@ def get_anchor_boxes(wh_stats: List[tuple], group_as: List[int]):
 
     group_as = np.cumsum(group_as[:-1])
     widths, heights = np.split(widths, group_as), np.split(heights, group_as)
+    widths = [width.tolist() for width in widths]
+    heights = [height.tolist() for height in heights]
     return widths, heights
 
 

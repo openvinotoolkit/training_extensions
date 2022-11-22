@@ -262,7 +262,12 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
             )
         self._recipe_cfg.log_config.hooks.append({"type": "OTXLoggerHook", "curves": self._learning_curves})
 
+        self._initialize_post_hook()
+
         logger.info("initialized.")
+
+    def _initialize_post_hook(self):
+        pass
 
     @abc.abstractmethod
     def _init_recipe(self):

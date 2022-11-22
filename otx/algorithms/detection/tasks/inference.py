@@ -15,6 +15,7 @@
 # and limitations under the License.
 
 import os
+from collections.abc import Mapping
 from typing import Iterable, Optional, Tuple
 
 import cv2
@@ -29,6 +30,7 @@ from otx.algorithms.detection.adapters.mmdet.utils import (
     patch_datasets,
     patch_evaluation,
 )
+from otx.algorithms.common.adapters.mmcv.config_utils import remove_from_config
 from otx.algorithms.detection.configs.base import DetectionConfig
 from otx.api.configuration.helper.utils import config_to_bytes
 from otx.api.entities.annotation import Annotation
@@ -151,8 +153,9 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         """
         stage_module = "DetectionInferrer"
         self._data_cfg = self._init_test_data_cfg(dataset)
-        dump_features = True
-        dump_saliency_map = not inference_parameters.is_evaluation if inference_parameters else True
+        # Temporary disable dump (will be handled by 'otx explain')
+        dump_features = False
+        dump_saliency_map = False # not inference_parameters.is_evaluation if inference_parameters else True
         results = self._run_task(
             stage_module,
             mode="train",

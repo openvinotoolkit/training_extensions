@@ -43,19 +43,25 @@ from ote_sdk.utils.argument_checks import (
 )
 
 from mmdet.apis import train_detector
-from mmdet.apis.fake_input import get_fake_input
+#  from detection_tasks.extension.utils.fake_input import get_fake_input
+from otx.algorithms.detection.adapters.mmdet.utils.fake_input import get_fake_input
 from detection_tasks.apis.detection.config_utils import prepare_for_training, remove_from_config
 from detection_tasks.apis.detection.configuration import OTEDetectionConfig
 from detection_tasks.apis.detection.inference_task import OTEDetectionInferenceTask
 from detection_tasks.apis.detection.ote_utils import OptimizationProgressCallback
 from detection_tasks.extension.utils.hooks import OTELoggerHook
-from mmdet.apis.train import build_val_dataloader
+#  from detection_tasks.extension.nncf.utils import build_val_dataloader
+from otx.algorithms.detection.adapters.mmdet.nncf.utils import build_val_dataloader
 from mmdet.datasets import build_dataloader, build_dataset
-from mmdet.integration.nncf import check_nncf_is_enabled
-from mmdet.integration.nncf import is_state_nncf
-from mmdet.integration.nncf import wrap_nncf_model
-from mmdet.integration.nncf import is_accuracy_aware_training_set
-from mmdet.integration.nncf.config import compose_nncf_config
+#  from detection_tasks.extension.nncf import check_nncf_is_enabled
+#  from detection_tasks.extension.nncf import is_state_nncf
+#  from detection_tasks.extension.nncf import wrap_nncf_model
+#  from detection_tasks.extension.nncf import is_accuracy_aware_training_set
+#  from detection_tasks.extension.nncf.config import compose_nncf_config
+from otx.algorithms.detection.adapters.mmdet.nncf import (
+    check_nncf_is_enabled, is_state_nncf, wrap_nncf_model, is_accuracy_aware_training_set
+)
+from otx.algorithms.detection.adapters.mmdet.nncf.config import compose_nncf_config
 from mmdet.utils.logger import get_root_logger
 
 
@@ -218,6 +224,9 @@ class OTEDetectionNNCFTask(OTEDetectionInferenceTask, IOptimizationTask):
 
         if torch.cuda.is_available():
             self._model.cuda(training_config.gpu_ids[0])
+            training_config.device = 'cuda'
+        else:
+            training_config.device = 'cpu'
 
         # Initialize NNCF parts if start from not compressed model
         if not self._compression_ctrl:
@@ -236,12 +245,40 @@ class OTEDetectionNNCFTask(OTEDetectionInferenceTask, IOptimizationTask):
             remove_from_config(training_config, "fp16")
             logger.warn("fp16 option is not supported in NNCF. Switch to fp32.")
 
+        #---
+        nncf_enable_compression = 'nncf_config' in training_config
+        nncf_config = training_config.get('nncf_config', {})
+        nncf_is_acc_aware_training_set = is_accuracy_aware_training_set(nncf_config)
+        if nncf_is_acc_aware_training_set:
+            # Prepare runner for Accuracy Aware
+            training_config.runner = {
+                'type': 'AccuracyAwareRunner',
+                'target_metric_name': nncf_config['target_metric_name'],
+                'nncf_config': nncf_config,
+                'compression_ctrl': self._compression_ctrl,
+            }
+        if nncf_enable_compression:
+            hooks = training_config.get('custom_hooks', [])
+            hooks.append(dict(type='CompressionHook', compression_ctrl=self._compression_ctrl))
+            hooks.append(dict(type='CheckpointHookBeforeTraining'))
+        #if nncf_is_acc_aware_training_set:
+        #    def configure_optimizers_fn():
+        #        optimizer = build_optimizer(runner.model, cfg.optimizer)
+        #        lr_scheduler = AccuracyAwareLrUpdater(lr_updater_hook, runner, optimizer)
+        #        return optimizer, lr_scheduler
+
+        #    runner.run(data_loaders, cfg.workflow,
+        #               compression_ctrl=compression_ctrl,
+        #               configure_optimizers_fn=configure_optimizers_fn,
+        #               nncf_config=nncf_config)
+        #---
+
         train_detector(model=self._model,
                        dataset=mm_train_dataset,
                        cfg=training_config,
-                       validate=True,
-                       val_dataloader=self._val_dataloader,
-                       compression_ctrl=self._compression_ctrl)
+                       validate=True)
+                       # val_dataloader=self._val_dataloader,
+                       # compression_ctrl=self._compression_ctrl)
 
         # Check for stop signal when training has stopped. If should_stop is true, training was cancelled
         if self._should_stop:

@@ -24,6 +24,10 @@ from mmcv.utils import ConfigDict
 from otx.algorithms.common.adapters.mmcv.hooks import OTXLoggerHook
 from otx.algorithms.common.utils.callback import TrainingProgressCallback
 from otx.algorithms.common.utils.data import get_unlabeled_dataset
+from otx.algorithms.detection.adapters.mmdet.utils.config_utils import (
+    cluster_anchors,
+    should_cluster_anchors,
+)
 from otx.api.configuration import cfg_helper
 from otx.api.configuration.helper.utils import ids_to_strings
 from otx.api.entities.datasets import DatasetEntity
@@ -70,12 +74,7 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
             "confidence_threshold": self.confidence_threshold,
             "VERSION": 1,
         }
-        if (
-            self._model_cfg
-            and hasattr(self._model_cfg.model, "bbox_head")
-            and hasattr(self._model_cfg.model.bbox_head, "anchor_generator")
-            and hasattr(self._model_cfg.model.bbox_head.anchor_generator, "reclustering_anchors")
-        ):
+        if should_cluster_anchors(self._model_cfg):
             modelinfo["anchors"] = {}
             self._update_anchors(
                 modelinfo["anchors"],
@@ -149,15 +148,6 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
             return
         # update checkpoint to the newly trained model
         self._model_ckpt = model_ckpt
-
-        # Update anchors
-        if (
-            self._model_cfg
-            and hasattr(self._model_cfg.model, "bbox_head")
-            and hasattr(self._model_cfg.model.bbox_head, "anchor_generator")
-            and hasattr(self._model_cfg.model.bbox_head.anchor_generator, "reclustering_anchors")
-        ):
-            self._update_anchors(self._anchors, self._model_cfg.model.bbox_head.anchor_generator)
 
         # get prediction on validation set
         self._is_training = False
@@ -261,3 +251,18 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
         )
 
         return output
+
+    def _initialize_post_hook(self):
+        model_cfg = self._model_cfg
+        recipe_cfg = self._recipe_cfg
+        # if self._anchors are set somewhere, anchors had already been clusted
+        # by this method or by loading trained model
+        if should_cluster_anchors(model_cfg) and len(self._anchors) == 0:
+            cluster_anchors(
+                model_cfg,
+                recipe_cfg,
+                self._data_cfg.data.train.otx_dataset,
+            )
+            self._update_anchors(
+                self._anchors, self._model_cfg.model.bbox_head.anchor_generator
+            )

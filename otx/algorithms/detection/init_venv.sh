@@ -114,10 +114,8 @@ pip install -e ../../../ || exit 1
 # Install mmdetection & MPA for detection training
 pip install --no-cache-dir -r ../../../requirements/detection.txt
 
-# Remedy solution for numpy lib conflict
-pip install numpy==1.21.0
-pip uninstall -y mmpycocotools
-pip install mmpycocotools
+# Temp install MPA from submodule
+pip install -e ../../../external/model-preparation-algorithm/submodule
 
 # Build NNCF extensions
 echo "Build NNCF extensions ..."
