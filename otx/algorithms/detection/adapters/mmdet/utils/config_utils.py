@@ -22,8 +22,8 @@ from typing import List, Optional, Union
 import torch
 from mmcv import Config, ConfigDict
 from mmdet.models.detectors import BaseDetector
-from mpa.utils.logger import get_logger
 
+from mpa.utils.logger import get_logger
 from otx.algorithms.common.adapters.mmcv.utils import (
     get_meta_keys,
     is_epoch_based_runner,
@@ -228,7 +228,7 @@ def patch_datasets(config: Config, domain: Domain):
     """Update dataset configs."""
 
     assert "data" in config
-    for subset in ("train", "val", "test"):
+    for subset in ("train", "val", "test", "unlabeled"):
         cfg = config.data.get(subset, None)
         if not cfg:
             continue
