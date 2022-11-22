@@ -5,11 +5,13 @@
 import os
 import pathlib
 import tempfile
+from copy import deepcopy
 
 import mmcv
 import torch
 from mmseg.utils import get_root_logger
 
+from otx.algorithms.common.utils import get_arg_spec
 from otx.algorithms.common.adapters.nncf.utils import (
     check_nncf_is_enabled,
     load_checkpoint,
@@ -115,13 +117,20 @@ def wrap_nncf_model(model,
         metric_name = nncf_config.get('target_metric_name')
         prepared_model = prepare_model_for_execution(model, cfg, distributed)
 
-        logger.info(f'Calculating an original model accuracy')
+        logger.info('Calculating an original model accuracy')
+
+        evaluation_cfg = deepcopy(cfg.evaluation)
+        spec = get_arg_spec(val_dataloader.dataset.evaluate)
+        for key in list(evaluation_cfg.keys()):
+            if key not in spec:
+                evaluation_cfg.pop(key)
+        evaluation_cfg["metric"] = metric_name
 
         if distributed:
             dist_eval_res = [None]
             results = multi_gpu_test(prepared_model, val_dataloader, gpu_collect=True)
             if torch.distributed.get_rank() == 0:
-                eval_res = val_dataloader.dataset.evaluate(results, metric=metric_name)
+                eval_res = val_dataloader.dataset.evaluate(results, **evaluation_cfg)
                 if metric_name not in eval_res:
                     raise RuntimeError(f'Cannot find {metric_name} metric in '
                                        'the evaluation result dict')
@@ -131,7 +140,7 @@ def wrap_nncf_model(model,
             return dist_eval_res[0][metric_name]
         else:
             results = single_gpu_test(prepared_model, val_dataloader, show=False)
-            eval_res = val_dataloader.dataset.evaluate(results, metric=metric_name)
+            eval_res = val_dataloader.dataset.evaluate(results, **evaluation_cfg)
 
             if metric_name not in eval_res:
                 raise RuntimeError(f'Cannot find {metric_name} metric in '

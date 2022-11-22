@@ -1,14 +1,17 @@
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
+
 import os
 import pathlib
 import tempfile
+from copy import deepcopy
 
 import mmcv
 import torch
 from mmdet.utils import get_root_logger
 
+from otx.algorithms.common.utils import get_arg_spec
 from otx.algorithms.common.adapters.nncf.utils import (
     check_nncf_is_enabled,
     load_checkpoint,
@@ -17,8 +20,9 @@ from otx.algorithms.common.adapters.nncf.utils import (
 from otx.algorithms.common.adapters.nncf.compression import (
     is_checkpoint_nncf,
 )
-
-from .utils import prepare_mmdet_model_for_execution
+from otx.algorithms.common.adapters.mmcv.nncf.utils import (
+    prepare_model_for_execution
+)
 
 
 def get_nncf_config_from_meta(path):
@@ -117,39 +121,39 @@ def wrap_nncf_model(model,
                                'dataset since the validation data loader was not passed '
                                'to wrap_nncf_model')
         from mmdet.apis import single_gpu_test, multi_gpu_test
-        from functools import partial
 
         metric_name = nncf_config.get('target_metric_name')
-        forward_backup = model.forward
-        model_forward = type(model).forward
-        model.forward = model_forward.__get__(model)
-        model.forward = partial(model.forward, return_loss=False)
-        prepared_model = prepare_mmdet_model_for_execution(model, cfg, distributed)
+        prepared_model = prepare_model_for_execution(model, cfg, distributed)
 
-        logger.info(f'Calculating an original model accuracy')
+        logger.info('Calculating an original model accuracy')
+
+        evaluation_cfg = deepcopy(cfg.evaluation)
+        spec = get_arg_spec(val_dataloader.dataset.evaluate)
+        for key in list(evaluation_cfg.keys()):
+            if key not in spec:
+                evaluation_cfg.pop(key)
+        evaluation_cfg["metric"] = metric_name
 
         if distributed:
             dist_eval_res = [None]
             results = multi_gpu_test(prepared_model, val_dataloader, gpu_collect=True)
             if torch.distributed.get_rank() == 0:
-                eval_res = val_dataloader.dataset.evaluate(results)
+                eval_res = val_dataloader.dataset.evaluate(results, **evaluation_cfg)
                 if metric_name not in eval_res:
                     raise RuntimeError(f'Cannot find {metric_name} metric in '
                                        'the evaluation result dict')
                 dist_eval_res[0] = eval_res
 
             torch.distributed.broadcast_object_list(dist_eval_res, src=0)
-            model.forward = forward_backup
             return dist_eval_res[0][metric_name]
         else:
             results = single_gpu_test(prepared_model, val_dataloader, show=False)
-            eval_res = val_dataloader.dataset.evaluate(results, metric=metric_name)
+            eval_res = val_dataloader.dataset.evaluate(results, **evaluation_cfg)
 
             if metric_name not in eval_res:
                 raise RuntimeError(f'Cannot find {metric_name} metric in '
                                    f'the evaluation result dict {eval_res.keys()}')
 
-            model.forward = forward_backup
             return eval_res[metric_name]
 
     if dataloader_for_init:
@@ -258,6 +262,7 @@ def wrap_nncf_model(model,
                                                       dummy_forward_fn=dummy_forward,
                                                       wrap_inputs_fn=wrap_inputs,
                                                       compression_state=compression_state)
+
     if resuming_state_dict:
         load_state(model, resuming_state_dict, is_resume=True)
 
