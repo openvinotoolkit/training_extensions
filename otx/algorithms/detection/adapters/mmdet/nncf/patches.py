@@ -24,12 +24,9 @@ from otx.algorithms.common.adapters.nncf.patchers import (
 from otx.algorithms.common.adapters.nncf.patches import nncf_trace_context
 
 
-#  from nncf.torch.dynamic_graph.context import get_current_context
-#  if get_current_context() is not None and get_current_context().is_tracing:
-#      __import__('ipdb').set_trace()
 
 
-HEADS_TARGETS = dict(
+HEAD_TARGETS = dict(
     classes=(
         BaseDenseHead,
         BaseMaskHead,
@@ -66,8 +63,8 @@ def should_wrap(obj_cls, fn_name, targets):
 
 
 def wrap_mmdet_head(obj_cls):
-    for fn_name in HEADS_TARGETS["fn_names"]:
-        if should_wrap(obj_cls, fn_name, HEADS_TARGETS):
+    for fn_name in HEAD_TARGETS["fn_names"]:
+        if should_wrap(obj_cls, fn_name, HEAD_TARGETS):
             NO_TRACE_PATCHER.patch(obj_cls, fn_name)
             # 'onnx_export' method calls 'forward' method which need to be traced
             TRACE_PATCHER.patch(obj_cls, "forward")
@@ -115,7 +112,9 @@ for sampler_cls in [BaseSampler] + list(BBOX_SAMPLERS.module_dict.values()):
 
 # for custom defined
 NO_TRACE_PATCHER.patch(HEADS, "_register_module", wrap_register_module, "in_fn")
-NO_TRACE_PATCHER.patch(BBOX_ASSIGNERS, "_register_module", wrap_register_module, "in_fn")
+NO_TRACE_PATCHER.patch(
+    BBOX_ASSIGNERS, "_register_module", wrap_register_module, "in_fn"
+)
 NO_TRACE_PATCHER.patch(BBOX_SAMPLERS, "_register_module", wrap_register_module, "in_fn")
 
 NO_TRACE_PATCHER.patch(

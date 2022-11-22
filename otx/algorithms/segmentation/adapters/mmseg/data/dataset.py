@@ -246,7 +246,7 @@ class MPASegDataset(OTXSegDataset):
             otx_dataset = kwargs["otx_dataset"]
             pipeline = kwargs["pipeline"]
             classes = kwargs["labels"]
-            new_classes = kwargs["new_classes"]
+            new_classes = kwargs.get("new_classes", [])
 
         if test_mode is False:
             self.img_indices = get_old_new_img_indices(classes, new_classes, otx_dataset)

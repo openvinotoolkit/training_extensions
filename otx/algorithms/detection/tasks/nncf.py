@@ -20,12 +20,11 @@ import json
 import os
 import tempfile
 from typing import DefaultDict, List, Optional
+from functools import partial
 
 import torch
 from mmcv.runner import load_checkpoint, load_state_dict
 from mmcv.utils import Config, ConfigDict
-from mmdet.apis import train_detector
-from mmdet.datasets import build_dataloader, build_dataset
 from mmdet.models import build_detector
 from mpa.utils.config_utils import remove_custom_hook
 from mpa.utils.logger import get_logger
@@ -37,18 +36,23 @@ from otx.algorithms.common.adapters.nncf import (
 )
 from otx.algorithms.common.adapters.nncf.config import compose_nncf_config
 from otx.algorithms.common.adapters.mmcv.hooks import OTXLoggerHook
-from otx.algorithms.common.adapters.mmcv.utils import remove_from_config
+from otx.algorithms.common.adapters.mmcv.utils import (
+    remove_from_config,
+    get_configs_by_keys
+)
 from otx.algorithms.common.utils.callback import OptimizationProgressCallback
 from otx.algorithms.detection.adapters.mmdet.utils.config_utils import (
     patch_config,
+    patch_model_config,
     prepare_for_training,
     set_hyperparams,
+    align_data_config_with_recipe,
 )
 from otx.algorithms.detection.adapters.mmdet.nncf import (
     wrap_nncf_model,
 )
 from otx.algorithms.detection.adapters.mmdet.nncf.utils import (
-    build_val_dataloader,
+    build_dataloader,
     get_fake_input,
 )
 from otx.algorithms.detection.configs.base import DetectionConfig
@@ -92,60 +96,26 @@ class DetectionNNCFTask(DetectionInferenceTask, IOptimizationTask):
     @check_input_parameters_type()
     def __init__(self, task_environment: TaskEnvironment):
         super().__init__(task_environment)
-        self._val_dataloader = None
+
         self._compression_ctrl = None
         self._nncf_preset = "nncf_quantization"
         check_nncf_is_enabled()
         # super().__init__(task_environment)
-        self._task_environment = task_environment
-        self._task_type = task_environment.model_template.task_type
-        self._output_path = tempfile.mkdtemp(prefix="otx-det-scratch-")
-        logger.info(f"Scratch space created at {self._output_path}")
+        self._scratch_space = tempfile.mkdtemp(prefix="otx-det-scratch-")
+        logger.info(f"Scratch space created at {self._scratch_space}")
 
-        self._model_name = task_environment.model_template.name
-        self._labels = task_environment.get_labels(False)
-
-        template_file_path = task_environment.model_template.model_template_path
-
-        # Get and prepare mmdet config.
-        self._base_dir = os.path.abspath(os.path.dirname(template_file_path))
-
-        # Align MPA config for nncf task
-        self._initialize()
-        self._config = Config()
-        if self._recipe_cfg:
-            self._config = self._recipe_cfg
-            self._config.merge_from_dict(self._model_cfg)
-            self._config.data.pop("super_type", None)
-            remove_custom_hook(self._config, "CancelInterfaceHook")
-        else:
-            config_file_path = os.path.join(self._base_dir, "model.py")
-            self._config = Config.fromfile(config_file_path)
-
-        patch_config(
-            self._config,
-            self._output_path,
-            self._labels,
-            task_type_to_label_domain(self._task_type),
-            random_seed=42,
-        )
-        set_hyperparams(self._config, self._hyperparams)
-        self.confidence_threshold: float = self._hyperparams.postprocessing.confidence_threshold
+        self.confidence_threshold = None
 
         # Set default model attributes.
         self._optimization_methods = []  # type: List
-        self._precision = self._precision_from_config
-
-        # Create and initialize PyTorch model.
-        logger.info("Loading the model")
-        self._model = self._load_model(task_environment.model)
+        self._precision = [ModelPrecision.FP32]
 
         # Extra control variables.
         self._training_work_dir = None
         self._is_training = False
         self._should_stop = False
-        logger.info("Task initialization completed")
         self._optimization_type = ModelOptimizationType.NNCF
+        logger.info("Task initialization completed")
 
     def _set_attributes_by_hyperparams(self):
         quantization = self._hyperparams.nncf_optimization.enable_quantization
@@ -166,13 +136,14 @@ class DetectionNNCFTask(DetectionInferenceTask, IOptimizationTask):
         if not quantization and pruning:
             self._nncf_preset = "nncf_pruning"
             self._optimization_methods = [OptimizationMethod.FILTER_PRUNING]
-            self._precision = self._precision_from_config
+            self._precision = [ModelPrecision.FP32]
             return
         raise RuntimeError("Not selected optimization algorithm")
 
     def _load_model(self, model: Optional[ModelEntity]):
         # NNCF parts
-        nncf_config_path = os.path.join(self._base_dir, "compression_config.json")
+        base_dir = os.path.abspath(os.path.dirname(self.template_file_path))
+        nncf_config_path = os.path.join(base_dir, "compression_config.json")
 
         with open(nncf_config_path, encoding="UTF-8") as nncf_config_file:
             common_nncf_config = json.load(nncf_config_file)
@@ -190,11 +161,11 @@ class DetectionNNCFTask(DetectionInferenceTask, IOptimizationTask):
                 ]
             ) = max_acc_drop
             # Force evaluation interval
-            self._config.evaluation.interval = 1
+            self._recipe_cfg.evaluation.interval = 1
         else:
             logger.info("NNCF config has no accuracy_aware_training parameters")
 
-        self._config.update(optimization_config)
+        self._recipe_cfg.merge_from_dict(optimization_config)
 
         compression_ctrl = None
         if model is not None:
@@ -208,10 +179,10 @@ class DetectionNNCFTask(DetectionInferenceTask, IOptimizationTask):
             )
             if model_data.get("anchors"):
                 anchors = model_data["anchors"]
-                self._config.model.bbox_head.anchor_generator.heights = anchors["heights"]
-                self._config.model.bbox_head.anchor_generator.widths = anchors["widths"]
+                self._model_cfg.model.bbox_head.anchor_generator.heights = anchors["heights"]
+                self._model_cfg.model.bbox_head.anchor_generator.widths = anchors["widths"]
 
-            model = self._create_model(self._config, from_scratch=True)
+            model = self._create_model(self._model_cfg, from_scratch=True)
             try:
                 if is_state_nncf(model_data):
                     compression_ctrl, model = wrap_nncf_model(
@@ -248,45 +219,144 @@ class DetectionNNCFTask(DetectionInferenceTask, IOptimizationTask):
 
         :return model: ModelEntity in training mode
         """
+
         model_cfg = copy.deepcopy(config.model)
 
         init_from = None if from_scratch else config.get("load_from", None)
-        logger.warning(init_from)
+        logger.warning(f"Init from: {init_from}")
+
         if init_from is not None:
             # No need to initialize backbone separately, if all weights are provided.
             model_cfg.pretrained = None
             logger.warning("build detector")
             model = build_detector(model_cfg)
+
             # Load all weights.
             logger.warning("load checkpoint")
             load_checkpoint(model, init_from, map_location="cpu")
         else:
             logger.warning("build detector")
             model = build_detector(model_cfg)
+
         return model
 
-    def _create_compressed_model(self, dataset, config):
-        init_dataloader = build_dataloader(
-            dataset,
-            config.data.samples_per_gpu,
-            config.data.workers_per_gpu,
-            len(config.gpu_ids),
-            dist=False,
-            seed=config.seed,
-        )
+    def _create_compressed_model(self, config):
+        init_dataloader = build_dataloader(config, "train", False)
+
         is_acc_aware_training_set = is_accuracy_aware_training_set(config.get("nncf_config"))
 
+        val_dataloader = None
         if is_acc_aware_training_set:
-            self._val_dataloader = build_val_dataloader(config, False)
+            val_dataloader = build_dataloader(config, "val", False)
 
         self._compression_ctrl, self._model = wrap_nncf_model(
             self._model,
             config,
-            val_dataloader=self._val_dataloader,
+            val_dataloader=val_dataloader,
             dataloader_for_init=init_dataloader,
             get_fake_input_func=get_fake_input,
             is_accuracy_aware=is_acc_aware_training_set,
         )
+
+    def _initialize_post_hook(self):
+        super()._initialize_post_hook()
+
+        # Update model_cfg to initialize model in OTX not MPA
+        initial_model_cfg = copy.deepcopy(self._model_cfg)
+        # merge base model config
+        self._model_cfg.merge_from_dict(dict(model=self._recipe_cfg.model))
+        # merge initial model config
+        self._model_cfg.merge_from_dict(initial_model_cfg)
+
+        # Disable task adaptation in NNCF task
+        self._recipe_cfg.pop("task_adapt", None)
+        self._model_cfg.pop("task_adapt", None)
+        if hasattr(self._recipe_cfg.model, "is_task_adapt"):
+            self._recipe_cfg.model.is_task_adapt = False
+        if hasattr(self._model_cfg.model, "is_task_adapt"):
+            self._model_cfg.model.is_task_adapt = False
+
+        patch_model_config(self._model_cfg, self._labels)
+
+        self._recipe_cfg.data.pop("super_type", None)
+        remove_custom_hook(self._recipe_cfg, "CancelInterfaceHook")
+        patch_config(
+            self._recipe_cfg,
+            self._scratch_space,
+            self._labels,
+            task_type_to_label_domain(self._task_type),
+        )
+        set_hyperparams(self._recipe_cfg, self._hyperparams)
+        self.confidence_threshold = self._hyperparams.postprocessing.confidence_threshold
+
+        # Create and initialize PyTorch model.
+        logger.info("Loading the model")
+        self._model = self._load_model(self._task_environment.model)
+
+        self._recipe_cfg_backup = self._recipe_cfg
+        self._model_cfg_backup = self._model_cfg
+        recipe_cfg = copy.deepcopy(self._recipe_cfg)
+        model_cfg = copy.deepcopy(self._model_cfg)
+
+        # when export we do not need to deal with this
+        if getattr(self, "_data_cfg", None) is not None:
+            align_data_config_with_recipe(self._data_cfg, recipe_cfg)
+
+            recipe_cfg = prepare_for_training(
+                recipe_cfg,
+                self._data_cfg,
+            )
+            # Initialize NNCF parts if it starts from not compressed model
+            if not self._compression_ctrl:
+                self._create_compressed_model(recipe_cfg)
+        assert self._compression_ctrl is not None
+
+        # nncf does not suppoer FP16
+        if "fp16" in recipe_cfg or "fp16" in model_cfg:
+            remove_from_config(recipe_cfg, "fp16")
+            remove_from_config(model_cfg, "fp16")
+            logger.warning("fp16 option is not supported in NNCF. Switch to fp32.")
+
+        nncf_enable_compression = 'nncf_config' in recipe_cfg
+        nncf_config = recipe_cfg.get('nncf_config', {})
+        if is_accuracy_aware_training_set(nncf_config):
+            # Prepare runner for Accuracy Aware
+            recipe_cfg.runner = {
+                'type': 'AccuracyAwareRunner',
+                'nncf_config': nncf_config,
+            }
+        if nncf_enable_compression:
+            hooks = recipe_cfg.get('custom_hooks', [])
+            hooks.append(
+                ConfigDict(
+                    type='CompressionHook',
+                    compression_ctrl=self._compression_ctrl
+                )
+            )
+            hooks.append(ConfigDict(type='CheckpointHookBeforeTraining'))
+
+        self._recipe_cfg = recipe_cfg
+        self._model_cfg = model_cfg
+
+    def _init_train_data_cfg(self, dataset: DatasetEntity):
+        logger.info("init data cfg.")
+        data_cfg = ConfigDict(
+            data=ConfigDict(
+                train=ConfigDict(
+                    otx_dataset=dataset.get_subset(Subset.TRAINING),
+                    labels=self._labels,
+                ),
+                val=ConfigDict(
+                    otx_dataset=dataset.get_subset(Subset.VALIDATION),
+                    labels=self._labels,
+                ),
+            )
+        )
+
+        # Temparory remedy for cfg.pretty_text error
+        for label in self._labels:
+            label.hotkey = "a"
+        return data_cfg
 
     @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def optimize(
@@ -300,73 +370,36 @@ class DetectionNNCFTask(DetectionInferenceTask, IOptimizationTask):
         if optimization_type is not OptimizationType.NNCF:
             raise RuntimeError("NNCF is the only supported optimization")
 
-        train_dataset = dataset.get_subset(Subset.TRAINING)
-        val_dataset = dataset.get_subset(Subset.VALIDATION)
-
-        config = self._config
-
         if optimization_parameters is not None:
             update_progress_callback = optimization_parameters.update_progress
         else:
             update_progress_callback = default_progress_callback
 
-        time_monitor = OptimizationProgressCallback(
+        self._time_monitor = OptimizationProgressCallback(
             update_progress_callback,
             loading_stage_progress_percentage=5,
             initialization_stage_progress_percentage=5,
         )
-        training_config = prepare_for_training(config, train_dataset, val_dataset, time_monitor)
-        mm_train_dataset = build_dataset(training_config.data.train)
+        self._data_cfg = self._init_train_data_cfg(dataset)
 
-        if torch.cuda.is_available():
-            self._model.cuda(training_config.gpu_ids[0])
-            training_config.device = 'cuda'
-        else:
-            training_config.device = 'cpu'
+        self._initialize()
+        self._time_monitor.on_initialization_end()
 
-        # Initialize NNCF parts if start from not compressed model
-        if not self._compression_ctrl:
-            self._create_compressed_model(mm_train_dataset, training_config)
-
-        time_monitor.on_initialization_end()
-
-        # Run training.
-        self._training_work_dir = training_config.work_dir
         self._is_training = True
         self._model.train()
 
-        fp16 = training_config.get("fp16", None)
-
-        if fp16 is not None:
-            remove_from_config(training_config, "fp16")
-            logger.warning("fp16 option is not supported in NNCF. Switch to fp32.")
-
-        nncf_enable_compression = 'nncf_config' in training_config
-        nncf_config = training_config.get('nncf_config', {})
-        nncf_is_acc_aware_training_set = is_accuracy_aware_training_set(nncf_config)
-        if nncf_is_acc_aware_training_set:
-            # Prepare runner for Accuracy Aware
-            training_config.runner = {
-                'type': 'AccuracyAwareRunner',
-                'target_metric_name': nncf_config['target_metric_name'],
-                'nncf_config': nncf_config,
-            }
-        if nncf_enable_compression:
-            hooks = training_config.get('custom_hooks', [])
-            hooks.append(
-                dict(
-                    type='CompressionHook',
-                    compression_ctrl=self._compression_ctrl
-                )
-            )
-            hooks.append(dict(type='CheckpointHookBeforeTraining'))
-
-        train_detector(
+        _ = self._run_task(
+            "DetectionTrainer",
+            mode="train",
+            dataset=dataset,
+            parameters=optimization_parameters,
             model=self._model,
-            dataset=mm_train_dataset,
-            cfg=training_config,
-            validate=True,
         )
+
+        self._recipe_cfg = self._recipe_cfg_backup
+        self._model_cfg = self._model_cfg_backup
+        delattr(self, "_recipe_cfg_backup")
+        delattr(self, "_model_cfg_backup")
 
         # Check for stop signal when training has stopped. If should_stop is true, training was cancelled
         if self._should_stop:
@@ -386,6 +419,7 @@ class DetectionNNCFTask(DetectionInferenceTask, IOptimizationTask):
 
     @check_input_parameters_type()
     def export(self, export_type: ExportType, output_model: ModelEntity):
+        self._initialize()
         """NNCF Export Function."""
         if self._compression_ctrl is None:
             super().export(export_type, output_model)
@@ -409,10 +443,12 @@ class DetectionNNCFTask(DetectionInferenceTask, IOptimizationTask):
         for algo_state in compression_state.get("ctrl_state", {}).values():
             if not algo_state.get("scheduler_state"):
                 algo_state["scheduler_state"] = {"current_step": 0, "current_epoch": 0}
+        config = copy.deepcopy(self._recipe_cfg)
+        config.merge_from_dict(self._model_cfg)
         modelinfo = {
             "compression_state": compression_state,
             "meta": {
-                "config": self._config,
+                "config": config,
                 "nncf_enable_compression": True,
             },
             "model": self._model.state_dict(),
@@ -422,9 +458,9 @@ class DetectionNNCFTask(DetectionInferenceTask, IOptimizationTask):
             "VERSION": 1,
         }
 
-        if hasattr(self._config.model, "bbox_head") and hasattr(self._config.model.bbox_head, "anchor_generator"):
+        if hasattr(config.model, "bbox_head") and hasattr(config.model.bbox_head, "anchor_generator"):
             if getattr(
-                self._config.model.bbox_head.anchor_generator,
+                config.model.bbox_head.anchor_generator,
                 "reclustering_anchors",
                 False,
             ):

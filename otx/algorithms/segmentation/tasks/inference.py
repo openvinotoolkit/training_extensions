@@ -82,7 +82,8 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
     ) -> DatasetEntity:
         """Main infer function of OTX Segmentation."""
         logger.info("infer()")
-        dump_features = True
+        # Temporary disable dump (will be handled by 'otx explain')
+        dump_features = False
 
         if inference_parameters is not None:
             update_progress_callback = inference_parameters.update_progress
@@ -93,10 +94,18 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
 
         self._time_monitor = InferenceProgressCallback(len(dataset), update_progress_callback)
 
-        stage_module = "SegInferrer"
+        self._initialize()
         self._data_cfg = self._init_test_data_cfg(dataset)
         self._label_dictionary = dict(enumerate(self._labels, 1))
-        results = self._run_task(stage_module, mode="train", dataset=dataset, dump_features=dump_features)
+        stage_module = "SegInferrer"
+        model = getattr(self, "_model", None)
+        results = self._run_task(
+            stage_module,
+            mode="train",
+            dataset=dataset,
+            dump_features=dump_features,
+            model=model
+        )
         logger.debug(f"result of run_task {stage_module} module = {results}")
         predictions = results["outputs"]
         prediction_results = zip(predictions["eval_predictions"], predictions["feature_vectors"])
