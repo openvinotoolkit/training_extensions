@@ -173,7 +173,12 @@ class SegmentationNNCFTask(SegmentationInferenceTask, IOptimizationTask):
             model = self._create_model(self._model_cfg, from_scratch=True)
             try:
                 if is_state_nncf(model_data):
-                    compression_ctrl, model = wrap_nncf_model(model, self._config, init_state_dict=model_data)
+                    compression_ctrl, model = wrap_nncf_model(
+                        model,
+                        self._recipe_cfg,
+                        init_state_dict=model_data,
+                        get_fake_input_func=get_fake_input,
+                    )
                     logger.info("Loaded model weights from Task Environment and wrapped by NNCF")
                 else:
                     try:
@@ -237,6 +242,7 @@ class SegmentationNNCFTask(SegmentationInferenceTask, IOptimizationTask):
             config,
             val_dataloader=val_dataloader,
             dataloader_for_init=init_dataloader,
+            get_fake_input_func=get_fake_input,
             is_accuracy_aware=is_acc_aware_training_set,
         )
 

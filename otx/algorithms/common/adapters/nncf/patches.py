@@ -25,16 +25,10 @@ def nncf_trace_context(self, img_metas, nncf_compress_postprocessing=True):
     # it must be on CPU
     device_backup = next(self.parameters()).device
     self = self.to("cpu")
-    # HACK
-    # temporarily change current context as onnx export context
-    # to trace network
-    onnx_backup = torch.onnx.utils.__IN_ONNX_EXPORT
-    torch.onnx.utils.__IN_ONNX_EXPORT = True
     # backup forward
     forward_backup = self.forward
     if nncf_compress_postprocessing:
-        self.forward = partial(self.forward, img_metas=img_metas)
-        #  self.forward = partial(self.forward, img_metas=img_metas, return_loss=False)
+        self.forward = partial(self.forward, img_metas=img_metas, return_loss=False)
     else:
         self.forward = partial(self.forward_dummy)
 
@@ -42,7 +36,6 @@ def nncf_trace_context(self, img_metas, nncf_compress_postprocessing=True):
 
     # make everything normal
     self.forward = forward_backup
-    torch.onnx.utils.__IN_ONNX_EXPORT = onnx_backup
     self = self.to(device_backup)
 
 

@@ -187,7 +187,7 @@ class DetectionNNCFTask(DetectionInferenceTask, IOptimizationTask):
                 if is_state_nncf(model_data):
                     compression_ctrl, model = wrap_nncf_model(
                         model,
-                        self._config,
+                        self._recipe_cfg,
                         init_state_dict=model_data,
                         get_fake_input_func=get_fake_input,
                     )
