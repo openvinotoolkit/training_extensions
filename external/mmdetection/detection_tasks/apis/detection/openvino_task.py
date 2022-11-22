@@ -29,7 +29,7 @@ from compression.graph import load_model, save_model
 from compression.graph.model_utils import compress_model_weights, get_nodes_by_type
 from compression.pipeline.initializer import create_pipeline
 from openvino.model_zoo.model_api.adapters import OpenvinoAdapter, create_core
-from openvino.model_zoo.model_api.models import Model, utils
+from openvino.model_zoo.model_api.models import Model
 from ote_sdk.entities.annotation import AnnotationSceneEntity
 from ote_sdk.entities.datasets import DatasetEntity
 from ote_sdk.entities.inference_parameters import (
@@ -72,6 +72,7 @@ from ote_sdk.utils.argument_checks import (
     check_input_parameters_type,
 )
 from ote_sdk.utils import Tiler
+from ote_sdk.utils.detection_utils import detection2array
 from ote_sdk.utils.vis_utils import get_actmap
 from typing import Any, Dict, Optional, Tuple, Union, List
 from zipfile import ZipFile
@@ -216,39 +217,13 @@ class OpenVINODetectionInferencer(BaseInferencerWithConverter):
 
         super().__init__(configuration, model, converter)
 
-    def convert2array(self, detections: List[utils.Detection]) -> np.ndarray:
-        """ Convert list of OpenVINO Detection to a numpy array
-
-        Args:
-            detections (List[utils.Detection]): List of OpenVINO Detection containing score, id, xmin, ymin, xmax, ymax
-
-        Returns:
-            np.ndarray: numpy array with [label, confidence, x1, y1, x2, y2]
-        """
-        scores = np.empty((0, 1), dtype=np.float32)
-        labels = np.empty((0, 1), dtype=np.uint32)
-        boxes = np.empty((0, 4), dtype=np.float32)
-        for det in detections:
-            if (det.xmax - det.xmin) * (det.ymax - det.ymin) < 1.0:
-                continue
-            scores = np.append(scores, [[det.score]], axis=0)
-            labels = np.append(labels, [[det.id]], axis=0)
-            boxes = np.append(
-                boxes,
-                [[float(det.xmin), float(det.ymin), float(det.xmax), float(det.ymax)]],
-                axis=0,
-            )
-        detections = np.concatenate((labels, scores, boxes), -1)
-        return detections
-
     @check_input_parameters_type()
     def post_process(
         self, prediction: Dict[str, np.ndarray], metadata: Dict[str, Any]
     ) -> AnnotationSceneEntity:
         detections = self.model.postprocess(prediction, metadata)
-        detections = self.convert2array(detections)
-        detections[:, 2:] /= np.tile(metadata["original_shape"][1::-1], 2)
-        return self.converter.convert_to_annotation(detections)
+        detections = detection2array(detections)
+        return self.converter.convert_to_annotation(detections, metadata)
 
     @check_input_parameters_type()
     def predict_tile(
@@ -266,41 +241,9 @@ class OpenVINODetectionInferencer(BaseInferencerWithConverter):
             detections: AnnotationSceneEntity
             features: list including saliency map and feature vector
         """
-        detections = np.empty((0, 6), dtype=np.float32)
-
-        tiler = Tiler(tile_size=tile_size, overlap=overlap)
-
-        original_shape = image.shape
-        features = [None, None]
-        for i, coord in enumerate(tiler.tile(image)):
-            x1, y1, x2, y2 = coord
-            tile_dict, tile_meta = self.pre_process(image[y1:y2, x1:x2])
-            raw_predictions = self.forward(tile_dict)
-            output = self.model.postprocess(raw_predictions, tile_meta)
-            # cache full image feature vector and saliency map at 0 index
-            if i == 0:
-                if (
-                    "feature_vector" in raw_predictions
-                    or "saliency_map" in raw_predictions
-                ):
-                    features = [
-                        raw_predictions["feature_vector"].reshape(-1),
-                        raw_predictions["saliency_map"],
-                    ]
-            output = self.convert2array(output)
-            output[:, 2:] += np.tile([x1, y1], 2)
-            detections = np.append(detections, output, axis=0)
-
-        if np.prod(detections):
-            scores = detections[:, 0]
-            labels = detections[:, 1]
-            boxes = detections[:, 2:]
-            _, keep = multiclass_nms(scores, labels, boxes, max_num=max_number)
-            detections = detections[keep]
-
-        # normalize coordinates between 0 and 1
-        detections[:, 2:] /= np.tile(original_shape[1::-1], 2)
-        detections = self.converter.convert_to_annotation(detections)
+        tiler = Tiler(tile_size=tile_size, overlap=overlap, max_number=max_number, model=self.model)
+        detections, features = tiler.predict(image)
+        detections = self.converter.convert_to_annotation(detections, metadata={"original_shape": image.shape})
         return detections, features
 
 
@@ -355,54 +298,9 @@ class OpenVINOMaskInferencer(BaseInferencerWithConverter):
             detections: AnnotationSceneEntity
             features: list including saliency map and feature vector
         """
-        scores = np.empty((0), dtype=np.float32)
-        labels = np.empty((0), dtype=np.uint32)
-        boxes = np.empty((0, 4), dtype=np.float32)
-        masks = []
-
-        tiler = Tiler(tile_size=tile_size, overlap=overlap)
-
-        original_shape = image.shape
-        tile_meta = {}
-        features = [None, None]
-        for i, coord in enumerate(tiler.tile(image)):
-            x1, y1, x2, y2 = coord
-            tile_dict, tile_meta = self.model.preprocess(image[y1:y2, x1:x2])
-            tile_meta["resize_mask"] = False
-            raw_predictions = self.model.infer_sync(tile_dict)
-            # cache full image feature vector and saliency map at 0 index
-            if i == 0:
-                if (
-                    "feature_vector" in raw_predictions
-                    or "saliency_map" in raw_predictions
-                ):
-                    features = [
-                        raw_predictions["feature_vector"].reshape(-1),
-                        raw_predictions["saliency_map"],
-                    ]
-            tile_scores, tile_labels, tile_boxes, tile_masks = self.model.postprocess(raw_predictions, tile_meta)
-            tile_boxes += np.tile([x1, y1], 2)
-            scores = np.append(scores, tile_scores, axis=0)
-            labels = np.append(labels, tile_labels, axis=0)
-            boxes = np.append(boxes, tile_boxes, axis=0)
-            masks.extend(tile_masks)
-
-        assert len(scores) == len(labels) == len(boxes) == len(masks)
-        if np.prod(scores):
-            _, keep = multiclass_nms(scores, labels, boxes, max_num=max_number)
-            boxes = boxes[keep]
-            labels = labels[keep]
-            scores = scores[keep]
-            masks = [masks[keep_idx] for keep_idx in keep]
-
-            for i in range(len(boxes)):
-                masks[i] = self.model._segm_postprocess(
-                    boxes[i], masks[i], *original_shape[:-1]
-                )
-
-        tile_meta["original_shape"] = original_shape
-        detections = scores, labels, boxes, masks
-        detections = self.converter.convert_to_annotation(detections, tile_meta)
+        tiler = Tiler(tile_size=tile_size, overlap=overlap, max_number=max_number, model=self.model)
+        detections, features = tiler.predict(image, segm=True)
+        detections = self.converter.convert_to_annotation(detections, metadata={"original_shape": image.shape})
         return detections, features
 
 
