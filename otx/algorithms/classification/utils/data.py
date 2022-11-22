@@ -21,6 +21,7 @@ import os
 from enum import Enum, auto
 from os import path as osp
 
+from otx.algorithms.common.utils.data import load_unlabeled_dataset_items
 from otx.api.entities.annotation import (
     Annotation,
     AnnotationSceneEntity,
@@ -60,6 +61,8 @@ class ClassificationDatasetAdapter(DatasetEntity):
             "val_data_root": OptionalDirectoryPathCheck,
             "test_ann_file": OptionalDirectoryPathCheck,
             "test_data_root": OptionalDirectoryPathCheck,
+            "unlabeled_data_root": OptionalDirectoryPathCheck,
+            "unlabeled_file_list": OptionalDirectoryPathCheck,
         }
     )
     def __init__(
@@ -70,8 +73,10 @@ class ClassificationDatasetAdapter(DatasetEntity):
         val_data_root=None,
         test_ann_file=None,
         test_data_root=None,
+        unlabeled_data_root=None,
+        unlabeled_file_list=None,
         **kwargs,
-    ):
+    ):  # pylint: disable=too-many-arguments
         self.data_roots = {}
         self.ann_files = {}
         self.data_type = ClassificationType.MULTICLASS
@@ -115,6 +120,14 @@ class ClassificationDatasetAdapter(DatasetEntity):
                 dataset_item = DatasetItemEntity(image, annotation_scene, subset=subset)
                 dataset_items.append(dataset_item)
 
+        if unlabeled_data_root is not None:
+            if not self.data_type == ClassificationType.MULTIHEAD:
+                dataset_items.extend(
+                    load_unlabeled_dataset_items(
+                        file_list_path=unlabeled_file_list,
+                        data_root_dir=unlabeled_data_root,
+                    )
+                )
         super().__init__(items=dataset_items, **kwargs)
 
     @staticmethod
