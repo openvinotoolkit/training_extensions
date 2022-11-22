@@ -43,41 +43,23 @@ from ote_cli.utils.parser import (
 ESC_BUTTON = 27
 
 
-def parse_args():
+def init_arguments(parser, parse_template_only=False):
     """
-    Parses command line arguments.
+    initialize arguments to parser. if 'parse_template_only' set as 'True',
+    'required' attribute to all arguments will be set as 'False' to simply get
+    the template argument.
     """
-
-    pre_parser = argparse.ArgumentParser(add_help=False)
-    pre_parser.add_argument("template")
-    # WA: added all available args to correctly parsing "template" positional arg
-    # to get the available hyper-parameters
-    pre_parser.add_argument("-i", "--input")
-    pre_parser.add_argument("--load-weights")
-    pre_parser.add_argument("--fit-to-size")
-    pre_parser.add_argument("--loop")
-    pre_parser.add_argument("--delay")
-    pre_parser.add_argument("--display-perf")
-
-    parsed, _ = pre_parser.parse_known_args()
-    # Load template.yaml file.
-    template = find_and_parse_model_template(parsed.template)
-    # Get hyper parameters schema.
-    hyper_parameters = template.hyper_parameters.data
-    assert hyper_parameters
-
-    parser = argparse.ArgumentParser()
     parser.add_argument("template")
     parser.add_argument(
         "-i",
         "--input",
-        required=True,
+        required=not parse_template_only,
         help="Source of input data: images folder, image, webcam and video.",
     )
     parser.add_argument(
         "--load-weights",
-        required=True,
-        help="Load weights to run the evaluation. It could be a trained/optimized model or exported model.",
+        required=not parse_template_only,
+        help="Load weights to run the evaluation. It could be a trained/optimized model (POT only) or exported model.",
     )
     parser.add_argument(
         "--fit-to-size",
@@ -100,6 +82,28 @@ def parse_args():
         "These metrics take into account not only model inference time, but also "
         "frame reading, pre-processing and post-processing.",
     )
+    return parser
+
+
+def parse_args():
+    """
+    Parses command line arguments.
+    """
+
+    pre_parser = argparse.ArgumentParser(add_help=False)
+    # WA: added all available args to correctly parsing "template" positional arg
+    # to get the available hyper-parameters
+    pre_parser = init_arguments(pre_parser, parse_template_only=True)
+
+    parsed, _ = pre_parser.parse_known_args()
+    # Load template.yaml file.
+    template = find_and_parse_model_template(parsed.template)
+    # Get hyper parameters schema.
+    hyper_parameters = template.hyper_parameters.data
+    assert hyper_parameters
+
+    parser = argparse.ArgumentParser()
+    parser = init_arguments(parser)
 
     add_hyper_parameters_sub_parser(parser, hyper_parameters, modes=("INFERENCE",))
 

@@ -39,6 +39,50 @@ from ote_cli.utils.parser import (
 )
 
 
+def init_arguments(parser, parse_template_only=False):
+    """
+    initialize arguments to parser. if 'parse_template_only' set as 'True',
+    'required' attribute to all arguments will be set as 'False' to simply get
+    the template argument.
+    """
+    parser.add_argument("template")
+    parser.add_argument(
+        "--train-ann-files",
+        required=not parse_template_only,
+        help="Comma-separated paths to training annotation files.",
+    )
+    parser.add_argument(
+        "--train-data-roots",
+        required=not parse_template_only,
+        help="Comma-separated paths to training data folders.",
+    )
+    parser.add_argument(
+        "--val-ann-files",
+        required=not parse_template_only,
+        help="Comma-separated paths to validation annotation files.",
+    )
+    parser.add_argument(
+        "--val-data-roots",
+        required=not parse_template_only,
+        help="Comma-separated paths to validation data folders.",
+    )
+    parser.add_argument(
+        "--load-weights",
+        required=not parse_template_only,
+        help="Load weights of trained model (for NNCF) or exported OpenVINO model (for POT)",
+    )
+    parser.add_argument(
+        "--save-model-to",
+        required=not parse_template_only,
+        help="Location where trained model will be stored.",
+    )
+    parser.add_argument(
+        "--save-performance",
+        help="Path to a json file where computed performance will be stored.",
+    )
+    return parser
+
+
 def parse_args():
     """
     Parses command line arguments.
@@ -46,16 +90,9 @@ def parse_args():
     """
 
     pre_parser = argparse.ArgumentParser(add_help=False)
-    pre_parser.add_argument("template")
     # WA: added all available args to correctly parsing "template" positional arg
     # to get the available hyper-parameters
-    pre_parser.add_argument("--train-ann-files")
-    pre_parser.add_argument("--train-data-roots")
-    pre_parser.add_argument("--val-ann-files")
-    pre_parser.add_argument("--val-data-roots")
-    pre_parser.add_argument("--load-weights")
-    pre_parser.add_argument("--save-model-to")
-    pre_parser.add_argument("--save-performance")
+    pre_parser = init_arguments(pre_parser, parse_template_only=True)
 
     parsed, _ = pre_parser.parse_known_args()
     # Load template.yaml file.
@@ -65,41 +102,7 @@ def parse_args():
     assert hyper_parameters
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("template")
-    parser.add_argument(
-        "--train-ann-files",
-        required=True,
-        help="Comma-separated paths to training annotation files.",
-    )
-    parser.add_argument(
-        "--train-data-roots",
-        required=True,
-        help="Comma-separated paths to training data folders.",
-    )
-    parser.add_argument(
-        "--val-ann-files",
-        required=True,
-        help="Comma-separated paths to validation annotation files.",
-    )
-    parser.add_argument(
-        "--val-data-roots",
-        required=True,
-        help="Comma-separated paths to validation data folders.",
-    )
-    parser.add_argument(
-        "--load-weights",
-        required=True,
-        help="Load weights of trained model (for NNCF) or exported OpenVINO model (for POT)",
-    )
-    parser.add_argument(
-        "--save-model-to",
-        required=True,
-        help="Location where trained model will be stored.",
-    )
-    parser.add_argument(
-        "--save-performance",
-        help="Path to a json file where computed performance will be stored.",
-    )
+    parser = init_arguments(parser)
 
     add_hyper_parameters_sub_parser(parser, hyper_parameters)
 

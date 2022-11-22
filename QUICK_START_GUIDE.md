@@ -38,7 +38,9 @@ Current version of OTE was tested under following environments
    $ pip3 install notebook; cd ote_cli/notebooks/; jupyter notebook
    ```
 
-1. There available scripts that create python virtual environments for different task types:
+   > **_Important note:_** You should confirm that the Python version that installed on your machine should be 3.8.X. For the future release of OTE will support wide range of the Python version.
+
+1. There are available scripts that create python virtual environments for different task types:
 
    ```bash
    $ find external/ -name init_venv.sh
@@ -56,11 +58,13 @@ Current version of OTE was tested under following environments
      - Classification
      - Detection
      - Segmantation
+     - Instance segmentation
+     - Rotated detection
 
    - `external/anomaly/init_venv.sh` can be used to create a virtual environment for the following task types.
-     - Anomaly-classification
-     - Anomaly-detection
-     - Anomaly-segmentation
+     - Anomaly_classification
+     - Anomaly_detection
+     - Anomaly_segmentation
 
 1. Create and activate a virtual environment for the chosen task, then install the `ote_cli`. The following example shows that creating virtual environment to the `.venv_mpa` folder in your current directory for detection task.
 
@@ -343,7 +347,7 @@ optional arguments:
                         Path to a json file where computed performance will be stored.
 ```
 
-> **_Note_**: Work-In-Progress for `params` argument.
+> **_Note:_** Work-In-Progress for `params` argument.
 
 #### Command example of the evaluation
 
@@ -376,6 +380,8 @@ Performance(score: 0.8799999999999999, dashboard: (1 metric groups))
 
 > **_Note:_** `demo` command requires GUI backend to your system for displaying inference results.
 
+> **_Note:_** The model optimzied with `NNCF` is not supported for the `demo` command.
+
 With the `--help` command, you can list additional information, such as its parameters common to all model templates:
 command example:
 
@@ -403,11 +409,15 @@ optional arguments:
 
 #### Command example of the demostration
 
-The command below performs demonstration to the [optimized model](#command-example-for-optimizing-a-pytorch-model-pth-with-openvino-nncf) `outputs/nncf/weights.pth` in previous section with images in the given input folder.
+The command below performs demonstration to the [optimized model](#command-example-for-optimizing-openvino-model-xml-with-openvino-pot) `outputs/ov/pot/openvino.xml` in previous section with images in the given input folder.
 
 ```bash
-TBD
+(mpa) ...$ ote demo external/model-preparation-algorithm/configs/detection/mobilenetv2_ssd_cls_incr/template.yaml --input data/airport/val/ --load-weights outputs/ov/pot/openvino.xml --display-perf --delay 1000
+...
+[ INFO ] OpenVINO inference completed
 ```
+
+> **_Note:_** The inference results with a model will be display to the GUI window with 1 second interval. If you execute this command from the remote environment (e.g., using text-only SSH via terminal) without having remote GUI client software, you can meet some error message from this command.
 
 ### Deployment
 

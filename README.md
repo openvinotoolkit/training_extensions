@@ -27,11 +27,7 @@ toolkit](https://software.intel.com/en-us/openvino-toolkit). For example, users 
 
 ## Roadmap
 
-### v0.4.0 (4Q22)
-
-- New algorithms
-
-### v1.0.0 (1Q22)
+### v1.0.0 (1Q23)
 
 - Installation through PyPI
   - Package will be renamed as OTX (OpenVINO Training eXtension)
@@ -40,11 +36,12 @@ toolkit](https://software.intel.com/en-us/openvino-toolkit). For example, users 
   - Introduce `build` command to customize task or model configurations
   - Automatic algorihm selection for the `train` command using the given input dataset
 - Adaptation of [Datumaro](https://github.com/openvinotoolkit/datumaro) component as a dataset interface
-
-### v1.1.0 (2Q22)
-
-- Structural update
 - Integrate hyper-parameter optimizations
+- Support action recognition task
+
+### v1.1.0 (2Q23)
+
+- SDK/API update
 
 ---
 
