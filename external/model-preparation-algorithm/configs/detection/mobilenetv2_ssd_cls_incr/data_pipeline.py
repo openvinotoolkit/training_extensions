@@ -37,10 +37,10 @@ data = dict(
     samples_per_gpu=10,
     workers_per_gpu=4,
     train=dict(
-          type=dataset_type,
-          ann_file="data/coco/annotations/instances_train2017.json",
-          img_prefix="data/coco/train2017",
-          pipeline=train_pipeline,
+        type=dataset_type,
+        ann_file="data/coco/annotations/instances_train2017.json",
+        img_prefix="data/coco/train2017",
+        pipeline=train_pipeline,
     ),
     val=dict(
         type=dataset_type,
