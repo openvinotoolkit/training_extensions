@@ -230,7 +230,12 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
             )
         self._recipe_cfg.log_config.hooks.append({"type": "OTXLoggerHook", "curves": self._learning_curves})
 
+        self._initialize_post_hook()
+
         logger.info("initialized.")
+
+    def _initialize_post_hook(self):
+        pass
 
     @abc.abstractmethod
     def _init_recipe(self):
@@ -359,10 +364,6 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         def __repr__(self):
             """Function repr in OnHookInitialized."""
             return f"'{__name__}.OnHookInitialized'"
-
-        def __reduce__(self):
-            """Function reduce in OnHookInitialized."""
-            return (self.__class__, (id(self.task_instance),))
 
     def update_override_configurations(self, config):
         """Update override_configs."""

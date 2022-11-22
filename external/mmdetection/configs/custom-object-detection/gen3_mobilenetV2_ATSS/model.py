@@ -2,7 +2,7 @@ _base_ = [
     './coco_data_pipeline.py'
 ]
 model = dict(
-    type='ATSS',
+    type='CustomATSS',
     backbone=dict(
         type='mobilenetv2_w1',
         out_indices=(2, 3, 4, 5),
@@ -14,12 +14,11 @@ model = dict(
         in_channels=[24, 32, 96, 320],
         out_channels=64,
         start_level=1,
-        add_extra_convs=True,
-        extra_convs_on_inputs=False,
+        add_extra_convs='on_output',
         num_outs=5,
         relu_before_extra_convs=True),
     bbox_head=dict(
-        type='ATSSHead',
+        type='CustomATSSHead',
         num_classes=80,
         in_channels=64,
         stacked_convs=4,

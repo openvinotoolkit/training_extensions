@@ -53,15 +53,16 @@ from ote_sdk.utils.argument_checks import (
 )
 from ote_sdk.utils.vis_utils import get_actmap
 
-from mmdet.apis import export_model
+#from mmdet.apis import export_model
 from detection_tasks.apis.detection.config_utils import patch_config, prepare_for_testing, set_hyperparams
 from detection_tasks.apis.detection.configuration import OTEDetectionConfig
 from detection_tasks.apis.detection.ote_utils import InferenceProgressCallback
 from mmdet.datasets import build_dataloader, build_dataset
 from mmdet.models import build_detector
-from mmdet.parallel import MMDataCPU
+#from mmdet.parallel import MMDataCPU
+from otx.algorithms.detection.adapters.mmdet.data.data_cpu import MMDataCPU
 from mmdet.utils.collect_env import collect_env
-from mmdet.utils.deployment import get_saliency_map, get_feature_vector
+#from mmdet.utils.deployment import get_saliency_map, get_feature_vector
 from mmdet.utils.logger import get_root_logger
 
 logger = get_root_logger()
@@ -275,7 +276,7 @@ class OTEDetectionInferenceTask(IInferenceTask, IExportTask, IEvaluationTask, IU
             self.confidence_threshold = self._hyperparams.postprocessing.confidence_threshold
 
         update_progress_callback = default_progress_callback
-        dump_saliency_map = True
+        dump_saliency_map = False
         if inference_parameters is not None:
             update_progress_callback = inference_parameters.update_progress
             dump_saliency_map = not inference_parameters.is_evaluation
@@ -291,7 +292,7 @@ class OTEDetectionInferenceTask(IInferenceTask, IExportTask, IEvaluationTask, IU
         logger.info(f'Confidence threshold {self.confidence_threshold}')
         model = self._model
         with model.register_forward_pre_hook(pre_hook), model.register_forward_hook(hook):
-            prediction_results, _ = self._infer_detector(model, self._config, dataset, dump_features=True, eval=False, 
+            prediction_results, _ = self._infer_detector(model, self._config, dataset, dump_features=False, eval=False,
                                                          dump_saliency_map=dump_saliency_map)
         self._add_predictions_to_dataset(prediction_results, dataset, self.confidence_threshold)
 
@@ -301,7 +302,7 @@ class OTEDetectionInferenceTask(IInferenceTask, IExportTask, IEvaluationTask, IU
 
     @staticmethod
     def _infer_detector(model: torch.nn.Module, config: Config, dataset: DatasetEntity, dump_features: bool = False,
-                        eval: Optional[bool] = False, metric_name: Optional[str] = 'mAP', 
+                        eval: Optional[bool] = False, metric_name: Optional[str] = 'mAP',
                         dump_saliency_map: bool = False) -> Tuple[List, float]:
         model.eval()
         test_config = prepare_for_testing(config, dataset)
@@ -333,7 +334,7 @@ class OTEDetectionInferenceTask(IInferenceTask, IExportTask, IEvaluationTask, IU
             feature_vectors.append(None)
 
         def dump_saliency_hook(model: torch.nn.Module, input: Tuple, out: List[torch.Tensor]):
-            """ Dump the last feature map to `saliency_maps` cache 
+            """ Dump the last feature map to `saliency_maps` cache
 
             Args:
                 model (torch.nn.Module): PyTorch model
@@ -343,7 +344,7 @@ class OTEDetectionInferenceTask(IInferenceTask, IExportTask, IEvaluationTask, IU
             with torch.no_grad():
                 saliency_map = get_saliency_map(out[-1])
             saliency_maps.append(saliency_map.squeeze(0).detach().cpu().numpy())
-        
+
         def dummy_dump_saliency_hook(model, input, out):
             saliency_maps.append(None)
 

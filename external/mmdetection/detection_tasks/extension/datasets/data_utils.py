@@ -24,7 +24,8 @@ from ote_sdk.utils.argument_checks import (
     check_input_parameters_type,
 )
 from ote_sdk.utils.shape_factory import ShapeFactory
-from pycocotools.coco import COCO
+#from pycocotools.coco import COCO
+from mmdet.datasets.api_wrappers.coco_api import COCO
 
 from mmdet.core import BitmapMasks, PolygonMasks
 
