@@ -6,6 +6,7 @@ Tiling Module
 # SPDX-License-Identifier: Apache-2.0
 #
 
+from typing import List
 from itertools import product
 
 import numpy as np
@@ -17,41 +18,28 @@ class Tiler:
     Args:
         tile_size: Tile dimension for each patch
         overlap: Overlap between adjacent tile
-        batch_size: Batch Size
     """
 
-    def __init__(self, tile_size: int, overlap: float, batch_size=1) -> None:
+    def __init__(self, tile_size: int, overlap: float) -> None:
         self.tile_size = tile_size
         self.overlap = overlap
         self.stride = int(tile_size * (1 - overlap))
-        self.batch_size = batch_size
 
-    def tile(self, image: np.ndarray) -> np.ndarray:
+    def tile(self, image: np.ndarray) -> List[List]:
         """Tiles an input image to either overlapping, non-overlapping or random patches.
 
         Args:
             image: Input image to tile.
 
         Returns:
-            Tiles generated from the image.
+            Tiles coordinates
         """
         height, width = image.shape[:2]
 
-        tiles, offsets = [], []
-        for (loc_i, loc_j) in product(
-            range(0, height - self.tile_size + 1, self.stride),
+        coords = [(0, 0, width, height)]
+        for (loc_j, loc_i) in product(
             range(0, width - self.tile_size + 1, self.stride),
+            range(0, height - self.tile_size + 1, self.stride),
         ):
-            tiles.append(
-                image[
-                    loc_i : (loc_i + self.tile_size),
-                    loc_j : (loc_j + self.tile_size),
-                    ...,
-                ]
-            )
-            offsets.append((loc_i, loc_j))  # offset y, offset x
-            if len(tiles) == self.batch_size:
-                yield tiles, offsets
-                tiles, offsets = [], []
-        if tiles:
-            yield tiles, offsets
+            coords.append((loc_j, loc_i, loc_j + self.tile_size, loc_i + self.tile_size))
+        return coords

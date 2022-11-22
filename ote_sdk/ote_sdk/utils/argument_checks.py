@@ -215,39 +215,39 @@ def check_input_parameters_type(custom_checks: typing.Optional[dict] = None):
     def _check_input_parameters_type(function):
         @wraps(function)
         def validate(*args, **kwargs):
-            # Forming expected types dictionary
-            signature = inspect.signature(function)
-            expected_types_map = signature.parameters
-            if len(expected_types_map) < len(args):
-                raise TypeError("Too many positional arguments")
-            # Forming input parameters dictionary
-            input_parameters_values_map = dict(zip(signature.parameters.keys(), args))
-            for key, value in kwargs.items():
-                if key in input_parameters_values_map:
-                    raise TypeError(
-                        f"Duplication of the parameter {key} -- both in args and kwargs"
-                    )
-                input_parameters_values_map[key] = value
-            # Checking input parameters type
-            for parameter_name in expected_types_map:
-                parameter = input_parameters_values_map.get(parameter_name)
-                if parameter_name not in input_parameters_values_map:
-                    default_value = expected_types_map.get(parameter_name).default
-                    # pylint: disable=protected-access
-                    if default_value != inspect._empty:  # type: ignore
-                        parameter = default_value
-                if parameter_name in custom_checks:
-                    custom_check = custom_checks[parameter_name]
-                    if custom_check is None:
-                        continue
-                    custom_check(parameter, parameter_name).check()
-                else:
-                    check_parameter_type(
-                        parameter=parameter,
-                        parameter_name=parameter_name,
-                        expected_type=expected_types_map.get(parameter_name).annotation,
-                    )
-            return function(**input_parameters_values_map)
+            # # Forming expected types dictionary
+            # signature = inspect.signature(function)
+            # expected_types_map = signature.parameters
+            # if len(expected_types_map) < len(args):
+            #     raise TypeError("Too many positional arguments")
+            # # Forming input parameters dictionary
+            # input_parameters_values_map = dict(zip(signature.parameters.keys(), args))
+            # for key, value in kwargs.items():
+            #     if key in input_parameters_values_map:
+            #         raise TypeError(
+            #             f"Duplication of the parameter {key} -- both in args and kwargs"
+            #         )
+            #     input_parameters_values_map[key] = value
+            # # Checking input parameters type
+            # for parameter_name in expected_types_map:
+            #     parameter = input_parameters_values_map.get(parameter_name)
+            #     if parameter_name not in input_parameters_values_map:
+            #         default_value = expected_types_map.get(parameter_name).default
+            #         # pylint: disable=protected-access
+            #         if default_value != inspect._empty:  # type: ignore
+            #             parameter = default_value
+            #     if parameter_name in custom_checks:
+            #         custom_check = custom_checks[parameter_name]
+            #         if custom_check is None:
+            #             continue
+            #         custom_check(parameter, parameter_name).check()
+            #     else:
+            #         check_parameter_type(
+            #             parameter=parameter,
+            #             parameter_name=parameter_name,
+            #             expected_type=expected_types_map.get(parameter_name).annotation,
+            #         )
+            return function(*args, **kwargs)
 
         return validate
 

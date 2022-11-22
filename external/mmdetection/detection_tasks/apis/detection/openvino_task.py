@@ -250,17 +250,10 @@ class OpenVINODetectionInferencer(BaseInferencerWithConverter):
         detections[:, 2:] /= np.tile(metadata["original_shape"][1::-1], 2)
         return self.converter.convert_to_annotation(detections)
 
-    def process_tile_prediction(
-        self, predictions: List[utils.Detection], offset: Tuple[int, int]
-    ):
-        predictions = self.convert2array(predictions)
-        predictions[:, 2:] += np.tile(offset[0][::-1], 2)
-        return predictions
-
     @check_input_parameters_type()
     def predict_tile(
         self, image: np.ndarray, tile_size: int, overlap: float, max_number: int
-    ) -> AnnotationSceneEntity:
+    ) -> Tuple[AnnotationSceneEntity, np.ndarray, np.ndarray]:
         """ Run prediction by tiling image to small patches
 
         Args:
@@ -270,19 +263,33 @@ class OpenVINODetectionInferencer(BaseInferencerWithConverter):
             max_number (int): max number of predicted objects allowed
 
         Returns:
-            AnnotationSceneEntity: detections
+            detections: AnnotationSceneEntity
+            features: list including saliency map and feature vector
         """
         detections = np.empty((0, 6), dtype=np.float32)
 
-        batch_size = 1
-        tiler = Tiler(tile_size=tile_size, overlap=overlap, batch_size=batch_size)
+        tiler = Tiler(tile_size=tile_size, overlap=overlap)
 
         original_shape = image.shape
-        metadata = None
-        for tile, offset in tiler.tile(image):
-            output, metadata = self.model(tile[0])
-            predictions = self.process_tile_prediction(output, offset)
-            detections = np.append(detections, predictions, axis=0)
+        features = [None, None]
+        for i, coord in enumerate(tiler.tile(image)):
+            x1, y1, x2, y2 = coord
+            tile_dict, tile_meta = self.pre_process(image[y1:y2, x1:x2])
+            raw_predictions = self.forward(tile_dict)
+            output = self.model.postprocess(raw_predictions, tile_meta)
+            # cache full image feature vector and saliency map at 0 index
+            if i == 0:
+                if (
+                    "feature_vector" in raw_predictions
+                    or "saliency_map" in raw_predictions
+                ):
+                    features = [
+                        raw_predictions["feature_vector"].reshape(-1),
+                        raw_predictions["saliency_map"],
+                    ]
+            output = self.convert2array(output)
+            output[:, 2:] += np.tile([x1, y1], 2)
+            detections = np.append(detections, output, axis=0)
 
         if np.prod(detections):
             scores = detections[:, 0]
@@ -294,7 +301,7 @@ class OpenVINODetectionInferencer(BaseInferencerWithConverter):
         # normalize coordinates between 0 and 1
         detections[:, 2:] /= np.tile(original_shape[1::-1], 2)
         detections = self.converter.convert_to_annotation(detections)
-        return detections
+        return detections, features
 
 
 class OpenVINOMaskInferencer(BaseInferencerWithConverter):
@@ -332,19 +339,10 @@ class OpenVINOMaskInferencer(BaseInferencerWithConverter):
 
         super().__init__(configuration, model, converter)
 
-    def process_tile_prediction(self, predictions: Tuple, offset: Tuple[int, int]):
-        tile_scores, tile_labels, tile_boxes, tile_masks = predictions
-        y, x = offset[0]
-        tile_boxes[:, 0] += x
-        tile_boxes[:, 1] += y
-        tile_boxes[:, 2] += x
-        tile_boxes[:, 3] += y
-        return tile_scores, tile_labels, tile_boxes, tile_masks
-
     @check_input_parameters_type()
     def predict_tile(
         self, image: np.ndarray, tile_size: int, overlap: float, max_number: int
-    ) -> AnnotationSceneEntity:
+    ) -> Tuple[AnnotationSceneEntity, np.ndarray, np.ndarray]:
         """ Run prediction by tiling image to small patches
 
         Args:
@@ -354,33 +352,40 @@ class OpenVINOMaskInferencer(BaseInferencerWithConverter):
             max_number (int): max number of predicted objects allowed
 
         Returns:
-            AnnotationSceneEntity: detections
+            detections: AnnotationSceneEntity
+            features: list including saliency map and feature vector
         """
         scores = np.empty((0), dtype=np.float32)
         labels = np.empty((0), dtype=np.uint32)
         boxes = np.empty((0, 4), dtype=np.float32)
         masks = []
 
-        detection_task = (
-            True if isinstance(self, OpenVINODetectionInferencer) else False
-        )
-
-        batch_size = 1
-        tiler = Tiler(tile_size=tile_size, overlap=overlap, batch_size=batch_size)
+        tiler = Tiler(tile_size=tile_size, overlap=overlap)
 
         original_shape = image.shape
-        metadata = None
-        for tile, offset in tiler.tile(image):
-            tile_dict, metadata = self.model.preprocess(tile[0])
-            if not detection_task:
-                metadata["resize_mask"] = False
+        tile_meta = {}
+        features = [None, None]
+        for i, coord in enumerate(tiler.tile(image)):
+            x1, y1, x2, y2 = coord
+            tile_dict, tile_meta = self.model.preprocess(image[y1:y2, x1:x2])
+            tile_meta["resize_mask"] = False
             raw_predictions = self.model.infer_sync(tile_dict)
-            output = self.model.postprocess(raw_predictions, metadata)
-            score, label, box, mask = self.process_tile_prediction(output, offset)
-            scores = np.append(scores, score, axis=0)
-            labels = np.append(labels, label, axis=0)
-            boxes = np.append(boxes, box, axis=0)
-            masks.extend(mask)
+            # cache full image feature vector and saliency map at 0 index
+            if i == 0:
+                if (
+                    "feature_vector" in raw_predictions
+                    or "saliency_map" in raw_predictions
+                ):
+                    features = [
+                        raw_predictions["feature_vector"].reshape(-1),
+                        raw_predictions["saliency_map"],
+                    ]
+            tile_scores, tile_labels, tile_boxes, tile_masks = self.model.postprocess(raw_predictions, tile_meta)
+            tile_boxes += np.tile([x1, y1], 2)
+            scores = np.append(scores, tile_scores, axis=0)
+            labels = np.append(labels, tile_labels, axis=0)
+            boxes = np.append(boxes, tile_boxes, axis=0)
+            masks.extend(tile_masks)
 
         assert len(scores) == len(labels) == len(boxes) == len(masks)
         if np.prod(scores):
@@ -395,10 +400,10 @@ class OpenVINOMaskInferencer(BaseInferencerWithConverter):
                     boxes[i], masks[i], *original_shape[:-1]
                 )
 
-        metadata["original_shape"] = original_shape
+        tile_meta["original_shape"] = original_shape
         detections = scores, labels, boxes, masks
-        detections = self.converter.convert_to_annotation(detections, metadata)
-        return detections
+        detections = self.converter.convert_to_annotation(detections, tile_meta)
+        return detections, features
 
 
 class OpenVINORotatedRectInferencer(BaseInferencerWithConverter):
@@ -531,15 +536,15 @@ class OpenVINODetectionTask(
 
         dataset_size = len(dataset)
         for i, dataset_item in enumerate(dataset, 1):
-            predicted_scene, features = self.inferencer.predict(dataset_item.numpy)
             if self.config["tiling_parameters"]["enable_tiling"]["value"]:
-                tile_predicted_scene = self.inferencer.predict_tile(
+                predicted_scene, features = self.inferencer.predict_tile(
                     dataset_item.numpy,
                     tile_size=tile_size,
                     overlap=tile_overlap,
                     max_number=max_number,
                 )
-                dataset_item.append_annotations(tile_predicted_scene.annotations)
+            else:
+                predicted_scene, features = self.inferencer.predict(dataset_item.numpy)
 
             dataset_item.append_annotations(predicted_scene.annotations)
             update_progress_callback(int(i / dataset_size * 100))
