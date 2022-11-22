@@ -346,6 +346,8 @@ class ClassificationInferenceTask(
                     pipeline_step.to_rgb = to_rgb
                 elif pipeline_step.type == "MultiScaleFlipAug":
                     patch_color_conversion(pipeline_step.transforms)
+                elif pipeline_step.type == "TwoCropTransform":
+                    patch_color_conversion(pipeline_step.pipeline)
 
         assert "data" in config
         for subset in ("train", "val", "test"):
