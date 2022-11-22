@@ -14,7 +14,6 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import copy
 import math
 import os
 from collections import defaultdict
@@ -186,7 +185,6 @@ def prepare_for_training(
     learning_curves: defaultdict,
 ) -> Config:
     """Prepare configs for training phase."""
-    config = copy.deepcopy(config)
     prepare_work_dir(config)
     data_train = get_data_cfg(config)
     data_train.otx_dataset = train_dataset
@@ -266,6 +264,7 @@ def patch_evaluation(config: Config):
     config.early_stop_metric = "mAP"
 
 
+# TODO Replace this with function in common
 def patch_data_pipeline(config: Config, template_file_path: str):
     """Update data_pipeline configs."""
     base_dir = os.path.abspath(os.path.dirname(template_file_path))
@@ -320,6 +319,7 @@ def cluster_anchors(config: Config, dataset: DatasetEntity, model: BaseDetector)
     return config, model
 
 
+# TODO Replace this with function in common
 @check_input_parameters_type()
 def get_data_cfg(config: Union[Config, ConfigDict], subset: str = "train") -> Config:
     """Return dataset configs."""
