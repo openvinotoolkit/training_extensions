@@ -19,14 +19,13 @@ Detection utils
 from typing import List
 
 import numpy as np
-from openvino.model_zoo.model_api.models.utils import Detection
 
 
-def detection2array(detections: List[Detection]) -> np.ndarray:
+def detection2array(detections: List) -> np.ndarray:
     """Convert list of OpenVINO Detection to a numpy array
 
     Args:
-        detections (List[utils.Detection]): List of OpenVINO Detection containing score, id, xmin, ymin, xmax, ymax
+        detections (List): List of OpenVINO Detection containing score, id, xmin, ymin, xmax, ymax
 
     Returns:
         np.ndarray: numpy array with [label, confidence, x1, y1, x2, y2]

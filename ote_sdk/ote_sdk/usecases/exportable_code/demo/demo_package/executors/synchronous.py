@@ -32,10 +32,10 @@ class SyncExecutor:
     def __init__(self, model: ModelContainer, visualizer: IVisualizer) -> None:
         self.model = model.core_model
         self.params = model.parameters
-        self.tiler = self.setup_tiler()
         self.visualizer = visualizer
         self.converter = create_output_converter(model.task_type, model.labels)
         self.task_type = model.task_type
+        self.tiler = self.setup_tiler()
 
     def setup_tiler(self):
         """Setup tiler
@@ -48,10 +48,17 @@ class SyncExecutor:
             or not self.params["tiling_parameters"]["enable_tiling"]["value"]
         ):
             return None
+
+        segm = False
+        if (
+            self.task_type is TaskType.ROTATED_DETECTION
+            or self.task_type is TaskType.INSTANCE_SEGMENTATION
+        ):
+            segm = True
         tile_size = self.params["tiling_parameters"]["tile_size"]["value"]
         tile_overlap = self.params["tiling_parameters"]["tile_overlap"]["value"]
         max_number = self.params["tiling_parameters"]["tile_max_number"]["value"]
-        tiler = Tiler(tile_size, tile_overlap, max_number, self.model)
+        tiler = Tiler(tile_size, tile_overlap, max_number, self.model, segm)
         return tiler
 
     def infer(self, frame):
@@ -81,13 +88,7 @@ class SyncExecutor:
             frame_meta (Dict): dict with original shape
         """
 
-        segm = False
-        if (
-            self.task_type is TaskType.ROTATED_DETECTION
-            or self.task_type is TaskType.INSTANCE_SEGMENTATION
-        ):
-            segm = True
-        detections, _ = self.tiler.predict(frame, segm)
+        detections, _ = self.tiler.predict(frame)
         annotation_scene = self.converter.convert_to_annotation(
             detections, metadata={"original_shape": frame.shape}
         )

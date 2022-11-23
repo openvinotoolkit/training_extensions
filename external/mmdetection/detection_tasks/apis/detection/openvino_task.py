@@ -298,8 +298,8 @@ class OpenVINOMaskInferencer(BaseInferencerWithConverter):
             detections: AnnotationSceneEntity
             features: list including saliency map and feature vector
         """
-        tiler = Tiler(tile_size=tile_size, overlap=overlap, max_number=max_number, model=self.model)
-        detections, features = tiler.predict(image, segm=True)
+        tiler = Tiler(tile_size=tile_size, overlap=overlap, max_number=max_number, model=self.model, segm=True)
+        detections, features = tiler.predict(image)
         detections = self.converter.convert_to_annotation(detections, metadata={"original_shape": image.shape})
         return detections, features
 

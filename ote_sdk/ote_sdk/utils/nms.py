@@ -11,9 +11,7 @@ from openvino.model_zoo.model_api.models.utils import nms
 
 
 def multiclass_nms(
-    scores: np.ndarray,
-    labels: np.ndarray,
-    boxes: np.ndarray,
+    detections: np.ndarray,
     iou_threshold=0.45,
     max_num=200,
 ):
@@ -25,15 +23,16 @@ def multiclass_nms(
     from different classes do not overlap
 
     Args:
-        scores (np.ndarray): box scores
-        labels (np.ndarray): box label indices
-        boxes (np.ndarray): box coordinates
+        detections (np.ndarray): labels, scores and boxes
         iou_threshold (float, optional): IoU threshold. Defaults to 0.45.
         max_num (int, optional): Max number of objects filter. Defaults to 200.
 
     Returns:
         _type_: _description_
     """
+    labels = detections[:, 0]
+    scores = detections[:, 1]
+    boxes = detections[:, 2:]
     max_coordinate = boxes.max()
     offsets = labels.astype(boxes.dtype) * (max_coordinate + 1)
     boxes_for_nms = boxes + offsets[:, None]
@@ -41,4 +40,5 @@ def multiclass_nms(
     if max_num > 0:
         keep = keep[:max_num]
     keep = np.array(keep)
-    return keep
+    det = detections[keep]
+    return det, keep

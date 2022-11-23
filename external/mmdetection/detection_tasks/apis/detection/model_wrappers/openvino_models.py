@@ -76,6 +76,9 @@ class OTEMaskRCNNModel(MaskRCNNModel):
 
         return scores, classes, boxes, resized_masks
 
+    def segm_postprocess(self, *args, **kwargs):
+        return self._segm_postprocess(*args, **kwargs)
+
 
 class OTESSDModel(SSD):
     """OpenVINO model wrapper for OTE SSD model"""
