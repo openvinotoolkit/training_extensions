@@ -278,8 +278,9 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
                 elif saliency_map.ndim == 3:
                     # Multiple saliency maps per image (class-wise saliency map), support e.g. Recipro-CAM use case
                     for class_id, class_wise_saliency_map in enumerate(saliency_map):
-                        class_wise_saliency_map = get_actmap(class_wise_saliency_map,
-                                                             (dataset_item.width, dataset_item.height))
+                        class_wise_saliency_map = get_actmap(
+                            class_wise_saliency_map, (dataset_item.width, dataset_item.height)
+                        )
                         class_name_str = self._labels[class_id].name
                         saliency_map_media = ResultMediaEntity(
                             name=f"Saliency Map: {class_name_str}",
@@ -291,8 +292,9 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
                         )
                         dataset_item.append_metadata_item(saliency_map_media, model=self._task_environment.model)
                 else:
-                    raise RuntimeError(f'Single saliency map has to be 2 or 3-dimensional, '
-                                       f'but got {saliency_map.ndim} dims')
+                    raise RuntimeError(
+                        f"Single saliency map has to be 2 or 3-dimensional, " f"but got {saliency_map.ndim} dims"
+                    )
 
             update_progress_callback(int(i / dataset_size * 100))
 
