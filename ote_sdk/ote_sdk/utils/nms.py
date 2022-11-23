@@ -7,7 +7,41 @@ NMS Module
 #
 
 import numpy as np
-from openvino.model_zoo.model_api.models.utils import nms
+
+
+def nms(boxes, scores, thresh):
+    """Adapted NMS implementation from OMZ: model_zoo/model_api/models/utils.py#L181"""
+    # pylint: disable=too-many-locals
+
+    x1, y1, x2, y2 = boxes.T
+    areas = (x2 - x1) * (y2 - y1)
+    order = scores.argsort()[::-1]
+
+    keep = []
+    while order.size > 0:
+        i = order[0]
+        keep.append(i)
+
+        xx1 = np.maximum(x1[i], x1[order[1:]])
+        yy1 = np.maximum(y1[i], y1[order[1:]])
+        xx2 = np.minimum(x2[i], x2[order[1:]])
+        yy2 = np.minimum(y2[i], y2[order[1:]])
+
+        width = np.maximum(0.0, xx2 - xx1)
+        height = np.maximum(0.0, yy2 - yy1)
+        intersection = width * height
+
+        union = areas[i] + areas[order[1:]] - intersection
+        overlap = np.divide(
+            intersection,
+            union,
+            out=np.zeros_like(intersection, dtype=float),
+            where=union != 0,
+        )
+
+        order = order[np.where(overlap <= thresh)[0] + 1]
+
+    return keep
 
 
 def multiclass_nms(
@@ -36,7 +70,7 @@ def multiclass_nms(
     max_coordinate = boxes.max()
     offsets = labels.astype(boxes.dtype) * (max_coordinate + 1)
     boxes_for_nms = boxes + offsets[:, None]
-    keep = nms(*boxes_for_nms.T, scores, iou_threshold)
+    keep = nms(boxes_for_nms, scores, iou_threshold)
     if max_num > 0:
         keep = keep[:max_num]
     keep = np.array(keep)
