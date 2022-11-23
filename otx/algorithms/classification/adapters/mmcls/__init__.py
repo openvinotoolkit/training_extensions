@@ -15,7 +15,7 @@
 # and limitations under the License.
 
 from .data import MPAClsDataset
-from .data.twocrop_transform import ColorJitter, RandomAppliedTrans, TwoCropTransform
+from .data.twocrop_transform import TwoCropTransform
 from .model.heads.selfsl_cls_head import SelfSLClsHead
 from .model.losses.barlowtwins_loss import BarlowTwinsLoss
 from .model.selfsl_classifier import SelfSLClassifier
@@ -23,9 +23,7 @@ from .model.selfsl_classifier import SelfSLClassifier
 __all__ = [
     "MPAClsDataset",
     "TwoCropTransform",
-    "RandomAppliedTrans",
-    "ColorJitter",
     "SelfSLClsHead",
     "BarlowTwinsLoss",
-    "SelfSLClassifier"
+    "SelfSLClassifier",
 ]
