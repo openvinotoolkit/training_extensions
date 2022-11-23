@@ -16,15 +16,14 @@ Detection utils
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from openvino.model_zoo.model_api.models.utils import Detection
+from typing import List
 
 import numpy as np
-
-from typing import List
+from openvino.model_zoo.model_api.models.utils import Detection
 
 
 def detection2array(detections: List[Detection]) -> np.ndarray:
-    """ Convert list of OpenVINO Detection to a numpy array
+    """Convert list of OpenVINO Detection to a numpy array
 
     Args:
         detections (List[utils.Detection]): List of OpenVINO Detection containing score, id, xmin, ymin, xmax, ymax

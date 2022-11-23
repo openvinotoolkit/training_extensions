@@ -55,9 +55,12 @@ class DetectionToAnnotationConverter(IPredictionToAnnotationConverter):
     """
 
     def __init__(self, labels: Union[LabelSchemaEntity, List]):
-        if isinstance(labels, LabelSchemaEntity):
-            labels = labels.get_labels(include_empty=False)
-        self.label_map = dict(enumerate(labels))
+        self.labels = (
+            labels.get_labels(include_empty=False)
+            if isinstance(labels, LabelSchemaEntity)
+            else labels
+        )
+        self.label_map = dict(enumerate(self.labels))
 
     def convert_to_annotation(
         self, predictions: np.ndarray, metadata: Optional[Dict[str, np.ndarray]] = None
@@ -80,7 +83,8 @@ class DetectionToAnnotationConverter(IPredictionToAnnotationConverter):
         :returns AnnotationScene: AnnotationScene Object containing the boxes
                                   obtained from the prediction
         """
-        predictions[:, 2:] /= np.tile(metadata["original_shape"][1::-1], 2)
+        if metadata:
+            predictions[:, 2:] /= np.tile(metadata["original_shape"][1::-1], 2)
         annotations = self.__convert_to_annotations(predictions)
         # media_identifier = ImageIdentifier(image_id=ID())
         annotation_scene = AnnotationSceneEntity(

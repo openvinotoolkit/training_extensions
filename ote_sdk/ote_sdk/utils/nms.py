@@ -17,7 +17,7 @@ def multiclass_nms(
     iou_threshold=0.45,
     max_num=200,
 ):
-    """ Multi-class NMS
+    """Multi-class NMS
 
     strategy: in order to perform NMS independently per class,
     we add an offset to all the boxes. The offset is dependent
