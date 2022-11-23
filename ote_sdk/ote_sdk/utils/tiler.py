@@ -7,10 +7,9 @@ Tiling Module
 #
 
 from itertools import product
-from typing import List, Tuple, Union
+from typing import Any, List, Tuple, Union
 
 import numpy as np
-from openvino.model_zoo.model_api.models import Model
 
 from ote_sdk.utils.detection_utils import detection2array
 from ote_sdk.utils.nms import multiclass_nms
@@ -31,7 +30,7 @@ class Tiler:
         tile_size: int,
         overlap: float,
         max_number: int,
-        model: Model,
+        model: Any,
         segm: bool = False,
     ) -> None:
         self.tile_size = tile_size
