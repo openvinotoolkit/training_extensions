@@ -322,7 +322,11 @@ def patch_datasets(config: Config, domain=Domain.SEGMENTATION):
         if cfg.type == "RepeatDataset":
             cfg = cfg.dataset
 
-        cfg.type = "MPASegDataset"
+        if subset == "unlabeled":
+            cfg.type = "PseudoSemanticSegDataset"
+            cfg.orig_type = "MPASegDataset"
+        else:
+            cfg.type = "MPASegDataset"
         cfg.otx_dataset = None
         cfg.labels = None
 
@@ -340,7 +344,6 @@ def patch_datasets(config: Config, domain=Domain.SEGMENTATION):
                 pipeline_step.domain = domain
             if subset == "train" and pipeline_step.type == "Collect":
                 pipeline_step = get_meta_keys(pipeline_step)
-
         patch_color_conversion(cfg.pipeline)
 
 

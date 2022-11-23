@@ -184,6 +184,7 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         train_type = self._hyperparams.algo_backend.train_type
         logger.info(f"train type = {train_type}")
 
+        train_type = TrainType.SEMISUPERVISED
         if train_type not in (TrainType.SEMISUPERVISED, TrainType.INCREMENTAL):
             raise NotImplementedError(f"Train type {train_type} is not implemented yet.")
         if train_type == TrainType.SEMISUPERVISED:
@@ -211,7 +212,12 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
     # error log : b[k]=v. TypeError: list indices must be integers or slices, not str
     def _init_model_cfg(self):
         base_dir = os.path.abspath(os.path.dirname(self.template_file_path))
-        return MPAConfig.fromfile(os.path.join(base_dir, "model.py"))
+        model_cfg = MPAConfig.fromfile(os.path.join(base_dir, "model.py"))
+        if "model_config_path" in self._recipe_cfg:
+            recipe_root = os.path.join(MPAConstants.RECIPES_PATH, "stages/segmentation")
+            recipe_model_cfg = MPAConfig.fromfile(os.path.join(recipe_root, self._recipe_cfg["model_config_path"]))
+            model_cfg.merge_from_dict(recipe_model_cfg)
+        return model_cfg
 
     def _init_test_data_cfg(self, dataset: DatasetEntity):
         data_cfg = ConfigDict(
