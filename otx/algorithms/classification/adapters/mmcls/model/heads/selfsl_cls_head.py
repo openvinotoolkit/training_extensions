@@ -17,8 +17,8 @@ class SelfSLClsHead(BaseHead):
     Args:
         num_classes (int): The number of classes of dataset used for training
         in_channels (int): The channels of input data from the backbone
-        aux_head (dict): A dictionary with the out_channels and optionally the
-                         hid_channels of the auxiliary head.
+        aux_mlp (dict): A dictionary with the out_channels and optionally the
+                         hid_channels of the auxiliary MLP head.
         loss (dict): The SelfSL loss: BarlowTwinsLoss (default)
         topk (set): evaluation topk score, default is (1, )
     """
@@ -27,7 +27,7 @@ class SelfSLClsHead(BaseHead):
         self,
         num_classes: int,
         in_channels: int,
-        aux_head: Dict,
+        aux_mlp: Dict,
         loss=dict(type="BarlowTwinsLoss", off_diag_penality=1 / 128),
         lamda=1.0,
         topk=(1,),
@@ -53,18 +53,18 @@ class SelfSLClsHead(BaseHead):
         self.fc = nn.Linear(in_features=in_channels, out_features=self.num_classes)
 
         # Set up the auxiliar head
-        out_channels = aux_head["out_channels"]
+        out_channels = aux_mlp["out_channels"]
         if out_channels <= 0:
             raise ValueError(f"out_channels={out_channels} must be a positive integer")
-        if "hid_channels" in aux_head and aux_head["hid_channels"] > 0:
-            hid_channels = aux_head["hid_channels"]
-            self.aux_head = nn.Sequential(
+        if "hid_channels" in aux_mlp and aux_mlp["hid_channels"] > 0:
+            hid_channels = aux_mlp["hid_channels"]
+            self.aux_mlp = nn.Sequential(
                 nn.Linear(in_features=in_channels, out_features=hid_channels),
                 nn.ReLU(inplace=True),
                 nn.Linear(in_features=hid_channels, out_features=out_channels),
             )
         else:
-            self.aux_head = nn.Linear(
+            self.aux_mlp = nn.Linear(
                 in_features=in_channels, out_features=out_channels
             )
 
@@ -84,7 +84,7 @@ class SelfSLClsHead(BaseHead):
         aux_feats = None
         if x.shape[0] == 2 * bsz:
             # reshape aux_feats from [2 * bsz, dims] to [bs, 2, dims]
-            f1, f2 = torch.split(self.aux_head(x), [bsz, bsz], dim=0)
+            f1, f2 = torch.split(self.aux_mlp(x), [bsz, bsz], dim=0)
             aux_feats = torch.cat([f1.unsqueeze(1), f2.unsqueeze(1)], dim=1)
         loss = self.compute_loss(fc_feats, gt_labels, aux_feats=aux_feats)
         losses.update(loss)
