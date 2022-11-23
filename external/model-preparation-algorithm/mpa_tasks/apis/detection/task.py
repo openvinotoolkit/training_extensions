@@ -344,6 +344,23 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
                 elif pipeline_step.type == "MultiScaleFlipAug":
                     patch_color_conversion(pipeline_step.transforms)
 
+        def patch_data_pipeline(cfg):
+            pipeline = cfg.get("pipeline", None)
+            if pipeline is not None:
+                for pipeline_step in pipeline:
+                    if pipeline_step.type == "LoadImageFromFile":
+                        pipeline_step.type = "LoadImageFromOTEDataset"
+                    if pipeline_step.type == "LoadAnnotations":
+                        pipeline_step.type = "LoadAnnotationFromOTEDataset"
+                        pipeline_step.domain = domain
+                        pipeline_step.min_size = cfg.pop("min_size", -1)
+                    if (subset == "train" and
+                        pipeline_step.type == "Collect" and
+                        cfg.type not in ["ImageTilingDataset"]):
+                        pipeline_step = BaseTask._get_meta_keys(pipeline_step)
+                patch_color_conversion(cfg.pipeline)
+
+        # FIXME This code assume that max of wrapped data depth is 2
         # remove redundant parameters introduced in self._recipe_cfg.merge_from_dict
         remove_from_config(config, "ann_file")
         remove_from_config(config, "img_prefix")
@@ -355,8 +372,10 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
             # remove redundant parameters introduced in self._recipe_cfg.merge_from_dict
             remove_from_config(cfg, "ann_file")
             remove_from_config(cfg, "img_prefix")
+            patch_data_pipeline(cfg)
             if cfg.type in ["RepeatDataset", "MultiImageMixDataset", "ImageTilingDataset"]:
                 cfg = cfg.dataset
+                patch_data_pipeline(cfg)
             cfg.type = "MPADetDataset"
             cfg.domain = domain
             cfg.ote_dataset = None
@@ -364,16 +383,6 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
             remove_from_config(cfg, "ann_file")
             remove_from_config(cfg, "img_prefix")
             remove_from_config(cfg, "classes")  # Get from DatasetEntity
-            for pipeline_step in cfg.pipeline:
-                if pipeline_step.type == "LoadImageFromFile":
-                    pipeline_step.type = "LoadImageFromOTEDataset"
-                if pipeline_step.type == "LoadAnnotations":
-                    pipeline_step.type = "LoadAnnotationFromOTEDataset"
-                    pipeline_step.domain = domain
-                    pipeline_step.min_size = cfg.pop("min_size", -1)
-                if subset == "train" and pipeline_step.type == "Collect":
-                    pipeline_step = BaseTask._get_meta_keys(pipeline_step)
-            patch_color_conversion(cfg.pipeline)
 
     @staticmethod
     def _patch_evaluation(config: MPAConfig):
