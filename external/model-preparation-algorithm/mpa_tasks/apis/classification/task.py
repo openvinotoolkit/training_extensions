@@ -259,6 +259,9 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
 
             dataset_item.append_labels(item_labels)
 
+            probs = TensorEntity(name="probabilities", numpy=prediction_item.reshape(-1))
+            dataset_item.append_metadata_item(probs, model=self._task_environment.model)
+
             top_idxs = np.argpartition(prediction_item, -2)[-2:]
             top_probs = prediction_item[top_idxs]
             active_score = top_probs[1] - top_probs[0]
