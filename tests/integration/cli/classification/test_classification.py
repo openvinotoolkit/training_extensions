@@ -291,13 +291,7 @@ class TestToolsMultiClassSemiSLClassification:
 
 # Pre-train w/ 'car', 'tree' classes
 args0_m = {
-    "--train-ann-file": "data/car_tree_bug/annotations/multilabel_car_tree.json",
-    "--train-data-roots": "data/car_tree_bug/images",
-    "--val-ann-file": "data/car_tree_bug/annotations/multilabel_car_tree.json",
-    "--val-data-roots": "data/car_tree_bug/images",
-    "--test-ann-files": "data/car_tree_bug/annotations/multilabel_car_tree.json",
-    "--test-data-roots": "data/car_tree_bug/images",
-    "--input": "data/car_tree_bug/images",
+    "--train-data-roots": "data/datumaro/datumaro_multilabel",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
@@ -309,13 +303,7 @@ args0_m = {
 
 # Class-Incremental learning w/ 'car', 'tree', 'bug' classes
 args_m = {
-    "--train-ann-file": "data/car_tree_bug/annotations/multilabel_default.json",
-    "--train-data-roots": "data/car_tree_bug/images",
-    "--val-ann-file": "data/car_tree_bug/annotations/multilabel_default.json",
-    "--val-data-roots": "data/car_tree_bug/images",
-    "--test-ann-files": "data/car_tree_bug/annotations/multilabel_default.json",
-    "--test-data-roots": "data/car_tree_bug/images",
-    "--input": "data/car_tree_bug/images",
+    "--train-data-roots": "data/datumaro/datumaro_multilabel",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
@@ -486,13 +474,7 @@ class TestToolsMultilabelClassification:
 
 # TODO: (Jihwan) Enable C-IL test without image loading via otx-cli.
 args_h = {
-    "--train-ann-file": "data/car_tree_bug/annotations/hierarchical_default.json",
-    "--train-data-roots": "data/car_tree_bug/images",
-    "--val-ann-file": "data/car_tree_bug/annotations/hierarchical_default.json",
-    "--val-data-roots": "data/car_tree_bug/images",
-    "--test-ann-files": "data/car_tree_bug/annotations/hierarchical_default.json",
-    "--test-data-roots": "data/car_tree_bug/images",
-    "--input": "data/car_tree_bug/images",
+    "--train-data-roots": "data/datumaro/datumaro_h-label",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
