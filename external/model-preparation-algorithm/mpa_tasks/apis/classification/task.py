@@ -119,11 +119,16 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
         ) == len(
             task_environment.get_labels(include_empty=False)
         )  # noqa:E127
+        if self._multilabel:
+            logger.info("Classiification mode: multilabel")
 
         self._hierarchical_info = None
         if not self._multilabel and len(task_environment.label_schema.get_groups(False)) > 1:
+            logger.info("Classiification mode: hierarchical")
             self._hierarchical = True
             self._hierarchical_info = get_hierarchical_info(task_environment.label_schema)
+        else:
+            logger.info("Classiification mode: multiclass")
 
     def infer(
         self,
