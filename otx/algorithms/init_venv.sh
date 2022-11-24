@@ -87,24 +87,26 @@ fi
 #pip install wheel || exit 1
 pip install --upgrade pip setuptools || exit 1
 
-## Install PyTorch
-#export TORCH_VERSION=1.8.2
-#export TORCHVISION_VERSION=0.9.2
-#
-#if [[ -z $CUDA_VERSION_CODE ]]; then
-#  export TORCH_VERSION=${TORCH_VERSION}+cpu
-#  export TORCHVISION_VERSION=${TORCHVISION_VERSION}+cpu
-#else
-#  export TORCH_VERSION=${TORCH_VERSION}+cu${CUDA_VERSION_CODE}
-#  export TORCHVISION_VERSION=${TORCHVISION_VERSION}+cu${CUDA_VERSION_CODE}
-#fi
-#
-#echo torch=="${TORCH_VERSION}" >> "${CONSTRAINTS_FILE}"
-#echo torchvision=="${TORCHVISION_VERSION}" >> "${CONSTRAINTS_FILE}"
-#pip install torch=="${TORCH_VERSION}" torchvision=="${TORCHVISION_VERSION}" -f https://download.pytorch.org/whl/lts/1.8/torch_lts.html || exit 1
+# Install PyTorch
+export TORCH_VERSION=1.8.2
+export TORCHVISION_VERSION=0.9.2
+
+if [[ -z $CUDA_VERSION_CODE ]]; then
+  export TORCH_VERSION=${TORCH_VERSION}+cpu
+  export TORCHVISION_VERSION=${TORCHVISION_VERSION}+cpu
+else
+  export TORCH_VERSION=${TORCH_VERSION}+cu${CUDA_VERSION_CODE}
+  export TORCHVISION_VERSION=${TORCHVISION_VERSION}+cu${CUDA_VERSION_CODE}
+fi
+
+echo torch=="${TORCH_VERSION}" >> "${CONSTRAINTS_FILE}"
+echo torchvision=="${TORCHVISION_VERSION}" >> "${CONSTRAINTS_FILE}"
+pip install torch=="${TORCH_VERSION}" torchvision=="${TORCHVISION_VERSION}" -f https://download.pytorch.org/whl/lts/1.8/torch_lts.html || exit 1
 
 # Install OTX
-pip install -e ../../[detection] || exit 1
+#pip install -e ../../[detection] || exit 1
+pip install --use-deprecated=legacy-resolver -e ../../[mpa] || exit 1
+#pip install --no-cache-dir -e ../../[detection] || exit 1
 #pip install -e --use-deprecated=legacy-resolver ../../[detection] || exit 1
 #pip install -e --use-deprecated=legacy-resolver --no-cache-dir ../../[detection] || exit 1
 
@@ -114,8 +116,8 @@ pip install -e ../../[detection] || exit 1
 #pip install mmpycocotools
 
 # Build NNCF extensions
-echo "Build NNCF extensions ..."
-python -c "import nncf"
+#echo "Build NNCF extensions ..."
+#python -c "import nncf"
 
 deactivate
 
