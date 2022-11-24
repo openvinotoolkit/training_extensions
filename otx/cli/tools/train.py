@@ -173,12 +173,12 @@ def main():
         train_data_roots=args.train_data_roots,
         val_data_roots=args.val_data_roots
     )
-    dataset = datumaro_handler.convert_to_otx_format(datumaro_dataset)
+    dataset, label_schema = datumaro_handler.convert_to_otx_format(datumaro_dataset)
 
     environment = TaskEnvironment(
         model=None,
         hyper_parameters=hyper_parameters,
-        label_schema=generate_label_schema(dataset, template.task_type),
+        label_schema=label_schema,
         model_template=template,
     )
 
