@@ -193,9 +193,11 @@ class Tiler:
             detections (np.ndarray): _description_
 
         Returns:
-            _type_: _description_
+            scores (np.ndarray): scores between 0-1
+            labels (np.ndarray): label indices
+            boxes (np.ndarray): boxes
         """
         labels = detections[:, 0]
         scores = detections[:, 1]
         boxes = detections[:, 2:]
-        return labels, scores, boxes
+        return scores, labels, boxes
