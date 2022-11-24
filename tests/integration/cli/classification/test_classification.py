@@ -99,7 +99,6 @@ else:
     templates = Registry("otx/algorithms/classification").filter(task_type="CLASSIFICATION").templates
     templates_ids = [template.model_template_id for template in templates]
 
-
 class TestToolsMPAClassification:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
@@ -236,13 +235,7 @@ class TestToolsMPAClassification:
 
 # Pre-train w/ 'car', 'tree' classes
 args0_m = {
-    "--train-ann-file": "data/car_tree_bug/annotations/multilabel_car_tree.json",
-    "--train-data-roots": "data/car_tree_bug/images",
-    "--val-ann-file": "data/car_tree_bug/annotations/multilabel_car_tree.json",
-    "--val-data-roots": "data/car_tree_bug/images",
-    "--test-ann-files": "data/car_tree_bug/annotations/multilabel_car_tree.json",
-    "--test-data-roots": "data/car_tree_bug/images",
-    "--input": "data/car_tree_bug/images",
+    "--train-data-roots": "data/datumaro/datumaro_multilabel",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
@@ -254,13 +247,7 @@ args0_m = {
 
 # Class-Incremental learning w/ 'car', 'tree', 'bug' classes
 args_m = {
-    "--train-ann-file": "data/car_tree_bug/annotations/multilabel_default.json",
-    "--train-data-roots": "data/car_tree_bug/images",
-    "--val-ann-file": "data/car_tree_bug/annotations/multilabel_default.json",
-    "--val-data-roots": "data/car_tree_bug/images",
-    "--test-ann-files": "data/car_tree_bug/annotations/multilabel_default.json",
-    "--test-data-roots": "data/car_tree_bug/images",
-    "--input": "data/car_tree_bug/images",
+    "--train-data-roots": "data/datumaro/datumaro_multilabel",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
@@ -269,7 +256,6 @@ args_m = {
         "4",
     ],
 }
-
 
 class TestToolsMPAMultilabelClassification:
     @e2e_pytest_component
@@ -404,22 +390,15 @@ class TestToolsMPAMultilabelClassification:
 
 # TODO: (Jihwan) Enable C-IL test without image loading via otx-cli.
 args_h = {
-    "--train-ann-file": "data/car_tree_bug/annotations/hierarchical_default.json",
-    "--train-data-roots": "data/car_tree_bug/images",
-    "--val-ann-file": "data/car_tree_bug/annotations/hierarchical_default.json",
-    "--val-data-roots": "data/car_tree_bug/images",
-    "--test-ann-files": "data/car_tree_bug/annotations/hierarchical_default.json",
-    "--test-data-roots": "data/car_tree_bug/images",
-    "--input": "data/car_tree_bug/images",
+    "--train-data-roots": "data/datumaro/datumaro_h-label",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
         "2",
         "--learning_parameters.batch_size",
-        "12",
+        "4",
     ],
 }
-
 
 class TestToolsMPAHierarchicalClassification:
     @e2e_pytest_component
