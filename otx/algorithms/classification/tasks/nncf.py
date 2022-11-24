@@ -20,6 +20,7 @@ from otx.algorithms.classification.adapters.deep_object_reid.tasks import (
 from otx.api.entities.task_environment import TaskEnvironment
 
 
+# pylint: disable=too-many-ancestors
 class OTXClassificationNNCFTask(ClassificationNNCFTask):
     """Task for compressing classification models using NNCF."""
 
