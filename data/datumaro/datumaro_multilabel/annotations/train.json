@@ -1,4 +1,5 @@
 {
+<<<<<<< HEAD
   "info": {},
   "categories": {
     "label": {
@@ -65,4 +66,72 @@
       }
     }
   ]
+=======
+    "info": {},
+    "categories": {
+        "label": {
+            "label_groups": [
+                {
+                    "name": "tom",
+                    "group_type": "exclusive",
+                    "labels": ["tom"]
+                },
+                {
+                    "name": "mary",
+                    "group_type": "exclusive",
+                    "labels": ["mary"]
+                }
+            ],
+            "labels": [
+                {
+                    "name": "tom",
+                    "parent": "",
+                    "attributes": []
+                },
+                {
+                    "name": "mary",
+                    "parent": "",
+                    "attributes": []
+                }
+            ],
+            "attributes": []
+        }
+    },
+    "items": [
+        {
+            "id": "a",
+            "annotations": [
+                {
+                    "id": 0,
+                    "type": "label",
+                    "group": 0,
+                    "label_id": 0
+                },
+                {
+                    "id": 1,
+                    "type": "label",
+                    "group": 0,
+                    "label_id": 1
+                }
+            ],
+            "image": {
+                "path": "a.png"
+            }
+        },
+        {
+            "id": "b",
+            "annotations": [
+                {
+                    "id": 0,
+                    "type": "label",
+                    "group": 0,
+                    "label_id": 0
+                }
+            ],
+            "image": {
+                "path": "b.png"
+            }
+        }
+    ]
+>>>>>>> Add datasets
 }
