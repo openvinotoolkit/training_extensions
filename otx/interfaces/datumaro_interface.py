@@ -45,29 +45,6 @@ from otx.api.utils.argument_checks import (
 from mpa.utils.logger import get_logger
 logger = get_logger()
 
-###### Procedure ######
-# 1. Find the type of dataset by using Datumaro.Environment.detection_datset()
-# 1.1 Excpetion handling for unsupported dataset type
-# Classification : ImageNet(like ImageDirectory used Torchvision)
-# Detection : VOC, COCO
-# Segmentation : Common, CityScape, ADE20K
-# Action : CVAT
-
-# 2. Converting process (Datumaro Dataset --> DatasetEntity(OTE_SDK))
-
-# TODOs
-# TODO1: Consider H-label, multi-label classification (need to more analysis about Datumaro)
-# TODO2: Consider auto-split by using Datumaro function
-# TODO3: Unlabeled support 
-
-
-class ClassificationType(Enum):
-    """Classification Type."""
-
-    MULTICLASS = auto()
-    MULTILABEL = auto()
-    MULTIHEAD = auto()
-
 
 class DatumaroHandler:
     """Handler to use Datumaro as a front-end dataset."""
@@ -75,6 +52,7 @@ class DatumaroHandler:
         self.task_type = task_type
         logger.info('[*] Task type: {}'.format(self.task_type))
         self.domain = task_type.domain
+        self.sub_domain = []
     
     def import_dataset(
             self,
@@ -146,12 +124,18 @@ class DatumaroHandler:
     def _detect_dataset_format(self, path: str) -> str:
         """ Detection dataset format (ImageNet, COCO, Cityscapes, ...). """
         return datumaro.Environment().detect_dataset(path=path) 
-
+        
     def convert_to_otx_format(self, datumaro_dataset:dict) -> DatasetEntity:
         """ Convert Datumaro Datset to DatasetEntity(OTE_SDK)"""
-        class_name_items = list(datumaro_dataset[Subset.TRAINING].categories().values())[-1].items
+        label_categories_list = datumaro_dataset[Subset.TRAINING].categories().get(DatumaroAnnotationType.label, None)
+        category_items = label_categories_list.items
+
+        # Check the label_groups to get the hierarchical information
+        if hasattr(label_categories_list, 'label_groups'):
+            label_group_items = label_categories_list.label_groups
+        
         label_entities = [LabelEntity(name=class_name.name, domain=self.domain,
-                            is_empty=False, id=ID(i)) for i, class_name in enumerate(class_name_items)]
+                            is_empty=False, id=ID(i)) for i, class_name in enumerate(category_items)]
 
         dataset_items = []
         for subset, subset_data in datumaro_dataset.items():
@@ -162,12 +146,30 @@ class DatumaroHandler:
                     if self.domain == Domain.CLASSIFICATION:
                         labels = [
                             ScoredLabel(
-                                label= [label for label in label_entities if label.name == class_name_items[ann.label].name][0],
+                                label= [label for label in label_entities if label.name == category_items[ann.label].name][0],
                                 probability=1.0   
                             ) for ann in datumaro_item.annotations
                         ]
                         shapes = [Annotation(Rectangle.generate_full_box(), labels)]
-                    
+
+                        # Multi-Label
+                        label_schema = LabelSchemaEntity()
+
+                        for label_group_item in label_group_items:
+                            group_label_entity_list = []
+                            for label in label_group_item.labels:
+                                label_entity = [le for le in label_entities if le.name == label]
+                                group_label_entity_list.append(label_entity[0])
+
+                            label_schema.add_group(
+                                LabelGroup(
+                                    name=label_group_item.name,
+                                    labels=group_label_entity_list,
+                                    group_type=LabelGroupType.EXCLUSIVE
+                                )
+                            )
+                        label_schema.add_group(self._generate_empty_label_entity())
+
                     elif self.domain == Domain.DETECTION:
                         shapes = []
                         for ann in datumaro_item.annotations:
@@ -186,6 +188,7 @@ class DatumaroHandler:
                                         ]
                                     )
                                 )
+                        label_schema = self._generate_label_schema(label_entities)
                     elif self.domain == Domain.SEGMENTATION:
                         shapes = []
                         for ann in datumaro_item.annotations:
@@ -203,22 +206,27 @@ class DatumaroHandler:
                                                 ]
                                             )
                                         )
+                        label_schema = self._generate_label_schema(label_entities)
                     else : #Video
                         raise NotImplementedError()
                     annotation_scene = AnnotationSceneEntity(kind=AnnotationSceneKind.ANNOTATION, annotations=shapes)
                     dataset_item = DatasetItemEntity(image, annotation_scene, subset=subset)
                     dataset_items.append(dataset_item)
-        return DatasetEntity(items=dataset_items)
+        
+        return DatasetEntity(items=dataset_items), label_schema
 
-    def generate_label_schema(self, dataset:DatumaroDataset) -> LabelSchemaEntity:
-        """Generates label schema depending on task type.
+    def _generate_empty_label_entity(self):
+        empty_label = LabelEntity(name="Empty label", is_empty=True, domain=self.domain)
+        empty_group = LabelGroup(name="empty", labels=[empty_label], group_type=LabelGroupType.EMPTY_LABEL)
+        return empty_group
+    
 
-        Args:
-            dataset (DatumaroDataset): Task specific dataset.
-            task_type (TaskType): Task type used to call dataset specific functions and update label schema.
-
-        Returns:
-            LabelSchemaEntity: Label schema for the task.
-        """
-        if self.task_type == TaskType.CLASSIFICATION:
-            pass
+    def _generate_label_schema(self, label_entities:list):
+        label_schema = LabelSchemaEntity()
+        main_group = LabelGroup(
+            name="labels",
+            labels=label_entities,
+            group_type=LabelGroupType.EXCLUSIVE,
+        )
+        label_schema.add_group(main_group)
+        return label_schema
