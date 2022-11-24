@@ -365,6 +365,7 @@ def main():
         task.optimize(OptimizationType.NNCF, dataset, optimized_model, None)
 
         validate(task, validation_dataset, output_model)
+    task.unload()
 
 
 if __name__ == "__main__":

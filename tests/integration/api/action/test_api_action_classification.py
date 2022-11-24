@@ -158,6 +158,7 @@ class TestActionTaskAPI:
 
         train_future.result()
         assert time.time() - start_time < 25  # stopping process has to happen in less than 25 seconds
+        action_task.unload()
 
     @e2e_pytest_api
     def test_training_progress_tracking(self):
@@ -181,6 +182,7 @@ class TestActionTaskAPI:
 
         assert len(training_progress_curve) > 0
         assert np.all(training_progress_curve[1:] >= training_progress_curve[:-1])
+        task.unload()
 
     @e2e_pytest_api
     def test_inference_progress_tracking(self):
@@ -201,6 +203,7 @@ class TestActionTaskAPI:
 
         assert len(inference_progress_curve) > 0
         assert np.all(inference_progress_curve[1:] >= inference_progress_curve[:-1])
+        task.unload()
 
     @e2e_pytest_api
     def test_inference_task(self):
@@ -232,6 +235,8 @@ class TestActionTaskAPI:
         performance_after_load = task_eval(inference_task, trained_model, val_dataset)
 
         assert performance_after_train == performance_after_load
+        train_task.unload()
+        inference_task.unload()
 
         # Export
         # TODO Implement export task

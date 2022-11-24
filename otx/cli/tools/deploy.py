@@ -78,6 +78,8 @@ def main():
     with open(os.path.join(args.save_model_to, "openvino.zip"), "wb") as write_file:
         write_file.write(deployed_model.exportable_code)
 
+    task.unload()
+
 
 if __name__ == "__main__":
     main()

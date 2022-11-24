@@ -149,6 +149,8 @@ def main():
                 write_file,
             )
 
+    task.unload()
+
 
 if __name__ == "__main__":
     main()

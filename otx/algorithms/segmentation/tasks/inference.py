@@ -116,10 +116,6 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         logger.info(f"mDice after evaluation: {metrics.overall_dice.value}")
         output_resultset.performance = metrics.get_performance()
 
-    def unload(self):
-        """Unload the task."""
-        self._delete_scratch_space()
-
     def export(self, export_type: ExportType, output_model: ModelEntity):
         """Export function of OTX Segmentation Task."""
         logger.info("Exporting the model")

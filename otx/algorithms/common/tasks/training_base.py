@@ -168,6 +168,11 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         return self._hyperparams
 
     @property
+    def output_path(self):
+        """Temp log output path."""
+        return self._output_path
+
+    @property
     def _precision_from_config(self):
         return [ModelPrecision.FP16] if self._config.get("fp16", None) else [ModelPrecision.FP32]
 

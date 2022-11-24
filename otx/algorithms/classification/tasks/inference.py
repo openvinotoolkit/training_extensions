@@ -159,12 +159,6 @@ class ClassificationInferenceTask(
         output_resultset.performance = metric.get_performance()
         logger.info("Evaluation completed")
 
-    def unload(self):
-        """Unload function of OTX Classification Task."""
-
-        logger.info("called unload()")
-        self.finalize()
-
     def export(self, export_type: ExportType, output_model: ModelEntity):
         """Export function of OTX Classification Task."""
 

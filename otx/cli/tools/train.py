@@ -16,6 +16,7 @@
 
 import argparse
 import os.path as osp
+import shutil
 
 from otx.api.configuration.helper import create
 from otx.api.entities.inference_parameters import InferenceParameters
@@ -41,6 +42,8 @@ from otx.cli.utils.parser import (
     add_hyper_parameters_sub_parser,
     gen_params_dict_from_args,
 )
+
+# pylint: disable=too-many-locals
 
 
 def parse_args():
@@ -99,6 +102,11 @@ def parse_args():
         "--save-model-to",
         required="True",
         help="Location where trained model will be stored.",
+    )
+    parser.add_argument(
+        "--save-logs-to",
+        required=False,
+        help="Location where logs will be stored.",
     )
     parser.add_argument(
         "--enable-hpo",
@@ -198,6 +206,13 @@ def main():
     task.evaluate(resultset)
     assert resultset.performance is not None
     print(resultset.performance)
+
+    if args.save_logs_to:
+        tmp_path = task.output_path
+        logs_path = osp.join(args.save_logs_to, tmp_path.split("/")[-1])
+        shutil.copytree(tmp_path, logs_path)
+        print(f"Save logs: {logs_path}")
+    task.unload()
 
 
 if __name__ == "__main__":

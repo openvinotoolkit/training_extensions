@@ -285,10 +285,6 @@ class ActionClsInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         output_resultset.performance = metric.get_performance()
         logger.info("Evaluation completed")
 
-    def unload(self):
-        """Unload the task."""
-        self.finalize()
-
     @check_input_parameters_type()
     def export(self, export_type: ExportType, output_model: ModelEntity):
         """Export function of OTX Action Classification Task."""

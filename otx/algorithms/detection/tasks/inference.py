@@ -164,10 +164,6 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         output_resultset.performance = metric.get_performance()
         logger.info("Evaluation completed")
 
-    def unload(self):
-        """Unload the task."""
-        self._delete_scratch_space()
-
     @check_input_parameters_type()
     def export(self, export_type: ExportType, output_model: ModelEntity):
         """Export function of OTX Detection Task."""

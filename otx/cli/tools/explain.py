@@ -146,6 +146,7 @@ def main():
         )
 
     print(f"saliency maps saved to {args.save_explanation_to} for {len(image_files)} images...")
+    task.unload()
 
 
 if __name__ == "__main__":

@@ -218,6 +218,7 @@ class TestMPAClsAPI:
 
         assert len(training_progress_curve) > 0
         assert np.all(training_progress_curve[1:] >= training_progress_curve[:-1])
+        task.unload()
 
     @e2e_pytest_api
     @pytest.mark.parametrize(
@@ -244,6 +245,7 @@ class TestMPAClsAPI:
 
         assert len(inference_progress_curve) > 0
         assert np.all(inference_progress_curve[1:] >= inference_progress_curve[:-1])
+        task.unload()
 
     @e2e_pytest_api
     @pytest.mark.parametrize(
@@ -290,3 +292,5 @@ class TestMPAClsAPI:
             _id=ObjectId(),
         )
         inference_task.export(ExportType.OPENVINO, exported_model)
+        train_task.unload()
+        inference_task.unload()

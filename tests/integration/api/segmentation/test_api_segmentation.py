@@ -227,6 +227,7 @@ class TestMPASegAPI:
 
         train_future.result()
         assert time.time() - start_time < 25  # stopping process has to happen in less than 25 seconds
+        segmentation_task.unload()
 
     @e2e_pytest_api
     def test_training_progress_tracking(self):
@@ -251,6 +252,7 @@ class TestMPASegAPI:
 
         assert len(training_progress_curve) > 0
         assert np.all(training_progress_curve[1:] >= training_progress_curve[:-1])
+        task.unload()
 
     @e2e_pytest_api
     def test_inference_progress_tracking(self):
@@ -272,6 +274,7 @@ class TestMPASegAPI:
 
         assert len(inference_progress_curve) > 0
         assert np.all(inference_progress_curve[1:] >= inference_progress_curve[:-1])
+        task.unload()
 
     @e2e_pytest_api
     def test_inference_task(self):
@@ -307,3 +310,5 @@ class TestMPASegAPI:
         # Export
         exported_model = ModelEntity(dataset, segmentation_environment.get_model_configuration(), _id=ObjectId())
         inference_task.export(ExportType.OPENVINO, exported_model)
+        train_task.unload()
+        inference_task.unload()

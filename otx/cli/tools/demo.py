@@ -171,6 +171,8 @@ def main():
         else:
             print(f"{frame_index=}, {elapsed_time=}, {len(predictions)=}")
 
+    task.unload()
+
 
 if __name__ == "__main__":
     main()

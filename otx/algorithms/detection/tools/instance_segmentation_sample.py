@@ -387,6 +387,7 @@ def main(args):
         )
         nncf_openvino_task.evaluate(resultset)
         logger.info(str(resultset.performance))
+    task.unload()
 
 
 if __name__ == "__main__":

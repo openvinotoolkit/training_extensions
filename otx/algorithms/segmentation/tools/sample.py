@@ -378,6 +378,7 @@ def main(args):
         logger.info("export: PASSED")
         logger.info(f"POT: {pot_check}")
         logger.info(f"NNCF: {nncf_check}")
+    task.unload()
 
 
 if __name__ == "__main__":
