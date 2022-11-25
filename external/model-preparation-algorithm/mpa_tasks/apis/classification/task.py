@@ -62,7 +62,6 @@ from ote_sdk.utils.labels_utils import get_empty_label
 from ote_sdk.utils.vis_utils import get_actmap
 from torchreid_tasks.nncf_task import OTEClassificationNNCFTask
 
-# from torchreid_tasks.utils import TrainingProgressCallback
 from torchreid_tasks.utils import OTELoggerHook
 from torchreid_tasks.utils import get_multihead_class_info as get_hierarchical_info
 
