@@ -131,9 +131,6 @@ class ActionClsOpenVINOInferencer(BaseInferencer):
         image, metadata = self.pre_process(image)
         raw_predictions = self.forward(image)
         predictions = self.post_process(raw_predictions, metadata)
-        # actmap, repr_vectors, act_score = self.model.postprocess_aux_outputs(raw_predictions, metadata)
-
-        # return predictions, actmap, repr_vectors, act_score
         return predictions
 
     # @check_input_parameters_type()
