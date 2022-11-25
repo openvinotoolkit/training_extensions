@@ -38,7 +38,6 @@ class ClassificationDatasetAdapter(BaseDatasetAdapter):
         category_items = label_information["category_items"]
         label_groups = label_information["label_groups"]
         label_entities = label_information["label_entities"]
-
         # Generate label schema
         label_schema = self._generate_classification_label_schema(label_groups, label_entities)
 

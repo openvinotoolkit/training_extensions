@@ -42,8 +42,6 @@ from otx.cli.utils.parser import (
 )
 from otx.core.data.adapter import get_dataset_adapter
 
-
-
 def parse_args():
     """Parses command line arguments.
 

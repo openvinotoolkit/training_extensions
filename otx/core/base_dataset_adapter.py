@@ -13,6 +13,7 @@ from typing import Any, Dict, Tuple, Union
 import datumaro
 from datumaro.components.annotation import AnnotationType as DatumaroAnnotationType
 from datumaro.components.dataset import Dataset as DatumaroDataset
+from datumaro.components.annotation import AnnotationType as DatumaroAnnotationType
 
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.id import ID
@@ -74,6 +75,59 @@ def get_dataset_adapter(task_type):
 
     raise ValueError(f"Invalid task type: {task_type}")
 
+
+# pylint: disable=too-many-return-statements
+def get_dataset_adapter(task_type):
+    """Returns a dataset class by task type.
+    Args:
+        task_type: A task type such as ANOMALY_CLASSIFICATION, ANOMALY_DETECTION, ANOMALY_SEGMENTATION,
+        CLASSIFICATION, INSTANCE_SEGMENTATION, DETECTION, CLASSIFICATION, ROTATED_DETECTION, SEGMENTATION.
+    """
+    if task_type == TaskType.CLASSIFICATION:
+        from .classification_dataset_adapter import ClassificationDatasetAdapter
+
+        return ClassificationDatasetAdapter(task_type=task_type)
+
+    if task_type == TaskType.DETECTION:
+        from .detection_dataset_adapter import DetectionDatasetAdapter
+
+        return DetectionDatasetAdapter(task_type=task_type)
+    
+    if task_type == TaskType.SEGMENTATION:
+        from .segmentation_dataset_adapter import SegmentationDatasetAdapter
+
+        return SegmentationDatasetAdapter(task_type=task_type)
+    
+    """
+    #TODO: Need to implement
+    if task_type == TaskType.ANOMALY_CLASSIFICATION:
+        from otx.algorithms.anomaly.adapters.anomalib.data.dataset import (
+            AnomalyClassificationDataset,
+        )
+
+        return AnomalyClassificationDataset
+    if task_type == TaskType.ANOMALY_DETECTION:
+        from otx.algorithms.anomaly.adapters.anomalib.data.dataset import (
+            AnomalyDetectionDataset,
+        )
+
+        return AnomalyDetectionDataset
+    if task_type == TaskType.ANOMALY_SEGMENTATION:
+        from otx.algorithms.anomaly.adapters.anomalib.data.dataset import (
+            AnomalySegmentationDataset,
+        )
+
+        return AnomalySegmentationDataset
+    if task_type == TaskType.INSTANCE_SEGMENTATION:
+        from .detection_dataset_adapter import InstanceSegmentationDataset
+
+        return InstanceSegmentationDataset
+    if task_type == TaskType.ROTATED_DETECTION:
+        from .rotated_detection.dataset import RotatedDetectionDataset
+
+        return RotatedDetectionDataset
+    """
+    raise ValueError(f"Invalid task type: {task_type}")
 
 class BaseDatasetAdapter(metaclass=abc.ABCMeta):
     """Base dataset adapter for all of downstream tasks to use Datumaro
