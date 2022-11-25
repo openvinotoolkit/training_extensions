@@ -74,7 +74,7 @@ def patch_det_dataset(config: Config):
         cfg = config.data.get(subset, None)
         if not cfg:
             continue
-        cfg.type = "OTXAVADataset"
+        cfg.type = "OTXActionDetDataset"
 
 
 @check_input_parameters_type()

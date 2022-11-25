@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .ava_dataset import OTXAVADataset
 from .dataset import OTXRawframeDataset
+from .det_dataset import OTXActionDetDataset
 
-__all__ = ["OTXRawframeDataset", "OTXAVADataset"]
+__all__ = ["OTXRawframeDataset", "OTXActionDetDataset"]

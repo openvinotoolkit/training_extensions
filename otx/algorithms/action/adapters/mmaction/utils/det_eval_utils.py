@@ -1,4 +1,4 @@
-"""Collection of AVA evaluiation utils.."""
+"""Collection of Action detection evaluiation utils.."""
 
 # Copyright (C) 2021 Intel Corporation
 #
@@ -20,14 +20,14 @@ from collections import defaultdict
 
 import numpy as np
 from mmaction.core.evaluation.ava_evaluation import (
-    object_detection_evaluation as det_eval,
+    object_detection_evaluation as mm_det_eval,
 )
 from mmaction.core.evaluation.ava_evaluation import standard_fields
 from mmaction.core.evaluation.ava_utils import print_time, read_exclusions
 
 
 # pylint: disable=too-many-locals, too-many-branches
-def ava_eval(predictions, result_type, labels, video_infos, exclude_file, verbose=True, custom_classes=None):
+def det_eval(predictions, result_type, labels, video_infos, exclude_file, verbose=True, custom_classes=None):
     """Evaluation method for AVA Dataset."""
 
     assert result_type in ["mAP"]
@@ -57,7 +57,7 @@ def ava_eval(predictions, result_type, labels, video_infos, exclude_file, verbos
         print_time("Reading detection results", start)
 
     # Evaluation for mAP
-    pascal_evaluator = det_eval.PascalDetectionEvaluator(categories)
+    pascal_evaluator = mm_det_eval.PascalDetectionEvaluator(categories)
 
     start = time.time()
     for image_key in gt_boxes:

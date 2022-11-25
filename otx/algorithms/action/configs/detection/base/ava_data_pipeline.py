@@ -59,7 +59,7 @@ val_pipeline = [
 
 # Dataset structure
 # TODO Sync with latest mmaction2
-# pylint: disable=unhashable-member, no-member
+# pylint: disable=no-member
 data = dict(
     videos_per_gpu=8,
     workers_per_gpu=0,

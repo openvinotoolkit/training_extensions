@@ -16,7 +16,7 @@
 
 # pylint: disable=invalid-name
 
-_base_ = ["../base/data.py"]
+_base_ = ["../base/data_pipeline.py"]
 # model setting
 model = dict(
     type="FastRCNN",

@@ -28,7 +28,7 @@ from mmaction.datasets.pipelines import Compose
 from mmaction.utils import get_root_logger
 from mmcv.utils import print_log
 
-from otx.algorithms.action.adapters.mmaction.core.evaluation import ava_eval
+from otx.algorithms.action.adapters.mmaction.utils import det_eval
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label import LabelEntity
 from otx.api.utils.argument_checks import (
@@ -41,11 +41,12 @@ root_logger = get_root_logger()
 
 # pylint: disable=too-many-instance-attributes
 @DATASETS.register_module()
-class OTXAVADataset(AVADataset):
-    """Wrapper that allows using a OTX dataset to train mmaction models.
+class OTXActionDetDataset(AVADataset):
+    """Wrapper that allows using a OTX dataset to train action detection models.
 
     This wrapper is not based on the filesystem,
     but instead loads the items here directly from the OTX DatasetEntity object.
+    It is adapted from AVADataset of mmaction, but it supports other dataset such as UCF and JHMDB.
     """
 
     class _DataInfoProxy:
@@ -125,7 +126,7 @@ class OTXAVADataset(AVADataset):
         # OTX does not support custom_classes
         self.custom_classes = None
 
-        self.data_infos = OTXAVADataset._DataInfoProxy(otx_dataset, labels)
+        self.data_infos = OTXActionDetDataset._DataInfoProxy(otx_dataset, labels)
 
         if self.proposal_file is not None:
             self.proposals = mmcv.load(self.proposal_file)
@@ -277,7 +278,7 @@ class OTXAVADataset(AVADataset):
                 msg = "\n" + msg
             print_log(msg, logger=logger)
 
-            eval_result = ava_eval(
+            eval_result = det_eval(
                 predictions,
                 metric,
                 self.labels,
