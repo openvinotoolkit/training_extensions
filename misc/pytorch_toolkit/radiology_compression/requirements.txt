@@ -11,7 +11,7 @@ onnxruntime==1.8.1
 numpy==1.19.2
 matplotlib==3.5.2
 termcolor==1.1.0
-huffman
+dahuffman
 gdown
 tqdm
 pytest

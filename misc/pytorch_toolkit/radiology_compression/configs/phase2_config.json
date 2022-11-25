@@ -7,7 +7,7 @@
         "gpu": "True",
         "interval": 3,
         "subset_size": 5,
-        "model_file_name": "model_weights/cbis_a1_b1.model",
+        "model_file_name": "model_weights/final_d_3.model",
         "randomize_subset": "True",
         "depth": 3,
         "width": 96,
@@ -30,7 +30,7 @@
         "path_to_gdtruth": "test_data/phase2/train/gd_truth/"
     },
     "inference": {
-        "model_file": "model_weights/cbis_a1_b1.model",
+        "model_file": "model_weights/final_d_3.model",
         "inferdata": "",
         "bit_depth": 8,
         "gpu": "True",
@@ -49,7 +49,7 @@
         "alpha": 1,
         "beta": 1,
         "phi": 1,
-        "model_name_onnx": "cbis_a1_b1.onnx",
+        "model_name_onnx": "final_d_3.onnx",
         "input_shape": [
             1,
             16,
@@ -69,8 +69,8 @@
             3,
             3
         ],
-        "model_name_onnx": "cbis_a1_b1.onnx",
-        "model_name": "cbis_a1_b1",
+        "model_name_onnx": "final_d_3.onnx",
+        "model_name": "final_d_3",
         "alpha": 1,
         "beta": 1,
         "phi": 1,

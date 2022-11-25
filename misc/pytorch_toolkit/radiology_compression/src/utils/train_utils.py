@@ -214,7 +214,7 @@ def train_model(config):
         train_dataset.choose_random_subset(config['subset_size'])
         train_dataloader = data.DataLoader(train_dataset,
                                            batch_size=config['batch_size'],
-                                           num_workers=16, pin_memory=True,
+                                           num_workers=4, pin_memory=True,
                                            shuffle=True)
 
         # CBISDDSM dataset & dataloader for inference
@@ -222,7 +222,7 @@ def train_model(config):
                                            transform_images=images_transforms,
                                            transform_masks=labels_transforms)
         test_dataloader = data.DataLoader(test_dataset,
-                                          batch_size=1, num_workers=16,
+                                          batch_size=1, num_workers=4,
                                           pin_memory=True, shuffle=False)
 
     else:
@@ -234,7 +234,7 @@ def train_model(config):
                                             transform_masks=labels_transforms, mod=0)
         train_dataloader = data.DataLoader(train_dataset,
                                            batch_size=config['batch_size'],
-                                           num_workers=0, pin_memory=True,
+                                           num_workers=4, pin_memory=True,
                                            shuffle=True)
 
         # Dataset & dataloader for inference
@@ -245,7 +245,7 @@ def train_model(config):
                                            path_test_gdtruth, transform_images=None,
                                            transform_masks=labels_transforms, mod=1)
         test_dataloader = data.DataLoader(test_dataset,
-                                          batch_size=1, num_workers=0,
+                                          batch_size=1, num_workers=4,
                                           pin_memory=True, shuffle=False)
 
     if config['efficient_net']:

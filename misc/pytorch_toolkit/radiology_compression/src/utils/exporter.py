@@ -4,7 +4,6 @@ import subprocess
 from .model import load_checkpoint
 from .train_utils import load_model
 
-
 class Exporter:
     def __init__(self, config, phase):
         self.config = config
@@ -39,10 +38,11 @@ class Exporter:
         subprocess.run(export_command, shell=True, check=True)
 
     def export_model_onnx(self):
+
         print(f"Saving model to {self.config.get('model_name_onnx')}")
-        res_path = os.path.join(os.path.split(self.checkpoint)[
-                                0], self.config.get('model_name_onnx'))
-      
+
+        res_path = os.path.join(os.path.split(self.checkpoint)[0], self.config.get('model_name_onnx'))
+
         if self.phase == 2:
             dummy_input = torch.randn(1, 16, 3, 3)
         else:
