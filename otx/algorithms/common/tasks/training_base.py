@@ -61,15 +61,17 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         self._model_name = task_environment.model_template.name
         self._task_type = task_environment.model_template.task_type
         self._labels = task_environment.get_labels(include_empty=False)
-        output_path = getattr(task_environment, "work_dir", None)
-        self._output_path = tempfile.mkdtemp(prefix="OTX-task-") if output_path is None else output_path
-        logger.info(f"created output path at {self._output_path}")
         self.confidence_threshold = self._get_confidence_threshold(self._hyperparams)
         # Set default model attributes.
         self._model_label_schema = []  # type: List[LabelEntity]
         self._optimization_methods = []  # type: List[OptimizationMethod]
         self._model_ckpt = None
         self._anchors = {}  # type: Dict[str, int]
+        output_path = os.environ.get("OTX_TASK_OUTPUT_PATH")
+        if output_path is None:
+            output_path = tempfile.mkdtemp(prefix="OTX-task-")
+        self._output_path = output_path
+        logger.info(f"created output path at {self._output_path}")
         if task_environment.model is not None:
             logger.info("loading the model from the task env.")
             state_dict = self._load_model_state_dict(self._task_environment.model)
@@ -97,6 +99,10 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
 
         # to override configuration at runtime
         self.override_configs = {}  # type: Dict[str, str]
+
+    @property
+    def output_path(self):
+        return self._output_path
 
     def _run_task(self, stage_module, mode=None, dataset=None, **kwargs):
         # FIXME: Temporary remedy for CVS-88098
