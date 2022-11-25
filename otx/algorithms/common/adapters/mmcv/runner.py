@@ -19,6 +19,7 @@
 # * https://github.com/open-mmlab/mmcv/blob/master/mmcv/runner/iter_based_runner.py
 
 import warnings
+import time
 from typing import List, Optional, Sequence
 
 import mmcv
@@ -75,8 +76,8 @@ class EpochRunnerWithCancel(EpochBasedRunner):
         self.data_loader = data_loader
         self._max_iters = self._max_epochs * len(self.data_loader)
         self.call_hook("before_train_epoch")
-        # TODO: uncomment below line or resolve root cause of deadlock issue if multi-GPUs need to be supported.
-        # time.sleep(2)  # Prevent possible multi-gpu deadlock during epoch transition
+        if self.distributed:
+            time.sleep(2)  # Prevent possible multi-gpu deadlock during epoch transition
         for i, data_batch in enumerate(self.data_loader):
             self._inner_iter = i
             self.call_hook("before_train_iter")
