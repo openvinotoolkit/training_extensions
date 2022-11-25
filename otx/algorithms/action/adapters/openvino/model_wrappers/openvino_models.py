@@ -16,17 +16,16 @@
 
 # pylint: disable=invalid-name
 
-from typing import Any, Dict, Iterable, Union
-
+from typing import Any, Dict
+import glob
 import cv2
 import numpy as np
 
 from otx.api.utils.argument_checks import check_input_parameters_type
-import logging as log
+from otx.api.entities.datasets import DatasetItemEntity
 try:
     from openvino.model_zoo.model_api.models.model import Model
-    from openvino.model_zoo.model_api.models.types import BooleanValue, DictValue
-    from openvino.model_zoo.model_api.models.utils import RESIZE_TYPES, pad_image, InputTransform
+    from openvino.model_zoo.model_api.models.utils import RESIZE_TYPES, InputTransform
 except ImportError as e:
     import warnings
 
@@ -50,6 +49,7 @@ class OTXActionCls(Model):
         super().__init__(model_adapter, configuration, preload)
         self.image_blob_names, self.image_info_blob_names = self._get_inputs()
         self.image_blob_name = self.image_blob_names[0]
+        self.out_layer_name = self._get_outputs()
 
         _, self.n, self.c, self.t, self.h, self.w = self.inputs[self.image_blob_name].shape
         self.resize = RESIZE_TYPES['standard']
@@ -59,7 +59,6 @@ class OTXActionCls(Model):
     def parameters(cls):
         """Parameters."""
         parameters = super().parameters()
-        # parameters["resize_type"].update_default_value("standard")
         return parameters
 
     def _check_io_number(self, number_of_inputs, number_of_outputs):
@@ -72,10 +71,6 @@ class OTXActionCls(Model):
                 image_blob_names.append(name)
             elif len(metadata.shape) == 4:
                 image_info_blob_names.append(name)
-        #     else:
-        #         raise RuntimeError('Failed to identify the input for ImageModel: only 2D and 4D input layer supported')
-        # if not image_blob_names:
-        #     raise RuntimeError('Failed to identify the input for the image: no 4D input layer found')
         return image_blob_names, image_info_blob_names
 
     def _get_outputs(self):
@@ -83,39 +78,26 @@ class OTXActionCls(Model):
         for name, meta in self.outputs.items():
             if "logits" in meta.names:
                 layer_name = name
-        layer_shape = self.outputs[layer_name].shape
-
-        if len(layer_shape) != 2 and len(layer_shape) != 4:
-            raise RuntimeError("The Classification model wrapper supports topologies only with 2D or 4D output")
-        if len(layer_shape) == 4 and (layer_shape[2] != 1 or layer_shape[3] != 1):
-            raise RuntimeError(
-                "The Classification model wrapper supports topologies only with 4D "
-                "output which has last two dimensions of size 1"
-            )
-        if self.labels:
-            if layer_shape[1] == len(self.labels) + 1:
-                self.labels.insert(0, "other")
-                self.logger.warning("\tInserted 'other' label as first.")
-            if layer_shape[1] != len(self.labels):
-                raise RuntimeError(
-                    "Model's number of classes and parsed "
-                    f"labels must match ({layer_shape[1]} != {len(self.labels)})"
-                )
         return layer_name
 
-    # @check_input_parameters_type()
-    # def preprocess(self, inputs: np.ndarray):
-    #     """Pre-process."""
-    #     meta = {"original_shape": inputs.shape}
-    #     resized_image = self.resize(inputs, (self.w, self.h))
-    #     resized_image = cv2.cvtColor(resized_image, cv2.COLOR_RGB2BGR)
-    #     meta.update({"resized_shape": resized_image.shape})
-    #     if self.resize_type == "fit_to_window":
-    #         resized_image = pad_image(resized_image, (self.w, self.h))
-    #     resized_image = self.input_transform(resized_image)
-    #     resized_image = self._change_layout(resized_image)
-    #     dict_inputs = {self.image_blob_name: resized_image}
-    #     return dict_inputs, meta
+    @check_input_parameters_type()
+    def preprocess(self, inputs: DatasetItemEntity):
+        """Pre-process."""
+        frames = []
+        rawframes = glob.glob(inputs.media['frame_dir']+'/*')  # TODO: allow only .jpg, .png exts
+        for rawframe in rawframes:
+            frame = cv2.imread(rawframe)
+            resized_frame = self.resize(frame, (self.w, self.h))
+            resized_frame = cv2.cvtColor(resized_frame, cv2.COLOR_RGB2BGR)
+            resized_frame = self.input_transform(resized_frame)
+            frames.append(resized_frame)
+        frames = np.expand_dims(frames, axis=(0,1))  # [1, 1, T, H, W, C]
+        frames = frames.transpose(0, 1, -1, 2, 3, 4)  # [1, 1, C, T, H, W]
+        frames = frames[:, :, :, :8, :, :]  #  TODO: implement sampling method
+        dict_inputs = {self.image_blob_name: frames}
+        meta = {"original_shape": frames.shape}
+        meta.update({"resized_shape": resized_frame.shape})
+        return dict_inputs, meta
 
     @check_input_parameters_type()
     def postprocess(self, outputs: Dict[str, np.ndarray], meta: Dict[str, Any]):  # pylint: disable=unused-argument

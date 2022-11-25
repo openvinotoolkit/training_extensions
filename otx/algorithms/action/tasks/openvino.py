@@ -34,7 +34,7 @@ from otx.algorithms.classification.adapters.openvino import model_wrappers
 from otx.algorithms.classification.configs import ClassificationConfig
 from otx.algorithms.classification.utils import get_multihead_class_info
 from otx.api.entities.annotation import AnnotationSceneEntity
-from otx.api.entities.datasets import DatasetEntity
+from otx.api.entities.datasets import DatasetEntity, DatasetItemEntity
 from otx.api.entities.inference_parameters import (
     InferenceParameters,
     default_progress_callback,
@@ -83,8 +83,8 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 # TODO: refactoring to Sphinx style.
-class ClassificationOpenVINOInferencer(BaseInferencer):
-    """ClassificationOpenVINOInferencer class in OpenVINO task."""
+class ActionClsOpenVINOInferencer(BaseInferencer):
+    """ActionClsOpenVINOInferencer class in OpenVINO task."""
 
     @check_input_parameters_type()
     def __init__(
@@ -105,32 +105,17 @@ class ClassificationOpenVINOInferencer(BaseInferencer):
         :param device: Device to run inference on, such as CPU, GPU or MYRIAD. Defaults to "CPU".
         """
 
-        multilabel = len(label_schema.get_groups(False)) > 1 and len(label_schema.get_groups(False)) == len(
-            label_schema.get_labels(include_empty=False)
-        )
-        hierarchical = not multilabel and len(label_schema.get_groups(False)) > 1
-        multihead_class_info = {}
-        if hierarchical:
-            multihead_class_info = get_multihead_class_info(label_schema)
-
         self.label_schema = label_schema
-
         model_adapter = OpenvinoAdapter(
             create_core(), model_file, weight_file, device=device, max_num_requests=num_requests
         )
-        self.configuration = {
-            "multilabel": multilabel,
-            "hierarchical": hierarchical,
-            "multihead_class_info": multihead_class_info,
-        }
+        self.configuration = dict()
         self.model = Model.create_model("otx_action_classification", model_adapter, self.configuration, preload=True)
-
         self.converter = ClassificationToAnnotationConverter(self.label_schema)
 
     @check_input_parameters_type()
-    def pre_process(self, image: np.ndarray) -> Tuple[Dict[str, np.ndarray], Dict[str, Any]]:
-        """Pre-process function of OpenVINO Classification Inferencer."""
-
+    def pre_process(self, image: DatasetItemEntity) -> Tuple[Dict[str, np.ndarray], Dict[str, Any]]:
+        """Pre-process function of OpenVINO Action Classification Inferencer."""
         return self.model.preprocess(image)
 
     @check_input_parameters_type()
@@ -141,25 +126,25 @@ class ClassificationOpenVINOInferencer(BaseInferencer):
         return self.converter.convert_to_annotation(prediction, metadata)
 
     @check_input_parameters_type()
-    def predict(self, image: np.ndarray) -> Tuple[AnnotationSceneEntity, np.ndarray, np.ndarray, Any]:
-        """Predict function of OpenVINO Classification Inferencer."""
-
+    def predict(self, image: DatasetItemEntity) -> Tuple[AnnotationSceneEntity, np.ndarray, np.ndarray, Any]:
+        """Predict function of OpenVINO Action Classification Inferencer."""
         image, metadata = self.pre_process(image)
         raw_predictions = self.forward(image)
         predictions = self.post_process(raw_predictions, metadata)
-        actmap, repr_vectors, act_score = self.model.postprocess_aux_outputs(raw_predictions, metadata)
+        # actmap, repr_vectors, act_score = self.model.postprocess_aux_outputs(raw_predictions, metadata)
 
-        return predictions, actmap, repr_vectors, act_score
+        # return predictions, actmap, repr_vectors, act_score
+        return predictions
 
-    @check_input_parameters_type()
-    def forward(self, image: Dict[str, np.ndarray]) -> Dict[str, np.ndarray]:
-        """Forward function of OpenVINO Classification Inferencer."""
+    # @check_input_parameters_type()
+    def forward(self, image: Dict[str, DatasetItemEntity]) -> Dict[str, np.ndarray]:
+        """Forward function of OpenVINO Action Classification Inferencer."""
 
         return self.model.infer_sync(image)
 
 
 class OTXOpenVinoDataLoader(DataLoader):
-    """DataLoader implementation for ClassificationOpenVINOTask."""
+    """DataLoader implementation for ActionClsOpenVINOTask."""
 
     @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def __init__(self, dataset: DatasetEntity, inferencer: BaseInferencer):
@@ -170,21 +155,18 @@ class OTXOpenVinoDataLoader(DataLoader):
     @check_input_parameters_type()
     def __getitem__(self, index: int):
         """Get item from dataset."""
-
         image = self.dataset[index].numpy
         annotation = self.dataset[index].annotation_scene
         inputs, metadata = self.inferencer.pre_process(image)
-
         return (index, annotation), inputs, metadata
 
     def __len__(self):
         """Get length of dataset."""
-
         return len(self.dataset)
 
 
 class ActionClsOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IOptimizationTask):
-    """Task implementation for OTXClassification using OpenVINO backend."""
+    """Task implementation for OTXActionCls using OpenVINO backend."""
 
     @check_input_parameters_type()
     def __init__(self, task_environment: TaskEnvironment):
@@ -193,13 +175,13 @@ class ActionClsOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
         self.model = self.task_environment.model
         self.inferencer = self.load_inferencer()
 
-    def load_inferencer(self) -> ClassificationOpenVINOInferencer:
+    def load_inferencer(self) -> ActionClsOpenVINOInferencer:
         """load_inferencer function of ClassificationOpenVINOTask."""
 
         if self.model is None:
             raise RuntimeError("load_inferencer failed, model is None")
 
-        return ClassificationOpenVINOInferencer(
+        return ActionClsOpenVINOInferencer(
             self.hparams,
             self.task_environment.label_schema,
             self.model.get_data("openvino.xml"),
@@ -215,27 +197,10 @@ class ActionClsOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
         update_progress_callback = default_progress_callback
         if inference_parameters is not None:
             update_progress_callback = inference_parameters.update_progress  # type: ignore
-        dump_features = False
-        if inference_parameters is not None:
-            dump_features = not inference_parameters.is_evaluation
         dataset_size = len(dataset)
         for i, dataset_item in enumerate(dataset, 1):
-            predicted_scene, actmap, repr_vector, act_score = self.inferencer.predict(dataset_item.numpy)
+            predicted_scene = self.inferencer.predict(dataset_item)
             dataset_item.append_labels(predicted_scene.annotations[0].get_labels())
-            active_score_media = FloatMetadata(name="active_score", value=act_score, float_type=FloatType.ACTIVE_SCORE)
-            dataset_item.append_metadata_item(active_score_media, model=self.model)
-            feature_vec_media = TensorEntity(name="representation_vector", numpy=repr_vector.reshape(-1))
-            dataset_item.append_metadata_item(feature_vec_media, model=self.model)
-            if dump_features:
-                saliency_media = ResultMediaEntity(
-                    name="Saliency Map",
-                    type="saliency_map",
-                    annotation_scene=dataset_item.annotation_scene,
-                    numpy=actmap,
-                    roi=dataset_item.roi,
-                )
-                dataset_item.append_metadata_item(saliency_media, model=self.model)
-
             update_progress_callback(int(i / dataset_size * 100))
         return dataset
 
@@ -257,8 +222,8 @@ class ActionClsOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
 
         work_dir = os.path.dirname(demo.__file__)
         parameters = {}  # type: Dict[Any, Any]
-        parameters["type_of_model"] = "otx_classification"
-        parameters["converter_type"] = "CLASSIFICATION"
+        parameters["type_of_model"] = "otx_action_classification"
+        parameters["converter_type"] = "ACTION_CLASSIFICATION"
         parameters["model_parameters"] = self.inferencer.configuration
         parameters["model_parameters"]["labels"] = LabelSchemaMapper.forward(self.task_environment.label_schema)
 
@@ -296,6 +261,7 @@ class ActionClsOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
     ):  # pylint: disable=too-many-locals
         """Optimize function of ClassificationOpenVINOTask."""
 
+        raise NotImplementedError
         if optimization_type is not OptimizationType.POT:
             raise ValueError("POT is the only supported optimization type for OpenVino models")
 

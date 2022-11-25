@@ -22,6 +22,7 @@ import cv2
 import numpy as np
 
 from otx.api.utils.argument_checks import check_input_parameters_type
+from otx.api.entities.datasets import DatasetItemEntity
 
 try:
     from openvino.model_zoo.model_api.models.classification import Classification
@@ -82,7 +83,7 @@ class OTXClassification(Classification):
         return layer_name
 
     @check_input_parameters_type()
-    def preprocess(self, inputs: np.ndarray):
+    def preprocess(self, inputs: DatasetItemEntity):
         """Pre-process."""
         meta = {"original_shape": inputs.shape}
         resized_image = self.resize(inputs, (self.w, self.h))
