@@ -217,10 +217,10 @@ def main():
     if args.multi_gpu_train and not template.task_type.is_anomaly:
         gpu_ids = get_gpu_ids()
         if len(gpu_ids) > 1:
+            multi_gpu_train_args = [gpu_ids, task.output_path]
             if args.enable_hpo:
-                multi_gpu_processes = run_multi_gpu_train(gpu_ids, hyper_parameters)
-            else:
-                multi_gpu_processes = run_multi_gpu_train(gpu_ids)
+                multi_gpu_train_args.append(hyper_parameters)
+            multi_gpu_processes = run_multi_gpu_train(*multi_gpu_train_args)
         else:
             print("Number of avilable gpu is lower than 2. Multi GPU training won't be executed.")
 
@@ -298,10 +298,11 @@ def terminate_signal_handler(signum, frame, processes: List[mp.Process]):
 
     sys.exit(1)
 
-def run_multi_gpu_train(gpu_ids: List[int], optimized_hyper_parameters=None):
+def run_multi_gpu_train(gpu_ids: List[int], output_path: str, optimized_hyper_parameters=None):
     if optimized_hyper_parameters is not None:
         set_optimized_hp_for_child_process(optimized_hyper_parameters)
 
+    os.environ['OTX_TASK_OUTPUT_PATH'] = output_path
     processes= []
     spawned_mp = mp.get_context("spawn")
     for rank in range(1, len(gpu_ids)):
