@@ -115,7 +115,6 @@ NNCF_PATCHER.patch(
     "mmdet.models.roi_heads.roi_extractors.SingleRoIExtractor.map_roi_levels",
     no_nncf_trace_wrapper,
 )
-)
 NNCF_PATCHER.patch("mmdet.core.bbox2result", no_nncf_trace_wrapper)
 NNCF_PATCHER.patch("mmdet.core.bbox2roi", no_nncf_trace_wrapper)
 
