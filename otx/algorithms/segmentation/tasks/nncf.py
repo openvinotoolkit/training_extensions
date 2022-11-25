@@ -96,6 +96,8 @@ class SegmentationNNCFTask(SegmentationInferenceTask, IOptimizationTask):
 
         self._compression_ctrl = None
         self._nncf_preset = "nncf_quantization"
+        self._nncf_data_to_build = None
+        self._nncf_state_dict_to_build = dict()
         check_nncf_is_enabled()
         # super().__init__(task_environment)
         self._scratch_space = tempfile.mkdtemp(prefix="otx-seg-scratch-")
@@ -172,26 +174,30 @@ class SegmentationNNCFTask(SegmentationInferenceTask, IOptimizationTask):
 
             model = self._create_model(self._model_cfg, from_scratch=True)
             try:
+                state_dict = model_data["model"]
                 if is_state_nncf(model_data):
-                    compression_ctrl, model = wrap_nncf_model(
-                        model,
-                        self._recipe_cfg,
-                        init_state_dict=model_data,
-                        get_fake_input_func=get_fake_input,
-                    )
-                    logger.info("Loaded model weights from Task Environment and wrapped by NNCF")
-                else:
-                    try:
-                        load_state_dict(model, model_data["model"])
-                        logger.info("Loaded model weights from Task Environment")
-                        logger.info(f"Model architecture: {self._model_name}")
-                    except BaseException as ex:
-                        raise ValueError("Could not load the saved model. The model file structure is invalid.") from ex
-
+                    state_dict = model_data["meta"]["nncf_state_dict_to_build"]
+                    self._nncf_state_dict_to_build = state_dict
+                load_state_dict(model, state_dict)
                 logger.info("Loaded model weights from Task Environment")
                 logger.info(f"Model architecture: {self._model_name}")
             except BaseException as ex:
-                raise ValueError("Could not load the saved model. The model file structure is invalid.") from ex
+                raise ValueError(
+                    "Could not load the saved model. "
+                    "The model file structure is invalid."
+                ) from ex
+
+            if is_state_nncf(model_data):
+                self._nncf_data_to_build = model_data["meta"]["nncf_data_to_build"]
+                compression_ctrl, model = wrap_nncf_model(
+                    model,
+                    self._recipe_cfg,
+                    init_state_dict=model_data,
+                    get_fake_input_func=partial(
+                        get_fake_input, data=self._nncf_data_to_build
+                    ),
+                )
+                logger.info("Loaded model weights from Task Environment and wrapped by NNCF")
         else:
             raise ValueError("No trained model in project. NNCF require pretrained weights to compress the model")
 
@@ -231,6 +237,15 @@ class SegmentationNNCFTask(SegmentationInferenceTask, IOptimizationTask):
     def _create_compressed_model(self, config):
         init_dataloader = build_dataloader(config, "train", False)
 
+        # This data and state dict will be used to build NNCF graph later
+        # when loading NNCF model
+        # because some models run their subcomponents based on intermediate outputs
+        # resulting not a fully traced NNCF graph if fake data is given
+        datasets = get_configs_by_keys(config.data.train, "otx_dataset")
+        for dataset in datasets:
+            self._nncf_data_to_build = dataset[0].numpy
+        self._nncf_state_dict_to_build = copy.deepcopy(self._model.state_dict())
+
         is_acc_aware_training_set = is_accuracy_aware_training_set(config.get("nncf_config"))
 
         val_dataloader = None
@@ -242,7 +257,7 @@ class SegmentationNNCFTask(SegmentationInferenceTask, IOptimizationTask):
             config,
             val_dataloader=val_dataloader,
             dataloader_for_init=init_dataloader,
-            get_fake_input_func=get_fake_input,
+            get_fake_input_func=partial(get_fake_input, data=self._nncf_data_to_build),
             is_accuracy_aware=is_acc_aware_training_set,
         )
 
@@ -279,6 +294,9 @@ class SegmentationNNCFTask(SegmentationInferenceTask, IOptimizationTask):
         # Create and initialize PyTorch model.
         logger.info("Loading the model")
         self._model = self._load_model(self._task_environment.model)
+        # we loaded weights in _load_model method
+        self._model_cfg.pop("load_from", None)
+        self._model_ckpt = None
 
         self._recipe_cfg_backup = self._recipe_cfg
         self._model_cfg_backup = self._model_cfg
@@ -432,6 +450,8 @@ class SegmentationNNCFTask(SegmentationInferenceTask, IOptimizationTask):
             "meta": {
                 "config": config,
                 "nncf_enable_compression": True,
+                "nncf_data_to_build": self._nncf_data_to_build,
+                "nncf_state_dict_to_build": self._nncf_state_dict_to_build,
             },
             "model": self._model.state_dict(),
             "config": hyperparams_str,
