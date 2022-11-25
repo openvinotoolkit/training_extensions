@@ -270,8 +270,9 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
             top_idxs = np.argpartition(prediction_item, -2)[-2:]
             top_probs = prediction_item[top_idxs]
             active_score = top_probs[1] - top_probs[0]
-            active_score_media = FloatMetadata(name="active_score", value=active_score,
-                                               float_type=FloatType.ACTIVE_SCORE)
+            active_score_media = FloatMetadata(
+                name="active_score", value=active_score, float_type=FloatType.ACTIVE_SCORE
+            )
             dataset_item.append_metadata_item(active_score_media, model=self._task_environment.model)
 
             if feature_vector is not None:
