@@ -35,6 +35,7 @@ from compression.pipeline.initializer import create_pipeline
 from mpa.utils.logger import get_logger
 from openvino.model_zoo.model_api.adapters import OpenvinoAdapter, create_core
 from openvino.model_zoo.model_api.models import Model
+from ote_sdk.entities.subset import Subset
 
 from otx.algorithms.detection.adapters.openvino import model_wrappers
 from otx.algorithms.detection.configs.base import DetectionConfig
@@ -428,6 +429,7 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
         if self.model is None:
             raise RuntimeError("Optimize failed, model is None")
 
+        dataset = dataset.get_subset(Subset.TRAINING)
         data_loader = OTXOpenVinoDataLoader(dataset, self.inferencer)
 
         with tempfile.TemporaryDirectory() as tempdir:

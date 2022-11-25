@@ -55,6 +55,7 @@ from otx.api.entities.model import (
 from otx.api.entities.optimization_parameters import OptimizationParameters
 from otx.api.entities.result_media import ResultMediaEntity
 from otx.api.entities.resultset import ResultSetEntity
+from ote_sdk.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.entities.tensor import TensorEntity
 from otx.api.serialization.label_mapper import LabelSchemaMapper, label_schema_to_bytes
@@ -303,6 +304,7 @@ class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask,
         if optimization_type is not OptimizationType.POT:
             raise ValueError("POT is the only supported optimization type for OpenVino models")
 
+        dataset = dataset.get_subset(Subset.TRAINING)
         data_loader = OTXOpenVinoDataLoader(dataset, self.inferencer)
 
         with tempfile.TemporaryDirectory() as tempdir:

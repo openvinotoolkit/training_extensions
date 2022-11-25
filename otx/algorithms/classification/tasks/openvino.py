@@ -29,6 +29,7 @@ from compression.engines.ie_engine import IEEngine
 from compression.graph import load_model, save_model
 from compression.graph.model_utils import compress_model_weights, get_nodes_by_type
 from compression.pipeline.initializer import create_pipeline
+from ote_sdk.entities.subset import Subset
 
 from otx.algorithms.classification.adapters.openvino import model_wrappers
 from otx.algorithms.classification.configs import ClassificationConfig
@@ -299,6 +300,7 @@ class ClassificationOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTas
         if optimization_type is not OptimizationType.POT:
             raise ValueError("POT is the only supported optimization type for OpenVino models")
 
+        dataset = dataset.get_subset(Subset.TRAINING)
         data_loader = OTXOpenVinoDataLoader(dataset, self.inferencer)
 
         if self.model is None:

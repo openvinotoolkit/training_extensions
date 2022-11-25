@@ -194,7 +194,7 @@ def main(args):
             )
             openvino_task.optimize(
                 OptimizationType.POT,
-                dataset.get_subset(Subset.TRAINING),
+                dataset,
                 optimized_model,
                 OptimizationParameters())
 
