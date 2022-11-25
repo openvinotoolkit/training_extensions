@@ -216,12 +216,14 @@ class DatumaroHandler:
         return DatasetEntity(items=dataset_items), label_schema
 
     def _generate_empty_label_entity(self):
+        """ Generate empty label schema. """
         empty_label = LabelEntity(name="Empty label", is_empty=True, domain=self.domain)
         empty_group = LabelGroup(name="empty", labels=[empty_label], group_type=LabelGroupType.EMPTY_LABEL)
         return empty_group
     
 
     def _generate_label_schema(self, label_entities:list):
+        """ Generate label schema. """
         label_schema = LabelSchemaEntity()
         main_group = LabelGroup(
             name="labels",
