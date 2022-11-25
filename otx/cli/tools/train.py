@@ -17,6 +17,10 @@
 import argparse
 import os
 import os.path as osp
+import sys
+import signal
+from functools import partial
+from typing import List
 
 import torch
 import torch.distributed as dist
@@ -116,36 +120,19 @@ def parse_args():
         type=float,
         help="Expected ratio of total time to run HPO to time taken for full fine-tuning.",
     )
+    parser.add_argument(
+        "--multi-gpu-train",
+        action="store_true",
+        help="Enable multi gpu training. if number of gpu is more than one, then model is trained in each gpu with splited dataset.",
+    )
 
     add_hyper_parameters_sub_parser(parser, hyper_parameters)
 
     return parser.parse_args(), template, hyper_parameters
 
 
-def main(gpu=None, world_size=None):
+def main():
     """Main function that is used for model training."""
-    processes = None
-    gpu_ids = os.environ["CUDA_VISIBLE_DEVICES"].split(',')
-    if len(gpu_ids) > 1 and gpu is None:
-        processes= []
-        spawned_mp = mp.get_context("spawn")
-        for rank in gpu_ids[1:]:
-            task_p = spawned_mp.Process(
-                target=main,
-                args=(int(rank), len(gpu_ids))
-            )
-            task_p.start()
-            processes.append(task_p)
-        gpu = int(gpu_ids[0])
-        world_size = len(gpu_ids)
-    if gpu is not None:
-        os.environ['MASTER_ADDR'] = 'localhost'
-        os.environ['MASTER_PORT'] = '29500'
-        torch.cuda.set_device(gpu)
-        dist.init_process_group(backend='nccl',
-                                world_size=world_size, rank=gpu)
-        print(f'dist info world_size = {dist.get_world_size()}, rank = {dist.get_rank()}')
-
     # Dynamically create an argument parser based on override parameters.
     args, template, hyper_parameters = parse_args()
     # Get new values from user's input.
@@ -205,6 +192,17 @@ def main(gpu=None, world_size=None):
         environment.work_dir = osp.dirname(args.save_model_to)
         task = task_class(task_environment=environment)
 
+    multi_gpu_processes = []
+    if args.multi_gpu_train and not template.task_type.is_anomaly:
+        gpu_ids = get_gpu_ids()
+        if len(gpu_ids) > 1:
+            if args.enable_hpo:
+                multi_gpu_processes = run_multi_gpu_train(gpu_ids, hyper_parameters)
+            else:
+                multi_gpu_processes = run_multi_gpu_train(gpu_ids)
+        else:
+            print("Number of avilable gpu is lower than 2. Multi GPU training won't be executed.")
+
     output_model = ModelEntity(dataset, environment.get_model_configuration())
 
     task.train(dataset, output_model, train_parameters=TrainParameters())
@@ -226,10 +224,86 @@ def main(gpu=None, world_size=None):
     assert resultset.performance is not None
     print(resultset.performance)
 
-    if processes is not None:
-        for p_to_join in processes:
-            p_to_join.join()
+    for p in multi_gpu_processes:
+        p.join()
 
+def get_gpu_ids():
+    num_available_gpu = torch.cuda.device_count()
+    cuda_environ = os.environ.get("CUDA_VISIBLE_DEVICES")
+    if cuda_environ is None:
+        return list(range(num_available_gpu))
+    else:
+        gpu_ids = []
+        for gpu_idx in cuda_environ.split(','):
+            gpu_idx = int(gpu_idx)
+            if gpu_idx < num_available_gpu:
+                gpu_ids.append(gpu_idx)
+        return gpu_ids
+
+def multigpu_initilization(rank: int, gpu_ids: List[int]):
+    os.environ['MASTER_ADDR'] = 'localhost'
+    os.environ['MASTER_PORT'] = '29500'
+    torch.cuda.set_device(gpu_ids[rank])
+    dist.init_process_group(backend='nccl', world_size=len(gpu_ids), rank=rank)
+    print(f'dist info world_size = {dist.get_world_size()}, rank = {dist.get_rank()}')
+
+def run_multigpu_child_process(rank: int, gpu_ids: List[int]):
+    sys.argv.remove('--multi-gpu-train')
+    if "--enable-hpo" in sys.argv:
+        sys.argv.remove('--enable-hpo')
+
+    multigpu_initilization(rank, gpu_ids)
+    main()
+
+def terminate_signal_handler(signum, frame, processes: List[mp.Process]):
+    for process in processes:
+        print(f"Kill child process {process.pid}")
+        try:
+            process.kill()
+        except Exception:
+            pass
+
+    singal_name = {2: "SIGINT", 15: "SIGTERM"}
+    print(f"{singal_name[signum]} is sent. process exited.")
+
+    sys.exit(1)
+
+def run_multi_gpu_train(gpu_ids: List[int], optimized_hyper_parameters=None):
+    if optimized_hyper_parameters is not None:
+        set_optimized_hp_for_child_process(optimized_hyper_parameters)
+
+    processes= []
+    spawned_mp = mp.get_context("spawn")
+    for rank in range(1, len(gpu_ids)):
+        task_p = spawned_mp.Process(target=run_multigpu_child_process, args=(rank, gpu_ids))
+        task_p.start()
+        processes.append(task_p)
+
+    signal.signal(signal.SIGINT, partial(terminate_signal_handler, processes=processes))
+    signal.signal(signal.SIGTERM, partial(terminate_signal_handler, processes=processes))
+
+    multigpu_initilization(0, gpu_ids)
+
+    return processes
+
+def set_optimized_hp_for_child_process(hyper_parameters):
+    if "params" not in sys.argv:
+        sys.argv.append('params')
+
+    def set_hyper_parameter_in_argv(key, value):
+        if key in sys.argv:
+            sys.argv[sys.argv.index(key) + 1] = value
+        else:
+            sys.argv.extend([key, value])
+            
+    set_hyper_parameter_in_argv(
+        "--learning_parameters.learning_rate",
+        str(hyper_parameters.learning_parameters.learning_rate)
+    )
+    set_hyper_parameter_in_argv(
+        "--learning_parameters.batch_size",
+        str(hyper_parameters.learning_parameters.batch_size)
+    )
 
 if __name__ == "__main__":
     main()
