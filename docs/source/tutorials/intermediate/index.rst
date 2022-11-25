@@ -1,4 +1,4 @@
-Algorithms
+Intermediate
 =============
 
 .. toctree::

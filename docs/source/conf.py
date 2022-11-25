@@ -27,11 +27,11 @@ author = 'OpenVINO Training Extensions Contributors'
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = [
-    "sphinx.ext.autodoc",
-    "sphinx.ext.napoleon",
-    "nbsphinx",
-]
+# extensions = [
+#     "sphinx.ext.autodoc",
+#     "sphinx.ext.napoleon",
+#     "nbsphinx",
+# ]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -49,9 +49,14 @@ exclude_patterns = []
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_theme = "furo"
+html_theme = "pydata_sphinx_theme"
 html_static_path = ['_static']
 html_logo = "_images/logos/otx-logo-black-mini.png"
 html_theme_options = {
-    "sidebar_hide_name": True,
+    "navbar_start": ["navbar-logo"],
+    "navbar_center": [],
+    "navbar_end": ["navbar-icon-links"]
 }
+html_css_files = [
+    'css/custom.css',
+]

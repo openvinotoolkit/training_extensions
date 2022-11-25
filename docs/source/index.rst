@@ -8,7 +8,6 @@ OpenVINO Training Extensions -- OTX
    get_started/index
    design/index
    tutorials/index
-   additional_guidance/index
    reference/index
    samples/index
    release_notes/index

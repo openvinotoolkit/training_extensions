@@ -1,6 +1,6 @@
 CLI Samples
 =============
 
-.. automodule:: otx.cli
-   :members:
-   :undoc-members:
+.. toctree::
+   :maxdepth: 3
+   :caption: Contents:
