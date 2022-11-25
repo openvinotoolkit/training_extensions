@@ -274,8 +274,7 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
         # Training subset does not contain example of anomalous images.
         # Anomalous examples from all dataset used to get statistics for quantization.
         dataset = DatasetEntity(
-            items = [item for item in dataset if item.get_shapes_labels()[0].is_anomalous],
-            purpose = dataset.purpose
+            items=[item for item in dataset if item.get_shapes_labels()[0].is_anomalous], purpose=dataset.purpose
         )
 
         logger.info("Starting POT optimization.")
