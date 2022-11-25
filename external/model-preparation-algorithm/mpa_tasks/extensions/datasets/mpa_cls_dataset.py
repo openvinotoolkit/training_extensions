@@ -129,7 +129,12 @@ class MPAClsDataset(BaseDataset):
             metrics.remove("class_accuracy")
             self.class_acc = True
 
+        # compute top-k metrics from mmcls and align them in [0,1] range
         eval_results = super().evaluate(results, metrics, metric_options, logger)
+        for k in metric_options['topk']:
+            if 0 <= eval_results[f'accuracy_top-{k}'] <= 100:
+                eval_results[f'accuracy_top-{k}'] /= 100
+            assert 0 <= eval_results[f'accuracy_top-{k}'] <= 1
 
         # Add Evaluation Accuracy score per Class - it can be used only for multi-class dataset.
         if self.class_acc:
