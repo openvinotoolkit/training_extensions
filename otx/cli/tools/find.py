@@ -45,7 +45,7 @@ def main():
         otx_registry = otx_registry.filter(task_type=args.task_type)
 
     if args.template:
-        template_table = PrettyTable(["task_type", "ID", "NAME", "path"])
+        template_table = PrettyTable(["TASK", "ID", "NAME", "PATH"])
         for template in otx_registry.templates:
             relpath = os.path.relpath(template.model_template_path, os.path.abspath("."))
             template_table.add_row(

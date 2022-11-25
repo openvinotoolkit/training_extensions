@@ -148,6 +148,11 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         pass
 
     @property
+    def output_path(self):
+        """Return output path with logs."""
+        return self._output_path
+
+    @property
     def model_name(self):
         """Name of Model Template."""
         return self._task_environment.model_template.name
