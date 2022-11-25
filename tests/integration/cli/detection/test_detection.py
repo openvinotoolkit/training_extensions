@@ -33,27 +33,15 @@ from otx.cli.utils.tests import (
 )
 from tests.test_suite.e2e_test_system import e2e_pytest_component
 
-# Pre-train w/ 'person' class
+# Pre-train w/ 'person' class ##TODO: Currently, it is closed to sample test. need to change other sample
 args0 = {
-    "--train-ann-file": "data/airport/annotation_person_train.json",
-    "--train-data-roots": "data/airport/train",
-    "--val-ann-file": "data/airport/annotation_person_train.json",
-    "--val-data-roots": "data/airport/train",
-    "--test-ann-files": "data/airport/annotation_person_train.json",
-    "--test-data-roots": "data/airport/train",
-    "--input": "data/airport/train",
+    "--train-data-roots": "data/datumaro/coco_dataset/coco_detection_instances",
     "train_params": ["params", "--learning_parameters.num_iters", "4", "--learning_parameters.batch_size", "4"],
 }
 
 # Class-Incremental learning w/ 'vehicle', 'person', 'non-vehicle' classes
 args = {
-    "--train-ann-file": "data/airport/annotation_example_train.json",
-    "--train-data-roots": "data/airport/train",
-    "--val-ann-file": "data/airport/annotation_example_train.json",
-    "--val-data-roots": "data/airport/train",
-    "--test-ann-files": "data/airport/annotation_example_train.json",
-    "--test-data-roots": "data/airport/train",
-    "--input": "data/airport/train",
+    "--train-data-roots": "data/datumaro/coco_dataset/coco_detection_instances",
     "train_params": ["params", "--learning_parameters.num_iters", "2", "--learning_parameters.batch_size", "4"],
 }
 

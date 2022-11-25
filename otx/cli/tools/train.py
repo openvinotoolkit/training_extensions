@@ -42,9 +42,13 @@ from otx.cli.utils.parser import (
     add_hyper_parameters_sub_parser,
     gen_params_dict_from_args,
 )
+<<<<<<< HEAD
 
 # pylint: disable=too-many-locals
 
+=======
+from otx.core.base_dataset_adapter import get_dataset_adapter
+>>>>>>> Refactoring: create base class and each classe for tasks, edit cli test case
 
 def parse_args():
     """Parses command line arguments.
@@ -181,12 +185,12 @@ def main():  # pylint: disable=too-many-branches
         }
 
     # Datumaro 
-    datumaro_handler = DatumaroHandler(template.task_type)
-    datumaro_dataset = datumaro_handler.import_dataset(
+    datumaro_adapter = get_dataset_adapter(template.task_type)
+    datumaro_dataset = datumaro_adapter.import_dataset(
         train_data_roots=args.train_data_roots,
         val_data_roots=args.val_data_roots
     )
-    dataset, label_schema = datumaro_handler.convert_to_otx_format(datumaro_dataset)
+    dataset, label_schema = datumaro_adapter.convert_to_otx_format(datumaro_dataset)
 
     environment = TaskEnvironment(
         model=None,
