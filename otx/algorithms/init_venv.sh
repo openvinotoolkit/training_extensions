@@ -32,12 +32,12 @@ fi
 
 cd "${work_dir}" || exit
 
-#if [[ -e ${venv_dir} ]]; then
-#  echo
-#  echo "Virtualenv already exists. Use command to start working:"
-#  echo "$ . ${venv_dir}/bin/activate"
-#  exit
-#fi
+if [[ -e ${venv_dir} ]]; then
+  echo
+  echo "Virtualenv already exists. Use command to start working:"
+  echo "$ . ${venv_dir}/bin/activate"
+  exit
+fi
 
 # Create virtual environment
 $PYTHON_NAME -m venv "${venv_dir}" --prompt="otx"
@@ -49,6 +49,9 @@ fi
 
 # shellcheck source=/dev/null
 . "${venv_dir}"/bin/activate
+
+# Install build package
+pip install --upgrade pip wheel setuptools build || exit 1
 
 # Get CUDA version.
 CUDA_HOME_CANDIDATE=/usr/local/cuda
@@ -82,15 +85,9 @@ else
   echo "export CUDA_HOME=${CUDA_HOME}" >> "${venv_dir}"/bin/activate
 fi
 
-# Newer versions of pip have troubles with NNCF installation from the repo commit.
-#pip install pip==21.2.1 || exit 1
-#pip install wheel || exit 1
-pip install --upgrade pip setuptools || exit 1
-
 # Install PyTorch
 export TORCH_VERSION=1.8.2
 export TORCHVISION_VERSION=0.9.2
-
 if [[ -z $CUDA_VERSION_CODE ]]; then
   export TORCH_VERSION=${TORCH_VERSION}+cpu
   export TORCHVISION_VERSION=${TORCHVISION_VERSION}+cpu
@@ -98,26 +95,20 @@ else
   export TORCH_VERSION=${TORCH_VERSION}+cu${CUDA_VERSION_CODE}
   export TORCHVISION_VERSION=${TORCHVISION_VERSION}+cu${CUDA_VERSION_CODE}
 fi
-
 echo torch=="${TORCH_VERSION}" >> "${CONSTRAINTS_FILE}"
 echo torchvision=="${TORCHVISION_VERSION}" >> "${CONSTRAINTS_FILE}"
 pip install torch=="${TORCH_VERSION}" torchvision=="${TORCHVISION_VERSION}" -f https://download.pytorch.org/whl/lts/1.8/torch_lts.html || exit 1
 
 # Install OTX
-#pip install -e ../../[detection] || exit 1
-pip install --use-deprecated=legacy-resolver -e ../../[mpa] || exit 1
-#pip install --no-cache-dir -e ../../[detection] || exit 1
-#pip install -e --use-deprecated=legacy-resolver ../../[detection] || exit 1
-#pip install -e --use-deprecated=legacy-resolver --no-cache-dir ../../[detection] || exit 1
-
-## Remedy solution for numpy lib conflict
-#pip install numpy==1.21.0
-#pip uninstall -y mmpycocotools
-#pip install mmpycocotools
-
-# Build NNCF extensions
-#echo "Build NNCF extensions ..."
-#python -c "import nncf"
+# * Prerequisite
+#   - numpy: mmpycocotool uses source distribution, setup.py imports numpy
+#   - torch: mmdet/seg are installed via source, setup.py imports torch
+# * Issue
+#  - Dependency resolusion is to slow
+#  - Several lib version conflicts
+#  -> Temporary use of --use-deprecated=legacy-resolve
+pip install numpy
+pip install --use-deprecated=legacy-resolver -e ../../[full] || exit 1
 
 deactivate
 
