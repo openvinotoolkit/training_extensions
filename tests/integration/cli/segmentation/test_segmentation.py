@@ -32,14 +32,10 @@ from otx.cli.utils.tests import (
 )
 from tests.test_suite.e2e_test_system import e2e_pytest_component
 
+##TODO: Currently, it is closed to sample test. need to change other sample
 args = {
-    "--train-ann-file": "data/segmentation/custom/annotations/training",
-    "--train-data-roots": "data/segmentation/custom/images/training",
-    "--val-ann-file": "data/segmentation/custom/annotations/training",
-    "--val-data-roots": "data/segmentation/custom/images/training",
-    "--test-ann-files": "data/segmentation/custom/annotations/training",
-    "--test-data-roots": "data/segmentation/custom/images/training",
-    "--input": "data/segmentation/custom/images/training",
+    "--train-data-roots": "data/datumaro/common_semantic_segmentation_dataset/dataset",
+    "--val-data-roots": "data/datumaro/common_semantic_segmentation_dataset/dataset",
     "train_params": [
         "params",
         "--learning_parameters.learning_rate_fixed_iters",
