@@ -1,10 +1,10 @@
 # Description.
-model_template_id: Custom_Object_Detection_YOLOX
-name: YOLOX
+model_template_id: Custom_Object_Detection_Gen3_SSD
+name: SSD
 task_type: DETECTION
 task_family: VISION
 instantiation: "CLASS"
-summary: Class-Incremental Object Detection for YOLOX
+summary: Semi-Supervised Object Detection for SSD
 application: ~
 
 # Algo backend.
@@ -29,7 +29,7 @@ hyper_parameters:
         default_value: 8
         auto_hpo_state: POSSIBLE
       learning_rate:
-        default_value: 0.0002
+        default_value: 0.01
         auto_hpo_state: POSSIBLE
       learning_rate_warmup_iters:
         default_value: 3
@@ -41,12 +41,12 @@ hyper_parameters:
       enable_pruning:
         default_value: false
       pruning_supported:
-        default_value: false
+        default_value: true
       maximal_accuracy_degradation:
         default_value: 1.0
     algo_backend:
       train_type:
-        default_value: INCREMENTAL
+        default_value: SEMISUPERVISED
 
 # Training resources.
 max_nodes: 1
@@ -55,8 +55,8 @@ training_targets:
   - CPU
 
 # Stats.
-gigaflops: 6.5
-size: 20.4
+gigaflops: 9.4
+size: 7.6
 # # Inference options. Defined by OpenVINO capabilities, not Algo Backend or Platform.
 # inference_targets:
 #   - CPU

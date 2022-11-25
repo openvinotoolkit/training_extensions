@@ -4,7 +4,7 @@ name: YOLOX
 task_type: DETECTION
 task_family: VISION
 instantiation: "CLASS"
-summary: Class-Incremental Object Detection for YOLOX
+summary: Semi-Supervised Object Detection for YOLOX
 application: ~
 
 # Algo backend.
@@ -46,7 +46,7 @@ hyper_parameters:
         default_value: 1.0
     algo_backend:
       train_type:
-        default_value: INCREMENTAL
+        default_value: SEMISUPERVISED
 
 # Training resources.
 max_nodes: 1
