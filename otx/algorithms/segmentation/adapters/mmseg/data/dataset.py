@@ -265,3 +265,9 @@ class MPASegDataset(OTXSegDataset):
                     self.label_map[i] = -1
                 else:
                     self.label_map[i] = classes.index(c)
+
+    def _get_raw_unlabeled_data(self, idx):
+        item = self.data_infos[idx]
+        self.pre_pipeline(item)
+
+        return item
