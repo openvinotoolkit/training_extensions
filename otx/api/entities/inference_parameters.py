@@ -26,7 +26,10 @@ class InferenceParameters:
             as NMS.
         update_progress: Callback which can be used to provide updates
             about the progress of a task.
+        explainer: Explain algorithm to be used in explanation mode.
+            Will be converted automatically to lowercase.
     """
 
     is_evaluation: bool = False
     update_progress: Callable[[int, Optional[float]], Any] = default_progress_callback
+    explainer: str = ""
