@@ -37,7 +37,7 @@ from otx.cli.utils.tests import (
 )
 from tests.test_suite.e2e_test_system import e2e_pytest_component
 
-# Pre-train w/ 'intel', 'openvino' classes
+# Pre-train w/ 'label_0', 'label_1' classes
 args0 = {
     "--train-data-roots": "data/datumaro/imagenet_dataset",
     "--val-data-roots": "data/datumaro/imagenet_dataset",
@@ -50,10 +50,10 @@ args0 = {
     ],
 }
 
-# Pre-train w/ 'intel', 'openvino', 'opencv' classes
+# Pre-train w/ 'label_0', 'label_1', 'label_2' classes
 args = {
-    "--train-data-roots": "data/datumaro/imagenet_dataset",
-    "--val-data-roots": "data/datumaro/imagenet_dataset",
+    "--train-data-roots": "data/datumaro/imagenet_dataset_class_incremental",
+    "--val-data-roots": "data/datumaro/imagenet_dataset_class_incremental",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
