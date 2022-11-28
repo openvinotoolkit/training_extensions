@@ -141,10 +141,8 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
             #TODO: auto_split
             pass
 
-        # If unlabeled data is defined --> Semi-SL enable?
         if unlabeled_data_roots is not None:
             self.dataset[Subset.UNLABELED] = DatumaroDataset.import_from(unlabeled_data_roots, format='image_dir')
-            #TODO: enable to read unlabeled file lists
         
         return self.dataset
 

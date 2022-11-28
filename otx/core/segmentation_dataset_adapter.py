@@ -15,7 +15,7 @@ from otx.api.entities.shapes.polygon import Point, Polygon
 from otx.api.entities.id import ID
 from otx.api.entities.image import Image
 from otx.api.entities.scored_label import ScoredLabel
-from otx.api.entities.annotation import (Annotation, AnnotationSceneEntity, AnnotationSceneKind)
+from otx.api.entities.annotation import (Annotation, AnnotationSceneEntity, AnnotationSceneKind, NullAnnotationSceneEntity)
 from otx.utils.logger import get_logger
 
 logger = get_logger()
@@ -53,7 +53,11 @@ class SegmentationDatasetAdapter(BaseDatasetAdapter):
                                             ]
                                         )
                                     )
-                    annotation_scene = AnnotationSceneEntity(kind=AnnotationSceneKind.ANNOTATION, annotations=shapes)
+                    # Unlabeled dataset
+                    if len(shapes) == 0:
+                        annotation_scene = NullAnnotationSceneEntity()
+                    else:
+                        annotation_scene = AnnotationSceneEntity(kind=AnnotationSceneKind.ANNOTATION, annotations=shapes)
                     dataset_item = DatasetItemEntity(image, annotation_scene, subset=subset)
                     dataset_items.append(dataset_item)
         
