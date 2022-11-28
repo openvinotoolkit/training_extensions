@@ -22,7 +22,14 @@ from otx.api.entities.label import LabelEntity
 from otx.api.entities.label_schema import LabelGroup, LabelGroupType, LabelSchemaEntity
 from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.shapes.rectangle import Rectangle
+<<<<<<< HEAD
 from otx.core.base_dataset_adapter import BaseDatasetAdapter
+=======
+from otx.api.entities.label import Domain, LabelEntity
+from otx.api.entities.label_schema import (LabelGroup, LabelGroupType, LabelSchemaEntity)
+from otx.api.entities.annotation import (Annotation, AnnotationSceneEntity, AnnotationSceneKind, NullAnnotationSceneEntity)
+from otx.utils.logger import get_logger
+>>>>>>> Add class-incremental classification test, enable unlabeled dataset
 
 
 class ClassificationDatasetAdapter(BaseDatasetAdapter):
@@ -49,7 +56,6 @@ class ClassificationDatasetAdapter(BaseDatasetAdapter):
                     image = Image(file_path=datumaro_item.media.path)
                     labels = [
                         ScoredLabel(
-<<<<<<< HEAD
                             label=[label for label in label_entities if label.name == category_items[ann.label].name][
                                 0
                             ],
@@ -67,28 +73,13 @@ class ClassificationDatasetAdapter(BaseDatasetAdapter):
                         annotation_scene = AnnotationSceneEntity(
                             kind=AnnotationSceneKind.ANNOTATION, annotations=shapes
                         )
-=======
-                            label= [label for label in label_entities if label.name == category_items[ann.label].name][0],
-                            probability=1.0   
-                        ) for ann in datumaro_item.annotations
-                    ]
-                    shapes = [Annotation(Rectangle.generate_full_box(), labels)]
-                    
-                    annotation_scene = AnnotationSceneEntity(kind=AnnotationSceneKind.ANNOTATION, annotations=shapes)
->>>>>>> Fix: multi-class classification label schema error
                     dataset_item = DatasetItemEntity(image, annotation_scene, subset=subset)
                     dataset_items.append(dataset_item)
 
         return (DatasetEntity(items=dataset_items), label_schema)
 
     def _generate_classification_label_schema(
-<<<<<<< HEAD
         self, label_groups: List[LabelCategories.LabelGroup], label_entities: List[LabelEntity]
-=======
-        self, 
-        label_groups: List[LabelCategories.LabelGroup], 
-        label_entities: List[LabelEntity]
->>>>>>> Fix: multi-class classification label schema error
     ) -> LabelSchemaEntity:
         """Generate LabelSchema for Classification."""
         label_schema = LabelSchemaEntity()
@@ -102,13 +93,7 @@ class ClassificationDatasetAdapter(BaseDatasetAdapter):
 
                 label_schema.add_group(
                     LabelGroup(
-<<<<<<< HEAD
                         name=label_group.name, labels=group_label_entity_list, group_type=LabelGroupType.EXCLUSIVE
-=======
-                        name=label_group.name,
-                        labels=group_label_entity_list,
-                        group_type=LabelGroupType.EXCLUSIVE
->>>>>>> Fix: multi-class classification label schema error
                     )
                 )
             label_schema.add_group(self._generate_empty_label_entity())

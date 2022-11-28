@@ -22,7 +22,13 @@ from otx.api.entities.label_schema import LabelSchemaEntity
 from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.shapes.polygon import Point, Polygon
 from otx.api.entities.shapes.rectangle import Rectangle
+<<<<<<< HEAD
 from otx.core.base_dataset_adapter import BaseDatasetAdapter
+=======
+from datumaro.components.annotation import Bbox as DatumaroBbox
+from otx.api.entities.annotation import (Annotation, AnnotationSceneEntity, AnnotationSceneKind, NullAnnotationSceneEntity)
+from otx.utils.logger import get_logger
+>>>>>>> Add class-incremental classification test, enable unlabeled dataset
 
 
 class DetectionDatasetAdapter(BaseDatasetAdapter):

@@ -21,8 +21,13 @@ from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.image import Image
 from otx.api.entities.label_schema import LabelSchemaEntity
 from otx.api.entities.scored_label import ScoredLabel
+<<<<<<< HEAD
 from otx.api.entities.shapes.polygon import Point, Polygon
 from otx.core.base_dataset_adapter import BaseDatasetAdapter
+=======
+from otx.api.entities.annotation import (Annotation, AnnotationSceneEntity, AnnotationSceneKind, NullAnnotationSceneEntity)
+from otx.utils.logger import get_logger
+>>>>>>> Add class-incremental classification test, enable unlabeled dataset
 
 
 class SegmentationDatasetAdapter(BaseDatasetAdapter):
