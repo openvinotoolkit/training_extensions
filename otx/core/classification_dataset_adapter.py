@@ -42,14 +42,13 @@ class ClassificationDatasetAdapter(BaseDatasetAdapter):
             for _, datumaro_items in subset_data.subsets().items():
                 for datumaro_item in datumaro_items:
                     image = Image(file_path=datumaro_item.media.path)
-                    if self.domain == Domain.CLASSIFICATION:
-                        labels = [
-                            ScoredLabel(
-                                label= [label for label in label_entities if label.name == category_items[ann.label].name][0],
-                                probability=1.0   
-                            ) for ann in datumaro_item.annotations
-                        ]
-                        shapes = [Annotation(Rectangle.generate_full_box(), labels)]
+                    labels = [
+                        ScoredLabel(
+                            label= [label for label in label_entities if label.name == category_items[ann.label].name][0],
+                            probability=1.0   
+                        ) for ann in datumaro_item.annotations
+                    ]
+                    shapes = [Annotation(Rectangle.generate_full_box(), labels)]
                     
                     annotation_scene = AnnotationSceneEntity(kind=AnnotationSceneKind.ANNOTATION, annotations=shapes)
                     dataset_item = DatasetItemEntity(image, annotation_scene, subset=subset)
@@ -59,26 +58,29 @@ class ClassificationDatasetAdapter(BaseDatasetAdapter):
 
     def _generate_classification_label_schema(
         self, 
-        label_groups: LabelCategories.LabelGroup, 
+        label_groups: List[LabelCategories.LabelGroup], 
         label_entities: List[LabelEntity]
     ) -> LabelSchemaEntity:
         """ Generate LabelSchema for Classification. """
         label_schema = LabelSchemaEntity()
 
-        for label_group in label_groups:
-            group_label_entity_list = []
-            for label in label_group.labels:
-                label_entity = [le for le in label_entities if le.name == label]
-                group_label_entity_list.append(label_entity[0])
+        if len(label_groups) > 0:
+            for label_group in label_groups:
+                group_label_entity_list = []
+                for label in label_group.labels:
+                    label_entity = [le for le in label_entities if le.name == label]
+                    group_label_entity_list.append(label_entity[0])
 
-            label_schema.add_group(
-                LabelGroup(
-                    name=label_group.name,
-                    labels=group_label_entity_list,
-                    group_type=LabelGroupType.EXCLUSIVE
+                label_schema.add_group(
+                    LabelGroup(
+                        name=label_group.name,
+                        labels=group_label_entity_list,
+                        group_type=LabelGroupType.EXCLUSIVE
+                    )
                 )
-            )
-        label_schema.add_group(self._generate_empty_label_entity())
+            label_schema.add_group(self._generate_empty_label_entity())
+        else:
+            label_schema = self._generate_default_label_schema(label_entities)
 
         return label_schema
         
