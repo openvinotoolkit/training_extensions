@@ -1,9 +1,8 @@
 Beginner
-=========
+========
 
 .. toctree::
    :maxdepth: 3
-   :caption: Contents:
 
    create_dataset
    train_a_model
