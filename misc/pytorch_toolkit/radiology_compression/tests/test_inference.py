@@ -86,10 +86,6 @@ def create_inference_test_for_phase2():
             cls.tst_loader = DataLoader(tst_data, batch_size=1, shuffle=False, num_workers=16)
 
         def test_pytorch_inference(self):
-            # inference = CustomDatasetPhase2(
-            #     path_to_latent=self.config['path_to_latent'], path_to_gdtruth=self.config['path_to_gdtruth']
-            # )
-            # model = inference.load_model(run_type='pytorch')
             config = get_config(action='inference', phase=2)
 
             model = load_inference_model(config=config, run_type='pytorch')

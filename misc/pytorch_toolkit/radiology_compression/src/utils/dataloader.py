@@ -63,16 +63,17 @@ class CustomDatasetPhase1(data.Dataset):
                 image256 = self.transform_images(image256)
                 image128 = self.transform_images(image128)
 
-            return image256, image128
+            return [image256, image128]
             
         else:
             image = Image.open(os.path.join(self.path_to_dataset, self.test_files[i]))
             # image = torch.Tensor(image)
             if self.transform_images is not None:
                 image = self.transform_images(image)
-            return image, self.test_files[i]
-    
-    
+            # returns 0 as image == mask in this case.
+            return [image, 0, self.test_files[i]]
+
+
 class CustomDatasetPhase2(data.Dataset):
 
     def __init__(self, path_to_latent, path_to_gdtruth,
@@ -107,22 +108,15 @@ class CustomDatasetPhase2(data.Dataset):
 
     def __getitem__(self, index):
 
-        path_latent = os.path.join(
-            self.path_to_latent, self.list_latent[index])
+        path_latent = os.path.join(self.path_to_latent, self.list_latent[index])
         object = pd.read_pickle(path_latent)
         image = object["latent_int"]
 
         file_name = self.list_latent[index].rsplit('.latent')[0].rsplit('_')
 
-        file_join = '_'.join(file_name)
+        file_name_new = '_'.join(file_name[2:])
         
-        mask = Image.open(os.path.join(
-                    self.path_to_gdtruth, self.list_gdtruth[0]))
-                    
-        for i in range(len(self.list_gdtruth)):
-            if(file_join == self.list_gdtruth[i]):
-                mask = Image.open(os.path.join(
-                    self.path_to_gdtruth, self.list_gdtruth[i]))
+        mask = Image.open(os.path.join(self.path_to_gdtruth, file_name_new))
 
         # usual transformation apply
         if self.transform_images is not None:
@@ -131,7 +125,4 @@ class CustomDatasetPhase2(data.Dataset):
         if self.transform_masks is not None:
             mask = self.transform_masks(mask)
 
-        if self.preserve_name == True:
-            return image, mask, file_join
-        else:
-            return image, mask
+        return [image.squeeze(0), mask, file_name_new]

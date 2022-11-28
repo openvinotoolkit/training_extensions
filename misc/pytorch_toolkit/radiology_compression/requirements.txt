@@ -12,6 +12,6 @@ numpy==1.19.2
 matplotlib==3.5.2
 termcolor==1.1.0
 dahuffman
-gdown
+wget
 tqdm
 pytest

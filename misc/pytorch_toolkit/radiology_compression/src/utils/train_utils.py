@@ -48,8 +48,10 @@ def load_model(alpha=1, beta=1, eff_flag=False, it_no=0, depth=3, width=96, phas
 
 def train_model_phase1(config, train_dataloader, model, optimizer, msecrit, epoch, alpha, beta, it_no):
 
-    for idx, (img256, img128) in enumerate(tq(train_dataloader)):
+    for idx, data_list in enumerate(tq(train_dataloader)):
         # The data fetch loop
+        img256 = data_list[0]
+        img128 = data_list[1]
         if torch.cuda.is_available() and config['gpu']:
             # images, labels = images.cuda(), labels.cuda()
             img256, img128 = img256.cuda(), img128.cuda()
@@ -83,7 +85,9 @@ def train_model_phase1(config, train_dataloader, model, optimizer, msecrit, epoc
 
 def train_model_phase2(config, train_dataloader, model, optimizer, msecrit, epoch, alpha, beta, i):
 
-    for idx, (imageset1, imageset2) in enumerate(train_dataloader):
+    for idx, data_list in enumerate(train_dataloader):
+        imageset1 = data_list[0]
+        imageset2 = data_list[1]
         loss1, loss2 = 0., 0.
         psnr1, psnr2 = 0., 0.
         ssim1, ssim2 = 0., 0.
@@ -151,7 +155,8 @@ def train_model_phase2(config, train_dataloader, model, optimizer, msecrit, epoc
 
 def validate_model_phase1(config, test_dataloader, model, msecrit):
     n, avg_loss, avg_ssim, avg_psnr = 1, 0, 0, 0
-    for idx, (images, _) in enumerate(test_dataloader):
+    for idx, data_list in enumerate(test_dataloader):
+        images = data_list[0]
         if torch.cuda.is_available() and config['gpu']:
             images = images.cuda()
 
@@ -172,7 +177,8 @@ def validate_model_phase1(config, test_dataloader, model, msecrit):
 
 def validate_model_phase2(config, test_dataloader, model, msecrit):
     n, avg_loss, avg_ssim, avg_psnr = 1, 0, 0, 0
-    for idx, (images, _) in enumerate(test_dataloader):
+    for idx, data_list in enumerate(test_dataloader):
+        images = data_list[0]
         if torch.cuda.is_available() and config['gpu']:
             images = images.cuda()
 
