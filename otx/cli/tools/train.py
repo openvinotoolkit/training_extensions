@@ -188,8 +188,10 @@ def main():  # pylint: disable=too-many-branches
     datumaro_adapter = get_dataset_adapter(template.task_type)
     datumaro_dataset = datumaro_adapter.import_dataset(
         train_data_roots=args.train_data_roots,
-        val_data_roots=args.val_data_roots
+        val_data_roots=args.val_data_roots,
+        unlabeled_data_roots=args.unlabeled_data_roots
     )
+
     dataset, label_schema = datumaro_adapter.convert_to_otx_format(datumaro_dataset)
 
     environment = TaskEnvironment(
