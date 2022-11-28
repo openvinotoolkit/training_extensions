@@ -13,7 +13,7 @@ from otx.api.entities.image import Image
 from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.shapes.rectangle import Rectangle
 from datumaro.components.annotation import Bbox as DatumaroBbox
-from otx.api.entities.annotation import (Annotation, AnnotationSceneEntity, AnnotationSceneKind)
+from otx.api.entities.annotation import (Annotation, AnnotationSceneEntity, AnnotationSceneKind, NullAnnotationSceneEntity)
 from otx.utils.logger import get_logger
 
 logger = get_logger()
@@ -52,7 +52,11 @@ class DetectionDatasetAdapter(BaseDatasetAdapter):
                                     ]
                                 )
                             )
-                    annotation_scene = AnnotationSceneEntity(kind=AnnotationSceneKind.ANNOTATION, annotations=shapes)
+                    # Unlabeled dataset
+                    if len(shapes) == 0:
+                        annotation_scene = NullAnnotationSceneEntity()
+                    else:
+                        annotation_scene = AnnotationSceneEntity(kind=AnnotationSceneKind.ANNOTATION, annotations=shapes)
                     dataset_item = DatasetItemEntity(image, annotation_scene, subset=subset)
                     dataset_items.append(dataset_item)
         
