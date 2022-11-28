@@ -401,7 +401,7 @@ optional arguments:
   -i INPUT, --input INPUT
                         Source of input data: images folder, image, webcam and video.
   --load-weights LOAD_WEIGHTS
-                        Load weights to run the evaluation. It could be a trained/optimized model or exported model.
+                        Load weights to run the evaluation. It could be a trained/optimized model (POT only) or exported model.
   --fit-to-size FIT_TO_SIZE FIT_TO_SIZE
                         Width and Height space-separated values. Fits displayed images to window with specified Width and Height. This options applies to result visualisation only.
   --loop                Enable reading the input in a loop.

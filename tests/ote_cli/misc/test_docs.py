@@ -24,28 +24,48 @@ from ote_sdk.test_suite.e2e_test_system import e2e_pytest_component
 class TestDocs:
     @e2e_pytest_component
     def test_help_stdoutputs_of_tools(self):
+        # read and gathering help command example and corresponding output from the doc
         with open("QUICK_START_GUIDE.md", encoding="UTF-8") as read_file:
             commands = []
+            msg_in_doc = []
+            msg_temp = ""
             full_text = ''
+            found_help_cmd = False
+            cmd_idx = 0
             for line in read_file:
                 full_text += line
-                if "ote" in line and "--help" in line:
-                    commands.append(line.strip().split(' '))
+                if "$" in line and "ote" in line and "--help" in line:
+                    commands.append(line.split("$")[-1].strip().split(' '))
+                    found_help_cmd = True
+                elif found_help_cmd:
+                    # grep all messages quoted with "```"
+                    if "```" not in line:
+                        if line == "...\n":
+                            # some msg output is too long to put them all onto the doc.
+                            # those will be marked as "..." to represent its shrinking
+                            continue
+                        msg_temp += msg_temp
+                    else:
+                        # tokenize msg in the doc by replacing whitespace to a single space
+                        # for ease comparison with actual output messages
+                        msg_in_doc.append(" ".join(msg_temp.split()))
+                        msg_temp = ""
+                        cmd_idx += 1
+                        found_help_cmd = False
 
-            MAX_INDENT = 10
+            assert len(commands) == len(msg_in_doc), \
+                f"length of cmds & msg in doc is mismatched. len(cmds) = {len(commands)}, " \
+                f"len(msg_in_doc) = {len(msg_in_doc)}"
 
-            for command in commands:
-                output = run(command, capture_output=True)
-                help_message = output.stdout.decode()
-                found = True
-                if help_message not in full_text:
-                    found = False
-                    for _ in range(MAX_INDENT):
-                        help_message = "\n".join([" " + line for line in help_message.split("\n")])
-                        if help_message in full_text:
-                            found = True
-                            break
-                assert found, f"\nHelp message:\n{output.stdout.decode()}\n was not found in \n{full_text}"
+            # compare actual help message output & one that came from doc
+            for idx in range(len(commands)):
+                output = run(commands[idx], capture_output=True)
+                help_msg = output.stdout.decode()
+                # tokenize by replace all whitespace to a single space
+                help_msg = " ".join(help_msg.split())
+                # asserting with "in" op to deal with shrinked message as well
+                assert msg_in_doc[idx] in help_msg, \
+                    f"help message in doc:\n{msg_in_doc[idx]}\nis not equal with stdout:\n{help_msg}"
 
     @e2e_pytest_component
     def test_algorithms_table(self):
