@@ -29,7 +29,6 @@ from compression.engines.ie_engine import IEEngine
 from compression.graph import load_model, save_model
 from compression.graph.model_utils import compress_model_weights, get_nodes_by_type
 from compression.pipeline.initializer import create_pipeline
-from ote_sdk.entities.subset import Subset
 
 from otx.algorithms.classification.adapters.openvino import model_wrappers
 from otx.algorithms.classification.configs import ClassificationConfig
@@ -52,6 +51,7 @@ from otx.api.entities.model import (
 from otx.api.entities.optimization_parameters import OptimizationParameters
 from otx.api.entities.result_media import ResultMediaEntity
 from otx.api.entities.resultset import ResultSetEntity
+from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.entities.tensor import TensorEntity
 from otx.api.serialization.label_mapper import LabelSchemaMapper, label_schema_to_bytes
