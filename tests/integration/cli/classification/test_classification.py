@@ -40,6 +40,7 @@ from tests.test_suite.e2e_test_system import e2e_pytest_component
 # Pre-train w/ 'intel', 'openvino' classes
 args0 = {
     "--train-data-roots": "data/datumaro/imagenet_dataset",
+    "--val-data-roots": "data/datumaro/imagenet_dataset",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
@@ -52,6 +53,7 @@ args0 = {
 # Pre-train w/ 'intel', 'openvino', 'opencv' classes
 args = {
     "--train-data-roots": "data/datumaro/imagenet_dataset",
+    "--val-data-roots": "data/datumaro/imagenet_dataset",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
