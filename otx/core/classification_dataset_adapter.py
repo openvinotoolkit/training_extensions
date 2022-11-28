@@ -19,7 +19,7 @@ from otx.api.entities.subset import Subset
 from otx.api.entities.shapes.rectangle import Rectangle
 from otx.api.entities.label import Domain, LabelEntity
 from otx.api.entities.label_schema import (LabelGroup, LabelGroupType, LabelSchemaEntity)
-from otx.api.entities.annotation import (Annotation, AnnotationSceneEntity, AnnotationSceneKind)
+from otx.api.entities.annotation import (Annotation, AnnotationSceneEntity, AnnotationSceneKind, NullAnnotationSceneEntity)
 from otx.utils.logger import get_logger
 
 logger = get_logger()
@@ -50,7 +50,11 @@ class ClassificationDatasetAdapter(BaseDatasetAdapter):
                     ]
                     shapes = [Annotation(Rectangle.generate_full_box(), labels)]
                     
-                    annotation_scene = AnnotationSceneEntity(kind=AnnotationSceneKind.ANNOTATION, annotations=shapes)
+                    # Unlabeled dataset
+                    if len(shapes) == 0:
+                        annotation_scene = NullAnnotationSceneEntity()
+                    else:
+                        annotation_scene = AnnotationSceneEntity(kind=AnnotationSceneKind.ANNOTATION, annotations=shapes)
                     dataset_item = DatasetItemEntity(image, annotation_scene, subset=subset)
                     dataset_items.append(dataset_item)
 
