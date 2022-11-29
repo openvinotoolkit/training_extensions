@@ -28,7 +28,7 @@ class ModelContainer:
         model_dir: path to model directory
     """
 
-    def __init__(self, model_dir: Path) -> None:
+    def __init__(self, model_dir: Path, device='CPU') -> None:
         self.parameters = get_parameters(model_dir / "config.json")
         self._labels = LabelSchemaMapper.backward(
             self.parameters["model_parameters"]["labels"]
@@ -40,7 +40,7 @@ class ModelContainer:
         self.model_parameters["labels"] = []
 
         model_adapter = OpenvinoAdapter(
-            create_core(), get_model_path(model_dir / "model.xml")
+            create_core(), get_model_path(model_dir / "model.xml"), device=device
         )
 
         self._initialize_wrapper()

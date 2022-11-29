@@ -70,6 +70,20 @@ def build_argparser():
         default=False,
         action="store_true",
     )
+    args.add_argument(
+        "--no_show",
+        help="Optional. Disables showing inference results on UI.",
+        default=False,
+        action="store_true",
+    )
+    args.add_argument(
+        "-d",
+        "--device",
+        help="Optional. Device to infer the model.",
+        choices=["CPU", "GPU"],
+        default="CPU",
+        type=str
+    )
 
     return parser
 
@@ -102,7 +116,7 @@ def main():
     # create models
     models = []
     for model_dir in args.models:
-        model = ModelContainer(model_dir)
+        model = ModelContainer(model_dir, device=args.device)
         models.append(model)
 
     inferencer = get_inferencer_class(args.inference_type, models)
