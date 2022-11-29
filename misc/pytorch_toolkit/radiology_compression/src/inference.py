@@ -1,7 +1,6 @@
 import argparse
 from utils.inference_utils import inference_model
 
-
 def main(args):
     config = {
         'model_file': args.model_file,

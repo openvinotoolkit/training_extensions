@@ -40,7 +40,6 @@ class Exporter:
     def export_model_onnx(self):
 
         print(f"Saving model to {self.config.get('model_name_onnx')}")
-
         res_path = os.path.join(os.path.split(self.checkpoint)[0], self.config.get('model_name_onnx'))
 
         if self.phase == 2:

@@ -262,3 +262,4 @@ def validate_model(model, config, run_type):
 				break
 
 	return np.mean(all_ssim), np.mean(all_psnr)
+

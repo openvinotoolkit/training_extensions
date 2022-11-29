@@ -9,7 +9,6 @@ from skimage.util import view_as_windows
 PATCH_UP_BOUND = 0.7
 PATCH_LOW_BOUND = 0.3
 
-
 def consider_patch(patch):
     counts, _ = np.histogram(patch * 255., bins=256)
     if counts[0] < sum(counts)/3 and \
@@ -18,7 +17,6 @@ def consider_patch(patch):
         return True
     else:
         return False
-
 
 def main(args):
     # counters for gathering statistics
@@ -91,7 +89,7 @@ def main(args):
             print('Total {} valid patches out of {} patches'.format(valid_patch_count, all_patch_count))
 
 
-if _name_ == '_main_':
+if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser(
 	"""

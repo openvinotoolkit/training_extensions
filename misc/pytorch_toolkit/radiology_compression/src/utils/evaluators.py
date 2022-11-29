@@ -1,4 +1,3 @@
-import torch
 from torchmetrics import StructuralSimilarityIndexMeasure
 from torchmetrics import PeakSignalNoiseRatio
 
@@ -11,7 +10,6 @@ def compare_psnr_batch(original, compressed, **kwargs):
     avg_psnr = psnr(compressed, original)
 
     return avg_psnr
-
 
 def compare_ssim_batch(original, compressed, **kwargs):
     assert original.shape == compressed.shape # 'shapes should be same'

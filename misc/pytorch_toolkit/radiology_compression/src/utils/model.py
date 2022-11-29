@@ -1,14 +1,12 @@
 import torch
 from torch import nn
 
-
 def load_checkpoint(model, checkpoint):
     if checkpoint is not None:
         model_checkpoint = torch.load(checkpoint, map_location=torch.device('cpu'))
         model.load_state_dict(model_checkpoint['model_state'])
     else:
         model.state_dict()
-
 
 class Encoder(nn.Module):
     def __init__(self, n_downconv=3, n_encowidth=64):
@@ -42,7 +40,6 @@ class Encoder(nn.Module):
         # forward pass; a final clamping is applied
         return torch.clamp(self.encoder(x), 0, 1)
 
-
 class Decoder(nn.Module):
     def __init__(self, n_upconv=3, n_decowidth=96):
         super().__init__()
@@ -75,7 +72,6 @@ class Decoder(nn.Module):
     def forward(self, x):
         # forward pass; a final clamping is applied
         return torch.clamp(self.decoder(x), 0, 1)
-
 
 class AutoEncoder(nn.Module):
     def __init__(self, n_updownconv=3, width=64):

@@ -14,7 +14,6 @@ from .model import AutoEncoder, Decoder
 from .evaluators import compare_psnr_batch, compare_ssim_batch
 cudnn.benchmark = True
 
-
 def get_efficient_net_parameters(iterate, phi):
     b = [i/100. for i in range(10, int(phi*100))]
     alpha = random.sample(b, iterate)
@@ -22,7 +21,6 @@ def get_efficient_net_parameters(iterate, phi):
     beta = [np.sqrt(phi/i) for i in np.array(alpha)]
     beta = np.array(beta)
     return alpha, beta
-
 
 def load_model(alpha=1, beta=1, eff_flag=False, it_no=0, depth=3, width=96, phase=1, phi=1):
     if phase == 1:

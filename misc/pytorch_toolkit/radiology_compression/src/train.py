@@ -1,7 +1,6 @@
 import argparse
 from utils.train_utils import train_model
 
-
 def main(args):
     config = {
         'traindata': args.traindata,
@@ -21,7 +20,6 @@ def main(args):
         'phase': args.phase
     }
     train_model(config)
-
 
 if __name__ == '__main__':
 

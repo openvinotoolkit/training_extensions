@@ -4,7 +4,6 @@ from src.utils.downloader import download_checkpoint
 from src.utils.exporter import Exporter
 from src.utils.get_config import get_config
 
-
 def create_export_test_for_phase1():
     class ExportTest(unittest.TestCase):
         @classmethod

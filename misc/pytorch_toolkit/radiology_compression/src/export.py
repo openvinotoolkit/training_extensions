@@ -2,7 +2,6 @@ from utils.exporter import Exporter
 import argparse
 from utils.get_config import get_config
 
-
 def export(args):
     export_config = get_config(action='export', phase=args.phase)
     exporter = Exporter(export_config, args.optimised)

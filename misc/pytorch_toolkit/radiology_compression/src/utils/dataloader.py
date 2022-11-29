@@ -73,7 +73,6 @@ class CustomDatasetPhase1(data.Dataset):
             # returns 0 as image == mask in this case.
             return [image, 0, self.test_files[i]]
 
-
 class CustomDatasetPhase2(data.Dataset):
 
     def __init__(self, path_to_latent, path_to_gdtruth,

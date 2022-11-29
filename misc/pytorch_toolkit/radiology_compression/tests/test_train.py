@@ -27,14 +27,12 @@ def create_train_test_for_phase1():
         def test_config(self):
             self.config = get_config(action='train', phase=1)
             self.assertGreaterEqual(self.config["lr"], 1e-8)
-            self.assertEqual(self.config["class_count"], 3)
             self.assertGreaterEqual(self.config['alpha'], 0)
             self.assertGreaterEqual(self.config['phi'], -1)
             self.assertLessEqual(self.config['alpha'], 2)
             self.assertLessEqual(self.config['phi'], 1)
 
     return TrainerTest
-
 
 def create_train_test_for_phase2():
     class TrainerTestEff(unittest.TestCase):
@@ -57,7 +55,6 @@ def create_train_test_for_phase2():
         def test_config(self):
             self.config = get_config(action='train', phase=2)
             self.assertGreaterEqual(self.config["lr"], 1e-8)
-            self.assertEqual(self.config["class_count"], 3)
             self.assertGreaterEqual(self.config['alpha'], 0)
             self.assertGreaterEqual(self.config['phi'], -1)
             self.assertLessEqual(self.config['alpha'], 2)

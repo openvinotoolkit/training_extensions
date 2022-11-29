@@ -8,7 +8,6 @@ from src.utils.get_config import get_config
 from src.utils.dataloader import CustomDatasetPhase1, CustomDatasetPhase2
 from src.utils.downloader import download_data
 
-
 def create_inference_test_for_phase1():
     class InferenceTest(unittest.TestCase):
         @classmethod
