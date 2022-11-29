@@ -85,11 +85,11 @@ class Tiler:
             dets, keep = multiclass_nms(detections, max_num=self.max_number)
             if self.segm:
                 masks = [masks[keep_idx] for keep_idx in keep]
-                self.resize_mask(masks, dets, image.shape)
+                self.resize_masks(masks, dets, image.shape)
                 detections = *Tiler.detection2tuple(dets), masks
         return detections, features
 
-    def resize_mask(self, masks: List, dets: np.ndarray, shape: List[int]):
+    def resize_masks(self, masks: List, dets: np.ndarray, shape: List[int]):
         """Resize Masks
 
         Args:
