@@ -51,6 +51,7 @@ from ote_sdk.entities.result_media import ResultMediaEntity
 from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.entities.tensor import TensorEntity
+from ote_sdk.entities.label import Domain, LabelEntity
 from ote_sdk.serialization.label_mapper import LabelSchemaMapper, label_schema_to_bytes
 from ote_sdk.usecases.evaluation.metrics_helper import MetricsHelper
 from ote_sdk.usecases.exportable_code.inference import BaseInferencer
@@ -164,7 +165,7 @@ class BaseInferencerWithConverter(BaseInferencer):
         else:
             features = [
                 raw_predictions["feature_vector"].reshape(-1),
-                raw_predictions["saliency_map"],
+                raw_predictions["saliency_map"][0],
             ]
         return predictions, features
 
@@ -455,18 +456,56 @@ class OpenVINODetectionTask(
                     representation_vector, model=self.model
                 )
 
+            add_saliency_map = True
             if add_saliency_map and saliency_map is not None:
-                saliency_map = get_actmap(
-                    saliency_map, (dataset_item.width, dataset_item.height)
-                )
-                saliency_map_media = ResultMediaEntity(
-                    name="Saliency Map",
-                    type="saliency_map",
-                    annotation_scene=dataset_item.annotation_scene,
-                    numpy=saliency_map,
-                    roi=dataset_item.roi,
-                )
-                dataset_item.append_metadata_item(saliency_map_media, model=self.model)
+                if saliency_map.ndim == 2:
+                    # Single saliency map per image, support e.g. EigenCAM use case
+                    actmap = get_actmap(
+                        saliency_map, (dataset_item.width, dataset_item.height)
+                    )
+                    saliency_media = ResultMediaEntity(
+                        name="Saliency Map",
+                        type="saliency_map",
+                        annotation_scene=dataset_item.annotation_scene,
+                        numpy=actmap,
+                        roi=dataset_item.roi
+                    )
+                    dataset_item.append_metadata_item(saliency_media, model=self.model)
+                elif saliency_map.ndim == 3:
+                    # Multiple saliency maps per image (class-wise saliency map)
+                    # TODO: Handle background class for SSD
+                    labels = self.task_environment.get_labels(include_empty=True)
+                    num_saliency_maps = saliency_map.shape[0]
+                    if num_saliency_maps == len(labels) + 1:
+                        # include the background as the last label
+                        labels.append(LabelEntity('backgroung', Domain.DETECTION))
+                    for class_id, class_wise_saliency_map in enumerate(saliency_map):
+                        actmap = get_actmap(
+                            class_wise_saliency_map, (dataset_item.width, dataset_item.height)
+                        )
+                        class_name_str = labels[class_id].name
+                        saliency_media = ResultMediaEntity(
+                            name=class_name_str,
+                            type="saliency_map",
+                            annotation_scene=dataset_item.annotation_scene,
+                            numpy=actmap, roi=dataset_item.roi
+                        )
+                        dataset_item.append_metadata_item(saliency_media, model=self.model)
+                else:
+                    raise RuntimeError(f'Single saliency map has to be 2 or 3-dimensional, '
+                                       f'but got {saliency_map.ndim} dims')
+
+                # saliency_map = get_actmap(
+                #     saliency_map, (dataset_item.width, dataset_item.height)
+                # )
+                # saliency_map_media = ResultMediaEntity(
+                #     name="Saliency Map",
+                #     type="saliency_map",
+                #     annotation_scene=dataset_item.annotation_scene,
+                #     numpy=saliency_map,
+                #     roi=dataset_item.roi,
+                # )
+                # dataset_item.append_metadata_item(saliency_map_media, model=self.model)
         logger.info("OpenVINO inference completed")
         return dataset
 
