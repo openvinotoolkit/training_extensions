@@ -94,30 +94,13 @@ def update_in_channel(model_config, out_channels):
         print(f"\tUpdate model.neck.in_channels: {out_channels}")
         model_config.model.neck.in_channels = out_channels
     elif hasattr(model_config.model, "bbox_head"):
-        print(f"\tUpdate model.bbox_head.in_channels: {out_channels}")
-        model_config.model.bbox_head.in_channels = out_channels
-        if hasattr(model_config.model.bbox_head, "anchor_generator"):
-            strides = get_max_strides(out_channels)
-            model_config.model.bbox_head.anchor_generator.strides = strides
-            print(f"\tUpdate model.bbox_head.anchor_generator.strides: {strides}")
+        raise NotImplementedError("This architecture currently does not support public backbone.")
     elif hasattr(model_config.model, "decode_head"):
         print(f"\tUpdate model.decode_head.in_channels: {out_channels}")
         model_config.model.decode_head.in_channels = out_channels
     elif hasattr(model_config.model, "head"):
         print(f"\tUpdate model.head.in_channels: {out_channels}")
         model_config.model.head.in_channels = out_channels
-
-
-def get_max_strides(in_channels):
-    """Get max strides value from in_channels."""
-    strides = []
-    for channel in in_channels:
-        i = 0
-        while channel % 2 == 0 and i < 5:
-            i += 1
-            channel /= 2
-        strides.append(2**i)
-    return strides
 
 
 class Builder:
