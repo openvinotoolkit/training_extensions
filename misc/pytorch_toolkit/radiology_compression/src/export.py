@@ -12,7 +12,6 @@ def export(args):
     if args.ir:
         exporter.export_model_ir()
 
-
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()

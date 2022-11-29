@@ -16,6 +16,7 @@ from openvino.inference_engine import IECore
 from torch.backends import cudnn
 import json
 cudnn.benchmark = True
+from torchvision import transforms
 
 class Float2Int(nn.Module):
 	def __init__(self, bit_depth=8):
@@ -34,6 +35,47 @@ class Int2Float(nn.Module):
 	def forward(self, x):
 		x = x.type(torch.float32) / (2**self.bit_depth - 1)
 		return x
+
+def to_numpy(tensor):
+    return tensor.detach().cpu().numpy() if tensor.requires_grad else tensor.cpu().numpy()
+
+
+def lossless_compression(latent_int_numpy, config,img_size):
+	# encode latent_int with Huffman coding
+
+	# calculate the source symbol distribution; required for huffman encoding
+	inpt=[]
+	# print(latent_int_numpy.shape)
+	c1, c, h, w = latent_int_numpy.shape
+	flat = latent_int_numpy.flatten()
+	for i in flat:
+		inpt.append(str(i))
+
+	codec = HuffmanCodec.from_data(inpt)
+	encoded = codec.encode(inpt)
+
+	hufbook = codec.get_code_table()
+	book_size = sys.getsizeof(hufbook)
+	code_size = sys.getsizeof(encoded)
+	# print(book_size)
+	cf = img_size/(book_size+code_size)
+	# print("compression factor:",cf)
+	bits_al = []
+	for symbol, (bits, val) in hufbook.items():
+		bits_al.append(bits)
+		bits_al_np = np.array(bits_al)
+		av_bits = np.mean(bits_al_np)
+		decoded = codec.decode(encoded)
+
+		ar_in=[]
+		for i in decoded:
+			ar_in.append(int(i))
+		ar_in = np.array(ar_in)
+		latent = ar_in.reshape([c1,c,h,w])
+		latent_inp = torch.from_numpy(latent) #.cuda()
+	
+	return bits, latent_inp, hufbook
+
 
 def load_inference_model(config, run_type):
 
@@ -80,11 +122,11 @@ def validate_model(model, config, run_type):
 	# GPU transfer - Only pytorch models needs to be transfered.
 	if run_type == 'pytorch':
 		if torch.cuda.is_available() and config['gpu'] == 'True':
-
 			model = model.cuda()
 			float2int, int2float = float2int.cuda(), int2float.cuda()
 	else:
 		pass
+			
 
 	custom_transforms = torchvision.transforms.Compose(
 		[torchvision.transforms.Grayscale(),
@@ -107,13 +149,13 @@ def validate_model(model, config, run_type):
 	with torch.no_grad():
 		# a global counter & accumulation variables
 		n = 0
-		all_bits, all_bpp, all_ssim, all_psnr = [], [], [], []
-		all_cf = []
-		all_bits = []
+		all_ssim, all_psnr = [], []
+
 
 		for data_list in infer_dataloader:
 
 			tensor_1 = data_list[0]
+			print(tensor_1.shape)
 			tensor_2 = data_list[1]
 			file_name = data_list[2]
 			img_size = sys.getsizeof(tensor_1.storage())
@@ -130,60 +172,56 @@ def validate_model(model, config, run_type):
 					latent_int_numpy = latent_int.cpu().numpy()
 
 					if config["with_aac"] == 'True':
-						# encode latent_int with Huffman coding
 
-						# calculate the source symbol distribution; required for huffman encoding
-						inpt=[]
-						# print(latent_int_numpy.shape)
-						c1, c, h, w = latent_int_numpy.shape
-						flat = latent_int_numpy.flatten()
-						for i in flat:
-							inpt.append(str(i))
-
-						codec = HuffmanCodec.from_data(inpt)
-						encoded = codec.encode(inpt)
-
-						hufbook = codec.get_code_table()
-						book_size = sys.getsizeof(hufbook)
-						code_size = sys.getsizeof(encoded)
-						# print(book_size)
-						cf = img_size/(book_size+code_size)
-						# print("compression factor:",cf)
-
-						all_cf.append(cf)
-						bits_al = []
-						for symbol, (bits, val) in hufbook.items():
-							bits_al.append(bits)
-							bits_al_np = np.array(bits_al)
-							av_bits = np.mean(bits_al_np)
-							all_bits.append(av_bits)
-							decoded = codec.decode(encoded)
-
-							ar_in=[]
-							for i in decoded:
-								ar_in.append(int(i))
-							ar_in = np.array(ar_in)
-							latent = ar_in.reshape([c1,c,h,w])
-							latent_inp = torch.from_numpy(latent) #.cuda()
-						else:
-							# if not --with_aac, there is no codebook
-							# in that case, bpp is the bit depth of latent integer tensor
-							bits = config["bit_depth"]
-							hufbook = None
-
+						bits, latent_inp, hufbook = lossless_compression(latent_int_numpy,config,img_size)
 						# the canonical formula for calculating BPP
 						bpp = latent_int_numpy.size * bits / tensor_1_numpy.size
-						all_bits.append(bits)
-						all_bpp.append(bpp)
 
 						latent_float = int2float(latent_inp)  # back to float
 						decompressed = model.decoder(latent_float)  # forward through decoder
 						original, reconstructed = tensor_1, decompressed
+					else:
+						# if not --with_aac, there is no codebook
+						# in that case, bpp is the bit depth of latent integer tensor
+						bits = config["bit_depth"]
+						hufbook = None
 				else:
 					reconstructed = model(tensor_1)
 					original = tensor_2
+
+			elif run_type == 'onnx':
+				original = tensor_1 if config['phase'] == 1 else tensor_2
+				if config['phase'] == 1:
+					resize_tensor = transforms.Resize([1024,1024]) # Size is set since the onnx model accepts fixed size
+					tensor_1_ort = resize_tensor(tensor_1)
+					original = resize_tensor(original)
+				else:
+					tensor_1_ort = tensor_1
+					# print(tensor_1_ort.shape)
+				ort_inputs = {model.get_inputs()[0].name: to_numpy(tensor_1_ort)}
+				reconstructed = model.run(None, ort_inputs)
+				to_tensor = transforms.ToTensor()
+				reconstructed = np.array(reconstructed)
+				reconstructed = np.squeeze(reconstructed,axis=0)
+				reconstructed = to_tensor(np.squeeze(reconstructed,axis=0)).transpose(dim0=1, dim1=0).unsqueeze(0)
+				bits, latent_int, hufbook = None, None, None
+
 			else:
-				reconstructed = model(tensor_1)
+				original = tensor_1 if config['phase'] == 1 else tensor_2
+				if config['phase'] == 1:
+					resize_tensor = transforms.Resize([1024,1024]) # Size is set since the onnx model accepts fixed size
+					tensor_1 = resize_tensor(tensor_1)
+					original = resize_tensor(original)
+				else:
+					tensor_1_ort = tensor_1
+				# resize_tensor = transforms.Resize([1024,1024])
+				to_tensor = transforms.ToTensor()
+				reconstructed = model.infer(inputs={'input': resize_tensor(tensor_1)})['output']
+				reconstructed = np.array(reconstructed)
+				reconstructed = np.squeeze(reconstructed,axis=0)
+				reconstructed = to_tensor(np.squeeze(reconstructed,axis=0)).unsqueeze(0)
+
+				bits, latent_int, hufbook = None, None, None
 
 			ssim = compare_ssim_batch(original, reconstructed)
 			psnr = compare_psnr_batch(original, reconstructed)
@@ -203,7 +241,7 @@ def validate_model(model, config, run_type):
 					'cbis_' + str(config['bit_depth']) + '_' + file_name[0] + '.latent')
 				with open(latent_file_path, 'wb') as latent_file:
 					pickle.dump({
-						'latent_int': latent_int.cpu().numpy(),
+						'latent_int': latent_int,
 						'bits': bits,
 						'codebook': hufbook
 					}, latent_file)

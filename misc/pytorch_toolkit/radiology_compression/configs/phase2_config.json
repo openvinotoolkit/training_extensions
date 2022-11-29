@@ -53,8 +53,8 @@
         "input_shape": [
             1,
             16,
-            3,
-            3
+            160,
+            324
         ],
         "default_image_path": "test_data/phase2/test/latent/",
         "image_path": "test_data/phase2/test/latent/",
@@ -66,8 +66,8 @@
         "input_shape": [
             1,
             16,
-            3,
-            3
+            160,
+            324
         ],
         "model_name_onnx": "final_d_3.onnx",
         "model_name": "final_d_3",
