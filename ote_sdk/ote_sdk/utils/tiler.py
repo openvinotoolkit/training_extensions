@@ -66,7 +66,6 @@ class Tiler:
 
         Args:
             image (np.ndarray): full size image
-            segm (bool, optional): return mask if enabled. Defaults to False.
 
         Returns:
             detection: prediction results
