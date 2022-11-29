@@ -158,6 +158,7 @@ def validate_model(model, config, run_type):
 			print(tensor_1.shape)
 			tensor_2 = data_list[1]
 			file_name = data_list[2]
+			print(file_name)
 			img_size = sys.getsizeof(tensor_1.storage())
 			if torch.cuda.is_available() and config['gpu'] == 'True':
 				tensor_1 = tensor_1.cuda()
@@ -203,7 +204,7 @@ def validate_model(model, config, run_type):
 				to_tensor = transforms.ToTensor()
 				reconstructed = np.array(reconstructed)
 				reconstructed = np.squeeze(reconstructed,axis=0)
-				reconstructed = to_tensor(np.squeeze(reconstructed,axis=0)).transpose(dim0=1, dim1=0).unsqueeze(0)
+				reconstructed = to_tensor(np.squeeze(reconstructed,axis=0)).permute(1,2,0).unsqueeze(0)
 				bits, latent_int, hufbook = None, None, None
 
 			else:
@@ -214,9 +215,9 @@ def validate_model(model, config, run_type):
 					original = resize_tensor(original)
 				else:
 					tensor_1_ort = tensor_1
-				# resize_tensor = transforms.Resize([1024,1024])
+
 				to_tensor = transforms.ToTensor()
-				reconstructed = model.infer(inputs={'input': resize_tensor(tensor_1)})['output']
+				reconstructed = model.infer(inputs={'input': tensor_1})['output']
 				reconstructed = np.array(reconstructed)
 				reconstructed = np.squeeze(reconstructed,axis=0)
 				reconstructed = to_tensor(np.squeeze(reconstructed,axis=0)).unsqueeze(0)

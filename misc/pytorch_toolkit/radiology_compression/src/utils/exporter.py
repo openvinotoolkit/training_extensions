@@ -44,7 +44,7 @@ class Exporter:
         res_path = os.path.join(os.path.split(self.checkpoint)[0], self.config.get('model_name_onnx'))
 
         if self.phase == 2:
-            dummy_input = torch.randn(1, 16, 3, 3)
+            dummy_input = torch.randn(1, 16, 160, 324)
         else:
             dummy_input = torch.randn(1, 1, 1024, 1024)
 
