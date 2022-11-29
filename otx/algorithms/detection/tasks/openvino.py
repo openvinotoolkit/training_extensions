@@ -206,7 +206,7 @@ class OpenVINOMaskInferencer(BaseInferencerWithConverter):
             )
         }
 
-        model = Model.create_model("otx_maskrcnn", model_adapter, configuration, preload=True)
+        model = Model.create_model("OTX_MaskRCNN", model_adapter, configuration, preload=True)
 
         converter = MaskToAnnotationConverter(label_schema)
 
@@ -241,7 +241,7 @@ class OpenVINORotatedRectInferencer(BaseInferencerWithConverter):
             )
         }
 
-        model = Model.create_model("otx_maskrcnn", model_adapter, configuration, preload=True)
+        model = Model.create_model("OTX_MaskRCNN", model_adapter, configuration, preload=True)
 
         converter = RotatedRectToAnnotationConverter(label_schema)
 

@@ -20,7 +20,8 @@ import numpy as np
 
 try:
     from openvino.model_zoo.model_api.models.instance_segmentation import MaskRCNNModel
-    from openvino.model_zoo.model_api.models.ssd import SSD
+    from openvino.model_zoo.model_api.models.ssd import SSD, find_layer_by_name
+    from openvino.model_zoo.model_api.models.utils import Detection
 except ImportError as e:
     import warnings
 
@@ -44,21 +45,22 @@ class OTXMaskRCNNModel(MaskRCNNModel):
 
     def postprocess(self, outputs, meta):
         """Post process function for OTX MaskRCNN model."""
-        boxes = (
-            outputs[self.output_blob_name["boxes"]]
-            if self.is_segmentoly
-            else outputs[self.output_blob_name["boxes"]][:, :4]
-        )
-        scores = (
-            outputs[self.output_blob_name["scores"]]
-            if self.is_segmentoly
-            else outputs[self.output_blob_name["boxes"]][:, 4]
-        )
+        # FIXME: here, batch dim of IR must be 1
+        boxes = outputs[self.output_blob_name["boxes"]]
+        boxes = boxes.squeeze(0)
+        assert boxes.ndim == 2
         masks = outputs[self.output_blob_name["masks"]]
+        masks = masks.squeeze(0)
+        assert masks.ndim == 3
+        classes = outputs[self.output_blob_name["labels"]].astype(np.uint32)
+        classes = classes.squeeze(0)
+        assert classes.ndim == 1
         if self.is_segmentoly:
-            classes = outputs[self.output_blob_name["labels"]].astype(np.uint32)
+            scores = outputs[self.output_blob_name["scores"]]
         else:
-            classes = outputs[self.output_blob_name["labels"]].astype(np.uint32) + 1
+            scores = boxes[:, 4]
+            boxes = boxes[:, :4]
+            classes += 1
 
         # Filter out detections with low confidence.
         detections_filter = scores > self.confidence_threshold  # pylint: disable=no-member
@@ -85,6 +87,14 @@ class OTXSSDModel(SSD):
 
     __model__ = "OTX_SSD"
 
+    def __init__(self, model_adapter, configuration=None, preload=False):
+        super(SSD, self).__init__(model_adapter, configuration, preload)
+        self.image_info_blob_name = self.image_info_blob_names[0] if len(self.image_info_blob_names) == 1 else None
+        self.output_parser = BatchBoxesLabelsParser(
+            self.outputs,
+            self.inputs[self.image_blob_name].shape[2:][::-1]
+        )
+
     def _get_outputs(self) -> Dict:
         """Match the output names with graph node index."""
         output_match_dict = {}
@@ -95,3 +105,46 @@ class OTXSSDModel(SSD):
                     output_match_dict[output_name] = node_name
                     break
         return output_match_dict
+
+
+class BatchBoxesLabelsParser:
+    def __init__(self, layers, input_size, labels_layer='labels', default_label=0):
+        try:
+            self.labels_layer = find_layer_by_name(labels_layer, layers)
+        except ValueError:
+            self.labels_layer = None
+            self.default_label = default_label
+
+        self.bboxes_layer = self.find_layer_bboxes_output(layers)
+        self.input_size = input_size
+
+    @staticmethod
+    def find_layer_bboxes_output(layers):
+        filter_outputs = [name for name, data in layers.items() if len(data.shape) == 3 and data.shape[-1] == 5]
+        if not filter_outputs:
+            raise ValueError('Suitable output with bounding boxes is not found')
+        if len(filter_outputs) > 1:
+            raise ValueError('More than 1 candidate for output with bounding boxes.')
+        return filter_outputs[0]
+
+    def __call__(self, outputs):
+        # FIXME: here, batch dim of IR must be 1
+        bboxes = outputs[self.bboxes_layer]
+        bboxes = bboxes.squeeze(0)
+        assert bboxes.ndim == 2
+        scores = bboxes[:, 4]
+        bboxes = bboxes[:, :4]
+        bboxes[:, 0::2] /= self.input_size[0]
+        bboxes[:, 1::2] /= self.input_size[1]
+        if self.labels_layer:
+            labels = outputs[self.labels_layer]
+        else:
+            labels = np.full(len(bboxes), self.default_label, dtype=bboxes.dtype)
+        labels = labels.squeeze(0)
+
+        detections = [
+            Detection(*bbox, score, label) for label,
+            score,
+            bbox in zip(labels, scores, bboxes)
+        ]
+        return detections
