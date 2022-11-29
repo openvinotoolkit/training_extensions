@@ -1,5 +1,5 @@
-Beginner
-========
+How to use
+==========
 
 .. toctree::
    :maxdepth: 3

@@ -5,8 +5,8 @@ OpenVINO Training Extensions -- OTX
    :maxdepth: 1
 
    get_started/index
-   design/index
    tutorials/index
+   features/index
    reference/index
    release_notes/index
 

@@ -4,7 +4,6 @@ Tutorials
 .. toctree::
    :maxdepth: 2
 
-   installation
-   beginner/index
-   intermediate/index
-   advanced/index
+   how_to_install
+   how_to_use/index
+   how_to_customize/index

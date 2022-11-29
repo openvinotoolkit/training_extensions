@@ -1,6 +1,6 @@
-############
-Installation
-############
+##############
+How to install
+##############
 This section demonstrates how to install `otx`.
 
 .. contents:: Table of Contents

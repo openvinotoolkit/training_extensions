@@ -6,4 +6,4 @@ Reference
 
    api/index
    cli/index
-   algorithms/index
+   algorithm/index
