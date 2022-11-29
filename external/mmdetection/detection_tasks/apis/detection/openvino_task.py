@@ -473,7 +473,6 @@ class OpenVINODetectionTask(
                     dataset_item.append_metadata_item(saliency_media, model=self.model)
                 elif saliency_map.ndim == 3:
                     # Multiple saliency maps per image (class-wise saliency map)
-                    # TODO: Handle background class for SSD
                     labels = self.task_environment.get_labels(include_empty=True)
                     num_saliency_maps = saliency_map.shape[0]
                     if num_saliency_maps == len(labels) + 1:
@@ -494,18 +493,6 @@ class OpenVINODetectionTask(
                 else:
                     raise RuntimeError(f'Single saliency map has to be 2 or 3-dimensional, '
                                        f'but got {saliency_map.ndim} dims')
-
-                # saliency_map = get_actmap(
-                #     saliency_map, (dataset_item.width, dataset_item.height)
-                # )
-                # saliency_map_media = ResultMediaEntity(
-                #     name="Saliency Map",
-                #     type="saliency_map",
-                #     annotation_scene=dataset_item.annotation_scene,
-                #     numpy=saliency_map,
-                #     roi=dataset_item.roi,
-                # )
-                # dataset_item.append_metadata_item(saliency_map_media, model=self.model)
         logger.info("OpenVINO inference completed")
         return dataset
 
