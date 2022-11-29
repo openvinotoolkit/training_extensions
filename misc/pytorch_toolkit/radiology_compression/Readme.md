@@ -151,12 +151,3 @@ Github username:
 <div id="comp_journal">
 <a href="#results">[4]</a>  Irvin, Jeremy, Pranav Rajpurkar, Michael Ko, Yifan Yu, Silviana Ciurea-Ilcus, Chris Chute, Henrik Marklund et al. &quot;Chexpert: A large chest radiograph dataset with uncertainty labels and expert comparison.&quot; In _Proceedings of the AAAI Conference on Artificial Intelligence_, vol. 33, pp. 590-597. 2019. <a href="https://arxiv.org/abs/1901.07031"> (link) </a>
 </div>
-
-</br>
-</br>
-
-<span style="color:red">**Things to do**</span>
-1. Update Test data organisation
-2. Change phase 1 and phase 2 mentioned in code with stages in paper.
-3. Change few variable names
-4. Remove unnecessary configs.
