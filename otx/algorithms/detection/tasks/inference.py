@@ -14,18 +14,20 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+import errno
 import os
 from collections.abc import Mapping
-from typing import Iterable, Optional, Tuple
-from functools import partial
+from typing import Iterable, Optional, Tuple, Union
 
 import cv2
 import numpy as np
 from mmcv.utils import ConfigDict
+from mmcv.utils.config import Config
 from mpa import MPAConstants
 from mpa.utils.config_utils import MPAConfig
 from mpa.utils.logger import get_logger
 
+from otx.algorithms.common.adapters.mmcv.utils import get_configs_by_dict
 from otx.algorithms.common.configs.training_base import TrainType
 from otx.algorithms.common.tasks.training_base import BaseTask
 from otx.algorithms.common.utils.callback import InferenceProgressCallback
@@ -190,15 +192,25 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         output_model.model_format = ModelFormat.OPENVINO
         output_model.optimization_type = ModelOptimizationType.MO
 
+        self._initialize()
         stage_module = "DetectionExporter"
-        results = self._run_task(stage_module, mode="train", precision="FP32", export=True)
-        results = results.get("outputs")
-        logger.debug(f"results of run_task = {results}")
-        if results is None:
-            logger.error("error while exporting model, result is None")
+        results = self._run_task(
+            stage_module,
+            mode="train",
+            precision="FP32",
+            export=True,
+            deploy_cfg=self._init_deploy_cfg(),
+            model=getattr(self, "_model", None)
+        )
+        outputs = results.get("outputs")
+        logger.debug(f"results of run_task = {outputs}")
+        if outputs is None:
+            logger.error(
+                f"error while exporting model, result is None: {results.get('msg')}"
+            )
         else:
-            bin_file = results.get("bin")
-            xml_file = results.get("xml")
+            bin_file = outputs.get("bin")
+            xml_file = outputs.get("xml")
             if xml_file is None or bin_file is None:
                 raise RuntimeError("invalid status of exporting. bin and xml should not be None")
             with open(bin_file, "rb") as f:
@@ -216,6 +228,52 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
                 label_schema_to_bytes(self._task_environment.label_schema),
             )
         logger.info("Exporting completed")
+
+    def _init_deploy_cfg(self) -> Union[Config, None]:
+        base_dir = os.path.abspath(os.path.dirname(self.template_file_path))
+        deploy_cfg_path = os.path.join(base_dir, "deployment.py")
+        deploy_cfg = None
+        if os.path.exists(deploy_cfg_path):
+            deploy_cfg = MPAConfig.fromfile(deploy_cfg_path)
+
+            normalize_cfg = get_configs_by_dict(
+                self._recipe_cfg.data.test.pipeline,
+                dict(type="Normalize")
+            )
+            assert len(normalize_cfg) == 1
+            normalize_cfg = normalize_cfg[0]
+
+            def update_deploy_cfg(deploy_cfg, normalize_cfg):
+
+                options = dict(flags=[], args={})
+                if normalize_cfg.get("to_rgb", False):
+                    options["flags"] += ["--reverse_input_channels"]
+                # value must be a list not a tuple
+                if normalize_cfg.get("mean", None) is not None:
+                    options["args"]["--mean_values"] = list(normalize_cfg.get("mean"))
+                if normalize_cfg.get("std", None) is not None:
+                    options["args"]["--scale_values"] = list(normalize_cfg.get("std"))
+
+                # fill default
+                backend_config = deploy_cfg.backend_config
+                if backend_config.get("mo_options") is None:
+                    backend_config.mo_options = ConfigDict()
+                mo_options = backend_config.mo_options
+                if mo_options.get("args") is None:
+                    mo_options.args = ConfigDict()
+                if mo_options.get("flags") is None:
+                    mo_options.flags = []
+
+                # already defiend options have higher priority
+                options["args"].update(mo_options.args)
+                mo_options.args = ConfigDict(options["args"])
+                # make sure no duplicates
+                mo_options.flags.extend(options["flags"])
+                mo_options.flags = list(set(mo_options.flags))
+
+            update_deploy_cfg(deploy_cfg, normalize_cfg)
+
+        return deploy_cfg
 
     def _init_recipe_hparam(self) -> dict:
         configs = super()._init_recipe_hparam()
