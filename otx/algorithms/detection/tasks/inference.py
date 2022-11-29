@@ -226,11 +226,14 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         if train_type not in (TrainType.SEMISUPERVISED, TrainType.INCREMENTAL):
             raise NotImplementedError(f"Train type {train_type} is not implemented yet.")
         if train_type == TrainType.SEMISUPERVISED:
-            if self._data_cfg.get("data", None) and self._data_cfg.data.get("unlabeled", None):
-                recipe = os.path.join(recipe_root, "semisl.py")
+            if self._is_training:
+                if self._data_cfg.get("data", None) and self._data_cfg.data.get("unlabeled", None):
+                    recipe = os.path.join(recipe_root, "semisl.py")
+                else:
+                    logger.warning("Cannot find unlabeled data.. convert to INCREMENTAL.")
+                    train_type = TrainType.INCREMENTAL
             else:
-                logger.warning("Cannot find unlabeled data.. convert to INCREMENTAL.")
-                train_type = TrainType.INCREMENTAL
+                recipe = os.path.join(recipe_root, "semisl.py")
 
         if train_type == TrainType.INCREMENTAL:
             recipe = os.path.join(recipe_root, "incremental.py")
@@ -238,6 +241,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         logger.info(f"train type = {train_type} - loading {recipe}")
 
         self._recipe_cfg = MPAConfig.fromfile(recipe)
+        self._recipe_cfg.train_type = train_type
         patch_data_pipeline(self._recipe_cfg, self.template_file_path)
         patch_datasets(self._recipe_cfg, self._task_type.domain)  # for OTX compatibility
         patch_evaluation(self._recipe_cfg)  # for OTX compatibility
