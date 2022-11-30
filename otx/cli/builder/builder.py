@@ -33,14 +33,14 @@ DEFAULT_MODEL_TEMPLATE_ID = {
 }
 
 
-# pylint: disable=too-many-locals
+# pylint: disable=too-many-locals, too-many-statements, too-many-branches
 
 
 def get_backbone_out_channels(backbone):
     """Get output channels of backbone using fake data."""
     out_channels = []
     input_size = backbone.input_size if hasattr(backbone, "input_size") else 64
-    fake_data = torch.rand(1, 3, input_size, input_size)
+    fake_data = torch.rand(2, 3, input_size, input_size)
     outputs = backbone(fake_data)
     for out in outputs:
         out_channels.append(out.shape[1])
@@ -52,7 +52,10 @@ def update_backbone_args(backbone_config, registry, skip_missing=False):
     backbone_function = registry.get(backbone_config["type"])
     required_args, missing_args = [], []
     args_signature = inspect.signature(backbone_function)
+    use_out_indices = False
     for arg_key, arg_value in args_signature.parameters.items():
+        if arg_key == "out_indices":
+            use_out_indices = True
         if arg_value.default is inspect.Parameter.empty:
             # TODO: How to get argument type (or hint or format)
             required_args.append(arg_key)
@@ -61,15 +64,19 @@ def update_backbone_args(backbone_config, registry, skip_missing=False):
         backbone_config[arg_key] = arg_value.default
 
     # Get args from parents
-    if len(backbone_function.__bases__):
-        parent_args_signature = inspect.signature(backbone_function.__bases__[0])
+    parent_function = backbone_function.__bases__
+    while len(parent_function):
+        parent_args_signature = inspect.signature(parent_function[0])
         for arg_key, arg_value in parent_args_signature.parameters.items():
+            if arg_key == "out_indices":
+                use_out_indices = True
             if arg_value.default is inspect.Parameter.empty and arg_key not in required_args:
                 required_args.append(arg_key)
                 continue
-            # Update Backbone config to defaults
+            # Update Backbone out_indices to defaults
             if arg_key not in backbone_config and arg_key in ("out_indices"):
                 backbone_config[arg_key] = arg_value.default
+        parent_function = parent_function[0].__bases__
 
     for arg in required_args:
         if arg not in backbone_config and arg not in ("args", "kwargs", "self"):
@@ -86,6 +93,7 @@ def update_backbone_args(backbone_config, registry, skip_missing=False):
             f"[otx build] {backbone_config['type']} requires the argument : {missing_args}"
             f"\n[otx build] Please refer to {inspect.getfile(backbone_function)}"
         )
+    backbone_config["use_out_indices"] = use_out_indices
 
 
 def update_in_channel(model_config, out_channels):
@@ -184,12 +192,12 @@ class Builder:
         print(f"[otx build] Model Config with {backbone_config_path}")
 
         # Get Model config from model config file
-        model_in_indices = None
+        model_in_indices = []
         if os.path.exists(model_config_path):
             model_config = MPAConfig.fromfile(model_config_path)
             print(f"\tTarget Model: {model_config.model.type}")
             if "backbone" in model_config.model:
-                model_in_indices = model_config.model.backbone.get("out_indices", None)
+                model_in_indices = model_config.model.backbone.get("out_indices", [])
         else:
             raise ValueError(f"[otx build] The model is not properly defined or not found: {model_config_path}")
 
@@ -202,21 +210,23 @@ class Builder:
         backbone_pretrained = None
         if "model" in backbone_config:
             backbone_config = backbone_config["model"]
-            backbone_pretrained = backbone_config.get("pretrained", None)
         if "backbone" in backbone_config:
             backbone_config = backbone_config["backbone"]
+        backbone_pretrained = backbone_config.pop("pretrained", None)
 
         # Get Backbone configuration
         backend, _ = Registry.split_scope_key(backbone_config["type"])
         print(f"\tTarget Backbone: {backbone_config['type']}")
         otx_registry, custom_imports = get_backbone_registry(backend)
         update_backbone_args(backbone_config, otx_registry)
-        backbone_out_indices = backbone_config.get("out_indices", None)
-        if backbone_out_indices and model_in_indices and len(backbone_out_indices) != len(model_in_indices):
-            backbone_out_indices = backbone_out_indices[-len(model_in_indices) :]
-        if not backbone_out_indices and model_in_indices:
-            # Check out_indices vs num_stage
-            backbone_config["out_indices"] = model_in_indices
+        if backbone_config["use_out_indices"]:
+            backbone_out_indices = backbone_config.get("out_indices", None)
+            if isinstance(backbone_out_indices, (tuple, list)) and len(backbone_out_indices) != len(model_in_indices):
+                backbone_out_indices = backbone_out_indices[-len(model_in_indices) :]
+            if not backbone_out_indices and model_in_indices:
+                # Check out_indices vs num_stage
+                backbone_config["out_indices"] = model_in_indices
+        backbone_config.pop("use_out_indices", None)
         print(f"\tBackbone config: {backbone_config}")
 
         # Build Backbone
@@ -228,13 +238,15 @@ class Builder:
         model_config.load_from = None
         if backbone_pretrained:
             model_config.model.pretrained = backbone_pretrained
+        else:
+            model_config.model.pretrained = True
         if custom_imports:
             model_config["custom_imports"] = dict(imports=custom_imports, allow_failed_imports=False)
         update_in_channel(model_config, out_channels)
 
         # Dump or create model config file
         if output_path is None:
-            base_dir = os.path.abspath(os.path.dirname(backbone_config_path))
+            base_dir = os.path.abspath(".")
             model_file_name = "model.py"
             output_path = os.path.join(base_dir, model_file_name)
         model_config.dump(output_path)

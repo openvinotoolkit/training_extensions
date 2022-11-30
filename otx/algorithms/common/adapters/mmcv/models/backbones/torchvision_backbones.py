@@ -73,6 +73,39 @@ def generate_torchvision_backbones():
         def closure(model_name, model_builder):
             """Get Model builder for mmcv (copy from mmdet)."""
 
+            def resnet_forward(self, x):
+                """Resnet forward function for wrapping model (copy from torchvision)."""
+                outputs = []
+                y = x
+                stages = [self.layer1, self.layer2, self.layer3, self.layer4]
+                last_stage = max(self.out_indices)
+                y = self.conv1(y)
+                y = self.bn1(y)
+                y = self.relu(y)
+                y = self.maxpool(y)
+                for i, stage in enumerate(stages):
+                    y = stage(y)
+                    if i in self.out_indices:
+                        outputs.append(y)
+                    if i == last_stage:
+                        break
+                return outputs
+
+            def shufflenet_forward(self, x):
+                outputs = []
+                y = x
+                y = self.conv1(y)
+                y = self.maxpool(y)
+                stages = [self.stage2, self.stage3, self.stage4, self.conv5]
+                last_stage = max(self.out_indices)
+                for i, stage in enumerate(stages):
+                    y = stage(y)
+                    if i in self.out_indices:
+                        outputs.append(y)
+                    if i == last_stage:
+                        break
+                return outputs
+
             def multioutput_forward(self, x):
                 """Multioutput forward function for new model (copy from mmdet)."""
                 outputs = []
@@ -119,7 +152,7 @@ def generate_torchvision_backbones():
                 def __init__(
                     self,
                     *args,
-                    out_indices=None,
+                    out_indices=(0, 1, 2, 3),
                     frozen_stages=0,
                     norm_eval=False,
                     verbose=False,
@@ -143,17 +176,24 @@ def generate_torchvision_backbones():
                         TORCHVISION_MODEL_URLS[model_name] if model_name in TORCHVISION_MODEL_URLS else None
                     )
                     model.models_cache_root = models_cache_root
+                    model.init_weights = init_weights.__get__(model)
                     if hasattr(model, "features") and isinstance(model.features, nn.Sequential):
                         # Save original forward, just in case.
                         model.forward_single_output = model.forward
                         model.forward = multioutput_forward.__get__(model)
                         model.train = train.__get__(model)
-                        model.init_weights = init_weights.__get__(model)
 
                         model.output = None
                         for i, _ in enumerate(model.features):
                             if out_indices is not None and i > max(out_indices):
                                 model.features[i] = None
+                    elif model_name.startswith(("resne", "wide_resne")):
+                        # torchvision.resne* -> resnet_forward
+                        model.forward = resnet_forward.__get__(model)
+                        model.fc = None
+                    elif model_name.startswith("shufflenet"):
+                        model.forward = shufflenet_forward.__get__(model)
+                        model.fc = None
                     else:
                         raise ValueError(
                             "Failed to automatically wrap backbone network. "
