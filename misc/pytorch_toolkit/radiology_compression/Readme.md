@@ -50,6 +50,8 @@ Download `.pth` checkpoint for low and high density compression model trained on
 
 Inference models will be made available in the [open_model_zoo](https://github.com/openvinotoolkit/open_model_zoo/tree/master/models/public) as well.
 
+Note: The ONNX and IR representation models accepts inputs of fixed size mentioned in configuration file. This needs to be updated based on the input size.
+
 ## Setup
 
 * Ubuntu 20.04
@@ -108,6 +110,9 @@ radiology_compression/
 Necessary unit tests have been provided in the tests directory. The sample/toy dataset to be used in the tests can also be downloaded from [here](http://kliv.iitkgp.ac.in/projects/miriad/sample_data/bmi34/phase1/phase1.zip) and [here](http://kliv.iitkgp.ac.in/projects/miriad/sample_data/bmi34/phase2/phase2.zip).
 
 ## Acknowledgement
+
+The model and architecture was first published in Circuits, Systems, and Signal Processing, Springer., 2022 by Springer Nature.
+
 This work is undertaken as part of Intel India Grand Challenge 2016 Project MIRIAD: Many Incarnations of Screening of Radiology for High Throughput Disease Screening via Multiple Instance Reinforcement Learning with Adversarial Deep Neural Networks, sponsored by Intel Technology India Pvt. Ltd., Bangalore, India.
 
 **Principal Investigators**
@@ -134,20 +139,16 @@ Github username: Rakshith2597
 <a href=""> Aditya Raj</a>,</br>
 Department of Electrical Engineering,</br>
 Indian Institute of Technology Kharagpur</br>
-Github username:
 
 <a href=""> Subhadip Roy</a>,</br>
-Add department here,</br>
-Add Institute here</br>
-Github username:
+Department of Computer Science and Engineering,</br>
+Institute of Engineering and Management, Kolkata</br>
+Github username: Subhadip11290157
 
 
 ## References
 
-<div id="efficientnet">
-<a href="#abs">[3]</a>  Tan, Mingxing, and Quoc V. Le. &quot;EfficientNet: Rethinking model scaling for convolutional neural networks.&quot; , ICML, pp. 6105-6114. 2019. <a href="http://proceedings.mlr.press/v97/tan19a/tan19a.pdf"> (link) </a>
 
-</div>
 <div id="comp_journal">
-<a href="#results">[4]</a>  Irvin, Jeremy, Pranav Rajpurkar, Michael Ko, Yifan Yu, Silviana Ciurea-Ilcus, Chris Chute, Henrik Marklund et al. &quot;Chexpert: A large chest radiograph dataset with uncertainty labels and expert comparison.&quot; In _Proceedings of the AAAI Conference on Artificial Intelligence_, vol. 33, pp. 590-597. 2019. <a href="https://arxiv.org/abs/1901.07031"> (link) </a>
+<a href="#results">[1]</a>  Raj, Aditya and Sathish, Rakshith and Sarkar, Tandra and Sethuraman, Ramanathan and Sheet, Debdoot; Designing Deep Neural High-Density Compression Engines for Radiology Images; In Circuits, Systems, and Signal Processing, Springer., 2022. <a href="https://link.springer.com/article/10.1007/s00034-022-02222-0"> (link) </a>
 </div>
