@@ -71,12 +71,6 @@ def build_argparser():
         action="store_true",
     )
     args.add_argument(
-        "--no_show",
-        help="Optional. Disables showing inference results on UI.",
-        default=False,
-        action="store_true",
-    )
-    args.add_argument(
         "-d",
         "--device",
         help="Optional. Device to infer the model.",
