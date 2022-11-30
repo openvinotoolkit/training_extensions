@@ -476,8 +476,8 @@ class OpenVINODetectionTask(
                     labels = self.task_environment.get_labels(include_empty=True)
                     num_saliency_maps = saliency_map.shape[0]
                     if num_saliency_maps == len(labels) + 1:
-                        # include the background as the last label
-                        labels.append(LabelEntity('backgroung', Domain.DETECTION))
+                        # Include the background as the last label
+                        labels.append(LabelEntity('background', Domain.DETECTION))
                     for class_id, class_wise_saliency_map in enumerate(saliency_map):
                         actmap = get_actmap(
                             class_wise_saliency_map, (dataset_item.width, dataset_item.height)
