@@ -148,7 +148,7 @@ class OTXOpenVinoDataLoader(DataLoader):
     @check_input_parameters_type()
     def __getitem__(self, index: int):
         """Get item from dataset."""
-        image = self.dataset[index].numpy
+        image = self.dataset[index]
         annotation = self.dataset[index].annotation_scene
         inputs, metadata = self.inferencer.pre_process(image)
         return (index, annotation), inputs, metadata

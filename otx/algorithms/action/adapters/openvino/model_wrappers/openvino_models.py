@@ -93,11 +93,30 @@ class OTXActionCls(Model):
             frames.append(resized_frame)
         np_frames = np.expand_dims(frames, axis=(0, 1))  # [1, 1, T, H, W, C]
         np_frames = np_frames.transpose(0, 1, -1, 2, 3, 4)  # [1, 1, C, T, H, W]
-        np_frames = np_frames[:, :, :, :8, :, :]  #  TODO: implement sampling method
+        frame_inds = self.get_frame_inds(np_frames)
+        np_frames = np_frames[:, :, :, frame_inds, :, :]
         dict_inputs = {self.image_blob_name: np_frames}
         meta = {"original_shape": np_frames.shape}
         meta.update({"resized_shape": resized_frame.shape})
         return dict_inputs, meta
+
+    def get_frame_inds(self, np_frames: np.ndarray):
+        """Get sampled index for given np_frames."""
+        # FIXME These parameters should be initialized dynamically
+        # pylint: disable=attribute-defined-outside-init
+        self.clip_len = 8
+        self.interval = 4
+        # Why np_frames' shape is (1, 1, 3, 49, 224, 224)?
+        frame_len = np_frames.shape[3]
+        ori_clip_len = self.clip_len * self.interval
+        if frame_len > ori_clip_len - 1:
+            start = (frame_len - ori_clip_len + 1) / 2
+        else:
+            start = 0
+        frame_inds = np.arange(self.clip_len) * self.interval + int(start) + 1
+        frame_inds = np.clip(frame_inds, 0, frame_len - 1)
+        frame_inds = frame_inds.astype(np.int)
+        return frame_inds
 
     @check_input_parameters_type()
     def postprocess(self, outputs: Dict[str, np.ndarray], meta: Dict[str, Any]):  # pylint: disable=unused-argument
