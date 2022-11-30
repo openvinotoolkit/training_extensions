@@ -258,7 +258,7 @@ class ActionClsOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
     ):  # pylint: disable=too-many-locals
         """Optimize function of ClassificationOpenVINOTask."""
 
-        raise NotImplementedError
+        # raise NotImplementedError
         if optimization_type is not OptimizationType.POT:
             raise ValueError("POT is the only supported optimization type for OpenVino models")
 

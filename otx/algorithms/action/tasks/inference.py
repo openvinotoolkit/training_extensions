@@ -29,7 +29,11 @@ from mmcv.parallel import MMDataParallel
 from mmcv.runner import load_checkpoint, load_state_dict
 from mmcv.utils import Config
 
-from otx.algorithms.action.adapters.mmaction import patch_config, set_data_classes, export_model
+from otx.algorithms.action.adapters.mmaction import (
+    export_model,
+    patch_config,
+    set_data_classes,
+)
 from otx.algorithms.action.configs.base import ActionClsConfig
 from otx.algorithms.common.adapters.mmcv.utils import prepare_for_testing
 from otx.algorithms.common.tasks.training_base import BaseTask
@@ -300,27 +304,32 @@ class ActionClsInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         output_model.model_format = ModelFormat.OPENVINO
         output_model.optimization_type = ModelOptimizationType.MO
         self._init_task()
-        
+
         try:
             from torch.jit._trace import TracerWarning
-            warnings.filterwarnings('ignore', category=TracerWarning)
-            export_model(self._model,
-                         self._recipe_cfg,
-                         onnx_model_path=f"{self._output_path}/openvino.onnx",
-                         output_dir_path=f"{self._output_path}")
-            bin_file = [f for f in os.listdir(self._output_path) if f.endswith('.bin')][0]
-            xml_file = [f for f in os.listdir(self._output_path) if f.endswith('.xml')][0]
+
+            warnings.filterwarnings("ignore", category=TracerWarning)
+            export_model(
+                self._model,
+                self._recipe_cfg,
+                onnx_model_path=f"{self._output_path}/openvino.onnx",
+                output_dir_path=f"{self._output_path}",
+            )
+            bin_file = [f for f in os.listdir(self._output_path) if f.endswith(".bin")][0]
+            xml_file = [f for f in os.listdir(self._output_path) if f.endswith(".xml")][0]
             with open(os.path.join(self._output_path, bin_file), "rb") as f:
-                output_model.set_data('openvino.bin', f.read())
+                output_model.set_data("openvino.bin", f.read())
             with open(os.path.join(self._output_path, xml_file), "rb") as f:
-                output_model.set_data('openvino.xml', f.read())
-            output_model.set_data('confidence_threshold', np.array([self.confidence_threshold], dtype=np.float32).tobytes())
+                output_model.set_data("openvino.xml", f.read())
+            output_model.set_data(
+                "confidence_threshold", np.array([self.confidence_threshold], dtype=np.float32).tobytes()
+            )
             output_model.precision = self._precision
             output_model.optimization_methods = self._optimization_methods
         except Exception as ex:
-            raise RuntimeError('Optimization was unsuccessful.') from ex
+            raise RuntimeError("Optimization was unsuccessful.") from ex
         output_model.set_data("label_schema.json", label_schema_to_bytes(self._task_environment.label_schema))
-        logger.info('Exporting completed')
+        logger.info("Exporting completed")
 
     def _init_recipe_hparam(self) -> dict:
         configs = super()._init_recipe_hparam()

@@ -16,13 +16,15 @@
 
 # pylint: disable=invalid-name
 
-from typing import Any, Dict
 import glob
+from typing import Any, Dict
+
 import cv2
 import numpy as np
 
-from otx.api.utils.argument_checks import check_input_parameters_type
 from otx.api.entities.datasets import DatasetItemEntity
+from otx.api.utils.argument_checks import check_input_parameters_type
+
 try:
     from openvino.model_zoo.model_api.models.model import Model
     from openvino.model_zoo.model_api.models.utils import RESIZE_TYPES, InputTransform
@@ -38,21 +40,21 @@ class OTXActionCls(Model):
     __model__ = "otx_action_classification"
 
     def __init__(self, model_adapter, configuration=None, preload=False):
-        '''Image model constructor
+        """Image model constructor
 
         Calls the `Model` constructor first
 
         Args:
             model_adapter(ModelAdapter): allows working with the specified executor
             resize_type(str): sets the type for image resizing (see ``RESIZE_TYPE`` for info)
-        '''
+        """
         super().__init__(model_adapter, configuration, preload)
         self.image_blob_names, self.image_info_blob_names = self._get_inputs()
         self.image_blob_name = self.image_blob_names[0]
         self.out_layer_name = self._get_outputs()
 
         _, self.n, self.c, self.t, self.h, self.w = self.inputs[self.image_blob_name].shape
-        self.resize = RESIZE_TYPES['standard']
+        self.resize = RESIZE_TYPES["standard"]
         self.input_transform = InputTransform(False, None, None)
 
     @classmethod
@@ -84,14 +86,14 @@ class OTXActionCls(Model):
     def preprocess(self, inputs: DatasetItemEntity):
         """Pre-process."""
         frames = []
-        rawframes = glob.glob(inputs.media['frame_dir']+'/*')  # TODO: allow only .jpg, .png exts
+        rawframes = glob.glob(inputs.media["frame_dir"] + "/*")  # TODO: allow only .jpg, .png exts
         for rawframe in rawframes:
             frame = cv2.imread(rawframe)
             resized_frame = self.resize(frame, (self.w, self.h))
             resized_frame = cv2.cvtColor(resized_frame, cv2.COLOR_RGB2BGR)
             resized_frame = self.input_transform(resized_frame)
             frames.append(resized_frame)
-        frames = np.expand_dims(frames, axis=(0,1))  # [1, 1, T, H, W, C]
+        frames = np.expand_dims(frames, axis=(0, 1))  # [1, 1, T, H, W, C]
         frames = frames.transpose(0, 1, -1, 2, 3, 4)  # [1, 1, C, T, H, W]
         frames = frames[:, :, :, :8, :, :]  #  TODO: implement sampling method
         dict_inputs = {self.image_blob_name: frames}
@@ -105,12 +107,14 @@ class OTXActionCls(Model):
         logits = outputs[self.out_layer_name].squeeze()
         return get_multiclass_predictions(logits)
 
+
 @check_input_parameters_type()
 def softmax_numpy(x: np.ndarray):
     """Softmax numpy."""
     x = np.exp(x)
     x /= np.sum(x)
     return x
+
 
 @check_input_parameters_type()
 def get_multiclass_predictions(logits: np.ndarray, activate: bool = True):

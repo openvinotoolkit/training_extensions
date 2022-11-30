@@ -21,8 +21,8 @@ from typing import Any, Dict, Iterable, Union
 import cv2
 import numpy as np
 
-from otx.api.utils.argument_checks import check_input_parameters_type
 from otx.api.entities.datasets import DatasetItemEntity
+from otx.api.utils.argument_checks import check_input_parameters_type
 
 try:
     from openvino.model_zoo.model_api.models.classification import Classification
