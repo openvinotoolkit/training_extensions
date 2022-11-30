@@ -21,7 +21,6 @@ from typing import Any, Dict, Iterable, Union
 import cv2
 import numpy as np
 
-from otx.api.entities.datasets import DatasetItemEntity
 from otx.api.utils.argument_checks import check_input_parameters_type
 
 try:
@@ -83,7 +82,7 @@ class OTXClassification(Classification):
         return layer_name
 
     @check_input_parameters_type()
-    def preprocess(self, inputs: DatasetItemEntity):
+    def preprocess(self, inputs: np.ndarray):
         """Pre-process."""
         meta = {"original_shape": inputs.shape}
         resized_image = self.resize(inputs, (self.w, self.h))

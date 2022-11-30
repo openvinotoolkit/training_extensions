@@ -32,7 +32,6 @@ from compression.pipeline.initializer import create_pipeline
 
 from otx.algorithms.classification.adapters.openvino import model_wrappers
 from otx.algorithms.classification.configs import ClassificationConfig
-from otx.algorithms.classification.utils import get_multihead_class_info
 from otx.api.entities.annotation import AnnotationSceneEntity
 from otx.api.entities.datasets import DatasetEntity, DatasetItemEntity
 from otx.api.entities.inference_parameters import (
@@ -40,7 +39,6 @@ from otx.api.entities.inference_parameters import (
     default_progress_callback,
 )
 from otx.api.entities.label_schema import LabelSchemaEntity
-from otx.api.entities.metadata import FloatMetadata, FloatType
 from otx.api.entities.model import (
     ModelEntity,
     ModelFormat,
@@ -49,10 +47,8 @@ from otx.api.entities.model import (
     OptimizationMethod,
 )
 from otx.api.entities.optimization_parameters import OptimizationParameters
-from otx.api.entities.result_media import ResultMediaEntity
 from otx.api.entities.resultset import ResultSetEntity
 from otx.api.entities.task_environment import TaskEnvironment
-from otx.api.entities.tensor import TensorEntity
 from otx.api.serialization.label_mapper import LabelSchemaMapper, label_schema_to_bytes
 from otx.api.usecases.evaluation.metrics_helper import MetricsHelper
 from otx.api.usecases.exportable_code import demo
@@ -109,7 +105,7 @@ class ActionClsOpenVINOInferencer(BaseInferencer):
         model_adapter = OpenvinoAdapter(
             create_core(), model_file, weight_file, device=device, max_num_requests=num_requests
         )
-        self.configuration = dict()
+        self.configuration: Dict[Any, Any] = {}
         self.model = Model.create_model("otx_action_classification", model_adapter, self.configuration, preload=True)
         self.converter = ClassificationToAnnotationConverter(self.label_schema)
 
@@ -128,8 +124,8 @@ class ActionClsOpenVINOInferencer(BaseInferencer):
     @check_input_parameters_type()
     def predict(self, image: DatasetItemEntity) -> Tuple[AnnotationSceneEntity, np.ndarray, np.ndarray, Any]:
         """Predict function of OpenVINO Action Classification Inferencer."""
-        image, metadata = self.pre_process(image)
-        raw_predictions = self.forward(image)
+        data, metadata = self.pre_process(image)
+        raw_predictions = self.forward(data)
         predictions = self.post_process(raw_predictions, metadata)
         return predictions
 
@@ -258,7 +254,6 @@ class ActionClsOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
     ):  # pylint: disable=too-many-locals
         """Optimize function of ClassificationOpenVINOTask."""
 
-        # raise NotImplementedError
         if optimization_type is not OptimizationType.POT:
             raise ValueError("POT is the only supported optimization type for OpenVino models")
 

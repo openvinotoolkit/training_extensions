@@ -34,19 +34,16 @@ except ImportError as e:
     warnings.warn("ModelAPI was not found.")
 
 
+# pylint: disable=too-many-instance-attributes
 class OTXActionCls(Model):
     """OTX classification class for openvino."""
 
     __model__ = "otx_action_classification"
 
     def __init__(self, model_adapter, configuration=None, preload=False):
-        """Image model constructor
+        """Image model constructor.
 
         Calls the `Model` constructor first
-
-        Args:
-            model_adapter(ModelAdapter): allows working with the specified executor
-            resize_type(str): sets the type for image resizing (see ``RESIZE_TYPE`` for info)
         """
         super().__init__(model_adapter, configuration, preload)
         self.image_blob_names, self.image_info_blob_names = self._get_inputs()
@@ -86,18 +83,19 @@ class OTXActionCls(Model):
     def preprocess(self, inputs: DatasetItemEntity):
         """Pre-process."""
         frames = []
-        rawframes = glob.glob(inputs.media["frame_dir"] + "/*")  # TODO: allow only .jpg, .png exts
+        # TODO: allow only .jpg, .png exts
+        rawframes = glob.glob(inputs.media["frame_dir"] + "/*")  # type: ignore[index]
         for rawframe in rawframes:
             frame = cv2.imread(rawframe)
             resized_frame = self.resize(frame, (self.w, self.h))
             resized_frame = cv2.cvtColor(resized_frame, cv2.COLOR_RGB2BGR)
             resized_frame = self.input_transform(resized_frame)
             frames.append(resized_frame)
-        frames = np.expand_dims(frames, axis=(0, 1))  # [1, 1, T, H, W, C]
-        frames = frames.transpose(0, 1, -1, 2, 3, 4)  # [1, 1, C, T, H, W]
-        frames = frames[:, :, :, :8, :, :]  #  TODO: implement sampling method
-        dict_inputs = {self.image_blob_name: frames}
-        meta = {"original_shape": frames.shape}
+        np_frames = np.expand_dims(frames, axis=(0, 1))  # [1, 1, T, H, W, C]
+        np_frames = np_frames.transpose(0, 1, -1, 2, 3, 4)  # [1, 1, C, T, H, W]
+        np_frames = np_frames[:, :, :, :8, :, :]  #  TODO: implement sampling method
+        dict_inputs = {self.image_blob_name: np_frames}
+        meta = {"original_shape": np_frames.shape}
         meta.update({"resized_shape": resized_frame.shape})
         return dict_inputs, meta
 

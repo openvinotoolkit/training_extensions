@@ -40,12 +40,7 @@ from otx.algorithms.common.tasks.training_base import BaseTask
 from otx.algorithms.common.utils.callback import InferenceProgressCallback
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.inference_parameters import InferenceParameters
-from otx.api.entities.model import (
-    ModelEntity,
-    ModelFormat,
-    ModelOptimizationType,
-    ModelPrecision,
-)
+from otx.api.entities.model import ModelEntity, ModelFormat, ModelOptimizationType
 from otx.api.entities.result_media import ResultMediaEntity
 from otx.api.entities.resultset import ResultSetEntity
 from otx.api.entities.scored_label import ScoredLabel

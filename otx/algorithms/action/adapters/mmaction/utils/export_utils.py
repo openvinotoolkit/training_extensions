@@ -1,3 +1,4 @@
+"""Utils for Action recognition OpenVINO export task."""
 # Copyright (c) OpenMMLab. All rights reserved.
 from subprocess import DEVNULL, CalledProcessError, run  # nosec
 
@@ -10,12 +11,12 @@ try:
 
     rt.set_default_logger_severity(3)
 except ImportError as e:
-    raise ImportError(f"Please install onnx and onnxruntime first. {e}")
+    raise ImportError(f"Please install onnx and onnxruntime first. {e}") from e
 
 try:
     from mmcv.onnx.symbolic import register_extra_symbolics
-except ModuleNotFoundError:
-    raise NotImplementedError("please update mmcv to version>=1.0.4")
+except ModuleNotFoundError as e:
+    raise NotImplementedError("please update mmcv to version>=1.0.4") from e
 
 
 def _convert_batchnorm(module):
@@ -40,9 +41,10 @@ def _convert_batchnorm(module):
     return module_output
 
 
+# pylint: disable=too-many-arguments, too-many-locals, protected-access, no-member
 def pytorch2onnx(
     model,
-    input_shape=[1, 1, 3, 8, 224, 224],
+    input_shape,
     opset_version=11,
     show=False,
     output_file="tmp.onnx",
@@ -51,6 +53,7 @@ def pytorch2onnx(
     is_localizer=False,
 ):
     """Convert pytorch model to onnx model.
+
     Args:
         model (:obj:`nn.Module`): The pytorch model to be exported.
         input_shape (tuple[int]): The input tensor shape of the model.
@@ -60,6 +63,8 @@ def pytorch2onnx(
         output_file (str): Output onnx model name. Default: 'tmp.onnx'.
         verify (bool): Determines whether to verify the onnx model.
             Default: False.
+        softmax (bool): Determines whether to use softmax function.
+        is_localizer(bool): Determines this model is localizer or not
     """
     model = _convert_batchnorm(model)
 
@@ -125,6 +130,7 @@ def _get_mo_cmd():
     raise RuntimeError("OpenVINO Model Optimizer is not found or configured improperly")
 
 
+# pylint: disable=no-member
 def onnx2openvino(
     cfg,
     onnx_model_path,
@@ -134,6 +140,7 @@ def onnx2openvino(
     precision="FP32",
     pruning_transformation=False,
 ):
+    """Convert ONNX model into OpenVINO model."""
     cfg.model.pretrained = None
     cfg.data.test.test_mode = True
 
@@ -165,7 +172,7 @@ def onnx2openvino(
         f"--output_dir={output_dir_path}",
         f"--output={output_names}",
         f"--data_type={precision}",
-        f"--source_layout=??c???",
+        "--source_layout=??c???",
     ]
 
     assert input_format.lower() in ["bgr", "rgb"]
@@ -183,5 +190,6 @@ def onnx2openvino(
 
 
 def export_model(model, config, onnx_model_path=None, output_dir_path=None):
-    pytorch2onnx(model, output_file=onnx_model_path)
+    """Export PyTorch model into OpenVINO model."""
+    pytorch2onnx(model, input_shape=[1, 1, 3, 8, 224, 224], output_file=onnx_model_path)
     onnx2openvino(config, onnx_model_path, output_dir_path)
