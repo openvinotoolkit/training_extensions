@@ -16,6 +16,7 @@
 
 
 import importlib
+import inspect
 
 # pylint: disable=protected-access
 
@@ -76,3 +77,26 @@ def get_backbone_registry(backends=None):
             otx_registry._add_children(mm_registry)
             custom_imports.append(f"{backend}.models")
     return otx_registry, custom_imports
+
+
+def get_required_args(module):
+    """Gather backbone's Required Args."""
+    required_args = []
+    args_signature = inspect.signature(module)
+    for arg_key, arg_value in args_signature.parameters.items():
+        if arg_value.default is inspect.Parameter.empty:
+            required_args.append(arg_key)
+            continue
+    # Get args from parents
+    parent_module = module.__bases__
+    while len(parent_module):
+        parent_args_signature = inspect.signature(parent_module[0])
+        for arg_key, arg_value in parent_args_signature.parameters.items():
+            if arg_key == "depth" and "arch" in required_args:
+                continue
+            if arg_value.default is inspect.Parameter.empty and arg_key not in required_args:
+                required_args.append(arg_key)
+                continue
+        parent_module = parent_module[0].__bases__
+    required_args = [arg for arg in required_args if arg not in ("args", "kwargs", "self")]
+    return required_args

@@ -20,7 +20,9 @@ import os
 from prettytable import PrettyTable
 
 from otx.cli.registry import Registry
+from otx.cli.utils.importing import get_backbone_registry, get_required_args
 
+# pylint: disable=too-many-locals
 
 def parse_args():
     """Parses command line arguments."""
@@ -59,13 +61,20 @@ def main():
         print(template_table)
 
     if args.backbone:
-        backbone_registry_lst = otx_registry.find_backbones(args.backbone)
+        backbone_registry = {}
+        all_backbone_lst = otx_registry.get_backbones(args.backbone)
+        for backend in args.backbone:
+            registry, _ = get_backbone_registry(backend)
+            backbone_registry[backend] = registry
         row_index = 0
-        backbone_table = PrettyTable(["index", "Backbone Type"])
-        for backend, backbone_lst in backbone_registry_lst.items():
+        backbone_table = PrettyTable(["Index", "Backbone Type", "Required Args"])
+        for backend, backbone_lst in all_backbone_lst.items():
             for backbone in backbone_lst:
                 scope_name = "mmdet" if backend == "pytorchcv" else backend
-                backbone_table.add_row([row_index + 1, f"{scope_name}.{backbone}"])
+                backbone_type = f"{scope_name}.{backbone}"
+                required_arg = get_required_args(backbone_registry[backend].get(backbone_type))
+                required_arg = ", ".join(required_arg) if required_arg else ""
+                backbone_table.add_row([row_index + 1, backbone_type, required_arg])
                 row_index += 1
         print(backbone_table)
 

@@ -76,8 +76,7 @@ class Registry:
             raise ValueError(f"Could not find a template with {template_id} in registry.")
         return templates[0]
 
-    # TODO[HARIMKAN]: MPA
-    def find_backbones(self, backend_filter):
+    def get_backbones(self, backend_filter):
         """Returns list of backbones for a given template."""
         backbone_lst = {}
         for backend in backend_filter:

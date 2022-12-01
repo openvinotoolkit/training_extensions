@@ -29,6 +29,7 @@ from otx.cli.utils.importing import get_backbone_registry
 DEFAULT_MODEL_TEMPLATE_ID = {
     "classification": "Custom_Image_Classification_EfficinetNet-B0",
     "detection": "Custom_Object_Detection_Gen3_ATSS",
+    "instance_segmentation": "Custom_Counting_Instance_Segmentation_MaskRCNN_ResNet50",
     "segmentation": "Custom_Semantic_Segmentation_Lite-HRNet-18-mod2_OCR",
 }
 
@@ -50,6 +51,7 @@ def get_backbone_out_channels(backbone):
 def update_backbone_args(backbone_config, registry, skip_missing=False):
     """Update Backbone required arguments."""
     backbone_function = registry.get(backbone_config["type"])
+    required_option = {}
     required_args, missing_args = [], []
     args_signature = inspect.signature(backbone_function)
     use_out_indices = False
@@ -59,6 +61,8 @@ def update_backbone_args(backbone_config, registry, skip_missing=False):
         if arg_value.default is inspect.Parameter.empty:
             # TODO: How to get argument type (or hint or format)
             required_args.append(arg_key)
+            if hasattr(backbone_function, "arch_settings"):
+                required_option[arg_key] = ", ".join(list(backbone_function.arch_settings.keys()))
             continue
         # Update Backbone config to defaults
         backbone_config[arg_key] = arg_value.default
@@ -70,6 +74,8 @@ def update_backbone_args(backbone_config, registry, skip_missing=False):
         for arg_key, arg_value in parent_args_signature.parameters.items():
             if arg_key == "out_indices":
                 use_out_indices = True
+            if arg_key == "depth" and "arch" in required_args:
+                continue
             if arg_value.default is inspect.Parameter.empty and arg_key not in required_args:
                 required_args.append(arg_key)
                 continue
@@ -88,7 +94,10 @@ def update_backbone_args(backbone_config, registry, skip_missing=False):
         )
     if len(missing_args) > 0 and skip_missing:
         for arg in missing_args:
-            backbone_config[arg] = "!!!!!!!!!!!INPUT_HERE!!!!!!!!!!!"
+            if arg in required_option:
+                backbone_config[arg] = f"!!!SELECT_OPTION: {required_option[arg]}"
+            else:
+                backbone_config[arg] = "!!!!!!!!!!!INPUT_HERE!!!!!!!!!!!"
         print(
             f"[otx build] {backbone_config['type']} requires the argument : {missing_args}"
             f"\n[otx build] Please refer to {inspect.getfile(backbone_function)}"
@@ -113,9 +122,6 @@ def update_in_channel(model_config, out_channels):
 
 class Builder:
     """Class that implements a model templates registry."""
-
-    def __init__(self):
-        pass
 
     def build_task_config(self, task_type, model_type=None, workspace_path=None):
         """Build OTX workspace with Template configs from task type."""

@@ -25,7 +25,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", help="Input OTX model config file (e.g model.py).", default=None)
     parser.add_argument("--backbone", help="Input backbone config file (e.g backbone.yaml).")
-    parser.add_argument("--task_type", help="Input task type (e.g detection).")
+    parser.add_argument("--task", help="Input task type (e.g detection).")
     parser.add_argument("--save-to", default="./backbone.yaml")
 
     return parser.parse_args()
@@ -37,8 +37,8 @@ def main():
     args = parse_args()
 
     builder = Builder()
-    if args.task_type:
-        builder.build_task_config(args.task_type, args.model)
+    if args.task:
+        builder.build_task_config(args.task, args.model)
     if args.model and args.backbone:
         builder.build_model_config(args.model, args.backbone)
     elif args.backbone:
