@@ -53,6 +53,7 @@ def main():
     """Entry point for OTX CLI.
 
     This function is a single entry point for all OTX CLI related operations:
+      - build
       - demo
       - deploy
       - eval

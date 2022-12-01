@@ -16,6 +16,9 @@
 
 import argparse
 import json
+import os
+
+import yaml
 
 from otx.api.configuration.helper import create
 from otx.api.entities.inference_parameters import InferenceParameters
@@ -33,29 +36,38 @@ from otx.cli.utils.parser import (
     gen_params_dict_from_args,
 )
 
+# pylint: disable=too-many-locals
+
 
 def parse_args():
     """Parses command line arguments."""
 
     pre_parser = argparse.ArgumentParser(add_help=False)
-    pre_parser.add_argument("template")
-    parsed, _ = pre_parser.parse_known_args()
+    if os.path.exists("./template.yaml"):
+        template_path = "./template.yaml"
+    else:
+        pre_parser.add_argument("template")
+        parsed, _ = pre_parser.parse_known_args()
+        template_path = parsed.template
     # Load template.yaml file.
-    template = find_and_parse_model_template(parsed.template)
+    template = find_and_parse_model_template(template_path)
     # Get hyper parameters schema.
     hyper_parameters = template.hyper_parameters.data
     assert hyper_parameters
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("template")
+    if not os.path.exists("./template.yaml"):
+        parser.add_argument("template")
+    parser.add_argument("--data", required=False, default="./data.yaml")
+    required = not os.path.exists("./data.yaml")
     parser.add_argument(
         "--test-ann-files",
-        required=True,
+        required=required,
         help="Comma-separated paths to test annotation files.",
     )
     parser.add_argument(
         "--test-data-roots",
-        required=True,
+        required=required,
         help="Comma-separated paths to test data folders.",
     )
     parser.add_argument(
@@ -111,7 +123,18 @@ def main():
 
     dataset_class = get_dataset_class(template.task_type)
 
-    dataset = dataset_class(test_subset={"ann_file": args.test_ann_files, "data_root": args.test_data_roots})
+    test_ann_files, test_data_roots = args.test_ann_files, args.test_data_roots
+    if os.path.exists(args.data):
+        with open(args.data, "r", encoding="UTF-8") as stream:
+            data_config = yaml.safe_load(stream)
+        stream.close()
+
+        test_ann_files, test_data_roots = (
+            data_config["data"]["test"]["ann-files"],
+            data_config["data"]["test"]["data-roots"],
+        )
+
+    dataset = dataset_class(test_subset={"ann_file": test_ann_files, "data_root": test_data_roots})
 
     dataset_label_schema = generate_label_schema(dataset, template.task_type)
     check_label_schemas(read_label_schema(args.load_weights), dataset_label_schema)
@@ -142,12 +165,13 @@ def main():
     assert resultset.performance is not None
     print(resultset.performance)
 
-    if args.save_performance:
-        with open(args.save_performance, "w", encoding="UTF-8") as write_file:
-            json.dump(
-                {resultset.performance.score.name: resultset.performance.score.value},
-                write_file,
-            )
+    if not args.save_performance:
+        args.save_performance = os.path.join(os.path.dirname(args.load_weights), "performance.json")
+    with open(args.save_performance, "w", encoding="UTF-8") as write_file:
+        json.dump(
+            {resultset.performance.score.name: resultset.performance.score.value},
+            write_file,
+        )
 
 
 if __name__ == "__main__":

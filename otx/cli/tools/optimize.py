@@ -16,6 +16,9 @@
 
 import argparse
 import json
+import os
+
+import yaml
 
 from otx.api.configuration.helper import create
 from otx.api.entities.inference_parameters import InferenceParameters
@@ -35,6 +38,8 @@ from otx.cli.utils.parser import (
     gen_params_dict_from_args,
 )
 
+# pylint: disable=too-many-locals
+
 
 def parse_args():
     """Parses command line arguments.
@@ -43,34 +48,42 @@ def parse_args():
     """
 
     pre_parser = argparse.ArgumentParser(add_help=False)
-    pre_parser.add_argument("template")
-    parsed, _ = pre_parser.parse_known_args()
+    if os.path.exists("./template.yaml"):
+        template_path = "./template.yaml"
+    else:
+        pre_parser.add_argument("template")
+        parsed, _ = pre_parser.parse_known_args()
+        template_path = parsed.template
     # Load template.yaml file.
-    template = find_and_parse_model_template(parsed.template)
+    template = find_and_parse_model_template(template_path)
     # Get hyper parameters schema.
     hyper_parameters = template.hyper_parameters.data
     assert hyper_parameters
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("template")
+    if not os.path.exists("./template.yaml"):
+        parser.add_argument("template")
+    parser.add_argument("--data", required=False, default="./data.yaml")
+    required = not os.path.exists("./data.yaml")
+
     parser.add_argument(
         "--train-ann-files",
-        required=True,
+        required=required,
         help="Comma-separated paths to training annotation files.",
     )
     parser.add_argument(
         "--train-data-roots",
-        required=True,
+        required=required,
         help="Comma-separated paths to training data folders.",
     )
     parser.add_argument(
         "--val-ann-files",
-        required=True,
+        required=required,
         help="Comma-separated paths to validation annotation files.",
     )
     parser.add_argument(
         "--val-data-roots",
-        required=True,
+        required=required,
         help="Comma-separated paths to validation data folders.",
     )
     parser.add_argument(
@@ -118,12 +131,28 @@ def main():
     dataset_class = get_dataset_class(template.task_type)
 
     # Create instances of Task, ConfigurableParameters and Dataset.
+    train_ann_files, train_data_roots = args.train_ann_files, args.train_data_roots
+    val_ann_files, val_data_roots = args.val_ann_files, args.val_data_roots
+    if os.path.exists(args.data):
+        with open(args.data, "r", encoding="UTF-8") as stream:
+            data_config = yaml.safe_load(stream)
+        stream.close()
+
+        train_ann_files, train_data_roots = (
+            data_config["data"]["train"]["ann-files"],
+            data_config["data"]["train"]["data-roots"],
+        )
+        val_ann_files, val_data_roots = (
+            data_config["data"]["val"]["ann-files"],
+            data_config["data"]["val"]["data-roots"],
+        )
+
     dataset = dataset_class(
         train_subset={
-            "ann_file": args.train_ann_files,
-            "data_root": args.train_data_roots,
+            "ann_file": train_ann_files,
+            "data_root": train_data_roots,
         },
-        val_subset={"ann_file": args.val_ann_files, "data_root": args.val_data_roots},
+        val_subset={"ann_file": val_ann_files, "data_root": val_data_roots},
     )
 
     environment = TaskEnvironment(

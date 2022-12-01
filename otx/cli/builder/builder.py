@@ -165,6 +165,11 @@ class Builder:
         data_config = {"data": {subset: data_subset_format.copy() for subset in ("train", "val", "test")}}
         data_config["data"]["unlabeled"] = {"file-list": None, "data-roots": None}
         mmcv.dump(data_config, os.path.join(workspace_path, "data.yaml"))
+        if os.path.exists(os.path.join(template_dir, "compression_config.json")):
+            shutil.copyfile(
+                os.path.join(template_dir, "compression_config.json"),
+                os.path.join(workspace_path, "compression_config.json"),
+            )
 
         print(f"[otx build] Create OTX workspace: {workspace_path}")
         print(f"\tTask Type: {template.task_type}")

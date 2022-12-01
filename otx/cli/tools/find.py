@@ -24,12 +24,13 @@ from otx.cli.utils.importing import get_backbone_registry, get_required_args
 
 # pylint: disable=too-many-locals
 
+
 def parse_args():
     """Parses command line arguments."""
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--root", help="A root dir where templates should be searched.", default="otx")
-    parser.add_argument("--task_type")
+    parser.add_argument("--task")
     parser.add_argument("--template", action="store_true")
     parser.add_argument("--backbone", action="append")
     parser.add_argument("--save-to", help="")
@@ -43,8 +44,8 @@ def main():
     args = parse_args()
 
     otx_registry = Registry(args.root)
-    if args.task_type:
-        otx_registry = otx_registry.filter(task_type=args.task_type)
+    if args.task:
+        otx_registry = otx_registry.filter(task_type=args.task)
 
     if args.template:
         template_table = PrettyTable(["TASK", "ID", "NAME", "PATH"])
@@ -52,7 +53,7 @@ def main():
             relpath = os.path.relpath(template.model_template_path, os.path.abspath("."))
             template_table.add_row(
                 [
-                    template.task_type,
+                    template.task,
                     template.model_template_id,
                     template.name,
                     relpath,

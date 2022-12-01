@@ -16,7 +16,6 @@
 
 import argparse
 import os
-import os.path as osp
 import shutil
 
 import yaml
@@ -203,7 +202,7 @@ def main():
         model_adapters = {
             "weights.pth": ModelAdapter(read_binary(args.load_weights)),
         }
-        if osp.exists(osp.join(osp.dirname(args.load_weights), "label_schema.json")):
+        if os.path.exists(os.path.join(os.path.dirname(args.load_weights), "label_schema.json")):
             model_adapters.update(
                 {"label_schema.json": ModelAdapter(label_schema_to_bytes(read_label_schema(args.load_weights)))}
             )
