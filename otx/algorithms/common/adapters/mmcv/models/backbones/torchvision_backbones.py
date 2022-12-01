@@ -25,7 +25,7 @@ from torchvision.models.utils import load_state_dict_from_url
 
 from ..builder import TORCHVISION_BACKBONES
 
-# pylint: disable=protected-access, assignment-from-no-return, no-value-for-parameter
+# pylint: disable=protected-access, assignment-from-no-return, no-value-for-parameter, too-many-statements
 
 
 def get_torchvision_models():
@@ -66,85 +66,105 @@ def replace_norm(model, cfg):
     return model
 
 
+def resnet_forward(self, x):
+    """Resnet forward function for wrapping model (refer to torchvision)."""
+    outputs = []
+    y = x
+    stages = [self.layer1, self.layer2, self.layer3, self.layer4]
+    last_stage = max(self.out_indices)
+    y = self.conv1(y)
+    y = self.bn1(y)
+    y = self.relu(y)
+    y = self.maxpool(y)
+    for i, stage in enumerate(stages):
+        y = stage(y)
+        if i in self.out_indices:
+            outputs.append(y)
+        if i == last_stage:
+            break
+    return outputs
+
+
+def shufflenet_forward(self, x):
+    """Shufflenet forward function for wrapping model (refer to torchvision)."""
+    outputs = []
+    y = x
+    y = self.conv1(y)
+    y = self.maxpool(y)
+    stages = [self.stage2, self.stage3, self.stage4, self.conv5]
+    last_stage = max(self.out_indices)
+    for i, stage in enumerate(stages):
+        y = stage(y)
+        if i in self.out_indices:
+            outputs.append(y)
+        if i == last_stage:
+            break
+    return outputs
+
+
+def multioutput_forward(self, x):
+    """Multioutput forward function for new model (copy from mmdet)."""
+    outputs = []
+    y = x
+
+    last_stage = max(self.out_indices)
+    if hasattr(self, "features"):
+        stages = self.features
+    elif hasattr(self, "layers"):
+        stages = self.layers
+    else:
+        raise ValueError(f"Not supported multioutput forward: {self}")
+
+    for i, stage in enumerate(stages):
+        y = stage(y)
+        temp_s = str(i) + " " + str(y.shape)
+        if i in self.out_indices:
+            outputs.append(y)
+            temp_s += "*"
+        if self.verbose:
+            print(temp_s)
+        if i == last_stage:
+            break
+    return outputs
+
+
+def train(self, mode=True):
+    """Train forward function for new model (copy from mmdet)."""
+    super(self.__class__, self).train(mode)
+
+    if hasattr(self, "features"):
+        stages = self.features
+    elif hasattr(self, "layers"):
+        stages = self.layers
+    else:
+        raise ValueError(f"Not supported multioutput forward: {self}")
+
+    for i in range(self.frozen_stages + 1):
+        temp_m = stages[i]
+        temp_m.eval()
+        for param in temp_m.parameters():
+            param.requires_grad = False
+
+    if mode and self.norm_eval:
+        for mmodule in self.modules():
+            # trick: eval have effect on BatchNorm only
+            if isinstance(mmodule, _BatchNorm):
+                mmodule.eval()
+
+
+def init_weights(self, pretrained=True):
+    """Init weights function for new model (copy from mmdet)."""
+    if pretrained and self.model_urls:
+        state_dict = load_state_dict_from_url(self.model_urls)
+        self.load_state_dict(state_dict)
+
+
 def generate_torchvision_backbones():
     """Regist Torchvision Backbone into mmX Registry (copy from mmdet)."""
     for model_name, model_builder in TORCHVISION_MODELS.items():
 
         def closure(model_name, model_builder):
             """Get Model builder for mmcv (copy from mmdet)."""
-
-            def resnet_forward(self, x):
-                """Resnet forward function for wrapping model (copy from torchvision)."""
-                outputs = []
-                y = x
-                stages = [self.layer1, self.layer2, self.layer3, self.layer4]
-                last_stage = max(self.out_indices)
-                y = self.conv1(y)
-                y = self.bn1(y)
-                y = self.relu(y)
-                y = self.maxpool(y)
-                for i, stage in enumerate(stages):
-                    y = stage(y)
-                    if i in self.out_indices:
-                        outputs.append(y)
-                    if i == last_stage:
-                        break
-                return outputs
-
-            def shufflenet_forward(self, x):
-                outputs = []
-                y = x
-                y = self.conv1(y)
-                y = self.maxpool(y)
-                stages = [self.stage2, self.stage3, self.stage4, self.conv5]
-                last_stage = max(self.out_indices)
-                for i, stage in enumerate(stages):
-                    y = stage(y)
-                    if i in self.out_indices:
-                        outputs.append(y)
-                    if i == last_stage:
-                        break
-                return outputs
-
-            def multioutput_forward(self, x):
-                """Multioutput forward function for new model (copy from mmdet)."""
-                outputs = []
-                y = x
-
-                last_stage = max(self.out_indices)
-                for i, stage in enumerate(self.features):
-                    y = stage(y)
-                    temp_s = str(i) + " " + str(y.shape)
-                    if i in self.out_indices:
-                        outputs.append(y)
-                        temp_s += "*"
-                    if self.verbose:
-                        print(temp_s)
-                    if i == last_stage:
-                        break
-                return outputs
-
-            def train(self, mode=True):
-                """Train forward function for new model (copy from mmdet)."""
-                super(self.__class__, self).train(mode)
-
-                for i in range(self.frozen_stages + 1):
-                    temp_m = self.features[i]
-                    temp_m.eval()
-                    for param in temp_m.parameters():
-                        param.requires_grad = False
-
-                if mode and self.norm_eval:
-                    for mmodule in self.modules():
-                        # trick: eval have effect on BatchNorm only
-                        if isinstance(mmodule, _BatchNorm):
-                            mmodule.eval()
-
-            def init_weights(self, pretrained=True):
-                """Init weights function for new model (copy from mmdet)."""
-                if pretrained and self.model_urls:
-                    state_dict = load_state_dict_from_url(self.model_urls)
-                    self.load_state_dict(state_dict)
 
             class TorchvisionModelWrapper(nn.Module):  # pylint: disable=abstract-method
                 """Torchvision Model to MMX.model Wrapper (copy from mmdet)."""
@@ -187,6 +207,16 @@ def generate_torchvision_backbones():
                         for i, _ in enumerate(model.features):
                             if out_indices is not None and i > max(out_indices):
                                 model.features[i] = None
+                    elif hasattr(model, "layers") and isinstance(model.layers, nn.Sequential):
+                        # Save original forward, just in case.
+                        model.forward_single_output = model.forward
+                        model.forward = multioutput_forward.__get__(model)
+                        model.train = train.__get__(model)
+
+                        model.classifier = None
+                        for i, _ in enumerate(model.layers):
+                            if out_indices is not None and i > max(out_indices):
+                                model.layers[i] = None
                     elif model_name.startswith(("resne", "wide_resne")):
                         # torchvision.resne* -> resnet_forward
                         model.forward = resnet_forward.__get__(model)

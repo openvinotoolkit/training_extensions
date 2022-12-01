@@ -181,6 +181,8 @@ class Builder:
         if output_path.endswith((".yml", ".yaml", ".json")):
             mmcv.dump({"backbone": backbone_config}, output_path)
             print(f"[otx build] Save backbone configuration: {output_path}")
+        else:
+            raise ValueError("The backbone config support file format is as follows: (.yml, .yaml, .json)")
 
     def build_model_config(self, model_config_path, backbone_config_path, output_path=None):
         """Build model & update backbone configs.
