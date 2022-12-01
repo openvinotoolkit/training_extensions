@@ -283,7 +283,7 @@ class ClassificationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvalua
                         )
                         class_name_str = self._labels[class_id].name
                         saliency_map_media = ResultMediaEntity(
-                            name=f"Saliency Map: {class_name_str}",
+                            name=class_name_str,
                             type="saliency_map",
                             annotation_scene=dataset_item.annotation_scene,
                             numpy=class_wise_saliency_map,

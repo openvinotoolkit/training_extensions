@@ -8,7 +8,7 @@ import torch
 from mmcls.models import build_classifier
 from mmdet.models import build_detector
 
-from mpa.modules.hooks.auxiliary_hooks import ReciproCAMHook, SaliencyMapHookDet
+from mpa.modules.hooks.auxiliary_hooks import ReciproCAMHook, DetSaliencyMapHook
 from mpa.det.stage import DetectionStage
 
 
@@ -111,7 +111,7 @@ class TestExplainMethods:
         img = torch.rand(2, 3, 224, 224) - 0.5
         data = {"img_metas": [{}], "img": [img]}
 
-        with SaliencyMapHookDet(model) as det_hook:
+        with DetSaliencyMapHook(model) as det_hook:
             _ = model(return_loss=False, rescale=True, **data)
         saliency_maps = det_hook.records
 
