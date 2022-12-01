@@ -241,7 +241,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         logger.info(f"train type = {train_type} - loading {recipe}")
 
         self._recipe_cfg = MPAConfig.fromfile(recipe)
-        self._recipe_cfg.train_type = train_type
+        self._recipe_cfg.train_type = train_type.name
         patch_data_pipeline(self._recipe_cfg, self.template_file_path)
         patch_datasets(self._recipe_cfg, self._task_type.domain)  # for OTX compatibility
         patch_evaluation(self._recipe_cfg)  # for OTX compatibility
@@ -270,6 +270,15 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
             )
         )
         return data_cfg
+
+    def _update_stage_module(self, stage_module):
+        if hasattr(self._recipe_cfg, "train_type"):
+            if self._recipe_cfg.train_type == "SEMISUPERVISED":
+                if stage_module == "DetectionTrainer":
+                    stage_module = "SemiSLDetectionTrainer"
+                elif stage_module == "DetectionInferrer":
+                    stage_module = "SemiSLDetectionInferrer"
+        return stage_module
 
     def _add_predictions_to_dataset(self, prediction_results, dataset, confidence_threshold=0.0):
         """Loop over dataset again to assign predictions. Convert from MMDetection format to OTX format."""

@@ -101,6 +101,7 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         # FIXME: Temporary remedy for CVS-88098
         export = kwargs.get("export", False)
         self._initialize(export=export)
+        stage_module = self._update_stage_module(stage_module)
         # update model config -> model label schema
         data_classes = [label.name for label in self._labels]
         model_classes = [label.name for label in self._model_label_schema]
@@ -278,6 +279,9 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
             ),
             runner=ConfigDict(max_epochs=int(params.num_iters)),
         )
+
+    def _update_stage_module(self, stage_module: str):
+        return stage_module
 
     def _load_model_state_dict(self, model: Optional[ModelEntity]):
         if model and "weights.pth" in model.model_adapters:

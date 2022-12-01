@@ -269,10 +269,7 @@ def patch_data_pipeline(config: Config, template_file_path: str):
     """Update data_pipeline configs."""
     base_dir = os.path.abspath(os.path.dirname(template_file_path))
     # FIXME Loading data pipeline is hard-coded, it should be loaded from recipe of algorithm
-    if hasattr(config, "data") and hasattr(config.data, "unlabeled"):
-        data_pipeline_path = os.path.join(base_dir, "data_pipeline_semisl.py")
-    else:
-        data_pipeline_path = os.path.join(base_dir, "data_pipeline.py")
+    data_pipeline_path = os.path.join(base_dir, "data_pipeline.py")
     if os.path.exists(data_pipeline_path):
         data_pipeline_cfg = Config.fromfile(data_pipeline_path)
         config.merge_from_dict(data_pipeline_cfg)
