@@ -20,10 +20,10 @@ from typing import Iterable, Optional, Tuple
 import cv2
 import numpy as np
 from mmcv.utils import ConfigDict
-
 from mpa import MPAConstants
 from mpa.utils.config_utils import MPAConfig
 from mpa.utils.logger import get_logger
+
 from otx.algorithms.common.configs.training_base import TrainType
 from otx.algorithms.common.tasks.training_base import BaseTask
 from otx.algorithms.common.utils.callback import InferenceProgressCallback

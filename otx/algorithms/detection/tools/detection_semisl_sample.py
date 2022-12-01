@@ -98,12 +98,11 @@ def load_test_dataset():
                 ),
                 subset=subset,
             )
-        else:
-            return DatasetItemEntity(
-                media=Image(data=image),
-                annotation_scene=NullAnnotationSceneEntity(),
-                subset=subset,
-            )
+        return DatasetItemEntity(
+            media=Image(data=image),
+            annotation_scene=NullAnnotationSceneEntity(),
+            subset=subset,
+        )
 
     train = [get_image(Subset.TRAINING, 0) for i in range(10)]
     train += [get_image(Subset.TRAINING, 1) for i in range(10)]
@@ -114,7 +113,7 @@ def load_test_dataset():
     unlabeled = [get_image(Subset.UNLABELED, 0) for i in range(100)]
     unlabeled += [get_image(Subset.UNLABELED, 1) for i in range(100)]
 
-    return DatasetEntity(train+val+unlabeled), labels
+    return DatasetEntity(train + val + unlabeled), labels
 
 
 # pylint: disable=too-many-locals, too-many-statements

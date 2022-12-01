@@ -246,7 +246,7 @@ class DetectionNNCFTask(DetectionInferenceTask, IOptimizationTask):
         """
         model_cfg = copy.deepcopy(config.model)
 
-        super_type = model_cfg.pop('super_type', None)
+        super_type = model_cfg.pop("super_type", None)
         if super_type:
             model_cfg.arch_type = model_cfg.type
             model_cfg.type = super_type
