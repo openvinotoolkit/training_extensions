@@ -1,11 +1,9 @@
-from sched import scheduler
 import torch
 import torchvision
 import os
 from torch.utils import data
 from torch.backends import cudnn
 import numpy as np
-from termcolor import colored
 import json
 import random
 from tqdm import tqdm as tq
@@ -46,12 +44,11 @@ def load_model(alpha=1, beta=1, eff_flag=False, it_no=0, depth=3, width=96, phas
 
 def train_model_phase1(config, train_dataloader, model, optimizer, msecrit, epoch, alpha, beta, it_no):
 
-    for idx, data_list in enumerate(tq(train_dataloader)):
+    for _, data_list in enumerate(tq(train_dataloader)):
         # The data fetch loop
         img256 = data_list[0]
         img128 = data_list[1]
         if torch.cuda.is_available() and config['gpu']:
-            # images, labels = images.cuda(), labels.cuda()
             img256, img128 = img256.cuda(), img128.cuda()
 
         optimizer.zero_grad()  # zero out grads
@@ -61,21 +58,6 @@ def train_model_phase1(config, train_dataloader, model, optimizer, msecrit, epoc
         loss1 = msecrit(output256, img256)
         loss2 = msecrit(output128, img128)
         total_loss = loss1 + loss2
-        total_loss_r = total_loss.item()
-
-        # compute the required metrics
-        ssim256 = compare_ssim_batch(
-            img256.detach().cpu().numpy(), output256.detach().cpu().numpy())
-        psnr256 = compare_psnr_batch(
-            img256.detach().cpu().numpy(), output256.detach().cpu().numpy())
-        psnr256 = 20.0 * np.log10(psnr256)
-
-        ssim128 = compare_ssim_batch(
-            img128.detach().cpu().numpy(), output128.detach().cpu().numpy())
-        psnr128 = compare_psnr_batch(
-            img128.detach().cpu().numpy(), output128.detach().cpu().numpy())
-        psnr128 = 20.0 * np.log10(psnr128)
-
         total_loss.backward()  # backward
         optimizer.step()  # weight update
     # schedular.step()
@@ -128,32 +110,16 @@ def train_model_phase2(config, train_dataloader, model, optimizer, msecrit, epoc
         loss = (loss1/(len(imageset1[0])) + loss2/(len(imageset2[0])))/2
         ssim = (ssim1/(len(imageset1[0])) + ssim2/(len(imageset2[0])))/2
         psnr = (psnr1/(len(imageset1[0])) + psnr2/(len(imageset2[0])))/2
-        psnr = 20.0 * np.log10(psnr)
 
-        if config['efficient_net']:
-            if idx % config['interval'] == 0:
-                print('{tag} {0:4d}/{1:4d}/{2:4d} -> Loss: {3:.8f}, \
-                pSNR: {4:.8f}dB, SSIM: {5:.8f}, alpha: {6: .8f}, \
-                beta: {7: .8f}'.format(idx, epoch, config['epochs'],
-                                       loss.item(
-                ), psnr, ssim, alpha[i], beta[i],
-                    tag=colored('[Training]', 'yellow')))
-        else:
-            if idx % config['interval'] == 0:
-                print('{tag} {0:4d}/{1:4d}/{2:4d} -> Loss: {3:.8f}, \
-                pSNR: {4:.8f}dB, SSIM: {5:.8f}'.format(idx, epoch,
-                                                       config['epochs'], loss.item(
-                                                       ), psnr, ssim,
-                                                       tag=colored('[Training]', 'yellow')))
+        if idx % config['interval'] == 0:
+            print(f'idx: {idx} | Epoch: {epoch} | Loss: {loss.item} | pSNR: {psnr} | SSIM: {ssim}')
 
         loss.backward()  # backward
         optimizer.step()  # weight update
-    # schedular.step()
-
 
 def validate_model_phase1(config, test_dataloader, model, msecrit):
     n, avg_loss, avg_ssim, avg_psnr = 1, 0, 0, 0
-    for idx, data_list in enumerate(test_dataloader):
+    for _, data_list in enumerate(test_dataloader):
         images = data_list[0]
         if torch.cuda.is_available() and config['gpu']:
             images = images.cuda()
@@ -175,7 +141,7 @@ def validate_model_phase1(config, test_dataloader, model, msecrit):
 
 def validate_model_phase2(config, test_dataloader, model, msecrit):
     n, avg_loss, avg_ssim, avg_psnr = 1, 0, 0, 0
-    for idx, data_list in enumerate(test_dataloader):
+    for _, data_list in enumerate(test_dataloader):
         images = data_list[0]
         if torch.cuda.is_available() and config['gpu']:
             images = images.cuda()
@@ -288,8 +254,7 @@ def train_model(config):
                 schedular.load_state_dict(loaded_file['schedular_state'])
                 start_epoch = loaded_file['epoch'] + 1
 
-                print('{tag} resuming from saved model'.format(
-                    tag=colored('[Saving]', 'red')))
+                print(f'Resuming from saved model')
                 del loaded_file
 
         # For logging purpose; read anch chk for val decr : val in 2nd row < 1st row
@@ -320,24 +285,18 @@ def train_model(config):
                                    optimizer, msecrit, epoch,
                                    alpha, beta, i)
 
-            # TRAINING DONE
             model.eval()  # switch to evaluation mode
 
-            n = 0
             with torch.no_grad():
-                # Testing phase starts
                 if config['phase'] == 1:
                     validate_model_phase1(
                         config, test_dataloader, model, msecrit)
                 else:
-                    validate_model_phase2(
-                        config, test_dataloader, model, msecrit)  # later
-                    pass
+                    validate_model_phase2(config, test_dataloader, model, msecrit)
 
-            avg_psnr = 20.0 * np.log10(avg_psnr)  # convert pSNR to dB
 
-            print('{tag} Epoch: {0:3d}, Loss: {3:.8f}, pSNR: {1:.8f}, SSIM: {2:.8f}'.format(
-                epoch, avg_psnr, avg_ssim, avg_loss, tag=colored('[Testing]', 'cyan')))
+            print(f'Epoch: {epoch}, Loss: {avg_loss}, pSNR: {avg_psnr}, SSIM: {avg_ssim}')
+
             if config['efficient_net']:
                 aa = alpha[i]
                 bb = beta[i]
@@ -353,7 +312,7 @@ def train_model(config):
                     'lr': optimizer.param_groups[0]['lr'],
                     'Alpha': aa,
                     'Beta': bb
-                })  # accumulate information for the .log file
+                })
 
             # name of the log file
             with open(log_file, 'w') as logfile:
@@ -361,8 +320,7 @@ def train_model(config):
 
             # model saving, only if the SSIM is better than before
             if avg_ssim > prev_test_ssim:
-                print(
-                    colored('[Saving] model saved to {}'.format(model_file), 'red'))
+                print(f'[Saving] model saved to {model_file}')
                 torch.save({
                     'epoch': epoch,
                     'model_state': model.state_dict(),
@@ -371,6 +329,6 @@ def train_model(config):
                 }, os.path.abspath(model_file))
                 prev_test_ssim = avg_ssim
             else:
-                print(colored('[Saving] model NOT saved'))
+                print(f'[Saving] model NOT saved')
 
     return avg_loss, avg_ssim, avg_psnr

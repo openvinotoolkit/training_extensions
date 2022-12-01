@@ -24,20 +24,20 @@ def main(args):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser("""
-	The inference script works on a folder level. 
-	Provide this script a folder (--inferdata) with full-scale mammograms which can be created with the dataprep.py script.
-	It also requires a model (--model_file) file to work on which is to be produced by train.py script.
-	All the full-scale mammograms will be processed on by one to collect bpp, ssim and psnr information which will be averaged to produce the numbers to be plotted.
-	
-	To produce bpp-ssim-psnr with varying bit-depth, run the over and over JUST with different --bit_depth. Keep the json filename same.
+    The inference script works on a folder level. 
+    Provide this script a folder (--inferdata) with full-scale mammograms which can be created with the dataprep.py script.
+    It also requires a model (--model_file) file to work on which is to be produced by train.py script.
+    All the full-scale mammograms will be processed on by one to collect bpp, ssim and psnr information which will be averaged to produce the numbers to be plotted.
+    
+    To produce bpp-ssim-psnr with varying bit-depth, run the over and over JUST with different --bit_depth. Keep the json filename same.
 
-	(Optionally) Provide a json filename to write the metrics to.
-	(Optionally) You may choose to use AAC (Huffman coding).
-	(Optionally) You may choose to use GPU for all processing.
-	(Optionally) You may choose to produce (--produce_latent_code and --out_latent) the latent code (integer) and the corresponding huffman codebook.
-	(Optionally) You may choose to produce (--produce_decompressed_image and --out_decom) the decompressed images for visualization purpose.
-	(Optionally) You may choose the number of Convolution blocks in the architecture. (CVPR paper have 3)
-		""")
+    (Optionally) Provide a json filename to write the metrics to.
+    (Optionally) You may choose to use AAC (Huffman coding).
+    (Optionally) You may choose to use GPU for all processing.
+    (Optionally) You may choose to produce (--produce_latent_code and --out_latent) the latent code (integer) and the corresponding huffman codebook.
+    (Optionally) You may choose to produce (--produce_decompressed_image and --out_decom) the decompressed images for visualization purpose.
+    (Optionally) You may choose the number of Convolution blocks in the architecture. (CVPR paper have 3)
+        """)
     parser.add_argument('-m', '--model_file', required=True,
                         type=str, help='Path to the model file')
     parser.add_argument('--inferdata', type=str, required=True,

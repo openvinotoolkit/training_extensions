@@ -5,7 +5,6 @@ from src.utils.model import Encoder, Decoder
 from src.utils.downloader import download_checkpoint, download_data
 from src.utils.get_config import get_config
 
-
 def create_train_test_for_phase1():
     class TrainerTest(unittest.TestCase):
         @classmethod
@@ -20,8 +19,8 @@ def create_train_test_for_phase1():
             if not os.path.exists(self.config["checkpoint"]):
                 download_checkpoint(phase=1)
             self.device = self.config["device"]
-            avg_loss1, avg_ssim1, avg_psnr1 = train_model(self.config)
-            avg_loss2, avg_ssim2, avg_psnr2 = train_model(self.config)
+            avg_loss1, _, _ = train_model(self.config)
+            avg_loss2, _, _ = train_model(self.config)
             self.assertLessEqual(avg_loss2, avg_loss1)
 
         def test_config(self):

@@ -25,7 +25,6 @@ def download_data(phase):
     config = get_config(action='download', phase = phase, config_path='configs/')
     if not os.path.exists('test_data'):
         os.makedirs('test_data')
-        
         data_url = config['stage1']['url_data']
         data_path = config['stage1']['dest_path_data']
         download_and_extract(path=data_path, url=data_url, expath='test_data/')

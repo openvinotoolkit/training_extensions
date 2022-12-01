@@ -58,20 +58,18 @@ def main(args):
                                     patch = Image.fromarray(
                                         patch * 255.).convert('L')
                                     save_path = os.path.join(os.path.abspath(args.out_train),
-                                                             '_'.join([str(patient_id), str(rowid), str(colid)]) + '.png')
+                                            '_'.join([str(patient_id), str(rowid), str(colid)]) + '.png')
                                     patch.save(save_path)
                                     valid_patch_count += 1
                         train_count += 1
                     else:
-                        # full mammograms for testing
-
                         # round to 'nearest integer divisible by 32'
                         exact_shape = (round(image.shape[0]/32.)-1) * 32, (round(image.shape[1]/32.)-1) * 32
 
                         # make the full mammograms shape a multiple of 32
                         image = Image.fromarray(image[0:exact_shape[0], 0:exact_shape[1]] * 255.).convert('L')
-                        save_path = os.path.join(os.path.abspath(args.out_test),
-                                                 str(patient_id) + '.png')
+                        save_path = os.path.join(
+                            os.path.abspath(args.out_test),str(patient_id) + '.png')
                         image.save(save_path)
                         test_count += 1
                 else:
@@ -81,32 +79,34 @@ def main(args):
         print('Terminating patch generation')
     finally:
         if args.report:
-            print('Total mammograms: {}'.format(unint16_count + uint8_count))
-            print('16Bit mammograms: {}'.format(unint16_count))
-            print('8Bit mammograms: {} (ignored)'.format(unint16_count))
-            print('Training mammograms: {}'.format(train_count))
-            print('Training mammograms: {}'.format(test_count))
-            print('Total {} valid patches out of {} patches'.format(valid_patch_count, all_patch_count))
+            print(f'Total mammograms: {unint16_count + uint8_count}')
+            print(f'16Bit mammograms: {unint16_count}')
+            print(f'8Bit mammograms: {unint16_count} (ignored)')
+            print(f'Training mammograms: {train_count}')
+            print(f'Training mammograms: {test_count}')
+            print(f'Total {valid_patch_count} valid patches out of {all_patch_count} patches')
 
 
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser(
-	"""
-	Data preperation script. It may take a little while to generate all patches and full-scale images. 
-	You can interrupt the generation in the middle by CTRL+C.
+    """
+    Data preperation script. It may take a little while to generate all patches and full-scale images. 
+    You can interrupt the generation in the middle by CTRL+C.
 
-	Provide the folder path of original dataset.
-	This folder has to contain folders named 'Calc-Test_P_00127_RIGHT_MLO' etc.
-	Provide two directories (--out_train and --out_test) to store trainig images (patches) and testing images (full-scale mammograms).
+    Provide the folder path of original dataset.
+    This folder has to contain folders named 'Calc-Test_P_00127_RIGHT_MLO' etc.
+    Provide two directories (--out_train and --out_test) to store trainig images (patches) and testing images (full-scale mammograms).
 
-	(Optionally) Provide the patch size (--patch_dim). We strongly recommend the default values (256 or 128).
-	(Optionally) You may choose to generate a statistical report.
-	"""
+    (Optionally) Provide the patch size (--patch_dim). We strongly recommend the default values (256 or 128).
+    (Optionally) You may choose to generate a statistical report.
+    """
     )
 
-    parser.add_argument('-p', '--path_to_dataset', type=str, required=True, help='Path to the original CBIS-DDSM folder')
-    parser.add_argument('-d', '--patch_dim', type=int, required=False, default=256, help='Patches of size (patch_dim x patch_dim)')
+    parser.add_argument('-p', '--path_to_dataset',
+                        type=str, required=True, help='Path to the original CBIS-DDSM folder')
+    parser.add_argument('-d', '--patch_dim',
+                        type=int, required=False, default=256, help='Patches of size (patch_dim x patch_dim)')
     parser.add_argument('--out_train', type=str, required=True, help='Output folder for training samples')
     parser.add_argument('--out_test', type=str, required=True, help='Output folder for testing samples')
     parser.add_argument('--report', action='store_true', help='Report statistics')

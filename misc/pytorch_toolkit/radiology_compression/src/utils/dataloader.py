@@ -7,11 +7,11 @@ import pandas as pd
 
 
 class CustomDatasetPhase1(data.Dataset):
-	
+    
     def __init__(self, path_to_dataset, files256=None,files128=None,split=None,
-				transform_images = None, transform_masks = None,
-				images_path_rel = '.', masks_path_rel = '.',
-				preserve_names = False):
+                transform_images = None, transform_masks = None,
+                images_path_rel = '.', masks_path_rel = '.',
+                preserve_names = False):
         self.path_to_dataset = os.path.abspath(path_to_dataset)
         self.files256 = files256
         self.files128 = files128

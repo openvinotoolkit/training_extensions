@@ -16,9 +16,6 @@ def create_inference_test_for_phase1():
 
             if not os.path.exists(cls.config['image_path']):
                 download_data(phase=1)
-                # prepare_data()
-
-            # x_tst = np.load(cls.config['image_path'], allow_pickle=True)
             cls.images_transforms = torchvision.transforms.Compose(
                 [torchvision.transforms.Grayscale(), torchvision.transforms.ToTensor()])
 
@@ -26,13 +23,10 @@ def create_inference_test_for_phase1():
             cls.tst_loader = DataLoader(tst_data, batch_size=1, shuffle=False, num_workers=16)
 
         def test_pytorch_inference(self):
+
             config = get_config(action='inference', phase=1)
-
             model = load_inference_model(config=config, run_type='pytorch')
-
-            # getting avg_ssim and avg_psnr
             ssim, psnr = validate_model(model=model, config=config, run_type='pytorch')
-
             self.assertGreater(ssim, 0.8)
             self.assertGreater(psnr, 25)
 
@@ -40,9 +34,7 @@ def create_inference_test_for_phase1():
 
             config = get_config(action='inference', phase=1)
             model = load_inference_model(config=config, run_type='onnx')
-            # getting avg_ssim and avg_psnr
             ssim, psnr = validate_model(model=model, config=config, run_type='onnx')
-
             self.assertGreater(ssim, 0.8)
             self.assertGreater(psnr, 25)
 
@@ -50,10 +42,7 @@ def create_inference_test_for_phase1():
 
             config = get_config(action='inference', phase=1)
             model = load_inference_model(config=config, run_type='ir')
-
-            # getting avg_ssim and avg_psnr
             ssim, psnr = validate_model(model=model, config=config, run_type='ir')
-
             self.assertGreater(ssim, 0.8)
             self.assertGreater(psnr, 25)
 
@@ -72,11 +61,9 @@ def create_inference_test_for_phase2():
             cls.tst_loader = DataLoader(tst_data, batch_size=1, shuffle=False, num_workers=16)
 
         def test_pytorch_inference(self):
+
             config = get_config(action='inference', phase=2)
-
             model = load_inference_model(config=config, run_type='pytorch')
-
-            # getting avg_ssim and avg_psnr
             ssim, psnr = validate_model(model=model, config=config, run_type='pytorch')
             self.assertGreater(ssim, 0.8)
             self.assertGreater(psnr, 25)
@@ -85,19 +72,15 @@ def create_inference_test_for_phase2():
 
             config = get_config(action='inference', phase=2)
             model = load_inference_model(config=config, run_type='onnx')
-            # getting avg_ssim and avg_psnr
             ssim, psnr = validate_model(model=model, config=config, run_type='onnx')
             self.assertGreater(ssim, 0.8)
             self.assertGreater(psnr, 25)
 
         def test_ir_inference(self):
+
             config = get_config(action='inference', phase=2)
-
             model = load_inference_model(config=config, run_type='ir')
-
-            # getting avg_ssim and avg_psnr
-            ssim, psnr = validate_model(
-                model=model, config=config, run_type='ir')
+            ssim, psnr = validate_model(model=model, config=config, run_type='ir')
             self.assertGreater(ssim, 0.8)
             self.assertGreater(psnr, 25)
 
@@ -107,10 +90,8 @@ def create_inference_test_for_phase2():
 class TestTrainer(create_inference_test_for_phase1()):
     'Test case for phase1'
 
-
 class TestTrainerEff(create_inference_test_for_phase2()):
     'Test case for phase2'
-
 
 if __name__ == '__main__':
 
