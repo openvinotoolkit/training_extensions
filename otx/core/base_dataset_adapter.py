@@ -46,12 +46,15 @@ def get_dataset_adapter(task_type):
         return SegmentationDatasetAdapter(task_type=task_type)
 
     if task_type == TaskType.ACTION_CLASSIFICATION:
-        #TODO: Add Action Detection Dataset also
-        from .action_dataset_adapter import ActionDatasetAdapter
+        from .action_dataset_adapter import ActionClassificationDatasetAdapter
 
-        return ActionDatasetAdapter(task_type=task_type)
+        return ActionClassificationDatasetAdapter(task_type=task_type)
+    
     """
-    #TODO: Need to implement
+    if task_type == TaskType.ACTION_DETECTION:
+        from .action_dataset_adapter import ActionDetectionDatasetAdapter
+
+        return ActionDetectionDatasetAdapter(task_type=task_type)
     if task_type == TaskType.ANOMALY_CLASSIFICATION:
         from otx.algorithms.anomaly.adapters.anomalib.data.dataset import (
             AnomalyClassificationDataset,

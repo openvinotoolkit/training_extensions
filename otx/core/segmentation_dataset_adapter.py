@@ -12,7 +12,6 @@ from otx.core.base_dataset_adapter import BaseDatasetAdapter
 from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.shapes.polygon import Point, Polygon
-from otx.api.entities.id import ID
 from otx.api.entities.image import Image
 from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.annotation import (Annotation, AnnotationSceneEntity, AnnotationSceneKind, NullAnnotationSceneEntity)
@@ -25,8 +24,6 @@ class SegmentationDatasetAdapter(BaseDatasetAdapter):
         """ Convert DatumaroDataset to DatasetEntity for Segmentation. """
         # Prepare label information
         label_information = self._prepare_label_information(datumaro_dataset)
-        category_items = label_information["category_items"]
-        label_groups = label_information["label_groups"]
         label_entities = label_information["label_entities"]
 
         # Label schema
