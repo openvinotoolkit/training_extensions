@@ -8,7 +8,10 @@
 
 import abc
 from abc import abstractmethod
+<<<<<<< HEAD
 from typing import Any, Dict, Tuple, Union
+=======
+>>>>>>> Add action dataset adapter, remove some useless lines
 
 import datumaro
 from datumaro.components.annotation import AnnotationType as DatumaroAnnotationType
@@ -97,7 +100,12 @@ def get_dataset_adapter(task_type):
         from .segmentation_dataset_adapter import SegmentationDatasetAdapter
 
         return SegmentationDatasetAdapter(task_type=task_type)
-    
+
+    if task_type == TaskType.ACTION_CLASSIFICATION:
+        #TODO: Add Action Detection Dataset also
+        from .action_dataset_adapter import ActionDatasetAdapter
+
+        return ActionDatasetAdapter(task_type=task_type)
     """
     #TODO: Need to implement
     if task_type == TaskType.ANOMALY_CLASSIFICATION:
