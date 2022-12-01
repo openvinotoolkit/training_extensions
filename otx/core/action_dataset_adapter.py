@@ -116,7 +116,6 @@ class ActionClassificationDatasetAdapter(ActionBaseDatasetAdapter, BaseDatasetAd
 
     def convert_to_otx_format(self, datumaro_dataset: dict) -> Tuple[DatasetEntity, LabelSchemaEntity]:
         label_information = self._prepare_label_information(datumaro_dataset)
-        category_items = label_information["category_items"]
         label_entities = label_information["label_entities"]
 
         label_schema = self._generate_default_label_schema(label_entities)
