@@ -56,7 +56,7 @@ class ActionBaseDatasetAdapter(BaseDatasetAdapter):
     def _prepare_label_information(self, datumaro_dataset: dict) -> dict:
         """ Prepare and reorganize the label information for merging multiple video information.
         
-        Description.
+        Description w/ examples:
 
         [Making overall categories]
         Suppose that video1 has labels=[0, 1, 2] and video2 has labels=[0, 1, 4], 
@@ -96,10 +96,25 @@ class ActionBaseDatasetAdapter(BaseDatasetAdapter):
                             is_empty=False, id=ID(i)) for i, class_name in enumerate(outputs["category_items"])]
         return outputs
 
+
+    def convert_raw_frames_dataset_to_datumaro(self, path):
+        #TODO: make it more general
+        frames_dir_path = osp.join(path, 'rawframes')
+        train_txt_path = osp.join(path, 'train_list_rawframes.txt')
+        val_txt_path = osp.join(path, 'val.txt')
+
+        video_list = os.listdir(frames_dir_path)
+
+
+        pass
+
+    def import_ava_dataset(self, path):
+        #TODO: make it more general
+        pass
+
 class ActionClassificationDatasetAdapter(ActionBaseDatasetAdapter, BaseDatasetAdapter):
     def convert_to_otx_format(self, datumaro_dataset: dict) -> DatasetEntity:
         label_information = self._prepare_label_information(datumaro_dataset)
-        category_items = label_information["category_items"]
         label_entities = label_information["label_entities"]
 
         label_schema = self._generate_default_label_schema(label_entities)
