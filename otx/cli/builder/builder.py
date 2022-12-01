@@ -62,7 +62,8 @@ def update_backbone_args(backbone_config, registry, skip_missing=False):
             # TODO: How to get argument type (or hint or format)
             required_args.append(arg_key)
             if hasattr(backbone_function, "arch_settings"):
-                required_option[arg_key] = ", ".join(list(backbone_function.arch_settings.keys()))
+                arg_options = [str(option) for option in backbone_function.arch_settings.keys()]
+                required_option[arg_key] = ", ".join(arg_options)
             continue
         # Update Backbone config to defaults
         backbone_config[arg_key] = arg_value.default
@@ -87,12 +88,12 @@ def update_backbone_args(backbone_config, registry, skip_missing=False):
     for arg in required_args:
         if arg not in backbone_config and arg not in ("args", "kwargs", "self"):
             missing_args.append(arg)
-    if len(missing_args) > 0 and not skip_missing:
-        raise ValueError(
-            f"[otx build] {backbone_config['type']} requires the argument : {missing_args}"
-            f"\n[otx build] Please refer to {inspect.getfile(backbone_function)}"
-        )
-    if len(missing_args) > 0 and skip_missing:
+    if len(missing_args) > 0:
+        if not skip_missing:
+            raise ValueError(
+                f"[otx build] {backbone_config['type']} requires the argument : {missing_args}"
+                f"\n[otx build] Please refer to {inspect.getfile(backbone_function)}"
+            )
         for arg in missing_args:
             if arg in required_option:
                 backbone_config[arg] = f"!!!SELECT_OPTION: {required_option[arg]}"
@@ -103,6 +104,7 @@ def update_backbone_args(backbone_config, registry, skip_missing=False):
             f"\n[otx build] Please refer to {inspect.getfile(backbone_function)}"
         )
     backbone_config["use_out_indices"] = use_out_indices
+    return missing_args
 
 
 def update_in_channel(model_config, out_channels):
@@ -124,7 +126,12 @@ class Builder:
     """Class that implements a model templates registry."""
 
     def build_task_config(self, task_type, model_type=None, workspace_path=None):
-        """Build OTX workspace with Template configs from task type."""
+        """Create OTX workspace with Template configs from task type.
+
+        task_type: The type of task want to get (str)
+        model_type: Specifies the template of a model (str)
+        workspace_path: This is the folder path of the workspace want to create (os.path)
+        """
 
         # Create OTX-workspace
         if workspace_path is None:
@@ -180,26 +187,27 @@ class Builder:
     def build_backbone_config(self, backbone_type, output_path):
         """Build Backbone configs from backbone type.
 
-        backbone_type:
-        output_path: new model.py output path (os.path)
+        backbone_type: The type of backbone want to get (str)
+        output_path: new backbone configuration file output path (os.path)
         """
         print(f"[otx build] Backbone Config: {backbone_type}")
 
         backend, _ = Registry.split_scope_key(backbone_type)
         backbone_config = {"type": backbone_type}
         otx_registry, _ = get_backbone_registry(backend)
-        update_backbone_args(backbone_config, otx_registry, skip_missing=True)
+        missing_args = update_backbone_args(backbone_config, otx_registry, skip_missing=True)
         if output_path.endswith((".yml", ".yaml", ".json")):
             mmcv.dump({"backbone": backbone_config}, output_path)
             print(f"[otx build] Save backbone configuration: {output_path}")
         else:
             raise ValueError("The backbone config support file format is as follows: (.yml, .yaml, .json)")
+        return missing_args
 
     def build_model_config(self, model_config_path, backbone_config_path, output_path=None):
         """Build model & update backbone configs.
 
-        model_config_path: model.py or model.yaml (os.path)
-        backbone_config_path: backbone id (or name?) (os.path)
+        model_config_path: model configuration file path (os.path)
+        backbone_config_path: backbone configuration file path (os.path)
         output_path: new model.py output path (os.path)
         """
         print(f"[otx build] Model Config with {backbone_config_path}")
@@ -231,7 +239,7 @@ class Builder:
         backend, _ = Registry.split_scope_key(backbone_config["type"])
         print(f"\tTarget Backbone: {backbone_config['type']}")
         otx_registry, custom_imports = get_backbone_registry(backend)
-        update_backbone_args(backbone_config, otx_registry)
+        _ = update_backbone_args(backbone_config, otx_registry)
         if backbone_config["use_out_indices"]:
             backbone_out_indices = backbone_config.get("out_indices", None)
             if isinstance(backbone_out_indices, (tuple, list)) and len(backbone_out_indices) != len(model_in_indices):
@@ -251,8 +259,10 @@ class Builder:
         model_config.load_from = None
         if backbone_pretrained:
             model_config.model.pretrained = backbone_pretrained
-        else:
+        elif backend in ("torchvision"):
             model_config.model.pretrained = True
+        else:
+            model_config.model.pretrained = None
         if custom_imports:
             model_config["custom_imports"] = dict(imports=custom_imports, allow_failed_imports=False)
         update_in_channel(model_config, out_channels)

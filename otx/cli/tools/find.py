@@ -24,16 +24,32 @@ from otx.cli.utils.importing import get_backbone_registry, get_required_args
 
 # pylint: disable=too-many-locals
 
+SUPPORTED_TASKS = (
+    "CLASSIFICATION",
+    "DETECTION",
+    "INSTANCE_SEGMENTATION",
+    "SEGMENTATION",
+    "ACTION_CLASSIFICATION",
+    "ANOMALY_CLASSIFICATION",
+    "ANOMALY_DETECTION",
+    "ANOMALY_SEGMENTATION",
+)
+
 
 def parse_args():
     """Parses command line arguments."""
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--root", help="A root dir where templates should be searched.", default="otx")
-    parser.add_argument("--task")
-    parser.add_argument("--template", action="store_true")
-    parser.add_argument("--backbone", action="append")
-    parser.add_argument("--save-to", help="")
+    parser.add_argument("--task", help=f"The currently supported options: {SUPPORTED_TASKS}.")
+    parser.add_argument(
+        "--template", action="store_true", help="Shows a list of templates that can be used immediately."
+    )
+    parser.add_argument(
+        "--backbone",
+        action="append",
+        help="The currently supported options: (otx, mmcls, mmdet, mmseg, torchvision, pytorchcv).",
+    )
 
     return parser.parse_args()
 
@@ -53,7 +69,7 @@ def main():
             relpath = os.path.relpath(template.model_template_path, os.path.abspath("."))
             template_table.add_row(
                 [
-                    template.task,
+                    template.task_type,
                     template.model_template_id,
                     template.name,
                     relpath,
