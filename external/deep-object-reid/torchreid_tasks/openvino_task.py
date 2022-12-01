@@ -201,15 +201,23 @@ class OpenVINOClassificationTask(IDeploymentTask, IInferenceTask, IEvaluationTas
                     dataset_item.append_metadata_item(saliency_media, model=self.model)
                 elif saliency_map.ndim == 3:
                     # Multiple saliency maps per image (class-wise saliency map), support e.g. Recipro-CAM use case
+                    predicted_class_set = set()
+                    for label in predicted_scene.annotations[0].get_labels():
+                        predicted_class_set.add(label.name)
+
                     for class_id, class_wise_saliency_map in enumerate(saliency_map):
-                        actmap = get_actmap(class_wise_saliency_map, (dataset_item.width, dataset_item.height))
-                        class_name_str = self.task_environment.get_labels(include_empty=True)[class_id].name
-                        saliency_media = ResultMediaEntity(name=f"Saliency Map: {class_name_str}",
-                                                           type="saliency_map",
-                                                           annotation_scene=dataset_item.annotation_scene,
-                                                           numpy=actmap, roi=dataset_item.roi,
-                                                           label=predicted_scene.annotations[0].get_labels()[0].label)
-                        dataset_item.append_metadata_item(saliency_media, model=self.model)
+                        class_name_str = self.task_environment.get_labels()[class_id].name
+                        if class_name_str in predicted_class_set:
+                            # TODO (negvet): Support more advanced use case,
+                            #  when all/configurable set of saliency maps is returned
+                            actmap = get_actmap(class_wise_saliency_map, (dataset_item.width, dataset_item.height))
+                            label = predicted_scene.annotations[0].get_labels()[0].label
+                            saliency_media = ResultMediaEntity(name=class_name_str,
+                                                               type="saliency_map",
+                                                               annotation_scene=dataset_item.annotation_scene,
+                                                               numpy=actmap, roi=dataset_item.roi,
+                                                               label=label)
+                            dataset_item.append_metadata_item(saliency_media, model=self.model)
                 else:
                     raise RuntimeError(f'Single saliency map has to be 2 or 3-dimensional, '
                                        f'but got {saliency_map.ndim} dims')

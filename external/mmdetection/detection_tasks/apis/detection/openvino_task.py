@@ -456,7 +456,6 @@ class OpenVINODetectionTask(
                     representation_vector, model=self.model
                 )
 
-            add_saliency_map = True
             if add_saliency_map and saliency_map is not None:
                 if saliency_map.ndim == 2:
                     # Single saliency map per image, support e.g. EigenCAM use case
@@ -473,23 +472,30 @@ class OpenVINODetectionTask(
                     dataset_item.append_metadata_item(saliency_media, model=self.model)
                 elif saliency_map.ndim == 3:
                     # Multiple saliency maps per image (class-wise saliency map)
-                    labels = self.task_environment.get_labels(include_empty=True)
+                    predicted_class_set = set()
+                    for bbox in predicted_scene.annotations:
+                        predicted_class_set.add(bbox.get_labels()[0].name)
+
+                    labels = self.task_environment.get_labels()
                     num_saliency_maps = saliency_map.shape[0]
                     if num_saliency_maps == len(labels) + 1:
-                        # Include the background as the last label
+                        # Include the background as the last category
                         labels.append(LabelEntity('background', Domain.DETECTION))
                     for class_id, class_wise_saliency_map in enumerate(saliency_map):
-                        actmap = get_actmap(
-                            class_wise_saliency_map, (dataset_item.width, dataset_item.height)
-                        )
                         class_name_str = labels[class_id].name
-                        saliency_media = ResultMediaEntity(
-                            name=class_name_str,
-                            type="saliency_map",
-                            annotation_scene=dataset_item.annotation_scene,
-                            numpy=actmap, roi=dataset_item.roi
-                        )
-                        dataset_item.append_metadata_item(saliency_media, model=self.model)
+                        if class_name_str in predicted_class_set:
+                            # TODO (negvet): Support more advanced use case,
+                            #  when all/configurable set of saliency maps is returned
+                            actmap = get_actmap(
+                                class_wise_saliency_map, (dataset_item.width, dataset_item.height)
+                            )
+                            saliency_media = ResultMediaEntity(
+                                name=class_name_str,
+                                type="saliency_map",
+                                annotation_scene=dataset_item.annotation_scene,
+                                numpy=actmap, roi=dataset_item.roi
+                            )
+                            dataset_item.append_metadata_item(saliency_media, model=self.model)
                 else:
                     raise RuntimeError(f'Single saliency map has to be 2 or 3-dimensional, '
                                        f'but got {saliency_map.ndim} dims')
