@@ -70,7 +70,7 @@ except ImportError:
     import warnings
     warnings.warn("ModelAPI was not found.")
 from torchreid_tasks.parameters import OTEClassificationParameters
-from torchreid_tasks.utils import get_multihead_class_info
+from torchreid_tasks.utils import get_multihead_class_info, get_actmap
 
 from zipfile import ZipFile
 
@@ -183,7 +183,7 @@ class OpenVINOClassificationTask(IDeploymentTask, IInferenceTask, IEvaluationTas
             dump_features = not inference_parameters.is_evaluation
         dataset_size = len(dataset)
         for i, dataset_item in enumerate(dataset, 1):
-            predicted_scene, actmap, repr_vector, act_score = self.inferencer.predict(dataset_item.numpy)
+            predicted_scene, saliency_map, repr_vector, act_score = self.inferencer.predict(dataset_item.numpy)
             dataset_item.append_labels(predicted_scene.annotations[0].get_labels())
             active_score_media = FloatMetadata(name="active_score", value=act_score,
                                                float_type=FloatType.ACTIVE_SCORE)
@@ -191,11 +191,28 @@ class OpenVINOClassificationTask(IDeploymentTask, IInferenceTask, IEvaluationTas
             feature_vec_media = TensorEntity(name="representation_vector", numpy=repr_vector.reshape(-1))
             dataset_item.append_metadata_item(feature_vec_media, model=self.model)
             if dump_features:
-                saliency_media = ResultMediaEntity(name="Saliency Map", type="saliency_map",
-                                                   annotation_scene=dataset_item.annotation_scene,
-                                                   numpy=actmap, roi=dataset_item.roi,
-                                                   label=predicted_scene.annotations[0].get_labels()[0].label)
-                dataset_item.append_metadata_item(saliency_media, model=self.model)
+                if saliency_map.ndim == 2:
+                    # Single saliency map per image, support e.g. EigenCAM use case
+                    actmap = get_actmap(saliency_map, (dataset_item.width, dataset_item.height))
+                    saliency_media = ResultMediaEntity(name="Saliency Map", type="saliency_map",
+                                                       annotation_scene=dataset_item.annotation_scene,
+                                                       numpy=actmap, roi=dataset_item.roi,
+                                                       label=predicted_scene.annotations[0].get_labels()[0].label)
+                    dataset_item.append_metadata_item(saliency_media, model=self.model)
+                elif saliency_map.ndim == 3:
+                    # Multiple saliency maps per image (class-wise saliency map), support e.g. Recipro-CAM use case
+                    for class_id, class_wise_saliency_map in enumerate(saliency_map):
+                        actmap = get_actmap(class_wise_saliency_map, (dataset_item.width, dataset_item.height))
+                        class_name_str = self.task_environment.get_labels(include_empty=True)[class_id].name
+                        saliency_media = ResultMediaEntity(name=f"Saliency Map: {class_name_str}",
+                                                           type="saliency_map",
+                                                           annotation_scene=dataset_item.annotation_scene,
+                                                           numpy=actmap, roi=dataset_item.roi,
+                                                           label=predicted_scene.annotations[0].get_labels()[0].label)
+                        dataset_item.append_metadata_item(saliency_media, model=self.model)
+                else:
+                    raise RuntimeError(f'Single saliency map has to be 2 or 3-dimensional, '
+                                       f'but got {saliency_map.ndim} dims')
 
             update_progress_callback(int(i / dataset_size * 100))
         return dataset
