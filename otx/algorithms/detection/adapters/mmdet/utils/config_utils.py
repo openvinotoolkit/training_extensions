@@ -268,7 +268,6 @@ def patch_evaluation(config: Config):
 def patch_data_pipeline(config: Config, template_file_path: str):
     """Update data_pipeline configs."""
     base_dir = os.path.abspath(os.path.dirname(template_file_path))
-    # FIXME Loading data pipeline is hard-coded, it should be loaded from recipe of algorithm
     data_pipeline_path = os.path.join(base_dir, "data_pipeline.py")
     if os.path.exists(data_pipeline_path):
         data_pipeline_cfg = Config.fromfile(data_pipeline_path)

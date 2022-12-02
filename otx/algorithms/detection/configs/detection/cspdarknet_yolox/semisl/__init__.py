@@ -1,4 +1,4 @@
-"""Initialization of ATSS model for Detection Task."""
+"""Initialization of YOLOX model for Semi-SL Detection Task."""
 
 # Copyright (C) 2022 Intel Corporation
 #
