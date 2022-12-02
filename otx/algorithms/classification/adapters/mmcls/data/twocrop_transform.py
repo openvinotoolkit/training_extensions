@@ -6,14 +6,12 @@ from copy import deepcopy
 import numpy as np
 from mmcls.datasets.builder import PIPELINES
 from mmcls.datasets.pipelines import Compose, to_tensor
-from torchvision import transforms as tvt
-from PIL import Image
 
 from mmcv.utils import build_from_cfg
 
 
 @PIPELINES.register_module()
-class TwoCropTransform(object):
+class TwoCropTransform():
     """Generate two different cropped views of an image"""
 
     def __init__(self, pipeline):
