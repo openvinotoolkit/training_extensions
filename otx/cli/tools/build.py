@@ -39,7 +39,7 @@ def parse_args():
 
 
 def main():
-    """Main function for model templates searching."""
+    """Main function for model or backbone or task building."""
 
     args = parse_args()
 
