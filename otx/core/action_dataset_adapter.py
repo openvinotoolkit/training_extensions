@@ -97,21 +97,6 @@ class ActionBaseDatasetAdapter(BaseDatasetAdapter):
         return outputs
 
 
-    def convert_raw_frames_dataset_to_datumaro(self, path):
-        #TODO: make it more general
-        frames_dir_path = osp.join(path, 'rawframes')
-        train_txt_path = osp.join(path, 'train_list_rawframes.txt')
-        val_txt_path = osp.join(path, 'val.txt')
-
-        video_list = os.listdir(frames_dir_path)
-
-
-        pass
-
-    def import_ava_dataset(self, path):
-        #TODO: make it more general
-        pass
-
 class ActionClassificationDatasetAdapter(ActionBaseDatasetAdapter, BaseDatasetAdapter):
     def convert_to_otx_format(self, datumaro_dataset: dict) -> DatasetEntity:
         label_information = self._prepare_label_information(datumaro_dataset)
@@ -143,7 +128,6 @@ class ActionClassificationDatasetAdapter(ActionBaseDatasetAdapter, BaseDatasetAd
                         annotation_scene = AnnotationSceneEntity(kind=AnnotationSceneKind.ANNOTATION, annotations=shapes)
                     dataset_item = DatasetItemEntity(image, annotation_scene, subset=subset)
                     dataset_items.append(dataset_item)
-
         return DatasetEntity(items=dataset_items), label_schema
 
 class ActionDetectionDatasetAdapter(ActionBaseDatasetAdapter, BaseDatasetAdapter):
