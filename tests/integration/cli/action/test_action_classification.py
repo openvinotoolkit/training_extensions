@@ -15,12 +15,23 @@ from otx.cli.utils.tests import otx_eval_testing, otx_train_testing
 from tests.test_suite.e2e_test_system import e2e_pytest_component
 
 # Finetuning arguments
+"""
 args = {
-    "--train-data-roots": "data/datumaro/cvat_dataset/action_classification",
-    "--val-data-roots": "data/datumaro/cvat_dataset/action_classification",
+    "--train-data-roots": "/local/sungmanc/datasets/jester_SC_cvat_multifolder_classification/train",
+    "--val-data-roots": "/local/sungmanc/datasets/jester_SC_cvat_multifolder_classification/val",
     "train_params": ["params", "--learning_parameters.num_iters", "2", "--learning_parameters.batch_size", "4"],
 }
-
+args = {
+    "--train-data-roots": "./data/datumaro/cvat_dataset/action_classification",
+    "--val-data-roots": "./data/datumaro/cvat_dataset/action_classification",
+    "train_params": ["params", "--learning_parameters.num_iters", "2", "--learning_parameters.batch_size", "4"],
+}
+"""
+args = {
+    "--train-data-roots": "/local/sungmanc/datasets/jester_SC_cvat_multifolder_classification/train",
+    "--val-data-roots": "/local/sungmanc/datasets/jester_SC_cvat_multifolder_classification/train",
+    "train_params": ["params", "--learning_parameters.num_iters", "2", "--learning_parameters.batch_size", "4"],
+}
 otx_dir = os.getcwd()
 
 TT_STABILITY_TESTS = os.environ.get("TT_STABILITY_TESTS", False)
