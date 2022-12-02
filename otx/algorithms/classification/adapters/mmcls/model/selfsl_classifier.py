@@ -5,19 +5,12 @@
 import torch
 from torch.nn.functional import softmax
 from mmcls.models.builder import CLASSIFIERS
-from mpa.modules.models.classifiers.sam_classifier import SAMImageClassifier
+from mmcls.models.classifiers.image import ImageClassifier
 
 
 @CLASSIFIERS.register_module()
-class SelfSLClassifier(SAMImageClassifier):
-    def __init__(
-        self,
-        backbone=None,
-        neck=None,
-        head=None,
-        pretrained=None,
-        **kwargs
-    ):
+class SelfSLClassifier(ImageClassifier):
+    def __init__(self, backbone=None, neck=None, head=None, pretrained=None, **kwargs):
         super(SelfSLClassifier, self).__init__(
             backbone=backbone,
             neck=neck,
