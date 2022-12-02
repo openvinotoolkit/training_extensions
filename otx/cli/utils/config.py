@@ -40,7 +40,9 @@ def configure_dataset(args, train=False):
     """Configure dataset args."""
 
     # Create instances of Task, ConfigurableParameters and Dataset.
-    data_config = {"data": {}}
+    data_subset_format = {"ann-files": None, "data-roots": None}
+    data_config = {"data": {subset: data_subset_format.copy() for subset in ("train", "val", "test")}}
+    data_config["data"]["unlabeled"] = {"file-list": None, "data-roots": None}
     if os.path.exists(args.data):
         with open(args.data, "r", encoding="UTF-8") as stream:
             data_config = yaml.safe_load(stream)
@@ -50,7 +52,7 @@ def configure_dataset(args, train=False):
             args.save_logs_to = "./logs"
 
     # The command's args are overridden and use first
-    if "train_ann_file" in args and args.train_ann_files:
+    if "train_ann_files" in args and args.train_ann_files:
         data_config["data"]["train"]["ann-files"] = args.train_ann_files
     if "train_data_roots" in args and args.train_data_roots:
         data_config["data"]["train"]["data-roots"] = args.train_data_roots
