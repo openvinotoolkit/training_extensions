@@ -3,14 +3,17 @@
 
 import torch
 import torch.nn as nn
+from torch import Tensor
 from mmcls.models.builder import LOSSES, build_loss
 from mmcls.models.losses import CrossEntropyLoss
 
 
-def off_diagonal(x):
-    n, m = x.shape
-    assert n == m
-    return x.flatten()[:-1].view(n - 1, n + 1)[:, 1:].flatten()
+def off_diagonal(x: Tensor):
+    """
+    return a tensor containing all the elements outside the diagonal of x
+    """
+    assert x.shape[0] == x.shape[1]
+    return x.flatten()[:-1].view(x.shape[0] - 1, x.shape[0] + 1)[:, 1:].flatten()
 
 
 @LOSSES.register_module()
@@ -22,7 +25,7 @@ class BarlowTwinsLoss(nn.Module):
     """
 
     def __init__(self, off_diag_penality, loss_weight=1.0, cls_loss=None):
-        super(BarlowTwinsLoss, self).__init__()
+        super().__init__()
         self.penalty = off_diag_penality
         self.loss_weight = loss_weight
         if cls_loss is not None:
@@ -41,7 +44,7 @@ class BarlowTwinsLoss(nn.Module):
         Returns:
             A dictionary containing the loss in the 'loss' key.
         """
-        losses = dict()
+        losses = {}
         losses["loss"] = 0
 
         # Cross-Entropy loss: classification loss
@@ -49,26 +52,19 @@ class BarlowTwinsLoss(nn.Module):
             if fc_feats is not None and gt_labels is not None:
                 gt_labels = gt_labels.squeeze(dim=1)
                 if fc_feats.shape[0] == gt_labels.shape[0] * 2:
-                    losses["loss"] = self.criterion(
-                        fc_feats, torch.cat([gt_labels, gt_labels], dim=0)
-                    )
+                    losses["loss"] = self.criterion(fc_feats, torch.cat([gt_labels, gt_labels], dim=0))
                 else:
                     losses["loss"] = self.criterion(fc_feats, gt_labels)
         else:
-            raise NotImplementedError(
-                "Losses other than CrossEntropyLoss are not yet supported"
-            )
+            raise NotImplementedError("Losses other than CrossEntropyLoss are not yet supported")
 
-        losses['loss'] *= self.criterion.loss_weight
+        losses["loss"] *= self.criterion.loss_weight
 
         if aux_feats is None:
             return losses
 
         if len(aux_feats.shape) < 3:
-            raise ValueError(
-                "`aux_feats` needs to be [bsz, n_views, ...],"
-                "at least 3 dimensions are required"
-            )
+            raise ValueError("`aux_feats` needs to be [bsz, n_views, ...]," "at least 3 dimensions are required")
         if len(aux_feats.shape) > 3:
             aux_feats = aux_feats.view(aux_feats.shape[0], aux_feats.shape[1], -1)
 
@@ -76,9 +72,9 @@ class BarlowTwinsLoss(nn.Module):
         dimensionality = aux_feats.shape[2]
 
         # Barlow Twins loss: redundancy reduction
-        bn = nn.BatchNorm1d(dimensionality, affine=False, track_running_stats=False)
+        batch_norm = nn.BatchNorm1d(dimensionality, affine=False, track_running_stats=False)
         # empirical cross-correlation matrix
-        eccm = bn(aux_feats[:, 0, :]).T @ bn(aux_feats[:, 1, :])
+        eccm = batch_norm(aux_feats[:, 0, :]).T @ batch_norm(aux_feats[:, 1, :])
         eccm.div_(batch_size)
 
         # Compute the invariance term (diagonal) and redundacy term (off-diagonal)

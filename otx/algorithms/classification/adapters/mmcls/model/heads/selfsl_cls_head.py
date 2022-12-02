@@ -27,9 +27,8 @@ class SelfSLClsHead(BaseHead):
         self,
         num_classes: int,
         in_channels: int,
-        aux_mlp: Dict,
-        loss=dict(type="BarlowTwinsLoss", off_diag_penality=1 / 128),
-        lamda=1.0,
+        aux_mlp,
+        loss,
         topk=(1,),
         init_cfg=None,
     ):
@@ -42,15 +41,14 @@ class SelfSLClsHead(BaseHead):
             topk = (topk,)
         for _topk in topk:
             assert _topk > 0, "Top-k should be larger than 0"
-        super(BaseHead, self).__init__(init_cfg=init_cfg)
+        super().__init__(init_cfg=init_cfg)
 
         self.topk = topk
         self.compute_loss = build_loss(loss)
-        self.lamda = lamda
 
         # Set up the standard classification head
         self.num_classes = num_classes
-        self.fc = nn.Linear(in_features=in_channels, out_features=self.num_classes)
+        self.linear = nn.Linear(in_features=in_channels, out_features=self.num_classes)
 
         # Set up the auxiliar head
         out_channels = aux_mlp["out_channels"]
@@ -64,11 +62,9 @@ class SelfSLClsHead(BaseHead):
                 nn.Linear(in_features=hid_channels, out_features=out_channels),
             )
         else:
-            self.aux_mlp = nn.Linear(
-                in_features=in_channels, out_features=out_channels
-            )
+            self.aux_mlp = nn.Linear(in_features=in_channels, out_features=out_channels)
 
-    def forward_train(self, x, gt_labels):
+    def forward_train(self, x, gt_label):
         """
         Forward train head using the Supervised Contrastive Loss
         Args:
@@ -77,16 +73,16 @@ class SelfSLClsHead(BaseHead):
             dict[str, Tensor]: A dictionary of loss components.
         """
 
-        losses = dict()
-        fc_feats = self.fc(x)
+        losses = {}
+        fc_feats = self.linear(x)
 
-        bsz = gt_labels.shape[0]
+        bsz = gt_label.shape[0]
         aux_feats = None
         if x.shape[0] == 2 * bsz:
             # reshape aux_feats from [2 * bsz, dims] to [bs, 2, dims]
-            f1, f2 = torch.split(self.aux_mlp(x), [bsz, bsz], dim=0)
-            aux_feats = torch.cat([f1.unsqueeze(1), f2.unsqueeze(1)], dim=1)
-        loss = self.compute_loss(fc_feats, gt_labels, aux_feats=aux_feats)
+            feats1, feats2 = torch.split(self.aux_mlp(x), [bsz, bsz], dim=0)
+            aux_feats = torch.cat([feats1.unsqueeze(1), feats2.unsqueeze(1)], dim=1)
+        loss = self.compute_loss(fc_feats, gt_label, aux_feats=aux_feats)
         losses.update(loss)
         return losses
 
@@ -94,7 +90,7 @@ class SelfSLClsHead(BaseHead):
         """
         Test without data augmentation.
         """
-        cls_score = self.fc(img)
+        cls_score = self.linear(img)
 
         if isinstance(cls_score, list):
             cls_score = sum(cls_score) / float(len(cls_score))
