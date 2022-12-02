@@ -110,7 +110,6 @@ class ActionBaseDatasetAdapter(BaseDatasetAdapter):
     def convert_to_otx_format(self, datumaro_dataset: dict) -> Tuple[DatasetEntity, LabelSchemaEntity]:
         raise NotImplementedError
 
-
 class ActionClassificationDatasetAdapter(ActionBaseDatasetAdapter, BaseDatasetAdapter):
     """Action classification adapter inherited by ActionBaseDatasetAdapter and BaseDatasetAdapter."""
 
