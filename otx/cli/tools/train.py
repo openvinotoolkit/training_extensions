@@ -18,8 +18,6 @@ import argparse
 import os
 import shutil
 
-import yaml
-
 from otx.api.configuration.helper import create
 from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.model import ModelEntity
@@ -31,7 +29,7 @@ from otx.api.serialization.label_mapper import label_schema_to_bytes
 from otx.api.usecases.adapters.model_adapter import ModelAdapter
 from otx.cli.datasets import get_dataset_class
 from otx.cli.registry import find_and_parse_model_template
-from otx.cli.utils.config import override_parameters
+from otx.cli.utils.config import configure_dataset, override_parameters
 from otx.cli.utils.hpo import run_hpo
 from otx.cli.utils.importing import get_impl_class
 from otx.cli.utils.io import (
@@ -152,41 +150,22 @@ def main():
     task_class = get_impl_class(template.entrypoints.base)
     dataset_class = get_dataset_class(template.task_type)
 
-    # Create instances of Task, ConfigurableParameters and Dataset.
-    train_ann_files, train_data_roots = args.train_ann_files, args.train_data_roots
-    val_ann_files, val_data_roots = args.val_ann_files, args.val_data_roots
-    unlabeled_data_roots, unlabeled_file_list = args.unlabeled_data_roots, args.unlabeled_file_list
-    if os.path.exists(args.data):
-        with open(args.data, "r", encoding="UTF-8") as stream:
-            data_config = yaml.safe_load(stream)
-        stream.close()
-
-        train_ann_files, train_data_roots = (
-            data_config["data"]["train"]["ann-files"],
-            data_config["data"]["train"]["data-roots"],
-        )
-        val_ann_files, val_data_roots = (
-            data_config["data"]["val"]["ann-files"],
-            data_config["data"]["val"]["data-roots"],
-        )
-        unlabeled_data_roots, unlabeled_file_list = (
-            data_config["data"]["unlabeled"]["data-roots"],
-            data_config["data"]["unlabeled"]["file-list"],
-        )
-        args.save_model_to = "./models"
-        args.save_logs_to = "./logs"
+    data_config = configure_dataset(args, train=True)
 
     data_roots = dict(
         train_subset={
-            "ann_file": train_ann_files,
-            "data_root": train_data_roots,
+            "ann_file": data_config["data"]["train"]["ann-files"],
+            "data_root": data_config["data"]["train"]["data-roots"],
         },
-        val_subset={"ann_file": val_ann_files, "data_root": val_data_roots},
+        val_subset={
+            "ann_file": data_config["data"]["val"]["ann-files"],
+            "data_root": data_config["data"]["val"]["data-roots"],
+        },
     )
-    if unlabeled_data_roots:
+    if data_config["data"]["unlabeled"]["data-roots"]:
         data_roots["unlabeled_subset"] = {
-            "data_root": unlabeled_data_roots,
-            "file_list": unlabeled_file_list,
+            "data_root": data_config["data"]["unlabeled"]["data-roots"],
+            "file_list": data_config["data"]["unlabeled"]["file-list"],
         }
 
     dataset = dataset_class(**data_roots)

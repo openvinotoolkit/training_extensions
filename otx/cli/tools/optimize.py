@@ -18,8 +18,6 @@ import argparse
 import json
 import os
 
-import yaml
-
 from otx.api.configuration.helper import create
 from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.model import ModelEntity
@@ -30,7 +28,7 @@ from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.usecases.tasks.interfaces.optimization_interface import OptimizationType
 from otx.cli.datasets import get_dataset_class
 from otx.cli.registry import find_and_parse_model_template
-from otx.cli.utils.config import override_parameters
+from otx.cli.utils.config import configure_dataset, override_parameters
 from otx.cli.utils.importing import get_impl_class
 from otx.cli.utils.io import generate_label_schema, read_model, save_model_data
 from otx.cli.utils.parser import (
@@ -130,29 +128,17 @@ def main():
     task_class = get_impl_class(template.entrypoints.openvino if is_pot else template.entrypoints.nncf)
     dataset_class = get_dataset_class(template.task_type)
 
-    # Create instances of Task, ConfigurableParameters and Dataset.
-    train_ann_files, train_data_roots = args.train_ann_files, args.train_data_roots
-    val_ann_files, val_data_roots = args.val_ann_files, args.val_data_roots
-    if os.path.exists(args.data):
-        with open(args.data, "r", encoding="UTF-8") as stream:
-            data_config = yaml.safe_load(stream)
-        stream.close()
-
-        train_ann_files, train_data_roots = (
-            data_config["data"]["train"]["ann-files"],
-            data_config["data"]["train"]["data-roots"],
-        )
-        val_ann_files, val_data_roots = (
-            data_config["data"]["val"]["ann-files"],
-            data_config["data"]["val"]["data-roots"],
-        )
+    data_config = configure_dataset(args)
 
     dataset = dataset_class(
         train_subset={
-            "ann_file": train_ann_files,
-            "data_root": train_data_roots,
+            "ann_file": data_config["data"]["train"]["ann-files"],
+            "data_root": data_config["data"]["train"]["data-roots"],
         },
-        val_subset={"ann_file": val_ann_files, "data_root": val_data_roots},
+        val_subset={
+            "ann_file": data_config["data"]["val"]["ann-files"],
+            "data_root": data_config["data"]["val"]["data-roots"],
+        },
     )
 
     environment = TaskEnvironment(

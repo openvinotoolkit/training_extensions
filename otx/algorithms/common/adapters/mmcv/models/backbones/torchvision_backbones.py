@@ -1,5 +1,11 @@
-"""Model templates builder."""
+"""Torchvision Model Backbone Class Generation.
 
+For torchvision backbone support for OTX models,
+this is a code that converts torchvision backbone classes to match
+the mmcv backbone class format and registers them in the mmcv registry.
+This copied the format of "mmdet/models/backbones/imgclsmob.py"
+as it is and made some modifications & code cleaning.
+"""
 # Copyright (C) 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");

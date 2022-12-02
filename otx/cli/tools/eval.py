@@ -18,8 +18,6 @@ import argparse
 import json
 import os
 
-import yaml
-
 from otx.api.configuration.helper import create
 from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.resultset import ResultSetEntity
@@ -27,7 +25,7 @@ from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.cli.datasets import get_dataset_class
 from otx.cli.registry import find_and_parse_model_template
-from otx.cli.utils.config import override_parameters
+from otx.cli.utils.config import configure_dataset, override_parameters
 from otx.cli.utils.importing import get_impl_class
 from otx.cli.utils.io import generate_label_schema, read_label_schema, read_model
 from otx.cli.utils.nncf import is_checkpoint_nncf
@@ -123,18 +121,14 @@ def main():
 
     dataset_class = get_dataset_class(template.task_type)
 
-    test_ann_files, test_data_roots = args.test_ann_files, args.test_data_roots
-    if os.path.exists(args.data):
-        with open(args.data, "r", encoding="UTF-8") as stream:
-            data_config = yaml.safe_load(stream)
-        stream.close()
+    data_config = configure_dataset(args)
 
-        test_ann_files, test_data_roots = (
-            data_config["data"]["test"]["ann-files"],
-            data_config["data"]["test"]["data-roots"],
-        )
-
-    dataset = dataset_class(test_subset={"ann_file": test_ann_files, "data_root": test_data_roots})
+    dataset = dataset_class(
+        test_subset={
+            "ann_file": data_config["data"]["test"]["ann-files"],
+            "data_root": data_config["data"]["test"]["data-roots"],
+        }
+    )
 
     dataset_label_schema = generate_label_schema(dataset, template.task_type)
     check_label_schemas(read_label_schema(args.load_weights), dataset_label_schema)

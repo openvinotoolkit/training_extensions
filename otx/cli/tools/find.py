@@ -1,5 +1,7 @@
-"""Model templates searching tool."""
+"""OTX searching command 'otx find'.
 
+Through this command, you can check the tasks, templates, and backbones available in OTX.
+"""
 # Copyright (C) 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -35,6 +37,15 @@ SUPPORTED_TASKS = (
     "ANOMALY_SEGMENTATION",
 )
 
+SUPPORTED_BACKBONE_BACKENDS = (
+    "otx",
+    "mmcls",
+    "mmdet",
+    "mmseg",
+    "torchvision",
+    "pytorchcv",
+)
+
 
 def parse_args():
     """Parses command line arguments."""
@@ -48,7 +59,7 @@ def parse_args():
     parser.add_argument(
         "--backbone",
         action="append",
-        help="The currently supported options: (otx, mmcls, mmdet, mmseg, torchvision, pytorchcv).",
+        help=f"The currently supported options: {SUPPORTED_BACKBONE_BACKENDS}.",
     )
 
     return parser.parse_args()

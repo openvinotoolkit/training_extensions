@@ -1,5 +1,10 @@
-"""Builder Class for training template."""
+"""Builder Class for training template.
 
+For user's various use cases and convenient CLI,
+It is an internal Builder class used in the otx build command
+that enables the configuration of the basic workspace of OTX
+and supports the replacement of the backbone of the model.
+"""
 # Copyright (C) 2022 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,10 +32,10 @@ from otx.cli.registry import Registry as OTXRegistry
 from otx.cli.utils.importing import get_backbone_registry
 
 DEFAULT_MODEL_TEMPLATE_ID = {
-    "classification": "Custom_Image_Classification_EfficinetNet-B0",
-    "detection": "Custom_Object_Detection_Gen3_ATSS",
-    "instance_segmentation": "Custom_Counting_Instance_Segmentation_MaskRCNN_ResNet50",
-    "segmentation": "Custom_Semantic_Segmentation_Lite-HRNet-18-mod2_OCR",
+    "CLASSIFICATION": "Custom_Image_Classification_EfficinetNet-B0",
+    "DETECTION": "Custom_Object_Detection_Gen3_ATSS",
+    "INSTANCE_SEGMENTATION": "Custom_Counting_Instance_Segmentation_MaskRCNN_ResNet50",
+    "SEGMENTATION": "Custom_Semantic_Segmentation_Lite-HRNet-18-mod2_OCR",
 }
 
 
@@ -49,7 +54,12 @@ def get_backbone_out_channels(backbone):
 
 
 def update_backbone_args(backbone_config, registry, skip_missing=False):
-    """Update Backbone required arguments."""
+    """Update Backbone required arguments.
+
+    This function checks the init parameters of the corresponding backbone function (or class)
+    and identifies the required arguments.
+    Also, it distinguishes the argment needed for the build to add convenience to the user.
+    """
     backbone_function = registry.get(backbone_config["type"])
     required_option = {}
     required_args, missing_args = [], []
@@ -125,9 +135,11 @@ def update_in_channel(model_config, out_channels):
 class Builder:
     """Class that implements a model templates registry."""
 
-    def build_task_config(self, task_type, model_type=None, workspace_path=None):
+    def build_task_config(self, task_type, model_type=None, workspace_path=None, otx_root="."):
         """Create OTX workspace with Template configs from task type.
 
+        This function provides a user-friendly OTX workspace and provides more intuitive
+        and create customizable templates to help users use all the features of OTX.
         task_type: The type of task want to get (str)
         model_type: Specifies the template of a model (str)
         workspace_path: This is the folder path of the workspace want to create (os.path)
@@ -136,10 +148,12 @@ class Builder:
         # Create OTX-workspace
         if workspace_path is None:
             workspace_path = f"./otx-workspace-{task_type}"
-        os.makedirs(workspace_path, exist_ok=True)
+            if model_type:
+                workspace_path += f"-{model_type}"
+        os.makedirs(workspace_path, exist_ok=False)
 
         # Load & Save Model Template
-        otx_registry = OTXRegistry("otx").filter(task_type=task_type)
+        otx_registry = OTXRegistry(os.path.join(otx_root, "otx")).filter(task_type=task_type)
         if model_type:
             template = [temp for temp in otx_registry.templates if temp.name.lower() == model_type.lower()]
             if len(template) == 0:
@@ -149,11 +163,11 @@ class Builder:
                 )
             template = template[0]
         else:
-            template = otx_registry.get(DEFAULT_MODEL_TEMPLATE_ID[task_type])
+            template = otx_registry.get(DEFAULT_MODEL_TEMPLATE_ID[task_type.upper()])
         template_dir = os.path.dirname(template.model_template_path)
 
-        # Copy task configuration file
-        task_configuration_path = os.path.join("/".join(template_dir.split("/")[:-1]), "configuration.yaml")
+        # Copy task base configuration file
+        task_configuration_path = os.path.join(template_dir, template.hyper_parameters.base_path)
         shutil.copyfile(task_configuration_path, os.path.join(workspace_path, "configuration.yaml"))
         # Load & Save Model Template
         template_config = MPAConfig.fromfile(template.model_template_path)
@@ -187,7 +201,9 @@ class Builder:
     def build_backbone_config(self, backbone_type, output_path):
         """Build Backbone configs from backbone type.
 
-        backbone_type: The type of backbone want to get (str)
+        This is a function that makes the configuration
+        of the usable backbone found by the user through otx find.
+        backbone_type: The type of backbone want to get - {backend.backbone_type} (str)
         output_path: new backbone configuration file output path (os.path)
         """
         print(f"[otx build] Backbone Config: {backbone_type}")
@@ -197,8 +213,8 @@ class Builder:
         otx_registry, _ = get_backbone_registry(backend)
         missing_args = update_backbone_args(backbone_config, otx_registry, skip_missing=True)
         if output_path.endswith((".yml", ".yaml", ".json")):
-            mmcv.dump({"backbone": backbone_config}, output_path)
-            print(f"[otx build] Save backbone configuration: {output_path}")
+            mmcv.dump({"backbone": backbone_config}, os.path.abspath(output_path))
+            print(f"[otx build] Save backbone configuration: {os.path.abspath(output_path)}")
         else:
             raise ValueError("The backbone config support file format is as follows: (.yml, .yaml, .json)")
         return missing_args
@@ -206,6 +222,8 @@ class Builder:
     def build_model_config(self, model_config_path, backbone_config_path, output_path=None):
         """Build model & update backbone configs.
 
+        This is a function that updates the existing model to be able to build
+        through the backbone configuration file or backbone type.
         model_config_path: model configuration file path (os.path)
         backbone_config_path: backbone configuration file path (os.path)
         output_path: new model.py output path (os.path)
@@ -269,8 +287,6 @@ class Builder:
 
         # Dump or create model config file
         if output_path is None:
-            base_dir = os.path.abspath(".")
-            model_file_name = "model.py"
-            output_path = os.path.join(base_dir, model_file_name)
+            output_path = model_config_path
         model_config.dump(output_path)
         print(f"[otx build] Save model configuration: {output_path}")
