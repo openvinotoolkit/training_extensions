@@ -4,6 +4,9 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from .data import OTXRawframeDataset
+from .models import register_action_backbones
 from .utils import export_model, patch_config, set_data_classes
 
 __all__ = ["OTXRawframeDataset", "patch_config", "set_data_classes", "export_model"]
+
+register_action_backbones()

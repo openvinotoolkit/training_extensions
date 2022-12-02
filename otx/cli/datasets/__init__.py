@@ -68,5 +68,9 @@ def get_dataset_class(task_type):
         from .action_classification.dataset import ActionClassificationDataset
 
         return ActionClassificationDataset
+    if task_type == TaskType.ACTION_DETECTION:
+        from .action_detection.dataset import ActionDetectionDataset
+
+        return ActionDetectionDataset
 
     raise ValueError(f"Invalid task type: {task_type}")

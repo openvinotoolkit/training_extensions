@@ -1,4 +1,4 @@
-"""Task Initialization of OTX Action Classification."""
+"""Task Initialization of OTX Action Task."""
 
 # Copyright (C) 2022 Intel Corporation
 #
@@ -14,12 +14,12 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .inference import ActionClsInferenceTask
+from .inference import ActionInferenceTask
 from .openvino import ActionClsOpenVINOTask
-from .train import ActionClsTrainTask
+from .train import ActionTrainTask
 
 __all__ = [
-    "ActionClsInferenceTask",
+    "ActionInferenceTask",
     "ActionClsOpenVINOTask",
-    "ActionClsTrainTask",
+    "ActionTrainTask",
 ]

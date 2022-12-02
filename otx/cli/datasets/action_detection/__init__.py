@@ -1,4 +1,4 @@
-"""Configs Initialization of OTX Action Tasks."""
+"""Datasets for action detection tasks."""
 
 # Copyright (C) 2022 Intel Corporation
 #
@@ -13,7 +13,3 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions
 # and limitations under the License.
-
-from .configuration import ActionConfig
-
-__all__ = ["ActionConfig"]

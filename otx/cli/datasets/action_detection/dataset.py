@@ -1,4 +1,4 @@
-"""Module contains ActionClassificationDataset."""
+"""Module contains ActionDetectionDataset."""
 
 # Copyright (C) 2022 Intel Corporation
 #
@@ -14,14 +14,14 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from otx.algorithms.action.utils.data import load_cls_dataset
+from otx.algorithms.action.utils.data import load_det_dataset
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label import Domain
 from otx.api.entities.subset import Subset
 
 
-class ActionClassificationDataset(DatasetEntity):
-    """Class for working with file-system based Action Classification dataset."""
+class ActionDetectionDataset(DatasetEntity):
+    """Class for working with file-system based Action Detection dataset."""
 
     def __init__(
         self,
@@ -35,10 +35,10 @@ class ActionClassificationDataset(DatasetEntity):
 
         if train_subset is not None:
             items.extend(
-                load_cls_dataset(
+                load_det_dataset(
                     ann_file_path=train_subset["ann_file"],
                     data_root_dir=train_subset["data_root"],
-                    domain=Domain.ACTION_CLASSIFICATION,
+                    domain=Domain.ACTION_DETECTION,
                     subset=Subset.TRAINING,
                     labels_list=labels_list,
                 )
@@ -46,10 +46,10 @@ class ActionClassificationDataset(DatasetEntity):
 
         if val_subset is not None:
             items.extend(
-                load_cls_dataset(
+                load_det_dataset(
                     ann_file_path=val_subset["ann_file"],
                     data_root_dir=val_subset["data_root"],
-                    domain=Domain.ACTION_CLASSIFICATION,
+                    domain=Domain.ACTION_DETECTION,
                     subset=Subset.VALIDATION,
                     labels_list=labels_list,
                 )
@@ -57,10 +57,10 @@ class ActionClassificationDataset(DatasetEntity):
 
         if test_subset is not None:
             items.extend(
-                load_cls_dataset(
+                load_det_dataset(
                     ann_file_path=test_subset["ann_file"],
                     data_root_dir=test_subset["data_root"],
-                    domain=Domain.ACTION_CLASSIFICATION,
+                    domain=Domain.ACTION_DETECTION,
                     subset=Subset.TESTING,
                     labels_list=labels_list,
                 )
