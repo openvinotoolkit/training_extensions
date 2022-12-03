@@ -1,0 +1,15 @@
+metric: accuracy
+search_algorithm: asha
+hp_space:
+  learning_parameters.learning_rate:
+    param_type: qloguniform
+    range:
+      - 0.00029
+      - 0.1
+      - 0.00001
+  learning_parameters.batch_size:
+    param_type: qloguniform
+    range:
+      - 64
+      - 256
+      - 2

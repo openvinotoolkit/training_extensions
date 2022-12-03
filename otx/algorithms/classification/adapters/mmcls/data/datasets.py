@@ -5,6 +5,7 @@
 #
 
 # pylint: disable=invalid-name, too-many-locals, no-member
+import copy
 
 import numpy as np
 from mmcls.core import average_performance, mAP
@@ -96,9 +97,16 @@ class MPAClsDataset(BaseDataset):
             ignored_labels=ignored_labels,
         )
 
-        if self.pipeline is None:
-            return data_info
-        return self.pipeline(data_info)
+        data_infos = [copy.deepcopy(data_info) for _ in range(self.num_pipes)]
+        if isinstance(self.pipeline, dict):
+            results = {}
+            for i, k in enumerate(self.pipeline.keys()):
+                results[k] = self.pipeline[k](data_infos[i])
+        elif self.pipeline is None:
+            results = data_infos[0]
+        else:
+            results = self.pipeline(data_infos[0])
+        return results
 
     def get_gt_labels(self):
         """Get all ground-truth labels (categories).

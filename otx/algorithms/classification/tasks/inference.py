@@ -402,6 +402,7 @@ class ClassificationInferenceTask(
                     pipeline_step.to_rgb = to_rgb
                 elif pipeline_step.type == "MultiScaleFlipAug":
                     patch_color_conversion(pipeline_step.transforms)
+            return pipeline
 
         assert "data" in config
         for subset in ("train", "val", "test", "unlabeled"):
@@ -435,7 +436,11 @@ class ClassificationInferenceTask(
             for pipeline_step in cfg.pipeline:
                 if subset == "train" and pipeline_step.type == "Collect":
                     pipeline_step = get_meta_keys(pipeline_step)
-            patch_color_conversion(cfg.pipeline)
+
+            if isinstance(cfg.pipeline, ConfigDict):
+                cfg.pipeline = {key: patch_color_conversion(val) for key, val in cfg.pipeline.items()}
+            else:
+                patch_color_conversion(cfg.pipeline)
 
     def _patch_evaluation(self, config: MPAConfig):
         cfg = config.evaluation

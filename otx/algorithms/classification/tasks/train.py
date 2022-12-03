@@ -156,6 +156,10 @@ class ClassificationTrainTask(ClassificationInferenceTask):
                     otx_dataset=dataset.get_subset(Subset.VALIDATION),
                     labels=self._labels,
                 ),
+                unlabeled=ConfigDict(
+                    otx_dataset=dataset.get_subset(Subset.UNLABELED),
+                    labels=self._labels,
+                ),
             )
         )
         unlabeled_dataset = get_unlabeled_dataset(dataset)
