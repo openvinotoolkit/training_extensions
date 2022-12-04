@@ -150,7 +150,7 @@ def main():
     task_class = get_impl_class(template.entrypoints.base)
     dataset_class = get_dataset_class(template.task_type)
 
-    data_config = configure_dataset(args, train=True)
+    data_config = configure_dataset(args)
 
     data_roots = dict(
         train_subset={
@@ -203,6 +203,10 @@ def main():
 
     task.train(dataset, output_model, train_parameters=TrainParameters())
 
+    if "save_model_to" not in args or not args.save_model_to:
+        args.save_model_to = "./models"
+    if "save_logs_to" not in args or not args.save_logs_to:
+        args.save_logs_to = "./logs"
     save_model_data(output_model, args.save_model_to)
 
     validation_dataset = dataset.get_subset(Subset.VALIDATION)

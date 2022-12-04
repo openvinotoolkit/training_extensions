@@ -36,7 +36,7 @@ def override_parameters(overrides, parameters):
                 raise ValueError(f'The "{k}" is not in allowed_keys: {allowed_keys}')
 
 
-def configure_dataset(args, train=False):
+def configure_dataset(args):
     """Configure dataset args."""
 
     # Create instances of Task, ConfigurableParameters and Dataset.
@@ -47,9 +47,6 @@ def configure_dataset(args, train=False):
         with open(args.data, "r", encoding="UTF-8") as stream:
             data_config = yaml.safe_load(stream)
         stream.close()
-        if train:
-            args.save_model_to = "./models"
-            args.save_logs_to = "./logs"
 
     # The command's args are overridden and use first
     if "train_ann_files" in args and args.train_ann_files:

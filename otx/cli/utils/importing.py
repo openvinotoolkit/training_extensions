@@ -81,6 +81,8 @@ def get_backbone_registry(backends=None):
 
 def get_required_args(module):
     """Gather backbone's Required Args."""
+    if module is None:
+        return []
     required_args = []
     args_signature = inspect.signature(module)
     for arg_key, arg_value in args_signature.parameters.items():
