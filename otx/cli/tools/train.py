@@ -181,9 +181,6 @@ def main():
 
     dataset, label_schema = datumaro_adapter.convert_to_otx_format(datumaro_dataset)
     
-    for data in dataset:
-        print(data)
-    raise
     environment = TaskEnvironment(
         model=None,
         hyper_parameters=hyper_parameters,
