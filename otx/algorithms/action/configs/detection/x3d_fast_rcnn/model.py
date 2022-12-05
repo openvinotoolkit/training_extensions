@@ -1,4 +1,4 @@
-"""Model configuration of Two Stage Two backbone structure with X3D for Action Detection Task."""
+"""Model configuration of Fast RCNN with X3D for Action Detection Task."""
 
 # Copyright (C) 2022 Intel Corporation
 #

@@ -1,10 +1,10 @@
 # Description.
-model_template_id: Custom_Action_Detection_Two_Stage_Two_Backbone
-name: X3D_Two_Stage_Two_Backbone
+model_template_id: Custom_Action_Detection_X3D_FAST_RCNN
+name: X3D_FAST_RCNN
 task_type: ACTION_DETECTION
 task_family: VISION
 instantiation: "CLASS"
-summary: Basic transfer learning template for Two Stage Two Backbone Detector
+summary: Basic transfer learning template for Fast RCNN with 3D action backbone
 application: ~
 
 # Algo backend.

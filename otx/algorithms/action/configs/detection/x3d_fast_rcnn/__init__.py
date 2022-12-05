@@ -1,4 +1,4 @@
-"""Initialization of Two Stage Two Backbone structure for Action Detection Task."""
+"""Initialization of X3D_Fast_RCNN for Action Detection Task."""
 
 # Copyright (C) 2022 Intel Corporation
 #
