@@ -12,4 +12,5 @@ from otx.utils.logger import get_logger
 class AnomalyDatasetAdapter(BaseDatasetAdapter):
     def convert_to_otx_format(self, datumaro_dataset: dict) -> DatasetEntity:
         """ Conver DatumaroDataset to DatasetEntity for Anomalytasks. """
-        pass
+        # Prepare
+        
