@@ -1,4 +1,4 @@
-"""Model configuration of ATSS model for Detection Task."""
+"""Unbiased teacher detector configuration of OTX Semi-SL Detection."""
 
 # Copyright (C) 2022 Intel Corporation
 #
@@ -16,4 +16,8 @@
 
 # pylint: disable=invalid-name
 
-_base_ = ["../../../base/models/unbiased_teacher.py", "../model.py"]
+model = dict(
+    super_type="UnbiasedTeacher",
+    pseudo_conf_thresh=0.25,
+    unlabeled_loss_weight=1.0,
+)
