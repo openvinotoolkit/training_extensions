@@ -1,6 +1,5 @@
 import torch
 import os
-import subprocess
 from .model import load_checkpoint
 from .train_utils import load_model
 
@@ -35,7 +34,7 @@ class Exporter:
 
         if self.config.get('verbose_export'):
             print(export_command)
-        subprocess.run(export_command, shell=True, check=True)
+        os.system(export_command)
 
     def export_model_onnx(self):
 
