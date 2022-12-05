@@ -17,7 +17,7 @@ from datumaro.components.annotation import Label as DatumaroLabel
 from otx.core.base_dataset_adapter import BaseDatasetAdapter
 from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.datasets import DatasetEntity
-from otx.api.entities.metadata import MetadataItemEntity, FloatMetadata
+from otx.api.entities.metadata import MetadataItemEntity, VideoMetadata
 from otx.api.entities.subset import Subset
 from otx.api.entities.id import ID
 from otx.api.entities.image import Image
@@ -121,15 +121,18 @@ class ActionClassificationDatasetAdapter(ActionBaseDatasetAdapter, BaseDatasetAd
                                     ]
                                 )
                             )
-                    meta = MetadataItemEntity(
-                        data=
+                    meta_item = MetadataItemEntity(
+                        data=VideoMetadata(
+                            video_id=datumaro_item.media.path.split('/')[-2],
+                            frame_id=datumaro_item.media.path.split('/')[-1]
+                        )
                     )
                     # Unlabeled dataset
                     if len(shapes) == 0:
                         annotation_scene = NullAnnotationSceneEntity()
                     else:
                         annotation_scene = AnnotationSceneEntity(kind=AnnotationSceneKind.ANNOTATION, annotations=shapes)
-                    dataset_item = DatasetItemEntity(image, annotation_scene, subset=subset)
+                    dataset_item = DatasetItemEntity(image, annotation_scene, subset=subset, metadata=meta_item)
                     dataset_items.append(dataset_item)
         return DatasetEntity(items=dataset_items), label_schema
 
