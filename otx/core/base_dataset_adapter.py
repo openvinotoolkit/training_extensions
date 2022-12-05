@@ -35,7 +35,7 @@ def get_dataset_adapter(task_type):
 
         return ClassificationDatasetAdapter(task_type=task_type)
 
-    if task_type == TaskType.DETECTION:
+    if task_type == TaskType.DETECTION or task_type == TaskType.INSTANCE_SEGMENTATION:
         from .detection_dataset_adapter import DetectionDatasetAdapter
 
         return DetectionDatasetAdapter(task_type=task_type)
@@ -50,17 +50,15 @@ def get_dataset_adapter(task_type):
 
         return ActionClassificationDatasetAdapter(task_type=task_type)
     
+    if task_type == TaskType.ANOMALY_CLASSIFICATION:
+        from .anomaly_dataset_adapter import AnomalyDatasetAdapter
+
+        return AnomalyDatasetAdapter(task_type=task_type)
     """
     if task_type == TaskType.ACTION_DETECTION:
         from .action_dataset_adapter import ActionDetectionDatasetAdapter
 
         return ActionDetectionDatasetAdapter(task_type=task_type)
-    if task_type == TaskType.ANOMALY_CLASSIFICATION:
-        from otx.algorithms.anomaly.adapters.anomalib.data.dataset import (
-            AnomalyClassificationDataset,
-        )
-
-        return AnomalyClassificationDataset
     if task_type == TaskType.ANOMALY_DETECTION:
         from otx.algorithms.anomaly.adapters.anomalib.data.dataset import (
             AnomalyDetectionDataset,
@@ -73,10 +71,6 @@ def get_dataset_adapter(task_type):
         )
 
         return AnomalySegmentationDataset
-    if task_type == TaskType.INSTANCE_SEGMENTATION:
-        from .detection_dataset_adapter import InstanceSegmentationDataset
-
-        return InstanceSegmentationDataset
     if task_type == TaskType.ROTATED_DETECTION:
         from .rotated_detection.dataset import RotatedDetectionDataset
 
@@ -120,7 +114,7 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
         # Find self.data_type and task_type
         data_type_candidates = self._detect_dataset_format(path=train_data_roots)
         logger.info('[*] Data type candidates: {}'.format(data_type_candidates))
-        self.data_type = self._select_data_type(data_type_candidates) 
+        self.data_type = self._select_data_type(data_type_candidates)
         logger.info('[*] Selected data type: {}'.format(self.data_type))
 
         # Construct dataset for training, validation, unlabeled
