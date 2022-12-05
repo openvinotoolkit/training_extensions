@@ -8,10 +8,7 @@
 
 import abc
 from abc import abstractmethod
-<<<<<<< HEAD
 from typing import Any, Dict, Tuple, Union
-=======
->>>>>>> Add action dataset adapter, remove some useless lines
 
 import datumaro
 from datumaro.components.annotation import AnnotationType as DatumaroAnnotationType
@@ -91,7 +88,7 @@ def get_dataset_adapter(task_type):
 
         return ClassificationDatasetAdapter(task_type=task_type)
 
-    if task_type == TaskType.DETECTION:
+    if task_type == TaskType.DETECTION or task_type == TaskType.INSTANCE_SEGMENTATION:
         from .detection_dataset_adapter import DetectionDatasetAdapter
 
         return DetectionDatasetAdapter(task_type=task_type)
@@ -106,17 +103,15 @@ def get_dataset_adapter(task_type):
 
         return ActionClassificationDatasetAdapter(task_type=task_type)
     
+    if task_type == TaskType.ANOMALY_CLASSIFICATION:
+        from .anomaly_dataset_adapter import AnomalyDatasetAdapter
+
+        return AnomalyDatasetAdapter(task_type=task_type)
     """
     if task_type == TaskType.ACTION_DETECTION:
         from .action_dataset_adapter import ActionDetectionDatasetAdapter
 
         return ActionDetectionDatasetAdapter(task_type=task_type)
-    if task_type == TaskType.ANOMALY_CLASSIFICATION:
-        from otx.algorithms.anomaly.adapters.anomalib.data.dataset import (
-            AnomalyClassificationDataset,
-        )
-
-        return AnomalyClassificationDataset
     if task_type == TaskType.ANOMALY_DETECTION:
         from otx.algorithms.anomaly.adapters.anomalib.data.dataset import (
             AnomalyDetectionDataset,
@@ -129,10 +124,6 @@ def get_dataset_adapter(task_type):
         )
 
         return AnomalySegmentationDataset
-    if task_type == TaskType.INSTANCE_SEGMENTATION:
-        from .detection_dataset_adapter import InstanceSegmentationDataset
-
-        return InstanceSegmentationDataset
     if task_type == TaskType.ROTATED_DETECTION:
         from .rotated_detection.dataset import RotatedDetectionDataset
 
