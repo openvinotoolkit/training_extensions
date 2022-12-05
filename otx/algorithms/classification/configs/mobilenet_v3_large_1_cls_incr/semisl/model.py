@@ -9,9 +9,9 @@ model = dict(
     task="classification",
     backbone=dict(mode="large"),
     head=dict(
-        _delete_=True,
-        type="SemiSLClsHead",
+        type="SemiNonLinearClsHead",
         in_channels=960,
+        hid_channels=1280,
         loss=dict(
             type="CrossEntropyLoss",
             loss_weight=1.0,

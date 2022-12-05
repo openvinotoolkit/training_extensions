@@ -11,7 +11,7 @@ model = dict(
         version="b0",
     ),
     head=dict(
-        type="SemiSLClsHead",
+        type="SemiLinearClsHead",
         loss=dict(
             type="CrossEntropyLoss",
             loss_weight=1.0,
