@@ -20,6 +20,7 @@ args = {
     "--test-data-roots": "data/datumaro/cvat_dataset/action_classification/train",
     "train_params": ["params", "--learning_parameters.num_iters", "2", "--learning_parameters.batch_size", "4"],
 }
+
 otx_dir = os.getcwd()
 
 TT_STABILITY_TESTS = os.environ.get("TT_STABILITY_TESTS", False)
