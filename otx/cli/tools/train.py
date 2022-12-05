@@ -205,8 +205,6 @@ def main():
 
     if "save_model_to" not in args or not args.save_model_to:
         args.save_model_to = "./models"
-    if "save_logs_to" not in args or not args.save_logs_to:
-        args.save_logs_to = "./logs"
     save_model_data(output_model, args.save_model_to)
 
     validation_dataset = dataset.get_subset(Subset.VALIDATION)
