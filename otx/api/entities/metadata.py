@@ -62,7 +62,8 @@ class VideoMetadata(IMetadata):
     """This class represents metadata of video.
     
     Args:
-
+        video_id (int): ID for video.
+        frame_id (int): ID for frame.
     """
     
     def __init__(self, video_id: int, frame_id:int):
@@ -71,11 +72,11 @@ class VideoMetadata(IMetadata):
     
     def __repr__(self):
         """Prints the video_id, frame_id and type of the MetadataItemEntity."""
-        return f"FloatMetadata({self.name}, {self.value}, {self.float_type})"
+        return f"VideoMetadata({self.video_id}, {self.frame_id})"
 
     def __eq__(self, other):
-        """Checks if two FloatMetadata have the same name, value and type."""
-        return self.name == other.name and self.value == other.value and self.float_type == other.float_type
+        """Checks if two VideoMetadata have the same name, value and type."""
+        return self.video_id == other.video_id and self.frame_id == other.frame_id
         """"""
 
 class VideoMetadata(IMetadata):
