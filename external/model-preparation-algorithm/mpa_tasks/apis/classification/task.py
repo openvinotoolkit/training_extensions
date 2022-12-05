@@ -548,7 +548,11 @@ class ClassificationTrainTask(ClassificationInferenceTask):
             return output
 
         for key, curve in learning_curves.items():
-            metric_curve = CurveMetric(xs=curve.x, ys=curve.y, name=key)
+            metric_curve = CurveMetric(
+                xs=np.nan_to_num(curve.x).tolist(), 
+                ys=np.nan_to_num(curve.y).tolist(),
+                name=key
+            )
             if key == metric_key:
                 best_acc = max(curve.y)
             visualization_info = LineChartInfo(name=key, x_axis_label="Timestamp", y_axis_label=key)
