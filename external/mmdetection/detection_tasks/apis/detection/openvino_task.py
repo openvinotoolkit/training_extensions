@@ -49,6 +49,7 @@ from ote_sdk.entities.model_template import TaskType
 from ote_sdk.entities.optimization_parameters import OptimizationParameters
 from ote_sdk.entities.result_media import ResultMediaEntity
 from ote_sdk.entities.resultset import ResultSetEntity
+from ote_sdk.entities.subset import Subset
 from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.entities.tensor import TensorEntity
 from ote_sdk.entities.label import Domain, LabelEntity
@@ -589,6 +590,7 @@ class OpenVINODetectionTask(
                 "POT is the only supported optimization type for OpenVino models"
             )
 
+        dataset = dataset.get_subset(Subset.TRAINING)
         data_loader = OTEOpenVinoDataLoader(dataset, self.inferencer)
 
         with tempfile.TemporaryDirectory() as tempdir:

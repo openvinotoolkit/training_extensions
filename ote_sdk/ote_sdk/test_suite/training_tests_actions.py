@@ -410,9 +410,6 @@ class OTETestPotAction(BaseOTETestAction):
     _name = "pot"
     _depends_stages_names = ["export"]
 
-    def __init__(self, pot_subset=Subset.TRAINING):
-        self.pot_subset = pot_subset
-
     def _run_ote_pot(
         self, data_collector, model_template, dataset, environment_for_export
     ):
@@ -431,7 +428,7 @@ class OTETestPotAction(BaseOTETestAction):
         try:
             self.openvino_task_pot.optimize(
                 OptimizationType.POT,
-                dataset.get_subset(self.pot_subset),
+                dataset,
                 self.optimized_model_pot,
                 OptimizationParameters(),
             )
