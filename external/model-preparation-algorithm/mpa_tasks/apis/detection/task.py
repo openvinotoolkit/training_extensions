@@ -138,9 +138,9 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         output = results["outputs"]
         metric = output["metric"]
         predictions = output["detections"]
-        assert len(output["detections"]) == len(output["feature_vectors"]) == len(output["saliency_maps"]), (
+        assert len(output["detections"]) == len(output["feature_vectors"]), (
             "Number of elements should be the same, however, number of outputs are "
-            f"{len(output['detections'])}, {len(output['feature_vectors'])}, and {len(output['saliency_maps'])}"
+            f"{len(output['detections'])}, {len(output['feature_vectors'])})"
         )
         prediction_results = zip(predictions, output["feature_vectors"], output["saliency_maps"])
         return prediction_results, metric
