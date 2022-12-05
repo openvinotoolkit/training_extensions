@@ -6,6 +6,7 @@
 
 # pylint: disable=invalid-name, too-many-locals, no-member
 from datumaro.components.annotation import Bbox as DatumaroBbox
+from datumaro.components.annotation import Polygon as DatumaroPolygon
 
 from otx.core.base_dataset_adapter import BaseDatasetAdapter
 from otx.api.entities.dataset_item import DatasetItemEntity
@@ -13,6 +14,7 @@ from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.image import Image
 from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.shapes.rectangle import Rectangle
+from otx.api.entities.shapes.polygon import Point, Polygon
 from otx.api.entities.annotation import (Annotation, AnnotationSceneEntity, AnnotationSceneKind, NullAnnotationSceneEntity)
 from otx.utils.logger import get_logger
 
@@ -35,6 +37,18 @@ class DetectionDatasetAdapter(BaseDatasetAdapter):
                     image = Image(file_path=datumaro_item.media.path)
                     shapes = []
                     for ann in datumaro_item.annotations:
+                        if isinstance(ann, DatumaroPolygon):
+                            shapes.append(
+                                Annotation(
+                                    Polygon(points=[Point(x=ann.points[i]/image.width,y=ann.points[i+1]/image.height) for i in range(0,len(ann.points),2)]),
+                                    labels=[
+                                        ScoredLabel(
+                                            label=label_entities[ann.label]
+                                        )
+                                    ]
+                                )
+                            )
+                            continue
                         if isinstance(ann, DatumaroBbox):
                             shapes.append(
                                 Annotation(
