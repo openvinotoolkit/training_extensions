@@ -13,10 +13,16 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+from copy import deepcopy
 from typing import Any, Dict
 
 import numpy as np
+from mmcv.utils import build_from_cfg
 from mmseg.datasets.builder import PIPELINES
+from mmseg.datasets.pipelines import Compose, to_tensor
+from PIL import Image
+from torchvision import transforms as T
+from torchvision.transforms import functional as F
 
 from otx.api.utils.argument_checks import check_input_parameters_type
 
@@ -94,3 +100,90 @@ class LoadAnnotationFromOTXDataset:
         results["seg_fields"].append("gt_semantic_seg")
 
         return results
+
+
+@PIPELINES.register_module()
+class TwoCropTransform(object):
+    def __init__(self, view0, view1):
+        self.pipeline1 = Compose([build_from_cfg(p, PIPELINES) for p in view0])
+        self.pipeline2 = Compose([build_from_cfg(p, PIPELINES) for p in view1])
+
+    @check_input_parameters_type()
+    def __call__(self, results: Dict[str, Any]):
+        results1 = self.pipeline1(deepcopy(results))
+        results2 = self.pipeline2(deepcopy(results))
+
+        results = deepcopy(results1)
+        results['img'] = to_tensor(np.ascontiguousarray(
+            np.stack((results1['img'], results2['img']), axis=0).transpose(0, 3, 1, 2)
+        ))
+        results['gt_semantic_seg'] = to_tensor(np.ascontiguousarray(
+            np.stack((results1['gt_semantic_seg'], results2['gt_semantic_seg']), axis=0).transpose(0, 1, 2)
+        ))
+        results['flip'] = [results1['flip'], results2['flip']]
+
+        return results
+
+
+@PIPELINES.register_module
+class RandomResizedCrop(T.RandomResizedCrop):
+    def __call__(self, results):
+        img = Image.fromarray(results['img'])
+
+        i, j, h, w = self.get_params(img, self.scale, self.ratio)
+        img = np.array(F.resized_crop(img, i, j, h, w, self.size, self.interpolation))
+        results['img'] = img
+        results['img_shape'] = img.shape
+        for key in results.get('seg_fields', []):
+            results[key] = np.array(
+                F.resized_crop(
+                    Image.fromarray(results[key]), 
+                    i, j, h, w, self.size, self.interpolation))
+
+        w_scale = results['img_shape'][1] / results['ori_shape'][1]
+        h_scale = results['img_shape'][0] / results['ori_shape'][0]
+        results['scale_factor'] = np.array([w_scale, h_scale, w_scale, h_scale], dtype=np.float32)
+
+        return results
+
+
+@PIPELINES.register_module
+class ColorJitter(T.ColorJitter):
+    def __call__(self, results):
+        results['img'] = np.array(self.forward(Image.fromarray(results['img'])))
+        return results
+
+
+@PIPELINES.register_module
+class RandomGrayscale(T.RandomGrayscale):
+    def __call__(self, results):
+        results['img'] = np.array(self.forward(Image.fromarray(results['img'])))
+        return results
+
+
+@PIPELINES.register_module
+class GaussianBlur(T.GaussianBlur):
+    def __call__(self, results):
+        results['img'] = np.array(self.forward(Image.fromarray(results['img']))) 
+        
+        return results
+
+
+@PIPELINES.register_module
+class Solarization(object):
+    """Solarization augmentation in BYOL https://arxiv.org/abs/2006.07733."""
+
+    def __init__(self, threshold=128):
+        self.threshold = threshold
+
+    def __call__(self, results):
+        img = results['img']
+        img = np.where(img < self.threshold, img, 255 - img)
+        results['img'] = img
+
+        return results
+
+    def __repr__(self):
+        repr_str = self.__class__.__name__
+
+        return repr_str

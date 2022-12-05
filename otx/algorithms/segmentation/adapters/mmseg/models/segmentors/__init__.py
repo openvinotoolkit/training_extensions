@@ -1,4 +1,4 @@
-"""OTX Algorithms - Segmentation Dataset."""
+"""Segmentors."""
 
 # Copyright (C) 2022 Intel Corporation
 #
@@ -14,14 +14,6 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .dataset import MPASegDataset, get_annotation_mmseg_format
-from .pipelines import (
-    LoadAnnotationFromOTXDataset,
-    LoadImageFromOTXDataset,
-    TwoCropTransform
-)
+from .detcon import DetConB
 
-__all__ = [
-    "get_annotation_mmseg_format", "LoadImageFromOTXDataset", "LoadAnnotationFromOTXDataset",
-    "MPASegDataset", "TwoCropTransform"
-]
+__all__ = ["DetConB"]
