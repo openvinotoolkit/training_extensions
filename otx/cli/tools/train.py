@@ -225,7 +225,7 @@ def main():
     print(resultset.performance)
 
     if args.save_logs_to:
-        tmp_path = task.output_path
+        tmp_path = task.project_path
         logs_path = os.path.join(args.save_logs_to, tmp_path.split("/")[-1])
         shutil.copytree(tmp_path, logs_path)
         print(f"Save logs: {logs_path}")

@@ -148,7 +148,7 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         pass
 
     @property
-    def output_path(self):
+    def project_path(self):
         """Return output path with logs."""
         return self._output_path
 
