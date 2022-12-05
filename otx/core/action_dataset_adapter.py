@@ -17,6 +17,7 @@ from datumaro.components.annotation import Label as DatumaroLabel
 from otx.core.base_dataset_adapter import BaseDatasetAdapter
 from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.datasets import DatasetEntity
+from otx.api.entities.metadata import MetadataItemEntity, FloatMetadata
 from otx.api.entities.subset import Subset
 from otx.api.entities.id import ID
 from otx.api.entities.image import Image
@@ -96,7 +97,6 @@ class ActionBaseDatasetAdapter(BaseDatasetAdapter):
                             is_empty=False, id=ID(i)) for i, class_name in enumerate(outputs["category_items"])]
         return outputs
 
-
 class ActionClassificationDatasetAdapter(ActionBaseDatasetAdapter, BaseDatasetAdapter):
     def convert_to_otx_format(self, datumaro_dataset: dict) -> DatasetEntity:
         label_information = self._prepare_label_information(datumaro_dataset)
@@ -121,6 +121,9 @@ class ActionClassificationDatasetAdapter(ActionBaseDatasetAdapter, BaseDatasetAd
                                     ]
                                 )
                             )
+                    meta = MetadataItemEntity(
+                        data=
+                    )
                     # Unlabeled dataset
                     if len(shapes) == 0:
                         annotation_scene = NullAnnotationSceneEntity()
