@@ -260,7 +260,11 @@ class Builder:
         _ = update_backbone_args(backbone_config, otx_registry)
         if backbone_config["use_out_indices"]:
             backbone_out_indices = backbone_config.get("out_indices", None)
-            if isinstance(backbone_out_indices, (tuple, list)) and len(backbone_out_indices) != len(model_in_indices):
+            if (
+                isinstance(backbone_out_indices, (tuple, list))
+                and isinstance(model_in_indices, (tuple, list))
+                and len(backbone_out_indices) != len(model_in_indices)
+            ):
                 backbone_out_indices = backbone_out_indices[-len(model_in_indices) :]
             if not backbone_out_indices and model_in_indices:
                 # Check out_indices vs num_stage
