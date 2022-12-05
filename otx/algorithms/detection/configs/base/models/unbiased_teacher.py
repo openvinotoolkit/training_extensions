@@ -16,6 +16,8 @@
 
 # pylint: disable=invalid-name
 
+_base_ = "./detector.py"
+
 model = dict(
     super_type="UnbiasedTeacher",
     pseudo_conf_thresh=0.25,
