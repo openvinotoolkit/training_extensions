@@ -1,4 +1,22 @@
-"""Convert dataset: Public dataset (Jester[RawFrames], AVA) --> Datumaro dataset (CVAT)."""
+""" Convert dataset: Public dataset (Jester[RawFrames], AVA) --> Datumaro dataset (CVAT).
+
+It contains lots of hard-coded to make .xml file consumed on Datumaro.
+
+Current Datumaro format for video (CVAT)
+
+root
+|- video_0
+    |- images
+        |- frames_001.png
+        |- frames_002.png
+    |- annotations.xml
+|- video_1
+    |- images
+    |- annotations.xml
+|- video_2
+
+"""
+
 import os
 import os.path as osp
 
@@ -21,8 +39,6 @@ def convert_jester_dataset_to_datumaro(src_path, dst_path):
         pathlib.Path(osp.join(dst_path, phase)).mkdir(parents=True, exist_ok=True)
         for i, line in enumerate(txt.readlines()):
             video_dir, _, class_idx = line[:-1].split(' ')
-            print('[*] video_dir: ', video_dir)
-            print('[*] class_idx: ', class_idx)
             
             video_path = osp.join(frames_dir_path, video_dir)
             frame_list = os.listdir(video_path)
@@ -141,11 +157,9 @@ def convert_jester_dataset_to_datumaro(src_path, dst_path):
             et = etree.ElementTree(annotations)
             et.write(osp.join(dst_path, phase, 'video_{}/annotations.xml'.format(str(i))), pretty_print=True, xml_declaration=True, encoding="utf-8")
 
-# detection
+#TODO: detection
 def convert_ava_dataset(path):
-    #TODO: make it more general
     pass
-
 
 def main(src_path, dst_path):
     convert_jester_dataset_to_datumaro(src_path, dst_path)
