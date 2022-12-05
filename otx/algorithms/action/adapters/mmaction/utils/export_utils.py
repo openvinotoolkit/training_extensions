@@ -1,9 +1,11 @@
 """Utils for Action recognition OpenVINO export task."""
 # Copyright (c) OpenMMLab. All rights reserved.
+from functools import partial
 from subprocess import DEVNULL, CalledProcessError, run  # nosec
 
 import numpy as np
 import torch
+from mmaction.models import Recognizer3D
 
 try:
     import onnx
@@ -69,23 +71,29 @@ def pytorch2onnx(
     model = _convert_batchnorm(model)
 
     # onnx.export does not support kwargs
-    if hasattr(model, "forward_dummy"):
-        from functools import partial
-
-        model.forward = partial(model.forward_dummy, softmax=softmax)
-    elif hasattr(model, "_forward") and is_localizer:
-        model.forward = model._forward
+    if not isinstance(model, Recognizer3D):
+        img_metas = [[{"img_shape": input_shape[-2:]}]]
+        dummy_proposals = [[torch.Tensor([[0, 0, input_shape[-1], input_shape[-1]]])]]
+        model.forward = partial(
+            model.forward, img_metas=img_metas, return_loss=False, rescale=False, proposals=dummy_proposals
+        )
     else:
-        raise NotImplementedError("Please implement the forward method for exporting.")
+        if hasattr(model, "forward_dummy"):
+            model.forward = partial(model.forward_dummy, softmax=softmax)
+        elif hasattr(model, "_forward") and is_localizer:
+            model.forward = model._forward
+        else:
+            raise NotImplementedError("Please implement the forward method for exporting.")
 
     model.cpu().eval()
 
     input_tensor = torch.randn(input_shape)
+    onnx_input = input_tensor if isinstance(model, Recognizer3D) else [input_tensor]
 
     register_extra_symbolics(opset_version)
     torch.onnx.export(
         model,
-        input_tensor,
+        onnx_input,
         output_file,
         input_names=["data"],
         output_names=["logits"],
@@ -135,6 +143,7 @@ def onnx2openvino(
     cfg,
     onnx_model_path,
     output_dir_path,
+    layout,
     input_shape=None,
     input_format="bgr",
     precision="FP32",
@@ -172,7 +181,7 @@ def onnx2openvino(
         f"--output_dir={output_dir_path}",
         f"--output={output_names}",
         f"--data_type={precision}",
-        "--source_layout=??c???",
+        f"--source_layout={layout}",
     ]
 
     assert input_format.lower() in ["bgr", "rgb"]
@@ -191,5 +200,11 @@ def onnx2openvino(
 
 def export_model(model, config, onnx_model_path=None, output_dir_path=None):
     """Export PyTorch model into OpenVINO model."""
-    pytorch2onnx(model, input_shape=[1, 1, 3, 8, 224, 224], output_file=onnx_model_path)
-    onnx2openvino(config, onnx_model_path, output_dir_path)
+    if isinstance(model, Recognizer3D):
+        input_shape = [1, 1, 3, 8, 224, 224]
+        layout = "??c???"
+    else:
+        input_shape = [1, 3, 8, 256, 256]
+        layout = "bctwh"
+    pytorch2onnx(model, input_shape=input_shape, output_file=onnx_model_path)
+    onnx2openvino(config, onnx_model_path, output_dir_path, layout)

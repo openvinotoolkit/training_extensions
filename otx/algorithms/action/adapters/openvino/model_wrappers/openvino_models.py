@@ -85,6 +85,7 @@ class OTXActionCls(Model):
         frames = []
         # TODO: allow only .jpg, .png exts
         rawframes = glob.glob(inputs.media["frame_dir"] + "/*")  # type: ignore[index]
+        rawframes.sort()
         for rawframe in rawframes:
             frame = cv2.imread(rawframe)
             resized_frame = self.resize(frame, (self.w, self.h))

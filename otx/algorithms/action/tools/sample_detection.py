@@ -24,9 +24,12 @@ from otx.api.configuration.helper import create
 from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.model import ModelEntity
 from otx.api.entities.model_template import parse_model_template
+from otx.api.entities.optimization_parameters import OptimizationParameters
 from otx.api.entities.resultset import ResultSetEntity
 from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
+from otx.api.usecases.tasks.interfaces.export_interface import ExportType
+from otx.api.usecases.tasks.interfaces.optimization_interface import OptimizationType
 from otx.cli.datasets import get_dataset_class
 from otx.cli.utils.io import generate_label_schema
 
@@ -72,7 +75,7 @@ def main(args):
 
     logger.info("Set hyperparameters")
     params = create(model_template.hyper_parameters.data)
-    params.learning_parameters.num_iters = 5
+    params.learning_parameters.num_iters = 1
 
     logger.info("Setup environment")
     environment = TaskEnvironment(
@@ -110,7 +113,60 @@ def main(args):
     logger.info(str(resultset.performance))
 
     if args.export:
-        raise NotImplementedError("Export task is not supported in action detection task")
+        logger.info("Export model")
+        exported_model = ModelEntity(
+            dataset,
+            environment.get_model_configuration(),
+        )
+        task.export(ExportType.OPENVINO, exported_model)
+
+        logger.info("Create OpenVINO Task")
+        environment.model = exported_model
+        openvino_task_impl_path = model_template.entrypoints.openvino
+        openvino_task_cls = get_task_class(openvino_task_impl_path)
+        openvino_task = openvino_task_cls(environment)
+
+        logger.info("Get predictions on the validation set")
+        predicted_validation_dataset = openvino_task.infer(
+            validation_dataset.with_empty_annotations(),
+            InferenceParameters(is_evaluation=True),
+        )
+
+        resultset = ResultSetEntity(
+            model=output_model,
+            ground_truth_dataset=validation_dataset,
+            prediction_dataset=predicted_validation_dataset,
+        )
+        logger.info("Estimate quality on validation set")
+        openvino_task.evaluate(resultset)
+        logger.info(str(resultset.performance))
+
+        # TODO: implement POT
+        logger.info("Run POT optimization")
+        optimized_model = ModelEntity(
+            dataset,
+            environment.get_model_configuration(),
+        )
+        openvino_task.optimize(
+            OptimizationType.POT,
+            dataset.get_subset(Subset.TRAINING),
+            optimized_model,
+            OptimizationParameters(),
+        )
+
+        logger.info("Get predictions on the validation set")
+        predicted_validation_dataset = openvino_task.infer(
+            validation_dataset.with_empty_annotations(),
+            InferenceParameters(is_evaluation=True),
+        )
+        resultset = ResultSetEntity(
+            model=optimized_model,
+            ground_truth_dataset=validation_dataset,
+            prediction_dataset=predicted_validation_dataset,
+        )
+        logger.info("Performance of optimized model:")
+        openvino_task.evaluate(resultset)
+        logger.info(str(resultset.performance))
 
 
 if __name__ == "__main__":
