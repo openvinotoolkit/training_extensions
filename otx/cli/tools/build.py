@@ -21,6 +21,7 @@ import argparse
 import os
 
 from otx.cli.builder import Builder
+from otx.cli.utils.importing import get_otx_root_path
 
 SUPPORTED_TASKS = ("CLASSIFICATION", "DETECTION", "INSTANCE_SEGMENTATION", "SEGMENTATION")
 
@@ -33,7 +34,6 @@ def parse_args():
     parser.add_argument("--model", help="Input OTX model config file (e.g model.py).", default=None)
     parser.add_argument("--backbone", help="Enter the backbone configuration file path or available backbone type.")
     parser.add_argument("--save-backbone-to", help="Enter where to save the backbone configuration file.", default=None)
-    parser.add_argument("--root", help="A root dir where templates should be searched.", default=".")
 
     return parser.parse_args()
 
@@ -46,8 +46,9 @@ def main():
     builder = Builder()
 
     # Build with task_type -> Create User workspace
+    otx_root = get_otx_root_path()
     if args.task and args.task.upper() in SUPPORTED_TASKS:
-        builder.build_task_config(args.task, args.model, args.workspace_root, args.root)
+        builder.build_task_config(args.task, args.model, args.workspace_root, otx_root)
 
     # Build Backbone related
     if args.backbone:

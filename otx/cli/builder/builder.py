@@ -153,7 +153,7 @@ class Builder:
         os.makedirs(workspace_path, exist_ok=False)
 
         # Load & Save Model Template
-        otx_registry = OTXRegistry(os.path.join(otx_root, "otx")).filter(task_type=task_type)
+        otx_registry = OTXRegistry(otx_root).filter(task_type=task_type)
         if model_type:
             template = [temp for temp in otx_registry.templates if temp.name.lower() == model_type.lower()]
             if len(template) == 0:

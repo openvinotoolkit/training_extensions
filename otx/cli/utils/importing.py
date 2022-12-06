@@ -17,6 +17,7 @@
 
 import importlib
 import inspect
+import os
 
 # pylint: disable=protected-access
 
@@ -102,3 +103,11 @@ def get_required_args(module):
         parent_module = parent_module[0].__bases__
     required_args = [arg for arg in required_args if arg not in ("args", "kwargs", "self")]
     return required_args
+
+
+def get_otx_root_path():
+    """Get otx root path from importing otx."""
+    otx_module = importlib.import_module("otx")
+    if otx_module:
+        return os.path.dirname(inspect.getfile(otx_module))
+    return None

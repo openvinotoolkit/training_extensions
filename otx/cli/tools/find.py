@@ -22,7 +22,11 @@ import os
 from prettytable import PrettyTable
 
 from otx.cli.registry import Registry
-from otx.cli.utils.importing import get_backbone_registry, get_required_args
+from otx.cli.utils.importing import (
+    get_backbone_registry,
+    get_otx_root_path,
+    get_required_args,
+)
 
 # pylint: disable=too-many-locals
 
@@ -51,7 +55,6 @@ def parse_args():
     """Parses command line arguments."""
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--root", help="A root dir where templates should be searched.", default="otx")
     parser.add_argument("--task", help=f"The currently supported options: {SUPPORTED_TASKS}.")
     parser.add_argument(
         "--template", action="store_true", help="Shows a list of templates that can be used immediately."
@@ -70,7 +73,8 @@ def main():
 
     args = parse_args()
 
-    otx_registry = Registry(args.root)
+    otx_root = get_otx_root_path()
+    otx_registry = Registry(otx_root)
     if args.task:
         otx_registry = otx_registry.filter(task_type=args.task)
 
