@@ -1,4 +1,4 @@
-"""API Tests for Action Classification training"""
+"""API Tests for Action Detection training"""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -40,7 +40,7 @@ from otx.cli.utils.io import generate_label_schema
 from tests.test_suite.e2e_test_system import e2e_pytest_api
 from tests.unit.api.test_helpers import generate_random_annotated_image
 
-DEFAULT_ACTION_TEMPLATE_DIR = osp.join("otx/algorithms/action/configs", "classification", "x3d")
+DEFAULT_ACTION_TEMPLATE_DIR = osp.join("otx/algorithms/action/configs", "detection", "x3d_fast_rcnn")
 
 
 def task_eval(task: BaseTask, model: ModelEntity, dataset: DatasetEntity) -> Performance:
@@ -59,17 +59,17 @@ class TestActionTaskAPI:
     Collection of tests for OTX API and OTX Model Templates
     """
 
-    train_ann_files = "data/custom_action_recognition/custom_dataset/train_list_rawframes.txt"
+    train_ann_files = "data/custom_action_recognition/custom_dataset/val.csv"
     train_data_roots = "data/custom_action_recognition/custom_dataset/rawframes"
-    val_ann_files = "data/custom_action_recognition/custom_dataset/train_list_rawframes.txt"
+    val_ann_files = "data/custom_action_recognition/custom_dataset/val.csv"
     val_data_roots = "data/custom_action_recognition/custom_dataset/rawframes"
 
     @e2e_pytest_api
     def test_reading_action_model_template(self):
-        model_templates = ["x3d"]
+        model_templates = ["x3d_fast_rcnn"]
         for model_template in model_templates:
             parse_model_template(
-                osp.join("otx/algorithms/action/configs", "classification", model_template, "template.yaml")
+                osp.join("otx/algorithms/action/configs", "detection", model_template, "template.yaml")
             )
 
     def init_environment(self, params, model_template):
