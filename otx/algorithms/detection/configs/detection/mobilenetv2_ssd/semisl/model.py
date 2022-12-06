@@ -16,4 +16,4 @@
 
 # pylint: disable=invalid-name
 
-_base_ = ["../../../base/models/unbiased_teacher.py", "../model.py"]
+_base_ = ["../model.py", "../../../base/models/unbiased_teacher.py"]
