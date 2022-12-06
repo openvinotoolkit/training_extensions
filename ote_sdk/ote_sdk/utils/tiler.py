@@ -8,6 +8,7 @@ Tiling Module
 
 from itertools import product
 from typing import Any, List, Tuple, Union
+import copy
 
 import numpy as np
 
@@ -79,7 +80,7 @@ class Tiler:
             detections = np.append(detections, output, axis=0)
             # cache full image feature vector and saliency map at 0 index
             if i == 0:
-                features = feats
+                features = copy.deepcopy(feats)
 
         if np.prod(detections.shape):
             dets, keep = multiclass_nms(detections, max_num=self.max_number)
@@ -128,7 +129,7 @@ class Tiler:
             if "feature_vector" in raw_predictions or "saliency_map" in raw_predictions:
                 features = [
                     raw_predictions["feature_vector"].reshape(-1),
-                    raw_predictions["saliency_map"],
+                    raw_predictions["saliency_map"][0],
                 ]
         return features, output
 
