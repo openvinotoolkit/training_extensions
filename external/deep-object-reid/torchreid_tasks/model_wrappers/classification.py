@@ -30,6 +30,13 @@ except ImportError as e:
 class OteClassification(Classification):
     __model__ = 'ote_classification'
 
+    def __init__(self, model_adapter, configuration=None, preload=False):
+        super().__init__(model_adapter, configuration, preload)
+        if self.hierarchical:
+            logits_range_dict = self.multihead_class_info.get('head_idx_to_logits_range', False)
+            if logits_range_dict:  #  json allows only string key, revert to integer.
+                self.multihead_class_info['head_idx_to_logits_range'] = {int(k):v for k,v in logits_range_dict.items()}
+
     @classmethod
     def parameters(cls):
         parameters = super().parameters()
@@ -98,13 +105,14 @@ class OteClassification(Classification):
 
         if self.multilabel:
             probs = sigmoid_numpy(logits)
+        elif self.hierarchical:
+            probs = activate_multihead_output(logits, self.multihead_class_info)
         else:
             probs = softmax_numpy(logits)
 
         act_score = float(np.max(probs) - np.min(probs))
 
-        return saliency_map, repr_vector, act_score
-
+        return probs, saliency_map, repr_vector, act_score
 
 @check_input_parameters_type()
 def sigmoid_numpy(x: np.ndarray):
@@ -125,12 +133,22 @@ def softmax_numpy(x: np.ndarray, eps: float = 1e-9):
 
 
 @check_input_parameters_type()
+def activate_multihead_output(logits: np.ndarray, multihead_class_info: dict):
+    for i in range(multihead_class_info['num_multiclass_heads']):
+        logits_begin, logits_end = multihead_class_info['head_idx_to_logits_range'][i]
+        logits[logits_begin : logits_end] = softmax_numpy(logits[logits_begin : logits_end])
+
+    if multihead_class_info['num_multilabel_classes']:
+        logits_begin, logits_end = multihead_class_info['num_single_label_classes'], -1
+        logits[logits_begin : logits_end] = softmax_numpy(logits[logits_begin : logits_end])
+
+    return logits
+
+
+@check_input_parameters_type()
 def get_hierarchical_predictions(logits: np.ndarray, multihead_class_info: dict,
                                  pos_thr: float = 0.5, activate: bool = True):
     predicted_labels = []
-    logits_range_dict = multihead_class_info.get('head_idx_to_logits_range', False)
-    if logits_range_dict:  #  json allows only string key, revert to integer.
-        multihead_class_info['head_idx_to_logits_range'] = {int(k):v for k,v in logits_range_dict.items()}
     for i in range(multihead_class_info['num_multiclass_heads']):
         logits_begin, logits_end = multihead_class_info['head_idx_to_logits_range'][i]
         head_logits = logits[logits_begin : logits_end]
