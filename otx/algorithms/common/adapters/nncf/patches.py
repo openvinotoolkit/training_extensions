@@ -29,8 +29,7 @@ def nncf_trace_context(self, img_metas, nncf_compress_postprocessing=True):
     # it must be on CPU
     device_backup = next(self.parameters()).device
     self = self.to("cpu")
-    # backup forward
-    forward_backup = self.forward
+
     if nncf_compress_postprocessing:
         self.forward = partial(self.forward, img_metas=img_metas, return_loss=False)
     else:
