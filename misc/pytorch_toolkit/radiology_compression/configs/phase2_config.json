@@ -1,0 +1,73 @@
+{
+    "train": {
+        "train_data": "test_data/phase2/train/",
+        "test_data": "test_data/phase2/test/",
+        "batch_size": 10,
+        "epochs": 5,
+        "gpu": "False",
+        "interval": 3,
+        "subset_size": 5,
+        "model_file_name": "model_weights/final_d_3.model",
+        "randomize_subset": "True",
+        "depth": 3,
+        "width": 96,
+        "phase": 2,
+        "efficient_net": "True",
+        "iterate": 0,
+        "lr": 1e-8,
+        "checkpoint": "model_weights/final_d_3.model",
+        "device": "cuda",
+        "alpha": 1,
+        "beta": 1,
+        "phi": 1,
+        "n_digestunits": 3,
+        "savepath": "model_weights/",
+        "image_path": "test_data/phase2/train/gd_truth/",
+        "path_to_latent": "test_data/phase2/train/latent/",
+        "path_to_gdtruth": "test_data/phase2/train/gd_truth/"
+    },
+    "inference": {
+        "model_file": "model_weights/final_d_3.model",
+        "bit_depth": 4,
+        "gpu": "False",
+        "with_aac": "False",
+        "produce_latent_code": "False",
+        "produce_decompressed_image": "True",
+        "out_latent": "temp_data/phase2/latent/",
+        "out_decom": "temp_data/phase2/decom/",
+        "depth": 3,
+        "width": 96,
+        "max_samples": 10,
+        "phase": 2,
+        "checkpoint": "model_weights/final_d_3.model",
+        "alpha": 1,
+        "beta": 1,
+        "phi": 1,
+        "model_name_onnx": "final_d_3.onnx",
+        "input_shape": [
+            1,
+            16,
+            160,
+            324
+        ],
+        "image_path": "test_data/phase2/test/latent/",
+        "path_to_latent": "test_data/phase2/test/latent/",
+        "path_to_gdtruth": "test_data/phase2/test/gd_truth/"
+    },
+    "export": {
+        "checkpoint": "model_weights/final_d_3.model",
+        "input_shape": [
+            1,
+            16,
+            160,
+            324
+        ],
+        "model_name_onnx": "final_d_3.onnx",
+        "model_name": "final_d_3",
+        "alpha": 1,
+        "beta": 1,
+        "phi": 1,
+        "phase": 2,
+        "class_count": 3
+    }
+}
