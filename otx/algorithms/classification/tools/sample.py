@@ -340,9 +340,7 @@ def main():
             dataset,
             environment.get_model_configuration(),
         )
-        openvino_task.optimize(
-            OptimizationType.POT, dataset.get_subset(Subset.TRAINING), optimized_model, OptimizationParameters()
-        )
+        openvino_task.optimize(OptimizationType.POT, dataset, optimized_model, OptimizationParameters())
         logger.info("Run POT deploy")
         openvino_task.deploy(optimized_model)
         validate(task, validation_dataset, optimized_model)
