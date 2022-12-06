@@ -524,12 +524,12 @@ def otx_explain_testing(template, root, otx_dir, args):
 
 def otx_find_testing(otx_dir):
     # Find all model template
-    command_line = ["otx", "find", "--template", "--root", otx_dir]
+    command_line = ["otx", "find", "--template"]
     assert run(command_line).returncode == 0
 
     # Find command per tasks
     for task in find_supported_tasks:
-        command_line = ["otx", "find", "--template", "--root", otx_dir, "--task", task]
+        command_line = ["otx", "find", "--template", "--task", task]
         assert run(command_line).returncode == 0
 
     # Find Backbones per backends
@@ -539,8 +539,6 @@ def otx_find_testing(otx_dir):
             "find",
             "--backbone",
             backbone_backends,
-            "--root",
-            otx_dir,
         ]
         assert run(command_line).returncode == 0
 
@@ -555,8 +553,6 @@ def otx_build_testing(root, otx_dir, args):
             task,
             "--workspace-root",
             os.path.join(root, f"otx-workspace-{task}"),
-            "--root",
-            otx_dir,
         ]
         assert run(command_line).returncode == 0
 
@@ -570,8 +566,6 @@ def otx_build_testing(root, otx_dir, args):
             backbone,
             "--workspace-root",
             task_workspace,
-            "--root",
-            otx_dir,
             "--save-backbone-to",
             os.path.join(task_workspace, "backbone.yaml"),
         ]
@@ -588,8 +582,6 @@ def otx_build_testing(root, otx_dir, args):
             os.path.join(task_workspace, "backbone.yaml"),
             "--workspace-root",
             task_workspace,
-            "--root",
-            otx_dir,
         ]
         assert run(command_line).returncode == 0
 
@@ -603,7 +595,5 @@ def otx_build_testing(root, otx_dir, args):
             backbone,
             "--workspace-root",
             task_workspace,
-            "--root",
-            otx_dir,
         ]
         assert run(command_line).returncode == 0
