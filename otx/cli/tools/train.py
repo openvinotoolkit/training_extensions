@@ -285,7 +285,10 @@ def run_multigpu_child_process(rank: int, gpu_ids: List[int]):
     multigpu_initilization(rank, gpu_ids)
     main()
 
-def terminate_signal_handler(signum, frame, processes: List[mp.Process]):
+def terminate_signal_handler(signum, frame, processes: List[mp.Process], main_pid):
+    if main_pid != os.getpid(): # if main process is forked and they get a signal, then terminated alone.
+        sys.exit()
+
     for process in processes:
         print(f"Kill child process {process.pid}")
         try:
@@ -310,8 +313,8 @@ def run_multi_gpu_train(gpu_ids: List[int], output_path: str, optimized_hyper_pa
         task_p.start()
         processes.append(task_p)
 
-    signal.signal(signal.SIGINT, partial(terminate_signal_handler, processes=processes))
-    signal.signal(signal.SIGTERM, partial(terminate_signal_handler, processes=processes))
+    signal.signal(signal.SIGINT, partial(terminate_signal_handler, processes=processes, main_pid=os.getpid()))
+    signal.signal(signal.SIGTERM, partial(terminate_signal_handler, processes=processes, main_pid=os.getpid()))
 
     multigpu_initilization(0, gpu_ids)
 
