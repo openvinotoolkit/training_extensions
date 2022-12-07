@@ -40,7 +40,8 @@ hyper_parameters:
         default_value: 20
     algo_backend:
       train_type:
-        default_value: SELFSUPERVISED
+        default_value: SUPERVISEDCONTRASTIVE
+
 # Training resources.
 max_nodes: 1
 training_targets:

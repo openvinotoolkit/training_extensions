@@ -305,7 +305,7 @@ algo_backend:
     header: train type
     options:
       INCREMENTAL: "INCREMENTAL"
-      SELFSUPERVISED: "SELFSUPERVISED"
+      SUPERVISEDCONTRASTIVE: "SUPERVISEDCONTRASTIVE"
     type: SELECTABLE
     ui_rules:
       action: DISABLE_EDITING
