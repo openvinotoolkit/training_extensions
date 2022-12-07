@@ -76,7 +76,7 @@ def build_argparser():
         help="Optional. Device to infer the model.",
         choices=["CPU", "GPU"],
         default="CPU",
-        type=str
+        type=str,
     )
 
     return parser
