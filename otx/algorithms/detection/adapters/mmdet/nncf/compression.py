@@ -10,6 +10,7 @@ from copy import deepcopy
 import mmcv
 import torch
 from mmdet.utils import get_root_logger
+from mmcv.parallel import DataContainer
 
 from otx.algorithms.common.utils import get_arg_spec
 from otx.algorithms.common.adapters.nncf.utils import (
@@ -101,7 +102,10 @@ def wrap_nncf_model(model,
         def get_inputs(self, dataloader_output):
             # redefined PTInitializingDataLoader because
             # of DataContainer format in mmdet
-            kwargs = {k: v.data[0] for k, v in dataloader_output.items()}
+            kwargs = {
+                k: v.data[0] if isinstance(v, DataContainer) else v for k,
+                v in dataloader_output.items()
+            }
             return (), kwargs
 
     pathlib.Path(cfg.work_dir).mkdir(parents=True, exist_ok=True)

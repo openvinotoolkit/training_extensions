@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import torch
 from mmdet.datasets import build_dataloader as mmdet_build_dataloader, build_dataset
 
 
@@ -12,7 +11,7 @@ def build_dataloader(config, subset, distributed):
         workers_per_gpu=config.data.get("workers_per_gpu", 0),
         num_gpus=len(config.gpu_ids),
         dist=distributed,
-        seed=config.seed
+        seed=config.get("seed", None),
     )
     if subset == "train":
         default_args = dict(test_mode=False)

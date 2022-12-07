@@ -31,6 +31,11 @@ def get_fake_input(cfg, data=None, orig_img_shape=(128, 128, 3), device="cuda"):
     test_pipeline = [LoadImage()] + cfg.data.test.pipeline[1:]
     test_pipeline = Compose(test_pipeline)
     data = test_pipeline(data)
+
+    for key, value in data.items():
+        if not isinstance(value, list):
+            data[key] = [value]
+
     if device == torch.device("cpu"):
         data = scatter_cpu(collate([data], samples_per_gpu=1))[0]
     else:
