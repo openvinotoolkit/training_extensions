@@ -6,9 +6,9 @@ Tiling Module
 # SPDX-License-Identifier: Apache-2.0
 #
 
+import copy
 from itertools import product
 from typing import Any, List, Tuple, Union
-import copy
 
 import numpy as np
 
