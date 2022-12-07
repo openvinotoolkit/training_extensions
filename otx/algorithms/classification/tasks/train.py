@@ -43,7 +43,7 @@ logger = get_logger()
 
 TASK_CONFIG = ClassificationConfig
 
-
+# pylint: disable= too-many-ancestors
 class ClassificationTrainTask(ClassificationInferenceTask):
     """Train Task Implementation of OTX Classification."""
 

@@ -19,9 +19,17 @@ import os
 import re
 import struct
 import tempfile
+from pathlib import Path
+from typing import List, Optional, Tuple
 from zipfile import ZipFile
 
+import cv2
+import numpy as np
+
+from otx.api.entities.annotation import AnnotationSceneEntity, AnnotationSceneKind
+from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.datasets import DatasetEntity
+from otx.api.entities.image import Image
 from otx.api.entities.label import Domain, LabelEntity
 from otx.api.entities.label_schema import LabelGroup, LabelGroupType, LabelSchemaEntity
 from otx.api.entities.model import (
@@ -240,3 +248,63 @@ def generate_label_schema(dataset: DatasetEntity, task_type: TaskType) -> LabelS
         return label_schema
 
     return LabelSchemaEntity.from_labels(dataset.get_labels())
+
+
+def get_image_files(root_dir: str) -> Optional[List[Tuple[str, str]]]:
+    """Recursively get all image file paths from given root_dir."""
+    img_data_formats = (
+        ".jpg",
+        ".JPG",
+        ".jpeg",
+        ".JPEG",
+        ".gif",
+        ".GIF",
+        ".bmp",
+        ".BMP",
+        ".tif",
+        ".TIF",
+        ".tiff",
+        ".TIFF",
+        ".png",
+        ".PNG",
+    )
+    # single image path
+    if root_dir.endswith(img_data_formats):
+        return [("./", root_dir)]
+
+    img_files = []
+    for root, _, _ in os.walk(root_dir):
+        for format_ in img_data_formats:
+            img_files.extend([(root, file.name) for file in Path(root).glob(f"*{format_}")])
+    return img_files if img_files else None
+
+
+def save_saliency_output(
+    img: np.array,
+    saliency_map: np.array,
+    save_dir: str,
+    fname: str,
+    weight: float = 0.3,
+) -> None:
+    """Receives img and saliency map, then convert to colormap image and save images."""
+    overlay = img * weight + saliency_map * (1 - weight)
+    overlay[overlay > 255] = 255
+    overlay = overlay.astype(np.uint8)
+
+    cv2.imwrite(f"{os.path.join(save_dir, fname)}_saliency_map.png", saliency_map)
+    cv2.imwrite(f"{os.path.join(save_dir, fname)}_overlay_img.png", overlay)
+
+
+def get_explain_dataset_from_filelist(image_files: list):
+    """Get explain dataset with empty annotation."""
+    empty_annotation = AnnotationSceneEntity(annotations=[], kind=AnnotationSceneKind.PREDICTION)
+    items = []
+    for root_dir, filename in image_files:
+        frame = cv2.imread(os.path.join(root_dir, filename))
+        item = DatasetItemEntity(
+            media=Image(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)),
+            annotation_scene=empty_annotation,
+        )
+        items.append(item)
+    explain_dataset = DatasetEntity(items=items)
+    return explain_dataset

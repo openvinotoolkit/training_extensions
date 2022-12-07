@@ -1,4 +1,4 @@
-"""Initialization of ATSS model for Detection Task."""
+"""Initialization of X3D model for Action Classification Task."""
 
 # Copyright (C) 2022 Intel Corporation
 #
