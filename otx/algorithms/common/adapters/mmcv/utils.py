@@ -42,6 +42,7 @@ def remove_from_config(config: Union[Config, ConfigDict], key: str):
             raise ValueError(f"Unknown config type {type(config)}")
 
 
+@check_input_parameters_type()
 def remove_from_configs_by_type(configs: List[ConfigDict], type: str):
     """Update & remove by type"""
     indices = []

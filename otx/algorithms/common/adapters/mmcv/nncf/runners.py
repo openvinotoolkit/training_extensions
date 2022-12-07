@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import copy
 import time
 
 from mmcv.runner import RUNNERS, EpochBasedRunner
@@ -14,17 +13,6 @@ from otx.algorithms.common.adapters.nncf import (
     AccuracyAwareLrUpdater,
     check_nncf_is_enabled,
 )
-
-
-# Try monkey patching to steal validation result
-#from mmcv.runner.hooks import EvalHook
-import mmcv.runner.hooks
-old_evaluate = mmcv.runner.EvalHook.evaluate
-def new_evaluate(self, runner, result):
-    ret = old_evaluate(self, runner, result)
-    setattr(runner, "all_metrics", copy.deepcopy(runner.log_buffer.output))
-    return ret
-mmcv.runner.EvalHook.evaluate = new_evaluate
 
 
 @RUNNERS.register_module()

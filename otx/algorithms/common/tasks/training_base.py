@@ -21,6 +21,7 @@ import os
 import shutil
 import tempfile
 from typing import DefaultDict, Dict, List, Optional, Union
+from copy import deepcopy
 
 import numpy as np
 import torch
@@ -125,11 +126,16 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         common_cfg = ConfigDict(dict(output_path=self._output_path))
 
         # build workflow using recipe configuration
-        workflow = build(self._recipe_cfg, self._mode, stage_type=stage_module, common_cfg=common_cfg)
+        workflow = build(
+            deepcopy(self._recipe_cfg),
+            self._mode,
+            stage_type=stage_module,
+            common_cfg=common_cfg
+        )
 
         # run workflow with task specific model config and data config
         output = workflow.run(
-            model_cfg=self._model_cfg,
+            model_cfg=deepcopy(self._model_cfg),
             data_cfg=self._data_cfg,
             ir_path=None,
             model_ckpt=self._model_ckpt,
