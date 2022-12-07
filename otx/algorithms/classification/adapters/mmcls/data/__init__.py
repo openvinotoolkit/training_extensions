@@ -17,9 +17,4 @@
 from .datasets import MPAClsDataset, MPAHierarchicalClsDataset, MPAMultilabelClsDataset
 from .pipelines import LoadImageFromOTXDataset
 
-__all__ = [
-    "MPAClsDataset",
-    "MPAMultilabelClsDataset",
-    "MPAHierarchicalClsDataset",
-    "LoadImageFromOTXDataset",
-]
+__all__ = ["MPAClsDataset", "MPAMultilabelClsDataset", "MPAHierarchicalClsDataset", "LoadImageFromOTXDataset"]

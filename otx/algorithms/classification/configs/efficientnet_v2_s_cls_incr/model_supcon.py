@@ -1,13 +1,17 @@
-# _base_ = [ "../base/models/mobilenet_v3.py" ]
+"""EfficientNet-V2 for multi-class config."""
+
+# pylint: disable=invalid-name
+
+_base_ = "../base/models/efficientnet_v2.py"
 
 model = dict(
+    type="SupConClassifier",
     task="classification",
-    type="SelfSLClassifier",
-    backbone=dict(type="OTXMobileNetV3", pretrained=True, mode="large"),
-    neck=dict(type="GlobalAveragePooling"),
+    backbone=dict(
+        version="s_21k",
+    ),
     head=dict(
-        type="SelfSLClsHead",
-        num_classes=10,
+        type="SupConClsHead",
         in_channels=-1,
         aux_mlp=dict(hid_channels=0, out_channels=1024),
         loss=dict(
@@ -19,8 +23,4 @@ model = dict(
     ),
 )
 
-checkpoint_config = dict(
-    type="CheckpointHookWithValResults",
-    interval=1,
-    max_keep_ckpts=1,
-)
+fp16 = dict(loss_scale=512.0)
