@@ -1,0 +1,38 @@
+{
+  "image_path": {
+    "0": "hazelnut/good/21.jpg",
+    "1": "hazelnut/good/04.jpg",
+    "2": "hazelnut/good/31.jpg",
+    "3": "hazelnut/colour/07.jpg",
+    "4": "hazelnut/colour/09.jpg",
+    "5": "hazelnut/colour/16.jpg",
+    "6": "hazelnut/colour/13.jpg",
+    "7": "hazelnut/colour/03.jpg",
+    "8": "hazelnut/colour/08.jpg",
+    "9": "hazelnut/colour/11.jpg",
+    "10": "hazelnut/colour/12.jpg"
+  },
+  "label": {
+    "0": "good",
+    "1": "good",
+    "2": "good",
+    "3": "abnormal",
+    "4": "abnormal",
+    "5": "abnormal",
+    "6": "abnormal",
+    "7": "abnormal",
+    "8": "abnormal",
+    "9": "abnormal",
+    "10": "abnormal"
+  },
+  "masks": {
+    "3": "hazelnut/mask/colour/07.jpg",
+    "4": "hazelnut/mask/colour/09.jpg",
+    "5": "hazelnut/mask/colour/16.jpg",
+    "6": "hazelnut/mask/colour/13.jpg",
+    "7": "hazelnut/mask/colour/03.jpg",
+    "8": "hazelnut/mask/colour/08.jpg",
+    "9": "hazelnut/mask/colour/11.jpg",
+    "10": "hazelnut/mask/colour/12.jpg"
+  }
+}

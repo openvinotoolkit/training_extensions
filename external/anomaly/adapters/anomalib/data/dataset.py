@@ -109,16 +109,22 @@ class AnomalyClassificationDataset(BaseAnomalyDataset):
     """Dataloader for Anomaly Classification Task.
 
     Example:
-    >>> train_subset = {
-            "ann_file": "data/anomaly/classification/train.json",
-            "data_root": "data/anomaly/shapes",
-        }
-    >>> val_subset = {"ann_file": "data/anomaly/classification/val.json", "data_root": "data/anomaly/shapes"}
-    >>> training_dataset = AnomalyClassificationDataset(
-            train_subset=train_subset, val_subset=val_subset
-        )
-    >>> test_subset = {"ann_file": "data/anomaly/classification/test.json", "data_root": "data/anomaly/shapes"}
-    >>> testing_dataset = AnomalyClassificationDataset(test_subset=test_subset)
+        >>> train_subset = {
+                "ann_file": "data/anomaly/Hazelnut_Toy/classification/train.json",
+                "data_root": "data/anomaly/Hazelnut_Toy",
+            }
+        >>> val_subset = {
+                "ann_file": "data/anomaly/Hazelnut_Toy/classification/val.json",
+                "data_root": "data/anomaly/Hazelnut_Toy"
+                }
+        >>> training_dataset = AnomalyClassificationDataset(
+                train_subset=train_subset, val_subset=val_subset
+            )
+        >>> test_subset = {
+            "ann_file": "data/anomaly/Hazelnut_Toy/classification/test.json",
+            "data_root": "data/anomaly/Hazelnut_Toy"
+            }
+        >>> testing_dataset = AnomalyClassificationDataset(test_subset=test_subset)
     """
 
     def get_dataset_items(self, ann_file_path: Path, data_root_dir: Path, subset: Subset) -> List[DatasetItemEntity]:
@@ -161,14 +167,20 @@ class AnomalySegmentationDataset(BaseAnomalyDataset):
 
     Example:
         >>> train_subset = {
-                "ann_file": "data/anomaly/segmentation/train.json",
-                "data_root": "data/anomaly/shapes",
-            }
-        >>> val_subset = {"ann_file": "data/anomaly/segmentation/val.json", "data_root": "data/anomaly/shapes"}
-        >>> training_dataset = AnomalySegmentationDataset(
+            "ann_file": "data/anomaly/Hazelnut_Toy/segmentation/train.json",
+            "data_root": "data/anomaly/Hazelnut_Toy",
+        }
+        >>> val_subset = {
+                "ann_file": "data/anomaly/Hazelnut_Toy/segmentation/val.json",
+                "data_root": "data/anomaly/Hazelnut_Toy"
+                }
+        >>> training_dataset = AnomalyClassificationDataset(
                 train_subset=train_subset, val_subset=val_subset
             )
-        >>> test_subset = {"ann_file": "data/anomaly/segmentation/test.json", "data_root": "data/anomaly/shapes"}
+        >>> test_subset = {
+            "ann_file": "data/anomaly/Hazelnut_Toy/segmentation/test.json",
+            "data_root": "data/anomaly/Hazelnut_Toy"
+            }
         >>> testing_dataset = AnomalySegmentationDataset(test_subset=test_subset)
 
     """
@@ -235,14 +247,20 @@ class AnomalyDetectionDataset(BaseAnomalyDataset):
 
     Example:
         >>> train_subset = {
-                "ann_file": "data/anomaly/detection/train.json",
-                "data_root": "data/anomaly/shapes",
-            }
-        >>> val_subset = {"ann_file": "data/anomaly/detection/val.json", "data_root": "data/anomaly/shapes"}
-        >>> training_dataset = AnomalyDetectionDataset(
+            "ann_file": "data/anomaly/Hazelnut_Toy/detection/train.json",
+            "data_root": "data/anomaly/Hazelnut_Toy",
+        }
+        >>> val_subset = {
+                "ann_file": "data/anomaly/Hazelnut_Toy/detection/val.json",
+                "data_root": "data/anomaly/Hazelnut_Toy"
+                }
+        >>> training_dataset = AnomalyClassificationDataset(
                 train_subset=train_subset, val_subset=val_subset
             )
-        >>> test_subset = {"ann_file": "data/anomaly/detection/test.json", "data_root": "data/anomaly/shapes"}
+        >>> test_subset = {
+            "ann_file": "data/anomaly/Hazelnut_Toy/detection/test.json",
+            "data_root": "data/anomaly/Hazelnut_Toy"
+            }
         >>> testing_dataset = AnomalyDetectionDataset(test_subset=test_subset)
 
     """

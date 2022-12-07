@@ -37,72 +37,22 @@ Example:
     The following script will generate the classification, detection and segmentation
     JSON annotations to each category in ./data/anomaly/MVTec dataset.
 
-    >>> python external/anomaly/adapters.anomalib/data/create_mvtec_ad_json_annotations.py \
+    >>> python external/anomaly/adapters/anomalib/data/create_mvtec_ad_json_annotations.py \
     ...     --data_path ./data/anomaly/MVTec/
 """
 
-import json
 import os
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
-import cv2
 import pandas as pd
+from adapters.anomalib.data.utils import (
+    create_bboxes_from_mask,
+    create_polygons_from_mask,
+    save_json_items,
+)
 from anomalib.data.mvtec import make_mvtec_dataset
-
-
-def create_bboxes_from_mask(mask_path: str) -> List[List[float]]:
-    """Create bounding box from binary mask.
-
-    Args:
-        mask_path (str): Path to binary mask.
-
-    Returns:
-        List[List[float]]: Bounding box coordinates.
-    """
-    # pylint: disable-msg=too-many-locals
-
-    mask = cv2.imread(mask_path, cv2.IMREAD_GRAYSCALE)
-    height, width = mask.shape
-
-    bboxes: List[List[float]] = []
-    _, _, coordinates, _ = cv2.connectedComponentsWithStats(mask)
-    for i, coordinate in enumerate(coordinates):
-        # First row of the coordinates is always backround,
-        # so should be ignored.
-        if i == 0:
-            continue
-
-        # Last column of the coordinates is the area of the connected component.
-        # It could therefore be ignored.
-        comp_x, comp_y, comp_w, comp_h, _ = coordinate
-        x1 = comp_x / width
-        y1 = comp_y / height
-        x2 = (comp_x + comp_w) / width
-        y2 = (comp_y + comp_h) / height
-
-        bboxes.append([x1, y1, x2, y2])
-
-    return bboxes
-
-
-def create_polygons_from_mask(mask_path: str) -> List[List[List[float]]]:
-    """Create polygons from binary mask.
-
-    Args:
-        mask_path (str): Path to binary mask.
-
-    Returns:
-        List[List[float]]: Polygon coordinates.
-    """
-    mask = cv2.imread(mask_path, cv2.IMREAD_GRAYSCALE)
-    height, width = mask.shape
-
-    polygons = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)[0]
-    polygons = [[[point[0][0] / width, point[0][1] / height] for point in polygon] for polygon in polygons]
-
-    return polygons
 
 
 def create_classification_json_items(pd_items: pd.DataFrame) -> Dict[str, Any]:
@@ -160,17 +110,6 @@ def create_segmentation_json_items(pd_items: pd.DataFrame) -> Dict[str, Any]:
             json_items["masks"][str(index)] = create_polygons_from_mask(pd_item.mask_path)
 
     return json_items
-
-
-def save_json_items(json_items: Dict[str, Any], file: str) -> None:
-    """Save JSON items to file.
-
-    Args:
-        json_items (Dict[str, Any]): MVTec AD JSON items
-        file (str): Path to save as a JSON file.
-    """
-    with open(file=file, mode="w", encoding="utf-8") as f:
-        json.dump(json_items, f)
 
 
 def create_task_annotations(task: str, data_path: str, annotation_path: str) -> None:
