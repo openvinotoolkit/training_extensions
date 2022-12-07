@@ -14,10 +14,11 @@ Original papers:
 import os
 
 import timm
-from mmcls.models.builder import BACKBONES
 from mmcv.runner import load_checkpoint
 from mpa.utils.logger import get_logger
 from torch import nn
+
+from ..builder import BACKBONES
 
 logger = get_logger()
 

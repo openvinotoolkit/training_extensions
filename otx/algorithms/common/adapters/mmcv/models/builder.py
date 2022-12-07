@@ -1,4 +1,4 @@
-"""Task Initialization of OTX Detection."""
+"""Builder for OTX Common Algorithm. - mmcv.models."""
 
 # Copyright (C) 2022 Intel Corporation
 #
@@ -14,20 +14,8 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import mpa.det as MPADetection
+from mmcv.cnn import MODELS as MMCV_MODELS
+from mmcv.utils import Registry
 
-import otx.algorithms.common.adapters.mmcv.models as OTXBackbones
-
-from .inference import DetectionInferenceTask
-from .nncf import DetectionNNCFTask
-from .openvino import OpenVINODetectionTask
-from .train import DetectionTrainTask
-
-__all__ = [
-    "DetectionInferenceTask",
-    "DetectionTrainTask",
-    "DetectionNNCFTask",
-    "OpenVINODetectionTask",
-    "MPADetection",
-    "OTXBackbones",
-]
+BACKBONES = Registry("models", parent=MMCV_MODELS, scope="otx")
+TORCHVISION_BACKBONES = Registry("models", parent=MMCV_MODELS, scope="torchvision")

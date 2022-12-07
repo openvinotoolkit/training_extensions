@@ -1,4 +1,4 @@
-"""Adapters for OTX Common Algorithm. - mmcls.model."""
+"""Model templates builder."""
 
 # Copyright (C) 2022 Intel Corporation
 #
@@ -14,7 +14,8 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+from .builder import Builder
 
-from .backbones import OTXEfficientNet, OTXEfficientNetV2, OTXMobileNetV3
-
-__all__ = ["OTXEfficientNet", "OTXEfficientNetV2", "OTXMobileNetV3"]
+__all__ = [
+    "Builder",
+]

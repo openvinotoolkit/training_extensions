@@ -20,7 +20,7 @@ _base_ = ["../../base/models/detector.py"]
 
 model = dict(
     type="CustomYOLOX",
-    backbone=dict(type="CSPDarknet", deepen_factor=0.33, widen_factor=0.375),
+    backbone=dict(type="CSPDarknet", deepen_factor=0.33, widen_factor=0.375, out_indices=(2, 3, 4)),
     neck=dict(type="YOLOXPAFPN", in_channels=[96, 192, 384], out_channels=96, num_csp_blocks=1),
     bbox_head=dict(type="CustomYOLOXHead", num_classes=80, in_channels=96, feat_channels=96),
     train_cfg=dict(assigner=dict(type="SimOTAAssigner", center_radius=2.5)),
