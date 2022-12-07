@@ -1,4 +1,4 @@
-"""Configs Initialization of OTX Action Classification."""
+"""Configs Initialization of OTX Action Tasks."""
 
 # Copyright (C) 2022 Intel Corporation
 #
@@ -14,6 +14,6 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .configuration import ActionClsConfig
+from .configuration import ActionConfig
 
-__all__ = ["ActionClsConfig"]
+__all__ = ["ActionConfig"]
