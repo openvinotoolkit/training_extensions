@@ -252,9 +252,7 @@ def main(args):
             dataset,
             environment.get_model_configuration(),
         )
-        openvino_task.optimize(
-            OptimizationType.POT, dataset.get_subset(Subset.TRAINING), optimized_model, OptimizationParameters()
-        )
+        openvino_task.optimize(OptimizationType.POT, dataset, optimized_model, OptimizationParameters())
 
         logger.info("Get predictions on the validation set")
         predicted_validation_dataset = openvino_task.infer(
