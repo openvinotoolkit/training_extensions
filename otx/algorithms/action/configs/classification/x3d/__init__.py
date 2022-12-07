@@ -1,4 +1,4 @@
-"""Adapters for OTX Common Algorithm. - mmcls.model."""
+"""Initialization of X3D model for Action Classification Task."""
 
 # Copyright (C) 2022 Intel Corporation
 #
@@ -13,8 +13,3 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions
 # and limitations under the License.
-
-
-from .backbones import OTXEfficientNet, OTXEfficientNetV2, OTXMobileNetV3
-
-__all__ = ["OTXEfficientNet", "OTXEfficientNetV2", "OTXMobileNetV3"]

@@ -1,4 +1,4 @@
-"""Classification backbones."""
+"""OTX Custom backbones."""
 
 # Copyright (C) 2022 Intel Corporation
 #
@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+from . import torchvision_backbones
 from .efficientnet import OTXEfficientNet
 from .efficientnetv2 import OTXEfficientNetV2
 from .mobilenetv3 import OTXMobileNetV3

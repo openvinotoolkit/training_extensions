@@ -21,6 +21,7 @@ import os
 import yaml
 
 from otx.api.entities.model_template import parse_model_template
+from otx.cli.utils.importing import get_backbone_list
 
 
 class Registry:
@@ -74,6 +75,13 @@ class Registry:
         if not templates:
             raise ValueError(f"Could not find a template with {template_id} in registry.")
         return templates[0]
+
+    def get_backbones(self, backend_filter):
+        """Returns list of backbones for a given template."""
+        backbone_lst = {}
+        for backend in backend_filter:
+            backbone_lst[backend] = get_backbone_list(backend)
+        return backbone_lst
 
     def __str__(self):
         """Returns the string representation of the registry."""

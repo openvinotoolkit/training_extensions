@@ -75,7 +75,7 @@ from otx.api.utils.argument_checks import (
 logger = logging.getLogger(__name__)
 
 
-# pylint: disable=too-many-instance-attributes
+# pylint: disable=too-many-instance-attributes, too-many-ancestors
 class SegmentationNNCFTask(SegmentationInferenceTask, IOptimizationTask):
     """Task for compressing object detection models using NNCF."""
 

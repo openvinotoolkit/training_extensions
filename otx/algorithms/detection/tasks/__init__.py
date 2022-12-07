@@ -16,6 +16,8 @@
 
 import mpa.det as MPADetection
 
+import otx.algorithms.common.adapters.mmcv.models as OTXBackbones
+
 from .inference import DetectionInferenceTask
 from .nncf import DetectionNNCFTask
 from .openvino import OpenVINODetectionTask
@@ -27,4 +29,5 @@ __all__ = [
     "DetectionNNCFTask",
     "OpenVINODetectionTask",
     "MPADetection",
+    "OTXBackbones",
 ]

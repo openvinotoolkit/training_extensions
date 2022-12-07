@@ -267,7 +267,7 @@ class OtxAnomalyTask:
 
         self.openvino_task.optimize(
             optimization_type=OptimizationType.POT,
-            dataset=self.dataset.get_subset(Subset.TRAINING),
+            dataset=self.dataset,
             output_model=optimized_model,
             optimization_parameters=OptimizationParameters(),
         )

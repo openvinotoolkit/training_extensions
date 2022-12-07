@@ -17,7 +17,14 @@ import os
 import shutil
 from subprocess import run  # nosec
 
+import cv2
+import numpy as np
 import pytest
+
+from otx.api.utils.vis_utils import get_actmap
+from otx.cli.tools.build import SUPPORTED_TASKS as build_supported_tasks
+from otx.cli.tools.find import SUPPORTED_BACKBONE_BACKENDS as find_supported_backends
+from otx.cli.tools.find import SUPPORTED_TASKS as find_supported_tasks
 
 
 def get_template_rel_dir(template):
@@ -472,3 +479,121 @@ def xfail_templates(templates, xfail_template_ids_reasons):
                 "More than one reason for template. If you have more than one Jira tickets, list them in one reason."
             )
     return xfailed_templates
+
+
+def otx_explain_testing(template, root, otx_dir, args):
+    template_work_dir = get_template_dir(template, root)
+    test_algorithms = ["ActivationMap", "EigenCAM"]
+    check_files = ("Slide1_", "Slide2_", "intel_1_")
+
+    train_ann_file = args.get("--train-ann-file", "")
+    if "hierarchical" in train_ann_file:
+        train_type = "hierarchical"
+    elif "multilabel" in train_ann_file:
+        train_type = "multilabel"
+    else:
+        train_type = "default"
+
+    for test_algorithm in test_algorithms:
+        save_dir = f"explain_{template.model_template_id}/{test_algorithm}/{train_type}/"
+        output_dir = os.path.join(template_work_dir, save_dir)
+        compare_dir = os.path.join(f"{otx_dir}/data/explain_samples/", save_dir)
+        command_line = [
+            "otx",
+            "explain",
+            template.model_template_path,
+            "--load-weights",
+            f"{template_work_dir}/trained_{template.model_template_id}/weights.pth",
+            "--explain-data-root",
+            os.path.join(otx_dir, args["--input"]),
+            "--save-explanation-to",
+            output_dir,
+            "--explain-algorithm",
+            test_algorithm,
+        ]
+        assert run(command_line).returncode == 0
+        for fname in os.listdir(output_dir):
+            if fname.startswith(check_files) and "saliency" in fname:
+                output_image = cv2.imread(os.path.join(output_dir, fname))
+                h, w, _ = output_image.shape
+                compare_image = cv2.imread(os.path.join(compare_dir, fname), 0)
+                compare_image = get_actmap(compare_image, (w, h))
+                diff = np.sum((compare_image - output_image) ** 2) == 0
+                assert diff == 0, f"saliency map output is not same as the sample one, with {diff}!"
+
+
+def otx_find_testing(otx_dir):
+    # Find all model template
+    command_line = ["otx", "find", "--template"]
+    assert run(command_line).returncode == 0
+
+    # Find command per tasks
+    for task in find_supported_tasks:
+        command_line = ["otx", "find", "--template", "--task", task]
+        assert run(command_line).returncode == 0
+
+    # Find Backbones per backends
+    for backbone_backends in find_supported_backends:
+        command_line = [
+            "otx",
+            "find",
+            "--backbone",
+            backbone_backends,
+        ]
+        assert run(command_line).returncode == 0
+
+
+def otx_build_testing(root, otx_dir, args):
+    # Build otx-workspace per tasks check - Default Model Template only
+    for task in build_supported_tasks:
+        command_line = [
+            "otx",
+            "build",
+            "--task",
+            task,
+            "--workspace-root",
+            os.path.join(root, f"otx-workspace-{task}"),
+        ]
+        assert run(command_line).returncode == 0
+
+    for task, backbone in args.items():
+        task_workspace = os.path.join(root, f"otx-workspace-{task}")
+        # Build Backbone.yaml from backbone type
+        command_line = [
+            "otx",
+            "build",
+            "--backbone",
+            backbone,
+            "--workspace-root",
+            task_workspace,
+            "--save-backbone-to",
+            os.path.join(task_workspace, "backbone.yaml"),
+        ]
+        assert run(command_line).returncode == 0
+        assert os.path.exists(os.path.join(task_workspace, "backbone.yaml"))
+
+        # Build model.py from backbone.yaml
+        command_line = [
+            "otx",
+            "build",
+            "--model",
+            os.path.join(task_workspace, "model.py"),
+            "--backbone",
+            os.path.join(task_workspace, "backbone.yaml"),
+            "--workspace-root",
+            task_workspace,
+        ]
+        assert run(command_line).returncode == 0
+
+        # Build model.py from backbone type
+        command_line = [
+            "otx",
+            "build",
+            "--model",
+            os.path.join(task_workspace, "model.py"),
+            "--backbone",
+            backbone,
+            "--workspace-root",
+            task_workspace,
+        ]
+        assert run(command_line).returncode == 0
