@@ -23,9 +23,10 @@ from typing import List, Optional, Union
 
 from mmcv import Config, ConfigDict
 
-from otx.algorithms.common.adapters.mmcv.utils import (  # patch_color_conversion,
+from otx.algorithms.common.adapters.mmcv.utils import (
     get_meta_keys,
     is_epoch_based_runner,
+    patch_color_conversion,
     prepare_work_dir,
     remove_from_config,
 )
@@ -336,26 +337,15 @@ def patch_datasets(config: Config, domain=Domain.SEGMENTATION):
         remove_from_config(cfg, "classes")
 
         for pipeline_step in cfg.pipeline:
+            if pipeline_step.type == "LoadImageFromFile":
+                pipeline_step.type = "LoadImageFromOTXDataset"
+            elif pipeline_step.type == "LoadAnnotations":
+                pipeline_step.type = "LoadAnnotationFromOTXDataset"
+                pipeline_step.domain = domain
             if subset == "train" and pipeline_step.type == "Collect":
                 pipeline_step = get_meta_keys(pipeline_step)
+
         patch_color_conversion(cfg.pipeline)
-
-
-def patch_color_conversion(pipeline):
-    """Default data format for OTX is RGB, while mmx uses BGR, so negate the color conversion flag."""
-    if isinstance(pipeline, dict):
-        for k in pipeline.keys():
-            patch_color_conversion(pipeline[k])
-    else:
-        for pipeline_step in pipeline:
-            if pipeline_step.type == "Normalize":
-                to_rgb = False
-                if "to_rgb" in pipeline_step:
-                    to_rgb = pipeline_step.to_rgb
-                to_rgb = not bool(to_rgb)
-                pipeline_step.to_rgb = to_rgb
-            elif pipeline_step.type == "MultiScaleFlipAug":
-                patch_color_conversion(pipeline_step.transforms)
 
 
 def patch_evaluation(config: Config):
