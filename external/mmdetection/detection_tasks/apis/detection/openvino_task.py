@@ -76,50 +76,14 @@ from ote_sdk.utils.argument_checks import (
 from ote_sdk.utils import Tiler
 from ote_sdk.utils.detection_utils import detection2array
 from ote_sdk.utils.vis_utils import get_actmap
-from typing import Any, Dict, Optional, Tuple, Union, List
+from typing import Any, Dict, Optional, Tuple, Union
 from zipfile import ZipFile
 
 from mmdet.utils.logger import get_root_logger
 from .configuration import OTEDetectionConfig
 from . import model_wrappers
 
-from mmcv.ops import nms
-
 logger = get_root_logger()
-
-
-def multiclass_nms(
-    scores: np.ndarray,
-    labels: np.ndarray,
-    boxes: np.ndarray,
-    iou_threshold=0.45,
-    max_num=200,
-):
-    """ Multi-class NMS
-
-    strategy: in order to perform NMS independently per class,
-    we add an offset to all the boxes. The offset is dependent
-    only on the class idx, and is large enough so that boxes
-    from different classes do not overlap
-
-    Args:
-        scores (np.ndarray): box scores
-        labels (np.ndarray): box label indices
-        boxes (np.ndarray): box coordinates
-        iou_threshold (float, optional): IoU threshold. Defaults to 0.45.
-        max_num (int, optional): Max number of objects filter. Defaults to 200.
-
-    Returns:
-        _type_: _description_
-    """
-    max_coordinate = boxes.max()
-    offsets = labels.astype(boxes.dtype) * (max_coordinate + 1)
-    boxes_for_nms = boxes + offsets[:, None]
-    dets, keep = nms(boxes_for_nms, scores, iou_threshold)
-    if max_num > 0:
-        dets = dets[:max_num]
-        keep = keep[:max_num]
-    return dets, keep
 
 
 class BaseInferencerWithConverter(BaseInferencer):
@@ -174,6 +138,31 @@ class BaseInferencerWithConverter(BaseInferencer):
     def forward(self, inputs: Dict[str, np.ndarray]) -> Dict[str, np.ndarray]:
         return self.model.infer_sync(inputs)
 
+    @check_input_parameters_type()
+    def predict_tile(
+        self, image: np.ndarray, tile_size: int, overlap: float, max_number: int
+    ) -> Tuple[AnnotationSceneEntity, np.ndarray, np.ndarray]:
+        """ Run prediction by tiling image to small patches
+
+        Args:
+            image (np.ndarray): input image
+            tile_size (int): tile crop size
+            overlap (float): overlap ratio between tiles
+            max_number (int): max number of predicted objects allowed
+
+        Returns:
+            detections: AnnotationSceneEntity
+            features: list including saliency map and feature vector
+        """
+        segm = False
+        if isinstance(self.converter, (MaskToAnnotationConverter, RotatedRectToAnnotationConverter)):
+            segm = True
+
+        tiler = Tiler(tile_size=tile_size, overlap=overlap, max_number=max_number, model=self.model, segm=segm)
+        detections, features = tiler.predict(image)
+        detections = self.converter.convert_to_annotation(detections, metadata={"original_shape": image.shape})
+        return detections, features
+
 
 class OpenVINODetectionInferencer(BaseInferencerWithConverter):
     @check_input_parameters_type()
@@ -227,27 +216,6 @@ class OpenVINODetectionInferencer(BaseInferencerWithConverter):
         detections = detection2array(detections)
         return self.converter.convert_to_annotation(detections, metadata)
 
-    @check_input_parameters_type()
-    def predict_tile(
-        self, image: np.ndarray, tile_size: int, overlap: float, max_number: int
-    ) -> Tuple[AnnotationSceneEntity, np.ndarray, np.ndarray]:
-        """ Run prediction by tiling image to small patches
-
-        Args:
-            image (np.ndarray): input image
-            tile_size (int): tile crop size
-            overlap (float): overlap ratio between tiles
-            max_number (int): max number of predicted objects allowed
-
-        Returns:
-            detections: AnnotationSceneEntity
-            features: list including saliency map and feature vector
-        """
-        tiler = Tiler(tile_size=tile_size, overlap=overlap, max_number=max_number, model=self.model)
-        detections, features = tiler.predict(image)
-        detections = self.converter.convert_to_annotation(detections, metadata={"original_shape": image.shape})
-        return detections, features
-
 
 class OpenVINOMaskInferencer(BaseInferencerWithConverter):
     @check_input_parameters_type()
@@ -283,27 +251,6 @@ class OpenVINOMaskInferencer(BaseInferencerWithConverter):
         converter = MaskToAnnotationConverter(label_schema)
 
         super().__init__(configuration, model, converter)
-
-    @check_input_parameters_type()
-    def predict_tile(
-        self, image: np.ndarray, tile_size: int, overlap: float, max_number: int
-    ) -> Tuple[AnnotationSceneEntity, np.ndarray, np.ndarray]:
-        """ Run prediction by tiling image to small patches
-
-        Args:
-            image (np.ndarray): input image
-            tile_size (int): tile crop size
-            overlap (float): overlap ratio between tiles
-            max_number (int): max number of predicted objects allowed
-
-        Returns:
-            detections: AnnotationSceneEntity
-            features: list including saliency map and feature vector
-        """
-        tiler = Tiler(tile_size=tile_size, overlap=overlap, max_number=max_number, model=self.model, segm=True)
-        detections, features = tiler.predict(image)
-        detections = self.converter.convert_to_annotation(detections, metadata={"original_shape": image.shape})
-        return detections, features
 
 
 class OpenVINORotatedRectInferencer(BaseInferencerWithConverter):

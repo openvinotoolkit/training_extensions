@@ -30,7 +30,7 @@ class ModelContainer:
         model_dir: path to model directory
     """
 
-    def __init__(self, model_dir: Path, device='CPU') -> None:
+    def __init__(self, model_dir: Path, device="CPU") -> None:
         self.parameters = get_parameters(model_dir / "config.json")
         self._labels = LabelSchemaMapper.backward(
             self.parameters["model_parameters"]["labels"]

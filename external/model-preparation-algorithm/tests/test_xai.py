@@ -37,31 +37,31 @@ class TestExplainMethods:
     @staticmethod
     def get_detection_model():
         model_cfg = dict(
-            type='CustomSingleStageDetector',
-            backbone=dict(type='mobilenetv2_w1',
-                          out_indices=(4, 5),
-                          frozen_stages=-1,
-                          norm_eval=False,
-                          pretrained=True),
+            type="CustomSingleStageDetector",
+            backbone=dict(
+                type="mobilenetv2_w1", out_indices=(4, 5), frozen_stages=-1, norm_eval=False, pretrained=True
+            ),
             bbox_head=dict(
-                type='CustomSSDHead',
+                type="CustomSSDHead",
                 in_channels=(96, 320),
                 num_classes=20,
                 anchor_generator=dict(
-                    type='SSDAnchorGeneratorClustered',
+                    type="SSDAnchorGeneratorClustered",
                     reclustering_anchors=True,
                     strides=[16, 32],
-                    widths=[np.array([70.93408016, 132.06659281, 189.56180207, 349.90057837]),
-                            np.array([272.31733885, 448.52200666, 740.63350023, 530.78990182,
-                                      790.99297377])],
-                    heights=[np.array([93.83759764, 235.21261441, 432.6029996, 250.08979657]),
-                             np.array([672.8829653, 474.84783528, 420.18291446, 741.02592293,
-                                       766.45636125])]),
+                    widths=[
+                        np.array([70.93408016, 132.06659281, 189.56180207, 349.90057837]),
+                        np.array([272.31733885, 448.52200666, 740.63350023, 530.78990182, 790.99297377]),
+                    ],
+                    heights=[
+                        np.array([93.83759764, 235.21261441, 432.6029996, 250.08979657]),
+                        np.array([672.8829653, 474.84783528, 420.18291446, 741.02592293, 766.45636125]),
+                    ],
+                ),
                 bbox_coder=dict(
-                    type='DeltaXYWHBBoxCoder',
-                    target_means=[.0, .0, .0, .0],
-                    target_stds=[0.1, 0.1, 0.2, 0.2]),
-            )
+                    type="DeltaXYWHBBoxCoder", target_means=[0.0, 0.0, 0.0, 0.0], target_stds=[0.1, 0.1, 0.2, 0.2]
+                ),
+            ),
         )
         model = build_detector(model_cfg)
         return model.eval()
