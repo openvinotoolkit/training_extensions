@@ -1,0 +1,18 @@
+{
+    "stage1": {
+        "dest_path_data": "",
+        "url_data": "",
+        "url_model": "",
+        "dest_path_model": ""
+    },
+    "stage2": {
+        "dest_path_data": "",
+        "url_data": "",
+        "url_model": "",
+        "dest_path_model": ""
+    },
+    "test_data": {
+        "dest_path": "",
+        "drive_url": " "
+    }
+}
