@@ -30,7 +30,6 @@ from otx.algorithms.detection.adapters.mmdet.utils import (
     patch_datasets,
     patch_evaluation,
 )
-from otx.algorithms.common.adapters.mmcv.config_utils import remove_from_config
 from otx.algorithms.detection.configs.base import DetectionConfig
 from otx.api.configuration.helper.utils import config_to_bytes
 from otx.api.entities.annotation import Annotation
@@ -151,11 +150,13 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         Returns:
             Tuple[Iterable, float]: Iterable prediction results for each sample and metric for on the given dataset
         """
+        self._initialize()
         stage_module = "DetectionInferrer"
         self._data_cfg = self._init_test_data_cfg(dataset)
         # Temporary disable dump (will be handled by 'otx explain')
         dump_features = False
         dump_saliency_map = False # not inference_parameters.is_evaluation if inference_parameters else True
+        model = getattr(self, "_model", None)
         results = self._run_task(
             stage_module,
             mode="train",
@@ -163,6 +164,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
             eval=inference_parameters.is_evaluation if inference_parameters else False,
             dump_features=dump_features,
             dump_saliency_map=dump_saliency_map,
+            model=model
         )
         # TODO: InferenceProgressCallback register
         logger.debug(f"result of run_task {stage_module} module = {results}")

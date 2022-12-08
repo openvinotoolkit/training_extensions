@@ -29,6 +29,10 @@ from otx.algorithms.common.adapters.mmcv.utils import (
     patch_color_conversion,
     prepare_work_dir,
     remove_from_config,
+    get_configs_by_dict,
+    get_dataset_configs,
+    get_configs_by_keys,
+    update_config,
 )
 from otx.algorithms.segmentation.configs.base import SegmentationConfig
 from otx.api.entities.datasets import DatasetEntity
@@ -48,13 +52,12 @@ def patch_config(
     config: Config,
     work_dir: str,
     labels: List[LabelEntity],
-    random_seed: Optional[int] = None,
-    distributed: bool = False,
+    domain: Domain,
 ):  # pylint: disable=too-many-branches
     """Update config function."""
     # Set runner if not defined.
     if "runner" not in config:
-        config.runner = {"type": "IterBasedRunner"}
+        config.runner = ConfigDict({"type": "IterBasedRunner"})
 
     # Check that there is no conflict in specification of number of training epochs.
     # Move global definition of epochs inside runner config.
@@ -65,7 +68,6 @@ def patch_config(
             config.runner.max_epochs = config.total_epochs
         else:
             logger.warning(f"Total number of epochs set for an iteration based runner {config.runner.type}.")
-
         remove_from_config(config, "total_epochs")
 
     # Change runner's type.
@@ -80,26 +82,22 @@ def patch_config(
     if "custom_hooks" not in config:
         config.custom_hooks = []
     if "CancelTrainingHook" not in {hook.type for hook in config.custom_hooks}:
-        config.custom_hooks.append({"type": "CancelTrainingHook"})
+        config.custom_hooks.append(ConfigDict({"type": "CancelTrainingHook"}))
 
     # Remove high level data pipelines definition leaving them only inside `data` section.
     remove_from_config(config, "train_pipeline")
     remove_from_config(config, "test_pipeline")
-
     # Patch data pipeline, making it OTX-compatible.
-    patch_datasets(config)
+    patch_datasets(config, domain)
 
     if "log_config" not in config:
         config.log_config = ConfigDict()
-    config.log_config.hooks = []
-
     if "evaluation" not in config:
         config.evaluation = ConfigDict()
     config.evaluation["efficient_test"] = True
     evaluation_metric = config.evaluation.get("metric")
     if evaluation_metric is not None:
         config.evaluation.save_best = evaluation_metric
-
     if "checkpoint_config" not in config:
         config.checkpoint_config = ConfigDict()
     config.checkpoint_config.max_keep_ckpts = 5
@@ -107,18 +105,26 @@ def patch_config(
 
     label_names = ["background"] + [label.name for label in labels]
     set_data_classes(config, label_names)
+
+    remove_from_config(config, "img_norm_cfg")
+
+    config.gpu_ids = range(1)
+    config.work_dir = work_dir
+
+
+@check_input_parameters_type()
+def patch_model_config(
+    config: Config,
+    labels: List[LabelEntity],
+    distributed: bool = False,
+):
+    label_names = ["background"] + [label.name for label in labels]
     set_num_classes(config, len(label_names))
 
     if "test_cfg" not in config.model:
         config.model.test_cfg = ConfigDict()
     config.model.test_cfg.return_repr_vector = True
-
     set_distributed_mode(config, distributed)
-    remove_from_config(config, "img_norm_cfg")
-
-    config.gpu_ids = range(1)
-    config.work_dir = work_dir
-    config.seed = random_seed
 
 
 @check_input_parameters_type()
@@ -134,10 +140,19 @@ def set_hyperparams(config: Config, hyperparams: SegmentationConfig):
     main_iters = int(hyperparams.learning_parameters.num_iters)
     total_iterations = fixed_iters + warmup_iters + main_iters
 
-    config.params_config.iters = fixed_iters
-    config.lr_config.fixed_iters = fixed_iters
+    freeze_layer_config = get_configs_by_dict(
+        config.custom_hooks,
+        dict(type="FreezeLayers")
+    )
+    assert len(freeze_layer_config) == 1
+    freeze_layer_config = freeze_layer_config[0]
+    freeze_layer_config.iters = fixed_iters
+    if config.lr_config.get("policy", None) == "customstep":
+        config.lr_config.fixed_iters = fixed_iters
     config.find_unused_parameters = fixed_iters > 0
     config.lr_config.warmup_iters = warmup_iters
+    if config.lr_config.warmup_iters == 0:
+        config.lr_config.warmup = None
     if is_epoch_based_runner(config.runner):
         init_num_iterations = config.runner.max_epochs
         config.runner.max_epochs = total_iterations
@@ -221,32 +236,54 @@ def patch_adaptive_repeat_dataset(
     rescale_num_iterations(config, schedule_scale)
 
 
-@check_input_parameters_type({"train_dataset": DatasetParamTypeCheck, "val_dataset": DatasetParamTypeCheck})
+@check_input_parameters_type()
+def align_data_config_with_recipe(
+    data_config: ConfigDict,
+    config: Union[Config, ConfigDict]
+):
+    data_config = data_config.data
+    config = config.data
+    for subset in data_config.keys():
+        subset_config = data_config.get(subset, {})
+        for key in list(subset_config.keys()):
+            found_config = get_configs_by_keys(
+                config.get(subset),
+                key,
+                return_path=True
+            )
+            assert len(found_config) == 1
+            value = subset_config.pop(key)
+            path = list(found_config.keys())[0]
+            update_config(subset_config, {path: value})
+
+
+@check_input_parameters_type()
 def prepare_for_training(
     config: Config,
-    train_dataset: DatasetEntity,
-    val_dataset: DatasetEntity,
-    time_monitor: TimeMonitorCallback,
-    learning_curves: defaultdict,
+    data_config: ConfigDict,
 ) -> Config:
     """Prepare configs for training phase."""
-    config = copy.deepcopy(config)
     prepare_work_dir(config)
 
-    config.data.val.otx_dataset = val_dataset
-    config.data.val.labels = val_dataset.get_labels()
-    if "otx_dataset" in config.data.train:
-        config.data.train.otx_dataset = train_dataset
-        config.data.train.labels = train_dataset.get_labels()
-    else:
-        config.data.train.dataset.otx_dataset = train_dataset
-        config.data.train.dataset.labels = train_dataset.get_labels()
+    train_num_samples = 0
+    for subset in ["train", "val", "test"]:
+        data_config_ = data_config.data.get(subset)
+        config_ = config.data.get(subset)
+        if data_config_ is None:
+            continue
+        for key in ["otx_dataset", "labels"]:
+            found = get_configs_by_keys(data_config_, key, return_path=True)
+            if len(found) == 0:
+                continue
+            assert len(found) == 1
+            if subset == "train" and key == "otx_dataset":
+                found_value = list(found.values())[0]
+                if found_value:
+                    train_num_samples = len(found_value)
+            update_config(config_, found)
 
-    train_num_samples = len(train_dataset)
-    patch_adaptive_repeat_dataset(config, train_num_samples)
-
-    config.custom_hooks.append({"type": "OTXProgressHook", "time_monitor": time_monitor, "verbose": True})
-    config.log_config.hooks.append({"type": "OTXLoggerHook", "curves": learning_curves})
+    if train_num_samples > 0:
+        patch_adaptive_repeat_dataset(config, train_num_samples)
 
     return config
 
@@ -314,34 +351,37 @@ def set_num_classes(config: Config, num_classes: int):
 @check_input_parameters_type()
 def patch_datasets(config: Config, domain=Domain.SEGMENTATION):
     """Update dataset configs."""
-    assert "data" in config
-    for subset in ("train", "val", "test", "unlabeled"):
-        cfg = config.data.get(subset, None)
-        if not cfg:
-            continue
-        if cfg.type == "RepeatDataset":
-            cfg = cfg.dataset
 
-        cfg.type = "MPASegDataset"
-        cfg.otx_dataset = None
-        cfg.labels = None
-
-        remove_from_config(cfg, "ann_dir")
-        remove_from_config(cfg, "img_dir")
-        remove_from_config(cfg, "data_root")
-        remove_from_config(cfg, "split")
-        remove_from_config(cfg, "classes")
-
+    def update_pipeline(cfg):
         for pipeline_step in cfg.pipeline:
             if pipeline_step.type == "LoadImageFromFile":
                 pipeline_step.type = "LoadImageFromOTXDataset"
-            elif pipeline_step.type == "LoadAnnotations":
+            if pipeline_step.type == "LoadAnnotations":
                 pipeline_step.type = "LoadAnnotationFromOTXDataset"
                 pipeline_step.domain = domain
             if subset == "train" and pipeline_step.type == "Collect":
                 pipeline_step = get_meta_keys(pipeline_step)
-
         patch_color_conversion(cfg.pipeline)
+
+    assert "data" in config
+    for subset in ("train", "val", "test"):
+        cfgs = get_dataset_configs(config, subset)
+
+        for cfg in cfgs:
+            cfg.type = "MPASegDataset"
+            cfg.otx_dataset = None
+            cfg.labels = None
+            remove_from_config(cfg, "ann_dir")
+            remove_from_config(cfg, "img_dir")
+            remove_from_config(cfg, "data_root")
+            remove_from_config(cfg, "split")
+            remove_from_config(cfg, "classes")
+            update_pipeline(cfg)
+
+        # 'MultiImageMixDataset' wrapper dataset has pipeline as well
+        # which we should update
+        if len(cfgs) and config.data[subset].type == "MultiImageMixDataset":
+            update_pipeline(config.data[subset])
 
 
 def patch_evaluation(config: Config):

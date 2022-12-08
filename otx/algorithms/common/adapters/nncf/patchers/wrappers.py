@@ -8,21 +8,19 @@ from otx.algorithms.common.adapters.nncf.utils import (
 )
 
 
-def no_nncf_trace_wrapper(*args, **kwargs):
+def no_nncf_trace_wrapper(self, fn, *args, **kwargs):
     """
     A wrapper function not to trace in NNCF.
     """
 
-    in_fn = kwargs.pop("in_fn")
     with no_nncf_trace():
-        return in_fn(*args, **kwargs)
+        return fn(*args, **kwargs)
 
 
-def nncf_trace_wrapper(*args, **kwargs):
+def nncf_trace_wrapper(self, fn, *args, **kwargs):
     """
     A wrapper function to trace in NNCF.
     """
 
-    in_fn = kwargs.pop("in_fn")
     with nncf_trace():
-        return in_fn(*args, **kwargs)
+        return fn(*args, **kwargs)

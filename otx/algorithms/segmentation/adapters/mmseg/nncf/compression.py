@@ -9,7 +9,7 @@ from copy import deepcopy
 
 import mmcv
 import torch
-from mmdet.utils import get_root_logger
+from mmseg.utils import get_root_logger
 from mmcv.parallel import DataContainer
 
 from otx.algorithms.common.utils import get_arg_spec
@@ -75,16 +75,9 @@ def wrap_nncf_model(model,
                     dataloader_for_init=None,
                     get_fake_input_func=None,
                     init_state_dict=None,
-                    is_accuracy_aware=False,
-                    is_alt_ssd_export=None):
-
-    # TODO
-    if is_alt_ssd_export is not None:
-        raise NotImplementedError
+                    is_accuracy_aware=False):
     """
     The function wraps mmdet model by NNCF
-    Note that the parameter `get_fake_input_func` should be the function `get_fake_input`
-    -- cannot import this function here explicitly
     """
 
     check_nncf_is_enabled()
@@ -94,7 +87,6 @@ def wrap_nncf_model(model,
     from nncf.torch import register_default_init_args
     from nncf.torch import load_state
     from nncf.torch.dynamic_graph.io_handling import nncf_model_input
-    from nncf.torch.dynamic_graph.io_handling import wrap_nncf_model_outputs_with_objwalk
     from nncf.torch.dynamic_graph.trace_tensor import TracedTensor
     from nncf.torch.initialization import PTInitializingDataLoader
 
@@ -124,7 +116,7 @@ def wrap_nncf_model(model,
             raise RuntimeError('Cannot perform model evaluation on the validation '
                                'dataset since the validation data loader was not passed '
                                'to wrap_nncf_model')
-        from mmdet.apis import single_gpu_test, multi_gpu_test
+        from mmseg.apis import single_gpu_test, multi_gpu_test
 
         metric_name = nncf_config.get('target_metric_name')
         prepared_model = prepare_model_for_execution(model, cfg, distributed)
@@ -200,23 +192,6 @@ def wrap_nncf_model(model,
     else:
         compression_state = None
 
-    if "nncf_compress_postprocessing" in cfg:
-        # NB: This parameter is used to choose if we should try to make NNCF compression
-        #     for a whole model graph including postprocessing (`nncf_compress_postprocessing=True`),
-        #     or make NNCF compression of the part of the model without postprocessing
-        #     (`nncf_compress_postprocessing=False`).
-        #     Our primary goal is to make NNCF compression of such big part of the model as
-        #     possible, so `nncf_compress_postprocessing=True` is our primary choice, whereas
-        #     `nncf_compress_postprocessing=False` is our fallback decision.
-        #     When we manage to enable NNCF compression for sufficiently many models,
-        #     we should keep one choice only.
-        nncf_compress_postprocessing = cfg.get('nncf_compress_postprocessing')
-        logger.debug('set should_compress_postprocessing='f'{nncf_compress_postprocessing}')
-    else:
-        # TODO: Do we have to keep this configuration?
-        # This configuration is not enabled in forked mmdetection library in the first place
-        nncf_compress_postprocessing = True
-
     def _get_fake_data_for_forward(cfg, nncf_config, get_fake_input_func):
         input_size = nncf_config.get("input_info").get('sample_size')
         assert get_fake_input_func is not None
@@ -230,17 +205,12 @@ def wrap_nncf_model(model,
         fake_data = _get_fake_data_for_forward(cfg, nncf_config, get_fake_input_func)
         img, img_metas = fake_data["img"], fake_data["img_metas"]
 
-        ctx = model.nncf_trace_context(img_metas, nncf_compress_postprocessing)
+        ctx = model.nncf_trace_context(img_metas)
         with ctx:
             # The device where model is could be changed under this context
             img = [i.to(next(model.parameters()).device) for i in img]
             # Marking data as NNCF network input must be after device movement
             img = [nncf_model_input(i) for i in img]
-            if nncf_compress_postprocessing:
-                logger.debug("NNCF will try to compress a postprocessing part of the model")
-            else:
-                logger.debug("NNCF will NOT compress a postprocessing part of the model")
-                img = img[0]
             model(img)
 
     def wrap_inputs(args, kwargs):

@@ -22,7 +22,9 @@ from mmcv.utils import ConfigDict
 
 from otx.algorithms.common.adapters.mmcv.utils import (
     patch_data_pipeline,
-    remove_from_config,
+)
+from otx.algorithms.common.adapters.mmcv.utils import (
+    remove_from_configs_by_type,
 )
 from otx.algorithms.common.configs import TrainType
 from otx.algorithms.common.tasks import BaseTask
@@ -88,7 +90,8 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
     ) -> DatasetEntity:
         """Main infer function of OTX Segmentation."""
         logger.info("infer()")
-        dump_features = True
+        # Temporary disable dump (will be handled by 'otx explain')
+        dump_features = False
 
         if inference_parameters is not None:
             update_progress_callback = inference_parameters.update_progress
@@ -99,10 +102,18 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
 
         self._time_monitor = InferenceProgressCallback(len(dataset), update_progress_callback)
 
-        stage_module = "SegInferrer"
+        self._initialize()
         self._data_cfg = self._init_test_data_cfg(dataset)
         self._label_dictionary = dict(enumerate(self._labels, 1))
-        results = self._run_task(stage_module, mode="train", dataset=dataset, dump_features=dump_features)
+        stage_module = "SegInferrer"
+        model = getattr(self, "_model", None)
+        results = self._run_task(
+            stage_module,
+            mode="train",
+            dataset=dataset,
+            dump_features=dump_features,
+            model=model
+        )
         logger.debug(f"result of run_task {stage_module} module = {results}")
         predictions = results["outputs"]
         prediction_results = zip(predictions["eval_predictions"], predictions["feature_vectors"])
@@ -223,7 +234,7 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
             self.metric = self._recipe_cfg.evaluation.metric
 
         if not self.freeze:
-            remove_from_config(self._recipe_cfg, "params_config")
+            remove_from_configs_by_type(self._recipe_cfg.custom_hooks, "FreezeLayers")
         logger.info(f"initialized recipe = {recipe}")
 
     def _update_stage_module(self, stage_module: str):

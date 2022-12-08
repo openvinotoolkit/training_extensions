@@ -1,2 +1,3 @@
-mmcv-full==1.3.14
-otxseg==0.3.1
+mmcv-full==1.6.1
+mmsegmentation==0.29.1
+#otxseg==0.3.1

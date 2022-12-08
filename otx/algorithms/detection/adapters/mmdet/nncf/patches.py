@@ -17,16 +17,11 @@ from mmdet.models.roi_heads.bbox_heads.sabl_head import SABLHead
 from mmdet.models.roi_heads.mask_heads.fcn_mask_head import FCNMaskHead
 
 from otx.algorithms.common.adapters.nncf.patchers import (
-    NO_TRACE_PATCHER,
-    TRACE_PATCHER,
+    NNCF_PATCHER,
+    nncf_trace_wrapper,
     no_nncf_trace_wrapper,
 )
 from otx.algorithms.common.adapters.nncf.patches import nncf_trace_context
-
-
-#  from nncf.torch.dynamic_graph.context import get_current_context
-#  if get_current_context() is not None and get_current_context().is_tracing:
-#      __import__('ipdb').set_trace()
 
 
 HEADS_TARGETS = dict(
@@ -68,34 +63,33 @@ def should_wrap(obj_cls, fn_name, targets):
 def wrap_mmdet_head(obj_cls):
     for fn_name in HEADS_TARGETS["fn_names"]:
         if should_wrap(obj_cls, fn_name, HEADS_TARGETS):
-            NO_TRACE_PATCHER.patch(obj_cls, fn_name)
+            NNCF_PATCHER.patch(getattr(obj_cls, fn_name), no_nncf_trace_wrapper)
             # 'onnx_export' method calls 'forward' method which need to be traced
-            TRACE_PATCHER.patch(obj_cls, "forward")
+            NNCF_PATCHER.patch(getattr(obj_cls, "forward"), nncf_trace_wrapper)
 
 
 def wrap_mmdet_bbox_assigner(obj_cls):
     for fn_name in BBOX_ASSIGNERS_TARGETS["fn_names"]:
         if should_wrap(obj_cls, fn_name, BBOX_ASSIGNERS_TARGETS):
-            NO_TRACE_PATCHER.patch(obj_cls, fn_name)
+            NNCF_PATCHER.patch(getattr(obj_cls, fn_name), no_nncf_trace_wrapper)
 
 
 def wrap_mmdet_sampler(obj_cls):
     for fn_name in SAMPLERS_TARGETS["fn_names"]:
         if should_wrap(obj_cls, fn_name, SAMPLERS_TARGETS):
-            NO_TRACE_PATCHER.patch(obj_cls, fn_name)
+            NNCF_PATCHER.patch(getattr(obj_cls, fn_name), no_nncf_trace_wrapper)
 
 
-def wrap_register_module(self, *args, **kwargs):
+def wrap_register_module(self, fn, *args, **kwargs):
     """
     A function to wrap classes lazily defined such as custom ones.
     """
 
-    in_fn = kwargs.pop("in_fn")
     module = kwargs["module"]
     wrap_mmdet_head(module)
     wrap_mmdet_bbox_assigner(module)
     wrap_mmdet_sampler(module)
-    return in_fn(*args, **kwargs)
+    return fn(*args, **kwargs)
 
 
 # for mmdet defined heads
@@ -114,15 +108,15 @@ for sampler_cls in [BaseSampler] + list(BBOX_SAMPLERS.module_dict.values()):
     wrap_mmdet_sampler(sampler_cls)
 
 # for custom defined
-NO_TRACE_PATCHER.patch(HEADS, "_register_module", wrap_register_module, "in_fn")
-NO_TRACE_PATCHER.patch(BBOX_ASSIGNERS, "_register_module", wrap_register_module, "in_fn")
-NO_TRACE_PATCHER.patch(BBOX_SAMPLERS, "_register_module", wrap_register_module, "in_fn")
-
-NO_TRACE_PATCHER.patch(
-    "mmdet.models.roi_heads.roi_extractors.SingleRoIExtractor.map_roi_levels"
+NNCF_PATCHER.patch(HEADS._register_module, wrap_register_module)
+NNCF_PATCHER.patch(BBOX_ASSIGNERS._register_module, wrap_register_module)
+NNCF_PATCHER.patch(BBOX_SAMPLERS._register_module, wrap_register_module)
+NNCF_PATCHER.patch(
+    "mmdet.models.roi_heads.roi_extractors.SingleRoIExtractor.map_roi_levels",
+    no_nncf_trace_wrapper,
 )
-NO_TRACE_PATCHER.patch("mmdet.core.bbox2result")
-NO_TRACE_PATCHER.patch("mmdet.core.bbox2roi")
+NNCF_PATCHER.patch("mmdet.core.bbox2result", no_nncf_trace_wrapper)
+NNCF_PATCHER.patch("mmdet.core.bbox2roi", no_nncf_trace_wrapper)
 
 # add nncf context method that will be used when nncf tracing
 BaseDetector.nncf_trace_context = nncf_trace_context
