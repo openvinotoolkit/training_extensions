@@ -21,7 +21,7 @@ import os
 import yaml
 
 from otx.api.entities.model_template import parse_model_template
-from otx.cli.utils.importing import get_backbone_list
+from otx.cli.utils.importing import get_available_backbone_list
 
 
 class Registry:
@@ -80,7 +80,7 @@ class Registry:
         """Returns list of backbones for a given template."""
         backbone_lst = {}
         for backend in backend_filter:
-            backbone_lst[backend] = get_backbone_list(backend)
+            backbone_lst[backend] = get_available_backbone_list(backend)
         return backbone_lst
 
     def __str__(self):

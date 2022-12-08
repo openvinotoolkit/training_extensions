@@ -22,11 +22,7 @@ import os
 from prettytable import PrettyTable
 
 from otx.cli.registry import Registry
-from otx.cli.utils.importing import (
-    get_backbone_registry,
-    get_otx_root_path,
-    get_required_args,
-)
+from otx.cli.utils.importing import SUPPORTED_BACKBONE_BACKENDS, get_otx_root_path
 
 # pylint: disable=too-many-locals
 
@@ -39,15 +35,6 @@ SUPPORTED_TASKS = (
     "ANOMALY_CLASSIFICATION",
     "ANOMALY_DETECTION",
     "ANOMALY_SEGMENTATION",
-)
-
-SUPPORTED_BACKBONE_BACKENDS = (
-    "otx",
-    "mmcls",
-    "mmdet",
-    "mmseg",
-    "torchvision",
-    "pytorchcv",
 )
 
 
@@ -93,20 +80,24 @@ def main():
         print(template_table)
 
     if args.backbone:
-        backbone_registry = {}
-        all_backbone_lst = otx_registry.get_backbones(args.backbone)
-        for backend in args.backbone:
-            registry, _ = get_backbone_registry(backend)
-            backbone_registry[backend] = registry
+        all_backbones = otx_registry.get_backbones(args.backbone)
+        backbone_table = PrettyTable(["Index", "Backbone Type", "Required Args", "Confirmed model"])
         row_index = 0
-        backbone_table = PrettyTable(["Index", "Backbone Type", "Required Args"])
-        for backend, backbone_lst in all_backbone_lst.items():
-            for backbone in backbone_lst:
-                scope_name = "mmdet" if backend == "pytorchcv" else backend
-                backbone_type = f"{scope_name}.{backbone}"
-                required_arg = get_required_args(backbone_registry[backend].get(backbone_type))
-                required_arg = ", ".join(required_arg) if required_arg else ""
-                backbone_table.add_row([row_index + 1, backbone_type, required_arg])
+        for _, backbone_meta in all_backbones.items():
+            for backbone_type, meta_data in backbone_meta.items():
+                required_args = []
+                for arg in meta_data["required"]:
+                    output_arg = f"{arg}"
+                    if arg in meta_data["options"]:
+                        output_arg += f"={meta_data['options'][arg]}"
+                    required_args.append(output_arg)
+                row = [
+                    row_index + 1,
+                    backbone_type,
+                    ", ".join(required_args) if required_args else "",
+                    ", ".join(meta_data["available"]) if meta_data["available"] else "",
+                ]
+                backbone_table.add_row(row)
                 row_index += 1
         print(backbone_table)
 
