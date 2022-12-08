@@ -154,10 +154,7 @@ class BaseInferencerWithConverter(BaseInferencer):
             detections: AnnotationSceneEntity
             features: list including saliency map and feature vector
         """
-        segm = False
-        if isinstance(self.converter, (MaskToAnnotationConverter, RotatedRectToAnnotationConverter)):
-            segm = True
-
+        segm = isinstance(self.converter, (MaskToAnnotationConverter, RotatedRectToAnnotationConverter))
         tiler = Tiler(tile_size=tile_size, overlap=overlap, max_number=max_number, model=self.model, segm=segm)
         detections, features = tiler.predict(image)
         detections = self.converter.convert_to_annotation(detections, metadata={"original_shape": image.shape})
