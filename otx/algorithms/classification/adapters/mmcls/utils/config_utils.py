@@ -1,0 +1,232 @@
+"""Collection of utils for task implementation in Detection Task."""
+
+# Copyright (C) 2022 Intel Corporation
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions
+# and limitations under the License.
+
+import math
+from typing import List, Union, Optional
+
+import torch
+from mmcv import Config, ConfigDict
+from mpa.utils.logger import get_logger
+
+from otx.algorithms.common.adapters.mmcv.utils import (
+    get_meta_keys,
+    is_epoch_based_runner,
+    prepare_work_dir,
+    get_dataset_configs,
+    get_configs_by_keys,
+    update_config,
+    remove_from_config,
+    remove_from_configs_by_type,
+    patch_color_conversion,
+    get_configs_by_dict,
+)
+from otx.api.entities.label import Domain, LabelEntity
+from otx.api.utils.argument_checks import (
+    DirectoryPathCheck,
+    check_input_parameters_type,
+)
+
+
+logger = get_logger()
+
+
+@check_input_parameters_type({"work_dir": DirectoryPathCheck})
+def patch_recipe_config(
+    config: Config,
+    work_dir: str,
+):  # pylint: disable=too-many-branches
+    """Update config function."""
+
+    # Add training cancelation hook.
+    if "custom_hooks" not in config:
+        config.custom_hooks = []
+    if "CancelTrainingHook" not in {hook.type for hook in config.custom_hooks}:
+        config.custom_hooks.append(ConfigDict({"type": "CancelTrainingHook"}))
+
+    # Remove high level data pipelines definition leaving them only inside `data` section.
+    remove_from_config(config, "train_pipeline")
+    remove_from_config(config, "test_pipeline")
+    remove_from_config(config, "train_pipeline_strong")
+    # Remove cancel interface hook
+    remove_from_configs_by_type(config.custom_hooks, "CancelInterfaceHook")
+
+    config.checkpoint_config.max_keep_ckpts = 5
+    config.checkpoint_config.interval = config.evaluation.get("interval", 1)
+
+    config.gpu_ids = range(1)
+    config.work_dir = work_dir
+
+
+@check_input_parameters_type()
+def patch_model_config(
+    config: Config,
+    labels: List[LabelEntity],
+):
+    set_num_classes(config, len(labels))
+
+
+@check_input_parameters_type()
+def patch_adaptive_repeat_dataset(
+    config: Union[Config, ConfigDict],
+    num_samples: int,
+    decay: float = -0.002,
+    factor: float = 30,
+):
+    """Patch the repeat times and training epochs adatively.
+
+    Frequent dataloading inits and evaluation slow down training when the
+    sample size is small. Adjusting epoch and dataset repetition based on
+    empirical exponential decay improves the training time by applying high
+    repeat value to small sample size dataset and low repeat value to large
+    sample.
+
+    :param config: mmcv config
+    :param num_samples: number of training samples
+    :param decay: decaying rate
+    :param factor: base repeat factor
+    """
+    data_train = config.data.train
+    if data_train.type == "RepeatDataset" and getattr(data_train, "adaptive_repeat_times", False):
+        if is_epoch_based_runner(config.runner):
+            cur_epoch = config.runner.max_epochs
+            new_repeat = max(round(math.exp(decay * num_samples) * factor), 1)
+            new_epoch = math.ceil(cur_epoch / new_repeat)
+            if new_epoch == 1:
+                return
+            config.runner.max_epochs = new_epoch
+            data_train.times = new_repeat
+
+
+@check_input_parameters_type()
+def align_data_config_with_recipe(
+    data_config: ConfigDict,
+    config: Union[Config, ConfigDict]
+):
+    data_config = data_config.data
+    config = config.data
+    for subset in data_config.keys():
+        subset_config = data_config.get(subset, {})
+        for key in list(subset_config.keys()):
+            found_config = get_configs_by_keys(
+                config.get(subset),
+                key,
+                return_path=True
+            )
+            assert len(found_config) == 1
+            value = subset_config.pop(key)
+            path = list(found_config.keys())[0]
+            update_config(subset_config, {path: value})
+
+
+@check_input_parameters_type()
+def prepare_for_training(
+    config: Union[Config, ConfigDict],
+    data_config: ConfigDict,
+) -> Union[Config, ConfigDict]:
+    """Prepare configs for training phase."""
+    prepare_work_dir(config)
+
+    train_num_samples = 0
+    for subset in ["train", "val", "test"]:
+        data_config_ = data_config.data.get(subset)
+        config_ = config.data.get(subset)
+        if data_config_ is None:
+            continue
+        for key in ["otx_dataset", "labels"]:
+            found = get_configs_by_keys(data_config_, key, return_path=True)
+            if len(found) == 0:
+                continue
+            assert len(found) == 1
+            if subset == "train" and key == "otx_dataset":
+                found_value = list(found.values())[0]
+                if found_value:
+                    train_num_samples = len(found_value)
+            update_config(config_, found)
+
+    if train_num_samples > 0:
+        patch_adaptive_repeat_dataset(config, train_num_samples)
+
+    return config
+
+
+#  @check_input_parameters_type()
+#  def set_data_classes(config: Config, labels: List[LabelEntity]):
+#      """Setter data classes into config."""
+#      # Save labels in data configs.
+#      for subset in ("train", "val", "test"):
+#          for cfg in get_dataset_configs(config, subset):
+#              cfg.labels = labels
+
+
+@check_input_parameters_type()
+def set_num_classes(config: Config, num_classes: int):
+    head_names = ["head"]
+    for head_name in head_names:
+        if head_name in config.model:
+            config.model[head_name].num_classes = num_classes
+
+
+@check_input_parameters_type()
+def patch_datasets(
+    config: Config,
+    data_config: Optional[ConfigDict],
+    domain: Domain = Domain.CLASSIFICATION,
+    **kwargs
+):
+    """Update dataset configs."""
+    assert "data" in config
+    assert "type" in kwargs
+
+    for subset in ("train", "val", "test", "unlabeled"):
+        config.data[f"{subset}_dataloader"] = config.data.get(
+            f"{subset}_dataloader", ConfigDict()
+        )
+        # For stable hierarchical information indexing
+        if subset == "train" and kwargs["type"] == "MPAHierarchicalClsDataset":
+            config.data[f"{subset}_dataloader"].drop_last = True
+
+        for cfg in get_dataset_configs(config, subset):
+            cfg.domain = domain
+            cfg.otx_dataset = None
+            cfg.labels = None
+            cfg.update(kwargs)
+
+            if subset == "train":
+                collect_cfg = get_configs_by_dict(cfg.pipeline, dict(type="Collect"))
+                assert len(collect_cfg) == 1
+                get_meta_keys(collect_cfg[0])
+                # In train dataset, when sample size is smaller than batch size
+                if data_config is not None:
+                    data_cfg = data_config.data.get(subset)
+                    if len(data_cfg.get("otx_dataset", [])) < config.data.get("samples_per_gpu", 2):
+                        config.data[f"{subset}_dataloader"].drop_last = False
+
+    patch_color_conversion(config)
+
+
+def patch_evaluation(config: Config, task: str):
+    cfg = config.evaluation
+    if task == "multilabel":
+        cfg.metric = ["accuracy-mlc", "mAP", "CP", "OP", "CR", "OR", "CF1", "OF1"]
+        config.early_stop_metric = "mAP"
+    elif task == "hierarchical":
+        cfg.metric = ["MHAcc", "avgClsAcc", "mAP"]
+        config.early_stop_metric = "MHAcc"
+    elif task == "normal":
+        cfg.metric = ["accuracy", "class_accuracy"]
+        config.early_stop_metric = "accuracy"
+    else:
+        raise NotImplementedError
