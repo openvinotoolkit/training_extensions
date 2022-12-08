@@ -133,7 +133,7 @@ class ClassificationDatasetAdapter(DatasetEntity):
     @staticmethod
     def _load_text_annotation(annot_path, data_dir):
         out_data = []
-        with open(annot_path) as f:
+        with open(annot_path, encoding="utf-8") as f:
             annotation = json.load(f)
             if "hierarchy" not in annotation:
                 all_classes = sorted(annotation["classes"])
@@ -174,7 +174,7 @@ class ClassificationDatasetAdapter(DatasetEntity):
                 if not labels_idx:
                     img_wo_objects += 1
 
-                out_data.append((full_image_path, tuple(labels_idx), 0, 0, '', -1, -1))
+                out_data.append((full_image_path, tuple(labels_idx), 0, 0, "", -1, -1))
                 if len(labels_idx) > 1 and annotation_type is None:
                     annotation_type = ClassificationType.MULTILABEL
             if annotation_type is None:

@@ -331,7 +331,7 @@ class ClassificationInferenceTask(
             else:
                 cfg_path = os.path.join(base_dir, "model.py")
         cfg = MPAConfig.fromfile(cfg_path)
-        
+
         cfg.model.multilabel = self._multilabel
         cfg.model.hierarchical = self._hierarchical
         if self._hierarchical:
