@@ -338,7 +338,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
                         dataset_item.append_metadata_item(saliency_media, model=self._task_environment.model)
                 else:
                     raise RuntimeError(
-                        f"Single saliency map has to be 2 or 3-dimensional, " f"but got {saliency_map.ndim} dims"
+                        f"Single saliency map has to be 2 or 3-dimensional, but got {saliency_map.ndim} dims"
                     )
 
     def _patch_data_pipeline(self):

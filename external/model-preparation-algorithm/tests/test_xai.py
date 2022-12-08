@@ -8,8 +8,8 @@ import torch
 from mmcls.models import build_classifier
 from mmdet.models import build_detector
 
+from mpa.det.stage import DetectionStage  # noqa
 from mpa.modules.hooks.auxiliary_hooks import ReciproCAMHook, DetSaliencyMapHook
-from mpa.det.stage import DetectionStage
 
 
 torch.manual_seed(0)
