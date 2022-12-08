@@ -411,3 +411,43 @@ class MPAHierarchicalClsDataset(MPAMultilabelClsDataset):
         eval_results["accuracy"] = total_acc
 
         return eval_results
+
+
+@DATASETS.register_module()
+class SelfSLDataset:
+    """SelfSL dataset."""
+
+    def __init__(self, otx_dataset=None, pipeline=None, **kwargs): # pylint: disable=unused-argument
+        self.otx_dataset = otx_dataset
+
+        pipeline1 = [build_from_cfg(p, PIPELINES) for p in [dict(type="LoadImageFromOTXDataset")]+pipeline['view0']]
+        self.pipeline1 = Compose(pipeline1)
+        pipeline2 = [build_from_cfg(p, PIPELINES) for p in [dict(type="LoadImageFromOTXDataset")]+pipeline['view1']]
+        self.pipeline2 = Compose(pipeline2)
+
+    def __getitem__(self, index: int):
+        """Get item from dataset."""
+        dataset = self.otx_dataset
+        item = dataset[index]
+        ignored_labels = np.array([self.label_idx[lbs.id] for lbs in item.ignored_labels])
+
+        height, width = item.height, item.width
+
+        data_info = dict(
+            dataset_item=item,
+            width=width,
+            height=height,
+            index=index,
+            ignored_labels=ignored_labels,
+        )
+
+        results1 = self.pipeline1(data_info)
+        results2 = self.pipeline2(data_info)
+
+        results = {}
+        for k, v in results1.items():
+            results[k+'1'] = v
+        for k, v in results2.items():
+            results[k+'2'] = v
+
+        return results

@@ -14,7 +14,24 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .datasets import MPAClsDataset, MPAHierarchicalClsDataset, MPAMultilabelClsDataset
-from .pipelines import LoadImageFromOTXDataset
+from .datasets import (
+    MPAClsDataset,
+    MPAHierarchicalClsDataset,
+    MPAMultilabelClsDataset,
+    SelfSLDataset,
+)
+from .pipelines import (
+    LoadImageFromOTXDataset,
+    RandomHorizontalFlip,
+    RandomResizedCrop,
+    RandomAppliedTrans,
+    ColorJitter,
+    RandomGrayscale,
+    GaussianBlur
+)
 
-__all__ = ["MPAClsDataset", "MPAMultilabelClsDataset", "MPAHierarchicalClsDataset", "LoadImageFromOTXDataset"]
+__all__ = [
+    "MPAClsDataset", "MPAMultilabelClsDataset", "MPAHierarchicalClsDataset", "SelfSLDataset",
+    "LoadImageFromOTXDataset", "RandomHorizontalFlip", "RandomResizedCrop", "RandomAppliedTrans",
+    "ColorJitter", "RandomGrayscale", "GaussianBlur"
+]
