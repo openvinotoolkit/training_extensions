@@ -100,7 +100,8 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
     def _run_task(self, stage_module, mode=None, dataset=None, **kwargs):
         # FIXME: Temporary remedy for CVS-88098
         export = kwargs.get("export", False)
-        self._initialize(export=export)
+        force = kwargs.get("force", False)
+        self._initialize(export=export, force=force)
         # update model config -> model label schema
         data_classes = [label.name for label in self._labels]
         model_classes = [label.name for label in self._model_label_schema]
@@ -111,7 +112,10 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
             new_classes = np.setdiff1d(data_classes, model_classes).tolist()
             train_data_cfg["new_classes"] = new_classes
 
-        logger.info(f"running task... kwargs = {kwargs}")
+        logger.info(
+            "running task... kwargs = " +
+            str({k: v if k != 'model' else object.__repr__(v) for k, v in kwargs.items()})
+        )
         if self._recipe_cfg is None:
             raise RuntimeError("'recipe_cfg' is not initialized yet. call prepare() method before calling this method")
 
@@ -167,12 +171,11 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         """Hyper Parameters configuration."""
         return self._hyperparams
 
-    @property
-    def _precision_from_config(self):
-        return [ModelPrecision.FP16] if self._config.get("fp16", None) else [ModelPrecision.FP32]
-
-    def _initialize(self, export=False):
+    def _initialize(self, export=False, force=False):
         """Prepare configurations to run a task through MPA's stage."""
+        if not force and getattr(self, "_recipe_cfg", None) is not None:
+            return
+
         logger.info("initializing....")
         self._init_recipe()
 
@@ -229,6 +232,16 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
                 ),
             )
         self._recipe_cfg.log_config.hooks.append({"type": "OTXLoggerHook", "curves": self._learning_curves})
+
+        # if num_workers is 0, persistent_workers must be False
+        data_cfg = self._recipe_cfg.data
+        if data_cfg.get("workers_per_gpu", 0) == 0:
+            for subset in ["train", "val", "test"]:
+                dataloader_cfg = data_cfg.get(
+                    f"{subset}_dataloader", ConfigDict()
+                )
+                dataloader_cfg["persistent_workers"] = False
+                data_cfg[f"{subset}_dataloader"] = dataloader_cfg
 
         self._initialize_post_hook()
 

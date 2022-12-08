@@ -30,8 +30,11 @@ from otx.algorithms.common.adapters.mmcv.utils import (
     is_epoch_based_runner,
     patch_color_conversion,
     prepare_work_dir,
+    get_dataset_configs,
+    get_configs_by_keys,
+    update_config,
+    remove_from_config,
 )
-from otx.algorithms.common.adapters.mmcv.config_utils import remove_from_config
 from otx.algorithms.detection.configs.base import DetectionConfig
 from otx.algorithms.detection.utils.data import (
     format_list_to_str,
@@ -66,7 +69,6 @@ def patch_config(
     work_dir: str,
     labels: List[LabelEntity],
     domain: Domain,
-    random_seed: Optional[int] = None,
 ):  # pylint: disable=too-many-branches
     """Update config function."""
     # Set runner if not defined.
@@ -96,7 +98,7 @@ def patch_config(
     if "custom_hooks" not in config:
         config.custom_hooks = []
     if "CancelTrainingHook" not in {hook.type for hook in config.custom_hooks}:
-        config.custom_hooks.append({"type": "CancelTrainingHook"})
+        config.custom_hooks.append(ConfigDict({"type": "CancelTrainingHook"}))
 
     # Remove high level data pipelines definition leaving them only inside `data` section.
     remove_from_config(config, "train_pipeline")
@@ -121,22 +123,33 @@ def patch_config(
         config.checkpoint_config = ConfigDict()
     config.checkpoint_config.max_keep_ckpts = 5
     config.checkpoint_config.interval = config.evaluation.get("interval", 1)
+
     set_data_classes(config, labels)
+
     config.gpu_ids = range(1)
     config.work_dir = work_dir
-    config.seed = random_seed
+
+
+@check_input_parameters_type()
+def patch_model_config(
+    config: Config,
+    labels: List[LabelEntity],
+):
+    set_num_classes(config, len(labels))
 
 
 @check_input_parameters_type()
 def set_hyperparams(config: Config, hyperparams: DetectionConfig):
     """Set function for hyperparams (DetectionConfig)."""
+    config.data.samples_per_gpu = int(hyperparams.learning_parameters.batch_size)
+    config.data.workers_per_gpu = int(hyperparams.learning_parameters.num_workers)
     config.optimizer.lr = float(hyperparams.learning_parameters.learning_rate)
+
+    total_iterations = int(hyperparams.learning_parameters.num_iters)
+
     config.lr_config.warmup_iters = int(hyperparams.learning_parameters.learning_rate_warmup_iters)
     if config.lr_config.warmup_iters == 0:
         config.lr_config.warmup = None
-    config.data.samples_per_gpu = int(hyperparams.learning_parameters.batch_size)
-    config.data.workers_per_gpu = int(hyperparams.learning_parameters.num_workers)
-    total_iterations = int(hyperparams.learning_parameters.num_iters)
     if is_epoch_based_runner(config.runner):
         config.runner.max_epochs = total_iterations
     else:
@@ -177,20 +190,55 @@ def patch_adaptive_repeat_dataset(
             data_train.times = new_repeat
 
 
-@check_input_parameters_type({"train_dataset": DatasetParamTypeCheck, "val_dataset": DatasetParamTypeCheck})
+@check_input_parameters_type()
+def align_data_config_with_recipe(
+    data_config: ConfigDict,
+    config: Union[Config, ConfigDict]
+):
+    data_config = data_config.data
+    config = config.data
+    for subset in data_config.keys():
+        subset_config = data_config.get(subset, {})
+        for key in list(subset_config.keys()):
+            found_config = get_configs_by_keys(
+                config.get(subset),
+                key,
+                return_path=True
+            )
+            assert len(found_config) == 1
+            value = subset_config.pop(key)
+            path = list(found_config.keys())[0]
+            update_config(subset_config, {path: value})
+
+
+@check_input_parameters_type()
 def prepare_for_training(
     config: Union[Config, ConfigDict],
-    train_dataset: DatasetEntity,
-    val_dataset: DatasetEntity,
-    time_monitor: TimeMonitorCallback,
+    data_config: ConfigDict,
 ) -> Union[Config, ConfigDict]:
     """Prepare configs for training phase."""
     prepare_work_dir(config)
-    data_train = get_data_cfg(config)
-    data_train.otx_dataset = train_dataset
-    config.data.val.otx_dataset = val_dataset
-    patch_adaptive_repeat_dataset(config, len(train_dataset))
-    config.custom_hooks.append({"type": "OTXProgressHook", "time_monitor": time_monitor, "verbose": True})
+
+    train_num_samples = 0
+    for subset in ["train", "val", "test"]:
+        data_config_ = data_config.data.get(subset)
+        config_ = config.data.get(subset)
+        if data_config_ is None:
+            continue
+        for key in ["otx_dataset"]:
+            found = get_configs_by_keys(data_config_, key, return_path=True)
+            if len(found) == 0:
+                continue
+            assert len(found) == 1
+            if subset == "train" and key == "otx_dataset":
+                found_value = list(found.values())[0]
+                if found_value:
+                    train_num_samples = len(found_value)
+            update_config(config_, found)
+
+    if train_num_samples > 0:
+        patch_adaptive_repeat_dataset(config, train_num_samples)
+
     return config
 
 
@@ -199,13 +247,15 @@ def set_data_classes(config: Config, labels: List[LabelEntity]):
     """Setter data classes into config."""
     # Save labels in data configs.
     for subset in ("train", "val", "test"):
-        cfg = get_data_cfg(config, subset)
-        cfg.labels = labels
-        #  config.data[subset].labels = labels
+        for cfg in get_dataset_configs(config, subset):
+            cfg.labels = labels
+            #  config.data[subset].labels = labels
 
+
+@check_input_parameters_type()
+def set_num_classes(config: Config, num_classes: int):
     # Set proper number of classes in model's detection heads.
     head_names = ("mask_head", "bbox_head", "segm_head")
-    num_classes = len(labels)
     if "roi_head" in config.model:
         for head_name in head_names:
             if head_name in config.model.roi_head:
@@ -240,7 +290,7 @@ def patch_datasets(config: Config, domain: Domain):
 
     assert "data" in config
     for subset in ("train", "val", "test"):
-        cfgs = get_data_cfgs(config, subset)
+        cfgs = get_dataset_configs(config, subset)
 
         for cfg in cfgs:
             cfg.type = "MPADetDataset"
@@ -330,45 +380,3 @@ def cluster_anchors(model_config: Config, data_config: Config, dataset: DatasetE
     config_generator.widths, config_generator.heights = widths, heights
 
     model_config.model.bbox_head.anchor_generator = config_generator
-
-
-# TODO Replace this with function in common
-@check_input_parameters_type()
-def get_data_cfg(config: Union[Config, ConfigDict], subset: str = "train") -> Config:
-    """Return dataset configs."""
-    data_cfg = config.data[subset]
-    while "dataset" in data_cfg:
-        data_cfg = data_cfg.dataset
-    return data_cfg
-
-
-@check_input_parameters_type()
-def get_data_cfgs(  # noqa: C901
-    config: Union[Config, ConfigDict], subset: str = "train"
-) -> List[Config]:
-    """Return a list of dataset configs."""
-
-    if config.data.get(subset, None) is None:
-        return []
-
-    data_cfg = config.data[subset]
-
-    def get_datasets(cfg, key=None):
-        if key == "dataset":
-            return [cfg]
-        elif key == "datasets":
-            assert isinstance(cfg, list)
-        out = []
-        if isinstance(cfg, Mapping):
-            for key, value in cfg.items():
-                if isinstance(value, (Mapping, list)):
-                    out += get_datasets(value, key)
-        elif isinstance(cfg, list):
-            for value in cfg:
-                if isinstance(value, (Mapping, list)):
-                    out_ = get_datasets(value)
-                    out += value if not out_ and key == "datasets" else out_
-        return out
-
-    data_cfgs = get_datasets(data_cfg)
-    return data_cfgs if data_cfgs else [data_cfg]

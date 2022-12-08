@@ -38,11 +38,11 @@ class AccuracyAwareRunner(EpochBasedRunner):
     training loop using the parameters specified in the "accuracy_aware_training".
     """
 
-    def __init__(self, *args, target_metric_name, nncf_config, **kwargs):
+    def __init__(self, *args, nncf_config, **kwargs):
         super().__init__(*args, **kwargs)
-        self.target_metric_name = target_metric_name
         self.nncf_config = nncf_config
         self.compression_ctrl = None
+        self._target_metric_name = nncf_config['target_metric_name']
 
     def run(self, data_loaders, *args, **kwargs):
         check_nncf_is_enabled()
@@ -124,11 +124,10 @@ class AccuracyAwareRunner(EpochBasedRunner):
         This method is used in NNCF-based accuracy-aware training.
         """
         # Get metric from runner's attributes that set in EvalHook.evaluate() function
-        # metric = getattr(self, self.target_metric_name, None)
         all_metrics = getattr(self, "all_metrics", {})
         if len(all_metrics) == 0:
             return 0.0
-        metric = all_metrics.get(self.target_metric_name, None)
+        metric = all_metrics.get(self._target_metric_name, None)
         if metric is None:
-            raise RuntimeError(f"Could not find the {self.target_metric_name} key")
+            raise RuntimeError(f"Could not find the {self._target_metric_name} key")
         return metric

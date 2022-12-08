@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from mmdet.datasets import build_dataloader as mmdet_build_dataloader, build_dataset
+from mmseg.datasets import build_dataloader as mmseg_build_dataloader, build_dataset
 
 
 def build_dataloader(config, subset, distributed):
@@ -23,7 +23,7 @@ def build_dataloader(config, subset, distributed):
     dataset = build_dataset(config.data.get(subset), default_args)
 
     loader_cfg = {**loader_cfg, **config.data.get(f'{subset}_dataloader', {})}
-    dataloader = mmdet_build_dataloader(
+    dataloader = mmseg_build_dataloader(
         dataset,
         **loader_cfg,
     )

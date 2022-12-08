@@ -25,7 +25,7 @@ model = dict(
     is_task_adapt=True,
     pretrained=None,
     decode_head=dict(
-        type="FCNHead",
+        type="CustomFCNHead",
         in_channels=[40, 80, 160, 320],
         in_index=[0, 1, 2, 3],
         input_transform="multiple_select",
@@ -41,8 +41,8 @@ model = dict(
         enable_out_norm=False,
         loss_decode=[
             dict(
-                type="CrossEntropyLoss",
-                use_sigmoid=False,
+                type="CrossEntropyLossWithIgnore",
+                reduction="mean",
                 sampler=dict(type="MaxPoolingPixelSampler", ratio=0.25, p=1.7),
                 loss_weight=1.0,
             ),

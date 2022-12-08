@@ -8,11 +8,15 @@ from functools import partial
 import torch
 from nncf.torch.dynamic_graph.io_handling import replicate_same_tensors
 
-from .patchers import NO_TRACE_PATCHER, TRACE_PATCHER
+from .patchers import NNCF_PATCHER, no_nncf_trace_wrapper
 
 
-NO_TRACE_PATCHER.patch("mpa.modules.utils.export_helpers.get_saliency_map")
-NO_TRACE_PATCHER.patch("mpa.modules.utils.export_helpers.get_feature_vector")
+NNCF_PATCHER.patch(
+    "mpa.modules.utils.export_helpers.get_saliency_map", no_nncf_trace_wrapper
+)
+NNCF_PATCHER.patch(
+    "mpa.modules.utils.export_helpers.get_feature_vector", no_nncf_trace_wrapper
+)
 
 
 @contextmanager
@@ -25,24 +29,16 @@ def nncf_trace_context(self, img_metas, nncf_compress_postprocessing=True):
     # it must be on CPU
     device_backup = next(self.parameters()).device
     self = self.to("cpu")
-    # HACK
-    # temporarily change current context as onnx export context
-    # to trace network
-    onnx_backup = torch.onnx.utils.__IN_ONNX_EXPORT
-    torch.onnx.utils.__IN_ONNX_EXPORT = True
-    # backup forward
-    forward_backup = self.forward
+
     if nncf_compress_postprocessing:
-        self.forward = partial(self.forward, img_metas=img_metas)
-        #  self.forward = partial(self.forward, img_metas=img_metas, return_loss=False)
+        self.forward = partial(self.forward, img_metas=img_metas, return_loss=False)
     else:
         self.forward = partial(self.forward_dummy)
 
     yield
 
     # make everything normal
-    self.forward = forward_backup
-    torch.onnx.utils.__IN_ONNX_EXPORT = onnx_backup
+    self.__dict__.pop("forward")
     self = self.to(device_backup)
 
 
