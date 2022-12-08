@@ -18,6 +18,7 @@ otx_dir = os.getcwd()
 build_backbone_args = {
     "DETECTION": "torchvision.mobilenet_v3_large",
     "INSTANCE_SEGMENTATION": "torchvision.mobilenet_v3_large",
+    "SEGMENTATION": "torchvision.mobilenet_v3_large",
 }
 
 
