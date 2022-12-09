@@ -43,11 +43,11 @@ from ote_cli.utils.tests import (
 
 args = {
     "--train-ann-file": "data/anomaly/Hazelnut_Toy/segmentation/train.json",
-    "--train-data-roots": "data/anomaly/Hazelnut_Toy",
+    "--train-data-roots": "data/anomaly/Hazelnut_Toy/hazelnut",
     "--val-ann-file": "data/anomaly/Hazelnut_Toy/segmentation/val.json",
-    "--val-data-roots": "data/anomaly/Hazelnut_Toy",
+    "--val-data-roots": "data/anomaly/Hazelnut_Toy/hazelnut",
     "--test-ann-files": "data/anomaly/Hazelnut_Toy/segmentation/test.json",
-    "--test-data-roots": "data/anomaly/Hazelnut_Toy",
+    "--test-data-roots": "data/anomaly/Hazelnut_Toy/hazelnut",
     "--input": "data/anomaly/Hazelnut_Toy/hazelnut/colour",
     "train_params": [],
 }

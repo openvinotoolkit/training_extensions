@@ -1,17 +1,17 @@
 {
   "image_path": {
-    "0": "hazelnut/good/07.jpg",
-    "1": "hazelnut/good/26.jpg",
-    "2": "hazelnut/good/03.jpg",
-    "3": "hazelnut/colour/00.jpg",
-    "4": "hazelnut/colour/15.jpg",
-    "5": "hazelnut/colour/10.jpg",
-    "6": "hazelnut/colour/14.jpg",
-    "7": "hazelnut/colour/05.jpg",
-    "8": "hazelnut/colour/06.jpg",
-    "9": "hazelnut/colour/01.jpg",
-    "10": "hazelnut/colour/04.jpg",
-    "11": "hazelnut/colour/02.jpg"
+    "0": "good/25.png",
+    "1": "good/05.png",
+    "2": "good/28.png",
+    "3": "colour/06.png",
+    "4": "colour/03.png",
+    "5": "colour/07.png",
+    "6": "colour/14.png",
+    "7": "colour/01.png",
+    "8": "colour/12.png",
+    "9": "colour/11.png",
+    "10": "colour/09.png",
+    "11": "colour/08.png"
   },
   "label": {
     "0": "good",
@@ -28,14 +28,14 @@
     "11": "abnormal"
   },
   "masks": {
-    "3": "hazelnut/mask/colour/00.jpg",
-    "4": "hazelnut/mask/colour/15.jpg",
-    "5": "hazelnut/mask/colour/10.jpg",
-    "6": "hazelnut/mask/colour/14.jpg",
-    "7": "hazelnut/mask/colour/05.jpg",
-    "8": "hazelnut/mask/colour/06.jpg",
-    "9": "hazelnut/mask/colour/01.jpg",
-    "10": "hazelnut/mask/colour/04.jpg",
-    "11": "hazelnut/mask/colour/02.jpg"
+    "3": "mask/colour/06.png",
+    "4": "mask/colour/03.png",
+    "5": "mask/colour/07.png",
+    "6": "mask/colour/14.png",
+    "7": "mask/colour/01.png",
+    "8": "mask/colour/12.png",
+    "9": "mask/colour/11.png",
+    "10": "mask/colour/09.png",
+    "11": "mask/colour/08.png"
   }
 }
