@@ -107,6 +107,7 @@ pip install torch=="${TORCH_VERSION}" torchvision=="${TORCHVISION_VERSION}" -f h
 #  - Dependency resolusion is to slow
 #  - Several lib version conflicts
 #  -> Temporary use of --use-deprecated=legacy-resolve
+# shellcheck disable=SC2102
 pip install --use-deprecated=legacy-resolver -e ../../[full] || exit 1
 
 deactivate
