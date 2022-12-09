@@ -111,7 +111,7 @@ class ModelContainer:
         predictions, frame_meta = self.core_model(frame)
 
         # MaskRCNN returns tuple so no need to process
-        if not self.segm:
+        if self._task_type == TaskType.DETECTION:
             predictions = detection2array(predictions)
         return predictions, frame_meta
 
