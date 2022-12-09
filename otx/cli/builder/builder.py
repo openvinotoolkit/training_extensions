@@ -123,10 +123,10 @@ def patch_missing_args(backbone_config, missing_args):
     updated_missing_args = []
     backbone_type = backbone_config["type"]
     backend, _ = Registry.split_scope_key(backbone_type)
-    backbone_data = get_available_backbone_list(backend)
-    if backbone_type not in backbone_data:
+    available_backbones = get_available_backbone_list(backend)
+    if backbone_type not in available_backbones:
         return missing_args
-    backbone_data = backbone_data[backbone_type]
+    backbone_data = available_backbones[backbone_type]
     for arg in missing_args:
         if "options" in backbone_data and arg in backbone_data["options"]:
             backbone_config[arg] = backbone_data["options"][arg][0]

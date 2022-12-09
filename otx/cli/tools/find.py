@@ -79,6 +79,7 @@ def main():
             )
         print(template_table)
 
+    # TODO: Get params from cli args & Flow arrangement (for all tasks backbone usable)
     if args.backbone:
         all_backbones = otx_registry.get_backbones(args.backbone)
         backbone_table = PrettyTable(["Index", "Backbone Type", "Required Args", "Confirmed model"])
