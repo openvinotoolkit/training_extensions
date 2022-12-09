@@ -23,4 +23,3 @@ _base_ = [
 
 base_model_path = "../model.py"
 
-fp16 = dict(loss_scale=512.0)

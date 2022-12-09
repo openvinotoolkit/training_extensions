@@ -63,12 +63,20 @@ if TT_STABILITY_TESTS:
     templates = [default_template] * 100
     templates_ids = [template.model_template_id + f"-{i+1}" for i, template in enumerate(templates)]
 
+    semisl_default_template = parse_model_template(
+        os.path.join(
+            "otx/algorithms/detection/configs", "ocr_lite_hrnet_18_mod2", "semisl", "template_semisl.yaml"
+        )
+    )
+    semisl_templates = [semisl_default_template] * 100
+    semisl_templates_ids = [template.model_template_id + f"_semisl-{i+1}" for i, template in enumerate(semisl_templates)]
+
 else:
     templates = Registry("otx/algorithms/segmentation").filter(task_type="SEGMENTATION").templates
     templates_ids = [template.model_template_id for template in templates]
 
-    templates_semisl = Registry("otx/algorithms/segmentation", semisl=True).filter(task_type="SEGMENTATION").templates
-    templates_semisl_ids = [template.model_template_id + "_semisl" for template in templates_semisl]
+    semisl_templates = Registry("otx/algorithms/segmentation", semisl=True).filter(task_type="SEGMENTATION").templates
+    semisl_templates_ids = [template.model_template_id + "_semisl" for template in semisl_templates]
 
 @pytest.fixture(scope="session")
 def tmp_dir_path():
@@ -78,20 +86,19 @@ def tmp_dir_path():
 
 class TestToolsMPASemiSLSegmentation:
     @e2e_pytest_component
-    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
-    @pytest.mark.parametrize("templates_semisl", templates_semisl, ids=templates_semisl_ids)
-    def test_otx_train(self, templates_semisl, tmp_dir_path):
+    @pytest.mark.parametrize("template", semisl_templates, ids=semisl_templates_ids)
+    def test_otx_train(self, template, tmp_dir_path):
         args_semisl = args.copy()
         args_semisl["--unlabeled-data-roots"] = "data/vlp_test/train"
-        otx_train_testing(templates_semisl, tmp_dir_path, otx_dir, args_semisl)
+        otx_train_testing(template, tmp_dir_path, otx_dir, args_semisl)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
-    @pytest.mark.parametrize("templates_semisl", templates_semisl, ids=templates_semisl_ids)
-    def test_otx_eval(self, templates_semisl, tmp_dir_path):
+    @pytest.mark.parametrize("template", semisl_templates, ids=semisl_templates_ids)
+    def test_otx_eval(self, template, tmp_dir_path):
         args_semisl = args.copy()
         args_semisl["--unlabeled-data-roots"] = "data/vlp_test/train"
-        otx_eval_testing(templates_semisl, tmp_dir_path, otx_dir, args_semisl)
+        otx_eval_testing(template, tmp_dir_path, otx_dir, args_semisl)
 
 class TestToolsMPASegmentation:
     @e2e_pytest_component
