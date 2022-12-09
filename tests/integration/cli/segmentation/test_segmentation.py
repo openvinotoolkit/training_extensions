@@ -65,7 +65,7 @@ if TT_STABILITY_TESTS:
 
     semisl_default_template = parse_model_template(
         os.path.join(
-            "otx/algorithms/detection/configs", "ocr_lite_hrnet_18_mod2", "semisl", "template_semisl.yaml"
+            "otx/algorithms/segmentation/configs", "ocr_lite_hrnet_18_mod2", "semisl", "template_semisl.yaml"
         )
     )
     semisl_templates = [semisl_default_template] * 100
