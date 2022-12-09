@@ -107,7 +107,6 @@ pip install torch=="${TORCH_VERSION}" torchvision=="${TORCHVISION_VERSION}" -f h
 #  - Dependency resolusion is to slow
 #  - Several lib version conflicts
 #  -> Temporary use of --use-deprecated=legacy-resolve
-pip install numpy
 pip install --use-deprecated=legacy-resolver -e ../../[full] || exit 1
 
 deactivate
