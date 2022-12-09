@@ -51,26 +51,25 @@ def get_dataset_adapter(task_type):
         return ActionClassificationDatasetAdapter(task_type=task_type)
     
     if task_type == TaskType.ANOMALY_CLASSIFICATION:
-        from .anomaly_dataset_adapter import AnomalyDatasetAdapter
+        from .anomaly_dataset_adapter import AnomalyClassificationDatasetAdapter
 
-        return AnomalyDatasetAdapter(task_type=task_type)
+        return AnomalyClassificationDatasetAdapter(task_type=task_type)
+
+    if task_type == TaskType.ANOMALY_DETECTION:
+        from .anomaly_dataset_adapter import AnomalyDetectionDatasetAdapter
+
+        return AnomalyDetectionDatasetAdapter(task_type=task_type)
+
+    if task_type == TaskType.ANOMALY_SEGMENTATION:
+        from .anomaly_dataset_adapter import AnomalySegmentationDatasetAdapter
+
+        return AnomalySegmentationDatasetAdapter(task_type=task_type)
     """
+    TODO: Need to implement
     if task_type == TaskType.ACTION_DETECTION:
         from .action_dataset_adapter import ActionDetectionDatasetAdapter
 
         return ActionDetectionDatasetAdapter(task_type=task_type)
-    if task_type == TaskType.ANOMALY_DETECTION:
-        from otx.algorithms.anomaly.adapters.anomalib.data.dataset import (
-            AnomalyDetectionDataset,
-        )
-
-        return AnomalyDetectionDataset
-    if task_type == TaskType.ANOMALY_SEGMENTATION:
-        from otx.algorithms.anomaly.adapters.anomalib.data.dataset import (
-            AnomalySegmentationDataset,
-        )
-
-        return AnomalySegmentationDataset
     if task_type == TaskType.ROTATED_DETECTION:
         from .rotated_detection.dataset import RotatedDetectionDataset
 
