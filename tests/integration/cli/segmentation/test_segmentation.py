@@ -62,16 +62,36 @@ if TT_STABILITY_TESTS:
     )
     templates = [default_template] * 100
     templates_ids = [template.model_template_id + f"-{i+1}" for i, template in enumerate(templates)]
+
 else:
     templates = Registry("otx/algorithms/segmentation").filter(task_type="SEGMENTATION").templates
     templates_ids = [template.model_template_id for template in templates]
 
+    templates_semisl = Registry("otx/algorithms/segmentation", semisl=True).filter(task_type="SEGMENTATION").templates
+    templates_semisl_ids = [template.model_template_id + "_semisl" for template in templates_semisl]
 
 @pytest.fixture(scope="session")
 def tmp_dir_path():
     with TemporaryDirectory() as tmp_dir:
         yield Path(tmp_dir)
 
+
+class TestToolsMPASemiSLSegmentation:
+    @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.parametrize("templates_semisl", templates_semisl, ids=templates_semisl_ids)
+    def test_otx_train(self, templates_semisl, tmp_dir_path):
+        args_semisl = args.copy()
+        args_semisl["--unlabeled-data-roots"] = "data/vlp_test/train"
+        otx_train_testing(templates_semisl, tmp_dir_path, otx_dir, args_semisl)
+
+    @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.parametrize("templates_semisl", templates_semisl, ids=templates_semisl_ids)
+    def test_otx_eval(self, templates_semisl, tmp_dir_path):
+        args_semisl = args.copy()
+        args_semisl["--unlabeled-data-roots"] = "data/vlp_test/train"
+        otx_eval_testing(templates_semisl, tmp_dir_path, otx_dir, args_semisl)
 
 class TestToolsMPASegmentation:
     @e2e_pytest_component
