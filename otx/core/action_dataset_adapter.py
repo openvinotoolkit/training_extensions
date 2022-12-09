@@ -117,14 +117,15 @@ class ActionClassificationDatasetAdapter(ActionBaseDatasetAdapter, BaseDatasetAd
                                     Rectangle.generate_full_box(),
                                     labels = [
                                         ScoredLabel(
-                                            label=label_entities[ann.label]                                        )
+                                            label=label_entities[ann.label]                                        
+                                        )
                                     ]
                                 )
                             )
                     meta_item = MetadataItemEntity(
                         data=VideoMetadata(
                             video_id=datumaro_item.media.path.split('/')[-2],
-                            frame_id=datumaro_item.media.path.split('/')[-1]
+                            frame_idx=datumaro_item.media.path.split('/')[-1]
                         )
                     )
                     # Unlabeled dataset
