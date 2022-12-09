@@ -18,6 +18,7 @@ otx_dir = os.getcwd()
 build_backbone_args = {
     "DETECTION": "torchvision.mobilenet_v3_large",
     "INSTANCE_SEGMENTATION": "torchvision.mobilenet_v3_large",
+    "SEGMENTATION": "torchvision.mobilenet_v3_large",
 }
 
 
@@ -30,8 +31,8 @@ def tmp_dir_path():
 class TestToolsOTXCLI:
     @e2e_pytest_component
     def test_otx_find(self):
-        otx_find_testing(otx_dir)
+        otx_find_testing()
 
     @e2e_pytest_component
     def test_otx_build(self, tmp_dir_path):
-        otx_build_testing(tmp_dir_path, otx_dir, build_backbone_args)
+        otx_build_testing(tmp_dir_path, build_backbone_args)

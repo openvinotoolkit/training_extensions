@@ -17,9 +17,19 @@
 
 import importlib
 import inspect
+import json
 import os
 
 # pylint: disable=protected-access
+
+SUPPORTED_BACKBONE_BACKENDS = (
+    "otx",
+    "mmcls",
+    "mmdet",
+    "mmseg",
+    "torchvision",
+    "pytorchcv",
+)
 
 
 def get_impl_class(impl_path):
@@ -52,8 +62,35 @@ def get_backbone_list(backend):
     raise ValueError(f"{backend} cannot be imported.")
 
 
+def get_available_backbone_list(backend):
+    """Gather available backbone list from json file."""
+    available_backbone_path = os.path.join(get_otx_root_path(), "cli/builder/supported_backbone")
+    available_backbone_path = os.path.join(available_backbone_path, f"{backend}.json")
+    available_backbones = {}
+    if os.path.exists(available_backbone_path):
+        with open(available_backbone_path, "r", encoding="UTF-8") as f:
+            available_backbones = json.load(f)
+        available_backbones = available_backbones["backbones"]
+    elif backend in ("otx", "pytorchcv"):
+        backbone_list = get_backbone_list(backend)
+        registry, _ = get_backbone_registry(backend)
+        backbone_format = {"required": [], "options": {}, "available": []}
+        for backbone in backbone_list:
+            scope_name = "mmdet" if backend == "pytorchcv" else backend
+            backbone_type = f"{scope_name}.{backbone}"
+            backbone_format = {
+                "required": get_required_args(registry.get(backbone_type)),
+                "options": {},
+                "available": [],
+            }
+            available_backbones[backbone_type] = backbone_format
+    return available_backbones
+
+
 def get_backbone_registry(backends=None):
     """Gather backbone list from backends."""
+    if backends not in SUPPORTED_BACKBONE_BACKENDS:
+        raise ValueError(f"{backends} is an unsupported backbone backend.")
 
     custom_imports = []
     # Get OTX Custom + Torchvision registry
@@ -75,7 +112,8 @@ def get_backbone_registry(backends=None):
         if importlib.util.find_spec(backend):
             mm_backbones = importlib.import_module(f"{backend}.models")
             mm_registry = mm_backbones.BACKBONES
-            otx_registry._add_children(mm_registry)
+            if mm_registry.scope not in otx_registry.children:
+                otx_registry._add_children(mm_registry)
             custom_imports.append(f"{backend}.models")
     return otx_registry, custom_imports
 
