@@ -150,7 +150,6 @@ class ClassificationTrainTask(ClassificationInferenceTask):
                 train=ConfigDict(
                     otx_dataset=dataset.get_subset(Subset.TRAINING),
                     labels=self._labels,
-                    label_names=list(label.name for label in self._labels),
                 ),
                 val=ConfigDict(
                     otx_dataset=dataset.get_subset(Subset.VALIDATION),

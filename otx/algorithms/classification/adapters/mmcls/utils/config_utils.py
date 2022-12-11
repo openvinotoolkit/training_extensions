@@ -1,4 +1,4 @@
-"""Collection of utils for task implementation in Detection Task."""
+"""Collection of utils for task implementation in Classification Task."""
 
 # Copyright (C) 2022 Intel Corporation
 #
@@ -47,6 +47,7 @@ logger = get_logger()
 def patch_recipe_config(
     config: Config,
     work_dir: str,
+    labels: List[LabelEntity],
 ):  # pylint: disable=too-many-branches
     """Update config function."""
 
@@ -65,6 +66,8 @@ def patch_recipe_config(
 
     config.checkpoint_config.max_keep_ckpts = 5
     config.checkpoint_config.interval = config.evaluation.get("interval", 1)
+
+    set_data_classes(config, labels)
 
     config.gpu_ids = range(1)
     config.work_dir = work_dir
@@ -111,27 +114,6 @@ def patch_adaptive_repeat_dataset(
 
 
 @check_input_parameters_type()
-def align_data_config_with_recipe(
-    data_config: ConfigDict,
-    config: Union[Config, ConfigDict]
-):
-    data_config = data_config.data
-    config = config.data
-    for subset in data_config.keys():
-        subset_config = data_config.get(subset, {})
-        for key in list(subset_config.keys()):
-            found_config = get_configs_by_keys(
-                config.get(subset),
-                key,
-                return_path=True
-            )
-            assert len(found_config) == 1
-            value = subset_config.pop(key)
-            path = list(found_config.keys())[0]
-            update_config(subset_config, {path: value})
-
-
-@check_input_parameters_type()
 def prepare_for_training(
     config: Union[Config, ConfigDict],
     data_config: ConfigDict,
@@ -162,13 +144,13 @@ def prepare_for_training(
     return config
 
 
-#  @check_input_parameters_type()
-#  def set_data_classes(config: Config, labels: List[LabelEntity]):
-#      """Setter data classes into config."""
-#      # Save labels in data configs.
-#      for subset in ("train", "val", "test"):
-#          for cfg in get_dataset_configs(config, subset):
-#              cfg.labels = labels
+@check_input_parameters_type()
+def set_data_classes(config: Config, labels: List[LabelEntity]):
+    """Setter data classes into config."""
+    # Save labels in data configs.
+    for subset in ("train", "val", "test"):
+        for cfg in get_dataset_configs(config, subset):
+            cfg.labels = labels
 
 
 @check_input_parameters_type()

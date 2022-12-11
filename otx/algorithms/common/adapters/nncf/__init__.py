@@ -4,7 +4,6 @@
 
 from .compression import (
     AccuracyAwareLrUpdater,
-    extract_model_and_compression_states,
     get_nncf_metadata,
     get_uncompressed_model,
     is_checkpoint_nncf,
@@ -22,7 +21,6 @@ from .patches import *
 
 
 __all__ = [
-    "extract_model_and_compression_states",
     "AccuracyAwareLrUpdater",
     "check_nncf_is_enabled",
     "get_nncf_metadata",

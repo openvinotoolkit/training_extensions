@@ -33,6 +33,7 @@ from mpa.utils.config_utils import remove_custom_hook, update_or_add_custom_hook
 from mpa.utils.logger import get_logger
 
 from otx.algorithms.common.adapters.mmcv.hooks import OTXLoggerHook
+from otx.algorithms.common.adapters.mmcv.utils import align_data_config_with_recipe
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label import LabelEntity
 from otx.api.entities.model import ModelEntity, ModelPrecision, OptimizationMethod
@@ -100,9 +101,7 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
 
     def _run_task(self, stage_module, mode=None, dataset=None, **kwargs):
         # FIXME: Temporary remedy for CVS-88098
-        export = kwargs.get("export", False)
-        force = kwargs.get("force", False)
-        self._initialize(export=export, force=force)
+        self._initialize(kwargs)
         # update model config -> model label schema
         data_classes = [label.name for label in self._labels]
         model_classes = [label.name for label in self._model_label_schema]
@@ -115,7 +114,7 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
 
         logger.info(
             "running task... kwargs = " +
-            str({k: v if k != 'model' else object.__repr__(v) for k, v in kwargs.items()})
+            str({k: v if k != "model_builder" else object.__repr__(v) for k, v in kwargs.items()})
         )
         if self._recipe_cfg is None:
             raise RuntimeError("'recipe_cfg' is not initialized yet. call prepare() method before calling this method")
@@ -177,10 +176,9 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         """Hyper Parameters configuration."""
         return self._hyperparams
 
-    def _initialize(self, export=False, force=False):
+    def _initialize(self, options):
         """Prepare configurations to run a task through MPA's stage."""
-        if not force and getattr(self, "_recipe_cfg", None) is not None:
-            return
+        export = options.get("export", False)
 
         logger.info("initializing....")
         self._init_recipe()
@@ -249,11 +247,14 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
                 dataloader_cfg["persistent_workers"] = False
                 data_cfg[f"{subset}_dataloader"] = dataloader_cfg
 
-        self._initialize_post_hook()
+        if self._data_cfg is not None:
+            align_data_config_with_recipe(self._data_cfg, self._recipe_cfg)
+
+        self._initialize_post_hook(options)
 
         logger.info("initialized.")
 
-    def _initialize_post_hook(self):
+    def _initialize_post_hook(self, options=dict()):
         pass
 
     @abc.abstractmethod

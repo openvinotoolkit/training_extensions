@@ -43,7 +43,6 @@ from otx.algorithms.detection.utils.data import (
 )
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label import Domain, LabelEntity
-from otx.api.usecases.reporting.time_monitor_callback import TimeMonitorCallback
 from otx.api.utils.argument_checks import (
     DatasetParamTypeCheck,
     DirectoryPathCheck,
@@ -64,35 +63,12 @@ logger = get_logger()
 
 
 @check_input_parameters_type({"work_dir": DirectoryPathCheck})
-def patch_config(
+def patch_recipe_config(
     config: Config,
     work_dir: str,
     labels: List[LabelEntity],
-    domain: Domain,
 ):  # pylint: disable=too-many-branches
     """Update config function."""
-    # Set runner if not defined.
-    if "runner" not in config:
-        config.runner = ConfigDict({"type": "EpochBasedRunner"})
-
-    # Check that there is no conflict in specification of number of training epochs.
-    # Move global definition of epochs inside runner config.
-    if "total_epochs" in config:
-        if is_epoch_based_runner(config.runner):
-            if config.runner.max_epochs != config.total_epochs:
-                logger.warning("Conflicting declaration of training epochs number.")
-            config.runner.max_epochs = config.total_epochs
-        else:
-            logger.warning(f"Total number of epochs set for an iteration based runner {config.runner.type}.")
-        remove_from_config(config, "total_epochs")
-
-    # Change runner's type.
-    if is_epoch_based_runner(config.runner):
-        logger.info(f"Replacing runner from {config.runner.type} to EpochRunnerWithCancel.")
-        config.runner.type = "EpochRunnerWithCancel"
-    else:
-        logger.info(f"Replacing runner from {config.runner.type} to IterBasedRunnerWithCancel.")
-        config.runner.type = "IterBasedRunnerWithCancel"
 
     # Add training cancelation hook.
     if "custom_hooks" not in config:
@@ -103,24 +79,10 @@ def patch_config(
     # Remove high level data pipelines definition leaving them only inside `data` section.
     remove_from_config(config, "train_pipeline")
     remove_from_config(config, "test_pipeline")
-    # Patch data pipeline, making it OTX-compatible.
-    patch_datasets(config, domain)
 
-    # Remove FP16 config if running on CPU device and revert to FP32
-    # https://github.com/pytorch/pytorch/issues/23377
-    if not torch.cuda.is_available() and "fp16" in config:
-        logger.info("Revert FP16 to FP32 on CPU device")
-        remove_from_config(config, "fp16")
-
-    if "log_config" not in config:
-        config.log_config = ConfigDict()
-    if "evaluation" not in config:
-        config.evaluation = ConfigDict()
     evaluation_metric = config.evaluation.get("metric")
     if evaluation_metric is not None:
         config.evaluation.save_best = evaluation_metric
-    if "checkpoint_config" not in config:
-        config.checkpoint_config = ConfigDict()
     config.checkpoint_config.max_keep_ckpts = 5
     config.checkpoint_config.interval = config.evaluation.get("interval", 1)
 
@@ -191,27 +153,6 @@ def patch_adaptive_repeat_dataset(
 
 
 @check_input_parameters_type()
-def align_data_config_with_recipe(
-    data_config: ConfigDict,
-    config: Union[Config, ConfigDict]
-):
-    data_config = data_config.data
-    config = config.data
-    for subset in data_config.keys():
-        subset_config = data_config.get(subset, {})
-        for key in list(subset_config.keys()):
-            found_config = get_configs_by_keys(
-                config.get(subset),
-                key,
-                return_path=True
-            )
-            assert len(found_config) == 1
-            value = subset_config.pop(key)
-            path = list(found_config.keys())[0]
-            update_config(subset_config, {path: value})
-
-
-@check_input_parameters_type()
 def prepare_for_training(
     config: Union[Config, ConfigDict],
     data_config: ConfigDict,
@@ -225,7 +166,7 @@ def prepare_for_training(
         config_ = config.data.get(subset)
         if data_config_ is None:
             continue
-        for key in ["otx_dataset"]:
+        for key in ["otx_dataset", "labels"]:
             found = get_configs_by_keys(data_config_, key, return_path=True)
             if len(found) == 0:
                 continue
@@ -273,7 +214,7 @@ def set_num_classes(config: Config, num_classes: int):
 
 
 @check_input_parameters_type()
-def patch_datasets(config: Config, domain: Domain):
+def patch_datasets(config: Config, domain: Domain = Domain.DETECTION, **kwargs):
     """Update dataset configs."""
 
     def update_pipeline(cfg):
@@ -286,17 +227,18 @@ def patch_datasets(config: Config, domain: Domain):
                 pipeline_step.min_size = cfg.pop("min_size", -1)
             if subset == "train" and pipeline_step.type == "Collect":
                 pipeline_step = get_meta_keys(pipeline_step)
-        patch_color_conversion(cfg.pipeline)
 
     assert "data" in config
     for subset in ("train", "val", "test"):
         cfgs = get_dataset_configs(config, subset)
 
         for cfg in cfgs:
-            cfg.type = "MPADetDataset"
             cfg.domain = domain
             cfg.otx_dataset = None
             cfg.labels = None
+            cfg.type = "MPADetDataset"
+            cfg.update(kwargs)
+
             remove_from_config(cfg, "ann_file")
             remove_from_config(cfg, "img_prefix")
             remove_from_config(cfg, "classes")  # Get from DatasetEntity
@@ -306,6 +248,8 @@ def patch_datasets(config: Config, domain: Domain):
         # which we should update
         if len(cfgs) and config.data[subset].type == "MultiImageMixDataset":
             update_pipeline(config.data[subset])
+
+    patch_color_conversion(config)
 
 
 def patch_evaluation(config: Config):
@@ -317,16 +261,6 @@ def patch_evaluation(config: Config):
     cfg.save_best = "mAP"
     # EarlyStoppingHook
     config.early_stop_metric = "mAP"
-
-
-# TODO Replace this with function in common
-def patch_data_pipeline(config: Config, template_file_path: str):
-    """Update data_pipeline configs."""
-    base_dir = os.path.abspath(os.path.dirname(template_file_path))
-    data_pipeline_path = os.path.join(base_dir, "data_pipeline.py")
-    if os.path.exists(data_pipeline_path):
-        data_pipeline_cfg = Config.fromfile(data_pipeline_path)
-        config.merge_from_dict(data_pipeline_cfg)
 
 
 def should_cluster_anchors(model_cfg: Config):

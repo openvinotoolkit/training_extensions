@@ -72,6 +72,10 @@ class AccuracyAwareRunner(EpochBasedRunner):
         self._max_epochs = params["maximal_total_epochs"]
         self._max_iters = self._max_epochs * len(self.train_data_loader)
 
+        self.logger.info('Start running, host: %s, work_dir: %s',
+                         get_host_info(), work_dir)
+        self.logger.info('Hooks will be executed in the following order:\n%s',
+                         self.get_hook_info())
         self.call_hook("before_run")
 
         def configure_optimizers_fn():

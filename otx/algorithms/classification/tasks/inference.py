@@ -98,22 +98,23 @@ class ClassificationInferenceTask(
     ) -> DatasetEntity:
         """Main infer function of OTX Classification."""
 
-        self._initialize()
         logger.info("called infer()")
         stage_module = "ClsInferrer"
         self._data_cfg = self._init_test_data_cfg(dataset)
         dataset = dataset.with_empty_annotations()
 
-        dump_features = True
-        dump_saliency_map = not inference_parameters.is_evaluation if inference_parameters else True
-        model = getattr(self, "_model", None)
+        # Temporary disable dump (will be handled by 'otx explain')
+        #  dump_features = True
+        #  dump_saliency_map = not inference_parameters.is_evaluation if inference_parameters else True
+        dump_features = False
+        dump_saliency_map = False
+
         results = self._run_task(
             stage_module,
             mode="train",
             dataset=dataset,
             dump_features=dump_features,
             dump_saliency_map=dump_saliency_map,
-            model=model,
         )
         logger.debug(f"result of run_task {stage_module} module = {results}")
         predictions = results["outputs"]

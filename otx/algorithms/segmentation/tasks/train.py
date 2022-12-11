@@ -142,10 +142,8 @@ class SegmentationTrainTask(SegmentationInferenceTask, ITrainingTask):
         data_cfg = ConfigDict(
             data=ConfigDict(
                 train=ConfigDict(
-                    dataset=ConfigDict(
-                        otx_dataset=dataset.get_subset(Subset.TRAINING),
-                        labels=self._labels,
-                    )
+                    otx_dataset=dataset.get_subset(Subset.TRAINING),
+                    labels=self._labels,
                 ),
                 val=ConfigDict(
                     otx_dataset=dataset.get_subset(Subset.VALIDATION),
