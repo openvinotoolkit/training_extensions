@@ -414,7 +414,7 @@ class MPAHierarchicalClsDataset(MPAMultilabelClsDataset):
 
 
 @DATASETS.register_module()
-class SelfSLDataset:
+class SelfSLDataset(MPAClsDataset):
     """SelfSL dataset."""
 
     def __init__(self, otx_dataset=None, pipeline=None, **kwargs): # pylint: disable=unused-argument
@@ -451,3 +451,15 @@ class SelfSLDataset:
             results[k+'2'] = v
 
         return results
+
+    def load_annotations(self):
+        pass
+
+    def get_gt_labels(self):
+        pass
+
+    def evaluate(self, *args, **kwargs):
+        pass
+
+    def class_accuracy(self, *args, **kwargs):
+        pass
