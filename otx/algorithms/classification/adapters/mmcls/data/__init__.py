@@ -23,15 +23,12 @@ from .datasets import (
 from .pipelines import (
     LoadImageFromOTXDataset,
     RandomHorizontalFlip,
-    RandomResizedCrop,
     RandomAppliedTrans,
-    ColorJitter,
-    RandomGrayscale,
-    GaussianBlur
+    GaussianBlur,
+    OTXColorJitter
 )
 
 __all__ = [
     "MPAClsDataset", "MPAMultilabelClsDataset", "MPAHierarchicalClsDataset", "SelfSLDataset",
-    "LoadImageFromOTXDataset", "RandomHorizontalFlip", "RandomResizedCrop", "RandomAppliedTrans",
-    "ColorJitter", "RandomGrayscale", "GaussianBlur"
+    "LoadImageFromOTXDataset", "RandomHorizontalFlip", "RandomAppliedTrans", "GaussianBlur", "OTXColorJitter"
 ]
