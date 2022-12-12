@@ -142,7 +142,8 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
             f"media={self.media}, "
             f"annotation_scene={self.annotation_scene}, "
             f"roi={self.roi}, "
-            f"subset={self.subset})"
+            f"subset={self.subset}), "
+            f"meta={self.get_metadata()}"
         )
 
     @property
@@ -174,7 +175,7 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
     def media(self) -> IMedia2DEntity:
         """Media."""
         return self.__media
-
+    
     def roi_numpy(self, roi: Optional[Annotation] = None) -> np.ndarray:
         """Gives the numpy data for the media, given an ROI.
 

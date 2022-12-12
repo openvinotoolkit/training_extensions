@@ -161,7 +161,6 @@ def convert_jester_dataset_to_datumaro(src_path, dst_path):
             et = etree.ElementTree(annotations)
             et.write(osp.join(dst_path, phase, 'video_{}/annotations.xml'.format(str(i))), pretty_print=True, xml_declaration=True, encoding="utf-8")
 
-#TODO: detection
 def convert_ava_dataset_to_datumaro(src_path, dst_path):
     ## Prepare dst_path
     frames_dir_path = osp.join(src_path, 'frames')
@@ -227,12 +226,9 @@ def convert_ava_dataset_to_datumaro(src_path, dst_path):
             et = etree.ElementTree(v)
             et.write(osp.join(dst_path, phase, 'video_{}/annotations.xml'.format(str(i))), pretty_print=True, xml_declaration=True, encoding="utf-8")
 
-        raise
-    pass
-
 def main(src_path, dst_path):
     #convert_jester_dataset_to_datumaro(src_path, dst_path)
     convert_ava_dataset_to_datumaro(src_path, dst_path)
 
 if __name__ == '__main__':
-    main('/local/sungmanc/datasets/jester_SC', '/local/sungmanc/datasets/jester_SC_cvat_multifolder_detection')
+    main('/local/sungmanc/datasets/ava_SC', '/local/sungmanc/datasets/ava_SC_cvat_multifolder_detection')
