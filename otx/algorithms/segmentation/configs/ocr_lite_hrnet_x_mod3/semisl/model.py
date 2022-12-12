@@ -21,5 +21,3 @@ _base_ = [
     "../../base/models/semi_mt_segmentor.py",
     "../model.py",
 ]
-
-base_model_path = "../model.py"

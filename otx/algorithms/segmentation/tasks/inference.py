@@ -188,15 +188,7 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         if train_type not in (TrainType.SEMISUPERVISED, TrainType.INCREMENTAL):
             raise NotImplementedError(f"Train type {train_type} is not implemented yet.")
         if train_type == TrainType.SEMISUPERVISED:
-            if self._is_training:
-                if self._data_cfg.get("data", None) and self._data_cfg.data.get("unlabeled", None):
-                    recipe = os.path.join(recipe_root, "semisl.py")
-                else:
-                    logger.warning("Cannot find unlabeled data.. convert to INCREMENTAL.")
-                    train_type = TrainType.INCREMENTAL
-            else:
-                recipe = os.path.join(recipe_root, "semisl.py")
-
+            recipe = os.path.join(recipe_root, "semisl.py")
         if train_type == TrainType.INCREMENTAL:
             recipe = os.path.join(recipe_root, "incremental.py")
 
@@ -222,11 +214,6 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
     def _init_model_cfg(self):
         base_dir = os.path.abspath(os.path.dirname(self.template_file_path))
         model_cfg = MPAConfig.fromfile(os.path.join(base_dir, "model.py"))
-
-        # check if train_type has the right model cfg path
-        if self.train_type == TrainType.INCREMENTAL and "base_model_path" in model_cfg:
-            # reload model cfg
-            model_cfg = MPAConfig.fromfile(os.path.join(base_dir, model_cfg.base_model_path))
 
         return model_cfg
 
