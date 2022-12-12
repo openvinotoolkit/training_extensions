@@ -33,7 +33,7 @@ learning_parameters:
       make it unstable.
     editable: true
     header: Learning rate
-    max_value: 0.1
+    max_value: 1.0
     min_value: 1.0e-07
     type: FLOAT
     ui_rules:
@@ -305,6 +305,7 @@ algo_backend:
     header: train type
     options:
       INCREMENTAL: "INCREMENTAL"
+      SELFSUPERVISED: "SELFSUPERVISED"
     type: SELECTABLE
     ui_rules:
       action: DISABLE_EDITING
