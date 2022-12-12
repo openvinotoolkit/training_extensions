@@ -42,13 +42,7 @@ from otx.cli.utils.parser import (
     add_hyper_parameters_sub_parser,
     gen_params_dict_from_args,
 )
-<<<<<<< HEAD
-
-# pylint: disable=too-many-locals
-
-=======
 from otx.core.base_dataset_adapter import get_dataset_adapter
->>>>>>> Refactoring: create base class and each classe for tasks, edit cli test case
 
 def parse_args():
     """Parses command line arguments.
@@ -77,7 +71,7 @@ def parse_args():
 
     parser.add_argument(
         "--train-ann-files",
-        required=required,
+        required=False,
         help="Comma-separated paths to training annotation files.",
     )
     parser.add_argument(
@@ -87,12 +81,12 @@ def parse_args():
     )
     parser.add_argument(
         "--val-ann-files",
-        required=required,
+        required=False,
         help="Comma-separated paths to validation annotation files.",
     )
     parser.add_argument(
         "--val-data-roots",
-        required=required,
+        required=False,
         help="Comma-separated paths to validation data folders.",
     )
     parser.add_argument(
@@ -163,8 +157,6 @@ def main():  # pylint: disable=too-many-branches
 
     # Get classes for Task, ConfigurableParameters and Dataset.
     task_class = get_impl_class(template.entrypoints.base)
-    dataset_class = get_dataset_class(template.task_type)
-
     data_config = configure_dataset(args)
 
     data_roots = dict(
@@ -183,17 +175,17 @@ def main():  # pylint: disable=too-many-branches
             "data_root": data_config["data"]["unlabeled"]["data-roots"],
             "file_list": data_config["data"]["unlabeled"]["file-list"],
         }
+        is_include_unlabel_data = True
 
     # Datumaro 
     datumaro_adapter = get_dataset_adapter(template.task_type)
     datumaro_dataset = datumaro_adapter.import_dataset(
-        train_data_roots=args.train_data_roots,
-        val_data_roots=args.val_data_roots,
-        unlabeled_data_roots=args.unlabeled_data_roots
+        train_data_roots=data_roots["train_subset"]["data_root"],
+        val_data_roots=data_roots["val_subset"]["data_root"],
+        unlabeled_data_roots=data_roots["unlabeled_subset"]["data_root"] if is_include_unlabel_data else None
     )
-
     dataset, label_schema = datumaro_adapter.convert_to_otx_format(datumaro_dataset)
-    
+
     environment = TaskEnvironment(
         model=None,
         hyper_parameters=hyper_parameters,

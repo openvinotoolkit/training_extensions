@@ -91,7 +91,9 @@ class OTXRawframeDataset(RawframeDataset):
         self.data_infos = OTXRawframeDataset._DataInfoProxy(otx_dataset, labels)
 
         self.pipeline = Compose(pipeline)
-        self.make_video_infos()
+        chunk_info = self._prepare_chunk_information()
+        chunk_list = self._make_chunk(chunk_info)
+        #self.make_video_infos()
 
     def __len__(self):
         """Return length of dataset."""
@@ -136,9 +138,63 @@ class OTXRawframeDataset(RawframeDataset):
         for data_info in self.data_infos:
             media = data_info["dataset_item"].media
             annotation = data_info["dataset_item"].get_annotations()
+            video_id = data_info["dataset_item"].get_metadata().data.video_id
+            frame_idx = data_info["dataset_item"].get_metadata().data.frame_idx
+
+            print(media, video_id, frame_idx)
+            raise
             if len(annotation) == 0:
                 label = None
             else:
                 label = int(data_info["dataset_item"].get_roi_labels(self.labels)[0].id)
             media["label"] = label
             self.video_infos.append(media)
+
+    """
+    FIXME: Maybe there is better way to make video chunk 
+    TODO: Can be changed according to the requirements from Geti. and not working on detection
+    ---
+    Preparing Chunk by using DatasetItemEntity.
+    Below functions will works under below assumptions.
+
+    Assumptions
+        1.  Frame index should starts from 0 and will be increased by 1.
+            (i.e. 
+                [0, 1, 2, 3] --> OK
+                [0, 1, 2, 4] --> Not work
+                [1, 2, 3, 4] --> Not work
+            )
+        
+        2.  All frame information is needed even there is no annotation.
+            Frames that have no annotations can be regarded as 'label=0' to make video chunk
+    """
+    def _prepare_chunk_information(self):
+        chunk_info_dict = {}
+        for data_info in self.data_infos:
+            video_id = data_info["dataset_item"].get_metadata().data.video_id
+            frame_idx = data_info["dataset_item"].get_metadata().data.frame_idx
+
+            annotation = data_info["dataset_item"].get_annotations()
+            if len(annotation) == 0:
+                label = None
+            else:
+                label = int(data_info["dataset_item"].get_roi_labels(self.labels)[0].id)
+
+            if video_id not in chunk_info_dict.keys():
+                chunk_info_dict[video_id] = np.zeros(frame_idx, dtype=np.uint8)
+                chunk_info_dict[video_id][frame_idx-1] = label + 1 # 0 represents "no-label"
+            else:
+                if frame_idx > chunk_info_dict[video_id].shape[0]:
+                    chunk_info_dict[video_id] = np.concatenate((chunk_info_dict[video_id], np.zeros(frame_idx-chunk_info_dict[video_id].shape[0], dtype=np.uint8)),axis=0)
+                    chunk_info_dict[video_id][frame_idx-1] = label + 1
+                elif frame_idx < chunk_info_dict[video_id].shape[0]:
+                    chunk_info_dict[video_id][frame_idx-1] = label + 1
+                else:
+                    raise ValueError("Can't be same")
+
+        return chunk_info_dict
+
+
+    def _make_chunk(self, chunk_info):
+        ##TODO
+        pass
