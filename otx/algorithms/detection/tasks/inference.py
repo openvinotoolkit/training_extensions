@@ -73,10 +73,10 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
     """Inference Task Implementation of OTX Detection."""
 
     @check_input_parameters_type()
-    def __init__(self, task_environment: TaskEnvironment):
+    def __init__(self, task_environment: TaskEnvironment, **kwargs):
         # self._should_stop = False
         self.train_type = None
-        super().__init__(DetectionConfig, task_environment)
+        super().__init__(DetectionConfig, task_environment, **kwargs)
         self.template_dir = os.path.abspath(os.path.dirname(self.template_file_path))
         self.base_dir = self.template_dir
         # TODO Move this to the common

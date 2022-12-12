@@ -55,7 +55,7 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
     _task_environment: TaskEnvironment
 
     @check_input_parameters_type()
-    def __init__(self, task_config, task_environment: TaskEnvironment):
+    def __init__(self, task_config, task_environment: TaskEnvironment, output_path: Optional[str] = None):
         self._task_config = task_config
         self._task_environment = task_environment
         self._hyperparams = task_environment.get_hyper_parameters(self._task_config)  # type: ConfigDict
@@ -69,7 +69,6 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         self._model_ckpt = None
         self._data_pipeline_path = None
         self._anchors = {}  # type: Dict[str, int]
-        output_path = os.environ.get("OTX_TASK_OUTPUT_PATH")
         if output_path is None:
             output_path = tempfile.mkdtemp(prefix="OTX-task-")
         self._output_path = output_path
@@ -101,10 +100,6 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
 
         # to override configuration at runtime
         self.override_configs = {}  # type: Dict[str, str]
-
-    @property
-    def output_path(self):
-        return self._output_path
 
     def _run_task(self, stage_module, mode=None, dataset=None, **kwargs):
         # FIXME: Temporary remedy for CVS-88098

@@ -70,7 +70,7 @@ logger = get_logger(__name__)
 class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
     """Base Anomaly Task."""
 
-    def __init__(self, task_environment: TaskEnvironment) -> None:
+    def __init__(self, task_environment: TaskEnvironment, output_path: Optional[str] = None) -> None:
         """Train, Infer, Export, Optimize and Deploy an Anomaly Classification Task.
 
         Args:
@@ -87,7 +87,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         self.base_dir = os.path.abspath(os.path.dirname(template_file_path))
 
         # Hyperparameters.
-        self.project_path: str = tempfile.mkdtemp(prefix="otx-anomalib")
+        self.project_path: str = output_path if output_path is not None else tempfile.mkdtemp(prefix="otx-anomalib")
         self.config = self.get_config()
 
         # Set default model attributes.

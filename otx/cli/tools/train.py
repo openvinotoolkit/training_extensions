@@ -16,17 +16,17 @@
 
 import argparse
 import os
-import shutil
-import os.path as osp
 import sys
 import signal
-from functools import partial
-from typing import List
+import threading
+from typing import List, Optional
+import time
 
 import torch
 import torch.distributed as dist
 import torch.multiprocessing as mp
 
+from otx.api.configuration import ConfigurableParameters
 from otx.api.configuration.helper import create
 from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.model import ModelEntity
@@ -138,8 +138,7 @@ def parse_args():
         help="Expected ratio of total time to run HPO to time taken for full fine-tuning.",
     )
     parser.add_argument(
-        "--multi-gpu-train",
-        action="store_true",
+        "--gpus",
         help="Enable multi gpu training. if number of gpu is more than one, then model is trained in each gpu with splited dataset.",
     )
 
@@ -208,21 +207,17 @@ def main():
         task = run_hpo(args, environment, dataset, template.task_type)
         if task is None:
             print("cannot run HPO for this task. will train a model without HPO.")
-            task = task_class(task_environment=environment)
+            task = task_class(task_environment=environment, output_path=args.save_logs_to)
     else:
-        environment.work_dir = osp.dirname(args.save_model_to)
-        task = task_class(task_environment=environment)
+        task = task_class(task_environment=environment, output_path=args.save_logs_to)
 
-    multi_gpu_processes = []
-    if args.multi_gpu_train and not template.task_type.is_anomaly:
-        gpu_ids = get_gpu_ids()
-        if len(gpu_ids) > 1:
-            multi_gpu_train_args = [gpu_ids, task.output_path]
-            if args.enable_hpo:
-                multi_gpu_train_args.append(hyper_parameters)
-            multi_gpu_processes = run_multi_gpu_train(*multi_gpu_train_args)
-        else:
-            print("Number of avilable gpu is lower than 2. Multi GPU training won't be executed.")
+    if args.gpus:
+        multigpu_manager = MultiGPUManager(args.gpus)
+        if multigpu_manager.is_available(template):
+            multigpu_manager.setup_multi_gpu_train(
+                task.project_path,
+                hyper_parameters if args.enable_hpo else None
+            )
 
     output_model = ModelEntity(dataset, environment.get_model_configuration())
 
@@ -248,96 +243,155 @@ def main():
         assert resultset.performance is not None
         print(resultset.performance)
 
-    if args.save_logs_to:
-        tmp_path = task.project_path
-        logs_path = os.path.join(args.save_logs_to, tmp_path.split("/")[-1])
-        shutil.copytree(tmp_path, logs_path)
-        print(f"Save logs: {logs_path}")
+    if args.gpus:
+        multigpu_manager.finalize()
 
-    for p in multi_gpu_processes:
-        p.join()
+class MultiGPUManager:
+    def __init__(self, gpu_ids: str):
+        self._gpu_ids = self._get_gpu_ids(gpu_ids)
+        self._main_pid = os.getpid()
+        self._processes = None
 
-def get_gpu_ids():
-    num_available_gpu = torch.cuda.device_count()
-    cuda_environ = os.environ.get("CUDA_VISIBLE_DEVICES")
-    if cuda_environ is None:
-        return list(range(num_available_gpu))
-    else:
+    def _get_gpu_ids(self, gpus: str) -> List[int]:
+        num_available_gpu = torch.cuda.device_count()
         gpu_ids = []
-        for gpu_idx in cuda_environ.split(','):
-            gpu_idx = int(gpu_idx)
-            if gpu_idx < num_available_gpu:
-                gpu_ids.append(gpu_idx)
+        for gpu_id in gpus.split(','):
+            if not gpu_id.isnumeric():
+                raise RuntimeError("--gpus argument should be numbers concatenated by ','.")
+            gpu_ids.append(int(gpu_id))
+
+        wrong_gpus = []
+        for gpu_idx in gpu_ids:
+            if gpu_idx >= num_available_gpu:
+                wrong_gpus.append(gpu_idx)
+
+        for wrong_gpu in wrong_gpus:
+            gpu_ids.remove(wrong_gpu)
+
+        if wrong_gpus:
+            print(f"Wrong gpu indeces are excluded. {','.join(gpu_ids)} GPU will be used.")
+
         return gpu_ids
 
-def multigpu_initilization(rank: int, gpu_ids: List[int]):
-    os.environ['MASTER_ADDR'] = 'localhost'
-    os.environ['MASTER_PORT'] = '29500'
-    torch.cuda.set_device(gpu_ids[rank])
-    dist.init_process_group(backend='nccl', world_size=len(gpu_ids), rank=rank)
-    print(f'dist info world_size = {dist.get_world_size()}, rank = {dist.get_rank()}')
+    def is_available(self, template) -> bool:
+        return len(self._gpu_ids) > 1 and not template.task_type.is_anomaly
 
-def run_multigpu_child_process(rank: int, gpu_ids: List[int]):
-    sys.argv.remove('--multi-gpu-train')
-    if "--enable-hpo" in sys.argv:
-        sys.argv.remove('--enable-hpo')
+    def setup_multi_gpu_train(
+        self,
+        output_path: str,
+        optimized_hyper_parameters: Optional[ConfigurableParameters] = None
+    ):
+        if optimized_hyper_parameters is not None:
+            self._set_optimized_hp_for_child_process(optimized_hyper_parameters)
 
-    multigpu_initilization(rank, gpu_ids)
-    main()
+        processes= []
+        spawned_mp = mp.get_context("spawn")
+        for rank in range(1, len(self._gpu_ids)):
+            task_p = spawned_mp.Process(
+                target=MultiGPUManager.run_child_process,
+                args=(rank, self._gpu_ids, output_path)
+            )
+            task_p.start()
+            processes.append(task_p)
 
-def terminate_signal_handler(signum, frame, processes: List[mp.Process], main_pid):
-    if main_pid != os.getpid(): # if main process is forked and they get a signal, then terminated alone.
-        sys.exit()
+        signal.signal(signal.SIGINT, self._terminate_signal_handler)
+        signal.signal(signal.SIGTERM, self._terminate_signal_handler)
 
-    for process in processes:
-        print(f"Kill child process {process.pid}")
-        try:
-            process.kill()
-        except Exception:
-            pass
+        self.initialize_multigpu_train(0, self._gpu_ids)
+        self._processes = processes
 
-    singal_name = {2: "SIGINT", 15: "SIGTERM"}
-    print(f"{singal_name[signum]} is sent. process exited.")
+        self._run_thread_to_check_child_processes()
 
-    sys.exit(1)
+    def finalize(self):
+        if self._processes is not None:
+            for p in self._processes:
+                p.join()
 
-def run_multi_gpu_train(gpu_ids: List[int], output_path: str, optimized_hyper_parameters=None):
-    if optimized_hyper_parameters is not None:
-        set_optimized_hp_for_child_process(optimized_hyper_parameters)
+    @staticmethod
+    def initialize_multigpu_train(rank: int, gpu_ids: List[int]):
+        os.environ['MASTER_ADDR'] = 'localhost'
+        os.environ['MASTER_PORT'] = '29500'
+        torch.cuda.set_device(gpu_ids[rank])
+        dist.init_process_group(backend='nccl', world_size=len(gpu_ids), rank=rank)
+        print(f'dist info world_size = {dist.get_world_size()}, rank = {dist.get_rank()}')
 
-    os.environ['OTX_TASK_OUTPUT_PATH'] = output_path
-    processes= []
-    spawned_mp = mp.get_context("spawn")
-    for rank in range(1, len(gpu_ids)):
-        task_p = spawned_mp.Process(target=run_multigpu_child_process, args=(rank, gpu_ids))
-        task_p.start()
-        processes.append(task_p)
+    @staticmethod
+    def run_child_process(rank: int, gpu_ids: List[int], output_path: str):
+        gpus_arg_idx = sys.argv.index('--gpus')
+        for _ in range(2):
+            sys.argv.pop(gpus_arg_idx)
+        if "--enable-hpo" in sys.argv:
+            sys.argv.remove('--enable-hpo')
+        MultiGPUManager.set_arguments_to_argv("--save-logs-to", output_path)
+        MultiGPUManager.initialize_multigpu_train(rank, gpu_ids)
+        print("*"*100, os.getpid())
+        main()
 
-    signal.signal(signal.SIGINT, partial(terminate_signal_handler, processes=processes, main_pid=os.getpid()))
-    signal.signal(signal.SIGTERM, partial(terminate_signal_handler, processes=processes, main_pid=os.getpid()))
-
-    multigpu_initilization(0, gpu_ids)
-
-    return processes
-
-def set_optimized_hp_for_child_process(hyper_parameters):
-    if "params" not in sys.argv:
-        sys.argv.append('params')
-
-    def set_hyper_parameter_in_argv(key, value):
+    @staticmethod
+    def set_arguments_to_argv(key: str, value: str, after_params: bool = False):
         if key in sys.argv:
             sys.argv[sys.argv.index(key) + 1] = value
         else:
-            sys.argv.extend([key, value])
-            
-    set_hyper_parameter_in_argv(
-        "--learning_parameters.learning_rate",
-        str(hyper_parameters.learning_parameters.learning_rate)
-    )
-    set_hyper_parameter_in_argv(
-        "--learning_parameters.batch_size",
-        str(hyper_parameters.learning_parameters.batch_size)
-    )
+            if not after_params and "params" in sys.argv:
+                sys.argv.insert(sys.argv.index("params"), key)
+                sys.argv.insert(sys.argv.index("params"), value)
+            else:
+                if after_params and "params" not in sys.argv:
+                    sys.argv.append('params')
+                sys.argv.extend([key, value])
+
+    def _terminate_signal_handler(self, signum, frame):
+        # This code prevents child processses from being killed unintentionally by forked main process
+        if self._main_pid != os.getpid():
+            sys.exit()
+
+        self._kill_child_process()
+
+        singal_name = {2: "SIGINT", 15: "SIGTERM"}
+        print(f"{singal_name[signum]} is sent. process exited.")
+
+        sys.exit(1)
+
+    def _kill_child_process(self):
+        if self._processes is None:
+            return
+
+        for process in self._processes:
+            print(f"Kill child process {process.pid}")
+            try:
+                process.kill()
+            except Exception:
+                pass
+
+    def _set_optimized_hp_for_child_process(self, hyper_parameters: ConfigurableParameters):
+        self.set_arguments_to_argv(
+            "--learning_parameters.learning_rate",
+            str(hyper_parameters.learning_parameters.learning_rate),
+            True
+        )
+        self.set_arguments_to_argv(
+            "--learning_parameters.batch_size",
+            str(hyper_parameters.learning_parameters.batch_size),
+            True
+        )
+
+    def _run_thread_to_check_child_processes(self):
+        t = threading.Thread(target=self._check_child_processes_alive, daemon=True)
+        t.start()
+
+    def _check_child_processes_alive(self):
+        child_is_running = True
+        while child_is_running:
+            time.sleep(1)
+            for p in self._processes:
+                if not p.is_alive() and p.exitcode != 0:
+                    child_is_running = False
+                    break
+
+        print("Some of child processes are terminated abnormally. process exits.")
+        self._kill_child_process()
+        os.kill(self._main_pid, signal.SIGKILL)
+
 
 if __name__ == "__main__":
     main()
