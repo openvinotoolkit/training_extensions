@@ -33,7 +33,6 @@ from ote_cli.utils.tests import (
     nncf_eval_openvino_testing,
 )
 
-
 args = {
     "--train-ann-file": "data/segmentation/custom/annotations/training",
     "--train-data-roots": "data/segmentation/custom/images/training",
@@ -149,6 +148,8 @@ class TestToolsMPASegmentation:
     def test_nncf_optimize(self, template):
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
+        if template.model_template_id == "Custom_Semantic_Segmentation_Lite-HRNet-18_OCR":
+            pytest.skip("[CVS-91469] This is a deprecated model template.")
 
         nncf_optimize_testing(template, root, ote_dir, args)
 
@@ -158,6 +159,8 @@ class TestToolsMPASegmentation:
     def test_nncf_export(self, template):
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
+        if template.model_template_id == "Custom_Semantic_Segmentation_Lite-HRNet-18_OCR":
+            pytest.skip("[CVS-91469] This is a deprecated model template.")
 
         nncf_export_testing(template, root)
 
@@ -167,6 +170,8 @@ class TestToolsMPASegmentation:
     def test_nncf_eval(self, template):
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
+        if template.model_template_id == "Custom_Semantic_Segmentation_Lite-HRNet-18_OCR":
+            pytest.skip("[CVS-91469] This is a deprecated model template.")
 
         nncf_eval_testing(template, root, ote_dir, args, threshold=0.001)
 
@@ -176,6 +181,8 @@ class TestToolsMPASegmentation:
     def test_nncf_eval_openvino(self, template):
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
+        if template.model_template_id == "Custom_Semantic_Segmentation_Lite-HRNet-18_OCR":
+            pytest.skip("[CVS-91469] This is a deprecated model template.")
 
         nncf_eval_openvino_testing(template, root, ote_dir, args)
 

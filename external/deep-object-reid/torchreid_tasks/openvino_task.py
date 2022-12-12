@@ -40,6 +40,7 @@ from ote_sdk.entities.optimization_parameters import OptimizationParameters
 from ote_sdk.entities.tensor import TensorEntity
 from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.result_media import ResultMediaEntity
+from ote_sdk.entities.subset import Subset
 from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.serialization.label_mapper import LabelSchemaMapper, label_schema_to_bytes
 from ote_sdk.usecases.exportable_code.inference import BaseInferencer
@@ -70,7 +71,7 @@ except ImportError:
     import warnings
     warnings.warn("ModelAPI was not found.")
 from torchreid_tasks.parameters import OTEClassificationParameters
-from torchreid_tasks.utils import get_multihead_class_info
+from torchreid_tasks.utils import get_multihead_class_info, get_actmap
 
 from zipfile import ZipFile
 
@@ -126,13 +127,13 @@ class OpenVINOClassificationInferencer(BaseInferencer):
         return self.converter.convert_to_annotation(prediction, metadata)
 
     @check_input_parameters_type()
-    def predict(self, image: np.ndarray) -> Tuple[AnnotationSceneEntity, np.ndarray, np.ndarray]:
+    def predict(self, image: np.ndarray) -> Tuple[AnnotationSceneEntity, np.ndarray, np.ndarray, np.ndarray]:
         image, metadata = self.pre_process(image)
         raw_predictions = self.forward(image)
         predictions = self.post_process(raw_predictions, metadata)
-        actmap, repr_vectors, act_score = self.model.postprocess_aux_outputs(raw_predictions, metadata)
+        probs, actmap, repr_vectors, act_score = self.model.postprocess_aux_outputs(raw_predictions, metadata)
 
-        return predictions, actmap, repr_vectors, act_score
+        return predictions, probs, actmap, repr_vectors, act_score
 
     @check_input_parameters_type()
     def forward(self, inputs: Dict[str, np.ndarray]) -> Dict[str, np.ndarray]:
@@ -183,19 +184,48 @@ class OpenVINOClassificationTask(IDeploymentTask, IInferenceTask, IEvaluationTas
             dump_features = not inference_parameters.is_evaluation
         dataset_size = len(dataset)
         for i, dataset_item in enumerate(dataset, 1):
-            predicted_scene, actmap, repr_vector, act_score = self.inferencer.predict(dataset_item.numpy)
+            predicted_scene, probs, saliency_map, repr_vector, act_score = self.inferencer.predict(dataset_item.numpy)
             dataset_item.append_labels(predicted_scene.annotations[0].get_labels())
             active_score_media = FloatMetadata(name="active_score", value=act_score,
                                                float_type=FloatType.ACTIVE_SCORE)
             dataset_item.append_metadata_item(active_score_media, model=self.model)
+
+            probs_meta = TensorEntity(name="probabilities", numpy=probs.reshape(-1))
+            dataset_item.append_metadata_item(probs_meta, model=self.model)
+
             feature_vec_media = TensorEntity(name="representation_vector", numpy=repr_vector.reshape(-1))
             dataset_item.append_metadata_item(feature_vec_media, model=self.model)
             if dump_features:
-                saliency_media = ResultMediaEntity(name="Saliency Map", type="saliency_map",
-                                                   annotation_scene=dataset_item.annotation_scene,
-                                                   numpy=actmap, roi=dataset_item.roi,
-                                                   label=predicted_scene.annotations[0].get_labels()[0].label)
-                dataset_item.append_metadata_item(saliency_media, model=self.model)
+                if saliency_map.ndim == 2:
+                    # Single saliency map per image, support e.g. EigenCAM use case
+                    actmap = get_actmap(saliency_map, (dataset_item.width, dataset_item.height))
+                    saliency_media = ResultMediaEntity(name="Saliency Map", type="saliency_map",
+                                                       annotation_scene=dataset_item.annotation_scene,
+                                                       numpy=actmap, roi=dataset_item.roi,
+                                                       label=predicted_scene.annotations[0].get_labels()[0].label)
+                    dataset_item.append_metadata_item(saliency_media, model=self.model)
+                elif saliency_map.ndim == 3:
+                    # Multiple saliency maps per image (class-wise saliency map), support e.g. Recipro-CAM use case
+                    predicted_class_set = set()
+                    for label in predicted_scene.annotations[0].get_labels():
+                        predicted_class_set.add(label.name)
+
+                    for class_id, class_wise_saliency_map in enumerate(saliency_map):
+                        class_name_str = self.task_environment.get_labels()[class_id].name
+                        if class_name_str in predicted_class_set:
+                            # TODO (negvet): Support more advanced use case,
+                            #  when all/configurable set of saliency maps is returned
+                            actmap = get_actmap(class_wise_saliency_map, (dataset_item.width, dataset_item.height))
+                            label = predicted_scene.annotations[0].get_labels()[0].label
+                            saliency_media = ResultMediaEntity(name=class_name_str,
+                                                               type="saliency_map",
+                                                               annotation_scene=dataset_item.annotation_scene,
+                                                               numpy=actmap, roi=dataset_item.roi,
+                                                               label=label)
+                            dataset_item.append_metadata_item(saliency_media, model=self.model)
+                else:
+                    raise RuntimeError(f'Single saliency map has to be 2 or 3-dimensional, '
+                                       f'but got {saliency_map.ndim} dims')
 
             update_progress_callback(int(i / dataset_size * 100))
         return dataset
@@ -252,6 +282,7 @@ class OpenVINOClassificationTask(IDeploymentTask, IInferenceTask, IEvaluationTas
         if optimization_type is not OptimizationType.POT:
             raise ValueError("POT is the only supported optimization type for OpenVino models")
 
+        dataset = dataset.get_subset(Subset.TRAINING)
         data_loader = OTEOpenVinoDataLoader(dataset, self.inferencer)
 
         with tempfile.TemporaryDirectory() as tempdir:
