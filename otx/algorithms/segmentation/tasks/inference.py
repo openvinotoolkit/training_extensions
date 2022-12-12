@@ -75,6 +75,7 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         self.freeze = True
         self.metric = "mDice"
         self._label_dictionary = {}  # type: Dict
+        self.train_type = None
         super().__init__(SegmentationConfig, task_environment)
 
     def infer(
@@ -213,9 +214,9 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
     def _update_stage_module(self, stage_module: str):
         if self.train_type == TrainType.SEMISUPERVISED:
             if stage_module == "SegTrainer":
-                return 'SemiSegTrainer'
+                return "SemiSegTrainer"
             if stage_module == "SegInferrer":
-                return 'SemiSegInferrer'
+                return "SemiSegInferrer"
         return stage_module
 
     def _init_model_cfg(self):
@@ -223,10 +224,10 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         model_cfg = MPAConfig.fromfile(os.path.join(base_dir, "model.py"))
 
         # check if train_type has the right model cfg path
-        if self.train_type == TrainType.INCREMENTAL and 'base_model_path' in model_cfg:
+        if self.train_type == TrainType.INCREMENTAL and "base_model_path" in model_cfg:
             # reload model cfg
             model_cfg = MPAConfig.fromfile(os.path.join(base_dir, model_cfg.base_model_path))
-        
+
         return model_cfg
 
     def _init_test_data_cfg(self, dataset: DatasetEntity):

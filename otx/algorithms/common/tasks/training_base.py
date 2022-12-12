@@ -102,7 +102,7 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         export = kwargs.get("export", False)
         self._initialize(export=export)
         stage_module = self._update_stage_module(stage_module)
-        
+
         # update model config -> model label schema
         data_classes = [label.name for label in self._labels]
         model_classes = [label.name for label in self._model_label_schema]

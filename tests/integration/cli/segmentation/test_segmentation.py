@@ -64,12 +64,12 @@ if TT_STABILITY_TESTS:
     templates_ids = [template.model_template_id + f"-{i+1}" for i, template in enumerate(templates)]
 
     semisl_default_template = parse_model_template(
-        os.path.join(
-            "otx/algorithms/segmentation/configs", "ocr_lite_hrnet_18_mod2", "semisl", "template_semisl.yaml"
-        )
+        os.path.join("otx/algorithms/segmentation/configs", "ocr_lite_hrnet_18_mod2", "semisl", "template_semisl.yaml")
     )
     semisl_templates = [semisl_default_template] * 100
-    semisl_templates_ids = [template.model_template_id + f"_semisl-{i+1}" for i, template in enumerate(semisl_templates)]
+    semisl_templates_ids = [
+        template.model_template_id + f"_semisl-{i+1}" for i, template in enumerate(semisl_templates)
+    ]
 
 else:
     templates = Registry("otx/algorithms/segmentation").filter(task_type="SEGMENTATION").templates
@@ -77,6 +77,7 @@ else:
 
     semisl_templates = Registry("otx/algorithms/segmentation", semisl=True).filter(task_type="SEGMENTATION").templates
     semisl_templates_ids = [template.model_template_id + "_semisl" for template in semisl_templates]
+
 
 @pytest.fixture(scope="session")
 def tmp_dir_path():
@@ -99,6 +100,7 @@ class TestToolsMPASemiSLSegmentation:
         args_semisl = args.copy()
         args_semisl["--unlabeled-data-roots"] = "data/vlp_test/train"
         otx_eval_testing(template, tmp_dir_path, otx_dir, args_semisl)
+
 
 class TestToolsMPASegmentation:
     @e2e_pytest_component

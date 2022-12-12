@@ -44,9 +44,9 @@ class Registry:
                 )
             if semisl:
                 template_filenames = glob.glob(
-                                        os.path.join(templates_dir, "**", "template_semisl.yaml"),
-                                        recursive=True,
-                                    )
+                    os.path.join(templates_dir, "**", "template_semisl.yaml"),
+                    recursive=True,
+                )
             template_filenames = [os.path.abspath(p) for p in template_filenames]
 
             self.templates = []

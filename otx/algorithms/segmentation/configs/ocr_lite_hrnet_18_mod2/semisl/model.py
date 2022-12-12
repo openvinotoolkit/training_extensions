@@ -22,4 +22,3 @@ _base_ = [
 ]
 
 base_model_path = "../model.py"
-
