@@ -19,7 +19,7 @@
 _base_ = ["../base/data_pipeline.py"]
 # model setting
 model = dict(
-    type="FastRCNN",
+    type="AVAFastRCNN",
     backbone=dict(type="X3D", gamma_w=1, gamma_b=2.25, gamma_d=2.2),
     roi_head=dict(
         type="AVARoIHead",
