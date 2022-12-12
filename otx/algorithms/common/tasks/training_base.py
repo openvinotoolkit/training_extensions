@@ -101,15 +101,16 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         # FIXME: Temporary remedy for CVS-88098
         export = kwargs.get("export", False)
         self._initialize(export=export)
-        # update model config -> model label schema
-        data_classes = [label.name for label in self._labels]
-        model_classes = [label.name for label in self._model_label_schema]
-        self._model_cfg["model_classes"] = model_classes
-        if dataset is not None:
-            train_data_cfg = Stage.get_train_data_cfg(self._data_cfg)
-            train_data_cfg["data_classes"] = data_classes
-            new_classes = np.setdiff1d(data_classes, model_classes).tolist()
-            train_data_cfg["new_classes"] = new_classes
+        if not self._warmstart:
+            # update model config -> model label schema
+            data_classes = [label.name for label in self._labels]
+            model_classes = [label.name for label in self._model_label_schema]
+            self._model_cfg["model_classes"] = model_classes
+            if dataset is not None:
+                train_data_cfg = Stage.get_train_data_cfg(self._data_cfg)
+                train_data_cfg["data_classes"] = data_classes
+                new_classes = np.setdiff1d(data_classes, model_classes).tolist()
+                train_data_cfg["new_classes"] = new_classes
 
         logger.info(f"running task... kwargs = {kwargs}")
         if self._recipe_cfg is None:

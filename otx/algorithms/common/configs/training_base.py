@@ -85,7 +85,7 @@ class BaseConfig(ConfigurableParameters):
         learning_rate = configurable_float(
             default_value=0.01,
             min_value=1e-07,
-            max_value=1e-01,
+            max_value=1.0,
             header="Learning rate",
             description="Increasing this value will speed up training convergence but might make it unstable.",
             affects_outcome_of=ModelLifecycle.TRAINING,
