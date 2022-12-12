@@ -301,6 +301,7 @@ def read_ava_csv(csv_path):
     return annot_info
 
 
+<<<<<<< HEAD
 def main(src_path, dst_path, task):
     """Main function."""
     if task == "cls":
@@ -316,3 +317,11 @@ if __name__ == "__main__":
         print("Usage: python convert_public_data_to_cvat.py data_src data_dst data_type(cls or det)")
         raise Exception from e
     main(src, dst, data_type)
+=======
+def main(src_path, dst_path):
+    #convert_jester_dataset_to_datumaro(src_path, dst_path)
+    convert_ava_dataset_to_datumaro(src_path, dst_path)
+
+if __name__ == '__main__':
+    main('/local/sungmanc/datasets/ava_SC', '/local/sungmanc/datasets/ava_SC_cvat_multifolder_detection')
+>>>>>>> Finish the draft of anomaly tasks, Reflect the change of CLI part caused by public backbone support, Working on Action tasks

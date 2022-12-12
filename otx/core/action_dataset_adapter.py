@@ -124,8 +124,8 @@ class ActionClassificationDatasetAdapter(ActionBaseDatasetAdapter, BaseDatasetAd
                             )
                     meta_item = MetadataItemEntity(
                         data=VideoMetadata(
-                            video_id=datumaro_item.media.path.split('/')[-2],
-                            frame_idx=datumaro_item.media.path.split('/')[-1]
+                            video_id=ID(int(datumaro_item.media.path.split('/')[-3].split('_')[-1])),
+                            frame_idx=int(datumaro_item.media.path.split('/')[-1].split('.')[0].lstrip("0"))
                         )
                     )
                     # Unlabeled dataset
