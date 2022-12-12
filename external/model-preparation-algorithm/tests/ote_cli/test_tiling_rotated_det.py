@@ -110,6 +110,7 @@ class TestToolsSmallRotatedDetection:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.xfail(reason="CVS-98026")
     def test_nncf_optimize(self, template):
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
@@ -118,6 +119,7 @@ class TestToolsSmallRotatedDetection:
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.xfail(reason="CVS-98026")
     def test_nncf_export(self, template):
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
