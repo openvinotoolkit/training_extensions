@@ -204,8 +204,8 @@ class Builder:
         if os.path.exists(os.path.join(template_dir, "data_pipeline.py")):
             data_pipeline_config = MPAConfig.fromfile(os.path.join(template_dir, "data_pipeline.py"))
             data_pipeline_config.dump(os.path.join(workspace_path, "data_pipeline.py"))
-        elif os.path.exists(template_config.base_data_pipeline_path):
-            data_pipeline_config = MPAConfig.fromfile(template_config.base_data_pipeline_path)
+        elif os.path.exists(os.path.join(template_dir, template_config.base_data_pipeline_path)):
+            data_pipeline_config = MPAConfig.fromfile(os.path.join(template_dir, template_config.base_data_pipeline_path))
             data_pipeline_config.dump(os.path.join(workspace_path, "data_pipeline.py"))
 
         # Create Data.yaml
