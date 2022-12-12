@@ -200,14 +200,21 @@ class Builder:
         model_config = MPAConfig.fromfile(os.path.join(template_dir, "model.py"))
         model_config.dump(os.path.join(workspace_path, "model.py"))
 
-        # Copy Data config
+        # Copy Data pipeline config
         if os.path.exists(os.path.join(template_dir, "data_pipeline.py")):
             data_pipeline_config = MPAConfig.fromfile(os.path.join(template_dir, "data_pipeline.py"))
             data_pipeline_config.dump(os.path.join(workspace_path, "data_pipeline.py"))
+        elif os.path.exists(template_config.data_pipeline_path):
+            data_pipeline_config = MPAConfig.fromfile(template_config.data_pipeline_path)
+            data_pipeline_config.dump(os.path.join(workspace_path, "data_pipeline.py"))
+
+        # Create Data.yaml
         data_subset_format = {"ann-files": None, "data-roots": None}
         data_config = {"data": {subset: data_subset_format.copy() for subset in ("train", "val", "test")}}
         data_config["data"]["unlabeled"] = {"file-list": None, "data-roots": None}
         mmcv.dump(data_config, os.path.join(workspace_path, "data.yaml"))
+
+        # Copy compression_config.json
         if os.path.exists(os.path.join(template_dir, "compression_config.json")):
             shutil.copyfile(
                 os.path.join(template_dir, "compression_config.json"),
