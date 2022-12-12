@@ -172,7 +172,7 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         """Base Data Pipeline file path."""
         return os.path.join(
             os.path.dirname(os.path.abspath(self.template_file_path)),
-            self._task_environment.model_template.data_pipeline_path,
+            self._task_environment.model_template.base_data_pipeline_path,
         )
 
     @property
