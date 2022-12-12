@@ -50,15 +50,6 @@ otx_dir = os.getcwd()
 templates = Registry("otx/algorithms").filter(task_type="ANOMALY_CLASSIFICATION").templates
 templates_ids = [template.model_template_id for template in templates]
 
-<<<<<<< HEAD
-=======
-
-@pytest.fixture(scope="session")
-def tmp_dir_path():
-    with TemporaryDirectory() as tmp_dir:
-        yield Path(tmp_dir)
-
->>>>>>> Add Pyling, Mypy, Docstring
 
 class TestToolsAnomalyClassification:
     @e2e_pytest_component

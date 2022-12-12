@@ -175,7 +175,7 @@ class DatasetItemEntity(metaclass=abc.ABCMeta):
     def media(self) -> IMedia2DEntity:
         """Media."""
         return self.__media
-
+    
     def roi_numpy(self, roi: Optional[Annotation] = None) -> np.ndarray:
         """Gives the numpy data for the media, given an ROI.
 
