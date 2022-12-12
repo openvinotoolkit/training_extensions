@@ -214,7 +214,12 @@ def set_num_classes(config: Config, num_classes: int):
 
 
 @check_input_parameters_type()
-def patch_datasets(config: Config, domain: Domain = Domain.DETECTION, **kwargs):
+def patch_datasets(
+    config: Config,
+    domain: Domain = Domain.DETECTION,
+    subsets: List[str] = ["train", "val", "test"],
+    **kwargs
+):
     """Update dataset configs."""
 
     def update_pipeline(cfg):
@@ -229,9 +234,15 @@ def patch_datasets(config: Config, domain: Domain = Domain.DETECTION, **kwargs):
                 pipeline_step = get_meta_keys(pipeline_step)
 
     assert "data" in config
-    for subset in ("train", "val", "test"):
-        cfgs = get_dataset_configs(config, subset)
 
+    for subset in subsets:
+        if subset not in config.data:
+            continue
+        config.data[f"{subset}_dataloader"] = config.data.get(
+            f"{subset}_dataloader", ConfigDict()
+        )
+
+        cfgs = get_dataset_configs(config, subset)
         for cfg in cfgs:
             cfg.domain = domain
             cfg.otx_dataset = None

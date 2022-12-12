@@ -326,9 +326,6 @@ class NNCFBaseTask(BaseTask, IOptimizationTask):
     def save_model(self, output_model: ModelEntity):
         """Saving model function for NNCF Task."""
         buffer = io.BytesIO()
-        #  hyperparams = self._task_environment.get_hyper_parameters(
-        #      DetectionConfig
-        #  )  # type: ConfigDict
         hyperparams_str = ids_to_strings(
             cfg_helper.convert(self._hyperparams, dict, enum_to_str=True)
         )
@@ -361,7 +358,6 @@ class NNCFBaseTask(BaseTask, IOptimizationTask):
                 "VERSION": 1,
             },
         )
-
         self._update_modelinfo_to_save(modelinfo)
 
         torch.save(modelinfo, buffer)

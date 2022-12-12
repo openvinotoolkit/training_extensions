@@ -267,10 +267,10 @@ def patch_default_config(config: Config):
 @check_input_parameters_type()
 def patch_data_pipeline(config: Config, base_dir: str):
     """Replace data pipeline to data_pipeline.py if it exist."""
-    data_pipeline_path = os.path.join(base_dir, "data_pipelne.py")
+    data_pipeline_path = os.path.join(base_dir, "data_pipeline.py")
     if os.path.exists(data_pipeline_path):
         data_pipeline_cfg = Config.fromfile(data_pipeline_path)
-        config.merge_from_dcit(data_pipeline_cfg)
+        config.merge_from_dict(data_pipeline_cfg)
 
 
 @check_input_parameters_type()

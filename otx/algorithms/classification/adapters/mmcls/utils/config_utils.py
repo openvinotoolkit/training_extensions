@@ -166,21 +166,26 @@ def patch_datasets(
     config: Config,
     data_config: Optional[ConfigDict],
     domain: Domain = Domain.CLASSIFICATION,
+    subsets: List[str] = ["train", "val", "test", "unlabeled"],
     **kwargs
 ):
     """Update dataset configs."""
     assert "data" in config
     assert "type" in kwargs
 
-    for subset in ("train", "val", "test", "unlabeled"):
+    for subset in subsets:
+        if subset not in config.data:
+            continue
         config.data[f"{subset}_dataloader"] = config.data.get(
             f"{subset}_dataloader", ConfigDict()
         )
+
         # For stable hierarchical information indexing
         if subset == "train" and kwargs["type"] == "MPAHierarchicalClsDataset":
             config.data[f"{subset}_dataloader"].drop_last = True
 
-        for cfg in get_dataset_configs(config, subset):
+        cfgs = get_dataset_configs(config, subset)
+        for cfg in cfgs:
             cfg.domain = domain
             cfg.otx_dataset = None
             cfg.labels = None

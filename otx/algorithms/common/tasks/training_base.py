@@ -100,7 +100,6 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         self.override_configs = {}  # type: Dict[str, str]
 
     def _run_task(self, stage_module, mode=None, dataset=None, **kwargs):
-        # FIXME: Temporary remedy for CVS-88098
         self._initialize(kwargs)
         # update model config -> model label schema
         data_classes = [label.name for label in self._labels]
@@ -184,6 +183,7 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         self._init_recipe()
 
         if not export:
+            # FIXME: Temporary remedy for CVS-88098
             recipe_hparams = self._init_recipe_hparam()
             if len(recipe_hparams) > 0:
                 self._recipe_cfg.merge_from_dict(recipe_hparams)
