@@ -41,13 +41,9 @@ from otx.cli.utils.tests import (
 from tests.test_suite.e2e_test_system import e2e_pytest_component
 
 args = {
-    "--train-ann-file": "data/anomaly/classification/train.json",
-    "--train-data-roots": "data/anomaly/shapes",
-    "--val-ann-file": "data/anomaly/classification/val.json",
-    "--val-data-roots": "data/anomaly/shapes",
-    "--test-ann-files": "data/anomaly/classification/test.json",
-    "--test-data-roots": "data/anomaly/shapes",
-    "--input": "data/anomaly/shapes/test/hexagon",
+    "--train-data-roots": "data/datumaro_test/mvtec/train",
+    "--val-data-roots": "data/datumaro_test/mvtec/test",
+    "--test-data-roots": "data/datumaro_test/mvtec/test",
     "train_params": [],
 }
 
@@ -55,7 +51,6 @@ otx_dir = os.getcwd()
 
 templates = Registry("otx/algorithms").filter(task_type="ANOMALY_CLASSIFICATION").templates
 templates_ids = [template.model_template_id for template in templates]
-
 
 @pytest.fixture(scope="session")
 def tmp_dir_path():
