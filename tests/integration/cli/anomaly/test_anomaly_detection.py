@@ -39,13 +39,9 @@ from otx.cli.utils.tests import (
 from tests.test_suite.e2e_test_system import e2e_pytest_component
 
 args = {
-    "--train-ann-file": "data/anomaly/detection/train.json",
-    "--train-data-roots": "data/anomaly/shapes",
-    "--val-ann-file": "data/anomaly/detection/val.json",
-    "--val-data-roots": "data/anomaly/shapes",
-    "--test-ann-files": "data/anomaly/detection/test.json",
-    "--test-data-roots": "data/anomaly/shapes",
-    "--input": "data/anomaly/shapes/test/hexagon",
+    "--train-data-roots": "data/datumaro_test/mvtec/train",
+    "--val-data-roots": "data/datumaro_test/mvtec/test",
+    "--test-data-roots": "data/datumaro_test/mvtec/test",
     "train_params": [],
 }
 
