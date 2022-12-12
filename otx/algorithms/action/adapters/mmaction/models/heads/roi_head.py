@@ -3,6 +3,7 @@ import torch
 from mmaction.core.bbox import bbox2result
 from mmaction.models.heads import AVARoIHead as MMAVARoIHead
 from mmdet.models import HEADS as MMDET_HEADS
+from torch.onnx import is_in_onnx_export
 
 
 @MMDET_HEADS.register_module(force=True)
@@ -26,8 +27,7 @@ class AVARoIHead(MMAVARoIHead):
             det_bboxes, det_labels = self.simple_test_bboxes(
                 x, img_metas, proposal_list, self.test_cfg, rescale=rescale
             )
+            if is_in_onnx_export():
+                return det_bboxes, det_labels
             bbox_results = bbox2result(det_bboxes, det_labels, self.bbox_head.num_classes, thr=self.test_cfg.action_thr)
-            # To support onnx support, output shoud be changed to tensor from ndarray
-            for idx, bbox_result in enumerate(bbox_results):
-                bbox_results[idx] = torch.Tensor(bbox_result)
             return [bbox_results]

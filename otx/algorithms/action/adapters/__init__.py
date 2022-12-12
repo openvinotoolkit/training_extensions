@@ -14,6 +14,6 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .openvino.model_wrappers import OTXActionCls
+from .openvino import OTXActionCls, OTXActionDet
 
-__all__ = ["OTXActionCls"]
+__all__ = ["OTXActionCls", "OTXActionDet"]

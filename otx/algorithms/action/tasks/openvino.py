@@ -1,4 +1,4 @@
-"""Openvino Task of OTX Action classification."""
+"""Openvino Task of OTX Action Recognition."""
 
 # Copyright (C) 2022 Intel Corporation
 #
@@ -55,6 +55,8 @@ from otx.api.usecases.exportable_code import demo
 from otx.api.usecases.exportable_code.inference import BaseInferencer
 from otx.api.usecases.exportable_code.prediction_to_annotation_converter import (
     ClassificationToAnnotationConverter,
+    DetectionBoxToAnnotationConverter,
+    IPredictionToAnnotationConverter,
 )
 from otx.api.usecases.tasks.interfaces.deployment_interface import IDeploymentTask
 from otx.api.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
@@ -85,13 +87,14 @@ class ActionClsOpenVINOInferencer(BaseInferencer):
     @check_input_parameters_type()
     def __init__(
         self,
+        task_type: str,
         hparams: ClassificationConfig,
         label_schema: LabelSchemaEntity,
         model_file: Union[str, bytes],
         weight_file: Union[str, bytes, None] = None,
         device: str = "CPU",
         num_requests: int = 1,
-    ):  # pylint: disable=unused-argument
+    ):  # pylint: disable=unused-argument, too-many-arguments
         """Inferencer implementation for OTXDetection using OpenVINO backend.
 
         :param model: Path to model to load, `.xml`, `.bin` or `.onnx` file.
@@ -101,13 +104,18 @@ class ActionClsOpenVINOInferencer(BaseInferencer):
         :param device: Device to run inference on, such as CPU, GPU or MYRIAD. Defaults to "CPU".
         """
 
+        self.task_type = task_type
         self.label_schema = label_schema
         model_adapter = OpenvinoAdapter(
             create_core(), model_file, weight_file, device=device, max_num_requests=num_requests
         )
         self.configuration: Dict[Any, Any] = {}
-        self.model = Model.create_model("otx_action_classification", model_adapter, self.configuration, preload=True)
-        self.converter = ClassificationToAnnotationConverter(self.label_schema)
+        self.model = Model.create_model(self.task_type, model_adapter, self.configuration, preload=True)
+        self.converter: IPredictionToAnnotationConverter
+        if self.task_type == "ACTION_CLASSIFICATION":
+            self.converter = ClassificationToAnnotationConverter(self.label_schema)
+        else:
+            self.converter = DetectionBoxToAnnotationConverter(self.label_schema)
 
     @check_input_parameters_type()
     def pre_process(self, image: DatasetItemEntity) -> Tuple[Dict[str, np.ndarray], Dict[str, Any]]:
@@ -166,6 +174,7 @@ class ActionClsOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
         self.task_environment = task_environment
         self.hparams = self.task_environment.get_hyper_parameters(ClassificationConfig)
         self.model = self.task_environment.model
+        self.task_type = self.task_environment.model_template.task_type.name
         self.inferencer = self.load_inferencer()
 
     def load_inferencer(self) -> ActionClsOpenVINOInferencer:
@@ -175,6 +184,7 @@ class ActionClsOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
             raise RuntimeError("load_inferencer failed, model is None")
 
         return ActionClsOpenVINOInferencer(
+            self.task_type,
             self.hparams,
             self.task_environment.label_schema,
             self.model.get_data("openvino.xml"),
@@ -193,7 +203,10 @@ class ActionClsOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
         dataset_size = len(dataset)
         for i, dataset_item in enumerate(dataset, 1):
             predicted_scene = self.inferencer.predict(dataset_item)
-            dataset_item.append_labels(predicted_scene.annotations[0].get_labels())
+            if self.task_type == "ACTION_CLASSIFICATION":
+                dataset_item.append_labels(predicted_scene.annotations[0].get_labels())
+            else:
+                dataset_item.append_annotations(predicted_scene.annotations)
             update_progress_callback(int(i / dataset_size * 100))
         return dataset
 
@@ -202,10 +215,11 @@ class ActionClsOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
         """Evaluate function of ClassificationOpenVINOTask."""
 
         if evaluation_metric is not None:
-            logger.warning(
-                f"Requested to use {evaluation_metric} metric," "but parameter is ignored. Use accuracy instead."
-            )
-        output_resultset.performance = MetricsHelper.compute_accuracy(output_resultset).get_performance()
+            logger.warning(f"Requested to use {evaluation_metric} metric," "but parameter is ignored.")
+        if self.task_type == "ACTION_CLASSIFICATION":
+            output_resultset.performance = MetricsHelper.compute_accuracy(output_resultset).get_performance()
+        elif self.task_type == "ACTION_DETECTION":
+            output_resultset.performance = MetricsHelper.compute_f_measure(output_resultset).get_performance()
 
     @check_input_parameters_type()
     def deploy(self, output_model: ModelEntity) -> None:
@@ -215,8 +229,8 @@ class ActionClsOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
 
         work_dir = os.path.dirname(demo.__file__)
         parameters = {}  # type: Dict[Any, Any]
-        parameters["type_of_model"] = "otx_action_classification"
-        parameters["converter_type"] = "ACTION_CLASSIFICATION"
+        parameters["type_of_model"] = f"otx_{self.task_type.lower()}"
+        parameters["converter_type"] = f"{self.task_type}"
         parameters["model_parameters"] = self.inferencer.configuration
         parameters["model_parameters"]["labels"] = LabelSchemaMapper.forward(self.task_environment.label_schema)
 

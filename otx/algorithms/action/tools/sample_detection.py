@@ -141,7 +141,6 @@ def main(args):
         openvino_task.evaluate(resultset)
         logger.info(str(resultset.performance))
 
-        # TODO: implement POT
         logger.info("Run POT optimization")
         optimized_model = ModelEntity(
             dataset,
