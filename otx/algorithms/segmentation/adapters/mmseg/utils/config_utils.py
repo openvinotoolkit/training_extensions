@@ -308,7 +308,6 @@ def patch_datasets(config: Config, domain: Domain = Domain.SEGMENTATION, **kwarg
                 pipeline_step.type = "LoadImageFromOTXDataset"
             if pipeline_step.type == "LoadAnnotations":
                 pipeline_step.type = "LoadAnnotationFromOTXDataset"
-                #  pipeline_step.domain = domain
             if subset == "train" and pipeline_step.type == "Collect":
                 pipeline_step = get_meta_keys(pipeline_step)
 
@@ -333,7 +332,6 @@ def patch_datasets(config: Config, domain: Domain = Domain.SEGMENTATION, **kwarg
         # 'MultiImageMixDataset' wrapper dataset has pipeline as well
         # which we should update
         if len(cfgs) and config.data[subset].type == "MultiImageMixDataset":
-            __import__('ipdb').set_trace()
             update_pipeline(config.data[subset])
 
     patch_color_conversion(config)
