@@ -75,7 +75,7 @@ def main(args):
 
     logger.info("Set hyperparameters")
     params = create(model_template.hyper_parameters.data)
-    params.learning_parameters.num_iters = 1
+    params.learning_parameters.num_iters = 5
 
     logger.info("Setup environment")
     environment = TaskEnvironment(

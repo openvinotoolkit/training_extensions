@@ -41,6 +41,7 @@ from otx.api.entities.tensor import TensorEntity
 from otx.api.serialization.label_mapper import label_schema_to_bytes
 from otx.api.usecases.evaluation.metrics_helper import MetricsHelper
 from otx.api.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
+from otx.api.usecases.tasks.interfaces.explain_interface import IExplainTask
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType, IExportTask
 from otx.api.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from otx.api.usecases.tasks.interfaces.unload_interface import IUnload
@@ -55,7 +56,7 @@ TASK_CONFIG = ClassificationConfig
 
 
 class ClassificationInferenceTask(
-    BaseTask, IInferenceTask, IExportTask, IEvaluationTask, IUnload
+    BaseTask, IInferenceTask, IExportTask, IEvaluationTask, IExplainTask, IUnload
 ):  # pylint: disable=too-many-instance-attributes
     """Inference Task Implementation of OTX Classification."""
 
@@ -117,6 +118,32 @@ class ClassificationInferenceTask(
             update_progress_callback = inference_parameters.update_progress  # type: ignore
 
         self._add_predictions_to_dataset(prediction_results, dataset, update_progress_callback)
+        return dataset
+
+    def explain(
+        self,
+        dataset: DatasetEntity,
+        explain_parameters: Optional[InferenceParameters] = None,
+    ) -> DatasetEntity:
+        """Main explain function of OTX Classification Task."""
+        logger.info("called explain()")
+        stage_module = "ClsExplainer"
+        self._data_cfg = self._init_test_data_cfg(dataset)
+        dataset = dataset.with_empty_annotations()
+
+        results = self._run_task(
+            stage_module,
+            mode="train",
+            dataset=dataset,
+            explainer=explain_parameters.explainer if explain_parameters else None,
+        )
+        logger.debug(f"result of run_task {stage_module} module = {results}")
+        saliency_maps = results["outputs"]["saliency_maps"]
+        update_progress_callback = default_progress_callback
+        if explain_parameters is not None:
+            update_progress_callback = explain_parameters.update_progress  # type: ignore
+
+        self._add_saliency_maps_to_dataset(saliency_maps, dataset, update_progress_callback)
         return dataset
 
     def evaluate(
@@ -233,16 +260,31 @@ class ClassificationInferenceTask(
                 dataset_item.append_metadata_item(active_score, model=self._task_environment.model)
 
             if saliency_map is not None:
-                saliency_map = get_actmap(saliency_map, (dataset_item.width, dataset_item.height))
+                actmap = get_actmap(saliency_map, (dataset_item.width, dataset_item.height))
                 saliency_map_media = ResultMediaEntity(
                     name="Saliency Map",
                     type="saliency_map",
                     annotation_scene=dataset_item.annotation_scene,
-                    numpy=saliency_map,
+                    numpy=actmap,
                     roi=dataset_item.roi,
                 )
                 dataset_item.append_metadata_item(saliency_map_media, model=self._task_environment.model)
 
+            update_progress_callback(int(i / dataset_size * 100))
+
+    def _add_saliency_maps_to_dataset(self, saliency_maps, dataset, update_progress_callback):
+        """Loop over dataset again and assign saliency maps."""
+        dataset_size = len(dataset)
+        for i, (dataset_item, saliency_map) in enumerate(zip(dataset, saliency_maps)):
+            actmap = get_actmap(saliency_map, (dataset_item.width, dataset_item.height))
+            saliency_map_media = ResultMediaEntity(
+                name="Saliency Map",
+                type="saliency_map",
+                annotation_scene=dataset_item.annotation_scene,
+                numpy=actmap,
+                roi=dataset_item.roi,
+            )
+            dataset_item.append_metadata_item(saliency_map_media, model=self._task_environment.model)
             update_progress_callback(int(i / dataset_size * 100))
 
     def _init_recipe_hparam(self) -> dict:
@@ -278,7 +320,11 @@ class ClassificationInferenceTask(
     def _init_recipe(self):
         logger.info("called _init_recipe()")
 
-        recipe_root = os.path.join(MPAConstants.RECIPES_PATH, "stages/classification")
+        if self._multilabel:
+            recipe_root = os.path.join(MPAConstants.RECIPES_PATH, "stages/classification/multilabel")
+        else:
+            recipe_root = os.path.join(MPAConstants.RECIPES_PATH, "stages/classification")
+
         train_type = self._hyperparams.algo_backend.train_type
         logger.info(f"train type = {train_type}")
 
@@ -297,10 +343,7 @@ class ClassificationInferenceTask(
                 )
 
         if train_type == TrainType.INCREMENTAL:
-            if self._multilabel:
-                recipe = os.path.join(recipe_root, "class_incr_multilabel.yaml")
-            else:
-                recipe = os.path.join(recipe_root, "class_incr.yaml")
+            recipe = os.path.join(recipe_root, "incremental.yaml")
 
         logger.info(f"train type = {train_type} - loading {recipe}")
 

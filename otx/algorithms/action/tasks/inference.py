@@ -392,7 +392,7 @@ class ActionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask
             for label_idx, detections in enumerate(all_results):
                 for i in range(detections.shape[0]):
                     probability = float(detections[i, 4])
-                    coords = detections[i, :4].tolist()
+                    coords = detections[i, :4]
 
                     if probability < confidence_threshold:
                         continue

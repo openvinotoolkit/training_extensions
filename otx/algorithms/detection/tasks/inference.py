@@ -227,13 +227,13 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
             raise NotImplementedError(f"Train type {train_type} is not implemented yet.")
         if train_type == TrainType.SEMISUPERVISED:
             if self._data_cfg.get("data", None) and self._data_cfg.data.get("unlabeled", None):
-                recipe = os.path.join(recipe_root, "unbiased_teacher.py")
+                recipe = os.path.join(recipe_root, "semisl.py")
             else:
                 logger.warning("Cannot find unlabeled data.. convert to INCREMENTAL.")
                 train_type = TrainType.INCREMENTAL
 
         if train_type == TrainType.INCREMENTAL:
-            recipe = os.path.join(recipe_root, "imbalance.py")
+            recipe = os.path.join(recipe_root, "incremental.py")
 
         logger.info(f"train type = {train_type} - loading {recipe}")
 

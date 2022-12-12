@@ -16,6 +16,8 @@
 
 import mpa.seg as MPASegmentation
 
+import otx.algorithms.common.adapters.mmcv.models as OTXBackbones
+
 from .inference import SegmentationInferenceTask
 from .nncf import SegmentationNNCFTask
 from .openvino import OpenVINOSegmentationTask
@@ -27,4 +29,5 @@ __all__ = [
     "SegmentationTrainTask",
     "SegmentationNNCFTask",
     "OpenVINOSegmentationTask",
+    "OTXBackbones",
 ]

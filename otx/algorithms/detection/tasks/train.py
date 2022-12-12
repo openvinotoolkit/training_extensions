@@ -52,7 +52,7 @@ from .inference import DetectionInferenceTask
 logger = get_logger()
 
 
-# pylint: disable=too-many-locals, too-many-instance-attributes
+# pylint: disable=too-many-locals, too-many-instance-attributes, too-many-ancestors
 class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
     """Train Task Implementation of OTX Detection."""
 

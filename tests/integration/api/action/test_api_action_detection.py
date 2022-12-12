@@ -40,7 +40,7 @@ from otx.cli.utils.io import generate_label_schema
 from tests.test_suite.e2e_test_system import e2e_pytest_api
 from tests.unit.api.test_helpers import generate_random_annotated_image
 
-DEFAULT_ACTION_TEMPLATE_DIR = osp.join("otx/algorithms/action/configs", "detection", "two_stage_two_backbone")
+DEFAULT_ACTION_TEMPLATE_DIR = osp.join("otx/algorithms/action/configs", "detection", "x3d_fast_rcnn")
 
 
 def task_eval(task: BaseTask, model: ModelEntity, dataset: DatasetEntity) -> Performance:
@@ -66,7 +66,7 @@ class TestActionTaskAPI:
 
     @e2e_pytest_api
     def test_reading_action_model_template(self):
-        model_templates = ["two_stage_two_backbone"]
+        model_templates = ["x3d_fast_rcnn"]
         for model_template in model_templates:
             parse_model_template(
                 osp.join("otx/algorithms/action/configs", "detection", model_template, "template.yaml")
