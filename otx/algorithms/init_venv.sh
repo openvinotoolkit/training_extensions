@@ -104,9 +104,9 @@ pip install torch=="${TORCH_VERSION}" torchvision=="${TORCHVISION_VERSION}" -f h
 #   - numpy: mmpycocotool uses source distribution, setup.py imports numpy
 #   - torch: mmdet/seg are installed via source, setup.py imports torch
 # * Issue
-#  - Dependency resolusion is to slow
+#  - Dependency resolution is to slow
 #  - Several lib version conflicts
-#  -> Temporary use of --use-deprecated=legacy-resolve
+#  -> Temporary use of --use-deprecated=legacy-resolver
 # shellcheck disable=SC2102
 pip install --use-deprecated=legacy-resolver -e ../../[full] || exit 1
 
