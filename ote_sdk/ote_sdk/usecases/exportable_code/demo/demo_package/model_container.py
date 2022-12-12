@@ -30,12 +30,17 @@ class ModelContainer:
         model_dir: path to model directory
     """
 
-    def __init__(self, model_dir: Path, device='CPU') -> None:
+    def __init__(self, model_dir: Path, device="CPU") -> None:
         self.parameters = get_parameters(model_dir / "config.json")
         self._labels = LabelSchemaMapper.backward(
             self.parameters["model_parameters"]["labels"]
         )
         self._task_type = TaskType[self.parameters["converter_type"]]
+
+        self.segm = bool(
+            self._task_type is TaskType.ROTATED_DETECTION
+            or self._task_type is TaskType.INSTANCE_SEGMENTATION
+        )
 
         # labels for modelAPI wrappers can be empty, because unused in pre- and postprocessing
         self.model_parameters = self.parameters["model_parameters"]
@@ -67,16 +72,10 @@ class ModelContainer:
         ):
             return None
 
-        segm = False
-        if (
-            self._task_type is TaskType.ROTATED_DETECTION
-            or self._task_type is TaskType.INSTANCE_SEGMENTATION
-        ):
-            segm = True
         tile_size = self.parameters["tiling_parameters"]["tile_size"]["value"]
         tile_overlap = self.parameters["tiling_parameters"]["tile_overlap"]["value"]
         max_number = self.parameters["tiling_parameters"]["tile_max_number"]["value"]
-        tiler = Tiler(tile_size, tile_overlap, max_number, self.core_model, segm)
+        tiler = Tiler(tile_size, tile_overlap, max_number, self.core_model, self.segm)
         return tiler
 
     @property
@@ -110,7 +109,10 @@ class ModelContainer:
         """
         # getting result include preprocessing, infer, postprocessing for sync infer
         predictions, frame_meta = self.core_model(frame)
-        predictions = detection2array(predictions)
+
+        # MaskRCNN returns tuple so no need to process
+        if self._task_type == TaskType.DETECTION:
+            predictions = detection2array(predictions)
         return predictions, frame_meta
 
     def infer_tile(self, frame):
