@@ -14,6 +14,7 @@ from mmcls.datasets.pipelines import Compose
 from mmcv.utils.registry import build_from_cfg
 from mpa.utils.logger import get_logger
 from sklearn.metrics import confusion_matrix as sklearn_confusion_matrix
+from torch.utils.data import Dataset
 
 from otx.algorithms.common.utils import get_cls_img_indices, get_old_new_img_indices
 
@@ -414,22 +415,27 @@ class MPAHierarchicalClsDataset(MPAMultilabelClsDataset):
 
 
 @DATASETS.register_module()
-class SelfSLDataset(MPAClsDataset):
-    """SelfSL dataset."""
+class SelfSLDataset(Dataset):
+    """SelfSL dataset that training with two pipelines and no label."""
+
+    CLASSES = None
 
     def __init__(self, otx_dataset=None, pipeline=None, **kwargs): # pylint: disable=unused-argument
+        super(SelfSLDataset, self).__init__()
         self.otx_dataset = otx_dataset
 
-        pipeline1 = [build_from_cfg(p, PIPELINES) for p in [dict(type="LoadImageFromOTXDataset")]+pipeline['view0']]
-        self.pipeline1 = Compose(pipeline1)
-        pipeline2 = [build_from_cfg(p, PIPELINES) for p in [dict(type="LoadImageFromOTXDataset")]+pipeline['view1']]
-        self.pipeline2 = Compose(pipeline2)
+        self.load_pipeline = build_from_cfg(dict(type="LoadImageFromOTXDataset"), PIPELINES)
+        self.pipeline1 = Compose([build_from_cfg(p, PIPELINES) for p in pipeline['view0']])
+        self.pipeline2 = Compose([build_from_cfg(p, PIPELINES) for p in pipeline['view1']])
+
+    def __len__(self):
+        """Get dataset length."""
+        return len(self.otx_dataset)
 
     def __getitem__(self, index: int):
         """Get item from dataset."""
         dataset = self.otx_dataset
         item = dataset[index]
-        ignored_labels = np.array([self.label_idx[lbs.id] for lbs in item.ignored_labels])
 
         height, width = item.height, item.width
 
@@ -438,11 +444,11 @@ class SelfSLDataset(MPAClsDataset):
             width=width,
             height=height,
             index=index,
-            ignored_labels=ignored_labels,
         )
 
-        results1 = self.pipeline1(data_info)
-        results2 = self.pipeline2(data_info)
+        loaded_results = self.load_pipeline(data_info)
+        results1 = self.pipeline1(loaded_results.copy())
+        results2 = self.pipeline2(loaded_results.copy())
 
         results = {}
         for k, v in results1.items():
@@ -451,15 +457,3 @@ class SelfSLDataset(MPAClsDataset):
             results[k+'2'] = v
 
         return results
-
-    def load_annotations(self):
-        pass
-
-    def get_gt_labels(self):
-        pass
-
-    def evaluate(self, *args, **kwargs):
-        pass
-
-    def class_accuracy(self, *args, **kwargs):
-        pass
