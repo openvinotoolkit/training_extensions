@@ -1,0 +1,50 @@
+# Description.
+model_template_id: Custom_Image_Classification_MobileNet-V3-large-1x
+name: MobileNet-V3-large-1x
+task_type: CLASSIFICATION
+task_family: VISION
+instantiation: "CLASS"
+summary: Warmstart Image Classification for MobileNet-V3-large-1x
+application: ~
+
+# Algo backend.
+framework: OTEClassification v1.2.3
+
+# Task implementations.
+entrypoints:
+  base: otx.algorithms.classification.tasks.ClassificationTrainTask
+  openvino: otx.algorithms.classification.tasks.ClassificationOpenVINOTask
+  nncf: otx.algorithms.classification.tasks.nncf.OTXClassificationNNCFTask
+
+# Capabilities.
+capabilities:
+  - compute_representations
+
+# Hyperparameters.
+hyper_parameters:
+  base_path: ../configuration.yaml
+  parameter_overrides:
+    learning_parameters:
+      batch_size:
+        default_value: 256
+        auto_hpo_state: POSSIBLE
+      num_workers:
+        default_value: 0
+      learning_rate:
+        default_value: 0.45
+        auto_hpo_state: POSSIBLE
+      learning_rate_warmup_iters:
+        default_value: 50
+      num_iters:
+        default_value: 5000
+      enable_early_stopping:
+        default_value: false
+    algo_backend:
+      train_type:
+        default_value: SELFSUPERVISED
+
+# Training resources.
+max_nodes: 1
+training_targets:
+  - GPU
+  - CPU
