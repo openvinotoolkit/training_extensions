@@ -30,8 +30,10 @@ from compression.graph import load_model, save_model
 from compression.graph.model_utils import compress_model_weights, get_nodes_by_type
 from compression.pipeline.initializer import create_pipeline
 
+from otx.algorithms.action.configs.base import ActionConfig
+
+# FIXME Discuss with Jihwan below import
 from otx.algorithms.classification.adapters.openvino import model_wrappers
-from otx.algorithms.classification.configs import ClassificationConfig
 from otx.api.entities.annotation import AnnotationSceneEntity
 from otx.api.entities.datasets import DatasetEntity, DatasetItemEntity
 from otx.api.entities.inference_parameters import (
@@ -81,14 +83,14 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 # TODO: refactoring to Sphinx style.
-class ActionClsOpenVINOInferencer(BaseInferencer):
-    """ActionClsOpenVINOInferencer class in OpenVINO task."""
+class ActionOpenVINOInferencer(BaseInferencer):
+    """ActionOpenVINOInferencer class in OpenVINO task for action recognition."""
 
     @check_input_parameters_type()
     def __init__(
         self,
         task_type: str,
-        hparams: ClassificationConfig,
+        hparams: ActionConfig,
         label_schema: LabelSchemaEntity,
         model_file: Union[str, bytes],
         weight_file: Union[str, bytes, None] = None,
@@ -119,19 +121,19 @@ class ActionClsOpenVINOInferencer(BaseInferencer):
 
     @check_input_parameters_type()
     def pre_process(self, image: DatasetItemEntity) -> Tuple[Dict[str, np.ndarray], Dict[str, Any]]:
-        """Pre-process function of OpenVINO Action Classification Inferencer."""
+        """Pre-process function of OpenVINO Inferencer for Action Recognition."""
         return self.model.preprocess(image)
 
     @check_input_parameters_type()
     def post_process(self, prediction, metadata: Dict[str, Any]) -> Optional[AnnotationSceneEntity]:
-        """Post-process function of OpenVINO Classification Inferencer."""
+        """Post-process function of OpenVINO Inferencer for Action Recognition."""
 
         prediction = self.model.postprocess(prediction, metadata)
         return self.converter.convert_to_annotation(prediction, metadata)
 
     @check_input_parameters_type()
     def predict(self, image: DatasetItemEntity) -> Tuple[AnnotationSceneEntity, np.ndarray, np.ndarray, Any]:
-        """Predict function of OpenVINO Action Classification Inferencer."""
+        """Predict function of OpenVINO Action Inferencer for Action Recognition."""
         data, metadata = self.pre_process(image)
         raw_predictions = self.forward(data)
         predictions = self.post_process(raw_predictions, metadata)
@@ -139,13 +141,13 @@ class ActionClsOpenVINOInferencer(BaseInferencer):
 
     # @check_input_parameters_type()
     def forward(self, image: Dict[str, DatasetItemEntity]) -> Dict[str, np.ndarray]:
-        """Forward function of OpenVINO Action Classification Inferencer."""
+        """Forward function of OpenVINO Action Inferencer for Action Recognition."""
 
         return self.model.infer_sync(image)
 
 
 class OTXOpenVinoDataLoader(DataLoader):
-    """DataLoader implementation for ActionClsOpenVINOTask."""
+    """DataLoader implementation for ActionOpenVINOTask."""
 
     @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def __init__(self, dataset: DatasetEntity, inferencer: BaseInferencer):
@@ -166,24 +168,24 @@ class OTXOpenVinoDataLoader(DataLoader):
         return len(self.dataset)
 
 
-class ActionClsOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IOptimizationTask):
-    """Task implementation for OTXActionCls using OpenVINO backend."""
+class ActionOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IOptimizationTask):
+    """Task implementation for OTX Action Recognition using OpenVINO backend."""
 
     @check_input_parameters_type()
     def __init__(self, task_environment: TaskEnvironment):
         self.task_environment = task_environment
-        self.hparams = self.task_environment.get_hyper_parameters(ClassificationConfig)
+        self.hparams = self.task_environment.get_hyper_parameters(ActionConfig)
         self.model = self.task_environment.model
         self.task_type = self.task_environment.model_template.task_type.name
         self.inferencer = self.load_inferencer()
 
-    def load_inferencer(self) -> ActionClsOpenVINOInferencer:
-        """load_inferencer function of ClassificationOpenVINOTask."""
+    def load_inferencer(self) -> ActionOpenVINOInferencer:
+        """load_inferencer function of OpenVINOTask for Action Recognition."""
 
         if self.model is None:
             raise RuntimeError("load_inferencer failed, model is None")
 
-        return ActionClsOpenVINOInferencer(
+        return ActionOpenVINOInferencer(
             self.task_type,
             self.hparams,
             self.task_environment.label_schema,
@@ -195,7 +197,7 @@ class ActionClsOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
     def infer(
         self, dataset: DatasetEntity, inference_parameters: Optional[InferenceParameters] = None
     ) -> DatasetEntity:
-        """Infer function of ClassificationOpenVINOTask."""
+        """Infer function of OpenVINOTask for Action Recognition."""
 
         update_progress_callback = default_progress_callback
         if inference_parameters is not None:
@@ -212,7 +214,7 @@ class ActionClsOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
 
     @check_input_parameters_type()
     def evaluate(self, output_resultset: ResultSetEntity, evaluation_metric: Optional[str] = None):
-        """Evaluate function of ClassificationOpenVINOTask."""
+        """Evaluate function of OpenVINOTask."""
 
         if evaluation_metric is not None:
             logger.warning(f"Requested to use {evaluation_metric} metric," "but parameter is ignored.")
@@ -223,7 +225,7 @@ class ActionClsOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
 
     @check_input_parameters_type()
     def deploy(self, output_model: ModelEntity) -> None:
-        """Deploy function of ClassificationOpenVINOTask."""
+        """Deploy function of OpenVINOTask."""
 
         logger.info("Deploying the model")
 
@@ -266,7 +268,7 @@ class ActionClsOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
         output_model: ModelEntity,
         optimization_parameters: Optional[OptimizationParameters] = None,
     ):  # pylint: disable=too-many-locals
-        """Optimize function of ClassificationOpenVINOTask."""
+        """Optimize function of OpenVINOTask."""
 
         if optimization_type is not OptimizationType.POT:
             raise ValueError("POT is the only supported optimization type for OpenVino models")

@@ -14,7 +14,6 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .openvino_det_models import OTXActionDet
-from .openvino_models import OTXActionCls
+from .openvino_models import OTXActionCls, OTXActionDet
 
 __all__ = ["OTXActionCls", "OTXActionDet"]
