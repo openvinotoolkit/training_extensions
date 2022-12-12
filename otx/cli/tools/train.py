@@ -166,6 +166,7 @@ def main():  # pylint: disable=too-many-branches
             "data_root": data_config["data"]["unlabeled"]["data-roots"],
             "file_list": data_config["data"]["unlabeled"]["file-list"],
         }
+        is_include_unlabel_data = True
 
     # Datumaro
     dataset_adapter = get_dataset_adapter(

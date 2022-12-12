@@ -140,7 +140,6 @@ class OTXRawframeDataset(RawframeDataset):
         for data_info in self.data_infos:
             media = data_info["dataset_item"].media
             annotation = data_info["dataset_item"].get_annotations()
-
             if len(annotation) == 0:
                 label = None
             else:

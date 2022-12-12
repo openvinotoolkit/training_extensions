@@ -182,7 +182,6 @@ def convert_jester_dataset_to_datumaro(src_path, dst_path):
                     encoding="utf-8",
                 )
 
-
 def convert_ava_dataset_to_datumaro(src_path, dst_path):
     """Convert AVA dataset to multi-video CVAT (Datumaro) format."""
     # Prepare dst_path
