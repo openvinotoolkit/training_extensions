@@ -8,6 +8,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 import pytest
+import yaml
 
 from otx.api.entities.model_template import parse_model_template
 from otx.cli.registry import Registry
@@ -32,6 +33,18 @@ from otx.cli.utils.tests import (
     pot_optimize_testing,
 )
 from tests.test_suite.e2e_test_system import e2e_pytest_component
+
+# Warmstart using data w/ 'intel', 'openvino', 'opencv' classes
+args_w = {
+    "--train-data-roots": "data/text_recognition/IL_data",
+    "train_params": [
+        "params",
+        "--learning_parameters.num_iters",
+        "100",
+        "--learning_parameters.batch_size",
+        "4",
+    ],
+}
 
 # Pre-train w/ 'intel', 'openvino' classes
 args0 = {
@@ -94,8 +107,38 @@ else:
     templates = Registry("otx/algorithms/classification").filter(task_type="CLASSIFICATION").templates
     templates_ids = [template.model_template_id for template in templates]
 
+    warmstart_templates = [parse_model_template(template.model_template_path\
+                           .replace("_incr", "_warmstart")\
+                           .replace("template", "template_experimental"))
+                           for template in templates]
+    warmstart_templates_ids = [template.model_template_id for template in warmstart_templates]
+
 
 class TestToolsMPAClassification:
+    @e2e_pytest_component
+    @pytest.mark.parametrize("warmstart_template,template",
+                             [(wt, t) for wt, t in zip(warmstart_templates, templates)],
+                             ids=warmstart_templates_ids)
+    def test_otx_warmstart_train(self, warmstart_template, template, tmp_dir_path):
+        # tmp: set data.yaml to only use train-data-roots
+        to_save_data_args = {"data": {}}
+        for mode in ["train", "val", "unlabeled"]:
+            to_save_data_args["data"][mode] = {}
+            for property in ["ann-files", "data-roots"]:
+                key = f"--{mode}-{property}"
+                if key == "--train-data-roots":
+                    to_save_data_args["data"][mode][property] = args_w[key]
+                else:
+                    to_save_data_args["data"][mode][property] = None
+        yaml.dump(to_save_data_args, open("./data.yaml", "w"), default_flow_style=False)
+        args_w["--data"] = "./data.yaml"
+
+        otx_train_testing(warmstart_template, tmp_dir_path, otx_dir, args_w)
+        template_work_dir = get_template_dir(warmstart_template, tmp_dir_path)
+        args1 = args.copy()
+        args1["--load-weights"] = f"{template_work_dir}/trained_{warmstart_template.model_template_id}/weights.pth"
+        otx_train_testing(template, tmp_dir_path, otx_dir, args1)
+
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train(self, template, tmp_dir_path):
@@ -214,6 +257,18 @@ class TestToolsMPAClassification:
         pot_eval_testing(template, tmp_dir_path, otx_dir, args)
 
 
+# Warmstart using data w/ 'intel', 'openvino', 'opencv' classes
+args_wm = {
+    "--train-data-roots": "data/car_tree_bug/images",
+    "train_params": [
+        "params",
+        "--learning_parameters.num_iters",
+        "100",
+        "--learning_parameters.batch_size",
+        "4",
+    ],
+}
+
 # Pre-train w/ 'car', 'tree' classes
 args0_m = {
     "--train-ann-file": "data/car_tree_bug/annotations/multilabel_car_tree.json",
@@ -252,6 +307,30 @@ args_m = {
 
 
 class TestToolsMPAMultilabelClassification:
+    @e2e_pytest_component
+    @pytest.mark.parametrize("warmstart_template,template",
+                             [(wt, t) for wt, t in zip(warmstart_templates, templates)],
+                             ids=warmstart_templates_ids)
+    def test_otx_warmstart_train(self, warmstart_template, template, tmp_dir_path):
+        # tmp: set data.yaml to only use train-data-roots
+        to_save_data_args = {"data": {}}
+        for mode in ["train", "val", "unlabeled"]:
+            to_save_data_args["data"][mode] = {}
+            for property in ["ann-files", "data-roots"]:
+                key = f"--{mode}-{property}"
+                if key == "--train-data-roots":
+                    to_save_data_args["data"][mode][property] = args_wm[key]
+                else:
+                    to_save_data_args["data"][mode][property] = None
+        yaml.dump(to_save_data_args, open("./data.yaml", "w"), default_flow_style=False)
+        args_wm["--data"] = "./data.yaml"
+
+        otx_train_testing(warmstart_template, tmp_dir_path, otx_dir, args_wm)
+        template_work_dir = get_template_dir(warmstart_template, tmp_dir_path)
+        args1 = args_m.copy()
+        args1["--load-weights"] = f"{template_work_dir}/trained_{warmstart_template.model_template_id}/weights.pth"
+        otx_train_testing(template, tmp_dir_path, otx_dir, args1)
+    
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train(self, template, tmp_dir_path):
@@ -373,6 +452,18 @@ class TestToolsMPAMultilabelClassification:
         pot_eval_testing(template, tmp_dir_path, otx_dir, args_m)
 
 
+# Warmstart using data w/ 'intel', 'openvino', 'opencv' classes
+args_wh = {
+    "--train-data-roots": "data/car_tree_bug/images",
+    "train_params": [
+        "params",
+        "--learning_parameters.num_iters",
+        "100",
+        "--learning_parameters.batch_size",
+        "4",
+    ],
+}
+
 # TODO: (Jihwan) Enable C-IL test without image loading via otx-cli.
 args_h = {
     "--train-ann-file": "data/car_tree_bug/annotations/hierarchical_default.json",
@@ -393,6 +484,30 @@ args_h = {
 
 
 class TestToolsMPAHierarchicalClassification:
+    @e2e_pytest_component
+    @pytest.mark.parametrize("warmstart_template,template",
+                             [(wt, t) for wt, t in zip(warmstart_templates, templates)],
+                             ids=warmstart_templates_ids)
+    def test_otx_warmstart_train(self, warmstart_template, template, tmp_dir_path):
+        # tmp: set data.yaml to only use train-data-roots
+        to_save_data_args = {"data": {}}
+        for mode in ["train", "val", "unlabeled"]:
+            to_save_data_args["data"][mode] = {}
+            for property in ["ann-files", "data-roots"]:
+                key = f"--{mode}-{property}"
+                if key == "--train-data-roots":
+                    to_save_data_args["data"][mode][property] = args_wh[key]
+                else:
+                    to_save_data_args["data"][mode][property] = None
+        yaml.dump(to_save_data_args, open("./data.yaml", "w"), default_flow_style=False)
+        args_wh["--data"] = "./data.yaml"
+
+        otx_train_testing(warmstart_template, tmp_dir_path, otx_dir, args_wh)
+        template_work_dir = get_template_dir(warmstart_template, tmp_dir_path)
+        args1 = args_h.copy()
+        args1["--load-weights"] = f"{template_work_dir}/trained_{warmstart_template.model_template_id}/weights.pth"
+        otx_train_testing(template, tmp_dir_path, otx_dir, args1)
+    
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train(self, template, tmp_dir_path):
