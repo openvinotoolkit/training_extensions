@@ -139,7 +139,14 @@ def parse_args():
     )
     parser.add_argument(
         "--gpus",
+        type=str,
         help="Enable multi gpu training. if number of gpu is more than one, then model is trained in each gpu with splited dataset.",
+    )
+    parser.add_argument(
+        "--multi-gpu-port",
+        default=25000,
+        type=int,
+        help="port for communication beteween multi GPU processes.",
     )
 
     add_hyper_parameters_sub_parser(parser, hyper_parameters)
@@ -212,7 +219,7 @@ def main():
         task = task_class(task_environment=environment, output_path=args.save_logs_to)
 
     if args.gpus:
-        multigpu_manager = MultiGPUManager(args.gpus)
+        multigpu_manager = MultiGPUManager(args.gpus, str(args.multi_gpu_port))
         if multigpu_manager.is_available(template):
             multigpu_manager.setup_multi_gpu_train(
                 task.project_path,
@@ -247,8 +254,9 @@ def main():
         multigpu_manager.finalize()
 
 class MultiGPUManager:
-    def __init__(self, gpu_ids: str):
+    def __init__(self, gpu_ids: str, multi_gpu_port: str):
         self._gpu_ids = self._get_gpu_ids(gpu_ids)
+        self._multi_gpu_port = multi_gpu_port
         self._main_pid = os.getpid()
         self._processes = None
 
@@ -269,7 +277,7 @@ class MultiGPUManager:
             gpu_ids.remove(wrong_gpu)
 
         if wrong_gpus:
-            print(f"Wrong gpu indeces are excluded. {','.join(gpu_ids)} GPU will be used.")
+            print(f"Wrong gpu indeces are excluded. {','.join([str(val) for val in gpu_ids])} GPU will be used.")
 
         return gpu_ids
 
@@ -284,23 +292,15 @@ class MultiGPUManager:
         if optimized_hyper_parameters is not None:
             self._set_optimized_hp_for_child_process(optimized_hyper_parameters)
 
-        processes= []
-        spawned_mp = mp.get_context("spawn")
-        for rank in range(1, len(self._gpu_ids)):
-            task_p = spawned_mp.Process(
-                target=MultiGPUManager.run_child_process,
-                args=(rank, self._gpu_ids, output_path)
-            )
-            task_p.start()
-            processes.append(task_p)
+        self._processes = self._spawn_multi_gpu_processes(output_path)
 
         signal.signal(signal.SIGINT, self._terminate_signal_handler)
         signal.signal(signal.SIGTERM, self._terminate_signal_handler)
 
-        self.initialize_multigpu_train(0, self._gpu_ids)
-        self._processes = processes
+        self.initialize_multigpu_train(0, self._gpu_ids, self._multi_gpu_port)
 
-        self._run_thread_to_check_child_processes()
+        t = threading.Thread(target=self._check_child_processes_alive, daemon=True)
+        t.start()
 
     def finalize(self):
         if self._processes is not None:
@@ -308,22 +308,22 @@ class MultiGPUManager:
                 p.join()
 
     @staticmethod
-    def initialize_multigpu_train(rank: int, gpu_ids: List[int]):
+    def initialize_multigpu_train(rank: int, gpu_ids: List[int], multi_gpu_port: str):
         os.environ['MASTER_ADDR'] = 'localhost'
-        os.environ['MASTER_PORT'] = '29500'
+        os.environ['MASTER_PORT'] = multi_gpu_port
         torch.cuda.set_device(gpu_ids[rank])
         dist.init_process_group(backend='nccl', world_size=len(gpu_ids), rank=rank)
         print(f'dist info world_size = {dist.get_world_size()}, rank = {dist.get_rank()}')
 
     @staticmethod
-    def run_child_process(rank: int, gpu_ids: List[int], output_path: str):
+    def run_child_process(rank: int, gpu_ids: List[int], output_path: str, multi_gpu_port: str):
         gpus_arg_idx = sys.argv.index('--gpus')
         for _ in range(2):
             sys.argv.pop(gpus_arg_idx)
         if "--enable-hpo" in sys.argv:
             sys.argv.remove('--enable-hpo')
         MultiGPUManager.set_arguments_to_argv("--save-logs-to", output_path)
-        MultiGPUManager.initialize_multigpu_train(rank, gpu_ids)
+        MultiGPUManager.initialize_multigpu_train(rank, gpu_ids, multi_gpu_port)
         print("*"*100, os.getpid())
         main()
 
@@ -339,6 +339,19 @@ class MultiGPUManager:
                 if after_params and "params" not in sys.argv:
                     sys.argv.append('params')
                 sys.argv.extend([key, value])
+
+    def _spawn_multi_gpu_processes(self, output_path: str) -> List[mp.Process]:
+        processes= []
+        spawned_mp = mp.get_context("spawn")
+        for rank in range(1, len(self._gpu_ids)):
+            task_p = spawned_mp.Process(
+                target=MultiGPUManager.run_child_process,
+                args=(rank, self._gpu_ids, output_path, self._multi_gpu_port)
+            )
+            task_p.start()
+            processes.append(task_p)
+
+        return processes
 
     def _terminate_signal_handler(self, signum, frame):
         # This code prevents child processses from being killed unintentionally by forked main process
@@ -374,10 +387,6 @@ class MultiGPUManager:
             str(hyper_parameters.learning_parameters.batch_size),
             True
         )
-
-    def _run_thread_to_check_child_processes(self):
-        t = threading.Thread(target=self._check_child_processes_alive, daemon=True)
-        t.start()
 
     def _check_child_processes_alive(self):
         child_is_running = True
