@@ -302,9 +302,8 @@ class ClassificationInferenceTask(
 
         if train_type == TrainType.INCREMENTAL:
             recipe = os.path.join(recipe_root, "incremental.yaml")
-
-        if self._hyperparams.learning_parameters.enable_supcon:
-            recipe = os.path.join(recipe_root, "supcon.yaml")
+            if self._hyperparams.learning_parameters.enable_supcon:
+                recipe = os.path.join(recipe_root, "supcon.yaml")
 
         logger.info(f"train type = {train_type} - loading {recipe}")
 
