@@ -51,7 +51,7 @@ class Patcher:
         else:
             if "_partialmethod" in obj_cls.__dict__:
                 while "_partialmethod" in obj_cls.__dict__:
-                    obj_cls = obj_cls._partialmethod.args[-1]
+                    obj_cls = obj_cls._partialmethod.keywords["__fn"]
             elif isinstance(obj_cls, partial):
                 while isinstance(obj_cls.args[0], partial):
                     obj_cls = obj_cls.args[0]
@@ -94,8 +94,24 @@ class Patcher:
 
     def _patch_class_fn(self, obj_cls, fn_name, fn, wrapper, force):
 
-        def helper(self, wrapper, fn, *args, **kwargs):
-            return wrapper(self, fn.__get__(self), *args, **kwargs)
+        if isinstance(fn, (staticmethod, classmethod)):
+
+            def helper(*args, **kwargs):
+                wrapper = kwargs.pop("__wrapper")
+                fn = kwargs.pop("__fn")
+                obj_cls = kwargs.pop("__obj_cls")
+                if isinstance(args[0], obj_cls):
+                    return wrapper(args[0], fn.__get__(args[0]), *args[1:], **kwargs)
+                else:
+                    return wrapper(obj_cls, fn.__get__(obj_cls), *args, **kwargs)
+
+        else:
+
+            def helper(self, *args, **kwargs):
+                kwargs.pop("__obj_cls")
+                wrapper = kwargs.pop("__wrapper")
+                fn = kwargs.pop("__fn")
+                return wrapper(self, fn.__get__(self), *args, **kwargs)
 
         assert len(inspect.getargspec(obj_cls.__getattribute__)[0]) == 2
         obj_cls_path = obj_cls.__module__ + "." + obj_cls.__name__
@@ -103,7 +119,11 @@ class Patcher:
         fn_ = self._initialize(key, force)
         if fn_ is not None:
             fn = fn_
-        setattr(obj_cls, fn_name, partialmethod(helper, wrapper, fn))
+        setattr(
+            obj_cls,
+            fn_name,
+            partialmethod(helper, __wrapper=wrapper, __fn=fn, __obj_cls=obj_cls),
+        )
         self._patched[key].append((fn, wrapper))
 
     def _patch_instance_fn(self, obj_cls, fn_name, fn, wrapper, force):
