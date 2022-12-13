@@ -63,22 +63,20 @@ if TT_STABILITY_TESTS:
     templates = [default_template] * 100
     templates_ids = [template.model_template_id + f"-{i+1}" for i, template in enumerate(templates)]
 
-    # semisl_default_template = parse_model_template(
-    #     os.path.join("otx/algorithms/segmentation/configs", "ocr_lite_hrnet_18_mod2", "semisl", "template_semisl.yaml")
-    # )
-    # semisl_templates = [semisl_default_template] * 100
-    # semisl_templates_ids = [
-    #     template.model_template_id + f"_semisl-{i+1}" for i, template in enumerate(semisl_templates)
-    # ]
+    semisl_default_template = parse_model_template(
+        os.path.join("otx/algorithms/segmentation/configs", "ocr_lite_hrnet_18_mod2", "semisl", "template_semisl.yaml")
+    )
+    semisl_templates = [semisl_default_template] * 100
+    semisl_templates_ids = [
+        template.model_template_id + f"_semisl-{i+1}" for i, template in enumerate(semisl_templates)
+    ]
 
 else:
     templates = Registry("otx/algorithms/segmentation").filter(task_type="SEGMENTATION").templates
     templates_ids = [template.model_template_id for template in templates]
 
-    # semisl_templates = templates.copy()
-    # for i in range(len(semisl_templates)):
-    #     semisl_templates[i].hyper_parameters.parameter_overrides['algo_backend']['train_type']['default_value'] = 'SEMISUPERVISED'
-    # semisl_templates_ids = [template.model_template_id + "_semisl" for template in semisl_templates]
+    semisl_templates = Registry("otx/algorithms/segmentation", semisl=True).filter(task_type="SEGMENTATION").templates
+    semisl_templates_ids = [template.model_template_id + "_semisl" for template in semisl_templates]
 
 
 @pytest.fixture(scope="session")
@@ -86,23 +84,13 @@ def tmp_dir_path():
     with TemporaryDirectory() as tmp_dir:
         yield Path(tmp_dir)
 
-@pytest.fixture(scope="session")
-def semisl_templates():
-    semisl_templates = templates.copy()
-    for i in range(len(semisl_templates)):
-        semisl_templates[i].hyper_parameters.parameter_overrides['algo_backend']['train_type']['default_value'] = 'SEMISUPERVISED'
-    semisl_templates_ids = [template.model_template_id + "_semisl" for template in semisl_templates]
 
 class TestToolsMPASemiSLSegmentation:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", semisl_templates, ids=semisl_templates_ids)
     def test_otx_train(self, template, tmp_dir_path):
-        mk_semi_template(template, tmp_dir_path)
-        breakpoint()
         args_semisl = args.copy()
         args_semisl["--unlabeled-data-roots"] = "data/vlp_test/train"
-        breakpoint()
-
         otx_train_testing(template, tmp_dir_path, otx_dir, args_semisl)
 
     @e2e_pytest_component
