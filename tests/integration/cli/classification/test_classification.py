@@ -111,6 +111,14 @@ class TestToolsMPAClassification:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_multi_gpu_train(self, template, tmp_dir_path):
+        args = args.copy()
+        args["--gpus"] = "0,1"
+        otx_train_testing(template, tmp_dir_path, otx_dir, args)
+
+    @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_export(self, template, tmp_dir_path):
         otx_export_testing(template, tmp_dir_path)
 
@@ -273,6 +281,14 @@ class TestToolsMPAMultilabelClassification:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_multi_gpu_train(self, template, tmp_dir_path):
+        args0 = args0_m.copy()
+        args0["--gpus"] = "0,1"
+        otx_train_testing(template, tmp_dir_path, otx_dir, args0)
+
+    @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_export(self, template, tmp_dir_path):
         otx_export_testing(template, tmp_dir_path)
 
@@ -409,6 +425,14 @@ class TestToolsMPAHierarchicalClassification:
         template_work_dir = get_template_dir(template, tmp_dir_path)
         args1 = args_h.copy()
         args1["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/weights.pth"
+        otx_train_testing(template, tmp_dir_path, otx_dir, args1)
+
+    @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_multi_gpu_train(self, template, tmp_dir_path):
+        args1 = args_h.copy()
+        args1["--gpus"] = "0,1"
         otx_train_testing(template, tmp_dir_path, otx_dir, args1)
 
     @e2e_pytest_component

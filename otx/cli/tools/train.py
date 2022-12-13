@@ -16,11 +16,11 @@
 
 import argparse
 import os
-import sys
 import signal
+import sys
 import threading
-from typing import List, Optional
 import time
+from typing import List, Optional
 
 import torch
 import torch.distributed as dist
@@ -221,10 +221,7 @@ def main():
     if args.gpus:
         multigpu_manager = MultiGPUManager(args.gpus, str(args.multi_gpu_port))
         if multigpu_manager.is_available(template):
-            multigpu_manager.setup_multi_gpu_train(
-                task.project_path,
-                hyper_parameters if args.enable_hpo else None
-            )
+            multigpu_manager.setup_multi_gpu_train(task.project_path, hyper_parameters if args.enable_hpo else None)
 
     output_model = ModelEntity(dataset, environment.get_model_configuration())
 
@@ -253,6 +250,7 @@ def main():
     if args.gpus:
         multigpu_manager.finalize()
 
+
 class MultiGPUManager:
     def __init__(self, gpu_ids: str, multi_gpu_port: str):
         self._gpu_ids = self._get_gpu_ids(gpu_ids)
@@ -263,7 +261,7 @@ class MultiGPUManager:
     def _get_gpu_ids(self, gpus: str) -> List[int]:
         num_available_gpu = torch.cuda.device_count()
         gpu_ids = []
-        for gpu_id in gpus.split(','):
+        for gpu_id in gpus.split(","):
             if not gpu_id.isnumeric():
                 raise RuntimeError("--gpus argument should be numbers separated by ','.")
             gpu_ids.append(int(gpu_id))
@@ -285,9 +283,7 @@ class MultiGPUManager:
         return len(self._gpu_ids) > 1 and not template.task_type.is_anomaly
 
     def setup_multi_gpu_train(
-        self,
-        output_path: str,
-        optimized_hyper_parameters: Optional[ConfigurableParameters] = None
+        self, output_path: str, optimized_hyper_parameters: Optional[ConfigurableParameters] = None
     ):
         if optimized_hyper_parameters is not None:
             self._set_optimized_hp_for_child_process(optimized_hyper_parameters)
@@ -309,19 +305,19 @@ class MultiGPUManager:
 
     @staticmethod
     def initialize_multigpu_train(rank: int, gpu_ids: List[int], multi_gpu_port: str):
-        os.environ['MASTER_ADDR'] = 'localhost'
-        os.environ['MASTER_PORT'] = multi_gpu_port
+        os.environ["MASTER_ADDR"] = "localhost"
+        os.environ["MASTER_PORT"] = multi_gpu_port
         torch.cuda.set_device(gpu_ids[rank])
-        dist.init_process_group(backend='nccl', world_size=len(gpu_ids), rank=rank)
-        print(f'dist info world_size = {dist.get_world_size()}, rank = {dist.get_rank()}')
+        dist.init_process_group(backend="nccl", world_size=len(gpu_ids), rank=rank)
+        print(f"dist info world_size = {dist.get_world_size()}, rank = {dist.get_rank()}")
 
     @staticmethod
     def run_child_process(rank: int, gpu_ids: List[int], output_path: str, multi_gpu_port: str):
-        gpus_arg_idx = sys.argv.index('--gpus')
+        gpus_arg_idx = sys.argv.index("--gpus")
         for _ in range(2):
             sys.argv.pop(gpus_arg_idx)
         if "--enable-hpo" in sys.argv:
-            sys.argv.remove('--enable-hpo')
+            sys.argv.remove("--enable-hpo")
         MultiGPUManager.set_arguments_to_argv("--save-logs-to", output_path)
 
         MultiGPUManager.initialize_multigpu_train(rank, gpu_ids, multi_gpu_port)
@@ -338,16 +334,15 @@ class MultiGPUManager:
                 sys.argv.insert(sys.argv.index("params"), value)
             else:
                 if after_params and "params" not in sys.argv:
-                    sys.argv.append('params')
+                    sys.argv.append("params")
                 sys.argv.extend([key, value])
 
     def _spawn_multi_gpu_processes(self, output_path: str) -> List[mp.Process]:
-        processes= []
+        processes = []
         spawned_mp = mp.get_context("spawn")
         for rank in range(1, len(self._gpu_ids)):
             task_p = spawned_mp.Process(
-                target=MultiGPUManager.run_child_process,
-                args=(rank, self._gpu_ids, output_path, self._multi_gpu_port)
+                target=MultiGPUManager.run_child_process, args=(rank, self._gpu_ids, output_path, self._multi_gpu_port)
             )
             task_p.start()
             processes.append(task_p)
@@ -379,14 +374,10 @@ class MultiGPUManager:
 
     def _set_optimized_hp_for_child_process(self, hyper_parameters: ConfigurableParameters):
         self.set_arguments_to_argv(
-            "--learning_parameters.learning_rate",
-            str(hyper_parameters.learning_parameters.learning_rate),
-            True
+            "--learning_parameters.learning_rate", str(hyper_parameters.learning_parameters.learning_rate), True
         )
         self.set_arguments_to_argv(
-            "--learning_parameters.batch_size",
-            str(hyper_parameters.learning_parameters.batch_size),
-            True
+            "--learning_parameters.batch_size", str(hyper_parameters.learning_parameters.batch_size), True
         )
 
     def _check_child_processes_alive(self):
