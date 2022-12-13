@@ -239,7 +239,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
 
         self._recipe_cfg = MPAConfig.fromfile(recipe)
         patch_data_pipeline(
-            self._recipe_cfg, os.path.abspath(os.path.dirname(self.template_file_path)), self.base_data_pipeline_path
+            self._recipe_cfg, os.path.abspath(os.path.dirname(self.template_file_path)), self.data_pipeline_path
         )
         patch_datasets(self._recipe_cfg, self._task_type.domain)  # for OTX compatibility
         patch_evaluation(self._recipe_cfg)  # for OTX compatibility
