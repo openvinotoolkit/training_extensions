@@ -212,8 +212,11 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         return stage_module
 
     def _init_model_cfg(self):
-        base_dir = os.path.abspath(os.path.dirname(self.template_file_path))
-        model_cfg = MPAConfig.fromfile(os.path.join(base_dir, "model.py"))
+        if self.train_type == TrainType.SEMISUPERVISED:
+            model_cfg = MPAConfig.fromfile(os.path.join(base_dir, "semisl/model.py"))
+        else:
+            base_dir = os.path.abspath(os.path.dirname(self.template_file_path))
+            model_cfg = MPAConfig.fromfile(os.path.join(base_dir, "model.py"))
 
         return model_cfg
 
