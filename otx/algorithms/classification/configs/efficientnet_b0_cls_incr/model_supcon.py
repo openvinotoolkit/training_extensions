@@ -5,8 +5,8 @@
 _base_ = "../base/models/efficientnet.py"
 
 model = dict(
-    type="SupConClassifier",
     task="classification",
+    type="SupConClassifier",
     backbone=dict(
         version="b0",
     ),
@@ -14,11 +14,11 @@ model = dict(
         type="SupConClsHead",
         in_channels=-1,
         aux_mlp=dict(hid_channels=0, out_channels=1024),
-        loss=dict(
+        loss=dict(type="CrossEntropyLoss", loss_weight=1.0),
+        aux_loss=dict(
             type="BarlowTwinsLoss",
             off_diag_penality=1.0 / 128.0,
             loss_weight=1.0,
-            cls_loss=dict(type="CrossEntropyLoss", loss_weight=1.0),
         ),
     ),
 )
