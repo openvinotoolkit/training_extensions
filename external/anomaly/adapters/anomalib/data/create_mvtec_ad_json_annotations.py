@@ -55,60 +55,35 @@ from adapters.anomalib.data.utils import (
 from anomalib.data.mvtec import make_mvtec_dataset
 
 
-def create_classification_json_items(pd_items: pd.DataFrame) -> Dict[str, Any]:
-    """Create JSON items for the classification task.
-
+def create_json_items(pd_items: pd.DataFrame, task: str) -> Dict[str, Any]:
+    """Create JSON items for the given task.
+    
     Args:
         pd_items (pd.DataFrame): MVTec AD samples in pandas DataFrame object.
-
+        task (str): Task name. One of "classification", "detection", "segmentation".
+    
     Returns:
-        Dict[str, Any]: MVTec AD classification JSON items
+        Dict[str, Any]: MVTec AD JSON items
     """
-    json_items: Dict[str, Any] = {"image_path": {}, "label": {}, "masks": {}}
+    if task not in ("classification", "detection", "segmentation"):
+        raise ValueError(f"Unsupported task: {task}")
+
+    json_items: Dict[str, Any] = {"image_path": {}, "label": {}}
+    if task in ("classification", "segmentation"):
+        json_items["masks"] = {}
+    else:  # detection
+        json_items["bboxes"] = {}
+
     for index, pd_item in pd_items.iterrows():
         json_items["image_path"][str(index)] = pd_item.image_path.replace(pd_item.path, "")[1:]
         json_items["label"][str(index)] = pd_item.label
         if pd_item.label != "good":
-            json_items["masks"][str(index)] = pd_item.mask_path.replace(pd_item.path, "")[1:]
-
-    return json_items
-
-
-def create_detection_json_items(pd_items: pd.DataFrame) -> Dict[str, Any]:
-    """Create JSON items for the detection task.
-
-    Args:
-        pd_items (pd.DataFrame): MVTec AD samples in pandas DataFrame object.
-
-    Returns:
-        Dict[str, Any]: MVTec AD detection JSON items
-    """
-    json_items: Dict[str, Any] = {"image_path": {}, "label": {}, "bboxes": {}}
-    for index, pd_item in pd_items.iterrows():
-        json_items["image_path"][str(index)] = pd_item.image_path.replace(pd_item.path, "")[1:]
-        json_items["label"][str(index)] = pd_item.label
-        if pd_item.label != "good":
-            json_items["bboxes"][str(index)] = create_bboxes_from_mask(pd_item.mask_path)
-
-    return json_items
-
-
-def create_segmentation_json_items(pd_items: pd.DataFrame) -> Dict[str, Any]:
-    """Create JSON items for the segmentation task.
-
-    Args:
-        pd_items (pd.DataFrame): MVTec AD samples in pandas DataFrame object.
-
-    Returns:
-        Dict[str, Any]: MVTec AD segmentation JSON items
-    """
-    json_items: Dict[str, Any] = {"image_path": {}, "label": {}, "masks": {}}
-    for index, pd_item in pd_items.iterrows():
-        json_items["image_path"][str(index)] = pd_item.image_path.replace(pd_item.path, "")[1:]
-        json_items["label"][str(index)] = pd_item.label
-        if pd_item.label != "good":
-            json_items["masks"][str(index)] = create_polygons_from_mask(pd_item.mask_path)
-
+            if task == "classification":
+                json_items["masks"][str(index)] = pd_item.mask_path.replace(pd_item.path, "")[1:]
+            elif task == "detection":
+                json_items["bboxes"][str(index)] = create_bboxes_from_mask(pd_item.mask_path)
+            else:  # segmentation
+                json_items["masks"][str(index)] = create_polygons_from_mask(pd_item.mask_path)
     return json_items
 
 
@@ -127,18 +102,8 @@ def create_task_annotations(task: str, data_path: str, annotation_path: str) -> 
     os.makedirs(annotation_path, exist_ok=True)
 
     for split in ["train", "val", "test"]:
-
-        if task == "classification":
-            create_json_items = create_classification_json_items
-        elif task == "detection":
-            create_json_items = create_detection_json_items
-        elif task == "segmentation":
-            create_json_items = create_segmentation_json_items
-        else:
-            raise ValueError(f"Unknown task {task}. Available tasks are classification, detection and segmentation.")
-
         df_items = make_mvtec_dataset(path=Path(data_path), create_validation_set=True, split=split)
-        json_items = create_json_items(df_items)
+        json_items = create_json_items(df_items, task)
         save_json_items(json_items, f"{annotation_path}/{split}.json")
 
 
