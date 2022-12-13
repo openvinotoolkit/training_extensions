@@ -207,20 +207,21 @@ def main():
         args.save_model_to = "./models"
     save_model_data(output_model, args.save_model_to)
 
-    validation_dataset = dataset.get_subset(Subset.VALIDATION)
-    predicted_validation_dataset = task.infer(
-        validation_dataset.with_empty_annotations(),
-        InferenceParameters(is_evaluation=False),
-    )
+    if data_config["data"]["val"]["data-roots"]: # TODO (sungchul): refactoring
+        validation_dataset = dataset.get_subset(Subset.VALIDATION)
+        predicted_validation_dataset = task.infer(
+            validation_dataset.with_empty_annotations(),
+            InferenceParameters(is_evaluation=False),
+        )
 
-    resultset = ResultSetEntity(
-        model=output_model,
-        ground_truth_dataset=validation_dataset,
-        prediction_dataset=predicted_validation_dataset,
-    )
-    task.evaluate(resultset)
-    assert resultset.performance is not None
-    print(resultset.performance)
+        resultset = ResultSetEntity(
+            model=output_model,
+            ground_truth_dataset=validation_dataset,
+            prediction_dataset=predicted_validation_dataset,
+        )
+        task.evaluate(resultset)
+        assert resultset.performance is not None
+        print(resultset.performance)
 
     if args.save_logs_to:
         tmp_path = task.project_path
