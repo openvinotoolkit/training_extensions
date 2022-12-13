@@ -38,6 +38,8 @@ hyper_parameters:
         default_value: 10
       num_iters:
         default_value: 90
+      enable_supcon:
+        default_value: true
     nncf_optimization:
       enable_quantization:
         default_value: true
@@ -49,7 +51,7 @@ hyper_parameters:
         default_value: 1.0
     algo_backend:
       train_type:
-        default_value: SUPERVISEDCONTRASTIVE
+        default_value: INCREMENTAL
 
 # Training resources.
 max_nodes: 1

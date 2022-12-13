@@ -38,9 +38,11 @@ hyper_parameters:
         default_value: 100
       num_iters:
         default_value: 20
+      enable_supcon:
+        default_value: true
     algo_backend:
       train_type:
-        default_value: SUPERVISEDCONTRASTIVE
+        default_value: INCREMENTAL
 
 # Training resources.
 max_nodes: 1

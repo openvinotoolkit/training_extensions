@@ -38,7 +38,6 @@ class TrainType(ConfigurableEnum):
     SEMISUPERVISED = "SEMISUPERVISED"
     SELFSUPERVISED = "SELFSUPERVISED"
     INCREMENTAL = "INCREMENTAL"
-    SUPERVISEDCONTRASTIVE = "SUPERVISEDCONTRASTIVE"
     FUTUREWORK = "FUTUREWORK"
 
 
@@ -165,6 +164,13 @@ class BaseConfig(ConfigurableParameters):
             header="Number of checkpoints that is done during the single training round",
             description="",
             affects_outcome_of=ModelLifecycle.NONE,
+        )
+
+        enable_supcon = configurable_boolean(
+            default_value=False,
+            header="Enable Supervised Contrastive helper loss",
+            description="This auxiliar loss might increase robustness and accuracy for small datasets",
+            affects_outcome_of=ModelLifecycle.TRAINING,
         )
 
     @attrs

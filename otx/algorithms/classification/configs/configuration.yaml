@@ -121,7 +121,7 @@ learning_parameters:
   enable_early_stopping:
     affects_outcome_of: TRAINING
     default_value: true
-    description: Early exit from training when validation accuracy isn't changed or decreased for several epochs.
+    description: Early exit from training when validation accuracy is not changed or decreased for several epochs.
     editable: true
     header: Enable early stopping of the training
     type: BOOLEAN
@@ -183,6 +183,22 @@ learning_parameters:
     value: 0
     visible_in_ui: true
     warning: This is applied exclusively when early stopping is enabled.
+  enable_supcon:
+    affects_outcome_of: TRAINING
+    default_value: false
+    description:
+      Enable an auxiliar supervised contrastive loss, which might increase robustness
+      and accuracy for small datasets.
+    editable: true
+    header: Enable Supervised Contrastive helper loss
+    type: BOOLEAN
+    ui_rules:
+      action: DISABLE_EDITING
+      operator: AND
+      rules: []
+      type: UI_RULES
+    visible_in_ui: true
+    warning: null
   type: PARAMETER_GROUP
   visible_in_ui: true
 pot_parameters:
@@ -305,7 +321,6 @@ algo_backend:
     header: train type
     options:
       INCREMENTAL: "INCREMENTAL"
-      SUPERVISEDCONTRASTIVE: "SUPERVISEDCONTRASTIVE"
     type: SELECTABLE
     ui_rules:
       action: DISABLE_EDITING

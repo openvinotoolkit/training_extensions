@@ -286,7 +286,7 @@ class ClassificationInferenceTask(
         train_type = self._hyperparams.algo_backend.train_type
         logger.info(f"train type = {train_type}")
 
-        if train_type not in (TrainType.SEMISUPERVISED, TrainType.INCREMENTAL, TrainType.SUPERVISEDCONTRASTIVE):
+        if train_type not in (TrainType.SEMISUPERVISED, TrainType.INCREMENTAL):
             raise NotImplementedError(f"Train type {train_type} is not implemented yet.")
         if train_type == TrainType.SEMISUPERVISED:
             if not self._multilabel and not self._hierarchical:
@@ -302,7 +302,8 @@ class ClassificationInferenceTask(
 
         if train_type == TrainType.INCREMENTAL:
             recipe = os.path.join(recipe_root, "incremental.yaml")
-        elif train_type == TrainType.SUPERVISEDCONTRASTIVE:
+
+        if self._hyperparams.learning_parameters.enable_supcon:
             recipe = os.path.join(recipe_root, "supcon.yaml")
 
         logger.info(f"train type = {train_type} - loading {recipe}")
@@ -321,17 +322,19 @@ class ClassificationInferenceTask(
     # error log : ValueError: Unexpected type of 'data_loader' parameter
     def _init_model_cfg(self):
         base_dir = os.path.abspath(os.path.dirname(self.template_file_path))
-        if self._hyperparams.algo_backend.train_type == TrainType.SUPERVISEDCONTRASTIVE:
-            cfg_path = os.path.join(base_dir, "model_supcon.py")
-        else:
-            if self._multilabel:
-                cfg_path = os.path.join(base_dir, "model_multilabel.py")
-            elif self._hierarchical:
-                cfg_path = os.path.join(base_dir, "model_hierarchical.py")
-            else:
-                cfg_path = os.path.join(base_dir, "model.py")
-        cfg = MPAConfig.fromfile(cfg_path)
 
+        model_base_name = "model"
+        if self._hyperparams.learning_parameters.enable_supcon:
+            model_base_name = "model_supcon"
+
+        if self._multilabel:
+            cfg_path = os.path.join(base_dir, model_base_name + "_multilabel.py")
+        elif self._hierarchical:
+            cfg_path = os.path.join(base_dir, model_base_name + "_hierarchical.py")
+        else:
+            cfg_path = os.path.join(base_dir, model_base_name + ".py")
+
+        cfg = MPAConfig.fromfile(cfg_path)
         cfg.model.multilabel = self._multilabel
         cfg.model.hierarchical = self._hierarchical
         if self._hierarchical:
