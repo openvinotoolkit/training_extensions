@@ -57,11 +57,11 @@ from anomalib.data.mvtec import make_mvtec_dataset
 
 def create_json_items(pd_items: pd.DataFrame, task: str) -> Dict[str, Any]:
     """Create JSON items for the given task.
-    
+
     Args:
         pd_items (pd.DataFrame): MVTec AD samples in pandas DataFrame object.
         task (str): Task name. One of "classification", "detection", "segmentation".
-    
+
     Returns:
         Dict[str, Any]: MVTec AD JSON items
     """

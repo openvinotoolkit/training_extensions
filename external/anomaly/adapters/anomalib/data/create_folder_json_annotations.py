@@ -46,14 +46,13 @@ def create_json_items(pd_items: pd.DataFrame, data_root: str, task: str) -> Dict
     """
     if task not in ("classification", "detection", "segmentation"):
         raise ValueError(f"Unsupported task: {task}")
-    
+
     json_items: Dict[str, Any] = {"image_path": {}, "label": {}}
     if task in ("classification", "segmentation"):
         json_items["masks"] = {}
     else:  # detection
         json_items["bboxes"] = {}
 
-    
     for index, pd_item in pd_items.iterrows():
         json_items["image_path"][str(index)] = pd_item.image_path.replace(data_root, "")[1:]
         json_items["label"][str(index)] = pd_item.label if pd_item.label != "normal" else "good"
