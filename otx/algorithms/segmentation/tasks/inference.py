@@ -202,9 +202,7 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         logger.info(f"train type = {train_type} - loading {recipe}")
 
         self._recipe_cfg = MPAConfig.fromfile(recipe)
-        patch_data_pipeline(
-            self._recipe_cfg, os.path.abspath(os.path.dirname(self.template_file_path)), self.data_pipeline_path
-        )
+        patch_data_pipeline(self._recipe_cfg, self.data_pipeline_path)
         patch_datasets(self._recipe_cfg)  # for OTX compatibility
         patch_evaluation(self._recipe_cfg)  # for OTX compatibility
         self.metric = self._recipe_cfg.evaluation.metric

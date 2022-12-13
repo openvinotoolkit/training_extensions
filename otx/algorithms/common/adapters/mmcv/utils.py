@@ -70,14 +70,10 @@ def config_from_string(config_string: str) -> Config:
 
 
 @check_input_parameters_type()
-def patch_data_pipeline(config: Config, base_dir: str, base_data_pipeline: str = ""):
+def patch_data_pipeline(config: Config, data_pipeline: str = ""):
     """Replace data pipeline to data_pipeline.py if it exist."""
-    data_pipeline_path = os.path.join(base_dir, "data_pipeline.py")
-    if os.path.exists(data_pipeline_path):
-        data_pipeline_cfg = Config.fromfile(data_pipeline_path)
-        config.merge_from_dict(data_pipeline_cfg)
-    elif os.path.exists(base_data_pipeline):
-        data_pipeline_cfg = Config.fromfile(base_data_pipeline)
+    if os.path.exists(data_pipeline):
+        data_pipeline_cfg = Config.fromfile(data_pipeline)
         config.merge_from_dict(data_pipeline_cfg)
 
 

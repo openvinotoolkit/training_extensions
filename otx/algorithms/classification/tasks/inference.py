@@ -352,9 +352,7 @@ class ClassificationInferenceTask(
         # FIXME[Soobee] : if train type is not in cfg, it raises an error in default INCREMENTAL mode.
         # During semi-implementation, this line should be fixed to -> self._recipe_cfg.train_type = train_type
         self._recipe_cfg.train_type = train_type.name
-        patch_data_pipeline(
-            self._recipe_cfg, os.path.abspath(os.path.dirname(self.template_file_path)), self.data_pipeline_path
-        )
+        patch_data_pipeline(self._recipe_cfg, self.data_pipeline_path)
         self._patch_datasets(self._recipe_cfg)  # for OTX compatibility
         self._patch_evaluation(self._recipe_cfg)  # for OTX compatibility
         logger.info(f"initialized recipe = {recipe}")
