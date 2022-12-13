@@ -320,9 +320,15 @@ class ClassificationInferenceTask(
                 workers_per_gpu=int(self._hyperparams.learning_parameters.num_workers),
             ),
         )
-        if not self._warmstart:
-            # Warmstart uses iter_runner, and max_epochs is not required.
-            # So, we can update max_epochs for epoch_runner if warmstart is not.
+        if self._warmstart:
+            cfg.update(
+                ConfigDict(
+                    runner=ConfigDict(
+                        max_iters=int(self._hyperparams.learning_parameters.num_iters)
+                    )
+                )
+            )
+        else:
             cfg.update(
                 ConfigDict(
                     runner=ConfigDict(
