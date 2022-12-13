@@ -4,7 +4,7 @@ name: MobileNet-V3-large-0.75x
 task_type: CLASSIFICATION
 task_family: VISION
 instantiation: "CLASS"
-summary: Warmstart Image Classification for MobileNet-V3-learge-0.75x
+summary: Warmstart Image Classification for MobileNet-V3-large-0.75x
 application: ~
 
 # Algo backend.
