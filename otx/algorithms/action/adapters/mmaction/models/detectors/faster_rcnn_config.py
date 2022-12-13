@@ -16,7 +16,7 @@
 
 # pylint: disable=invalid-name
 
-model = dict(
+faster_rcnn = dict(
     type="FasterRCNN",
     pretrained="torchvision://resnet50",
     backbone=dict(
@@ -102,7 +102,7 @@ model = dict(
     ),
 )
 
-load_from = (
+faster_rcnn_pretrained = (
     "http://download.openmmlab.com/mmdetection/v2.0/faster_rcnn/faster_rcnn_r50_fpn_2x_coco/"
     "faster_rcnn_r50_fpn_2x_coco_bbox_mAP-0.384_20200504_210434-a5d8aa15.pth"
 )
