@@ -327,9 +327,9 @@ class ClassificationInferenceTask(
             model_base_name = "model_supcon"
 
         if self._multilabel:
-            cfg_path = os.path.join(base_dir, model_base_name + "_multilabel.py")
+            cfg_path = os.path.join(base_dir, "model_multilabel.py")
         elif self._hierarchical:
-            cfg_path = os.path.join(base_dir, model_base_name + "_hierarchical.py")
+            cfg_path = os.path.join(base_dir, "model_hierarchical.py")
         else:
             cfg_path = os.path.join(base_dir, model_base_name + ".py")
 
