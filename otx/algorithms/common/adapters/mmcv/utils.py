@@ -261,7 +261,7 @@ def patch_default_config(config: Config):
     if "evaluation" not in config:
         config.evaluation = ConfigDict()
     if "checkpoint_config" not in config:
-        config.checkpoint_config = ConfigDict()
+        config.checkpoint_config = ConfigDict({"type": "CheckpointHook", "interval": 1})
 
 
 @check_input_parameters_type()
