@@ -11,7 +11,20 @@ import pytest
 
 from otx.api.entities.model_template import parse_model_template
 from otx.cli.registry import Registry
-from otx.cli.utils.tests import otx_eval_testing, otx_train_testing
+from otx.cli.utils.tests import (
+    otx_demo_deployment_testing,
+    otx_demo_openvino_testing,
+    otx_demo_testing,
+    otx_deploy_openvino_testing,
+    otx_eval_deployment_testing,
+    otx_eval_openvino_testing,
+    otx_eval_testing,
+    otx_export_testing,
+    otx_hpo_testing,
+    otx_train_testing,
+    pot_eval_testing,
+    pot_optimize_testing,
+)
 from tests.test_suite.e2e_test_system import e2e_pytest_component
 
 # Finetuning arguments
@@ -22,6 +35,7 @@ args = {
     "--val-data-roots": "data/custom_action_recognition/custom_dataset/rawframes",
     "--test-ann-files": "data/custom_action_recognition/custom_dataset/train_list_rawframes.txt",
     "--test-data-roots": "data/custom_action_recognition/custom_dataset/rawframes",
+    "--input": "data/custom_action_recognition/custom_dataset/rawframes",
     "train_params": ["params", "--learning_parameters.num_iters", "2", "--learning_parameters.batch_size", "4"],
 }
 
@@ -56,3 +70,27 @@ class TestToolsActionCls:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_eval(self, template, tmp_dir_path):
         otx_eval_testing(template, tmp_dir_path, otx_dir, args)
+
+    @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_export(self, template, tmp_dir_path):
+        otx_export_testing(template, tmp_dir_path)
+
+    @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_eval_openvino(self, template, tmp_dir_path):
+        otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args, threshold=0.2)
+
+    @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_pot_optimize(self, template, tmp_dir_path):
+        pot_optimize_testing(template, tmp_dir_path, otx_dir, args)
+
+    @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_pot_eval(self, template, tmp_dir_path):
+        pot_eval_testing(template, tmp_dir_path, otx_dir, args)

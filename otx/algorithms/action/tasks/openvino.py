@@ -30,10 +30,8 @@ from compression.graph import load_model, save_model
 from compression.graph.model_utils import compress_model_weights, get_nodes_by_type
 from compression.pipeline.initializer import create_pipeline
 
+from otx.algorithms.action.adapters.openvino import model_wrappers
 from otx.algorithms.action.configs.base import ActionConfig
-
-# FIXME Discuss with Jihwan below import
-from otx.algorithms.classification.adapters.openvino import model_wrappers
 from otx.api.entities.annotation import AnnotationSceneEntity
 from otx.api.entities.datasets import DatasetEntity, DatasetItemEntity
 from otx.api.entities.inference_parameters import (

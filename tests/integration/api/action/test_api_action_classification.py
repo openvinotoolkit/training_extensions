@@ -234,6 +234,5 @@ class TestActionTaskAPI:
         assert performance_after_train == performance_after_load
 
         # Export
-        # TODO Implement export task
-        # exported_model = ModelEntity(dataset, action_environment.get_model_configuration())
-        # inference_task.export(ExportType.OPENVINO, exported_model)
+        exported_model = ModelEntity(dataset, action_environment.get_model_configuration())
+        inference_task.export(ExportType.OPENVINO, exported_model)

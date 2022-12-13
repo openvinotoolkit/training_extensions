@@ -123,13 +123,13 @@ class OTXActionCls(Model):
         meta.update({"resized_shape": resized_frame.shape})
         return dict_inputs, meta
 
-    def get_frame_inds(self, vid):
+    def get_frame_inds(self, np_frames: np.ndarray):
         """Get sampled index for given video input."""
         # FIXME These parameters should be initialized dynamically
         # pylint: disable=attribute-defined-outside-init
         self.clip_len = 8
         self.interval = 4
-        frame_len = vid.shape[3]
+        frame_len = np_frames.shape[3]
         ori_clip_len = self.clip_len * self.interval
         if frame_len > ori_clip_len - 1:
             start = (frame_len - ori_clip_len + 1) / 2
@@ -198,25 +198,29 @@ class OTXActionDet(OTXActionCls):
             frames.append(resized_frame)
         np_frames = np.expand_dims(frames, axis=(0))  # [1, T, H, W, C]
         np_frames = np_frames.transpose(0, 4, 1, 2, 3)  # [1, C, T, H, W]
-        frame_inds = self.get_frame_inds(inputs.media)
+        frame_inds = self.get_frame_inds(np_frames)
         np_frames = np_frames[:, :, frame_inds, :, :]
         dict_inputs = {self.image_blob_name: np_frames}
         meta = {"original_shape": frame.shape}
         meta.update({"resized_shape": resized_frame.shape})
         return dict_inputs, meta
 
-    def get_frame_inds(self, vid):
-        """Get sampled index for given np_frames."""
+    def get_frame_inds(self, np_frames: np.ndarray):
+        """Get sampled index for given np_frames.
+
+        Sample clips from middle frame of video
+        """
         # FIXME These parameters should be initialized dynamically
         # pylint: disable=attribute-defined-outside-init
         self.clip_len = 32
-        self.frame_interval = 2
-        fps = vid["fps"]
-        timestamp = vid["timestamp"]
-        timestamp_start = vid["timestamp_start"]
-        shot_info = vid["shot_info"]
+        self.frame_interval = 1
+        self.fps = 1
+        timestamp = np_frames.shape[2] // 2
+        timestamp_start = 1
+        timestamp_end = np_frames.shape[2]
+        shot_info = (0, timestamp_end - timestamp_start) * self.fps
 
-        center_index = fps * (timestamp - timestamp_start) + 1
+        center_index = self.fps * (timestamp - timestamp_start) + 1
 
         start = center_index - (self.clip_len // 2) * self.frame_interval
         end = center_index + ((self.clip_len + 1) // 2) * self.frame_interval
