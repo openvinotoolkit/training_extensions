@@ -1,4 +1,4 @@
-"""MobileNet-V3-Small for multi-class config."""
+"""MobileNet-V3-Small config for multi-class with contrastive loss for small datasets."""
 
 # pylint: disable=invalid-name
 

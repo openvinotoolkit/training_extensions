@@ -1,4 +1,4 @@
-"""EfficientNet-B0 for multi-class config."""
+"""EfficientNet-B0 config for multi-class with contrastive loss for small datasets."""
 
 # pylint: disable=invalid-name
 
