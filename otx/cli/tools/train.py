@@ -140,7 +140,7 @@ def parse_args():
     parser.add_argument(
         "--gpus",
         type=str,
-        help="Enable multi gpu training. if number of gpu is more than one, then model is trained in each gpu with splited dataset.",
+        help="Comma-separated indcies of GPU. If there are more than one available GPU, then model is trained with multi GPUs.",
     )
     parser.add_argument(
         "--multi-gpu-port",
@@ -265,7 +265,7 @@ class MultiGPUManager:
         gpu_ids = []
         for gpu_id in gpus.split(','):
             if not gpu_id.isnumeric():
-                raise RuntimeError("--gpus argument should be numbers concatenated by ','.")
+                raise RuntimeError("--gpus argument should be numbers separated by ','.")
             gpu_ids.append(int(gpu_id))
 
         wrong_gpus = []
@@ -323,8 +323,9 @@ class MultiGPUManager:
         if "--enable-hpo" in sys.argv:
             sys.argv.remove('--enable-hpo')
         MultiGPUManager.set_arguments_to_argv("--save-logs-to", output_path)
+
         MultiGPUManager.initialize_multigpu_train(rank, gpu_ids, multi_gpu_port)
-        print("*"*100, os.getpid())
+
         main()
 
     @staticmethod
