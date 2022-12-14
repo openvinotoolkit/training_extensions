@@ -1,4 +1,4 @@
-"""Model configuration of OCR-Lite-HRnet-x-mod3 model for Segmentation Task."""
+"""Model configuration of OCR-Lite-HRnet-x-mod3 model for Warmstart Segmentation Task."""
 
 # Copyright (C) 2022 Intel Corporation
 #
