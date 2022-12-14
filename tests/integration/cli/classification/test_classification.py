@@ -108,18 +108,22 @@ else:
     templates = Registry("otx/algorithms/classification").filter(task_type="CLASSIFICATION").templates
     templates_ids = [template.model_template_id for template in templates]
 
-    warmstart_templates = [parse_model_template(template.model_template_path\
-                           .replace("_incr", "_warmstart")\
-                           .replace("template", "template_experimental"))
-                           for template in templates]
+    warmstart_templates = [
+        parse_model_template(
+            template.model_template_path.replace("_incr", "_warmstart").replace("template", "template_experimental")
+        )
+        for template in templates
+    ]
     warmstart_templates_ids = [template.model_template_id for template in warmstart_templates]
 
 
 class TestToolsMPAClassification:
     @e2e_pytest_component
-    @pytest.mark.parametrize("warmstart_template,template",
-                             [(wt, t) for wt, t in zip(warmstart_templates, templates)],
-                             ids=warmstart_templates_ids)
+    @pytest.mark.parametrize(
+        "warmstart_template,template",
+        [(wt, t) for wt, t in zip(warmstart_templates, templates)],
+        ids=warmstart_templates_ids,
+    )
     def test_otx_warmstart_train(self, warmstart_template, template, tmp_dir_path):
         # tmp: set data.yaml to only use train-data-roots
         to_save_data_args = {"data": {}}
@@ -315,9 +319,11 @@ args_m = {
 
 class TestToolsMPAMultilabelClassification:
     @e2e_pytest_component
-    @pytest.mark.parametrize("warmstart_template,template",
-                             [(wt, t) for wt, t in zip(warmstart_templates, templates)],
-                             ids=warmstart_templates_ids)
+    @pytest.mark.parametrize(
+        "warmstart_template,template",
+        [(wt, t) for wt, t in zip(warmstart_templates, templates)],
+        ids=warmstart_templates_ids,
+    )
     def test_otx_warmstart_train(self, warmstart_template, template, tmp_dir_path):
         # tmp: set data.yaml to only use train-data-roots
         to_save_data_args = {"data": {}}
@@ -337,7 +343,7 @@ class TestToolsMPAMultilabelClassification:
         args1 = args_m.copy()
         args1["--load-weights"] = f"{template_work_dir}/trained_{warmstart_template.model_template_id}/weights.pth"
         otx_train_testing(template, tmp_dir_path, otx_dir, args1)
-    
+
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train(self, template, tmp_dir_path):
@@ -492,9 +498,11 @@ args_h = {
 
 class TestToolsMPAHierarchicalClassification:
     @e2e_pytest_component
-    @pytest.mark.parametrize("warmstart_template,template",
-                             [(wt, t) for wt, t in zip(warmstart_templates, templates)],
-                             ids=warmstart_templates_ids)
+    @pytest.mark.parametrize(
+        "warmstart_template,template",
+        [(wt, t) for wt, t in zip(warmstart_templates, templates)],
+        ids=warmstart_templates_ids,
+    )
     def test_otx_warmstart_train(self, warmstart_template, template, tmp_dir_path):
         # tmp: set data.yaml to only use train-data-roots
         to_save_data_args = {"data": {}}
@@ -514,7 +522,7 @@ class TestToolsMPAHierarchicalClassification:
         args1 = args_h.copy()
         args1["--load-weights"] = f"{template_work_dir}/trained_{warmstart_template.model_template_id}/weights.pth"
         otx_train_testing(template, tmp_dir_path, otx_dir, args1)
-    
+
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train(self, template, tmp_dir_path):
