@@ -15,8 +15,6 @@ model = dict(
     ),
 )
 
-custom_hooks = [dict(type="MomentumUpdateHook", end_momentum=1.0)]
-
 load_from = None
 
 resume_from = None
