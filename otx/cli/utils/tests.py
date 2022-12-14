@@ -58,10 +58,16 @@ def otx_train_testing(template, root, otx_dir, args):
         "train",
         template.model_template_path,
     ]
-    for option in ["--data", "--train-ann-file", "--train-data-roots",
-                   "--val-ann-file", "--val-data-roots", "--load-weights"]:
+    for option in [
+        "--data",
+        "--train-ann-file",
+        "--train-data-roots",
+        "--val-ann-file",
+        "--val-data-roots",
+        "--load-weights",
+    ]:
         if option in args:
-            command_line.extend([option, f'{os.path.join(otx_dir, args[option])}'])
+            command_line.extend([option, f"{os.path.join(otx_dir, args[option])}"])
 
     command_line.extend(["--save-model-to", f"{template_work_dir}/trained_{template.model_template_id}"])
     command_line.extend(args["train_params"])

@@ -207,7 +207,7 @@ def main():
         args.save_model_to = "./models"
     save_model_data(output_model, args.save_model_to)
 
-    if data_config["data"]["val"]["data-roots"]: # TODO (sungchul): refactoring
+    if data_config["data"]["val"]["data-roots"]:  # TODO (sungchul): refactoring
         validation_dataset = dataset.get_subset(Subset.VALIDATION)
         predicted_validation_dataset = task.infer(
             validation_dataset.with_empty_annotations(),

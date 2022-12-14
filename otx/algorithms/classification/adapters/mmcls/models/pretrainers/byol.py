@@ -1,21 +1,29 @@
-# pylint: disable=missing-module-docstring, too-many-instance-attributes, unused-argument
+"""BYOL (Bootstrap Your Own Latent) implementation for self-supervised learning.
+
+Original papers:
+- 'Bootstrap Your Own Latent: A New Approach to Self-Supervised Learning', https://arxiv.org/abs/2006.07733
+"""
+
+# Copyright (C) 2022 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
+# pylint: disable=missing-module-docstring, too-many-instance-attributes, unused-argument, unnecessary-pass
 from collections import OrderedDict
-from typing import Dict, Optional, Any
+from typing import Any, Dict, Optional
 
 import torch
 import torch.distributed as dist
-from torch import nn
 from mmcls.models.builder import CLASSIFIERS, build_backbone, build_head, build_neck
 from mpa.utils.logger import get_logger
+from torch import nn
 
 logger = get_logger()
 
 
 @CLASSIFIERS.register_module()
 class BYOL(nn.Module):
-    """
-    Implementation of "Bootstrap Your Own Latent: A New Approach to
-    Self-Supervised Learning (https://arxiv.org/abs/2006.07733)".
+    """Implementation of 'Bootstrap Your Own Latent: A New Approach to \
+    Self-Supervised Learning (https://arxiv.org/abs/2006.07733)'.
 
     Args:
         backbone (dict): Config dict for module of backbone ConvNet.
@@ -26,6 +34,7 @@ class BYOL(nn.Module):
         base_momentum (float): The base momentum coefficient for the target network.
             Default: 0.996.
     """
+
     def __init__(
         self,
         backbone: Dict[str, Any],
@@ -33,7 +42,7 @@ class BYOL(nn.Module):
         head: Optional[Dict[str, Any]] = None,
         pretrained: Optional[str] = None,
         base_momentum: float = 0.996,
-        **kwargs # pylint: disable=unused-argument
+        **kwargs,  # pylint: disable=unused-argument
     ):
 
         super().__init__()
@@ -66,16 +75,14 @@ class BYOL(nn.Module):
 
         # init backbone
         self.online_backbone.init_weights(pretrained=pretrained)
-        for param_ol, param_tgt in zip(self.online_backbone.parameters(),
-                                       self.target_backbone.parameters()):
+        for param_ol, param_tgt in zip(self.online_backbone.parameters(), self.target_backbone.parameters()):
             param_tgt.data.copy_(param_ol.data)
             param_tgt.requires_grad = False
             param_ol.requires_grad = True
 
         # init projector
         self.online_projector.init_weights(init_linear="kaiming")
-        for param_ol, param_tgt in zip(self.online_projector.parameters(),
-                                       self.target_projector.parameters()):
+        for param_ol, param_tgt in zip(self.online_projector.parameters(), self.target_projector.parameters()):
             param_tgt.data.copy_(param_ol.data)
             param_tgt.requires_grad = False
             param_ol.requires_grad = True
@@ -86,15 +93,11 @@ class BYOL(nn.Module):
     @torch.no_grad()
     def _momentum_update(self):
         """Momentum update of the target network."""
-        for param_ol, param_tgt in zip(self.online_backbone.parameters(),
-                                       self.target_backbone.parameters()):
-            param_tgt.data = param_tgt.data * self.momentum + \
-                             param_ol.data * (1. - self.momentum)
+        for param_ol, param_tgt in zip(self.online_backbone.parameters(), self.target_backbone.parameters()):
+            param_tgt.data = param_tgt.data * self.momentum + param_ol.data * (1.0 - self.momentum)
 
-        for param_ol, param_tgt in zip(self.online_projector.parameters(),
-                                       self.target_projector.parameters()):
-            param_tgt.data = param_tgt.data * self.momentum + \
-                             param_ol.data * (1. - self.momentum)
+        for param_ol, param_tgt in zip(self.online_projector.parameters(), self.target_projector.parameters()):
+            param_tgt.data = param_tgt.data * self.momentum + param_ol.data * (1.0 - self.momentum)
 
     @torch.no_grad()
     def momentum_update(self):
@@ -151,13 +154,12 @@ class BYOL(nn.Module):
         losses = self(**data)
         loss, log_vars = self._parse_losses(losses)
 
-        outputs = dict(
-            loss=loss, log_vars=log_vars, num_samples=len(data["img1"].data))
+        outputs = dict(loss=loss, log_vars=log_vars, num_samples=len(data["img1"].data))
 
         return outputs
 
-    # pylint: disable=missing-function-docstring
     def val_step(self, *args):
+        """Disable validation step during self-supervised learning."""
         pass
 
     def _parse_losses(self, losses: Dict[str, Any]):
@@ -179,11 +181,9 @@ class BYOL(nn.Module):
                 for name, value in loss_value.items():
                     log_vars[name] = value
             else:
-                raise TypeError(
-                    f"{loss_name} is not a tensor or list of tensors")
+                raise TypeError(f"{loss_name} is not a tensor or list of tensors")
 
-        loss = sum(_value for _key, _value in log_vars.items()
-                   if "loss" in _key)
+        loss = sum(_value for _key, _value in log_vars.items() if "loss" in _key)
 
         log_vars["loss"] = loss
         for loss_name, loss_value in log_vars.items():

@@ -2,11 +2,9 @@
 
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-#
 
 from typing import Any, Dict, List
 
-import mmcv
 import numpy as np
 from mmcls.datasets import PIPELINES
 from mmcv.utils.registry import build_from_cfg
@@ -74,10 +72,11 @@ class RandomHorizontalFlip(T.RandomHorizontalFlip):
 
     @check_input_parameters_type()
     def __call__(self, results: Dict[str, Any]):
+        """Callback function of RandomHorizontalFlip.
+
+        :param results: Inputs to be transformed.
         """
-        :param results: dict
-        """
-        results['img'] = np.array(self.forward(Image.fromarray(results['img'])))
+        results["img"] = np.array(self.forward(Image.fromarray(results["img"])))
         return results
 
 
@@ -90,22 +89,36 @@ class RandomAppliedTrans:
     """
 
     def __init__(self, transforms: List, p: float = 0.5):
-        t = [build_from_cfg(t, PIPELINES) for t in transforms] # pylint: disable=invalid-name
+        t = [build_from_cfg(t, PIPELINES) for t in transforms]  # pylint: disable=invalid-name
         self.trans = T.RandomApply(t, p=p)
 
     @check_input_parameters_type()
     def __call__(self, results: Dict[str, Any]):
+        """Callback function of RandomAppliedTrans.
+
+        :param results: Inputs to be transformed.
+        """
         return self.trans(results)
 
     def __repr__(self):
+        """Set repr of RandomAppliedTrans."""
         repr_str = self.__class__.__name__
         return repr_str
 
 
 @PIPELINES.register_module
 class OTXColorJitter(T.ColorJitter):
+    """Wrapper for ColorJitter in torchvision.transforms.
+
+    Use this instead of mmcls's because there is no `hue` parameter in mmcls ColorJitter.
+    """
+
     def __call__(self, results):
-        results['img'] = np.array(self.forward(Image.fromarray(results['img'])))
+        """Callback function of OTXColorJitter.
+
+        :param results: Inputs to be transformed.
+        """
+        results["img"] = np.array(self.forward(Image.fromarray(results["img"])))
         return results
 
 
@@ -124,13 +137,18 @@ class GaussianBlur:
 
     @check_input_parameters_type()
     def __call__(self, results: Dict[str, Any]):
-        for key in results.get('img_fields', ['img']):
+        """Callback function of GaussianBlur.
+
+        :param results: Inputs to be transformed.
+        """
+        for key in results.get("img_fields", ["img"]):
             img = Image.fromarray(results[key])
             sigma = np.random.uniform(self.sigma_min, self.sigma_max)
             results[key] = np.array(img.filter(ImageFilter.GaussianBlur(radius=sigma)))
         return results
 
     def __repr__(self):
+        """Set repr of GaussianBlur."""
         repr_str = self.__class__.__name__
         return repr_str
 
@@ -139,7 +157,7 @@ class GaussianBlur:
 class Solarization:
     """Solarization augmentation in BYOL https://arxiv.org/abs/2006.07733.
 
-    :param threshold: ..., defaults to 128
+    :param threshold: Threshold for solarization, defaults to 128
     """
 
     @check_input_parameters_type()
@@ -148,11 +166,16 @@ class Solarization:
 
     @check_input_parameters_type()
     def __call__(self, results: Dict[str, Any]):
-        for key in results.get('img_fields', ['img']):
+        """Callback function of Solarization.
+
+        :param results: inputs to be transformed.
+        """
+        for key in results.get("img_fields", ["img"]):
             img = results[key]
             results[key] = np.where(img < self.threshold, img, 255 - img).astype(np.uint8)
         return results
 
     def __repr__(self):
+        """Set repr of Solarization."""
         repr_str = self.__class__.__name__
         return repr_str
