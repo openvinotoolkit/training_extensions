@@ -20,7 +20,7 @@ import argparse
 def gen_param_help(hyper_parameters):
     """Generates help for hyper parameters section."""
 
-    type_map = {"FLOAT": float, "INTEGER": int, "BOOLEAN": bool}
+    type_map = {"FLOAT": float, "INTEGER": int, "BOOLEAN": bool, "SELECTABLE": str}
 
     help_keys = ("header", "type", "default_value", "max_value", "min_value")
 
@@ -35,9 +35,6 @@ def gen_param_help(hyper_parameters):
                 assert isinstance(val["default_value"], (int, float, str))
                 help_str = "\n".join([f"{kk}: {val[kk]}" for kk in help_keys if kk in val.keys()])
                 assert "." not in k
-
-                if val["type"] == "SELECTABLE":
-                    continue
 
                 cur_help.update(
                     {
@@ -99,7 +96,6 @@ def add_hyper_parameters_sub_parser(parser, config, modes=None):
         if val.lower() in ("false", "0"):
             return False
         raise argparse.ArgumentTypeError("Boolean value expected.")
-
     params = gen_param_help(config)
 
     subparsers = parser.add_subparsers(help="sub-command help")
