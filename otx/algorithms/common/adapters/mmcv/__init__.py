@@ -18,11 +18,11 @@ from .hooks import (
     CancelTrainingHook,
     EarlyStoppingHook,
     EnsureCorrectBestCheckpointHook,
+    MomentumUpdateHook,
     OTXLoggerHook,
     OTXProgressHook,
     ReduceLROnPlateauLrUpdaterHook,
     StopLossNanTrainingHook,
-    MomentumUpdateHook,
 )
 from .runner import EpochRunnerWithCancel, IterBasedRunnerWithCancel
 

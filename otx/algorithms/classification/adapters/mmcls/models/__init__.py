@@ -14,8 +14,8 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .pretrainers import BYOL
-from .necks import SelfSLMLP
 from .heads import ConstrastiveHead
+from .necks import SelfSLMLP
+from .pretrainers import BYOL
 
 __all__ = ["BYOL", "SelfSLMLP", "ConstrastiveHead"]

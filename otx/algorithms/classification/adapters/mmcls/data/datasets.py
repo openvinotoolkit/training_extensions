@@ -420,13 +420,13 @@ class SelfSLDataset(Dataset):
 
     CLASSES = None
 
-    def __init__(self, otx_dataset=None, pipeline=None, **kwargs): # pylint: disable=unused-argument
-        super(SelfSLDataset, self).__init__()
+    def __init__(self, otx_dataset=None, pipeline=None, **kwargs):  # pylint: disable=unused-argument
+        super().__init__()
         self.otx_dataset = otx_dataset
 
         self.load_pipeline = build_from_cfg(dict(type="LoadImageFromOTXDataset"), PIPELINES)
-        self.pipeline1 = Compose([build_from_cfg(p, PIPELINES) for p in pipeline['view0']])
-        self.pipeline2 = Compose([build_from_cfg(p, PIPELINES) for p in pipeline['view1']])
+        self.pipeline1 = Compose([build_from_cfg(p, PIPELINES) for p in pipeline["view0"]])
+        self.pipeline2 = Compose([build_from_cfg(p, PIPELINES) for p in pipeline["view1"]])
 
     def __len__(self):
         """Get dataset length."""
@@ -452,8 +452,8 @@ class SelfSLDataset(Dataset):
 
         results = {}
         for k, v in results1.items():
-            results[k+'1'] = v
+            results[k + "1"] = v
         for k, v in results2.items():
-            results[k+'2'] = v
+            results[k + "2"] = v
 
         return results

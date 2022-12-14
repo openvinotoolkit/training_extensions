@@ -17,7 +17,4 @@
 from .data import MPAClsDataset, SelfSLDataset
 from .models import BYOL, ConstrastiveHead, SelfSLMLP
 
-__all__ = [
-    "MPAClsDataset", "SelfSLDataset",
-    "BYOL", "SelfSLMLP", "ConstrastiveHead"
-]
+__all__ = ["MPAClsDataset", "SelfSLDataset", "BYOL", "SelfSLMLP", "ConstrastiveHead"]

@@ -1,5 +1,10 @@
-# pylint: disable=missing-module-docstring, unused-argument
-from typing import Dict, Any
+"""Contrastive head to get contrastive loss with predictor head."""
+
+# Copyright (C) 2022 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+#
+# pylint: disable=unused-argument
+from typing import Any, Dict
 
 import torch
 import torch.nn.functional as F
@@ -15,13 +20,8 @@ class ConstrastiveHead(nn.Module):
         predictor (dict): configurations for predictor.
         size_average (bool): whether averaging loss using batch size. Default value is True.
     """
-    def __init__(
-        self,
-        predictor: Dict[str, Any],
-        size_average: bool = True,
-        **kwargs
-    ):
 
+    def __init__(self, predictor: Dict[str, Any], size_average: bool = True, **kwargs):
         super().__init__()
         self.predictor = build_neck(predictor)
         self.size_average = size_average
@@ -30,7 +30,7 @@ class ConstrastiveHead(nn.Module):
         """Initialize predictor weights.
 
         Args:
-            init_linear (str): ... Default: "normal"
+            init_linear (str): Option to initialize weights. Default: 'normal'
         """
         self.predictor.init_weights(init_linear=init_linear)
 

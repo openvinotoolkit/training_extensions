@@ -315,21 +315,9 @@ class ClassificationInferenceTask(
             ),
         )
         if self._warmstart:
-            cfg.update(
-                ConfigDict(
-                    runner=ConfigDict(
-                        max_iters=int(self._hyperparams.learning_parameters.num_iters)
-                    )
-                )
-            )
+            cfg.update(ConfigDict(runner=ConfigDict(max_iters=int(self._hyperparams.learning_parameters.num_iters))))
         else:
-            cfg.update(
-                ConfigDict(
-                    runner=ConfigDict(
-                        max_epochs=int(self._hyperparams.learning_parameters.num_iters)
-                    )
-                )
-            )
+            cfg.update(ConfigDict(runner=ConfigDict(max_epochs=int(self._hyperparams.learning_parameters.num_iters))))
 
         return cfg
 
@@ -469,7 +457,7 @@ class ClassificationInferenceTask(
                 patch_color_conversion(cfg.pipeline)
 
     def _patch_evaluation(self, config: MPAConfig):
-        cfg = config.get('evaluation', None)
+        cfg = config.get("evaluation", None)
         if cfg:
             if self._multilabel:
                 cfg.metric = ["accuracy-mlc", "mAP", "CP", "OP", "CR", "OR", "CF1", "OF1"]
