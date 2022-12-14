@@ -265,7 +265,8 @@ algo_backend:
     header: train type
     options:
       INCREMENTAL: "INCREMENTAL"
-      SEMISUPERVISED: "SEMISUPERVISED"
+      SEMISUPEVISED: "SEMISUPERVISED"
+      SELFSUPERVISED: "SELFSUPERVISED"
     type: SELECTABLE
     ui_rules:
       action: DISABLE_EDITING
