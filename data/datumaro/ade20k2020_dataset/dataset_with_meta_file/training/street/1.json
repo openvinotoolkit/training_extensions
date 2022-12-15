@@ -1,0 +1,110 @@
+{
+  "annotation": {
+    "filename": "1.jpg",
+    "folder": "training/street",
+    "imsize": [
+      5,
+      5,
+      3
+    ],
+    "source": {
+      "folder": "",
+      "filename": "",
+      "origin": ""
+    },
+    "scene": [
+      "outdoor",
+      "urban",
+      "street"
+    ],
+    "object": [
+      {
+        "id": 0,
+        "name": "car, auto, automobile, machine, motorcar",
+        "name_ndx": 401,
+        "hypernym": [
+          "car, auto, automobile, machine, motorcar",
+          "motor vehicle, automotive vehicle",
+          "self-propelled vehicle",
+          "wheeled vehicle",
+          "vehicle",
+          "conveyance, transport",
+          "instrumentality, instrumentation",
+          "artifact, artefact",
+          "whole, unit",
+          "object, physical object",
+          "physical entity",
+          "entity"
+        ],
+        "raw_name": "car",
+        "attributes": [],
+        "depth_ordering_rank": 2,
+        "occluded": [],
+        "crop": 0,
+        "parts": {
+          "hasparts": [],
+          "ispartof": [],
+          "part_level": 0
+        },
+        "instance_mask": "1/instance_000_ADE_train_1.png",
+        "polygon": {
+          "x": [],
+          "y": []
+        },
+        "saved_date": "1-Jan-1970 00:00:00"
+      },
+      {
+        "id": 1,
+        "name": "person, individual, someone, somebody, mortal, soul",
+        "name_ndx": 1831,
+        "hypernym": [
+          "person, individual, someone, somebody, mortal, soul",
+          "organism, being",
+          "living thing, animate thing",
+          "whole, unit",
+          "object, physical object",
+          "physical entity",
+          "entity"
+        ],
+        "raw_name": "person",
+        "attributes": ["walkin"],
+        "depth_ordering_rank": 1,
+        "occluded": "no",
+        "crop": 0,
+        "parts": {
+          "hasparts": [],
+          "ispartof": [],
+          "part_level": 0
+        },
+        "instance_mask": "1/instance_001_ADE_train_1.png",
+        "polygon": {
+          "x": [1, 1, 1, 1, 1],
+          "y": [0, 1, 2, 3, 4]
+        },
+        "saved_date": "1-Jan-1970 00:00:00"
+      },
+      {
+        "id": 2,
+        "name": "door",
+        "name_ndx": 774,
+        "hypernym": ["door", "doors", "garage door"],
+        "raw_name": "door",
+        "attributes": [],
+        "depth_ordering_rank": 3,
+        "occluded": "yes",
+        "crop": 0,
+        "parts": {
+          "hasparts": [],
+          "ispartof": 0,
+          "part_level": 1
+        },
+        "instance_mask": "1/instance_002_ADE_train_1.png",
+        "polygon": {
+          "x": [],
+          "y": []
+        },
+        "saved_date": "1-Jan-1970 00:00:00"
+      }
+        ]
+  }
+}
