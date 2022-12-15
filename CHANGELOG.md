@@ -2,6 +2,43 @@
 
 All notable changes to this project will be documented in this file.
 
+## \[v0.4.0\]
+
+### Added
+
+- Model Preparation Algorithm (MPA)
+  - Better saliency map support
+    - Replace current saliency map generation with Recipro-CAM for cls (<https://github.com/openvinotoolkit/training_extensions/pull/1363>)
+    - Class-wise saliency map generation for the detection task (<https://github.com/openvinotoolkit/training_extensions/pull/1402>)
+  - Improve object counting algorithm for high-res images via image tiling
+    - Add Tiling Module (<https://github.com/openvinotoolkit/training_extensions/pull/1200>)
+    - Fliter object less than 1 pixel (<https://github.com/openvinotoolkit/training_extensions/pull/1305>)
+    - Tiling deployment (<https://github.com/openvinotoolkit/training_extensions/pull/1387>)
+    - Enable tiling oriented detection for v0.4.0/geti1.1.0 (<https://github.com/openvinotoolkit/training_extensions/pull/1427>)
+
+### Fixed
+
+- Hot-fix for Detection fix two stage error (<https://github.com/openvinotoolkit/training_extensions/pull/1433>)
+- Some minor issues
+
+## \[v0.3.1\]
+
+### Fixed
+
+- Neural Network Compression Framework (NNCF)
+  - Fix CUDA OOM for NNCF optimization model MaskRCNN-EfficientNetB2B (<https://github.com/openvinotoolkit/training_extensions/pull/1319>)
+
+- Model Preparation Algorithm (MPA)
+  - Fix 'Shape out of bounds' error when accepting AI predictions for detection oriented (<https://github.com/openvinotoolkit/training_extensions/pull/1326>)
+  - Fix weird confidence behaviour issue on predictions for hierarchical classification (<https://github.com/openvinotoolkit/training_extensions/pull/1332>)
+  - Fix training failure issue for hierarchical classification (<https://github.com/openvinotoolkit/training_extensions/pull/1329>)
+  - Fix training failure issues for segmentation and instance segmentation during inference process (<https://github.com/openvinotoolkit/training_extensions/pull/1338>)
+  - Some minor issues
+
+### Security
+
+- Update vulnerable Python dependencies in OTE (<https://github.com/openvinotoolkit/training_extensions/pull/1303>)
+
 ## \[v0.3.0\]
 
 ### Added
