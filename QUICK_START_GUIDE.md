@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-Current version of OTE was tested under following environments
+Current version of OTX was tested under following environments
 
 - Ubuntu 20.04
 - Python 3.8.x
@@ -18,80 +18,44 @@ Current version of OTE was tested under following environments
    $ git clone https://github.com/openvinotoolkit/training_extensions.git
    $ cd training_extensions
    $ git checkout develop
-   $ git submodule update --init --recursive
    ```
 
 1. Install prerequisites with:
 
-   ```bash
-   $ sudo apt-get install python3-pip python3-venv
-   # verify your python version
-   $ python3 --version; pip3 --version; virtualenv --version
-   Python 3.8.10
-   pip 20.0.2 from /usr/lib/python3/dist-packages/pip (python 3.8)
-   virtualenv 20.0.17 from /usr/lib/python3/dist-packages/virtualenv/__init__.py
-   ```
+   (Optional) Install pytorch according to your system environment
+   Refer to the [official inatllation guide](https://pytorch.org/get-started/previous-versions/)
 
-   (Optional) You may also want to use Jupyter notebooks or OTE CLI tools:
+   > **_Important note:_** Currently, only torch==1.8 was fully validated. torch==1.13/2.x will be supported soon.
+
+   (Optional) You may also want to use Jupyter notebooks or OTX CLI tools:
 
    ```
    $ pip3 install notebook; cd ote_cli/notebooks/; jupyter notebook
    ```
 
-   > **_Important note:_** You should confirm that the Python version that installed on your machine should be 3.8.X. For the future release of OTE will support wide range of the Python version.
+   > **_Important note:_** You should confirm that the Python version that installed on your machine should be 3.8.X. For the future release of OTX will support wide range of the Python version.
 
-1. There are available scripts that create python virtual environments for different task types:
-
-   ```bash
-   $ find external/ -name init_venv.sh
-   ```
-
-   > **_Note_** The following scripts are valid for the current version of the project
-
-   ```
-   external/model-preparation-algorithm/init_venv.sh
-   external/anomaly/init_venv.sh
-   ```
-
-   - `external/model-preparation-algorithm/init_venv.sh` can be used to create a virtual environment for the following task types.
-
-     - Classification
-     - Detection
-     - Segmantation
-     - Instance_segmentation
-     - Rotated_detection
-
-   - `external/anomaly/init_venv.sh` can be used to create a virtual environment for the following task types.
-     - Anomaly_classification
-     - Anomaly_detection
-     - Anomaly_segmentation
-
-1. Create and activate a virtual environment for the chosen task, then install the `ote_cli`. The following example shows that creating virtual environment to the `.venv_mpa` folder in your current directory for detection task.
+1. Create a virtual environment, then install OTX package
 
    ```bash
-   # create virtual env.
-   $ external/model-preparation-algorithm/init_venv.sh .venv_mpa
-   # activate virtual env.
-   $ source .venv_mpa/bin/activate
-   # install 'ote_cli' to the activated virtual env.
-   (mpa)...$ pip3 install -e ote_cli/ -c external/model-preparation-algorithm/constraints.txt
+   # Create virtual env.
+   $ otx/algorithms/init_venv.sh .venv
+   # Activate virtual env.
+   $ source .venv/bin/activate
    ```
 
-   > **_note_** that during installation of `ote_cli` the constraint file
-   > from the chosen backend folder is used to avoid breaking constraints.
+1. Once the package is installed to the virtual environment, you can use the
+   `otx` command line interface to perform various commands for templates related to the chosen task type, described in [OTX CLI commands](#otx-cli-commands) on that virutal environment.
 
-1. Once `ote_cli` is installed to the virtual environment, you can use the
-   `ote` command line interface to perform various commands for templates related to the chosen task type, described in [OTE CLI commands](#ote-cli-commands) on that virutal environment.
-
-## OTE CLI commands
+## OTX CLI commands
 
 ### Find
 
 `find` lists model templates available for the given virtual environment.
 
 ```
-(mpa) ...$ ote find --help
-usage: ote find [-h] [--root ROOT] [--task_type {classification,detection,segmentation,instance_segmantation,rotated_detection,anomaly_classification,anomaly_detection,anomaly_segmentation}]
+(otx) ...$ otx find --help
+usage: otx find [-h] [--root ROOT] [--task_type {classification,detection,segmentation,instance_segmantation,rotated_detection,anomaly_classification,anomaly_detection,anomaly_segmentation}]
                 [--experimental]
 
 optional arguments:
@@ -103,18 +67,18 @@ optional arguments:
 
 ```bash
 # example to find templates for the detection task
-(mpa) ...$ ote find --task_type detection
+(otx) ...$ otx find --task_type detection
 - id: Custom_Object_Detection_Gen3_SSD
   name: SSD
-  path: /local/yunchule/workspace/training_extensions/external/model-preparation-algorithm/configs/detection/mobilenetv2_ssd_cls_incr/template.yaml
+  path: otx/algorithms/detection/configs/detection/mobilenetv2_ssd/template.yaml
   task_type: DETECTION
 - id: Custom_Object_Detection_YOLOX
   name: YOLOX
-  path: /local/yunchule/workspace/training_extensions/external/model-preparation-algorithm/configs/detection/cspdarknet_yolox_cls_incr/template.yaml
+  path: otx/algorithms/detection/configs/detection/cspdarknet_yolox/template.yaml
   task_type: DETECTION
 - id: Custom_Object_Detection_Gen3_ATSS
   name: ATSS
-  path: /local/yunchule/workspace/training_extensions/external/model-preparation-algorithm/configs/detection/mobilenetv2_atss_cls_incr/template.yaml
+  path: otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml
   task_type: DETECTION
 ```
 
@@ -130,7 +94,7 @@ These files can be used by other commands: `export`, `eval`, and `demo`.
 `train` command requires `template` as a positional arguement. it could be taken from the output of the `find` command above.
 
 ```
-usage: ote train template
+usage: otx train template
 ```
 
 And with the `--help` command along with `template`, you can list additional information, such as its parameters common to all model templates and model-specific hyper parameters.
@@ -139,8 +103,8 @@ And with the `--help` command along with `template`, you can list additional inf
 
 ```bash
 # command example to get common paramters to any model templates
-(mpa) ...$ ote train external/model-preparation-algorithm/configs/detection/mobilenetv2_ssd_cls_incr/template.yaml --help
-usage: ote train [-h] --train-ann-files TRAIN_ANN_FILES --train-data-roots TRAIN_DATA_ROOTS --val-ann-files VAL_ANN_FILES --val-data-roots VAL_DATA_ROOTS [--load-weights LOAD_WEIGHTS] --save-model-to SAVE_MODEL_TO
+(otx) ...$ otx train otx/algorithms/detection/configs/detection/mobilenetv2_ssd/template.yaml --help
+usage: otx train [-h] --train-ann-files TRAIN_ANN_FILES --train-data-roots TRAIN_DATA_ROOTS --val-ann-files VAL_ANN_FILES --val-data-roots VAL_DATA_ROOTS [--load-weights LOAD_WEIGHTS] --save-model-to SAVE_MODEL_TO
                  [--enable-hpo] [--hpo-time-ratio HPO_TIME_RATIO]
                  template {params} ...
 
@@ -174,8 +138,8 @@ command example:
 
 ```bash
 # command example to get tamplate-specific parameters
-(mpa) ...$ ote train external/model-preparation-algorithm/configs/detection/mobilenetv2_ssd_cls_incr/template.yaml params --help
-usage: ote train template params [-h] [--learning_parameters.batch_size BATCH_SIZE] [--learning_parameters.learning_rate LEARNING_RATE] [--learning_parameters.learning_rate_warmup_iters LEARNING_RATE_WARMUP_ITERS]
+(otx) ...$ otx train otx/algorithms/detection/configs/detection/mobilenetv2_ssd/template.yaml params --help
+usage: otx train template params [-h] [--learning_parameters.batch_size BATCH_SIZE] [--learning_parameters.learning_rate LEARNING_RATE] [--learning_parameters.learning_rate_warmup_iters LEARNING_RATE_WARMUP_ITERS]
                                  [--learning_parameters.num_iters NUM_ITERS] [--learning_parameters.enable_early_stopping ENABLE_EARLY_STOPPING] [--learning_parameters.early_stop_start EARLY_STOP_START]
                                  [--learning_parameters.early_stop_patience EARLY_STOP_PATIENCE] [--learning_parameters.early_stop_iteration_patience EARLY_STOP_ITERATION_PATIENCE]
                                  [--learning_parameters.use_adaptive_interval USE_ADAPTIVE_INTERVAL] [--postprocessing.confidence_threshold CONFIDENCE_THRESHOLD]
@@ -210,7 +174,7 @@ optional arguments:
 #### Command example of the training
 
 ```bash
-(mpa) ...$ ote train external/model-preparation-algorithm/configs/detection/mobilenetv2_ssd_cls_incr/template.yaml --train-ann-file data/airport/annotation_person_train.json  --train-data-roots data/airport/train/ --val-ann-files data/airport/annotation_person_val.json --val-data-roots data/airport/val/ --save-model-to outputs
+(otx) ...$ otx train otx/algorithms/detection/configs/detection/mobilenetv2_ssd/template.yaml --train-ann-file data/airport/annotation_person_train.json  --train-data-roots data/airport/train/ --val-ann-files data/airport/annotation_person_val.json --val-data-roots data/airport/val/ --save-model-to outputs
 ...
 
 ---------------iou_thr: 0.5---------------
@@ -238,8 +202,8 @@ With the `--help` command, you can list additional information, such as its para
 command example:
 
 ```bash
-(mpa) ...$ ote export external/model-preparation-algorithm/configs/detection/mobilenetv2_ssd_cls_incr/template.yaml --help
-usage: ote export [-h] --load-weights LOAD_WEIGHTS --save-model-to SAVE_MODEL_TO template
+(otx) ...$ otx export otx/algorithms/detection/configs/detection/mobilenetv2_ssd/template.yaml --help
+usage: otx export [-h] --load-weights LOAD_WEIGHTS --save-model-to SAVE_MODEL_TO template
 
 positional arguments:
   template
@@ -257,7 +221,7 @@ optional arguments:
 The command below performs exporting to the [trained model](#command-example-of-the-training) `outputs/weights.pth` in previous section and save exported model to the `outputs/ov/` folder.
 
 ```bash
-(mpa) ...$ ote export external/model-preparation-algorithm/configs/detection/mobilenetv2_ssd_cls_incr/template.yaml --load-weights outputs/weights.pth --save-model-to outputs/ov
+(otx) ...$ otx export otx/algorithms/detection/configs/detection/mobilenetv2_ssd/template.yaml --load-weights outputs/weights.pth --save-model-to outputs/ov
 ...
 [ INFO ] The model was converted to IR v11, the latest model format that corresponds to the source DL framework input/output format. While IR v11 is backwards compatible with OpenVINO Inference Engine API v1.0, please use API v2.0 (as of 2022.1) to take advantage of the latest improvements in IR v11.
 Find more information about API v2.0 and IR v11 at https://docs.openvino.ai
@@ -277,8 +241,8 @@ With the `--help` command, you can list additional information.
 command example:
 
 ```
-(mpa) ...$ ote optimize external/model-preparation-algorithm/configs/detection/mobilenetv2_ssd_cls_incr/template.yaml --help
-usage: ote optimize [-h] --train-ann-files TRAIN_ANN_FILES --train-data-roots TRAIN_DATA_ROOTS --val-ann-files VAL_ANN_FILES --val-data-roots VAL_DATA_ROOTS --load-weights LOAD_WEIGHTS --save-model-to SAVE_MODEL_TO
+(otx) ...$ otx optimize otx/algorithms/detection/configs/detection/mobilenetv2_ssd/template.yaml --help
+usage: otx optimize [-h] --train-ann-files TRAIN_ANN_FILES --train-data-roots TRAIN_DATA_ROOTS --val-ann-files VAL_ANN_FILES --val-data-roots VAL_DATA_ROOTS --load-weights LOAD_WEIGHTS --save-model-to SAVE_MODEL_TO
                     [--save-performance SAVE_PERFORMANCE]
                     template {params} ...
 
@@ -310,7 +274,7 @@ optional arguments:
 The command below performs optimization to the [trained model](#command-example-of-the-training) `outputs/weights.pth` in previous section and save optimized model to the `outputs/nncf` folder.
 
 ```bash
-(mpa) ...$ ote optimize external/model-preparation-algorithm/configs/detection/mobilenetv2_ssd_cls_incr/template.yaml --train-ann-files data/airport/annotation_person_train.json --train-data-roots data/airport/train/ --val-ann-files data/airport/annotation_person_val.json --val-data-roots data/airport/val/ --load-weights outputs/weights.pth --save-model-to outputs/nncf --save-performance outputs/nncf/performance.json
+(otx) ...$ otx optimize otx/algorithms/detection/configs/detection/mobilenetv2_ssd/template.yaml --train-ann-files data/airport/annotation_person_train.json --train-data-roots data/airport/train/ --val-ann-files data/airport/annotation_person_val.json --val-data-roots data/airport/val/ --load-weights outputs/weights.pth --save-model-to outputs/nncf --save-performance outputs/nncf/performance.json
 ```
 
 #### Command example for optimizing OpenVINO model (.xml) with OpenVINO POT:
@@ -318,7 +282,7 @@ The command below performs optimization to the [trained model](#command-example-
 The command below performs optimization to the [exported model](#command-example-of-the-exporting) `outputs/ov/openvino.xml` in previous section and save optimized model to the `outputs/ov/pot` folder.
 
 ```bash
-(mpa) ...$ ote optimize external/model-preparation-algorithm/configs/detection/mobilenetv2_ssd_cls_incr/template.yaml --train-ann-files data/airport/annotation_person_train.json --train-data-roots data/airport/train/ --val-ann-files data/airport/annotation_person_val.json --val-data-roots data/airport/val/ --load-weights outputs/ov/openvino.xml --save-model-to outputs/ov/pot --save-performance outputs/ov/pot/performance.json
+(otx) ...$ otx optimize otx/algorithms/detection/configs/detection/mobilenetv2_ssd/template.yaml --train-ann-files data/airport/annotation_person_train.json --train-data-roots data/airport/train/ --val-ann-files data/airport/annotation_person_val.json --val-data-roots data/airport/val/ --load-weights outputs/ov/openvino.xml --save-model-to outputs/ov/pot --save-performance outputs/ov/pot/performance.json
 ```
 
 ### Evaluation
@@ -329,8 +293,8 @@ With the `--help` command, you can list additional information, such as its para
 command example:
 
 ```bash
-(mpa) yunchu@yunchu-desktop:~/workspace/training_extensions$ ote eval external/model-preparation-algorithm/configs/detection/mobilenetv2_ssd_cls_incr/template.yaml --help
-usage: ote eval [-h] --test-ann-files TEST_ANN_FILES --test-data-roots TEST_DATA_ROOTS --load-weights LOAD_WEIGHTS [--save-performance SAVE_PERFORMANCE] template {params} ...
+(otx) ...$ otx eval otx/algorithms/detection/configs/detection/mobilenetv2_ssd/template.yaml --help
+usage: otx eval [-h] --test-ann-files TEST_ANN_FILES --test-data-roots TEST_DATA_ROOTS --load-weights LOAD_WEIGHTS [--save-performance SAVE_PERFORMANCE] template {params} ...
 
 positional arguments:
   template
@@ -356,7 +320,7 @@ optional arguments:
 The command below performs evaluation to the [trained model](#command-example-of-the-training) `outputs/weights.pth` in previous section and save result performance to the `outputs/performance.json` file.
 
 ```bash
-(mpa) ...$ ote eval external/model-preparation-algorithm/configs/detection/mobilenetv2_ssd_cls_incr/template.yaml --test-ann-files data/airport/annotation_person_val.json --test-data-roots data/airport/val/ --load-weights outputs/weights.pth --save-performance outputs/performance.json
+(otx) ...$ otx eval otx/algorithms/detection/configs/detection/mobilenetv2_ssd/template.yaml --test-ann-files data/airport/annotation_person_val.json --test-data-roots data/airport/val/ --load-weights outputs/weights.pth --save-performance outputs/performance.json
 ...
 [>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>] 10/10, 7.9 task/s, elapsed: 1s, ETA:     0s
 ---------------iou_thr: 0.5---------------
@@ -388,8 +352,8 @@ With the `--help` command, you can list additional information, such as its para
 command example:
 
 ```bash
-(mpa) ...$ ote demo external/model-preparation-algorithm/configs/detection/mobilenetv2_ssd_cls_incr/template.yaml --help
-usage: ote demo [-h] -i INPUT --load-weights LOAD_WEIGHTS [--fit-to-size FIT_TO_SIZE FIT_TO_SIZE] [--loop] [--delay DELAY] [--display-perf] template {params} ...
+(otx) ...$ otx demo otx/algorithms/detection/configs/detection/mobilenetv2_ssd/template.yaml --help
+usage: otx demo [-h] -i INPUT --load-weights LOAD_WEIGHTS [--fit-to-size FIT_TO_SIZE FIT_TO_SIZE] [--loop] [--delay DELAY] [--display-perf] template {params} ...
 
 positional arguments:
   template
@@ -414,7 +378,7 @@ optional arguments:
 The command below performs demonstration to the [optimized model](#command-example-for-optimizing-openvino-model-xml-with-openvino-pot) `outputs/ov/pot/openvino.xml` in previous section with images in the given input folder.
 
 ```bash
-(mpa) ...$ ote demo external/model-preparation-algorithm/configs/detection/mobilenetv2_ssd_cls_incr/template.yaml --input data/airport/val/ --load-weights outputs/ov/pot/openvino.xml --display-perf --delay 1000
+(otx) ...$ otx demo otx/algorithms/detection/configs/detection/mobilenetv2_ssd/template.yaml --input data/airport/val/ --load-weights outputs/ov/pot/openvino.xml --display-perf --delay 1000
 ...
 [ INFO ] OpenVINO inference completed
 ```
@@ -429,8 +393,8 @@ With the `--help` command, you can list additional information, such as its para
 command example:
 
 ```bash
-(mpa) ...$ ote deploy external/model-preparation-algorithm/configs/detection/mobilenetv2_ssd_cls_incr/template.yaml --help
-usage: ote deploy [-h] --load-weights LOAD_WEIGHTS [--save-model-to SAVE_MODEL_TO] template
+(otx) ...$ otx deploy otx/algorithms/detection/configs/detection/mobilenetv2_ssd/template.yaml --help
+usage: otx deploy [-h] --load-weights LOAD_WEIGHTS [--save-model-to SAVE_MODEL_TO] template
 
 positional arguments:
   template

@@ -24,19 +24,19 @@
 
 ## Overview
 
-OpenVINO™ Training Extensions (OTE) is command-line interface (CLI) framework designed for low-code deep learning model training. OTE lets developers train/inference/optimize models with a diverse combination of model architectures and learning methods using the [OpenVINO™
-toolkit](https://software.intel.com/en-us/openvino-toolkit). For example, users can train a ResNet18-based SSD ([Single Shot Detection](https://arxiv.org/abs/1512.02325)) model in a semi-supervised manner without worrying about setting a configuration manually. `ote build` and `ote train` commands will automatically analyze users' dataset and do necessary tasks for training the model with best configuration. OTE provides the following features:
+OpenVINO™ Training Extensions (OTX) is command-line interface (CLI) framework designed for low-code deep learning model training. OTX lets developers train/inference/optimize models with a diverse combination of model architectures and learning methods using the [OpenVINO™
+toolkit](https://software.intel.com/en-us/openvino-toolkit). For example, users can train a ResNet18-based SSD ([Single Shot Detection](https://arxiv.org/abs/1512.02325)) model in a semi-supervised manner without worrying about setting a configuration manually. `otx build` and `otx train` commands will automatically analyze users' dataset and do necessary tasks for training the model with best configuration. OTX provides the following features:
 
 - Provide a set of pre-configured models for quick start
-  - `ote find` helps you quickly finds the best pre-configured models for common task types like classification, detection, segmentation, and anomaly analysis.
+  - `otx find` helps you quickly finds the best pre-configured models for common task types like classification, detection, segmentation, and anomaly analysis.
 - Configure and train a model from torchvision, [OpenVINO Model Zoo (OMZ)](https://github.com/openvinotoolkit/open_model_zoo)
-  - `ote build` can help you configure your own model based on torchvision and OpenVINO Model Zoo models. You can replace backbones, necks and heads for your own preference (Currently only backbones are supported).
+  - `otx build` can help you configure your own model based on torchvision and OpenVINO Model Zoo models. You can replace backbones, necks and heads for your own preference (Currently only backbones are supported).
 - Provide several learning methods including supervised, semi-supervised, imbalanced-learn, class-incremental, self-supervised representation learning
-  - `ote build` helps you automatically identify the best learning methods for your data and model. All you need to do is to set your data in the supported format. If you don't specify a model, the framework will automatically sets the best model for you. For example, if your dataset has long-tailed and partially-annotated bounding box annotations, OTE auto-configurator will choose a semi-supervised imbalanced-learning method and an appropriate model with the best parameters.
+  - `otx build` helps you automatically identify the best learning methods for your data and model. All you need to do is to set your data in the supported format. If you don't specify a model, the framework will automatically sets the best model for you. For example, if your dataset has long-tailed and partially-annotated bounding box annotations, OTX auto-configurator will choose a semi-supervised imbalanced-learning method and an appropriate model with the best parameters.
 - Integrated efficient hyper-parameter optimization
-  - OTE has an integrated, efficient hyper-parameter optimization module. So, you don't need to worry about searching right hyper-parameters. Through dataset proxy and built-in hyper-parameter optimizer, you can get much faster hyper-parameter optimization compared to other off-the-shelf tools. The hyperparameter optimization is dynamically scheduled based on your resource budget.
+  - OTX has an integrated, efficient hyper-parameter optimization module. So, you don't need to worry about searching right hyper-parameters. Through dataset proxy and built-in hyper-parameter optimizer, you can get much faster hyper-parameter optimization compared to other off-the-shelf tools. The hyperparameter optimization is dynamically scheduled based on your resource budget.
 - Support widely-used annotation formats
-  - OTE uses [datumaro](https://github.com/openvinotoolkit/datumaro), which is designed for dataset building and transformation, as a default interface for dataset management. All supported formats by datumaro are also consumable by OTE without the need of explicit data conversion. If you want to build your own custom dataset format, you can do this via datumaro CLI and API.
+  - OTX uses [datumaro](https://github.com/openvinotoolkit/datumaro), which is designed for dataset building and transformation, as a default interface for dataset management. All supported formats by datumaro are also consumable by OTX without the need of explicit data conversion. If you want to build your own custom dataset format, you can do this via datumaro CLI and API.
 
 ---
 
@@ -63,9 +63,9 @@ toolkit](https://software.intel.com/en-us/openvino-toolkit). For example, users 
 ## Repository
 
 - Components
-  - [OTE SDK](ote_sdk)
-  - [OTE CLI](ote_cli)
-  - [OTE Algorithms](external)
+  - [OTX API](otx/api)
+  - [OTX CLI](otx/cli)
+  - [OTX Algorithms](otx/algorithms)
 - Branches
   - [develop](https://github.com/openvinotoolkit/training_extensions/tree/develop)
     - Mainly maintained branch for releasing new features in the future
