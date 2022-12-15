@@ -71,7 +71,7 @@ class ClassificationInferenceTask(
         self._empty_label = get_empty_label(task_environment.label_schema)
         self._multilabel = False
         self._hierarchical = False
-        self._warmstart = False
+        self._selfsl = False
 
         self._multilabel = len(task_environment.label_schema.get_groups(False)) > 1 and len(
             task_environment.label_schema.get_groups(False)
@@ -85,8 +85,7 @@ class ClassificationInferenceTask(
             self._hierarchical_info = get_hierarchical_info(task_environment.label_schema)
 
         if self._hyperparams.algo_backend.train_type == TrainType.SELFSUPERVISED:
-            # TODO (sungchul): set more deterministic conditions
-            self._warmstart = True
+            self._selfsl = True
 
     def infer(
         self,
@@ -305,7 +304,12 @@ class ClassificationInferenceTask(
         else:
             early_stop = False
 
-        cfg = ConfigDict(
+        if self._recipe_cfg.runner.get("type") == "IterBasedRunner":
+            runner = ConfigDict(max_iters=int(self._hyperparams.learning_parameters.num_iters))
+        else:
+            runner = ConfigDict(max_epochs=int(self._hyperparams.learning_parameters.num_iters))
+
+        return ConfigDict(
             optimizer=ConfigDict(lr=self._hyperparams.learning_parameters.learning_rate),
             lr_config=lr_config,
             early_stop=early_stop,
@@ -313,13 +317,8 @@ class ClassificationInferenceTask(
                 samples_per_gpu=int(self._hyperparams.learning_parameters.batch_size),
                 workers_per_gpu=int(self._hyperparams.learning_parameters.num_workers),
             ),
+            runner=runner,
         )
-        if self._warmstart:
-            cfg.update(ConfigDict(runner=ConfigDict(max_iters=int(self._hyperparams.learning_parameters.num_iters))))
-        else:
-            cfg.update(ConfigDict(runner=ConfigDict(max_epochs=int(self._hyperparams.learning_parameters.num_iters))))
-
-        return cfg
 
     def _init_recipe(self):
         logger.info("called _init_recipe()")
@@ -350,7 +349,7 @@ class ClassificationInferenceTask(
             recipe = os.path.join(recipe_root, "incremental.yaml")
 
         if train_type == TrainType.SELFSUPERVISED:
-            recipe = os.path.join(recipe_root, "warmstart.yaml")
+            recipe = os.path.join(recipe_root, "selfsl.yaml")
 
         logger.info(f"train type = {train_type} - loading {recipe}")
 
@@ -427,7 +426,7 @@ class ClassificationInferenceTask(
                     cfg.hierarchical_info = self._hierarchical_info
                     if subset == "train":
                         cfg.drop_last = True  # For stable hierarchical information indexing
-                elif self._warmstart:
+                elif self._selfsl:
                     cfg.type = "SelfSLDataset"
                 else:
                     cfg.type = "MPAClsDataset"
@@ -443,8 +442,10 @@ class ClassificationInferenceTask(
             cfg.labels = None
             cfg.empty_label = self._empty_label
             for pipeline_step in cfg.pipeline:
-                if self._warmstart:
-                    # TODO (sungchul): refactoring
+                if self._selfsl:
+                    # TODO : refactoring
+                    # SelfSLDataset has pipelines={"view0": [...], "view1": [...]}.
+                    # To access `Normalize`, patch_color_conversion must be applied to both view0 and view1.
                     for pipeline_view in cfg.pipeline[pipeline_step]:
                         if subset == "train" and pipeline_view.type == "Collect":
                             pipeline_view = get_meta_keys(pipeline_view)
@@ -453,7 +454,7 @@ class ClassificationInferenceTask(
                     if subset == "train" and pipeline_step.type == "Collect":
                         pipeline_step = get_meta_keys(pipeline_step)
 
-            if not self._warmstart:
+            if not self._selfsl:
                 patch_color_conversion(cfg.pipeline)
 
     def _patch_evaluation(self, config: MPAConfig):
