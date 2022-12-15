@@ -22,7 +22,7 @@
       "subtask": {
         "parent": "car",
         "group": "color",
-        "labels":["green"],
+        "labels": ["green"],
         "task_type": "single-label"
       }
     }

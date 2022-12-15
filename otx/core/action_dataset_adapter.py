@@ -74,6 +74,10 @@ class ActionBaseDatasetAdapter(BaseDatasetAdapter):
         In this case, if the label for 'video1/frame_000.jpg' is 2, then the index of label is set to 2.
         For the case of video2, if the label for 'video2/frame_000.jpg' is 4, then the index of label is set to 2.
         However, Since overall labels are [0, 1, 2, 4], 'video2/frame_000.jpg' should has the label index as 3.
+<<<<<<< HEAD
+=======
+
+>>>>>>> Add Pyling, Mypy, Docstring
         """
         outputs = {
             "category_items": [],

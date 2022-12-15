@@ -140,18 +140,11 @@ class OTXRawframeDataset(RawframeDataset):
         for data_info in self.data_infos:
             media = data_info["dataset_item"].media
             annotation = data_info["dataset_item"].get_annotations()
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-
->>>>>>> Add Pyling, Mypy, Docstring
-=======
             video_id = data_info["dataset_item"].get_metadata().data.video_id
             frame_idx = data_info["dataset_item"].get_metadata().data.frame_idx
 
             print(media, video_id, frame_idx)
             raise
->>>>>>> Finish the draft of anomaly tasks, Reflect the change of CLI part caused by public backbone support, Working on Action tasks
             if len(annotation) == 0:
                 label = None
             else:
@@ -159,16 +152,10 @@ class OTXRawframeDataset(RawframeDataset):
             media["label"] = label
             self.video_infos.append(media)
 
-<<<<<<< HEAD
     def _prepare_chunk_information(self):
-<<<<<<< HEAD
         """Preparing testing data.
 
         FIXME: Maybe there is better way to make video chunk.
-=======
-        """
-        FIXME: Maybe there is better way to make video chunk
->>>>>>> Add Pyling, Mypy, Docstring
         TODO: Can be changed according to the requirements from Geti. and not working on detection
         ---
         Preparing Chunk by using DatasetItemEntity.
@@ -183,34 +170,8 @@ class OTXRawframeDataset(RawframeDataset):
                 )
 
             2.  All frame information is needed even there is no annotation.
-<<<<<<< HEAD
                 Frames that have no annotations can be regarded as 'label=0' to make video chunk.
-=======
-                Frames that have no annotations can be regarded as 'label=0' to make video chunk
->>>>>>> Add Pyling, Mypy, Docstring
         """
-
-=======
-    """
-    FIXME: Maybe there is better way to make video chunk 
-    TODO: Can be changed according to the requirements from Geti. and not working on detection
-    ---
-    Preparing Chunk by using DatasetItemEntity.
-    Below functions will works under below assumptions.
-
-    Assumptions
-        1.  Frame index should starts from 0 and will be increased by 1.
-            (i.e. 
-                [0, 1, 2, 3] --> OK
-                [0, 1, 2, 4] --> Not work
-                [1, 2, 3, 4] --> Not work
-            )
-        
-        2.  All frame information is needed even there is no annotation.
-            Frames that have no annotations can be regarded as 'label=0' to make video chunk
-    """
-    def _prepare_chunk_information(self):
->>>>>>> Finish the draft of anomaly tasks, Reflect the change of CLI part caused by public backbone support, Working on Action tasks
         chunk_info_dict = {}
         for data_info in self.data_infos:
             video_id = data_info["dataset_item"].get_metadata().data.video_id
@@ -222,7 +183,6 @@ class OTXRawframeDataset(RawframeDataset):
             else:
                 label = int(data_info["dataset_item"].get_roi_labels(self.labels)[0].id)
 
-<<<<<<< HEAD
             if video_id not in chunk_info_dict:
                 chunk_info_dict[video_id] = np.zeros(frame_idx, dtype=np.uint8)
                 chunk_info_dict[video_id][frame_idx - 1] = label + 1  # 0 represents "no-label"
@@ -238,26 +198,22 @@ class OTXRawframeDataset(RawframeDataset):
                     chunk_info_dict[video_id][frame_idx - 1] = label + 1
                 elif frame_idx < chunk_info_dict[video_id].shape[0]:
                     chunk_info_dict[video_id][frame_idx - 1] = label + 1
-=======
             if video_id not in chunk_info_dict.keys():
                 chunk_info_dict[video_id] = np.zeros(frame_idx, dtype=np.uint8)
-                chunk_info_dict[video_id][frame_idx-1] = label + 1 # 0 represents "no-label"
+                chunk_info_dict[video_id][frame_idx - 1] = label + 1  # 0 represents "no-label"
             else:
                 if frame_idx > chunk_info_dict[video_id].shape[0]:
-                    chunk_info_dict[video_id] = np.concatenate((chunk_info_dict[video_id], np.zeros(frame_idx-chunk_info_dict[video_id].shape[0], dtype=np.uint8)),axis=0)
-                    chunk_info_dict[video_id][frame_idx-1] = label + 1
+                    chunk_info_dict[video_id] = np.concatenate(
+                        (
+                            chunk_info_dict[video_id],
+                            np.zeros(frame_idx - chunk_info_dict[video_id].shape[0], dtype=np.uint8),
+                        ),
+                        axis=0,
+                    )
+                    chunk_info_dict[video_id][frame_idx - 1] = label + 1
                 elif frame_idx < chunk_info_dict[video_id].shape[0]:
                     chunk_info_dict[video_id][frame_idx-1] = label + 1
->>>>>>> Finish the draft of anomaly tasks, Reflect the change of CLI part caused by public backbone support, Working on Action tasks
                 else:
                     raise ValueError("Can't be same")
 
         return chunk_info_dict
-<<<<<<< HEAD
-=======
-
-
-    def _make_chunk(self, chunk_info):
-        ##TODO
-        pass
->>>>>>> Finish the draft of anomaly tasks, Reflect the change of CLI part caused by public backbone support, Working on Action tasks

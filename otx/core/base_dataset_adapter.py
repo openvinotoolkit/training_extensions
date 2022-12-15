@@ -14,6 +14,7 @@ import datumaro
 from datumaro.components.annotation import AnnotationType as DatumaroAnnotationType
 from datumaro.components.dataset import Dataset as DatumaroDataset
 from datumaro.components.annotation import AnnotationType as DatumaroAnnotationType
+from datumaro.components.dataset import Dataset as DatumaroDataset
 
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.id import ID
@@ -76,7 +77,6 @@ def get_dataset_adapter(task_type):
     raise ValueError(f"Invalid task type: {task_type}")
 
 
-# pylint: disable=too-many-return-statements
 def get_dataset_adapter(task_type):
     """Returns a dataset class by task type.
     Args:
@@ -88,11 +88,11 @@ def get_dataset_adapter(task_type):
 
         return ClassificationDatasetAdapter(task_type=task_type)
 
-    if task_type == TaskType.DETECTION or task_type == TaskType.INSTANCE_SEGMENTATION:
+    if task_type in [TaskType.DETECTION, TaskType.INSTANCE_SEGMENTATION]:
         from .detection_dataset_adapter import DetectionDatasetAdapter
 
         return DetectionDatasetAdapter(task_type=task_type)
-    
+
     if task_type == TaskType.SEGMENTATION:
         from .segmentation_dataset_adapter import SegmentationDatasetAdapter
 
@@ -102,7 +102,7 @@ def get_dataset_adapter(task_type):
         from .action_dataset_adapter import ActionClassificationDatasetAdapter
 
         return ActionClassificationDatasetAdapter(task_type=task_type)
-    
+
     if task_type == TaskType.ANOMALY_CLASSIFICATION:
         from .anomaly_dataset_adapter import AnomalyClassificationDatasetAdapter
 
@@ -117,18 +117,19 @@ def get_dataset_adapter(task_type):
         from .anomaly_dataset_adapter import AnomalySegmentationDatasetAdapter
 
         return AnomalySegmentationDatasetAdapter(task_type=task_type)
-    """
-    TODO: Need to implement
-    if task_type == TaskType.ACTION_DETECTION:
-        from .action_dataset_adapter import ActionDetectionDatasetAdapter
 
-        return ActionDetectionDatasetAdapter(task_type=task_type)
-    if task_type == TaskType.ROTATED_DETECTION:
-        from .rotated_detection.dataset import RotatedDetectionDataset
+    # TODO: Need to implement
+    # if task_type == TaskType.ACTION_DETECTION:
+    #    from .action_dataset_adapter import ActionDetectionDatasetAdapter
+    #
+    #    return ActionDetectionDatasetAdapter(task_type=task_type)
+    # if task_type == TaskType.ROTATED_DETECTION:
+    #    from .rotated_detection.dataset import RotatedDetectionDataset
+    #
+    #    return RotatedDetectionDataset
 
-        return RotatedDetectionDataset
-    """
     raise ValueError(f"Invalid task type: {task_type}")
+
 
 class BaseDatasetAdapter(metaclass=abc.ABCMeta):
     """Base dataset adapter for all of downstream tasks to use Datumaro
