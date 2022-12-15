@@ -1,0 +1,35 @@
+{
+    "licenses":[
+      {
+        "name":"",
+        "id":0,
+        "url":""
+      }
+    ],
+    "info":{
+      "contributor":"",
+      "date_created":"",
+      "description":"",
+      "url":"",
+      "version":"",
+      "year":""
+    },
+    "categories":[
+
+    ],
+    "images":[
+      {
+        "id":40,
+        "width":5,
+        "height":10,
+        "file_name":"b.jpg",
+        "license":0,
+        "flickr_url":"",
+        "coco_url":"",
+        "date_captured":0
+      }
+    ],
+    "annotations":[
+
+    ]
+  }
