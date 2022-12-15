@@ -140,11 +140,7 @@ class OTXRawframeDataset(RawframeDataset):
         for data_info in self.data_infos:
             media = data_info["dataset_item"].media
             annotation = data_info["dataset_item"].get_annotations()
-            video_id = data_info["dataset_item"].get_metadata().data.video_id
-            frame_idx = data_info["dataset_item"].get_metadata().data.frame_idx
 
-            print(media, video_id, frame_idx)
-            raise
             if len(annotation) == 0:
                 label = None
             else:
@@ -212,7 +208,7 @@ class OTXRawframeDataset(RawframeDataset):
                     )
                     chunk_info_dict[video_id][frame_idx - 1] = label + 1
                 elif frame_idx < chunk_info_dict[video_id].shape[0]:
-                    chunk_info_dict[video_id][frame_idx-1] = label + 1
+                    chunk_info_dict[video_id][frame_idx - 1] = label + 1
                 else:
                     raise ValueError("Can't be same")
 
