@@ -25,7 +25,6 @@ from .pipelines import (
     LoadImageFromOTXDataset,
     OTXColorJitter,
     RandomAppliedTrans,
-    RandomHorizontalFlip,
 )
 
 __all__ = [
@@ -34,7 +33,6 @@ __all__ = [
     "MPAHierarchicalClsDataset",
     "SelfSLDataset",
     "LoadImageFromOTXDataset",
-    "RandomHorizontalFlip",
     "RandomAppliedTrans",
     "GaussianBlur",
     "OTXColorJitter",
