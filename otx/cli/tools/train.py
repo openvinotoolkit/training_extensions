@@ -33,13 +33,18 @@ from otx.cli.registry import find_and_parse_model_template
 from otx.cli.utils.config import configure_dataset, override_parameters
 from otx.cli.utils.hpo import run_hpo
 from otx.cli.utils.importing import get_impl_class
+<<<<<<< HEAD
 from otx.cli.utils.io import read_binary, read_label_schema, save_model_data
+=======
+>>>>>>> Add Pyling, Mypy, Docstring
 from otx.cli.utils.multi_gpu import MultiGPUManager
+from otx.cli.utils.io import read_binary, read_label_schema, save_model_data
 from otx.cli.utils.parser import (
     add_hyper_parameters_sub_parser,
     gen_params_dict_from_args,
 )
 from otx.core.data.adapter import get_dataset_adapter
+
 
 
 def parse_args():

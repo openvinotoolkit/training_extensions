@@ -140,6 +140,10 @@ class OTXRawframeDataset(RawframeDataset):
         for data_info in self.data_infos:
             media = data_info["dataset_item"].media
             annotation = data_info["dataset_item"].get_annotations()
+<<<<<<< HEAD
+=======
+
+>>>>>>> Add Pyling, Mypy, Docstring
             if len(annotation) == 0:
                 label = None
             else:
@@ -148,9 +152,14 @@ class OTXRawframeDataset(RawframeDataset):
             self.video_infos.append(media)
 
     def _prepare_chunk_information(self):
+<<<<<<< HEAD
         """Preparing testing data.
 
         FIXME: Maybe there is better way to make video chunk.
+=======
+        """
+        FIXME: Maybe there is better way to make video chunk
+>>>>>>> Add Pyling, Mypy, Docstring
         TODO: Can be changed according to the requirements from Geti. and not working on detection
         ---
         Preparing Chunk by using DatasetItemEntity.
@@ -165,7 +174,11 @@ class OTXRawframeDataset(RawframeDataset):
                 )
 
             2.  All frame information is needed even there is no annotation.
+<<<<<<< HEAD
                 Frames that have no annotations can be regarded as 'label=0' to make video chunk.
+=======
+                Frames that have no annotations can be regarded as 'label=0' to make video chunk
+>>>>>>> Add Pyling, Mypy, Docstring
         """
 
         chunk_info_dict = {}
