@@ -67,20 +67,6 @@ class LoadImageFromOTXDataset:
 
 
 @PIPELINES.register_module()
-class RandomHorizontalFlip(T.RandomHorizontalFlip):
-    """Wrapper to use mmcv formatted data in torchvision.transforms."""
-
-    @check_input_parameters_type()
-    def __call__(self, results: Dict[str, Any]):
-        """Callback function of RandomHorizontalFlip.
-
-        :param results: Inputs to be transformed.
-        """
-        results["img"] = np.array(self.forward(Image.fromarray(results["img"])))
-        return results
-
-
-@PIPELINES.register_module()
 class RandomAppliedTrans:
     """Randomly applied transformations.
 
@@ -149,33 +135,5 @@ class GaussianBlur:
 
     def __repr__(self):
         """Set repr of GaussianBlur."""
-        repr_str = self.__class__.__name__
-        return repr_str
-
-
-@PIPELINES.register_module()
-class Solarization:
-    """Solarization augmentation in BYOL https://arxiv.org/abs/2006.07733.
-
-    :param threshold: Threshold for solarization, defaults to 128
-    """
-
-    @check_input_parameters_type()
-    def __init__(self, threshold: int = 128):
-        self.threshold = threshold
-
-    @check_input_parameters_type()
-    def __call__(self, results: Dict[str, Any]):
-        """Callback function of Solarization.
-
-        :param results: inputs to be transformed.
-        """
-        for key in results.get("img_fields", ["img"]):
-            img = results[key]
-            results[key] = np.where(img < self.threshold, img, 255 - img).astype(np.uint8)
-        return results
-
-    def __repr__(self):
-        """Set repr of Solarization."""
         repr_str = self.__class__.__name__
         return repr_str
