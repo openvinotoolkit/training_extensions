@@ -18,7 +18,7 @@ from .hooks import (
     CancelTrainingHook,
     EarlyStoppingHook,
     EnsureCorrectBestCheckpointHook,
-    MomentumUpdateHook,
+    EMAMomentumUpdateHook,
     OTXLoggerHook,
     OTXProgressHook,
     ReduceLROnPlateauLrUpdaterHook,
@@ -36,5 +36,5 @@ __all__ = [
     "ReduceLROnPlateauLrUpdaterHook",
     "EnsureCorrectBestCheckpointHook",
     "StopLossNanTrainingHook",
-    "MomentumUpdateHook",
+    "EMAMomentumUpdateHook",
 ]

@@ -571,8 +571,8 @@ class StopLossNanTrainingHook(Hook):
 
 
 @HOOKS.register_module()
-class MomentumUpdateHook(Hook):
-    """Momentum update hook for self-supervised methods.
+class EMAMomentumUpdateHook(Hook):
+    """Exponential moving average (EMA) momentum update hook for self-supervised methods.
 
     This hook includes momentum adjustment in self-supervised methods following:
         m = 1 - ( 1- m_0) * (cos(pi * k / K) + 1) / 2,
@@ -589,7 +589,7 @@ class MomentumUpdateHook(Hook):
         self.update_interval = update_interval
 
     def before_train_epoch(self, runner):
-        """Called before_train_epoch in MomentumUpdateHook."""
+        """Called before_train_epoch in EMAMomentumUpdateHook."""
         if not self.by_epoch:
             return
 
@@ -613,7 +613,7 @@ class MomentumUpdateHook(Hook):
             model.momentum = updated_m
 
     def before_train_iter(self, runner):
-        """Called before_train_iter in MomentumUpdateHook."""
+        """Called before_train_iter in EMAMomentumUpdateHook."""
         if self.by_epoch:
             return
 
@@ -637,7 +637,7 @@ class MomentumUpdateHook(Hook):
             model.momentum = updated_m
 
     def after_train_iter(self, runner):
-        """Called after_train_iter in MomentumUpdateHook."""
+        """Called after_train_iter in EMAMomentumUpdateHook."""
         if self.every_n_iters(runner, self.update_interval):
             if is_module_wrapper(runner.model):
                 runner.model.module.momentum_update()
