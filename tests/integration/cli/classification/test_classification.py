@@ -81,6 +81,7 @@ else:
     templates = Registry("otx/algorithms/classification").filter(task_type="CLASSIFICATION").templates
     templates_ids = [template.model_template_id for template in templates]
 
+
 class TestToolsMPAClassification:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
@@ -239,6 +240,7 @@ args_m = {
     ],
 }
 
+
 class TestToolsMPAMultilabelClassification:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
@@ -381,6 +383,7 @@ args_h = {
         "4",
     ],
 }
+
 
 class TestToolsMPAHierarchicalClassification:
     @e2e_pytest_component
