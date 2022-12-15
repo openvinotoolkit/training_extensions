@@ -111,16 +111,12 @@ class OTXClassification(Classification):
         """Postprocess for aux outputs."""
         actmap = get_actmap(outputs["saliency_map"][0], (metadata["original_shape"][1], metadata["original_shape"][0]))
         repr_vector = outputs["feature_vector"].reshape(-1)
-
         logits = outputs[self.out_layer_name].squeeze()
-
         if self.multilabel:
             probs = sigmoid_numpy(logits)
         else:
             probs = softmax_numpy(logits)
-
         act_score = float(np.max(probs) - np.min(probs))
-
         return actmap, repr_vector, act_score
 
 

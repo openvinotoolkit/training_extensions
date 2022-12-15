@@ -26,6 +26,7 @@ class Domain(Enum):
     INSTANCE_SEGMENTATION = auto()
     ROTATED_DETECTION = auto()
     ACTION_CLASSIFICATION = auto()
+    ACTION_DETECTION = auto()
 
     def __str__(self):
         """Returns Domain name."""

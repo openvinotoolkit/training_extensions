@@ -15,5 +15,6 @@
 # and limitations under the License.
 
 from .dataset import OTXRawframeDataset
+from .det_dataset import OTXActionDetDataset
 
-__all__ = ["OTXRawframeDataset"]
+__all__ = ["OTXRawframeDataset", "OTXActionDetDataset"]

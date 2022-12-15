@@ -121,7 +121,7 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         self._delete_scratch_space()
 
     def export(self, export_type: ExportType, output_model: ModelEntity):
-        """Export function of OTX Detection Task."""
+        """Export function of OTX Segmentation Task."""
         logger.info("Exporting the model")
         if export_type != ExportType.OPENVINO:
             raise RuntimeError(f"not supported export type {export_type}")

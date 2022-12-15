@@ -212,6 +212,9 @@ class TaskType(Enum):
         is_global=False,
         is_local=True,
     )
+    ACTION_DETECTION = 15, TaskInfo(
+        domain=Domain.ACTION_DETECTION, is_trainable=True, is_anomaly=False, is_global=False, is_local=True
+    )
 
     def __str__(self) -> str:
         """Returns name."""
@@ -244,6 +247,7 @@ def task_type_to_label_domain(task_type: TaskType) -> Domain:
         TaskType.ANOMALY_SEGMENTATION: Domain.ANOMALY_SEGMENTATION,
         TaskType.ROTATED_DETECTION: Domain.ROTATED_DETECTION,
         TaskType.ACTION_CLASSIFICATION: Domain.ACTION_CLASSIFICATION,
+        TaskType.ACTION_DETECTION: Domain.ACTION_DETECTION,
     }
 
     try:
@@ -578,6 +582,7 @@ TRAINABLE_TASK_TYPES: Sequence[TaskType] = (
     TaskType.ANOMALY_SEGMENTATION,
     TaskType.ROTATED_DETECTION,
     TaskType.ACTION_CLASSIFICATION,
+    TaskType.ACTION_DETECTION,
 )
 
 

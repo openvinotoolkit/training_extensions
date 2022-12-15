@@ -81,7 +81,7 @@ from .inference import DetectionInferenceTask
 logger = get_logger()
 
 
-# pylint: disable=too-many-instance-attributes
+# pylint: disable=too-many-instance-attributes, too-many-ancestors
 class DetectionNNCFTask(DetectionInferenceTask, IOptimizationTask):
     """Task for compressing detection models using NNCF."""
 

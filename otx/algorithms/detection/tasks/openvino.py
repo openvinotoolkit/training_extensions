@@ -56,6 +56,7 @@ from otx.api.entities.model_template import TaskType
 from otx.api.entities.optimization_parameters import OptimizationParameters
 from otx.api.entities.result_media import ResultMediaEntity
 from otx.api.entities.resultset import ResultSetEntity
+from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.entities.tensor import TensorEntity
 from otx.api.serialization.label_mapper import LabelSchemaMapper, label_schema_to_bytes
@@ -339,12 +340,12 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
                 dataset_item.append_metadata_item(representation_vector, model=self.model)
 
             if add_saliency_map and saliency_map is not None:
-                saliency_map = get_actmap(saliency_map, (dataset_item.width, dataset_item.height))
+                actmap = get_actmap(saliency_map, (dataset_item.width, dataset_item.height))
                 saliency_map_media = ResultMediaEntity(
                     name="Saliency Map",
                     type="saliency_map",
                     annotation_scene=dataset_item.annotation_scene,
-                    numpy=saliency_map,
+                    numpy=actmap,
                     roi=dataset_item.roi,
                 )
                 dataset_item.append_metadata_item(saliency_map_media, model=self.model)
@@ -428,6 +429,7 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
         if self.model is None:
             raise RuntimeError("Optimize failed, model is None")
 
+        dataset = dataset.get_subset(Subset.TRAINING)
         data_loader = OTXOpenVinoDataLoader(dataset, self.inferencer)
 
         with tempfile.TemporaryDirectory() as tempdir:

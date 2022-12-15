@@ -1,4 +1,4 @@
-"""Train Task of OTX Action Classification."""
+"""Train Task of OTX Action Task."""
 
 # Copyright (C) 2022 Intel Corporation
 #
@@ -43,24 +43,24 @@ from otx.api.entities.metrics import (
     VisualizationType,
 )
 from otx.api.entities.model import ModelEntity
+from otx.api.entities.model_template import TaskType
 from otx.api.entities.resultset import ResultSetEntity
 from otx.api.entities.subset import Subset
 from otx.api.entities.train_parameters import TrainParameters, default_progress_callback
 from otx.api.serialization.label_mapper import label_schema_to_bytes
-from otx.api.usecases.evaluation.metrics_helper import MetricsHelper
 from otx.api.usecases.tasks.interfaces.training_interface import ITrainingTask
 
-from .inference import ActionClsInferenceTask
+from .inference import ActionInferenceTask
 
 logger = get_root_logger()
 
 
 # pylint: disable=too-many-locals, too-many-instance-attributes
-class ActionClsTrainTask(ActionClsInferenceTask, ITrainingTask):
-    """Train Task Implementation of OTX Action Classification."""
+class ActionTrainTask(ActionInferenceTask, ITrainingTask):
+    """Train Task Implementation of OTX Action Task."""
 
     def save_model(self, output_model: ModelEntity):
-        """Save best model weights in ActionClsTrainTask."""
+        """Save best model weights in ActionTrainTask."""
         logger.info("called save_model")
         buffer = io.BytesIO()
         hyperparams_str = ids_to_strings(cfg_helper.convert(self._hyperparams, dict, enum_to_str=True))
@@ -83,7 +83,7 @@ class ActionClsTrainTask(ActionClsInferenceTask, ITrainingTask):
         output_model.precision = self._precision
 
     def cancel_training(self):
-        """Cancel training function in ActionClsTrainTask.
+        """Cancel training function in ActionTrainTask.
 
         Sends a cancel training signal to gracefully stop the optimizer. The signal consists of creating a
         '.stop_training' file in the current work_dir. The runner checks for this file periodically.
@@ -104,7 +104,7 @@ class ActionClsTrainTask(ActionClsInferenceTask, ITrainingTask):
         output_model: ModelEntity,
         train_parameters: Optional[TrainParameters] = None,
     ):
-        """Train function in ActionClsTrainTask."""
+        """Train function in ActionTrainTask."""
         logger.info("train()")
         # Check for stop signal when training has stopped.
         # If should_stop is true, training was cancelled and no new
@@ -186,7 +186,11 @@ class ActionClsTrainTask(ActionClsInferenceTask, ITrainingTask):
         val_preds, val_map = self._infer_model(val_dataset, InferenceParameters(is_evaluation=True))
 
         preds_val_dataset = val_dataset.with_empty_annotations()
-        self._add_predictions_to_dataset(val_preds, preds_val_dataset)
+        # TODO Load _add_predictions_to_dataset function from self._task_type
+        if self._task_type == TaskType.ACTION_CLASSIFICATION:
+            self._add_predictions_to_dataset(val_preds, preds_val_dataset)
+        elif self._task_type == TaskType.ACTION_DETECTION:
+            self._add_det_predictions_to_dataset(val_preds, preds_val_dataset)
 
         result_set = ResultSetEntity(
             model=output_model,
@@ -194,18 +198,19 @@ class ActionClsTrainTask(ActionClsInferenceTask, ITrainingTask):
             prediction_dataset=preds_val_dataset,
         )
 
-        metric = MetricsHelper.compute_accuracy(result_set)
+        metric = self._get_metric(result_set)
 
         # compose performance statistics
         performance = metric.get_performance()
         metric_name = self._recipe_cfg.evaluation.final_metric
         performance.dashboard_metrics.extend(
-            ActionClsTrainTask._generate_training_metrics(self._learning_curves, val_map, metric_name)
+            ActionTrainTask._generate_training_metrics(self._learning_curves, val_map, metric_name)
         )
         logger.info(f"Final model performance: {str(performance)}")
         return performance
 
     @staticmethod
+    # TODO Implement proper function for action classification
     def _generate_training_metrics(learning_curves, scores, metric_name) -> Iterable[MetricsGroup[Any, Any]]:
         """Get Training metrics (epochs & scores).
 
