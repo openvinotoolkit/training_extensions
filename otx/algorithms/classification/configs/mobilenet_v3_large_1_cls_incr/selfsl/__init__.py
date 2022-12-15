@@ -1,4 +1,4 @@
-"""Initialization of EfficinetNet-V2 model for Warmstart Classification Task."""
+"""Initialization of MobileNet-V3-large-075 model for Classification Task with Self-Supervised Learning."""
 
 # Copyright (C) 2022 Intel Corporation
 #

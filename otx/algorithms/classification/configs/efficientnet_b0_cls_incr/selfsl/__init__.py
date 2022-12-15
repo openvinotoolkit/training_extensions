@@ -1,4 +1,4 @@
-"""Initialization of EfficinetNet-B0 model for Warmstart Classification Task."""
+"""Initialization of EfficinetNet-B0 model for Classification Task with Self-Supervised Learning."""
 
 # Copyright (C) 2022 Intel Corporation
 #

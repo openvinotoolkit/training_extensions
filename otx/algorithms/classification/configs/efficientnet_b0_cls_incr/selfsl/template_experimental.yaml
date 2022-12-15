@@ -4,7 +4,7 @@ name: EfficientNet-B0
 task_type: CLASSIFICATION
 task_family: VISION
 instantiation: "CLASS"
-summary: Warmstart Image Classification for EfficientNet-B0
+summary: Self-Supervised Learning for EfficientNet-B0
 application: ~
 
 # Algo backend.
@@ -22,7 +22,7 @@ capabilities:
 
 # Hyperparameters.
 hyper_parameters:
-  base_path: ../configuration.yaml
+  base_path: ../../configuration.yaml
   parameter_overrides:
     learning_parameters:
       batch_size:
