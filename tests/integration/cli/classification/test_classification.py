@@ -92,7 +92,6 @@ else:
     templates = Registry("otx/algorithms/classification").filter(task_type="CLASSIFICATION").templates
     templates_ids = [template.model_template_id for template in templates]
 
-<<<<<<< HEAD
 
 class TestToolsMultiClassClassification:
     @e2e_pytest_component
@@ -102,9 +101,6 @@ class TestToolsMultiClassClassification:
         args1["train_params"].extend(["--learning_parameters.enable_supcon", "True"])
         otx_train_testing(template, tmp_dir_path, otx_dir, args1)
 
-=======
-class TestToolsMPAClassification:
->>>>>>> Add dataset for tests and edit test code
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train(self, template, tmp_dir_path):
@@ -289,12 +285,8 @@ args_m = {
     ],
 }
 
-<<<<<<< HEAD
 
 class TestToolsMultilabelClassification:
-=======
-class TestToolsMPAMultilabelClassification:
->>>>>>> Add dataset for tests and edit test code
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train(self, template, tmp_dir_path):
@@ -448,12 +440,8 @@ args_h = {
     ],
 }
 
-<<<<<<< HEAD
 
 class TestToolsHierarchicalClassification:
-=======
-class TestToolsMPAHierarchicalClassification:
->>>>>>> Add dataset for tests and edit test code
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train(self, template, tmp_dir_path):
