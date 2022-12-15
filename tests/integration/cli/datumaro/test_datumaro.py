@@ -11,10 +11,7 @@ import pytest
 
 from otx.api.entities.model_template import parse_model_template
 from otx.cli.registry import Registry
-from otx.cli.utils.tests import (
-    get_template_dir,
-    otx_train_testing,
-)
+from otx.cli.utils.tests import get_template_dir, otx_train_testing
 from tests.test_suite.e2e_test_system import e2e_pytest_component
 
 otx_dir = os.getcwd()
@@ -84,6 +81,7 @@ else:
     templates = Registry("otx/algorithms/classification").filter(task_type="CLASSIFICATION").templates
     templates_ids = [template.model_template_id for template in templates]
 
+
 class TestToolsOTXClassificationDatumaro:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
@@ -93,7 +91,7 @@ class TestToolsOTXClassificationDatumaro:
         args1 = args_classification.copy()
         args1["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/weights.pth"
         otx_train_testing(template, tmp_dir_path, otx_dir, args1)
-    
+
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train_classfication_multilabel(self, template, tmp_dir_path):
@@ -102,7 +100,7 @@ class TestToolsOTXClassificationDatumaro:
         args1 = args_classification_multilabel.copy()
         args1["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/weights.pth"
         otx_train_testing(template, tmp_dir_path, otx_dir, args1)
-    
+
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train_classfication_hierarchical_label(self, template, tmp_dir_path):
@@ -111,6 +109,7 @@ class TestToolsOTXClassificationDatumaro:
         args1 = args_classification_hierarchical_label.copy()
         args1["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/weights.pth"
         otx_train_testing(template, tmp_dir_path, otx_dir, args1)
+
 
 """ 
 Detection Tests
@@ -132,6 +131,7 @@ else:
     templates = Registry("otx/algorithms/detection").filter(task_type="DETECTION").templates
     templates_ids = [template.model_template_id for template in templates]
 
+
 class TestToolsOTXDetectionDatumaro:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
@@ -141,6 +141,7 @@ class TestToolsOTXDetectionDatumaro:
         args1 = args_detection.copy()
         args1["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/weights.pth"
         otx_train_testing(template, tmp_dir_path, otx_dir, args1)
+
 
 """ 
 Instance Segmentation Tests
@@ -162,6 +163,7 @@ else:
     templates = Registry("otx/algorithms/detection").filter(task_type="INSTANCE_SEGMENTATION").templates
     templates_ids = [template.model_template_id for template in templates]
 
+
 class TestToolsOTXInstanceSegmentationDatumaro:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
@@ -171,6 +173,7 @@ class TestToolsOTXInstanceSegmentationDatumaro:
         args1 = args_instance_segmentation.copy()
         args1["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/weights.pth"
         otx_train_testing(template, tmp_dir_path, otx_dir, args1)
+
 
 """
 Semantic Segmentation Tests
@@ -203,6 +206,7 @@ else:
     templates = Registry("otx/algorithms/segmentation").filter(task_type="SEGMENTATION").templates
     templates_ids = [template.model_template_id for template in templates]
 
+
 class TestToolsOTXSemanticSegmentation:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
@@ -212,6 +216,7 @@ class TestToolsOTXSemanticSegmentation:
         args1 = args_semantic_segmentation.copy()
         args1["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/weights.pth"
         otx_train_testing(template, tmp_dir_path, otx_dir, args1)
+
 
 """
 Anomaly Classification Tests
@@ -227,11 +232,13 @@ args_anomaly_tasks = {
 templates = Registry("otx/algorithms").filter(task_type="ANOMALY_CLASSIFICATION").templates
 templates_ids = [template.model_template_id for template in templates]
 
+
 class TestToolsOTXAnomalyClassification:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train(self, template, tmp_dir_path):
         otx_train_testing(template, tmp_dir_path, otx_dir, args_anomaly_tasks)
+
 
 """
 Anomaly Detection Tests
@@ -240,11 +247,13 @@ Anomaly Detection Tests
 templates = Registry("otx/algorithms").filter(task_type="ANOMALY_DETECTION").templates
 templates_ids = [template.model_template_id for template in templates]
 
+
 class TestToolsOTXAnomalyDetection:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train(self, template, tmp_dir_path):
         otx_train_testing(template, tmp_dir_path, otx_dir, args_anomaly_tasks)
+
 
 """
 Anomaly Segmentation Tests
@@ -252,6 +261,7 @@ Anomaly Segmentation Tests
 
 templates = Registry("otx/algorithms").filter(task_type="ANOMALY_SEGMENTATION").templates
 templates_ids = [template.model_template_id for template in templates]
+
 
 class TestToolsOTXAnomalySegmentation:
     @e2e_pytest_component

@@ -6,8 +6,8 @@ import abc
 from enum import Enum, auto
 from typing import Optional
 
-from otx.api.entities.model import ModelEntity
 from otx.api.entities.id import ID
+from otx.api.entities.model import ModelEntity
 
 
 class IMetadata(metaclass=abc.ABCMeta):
@@ -59,18 +59,19 @@ class FloatMetadata(IMetadata):
         """Checks if two FloatMetadata have the same name, value and type."""
         return self.name == other.name and self.value == other.value and self.float_type == other.float_type
 
+
 class VideoMetadata(IMetadata):
     """This class represents metadata of video.
-    
+
     Args:
         video_id (ID): ID for video.
         frame_idx (int): Index for frame.
     """
-    
-    def __init__(self, video_id: ID, frame_idx:int):
+
+    def __init__(self, video_id: ID, frame_idx: int):
         self.video_id = video_id
         self.frame_idx = frame_idx
-    
+
     def __repr__(self):
         """Prints the video_id, frame_id and type of the MetadataItemEntity."""
         return f"VideoMetadata({self.video_id}, {self.frame_idx})"
@@ -78,7 +79,7 @@ class VideoMetadata(IMetadata):
     def __eq__(self, other):
         """Checks if two VideoMetadata have the same name, value and type."""
         return self.video_id == other.video_id and self.frame_idx == other.frame_idx
-        """"""
+
 
 class MetadataItemEntity:
     """This class is a wrapper class which connects the metadata value to model, which was used to generate it.
