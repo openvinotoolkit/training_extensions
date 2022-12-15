@@ -74,7 +74,7 @@ class ActionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask
         # self._should_stop = False
         self._model = None
         self.task_environment = task_environment
-        super().__init__(ActionConfig, task_environment **kwargs)
+        super().__init__(ActionConfig, task_environment, **kwargs)
 
     @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def infer(

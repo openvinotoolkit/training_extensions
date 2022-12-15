@@ -18,8 +18,8 @@
 # * https://github.com/open-mmlab/mmcv/blob/master/mmcv/runner/epoch_based_runner.py
 # * https://github.com/open-mmlab/mmcv/blob/master/mmcv/runner/iter_based_runner.py
 
-import warnings
 import time
+import warnings
 from typing import List, Optional, Sequence
 
 import mmcv

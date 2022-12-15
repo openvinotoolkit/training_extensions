@@ -335,8 +335,8 @@ def get_train_wrapper_task(impl_class, task_type):
     class HpoTrainTask(impl_class):
         """wrapper class for the HPO."""
 
-        def __init__(self, task_environment):
-            super().__init__(task_environment)
+        def __init__(self, task_environment, **kwargs):
+            super().__init__(task_environment, **kwargs)
             self._task_type = task_type
 
         # TODO: need to check things below whether works on MPA tasks

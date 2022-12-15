@@ -75,6 +75,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
 
         Args:
             task_environment (TaskEnvironment): OTX Task environment.
+            output_path (Optional[str]): output path where task output are saved.
         """
         torch.backends.cudnn.enabled = True
         logger.info("Initializing the task environment.")
