@@ -75,7 +75,10 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
     @check_input_parameters_type()
     def __init__(self, task_environment: TaskEnvironment):
         # self._should_stop = False
+        self.train_type = None
         super().__init__(DetectionConfig, task_environment)
+        self.template_dir = os.path.abspath(os.path.dirname(self.template_file_path))
+        self.base_dir = self.template_dir
 
     @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def infer(
@@ -229,11 +232,13 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
             if self._is_training:
                 if self._data_cfg.get("data", None) and self._data_cfg.data.get("unlabeled", None):
                     recipe = os.path.join(recipe_root, "semisl.py")
+                    self.base_dir = os.path.join(self.template_dir, "semisl")
                 else:
                     logger.warning("Cannot find unlabeled data.. convert to INCREMENTAL.")
                     train_type = TrainType.INCREMENTAL
             else:
                 recipe = os.path.join(recipe_root, "semisl.py")
+                self.base_dir = os.path.join(self.template_dir, "semisl")
 
         if train_type == TrainType.INCREMENTAL:
             recipe = os.path.join(recipe_root, "incremental.py")
@@ -241,17 +246,14 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         logger.info(f"train type = {train_type} - loading {recipe}")
 
         self._recipe_cfg = MPAConfig.fromfile(recipe)
-        self._recipe_cfg.train_type = train_type.name
-        patch_data_pipeline(self._recipe_cfg, self.template_file_path)
+        self.train_type = train_type
+        patch_data_pipeline(self._recipe_cfg, self.base_dir)
         patch_datasets(self._recipe_cfg, self._task_type.domain)  # for OTX compatibility
         patch_evaluation(self._recipe_cfg)  # for OTX compatibility
         logger.info(f"initialized recipe = {recipe}")
 
-    # TODO: make cfg_path loaded from custom model cfg file corresponding to train_type
-    # model.py contains head cfg only for INCREMENTAL setting
     def _init_model_cfg(self):
-        base_dir = os.path.abspath(os.path.dirname(self.template_file_path))
-        model_cfg = MPAConfig.fromfile(os.path.join(base_dir, "model.py"))
+        model_cfg = MPAConfig.fromfile(os.path.join(self.base_dir, "model.py"))
         if len(self._anchors) != 0:
             self._update_anchors(model_cfg.model.bbox_head.anchor_generator, self._anchors)
         return model_cfg
@@ -272,12 +274,11 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         return data_cfg
 
     def _update_stage_module(self, stage_module):
-        if hasattr(self._recipe_cfg, "train_type"):
-            if self._recipe_cfg.train_type == "SEMISUPERVISED":
-                if stage_module == "DetectionTrainer":
-                    stage_module = "SemiSLDetectionTrainer"
-                elif stage_module == "DetectionInferrer":
-                    stage_module = "SemiSLDetectionInferrer"
+        if self.train_type == TrainType.SEMISUPERVISED:
+            if stage_module == "DetectionTrainer":
+                stage_module = "SemiSLDetectionTrainer"
+            elif stage_module == "DetectionInferrer":
+                stage_module = "SemiSLDetectionInferrer"
         return stage_module
 
     def _add_predictions_to_dataset(self, prediction_results, dataset, confidence_threshold=0.0):

@@ -265,9 +265,8 @@ def patch_evaluation(config: Config):
 
 
 # TODO Replace this with function in common
-def patch_data_pipeline(config: Config, template_file_path: str):
+def patch_data_pipeline(config: Config, base_dir: str):
     """Update data_pipeline configs."""
-    base_dir = os.path.abspath(os.path.dirname(template_file_path))
     data_pipeline_path = os.path.join(base_dir, "data_pipeline.py")
     if os.path.exists(data_pipeline_path):
         data_pipeline_cfg = Config.fromfile(data_pipeline_path)
