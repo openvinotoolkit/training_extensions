@@ -246,8 +246,8 @@ algo_backend:
   train_type:
     affects_outcome_of: TRAINING
     default_value: INCREMENTAL
-    description: Quantization preset that defines quantization scheme
-    editable: false
+    description: Training schema for the MPA task
+    editable: True
     enum_name: TrainType
     header: Train type
     options:
