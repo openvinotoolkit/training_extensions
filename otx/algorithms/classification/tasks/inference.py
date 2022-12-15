@@ -324,7 +324,7 @@ class ClassificationInferenceTask(
 
         model_base_name = "model"
         if self._hyperparams.learning_parameters.enable_supcon:
-            model_base_name = "model_supcon"
+            model_base_name = os.path.join("supcon", "model")
 
         if self._multilabel:
             cfg_path = os.path.join(base_dir, "model_multilabel.py")
