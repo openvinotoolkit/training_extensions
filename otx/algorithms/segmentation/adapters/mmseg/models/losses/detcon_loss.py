@@ -1,3 +1,8 @@
+"""DetCon loss."""
+
+# Copyright (C) 2022 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
 import torch
 import torch.distributed as dist
 import torch.nn as nn
@@ -6,17 +11,16 @@ from mmseg.models import LOSSES
 
 
 def manual_cross_entropy(logits, labels, weight):
+    """Manually calculate weighted cross entropy."""
     ce = -weight * torch.sum(labels * F.log_softmax(logits, dim=-1), dim=-1)
     return torch.mean(ce)
 
 
 @LOSSES.register_module
 class DetConLoss(nn.Module):
-    """
-    Modified from https://github.com/deepmind/detcon/blob/main/utils/losses.py.
-    
-    Compute the NCE scores from pairs of predictions and targets.
+    """Modified from https://github.com/deepmind/detcon/blob/main/utils/losses.py.
 
+    Compute the NCE scores from pairs of predictions and targets.
     This implements the batched form of the loss described in
     Section 3.1, Equation 3 in https://arxiv.org/pdf/2103.10957.pdf.
 
@@ -25,20 +29,16 @@ class DetConLoss(nn.Module):
         use_replicator_loss (bool): use cross-replica samples.
     """
 
-    def __init__(
-        self,
-        temperature: float = 0.1,
-        use_replicator_loss: bool = True,
-        ignore_index: int = 255
-    ):
-    
+    def __init__(self, temperature: float = 0.1, use_replicator_loss: bool = True, ignore_index: int = 255):
+
         super().__init__()
         assert temperature > 0
         self.temperature = torch.tensor(temperature)
         self.use_replicator_loss = use_replicator_loss
 
     def forward(self, pred1, pred2, target1, target2, pind1, pind2, tind1, tind2, local_negatives=True):
-        """
+        """Forward loss.
+
         Args:
             pred1: (b, num_samples, d) the prediction from first view.
             pred2: (b, num_samples, d) the prediction from second view.
@@ -57,8 +57,7 @@ class DetConLoss(nn.Module):
         infinity_proxy = 1e9  # Used for masks to proxy a very large number.
 
         def make_same_obj(ind_0, ind_1):
-            same_obj = torch.eq(ind_0.reshape([bs, num_samples, 1]),
-                                ind_1.reshape([bs, 1, num_samples]))
+            same_obj = torch.eq(ind_0.reshape([bs, num_samples, 1]), ind_1.reshape([bs, 1, num_samples]))
             same_obj = same_obj.unsqueeze(2).to(torch.float)
             return same_obj
 
@@ -96,7 +95,7 @@ class DetConLoss(nn.Module):
             target1_large = target1
             target2_large = target2
             labels = F.one_hot(torch.arange(bs), num_classes=bs).to(pred1.device)
-        
+
         labels = labels.unsqueeze(dim=2).unsqueeze(dim=1)
 
         # Do our matmuls and mask out appropriately.
@@ -112,8 +111,8 @@ class DetConLoss(nn.Module):
 
         logits_aa = logits_aa - infinity_proxy * labels * same_obj_aa
         logits_bb = logits_bb - infinity_proxy * labels * same_obj_bb
-        labels_aa = 0. * labels_aa
-        labels_bb = 0. * labels_bb
+        labels_aa = 0.0 * labels_aa
+        labels_bb = 0.0 * labels_bb
         if not local_negatives:
             logits_aa = logits_aa - infinity_proxy * labels * (1 - same_obj_aa)
             logits_ab = logits_ab - infinity_proxy * labels * (1 - same_obj_ab)

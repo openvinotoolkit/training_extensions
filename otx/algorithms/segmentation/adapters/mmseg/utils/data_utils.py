@@ -174,12 +174,12 @@ def load_dataset_items(
     test_mode = subset in {Subset.VALIDATION, Subset.TESTING}
     pipeline = [dict(type="LoadAnnotations")]
     # sungchul: temporary settings for target datasets
-    if 'pascal_voc' in img_dir:
-        img_suffix = '.jpg'
-        seg_map_suffix = '.png'
-    elif 'cityscapes' in img_dir:
-        img_suffix = '_leftImg8bit.png'
-        seg_map_suffix = '_gtFine_labelTrainIds.png'
+    if "pascal_voc" in img_dir:
+        img_suffix = ".jpg"
+        seg_map_suffix = ".png"
+    elif "cityscapes" in img_dir:
+        img_suffix = "_leftImg8bit.png"
+        seg_map_suffix = "_gtFine_labelTrainIds.png"
 
     dataset = CustomDataset(
         img_dir=img_dir,

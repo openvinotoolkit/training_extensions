@@ -18,10 +18,13 @@ from .dataset import MPASegDataset, get_annotation_mmseg_format
 from .pipelines import (
     LoadAnnotationFromOTXDataset,
     LoadImageFromOTXDataset,
-    TwoCropTransform
+    TwoCropTransform,
 )
 
 __all__ = [
-    "get_annotation_mmseg_format", "LoadImageFromOTXDataset", "LoadAnnotationFromOTXDataset",
-    "MPASegDataset", "TwoCropTransform"
+    "get_annotation_mmseg_format",
+    "LoadImageFromOTXDataset",
+    "LoadAnnotationFromOTXDataset",
+    "MPASegDataset",
+    "TwoCropTransform",
 ]

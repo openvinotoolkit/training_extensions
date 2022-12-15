@@ -214,9 +214,9 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         patch_data_pipeline(self._recipe_cfg, pipeline_path)
         patch_datasets(self._recipe_cfg)  # for OTX compatibility
         patch_evaluation(self._recipe_cfg)  # for OTX compatibility
-        if self._recipe_cfg.get('evaluation', None):
+        if self._recipe_cfg.get("evaluation", None):
             self.metric = self._recipe_cfg.evaluation.metric
-            
+
         if not self.freeze:
             remove_from_config(self._recipe_cfg, "params_config")
         logger.info(f"initialized recipe = {recipe}")

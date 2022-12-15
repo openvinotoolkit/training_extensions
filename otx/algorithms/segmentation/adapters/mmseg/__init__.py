@@ -4,8 +4,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from .data import MPASegDataset
-from .models import DetConB, SelfSLMLP, DetConLoss
+from .models import DetConB, DetConLoss, SelfSLMLP
 
-__all__ = [
-    "MPASegDataset", "DetConLoss", "SelfSLMLP", "DetConB"
-]
+__all__ = ["MPASegDataset", "DetConLoss", "SelfSLMLP", "DetConB"]

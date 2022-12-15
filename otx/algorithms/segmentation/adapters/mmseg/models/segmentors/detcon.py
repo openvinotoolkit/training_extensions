@@ -1,3 +1,12 @@
+"""DetCon implementation for self-supervised learning.
+
+Original papers:
+- 'Efficient Visual Pretraining with Contrastive Detection', https://arxiv.org/abs/2103.10957
+"""
+
+# Copyright (C) 2022 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
 from collections import OrderedDict
 from typing import Dict, List, Optional, Tuple, Union
 
@@ -22,7 +31,7 @@ class MaskPooling(nn.Module):
     """
 
     def __init__(
-        self, 
+        self,
         num_classes: int,
         num_samples: int = 16,
         downsample: int = 32,
@@ -67,11 +76,11 @@ class MaskPooling(nn.Module):
         Returns:
             masks: (b, num_samples, d)
         """
-        
+
         batch_size = masks.shape[0]
         mask_exists = torch.greater(masks.sum(dim=-1), 1e-3)
         sel_masks = mask_exists.to(torch.float) + 1e-11
-        
+
         mask_ids = torch.multinomial(sel_masks, num_samples=self.num_samples, replacement=self.replacement)
         sampled_masks = torch.stack([masks[b][mask_ids[b]] for b in range(batch_size)])
 
@@ -110,7 +119,7 @@ class DetConB(nn.Module):
         in_index: List[int] = [],
         align_corners: bool = False,
         loss_cfg: Dict[str, Union[str, float]] = {},
-        **kwargs
+        **kwargs,
     ):
         super(DetConB, self).__init__()
 
@@ -151,20 +160,24 @@ class DetConB(nn.Module):
 
         if pretrained is not None:
             logger.info(f"load model from: {pretrained}")
-            load_checkpoint(self.backbone, pretrained, strict=False, map_location='cpu', 
-                            logger=logger, revise_keys=[(r'^backbone\.', '')])
+            load_checkpoint(
+                self.backbone,
+                pretrained,
+                strict=False,
+                map_location="cpu",
+                logger=logger,
+                revise_keys=[(r"^backbone\.", "")],
+            )
 
         # init backbone
-        for param_ol, param_tgt in zip(self.online_backbone.parameters(),
-                                       self.target_backbone.parameters()):
+        for param_ol, param_tgt in zip(self.online_backbone.parameters(), self.target_backbone.parameters()):
             param_tgt.data.copy_(param_ol.data)
             param_tgt.requires_grad = False
             param_ol.requires_grad = True
 
         # init projector
-        self.online_projector.init_weights(init_linear='kaiming')
-        for param_ol, param_tgt in zip(self.online_projector.parameters(),
-                                       self.target_projector.parameters()):
+        self.online_projector.init_weights(init_linear="kaiming")
+        for param_ol, param_tgt in zip(self.online_projector.parameters(), self.target_projector.parameters()):
             param_tgt.data.copy_(param_ol.data)
             param_tgt.requires_grad = False
             param_ol.requires_grad = True
@@ -176,15 +189,11 @@ class DetConB(nn.Module):
     def _momentum_update(self):
         """Momentum update of the target network."""
 
-        for param_ol, param_tgt in zip(self.online_backbone.parameters(),
-                                       self.target_backbone.parameters()):
-            param_tgt.data = param_tgt.data * self.momentum + \
-                             param_ol.data * (1. - self.momentum)
+        for param_ol, param_tgt in zip(self.online_backbone.parameters(), self.target_backbone.parameters()):
+            param_tgt.data = param_tgt.data * self.momentum + param_ol.data * (1.0 - self.momentum)
 
-        for param_ol, param_tgt in zip(self.online_projector.parameters(),
-                                       self.target_projector.parameters()):
-            param_tgt.data = param_tgt.data * self.momentum + \
-                             param_ol.data * (1. - self.momentum)
+        for param_ol, param_tgt in zip(self.online_projector.parameters(), self.target_projector.parameters()):
+            param_tgt.data = param_tgt.data * self.momentum + param_ol.data * (1.0 - self.momentum)
 
     def get_transformed_features(self, x):
         if self.input_transform:
@@ -203,17 +212,14 @@ class DetConB(nn.Module):
             Tensor: The transformed inputs
         """
 
-        if self.input_transform == 'resize_concat':
+        if self.input_transform == "resize_concat":
             inputs = [inputs[i] for i in self.in_index]
             upsampled_inputs = [
-                resize(
-                    input=x,
-                    size=inputs[0].shape[2:],
-                    mode='bilinear',
-                    align_corners=self.align_corners) for x in inputs
+                resize(input=x, size=inputs[0].shape[2:], mode="bilinear", align_corners=self.align_corners)
+                for x in inputs
             ]
             inputs = torch.cat(upsampled_inputs, dim=1)
-        elif self.input_transform == 'multiple_select':
+        elif self.input_transform == "multiple_select":
             inputs = [inputs[i] for i in self.in_index]
         else:
             inputs = inputs[self.in_index]
@@ -227,16 +233,12 @@ class DetConB(nn.Module):
 
         return x
 
-    def sample_masked_feats(
-        self,
-        feats: Union[torch.Tensor, List, Tuple],
-        masks: torch.Tensor,
-        projector: nn.Module):
+    def sample_masked_feats(self, feats: Union[torch.Tensor, List, Tuple], masks: torch.Tensor, projector: nn.Module):
         """Sampled features from mask.
 
         Args:
-            feats (Tensor): 
-            masks (Tensor): 
+            feats (Tensor):
+            masks (Tensor):
             projector (nn.Module):
         """
         if isinstance(feats, (list, tuple)) and len(feats) > 1:
@@ -283,18 +285,19 @@ class DetConB(nn.Module):
         pred2 = pred2.reshape((-1, self.num_samples, pred2.shape[-1]))
         proj1_tgt = proj1_tgt.reshape((-1, self.num_samples, proj1_tgt.shape[-1]))
         proj2_tgt = proj2_tgt.reshape((-1, self.num_samples, proj2_tgt.shape[-1]))
-        
+
         # decon loss
         loss = self.detcon_loss(
-            pred1=pred1, 
+            pred1=pred1,
             pred2=pred2,
             target1=proj1_tgt,
             target2=proj2_tgt,
             pind1=id1,
             pind2=id2,
             tind1=id1_tgt,
-            tind2=id2_tgt)
-        
+            tind2=id2_tgt,
+        )
+
         return loss
 
     def train_step(self, data_batch, optimizer, **kwargs):
@@ -327,11 +330,7 @@ class DetConB(nn.Module):
         losses = self(**data_batch)
         loss, log_vars = self._parse_losses(losses)
 
-        outputs = dict(
-            loss=loss,
-            log_vars=log_vars,
-            num_samples=len(data_batch['img_metas'])
-        )
+        outputs = dict(loss=loss, log_vars=log_vars, num_samples=len(data_batch["img_metas"]))
 
         return outputs
 
@@ -359,14 +358,11 @@ class DetConB(nn.Module):
             elif isinstance(var_value, (int, float)):
                 log_vars[var_name] = var_value
             else:
-                raise TypeError(f'{var_name} is not a tensor or list of tensors')
+                raise TypeError(f"{var_name} is not a tensor or list of tensors")
 
-        loss = sum(
-            _value for _key, _value in log_vars.items()
-            if 'loss' in _key
-        )
+        loss = sum(_value for _key, _value in log_vars.items() if "loss" in _key)
 
-        log_vars['loss'] = loss
+        log_vars["loss"] = loss
         for var_name, var_value in log_vars.items():
             if isinstance(var_value, (int, float)):
                 continue

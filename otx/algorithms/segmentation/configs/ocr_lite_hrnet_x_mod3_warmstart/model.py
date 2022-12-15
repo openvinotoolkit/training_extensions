@@ -26,25 +26,25 @@ model = dict(
     num_classes=256,
     num_samples=16,
     downsample=2,
-    input_transform='resize_concat',
-    in_index=[0,1,2,3,4],
+    input_transform="resize_concat",
+    in_index=[0, 1, 2, 3, 4],
     neck=dict(
         type="SelfSLMLP",
         in_channels=638,
         hid_channels=256,
         out_channels=128,
-        norm_cfg=dict(type='BN1d', requires_grad=True),
-        with_avg_pool=False
+        norm_cfg=dict(type="BN1d", requires_grad=True),
+        with_avg_pool=False,
     ),
     head=dict(
         type="SelfSLMLP",
         in_channels=128,
         hid_channels=256,
         out_channels=128,
-        norm_cfg=dict(type='BN1d', requires_grad=True),
-        with_avg_pool=False
+        norm_cfg=dict(type="BN1d", requires_grad=True),
+        with_avg_pool=False,
     ),
-    loss_cfg=dict(type='DetConLoss', temperature=0.1)
+    loss_cfg=dict(type="DetConLoss", temperature=0.1),
 )
 
 load_from = None
