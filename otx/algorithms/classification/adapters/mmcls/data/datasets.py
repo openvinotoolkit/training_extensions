@@ -145,8 +145,7 @@ class MPAClsDataset(BaseDataset):
             metrics.remove("class_accuracy")
             self.class_acc = True
 
-        eval_results = super().evaluate(results, metrics, metric_options, logger)
-
+        eval_results = super().evaluate(results, metrics, metric_options, logger=logger)
         # Add Evaluation Accuracy score per Class - it can be used only for multi-class dataset.
         if self.class_acc:
             results = np.vstack(results)
