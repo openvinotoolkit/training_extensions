@@ -5,31 +5,40 @@
 #
 
 # pylint: disable=invalid-name, too-many-locals, no-member
-from typing import List
+from typing import Any, List, Tuple
+
 from datumaro.components.annotation import LabelCategories
 
-from otx.core.base_dataset_adapter import BaseDatasetAdapter
+from otx.api.entities.annotation import (
+    Annotation,
+    AnnotationSceneEntity,
+    AnnotationSceneKind,
+    NullAnnotationSceneEntity,
+)
 from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.datasets import DatasetEntity
-from otx.api.entities.label import LabelEntity
 from otx.api.entities.image import Image
+from otx.api.entities.label import LabelEntity
+from otx.api.entities.label_schema import LabelGroup, LabelGroupType, LabelSchemaEntity
 from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.shapes.rectangle import Rectangle
-from otx.api.entities.label_schema import (LabelGroup, LabelGroupType, LabelSchemaEntity)
-from otx.api.entities.annotation import (Annotation, AnnotationSceneEntity, AnnotationSceneKind, NullAnnotationSceneEntity)
-from otx.utils.logger import get_logger
+from otx.core.base_dataset_adapter import BaseDatasetAdapter
 
-logger = get_logger()
 
 class ClassificationDatasetAdapter(BaseDatasetAdapter):
-    def convert_to_otx_format(self, datumaro_dataset: dict) -> DatasetEntity:
-        """ Convert DatumaroDataset to DatasetEntity for Classification. """
+    """Classification adapter inherited by BaseDatasetAdapter.
+    It converts DatumaroDataset -> DatasetEntity
+    for multi-class, multi-label, and hierarchical-label classification tasks
+    """
+
+    def convert_to_otx_format(self, datumaro_dataset: dict) -> Tuple[DatasetEntity, LabelSchemaEntity]:
+        """Convert DatumaroDataset to DatasetEntity for Classification."""
         # Prepare label information
         label_information = self._prepare_label_information(datumaro_dataset)
         category_items = label_information["category_items"]
         label_groups = label_information["label_groups"]
         label_entities = label_information["label_entities"]
-        
+
         # Generate label schema
         label_schema = self._generate_classification_label_schema(label_groups, label_entities)
 
@@ -41,28 +50,32 @@ class ClassificationDatasetAdapter(BaseDatasetAdapter):
                     image = Image(file_path=datumaro_item.media.path)
                     labels = [
                         ScoredLabel(
-                            label= [label for label in label_entities if label.name == category_items[ann.label].name][0],
-                            probability=1.0   
-                        ) for ann in datumaro_item.annotations
+                            label=[label for label in label_entities if label.name == category_items[ann.label].name][
+                                0
+                            ],
+                            probability=1.0,
+                        )
+                        for ann in datumaro_item.annotations
                     ]
                     shapes = [Annotation(Rectangle.generate_full_box(), labels)]
-                    
+
                     # Unlabeled dataset
+                    annotation_scene = None  # type: Any
                     if len(shapes) == 0:
                         annotation_scene = NullAnnotationSceneEntity()
                     else:
-                        annotation_scene = AnnotationSceneEntity(kind=AnnotationSceneKind.ANNOTATION, annotations=shapes)
+                        annotation_scene = AnnotationSceneEntity(
+                            kind=AnnotationSceneKind.ANNOTATION, annotations=shapes
+                        )
                     dataset_item = DatasetItemEntity(image, annotation_scene, subset=subset)
                     dataset_items.append(dataset_item)
 
-        return DatasetEntity(items=dataset_items), label_schema
+        return (DatasetEntity(items=dataset_items), label_schema)
 
     def _generate_classification_label_schema(
-        self, 
-        label_groups: List[LabelCategories.LabelGroup], 
-        label_entities: List[LabelEntity]
+        self, label_groups: List[LabelCategories.LabelGroup], label_entities: List[LabelEntity]
     ) -> LabelSchemaEntity:
-        """ Generate LabelSchema for Classification. """
+        """Generate LabelSchema for Classification."""
         label_schema = LabelSchemaEntity()
 
         if len(label_groups) > 0:
@@ -74,9 +87,7 @@ class ClassificationDatasetAdapter(BaseDatasetAdapter):
 
                 label_schema.add_group(
                     LabelGroup(
-                        name=label_group.name,
-                        labels=group_label_entity_list,
-                        group_type=LabelGroupType.EXCLUSIVE
+                        name=label_group.name, labels=group_label_entity_list, group_type=LabelGroupType.EXCLUSIVE
                     )
                 )
             label_schema.add_group(self._generate_empty_label_entity())
@@ -84,4 +95,3 @@ class ClassificationDatasetAdapter(BaseDatasetAdapter):
             label_schema = self._generate_default_label_schema(label_entities)
 
         return label_schema
-        

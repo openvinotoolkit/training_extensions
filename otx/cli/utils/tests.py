@@ -53,11 +53,7 @@ def get_template_dir(template, root) -> str:
 
 def otx_train_testing(template, root, otx_dir, args):
     template_work_dir = get_template_dir(template, root)
-    command_line = [
-        "otx",
-        "train",
-        template.model_template_path
-    ]
+    command_line = ["otx", "train", template.model_template_path]
 
     for arg in ["--train-ann_file", "--train-data-roots", "--val-ann-file", "--val-data-roots"]:
         arg_value = args.get(arg, None)

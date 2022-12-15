@@ -14,6 +14,8 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+# pylint: disable=too-many-locals
+
 import argparse
 import os
 import shutil
@@ -31,17 +33,13 @@ from otx.cli.registry import find_and_parse_model_template
 from otx.cli.utils.config import configure_dataset, override_parameters
 from otx.cli.utils.hpo import run_hpo
 from otx.cli.utils.importing import get_impl_class
-from otx.cli.utils.io import (
-    generate_label_schema,
-    read_binary,
-    read_label_schema,
-    save_model_data,
-)
+from otx.cli.utils.io import read_binary, read_label_schema, save_model_data
 from otx.cli.utils.parser import (
     add_hyper_parameters_sub_parser,
     gen_params_dict_from_args,
 )
 from otx.core.base_dataset_adapter import get_dataset_adapter
+
 
 def parse_args():
     """Parses command line arguments.
@@ -165,12 +163,12 @@ def main():
         }
         is_include_unlabel_data = True
 
-    # Datumaro 
+    # Datumaro
     datumaro_adapter = get_dataset_adapter(template.task_type)
     datumaro_dataset = datumaro_adapter.import_dataset(
         train_data_roots=data_roots["train_subset"]["data_root"],
         val_data_roots=data_roots["val_subset"]["data_root"],
-        unlabeled_data_roots=data_roots["unlabeled_subset"]["data_root"] if is_include_unlabel_data else None
+        unlabeled_data_roots=data_roots["unlabeled_subset"]["data_root"] if is_include_unlabel_data else None,
     )
     dataset, label_schema = datumaro_adapter.convert_to_otx_format(datumaro_dataset)
 
