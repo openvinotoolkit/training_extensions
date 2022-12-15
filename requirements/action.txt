@@ -3,5 +3,5 @@ mmcv-full==1.3.14
 mmaction2==0.24.1
 otxdet==0.3.2
 #otxmpa==0.3.0
-mpa@git+https://github.com/openvinotoolkit/model_preparation_algorithm@otx
+mpa@git+https://github.com/openvinotoolkit/model_preparation_algorithm@songkich/merge-dev-otx
 numpy==1.21.0
