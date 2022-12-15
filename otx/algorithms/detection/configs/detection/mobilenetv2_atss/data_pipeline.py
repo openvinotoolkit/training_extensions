@@ -16,8 +16,8 @@
 
 # pylint: disable=invalid-name
 
-img_size = (992, 736)
-img_norm_cfg = dict(mean=[0, 0, 0], std=[255, 255, 255], to_rgb=True)
+__img_size = (992, 736)
+__img_norm_cfg = dict(mean=[0, 0, 0], std=[255, 255, 255], to_rgb=True)
 
 train_pipeline = [
     dict(type="LoadImageFromFile"),
@@ -30,7 +30,7 @@ train_pipeline = [
         keep_ratio=False,
     ),
     dict(type="RandomFlip", flip_ratio=0.5),
-    dict(type="Normalize", **img_norm_cfg),
+    dict(type="Normalize", **__img_norm_cfg),
     dict(type="DefaultFormatBundle"),
     dict(type="Collect", keys=["img", "gt_bboxes", "gt_labels"]),
 ]
@@ -38,12 +38,12 @@ test_pipeline = [
     dict(type="LoadImageFromFile"),
     dict(
         type="MultiScaleFlipAug",
-        img_scale=img_size,
+        img_scale=__img_size,
         flip=False,
         transforms=[
             dict(type="Resize", keep_ratio=False),
             dict(type="RandomFlip"),
-            dict(type="Normalize", **img_norm_cfg),
+            dict(type="Normalize", **__img_norm_cfg),
             dict(type="ImageToTensor", keys=["img"]),
             dict(type="Collect", keys=["img"]),
         ],

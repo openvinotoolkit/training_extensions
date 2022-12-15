@@ -191,23 +191,28 @@ class Builder:
         # Copy task base configuration file
         task_configuration_path = os.path.join(template_dir, template.hyper_parameters.base_path)
         shutil.copyfile(task_configuration_path, os.path.join(workspace_path, "configuration.yaml"))
-        # Load & Save Model Template
+        # Load Model Template
         template_config = MPAConfig.fromfile(template.model_template_path)
         template_config.hyper_parameters.base_path = "./configuration.yaml"
-        template_config.dump(os.path.join(workspace_path, "template.yaml"))
 
         # Load & Save Model config
         model_config = MPAConfig.fromfile(os.path.join(template_dir, "model.py"))
         model_config.dump(os.path.join(workspace_path, "model.py"))
 
-        # Copy Data config
-        if os.path.exists(os.path.join(template_dir, "data_pipeline.py")):
-            data_pipeline_config = MPAConfig.fromfile(os.path.join(template_dir, "data_pipeline.py"))
+        # Copy Data pipeline config
+        if os.path.exists(os.path.join(template_dir, template_config.data_pipeline_path)):
+            data_pipeline_config = MPAConfig.fromfile(os.path.join(template_dir, template_config.data_pipeline_path))
             data_pipeline_config.dump(os.path.join(workspace_path, "data_pipeline.py"))
+            template_config.data_pipeline_path = "./data_pipeline.py"
+        template_config.dump(os.path.join(workspace_path, "template.yaml"))
+
+        # Create Data.yaml
         data_subset_format = {"ann-files": None, "data-roots": None}
         data_config = {"data": {subset: data_subset_format.copy() for subset in ("train", "val", "test")}}
         data_config["data"]["unlabeled"] = {"file-list": None, "data-roots": None}
         mmcv.dump(data_config, os.path.join(workspace_path, "data.yaml"))
+
+        # Copy compression_config.json
         if os.path.exists(os.path.join(template_dir, "compression_config.json")):
             shutil.copyfile(
                 os.path.join(template_dir, "compression_config.json"),

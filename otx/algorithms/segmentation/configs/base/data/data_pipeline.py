@@ -1,4 +1,4 @@
-"""Data Pipeline of Resnet model for Instance-Seg Task."""
+"""Data Pipeline for Cls-Incr model of Segmentation Task."""
 
 # Copyright (C) 2022 Intel Corporation
 #
@@ -16,26 +16,36 @@
 
 # pylint: disable=invalid-name
 
-__img_size = (1344, 800)
-
-# TODO: A comparison experiment is needed to determine which value is appropriate for to_rgb.
 __img_norm_cfg = dict(mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
+__img_scale = (544, 544)
+__crop_size = (512, 512)
 
 train_pipeline = [
     dict(type="LoadImageFromFile"),
-    dict(type="LoadAnnotations", with_bbox=True, with_mask=True, poly2mask=False),
-    dict(type="Resize", img_scale=__img_size, keep_ratio=False),
-    dict(type="RandomFlip", flip_ratio=0.5),
+    dict(type="LoadAnnotations"),
+    dict(type="Resize", img_scale=__img_scale, ratio_range=(0.5, 2.0), keep_ratio=False),
+    dict(type="RandomCrop", crop_size=__crop_size, cat_max_ratio=0.75),
+    dict(type="RandomFlip", prob=0.5, direction="horizontal"),
+    dict(
+        type="MaskCompose",
+        prob=0.5,
+        lambda_limits=(4, 16),
+        keep_original=False,
+        transforms=[
+            dict(type="PhotoMetricDistortion"),
+        ],
+    ),
     dict(type="Normalize", **__img_norm_cfg),
+    dict(type="Pad", size=__crop_size, pad_val=0, seg_pad_val=255),
+    dict(type="RandomRotate", prob=0.5, degree=30, pad_val=0, seg_pad_val=255),
     dict(type="DefaultFormatBundle"),
-    dict(type="Collect", keys=["img", "gt_bboxes", "gt_labels", "gt_masks"]),
+    dict(type="Collect", keys=["img", "gt_semantic_seg"]),
 ]
-
 test_pipeline = [
     dict(type="LoadImageFromFile"),
     dict(
         type="MultiScaleFlipAug",
-        img_scale=__img_size,
+        img_scale=__img_scale,
         flip=False,
         transforms=[
             dict(type="Resize", keep_ratio=False),
@@ -47,29 +57,5 @@ test_pipeline = [
     ),
 ]
 
-__dataset_type = "CocoDataset"
 
-data = dict(
-    samples_per_gpu=4,
-    workers_per_gpu=2,
-    train=dict(
-        type=__dataset_type,
-        ann_file="data/coco/annotations/instances_train2017.json",
-        img_prefix="data/coco/train2017",
-        pipeline=train_pipeline,
-    ),
-    val=dict(
-        type=__dataset_type,
-        test_mode=True,
-        ann_file="data/coco/annotations/instances_val2017.json",
-        img_prefix="data/coco/val2017",
-        pipeline=test_pipeline,
-    ),
-    test=dict(
-        type=__dataset_type,
-        test_mode=True,
-        ann_file="data/coco/annotations/instances_val2017.json",
-        img_prefix="data/coco/val2017",
-        pipeline=test_pipeline,
-    ),
-)
+data = dict(train=dict(pipeline=train_pipeline), val=dict(pipeline=test_pipeline), test=dict(pipeline=test_pipeline))
