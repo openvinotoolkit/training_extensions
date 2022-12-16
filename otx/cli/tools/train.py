@@ -113,9 +113,9 @@ def parse_args():
         help="Location where trained model will be stored.",
     )
     parser.add_argument(
-        "--save-logs-to",
+        "--output-path",
         required=False,
-        help="Location where logs will be stored.",
+        help="Location where product of the training will be stored.",
     )
     parser.add_argument(
         "--enable-hpo",
@@ -206,9 +206,9 @@ def main():
         task = run_hpo(args, environment, dataset, template.task_type)
         if task is None:
             print("cannot run HPO for this task. will train a model without HPO.")
-            task = task_class(task_environment=environment, output_path=args.save_logs_to)
+            task = task_class(task_environment=environment, output_path=args.output_path)
     else:
-        task = task_class(task_environment=environment, output_path=args.save_logs_to)
+        task = task_class(task_environment=environment, output_path=args.output_path)
 
     if args.gpus:
         multigpu_manager = MultiGPUManager(main, args.gpus, str(args.multi_gpu_port))

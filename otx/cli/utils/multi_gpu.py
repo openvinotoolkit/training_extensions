@@ -179,7 +179,7 @@ class MultiGPUManager:
             sys.argv.pop(gpus_arg_idx)
         if "--enable-hpo" in sys.argv:
             sys.argv.remove("--enable-hpo")
-        set_arguments_to_argv("--save-logs-to", output_path)
+        set_arguments_to_argv("--output-path", output_path)
 
         MultiGPUManager.initialize_multigpu_train(rank, gpu_ids, multi_gpu_port)
 
