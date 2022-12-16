@@ -29,7 +29,7 @@ from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.shapes.rectangle import Rectangle
 from otx.api.entities.subset import Subset
 from otx.api.utils.segmentation_utils import create_annotation_from_segmentation_map
-from otx.core.base_dataset_adapter import BaseDatasetAdapter
+from otx.core.data.base_dataset_adapter import BaseDatasetAdapter
 
 
 class AnomalyBaseDatasetAdapter(BaseDatasetAdapter):
@@ -79,7 +79,7 @@ class AnomalyBaseDatasetAdapter(BaseDatasetAdapter):
         raise NotImplementedError
 
 
-class AnomalyClassificationDatasetAdapter(AnomalyBaseDatasetAdapter, BaseDatasetAdapter):
+class AnomalyClassificationDatasetAdapter(AnomalyBaseDatasetAdapter):
     """Anomaly classification adapter inherited by AnomalyBaseDatasetAdapter and BaseDatasetAdapter."""
 
     def convert_to_otx_format(self, datumaro_dataset: dict) -> Tuple[DatasetEntity, LabelSchemaEntity]:
@@ -115,7 +115,7 @@ class AnomalyClassificationDatasetAdapter(AnomalyBaseDatasetAdapter, BaseDataset
         return DatasetEntity(items=dataset_items), label_schema
 
 
-class AnomalyDetectionDatasetAdapter(AnomalyBaseDatasetAdapter, BaseDatasetAdapter):
+class AnomalyDetectionDatasetAdapter(AnomalyBaseDatasetAdapter):
     """Anomaly detection adapter inherited by AnomalyBaseDatasetAdapter and BaseDatasetAdapter."""
 
     def convert_to_otx_format(self, datumaro_dataset: dict) -> Tuple[DatasetEntity, LabelSchemaEntity]:
@@ -136,8 +136,12 @@ class AnomalyDetectionDatasetAdapter(AnomalyBaseDatasetAdapter, BaseDatasetAdapt
                             labels=[ScoredLabel(label=label, probability=1.0)],
                         )
                     ]
-                    #TODO: avoid hard coding, plan to enable MVTec to Datumaro 
-                    mask_file_path = os.path.join('/'.join(datumaro_item.media.path.split('/')[:-3]), 'ground_truth', str(datumaro_item.id) + "_mask.png") 
+                    # TODO: avoid hard coding, plan to enable MVTec to Datumaro
+                    mask_file_path = os.path.join(
+                        "/".join(datumaro_item.media.path.split("/")[:-3]),
+                        "ground_truth",
+                        str(datumaro_item.id) + "_mask.png",
+                    )
                     if os.path.exists(mask_file_path):
                         mask = (cv2.imread(mask_file_path, cv2.IMREAD_GRAYSCALE) / 255).astype(np.uint8)
                         bboxes = mask2bbox(mask)
@@ -151,7 +155,7 @@ class AnomalyDetectionDatasetAdapter(AnomalyBaseDatasetAdapter, BaseDatasetAdapt
                                         x2=x2 / image.width,
                                         y2=y2 / image.height,
                                     ),
-                                    labels=[ScoredLabel(label=self.abnormal_label)],
+                                    labels=[ScoredLabel(label=abnormal_label)],
                                 )
                             )
                     # Unlabeled dataset
@@ -168,7 +172,7 @@ class AnomalyDetectionDatasetAdapter(AnomalyBaseDatasetAdapter, BaseDatasetAdapt
         return DatasetEntity(items=dataset_items), label_schema
 
 
-class AnomalySegmentationDatasetAdapter(AnomalyBaseDatasetAdapter, BaseDatasetAdapter):
+class AnomalySegmentationDatasetAdapter(AnomalyBaseDatasetAdapter):
     """Anomaly segmentation adapter inherited by AnomalyBaseDatasetAdapter and BaseDatasetAdapter."""
 
     def convert_to_otx_format(self, datumaro_dataset: dict) -> Tuple[DatasetEntity, LabelSchemaEntity]:
@@ -189,15 +193,19 @@ class AnomalySegmentationDatasetAdapter(AnomalyBaseDatasetAdapter, BaseDatasetAd
                             labels=[ScoredLabel(label=label, probability=1.0)],
                         )
                     ]
-                    #TODO: avoid hard coding, plan to enable MVTec to Datumaro 
-                    mask_file_path = os.path.join('/'.join(datumaro_item.media.path.split('/')[:-3]), 'ground_truth', str(datumaro_item.id) + "_mask.png") 
+                    # TODO: avoid hard coding, plan to enable MVTec to Datumaro
+                    mask_file_path = os.path.join(
+                        "/".join(datumaro_item.media.path.split("/")[:-3]),
+                        "ground_truth",
+                        str(datumaro_item.id) + "_mask.png",
+                    )
                     if os.path.exists(mask_file_path):
                         mask = (cv2.imread(mask_file_path, cv2.IMREAD_GRAYSCALE) / 255).astype(np.uint8)
                         shapes.extend(
                             create_annotation_from_segmentation_map(
                                 hard_prediction=mask,
                                 soft_prediction=np.ones_like(mask),
-                                label_map={0: self.normal_label, 1: self.abnormal_label},
+                                label_map={0: normal_label, 1: abnormal_label},
                             )
                         )
                     # Unlabeled dataset

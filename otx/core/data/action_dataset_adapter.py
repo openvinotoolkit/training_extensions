@@ -30,7 +30,7 @@ from otx.api.entities.metadata import MetadataItemEntity, VideoMetadata
 from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.shapes.rectangle import Rectangle
 from otx.api.entities.subset import Subset
-from otx.core.base_dataset_adapter import BaseDatasetAdapter
+from otx.core.data.base_dataset_adapter import BaseDatasetAdapter
 
 
 class ActionBaseDatasetAdapter(BaseDatasetAdapter):
@@ -74,10 +74,6 @@ class ActionBaseDatasetAdapter(BaseDatasetAdapter):
         In this case, if the label for 'video1/frame_000.jpg' is 2, then the index of label is set to 2.
         For the case of video2, if the label for 'video2/frame_000.jpg' is 4, then the index of label is set to 2.
         However, Since overall labels are [0, 1, 2, 4], 'video2/frame_000.jpg' should has the label index as 3.
-<<<<<<< HEAD
-=======
-
->>>>>>> Add Pyling, Mypy, Docstring
         """
         outputs = {
             "category_items": [],
@@ -155,7 +151,7 @@ class ActionClassificationDatasetAdapter(ActionBaseDatasetAdapter, BaseDatasetAd
         return DatasetEntity(items=dataset_items), label_schema
 
 
-class ActionDetectionDatasetAdapter(ActionBaseDatasetAdapter, BaseDatasetAdapter):
+class ActionDetectionDatasetAdapter(ActionBaseDatasetAdapter):
     """Action Detection adapter inherited by ActionBaseDatasetAdapter and BaseDatasetAdapter."""
 
     def convert_to_otx_format(self, datumaro_dataset: dict) -> Tuple[DatasetEntity, LabelSchemaEntity]:
