@@ -22,62 +22,8 @@ from otx.api.entities.model_template import TaskType
 from otx.api.entities.subset import Subset
 
 
-def get_dataset_adapter(task_type):
-    """Returns a dataset class by task type.
-    Args:
-        task_type: A task type such as ANOMALY_CLASSIFICATION, ANOMALY_DETECTION, ANOMALY_SEGMENTATION,
-        CLASSIFICATION, INSTANCE_SEGMENTATION, DETECTION, CLASSIFICATION, ROTATED_DETECTION, SEGMENTATION.
-    """
-    if task_type == TaskType.CLASSIFICATION:
-        from .classification_dataset_adapter import ClassificationDatasetAdapter
-
-        return ClassificationDatasetAdapter(task_type=task_type)
-
-    if task_type in [TaskType.DETECTION, TaskType.INSTANCE_SEGMENTATION]:
-        from .detection_dataset_adapter import DetectionDatasetAdapter
-
-        return DetectionDatasetAdapter(task_type=task_type)
-
-    if task_type == TaskType.SEGMENTATION:
-        from .segmentation_dataset_adapter import SegmentationDatasetAdapter
-
-        return SegmentationDatasetAdapter(task_type=task_type)
-
-    if task_type == TaskType.ACTION_CLASSIFICATION:
-        from .action_dataset_adapter import ActionClassificationDatasetAdapter
-
-        return ActionClassificationDatasetAdapter(task_type=task_type)
-
-    if task_type == TaskType.ANOMALY_CLASSIFICATION:
-        from .anomaly_dataset_adapter import AnomalyClassificationDatasetAdapter
-
-        return AnomalyClassificationDatasetAdapter(task_type=task_type)
-
-    if task_type == TaskType.ANOMALY_DETECTION:
-        from .anomaly_dataset_adapter import AnomalyDetectionDatasetAdapter
-
-        return AnomalyDetectionDatasetAdapter(task_type=task_type)
-
-    if task_type == TaskType.ANOMALY_SEGMENTATION:
-        from .anomaly_dataset_adapter import AnomalySegmentationDatasetAdapter
-
-        return AnomalySegmentationDatasetAdapter(task_type=task_type)
-
-    # TODO: Need to implement
-    # if task_type == TaskType.ACTION_DETECTION:
-    #    from .action_dataset_adapter import ActionDetectionDatasetAdapter
-    #
-    #    return ActionDetectionDatasetAdapter(task_type=task_type)
-    # if task_type == TaskType.ROTATED_DETECTION:
-    #    from .rotated_detection.dataset import RotatedDetectionDataset
-    #
-    #    return RotatedDetectionDataset
-
-    raise ValueError(f"Invalid task type: {task_type}")
-
-
 class BaseDatasetAdapter(metaclass=abc.ABCMeta):
-    """Base dataset adapter for all of downstream tasks to use Datumaro
+    """Base dataset adapter for all of downstream tasks to use Datumaro.
 
     Mainly, BaseDatasetAdapter detect and import the dataset by using the function implemented in Datumaro.
     And it could prepare common variable, function (EmptyLabelSchema, LabelSchema, ..) commonly consumed under all tasks
@@ -145,8 +91,10 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
     @abstractmethod
     def convert_to_otx_format(self, datumaro_dataset: dict) -> Tuple[DatasetEntity, LabelSchemaEntity]:
         """Convert DatumaroDataset to the DatasetEntity.
+
         Args:
             datumaro_dataset (dict): A Dictionary that includes subset dataset(DatasetEntity)
+
         Returns:
             DatasetEntity:
         """
