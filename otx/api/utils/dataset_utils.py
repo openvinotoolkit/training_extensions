@@ -16,11 +16,17 @@
 
 from typing import List, Optional, Tuple
 
+import numpy as np
+
 from otx.api.entities.annotation import AnnotationSceneEntity
 from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.datasets import DatasetEntity
+from otx.api.entities.label import LabelEntity
+from otx.api.entities.model import ModelEntity
+from otx.api.entities.result_media import ResultMediaEntity
 from otx.api.entities.resultset import ResultSetEntity
 from otx.api.entities.shapes.rectangle import Rectangle
+from otx.api.utils.vis_utils import get_actmap
 
 
 def get_fully_annotated_idx(dataset: DatasetEntity) -> List[int]:
@@ -183,3 +189,48 @@ def contains_anomalous_images(dataset: DatasetEntity) -> bool:
         if any(label.is_anomalous for label in labels):
             return True
     return False
+
+
+def add_saliency_maps_to_dataset_item(
+    dataset_item: DatasetItemEntity,
+    saliency_map: np.ndarray,
+    model: Optional[ModelEntity],
+    labels: List[LabelEntity],
+    predicted_scene: AnnotationSceneEntity = None,
+):
+    """Add saliency maps(2d for class-ignore saliency map, 3d for class-wise saliency maps) to a single dataset item."""
+    if saliency_map.ndim == 2:
+        # Single saliency map per image, support e.g. EigenCAM use case
+        actmap = get_actmap(saliency_map, (dataset_item.width, dataset_item.height))
+        saliency_media = ResultMediaEntity(
+            name="Saliency Map",
+            type="saliency_map",
+            annotation_scene=dataset_item.annotation_scene,
+            numpy=actmap,
+            roi=dataset_item.roi,
+        )
+        dataset_item.append_metadata_item(saliency_media, model=model)
+    elif saliency_map.ndim == 3:
+        # Multiple saliency maps per image (class-wise saliency map)
+        # If predicted_scene is provided, add saliency map with only predicted classes(used for openvino task)
+        predicted_class_set = (
+            set(label.name for label in predicted_scene.annotations[0].get_labels())
+            if predicted_scene is not None and len(predicted_scene.annotations) > 0
+            else set()
+        )
+        for class_id, class_wise_saliency_map in enumerate(saliency_map):
+            label = labels[class_id]
+            if predicted_scene is not None and label.name not in predicted_class_set:
+                continue
+            class_wise_saliency_map = get_actmap(class_wise_saliency_map, (dataset_item.width, dataset_item.height))
+            saliency_media = ResultMediaEntity(
+                name=label.name,
+                type="saliency_map",
+                annotation_scene=dataset_item.annotation_scene,
+                numpy=class_wise_saliency_map,
+                roi=dataset_item.roi,
+                label=label,
+            )
+            dataset_item.append_metadata_item(saliency_media, model=model)
+    else:
+        raise RuntimeError(f"Single saliency map has to be 2 or 3-dimensional, but got {saliency_map.ndim} dims")

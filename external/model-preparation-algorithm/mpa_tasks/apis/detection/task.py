@@ -59,6 +59,7 @@ from ote_sdk.entities.train_parameters import TrainParameters, default_progress_
 from ote_sdk.serialization.label_mapper import label_schema_to_bytes
 from ote_sdk.usecases.evaluation.metrics_helper import MetricsHelper
 from ote_sdk.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
+from ote_sdk.usecases.tasks.interfaces.explain_interface import IExplainTask
 from ote_sdk.usecases.tasks.interfaces.export_interface import ExportType, IExportTask
 from ote_sdk.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from ote_sdk.usecases.tasks.interfaces.training_interface import ITrainingTask
@@ -71,7 +72,7 @@ logger = get_logger()
 TASK_CONFIG = DetectionConfig
 
 
-class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask, IUnload):
+class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask, IExplainTask, IUnload):
     def __init__(self, task_environment: TaskEnvironment):
         # self._should_stop = False
         super().__init__(TASK_CONFIG, task_environment)
