@@ -15,6 +15,19 @@
 # and limitations under the License.
 
 from .datasets import MPAClsDataset, MPAHierarchicalClsDataset, MPAMultilabelClsDataset
-from .pipelines import LoadImageFromOTXDataset
+from .pipelines import (
+    BranchField,
+    BranchImage,
+    LoadImageFromOTXDataset,
+    PILImageToNDArray,
+)
 
-__all__ = ["MPAClsDataset", "MPAMultilabelClsDataset", "MPAHierarchicalClsDataset", "LoadImageFromOTXDataset"]
+__all__ = [
+    "MPAClsDataset",
+    "MPAMultilabelClsDataset",
+    "MPAHierarchicalClsDataset",
+    "LoadImageFromOTXDataset",
+    "PILImageToNDArray",
+    "BranchField",
+    "BranchImage",
+]

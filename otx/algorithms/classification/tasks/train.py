@@ -158,7 +158,7 @@ class ClassificationTrainTask(ClassificationInferenceTask):
                 ),
                 unlabeled=ConfigDict(
                     otx_dataset=dataset.get_subset(Subset.UNLABELED),
-                    labels=self._labels,
+                    labels=None,
                 ),
             )
         )

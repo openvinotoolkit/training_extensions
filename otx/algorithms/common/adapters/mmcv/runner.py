@@ -68,7 +68,7 @@ class EpochRunnerWithCancel(EpochBasedRunner):
         return broadcast_obj[0]
 
     @check_input_parameters_type()
-    def train(self, data_loader, **kwargs):
+    def train(self, data_loader: DataLoader, **kwargs):
         """Train call hook."""
         self.model.train()
         self.mode = "train"

@@ -5,8 +5,6 @@
 #
 
 # pylint: disable=invalid-name, too-many-locals, no-member
-import copy
-
 import numpy as np
 from mmcls.core import average_performance, mAP
 from mmcls.datasets.base_dataset import BaseDataset
@@ -45,17 +43,8 @@ class MPAClsDataset(BaseDataset):
             new_classes = kwargs.pop("new_classes", [])
             self.img_indices = self.get_indices(new_classes)
 
-        if isinstance(pipeline, dict):
-            self.pipeline = {}
-            for k, v in pipeline.items():
-                _pipeline = [dict(type="LoadImageFromOTXDataset"), *v]
-                _pipeline = [build_from_cfg(p, PIPELINES) for p in _pipeline]
-                self.pipeline[k] = Compose(_pipeline)
-            self.num_pipes = len(pipeline)
-        elif isinstance(pipeline, list):
-            self.num_pipes = 1
-            _pipeline = [dict(type="LoadImageFromOTXDataset"), *pipeline]
-            self.pipeline = Compose([build_from_cfg(p, PIPELINES) for p in _pipeline])
+        _pipeline = [dict(type="LoadImageFromOTXDataset"), *pipeline]
+        self.pipeline = Compose([build_from_cfg(p, PIPELINES) for p in _pipeline])
         self.load_annotations()
 
     def get_indices(self, *args):  # pylint: disable=unused-argument
@@ -97,15 +86,10 @@ class MPAClsDataset(BaseDataset):
             ignored_labels=ignored_labels,
         )
 
-        data_infos = [copy.deepcopy(data_info) for _ in range(self.num_pipes)]
-        if isinstance(self.pipeline, dict):
-            results = {}
-            for i, k in enumerate(self.pipeline.keys()):
-                results[k] = self.pipeline[k](data_infos[i])
-        elif self.pipeline is None:
-            results = data_infos[0]
+        if self.pipeline is None:
+            results = data_info
         else:
-            results = self.pipeline(data_infos[0])
+            results = self.pipeline(data_info)
         return results
 
     def get_gt_labels(self):
