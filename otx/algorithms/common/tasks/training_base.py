@@ -168,6 +168,14 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         return self._task_environment.model_template.model_template_path
 
     @property
+    def data_pipeline_path(self):
+        """Base Data Pipeline file path."""
+        return os.path.join(
+            os.path.dirname(os.path.abspath(self.template_file_path)),
+            self._task_environment.model_template.data_pipeline_path,
+        )
+
+    @property
     def hyperparams(self):
         """Hyper Parameters configuration."""
         return self._hyperparams
