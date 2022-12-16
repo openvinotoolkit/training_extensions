@@ -217,7 +217,7 @@ args0_m = {
     ],
 }
 
-# Class-Incremental learning w/ 'car', 'tree', 'bug' classes 
+# Class-Incremental learning w/ 'car', 'tree', 'bug' classes
 # TODO: Not include incremental case yet
 args_m = {
     "--train-data-roots": "data/datumaro/datumaro_multilabel",
