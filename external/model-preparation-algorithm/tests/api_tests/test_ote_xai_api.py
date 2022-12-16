@@ -16,8 +16,8 @@ from ote_sdk.entities.train_parameters import TrainParameters
 from ote_sdk.entities.result_media import ResultMediaEntity
 from ote_sdk.test_suite.e2e_test_system import e2e_pytest_api
 from ote_cli.utils.io import save_model_data, read_model
-from tests.api_tests.test_ote_classification_api import TestMPAClsAPI, DEFAULT_CLS_TEMPLATE_DIR
-from tests.api_tests.test_ote_detection_api import TestMPADetAPI, DEFAULT_DET_TEMPLATE_DIR
+from tests.api_tests.test_ote_classification_api import MPAClsAPIBase, DEFAULT_CLS_TEMPLATE_DIR
+from tests.api_tests.test_ote_detection_api import MPADetAPIBase, DEFAULT_DET_TEMPLATE_DIR
 from torchreid_tasks.openvino_task import OpenVINOClassificationTask
 from detection_tasks.apis.detection.openvino_task import OpenVINODetectionTask
 from mpa_tasks.apis.detection import DetectionInferenceTask, DetectionTrainTask
@@ -47,7 +47,7 @@ def saliency_maps_check(predicted_dataset, task_labels, assert_text, only_predic
             assert saliency_map_counter == len(task_labels), assert_text
 
 
-class TestOVClsXAIAPI(TestMPAClsAPI):
+class TestOVClsXAIAPI(MPAClsAPIBase):
     @e2e_pytest_api
     @pytest.mark.parametrize(
         "multilabel,hierarchical",
@@ -98,7 +98,7 @@ class TestOVClsXAIAPI(TestMPAClsAPI):
         saliency_maps_check(predicted_dataset_ov, task_labels, assert_text_ov, only_predicted=True)
 
 
-class TestOVDetXAIAPI(TestMPADetAPI):
+class TestOVDetXAIAPI(MPADetAPIBase):
     @e2e_pytest_api
     def test_inference_xai(self):
         hyper_parameters, model_template = self.setup_configurable_parameters(DEFAULT_DET_TEMPLATE_DIR, num_iters=2)

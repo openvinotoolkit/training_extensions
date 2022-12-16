@@ -42,17 +42,7 @@ from tests.mpa_common import eval
 DEFAULT_DET_TEMPLATE_DIR = osp.join("configs", "detection", "mobilenetv2_atss_cls_incr")
 
 
-class TestMPADetAPI:
-    """
-    Collection of tests for OTE API and OTE Model Templates
-    """
-
-    @e2e_pytest_api
-    def test_reading_detection_cls_incr_model_template(self):
-        detection_template = ["mobilenetv2_atss_cls_incr"]
-        for model_template in detection_template:
-            parse_model_template(osp.join("configs", "detection", model_template, "template.yaml"))
-
+class MPADetAPIBase:
     def init_environment(self, params, model_template, number_of_images=500, task_type=TaskType.DETECTION):
 
         labels_names = ("rectangle", "ellipse", "triangle")
@@ -117,6 +107,18 @@ class TestMPADetAPI:
         hyper_parameters.postprocessing.result_based_confidence_threshold = False
         hyper_parameters.postprocessing.confidence_threshold = 0.1
         return hyper_parameters, model_template
+
+
+class TestMPADetAPI(MPADetAPIBase):
+    """
+    Collection of tests for OTE API and OTE Model Templates
+    """
+
+    @e2e_pytest_api
+    def test_reading_detection_cls_incr_model_template(self):
+        detection_template = ["mobilenetv2_atss_cls_incr"]
+        for model_template in detection_template:
+            parse_model_template(osp.join("configs", "detection", model_template, "template.yaml"))
 
     @e2e_pytest_api
     def test_cancel_training_detection(self):

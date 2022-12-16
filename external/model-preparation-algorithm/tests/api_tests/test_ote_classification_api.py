@@ -43,17 +43,7 @@ from tests.mpa_common import eval
 DEFAULT_CLS_TEMPLATE_DIR = osp.join("configs", "classification", "efficientnet_b0_cls_incr")
 
 
-class TestMPAClsAPI:
-    @e2e_pytest_api
-    def test_reading_classification_cls_incr_model_template(self):
-        classification_template = [
-            "efficientnet_b0_cls_incr",
-            "efficientnet_v2_s_cls_incr",
-            "mobilenet_v3_large_1_cls_incr",
-        ]
-        for model_template in classification_template:
-            parse_model_template(osp.join("configs", "classification", model_template, "template.yaml"))
-
+class MPAClsAPIBase:
     @staticmethod
     def generate_label_schema(not_empty_labels, multilabel=False, hierarchical=False):
         assert len(not_empty_labels) > 1
@@ -175,6 +165,18 @@ class TestMPAClsAPI:
             model_template=model_template,
         )
         return environment, dataset
+
+
+class TestMPAClsAPI(MPAClsAPIBase):
+    @e2e_pytest_api
+    def test_reading_classification_cls_incr_model_template(self):
+        classification_template = [
+            "efficientnet_b0_cls_incr",
+            "efficientnet_v2_s_cls_incr",
+            "mobilenet_v3_large_1_cls_incr",
+        ]
+        for model_template in classification_template:
+            parse_model_template(osp.join("configs", "classification", model_template, "template.yaml"))
 
     @e2e_pytest_api
     @pytest.mark.parametrize(
