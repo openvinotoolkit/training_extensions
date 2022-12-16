@@ -26,7 +26,7 @@ from otx.api.entities.model_template import parse_model_template
 class Registry:
     """Class that implements a model templates registry."""
 
-    def __init__(self, templates_dir=None, templates=None, experimental=False, semisl=False):
+    def __init__(self, templates_dir=None, templates=None, experimental=False):
         if templates is None:
             if templates_dir is None:
                 templates_dir = os.getenv("TEMPLATES_DIR")
@@ -34,12 +34,7 @@ class Registry:
             if templates_dir is None:
                 raise RuntimeError("The templates_dir is not set.")
 
-            if semisl:
-                template_filenames = glob.glob(
-                    os.path.join(templates_dir, "**", "template_semisl.yaml"), recursive=True
-                )
-            else:
-                template_filenames = glob.glob(os.path.join(templates_dir, "**", "template.yaml"), recursive=True)
+            template_filenames = glob.glob(os.path.join(templates_dir, "**", "template.yaml"), recursive=True)
             if experimental:
                 template_filenames.extend(
                     glob.glob(
