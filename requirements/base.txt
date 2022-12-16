@@ -19,4 +19,4 @@ scikit-learn==0.24.*
 Shapely>=1.7.1,<=1.8.0
 hpopt==0.3.0
 imagesize==1.4.1
-datumaro>=0.3.1
+datumaro==0.4.0.1
