@@ -122,7 +122,8 @@ def patch_missing_args(backbone_config, missing_args):
     """Patch backbone's required arg configuration."""
     updated_missing_args = []
     backbone_type = backbone_config["type"]
-    backend, _ = Registry.split_scope_key(backbone_type)
+    backend, backbone_class = Registry.split_scope_key(backbone_type)
+    backend = "omz" if backbone_class == "MMOVBackbone" else backend
     available_backbones = get_available_backbone_list(backend)
     if backbone_type not in available_backbones:
         return missing_args
@@ -142,11 +143,19 @@ def patch_missing_args(backbone_config, missing_args):
 def update_in_channel(model_config, out_channels):
     """Update in_channel of head or neck."""
     if hasattr(model_config.model, "neck"):
-        print(f"\tUpdate model.neck.in_channels: {out_channels}")
-        model_config.model.neck.in_channels = out_channels
+        if model_config.model.neck.type == "GlobalAveragePooling":
+            model_config.model.neck.pop("in_channels", None)
+        else:
+            print(f"\tUpdate model.neck.in_channels: {out_channels}")
+            model_config.model.neck.in_channels = out_channels
     elif hasattr(model_config.model, "bbox_head"):
         raise NotImplementedError("This architecture currently does not support public backbone.")
     elif hasattr(model_config.model, "decode_head"):
+        head_in_index = model_config.model.decode_head.get("in_index", None)
+        if head_in_index and len(out_channels) != len(head_in_index):
+            updated_in_index = list(range(len(out_channels)))
+            print(f"\tUpdate model.decode_head.in_index: {updated_in_index}")
+            model_config.model.decode_head.in_index = updated_in_index
         print(f"\tUpdate model.decode_head.in_channels: {out_channels}")
         model_config.model.decode_head.in_channels = out_channels
     elif hasattr(model_config.model, "head"):
@@ -230,8 +239,11 @@ class Builder:
         """
         print(f"[otx build] Backbone Config: {backbone_type}")
 
-        backend, _ = Registry.split_scope_key(backbone_type)
+        backend, backbone_class = Registry.split_scope_key(backbone_type)
         backbone_config = {"type": backbone_type}
+        if backbone_class == "MMOVBackbone":
+            backend = f"omz.{backend}"
+            backbone_config["verify_shape"] = False
         otx_registry, _ = get_backbone_registry(backend)
         missing_args = update_backbone_args(backbone_config, otx_registry, skip_missing=True)
         missing_args = patch_missing_args(backbone_config, missing_args)
@@ -251,15 +263,12 @@ class Builder:
         backbone_config_path: backbone configuration file path (os.path)
         output_path: new model.py output path (os.path)
         """
-        print(f"[otx build] Model Config with {backbone_config_path}")
+        print(f"[otx build] Update {model_config_path} with {backbone_config_path}")
 
         # Get Model config from model config file
-        model_in_indices = []
         if os.path.exists(model_config_path):
             model_config = MPAConfig.fromfile(model_config_path)
             print(f"\tTarget Model: {model_config.model.type}")
-            if "backbone" in model_config.model:
-                model_in_indices = model_config.model.backbone.get("out_indices", [])
         else:
             raise ValueError(f"[otx build] The model is not properly defined or not found: {model_config_path}")
 
@@ -270,24 +279,22 @@ class Builder:
             raise ValueError(f"[otx build] The backbone is not found: {backbone_config_path}")
 
         backbone_pretrained = None
-        if "model" in backbone_config:
-            backbone_config = backbone_config["model"]
         if "backbone" in backbone_config:
             backbone_config = backbone_config["backbone"]
         backbone_pretrained = backbone_config.pop("pretrained", None)
 
         # Get Backbone configuration
-        backend, _ = Registry.split_scope_key(backbone_config["type"])
+        backend, backbone_class = Registry.split_scope_key(backbone_config["type"])
+        backend = f"omz.{backend}" if backbone_class == "MMOVBackbone" else backend
         print(f"\tTarget Backbone: {backbone_config['type']}")
         otx_registry, custom_imports = get_backbone_registry(backend)
+
+        # Update out_indices of backbone
         if backbone_config["use_out_indices"]:
+            model_in_indices = []
+            if "backbone" in model_config.model:
+                model_in_indices = model_config.model.backbone.get("out_indices", [])
             backbone_out_indices = backbone_config.get("out_indices", None)
-            if (
-                isinstance(backbone_out_indices, (tuple, list))
-                and isinstance(model_in_indices, (tuple, list))
-                and len(backbone_out_indices) != len(model_in_indices)
-            ):
-                backbone_out_indices = backbone_out_indices[-len(model_in_indices) :]
             if not backbone_out_indices and model_in_indices:
                 # Check out_indices vs num_stage
                 backbone_config["out_indices"] = model_in_indices
@@ -296,7 +303,15 @@ class Builder:
 
         # Build Backbone
         backbone = build_from_cfg(backbone_config, otx_registry, None)
-        out_channels = get_backbone_out_channels(backbone)
+        if model_config.model.get("task", None) == "classification":
+            # Update model layer's in/out configuration in ClsStage.configure_model
+            out_channels = -1
+            if hasattr(model_config.model, "head"):
+                model_config.model.head.in_channels = -1
+        else:
+            # Need to update in/out channel configuration here
+            out_channels = get_backbone_out_channels(backbone)
+        update_in_channel(model_config, out_channels)
 
         # Update Model Configuration
         model_config.model.backbone = backbone_config
@@ -309,7 +324,6 @@ class Builder:
             model_config.model.pretrained = None
         if custom_imports:
             model_config["custom_imports"] = dict(imports=custom_imports, allow_failed_imports=False)
-        update_in_channel(model_config, out_channels)
 
         # Dump or create model config file
         if output_path is None:
