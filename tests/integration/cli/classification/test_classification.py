@@ -227,6 +227,7 @@ class TestToolsMPAClassification:
 # Pre-train w/ 'car', 'tree' classes
 args0_m = {
     "--train-data-roots": "data/datumaro/datumaro_multilabel",
+    "--val-data-roots": "data/datumaro/datumaro_multilabel",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
@@ -236,9 +237,11 @@ args0_m = {
     ],
 }
 
-# Class-Incremental learning w/ 'car', 'tree', 'bug' classes
+# Class-Incremental learning w/ 'car', 'tree', 'bug' classes 
+# TODO: Not include incremental case yet
 args_m = {
     "--train-data-roots": "data/datumaro/datumaro_multilabel",
+    "--val-data-roots": "data/datumaro/datumaro_multilabel",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
@@ -383,6 +386,7 @@ class TestToolsMPAMultilabelClassification:
 # TODO: (Jihwan) Enable C-IL test without image loading via otx-cli.
 args_h = {
     "--train-data-roots": "data/datumaro/datumaro_h-label",
+    "--val-data-roots": "data/datumaro/datumaro_h-label",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
