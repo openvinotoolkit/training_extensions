@@ -5,13 +5,16 @@
 
 from copy import deepcopy
 
-from nncf.torch.nncf_network import NNCFNetwork
-
+from otx.algorithms.common.adapters.nncf.utils import is_nncf_enabled
 from otx.algorithms.common.adapters.nncf.patches import nncf_train_step
 from otx.algorithms.common.adapters.nncf.patchers import NNCF_PATCHER
 
-# add wrapper train_step method
-NNCFNetwork.train_step = nncf_train_step
+
+if is_nncf_enabled():
+    from nncf.torch.nncf_network import NNCFNetwork
+
+    # add wrapper train_step method
+    NNCFNetwork.train_step = nncf_train_step
 
 
 def evaluation_wrapper(self, fn, runner, *args, **kwargs):

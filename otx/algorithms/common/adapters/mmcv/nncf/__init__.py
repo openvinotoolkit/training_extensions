@@ -10,6 +10,8 @@ from .utils import (
     wrap_nncf_model,
 )
 
+from .patches import *
+
 __all__ = [
     "prepare_model_for_execution",
     "get_fake_input",
