@@ -133,7 +133,7 @@ def get_dataset_adapter(task_type):
 
 
 class BaseDatasetAdapter(metaclass=abc.ABCMeta):
-    """Base dataset adapter for all of downstream tasks to use Datumaro
+    """Base dataset adapter for all of downstream tasks to use Datumaro.
 
     Mainly, BaseDatasetAdapter detect and import the dataset by using the function implemented in Datumaro.
     And it could prepare common variable, function (EmptyLabelSchema, LabelSchema, ..) commonly consumed under all tasks
@@ -211,8 +211,10 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
     @abstractmethod
     def convert_to_otx_format(self, datumaro_dataset: dict) -> Tuple[DatasetEntity, LabelSchemaEntity]:
         """Convert DatumaroDataset to the DatasetEntity.
+
         Args:
             datumaro_dataset (dict): A Dictionary that includes subset dataset(DatasetEntity)
+
         Returns:
             DatasetEntity:
         """

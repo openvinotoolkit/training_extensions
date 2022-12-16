@@ -108,12 +108,14 @@ class ActionBaseDatasetAdapter(BaseDatasetAdapter):
         return outputs
 
     def convert_to_otx_format(self, datumaro_dataset: dict) -> Tuple[DatasetEntity, LabelSchemaEntity]:
+        """Convert DatumaroDataset to DatasetEntity for Acion tasks."""
         raise NotImplementedError
 
 class ActionClassificationDatasetAdapter(ActionBaseDatasetAdapter, BaseDatasetAdapter):
     """Action classification adapter inherited by ActionBaseDatasetAdapter and BaseDatasetAdapter."""
 
     def convert_to_otx_format(self, datumaro_dataset: dict) -> Tuple[DatasetEntity, LabelSchemaEntity]:
+        """Convert DatumaroDataset to DatasetEntity for Acion Classification."""
         label_information = self._prepare_label_information(datumaro_dataset)
         label_entities = label_information["label_entities"]
 
@@ -155,6 +157,7 @@ class ActionDetectionDatasetAdapter(ActionBaseDatasetAdapter):
     """Action Detection adapter inherited by ActionBaseDatasetAdapter and BaseDatasetAdapter."""
 
     def convert_to_otx_format(self, datumaro_dataset: dict) -> Tuple[DatasetEntity, LabelSchemaEntity]:
+        """Convert DatumaroDataset to DatasetEntity for Acion Detection."""
         label_information = self._prepare_label_information(datumaro_dataset)
         label_entities = label_information["label_entities"]
 
