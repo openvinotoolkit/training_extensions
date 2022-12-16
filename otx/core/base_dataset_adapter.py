@@ -21,6 +21,7 @@ from otx.api.entities.label_schema import LabelGroup, LabelGroupType, LabelSchem
 from otx.api.entities.model_template import TaskType
 from otx.api.entities.subset import Subset
 
+
 def get_dataset_adapter(task_type):
     """Returns a dataset class by task type.
     Args:
@@ -86,7 +87,7 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
     def __init__(self, task_type: TaskType):
         self.task_type = task_type
         self.domain = task_type.domain
-        self.data_type = None # type: Any
+        self.data_type = None  # type: Any
         self.dataset = None  # type: Any
 
     def import_dataset(
