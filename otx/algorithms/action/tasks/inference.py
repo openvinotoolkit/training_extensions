@@ -353,7 +353,7 @@ class ActionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask
         recipe_root = os.path.abspath(os.path.dirname(self.template_file_path))
         recipe = os.path.join(recipe_root, "model.py")
         self._recipe_cfg = Config.fromfile(recipe)
-        patch_config(self._recipe_cfg, self.template_file_path, self._output_path, self._task_type)
+        patch_config(self._recipe_cfg, self.data_pipeline_path, self._output_path, self._task_type)
         set_data_classes(self._recipe_cfg, self._labels, self._task_type)
         logger.info(f"initialized recipe = {recipe}")
 

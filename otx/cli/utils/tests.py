@@ -22,6 +22,9 @@ import numpy as np
 import pytest
 
 from otx.api.utils.vis_utils import get_actmap
+from otx.cli.tools.build import SUPPORTED_TASKS as build_supported_tasks
+from otx.cli.tools.find import SUPPORTED_BACKBONE_BACKENDS as find_supported_backends
+from otx.cli.tools.find import SUPPORTED_TASKS as find_supported_tasks
 
 
 def get_template_rel_dir(template):
@@ -521,3 +524,80 @@ def otx_explain_testing(template, root, otx_dir, args):
                 compare_image = get_actmap(compare_image, (w, h))
                 diff = np.sum((compare_image - output_image) ** 2) == 0
                 assert diff == 0, f"saliency map output is not same as the sample one, with {diff}!"
+
+
+def otx_find_testing():
+    # Find all model template
+    command_line = ["otx", "find", "--template"]
+    assert run(command_line).returncode == 0
+
+    # Find command per tasks
+    for task in find_supported_tasks:
+        command_line = ["otx", "find", "--template", "--task", task]
+        assert run(command_line).returncode == 0
+
+    # Find Backbones per backends
+    for backbone_backends in find_supported_backends:
+        command_line = [
+            "otx",
+            "find",
+            "--backbone",
+            backbone_backends,
+        ]
+        assert run(command_line).returncode == 0
+
+
+def otx_build_testing(root, args):
+    # Build otx-workspace per tasks check - Default Model Template only
+    for task in build_supported_tasks:
+        command_line = [
+            "otx",
+            "build",
+            "--task",
+            task,
+            "--workspace-root",
+            os.path.join(root, f"otx-workspace-{task}"),
+        ]
+        assert run(command_line).returncode == 0
+
+    for task, backbone in args.items():
+        task_workspace = os.path.join(root, f"otx-workspace-{task}")
+        # Build Backbone.yaml from backbone type
+        command_line = [
+            "otx",
+            "build",
+            "--backbone",
+            backbone,
+            "--workspace-root",
+            task_workspace,
+            "--save-backbone-to",
+            os.path.join(task_workspace, "backbone.yaml"),
+        ]
+        assert run(command_line).returncode == 0
+        assert os.path.exists(os.path.join(task_workspace, "backbone.yaml"))
+
+        # Build model.py from backbone.yaml
+        command_line = [
+            "otx",
+            "build",
+            "--model",
+            os.path.join(task_workspace, "model.py"),
+            "--backbone",
+            os.path.join(task_workspace, "backbone.yaml"),
+            "--workspace-root",
+            task_workspace,
+        ]
+        assert run(command_line).returncode == 0
+
+        # Build model.py from backbone type
+        command_line = [
+            "otx",
+            "build",
+            "--model",
+            os.path.join(task_workspace, "model.py"),
+            "--backbone",
+            backbone,
+            "--workspace-root",
+            task_workspace,
+        ]
+        assert run(command_line).returncode == 0

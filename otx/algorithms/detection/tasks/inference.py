@@ -24,11 +24,11 @@ from mpa import MPAConstants
 from mpa.utils.config_utils import MPAConfig
 from mpa.utils.logger import get_logger
 
+from otx.algorithms.common.adapters.mmcv.utils import patch_data_pipeline
 from otx.algorithms.common.configs.training_base import TrainType
 from otx.algorithms.common.tasks.training_base import BaseTask
 from otx.algorithms.common.utils.callback import InferenceProgressCallback
 from otx.algorithms.detection.adapters.mmdet.utils import (
-    patch_data_pipeline,
     patch_datasets,
     patch_evaluation,
 )
@@ -68,7 +68,7 @@ from otx.api.utils.vis_utils import get_actmap
 logger = get_logger()
 
 
-# pylint: disable=too-many-locals
+# pylint: disable=too-many-locals, too-many-instance-attributes
 class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask, IUnload):
     """Inference Task Implementation of OTX Detection."""
 
@@ -233,6 +233,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
                 if self._data_cfg.get("data", None) and self._data_cfg.data.get("unlabeled", None):
                     recipe = os.path.join(recipe_root, "semisl.py")
                     self.base_dir = os.path.join(self.template_dir, "semisl")
+                    self.data_pipeline_path = os.path.join(self.base_dir, "data_pipeline.py")
                 else:
                     logger.warning("Cannot find unlabeled data.. convert to INCREMENTAL.")
                     train_type = TrainType.INCREMENTAL
@@ -247,7 +248,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
 
         self._recipe_cfg = MPAConfig.fromfile(recipe)
         self.train_type = train_type
-        patch_data_pipeline(self._recipe_cfg, self.base_dir)
+        patch_data_pipeline(self._recipe_cfg, self.data_pipeline_path)
         patch_datasets(self._recipe_cfg, self._task_type.domain)  # for OTX compatibility
         patch_evaluation(self._recipe_cfg)  # for OTX compatibility
         logger.info(f"initialized recipe = {recipe}")

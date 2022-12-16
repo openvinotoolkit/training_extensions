@@ -78,6 +78,10 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
                     os.remove(self._model_ckpt)
                 torch.save(state_dict, self._model_ckpt)
                 self._model_label_schema = self._load_model_label_schema(self._task_environment.model)
+        self.data_pipeline_path = os.path.join(
+            os.path.dirname(os.path.abspath(self.template_file_path)),
+            self._task_environment.model_template.data_pipeline_path,
+        )
 
         # property below will be initialized by initialize()
         self._recipe_cfg = None
@@ -147,6 +151,11 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
 
     def _pre_task_run(self):
         pass
+
+    @property
+    def project_path(self):
+        """Return output path with logs."""
+        return self._output_path
 
     @property
     def model_name(self):
