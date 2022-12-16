@@ -113,9 +113,9 @@ def parse_args():
         help="Location where trained model will be stored.",
     )
     parser.add_argument(
-        "--output-path",
+        "--work-dir",
         required=False,
-        help="Location where product of the training will be stored.",
+        help="Location where the intermediate output of the training will be stored.",
     )
     parser.add_argument(
         "--enable-hpo",
@@ -206,9 +206,9 @@ def main():
         task = run_hpo(args, environment, dataset, template.task_type)
         if task is None:
             print("cannot run HPO for this task. will train a model without HPO.")
-            task = task_class(task_environment=environment, output_path=args.output_path)
+            task = task_class(task_environment=environment, output_path=args.work_dir)
     else:
-        task = task_class(task_environment=environment, output_path=args.output_path)
+        task = task_class(task_environment=environment, output_path=args.work_dir)
 
     if args.gpus:
         multigpu_manager = MultiGPUManager(main, args.gpus, str(args.multi_gpu_port))

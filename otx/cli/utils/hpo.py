@@ -136,7 +136,7 @@ def run_hpo(args: Namespace, environment: TaskEnvironment, dataset: DatasetEntit
     task_class = get_impl_class(environment.model_template.entrypoints.base)
     task_class = get_train_wrapper_task(task_class, task_type)
 
-    task = task_class(task_environment=environment, output_path=args.save_logs_to)
+    task = task_class(task_environment=environment, output_path=args.work_dir)
 
     hpopt_cfg = _load_hpopt_config(
         osp.join(

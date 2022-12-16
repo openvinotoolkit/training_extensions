@@ -24,5 +24,5 @@ from otx.api.entities.task_environment import TaskEnvironment
 class OTXClassificationNNCFTask(ClassificationNNCFTask):
     """Task for compressing classification models using NNCF."""
 
-    def __init__(self, task_environment: TaskEnvironment):  # pylint: disable=useless-parent-delegation
-        super().__init__(task_environment)
+    def __init__(self, task_environment: TaskEnvironment, **kwargs):  # pylint: disable=useless-parent-delegation
+        super().__init__(task_environment, **kwargs)
