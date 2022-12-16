@@ -215,11 +215,9 @@ class MultiGPUManager:
             return
 
         for process in self._processes:
-            print(f"Kill child process {process.pid}")
-            try:
+            if process.is_alive():
+                print(f"Kill child process {process.pid}")
                 process.kill()
-            except Exception:  # pylint: disable=broad-except
-                pass
 
     def _set_optimized_hp_for_child_process(self, hyper_parameters: ConfigurableParameters):
         set_arguments_to_argv(
