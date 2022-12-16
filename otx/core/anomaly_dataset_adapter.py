@@ -34,11 +34,6 @@ from otx.core.base_dataset_adapter import BaseDatasetAdapter
 
 class AnomalyBaseDatasetAdapter(BaseDatasetAdapter):
     """BaseDataset Adpater for Anomaly tasks inherited by BaseDatasetAdapter."""
-    def __init__(self):
-        super(self, AnomalyBaseDatasetAdapter).__init__()
-        self.gt_path = None # type: str
-        self.normal_label = None # type: LabelEntity
-        self.abnormal_label = None # type: LabelEntity
 
     def import_dataset(
         self,
@@ -68,19 +63,17 @@ class AnomalyBaseDatasetAdapter(BaseDatasetAdapter):
         self.dataset[Subset.TRAINING] = DatumaroDataset.import_from(train_data_roots, format="image_dir")
         if val_data_roots:
             self.dataset[Subset.VALIDATION] = DatumaroDataset.import_from(val_data_roots, format="image_dir")
-            self.gt_path = os.path.join("/".join(val_data_roots.split("/")[:-1]), "ground_truth")
         return self.dataset
 
     def _prepare_anomaly_label_information(self) -> List[LabelEntity]:
-        self.normal_label = LabelEntity(id=ID(0), name="Normal", domain=self.domain)
-        self.abnormal_label = LabelEntity(
+        normal_label = LabelEntity(id=ID(0), name="Normal", domain=self.domain)
+        abnormal_label = LabelEntity(
             id=ID(1),
             name="Anomalous",
             domain=self.domain,
             is_anomalous=True,
         )
-        label_entities = [self.normal_label, self.abnormal_label]
-        return label_entities
+        return [normal_label, abnormal_label]
 
     def convert_to_otx_format(self, datumaro_dataset: dict) -> Tuple[DatasetEntity, LabelSchemaEntity]:
         raise NotImplementedError
@@ -91,8 +84,8 @@ class AnomalyClassificationDatasetAdapter(AnomalyBaseDatasetAdapter, BaseDataset
 
     def convert_to_otx_format(self, datumaro_dataset: dict) -> Tuple[DatasetEntity, LabelSchemaEntity]:
         """Conver DatumaroDataset to DatasetEntity for Anomalytasks."""
-        label_entities = self._prepare_anomaly_label_information()
-        label_schema = self._generate_default_label_schema(label_entities)
+        normal_label, abnormal_label = self._prepare_anomaly_label_information()
+        label_schema = self._generate_default_label_schema([normal_label, abnormal_label])
 
         # Prepare
         dataset_items = []
@@ -101,7 +94,7 @@ class AnomalyClassificationDatasetAdapter(AnomalyBaseDatasetAdapter, BaseDataset
                 for datumaro_item in datumaro_items:
                     image = Image(file_path=datumaro_item.media.path)
 
-                    label = self.normal_label if datumaro_item.id.split("/")[0] == "good" else self.abnormal_label
+                    label = normal_label if datumaro_item.id.split("/")[0] == "good" else abnormal_label
                     shapes = [
                         Annotation(
                             Rectangle.generate_full_box(),
@@ -127,8 +120,8 @@ class AnomalyDetectionDatasetAdapter(AnomalyBaseDatasetAdapter, BaseDatasetAdapt
 
     def convert_to_otx_format(self, datumaro_dataset: dict) -> Tuple[DatasetEntity, LabelSchemaEntity]:
         """Conver DatumaroDataset to DatasetEntity for Anomalytasks."""
-        label_entities = self._prepare_anomaly_label_information()
-        label_schema = self._generate_default_label_schema(label_entities)
+        normal_label, abnormal_label = self._prepare_anomaly_label_information()
+        label_schema = self._generate_default_label_schema([normal_label, abnormal_label])
 
         # Prepare
         dataset_items = []
@@ -136,14 +129,15 @@ class AnomalyDetectionDatasetAdapter(AnomalyBaseDatasetAdapter, BaseDatasetAdapt
             for _, datumaro_items in subset_data.subsets().items():
                 for datumaro_item in datumaro_items:
                     image = Image(file_path=datumaro_item.media.path)
-                    label = self.normal_label if datumaro_item.id.split("/")[0] == "good" else self.abnormal_label
+                    label = normal_label if datumaro_item.id.split("/")[0] == "good" else abnormal_label
                     shapes = [
                         Annotation(
                             Rectangle.generate_full_box(),
                             labels=[ScoredLabel(label=label, probability=1.0)],
                         )
                     ]
-                    mask_file_path = os.path.join(self.gt_path, str(datumaro_item.id) + "_mask.png")
+                    #TODO: avoid hard coding, plan to enable MVTec to Datumaro 
+                    mask_file_path = os.path.join('/'.join(datumaro_item.media.path.split('/')[:-3]), 'ground_truth', str(datumaro_item.id) + "_mask.png") 
                     if os.path.exists(mask_file_path):
                         mask = (cv2.imread(mask_file_path, cv2.IMREAD_GRAYSCALE) / 255).astype(np.uint8)
                         bboxes = mask2bbox(mask)
@@ -179,8 +173,8 @@ class AnomalySegmentationDatasetAdapter(AnomalyBaseDatasetAdapter, BaseDatasetAd
 
     def convert_to_otx_format(self, datumaro_dataset: dict) -> Tuple[DatasetEntity, LabelSchemaEntity]:
         """Conver DatumaroDataset to DatasetEntity for Anomalytasks."""
-        label_entities = self._prepare_anomaly_label_information()
-        label_schema = self._generate_default_label_schema(label_entities)
+        normal_label, abnormal_label = self._prepare_anomaly_label_information()
+        label_schema = self._generate_default_label_schema([normal_label, abnormal_label])
 
         # Prepare
         dataset_items = []
@@ -188,14 +182,15 @@ class AnomalySegmentationDatasetAdapter(AnomalyBaseDatasetAdapter, BaseDatasetAd
             for _, datumaro_items in subset_data.subsets().items():
                 for datumaro_item in datumaro_items:
                     image = Image(file_path=datumaro_item.media.path)
-                    label = self.normal_label if datumaro_item.id.split("/")[0] == "good" else self.abnormal_label
+                    label = normal_label if datumaro_item.id.split("/")[0] == "good" else abnormal_label
                     shapes = [
                         Annotation(
                             Rectangle.generate_full_box(),
                             labels=[ScoredLabel(label=label, probability=1.0)],
                         )
                     ]
-                    mask_file_path = os.path.join(self.gt_path, str(datumaro_item.id) + "_mask.png")
+                    #TODO: avoid hard coding, plan to enable MVTec to Datumaro 
+                    mask_file_path = os.path.join('/'.join(datumaro_item.media.path.split('/')[:-3]), 'ground_truth', str(datumaro_item.id) + "_mask.png") 
                     if os.path.exists(mask_file_path):
                         mask = (cv2.imread(mask_file_path, cv2.IMREAD_GRAYSCALE) / 255).astype(np.uint8)
                         shapes.extend(
