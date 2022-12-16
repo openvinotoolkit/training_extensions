@@ -240,6 +240,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
             else:
                 recipe = os.path.join(recipe_root, "semisl.py")
                 self.base_dir = os.path.join(self.template_dir, "semisl")
+                self.data_pipeline_path = os.path.join(self.base_dir, "data_pipeline.py")
 
         if train_type == TrainType.INCREMENTAL:
             recipe = os.path.join(recipe_root, "incremental.py")
