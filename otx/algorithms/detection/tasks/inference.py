@@ -79,6 +79,8 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         super().__init__(DetectionConfig, task_environment)
         self.template_dir = os.path.abspath(os.path.dirname(self.template_file_path))
         self.base_dir = self.template_dir
+        # TODO Move this to the common
+        self.supported_task = [TrainType.INCREMENTAL, TrainType.SEMISUPERVISED]
 
     @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def infer(
@@ -226,7 +228,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         train_type = self._hyperparams.algo_backend.train_type
         logger.info(f"train type = {train_type}")
 
-        if train_type not in (TrainType.SEMISUPERVISED, TrainType.INCREMENTAL):
+        if train_type not in self.supported_task:
             raise NotImplementedError(f"Train type {train_type} is not implemented yet.")
         if train_type == TrainType.SEMISUPERVISED:
             if self._is_training:

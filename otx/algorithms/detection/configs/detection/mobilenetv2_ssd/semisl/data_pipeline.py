@@ -25,13 +25,6 @@ common_pipeline = [
     dict(
         type="Resize",
         img_scale=__img_scale,
-        # img_scale=[
-        #     (992, 736),
-        #     (896, 736),
-        #     (1088, 736),
-        #     (992, 672),
-        #     (992, 800),
-        # ],
         multiscale_mode="value",
         keep_ratio=False,
     ),
