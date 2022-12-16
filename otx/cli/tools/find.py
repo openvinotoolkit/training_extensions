@@ -29,6 +29,7 @@ from otx.cli.utils.importing import SUPPORTED_BACKBONE_BACKENDS, get_otx_root_pa
 SUPPORTED_TASKS = (
     "CLASSIFICATION",
     "DETECTION",
+    "ROTATED_DETECTION",
     "INSTANCE_SEGMENTATION",
     "SEGMENTATION",
     "ACTION_CLASSIFICATION",
@@ -42,7 +43,7 @@ def parse_args():
     """Parses command line arguments."""
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--task", help=f"The currently supported options: {SUPPORTED_TASKS}.")
+    parser.add_argument("--task", help=f"Supported task types.", choices=SUPPORTED_TASKS)
     parser.add_argument(
         "--template", action="store_true", help="Shows a list of templates that can be used immediately."
     )
