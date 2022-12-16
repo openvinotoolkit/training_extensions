@@ -4,6 +4,7 @@
 #
 
 
+import json
 import os
 from enum import Enum
 from typing import Any, List, Tuple, Type, Union
@@ -11,6 +12,7 @@ from typing import Any, List, Tuple, Type, Union
 import yaml
 from omegaconf import DictConfig, OmegaConf
 
+from otx.api.configuration.configurable_parameters import ConfigurableParameters
 from otx.api.configuration.enums.utils import get_enum_names
 from otx.api.entities.id import ID
 
@@ -19,6 +21,7 @@ from .config_element_mapping import (
     PrimitiveElementMapping,
     RuleElementMapping,
 )
+from .convert import convert
 
 
 def _search_in_config_dict_inner(
@@ -171,3 +174,14 @@ def ids_to_strings(config_dict: dict) -> dict:
         if isinstance(value, ID):
             config_dict[key] = str(value)
     return config_dict
+
+
+def config_to_bytes(config: ConfigurableParameters) -> bytes:
+    """
+    Converts ConfigurableParameters to bytes.
+
+    :param config: configurable parameters
+    :return: JSON in bytes
+    """
+    config_dict = convert(config, dict, enum_to_str=True)
+    return json.dumps(config_dict, indent=4).encode()

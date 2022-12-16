@@ -3,7 +3,7 @@
 attrs>=21.2.0
 natsort>=6.0.0
 nbmake
-networkx>=2.5,<=2.8.0
+networkx>=2.6,<=2.8.0
 numpy>=1.21.0
 omegaconf==2.1.*
 opencv-python==4.5.*

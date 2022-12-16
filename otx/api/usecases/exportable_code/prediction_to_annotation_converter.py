@@ -5,7 +5,7 @@
 #
 
 import abc
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import cv2
 import numpy as np
@@ -17,7 +17,7 @@ from otx.api.entities.annotation import (
     AnnotationSceneKind,
 )
 from otx.api.entities.id import ID
-from otx.api.entities.label import Domain, LabelEntity
+from otx.api.entities.label import Domain
 from otx.api.entities.label_schema import LabelSchemaEntity
 from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.shapes.polygon import Point, Polygon
@@ -52,12 +52,18 @@ class DetectionToAnnotationConverter(IPredictionToAnnotationConverter):
         labels (List[LabelEntity]): list of labels
     """
 
-    def __init__(self, labels: List[LabelEntity]):
-        self.label_map = dict(enumerate(labels))
+    def __init__(self, labels: Union[LabelSchemaEntity, List]):
+        self.labels = (
+            labels.get_labels(include_empty=False)
+            if isinstance(labels, LabelSchemaEntity)
+            else labels
+        )
+        self.label_map = dict(enumerate(self.labels))
 
-    def convert_to_annotation(self, predictions: np.ndarray, metadata: Optional[Dict] = None) -> AnnotationSceneEntity:
-        """Converts a set of predictions into an AnnotationScene object.
-
+    def convert_to_annotation(
+        self, predictions: np.ndarray, metadata: Optional[Dict[str, np.ndarray]] = None
+    ) -> AnnotationSceneEntity:
+        """
         Args:
             predictions (np.ndarray): Prediction with shape [num_predictions, 6] or
                             [num_predictions, 7]
@@ -70,11 +76,13 @@ class DetectionToAnnotationConverter(IPredictionToAnnotationConverter):
                 `label` can be any integer that can be mapped to `self.labels`
                 `confidence` should be a value between 0 and 1
                 `x1`, `x2`, `y1` and `y2` are expected to be normalized.
-            metadata (Optional[Dict]): (Unused)
+            metadata (Optional[Dict]): Additional information
 
         Returns:
             AnnotationScene: AnnotationScene Object containing the boxes obtained from the prediction.
         """
+        if metadata:
+            predictions[:, 2:] /= np.tile(metadata["original_shape"][1::-1], 2)
         annotations = self.__convert_to_annotations(predictions)
         # media_identifier = ImageIdentifier(image_id=ID())
         annotation_scene = AnnotationSceneEntity(
@@ -102,13 +110,16 @@ class DetectionToAnnotationConverter(IPredictionToAnnotationConverter):
                             (n, 7) or (n, 6)
         """
         annotations = []
-        if predictions.shape[1:] < (6,) or predictions.shape[1:] > (7,):
+        if (
+            len(predictions)
+            and predictions.shape[1:] < (6,)
+            or predictions.shape[1:] > (7,)
+        ):
             raise ValueError(
-                f"Shape of prediction is not expected, expected (n, 7) or (n, 6) " f"got {predictions.shape}"
+                f"Shape of prediction is not expected, expected (n, 7) or (n, 6) but got {predictions.shape}"
             )
 
         for prediction in predictions:
-
             if prediction.shape == (7,):
                 # Some OpenVINO models use an output shape of [7,]
                 # If this is the case, skip the first value as it is not used
@@ -117,9 +128,10 @@ class DetectionToAnnotationConverter(IPredictionToAnnotationConverter):
             label = int(prediction[0])
             confidence = prediction[1]
             scored_label = ScoredLabel(self.label_map[label], confidence)
+            coords = prediction[2:]
             annotations.append(
                 Annotation(
-                    Rectangle(prediction[2], prediction[3], prediction[4], prediction[5]),
+                    Rectangle(coords[0], coords[1], coords[2], coords[3]),
                     labels=[scored_label],
                 )
             )
@@ -140,7 +152,7 @@ def create_converter(
 
     converter: IPredictionToAnnotationConverter
     if converter_type == Domain.DETECTION:
-        converter = DetectionBoxToAnnotationConverter(labels)
+        converter = DetectionToAnnotationConverter(labels)
     elif converter_type == Domain.SEGMENTATION:
         converter = SegmentationToAnnotationConverter(labels)
     elif converter_type == Domain.CLASSIFICATION:
@@ -187,7 +199,10 @@ class DetectionBoxToAnnotationConverter(IPredictionToAnnotationConverter):
         image_size = metadata["original_shape"][1::-1]
         for box in predictions:
             scored_label = ScoredLabel(self.labels[int(box.id)], float(box.score))
-            coords = np.array(box.get_coords(), dtype=float) / np.tile(image_size, 2)
+            coords = np.array(box.get_coords(), dtype=float)
+            if (coords[2] - coords[0]) * (coords[3] - coords[1]) < 1.0:
+                continue
+            coords /= np.tile(image_size, 2)
             annotations.append(
                 Annotation(
                     Rectangle(coords[0], coords[1], coords[2], coords[3]),
@@ -246,9 +261,8 @@ class ClassificationToAnnotationConverter(IPredictionToAnnotationConverter):
         else:
             self.labels = label_schema.get_labels(include_empty=False)
         self.empty_label = get_empty_label(label_schema)
-        multilabel = len(label_schema.get_groups(False)) > 1 and len(label_schema.get_groups(False)) == len(
-            label_schema.get_labels(include_empty=False)
-        )
+        multilabel = len(label_schema.get_groups(False)) > 1
+        multilabel = multilabel and len(label_schema.get_groups(False)) == len(label_schema.get_labels(include_empty=False))
         self.hierarchical = not multilabel and len(label_schema.get_groups(False)) > 1
 
         self.label_schema = label_schema
@@ -359,7 +373,11 @@ class AnomalyDetectionToAnnotationConverter(IPredictionToAnnotationConverter):
     """
 
     def __init__(self, label_schema: LabelSchemaEntity):
-        """Initialize AnomalyDetectionToAnnotationConverter."""
+        """Initialize AnomalyDetectionToAnnotationConverter.
+
+        Args:
+            label_schema (LabelSchemaEntity): Label Schema containing the label info of the task
+        """
         labels = label_schema.get_labels(include_empty=False)
         self.normal_label = [label for label in labels if not label.is_anomalous][0]
         self.anomalous_label = [label for label in labels if label.is_anomalous][0]
@@ -414,9 +432,9 @@ class MaskToAnnotationConverter(IPredictionToAnnotationConverter):
             for contour, hierarchy in zip(contours, hierarchies[0]):
                 if hierarchy[3] != -1:
                     continue
-                contour = list(contour)
-                if len(contour) <= 2:
+                if len(contour) <= 2 or cv2.contourArea(contour) < 1.0:
                     continue
+                contour = list(contour)
                 points = [
                     Point(
                         x=point[0][0] / metadata["original_shape"][1],
@@ -425,13 +443,14 @@ class MaskToAnnotationConverter(IPredictionToAnnotationConverter):
                     for point in contour
                 ]
                 polygon = Polygon(points=points)
-                if polygon.get_area() > 1e-12:
-                    annotations.append(
-                        Annotation(
-                            polygon,
-                            labels=[ScoredLabel(self.labels[int(class_idx) - 1], float(score))],
-                        )
+                annotations.append(
+                    Annotation(
+                        polygon,
+                        labels=[
+                            ScoredLabel(self.labels[int(class_idx) - 1], float(score))
+                        ],
                     )
+                )
         annotation_scene = AnnotationSceneEntity(
             kind=AnnotationSceneKind.PREDICTION,
             annotations=annotations,
@@ -468,7 +487,7 @@ class RotatedRectToAnnotationConverter(IPredictionToAnnotationConverter):
             for contour, hierarchy in zip(contours, hierarchies[0]):
                 if hierarchy[3] != -1:
                     continue
-                if len(contour) <= 2:
+                if len(contour) <= 2 or cv2.contourArea(contour) < 1.0:
                     continue
                 points = [
                     Point(
@@ -478,13 +497,14 @@ class RotatedRectToAnnotationConverter(IPredictionToAnnotationConverter):
                     for point in cv2.boxPoints(cv2.minAreaRect(contour))
                 ]
                 polygon = Polygon(points=points)
-                if polygon.get_area() > 1e-12:
-                    annotations.append(
-                        Annotation(
-                            polygon,
-                            labels=[ScoredLabel(self.labels[int(class_idx) - 1], float(score))],
-                        )
+                annotations.append(
+                    Annotation(
+                        polygon,
+                        labels=[
+                            ScoredLabel(self.labels[int(class_idx) - 1], float(score))
+                        ],
                     )
+                )
         annotation_scene = AnnotationSceneEntity(
             kind=AnnotationSceneKind.PREDICTION,
             annotations=annotations,
