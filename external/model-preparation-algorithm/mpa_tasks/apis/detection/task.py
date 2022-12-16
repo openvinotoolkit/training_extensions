@@ -327,13 +327,14 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
                         labels.append(LabelEntity("background", Domain.DETECTION))
                     for class_id, class_wise_saliency_map in enumerate(saliency_map):
                         actmap = get_actmap(class_wise_saliency_map, (dataset_item.width, dataset_item.height))
-                        class_name_str = labels[class_id].name
+                        label = labels[class_id]
                         saliency_media = ResultMediaEntity(
-                            name=class_name_str,
+                            name=label.name,
                             type="saliency_map",
                             annotation_scene=dataset_item.annotation_scene,
                             numpy=actmap,
                             roi=dataset_item.roi,
+                            label=label,
                         )
                         dataset_item.append_metadata_item(saliency_media, model=self._task_environment.model)
                 else:
