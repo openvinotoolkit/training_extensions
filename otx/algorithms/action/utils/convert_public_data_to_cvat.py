@@ -1,4 +1,4 @@
-""" Convert dataset: Public dataset (Jester[RawFrames], AVA) --> Datumaro dataset (CVAT).
+"""Convert dataset: Public dataset (Jester[RawFrames], AVA) --> Datumaro dataset (CVAT).
 
 It contains lots of hard-coded to make .xml file consumed on Datumaro.
 
@@ -44,9 +44,7 @@ from lxml import etree
 
 
 def generate_default_cvat_xml_fields(i, class_idx, video_path, frame_list):
-    """
-    Generate default CVAT xml fields required to make multi-video CVAT format by using Jester, and AVA dataset.
-    """
+    """Generate default CVAT xml fields required to make multi-video CVAT format by using Jester, and AVA dataset."""
     n_frames = len(frame_list)
     annotations = etree.Element("annotations")
 
@@ -143,9 +141,7 @@ def generate_default_cvat_xml_fields(i, class_idx, video_path, frame_list):
 
 # classification
 def convert_jester_dataset_to_datumaro(src_path, dst_path):
-    """
-    Convert Jester dataset to multi-video CVAT (Datumaro) format
-    """
+    """Convert Jester dataset to multi-video CVAT (Datumaro) format."""
     ## Prepare dst_path
     frames_dir_path = osp.join(src_path, "frames")
 
@@ -191,9 +187,7 @@ def convert_jester_dataset_to_datumaro(src_path, dst_path):
 
 
 def convert_ava_dataset_to_datumaro(src_path, dst_path):
-    """
-    Convert AVA dataset to multi-video CVAT (Datumaro) format
-    """
+    """Convert AVA dataset to multi-video CVAT (Datumaro) format."""
     ## Prepare dst_path
     frames_dir_path = osp.join(src_path, "frames")
 
@@ -257,7 +251,7 @@ def convert_ava_dataset_to_datumaro(src_path, dst_path):
 
 
 def main(src_path, dst_path):
-    """Main function"""
+    """Main function."""
     # convert_jester_dataset_to_datumaro(src_path, dst_path)
     convert_ava_dataset_to_datumaro(src_path, dst_path)
 
