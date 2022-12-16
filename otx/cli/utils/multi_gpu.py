@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+import logging
 import os
 import signal
 import sys
@@ -26,7 +27,8 @@ import torch.distributed as dist
 import torch.multiprocessing as mp
 
 from otx.api.configuration import ConfigurableParameters
-from otx.api.entities.model_template import ModelTemplate, TaskType
+
+logger = logging.getLogger(__name__)
 
 
 def get_gpu_ids(gpus: str) -> List[int]:
@@ -57,7 +59,7 @@ def get_gpu_ids(gpus: str) -> List[int]:
         gpu_ids.remove(wrong_gpu)
 
     if wrong_gpus:
-        print(f"Warning: Wrong gpu indeces are excluded. {','.join([str(val) for val in gpu_ids])} GPU will be used.")
+        logger.warning(f"Wrong gpu indeces are excluded. {','.join([str(val) for val in gpu_ids])} GPU will be used.")
 
     return gpu_ids
 
@@ -103,21 +105,14 @@ class MultiGPUManager:
         self._main_pid = os.getpid()
         self._processes: Optional[List[mp.Process]] = None
 
-    def is_available(self, template: ModelTemplate) -> bool:
+    def is_available(self) -> bool:
         """Check multi GPU training is available.
-
-        Args:
-            template (ModelTemplate): template for training.
 
         Returns:
             bool:
                 whether multi GPU training is available.
         """
-        return (
-            len(self._gpu_ids) > 1
-            and not template.task_type.is_anomaly
-            and template.task_type not in (TaskType.ACTION_CLASSIFICATION, TaskType.ACTION_DETECTION)
-        )
+        return len(self._gpu_ids) > 1
 
     def setup_multi_gpu_train(
         self,
@@ -161,7 +156,7 @@ class MultiGPUManager:
         os.environ["MASTER_PORT"] = multi_gpu_port
         torch.cuda.set_device(gpu_ids[rank])
         dist.init_process_group(backend="nccl", world_size=len(gpu_ids), rank=rank)
-        print(f"dist info world_size = {dist.get_world_size()}, rank = {dist.get_rank()}")
+        logger.info(f"dist info world_size = {dist.get_world_size()}, rank = {dist.get_rank()}")
 
     @staticmethod
     def run_child_process(train_func: Callable, rank: int, gpu_ids: List[int], output_path: str, multi_gpu_port: str):
@@ -179,7 +174,7 @@ class MultiGPUManager:
             sys.argv.pop(gpus_arg_idx)
         if "--enable-hpo" in sys.argv:
             sys.argv.remove("--enable-hpo")
-        set_arguments_to_argv("--output-path", output_path)
+        set_arguments_to_argv("--work-dir", output_path)
 
         MultiGPUManager.initialize_multigpu_train(rank, gpu_ids, multi_gpu_port)
 
@@ -206,7 +201,7 @@ class MultiGPUManager:
         self._kill_child_process()
 
         singal_name = {2: "SIGINT", 15: "SIGTERM"}
-        print(f"{singal_name[signum]} is sent. process exited.")
+        logger.warning(f"{singal_name[signum]} is sent. process exited.")
 
         sys.exit(1)
 
@@ -216,7 +211,7 @@ class MultiGPUManager:
 
         for process in self._processes:
             if process.is_alive():
-                print(f"Kill child process {process.pid}")
+                logger.warning(f"Kill child process {process.pid}")
                 process.kill()
 
     def _set_optimized_hp_for_child_process(self, hyper_parameters: ConfigurableParameters):
@@ -240,6 +235,6 @@ class MultiGPUManager:
                     child_is_running = False
                     break
 
-        print("Some of child processes are terminated abnormally. process exits.")
+        logger.warning("Some of child processes are terminated abnormally. process exits.")
         self._kill_child_process()
         os.kill(self._main_pid, signal.SIGKILL)

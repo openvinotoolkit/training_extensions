@@ -20,6 +20,7 @@ import os
 from otx.api.configuration.helper import create
 from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.model import ModelEntity
+from otx.api.entities.model_template import TaskType
 from otx.api.entities.resultset import ResultSetEntity
 from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
@@ -212,7 +213,12 @@ def main():
 
     if args.gpus:
         multigpu_manager = MultiGPUManager(main, args.gpus, str(args.multi_gpu_port))
-        if multigpu_manager.is_available(template):
+        if template.task_type in (TaskType.ACTION_CLASSIFICATION, TaskType.ACTION_DETECTION):
+            print("Multi-GPU training for action tasks isn't supported yet. A single GPU will be used for a training.")
+        elif (
+            multigpu_manager.is_available()
+            and not template.task_type.is_anomaly  # anomaly tasks don't use this way for multi-GPU training
+        ):
             multigpu_manager.setup_multi_gpu_train(task.project_path, hyper_parameters if args.enable_hpo else None)
 
     output_model = ModelEntity(dataset, environment.get_model_configuration())
