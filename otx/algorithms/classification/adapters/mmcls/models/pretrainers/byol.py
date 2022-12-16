@@ -48,7 +48,7 @@ class BYOL(nn.Module):
         super().__init__()
 
         # build backbone
-        self.online_backbone = self.backbone = build_backbone(backbone)
+        self.online_backbone = build_backbone(backbone)
         self.target_backbone = build_backbone(backbone)
 
         # build projector
@@ -62,6 +62,9 @@ class BYOL(nn.Module):
 
         self.base_momentum = base_momentum
         self.momentum = base_momentum
+
+        # Hooks for super_type transparent weight save
+        self._register_state_dict_hook(self.state_dict_hook)
 
     def init_weights(self, pretrained: Optional[str] = None):
         """Initialize the weights of model.
@@ -194,3 +197,14 @@ class BYOL(nn.Module):
             log_vars[loss_name] = loss_value.item()
 
         return loss, log_vars
+
+    @staticmethod
+    def state_dict_hook(module, state_dict, *args, **kwargs):
+        """Save only online backbone as output state_dict."""
+        logger.info('----------------- BYOL.state_dict_hook() called')
+        output = OrderedDict()
+        for k, v in state_dict.items():
+            if 'online_backbone.' in k:
+                k = k.replace('online_backbone.', '')
+                output[k] = v
+        return output
