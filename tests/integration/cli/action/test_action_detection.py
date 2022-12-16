@@ -12,15 +12,9 @@ import pytest
 from otx.api.entities.model_template import parse_model_template
 from otx.cli.registry import Registry
 from otx.cli.utils.tests import (
-    otx_demo_deployment_testing,
-    otx_demo_openvino_testing,
-    otx_demo_testing,
-    otx_deploy_openvino_testing,
-    otx_eval_deployment_testing,
     otx_eval_openvino_testing,
     otx_eval_testing,
     otx_export_testing,
-    otx_hpo_testing,
     otx_train_testing,
     pot_eval_testing,
     pot_optimize_testing,

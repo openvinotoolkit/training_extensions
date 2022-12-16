@@ -75,15 +75,8 @@ class OTXActionCls(Model):
         self.resize = RESIZE_TYPES["standard"]
         self.input_transform = InputTransform(False, None, None)
 
-    @classmethod
-    # TODO What is this?
-    def parameters(cls):
-        """Parameters."""
-        parameters = super().parameters()
-        return parameters
-
-    def _check_io_number(self, number_of_inputs, number_of_outputs):
-        pass
+        # FIXME Below parameters should be changed dynamically from data pipeline config
+        self.interval = 4
 
     def _get_inputs(self):
         image_blob_names, image_info_blob_names = [], []
@@ -125,17 +118,13 @@ class OTXActionCls(Model):
 
     def get_frame_inds(self, np_frames: np.ndarray):
         """Get sampled index for given video input."""
-        # FIXME These parameters should be initialized dynamically
-        # pylint: disable=attribute-defined-outside-init
-        self.clip_len = 8
-        self.interval = 4
         frame_len = np_frames.shape[3]
-        ori_clip_len = self.clip_len * self.interval
+        ori_clip_len = self.t * self.interval
         if frame_len > ori_clip_len - 1:
             start = (frame_len - ori_clip_len + 1) / 2
         else:
             start = 0
-        frame_inds = np.arange(self.clip_len) * self.interval + int(start)
+        frame_inds = np.arange(self.t) * self.interval + int(start)
         frame_inds = np.clip(frame_inds, 0, frame_len - 1)
         frame_inds = frame_inds.astype(np.int)
         return frame_inds
@@ -166,6 +155,10 @@ class OTXActionDet(OTXActionCls):
         self.n, self.c, self.t, self.h, self.w = self.inputs[self.image_blob_name].shape
         self.resize = RESIZE_TYPES["standard"]
         self.input_transform = InputTransform(False, None, None)
+
+        # FIXME Below parameters should be changed dynamically from data pipeline config
+        self.interval = 1
+        self.fps = 1
 
     def _get_inputs(self):
         image_blob_names = []
@@ -210,11 +203,6 @@ class OTXActionDet(OTXActionCls):
 
         Sample clips from middle frame of video
         """
-        # FIXME These parameters should be initialized dynamically
-        # pylint: disable=attribute-defined-outside-init
-        self.clip_len = 32
-        self.frame_interval = 1
-        self.fps = 1
         timestamp = np_frames.shape[2] // 2
         timestamp_start = 1
         timestamp_end = np_frames.shape[2]
@@ -222,8 +210,8 @@ class OTXActionDet(OTXActionCls):
 
         center_index = self.fps * (timestamp - timestamp_start) + 1
 
-        start = center_index - (self.clip_len // 2) * self.frame_interval
-        end = center_index + ((self.clip_len + 1) // 2) * self.frame_interval
+        start = center_index - (self.t // 2) * self.frame_interval
+        end = center_index + ((self.t + 1) // 2) * self.frame_interval
         frame_inds = list(range(start, end, self.frame_interval))
         frame_inds = np.clip(frame_inds, shot_info[0], shot_info[1] - 1)
         return frame_inds
