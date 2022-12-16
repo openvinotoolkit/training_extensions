@@ -86,6 +86,12 @@ class AVAFastRCNN(FastRCNN):
         if self.detector.CLASSES[0] != "person":
             raise Exception(f"Person detector should has person as the first category, but got {self.detector.CLASSES}")
 
+    def patch_pools(self):
+        """Patch pooling functions for ONNX export.
+
+        AVAFastRCNN's bbox head has pooling funcitons, which contain dynamic shaping.
+        This funciton change those pooling functions from dynamic shaping to static shaping.
+        """
         self.roi_head.bbox_head.temporal_pool = ONNXPool3D(self.roi_head.bbox_head.temporal_pool_type, "temporal")
         self.roi_head.bbox_head.spatial_pool = ONNXPool3D(self.roi_head.bbox_head.spatial_pool_type, "spatial")
 

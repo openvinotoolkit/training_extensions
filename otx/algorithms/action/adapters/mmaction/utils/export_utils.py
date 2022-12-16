@@ -132,6 +132,7 @@ def pytorch2onnx(
     if not isinstance(model, Recognizer3D):
         if isinstance(model, AVAFastRCNN):
             model.add_detector()
+            model.patch_pools()
         input_tensor, meta = preprocess(input_shape[2], input_shape[3], input_shape[4])
         model.forward = partial(model.forward_infer, img_metas=meta)
         onnx_input = [input_tensor]
