@@ -51,7 +51,7 @@ fi
 . "${venv_dir}"/bin/activate
 
 # Install build package
-pip install --upgrade pip wheel setuptools build || exit 1
+pip install --upgrade 'pip>=22.0' wheel setuptools build || exit 1
 
 # Get CUDA version.
 CUDA_HOME_CANDIDATE=/usr/local/cuda
@@ -103,12 +103,8 @@ pip install torch=="${TORCH_VERSION}" torchvision=="${TORCHVISION_VERSION}" -f h
 # * Prerequisite
 #   - numpy: mmpycocotool uses source distribution, setup.py imports numpy
 #   - torch: mmdet/seg are installed via source, setup.py imports torch
-# * Issue
-#  - Dependency resolution is to slow
-#  - Several lib version conflicts
-#  -> Temporary use of --use-deprecated=legacy-resolver
 # shellcheck disable=SC2102
-pip install --use-deprecated=legacy-resolver -e ../../[full] || exit 1
+pip install -e ../../[full] || exit 1
 
 deactivate
 
