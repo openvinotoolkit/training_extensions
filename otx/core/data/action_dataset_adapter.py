@@ -30,7 +30,7 @@ from otx.api.entities.metadata import MetadataItemEntity, VideoMetadata
 from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.shapes.rectangle import Rectangle
 from otx.api.entities.subset import Subset
-from otx.core.base_dataset_adapter import BaseDatasetAdapter
+from otx.core.data.base_dataset_adapter import BaseDatasetAdapter
 
 
 class ActionBaseDatasetAdapter(BaseDatasetAdapter):
@@ -112,7 +112,7 @@ class ActionBaseDatasetAdapter(BaseDatasetAdapter):
         raise NotImplementedError
 
 
-class ActionClassificationDatasetAdapter(ActionBaseDatasetAdapter, BaseDatasetAdapter):
+class ActionClassificationDatasetAdapter(ActionBaseDatasetAdapter):
     """Action classification adapter inherited by ActionBaseDatasetAdapter and BaseDatasetAdapter."""
 
     def convert_to_otx_format(self, datumaro_dataset: dict) -> Tuple[DatasetEntity, LabelSchemaEntity]:
@@ -153,7 +153,7 @@ class ActionClassificationDatasetAdapter(ActionBaseDatasetAdapter, BaseDatasetAd
         return DatasetEntity(items=dataset_items), label_schema
 
 
-class ActionDetectionDatasetAdapter(ActionBaseDatasetAdapter, BaseDatasetAdapter):
+class ActionDetectionDatasetAdapter(ActionBaseDatasetAdapter):
     """Action Detection adapter inherited by ActionBaseDatasetAdapter and BaseDatasetAdapter."""
 
     def convert_to_otx_format(self, datumaro_dataset: dict) -> Tuple[DatasetEntity, LabelSchemaEntity]:

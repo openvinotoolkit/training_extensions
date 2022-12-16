@@ -149,8 +149,9 @@ class OTXRawframeDataset(RawframeDataset):
             self.video_infos.append(media)
 
     def _prepare_chunk_information(self):
-        """
-        FIXME: Maybe there is better way to make video chunk
+        """Preparing testing data.
+
+        FIXME: Maybe there is better way to make video chunk.
         TODO: Can be changed according to the requirements from Geti. and not working on detection
         ---
         Preparing Chunk by using DatasetItemEntity.
@@ -165,7 +166,7 @@ class OTXRawframeDataset(RawframeDataset):
                 )
 
             2.  All frame information is needed even there is no annotation.
-                Frames that have no annotations can be regarded as 'label=0' to make video chunk
+                Frames that have no annotations can be regarded as 'label=0' to make video chunk.
         """
 
         chunk_info_dict = {}

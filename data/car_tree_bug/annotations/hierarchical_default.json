@@ -17,14 +17,8 @@
     {
       "parent": "self",
       "group": "manmade",
-      "labels": ["car", "bus"],
-      "task_type": "multi-label",
-      "subtask": {
-        "parent": "car",
-        "group": "color",
-        "labels": ["green"],
-        "task_type": "single-label"
-      }
+      "labels": ["car"],
+      "task_type": "multi-label"
     }
   ]
 }
