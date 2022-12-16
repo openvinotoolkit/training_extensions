@@ -22,7 +22,7 @@ from otx.api.entities.image import Image
 from otx.api.entities.label_schema import LabelSchemaEntity
 from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.shapes.polygon import Point, Polygon
-from otx.core.base_dataset_adapter import BaseDatasetAdapter
+from otx.core.data.base_dataset_adapter import BaseDatasetAdapter
 
 
 class SegmentationDatasetAdapter(BaseDatasetAdapter):
