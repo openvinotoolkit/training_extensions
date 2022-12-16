@@ -317,7 +317,7 @@ if __name__ == "__main__":
         raise Exception from e
     main(src, dst, data_type)
 def main(src_path, dst_path):
-    """Main function"""
+    """Main function."""
     # convert_jester_dataset_to_datumaro(src_path, dst_path)
     convert_ava_dataset_to_datumaro(src_path, dst_path)
 

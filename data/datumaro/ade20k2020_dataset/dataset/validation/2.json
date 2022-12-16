@@ -2,29 +2,13 @@
   "annotation": {
     "filename": "2.jpg",
     "folder": "validation",
-<<<<<<< HEAD
     "imsize": [5, 5, 3],
-=======
-    "imsize": [
-      5,
-      5,
-      3
-    ],
->>>>>>> Add data samples for tests and add task_type input for datumaro
     "source": {
       "folder": "",
       "filename": "",
       "origin": ""
     },
-<<<<<<< HEAD
     "scene": ["outdoor", "urban", "street"],
-=======
-    "scene": [
-      "outdoor",
-      "urban",
-      "street"
-    ],
->>>>>>> Add data samples for tests and add task_type input for datumaro
     "object": [
       {
         "id": 0,

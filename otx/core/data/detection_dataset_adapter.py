@@ -22,13 +22,11 @@ from otx.api.entities.label_schema import LabelSchemaEntity
 from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.shapes.polygon import Point, Polygon
 from otx.api.entities.shapes.rectangle import Rectangle
-from otx.core.base_dataset_adapter import BaseDatasetAdapter
-from otx.api.entities.annotation import (Annotation, AnnotationSceneEntity, AnnotationSceneKind, NullAnnotationSceneEntity)
-from otx.utils.logger import get_logger
+from otx.core.data.base_dataset_adapter import BaseDatasetAdapter
+
 
 class DetectionDatasetAdapter(BaseDatasetAdapter):
-    """Detection adapter inherited from BaseDatasetAdapter.
-
+    """Detection adapter inherited by BaseDatasetAdapter.
     It converts DatumaroDataset --> DatasetEntity for object detection, and instance segmentation tasks
     """
 

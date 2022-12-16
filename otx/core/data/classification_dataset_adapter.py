@@ -22,7 +22,7 @@ from otx.api.entities.label import LabelEntity
 from otx.api.entities.label_schema import LabelGroup, LabelGroupType, LabelSchemaEntity
 from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.shapes.rectangle import Rectangle
-from otx.core.base_dataset_adapter import BaseDatasetAdapter
+from otx.core.data.base_dataset_adapter import BaseDatasetAdapter
 
 
 class ClassificationDatasetAdapter(BaseDatasetAdapter):

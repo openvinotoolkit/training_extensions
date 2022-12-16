@@ -1,5 +1,4 @@
 {
-<<<<<<< HEAD
   "licenses": [
     {
       "name": "",
@@ -43,50 +42,3 @@
     }
   ]
 }
-=======
-    "licenses":[
-      {
-        "name":"",
-        "id":0,
-        "url":""
-      }
-    ],
-    "info":{
-      "contributor":"",
-      "date_created":"",
-      "description":"",
-      "url":"",
-      "version":"",
-      "year":""
-    },
-    "categories":[
-
-    ],
-    "images":[
-      {
-        "id":40,
-        "width":5,
-        "height":10,
-        "file_name":"b.jpg",
-        "license":0,
-        "flickr_url":"",
-        "coco_url":"",
-        "date_captured":0
-      }
-    ],
-    "annotations":[
-      {
-        "id":1,
-        "image_id":40,
-        "category_id":0,
-        "caption":"world"
-      },
-      {
-        "id":2,
-        "image_id":40,
-        "category_id":0,
-        "caption":"text"
-      }
-    ]
-  }
->>>>>>> Add data samples for tests and add task_type input for datumaro
