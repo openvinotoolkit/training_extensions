@@ -76,6 +76,7 @@ class AnomalyBaseDatasetAdapter(BaseDatasetAdapter):
         return [normal_label, abnormal_label]
 
     def convert_to_otx_format(self, datumaro_dataset: dict) -> Tuple[DatasetEntity, LabelSchemaEntity]:
+        """Convert DatumaroDataset to DatasetEntity for Anomalytasks."""
         raise NotImplementedError
 
 
@@ -83,7 +84,7 @@ class AnomalyClassificationDatasetAdapter(AnomalyBaseDatasetAdapter):
     """Anomaly classification adapter inherited by AnomalyBaseDatasetAdapter and BaseDatasetAdapter."""
 
     def convert_to_otx_format(self, datumaro_dataset: dict) -> Tuple[DatasetEntity, LabelSchemaEntity]:
-        """Conver DatumaroDataset to DatasetEntity for Anomalytasks."""
+        """Convert DatumaroDataset to DatasetEntity for Anomaly classification."""
         normal_label, abnormal_label = self._prepare_anomaly_label_information()
         label_schema = self._generate_default_label_schema([normal_label, abnormal_label])
 
@@ -119,7 +120,7 @@ class AnomalyDetectionDatasetAdapter(AnomalyBaseDatasetAdapter):
     """Anomaly detection adapter inherited by AnomalyBaseDatasetAdapter and BaseDatasetAdapter."""
 
     def convert_to_otx_format(self, datumaro_dataset: dict) -> Tuple[DatasetEntity, LabelSchemaEntity]:
-        """Conver DatumaroDataset to DatasetEntity for Anomalytasks."""
+        """Conver DatumaroDataset to DatasetEntity for Anomaly detection."""
         normal_label, abnormal_label = self._prepare_anomaly_label_information()
         label_schema = self._generate_default_label_schema([normal_label, abnormal_label])
 
@@ -176,7 +177,7 @@ class AnomalySegmentationDatasetAdapter(AnomalyBaseDatasetAdapter):
     """Anomaly segmentation adapter inherited by AnomalyBaseDatasetAdapter and BaseDatasetAdapter."""
 
     def convert_to_otx_format(self, datumaro_dataset: dict) -> Tuple[DatasetEntity, LabelSchemaEntity]:
-        """Conver DatumaroDataset to DatasetEntity for Anomalytasks."""
+        """Conver DatumaroDataset to DatasetEntity for Anomaly segmentation."""
         normal_label, abnormal_label = self._prepare_anomaly_label_information()
         label_schema = self._generate_default_label_schema([normal_label, abnormal_label])
 

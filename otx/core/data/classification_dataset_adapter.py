@@ -27,6 +27,7 @@ from otx.core.data.base_dataset_adapter import BaseDatasetAdapter
 
 class ClassificationDatasetAdapter(BaseDatasetAdapter):
     """Classification adapter inherited by BaseDatasetAdapter.
+
     It converts DatumaroDataset -> DatasetEntity
     for multi-class, multi-label, and hierarchical-label classification tasks
     """

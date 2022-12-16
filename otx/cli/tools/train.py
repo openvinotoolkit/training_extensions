@@ -39,7 +39,7 @@ from otx.cli.utils.parser import (
     add_hyper_parameters_sub_parser,
     gen_params_dict_from_args,
 )
-from otx.core.data.base_dataset_adapter import get_dataset_adapter
+from otx.core.data import get_dataset_adapter
 
 
 def parse_args():
