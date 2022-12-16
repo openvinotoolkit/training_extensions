@@ -27,6 +27,7 @@ from otx.core.data.base_dataset_adapter import BaseDatasetAdapter
 
 class SegmentationDatasetAdapter(BaseDatasetAdapter):
     """Segmentation adapter inherited by BaseDatasetAdapter.
+
     It converts DatumaroDataset --> DatasetEntity for semantic segmentation task
     """
 
