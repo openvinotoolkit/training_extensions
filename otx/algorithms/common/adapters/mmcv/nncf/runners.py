@@ -4,10 +4,11 @@
 
 import time
 
-from mmcv.runner import RUNNERS, EpochBasedRunner
+from mmcv.runner import RUNNERS
 from mmcv.runner.hooks.lr_updater import LrUpdaterHook
 from mmcv.runner.utils import get_host_info
 
+from otx.algorithms.common.adapters.mmcv.runner import EpochRunnerWithCancel
 from otx.algorithms.common.adapters.mmcv.nncf.hooks import CompressionHook
 from otx.algorithms.common.adapters.nncf import (
     AccuracyAwareLrUpdater,
@@ -16,7 +17,7 @@ from otx.algorithms.common.adapters.nncf import (
 
 
 @RUNNERS.register_module()
-class AccuracyAwareRunner(EpochBasedRunner):
+class AccuracyAwareRunner(EpochRunnerWithCancel):
     """
     An mmcv training runner to be used with NNCF-based accuracy-aware training.
     Inherited from the standard EpochBasedRunner with the overridden "run" method.
