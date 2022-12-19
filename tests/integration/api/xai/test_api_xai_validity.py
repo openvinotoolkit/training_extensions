@@ -28,9 +28,9 @@ templates_det_ids = [template.model_template_id for template in templates_det]
 
 class TestExplainMethods:
     ref_saliency_vals_cls = {
-        "EfficientNet-B0": np.array([36, 185, 190, 159, 173, 124, 19], dtype=np.uint8),
-        "MobileNet-V3-large-1x": np.array([21, 38, 56, 134, 100, 41, 38], dtype=np.uint8),
-        "EfficientNet-V2-S": np.array([166, 204, 201, 206, 218, 221, 138], dtype=np.uint8),
+        "EfficientNet-B0": np.array([238, 164, 140, 128, 141, 173, 239], dtype=np.uint8),
+        "MobileNet-V3-large-1x": np.array([109, 183, 171, 195, 172, 207, 37], dtype=np.uint8),
+        "EfficientNet-V2-S": np.array([89, 221, 233, 233, 242, 230, 155], dtype=np.uint8),
     }
 
     ref_saliency_shapes = {
@@ -40,9 +40,9 @@ class TestExplainMethods:
     }
 
     ref_saliency_vals_det = {
-        "ATSS": np.array([78, 217, 42, 102], dtype=np.uint8),
-        "SSD": np.array([225, 158, 221, 106, 146, 158, 227, 149, 137, 135, 200, 159, 255], dtype=np.uint8),
-        "YOLOX": np.array([109, 174, 82, 214, 178, 184, 168, 161, 163, 156, 220, 233, 195], dtype=np.uint8),
+        "ATSS": np.array([16, 4, 134, 79], dtype=np.uint8),
+        "SSD": np.array([255, 198, 179, 211, 211, 123, 154, 176, 199, 127, 139, 251, 146], dtype=np.uint8),
+        "YOLOX": np.array([174, 134, 203, 218, 38, 124, 81, 54, 106, 147, 132, 138, 172], dtype=np.uint8),
     }
 
     @e2e_pytest_unit
