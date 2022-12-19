@@ -4,7 +4,9 @@
 
 from copy import deepcopy
 from functools import partial
+from typing import Optional, Union
 
+import torch
 from mmcv.runner import CheckpointLoader, load_state_dict
 from mmcv.utils import Config, ConfigDict
 from mmdet.utils import get_root_logger
@@ -20,23 +22,27 @@ from otx.algorithms.common.adapters.nncf.compression import (
     NNCF_STATE_NAME,
     STATE_TO_BUILD_NAME,
 )
-from otx.algorithms.common.adapters.nncf.utils import load_checkpoint, no_nncf_trace
+from otx.algorithms.common.adapters.nncf.utils import no_nncf_trace
+from otx.algorithms.detection.adapters.mmdet.utils import build_detector
 
 
 logger = get_root_logger()
 
 
-def build_nncf_model(config, distributed=False, is_alt_ssd_export=None):
-    # TODO
-    if is_alt_ssd_export is not None:
-        raise NotImplementedError
-
+def build_nncf_detector(
+    config: Config,
+    train_cfg: Optional[Union[Config, ConfigDict]] = None,
+    test_cfg: Optional[Union[Config, ConfigDict]] = None,
+    checkpoint: Optional[str] = None,
+    device: Union[str, torch.device] = "cpu",
+    cfg_options: Optional[Union[Config, ConfigDict]] = None,
+    distributed=False,
+):
     from mmdet.apis import multi_gpu_test, single_gpu_test
     from mmdet.apis.inference import LoadImage
     from mmdet.datasets import build_dataloader as mmdet_build_dataloader
     from mmdet.datasets import build_dataset
     from mmdet.datasets.pipelines import Compose
-    from mmdet.models import build_detector
     from nncf.torch.dynamic_graph.io_handling import nncf_model_input
 
     from otx.algorithms.common.adapters.mmcv.nncf import (
@@ -46,40 +52,20 @@ def build_nncf_model(config, distributed=False, is_alt_ssd_export=None):
         wrap_nncf_model,
     )
 
-    def build_model(config: Config, from_scratch: bool = False):
-        """Creates a model, based on the configuration in config.
+    if cfg_options is not None:
+        config.merge_from_dict(cfg_options)
+    if checkpoint is None:
+        # load model in this function not in runner
+        checkpoint = config.load_from
+        config.load_from = None
+    assert checkpoint is not None
 
-        :param config: mmdetection configuration from which the model has to be built
-        :param from_scratch: bool, if True does not load any weights
+    model = build_detector(
+        config, train_cfg=train_cfg, test_cfg=test_cfg, from_scratch=True
+    )
+    model = model.to(device)
 
-        :return model: ModelEntity in training mode
-        """
-
-        model_cfg = deepcopy(config.model)
-
-        init_from = None if from_scratch else config.get("load_from", None)
-        logger.warning(f"Init from: {init_from}")
-
-        if init_from is not None:
-            # No need to initialize backbone separately, if all weights are provided.
-            model_cfg.pretrained = None
-            logger.warning("build detector")
-            model = build_detector(model_cfg)
-
-            # Load all weights.
-            logger.warning("load checkpoint")
-            load_checkpoint(model, init_from, map_location="cpu")
-        else:
-            logger.warning("build detector")
-            model = build_detector(model_cfg)
-
-        return model
-
-    state_dict = CheckpointLoader.load_checkpoint(config.load_from, map_location="cpu")
-    # load model in this function not in runner
-    config.load_from = None
-
-    model = build_model(config, from_scratch=True)
+    state_dict = CheckpointLoader.load_checkpoint(checkpoint, map_location=device)
 
     is_acc_aware = is_accuracy_aware_training_set(config.get("nncf_config"))
 

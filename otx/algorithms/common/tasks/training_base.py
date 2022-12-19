@@ -212,7 +212,6 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
                 del self._model_cfg._cfg_dict["fp16"]
             elif isinstance(self._model_cfg, ConfigDict):
                 del self._model_cfg["fp16"]
-        self._precision = [ModelPrecision.FP32]
 
         # Add/remove adaptive interval hook
         if self._recipe_cfg.get("use_adaptive_interval", False):
@@ -262,7 +261,9 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         logger.info("initialized.")
 
     def _initialize_post_hook(self, options=dict()):
-        pass
+        if options.get("export", False) and options.get("precision", None) is None:
+            assert len(self._precision) == 1
+            options["precision"] = str(self._precision[0])
 
     @abc.abstractmethod
     def _init_recipe(self):

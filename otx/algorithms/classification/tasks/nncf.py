@@ -19,7 +19,9 @@ from typing import Optional
 
 from mpa.utils.logger import get_logger
 
-from otx.algorithms.classification.adapters.mmcls.nncf import build_nncf_model
+from otx.algorithms.classification.adapters.mmcls.nncf.builder import (
+    build_nncf_classifier,
+)
 from otx.algorithms.common.tasks.nncf_base import NNCFBaseTask
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.optimization_parameters import OptimizationParameters
@@ -44,7 +46,7 @@ class ClassificationNNCFTask(NNCFBaseTask, ClassificationInferenceTask):
         export = options.get("export", False)
         options["model_builder"] = partial(
             self.model_builder,
-            nncf_model_builder=build_nncf_model,
+            nncf_model_builder=build_nncf_classifier,
             return_compression_ctrl=False,
             is_export=export,
         )

@@ -81,22 +81,25 @@ class NNCFBaseTask(BaseTask, IOptimizationTask):
     def __init__(self, task_environment: TaskEnvironment):
         super().__init__(task_environment)
 
-        self._nncf_preset = "nncf_quantization"
+        # Set default model attributes.
+        check_nncf_is_enabled()
         self._nncf_data_to_build = None
         self._nncf_state_dict_to_build = dict()
-        check_nncf_is_enabled()
-        self._scratch_space = tempfile.mkdtemp(prefix="otx-nncf-scratch-")
-        logger.info(f"Scratch space created at {self._scratch_space}")
-
-        # Set default model attributes.
+        self._nncf_preset = None
         self._optimization_methods = []  # type: List
         self._precision = [ModelPrecision.FP32]
+
+        self._scratch_space = tempfile.mkdtemp(prefix="otx-nncf-scratch-")
+        logger.info(f"Scratch space created at {self._scratch_space}")
 
         # Extra control variables.
         self._training_work_dir = None
         self._is_training = False
         self._should_stop = False
         self._optimization_type = ModelOptimizationType.NNCF
+
+        self._set_attributes_by_hyperparams()
+
         logger.info("Task initialization completed")
 
     def _set_attributes_by_hyperparams(self):
@@ -148,8 +151,6 @@ class NNCFBaseTask(BaseTask, IOptimizationTask):
 
         with open(nncf_config_path, encoding="UTF-8") as nncf_config_file:
             common_nncf_config = json.load(nncf_config_file)
-
-        self._set_attributes_by_hyperparams()
 
         optimization_config = compose_nncf_config(
             common_nncf_config, [self._nncf_preset]
@@ -224,11 +225,13 @@ class NNCFBaseTask(BaseTask, IOptimizationTask):
     @staticmethod
     def model_builder(
         config,
+        *args,
         nncf_model_builder,
         model_config=None,
         data_config=None,
         is_export=False,
         return_compression_ctrl=False,
+        **kwargs,
     ):
         if model_config is not None or data_config is not None:
             config = deepcopy(config)
@@ -240,6 +243,8 @@ class NNCFBaseTask(BaseTask, IOptimizationTask):
         compression_ctrl, model, = nncf_model_builder(
             config,
             distributed=False,
+            *args,
+            **kwargs,
         )
 
         if is_export:

@@ -36,9 +36,12 @@ from otx.algorithms.common.adapters.mmcv.utils import (
     patch_runner,
     patch_data_pipeline,
 )
-from otx.algorithms.detection.adapters.mmdet.utils import (
+from otx.algorithms.detection.adapters.mmdet.utils.config_utils import (
     patch_datasets,
     patch_evaluation,
+)
+from otx.algorithms.detection.adapters.mmdet.utils.builder import (
+    build_detector
 )
 from otx.algorithms.detection.adapters.mmdet.utils.config_utils import (
     cluster_anchors,
@@ -196,7 +199,6 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         results = self._run_task(
             stage_module,
             mode="train",
-            precision="FP32",
             export=True,
         )
         outputs = results.get("outputs")
@@ -384,6 +386,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
 
     def _initialize_post_hook(self, options=dict()):
         super()._initialize_post_hook(options)
+        options["model_builder"] = build_detector
 
         # if self._anchors are set somewhere, anchors had already been clusted
         # by this method or by loading trained model

@@ -35,9 +35,12 @@ from otx.algorithms.common.adapters.mmcv.utils import (
     patch_default_config,
     patch_runner,
 )
-from otx.algorithms.segmentation.adapters.mmseg.utils import (
+from otx.algorithms.segmentation.adapters.mmseg.utils.config_utils import (
     patch_datasets,
     patch_evaluation,
+)
+from otx.algorithms.segmentation.adapters.mmseg.utils.builder import (
+    build_segmentor,
 )
 from otx.algorithms.segmentation.adapters.openvino.model_wrappers.blur import (
     get_activation_map,
@@ -148,7 +151,6 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         results = self._run_task(
             stage_module,
             mode="train",
-            precision="FP32",
             export=True,
         )
         outputs = results.get("outputs")
@@ -292,3 +294,7 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
                         numpy=class_act_map,
                     )
                     dataset_item.append_metadata_item(result_media, model=self._task_environment.model)
+
+    def _initialize_post_hook(self, options=dict()):
+        super()._initialize_post_hook(options)
+        options["model_builder"] = build_segmentor

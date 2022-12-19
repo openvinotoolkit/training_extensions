@@ -29,6 +29,9 @@ from otx.algorithms.classification.adapters.mmcls.utils.config_utils import (
     patch_datasets,
     patch_evaluation,
 )
+from otx.algorithms.classification.adapters.mmcls.utils.builder import (
+    build_classifier,
+)
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.inference_parameters import (
     InferenceParameters,
@@ -163,7 +166,6 @@ class ClassificationInferenceTask(
         results = self._run_task(
             stage_module,
             mode="train",
-            precision="FP32",
             export=True
         )
         outputs = results.get("outputs")
@@ -379,3 +381,7 @@ class ClassificationInferenceTask(
             )
         )
         return data_cfg
+
+    def _initialize_post_hook(self, options=dict()):
+        super()._initialize_post_hook(options)
+        options["model_builder"] = build_classifier

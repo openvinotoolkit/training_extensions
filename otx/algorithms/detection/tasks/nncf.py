@@ -22,7 +22,7 @@ from mpa.utils.logger import get_logger
 
 from otx.algorithms.common.adapters.mmcv.utils import remove_from_config
 from otx.algorithms.common.tasks.nncf_base import NNCFBaseTask
-from otx.algorithms.detection.adapters.mmdet.nncf import build_nncf_model
+from otx.algorithms.detection.adapters.mmdet.nncf import build_nncf_detector
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.optimization_parameters import OptimizationParameters
 
@@ -39,7 +39,7 @@ class DetectionNNCFTask(NNCFBaseTask, DetectionInferenceTask):
         export = options.get("export", False)
         options["model_builder"] = partial(
             self.model_builder,
-            nncf_model_builder=build_nncf_model,
+            nncf_model_builder=build_nncf_detector,
             return_compression_ctrl=False,
             is_export=export,
         )

@@ -11,6 +11,7 @@ from .config_utils import (
     set_hyperparams,
 )
 from .data_utils import load_dataset_items
+from .builder import build_segmentor
 
 __all__ = [
     "patch_recipe_config",
@@ -19,4 +20,5 @@ __all__ = [
     "prepare_for_training",
     "set_hyperparams",
     "load_dataset_items",
+    "build_segmentor",
 ]

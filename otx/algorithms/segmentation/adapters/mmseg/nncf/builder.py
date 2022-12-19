@@ -4,7 +4,9 @@
 
 from copy import deepcopy
 from functools import partial
+from typing import Optional, Union
 
+import torch
 from mmcv.runner import CheckpointLoader, load_state_dict
 from mmcv.utils import Config, ConfigDict
 from mmseg.utils import get_root_logger
@@ -21,18 +23,26 @@ from otx.algorithms.common.adapters.nncf.compression import (
     STATE_TO_BUILD_NAME,
 )
 from otx.algorithms.common.adapters.nncf.utils import load_checkpoint
+from otx.algorithms.segmentation.adapters.mmseg.utils import build_segmentor
 
 
 logger = get_root_logger()
 
 
-def build_nncf_model(config, distributed=False):
+def build_nncf_segmentor(
+    config: Config,
+    train_cfg: Optional[Union[Config, ConfigDict]] = None,
+    test_cfg: Optional[Union[Config, ConfigDict]] = None,
+    checkpoint: Optional[str] = None,
+    device: Union[str, torch.device] = "cpu",
+    cfg_options: Optional[Union[Config, ConfigDict]] = None,
+    distributed=False,
+):
     from mmseg.apis import multi_gpu_test, single_gpu_test
     from mmseg.apis.inference import LoadImage
     from mmseg.datasets import build_dataloader as mmseg_build_dataloader
     from mmseg.datasets import build_dataset
     from mmseg.datasets.pipelines import Compose
-    from mmseg.models import build_segmentor
 
     from otx.algorithms.common.adapters.mmcv.nncf import (
         build_dataloader,
@@ -41,40 +51,20 @@ def build_nncf_model(config, distributed=False):
         wrap_nncf_model,
     )
 
-    def build_model(config: Config, from_scratch: bool = False):
-        """Creates a model, based on the configuration in config.
+    if cfg_options is not None:
+        config.merge_from_dict(cfg_options)
+    if checkpoint is None:
+        # load model in this function not in runner
+        checkpoint = config.load_from
+        config.load_from = None
+    assert checkpoint is not None
 
-        :param config: mmsegmentation configuration from which the model has to be built
-        :param from_scratch: bool, if True does not load any weights
+    model = build_segmentor(
+        config, train_cfg=train_cfg, test_cfg=test_cfg, from_scratch=True
+    )
+    model = model.to(device)
 
-        :return model: ModelEntity in training mode
-        """
-
-        model_cfg = deepcopy(config.model)
-
-        init_from = None if from_scratch else config.get("load_from", None)
-        logger.warning(f"Init from: {init_from}")
-
-        if init_from is not None:
-            # No need to initialize backbone separately, if all weights are provided.
-            model_cfg.pretrained = None
-            logger.warning("build segmentor")
-            model = build_segmentor(model_cfg)
-
-            # Load all weights.
-            logger.warning("load checkpoint")
-            load_checkpoint(model, init_from, map_location="cpu")
-        else:
-            logger.warning("build segmentor")
-            model = build_segmentor(model_cfg)
-
-        return model
-
-    state_dict = CheckpointLoader.load_checkpoint(config.load_from, map_location="cpu")
-    # load model in this function not in runner
-    config.load_from = None
-
-    model = build_model(config, from_scratch=True)
+    state_dict = CheckpointLoader.load_checkpoint(checkpoint, map_location=device)
 
     is_acc_aware = is_accuracy_aware_training_set(config.get("nncf_config"))
 
