@@ -259,8 +259,6 @@ class ClassificationInferenceTask(
                 dataset_item.append_metadata_item(active_score, model=self._task_environment.model)
 
             if saliency_map is not None:
-                if saliency_map.ndim == 4 and saliency_map.shape[0] == 1:
-                    saliency_map = saliency_map[0]
                 add_saliency_maps_to_dataset_item(
                     dataset_item=dataset_item,
                     saliency_map=saliency_map,
@@ -273,8 +271,6 @@ class ClassificationInferenceTask(
         """Loop over dataset again and assign saliency maps."""
         dataset_size = len(dataset)
         for i, (dataset_item, saliency_map) in enumerate(zip(dataset, saliency_maps)):
-            if saliency_map.ndim == 4 and saliency_map.shape[0] == 1:
-                saliency_map = saliency_map[0]
             add_saliency_maps_to_dataset_item(
                 dataset_item=dataset_item,
                 saliency_map=saliency_map,
