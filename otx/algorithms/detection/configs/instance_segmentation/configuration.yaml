@@ -244,14 +244,15 @@ algo_backend:
   description: parameters for algo backend
   header: Algo backend parameters
   train_type:
-    affects_outcome_of: NONE
+    affects_outcome_of: TRAINING
     default_value: INCREMENTAL
-    description: Quantization preset that defines quantization scheme
-    editable: false
+    description: Training scheme option that determines how to train the model
+    editable: True
     enum_name: TrainType
     header: Train type
     options:
       INCREMENTAL: "INCREMENTAL"
+      SEMISUPEVISED: "SEMISUPERVISED"
     type: SELECTABLE
     ui_rules:
       action: DISABLE_EDITING
