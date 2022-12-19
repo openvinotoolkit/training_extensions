@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file.
   - Better saliency map support
     - Replace current saliency map generation with Recipro-CAM for cls (<https://github.com/openvinotoolkit/training_extensions/pull/1363>)
     - Class-wise saliency map generation for the detection task (<https://github.com/openvinotoolkit/training_extensions/pull/1402>)
+    - OTE Saliency Map Label (<https://github.com/openvinotoolkit/training_extensions/pull/1447>)
   - Improve object counting algorithm for high-res images via image tiling
     - Add Tiling Module (<https://github.com/openvinotoolkit/training_extensions/pull/1200>)
     - Fliter object less than 1 pixel (<https://github.com/openvinotoolkit/training_extensions/pull/1305>)
@@ -19,6 +20,7 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 
 - Hot-fix for Detection fix two stage error (<https://github.com/openvinotoolkit/training_extensions/pull/1433>)
+- Fixing ZeroDivisionError in iteration counter for detection-classification project trainings (<https://github.com/openvinotoolkit/training_extensions/pull/1449>)
 - Some minor issues
 
 ## \[v0.3.1\]
@@ -26,6 +28,7 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 
 - Neural Network Compression Framework (NNCF)
+
   - Fix CUDA OOM for NNCF optimization model MaskRCNN-EfficientNetB2B (<https://github.com/openvinotoolkit/training_extensions/pull/1319>)
 
 - Model Preparation Algorithm (MPA)
