@@ -1,4 +1,4 @@
-"""Initialization of OCR-Lite-HRnet-x-mod3 model for Segmentation Task."""
+"""Initialization of OCR-Lite-HRnet-x-mod3 model for Semi-SL egmentation Task."""
 
 # Copyright (C) 2022 Intel Corporation
 #
