@@ -68,7 +68,7 @@ from otx.api.utils.segmentation_utils import (
 logger = get_logger()
 
 
-# pylint: disable=too-many-locals
+# pylint: disable=too-many-locals, too-many-instance-attributes
 class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask, IUnload):
     """Inference Task Implementation of OTX Segmentation."""
 
@@ -79,6 +79,8 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         self.metric = "mDice"
         self._label_dictionary = {}  # type: Dict
         self.train_type = None
+        self.base_model_dir = None
+        self.base_pipeline_path = None
         super().__init__(SegmentationConfig, task_environment)
 
     def infer(
@@ -187,11 +189,16 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         recipe_root = os.path.join(MPAConstants.RECIPES_PATH, "stages/segmentation")
         train_type = self._hyperparams.algo_backend.train_type
         logger.info(f"train type = {train_type}")
+        self.base_model_dir = os.path.abspath(os.path.dirname(self.template_file_path))
+        self.base_pipeline_path = os.path.abspath(self.data_pipeline_path)
 
         if train_type not in (TrainType.SEMISUPERVISED, TrainType.INCREMENTAL):
             raise NotImplementedError(f"Train type {train_type} is not implemented yet.")
         if train_type == TrainType.SEMISUPERVISED:
             recipe = os.path.join(recipe_root, "semisl.py")
+            self.base_model_dir = os.path.join(self.base_model_dir, "semisl")
+            self.base_pipeline_path = os.path.join(self.base_pipeline_path, "semisl/data_pipeline.py")
+
         if train_type == TrainType.INCREMENTAL:
             recipe = os.path.join(recipe_root, "incremental.py")
 
@@ -199,7 +206,7 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
 
         self._recipe_cfg = MPAConfig.fromfile(recipe)
         self.train_type = train_type
-        patch_data_pipeline(self._recipe_cfg, self.data_pipeline_path)
+        patch_data_pipeline(self._recipe_cfg, self.base_pipeline_path)
         patch_datasets(self._recipe_cfg)  # for OTX compatibility
         patch_evaluation(self._recipe_cfg)  # for OTX compatibility
         self.metric = self._recipe_cfg.evaluation.metric
@@ -216,13 +223,7 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         return stage_module
 
     def _init_model_cfg(self):
-        if self.train_type == TrainType.SEMISUPERVISED:
-            base_dir = os.path.abspath(os.path.dirname(self.template_file_path))
-            model_cfg = MPAConfig.fromfile(os.path.join(base_dir, "semisl/model.py"))
-        else:
-            base_dir = os.path.abspath(os.path.dirname(self.template_file_path))
-            model_cfg = MPAConfig.fromfile(os.path.join(base_dir, "model.py"))
-
+        model_cfg = MPAConfig.fromfile(os.path.join(self.base_model_dir, "model.py"))
         return model_cfg
 
     def _init_test_data_cfg(self, dataset: DatasetEntity):

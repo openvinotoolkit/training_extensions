@@ -322,11 +322,7 @@ def patch_datasets(config: Config, domain=Domain.SEGMENTATION):
         if cfg.type == "RepeatDataset":
             cfg = cfg.dataset
 
-        if subset == "unlabeled":
-            cfg.type = "UnlabeledSegDataset"
-            cfg.orig_type = "MPASegDataset"
-        else:
-            cfg.type = "MPASegDataset"
+        cfg.type = "MPASegDataset"
         cfg.otx_dataset = None
         cfg.labels = None
 

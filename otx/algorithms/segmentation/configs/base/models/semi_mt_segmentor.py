@@ -1,7 +1,7 @@
 """Segmentor config for semi-supervised learning."""
 
 model = dict(
-    type="MeanTeacherNaive",
+    type="MeanTeacher",
     orig_type="EncoderDecoder",
     unsup_weight=0.1,
     train_cfg=dict(mix_loss=dict(enable=False, weight=0.1)),
