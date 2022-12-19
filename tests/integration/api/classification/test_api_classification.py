@@ -56,7 +56,7 @@ def task_eval(task: BaseTask, model: ModelEntity, dataset: DatasetEntity) -> Per
     return result_set.performance
 
 
-class MPAClsAPIBase:
+class ClassificationTaskAPIBase:
     @staticmethod
     def generate_label_schema(not_empty_labels, multilabel=False, hierarchical=False):
         assert len(not_empty_labels) > 1
@@ -180,7 +180,7 @@ class MPAClsAPIBase:
         return environment, dataset
 
 
-class TestMPAClsAPI(MPAClsAPIBase):
+class TestClassificationTaskAPI(ClassificationTaskAPIBase):
     @e2e_pytest_api
     def test_reading_classification_cls_incr_model_template(self):
         classification_template = [

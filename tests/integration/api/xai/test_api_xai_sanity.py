@@ -26,11 +26,11 @@ from otx.api.usecases.tasks.interfaces.export_interface import ExportType
 from otx.cli.utils.io import read_model, save_model_data
 from tests.integration.api.classification.test_api_classification import (
     DEFAULT_CLS_TEMPLATE_DIR,
-    MPAClsAPIBase,
+    ClassificationTaskAPIBase,
 )
 from tests.integration.api.detection.test_api_detection import (
     DEFAULT_DET_TEMPLATE_DIR,
-    MPADetAPIBase,
+    DetectionTaskAPIBase,
 )
 from tests.test_suite.e2e_test_system import e2e_pytest_api
 
@@ -58,7 +58,7 @@ def saliency_maps_check(predicted_dataset, task_labels, assert_text, only_predic
             assert saliency_map_counter == len(task_labels), assert_text
 
 
-class TestOVClsXAIAPI(MPAClsAPIBase):
+class TestOVClsXAIAPI(ClassificationTaskAPIBase):
     @e2e_pytest_api
     @pytest.mark.parametrize(
         "multilabel,hierarchical",
@@ -109,7 +109,7 @@ class TestOVClsXAIAPI(MPAClsAPIBase):
         saliency_maps_check(predicted_dataset_ov, task_labels, assert_text_ov, only_predicted=True)
 
 
-class TestOVDetXAIAPI(MPADetAPIBase):
+class TestOVDetXAIAPI(DetectionTaskAPIBase):
     @e2e_pytest_api
     def test_inference_xai(self):
         hyper_parameters, model_template = self.setup_configurable_parameters(DEFAULT_DET_TEMPLATE_DIR, num_iters=2)

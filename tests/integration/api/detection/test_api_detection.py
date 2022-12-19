@@ -52,7 +52,7 @@ def task_eval(task: BaseTask, model: ModelEntity, dataset: DatasetEntity) -> Per
     return result_set.performance
 
 
-class MPADetAPIBase:
+class DetectionTaskAPIBase:
     """
     Collection of tests for OTX API and OTX Model Templates
     """
@@ -123,7 +123,7 @@ class MPADetAPIBase:
         return hyper_parameters, model_template
 
 
-class TestMPADetAPI(MPADetAPIBase):
+class TestDetectionTaskAPI(DetectionTaskAPIBase):
     """
     Collection of tests for OTE API and OTE Model Templates
     """
