@@ -99,7 +99,7 @@ class ClassificationInferenceTask(
         dump_saliency_map = not inference_parameters.is_evaluation if inference_parameters else True
         results = self._run_task(
             stage_module,
-            mode="eval",
+            mode="train",
             dataset=dataset,
             dump_features=dump_features,
             dump_saliency_map=dump_saliency_map,

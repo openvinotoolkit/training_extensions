@@ -328,12 +328,6 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
                 dataset_item.append_metadata_item(active_score, model=self._task_environment.model)
 
             if saliency_map is not None:
-                if saliency_map.ndim == 4 and saliency_map.shape[0] == 1:
-                    saliency_map = saliency_map[0]
-                num_saliency_maps = saliency_map.shape[0]
-                if num_saliency_maps == len(self._labels) + 1:
-                    # Include the background as the last category
-                    self._labels.append(LabelEntity("background", Domain.DETECTION))
                 add_saliency_maps_to_dataset_item(
                     dataset_item=dataset_item,
                     saliency_map=saliency_map,
