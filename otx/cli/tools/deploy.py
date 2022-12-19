@@ -28,7 +28,8 @@ from otx.cli.utils.io import read_label_schema, read_model
 def parse_args():
     """Parses command line arguments."""
     parser = argparse.ArgumentParser()
-    parser.add_argument("template")
+    if not os.path.exists("./template.yaml"):
+        parser.add_argument("template")
     parser.add_argument(
         "--load-weights",
         required=True,
@@ -47,9 +48,13 @@ def main():
 
     # Parses input arguments.
     args = parse_args()
+    if os.path.exists("./template.yaml"):
+        template_path = "./template.yaml"
+    else:
+        template_path = args.template
 
     # Reads model template file.
-    template = find_and_parse_model_template(args.template)
+    template = find_and_parse_model_template(template_path)
 
     # Get hyper parameters schema.
     hyper_parameters = template.hyper_parameters.data

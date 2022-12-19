@@ -39,7 +39,7 @@ def get_otx_version() -> str:
 
     Example:
         >>> # Assume that __version__ = "0.2.6"
-        >>> get_version()
+        >>> get_otx_version()
         "0.2.6"
 
     Returns:
@@ -273,6 +273,7 @@ setup(
             "otx_find=otx.cli.tools.find:main",
             "otx_train=otx.cli.tools.train:main",
             "otx_optimize=otx.cli.tools.optimize:main",
+            "otx_build=otx.cli.tools.build:main",
         ]
     },
 )

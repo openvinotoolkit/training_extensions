@@ -150,6 +150,11 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         pass
 
     @property
+    def project_path(self):
+        """Return output path with logs."""
+        return self._output_path
+
+    @property
     def model_name(self):
         """Name of Model Template."""
         return self._task_environment.model_template.name
@@ -163,6 +168,14 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
     def template_file_path(self):
         """Model Template file path."""
         return self._task_environment.model_template.model_template_path
+
+    @property
+    def data_pipeline_path(self):
+        """Base Data Pipeline file path."""
+        return os.path.join(
+            os.path.dirname(os.path.abspath(self.template_file_path)),
+            self._task_environment.model_template.data_pipeline_path,
+        )
 
     @property
     def hyperparams(self):

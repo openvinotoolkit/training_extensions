@@ -259,7 +259,7 @@ algo_backend:
   train_type:
     affects_outcome_of: TRAINING
     default_value: INCREMENTAL
-    description: Quantization preset that defines quantization scheme
+    description: Training scheme option that determines how to train the model
     editable: True
     enum_name: TrainType
     header: train type

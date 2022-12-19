@@ -474,6 +474,7 @@ class ModelTemplate:
     grpc_address (Optional[str]): the grpc host address (for instantiation type == GRPC)
     entrypoints (Optional[Entrypoints]): Entrypoints implementing the Python task interface
     base_model_path (str): Path to template file for the base model used for nncf compression.
+    data_pipeline_path (str): Path to data pipeline config file.
     exportable_code_paths (ExportableCodePaths): if it exists, the path to the exportable code sources.
         Defaults to empty `field`.
     task_type_sort_priority (int): priority of order of how tasks are shown in the pipeline dropdown for a given task
@@ -505,6 +506,7 @@ class ModelTemplate:
     grpc_address: Optional[str] = None
     entrypoints: Optional[EntryPoints] = None
     base_model_path: str = ""
+    data_pipeline_path: str = ""
     exportable_code_paths: ExportableCodePaths = field(default_factory=ExportableCodePaths)
     task_type_sort_priority: int = -1
     gigaflops: float = 0

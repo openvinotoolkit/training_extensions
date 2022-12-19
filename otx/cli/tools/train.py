@@ -15,7 +15,8 @@
 # and limitations under the License.
 
 import argparse
-import os.path as osp
+import os
+import shutil
 
 from otx.api.configuration.helper import create
 from otx.api.entities.inference_parameters import InferenceParameters
@@ -28,7 +29,7 @@ from otx.api.serialization.label_mapper import label_schema_to_bytes
 from otx.api.usecases.adapters.model_adapter import ModelAdapter
 from otx.cli.datasets import get_dataset_class
 from otx.cli.registry import find_and_parse_model_template
-from otx.cli.utils.config import override_parameters
+from otx.cli.utils.config import configure_dataset, override_parameters
 from otx.cli.utils.hpo import run_hpo
 from otx.cli.utils.importing import get_impl_class
 from otx.cli.utils.io import (
@@ -42,6 +43,8 @@ from otx.cli.utils.parser import (
     gen_params_dict_from_args,
 )
 
+# pylint: disable=too-many-locals
+
 
 def parse_args():
     """Parses command line arguments.
@@ -50,34 +53,42 @@ def parse_args():
     """
 
     pre_parser = argparse.ArgumentParser(add_help=False)
-    pre_parser.add_argument("template")
-    parsed, _ = pre_parser.parse_known_args()
+    if os.path.exists("./template.yaml"):
+        template_path = "./template.yaml"
+    else:
+        pre_parser.add_argument("template")
+        parsed, _ = pre_parser.parse_known_args()
+        template_path = parsed.template
     # Load template.yaml file.
-    template = find_and_parse_model_template(parsed.template)
+    template = find_and_parse_model_template(template_path)
     # Get hyper parameters schema.
     hyper_parameters = template.hyper_parameters.data
     assert hyper_parameters
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("template")
+    if not os.path.exists("./template.yaml"):
+        parser.add_argument("template")
+    parser.add_argument("--data", required=False, default="./data.yaml")
+    required = not os.path.exists("./data.yaml")
+
     parser.add_argument(
         "--train-ann-files",
-        required=True,
+        required=required,
         help="Comma-separated paths to training annotation files.",
     )
     parser.add_argument(
         "--train-data-roots",
-        required=True,
+        required=required,
         help="Comma-separated paths to training data folders.",
     )
     parser.add_argument(
         "--val-ann-files",
-        required=True,
+        required=required,
         help="Comma-separated paths to validation annotation files.",
     )
     parser.add_argument(
         "--val-data-roots",
-        required=True,
+        required=required,
         help="Comma-separated paths to validation data folders.",
     )
     parser.add_argument(
@@ -90,6 +101,7 @@ def parse_args():
         required=False,
         help="Comma-separated paths to unlabeled file list",
     )
+
     parser.add_argument(
         "--load-weights",
         required=False,
@@ -97,8 +109,13 @@ def parse_args():
     )
     parser.add_argument(
         "--save-model-to",
-        required="True",
+        required=False,
         help="Location where trained model will be stored.",
+    )
+    parser.add_argument(
+        "--save-logs-to",
+        required=False,
+        help="Location where logs will be stored.",
     )
     parser.add_argument(
         "--enable-hpo",
@@ -133,18 +150,22 @@ def main():
     task_class = get_impl_class(template.entrypoints.base)
     dataset_class = get_dataset_class(template.task_type)
 
-    # Create instances of Task, ConfigurableParameters and Dataset.
+    data_config = configure_dataset(args)
+
     data_roots = dict(
         train_subset={
-            "ann_file": args.train_ann_files,
-            "data_root": args.train_data_roots,
+            "ann_file": data_config["data"]["train"]["ann-files"],
+            "data_root": data_config["data"]["train"]["data-roots"],
         },
-        val_subset={"ann_file": args.val_ann_files, "data_root": args.val_data_roots},
+        val_subset={
+            "ann_file": data_config["data"]["val"]["ann-files"],
+            "data_root": data_config["data"]["val"]["data-roots"],
+        },
     )
-    if args.unlabeled_data_roots:
+    if data_config["data"]["unlabeled"]["data-roots"]:
         data_roots["unlabeled_subset"] = {
-            "data_root": args.unlabeled_data_roots,
-            "file_list": args.unlabeled_file_list,
+            "data_root": data_config["data"]["unlabeled"]["data-roots"],
+            "file_list": data_config["data"]["unlabeled"]["file-list"],
         }
 
     dataset = dataset_class(**data_roots)
@@ -160,7 +181,7 @@ def main():
         model_adapters = {
             "weights.pth": ModelAdapter(read_binary(args.load_weights)),
         }
-        if osp.exists(osp.join(osp.dirname(args.load_weights), "label_schema.json")):
+        if os.path.exists(os.path.join(os.path.dirname(args.load_weights), "label_schema.json")):
             model_adapters.update(
                 {"label_schema.json": ModelAdapter(label_schema_to_bytes(read_label_schema(args.load_weights)))}
             )
@@ -182,6 +203,8 @@ def main():
 
     task.train(dataset, output_model, train_parameters=TrainParameters())
 
+    if "save_model_to" not in args or not args.save_model_to:
+        args.save_model_to = "./models"
     save_model_data(output_model, args.save_model_to)
 
     validation_dataset = dataset.get_subset(Subset.VALIDATION)
@@ -198,6 +221,12 @@ def main():
     task.evaluate(resultset)
     assert resultset.performance is not None
     print(resultset.performance)
+
+    if args.save_logs_to:
+        tmp_path = task.project_path
+        logs_path = os.path.join(args.save_logs_to, tmp_path.split("/")[-1])
+        shutil.copytree(tmp_path, logs_path)
+        print(f"Save logs: {logs_path}")
 
 
 if __name__ == "__main__":

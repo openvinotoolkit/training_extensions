@@ -35,12 +35,12 @@ from otx.api.utils.argument_checks import (
 
 
 @check_input_parameters_type()
-def patch_config(config: Config, base_dir: str, work_dir: str, task_type: TaskType):
+def patch_config(config: Config, data_pipeline_path: str, work_dir: str, task_type: TaskType):
     """Patch recipe config suitable to mmaction."""
     # FIXME omnisource is hard coded
     config.omnisource = None
     config.work_dir = work_dir
-    patch_data_pipeline(config, base_dir)
+    patch_data_pipeline(config, data_pipeline_path)
     if task_type == TaskType.ACTION_CLASSIFICATION:
         patch_cls_datasets(config)
     elif task_type == TaskType.ACTION_DETECTION:

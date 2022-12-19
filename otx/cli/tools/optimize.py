@@ -16,6 +16,7 @@
 
 import argparse
 import json
+import os
 
 from otx.api.configuration.helper import create
 from otx.api.entities.inference_parameters import InferenceParameters
@@ -27,13 +28,15 @@ from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.usecases.tasks.interfaces.optimization_interface import OptimizationType
 from otx.cli.datasets import get_dataset_class
 from otx.cli.registry import find_and_parse_model_template
-from otx.cli.utils.config import override_parameters
+from otx.cli.utils.config import configure_dataset, override_parameters
 from otx.cli.utils.importing import get_impl_class
 from otx.cli.utils.io import generate_label_schema, read_model, save_model_data
 from otx.cli.utils.parser import (
     add_hyper_parameters_sub_parser,
     gen_params_dict_from_args,
 )
+
+# pylint: disable=too-many-locals
 
 
 def parse_args():
@@ -43,34 +46,42 @@ def parse_args():
     """
 
     pre_parser = argparse.ArgumentParser(add_help=False)
-    pre_parser.add_argument("template")
-    parsed, _ = pre_parser.parse_known_args()
+    if os.path.exists("./template.yaml"):
+        template_path = "./template.yaml"
+    else:
+        pre_parser.add_argument("template")
+        parsed, _ = pre_parser.parse_known_args()
+        template_path = parsed.template
     # Load template.yaml file.
-    template = find_and_parse_model_template(parsed.template)
+    template = find_and_parse_model_template(template_path)
     # Get hyper parameters schema.
     hyper_parameters = template.hyper_parameters.data
     assert hyper_parameters
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("template")
+    if not os.path.exists("./template.yaml"):
+        parser.add_argument("template")
+    parser.add_argument("--data", required=False, default="./data.yaml")
+    required = not os.path.exists("./data.yaml")
+
     parser.add_argument(
         "--train-ann-files",
-        required=True,
+        required=required,
         help="Comma-separated paths to training annotation files.",
     )
     parser.add_argument(
         "--train-data-roots",
-        required=True,
+        required=required,
         help="Comma-separated paths to training data folders.",
     )
     parser.add_argument(
         "--val-ann-files",
-        required=True,
+        required=required,
         help="Comma-separated paths to validation annotation files.",
     )
     parser.add_argument(
         "--val-data-roots",
-        required=True,
+        required=required,
         help="Comma-separated paths to validation data folders.",
     )
     parser.add_argument(
@@ -117,13 +128,17 @@ def main():
     task_class = get_impl_class(template.entrypoints.openvino if is_pot else template.entrypoints.nncf)
     dataset_class = get_dataset_class(template.task_type)
 
-    # Create instances of Task, ConfigurableParameters and Dataset.
+    data_config = configure_dataset(args)
+
     dataset = dataset_class(
         train_subset={
-            "ann_file": args.train_ann_files,
-            "data_root": args.train_data_roots,
+            "ann_file": data_config["data"]["train"]["ann-files"],
+            "data_root": data_config["data"]["train"]["data-roots"],
         },
-        val_subset={"ann_file": args.val_ann_files, "data_root": args.val_data_roots},
+        val_subset={
+            "ann_file": data_config["data"]["val"]["ann-files"],
+            "data_root": data_config["data"]["val"]["data-roots"],
+        },
     )
 
     environment = TaskEnvironment(
