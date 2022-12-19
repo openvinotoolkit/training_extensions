@@ -16,7 +16,7 @@
 
 # pylint: disable=invalid-name
 
-from typing import Any, Dict, Iterable, Union
+from typing import Any, Dict
 
 import cv2
 import numpy as np
@@ -29,7 +29,6 @@ try:
     from openvino.model_zoo.model_api.models.utils import pad_image
 except ImportError as e:
     import warnings
-
     warnings.warn("ModelAPI was not found.")
 
 
@@ -37,6 +36,13 @@ class OTXClassification(Classification):
     """OTX classification class for openvino."""
 
     __model__ = "otx_classification"
+
+    def __init__(self, model_adapter, configuration=None, preload=False):
+        super().__init__(model_adapter, configuration, preload)
+        if self.hierarchical:
+            logits_range_dict = self.multihead_class_info.get('head_idx_to_logits_range', False)
+            if logits_range_dict:  #  json allows only string key, revert to integer.
+                self.multihead_class_info['head_idx_to_logits_range'] = {int(k):v for k,v in logits_range_dict.items()}
 
     @classmethod
     def parameters(cls):
@@ -96,7 +102,7 @@ class OTXClassification(Classification):
         return dict_inputs, meta
 
     @check_input_parameters_type()
-    def postprocess(self, outputs: Dict[str, np.ndarray], meta: Dict[str, Any]):  # pylint: disable=unused-argument
+    def postprocess(self, outputs: Dict[str, np.ndarray], metadata: Dict[str, Any]):  # pylint: disable=unused-argument
         """Post-process."""
         logits = outputs[self.out_layer_name].squeeze()
         if self.multilabel:
@@ -108,39 +114,53 @@ class OTXClassification(Classification):
 
     @check_input_parameters_type()
     def postprocess_aux_outputs(self, outputs: Dict[str, np.ndarray], metadata: Dict[str, Any]):
-        """Postprocess for aux outputs."""
-        actmap = get_actmap(outputs["saliency_map"][0], (metadata["original_shape"][1], metadata["original_shape"][0]))
+        """Post-process for auxiliary outputs."""
+        saliency_map = outputs["saliency_map"][0]
         repr_vector = outputs["feature_vector"].reshape(-1)
         logits = outputs[self.out_layer_name].squeeze()
         if self.multilabel:
             probs = sigmoid_numpy(logits)
+        elif self.hierarchical:
+            probs = activate_multihead_output(logits, self.multihead_class_info)
         else:
             probs = softmax_numpy(logits)
+
         act_score = float(np.max(probs) - np.min(probs))
-        return actmap, repr_vector, act_score
 
-
-@check_input_parameters_type()
-def get_actmap(features: Union[np.ndarray, Iterable, int, float], output_res: Union[tuple, list]):
-    """Get actmap."""
-    am = cv2.resize(features, output_res)
-    am = cv2.applyColorMap(am, cv2.COLORMAP_JET)
-    am = cv2.cvtColor(am, cv2.COLOR_BGR2RGB)
-    return am
-
+        return probs, saliency_map, repr_vector, act_score
 
 @check_input_parameters_type()
 def sigmoid_numpy(x: np.ndarray):
     """Sigmoid numpy."""
-    return 1.0 / (1.0 + np.exp(-1.0 * x))
+    return 1. / (1. + np.exp(-1. * x))
 
 
 @check_input_parameters_type()
-def softmax_numpy(x: np.ndarray):
+def softmax_numpy(x: np.ndarray, eps: float = 1e-9):
     """Softmax numpy."""
     x = np.exp(x)
-    x /= np.sum(x)
+    inf_ind = np.isinf(x)
+    total_infs = np.sum(inf_ind)
+    if total_infs > 0:
+        x[inf_ind] = 1. / total_infs
+        x[~inf_ind] = 0
+    else:
+        x /= np.sum(x) + eps
     return x
+
+
+@check_input_parameters_type()
+def activate_multihead_output(logits: np.ndarray, multihead_class_info: dict):
+    """Activate multi-head output."""
+    for i in range(multihead_class_info['num_multiclass_heads']):
+        logits_begin, logits_end = multihead_class_info['head_idx_to_logits_range'][i]
+        logits[logits_begin : logits_end] = softmax_numpy(logits[logits_begin : logits_end])
+
+    if multihead_class_info['num_multilabel_classes']:
+        logits_begin, logits_end = multihead_class_info['num_single_label_classes'], -1
+        logits[logits_begin : logits_end] = softmax_numpy(logits[logits_begin : logits_end])
+
+    return logits
 
 
 @check_input_parameters_type()
@@ -149,9 +169,6 @@ def get_hierarchical_predictions(
 ):
     """Get hierarchical predictions."""
     predicted_labels = []
-    logits_range_dict = multihead_class_info.get("head_idx_to_logits_range", False)
-    if logits_range_dict:  #  json allows only string key, revert to integer.
-        multihead_class_info["head_idx_to_logits_range"] = {int(k): v for k, v in logits_range_dict.items()}
     for i in range(multihead_class_info["num_multiclass_heads"]):
         logits_begin, logits_end = multihead_class_info["head_idx_to_logits_range"][i]
         head_logits = logits[logits_begin:logits_end]

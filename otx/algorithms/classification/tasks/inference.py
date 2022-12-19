@@ -18,7 +18,7 @@ from otx.algorithms.classification.configs import ClassificationConfig
 from otx.algorithms.classification.utils import (
     get_multihead_class_info as get_hierarchical_info,
 )
-from otx.algorithms.common.adapters.mmcv.utils import get_meta_keys, patch_data_pipeline
+from otx.algorithms.common.adapters.mmcv.utils import get_meta_keys
 from otx.algorithms.common.configs import TrainType
 from otx.algorithms.common.tasks import BaseTask
 from otx.api.entities.datasets import DatasetEntity
@@ -33,7 +33,6 @@ from otx.api.entities.model import (  # ModelStatus
     ModelOptimizationType,
     ModelPrecision,
 )
-from otx.api.entities.result_media import ResultMediaEntity
 from otx.api.entities.resultset import ResultSetEntity
 from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.task_environment import TaskEnvironment
@@ -45,8 +44,8 @@ from otx.api.usecases.tasks.interfaces.explain_interface import IExplainTask
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType, IExportTask
 from otx.api.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from otx.api.usecases.tasks.interfaces.unload_interface import IUnload
+from otx.api.utils.dataset_utils import add_saliency_maps_to_dataset_item
 from otx.api.utils.labels_utils import get_empty_label
-from otx.api.utils.vis_utils import get_actmap
 
 # pylint: disable=invalid-name
 
@@ -100,7 +99,7 @@ class ClassificationInferenceTask(
         dump_saliency_map = not inference_parameters.is_evaluation if inference_parameters else True
         results = self._run_task(
             stage_module,
-            mode="train",
+            mode="eval",
             dataset=dataset,
             dump_features=dump_features,
             dump_saliency_map=dump_saliency_map,
@@ -260,31 +259,28 @@ class ClassificationInferenceTask(
                 dataset_item.append_metadata_item(active_score, model=self._task_environment.model)
 
             if saliency_map is not None:
-                actmap = get_actmap(saliency_map, (dataset_item.width, dataset_item.height))
-                saliency_map_media = ResultMediaEntity(
-                    name="Saliency Map",
-                    type="saliency_map",
-                    annotation_scene=dataset_item.annotation_scene,
-                    numpy=actmap,
-                    roi=dataset_item.roi,
+                if saliency_map.ndim == 4 and saliency_map.shape[0] == 1:
+                    saliency_map = saliency_map[0]
+                add_saliency_maps_to_dataset_item(
+                    dataset_item=dataset_item,
+                    saliency_map=saliency_map,
+                    model=self._task_environment.model,
+                    labels=self._labels,
                 )
-                dataset_item.append_metadata_item(saliency_map_media, model=self._task_environment.model)
-
             update_progress_callback(int(i / dataset_size * 100))
 
     def _add_saliency_maps_to_dataset(self, saliency_maps, dataset, update_progress_callback):
         """Loop over dataset again and assign saliency maps."""
         dataset_size = len(dataset)
         for i, (dataset_item, saliency_map) in enumerate(zip(dataset, saliency_maps)):
-            actmap = get_actmap(saliency_map, (dataset_item.width, dataset_item.height))
-            saliency_map_media = ResultMediaEntity(
-                name="Saliency Map",
-                type="saliency_map",
-                annotation_scene=dataset_item.annotation_scene,
-                numpy=actmap,
-                roi=dataset_item.roi,
+            if saliency_map.ndim == 4 and saliency_map.shape[0] == 1:
+                saliency_map = saliency_map[0]
+            add_saliency_maps_to_dataset_item(
+                dataset_item=dataset_item,
+                saliency_map=saliency_map,
+                model=self._task_environment.model,
+                labels=self._labels,
             )
-            dataset_item.append_metadata_item(saliency_map_media, model=self._task_environment.model)
             update_progress_callback(int(i / dataset_size * 100))
 
     def _init_recipe_hparam(self) -> dict:
@@ -352,7 +348,6 @@ class ClassificationInferenceTask(
         # FIXME[Soobee] : if train type is not in cfg, it raises an error in default INCREMENTAL mode.
         # During semi-implementation, this line should be fixed to -> self._recipe_cfg.train_type = train_type
         self._recipe_cfg.train_type = train_type.name
-        patch_data_pipeline(self._recipe_cfg, self.data_pipeline_path)
         self._patch_datasets(self._recipe_cfg)  # for OTX compatibility
         self._patch_evaluation(self._recipe_cfg)  # for OTX compatibility
         logger.info(f"initialized recipe = {recipe}")
