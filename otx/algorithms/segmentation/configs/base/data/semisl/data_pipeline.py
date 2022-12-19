@@ -59,3 +59,11 @@ unlabeled_pipeline = [
     dict(type="DefaultFormatBundle"),
     dict(type="Collect", keys=["img", "ul_w_img"]),
 ]
+
+# TODO (Soobee) : Remove Repeatdataset in data config
+data = dict(
+    train=dict(dataset=dict(pipeline=train_pipeline)),
+    val=dict(pipeline=test_pipeline),
+    test=dict(pipeline=test_pipeline),
+    unlabeled=dict(pipeline=unlabeled_pipeline),
+)

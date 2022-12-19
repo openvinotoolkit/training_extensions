@@ -96,6 +96,7 @@ def add_hyper_parameters_sub_parser(parser, config, modes=None):
         if val.lower() in ("false", "0"):
             return False
         raise argparse.ArgumentTypeError("Boolean value expected.")
+
     params = gen_param_help(config)
 
     subparsers = parser.add_subparsers(help="sub-command help")

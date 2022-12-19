@@ -57,5 +57,9 @@ test_pipeline = [
     ),
 ]
 
-
-data = dict(train=dict(pipeline=train_pipeline), val=dict(pipeline=test_pipeline), test=dict(pipeline=test_pipeline))
+# TODO (Soobee) : Remove Repeatdataset in data config
+data = dict(
+    train=dict(dataset=dict(pipeline=train_pipeline)),
+    val=dict(pipeline=test_pipeline),
+    test=dict(pipeline=test_pipeline),
+)
