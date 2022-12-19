@@ -201,7 +201,7 @@ def add_saliency_maps_to_dataset_item(
 ):
     """Add saliency maps(2d for class-ignore saliency map, 3d for class-wise saliency maps) to a single dataset item.
 
-    Params `task` and `predicted_scene` is only provided for openvino task.
+    Params `task` and `predicted_scene` are only used for openvino task, to select the predicted class' saliency maps.
     """
     if saliency_map.ndim == 2:
         # Single saliency map per image, support e.g. EigenCAM use case

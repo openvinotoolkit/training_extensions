@@ -239,7 +239,7 @@ class ClassificationOpenVINOTask(IDeploymentTask, IInferenceTask, IEvaluationTas
                     saliency_map=saliency_map,
                     model=self.model,
                     labels=self.task_environment.get_labels(),
-                    task="classification",
+                    task="cls",
                     predicted_scene=predicted_scene,
                 )
             update_progress_callback(int(i / dataset_size * 100))

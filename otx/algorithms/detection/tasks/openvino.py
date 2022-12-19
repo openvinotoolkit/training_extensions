@@ -371,16 +371,12 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
             update_progress_callback(int(i / dataset_size * 100), None)
             _, saliency_map = features
             labels = self.task_environment.get_labels()
-            num_saliency_maps = saliency_map.shape[0]
-            if num_saliency_maps == len(labels) + 1:
-                # Include the background as the last category
-                logger.info("Adding background label, e.g. SSD case")
-                labels.append(LabelEntity("background", Domain.DETECTION))
             add_saliency_maps_to_dataset_item(
                 dataset_item=dataset_item,
                 saliency_map=saliency_map,
                 model=self.model,
                 labels=labels,
+                task="det",
                 predicted_scene=predicted_scene,
             )
         logger.info("OpenVINO explain completed")
