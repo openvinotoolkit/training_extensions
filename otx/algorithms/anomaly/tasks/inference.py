@@ -30,6 +30,16 @@ from anomalib.utils.callbacks import (
     MinMaxNormalizationCallback,
 )
 from omegaconf import DictConfig, ListConfig
+from ote_sdk.entities.datasets import DatasetEntity
+from ote_sdk.entities.inference_parameters import InferenceParameters
+from ote_sdk.entities.metrics import NullPerformance, Performance, ScoreMetric
+from ote_sdk.entities.model import (
+    ModelEntity,
+    ModelFormat,
+    ModelOptimizationType,
+    ModelPrecision,
+    OptimizationMethod,
+)
 from pytorch_lightning import Trainer
 
 from otx.algorithms.anomaly.adapters.anomalib.callbacks import (
@@ -40,16 +50,6 @@ from otx.algorithms.anomaly.adapters.anomalib.config import get_anomalib_config
 from otx.algorithms.anomaly.adapters.anomalib.data import OTXAnomalyDataModule
 from otx.algorithms.anomaly.adapters.anomalib.logger import get_logger
 from otx.algorithms.anomaly.configs.base.configuration import BaseAnomalyConfig
-from otx.api.entities.datasets import DatasetEntity
-from otx.api.entities.inference_parameters import InferenceParameters
-from otx.api.entities.metrics import NullPerformance, Performance, ScoreMetric
-from otx.api.entities.model import (
-    ModelEntity,
-    ModelFormat,
-    ModelOptimizationType,
-    ModelPrecision,
-    OptimizationMethod,
-)
 from otx.api.entities.model_template import TaskType
 from otx.api.entities.resultset import ResultSetEntity
 from otx.api.entities.task_environment import TaskEnvironment
@@ -101,7 +101,6 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
 
     def get_config(self) -> Union[DictConfig, ListConfig]:
         """Get Anomalib Config from task environment.
-
         Returns:
             Union[DictConfig, ListConfig]: Anomalib config.
         """
@@ -115,21 +114,18 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
 
     def load_model(self, otx_model: Optional[ModelEntity]) -> AnomalyModule:
         """Create and Load Anomalib Module from OTX Model.
-
         This method checks if the task environment has a saved OTX Model,
         and creates one. If the OTX model already exists, it returns the
         the model with the saved weights.
-
         Args:
             otx_model (Optional[ModelEntity]): OTX Model from the
                 task environment.
-
         Returns:
             AnomalyModule: Anomalib
                 classification or segmentation model with/without weights.
         """
-        model = get_model(config=self.config)
         if otx_model is None:
+            model = get_model(config=self.config)
             logger.info(
                 "No trained model in project yet. Created new model with '%s'",
                 self.model_name,
@@ -138,10 +134,16 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
             buffer = io.BytesIO(otx_model.get_data("weights.pth"))
             model_data = torch.load(buffer, map_location=torch.device("cpu"))
 
+            if model_data["config"]["model"]["backbone"] != self.config["model"]["backbone"]:
+                logger.warning(
+                    "Backbone of the model in the Task Environment is different from the one in the template. "
+                    f"creating model with backbone={model_data['config']['model']['backbone']}"
+                )
+                self.config["model"]["backbone"] = model_data["config"]["model"]["backbone"]
             try:
+                model = get_model(config=self.config)
                 model.load_state_dict(model_data["model"])
                 logger.info("Loaded model weights from Task Environment")
-
             except BaseException as exception:
                 raise ValueError("Could not load the saved model. The model file structure is invalid.") from exception
 
@@ -149,7 +151,6 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
 
     def cancel_training(self) -> None:
         """Cancel the training `after_batch_end`.
-
         This terminates the training; however validation is still performed.
         """
         logger.info("Cancel training requested.")
@@ -195,7 +196,6 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
 
     def evaluate(self, output_resultset: ResultSetEntity, evaluation_metric: Optional[str] = None) -> None:
         """Evaluate the performance on a result set.
-
         Args:
             output_resultset (ResultSetEntity): Result Set from which the performance is evaluated.
             evaluation_metric (Optional[str], optional): Evaluation metric. Defaults to None. Instead,
@@ -251,8 +251,8 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         logger.info("Exporting the OpenVINO model.")
         onnx_path = os.path.join(self.config.project.path, "onnx_model.onnx")
         self._export_to_onnx(onnx_path)
-        optimize_command = "mo --input_model " + onnx_path + " --output_dir " + self.config.project.path
-        subprocess.call(optimize_command, shell=True)
+        optimize_command = ["mo", "--input_model", onnx_path, "--output_dir", self.config.project.path]
+        subprocess.run(optimize_command, check=True)
         bin_file = glob(os.path.join(self.config.project.path, "*.bin"))[0]
         xml_file = glob(os.path.join(self.config.project.path, "*.xml"))[0]
         with open(bin_file, "rb") as file:
@@ -266,7 +266,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         output_model.set_data("label_schema.json", label_schema_to_bytes(self.task_environment.label_schema))
         self._set_metadata(output_model)
 
-    def _model_info(self) -> Dict:
+    def model_info(self) -> Dict:
         """Return model info to save the model weights.
 
         Returns:
@@ -285,7 +285,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
             output_model (ModelEntity): Output model onto which the weights are saved.
         """
         logger.info("Saving the model weights.")
-        model_info = self._model_info()
+        model_info = self.model_info()
         buffer = io.BytesIO()
         torch.save(model_info, buffer)
         output_model.set_data("weights.pth", buffer.getvalue())
@@ -301,8 +301,10 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         output_model.optimization_methods = self.optimization_methods
 
     def _set_metadata(self, output_model: ModelEntity):
-        output_model.set_data("image_threshold", self.model.image_threshold.value.cpu().numpy().tobytes())
-        output_model.set_data("pixel_threshold", self.model.pixel_threshold.value.cpu().numpy().tobytes())
+        if hasattr(self.model, "image_threshold"):
+            output_model.set_data("image_threshold", self.model.image_threshold.value.cpu().numpy().tobytes())
+        if hasattr(self.model, "pixel_threshold"):
+            output_model.set_data("pixel_threshold", self.model.pixel_threshold.value.cpu().numpy().tobytes())
         if hasattr(self.model, "normalization_metrics"):
             output_model.set_data("min", self.model.normalization_metrics.state_dict()["min"].cpu().numpy().tobytes())
             output_model.set_data("max", self.model.normalization_metrics.state_dict()["max"].cpu().numpy().tobytes())

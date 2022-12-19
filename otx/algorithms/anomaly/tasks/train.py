@@ -14,24 +14,23 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+import io
 from typing import Optional
 
+import torch
+from adapters.anomalib.callbacks import ProgressCallback
+from adapters.anomalib.data import OTEAnomalyDataModule
+from adapters.anomalib.logger import get_logger
+from anomalib.models import AnomalyModule, get_model
 from anomalib.utils.callbacks import (
     MetricsConfigurationCallback,
     MinMaxNormalizationCallback,
 )
+from ote_sdk.entities.datasets import DatasetEntity
+from ote_sdk.entities.model import ModelEntity
+from ote_sdk.entities.train_parameters import TrainParameters
+from ote_sdk.usecases.tasks.interfaces.training_interface import ITrainingTask
 from pytorch_lightning import Trainer, seed_everything
-
-from otx.algorithms.anomaly.adapters.anomalib.callbacks import (
-    ProgressCallback,
-    ScoreReportingCallback,
-)
-from otx.algorithms.anomaly.adapters.anomalib.data import OTXAnomalyDataModule
-from otx.algorithms.anomaly.adapters.anomalib.logger import get_logger
-from otx.api.entities.datasets import DatasetEntity
-from otx.api.entities.model import ModelEntity
-from otx.api.entities.train_parameters import TrainParameters
-from otx.api.usecases.tasks.interfaces.training_interface import ITrainingTask
 
 from .inference import InferenceTask
 
@@ -49,7 +48,6 @@ class TrainingTask(InferenceTask, ITrainingTask):
         seed: Optional[int] = None,
     ) -> None:
         """Train the anomaly classification model.
-
         Args:
             dataset (DatasetEntity): Input dataset.
             output_model (ModelEntity): Output model to save the model weights.
@@ -68,11 +66,10 @@ class TrainingTask(InferenceTask, ITrainingTask):
 
         logger.info("Training Configs '%s'", config)
 
-        datamodule = OTXAnomalyDataModule(config=config, dataset=dataset, task_type=self.task_type)
+        datamodule = OTEAnomalyDataModule(config=config, dataset=dataset, task_type=self.task_type)
         callbacks = [
             ProgressCallback(parameters=train_parameters),
             MinMaxNormalizationCallback(),
-            ScoreReportingCallback(parameters=train_parameters),
             MetricsConfigurationCallback(
                 adaptive_threshold=config.metrics.threshold.adaptive,
                 default_image_threshold=config.metrics.threshold.image_default,
@@ -88,3 +85,39 @@ class TrainingTask(InferenceTask, ITrainingTask):
         self.save_model(output_model)
 
         logger.info("Training completed.")
+
+    def load_model(self, ote_model: Optional[ModelEntity]) -> AnomalyModule:
+        """Create and Load Anomalib Module from OTE Model.
+        This method checks if the task environment has a saved OTE Model,
+        and creates one. If the OTE model already exists, it returns the
+        the model with the saved weights.
+        Args:
+            ote_model (Optional[ModelEntity]): OTE Model from the
+                task environment.
+        Returns:
+            AnomalyModule: Anomalib
+                classification or segmentation model with/without weights.
+        """
+        model = get_model(config=self.config)
+        if ote_model is None:
+            logger.info(
+                "No trained model in project yet. Created new model with '%s'",
+                self.model_name,
+            )
+        else:
+            buffer = io.BytesIO(ote_model.get_data("weights.pth"))
+            model_data = torch.load(buffer, map_location=torch.device("cpu"))
+
+            try:
+                if model_data["config"]["model"]["backbone"] == self.config["model"]["backbone"]:
+                    model.load_state_dict(model_data["model"])
+                    logger.info("Loaded model weights from Task Environment")
+                else:
+                    logger.info(
+                        "Model backbone does not match. Created new model with '%s'",
+                        self.model_name,
+                    )
+            except BaseException as exception:
+                raise ValueError("Could not load the saved model. The model file structure is invalid.") from exception
+
+        return model
