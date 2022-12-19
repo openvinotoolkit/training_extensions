@@ -140,7 +140,7 @@ def main():
     explained_dataset = task.explain(
         dataset_to_explain.with_empty_annotations(),
         InferenceParameters(
-            is_evaluation=True,
+            is_evaluation=False,
             explainer=args.explain_algorithm,
         ),
     )
@@ -157,7 +157,7 @@ def main():
                 weight=args.overlay_weight,
             )
 
-    print(f"saliency maps saved to {args.save_explanation_to} for {len(image_files)} images...")
+    print(f"Saliency maps saved to {args.save_explanation_to} for {len(image_files)} images...")
 
 
 if __name__ == "__main__":

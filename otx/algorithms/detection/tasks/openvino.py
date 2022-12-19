@@ -346,7 +346,7 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
                     saliency_map=saliency_map,
                     model=self.model,
                     labels=self.task_environment.get_labels(),
-                    task="detection",
+                    task="det",
                     predicted_scene=predicted_scene,
                 )
         logger.info("OpenVINO inference completed")

@@ -219,11 +219,11 @@ def add_saliency_maps_to_dataset_item(
         # If predicted_scene is provided, add saliency map with only predicted classes(used for openvino task)
         predicted_labels = set()
         if predicted_scene is not None:
-            if task == "classification" and len(predicted_scene.annotations) > 0:
+            if task == "cls" and len(predicted_scene.annotations) > 0:
                 predicted_labels = set(
                     scored_label.label for scored_label in predicted_scene.annotations[0].get_labels()
                 )
-            elif task == "detection":
+            elif task == "det":
                 for bbox in predicted_scene.annotations:
                     scored_label = bbox.get_labels()[0]
                     predicted_labels.add(scored_label.label)
