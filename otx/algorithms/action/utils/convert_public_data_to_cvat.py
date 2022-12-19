@@ -143,7 +143,7 @@ def generate_default_cvat_xml_fields(i, class_idx, video_path, frame_list):
 def convert_jester_dataset_to_datumaro(src_path, dst_path):
     """Convert Jester dataset to multi-video CVAT (Datumaro) format."""
     ## Prepare dst_path
-    frames_dir_path = osp.join(src_path, "frames")
+    frames_dir_path = osp.join(src_path, "rawframes")
 
     phases = ["train", "val", "test"]
     for phase in phases:
@@ -152,17 +152,21 @@ def convert_jester_dataset_to_datumaro(src_path, dst_path):
             pathlib.Path(osp.join(dst_path, phase)).mkdir(parents=True, exist_ok=True)
 
             for i, line in enumerate(txt.readlines()):
+                if line[0] == "#":
+                    continue
                 video_dir, _, class_idx = line[:-1].split(" ")
 
                 video_path = osp.join(frames_dir_path, video_dir)
+                video_name = video_path.split("/")[-1]
                 frame_list = os.listdir(video_path)
+                frame_list.sort()
 
                 shutil.copytree(
                     video_path,
                     osp.join(
                         dst_path,
                         phase,
-                        f"video_{i}/images",
+                        f"{video_name}/images",
                     ),
                 )
 
@@ -179,7 +183,7 @@ def convert_jester_dataset_to_datumaro(src_path, dst_path):
 
                 et = etree.ElementTree(annotations)
                 et.write(
-                    osp.join(dst_path, phase, f"video_{i}/annotations.xml"),
+                    osp.join(dst_path, phase, f"{video_name}/annotations.xml"),
                     pretty_print=True,
                     xml_declaration=True,
                     encoding="utf-8",
@@ -252,9 +256,9 @@ def convert_ava_dataset_to_datumaro(src_path, dst_path):
 
 def main(src_path, dst_path):
     """Main function."""
-    # convert_jester_dataset_to_datumaro(src_path, dst_path)
-    convert_ava_dataset_to_datumaro(src_path, dst_path)
+    convert_jester_dataset_to_datumaro(src_path, dst_path)
+    # convert_ava_dataset_to_datumaro(src_path, dst_path)
 
 
 if __name__ == "__main__":
-    main("/local/sungmanc/datasets/ava_SC", "/local/sungmanc/datasets/ava_SC_cvat_multifolder_detection")
+    main("data/custom_action_recognition/custom_dataset", "data/custom_action_recognition/custom_dataset_cvat/")

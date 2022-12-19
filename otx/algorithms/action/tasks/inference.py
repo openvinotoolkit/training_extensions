@@ -30,6 +30,7 @@ from mmcv.utils import Config
 
 from otx.algorithms.action.adapters.mmaction import patch_config, set_data_classes
 from otx.algorithms.action.configs.base import ActionConfig
+from otx.algorithms.action.utils.data import ActionVidDataset
 from otx.algorithms.common.adapters.mmcv.utils import prepare_for_testing
 from otx.algorithms.common.tasks.training_base import BaseTask
 from otx.algorithms.common.utils.callback import InferenceProgressCallback
@@ -84,6 +85,7 @@ class ActionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask
     ) -> DatasetEntity:
         """Main infer function of OTX Action Task."""
         logger.info("infer()")
+        dataset = ActionVidDataset(dataset)
 
         if inference_parameters:
             update_progress_callback = inference_parameters.update_progress
@@ -283,6 +285,8 @@ class ActionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask
     ):
         """Evaluate function of OTX Action Task."""
         logger.info("called evaluate()")
+        if len(output_resultset.ground_truth_dataset) != output_resultset.prediction_dataset:
+            output_resultset.ground_truth_dataset = ActionVidDataset(output_resultset.ground_truth_dataset)
         metric = self._get_metric(output_resultset)
         performance = metric.get_performance()
         logger.info(f"Final model performance: {str(performance)}")

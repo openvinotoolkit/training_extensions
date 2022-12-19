@@ -16,7 +16,7 @@
 
 import os.path as osp
 from collections import defaultdict
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 import numpy as np
 from mmcv import ConfigDict
@@ -27,6 +27,7 @@ from otx.api.entities.annotation import (
     AnnotationSceneKind,
 )
 from otx.api.entities.dataset_item import DatasetItemEntity
+from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.id import ID
 from otx.api.entities.label import Domain, LabelEntity
 from otx.api.entities.scored_label import ScoredLabel
@@ -211,3 +212,39 @@ def load_det_dataset(
         dataset_items.append(dataset_item)
 
     return dataset_items
+
+
+class ActionVidDataset(DatasetEntity):
+    """Convert frame based DatasetEntity to video based DatasetEntity."""
+
+    def __init__(self, dataset: DatasetEntity):
+        items = []
+        videos: Dict[str, List[DatasetItemEntity]] = {}
+        meta_datas: Dict[str, Any] = {}
+        for item in dataset:
+            metadata = item.get_metadata()[0].data
+            video_id = metadata.video_id  # type:ignore[attr-defined]
+            frame_idx = metadata.frame_idx  # type:ignore[attr-defined]
+            if video_id in videos:
+                # TODO Append with sort
+                videos[video_id].append(item)
+                if frame_idx < meta_datas[video_id]["start_index"]:
+                    meta_datas[video_id]["start_index"] = frame_idx
+            else:
+                videos[video_id] = [item]
+                meta_datas[video_id] = {"start_index": frame_idx}
+        for video_id, video in videos.items():
+            video_info: Dict[str, Any] = {}
+            video_info["video"] = video
+            video_info["total_frames"] = len(video)
+            video_info["start_index"] = meta_datas[video_id]["start_index"]
+            annotation_scene = video[0].annotation_scene
+            subset = video[0].subset
+            vid_entity = DatasetItemEntity(
+                media=ConfigDict(video_info),
+                annotation_scene=annotation_scene,
+                subset=subset,
+            )
+            items.append(vid_entity)
+
+        super().__init__(items=items)

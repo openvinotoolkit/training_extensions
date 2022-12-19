@@ -61,6 +61,7 @@ class ActionBaseDatasetAdapter(BaseDatasetAdapter):
             cvat_data_list.append(DatumaroDataset.import_from(cvat_data_path, "cvat"))
         return cvat_data_list
 
+    # pylint: disable=protected-access, too-many-nested-blocks
     def _prepare_label_information(self, datumaro_dataset: dict) -> dict:
         """Prepare and reorganize the label information for merging multiple video information.
 
@@ -77,36 +78,44 @@ class ActionBaseDatasetAdapter(BaseDatasetAdapter):
 
         """
         outputs = {
-            "category_items": [],
-            "label_groups": [],
             "label_entities": [],
         }  # type: dict
 
-        category_list = []  # to check the duplicate case
+        # Making overall categories
+        category_indices: Dict[str, int] = {}  # to check the duplicate case
         for cvat_data in datumaro_dataset[Subset.TRAINING]:
-            # Making overall categories
             categories = cvat_data.categories().get(DatumaroAnnotationType.label, None)
+            if categories is not None:
+                indices = categories._indices
+                for name in indices:
+                    if name not in category_indices:
+                        category_indices[name] = len(category_indices)
 
-            if categories not in category_list:
-                outputs["category_items"].extend(categories.items)
-                outputs["label_groups"].extend(categories.label_groups)
-
-            category_list.append(categories)
-
-            # Reindexing the each label index of multiple video datasets
-            for cvat_data_item in cvat_data:
-                for ann in cvat_data_item.annotations:
-                    ann_name = categories.items[ann.label].name
-                    ann.label = [
-                        i for i, category_item in enumerate(outputs["category_items"]) if category_item.name == ann_name
-                    ][0]
+        # Reindexing the each label index of multiple video datasets
+        for subset_data in datumaro_dataset.values():
+            for cvat_data in subset_data:
+                for cvat_data_item in cvat_data:
+                    categories = cvat_data.categories().get(DatumaroAnnotationType.label, None)
+                    if categories is not None:
+                        for ann in cvat_data_item.annotations:
+                            ann_name = self.find_ann_name(categories._indices, ann.label)
+                            if ann_name is not None:
+                                ann.label = category_indices[ann_name]
 
         # Generate label_entity list according to overall categories
         outputs["label_entities"] = [
-            LabelEntity(name=class_name.name, domain=self.domain, is_empty=False, id=ID(i))
-            for i, class_name in enumerate(outputs["category_items"])
+            LabelEntity(name=name, domain=self.domain, is_empty=False, id=ID(index))
+            for name, index in category_indices.items()
         ]
         return outputs
+
+    @staticmethod
+    def find_ann_name(indices, label):
+        """Get action name from index."""
+        for _name, _label in indices.items():
+            if _label == label:
+                return _name
+        return None
 
     def convert_to_otx_format(self, datumaro_dataset: dict) -> Tuple[DatasetEntity, LabelSchemaEntity]:
         """Convert DatumaroDataset to DatasetEntity for Acion tasks."""
@@ -123,10 +132,13 @@ class ActionClassificationDatasetAdapter(ActionBaseDatasetAdapter):
 
         label_schema = self._generate_default_label_schema(label_entities)
         dataset_items = []
+        video_ids: Dict[str, int] = {}
         for subset, subset_data in datumaro_dataset.items():
             for datumaro_items in subset_data:
                 for datumaro_item in datumaro_items:
                     image = Image(file_path=datumaro_item.media.path)
+                    video_name = str(subset) + "_" + datumaro_item.media.path.split("/")[-3]
+                    video_id = self.get_video_id(video_ids, video_name)
                     shapes = []
                     for ann in datumaro_item.annotations:
                         # Action Classification
@@ -138,7 +150,7 @@ class ActionClassificationDatasetAdapter(ActionBaseDatasetAdapter):
                             )
                     meta_item = MetadataItemEntity(
                         data=VideoMetadata(
-                            video_id=ID(int(datumaro_item.media.path.split("/")[-3].split("_")[-1])),
+                            video_id=ID(video_id),
                             frame_idx=int(datumaro_item.media.path.split("/")[-1].split(".")[0].lstrip("0")),
                         )
                     )
@@ -153,6 +165,13 @@ class ActionClassificationDatasetAdapter(ActionBaseDatasetAdapter):
                     dataset_item = DatasetItemEntity(image, annotation_scene, subset=subset, metadata=[meta_item])
                     dataset_items.append(dataset_item)
         return DatasetEntity(items=dataset_items), label_schema
+
+    @staticmethod
+    def get_video_id(video_ids, video_name):
+        """Get video id."""
+        if video_name not in video_ids:
+            video_ids[video_name] = len(video_ids) + 1
+        return video_ids[video_name]
 
 
 class ActionDetectionDatasetAdapter(ActionBaseDatasetAdapter):

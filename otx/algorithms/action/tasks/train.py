@@ -26,6 +26,7 @@ from mmaction.datasets import build_dataset
 from mmaction.utils import get_root_logger
 
 from otx.algorithms.action.adapters.mmaction.utils import prepare_for_training
+from otx.algorithms.action.utils.data import ActionVidDataset
 from otx.algorithms.common.adapters.mmcv.hooks import OTXLoggerHook
 from otx.algorithms.common.utils import TrainingProgressCallback
 from otx.api.configuration import cfg_helper
@@ -106,6 +107,7 @@ class ActionTrainTask(ActionInferenceTask, ITrainingTask):
     ):
         """Train function in ActionTrainTask."""
         logger.info("train()")
+        dataset = ActionVidDataset(dataset)
         # Check for stop signal when training has stopped.
         # If should_stop is true, training was cancelled and no new
         if self._should_stop:

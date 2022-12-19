@@ -15,7 +15,7 @@
 # and limitations under the License.
 
 from copy import copy
-from typing import Any, Dict, List, Sequence
+from typing import List, Sequence
 
 import numpy as np
 from mmaction.datasets.builder import DATASETS
@@ -57,12 +57,22 @@ class OTXRawframeDataset(RawframeDataset):
 
             dataset = self.otx_dataset
             item = dataset[index]
+            video = item.media["video"]
+            total_frames = item.media["total_frames"]
+            start_index = item.media["start_index"]
+            if len(item.get_annotations()) == 0:
+                label = None
+            else:
+                label = int(item.get_roi_labels(self.labels)[0].id)
             ignored_labels = np.array([self.label_idx[lbs.id] for lbs in item.ignored_labels])
 
             data_info = dict(
-                dataset_item=item,
+                data=video,
+                label=label,
                 index=index,
                 ann_info=dict(label_list=self.labels),
+                total_frames=total_frames,
+                start_index=start_index,
                 ignored_labels=ignored_labels,
             )
 
@@ -88,18 +98,13 @@ class OTXRawframeDataset(RawframeDataset):
         self.start_index = start_index
         self.modality = modality
 
-        self.data_infos = OTXRawframeDataset._DataInfoProxy(otx_dataset, labels)
+        self.video_infos = OTXRawframeDataset._DataInfoProxy(otx_dataset, labels)
 
         self.pipeline = Compose(pipeline)
-        # TODO: Use this function to make vidoe chunk
-        # chunk_info = self._prepare_chunk_information()
-
-        # Delete previous function
-        # self.make_video_infos()
 
     def __len__(self):
         """Return length of dataset."""
-        return len(self.data_infos)
+        return len(self.video_infos)
 
     @check_input_parameters_type()
     def prepare_train_frames(self, idx: int) -> dict:
@@ -108,8 +113,8 @@ class OTXRawframeDataset(RawframeDataset):
         :param idx: int, Index of data.
         :return dict: Training data and annotation after pipeline with new keys introduced by pipeline.
         """
-        item = copy(self.data_infos[idx])  # Copying dict(), not contents
-        self.pre_pipeline(item)
+        item = copy(self.video_infos[idx])  # Copying dict(), not contents
+        item["modality"] = self.modality
         return self.pipeline(item)
 
     @check_input_parameters_type()
@@ -119,83 +124,6 @@ class OTXRawframeDataset(RawframeDataset):
         :param idx: int, Index of data.
         :return dict: Testing data after pipeline with new keys introduced by pipeline.
         """
-        item = copy(self.data_infos[idx])  # Copying dict(), not contents
-        self.pre_pipeline(item)
+        item = copy(self.video_infos[idx])  # Copying dict(), not contents
+        item["modality"] = self.modality
         return self.pipeline(item)
-
-    @check_input_parameters_type()
-    def pre_pipeline(self, results: Dict[str, Any]):
-        """Prepare results dict for pipeline. Add expected keys to the dict."""
-        # Should we make function like LoadImageFromOTXDataset ?
-        results["frame_dir"] = results["dataset_item"].media["frame_dir"]
-        results["total_frames"] = results["dataset_item"].media["total_frames"]
-        results["label"] = results["dataset_item"].media["label"]
-        results["filename_tmpl"] = self.filename_tmpl
-        results["modality"] = self.modality
-        results["start_index"] = self.start_index
-
-    def make_video_infos(self):
-        """Make mmaction style video infos."""
-        self.video_infos = []
-        for data_info in self.data_infos:
-            media = data_info["dataset_item"].media
-            annotation = data_info["dataset_item"].get_annotations()
-
-            if len(annotation) == 0:
-                label = None
-            else:
-                label = int(data_info["dataset_item"].get_roi_labels(self.labels)[0].id)
-            media["label"] = label
-            self.video_infos.append(media)
-
-    def _prepare_chunk_information(self):
-        """Preparing testing data.
-
-        FIXME: Maybe there is better way to make video chunk.
-        TODO: Can be changed according to the requirements from Geti. and not working on detection
-        ---
-        Preparing Chunk by using DatasetItemEntity.
-        Below functions will works under below assumptions.
-
-        Assumptions
-            1.  Frame index should starts from 0 and will be increased by 1.
-                (i.e.
-                    [0, 1, 2, 3] --> OK
-                    [0, 1, 2, 4] --> Not work
-                    [1, 2, 3, 4] --> Not work
-                )
-
-            2.  All frame information is needed even there is no annotation.
-                Frames that have no annotations can be regarded as 'label=0' to make video chunk.
-        """
-
-        chunk_info_dict = {}
-        for data_info in self.data_infos:
-            video_id = data_info["dataset_item"].get_metadata().data.video_id
-            frame_idx = data_info["dataset_item"].get_metadata().data.frame_idx
-
-            annotation = data_info["dataset_item"].get_annotations()
-            if len(annotation) == 0:
-                label = None
-            else:
-                label = int(data_info["dataset_item"].get_roi_labels(self.labels)[0].id)
-
-            if video_id not in chunk_info_dict:
-                chunk_info_dict[video_id] = np.zeros(frame_idx, dtype=np.uint8)
-                chunk_info_dict[video_id][frame_idx - 1] = label + 1  # 0 represents "no-label"
-            else:
-                if frame_idx > chunk_info_dict[video_id].shape[0]:
-                    chunk_info_dict[video_id] = np.concatenate(
-                        (
-                            chunk_info_dict[video_id],
-                            np.zeros(frame_idx - chunk_info_dict[video_id].shape[0], dtype=np.uint8),
-                        ),
-                        axis=0,
-                    )
-                    chunk_info_dict[video_id][frame_idx - 1] = label + 1
-                elif frame_idx < chunk_info_dict[video_id].shape[0]:
-                    chunk_info_dict[video_id][frame_idx - 1] = label + 1
-                else:
-                    raise ValueError("Can't be same")
-
-        return chunk_info_dict
