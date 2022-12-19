@@ -19,10 +19,10 @@ from tests.test_suite.e2e_test_system import e2e_pytest_unit
 
 torch.manual_seed(0)
 
-templates_cls = Registry("external/model-preparation-algorithm").filter(task_type="CLASSIFICATION").templates
+templates_cls = Registry("otx/algorithms").filter(task_type="CLASSIFICATION").templates
 templates_cls_ids = [template.model_template_id for template in templates_cls]
 
-templates_det = Registry("external/model-preparation-algorithm").filter(task_type="DETECTION").templates
+templates_det = Registry("otx/algorithms").filter(task_type="DETECTION").templates
 templates_det_ids = [template.model_template_id for template in templates_det]
 
 

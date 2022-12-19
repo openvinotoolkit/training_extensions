@@ -535,7 +535,7 @@ def otx_explain_openvino_testing(template, root, otx_dir, args):
         "explain",
         template.model_template_path,
         "--load-weights",
-        f"{template_work_dir}/exported_nncf_{template.model_template_id}/openvino.xml",
+        f"{template_work_dir}/exported_{template.model_template_id}/openvino.xml",
         "--explain-data-root",
         os.path.join(otx_dir, args["--input"]),
         "--save-explanation-to",
