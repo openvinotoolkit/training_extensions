@@ -264,6 +264,7 @@ class ClassificationInferenceTask(
                     saliency_map=saliency_map,
                     model=self._task_environment.model,
                     labels=self._labels,
+                    task="cls",
                 )
             update_progress_callback(int(i / dataset_size * 100))
 

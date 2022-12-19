@@ -330,9 +330,10 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
             if saliency_map is not None:
                 add_saliency_maps_to_dataset_item(
                     dataset_item=dataset_item,
-                    saliency_map=saliency_map,
+                    saliency_map=saliency_map[0],
                     model=self._task_environment.model,
                     labels=self._labels,
+                    task="det",
                 )
 
     def _det_add_predictions_to_dataset(self, all_results, width, height, confidence_threshold):
@@ -389,7 +390,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         for dataset_item, saliency_map in zip(dataset, explain_results):
             add_saliency_maps_to_dataset_item(
                 dataset_item=dataset_item,
-                saliency_map=saliency_map,
+                saliency_map=saliency_map[0],
                 model=self._task_environment.model,
                 labels=self._labels,
             )

@@ -334,7 +334,6 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
         for i, dataset_item in enumerate(dataset, 1):
             predicted_scene, features = self.inferencer.predict(dataset_item.numpy)
             dataset_item.append_annotations(predicted_scene.annotations)
-            update_progress_callback(int(i / dataset_size * 100), None)
             feature_vector, saliency_map = features
             if feature_vector is not None:
                 representation_vector = TensorEntity(name="representation_vector", numpy=feature_vector.reshape(-1))
@@ -349,6 +348,7 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
                     task="det",
                     predicted_scene=predicted_scene,
                 )
+            update_progress_callback(int(i / dataset_size * 100), None)
         logger.info("OpenVINO inference completed")
         return dataset
 
