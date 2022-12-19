@@ -29,6 +29,8 @@ hyper_parameters:
       batch_size:
         default_value: 16
         auto_hpo_state: POSSIBLE
+      unlabeled_batch_size:
+        default_value: 48
       learning_rate:
         default_value: 0.00245
         auto_hpo_state: POSSIBLE
