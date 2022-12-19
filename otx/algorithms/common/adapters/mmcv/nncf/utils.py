@@ -10,7 +10,6 @@ from typing import Any, Callable, Dict, Optional, Tuple
 import numpy as np
 import torch
 import torch.nn as nn
-from torch.utils.data import DataLoader
 from mmcv import Config
 from mmcv.parallel import (
     DataContainer,
@@ -19,7 +18,8 @@ from mmcv.parallel import (
     collate,
     scatter,
 )
-from mmcv.utils import get_logger
+from mpa.utils.logger import get_logger
+from torch.utils.data import DataLoader
 
 from otx.algorithms.common.adapters.mmcv.data_cpu import MMDataCPU, scatter_cpu
 from otx.algorithms.common.adapters.nncf.compression import (
@@ -35,7 +35,7 @@ from otx.algorithms.common.adapters.nncf.utils import (
 from otx.algorithms.common.utils import get_arg_spec
 
 
-logger = get_logger(__name__)
+logger = get_logger()
 
 
 def prepare_model_for_execution(
@@ -282,10 +282,9 @@ def wrap_nncf_model(
         def _get_fake_data_for_forward(nncf_config):
             device = next(model.parameters()).device
 
-            if (
-                nncf_config.get("input_info", None)
-                and nncf_config.get("input_info").get("sample_size", None)
-            ):
+            if nncf_config.get("input_info", None) and nncf_config.get(
+                "input_info"
+            ).get("sample_size", None):
                 input_size = nncf_config.get("input_info").get("sample_size")
                 assert len(input_size) == 4 and input_size[0] == 1
                 H, W, C = input_size[2], input_size[3], input_size[1]
