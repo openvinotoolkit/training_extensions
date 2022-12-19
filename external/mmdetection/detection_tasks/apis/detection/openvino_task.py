@@ -417,28 +417,32 @@ class OpenVINODetectionTask(
                     dataset_item.append_metadata_item(saliency_media, model=self.model)
                 elif saliency_map.ndim == 3:
                     # Multiple saliency maps per image (class-wise saliency map)
-                    predicted_class_set = set()
+                    predicted_labels = set()
                     for bbox in predicted_scene.annotations:
-                        predicted_class_set.add(bbox.get_labels()[0].name)
+                        scored_label = bbox.get_labels()[0]
+                        predicted_labels.add(scored_label.label)
 
                     labels = self.task_environment.get_labels()
                     num_saliency_maps = saliency_map.shape[0]
                     if num_saliency_maps == len(labels) + 1:
                         # Include the background as the last category
                         labels.append(LabelEntity('background', Domain.DETECTION))
+
                     for class_id, class_wise_saliency_map in enumerate(saliency_map):
-                        class_name_str = labels[class_id].name
-                        if class_name_str in predicted_class_set:
+                        label = labels[class_id]
+                        if label in predicted_labels:
                             # TODO (negvet): Support more advanced use case,
                             #  when all/configurable set of saliency maps is returned
                             actmap = get_actmap(
                                 class_wise_saliency_map, (dataset_item.width, dataset_item.height)
                             )
                             saliency_media = ResultMediaEntity(
-                                name=class_name_str,
+                                name=label.name,
                                 type="saliency_map",
                                 annotation_scene=dataset_item.annotation_scene,
-                                numpy=actmap, roi=dataset_item.roi
+                                numpy=actmap,
+                                roi=dataset_item.roi,
+                                label=label
                             )
                             dataset_item.append_metadata_item(saliency_media, model=self.model)
                 else:

@@ -199,28 +199,29 @@ class OpenVINOClassificationTask(IDeploymentTask, IInferenceTask, IEvaluationTas
                 if saliency_map.ndim == 2:
                     # Single saliency map per image, support e.g. EigenCAM use case
                     actmap = get_actmap(saliency_map, (dataset_item.width, dataset_item.height))
-                    saliency_media = ResultMediaEntity(name="Saliency Map", type="saliency_map",
+                    saliency_media = ResultMediaEntity(name="Saliency Map",
+                                                       type="saliency_map",
                                                        annotation_scene=dataset_item.annotation_scene,
-                                                       numpy=actmap, roi=dataset_item.roi,
-                                                       label=predicted_scene.annotations[0].get_labels()[0].label)
+                                                       numpy=actmap,
+                                                       roi=dataset_item.roi)
                     dataset_item.append_metadata_item(saliency_media, model=self.model)
                 elif saliency_map.ndim == 3:
                     # Multiple saliency maps per image (class-wise saliency map), support e.g. Recipro-CAM use case
-                    predicted_class_set = set()
-                    for label in predicted_scene.annotations[0].get_labels():
-                        predicted_class_set.add(label.name)
+                    predicted_labels = set()
+                    for scored_label in predicted_scene.annotations[0].get_labels():
+                        predicted_labels.add(scored_label.label)
 
                     for class_id, class_wise_saliency_map in enumerate(saliency_map):
-                        class_name_str = self.task_environment.get_labels()[class_id].name
-                        if class_name_str in predicted_class_set:
+                        label = self.task_environment.get_labels()[class_id]
+                        if label in predicted_labels:
                             # TODO (negvet): Support more advanced use case,
                             #  when all/configurable set of saliency maps is returned
                             actmap = get_actmap(class_wise_saliency_map, (dataset_item.width, dataset_item.height))
-                            label = predicted_scene.annotations[0].get_labels()[0].label
-                            saliency_media = ResultMediaEntity(name=class_name_str,
+                            saliency_media = ResultMediaEntity(name=label.name,
                                                                type="saliency_map",
                                                                annotation_scene=dataset_item.annotation_scene,
-                                                               numpy=actmap, roi=dataset_item.roi,
+                                                               numpy=actmap,
+                                                               roi=dataset_item.roi,
                                                                label=label)
                             dataset_item.append_metadata_item(saliency_media, model=self.model)
                 else:
