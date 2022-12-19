@@ -32,7 +32,8 @@ def parse_args():
     """Parses command line arguments."""
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("template")
+    if not os.path.exists("./template.yaml"):
+        parser.add_argument("template")
     parser.add_argument(
         "--load-weights",
         required=True,
@@ -40,7 +41,7 @@ def parse_args():
     )
     parser.add_argument(
         "--save-model-to",
-        required="True",
+        required=True,
         help="Location where exported model will be stored.",
     )
 
@@ -53,7 +54,11 @@ def main():
     args = parse_args()
 
     # Load template.yaml file.
-    template = find_and_parse_model_template(args.template)
+    if os.path.exists("./template.yaml"):
+        template_path = "./template.yaml"
+    else:
+        template_path = args.template
+    template = find_and_parse_model_template(template_path)
 
     # Get class for Task.
     is_nncf = is_checkpoint_nncf(args.load_weights)

@@ -268,7 +268,7 @@ class BaseConfig(ConfigurableParameters):
         train_type = selectable(
             default_value=TrainType.INCREMENTAL,
             header="train type",
-            description="training schema for the MPA task",
+            description="Training scheme option that determines how to train the model",
             editable=False,
             visible_in_ui=True,
         )

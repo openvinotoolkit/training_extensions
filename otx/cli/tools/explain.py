@@ -44,16 +44,21 @@ def parse_args():
     """Parses command line arguments."""
 
     pre_parser = argparse.ArgumentParser(add_help=False)
-    pre_parser.add_argument("template")
-    parsed, _ = pre_parser.parse_known_args()
+    if os.path.exists("./template.yaml"):
+        template_path = "./template.yaml"
+    else:
+        pre_parser.add_argument("template")
+        parsed, _ = pre_parser.parse_known_args()
+        template_path = parsed.template
     # Load template.yaml file.
-    template = find_and_parse_model_template(parsed.template)
+    template = find_and_parse_model_template(template_path)
     # Get hyper parameters schema.
     hyper_parameters = template.hyper_parameters.data
     assert hyper_parameters
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("template")
+    if not os.path.exists("./template.yaml"):
+        parser.add_argument("template")
     parser.add_argument(
         "--explain-data-roots",
         required=True,

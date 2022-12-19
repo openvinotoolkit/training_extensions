@@ -1,0 +1,22 @@
+<annotation>
+  <folder></folder>
+  <filename>c.jpg</filename>
+  <source>
+    <database>Unknown</database>
+    <annotation>Unknown</annotation>
+    <image>Unknown</image>
+  </source>
+  <segmented>0</segmented>
+  <object>
+    <name>bicycle</name>
+    <truncated>0</truncated>
+    <occluded>0</occluded>
+    <difficult>0</difficult>
+    <bndbox>
+      <xmin>3.0</xmin>
+      <ymin>1.0</ymin>
+      <xmax>11.0</xmax>
+      <ymax>6.0</ymax>
+    </bndbox>
+  </object>
+</annotation>
