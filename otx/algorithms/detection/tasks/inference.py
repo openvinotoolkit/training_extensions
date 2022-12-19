@@ -392,6 +392,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
                 saliency_map=saliency_map,
                 model=self._task_environment.model,
                 labels=self._labels,
+                task="det",
             )
 
     @staticmethod
