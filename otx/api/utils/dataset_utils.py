@@ -238,12 +238,12 @@ def add_saliency_maps_to_dataset_item(
             label = labels[class_id]
             if predicted_scene is not None and label not in predicted_labels:
                 continue
-            class_wise_saliency_map = get_actmap(class_wise_saliency_map, (dataset_item.width, dataset_item.height))
+            class_wise_act_map = get_actmap(class_wise_saliency_map, (dataset_item.width, dataset_item.height))
             saliency_media = ResultMediaEntity(
                 name=label.name,
                 type="saliency_map",
                 annotation_scene=dataset_item.annotation_scene,
-                numpy=class_wise_saliency_map,
+                numpy=class_wise_act_map,
                 roi=dataset_item.roi,
                 label=label,
             )

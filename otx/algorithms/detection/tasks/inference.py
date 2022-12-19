@@ -177,13 +177,12 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         self._data_cfg = self._init_test_data_cfg(dataset)
         results = self._run_task(
             stage_module,
-            mode="eval",
+            mode="train",
             dataset=dataset,
-            dump_saliency_map=True,
             explainer=explain_parameters.explainer if explain_parameters else None,
         )
-        output = results["outputs"]
-        return output["saliency_maps"]
+        explain_results = results["outputs"]["saliency_maps"]
+        return explain_results
 
     @check_input_parameters_type()
     def evaluate(
@@ -330,7 +329,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
             if saliency_map is not None:
                 add_saliency_maps_to_dataset_item(
                     dataset_item=dataset_item,
-                    saliency_map=saliency_map[0],
+                    saliency_map=saliency_map,
                     model=self._task_environment.model,
                     labels=self._labels,
                     task="det",
@@ -390,7 +389,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         for dataset_item, saliency_map in zip(dataset, explain_results):
             add_saliency_maps_to_dataset_item(
                 dataset_item=dataset_item,
-                saliency_map=saliency_map[0],
+                saliency_map=saliency_map,
                 model=self._task_environment.model,
                 labels=self._labels,
             )
