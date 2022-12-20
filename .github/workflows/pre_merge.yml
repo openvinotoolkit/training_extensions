@@ -19,7 +19,7 @@ jobs:
   Pre-Merge-Tests:
     runs-on: [self-hosted, linux, x64]
     needs: Code-Quality-Checks
-    if: ! github.event.pull_request.draft
+    if: github.event.pull_request.draft == false
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
