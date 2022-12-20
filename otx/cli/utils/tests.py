@@ -523,6 +523,7 @@ def otx_explain_testing(template, root, otx_dir, args):
 
 
 def otx_find_testing():
+    """Performs several options of available otx find."""
     # Find all model template
     command_line = ["otx", "find", "--template"]
     assert run(command_line).returncode == 0
@@ -543,57 +544,70 @@ def otx_find_testing():
         assert run(command_line).returncode == 0
 
 
-def otx_build_testing(root, args):
+def otx_build_task_testing(root, task):
+    """Build OTX-workspace per tasks.
+
+    Build and verify the otx-workspace corresponding to each task.
+    """
     # Build otx-workspace per tasks check - Default Model Template only
-    for task in build_supported_tasks:
-        command_line = [
-            "otx",
-            "build",
-            "--task",
-            task,
-            "--workspace-root",
-            os.path.join(root, f"otx-workspace-{task}"),
-        ]
-        assert run(command_line).returncode == 0
+    command_line = [
+        "otx",
+        "build",
+        "--task",
+        task,
+        "--workspace-root",
+        os.path.join(root, f"otx-workspace-{task}"),
+    ]
+    assert run(command_line).returncode == 0
 
-    for task, backbone in args.items():
-        task_workspace = os.path.join(root, f"otx-workspace-{task}")
-        # Build Backbone.yaml from backbone type
-        command_line = [
-            "otx",
-            "build",
-            "--backbone",
-            backbone,
-            "--workspace-root",
-            task_workspace,
-            "--save-backbone-to",
-            os.path.join(task_workspace, "backbone.yaml"),
-        ]
-        assert run(command_line).returncode == 0
-        assert os.path.exists(os.path.join(task_workspace, "backbone.yaml"))
 
-        # Build model.py from backbone.yaml
-        command_line = [
-            "otx",
-            "build",
-            "--model",
-            os.path.join(task_workspace, "model.py"),
-            "--backbone",
-            os.path.join(task_workspace, "backbone.yaml"),
-            "--workspace-root",
-            task_workspace,
-        ]
-        assert run(command_line).returncode == 0
+def otx_build_backbone_testing(root, backbone_args):
+    """Build backbone & Update model testing.
 
-        # Build model.py from backbone type
-        command_line = [
-            "otx",
-            "build",
-            "--model",
-            os.path.join(task_workspace, "model.py"),
-            "--backbone",
-            backbone,
-            "--workspace-root",
-            task_workspace,
-        ]
-        assert run(command_line).returncode == 0
+    Build each backbone to create backbone.yaml into workspace,
+    build for the default model for the task,
+    and even test updating the model config.
+    This is done on the premise that the otx_workspace
+    has been created well through otx_build_task_testing.
+    """
+    task, backbone = backbone_args
+    task_workspace = os.path.join(root, f"otx-workspace-{task}")
+    # Build Backbone.yaml from backbone type
+    command_line = [
+        "otx",
+        "build",
+        "--backbone",
+        backbone,
+        "--workspace-root",
+        task_workspace,
+        "--save-backbone-to",
+        os.path.join(task_workspace, "backbone.yaml"),
+    ]
+    assert run(command_line).returncode == 0
+    assert os.path.exists(os.path.join(task_workspace, "backbone.yaml"))
+
+    # Build model.py from backbone.yaml
+    command_line = [
+        "otx",
+        "build",
+        "--model",
+        os.path.join(task_workspace, "model.py"),
+        "--backbone",
+        os.path.join(task_workspace, "backbone.yaml"),
+        "--workspace-root",
+        task_workspace,
+    ]
+    assert run(command_line).returncode == 0
+
+    # Build model.py from backbone type
+    command_line = [
+        "otx",
+        "build",
+        "--model",
+        os.path.join(task_workspace, "model.py"),
+        "--backbone",
+        backbone,
+        "--workspace-root",
+        task_workspace,
+    ]
+    assert run(command_line).returncode == 0
