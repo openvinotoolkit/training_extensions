@@ -25,4 +25,5 @@ from . import (
     unbiased_teacher_hook,
     unlabeled_data_hook,
     workflow_hooks,
+    eval_before_train_hook,
 )
