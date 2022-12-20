@@ -29,7 +29,11 @@ from mmcv.utils import Registry, build_from_cfg
 from mpa.utils.config_utils import MPAConfig
 
 from otx.cli.registry import Registry as OTXRegistry
-from otx.cli.utils.importing import get_available_backbone_list, get_backbone_registry
+from otx.cli.utils.importing import (
+    get_backbone_list,
+    get_backbone_registry,
+    get_module_args,
+)
 
 DEFAULT_MODEL_TEMPLATE_ID = {
     "CLASSIFICATION": "Custom_Image_Classification_EfficinetNet-B0",
@@ -53,7 +57,7 @@ def get_backbone_out_channels(backbone):
     return out_channels
 
 
-def update_backbone_args(backbone_config, registry, skip_missing=False):
+def update_backbone_args(backbone_config, registry):
     """Update Backbone required arguments.
 
     This function checks the init parameters of the corresponding backbone function (or class)
@@ -63,58 +67,22 @@ def update_backbone_args(backbone_config, registry, skip_missing=False):
     backbone_function = registry.get(backbone_config["type"])
     if not backbone_function:
         raise ValueError(f"{backbone_config['type']} is not supported backbone")
-    required_option = {}
-    required_args, missing_args = [], []
-    args_signature = inspect.signature(backbone_function)
-    use_out_indices = False
-    for arg_key, arg_value in args_signature.parameters.items():
-        if arg_key == "out_indices":
-            use_out_indices = True
-        if arg_value.default is inspect.Parameter.empty:
-            required_args.append(arg_key)
-            if hasattr(backbone_function, "arch_settings"):
-                arg_options = [str(option) for option in backbone_function.arch_settings.keys()]
-                required_option[arg_key] = ", ".join(arg_options)
-            continue
-        # Update Backbone config to defaults
-        backbone_config[arg_key] = arg_value.default
+    required_args, default_args = get_module_args(backbone_function)
+    for arg_key, default_value in default_args.items():
+        if arg_key not in backbone_config:
+            backbone_config[arg_key] = default_value
 
-    # Get args from parents
-    parent_function = backbone_function.__bases__
-    while len(parent_function):
-        parent_args_signature = inspect.signature(parent_function[0])
-        for arg_key, arg_value in parent_args_signature.parameters.items():
-            if arg_key == "out_indices":
-                use_out_indices = True
-            if arg_key == "depth" and "arch" in required_args:
-                continue
-            if arg_value.default is inspect.Parameter.empty and arg_key not in required_args:
-                required_args.append(arg_key)
-                continue
-            # Update Backbone out_indices to defaults
-            if arg_key not in backbone_config and arg_key in ("out_indices"):
-                backbone_config[arg_key] = arg_value.default
-        parent_function = parent_function[0].__bases__
-
+    missing_args = []
     for arg in required_args:
-        if arg not in backbone_config and arg not in ("args", "kwargs", "self"):
+        if arg not in backbone_config:
             missing_args.append(arg)
     if len(missing_args) > 0:
-        if not skip_missing:
-            raise ValueError(
-                f"[otx build] {backbone_config['type']} requires the argument : {missing_args}"
-                f"\n[otx build] Please refer to {inspect.getfile(backbone_function)}"
-            )
-        for arg in missing_args:
-            if arg in required_option:
-                backbone_config[arg] = f"!!!SELECT_OPTION: {required_option[arg]}"
-            else:
-                backbone_config[arg] = "!!!!!!!!!!!INPUT_HERE!!!!!!!!!!!"
         print(
             f"[otx build] {backbone_config['type']} requires the argument : {missing_args}"
             f"\n[otx build] Please refer to {inspect.getfile(backbone_function)}"
         )
-    backbone_config["use_out_indices"] = use_out_indices
+    if "out_indices" in backbone_config:
+        backbone_config["use_out_indices"] = True
     return missing_args
 
 
@@ -123,8 +91,8 @@ def patch_missing_args(backbone_config, missing_args):
     updated_missing_args = []
     backbone_type = backbone_config["type"]
     backend, backbone_class = Registry.split_scope_key(backbone_type)
-    backend = "omz" if backbone_class == "MMOVBackbone" else backend
-    available_backbones = get_available_backbone_list(backend)
+    backend = f"omz.{backend}" if backbone_class == "MMOVBackbone" else backend
+    available_backbones = get_backbone_list(backend)
     if backbone_type not in available_backbones:
         return missing_args
     backbone_data = available_backbones[backbone_type]
@@ -136,7 +104,7 @@ def patch_missing_args(backbone_config, missing_args):
                 f"\n[otx build] '{arg}' default value: {backbone_config[arg]}"
             )
         else:
-            updated_missing_args.append(arg)
+            backbone_config[arg] = "!!!!!!!!!!!INPUT_HERE!!!!!!!!!!!"
     return updated_missing_args
 
 
@@ -250,7 +218,7 @@ class Builder:
             backend = f"omz.{backend}"
             backbone_config["verify_shape"] = False
         otx_registry, _ = get_backbone_registry(backend)
-        missing_args = update_backbone_args(backbone_config, otx_registry, skip_missing=True)
+        missing_args = update_backbone_args(backbone_config, otx_registry)
         missing_args = patch_missing_args(backbone_config, missing_args)
         if output_path.endswith((".yml", ".yaml", ".json")):
             mmcv.dump({"backbone": backbone_config}, os.path.abspath(output_path))
