@@ -112,8 +112,8 @@ class OTXColorJitter(T.ColorJitter):
 class GaussianBlur:
     """Gaussian blur augmentation in SimCLR https://arxiv.org/abs/2002.05709.
 
-    :param sigma_min:
-    :param sigma_max:
+    :param sigma_min: Minimum value of sigma of gaussian filter.
+    :param sigma_max: Maximum value of sigma of gaussian filter.
     """
 
     @check_input_parameters_type()
