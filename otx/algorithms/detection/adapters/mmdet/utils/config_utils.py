@@ -217,7 +217,7 @@ def set_num_classes(config: Config, num_classes: int):
 def patch_datasets(
     config: Config,
     domain: Domain = Domain.DETECTION,
-    subsets: List[str] = ["train", "val", "test"],
+    subsets: List[str] = ["train", "val", "test", "unlabeled"],
     **kwargs
 ):
     """Update dataset configs."""
