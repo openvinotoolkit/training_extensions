@@ -43,7 +43,7 @@ from tests.mpa_common import eval
 DEFAULT_CLS_TEMPLATE_DIR = osp.join("configs", "classification", "efficientnet_b0_cls_incr")
 
 
-class TestClassificationTaskAPI:
+class TestMPAClsAPI:
     @e2e_pytest_api
     def test_reading_classification_cls_incr_model_template(self):
         classification_template = [
