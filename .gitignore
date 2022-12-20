@@ -6,7 +6,6 @@ __pycache__
 
 venv
 env
-submodule
 otx-workspace*
 .env
 .tox
