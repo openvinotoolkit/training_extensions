@@ -49,16 +49,6 @@ class BaseAnomalyConfig(ConfigurableParameters):
         header = string_attribute("Learning Parameters")
         description = header
 
-        # Editable is set to false as WideResNet50 is very large for
-        # onnx's protobuf (2gb) limit. This ends up crashing the export.
-        backbone = selectable(
-            default_value=ModelBackbone.RESNET18,
-            header="Model Backbone",
-            description="Pre-trained backbone used for feature extraction",
-            editable=False,
-            visible_in_ui=False,
-        )
-
         train_batch_size = configurable_integer(
             default_value=32,
             min_value=1,
