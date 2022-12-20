@@ -19,7 +19,6 @@ from sys import maxsize
 from attr import attrs
 
 from otx.algorithms.anomaly.configs.base.configuration_enums import (
-    ModelBackbone,
     POTQuantizationPreset,
 )
 from otx.api.configuration import ConfigurableParameters

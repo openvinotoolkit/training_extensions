@@ -101,6 +101,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
 
     def get_config(self) -> Union[DictConfig, ListConfig]:
         """Get Anomalib Config from task environment.
+
         Returns:
             Union[DictConfig, ListConfig]: Anomalib config.
         """
@@ -114,12 +115,15 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
 
     def load_model(self, otx_model: Optional[ModelEntity]) -> AnomalyModule:
         """Create and Load Anomalib Module from OTX Model.
+
         This method checks if the task environment has a saved OTX Model,
         and creates one. If the OTX model already exists, it returns the
         the model with the saved weights.
+
         Args:
             otx_model (Optional[ModelEntity]): OTX Model from the
                 task environment.
+
         Returns:
             AnomalyModule: Anomalib
                 classification or segmentation model with/without weights.
@@ -151,6 +155,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
 
     def cancel_training(self) -> None:
         """Cancel the training `after_batch_end`.
+
         This terminates the training; however validation is still performed.
         """
         logger.info("Cancel training requested.")
@@ -196,6 +201,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
 
     def evaluate(self, output_resultset: ResultSetEntity, evaluation_metric: Optional[str] = None) -> None:
         """Evaluate the performance on a result set.
+
         Args:
             output_resultset (ResultSetEntity): Result Set from which the performance is evaluated.
             evaluation_metric (Optional[str], optional): Evaluation metric. Defaults to None. Instead,

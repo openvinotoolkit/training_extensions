@@ -49,6 +49,7 @@ class TrainingTask(InferenceTask, ITrainingTask):
         seed: Optional[int] = None,
     ) -> None:
         """Train the anomaly classification model.
+
         Args:
             dataset (DatasetEntity): Input dataset.
             output_model (ModelEntity): Output model to save the model weights.
@@ -89,12 +90,15 @@ class TrainingTask(InferenceTask, ITrainingTask):
 
     def load_model(self, otx_model: Optional[ModelEntity]) -> AnomalyModule:
         """Create and Load Anomalib Module from OTE Model.
+
         This method checks if the task environment has a saved OTE Model,
         and creates one. If the OTE model already exists, it returns the
         the model with the saved weights.
+
         Args:
             otx_model (Optional[ModelEntity]): OTE Model from the
                 task environment.
+
         Returns:
             AnomalyModule: Anomalib
                 classification or segmentation model with/without weights.
