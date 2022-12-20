@@ -4,4 +4,4 @@ nncf==2.3.0
 onnx==1.10.1
 openmodelzoo-modelapi==2022.2.0
 openvino==2022.2.0
-openvino-dev==2022.2.0
+openvino-dev[tensorflow2,mxnet,caffe]==2022.2.0

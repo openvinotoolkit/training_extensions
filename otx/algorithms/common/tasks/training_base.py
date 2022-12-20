@@ -127,7 +127,8 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         output = workflow.run(
             model_cfg=self._model_cfg,
             data_cfg=self._data_cfg,
-            ir_path=None,
+            ir_model_path=None,
+            ir_weight_path=None,
             model_ckpt=self._model_ckpt,
             mode=self._mode,
             **kwargs,
