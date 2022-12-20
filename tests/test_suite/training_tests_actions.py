@@ -6,12 +6,14 @@ import importlib
 import json
 import os
 import os.path as osp
+import re
 from abc import ABC, abstractmethod
 from collections import OrderedDict
 from copy import deepcopy
 from typing import List, Optional, Type
 
 import pytest
+import yaml
 
 from otx.api.configuration.helper import create as otx_api_configuration_helper_create
 from otx.api.entities.inference_parameters import InferenceParameters
@@ -405,6 +407,56 @@ class OTXTestPotAction(BaseOTXTestAction):
         return results
 
 
+def check_fq_in_compressed_model(path_to_ref_data, compressed_type, model):
+    """
+    Check number of FakeQuantize nodes in the compressed model.
+    """
+
+    num_fq = len(re.findall(r'type="FakeQuantize"', model))
+
+    assert os.path.exists(path_to_ref_data), (
+        f"Reference file does not exist: {path_to_ref_data}." f"Current: {num_fq} for {compressed_type}"
+    )
+
+    with open(path_to_ref_data, encoding="utf-8") as stream:
+        ref_data = yaml.safe_load(stream)
+    ref_num_fq = ref_data[compressed_type]["number_of_fakequantizers"]
+    assert num_fq == ref_num_fq, f"Incorrect number of FQs in optimized model: {num_fq} != {ref_num_fq}"
+
+
+class OTXTestPotValidationFQAction(BaseOTXTestAction):
+    """
+    Test to check number of FakeQuantize nodes in the compressed model by POT.
+    """
+
+    _name = "pot_validate_fq"
+    _depends_stages_names = ["training", "pot"]
+
+    def __init__(self, reference_dir):
+        super().__init__()
+        self.reference_dir = reference_dir
+
+    def _run_otx_pot_validate_fq(self, optimized_model_pot):
+        logger.info("Begin validation FQs of pot model")
+
+        path_to_ref_data = os.path.join(self.reference_dir, "compressed_model.yml")
+
+        check_fq_in_compressed_model(path_to_ref_data, "pot", optimized_model_pot.get_data("openvino.xml"))
+
+        logger.info("End validation FQs of pot model")
+
+    def __call__(self, data_collector: DataCollector, results_prev_stages: OrderedDict):
+        self._check_result_prev_stages(results_prev_stages, self.depends_stages_names)
+
+        kwargs = {
+            "optimized_model_pot": results_prev_stages["pot"]["optimized_model_pot"],
+        }
+
+        self._run_otx_pot_validate_fq(**kwargs)
+
+        return {}
+
+
 class OTXTestPotEvaluationAction(BaseOTXTestAction):
     _name = "pot_evaluation"
     _with_validation = True
@@ -696,6 +748,39 @@ class OTXTestNNCFExportEvaluationAction(BaseOTXTestAction):
         return results
 
 
+class OTXTestNNCFValidationFQAction(BaseOTXTestAction):
+    """
+    Test to check number of FakeQuantize nodes in the compressed model by POT.
+    """
+
+    _name = "nncf_validate_fq"
+    _depends_stages_names = ["training", "nncf_export"]
+
+    def __init__(self, reference_dir):
+        super().__init__()
+        self.reference_dir = reference_dir
+
+    def _run_otx_nncf_validate_fq(self, nncf_exported_model):
+        logger.info("Begin validation FQs of nncf model")
+
+        path_to_ref_data = os.path.join(self.reference_dir, "compressed_model.yml")
+
+        check_fq_in_compressed_model(path_to_ref_data, "nncf", nncf_exported_model.get_data("openvino.xml"))
+
+        logger.info("End validation FQs of nncf model")
+
+    def __call__(self, data_collector: DataCollector, results_prev_stages: OrderedDict):
+        self._check_result_prev_stages(results_prev_stages, self.depends_stages_names)
+
+        kwargs = {
+            "nncf_exported_model": results_prev_stages["nncf_export"]["exported_model"],
+        }
+
+        self._run_otx_nncf_validate_fq(**kwargs)
+
+        return {}
+
+
 def get_default_test_action_classes() -> List[Type[BaseOTXTestAction]]:
     return [
         OTXTestTrainingAction,
@@ -704,9 +789,11 @@ def get_default_test_action_classes() -> List[Type[BaseOTXTestAction]]:
         OTXTestExportEvaluationAction,
         OTXTestPotAction,
         OTXTestPotEvaluationAction,
+        OTXTestPotValidationFQAction,
         OTXTestNNCFAction,
         OTXTestNNCFEvaluationAction,
         OTXTestNNCFExportAction,
         OTXTestNNCFExportEvaluationAction,
         OTXTestNNCFGraphAction,
+        OTXTestNNCFValidationFQAction,
     ]

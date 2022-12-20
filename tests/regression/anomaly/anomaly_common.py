@@ -37,8 +37,10 @@ from tests.test_suite.training_tests_actions import (
     OTXTestNNCFExportAction,
     OTXTestNNCFExportEvaluationAction,
     OTXTestNNCFGraphAction,
+    OTXTestNNCFValidationFQAction,
     OTXTestPotAction,
     OTXTestPotEvaluationAction,
+    OTXTestPotValidationFQAction,
     OTXTestTrainingAction,
     OTXTestTrainingEvaluationAction,
 )
@@ -106,11 +108,13 @@ def get_anomaly_domain_test_action_classes(
         OTXTestExportEvaluationAction,
         OTXTestPotAction,
         OTXTestPotEvaluationAction,
+        OTXTestPotValidationFQAction,
         OTXTestNNCFAction,
         OTXTestNNCFEvaluationAction,
         OTXTestNNCFExportAction,
         OTXTestNNCFExportEvaluationAction,
         OTXTestNNCFGraphAction,
+        OTXTestNNCFValidationFQAction,
     ]
 
 

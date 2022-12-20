@@ -437,9 +437,14 @@ class TestOTXReallifeAnomalySegmentation(OTXTrainingTestInterface):
                 "fn_get_compressed_model": get_dummy_compressed_model,
             }
 
+        def _reference_params_factory() -> Dict:
+            return {"reference_dir": otx_current_reference_dir_fx}
+
         params_factories_for_test_actions = {
             "training": _training_params_factory,
             "nncf_graph": _nncf_graph_params_factory,
+            "nncf_validate_fq": _reference_params_factory,
+            "pot_validate_fq": _reference_params_factory,
         }
         logger.debug("params_factories_for_test_actions_fx: end")
         return params_factories_for_test_actions
