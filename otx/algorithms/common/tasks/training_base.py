@@ -68,6 +68,7 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         self._model_label_schema = []  # type: List[LabelEntity]
         self._optimization_methods = []  # type: List[OptimizationMethod]
         self._model_ckpt = None
+        self._data_pipeline_path = None
         self._anchors = {}  # type: Dict[str, int]
         if task_environment.model is not None:
             logger.info("loading the model from the task env.")
@@ -172,10 +173,16 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
     @property
     def data_pipeline_path(self):
         """Base Data Pipeline file path."""
-        return os.path.join(
-            os.path.dirname(os.path.abspath(self.template_file_path)),
-            self._task_environment.model_template.data_pipeline_path,
-        )
+        if self._data_pipeline_path is None:
+            self._data_pipeline_path = os.path.join(
+                os.path.dirname(os.path.abspath(self.template_file_path)),
+                self._task_environment.model_template.data_pipeline_path,
+            )
+        return self._data_pipeline_path
+
+    @data_pipeline_path.setter
+    def data_pipeline_path(self, path):
+        self._data_pipeline_path = path
 
     @property
     def hyperparams(self):

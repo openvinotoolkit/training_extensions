@@ -79,8 +79,7 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         self.metric = "mDice"
         self._label_dictionary = {}  # type: Dict
         self.train_type = None
-        self.task_model_dir = None
-        self.task_pipeline_path = None
+        self.model_dir = None
         super().__init__(SegmentationConfig, task_environment)
 
     def infer(
@@ -189,18 +188,18 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         recipe_root = os.path.join(MPAConstants.RECIPES_PATH, "stages/segmentation")
         train_type = self._hyperparams.algo_backend.train_type
         logger.info(f"train type = {train_type}")
-        self.task_model_dir = os.path.abspath(os.path.dirname(self.template_file_path))
-        self.task_pipeline_path = os.path.abspath(self.data_pipeline_path)
+        self.model_dir = os.path.abspath(os.path.dirname(self.template_file_path))
+        pipeline_path = os.path.abspath(self.data_pipeline_path)
 
         if train_type not in (TrainType.SEMISUPERVISED, TrainType.INCREMENTAL):
             raise NotImplementedError(f"Train type {train_type} is not implemented yet.")
         if train_type == TrainType.SEMISUPERVISED:
-            if self._data_cfg.get("data", None) and self._data_cfg.data.get("unlabeled", None):
+            if (
+                self._is_training and self._data_cfg.get("data", None) and self._data_cfg.data.get("unlabeled", None)
+            ) or self._is_training is False:
                 recipe = os.path.join(recipe_root, "semisl.py")
-                self.task_model_dir = os.path.join(self.task_model_dir, "semisl")
-                self.task_pipeline_path = os.path.join(
-                    os.path.dirname(self.task_pipeline_path), "semisl/data_pipeline.py"
-                )
+                self.model_dir = os.path.join(self.model_dir, "semisl")
+                pipeline_path = os.path.join(os.path.dirname(pipeline_path), "semisl/data_pipeline.py")
             else:
                 logger.warning("Cannot find unlabeled data.. convert to INCREMENTAL.")
                 train_type = TrainType.INCREMENTAL
@@ -211,7 +210,7 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
 
         self._recipe_cfg = MPAConfig.fromfile(recipe)
         self.train_type = train_type
-        patch_data_pipeline(self._recipe_cfg, self.task_pipeline_path)
+        patch_data_pipeline(self._recipe_cfg, pipeline_path)
         patch_datasets(self._recipe_cfg)  # for OTX compatibility
         patch_evaluation(self._recipe_cfg)  # for OTX compatibility
         self.metric = self._recipe_cfg.evaluation.metric
@@ -228,7 +227,7 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         return stage_module
 
     def _init_model_cfg(self):
-        model_cfg = MPAConfig.fromfile(os.path.join(self.task_model_dir, "model.py"))
+        model_cfg = MPAConfig.fromfile(os.path.join(self.model_dir, "model.py"))
         return model_cfg
 
     def _init_test_data_cfg(self, dataset: DatasetEntity):
