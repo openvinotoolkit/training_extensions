@@ -25,6 +25,7 @@ dist/
 *.mapping
 
 *.tar.gz
+submodule/
 *.zip
 
 # mypy
