@@ -87,7 +87,7 @@ In May 2000, Guido and the Python core development team moved to BeOpen.com to f
 All Python releases are Open Source (see http://www.opensource.org for the Open Source Definition). Historically, most, but not all, Python releases have also been GPL-compatible; the table below summarizes the various releases.
 
 Release	Derived from  	Year	Owner	GPL-compatible? (1)
- 
+
 0.9.0 thru 1.2  	 	1991-1995	CWI	yes
 1.3 thru 1.5.2	1.2	1995-1999	CNRI	yes
 1.6	1.5.2	2000	CNRI	no
