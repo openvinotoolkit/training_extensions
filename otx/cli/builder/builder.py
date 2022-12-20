@@ -29,7 +29,7 @@ from mmcv.utils import Registry, build_from_cfg
 from mpa.utils.config_utils import MPAConfig
 
 from otx.cli.registry import Registry as OTXRegistry
-from otx.cli.utils.importing import get_backbone_registry
+from otx.cli.utils.importing import get_available_backbone_list, get_backbone_registry
 
 DEFAULT_MODEL_TEMPLATE_ID = {
     "CLASSIFICATION": "Custom_Image_Classification_EfficinetNet-B0",
@@ -61,6 +61,8 @@ def update_backbone_args(backbone_config, registry, skip_missing=False):
     Also, it distinguishes the argment needed for the build to add convenience to the user.
     """
     backbone_function = registry.get(backbone_config["type"])
+    if not backbone_function:
+        raise ValueError(f"{backbone_config['type']} is not supported backbone")
     required_option = {}
     required_args, missing_args = [], []
     args_signature = inspect.signature(backbone_function)
@@ -69,7 +71,6 @@ def update_backbone_args(backbone_config, registry, skip_missing=False):
         if arg_key == "out_indices":
             use_out_indices = True
         if arg_value.default is inspect.Parameter.empty:
-            # TODO: How to get argument type (or hint or format)
             required_args.append(arg_key)
             if hasattr(backbone_function, "arch_settings"):
                 arg_options = [str(option) for option in backbone_function.arch_settings.keys()]
@@ -115,6 +116,27 @@ def update_backbone_args(backbone_config, registry, skip_missing=False):
         )
     backbone_config["use_out_indices"] = use_out_indices
     return missing_args
+
+
+def patch_missing_args(backbone_config, missing_args):
+    """Patch backbone's required arg configuration."""
+    updated_missing_args = []
+    backbone_type = backbone_config["type"]
+    backend, _ = Registry.split_scope_key(backbone_type)
+    available_backbones = get_available_backbone_list(backend)
+    if backbone_type not in available_backbones:
+        return missing_args
+    backbone_data = available_backbones[backbone_type]
+    for arg in missing_args:
+        if "options" in backbone_data and arg in backbone_data["options"]:
+            backbone_config[arg] = backbone_data["options"][arg][0]
+            print(
+                f"[otx build] '{arg}' can choose between: {backbone_data['options'][arg]}"
+                f"\n[otx build] '{arg}' default value: {backbone_config[arg]}"
+            )
+        else:
+            updated_missing_args.append(arg)
+    return updated_missing_args
 
 
 def update_in_channel(model_config, out_channels):
@@ -169,23 +191,28 @@ class Builder:
         # Copy task base configuration file
         task_configuration_path = os.path.join(template_dir, template.hyper_parameters.base_path)
         shutil.copyfile(task_configuration_path, os.path.join(workspace_path, "configuration.yaml"))
-        # Load & Save Model Template
+        # Load Model Template
         template_config = MPAConfig.fromfile(template.model_template_path)
         template_config.hyper_parameters.base_path = "./configuration.yaml"
-        template_config.dump(os.path.join(workspace_path, "template.yaml"))
 
         # Load & Save Model config
         model_config = MPAConfig.fromfile(os.path.join(template_dir, "model.py"))
         model_config.dump(os.path.join(workspace_path, "model.py"))
 
-        # Copy Data config
-        if os.path.exists(os.path.join(template_dir, "data_pipeline.py")):
-            data_pipeline_config = MPAConfig.fromfile(os.path.join(template_dir, "data_pipeline.py"))
+        # Copy Data pipeline config
+        if os.path.exists(os.path.join(template_dir, template_config.data_pipeline_path)):
+            data_pipeline_config = MPAConfig.fromfile(os.path.join(template_dir, template_config.data_pipeline_path))
             data_pipeline_config.dump(os.path.join(workspace_path, "data_pipeline.py"))
+            template_config.data_pipeline_path = "./data_pipeline.py"
+        template_config.dump(os.path.join(workspace_path, "template.yaml"))
+
+        # Create Data.yaml
         data_subset_format = {"ann-files": None, "data-roots": None}
         data_config = {"data": {subset: data_subset_format.copy() for subset in ("train", "val", "test")}}
         data_config["data"]["unlabeled"] = {"file-list": None, "data-roots": None}
         mmcv.dump(data_config, os.path.join(workspace_path, "data.yaml"))
+
+        # Copy compression_config.json
         if os.path.exists(os.path.join(template_dir, "compression_config.json")):
             shutil.copyfile(
                 os.path.join(template_dir, "compression_config.json"),
@@ -212,6 +239,7 @@ class Builder:
         backbone_config = {"type": backbone_type}
         otx_registry, _ = get_backbone_registry(backend)
         missing_args = update_backbone_args(backbone_config, otx_registry, skip_missing=True)
+        missing_args = patch_missing_args(backbone_config, missing_args)
         if output_path.endswith((".yml", ".yaml", ".json")):
             mmcv.dump({"backbone": backbone_config}, os.path.abspath(output_path))
             print(f"[otx build] Save backbone configuration: {os.path.abspath(output_path)}")
@@ -257,7 +285,6 @@ class Builder:
         backend, _ = Registry.split_scope_key(backbone_config["type"])
         print(f"\tTarget Backbone: {backbone_config['type']}")
         otx_registry, custom_imports = get_backbone_registry(backend)
-        _ = update_backbone_args(backbone_config, otx_registry)
         if backbone_config["use_out_indices"]:
             backbone_out_indices = backbone_config.get("out_indices", None)
             if (

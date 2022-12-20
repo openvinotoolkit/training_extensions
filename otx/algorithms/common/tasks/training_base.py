@@ -127,7 +127,8 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         output = workflow.run(
             model_cfg=self._model_cfg,
             data_cfg=self._data_cfg,
-            ir_path=None,
+            ir_model_path=None,
+            ir_weight_path=None,
             model_ckpt=self._model_ckpt,
             mode=self._mode,
             **kwargs,
@@ -166,6 +167,14 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
     def template_file_path(self):
         """Model Template file path."""
         return self._task_environment.model_template.model_template_path
+
+    @property
+    def data_pipeline_path(self):
+        """Base Data Pipeline file path."""
+        return os.path.join(
+            os.path.dirname(os.path.abspath(self.template_file_path)),
+            self._task_environment.model_template.data_pipeline_path,
+        )
 
     @property
     def hyperparams(self):

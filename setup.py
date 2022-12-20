@@ -39,7 +39,7 @@ def get_otx_version() -> str:
 
     Example:
         >>> # Assume that __version__ = "0.2.6"
-        >>> get_version()
+        >>> get_otx_version()
         "0.2.6"
 
     Returns:

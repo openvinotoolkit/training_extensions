@@ -15,7 +15,7 @@ entrypoints:
   base: otx.algorithms.segmentation.tasks.SegmentationTrainTask
   openvino: otx.algorithms.segmentation.tasks.OpenVINOSegmentationTask
   nncf: otx.algorithms.segmentation.tasks.SegmentationNNCFTask
-base_model_path: ../../../../mmsegmentation/configs/custom-sematic-segmentation/ocr-lite-hrnet-s-mod2/template_experimental.yaml
+data_pipeline_path: ../base/data/data_pipeline.py
 
 # Capabilities.
 capabilities:

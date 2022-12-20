@@ -522,7 +522,7 @@ def otx_explain_testing(template, root, otx_dir, args):
                 assert diff == 0, f"saliency map output is not same as the sample one, with {diff}!"
 
 
-def otx_find_testing(otx_dir):
+def otx_find_testing():
     # Find all model template
     command_line = ["otx", "find", "--template"]
     assert run(command_line).returncode == 0
@@ -543,7 +543,7 @@ def otx_find_testing(otx_dir):
         assert run(command_line).returncode == 0
 
 
-def otx_build_testing(root, otx_dir, args):
+def otx_build_testing(root, args):
     # Build otx-workspace per tasks check - Default Model Template only
     for task in build_supported_tasks:
         command_line = [

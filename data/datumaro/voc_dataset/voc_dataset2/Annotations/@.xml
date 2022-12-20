@@ -1,0 +1,19 @@
+<annotation>
+  <!--
+    The purpose of this file is to test format detection in the case where
+    at least one annotation file could be misdetected as being in the LabelMe
+    format (due to containing no objects). See
+    <https://github.com/openvinotoolkit/datumaro/issues/658>.
+
+    The name of the file is "@.xml" so that it's sorted before all other XML
+    files and thus the LabelMe detector finds it first.
+  -->
+  <folder></folder>
+  <filename>@.jpg</filename>
+  <source>
+    <database>Unknown</database>
+    <annotation>Unknown</annotation>
+    <image>Unknown</image>
+  </source>
+  <segmented>0</segmented>
+</annotation>
