@@ -74,8 +74,9 @@ def collect_env_vars(work_dir):
 
 
 def check_run(cmd, **kwargs):
-    result = run(cmd, capture_output=True, **kwargs)
-    assert result.returncode == 0, result.stderr.decode("utf=8")
+    #result = run(cmd, capture_output=True, **kwargs)
+    #assert result.returncode == 0, result.stderr.decode("utf=8")
+    run(cmd, check=True, **kwargs)
 
 
 def ote_train_testing(template, root, ote_dir, args):
