@@ -234,7 +234,10 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         else:
             self._recipe_cfg.pop("adaptive_validation_interval", None)
 
-        self.set_early_stopping_hook()
+        # temp (sungchul): it will be removed after an update that applies hparam.yaml
+        if not self._selfsl:
+            # to disenable early stopping during self-sl
+            self.set_early_stopping_hook()
 
         # add Cancel tranining hook
         update_or_add_custom_hook(
