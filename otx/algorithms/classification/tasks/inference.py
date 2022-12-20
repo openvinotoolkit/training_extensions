@@ -14,12 +14,11 @@ from mpa.stage import Stage
 from mpa.utils.config_utils import MPAConfig
 from mpa.utils.logger import get_logger
 
-from otx.algorithms.common.adapters.mmcv.utils import patch_data_pipeline
 from otx.algorithms.classification.configs import ClassificationConfig
 from otx.algorithms.classification.utils import (
     get_multihead_class_info as get_hierarchical_info,
 )
-from otx.algorithms.common.adapters.mmcv.utils import get_meta_keys
+from otx.algorithms.common.adapters.mmcv.utils import get_meta_keys, patch_data_pipeline
 from otx.algorithms.common.configs import TrainType
 from otx.algorithms.common.tasks import BaseTask
 from otx.api.entities.datasets import DatasetEntity
