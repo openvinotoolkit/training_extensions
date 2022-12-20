@@ -30,16 +30,6 @@ from anomalib.utils.callbacks import (
     MinMaxNormalizationCallback,
 )
 from omegaconf import DictConfig, ListConfig
-from ote_sdk.entities.datasets import DatasetEntity
-from ote_sdk.entities.inference_parameters import InferenceParameters
-from ote_sdk.entities.metrics import NullPerformance, Performance, ScoreMetric
-from ote_sdk.entities.model import (
-    ModelEntity,
-    ModelFormat,
-    ModelOptimizationType,
-    ModelPrecision,
-    OptimizationMethod,
-)
 from pytorch_lightning import Trainer
 
 from otx.algorithms.anomaly.adapters.anomalib.callbacks import (
@@ -50,6 +40,16 @@ from otx.algorithms.anomaly.adapters.anomalib.config import get_anomalib_config
 from otx.algorithms.anomaly.adapters.anomalib.data import OTXAnomalyDataModule
 from otx.algorithms.anomaly.adapters.anomalib.logger import get_logger
 from otx.algorithms.anomaly.configs.base.configuration import BaseAnomalyConfig
+from otx.api.entities.datasets import DatasetEntity
+from otx.api.entities.inference_parameters import InferenceParameters
+from otx.api.entities.metrics import NullPerformance, Performance, ScoreMetric
+from otx.api.entities.model import (
+    ModelEntity,
+    ModelFormat,
+    ModelOptimizationType,
+    ModelPrecision,
+    OptimizationMethod,
+)
 from otx.api.entities.model_template import TaskType
 from otx.api.entities.resultset import ResultSetEntity
 from otx.api.entities.task_environment import TaskEnvironment
