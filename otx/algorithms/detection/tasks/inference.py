@@ -33,6 +33,7 @@ from otx.algorithms.detection.adapters.mmdet.utils import (
     patch_evaluation,
 )
 from otx.algorithms.detection.configs.base import DetectionConfig
+from otx.api.configuration.helper.utils import config_to_bytes
 from otx.api.entities.annotation import Annotation
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.id import ID
@@ -197,6 +198,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
                 "confidence_threshold",
                 np.array([self.confidence_threshold], dtype=np.float32).tobytes(),
             )
+            output_model.set_data("config.json", config_to_bytes(self._hyperparams))
             output_model.precision = [ModelPrecision.FP32]
             output_model.optimization_methods = self._optimization_methods
             output_model.set_data(
