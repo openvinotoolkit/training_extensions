@@ -1,12 +1,12 @@
 dataset_type = "CocoDataset"
 
-img_size = (1024, 1024)
+img_size = (1344, 800)
 
 tile_cfg = dict(
     tile_size=400, min_area_ratio=0.9, overlap_ratio=0.2, iou_threshold=0.45, max_per_img=1500, filter_empty_gt=True
 )
 
-img_norm_cfg = dict(mean=(103.53, 116.28, 123.675), std=(1.0, 1.0, 1.0), to_rgb=True)
+img_norm_cfg = dict(mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 
 train_pipeline = [
     dict(type="Resize", img_scale=img_size, keep_ratio=False),
