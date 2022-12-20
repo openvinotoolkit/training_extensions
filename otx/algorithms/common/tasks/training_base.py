@@ -106,7 +106,7 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         model_classes = [label.name for label in self._model_label_schema]
         self._model_cfg["model_classes"] = model_classes
         if dataset is not None:
-            train_data_cfg = Stage.get_train_data_cfg(self._data_cfg)
+            train_data_cfg = Stage.get_data_cfg(self._data_cfg, "train")
             train_data_cfg["data_classes"] = data_classes
             new_classes = np.setdiff1d(data_classes, model_classes).tolist()
             train_data_cfg["new_classes"] = new_classes
