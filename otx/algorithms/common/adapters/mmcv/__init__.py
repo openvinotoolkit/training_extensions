@@ -17,8 +17,8 @@
 from .hooks import (
     CancelTrainingHook,
     EarlyStoppingHook,
-    EnsureCorrectBestCheckpointHook,
     EMAMomentumUpdateHook,
+    EnsureCorrectBestCheckpointHook,
     OTXLoggerHook,
     OTXProgressHook,
     ReduceLROnPlateauLrUpdaterHook,

@@ -7,7 +7,7 @@ Original papers:
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-# pylint: disable=missing-module-docstring, too-many-instance-attributes, unused-argument, unnecessary-pass
+# pylint: disable=missing-module-docstring, too-many-instance-attributes, unused-argument, unnecessary-pass, invalid-name
 from collections import OrderedDict
 from typing import Any, Dict, Optional
 
@@ -201,10 +201,10 @@ class BYOL(nn.Module):
     @staticmethod
     def state_dict_hook(module, state_dict, *args, **kwargs):
         """Save only online backbone as output state_dict."""
-        logger.info('----------------- BYOL.state_dict_hook() called')
+        logger.info("----------------- BYOL.state_dict_hook() called")
         output = OrderedDict()
         for k, v in state_dict.items():
-            if 'online_backbone.' in k:
-                k = k.replace('online_backbone.', '')
+            if "online_backbone." in k:
+                k = k.replace("online_backbone.", "")
                 output[k] = v
         return output
