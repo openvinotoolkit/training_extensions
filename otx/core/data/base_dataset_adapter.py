@@ -170,13 +170,11 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
             DatumaroDataset: Datumaro Dataset
         """
         self.dataset = {}
-
         # Construct dataset for training, validation, testing, unlabeled
         if train_data_roots:
             # Find self.data_type and task_type
             data_type_candidates = self._detect_dataset_format(path=train_data_roots)
             self.data_type = self._select_data_type(data_type_candidates)
-
             datumaro_dataset = DatumaroDataset.import_from(train_data_roots, format=self.data_type)
 
             # Prepare subsets by using Datumaro dataset
@@ -196,7 +194,6 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
             if Subset.VALIDATION not in self.dataset:
                 # TODO: auto_split
                 pass
-
         if test_data_roots:
             test_data_candidates = self._detect_dataset_format(path=test_data_roots)
             test_data_type = self._select_data_type(test_data_candidates)
