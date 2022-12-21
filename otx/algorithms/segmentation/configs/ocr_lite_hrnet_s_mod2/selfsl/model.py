@@ -1,4 +1,4 @@
-"""Model configuration of OCR-Lite-HRnet-s-mod2 model for Warmstart Segmentation Task."""
+"""Model configuration of OCR-Lite-HRnet-s-mod2 model for Self-SL Segmentation Task."""
 
 # Copyright (C) 2022 Intel Corporation
 #
@@ -17,7 +17,7 @@
 # pylint: disable=invalid-name
 
 _base_ = [
-    "../ocr_lite_hrnet_s_mod2/model.py",
+    "../model.py",
 ]
 
 model = dict(

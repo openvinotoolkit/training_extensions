@@ -1,4 +1,4 @@
-"""Model configuration of OCR-Lite-HRnet-x-mod3 model for Warmstart Segmentation Task."""
+"""Model configuration of OCR-Lite-HRnet-18-mod2 model for Self-SL Segmentation Task."""
 
 # Copyright (C) 2022 Intel Corporation
 #
@@ -17,20 +17,20 @@
 # pylint: disable=invalid-name
 
 _base_ = [
-    "../ocr_lite_hrnet_x_mod3/model.py",
+    "../model.py",
 ]
 
 model = dict(
     type="DetConB",
-    pretrained="https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/custom_semantic_segmentation/litehrnetxv3_imagenet1k_rsc.pth",
+    pretrained="https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/custom_semantic_segmentation/litehrnet18_imagenet1k_rsc.pth",
     num_classes=256,
     num_samples=16,
-    downsample=2,
+    downsample=4,
     input_transform="resize_concat",
-    in_index=[0, 1, 2, 3, 4],
+    in_index=[0, 1, 2, 3],
     neck=dict(
         type="SelfSLMLP",
-        in_channels=638,
+        in_channels=600,
         hid_channels=256,
         out_channels=128,
         norm_cfg=dict(type="BN1d", requires_grad=True),
