@@ -1,4 +1,4 @@
-Algorithms
+Algorithm
 ===================
 
 Introduction
