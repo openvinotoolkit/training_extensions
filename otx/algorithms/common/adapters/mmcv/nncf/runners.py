@@ -119,7 +119,10 @@ class AccuracyAwareRunner(EpochRunnerWithCancel):
         # Get metric from runner's attributes that set in EvalHook.evaluate() function
         all_metrics = getattr(self, "all_metrics", {})
         if len(all_metrics) == 0:
-            return 0.0
+            evalhook = [hook for hook in self.hooks if getattr(hook, '_do_evaluate', None)]
+            assert len(evalhook) == 1
+            evalhook[0]._do_evaluate(self)
+            all_metrics = getattr(self, "all_metrics", {})
         metric = all_metrics.get(self._target_metric_name, None)
         if metric is None:
             raise RuntimeError(f"Could not find the {self._target_metric_name} key")
