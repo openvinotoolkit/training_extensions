@@ -16,7 +16,7 @@
 
 # pylint: disable=invalid-name
 
-from typing import Any, Dict, Iterable, Union
+from typing import Any, Dict
 
 import cv2
 import numpy as np
@@ -106,27 +106,21 @@ class OTXClassification(Classification):
 
         return get_multiclass_predictions(logits)
 
+    # pylint: disable=unused-argument
     @check_input_parameters_type()
     def postprocess_aux_outputs(self, outputs: Dict[str, np.ndarray], metadata: Dict[str, Any]):
-        """Postprocess for aux outputs."""
-        actmap = get_actmap(outputs["saliency_map"][0], (metadata["original_shape"][1], metadata["original_shape"][0]))
+        """Post-process for auxiliary outputs."""
+        saliency_map = outputs["saliency_map"][0]
         repr_vector = outputs["feature_vector"].reshape(-1)
         logits = outputs[self.out_layer_name].squeeze()
         if self.multilabel:
             probs = sigmoid_numpy(logits)
+        elif self.hierarchical:
+            probs = activate_multihead_output(logits, self.multihead_class_info)
         else:
             probs = softmax_numpy(logits)
         act_score = float(np.max(probs) - np.min(probs))
-        return actmap, repr_vector, act_score
-
-
-@check_input_parameters_type()
-def get_actmap(features: Union[np.ndarray, Iterable, int, float], output_res: Union[tuple, list]):
-    """Get actmap."""
-    am = cv2.resize(features, output_res)
-    am = cv2.applyColorMap(am, cv2.COLORMAP_JET)
-    am = cv2.cvtColor(am, cv2.COLOR_BGR2RGB)
-    return am
+        return probs, saliency_map, repr_vector, act_score
 
 
 @check_input_parameters_type()
@@ -141,6 +135,20 @@ def softmax_numpy(x: np.ndarray):
     x = np.exp(x)
     x /= np.sum(x)
     return x
+
+
+@check_input_parameters_type()
+def activate_multihead_output(logits: np.ndarray, multihead_class_info: dict):
+    """Activate multihead output."""
+    for i in range(multihead_class_info["num_multiclass_heads"]):
+        logits_begin, logits_end = multihead_class_info["head_idx_to_logits_range"][i]
+        logits[logits_begin:logits_end] = softmax_numpy(logits[logits_begin:logits_end])
+
+    if multihead_class_info["num_multilabel_classes"]:
+        logits_begin, logits_end = multihead_class_info["num_single_label_classes"], -1
+        logits[logits_begin:logits_end] = softmax_numpy(logits[logits_begin:logits_end])
+
+    return logits
 
 
 @check_input_parameters_type()
