@@ -111,8 +111,8 @@ class TwoCropTransform:
     """
 
     def __init__(self, view0: List, view1: List):
-        self.pipeline1 = Compose([build_from_cfg(p, PIPELINES) for p in view0])
-        self.pipeline2 = Compose([build_from_cfg(p, PIPELINES) for p in view1])
+        self.view0 = Compose([build_from_cfg(p, PIPELINES) for p in view0])
+        self.view1 = Compose([build_from_cfg(p, PIPELINES) for p in view1])
 
     @check_input_parameters_type()
     def __call__(self, results: Dict[str, Any]):
@@ -120,8 +120,8 @@ class TwoCropTransform:
 
         :param results: Inputs to be transformed.
         """
-        results1 = self.pipeline1(deepcopy(results))
-        results2 = self.pipeline2(deepcopy(results))
+        results1 = self.view0(deepcopy(results))
+        results2 = self.view1(deepcopy(results))
 
         results = deepcopy(results1)
         results["img"] = to_tensor(
