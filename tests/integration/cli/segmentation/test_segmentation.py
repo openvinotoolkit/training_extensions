@@ -36,8 +36,10 @@ from tests.test_suite.e2e_test_system import e2e_pytest_component
 
 ##TODO: Currently, it is closed to sample test. need to change other sample
 args = {
-    "--train-data-roots": "data/datumaro/common_semantic_segmentation_dataset/dataset",
-    "--val-data-roots": "data/datumaro/common_semantic_segmentation_dataset/dataset",
+    "--train-data-roots": "data/common_semantic_segmentation_dataset/dataset",
+    "--val-data-roots": "data/common_semantic_segmentation_dataset/dataset",
+    "--test-data-roots": "data/common_semantic_segmentation_dataset/dataset",
+    "--input": "data/common_semantic_segmentation_dataset/dataset/images",
     "train_params": [
         "params",
         "--learning_parameters.learning_rate_fixed_iters",

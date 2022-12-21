@@ -68,19 +68,9 @@ def parse_args():
     required = not os.path.exists("./data.yaml")
 
     parser.add_argument(
-        "--train-ann-files",
-        required=False,
-        help="Comma-separated paths to training annotation files.",
-    )
-    parser.add_argument(
         "--train-data-roots",
         required=required,
         help="Comma-separated paths to training data folders.",
-    )
-    parser.add_argument(
-        "--val-ann-files",
-        required=False,
-        help="Comma-separated paths to validation annotation files.",
     )
     parser.add_argument(
         "--val-data-roots",
@@ -97,7 +87,6 @@ def parse_args():
         required=False,
         help="Comma-separated paths to unlabeled file list",
     )
-
     parser.add_argument(
         "--load-weights",
         required=False,
@@ -159,7 +148,6 @@ def main():  # pylint: disable=too-many-branches
 
     data_roots = dict(
         train_subset={
-            "ann_file": data_config["data"]["train"]["ann-files"],
             "data_root": data_config["data"]["train"]["data-roots"],
         },
     )

@@ -15,11 +15,8 @@ from tests.test_suite.e2e_test_system import e2e_pytest_component
 # Finetuning arguments
 args = {
     "--train-ann-file": "data/custom_action_recognition/custom_dataset/val.csv",
-    "--train-data-roots": "data/custom_action_recognition/custom_dataset/rawframes",
     "--val-ann-file": "data/custom_action_recognition/custom_dataset/val.csv",
-    "--val-data-roots": "data/custom_action_recognition/custom_dataset/rawframes",
     "--test-ann-files": "data/custom_action_recognition/custom_dataset/val.csv",
-    "--test-data-roots": "data/custom_action_recognition/custom_dataset/rawframes",
     "train_params": ["params", "--learning_parameters.num_iters", "2", "--learning_parameters.batch_size", "4"],
 }
 
