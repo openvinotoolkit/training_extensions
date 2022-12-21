@@ -132,7 +132,7 @@ def parse_args():
     parser.add_argument(
         "--gpus",
         type=str,
-        help="Comma-separated indcies of GPU. \
+        help="Comma-separated indices of GPU. \
               If there are more than one available GPU, then model is trained with multi GPUs.",
     )
     parser.add_argument(
