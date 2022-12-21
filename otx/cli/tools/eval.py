@@ -33,8 +33,8 @@ from otx.cli.utils.parser import (
     add_hyper_parameters_sub_parser,
     gen_params_dict_from_args,
 )
-
 from otx.core.data import get_dataset_adapter
+
 # pylint: disable=too-many-locals
 
 
@@ -125,11 +125,8 @@ def main():
     )
 
     datumaro_adapter = get_dataset_adapter(template.task_type)
-    datumaro_dataset = datumaro_adapter.import_dataset(
-        test_data_roots=data_roots["test_subset"]["data_root"]
-    )
+    datumaro_dataset = datumaro_adapter.import_dataset(test_data_roots=data_roots["test_subset"]["data_root"])
     dataset, label_schema = datumaro_adapter.convert_to_otx_format(datumaro_dataset)
-
 
     environment = TaskEnvironment(
         model=None,
