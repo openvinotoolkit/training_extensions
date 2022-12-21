@@ -1,13 +1,13 @@
 # See help here: https://github.com/marketplace/actions/labeler
 
 dependencies:
-  - "**/*requirements*.*"
-  - "**/setup.py"
+  - "requirements/*"
+  - "setup.py"
 CLI:
-  - "ote_cli/**/*"
+  - "otx/cli/**/*"
 SDK:
-  - "ote_sdk/**/*"
+  - "otx/sdk/**/*"
 tests:
   - "tests/**/*"
 tasks:
-  - "external/**/*"
+  - "otx/algorithms/**/*"

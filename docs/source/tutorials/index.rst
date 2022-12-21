@@ -3,6 +3,7 @@ Tutorials
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
 
-   install
+   how_to_install
+   how_to_use/index
+   how_to_customize/index

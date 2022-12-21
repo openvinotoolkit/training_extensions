@@ -1,4 +1,4 @@
-CLI Reference
+CLI
 =============
 
 .. automodule:: otx.cli
