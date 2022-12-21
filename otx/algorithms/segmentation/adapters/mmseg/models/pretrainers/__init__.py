@@ -1,4 +1,4 @@
-"""Segmentors."""
+"""OTX Algorithms - Segmentation Pretrainers."""
 
 # Copyright (C) 2022 Intel Corporation
 #

@@ -1,4 +1,4 @@
-"""Segmentation necks."""
+"""OTX Algorithms - Segmentation Necks."""
 
 # Copyright (C) 2022 Intel Corporation
 #

@@ -133,7 +133,7 @@ class DetConB(nn.Module):
         self.align_corners = align_corners
 
         # build backbone
-        self.online_backbone = self.backbone = build_backbone(backbone)
+        self.online_backbone = build_backbone(backbone)
         self.target_backbone = build_backbone(backbone)
 
         # build projector
@@ -151,6 +151,9 @@ class DetConB(nn.Module):
         # build detcon loss
         self.detcon_loss = build_loss(loss_cfg)
 
+        # Hooks for super_type transparent weight save
+        self._register_state_dict_hook(self.state_dict_hook)
+
     def init_weights(self, pretrained: Optional[str] = None):
         """Initialize the weights of model.
         Args:
@@ -161,10 +164,10 @@ class DetConB(nn.Module):
         if pretrained is not None:
             logger.info(f"load model from: {pretrained}")
             load_checkpoint(
-                self.backbone,
+                self.online_backbone,
                 pretrained,
                 strict=False,
-                map_location="cpu",
+                map_location=None,
                 logger=logger,
                 revise_keys=[(r"^backbone\.", "")],
             )
@@ -378,3 +381,14 @@ class DetConB(nn.Module):
 
     def set_step_params(self, init_iter, epoch_size):
         pass
+
+    @staticmethod
+    def state_dict_hook(module, state_dict, *args, **kwargs):
+        """Save only online backbone as output state_dict."""
+        logger.info("----------------- BYOL.state_dict_hook() called")
+        output = OrderedDict()
+        for k, v in state_dict.items():
+            if "online_backbone." in k:
+                k = k.replace("online_backbone.", "")
+                output[k] = v
+        return output
