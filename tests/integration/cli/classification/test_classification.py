@@ -39,10 +39,10 @@ from tests.test_suite.e2e_test_system import e2e_pytest_component
 
 # Pre-train w/ 'label_0', 'label_1' classes
 args0 = {
-    "--train-data-roots": "data/imagenet_dataset",
-    "--val-data-roots": "data/imagenet_dataset",
-    "--test-data-roots": "data/imagenet_dataset",
-    "--input": "data/imagenet_dataset/label_0",
+    "--train-data-roots": "data/datumaro/imagenet_dataset",
+    "--val-data-roots": "data/datumaro/imagenet_dataset",
+    "--test-data-roots": "data/datumaro/imagenet_dataset",
+    "--input": "data/datumaro/imagenet_dataset/label_0",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
@@ -54,10 +54,10 @@ args0 = {
 
 # Pre-train w/ 'label_0', 'label_1', 'label_2' classes
 args = {
-    "--train-data-roots": "data/imagenet_dataset_class_incremental",
-    "--val-data-roots": "data/imagenet_dataset_class_incremental",
-    "--test-data-roots": "data/imagenet_dataset_class_incremental",
-    "--input": "data/imagenet_dataset/label_0",
+    "--train-data-roots": "data/datumaro/imagenet_dataset_class_incremental",
+    "--val-data-roots": "data/datumaro/imagenet_dataset_class_incremental",
+    "--test-data-roots": "data/datumaro/imagenet_dataset_class_incremental",
+    "--input": "data/datumaro/imagenet_dataset/label_0",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
@@ -230,10 +230,10 @@ class TestToolsMPAClassification:
 
 # Pre-train w/ 'car', 'tree' classes
 args0_m = {
-    "--train-data-roots": "data/datumaro_multilabel",
-    "--val-data-roots": "data/datumaro_multilabel",
-    "--test-data-roots": "data/datumaro_multilabel",
-    "--input": "data/datumaro_multilabel/images/train",
+    "--train-data-roots": "data/datumaro/datumaro_multilabel",
+    "--val-data-roots": "data/datumaro/datumaro_multilabel",
+    "--test-data-roots": "data/datumaro/datumaro_multilabel",
+    "--input": "data/datumaro/datumaro_multilabel/images/train",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
@@ -246,10 +246,10 @@ args0_m = {
 # Class-Incremental learning w/ 'car', 'tree', 'bug' classes
 # TODO: Not include incremental case yet
 args_m = {
-    "--train-data-roots": "data/datumaro_multilabel",
-    "--val-data-roots": "data/datumaro_multilabel",
-    "--test-data-roots": "data/datumaro_multilabel",
-    "--input": "data/datumaro_multilabel/images/train",
+    "--train-data-roots": "data/datumaro/datumaro_multilabel",
+    "--val-data-roots": "data/datumaro/datumaro_multilabel",
+    "--test-data-roots": "data/datumaro/datumaro_multilabel",
+    "--input": "data/datumaro/datumaro_multilabel/images/train",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
@@ -393,10 +393,10 @@ class TestToolsMPAMultilabelClassification:
 
 # TODO: (Jihwan) Enable C-IL test without image loading via otx-cli.
 args_h = {
-    "--train-data-roots": "data/datumaro_h-label",
-    "--val-data-roots": "data/datumaro_h-label",
-    "--test-data-roots": "data/datumaro_h-label",
-    "--input": "data/datumaro_h-label/images/train",
+    "--train-data-roots": "data/datumaro/datumaro_h-label",
+    "--val-data-roots": "data/datumaro/datumaro_h-label",
+    "--test-data-roots": "data/datumaro/datumaro_h-label",
+    "--input": "data/datumaro/datumaro_h-label/images/train",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
