@@ -307,7 +307,7 @@ class ClassificationInferenceTask(
         else:
             early_stop = False
 
-        if self._recipe_cfg.runner.get("type") == "IterBasedRunner":
+        if self._recipe_cfg.runner.get("type") == "IterBasedRunner":  # type: ignore
             runner = ConfigDict(max_iters=int(self._hyperparams.learning_parameters.num_iters))
         else:
             runner = ConfigDict(max_epochs=int(self._hyperparams.learning_parameters.num_iters))
