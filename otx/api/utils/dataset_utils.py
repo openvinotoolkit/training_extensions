@@ -191,6 +191,7 @@ def contains_anomalous_images(dataset: DatasetEntity) -> bool:
     return False
 
 
+# pylint: disable-msg=too-many-locals
 def add_saliency_maps_to_dataset_item(
     dataset_item: DatasetItemEntity,
     saliency_map: np.ndarray,
@@ -228,21 +229,22 @@ def add_saliency_maps_to_dataset_item(
                     scored_label = bbox.get_labels()[0]
                     predicted_labels.add(scored_label.label)
 
-        num_saliency_maps = saliency_map.shape[0]
-        if num_saliency_maps == len(labels) + 1:
-            # Include the background as the last category
-            labels.append(LabelEntity("background", Domain.DETECTION))
+        if task == "det":
+            num_saliency_maps = saliency_map.shape[0]
+            if num_saliency_maps == len(labels) + 1:
+                # Include the background as the last category
+                labels.append(LabelEntity("background", Domain.DETECTION))
 
         for class_id, class_wise_saliency_map in enumerate(saliency_map):
             label = labels[class_id]
             if predicted_scene is not None and label not in predicted_labels:
                 continue
-            class_wise_saliency_map = get_actmap(class_wise_saliency_map, (dataset_item.width, dataset_item.height))
+            class_wise_act_map = get_actmap(class_wise_saliency_map, (dataset_item.width, dataset_item.height))
             saliency_media = ResultMediaEntity(
                 name=label.name,
                 type="saliency_map",
                 annotation_scene=dataset_item.annotation_scene,
-                numpy=class_wise_saliency_map,
+                numpy=class_wise_act_map,
                 roi=dataset_item.roi,
                 label=label,
             )

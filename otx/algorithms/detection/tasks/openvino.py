@@ -45,7 +45,6 @@ from otx.api.entities.inference_parameters import (
     InferenceParameters,
     default_progress_callback,
 )
-from otx.api.entities.label import Domain, LabelEntity
 from otx.api.entities.label_schema import LabelSchemaEntity
 from otx.api.entities.model import (
     ModelEntity,
@@ -56,7 +55,6 @@ from otx.api.entities.model import (
 )
 from otx.api.entities.model_template import TaskType
 from otx.api.entities.optimization_parameters import OptimizationParameters
-from otx.api.entities.result_media import ResultMediaEntity
 from otx.api.entities.resultset import ResultSetEntity
 from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
@@ -390,14 +388,13 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
                 predicted_scene, features = self.inferencer.predict(dataset_item.numpy)
 
             dataset_item.append_annotations(predicted_scene.annotations)
-            update_progress_callback(int(i / dataset_size * 100), None)
             feature_vector, saliency_map = features
             if feature_vector is not None:
                 representation_vector = TensorEntity(name="representation_vector", numpy=feature_vector.reshape(-1))
                 dataset_item.append_metadata_item(representation_vector, model=self.model)
 
             if add_saliency_map and saliency_map is not None:
-		add_saliency_maps_to_dataset_item(
+                add_saliency_maps_to_dataset_item(
                     dataset_item=dataset_item,
                     saliency_map=saliency_map,
                     model=self.model,
@@ -405,8 +402,38 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
                     task="det",
                     predicted_scene=predicted_scene,
                 )
-                dataset_item.append_metadata_item(saliency_map_media, model=self.model)
+            update_progress_callback(int(i / dataset_size * 100), None)
         logger.info("OpenVINO inference completed")
+        return dataset
+
+    @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
+    def explain(
+        self,
+        dataset: DatasetEntity,
+        explain_parameters: Optional[InferenceParameters] = None,
+    ) -> DatasetEntity:
+        """Explain function of OpenVINODetectionTask."""
+        logger.info("Start OpenVINO explain")
+
+        update_progress_callback = default_progress_callback
+        if explain_parameters is not None:
+            update_progress_callback = explain_parameters.update_progress  # type: ignore
+        dataset_size = len(dataset)
+        for i, dataset_item in enumerate(dataset, 1):
+            predicted_scene, features = self.inferencer.predict(dataset_item.numpy)
+            dataset_item.append_annotations(predicted_scene.annotations)
+            update_progress_callback(int(i / dataset_size * 100), None)
+            _, saliency_map = features
+            labels = self.task_environment.get_labels()
+            add_saliency_maps_to_dataset_item(
+                dataset_item=dataset_item,
+                saliency_map=saliency_map,
+                model=self.model,
+                labels=labels,
+                task="det",
+                predicted_scene=predicted_scene,
+            )
+        logger.info("OpenVINO explain completed")
         return dataset
 
     @check_input_parameters_type()

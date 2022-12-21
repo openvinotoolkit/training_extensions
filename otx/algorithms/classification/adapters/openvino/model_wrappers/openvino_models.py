@@ -112,6 +112,7 @@ class OTXClassification(Classification):
 
         return get_multiclass_predictions(logits)
 
+    # pylint: disable=unused-argument
     @check_input_parameters_type()
     def postprocess_aux_outputs(self, outputs: Dict[str, np.ndarray], metadata: Dict[str, Any]):
         """Post-process for auxiliary outputs."""
@@ -124,21 +125,19 @@ class OTXClassification(Classification):
             probs = activate_multihead_output(logits, self.multihead_class_info)
         else:
             probs = softmax_numpy(logits)
-
         act_score = float(np.max(probs) - np.min(probs))
-
         return probs, saliency_map, repr_vector, act_score
 
 @check_input_parameters_type()
 def sigmoid_numpy(x: np.ndarray):
     """Sigmoid numpy."""
-    return 1. / (1. + np.exp(-1. * x))
+    return 1.0 / (1.0 + np.exp(-1.0 * x))
 
 
 @check_input_parameters_type()
 def softmax_numpy(x: np.ndarray, eps: float = 1e-9):
     """Softmax numpy."""
-    x = np.exp(x)
+    x = np.exp(x - np.max(x))
     inf_ind = np.isinf(x)
     total_infs = np.sum(inf_ind)
     if total_infs > 0:
@@ -152,13 +151,13 @@ def softmax_numpy(x: np.ndarray, eps: float = 1e-9):
 @check_input_parameters_type()
 def activate_multihead_output(logits: np.ndarray, multihead_class_info: dict):
     """Activate multi-head output."""
-    for i in range(multihead_class_info['num_multiclass_heads']):
-        logits_begin, logits_end = multihead_class_info['head_idx_to_logits_range'][i]
-        logits[logits_begin : logits_end] = softmax_numpy(logits[logits_begin : logits_end])
+    for i in range(multihead_class_info["num_multiclass_heads"]):
+        logits_begin, logits_end = multihead_class_info["head_idx_to_logits_range"][i]
+        logits[logits_begin:logits_end] = softmax_numpy(logits[logits_begin:logits_end])
 
-    if multihead_class_info['num_multilabel_classes']:
-        logits_begin, logits_end = multihead_class_info['num_single_label_classes'], -1
-        logits[logits_begin : logits_end] = softmax_numpy(logits[logits_begin : logits_end])
+    if multihead_class_info["num_multilabel_classes"]:
+        logits_begin, logits_end = multihead_class_info["num_single_label_classes"], -1
+        logits[logits_begin:logits_end] = softmax_numpy(logits[logits_begin:logits_end])
 
     return logits
 
