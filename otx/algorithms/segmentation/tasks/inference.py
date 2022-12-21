@@ -205,7 +205,7 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
             recipe = os.path.join(recipe_root, "incremental.py")
 
         if train_type == TrainType.SELFSUPERVISED:
-            recipe = os.path.join(recipe_root, "warmstart.py")
+            recipe = os.path.join(recipe_root, "selfsl.py")
 
         logger.info(f"train type = {train_type} - loading {recipe}")
 
