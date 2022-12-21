@@ -13,6 +13,7 @@ from otx.cli.utils.tests import otx_eval_testing, otx_train_testing
 from tests.test_suite.e2e_test_system import e2e_pytest_component
 
 # Finetuning arguments
+# TODO: Need to change sample dataset
 args = {
     "--train-data-roots": "/local/sungmanc/datasets/jester_SC_cvat_multifolder_classification/train",
     "--val-data-roots": "/local/sungmanc/datasets/jester_SC_cvat_multifolder_classification/train",
