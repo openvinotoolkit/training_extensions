@@ -74,7 +74,7 @@ def tmp_dir_path():
         yield Path(tmp_dir)
 
 
-class TestToolsMPASemiSLSegmentation:
+class TestToolsOTXSemiSLSegmentation:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train(self, template, tmp_dir_path):

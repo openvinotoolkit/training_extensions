@@ -15,6 +15,7 @@ from otx.cli.utils.tests import otx_eval_testing, otx_train_testing
 from tests.test_suite.e2e_test_system import e2e_pytest_component
 
 # Finetuning arguments
+# TODO: Need to change sample dataset
 args = {
     "--train-ann-file": "data/custom_action_recognition/custom_dataset/val.csv",
     "--val-ann-file": "data/custom_action_recognition/custom_dataset/val.csv",
