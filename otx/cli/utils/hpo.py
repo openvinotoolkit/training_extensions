@@ -239,7 +239,7 @@ def run_hpo_trainer(
             "data_root": dataset_paths.get("val_data_root", None),
         },
     )
-    
+
     # Datumaro
     datumaro_adapter = get_dataset_adapter(task_type)
     datumaro_dataset = datumaro_adapter.import_dataset(
