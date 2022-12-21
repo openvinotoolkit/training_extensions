@@ -15,7 +15,7 @@
 import json
 import os
 import shutil
-from subprocess import run  # nosec
+import subprocess  # nosec
 
 import cv2
 import numpy as np
@@ -52,7 +52,7 @@ def get_template_dir(template, root) -> str:
 
 
 def check_run(cmd, **kwargs):
-    result = run(cmd, capture_output=True, **kwargs)
+    result = subprocess.run(cmd, stderr=subprocess.PIPE, **kwargs)
     assert result.returncode == 0, result.stderr.decode("utf=8")
 
 
