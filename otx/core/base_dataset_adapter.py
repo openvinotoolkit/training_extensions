@@ -88,7 +88,7 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
         self.domain = task_type.domain
         self.data_type = None # type: Any
         self.dataset = None  # type: Any
-        self.is_train_phase = None # type: bool
+        self.is_train_phase = None  # type: bool
 
     def import_dataset(
         self,
@@ -113,13 +113,13 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
             DatumaroDataset: Datumaro Dataset
         """
         self.dataset = {}
-        
+
         # Construct dataset for training, validation, testing, unlabeled
         if train_data_roots:
             # Find self.data_type and task_type
             data_type_candidates = self._detect_dataset_format(path=train_data_roots)
             self.data_type = self._select_data_type(data_type_candidates)
-            
+
             datumaro_dataset = DatumaroDataset.import_from(train_data_roots, format=self.data_type)
 
             # Prepare subsets by using Datumaro dataset
@@ -139,7 +139,7 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
             if Subset.VALIDATION not in self.dataset:
                 # TODO: auto_split
                 pass
-        
+
         if test_data_roots:
             test_data_candidates = self._detect_dataset_format(path=test_data_roots)
             test_data_type = self._select_data_type(test_data_candidates)
@@ -188,9 +188,13 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
     ) -> dict:
         # Get datumaro category information
         if self.is_train_phase:
-            label_categories_list = datumaro_dataset[Subset.TRAINING].categories().get(DatumaroAnnotationType.label, None)
+            label_categories_list = (
+                datumaro_dataset[Subset.TRAINING].categories().get(DatumaroAnnotationType.label, None)
+            )
         else:
-            label_categories_list = datumaro_dataset[Subset.TESTING].categories().get(DatumaroAnnotationType.label, None)
+            label_categories_list = (
+                datumaro_dataset[Subset.TESTING].categories().get(DatumaroAnnotationType.label, None)
+            )
         category_items = label_categories_list.items
 
         # Get the 'label_groups' information
