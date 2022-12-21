@@ -68,7 +68,7 @@ from otx.api.utils.segmentation_utils import (
 logger = get_logger()
 
 
-# pylint: disable=too-many-locals, too-many-instance-attributes
+# pylint: disable=too-many-locals, too-many-instance-attributes, attribute-defined-outside-init
 class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask, IUnload):
     """Inference Task Implementation of OTX Segmentation."""
 
@@ -78,8 +78,6 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         self.freeze = True
         self.metric = "mDice"
         self._label_dictionary = {}  # type: Dict
-        self.train_type = None
-        self.model_dir = None
         super().__init__(SegmentationConfig, task_environment)
 
     def infer(

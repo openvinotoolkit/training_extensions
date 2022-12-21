@@ -17,6 +17,6 @@
 # pylint: disable=invalid-name
 
 _base_ = [
-    "../../base/models/semi_mt_segmentor.py",
+    "../../base/models/mean_teacher.py",
     "../model.py",
 ]
