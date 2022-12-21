@@ -25,11 +25,7 @@ __train_pipeline_v0 = [
     dict(
         type="RandomAppliedTrans",
         transforms=[
-            dict(type="OTXColorJitter",
-                 brightness=0.4,
-                 contrast=0.4,
-                 saturation=0.2,
-                 hue=0.1),
+            dict(type="OTXColorJitter", brightness=0.4, contrast=0.4, saturation=0.2, hue=0.1),
         ],
         p=0.8,
     ),
@@ -45,33 +41,18 @@ __train_pipeline_v1 = [
     dict(
         type="RandomAppliedTrans",
         transforms=[
-            dict(type="OTXColorJitter",
-                 brightness=0.4,
-                 contrast=0.4,
-                 saturation=0.2,
-                 hue=0.1),
+            dict(type="OTXColorJitter", brightness=0.4, contrast=0.4, saturation=0.2, hue=0.1),
         ],
         p=0.8,
     ),
     dict(type="RandomGrayscale", gray_prob=0.2),
-    dict(type="RandomAppliedTrans",
-         transforms=[
-             dict(type="GaussianBlur", sigma_min=0.1, sigma_max=2.0)
-         ],
-         p=0.1),
-    dict(type="RandomAppliedTrans",
-         transforms=[dict(type="Solarize", thr=128)],
-         p=0.2),
+    dict(type="RandomAppliedTrans", transforms=[dict(type="GaussianBlur", sigma_min=0.1, sigma_max=2.0)], p=0.1),
+    dict(type="RandomAppliedTrans", transforms=[dict(type="Solarize", thr=128)], p=0.2),
     dict(type="Normalize", **__img_norm_cfg),
     dict(type="ImageToTensor", keys=["img"]),
     dict(type="Collect", keys=["img"]),
 ]
 
 data = dict(
-    train=dict(
-        pipeline=dict(
-            view0=__train_pipeline_v0,
-            view1=__train_pipeline_v1
-        )
-    ),
+    train=dict(pipeline=dict(view0=__train_pipeline_v0, view1=__train_pipeline_v1)),
 )
