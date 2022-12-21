@@ -15,7 +15,6 @@
 # and limitations under the License.
 
 import math
-import os
 from collections import defaultdict
 from typing import List, Optional, Union
 
@@ -262,16 +261,6 @@ def patch_evaluation(config: Config):
     cfg.save_best = "mAP"
     # EarlyStoppingHook
     config.early_stop_metric = "mAP"
-
-
-# TODO Replace this with function in common
-def patch_data_pipeline(config: Config, template_file_path: str):
-    """Update data_pipeline configs."""
-    base_dir = os.path.abspath(os.path.dirname(template_file_path))
-    data_pipeline_path = os.path.join(base_dir, "data_pipeline.py")
-    if os.path.exists(data_pipeline_path):
-        data_pipeline_cfg = Config.fromfile(data_pipeline_path)
-        config.merge_from_dict(data_pipeline_cfg)
 
 
 @check_input_parameters_type({"dataset": DatasetParamTypeCheck})

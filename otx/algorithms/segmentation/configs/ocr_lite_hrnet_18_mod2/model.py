@@ -22,7 +22,6 @@ _base_ = [
 
 model = dict(
     type="ClassIncrSegmentor",
-    is_task_adapt=True,
     pretrained=None,
     decode_head=dict(
         type="FCNHead",
