@@ -35,6 +35,7 @@ from otx.cli.utils.parser import (
     add_hyper_parameters_sub_parser,
     gen_params_dict_from_args,
 )
+from otx.core.data import get_dataset_adapter
 
 # pylint: disable=too-many-locals
 
@@ -65,23 +66,13 @@ def parse_args():
     required = not os.path.exists("./data.yaml")
 
     parser.add_argument(
-        "--train-ann-files",
-        required=required,
-        help="Comma-separated paths to training annotation files.",
-    )
-    parser.add_argument(
         "--train-data-roots",
         required=required,
         help="Comma-separated paths to training data folders.",
     )
     parser.add_argument(
-        "--val-ann-files",
-        required=required,
-        help="Comma-separated paths to validation annotation files.",
-    )
-    parser.add_argument(
         "--val-data-roots",
-        required=required,
+        required=False,
         help="Comma-separated paths to validation data folders.",
     )
     parser.add_argument(
@@ -126,25 +117,29 @@ def main():
 
     # Get classes for Task, ConfigurableParameters and Dataset.
     task_class = get_impl_class(template.entrypoints.openvino if is_pot else template.entrypoints.nncf)
-    dataset_class = get_dataset_class(template.task_type)
-
     data_config = configure_dataset(args)
 
-    dataset = dataset_class(
+    data_roots = dict(
         train_subset={
-            "ann_file": data_config["data"]["train"]["ann-files"],
             "data_root": data_config["data"]["train"]["data-roots"],
         },
         val_subset={
-            "ann_file": data_config["data"]["val"]["ann-files"],
             "data_root": data_config["data"]["val"]["data-roots"],
         },
     )
 
+    # Datumaro
+    datumaro_adapter = get_dataset_adapter(template.task_type)
+    datumaro_dataset = datumaro_adapter.import_dataset(
+        train_data_roots=data_roots["train_subset"]["data_root"],
+        val_data_roots=data_roots["val_subset"]["data_root"],
+    )
+    dataset, label_schema = datumaro_adapter.convert_to_otx_format(datumaro_dataset)
+
     environment = TaskEnvironment(
         model=None,
         hyper_parameters=hyper_parameters,
-        label_schema=generate_label_schema(dataset, template.task_type),
+        label_schema=label_schema,
         model_template=template,
     )
 
