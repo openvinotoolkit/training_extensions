@@ -206,6 +206,8 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
 
         if train_type == TrainType.SELFSUPERVISED:
             recipe = os.path.join(recipe_root, "selfsl.py")
+            self.model_dir = os.path.join(self.model_dir, "selfsl")
+            pipeline_path = os.path.join(os.path.dirname(pipeline_path), "selfsl/data_pipeline.py")
 
         logger.info(f"train type = {train_type} - loading {recipe}")
 
