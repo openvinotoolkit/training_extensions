@@ -448,7 +448,6 @@ class ClassificationInferenceTask(
             for pipeline_step in cfg.pipeline:
                 if subset == "train" and pipeline_step.type == "Collect":
                     pipeline_step = get_meta_keys(pipeline_step)
-
             patch_color_conversion(cfg.pipeline)
 
     def _patch_evaluation(self, config: MPAConfig):

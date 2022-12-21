@@ -105,7 +105,7 @@ learning_parameters:
     warning: null
   num_workers:
     affects_outcome_of: NONE
-    default_value: 8
+    default_value: 0
     description:
       Increasing this value might improve training speed however it might
       cause out of memory errors. If the number of workers is set to zero, data loading

@@ -87,10 +87,8 @@ class MPAClsDataset(BaseDataset):
         )
 
         if self.pipeline is None:
-            results = data_info
-        else:
-            results = self.pipeline(data_info)
-        return results
+            return data_info
+        return self.pipeline(data_info)
 
     def get_gt_labels(self):
         """Get all ground-truth labels (categories).
