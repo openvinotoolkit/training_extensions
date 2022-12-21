@@ -16,6 +16,7 @@ from tests.test_suite.e2e_test_system import e2e_pytest_component
 args = {
     "--train-data-roots": "/local/sungmanc/datasets/jester_SC_cvat_multifolder_classification/train",
     "--val-data-roots": "/local/sungmanc/datasets/jester_SC_cvat_multifolder_classification/train",
+    "--test-data-roots": "/local/sungmanc/datasets/jester_SC_cvat_multifolder_classification/train",
     "train_params": ["params", "--learning_parameters.num_iters", "2", "--learning_parameters.batch_size", "4"],
 }
 
