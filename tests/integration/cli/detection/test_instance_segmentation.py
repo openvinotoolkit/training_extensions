@@ -36,19 +36,19 @@ from tests.test_suite.e2e_test_system import e2e_pytest_component
 
 # Pre-train w/ 'car & tree' class
 args0 = {
-    "--train-data-roots": "data/coco_dataset/coco_instance_segmentation",
-    "--val-data-roots": "data/coco_dataset/coco_instance_segmentation",
-    "--test-data-roots": "data/coco_dataset/coco_instance_segmentation",
-    "--input": "data/coco_dataset/coco_instance_segmentation/images",
+    "--train-data-roots": "data/datumaro/coco_dataset/coco_instance_segmentation",
+    "--val-data-roots": "data/datumaro/coco_dataset/coco_instance_segmentation",
+    "--test-data-roots": "data/datumaro/coco_dataset/coco_instance_segmentation",
+    "--input": "data/datumaro/coco_dataset/coco_instance_segmentation/images",
     "train_params": ["params", "--learning_parameters.num_iters", "4", "--learning_parameters.batch_size", "2"],
 }
 
 # Class-Incremental learning w/ 'car', 'tree', 'bug' classes ## TODO: add class incr sample
 args = {
-    "--train-data-roots": "data/coco_dataset/coco_instance_segmentation",
-    "--val-data-roots": "data/coco_dataset/coco_instance_segmentation",
-    "--test-data-roots": "data/coco_dataset/coco_instance_segmentation",
-    "--input": "data/coco_dataset/coco_instance_segmentation/images",
+    "--train-data-roots": "data/datumaro/coco_dataset/coco_instance_segmentation",
+    "--val-data-roots": "data/datumaro/coco_dataset/coco_instance_segmentation",
+    "--test-data-roots": "data/datumaro/coco_dataset/coco_instance_segmentation",
+    "--input": "data/datumaro/coco_dataset/coco_instance_segmentation/images",
     "train_params": ["params", "--learning_parameters.num_iters", "4", "--learning_parameters.batch_size", "2"],
 }
 

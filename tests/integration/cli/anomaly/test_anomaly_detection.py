@@ -39,9 +39,9 @@ from otx.cli.utils.tests import (
 from tests.test_suite.e2e_test_system import e2e_pytest_component
 
 args = {
-    "--train-data-roots": "data/datumaro_test/mvtec/train",
-    "--val-data-roots": "data/datumaro_test/mvtec/test",
-    "--test-data-roots": "data/datumaro_test/mvtec/test",
+    "--train-data-roots": "data/datumaro/mvtec/train",
+    "--val-data-roots": "data/datumaro/mvtec/test",
+    "--test-data-roots": "data/datumaro/mvtec/test",
     "train_params": [],
 }
 
