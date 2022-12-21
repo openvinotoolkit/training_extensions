@@ -262,6 +262,13 @@ class NNCFBaseTask(BaseTask, IOptimizationTask):
     ):
         raise NotImplementedError
 
+    def _optimize_post_hook(
+        self,
+        dataset: DatasetEntity,
+        output_model: ModelEntity,
+    ):
+        pass
+
     @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def optimize(
         self,
@@ -315,6 +322,8 @@ class NNCFBaseTask(BaseTask, IOptimizationTask):
         )
         torch.save(model_ckpt, self._model_ckpt)
 
+        self._optimize_post_hook(dataset, output_model)
+
         self.save_model(output_model)
 
         output_model.model_format = ModelFormat.BASE_FRAMEWORK
@@ -324,7 +333,7 @@ class NNCFBaseTask(BaseTask, IOptimizationTask):
 
         self._is_training = False
 
-    def _update_modelinfo_to_save(self, modelinfo):
+    def _save_model_post_hook(self, modelinfo):
         pass
 
     @check_input_parameters_type()
@@ -363,7 +372,7 @@ class NNCFBaseTask(BaseTask, IOptimizationTask):
                 "VERSION": 1,
             },
         )
-        self._update_modelinfo_to_save(modelinfo)
+        self._save_model_post_hook(modelinfo)
 
         torch.save(modelinfo, buffer)
         output_model.set_data("weights.pth", buffer.getvalue())
