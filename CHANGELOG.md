@@ -28,6 +28,7 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 
 - Neural Network Compression Framework (NNCF)
+
   - Fix CUDA OOM for NNCF optimization model MaskRCNN-EfficientNetB2B (<https://github.com/openvinotoolkit/training_extensions/pull/1319>)
 
 - Model Preparation Algorithm (MPA)
