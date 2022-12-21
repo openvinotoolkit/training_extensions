@@ -239,6 +239,14 @@ def run_hpo_trainer(
             "data_root": dataset_paths.get("val_data_root", None),
         },
     )
+    
+    # Datumaro
+    datumaro_adapter = get_dataset_adapter(task_type)
+    datumaro_dataset = datumaro_adapter.import_dataset(
+        train_data_roots=data_roots["train_subset"]["data_root"],
+        val_data_roots=data_roots["val_subset"]["data_root"],
+    )
+    dataset, label_schema = datumaro_adapter.convert_to_otx_format(datumaro_dataset)
 
     # Datumaro
     dataset_adapter = get_dataset_adapter(

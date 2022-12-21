@@ -11,7 +11,19 @@ import pytest
 
 from otx.api.entities.model_template import parse_model_template
 from otx.cli.registry import Registry
-from otx.cli.utils.tests import get_template_dir, otx_train_testing
+from otx.cli.utils.tests import (
+    get_template_dir, 
+    nncf_eval_openvino_testing,
+    nncf_eval_testing,
+    nncf_optimize_testing,
+    otx_eval_deployment_testing,
+    otx_eval_openvino_testing,
+    otx_eval_testing,
+    otx_train_testing,
+    otx_hpo_testing,
+    pot_eval_testing,
+    pot_optimize_testing,
+)
 from tests.test_suite.e2e_test_system import e2e_pytest_component
 
 otx_dir = os.getcwd()
@@ -64,6 +76,11 @@ args_classification_hierarchical_label = {
         "4",
     ],
 }
+classfication_args_list = [
+    args_classification,
+    args_classification_multilabel,
+    args_classification_hierarchical_label
+]
 
 TT_STABILITY_TESTS = os.environ.get("TT_STABILITY_TESTS", False)
 if TT_STABILITY_TESTS:
@@ -91,7 +108,7 @@ class TestToolsOTXClassificationDatumaro:
         args1 = args_classification.copy()
         args1["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/weights.pth"
         otx_train_testing(template, tmp_dir_path, otx_dir, args1)
-
+    
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train_classfication_multilabel(self, template, tmp_dir_path):
@@ -110,6 +127,54 @@ class TestToolsOTXClassificationDatumaro:
         args1["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/weights.pth"
         otx_train_testing(template, tmp_dir_path, otx_dir, args1)
 
+    @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_eval(self, template, tmp_dir_path):
+        for args in classfication_args_list:
+            otx_eval_testing(template, tmp_dir_path, otx_dir, args)
+
+    @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_nncf_optimize(self, template, tmp_dir_path):
+        if template.entrypoints.nncf is None:
+            pytest.skip("nncf entrypoint is none")
+        for args in classfication_args_list:
+            nncf_optimize_testing(template, tmp_dir_path, otx_dir, args)
+    
+    @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_nncf_eval(self, template, tmp_dir_path):
+        if template.entrypoints.nncf is None:
+            pytest.skip("nncf entrypoint is none")
+        for args in classfication_args_list:
+            nncf_eval_testing(template, tmp_dir_path, otx_dir, args, threshold=0.001)
+
+    @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_nncf_eval_openvino(self, template, tmp_dir_path):
+        if template.entrypoints.nncf is None:
+            pytest.skip("nncf entrypoint is none")
+        for args in classfication_args_list:
+            nncf_eval_openvino_testing(template, tmp_dir_path, otx_dir, args)
+
+    @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_pot_optimize(self, template, tmp_dir_path):
+        for args in classfication_args_list:
+            pot_optimize_testing(template, tmp_dir_path, otx_dir, args)
+
+    @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_pot_eval(self, template, tmp_dir_path):
+        for args in classfication_args_list:
+            pot_eval_testing(template, tmp_dir_path, otx_dir, args)
+    
 
 """ 
 Detection Tests
@@ -142,6 +207,53 @@ class TestToolsOTXDetectionDatumaro:
         args1["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/weights.pth"
         otx_train_testing(template, tmp_dir_path, otx_dir, args1)
 
+    @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_eval(self, template, tmp_dir_path):
+        for args in classfication_args_list:
+            otx_eval_testing(template, tmp_dir_path, otx_dir, args)
+
+    @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_nncf_optimize(self, template, tmp_dir_path):
+        if template.entrypoints.nncf is None:
+            pytest.skip("nncf entrypoint is none")
+        for args in classfication_args_list:
+            nncf_optimize_testing(template, tmp_dir_path, otx_dir, args)
+    
+    @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_nncf_eval(self, template, tmp_dir_path):
+        if template.entrypoints.nncf is None:
+            pytest.skip("nncf entrypoint is none")
+        for args in classfication_args_list:
+            nncf_eval_testing(template, tmp_dir_path, otx_dir, args, threshold=0.001)
+
+    @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_nncf_eval_openvino(self, template, tmp_dir_path):
+        if template.entrypoints.nncf is None:
+            pytest.skip("nncf entrypoint is none")
+        for args in classfication_args_list:
+            nncf_eval_openvino_testing(template, tmp_dir_path, otx_dir, args)
+
+    @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_pot_optimize(self, template, tmp_dir_path):
+        for args in classfication_args_list:
+            pot_optimize_testing(template, tmp_dir_path, otx_dir, args)
+
+    @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_pot_eval(self, template, tmp_dir_path):
+        for args in classfication_args_list:
+            pot_eval_testing(template, tmp_dir_path, otx_dir, args)
 
 """ 
 Instance Segmentation Tests

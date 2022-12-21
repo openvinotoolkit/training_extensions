@@ -88,10 +88,11 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
         self.domain = task_type.domain
         self.data_type = None # type: Any
         self.dataset = None  # type: Any
+        self.is_train_phase = None # type: bool
 
     def import_dataset(
         self,
-        train_data_roots: str,
+        train_data_roots: str = None,
         val_data_roots: str = None,
         test_data_roots: str = None,
         unlabeled_data_roots: str = None,
@@ -111,30 +112,39 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
         Returns:
             DatumaroDataset: Datumaro Dataset
         """
-        # Find self.data_type and task_type
-        data_type_candidates = self._detect_dataset_format(path=train_data_roots)
-        self.data_type = self._select_data_type(data_type_candidates)
-
-        # Construct dataset for training, validation, unlabeled
         self.dataset = {}
-        datumaro_dataset = DatumaroDataset.import_from(train_data_roots, format=self.data_type)
+        
+        # Construct dataset for training, validation, testing, unlabeled
+        if train_data_roots:
+            # Find self.data_type and task_type
+            data_type_candidates = self._detect_dataset_format(path=train_data_roots)
+            self.data_type = self._select_data_type(data_type_candidates)
+            
+            datumaro_dataset = DatumaroDataset.import_from(train_data_roots, format=self.data_type)
 
-        # Prepare subsets by using Datumaro dataset
-        for k, v in datumaro_dataset.subsets().items():
-            if "train" in k or "default" in k:
-                self.dataset[Subset.TRAINING] = v
-            elif "val" in k:
-                self.dataset[Subset.VALIDATION] = v
+            # Prepare subsets by using Datumaro dataset
+            for k, v in datumaro_dataset.subsets().items():
+                if "train" in k or "default" in k:
+                    self.dataset[Subset.TRAINING] = v
+                elif "val" in k:
+                    self.dataset[Subset.VALIDATION] = v
+            self.is_train_phase = True
 
-        # If validation is manually defined --> set the validation data according to user's input
-        if val_data_roots is not None:
-            val_data_candidates = self._detect_dataset_format(path=val_data_roots)
-            val_data_type = self._select_data_type(val_data_candidates)
-            self.dataset[Subset.VALIDATION] = DatumaroDataset.import_from(val_data_roots, format=val_data_type)
+            # If validation is manually defined --> set the validation data according to user's input
+            if val_data_roots:
+                val_data_candidates = self._detect_dataset_format(path=val_data_roots)
+                val_data_type = self._select_data_type(val_data_candidates)
+                self.dataset[Subset.VALIDATION] = DatumaroDataset.import_from(val_data_roots, format=val_data_type)
 
-        if Subset.VALIDATION not in self.dataset:
-            # TODO: auto_split
-            pass
+            if Subset.VALIDATION not in self.dataset:
+                # TODO: auto_split
+                pass
+        
+        if test_data_roots:
+            test_data_candidates = self._detect_dataset_format(path=test_data_roots)
+            test_data_type = self._select_data_type(test_data_candidates)
+            self.dataset[Subset.TESTING] = DatumaroDataset.import_from(test_data_roots, format=test_data_type)
+            self.is_train_phase = False
 
         if unlabeled_data_roots is not None:
             self.dataset[Subset.UNLABELED] = DatumaroDataset.import_from(unlabeled_data_roots, format="image_dir")
@@ -177,7 +187,10 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
         datumaro_dataset: dict,
     ) -> dict:
         # Get datumaro category information
-        label_categories_list = datumaro_dataset[Subset.TRAINING].categories().get(DatumaroAnnotationType.label, None)
+        if self.is_train_phase:
+            label_categories_list = datumaro_dataset[Subset.TRAINING].categories().get(DatumaroAnnotationType.label, None)
+        else:
+            label_categories_list = datumaro_dataset[Subset.TESTING].categories().get(DatumaroAnnotationType.label, None)
         category_items = label_categories_list.items
 
         # Get the 'label_groups' information

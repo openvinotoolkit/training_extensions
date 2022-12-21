@@ -109,7 +109,6 @@ def otx_hpo_testing(template, root, otx_dir, args):
     template_work_dir = get_template_dir(template, root)
     if os.path.exists(f"{template_work_dir}/hpo"):
         shutil.rmtree(f"{template_work_dir}/hpo")
-
     command_line = ["otx", "train", template.model_template_path]
 
     for arg in ["--train-data-roots", "--val-data-roots"]:
