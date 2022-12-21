@@ -425,8 +425,8 @@ class SelfSLDataset(Dataset):
         self.otx_dataset = otx_dataset
 
         self.load_pipeline = build_from_cfg(dict(type="LoadImageFromOTXDataset"), PIPELINES)
-        self.pipeline1 = Compose([build_from_cfg(p, PIPELINES) for p in pipeline["view0"]])
-        self.pipeline2 = Compose([build_from_cfg(p, PIPELINES) for p in pipeline["view1"]])
+        self.view0 = Compose([build_from_cfg(p, PIPELINES) for p in pipeline["view0"]])
+        self.view1 = Compose([build_from_cfg(p, PIPELINES) for p in pipeline["view1"]])
 
     def __len__(self):
         """Get dataset length."""
@@ -447,8 +447,8 @@ class SelfSLDataset(Dataset):
         )
 
         loaded_results = self.load_pipeline(data_info)
-        results1 = self.pipeline1(loaded_results.copy())
-        results2 = self.pipeline2(loaded_results.copy())
+        results1 = self.view0(loaded_results.copy())
+        results2 = self.view1(loaded_results.copy())
 
         results = {}
         for k, v in results1.items():
