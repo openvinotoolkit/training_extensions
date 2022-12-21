@@ -34,6 +34,7 @@ from otx.cli.utils.parser import (
     gen_params_dict_from_args,
 )
 
+from otx.core.data import get_dataset_adapter
 # pylint: disable=too-many-locals
 
 
@@ -58,11 +59,6 @@ def parse_args():
         parser.add_argument("template")
     parser.add_argument("--data", required=False, default="./data.yaml")
     required = not os.path.exists("./data.yaml")
-    parser.add_argument(
-        "--test-ann-files",
-        required=required,
-        help="Comma-separated paths to test annotation files.",
-    )
     parser.add_argument(
         "--test-data-roots",
         required=required,
@@ -120,24 +116,25 @@ def main():
     else:
         raise ValueError(f"Unsupported file: {args.load_weights}")
 
-    dataset_class = get_dataset_class(template.task_type)
-
     data_config = configure_dataset(args)
 
-    dataset = dataset_class(
+    data_roots = dict(
         test_subset={
-            "ann_file": data_config["data"]["test"]["ann-files"],
             "data_root": data_config["data"]["test"]["data-roots"],
         }
     )
 
-    dataset_label_schema = generate_label_schema(dataset, template.task_type)
-    check_label_schemas(read_label_schema(args.load_weights), dataset_label_schema)
+    datumaro_adapter = get_dataset_adapter(template.task_type)
+    datumaro_dataset = datumaro_adapter.import_dataset(
+        test_data_roots=data_roots["test_subset"]["data_root"]
+    )
+    dataset, label_schema = datumaro_adapter.convert_to_otx_format(datumaro_dataset)
+
 
     environment = TaskEnvironment(
         model=None,
         hyper_parameters=hyper_parameters,
-        label_schema=dataset_label_schema,
+        label_schema=label_schema,
         model_template=template,
     )
 
