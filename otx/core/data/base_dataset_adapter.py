@@ -35,7 +35,7 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
         self.domain = task_type.domain
         self.data_type = None  # type: Any
         self.dataset = None  # type: Any
-        self.is_train_phase = None  # type: bool
+        self.is_train_phase = None  # type: Any
 
     def import_dataset(
         self,
@@ -48,11 +48,8 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
 
         Args:
             train_data_roots (str): Path for training data
-            train_ann_files (str): Path for training annotation data
             val_data_roots (str): Path for validation data
-            val_ann_files (str): Path for validation annotation data
             test_data_roots (str): Path for test data
-            test_ann_files (str): Path for test annotation data
             unlabeled_data_roots (str): Path for unlabeled data
             unlabeled_file_lists (str): Path for unlabeled file list
 

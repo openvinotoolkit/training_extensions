@@ -33,6 +33,7 @@ root
 
 # pylint: disable=too-many-locals, c-extension-no-member, invalid-name, too-many-statements
 
+import argparse
 import csv
 import os
 import os.path as osp
@@ -318,8 +319,13 @@ if __name__ == "__main__":
     main(src, dst, data_type)
 def main(src_path, dst_path):
     """Main function."""
-    # convert_jester_dataset_to_datumaro(src_path, dst_path)
-    convert_ava_dataset_to_datumaro(src_path, dst_path)
+    args = parse_args()
+    if args.data_format == "jester":
+        convert_jester_dataset_to_datumaro(args.input, args.output)
+    elif args.data_format == "ava":
+        convert_ava_dataset_to_datumaro(args.input, args.output)
+    else:
+        raise NotImplementedError()
 
 if __name__ == '__main__':
     main('/local/sungmanc/datasets/ava_SC', '/local/sungmanc/datasets/ava_SC_cvat_multifolder_detection')

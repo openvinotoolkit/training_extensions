@@ -6,7 +6,7 @@
 
 # pylint: disable=invalid-name, too-many-locals, no-member
 import os
-from typing import Any, List, Tuple
+from typing import Any, Dict, List, Tuple
 
 import cv2
 import numpy as np
@@ -33,26 +33,22 @@ from otx.core.data.base_dataset_adapter import BaseDatasetAdapter
 
 
 class AnomalyBaseDatasetAdapter(BaseDatasetAdapter):
-    """BaseDataset Adpater for Anomaly tasks inherited by BaseDatasetAdapter."""
+    """BaseDataset Adpater for Anomaly tasks inherited from BaseDatasetAdapter."""
 
     def import_dataset(
         self,
-        train_data_roots: str,
+        train_data_roots: str = None,
         val_data_roots: str = None,
         test_data_roots: str = None,
         unlabeled_data_roots: str = None,
-    ) -> DatumaroDataset:
+    ) -> Dict[Subset, DatumaroDataset]:
         """Import dataset by using Datumaro.import_from() method.
 
         Args:
             train_data_roots (str): Path for training data
-            train_ann_files (str): Path for training annotation data
             val_data_roots (str): Path for validation data
-            val_ann_files (str): Path for validation annotation data
             test_data_roots (str): Path for test data
-            test_ann_files (str): Path for test annotation data
             unlabeled_data_roots (str): Path for unlabeled data
-            unlabeled_file_lists (str): Path for unlabeled file list
 
         Returns:
             DatumaroDataset: Datumaro Dataset
@@ -66,6 +62,7 @@ class AnomalyBaseDatasetAdapter(BaseDatasetAdapter):
         return self.dataset
 
     def _prepare_anomaly_label_information(self) -> List[LabelEntity]:
+        """Prepare LabelEntity List."""
         normal_label = LabelEntity(id=ID(0), name="Normal", domain=self.domain)
         abnormal_label = LabelEntity(
             id=ID(1),
@@ -81,7 +78,7 @@ class AnomalyBaseDatasetAdapter(BaseDatasetAdapter):
 
 
 class AnomalyClassificationDatasetAdapter(AnomalyBaseDatasetAdapter):
-    """Anomaly classification adapter inherited by AnomalyBaseDatasetAdapter and BaseDatasetAdapter."""
+    """Anomaly classification adapter inherited from AnomalyBaseDatasetAdapter."""
 
     def convert_to_otx_format(self, datumaro_dataset: dict) -> Tuple[DatasetEntity, LabelSchemaEntity]:
         """Convert DatumaroDataset to DatasetEntity for Anomaly classification."""
@@ -117,7 +114,7 @@ class AnomalyClassificationDatasetAdapter(AnomalyBaseDatasetAdapter):
 
 
 class AnomalyDetectionDatasetAdapter(AnomalyBaseDatasetAdapter):
-    """Anomaly detection adapter inherited by AnomalyBaseDatasetAdapter and BaseDatasetAdapter."""
+    """Anomaly detection adapter inherited from AnomalyBaseDatasetAdapter."""
 
     def convert_to_otx_format(self, datumaro_dataset: dict) -> Tuple[DatasetEntity, LabelSchemaEntity]:
         """Conver DatumaroDataset to DatasetEntity for Anomaly detection."""
