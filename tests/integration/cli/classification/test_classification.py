@@ -82,7 +82,7 @@ def tmp_dir_path():
         yield Path(tmp_dir)
 
 
-MULTI_GPU_AVAILABLE = torch.cuda.device_count() > 1
+MULTI_GPU_UNAVAILABLE = torch.cuda.device_count() <= 1
 TT_STABILITY_TESTS = os.environ.get("TT_STABILITY_TESTS", False)
 if TT_STABILITY_TESTS:
     default_template = parse_model_template(
@@ -112,12 +112,12 @@ class TestToolsMPAClassification:
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
-    @pytest.mark.skipif(MULTI_GPU_AVAILABLE, reason="The number of gpu is insufficient")
+    @pytest.mark.skipif(MULTI_GPU_UNAVAILABLE, reason="The number of gpu is insufficient")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_multi_gpu_train(self, template, tmp_dir_path):
-        args = args.copy()
-        args["--gpus"] = "0,1"
-        otx_train_testing(template, tmp_dir_path, otx_dir, args)
+        args1 = args.copy()
+        args1["--gpus"] = "0,1"
+        otx_train_testing(template, tmp_dir_path, otx_dir, args1)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
