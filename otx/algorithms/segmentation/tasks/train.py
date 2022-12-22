@@ -47,7 +47,7 @@ from otx.api.usecases.tasks.interfaces.training_interface import ITrainingTask
 logger = get_logger()
 
 
-# pylint: disable=too-many-locals, too-many-instance-attributes
+# pylint: disable=too-many-locals, too-many-instance-attributes, too-many-ancestors
 class SegmentationTrainTask(SegmentationInferenceTask, ITrainingTask):
     """Train Task Implementation of OTX Segmentation."""
 

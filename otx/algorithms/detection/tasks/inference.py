@@ -45,7 +45,6 @@ from otx.api.entities.model import (
     ModelPrecision,
 )
 from otx.api.entities.model_template import TaskType
-from otx.api.entities.result_media import ResultMediaEntity
 from otx.api.entities.resultset import ResultSetEntity
 from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.shapes.polygon import Point, Polygon
@@ -56,6 +55,7 @@ from otx.api.entities.train_parameters import default_progress_callback
 from otx.api.serialization.label_mapper import label_schema_to_bytes
 from otx.api.usecases.evaluation.metrics_helper import MetricsHelper
 from otx.api.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
+from otx.api.usecases.tasks.interfaces.explain_interface import IExplainTask
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType, IExportTask
 from otx.api.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from otx.api.usecases.tasks.interfaces.unload_interface import IUnload
@@ -63,13 +63,13 @@ from otx.api.utils.argument_checks import (
     DatasetParamTypeCheck,
     check_input_parameters_type,
 )
-from otx.api.utils.vis_utils import get_actmap
+from otx.api.utils.dataset_utils import add_saliency_maps_to_dataset_item
 
 logger = get_logger()
 
 
 # pylint: disable=too-many-locals, too-many-instance-attributes
-class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask, IUnload):
+class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask, IExplainTask, IUnload):
     """Inference Task Implementation of OTX Detection."""
 
     @check_input_parameters_type()
@@ -106,6 +106,26 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         prediction_results, _ = self._infer_detector(dataset, inference_parameters)
         self._add_predictions_to_dataset(prediction_results, dataset, self.confidence_threshold)
         logger.info("Inference completed")
+        return dataset
+
+    @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
+    def explain(
+        self,
+        dataset: DatasetEntity,
+        explain_parameters: Optional[InferenceParameters] = None,
+    ) -> DatasetEntity:
+        """Main explain function of OTX Detection."""
+        logger.info("explain()")
+
+        if explain_parameters:
+            update_progress_callback = explain_parameters.update_progress
+        else:
+            update_progress_callback = default_progress_callback
+
+        self._time_monitor = InferenceProgressCallback(len(dataset), update_progress_callback)
+        explain_results = self._explain_detector(dataset, explain_parameters)
+        self._add_explanations_to_dataset(explain_results, dataset)
+        logger.info("Explain completed")
         return dataset
 
     def _infer_detector(
@@ -151,6 +171,24 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         )
         prediction_results = zip(predictions, output["feature_vectors"], output["saliency_maps"])
         return prediction_results, metric
+
+    def _explain_detector(
+        self,
+        dataset: DatasetEntity,
+        explain_parameters: Optional[InferenceParameters] = None,
+    ) -> Tuple[Iterable, float]:
+        """Run explain stage and return saliency maps."""
+
+        stage_module = "DetectionExplainer"
+        self._data_cfg = self._init_test_data_cfg(dataset)
+        results = self._run_task(
+            stage_module,
+            mode="train",
+            dataset=dataset,
+            explainer=explain_parameters.explainer if explain_parameters else None,
+        )
+        explain_results = results["outputs"]["saliency_maps"]
+        return explain_results
 
     @check_input_parameters_type()
     def evaluate(
@@ -309,15 +347,13 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
                 dataset_item.append_metadata_item(active_score, model=self._task_environment.model)
 
             if saliency_map is not None:
-                saliency_map = get_actmap(saliency_map, (dataset_item.width, dataset_item.height))
-                saliency_map_media = ResultMediaEntity(
-                    name="Saliency Map",
-                    type="saliency_map",
-                    annotation_scene=dataset_item.annotation_scene,
-                    numpy=saliency_map,
-                    roi=dataset_item.roi,
+                add_saliency_maps_to_dataset_item(
+                    dataset_item=dataset_item,
+                    saliency_map=saliency_map,
+                    model=self._task_environment.model,
+                    labels=self._labels,
+                    task="det",
                 )
-                dataset_item.append_metadata_item(saliency_map_media, model=self._task_environment.model)
 
     def _det_add_predictions_to_dataset(self, all_results, width, height, confidence_threshold):
         shapes = []
@@ -367,6 +403,17 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
                     if cv2.contourArea(contour) > 0 and polygon.get_area() > 1e-12:
                         shapes.append(Annotation(polygon, labels=labels, id=ID(f"{label_idx:08}")))
         return shapes
+
+    def _add_explanations_to_dataset(self, explain_results, dataset):
+        """Add saliency map to the dataset."""
+        for dataset_item, saliency_map in zip(dataset, explain_results):
+            add_saliency_maps_to_dataset_item(
+                dataset_item=dataset_item,
+                saliency_map=saliency_map,
+                model=self._task_environment.model,
+                labels=self._labels,
+                task="det",
+            )
 
     @staticmethod
     def _update_anchors(origin, new):

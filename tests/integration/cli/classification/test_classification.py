@@ -24,6 +24,7 @@ from otx.cli.utils.tests import (
     otx_eval_deployment_testing,
     otx_eval_openvino_testing,
     otx_eval_testing,
+    otx_explain_openvino_testing,
     otx_explain_testing,
     otx_export_testing,
     otx_hpo_testing,
@@ -122,6 +123,12 @@ class TestToolsMPAClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_explain(self, template, tmp_dir_path):
         otx_explain_testing(template, tmp_dir_path, otx_dir, args)
+
+    @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_explain_openvino(self, template, tmp_dir_path):
+        otx_explain_openvino_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
