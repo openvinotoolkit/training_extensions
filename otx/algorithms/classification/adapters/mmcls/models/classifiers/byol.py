@@ -163,17 +163,20 @@ class BYOL(nn.Module):
         return outputs
 
     def val_step(self, *args):
-        """Disable validation step during self-supervised learning."""
+        """Disenable validation step during self-supervised learning."""
         pass
 
     def _parse_losses(self, losses: Dict[str, Any]):
         """Parse loss dictionary.
 
         Args:
-            losses (dict): ...
+            losses (dict): Raw output of the network, which usually contain
+                losses and other necessary information.
 
         Returns:
-            tuple: ...
+            tuple[Tensor, dict]: (loss, log_vars), loss is the loss tensor
+                which may be a weighted sum of all losses, log_vars contains
+                all the variables to be sent to the logger.
         """
         log_vars = OrderedDict()
         for loss_name, loss_value in losses.items():
