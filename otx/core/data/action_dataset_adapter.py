@@ -38,14 +38,15 @@ class ActionBaseDatasetAdapter(BaseDatasetAdapter):
 
     def import_dataset(
         self,
-        train_data_roots: str,
+        train_data_roots: str = None,
         val_data_roots: str = None,
         test_data_roots: str = None,
         unlabeled_data_roots: str = None,
     ) -> Dict[Subset, DatumaroDataset]:
         """Import multiple videos that have CVAT format annotation."""
         self.dataset = {}
-        self.dataset[Subset.TRAINING] = self._prepare_cvat_pair_data(train_data_roots)
+        if train_data_roots:
+            self.dataset[Subset.TRAINING] = self._prepare_cvat_pair_data(train_data_roots)
         if val_data_roots:
             self.dataset[Subset.VALIDATION] = self._prepare_cvat_pair_data(val_data_roots)
         if test_data_roots:
@@ -136,7 +137,8 @@ class ActionClassificationDatasetAdapter(ActionBaseDatasetAdapter, BaseDatasetAd
                             )
                     meta_item = MetadataItemEntity(
                         data=VideoMetadata(
-                            video_id=ID(int(datumaro_item.media.path.split("/")[-3].split("_")[-1])),
+                            name="video_meta",
+                            video_id=int(datumaro_item.media.path.split("/")[-3].split("_")[-1]),
                             frame_idx=int(datumaro_item.media.path.split("/")[-1].split(".")[0].lstrip("0")),
                         )
                     )
