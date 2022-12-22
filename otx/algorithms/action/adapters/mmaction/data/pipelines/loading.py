@@ -17,6 +17,8 @@
 import numpy as np
 from mmaction.datasets.builder import PIPELINES
 
+from otx.api.entities.dataset_item import DatasetItemEntity
+
 
 @PIPELINES.register_module(force=True)
 class RawFrameDecode:
@@ -24,9 +26,42 @@ class RawFrameDecode:
 
     def __call__(self, results):
         """Call function of RawFrameDecode."""
+        if isinstance(results["data"], list):
+            results = self.decode_from_list(results)
+        elif isinstance(results["data"], DatasetItemEntity):
+            results = self.decode_from_entity(results)
+        else:
+            raise Exception(f"{type(results['data'])} is not supported in RawFrameDecode")
+        return results
+
+    def decode_from_list(self, results):
+        """Generate numpy array list from list of DatasetItemEntity."""
         imgs = []
         for index in results["frame_inds"]:
             imgs.append(results["data"][index].media.numpy)
+        results["imgs"] = imgs
+        results["original_shape"] = imgs[0].shape[:2]
+        results["img_shape"] = imgs[0].shape[:2]
+
+        # we resize the gt_bboxes and proposals to their real scale
+        if "gt_bboxes" in results:
+            height, width = results["img_shape"]
+            scale_factor = np.array([width, height, width, height])
+            gt_bboxes = results["gt_bboxes"]
+            gt_bboxes = (gt_bboxes * scale_factor).astype(np.float32)
+            results["gt_bboxes"] = gt_bboxes
+            if "proposals" in results and results["proposals"] is not None:
+                proposals = results["proposals"]
+                proposals = (proposals * scale_factor).astype(np.float32)
+                results["proposals"] = proposals
+
+        return results
+
+    def decode_from_entity(self, results):
+        """Generate numpy array list from list of DatasetItemEntity."""
+        imgs = []
+        for index in results["frame_inds"]:
+            imgs.append(results["video"][index].media.numpy)
         results["imgs"] = imgs
         results["original_shape"] = imgs[0].shape[:2]
         results["img_shape"] = imgs[0].shape[:2]

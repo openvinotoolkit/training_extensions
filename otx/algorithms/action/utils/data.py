@@ -15,6 +15,7 @@
 # and limitations under the License.
 
 import os.path as osp
+import typing
 from collections import defaultdict
 from typing import Any, Dict, List, Optional
 
@@ -214,13 +215,22 @@ def load_det_dataset(
     return dataset_items
 
 
+def wrap_action_dataset(train_type, dataset):
+    """Chose dataset wrapper for action task."""
+    if train_type.name == "ACTION_CLASSIFICATION":
+        return ActionVidDataset(dataset)
+    if train_type.name == "ACTION_DETECTION":
+        return ActionFrameDataset(dataset)
+    raise NotImplementedError(f"{train_type.name} is not supported")
+
+
 class ActionVidDataset(DatasetEntity):
     """Convert frame based DatasetEntity to video based DatasetEntity."""
 
     def __init__(self, dataset: DatasetEntity):
         items = []
         videos: Dict[str, List[DatasetItemEntity]] = {}
-        meta_datas: Dict[str, Any] = {}
+        metadata_info: Dict[str, Any] = {}
         for item in dataset:
             metadata = item.get_metadata()[0].data
             video_id = metadata.video_id  # type:ignore[attr-defined]
@@ -228,22 +238,75 @@ class ActionVidDataset(DatasetEntity):
             if video_id in videos:
                 # TODO Append with sort
                 videos[video_id].append(item)
-                if frame_idx < meta_datas[video_id]["start_index"]:
-                    meta_datas[video_id]["start_index"] = frame_idx
+                if frame_idx < metadata_info[video_id]["start_index"]:
+                    metadata_info[video_id]["start_index"] = frame_idx
             else:
                 videos[video_id] = [item]
-                meta_datas[video_id] = {"start_index": frame_idx}
+                metadata_info[video_id] = {"start_index": frame_idx}
         for video_id, video in videos.items():
             video_info: Dict[str, Any] = {}
             video_info["video"] = video
             video_info["total_frames"] = len(video)
-            video_info["start_index"] = meta_datas[video_id]["start_index"]
+            video_info["start_index"] = metadata_info[video_id]["start_index"]
             annotation_scene = video[0].annotation_scene
             subset = video[0].subset
             vid_entity = DatasetItemEntity(
                 media=ConfigDict(video_info),
                 annotation_scene=annotation_scene,
                 subset=subset,
+            )
+            items.append(vid_entity)
+
+        super().__init__(items=items)
+
+
+class ActionFrameDataset(DatasetEntity):
+    """Add meta data and video information to DatasetItemEntity."""
+
+    @typing.no_type_check
+    def __init__(self, dataset: DatasetEntity):
+        self.data_root = None
+        items = []
+        videos: Dict[str, List[DatasetItemEntity]] = {}
+        metadata_info: Dict[str, Any] = {}
+
+        for item in dataset:
+            if self.data_root is None:
+                self.data_root = osp.join("/", *item.media._Image__file_path.split("/")[:-4])
+            metadata = item.get_metadata()[0].data
+            video_id = metadata.video_id
+            frame_idx = metadata.frame_idx
+            if video_id in videos:
+                videos[video_id].append(item)
+                if frame_idx < metadata_info[video_id]["start_index"]:
+                    metadata_info[video_id]["start_index"] = frame_idx
+                if frame_idx > metadata_info[video_id]["end_index"]:
+                    metadata_info[video_id]["end_index"] = frame_idx
+            else:
+                videos[video_id] = [item]
+                metadata_info[video_id] = {"start_index": frame_idx, "end_index": frame_idx}
+
+        for item in dataset:
+            metadata = item.get_metadata()[0].data
+            if metadata.is_empty_frame:
+                continue
+            video_id = metadata.video_id
+            frame_idx = metadata.frame_idx
+            video_info: Dict[str, Any] = {}
+            video_info["data"] = item
+            video_info["video"] = videos[video_id]
+            video_info["video_id"] = video_id
+            video_info["timestamp"] = frame_idx
+            video_info["img_key"] = str(video_info["video_id"]) + "," + str(video_info["timestamp"])
+            video_info["timestamp_start"] = metadata_info[video_id]["start_index"]
+            video_info["timestamp_end"] = metadata_info[video_id]["end_index"]
+            video_info["data_root"] = self.data_root
+            video_info["width"] = item.width
+            video_info["height"] = item.height
+            vid_entity = DatasetItemEntity(
+                media=ConfigDict(video_info),
+                annotation_scene=item.annotation_scene,
+                subset=item.subset,
             )
             items.append(vid_entity)
 

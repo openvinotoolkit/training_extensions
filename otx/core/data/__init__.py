@@ -60,11 +60,11 @@ def get_dataset_adapter(task_type):
 
         return AnomalySegmentationDatasetAdapter(task_type=task_type)
 
+    if task_type == TaskType.ACTION_DETECTION:
+        from .action_dataset_adapter import ActionDetectionDatasetAdapter
+
+        return ActionDetectionDatasetAdapter(task_type=task_type)
     # TODO: Need to implement
-    # if task_type == TaskType.ACTION_DETECTION:
-    #    from .action_dataset_adapter import ActionDetectionDatasetAdapter
-    #
-    #    return ActionDetectionDatasetAdapter(task_type=task_type)
     # if task_type == TaskType.ROTATED_DETECTION:
     #    from .rotated_detection.dataset import RotatedDetectionDataset
     #

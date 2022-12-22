@@ -16,8 +16,9 @@
 
 import copy
 import json
+import os
 from collections import defaultdict
-from typing import Any, Dict, List, Optional, Sequence, Union
+from typing import List, Optional, Sequence, Union
 
 import mmcv
 import numpy as np
@@ -39,7 +40,7 @@ from otx.api.utils.argument_checks import (
 root_logger = get_root_logger()
 
 
-# pylint: disable=too-many-instance-attributes
+# pylint: disable=too-many-instance-attributes, too-many-arguments, invalid-name, super-init-not-called, too-many-locals
 @DATASETS.register_module()
 class OTXActionDetDataset(AVADataset):
     """Wrapper that allows using a OTX dataset to train action detection models.
@@ -50,10 +51,22 @@ class OTXActionDetDataset(AVADataset):
     """
 
     class _DataInfoProxy:
-        def __init__(self, otx_dataset, labels):
+        def __init__(self, otx_dataset, labels, fps, test_mode):
             self.otx_dataset = otx_dataset
             self.labels = labels
             self.label_idx = {label.id: i for i, label in enumerate(labels)}
+            self.fps = fps
+            self.data_root = self.otx_dataset[0].media.data_root
+
+            if not test_mode:
+                self.proposal_file = os.path.join(self.data_root, "train.pkl")
+            else:
+                self.proposal_file = os.path.join(self.data_root, "valid.pkl")
+            if os.path.exists(self.proposal_file):
+                self.proposals = mmcv.load(self.proposal_file)
+                self.patch_proposals()
+            else:
+                self.proposals = None
 
         def __len__(self):
             return len(self.otx_dataset)
@@ -67,19 +80,60 @@ class OTXActionDetDataset(AVADataset):
 
             dataset = self.otx_dataset
             item = dataset[index]
+            shot_info = (0, (item.media.timestamp_end - item.media.timestamp_start)) * self.fps
             ignored_labels = np.array([self.label_idx[lbs.id] for lbs in item.ignored_labels])
 
             data_info = dict(
-                dataset_item=item,
+                **item.media,
+                shot_info=shot_info,
                 index=index,
                 ann_info=dict(label_list=self.labels),
                 ignored_labels=ignored_labels,
+                fps=self._FPS,
             )
+
+            anns = item.media.data.get_annotations()
+            if len(anns) > 0:
+                bboxes, labels = [], []
+                for ann in anns:
+                    bbox = np.asarray([ann.shape.x1, ann.shape.y1, ann.shape.x2, ann.shape.y2])
+                    valid_labels = np.array([int(label.id) for label in ann.get_labels()], dtype=int)
+                    label = np.zeros(len(self.labels) + 1, dtype=np.float32)
+                    label[valid_labels] = 1.0
+                    bboxes.append(bbox)
+                    labels.append(label)
+                data_info["gt_bboxes"] = np.stack(bboxes)
+                data_info["gt_labels"] = np.stack(labels)
+            else:
+                # Insert dummy gt bboxes for data pipeline in mmaction
+                data_info["gt_bboxes"] = np.zeros((1, 4))
+
+            if self.proposals is not None:
+                img_key = data_info["img_key"]
+                if img_key in self.proposals:
+                    proposal = self.proposals[img_key]
+                else:
+                    proposal = np.array([[0, 0, 1, 1, 1]])
+                data_info["proposals"] = proposal[:, :4]
+                data_info["scores"] = proposal[:, 4]
 
             return data_info
 
+        def patch_proposals(self):
+            """Remove fixed string format.
+
+            AVA dataset pre-proposals have fixed string format.
+            Fixed string format have scalability issues so here we remove it
+            """
+            # FIXME This may consume lots of time depends on size of proposals
+            root_logger.info("Patching pre proposals...")
+            for img_key in list(self.proposals):
+                proposal = self.proposals.pop(img_key)
+                new_img_key = img_key.split(",")[0] + "," + str(int(img_key.split(",")[1]))
+                self.proposals[f"{new_img_key}"] = proposal
+            root_logger.info("Done.")
+
     @check_input_parameters_type({"otx_dataset": DatasetParamTypeCheck})
-    # pylint: disable=too-many-arguments, invalid-name, super-init-not-called, too-many-locals
     # TODO Remove duplicated codes with mmaction's AVADataset
     def __init__(
         self,
@@ -126,139 +180,25 @@ class OTXActionDetDataset(AVADataset):
         # OTX does not support custom_classes
         self.custom_classes = None
 
-        self.data_infos = OTXActionDetDataset._DataInfoProxy(otx_dataset, labels)
-
-        if self.proposal_file is not None:
-            self.proposals = mmcv.load(self.proposal_file)
-            self.patch_proposals()
-        else:
-            self.proposals = None
+        self.video_infos = OTXActionDetDataset._DataInfoProxy(otx_dataset, labels, fps, test_mode)
 
         self.pipeline = Compose(pipeline)
-        self.video_infos: List[Dict[Any, Any]] = []
-        self.make_video_infos()
 
-        if not test_mode:
-            valid_indexes = self.filter_exclude_file()
-            self.video_infos = [self.video_infos[i] for i in valid_indexes]
-
-    def __len__(self):
-        """Return length of dataset."""
-        return len(self.data_infos)
-
-    def patch_proposals(self):
-        """Remove fixed string format.
-
-        AVA dataset pre-proposals have fixed string format.
-        Fixed string format have scalability issues so here we remove it
-        """
-        # TODO This may consume lots of time depends on size of proposals
-        # So handle proposals in offline or try remove this by using CVAT
-        root_logger.info("Patching pre proposals...")
-        for img_key in list(self.proposals):
-            proposal = self.proposals.pop(img_key)
-            new_img_key = img_key.split(",")[0] + "," + str(int(img_key.split(",")[1]))
-            self.proposals[f"{new_img_key}"] = proposal
-        root_logger.info("Done.")
+        # if not test_mode:
+        #     valid_indexes = self.filter_exclude_file()
+        #     self.video_infos = [self.video_infos[i] for i in valid_indexes]
 
     def prepare_train_frames(self, idx):
         """Prepare the frames for training given the index."""
-        results = self.pre_pipeline(idx)
+        results = copy.deepcopy(self.video_infos[idx])
+        results["modality"] = self.modality
         return self.pipeline(results)
 
     def prepare_test_frames(self, idx):
         """Prepare the frames for testing given the index."""
-        results = self.pre_pipeline(idx)
-        return self.pipeline(results)
-
-    def pre_pipeline(self, idx):
-        """Prepare proper data for mmaction pipeline."""
         results = copy.deepcopy(self.video_infos[idx])
-        img_key = results["img_key"]
-        video_id = results["video_id"]
-
-        results["filename_tmpl"] = self.get_filename_tmpl(img_key)
         results["modality"] = self.modality
-        results["start_index"] = self.start_index
-        results["timestamp_start"] = self.get_timestamp("start", video_id)
-        results["timestamp_end"] = self.get_timestamp("end", video_id)
-
-        if self.proposals is not None:
-            if img_key not in self.proposals:
-                results["proposals"] = np.array([[0, 0, 1, 1]])
-                results["scores"] = np.array([1])
-            else:
-                proposals = self.proposals[img_key]
-                assert proposals.shape[-1] in [4, 5]
-                if proposals.shape[-1] == 5:
-                    thr = min(self.person_det_score_thr, max(proposals[:, 4]))
-                    positive_inds = proposals[:, 4] >= thr
-                    proposals = proposals[positive_inds]
-                    proposals = proposals[: self.num_max_proposals]
-                    results["proposals"] = proposals[:, :4]
-                    results["scores"] = proposals[:, 4]
-                else:
-                    proposals = proposals[: self.num_max_proposals]
-                    results["proposals"] = proposals
-
-        ann = results.pop("ann")
-        if ann is not None:
-            results["gt_bboxes"] = ann["gt_bboxes"]
-            results["gt_labels"] = ann["gt_labels"]
-            results["entity_ids"] = ann["entity_ids"]
-        else:
-            # This is for RawFrameDecode pipeline
-            results["gt_bboxes"] = np.zeros((1, 4))
-        return results
-
-    def get_timestamp(self, key, video_id=None):
-        """Get start or end timestamp for video."""
-        if key == "start":
-            timestamp = self.timestamp_start
-        else:
-            timestamp = self.timestamp_end
-        if isinstance(timestamp, int):
-            return timestamp
-        return timestamp[video_id]
-
-    def get_filename_tmpl(self, img_key):
-        """Get dataset's own filename template."""
-        # FIXME This is very heuristic way. CVAT format may change this
-        if self.filename_tmpl[0] == "_":
-            return img_key.split(",")[0] + self.filename_tmpl
-        return self.filename_tmpl
-
-    def make_video_infos(self):
-        """Make mmaction style video infos."""
-        for data_info in self.data_infos:
-            media = data_info["dataset_item"].media
-            media["fps"] = self._FPS
-            video_id = media["video_id"]
-            timestamp_start = self.get_timestamp("start", video_id)
-            timestamp_end = self.get_timestamp("end", video_id)
-            shot_info = (0, timestamp_end - timestamp_start) * self._FPS
-            anns = data_info["dataset_item"].get_annotations()
-            media["ann"] = None
-            media["shot_info"] = shot_info
-            if len(anns) > 0:
-                bboxes, labels = [], []
-                for ann in anns:
-                    bbox = np.asarray([ann.shape.x1, ann.shape.y1, ann.shape.x2, ann.shape.y2])
-                    valid_labels = np.array([int(label.id) for label in ann.get_labels()], dtype=np.int8)
-                    label = np.zeros(len(self.labels) + 1, dtype=np.float32)
-                    label[valid_labels] = 1.0
-                    bboxes.append(bbox)
-                    labels.append(label)
-                bboxes = np.stack(bboxes)
-                labels = np.stack(labels)
-                media["ann"] = {"gt_bboxes": bboxes, "gt_labels": labels, "entity_ids": []}
-            media["timestamp_start"] = timestamp_start
-            media["timestamp_end"] = timestamp_end
-            self.video_infos.append(media)
-
-        if not self.test_mode:
-            valid_indexes = self.filter_exclude_file()
-            self.video_infos = [self.video_infos[i] for i in valid_indexes]
+        return self.pipeline(results)
 
     # pylint: disable=too-many-locals, unused-argument
     def evaluate(self, results, *args, metrics=("mAP",), metric_options=None, logger=None, **kwargs):

@@ -6,7 +6,6 @@ import abc
 from enum import Enum, auto
 from typing import Optional
 
-from otx.api.entities.id import ID
 from otx.api.entities.model import ModelEntity
 
 
@@ -68,9 +67,10 @@ class VideoMetadata(IMetadata):
         frame_idx (int): Index for frame.
     """
 
-    def __init__(self, video_id: ID, frame_idx: int):
+    def __init__(self, video_id: str, frame_idx: int, is_empty_frame: bool):
         self.video_id = video_id
         self.frame_idx = frame_idx
+        self.is_empty_frame = is_empty_frame
 
     def __repr__(self):
         """Prints the video_id, frame_id and type of the MetadataItemEntity."""
