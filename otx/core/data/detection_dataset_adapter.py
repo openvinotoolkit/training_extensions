@@ -26,7 +26,7 @@ from otx.core.data.base_dataset_adapter import BaseDatasetAdapter
 
 
 class DetectionDatasetAdapter(BaseDatasetAdapter):
-    """Detection adapter inherited by BaseDatasetAdapter.
+    """Detection adapter inherited from BaseDatasetAdapter.
 
     It converts DatumaroDataset --> DatasetEntity for object detection, and instance segmentation tasks
     """
