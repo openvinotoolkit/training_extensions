@@ -8,7 +8,7 @@ Original papers:
 # SPDX-License-Identifier: Apache-2.0
 
 from collections import OrderedDict
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Tuple, Union, Any
 
 import torch
 import torch.distributed as dist
@@ -22,20 +22,22 @@ logger = get_logger()
 
 
 class MaskPooling(nn.Module):
-    """
+    """Mask pooling module to filter each class with the same class.
+
     Args:
-        num_classes:
-        num_samples:
-        downsample:
-        replacement (bool): whether samples are drawn with replacement or not. Default is True.
+        num_classes (int): The number of classes to be considered as pseudo classes. Default: 256.
+        num_samples (int): The number of samples to be sampled. Default: 16.
+        downsample (int): The ratio of the mask size to the feature size. Default: 32.
+        replacement (bool): Whether samples are drawn with replacement or not.
+            It can be used when `num_classes` is small rather than `num_samples`. Default: True.
     """
 
     def __init__(
         self,
-        num_classes: int,
+        num_classes: int = 256,
         num_samples: int = 16,
         downsample: int = 32,
-        replacement: bool = True,
+        replacement: bool = False,
     ):
 
         super().__init__()
@@ -48,13 +50,14 @@ class MaskPooling(nn.Module):
         self.pool = nn.AvgPool2d(kernel_size=downsample, stride=downsample)
 
     def pool_masks(self, masks: torch.Tensor):
-        """Create binary masks and performs mask pooling
-        Args:
-            masks: (b, 1, h, w)
-        Returns:
-            masks: (b, num_classes, d)
-        """
+        """Perform mask pooling and create binary masks.
 
+        Args:
+            masks (Tensor): Ground truth masks.
+
+        Returns:
+            Tensor: Pooled binary masks.
+        """
         if masks.ndim < 4:
             masks = masks.unsqueeze(dim=1)
 
@@ -70,12 +73,16 @@ class MaskPooling(nn.Module):
         return masks
 
     def sample_masks(self, masks: torch.Tensor):
-        """Samples which binary masks to use in the loss.
+        """Samples of which binary masks to use in the loss.
+
         Args:
-            masks: (b, num_classes, d)
+            masks (Tensor): Pooled binary masks from `self.pool_masks`.
+
         Returns:
-            masks: (b, num_samples, d)
+            tuple[Tensor, Tensor]: (sampled_masks, mask_ids),
+                sampled binary masks and ids used to sample masks.
         """
+        assert masks.ndim == 3
 
         batch_size = masks.shape[0]
         mask_exists = torch.greater(masks.sum(dim=-1), 1e-3)
@@ -86,15 +93,16 @@ class MaskPooling(nn.Module):
 
         return sampled_masks, mask_ids
 
-    def forward(self, masks: List[torch.Tensor]):
-        """
-        Args:
-            masks: [mask1, mask2]
-        Returns:
-            sampled_masks: [sampled_mask1, sampled_mask2]
-            sampled_mask_ids: [sampled_mask_ids1, sampled_mask_ids2]
-        """
+    def forward(self, masks: torch.Tensor):
+        """Forward function for mask pooling.
 
+        Args:
+            masks (Tensor): Ground truth masks to be sampled.
+
+        Returns:
+            tuple[Tensor, Tensor]: (sampled_masks, sampled_mask_ids),
+                normalized sampled binary masks and ids used to sample masks.
+        """
         binary_masks = self.pool_masks(masks)
         sampled_masks, sampled_mask_ids = self.sample_masks(binary_masks)
         areas = sampled_masks.sum(dim=-1, keepdim=True)
@@ -105,20 +113,41 @@ class MaskPooling(nn.Module):
 
 @SEGMENTORS.register_module()
 class DetConB(nn.Module):
+    """Implementation of 'Efficient Visual Pretraining with Contrastive Detection' \
+        (https://arxiv.org/abs/2103.10957).
+
+    Args:
+        backbone (dict): Config dict for module of backbone ConvNet.
+        neck (dict, optional): Config dict for module of deep features to compact feature vectors.
+            Default: None.
+        head (dict, optional): Config dict for module of loss functions. Default: None.
+        pretrained (str, optional): Path to pre-trained weights. Default: None.
+        base_momentum (float): The base momentum coefficient for the target network.
+            Default: 0.996.
+        num_classes (int): The number of classes to be considered as pseudo classes. Default: 256.
+        num_samples (int): The number of samples to be sampled. Default: 16.
+        downsample (int): The ratio of the mask size to the feature size. Default: 32.
+        input_transform (str): Input transform of features from backbone. Default: "resize_concat".
+        in_index (list): Feature index to be used for DetCon if the backbone outputs
+            multi-scale features wrapped by list or tuple. Default: [0].
+        align_corners (bool): Whether apply `align_corners` during resize. Default: False.
+        loss_cfg (dict): DetCon loss configuration.
+    """
+
     def __init__(
         self,
-        backbone,
-        neck=None,
-        head=None,
-        pretrained=None,
+        backbone: Dict[str, Any],
+        neck: Optional[Dict[str, Any]] = None,
+        head: Optional[Dict[str, Any]] = None,
+        pretrained: Optional[str] = None,
         base_momentum: float = 0.996,
         num_classes: int = 256,
         num_samples: int = 16,
         downsample: int = 32,
         input_transform: str = "resize_concat",
-        in_index: List[int] = [],
+        in_index: List[int] = [0],
         align_corners: bool = False,
-        loss_cfg: Dict[str, Union[str, float]] = {},
+        loss_cfg: Dict[str, Any] = {},
         **kwargs,
     ):
         super(DetConB, self).__init__()
@@ -156,11 +185,11 @@ class DetConB(nn.Module):
 
     def init_weights(self, pretrained: Optional[str] = None):
         """Initialize the weights of model.
+
         Args:
             pretrained (str, optional): Path to pre-trained weights.
                 Default: None.
         """
-
         if pretrained is not None:
             logger.info(f"load model from: {pretrained}")
             load_checkpoint(
@@ -191,30 +220,22 @@ class DetConB(nn.Module):
     @torch.no_grad()
     def _momentum_update(self):
         """Momentum update of the target network."""
-
         for param_ol, param_tgt in zip(self.online_backbone.parameters(), self.target_backbone.parameters()):
             param_tgt.data = param_tgt.data * self.momentum + param_ol.data * (1.0 - self.momentum)
 
         for param_ol, param_tgt in zip(self.online_projector.parameters(), self.target_projector.parameters()):
             param_tgt.data = param_tgt.data * self.momentum + param_ol.data * (1.0 - self.momentum)
 
-    def get_transformed_features(self, x):
-        if self.input_transform:
-            return self.transform_inputs(x)
-        elif isinstance(self.in_index, int):
-            return x[self.in_index]
-        else:
-            raise ValueError()
-
     def transform_inputs(self, inputs: List[torch.Tensor]):
         """Transform inputs for decoder.
 
         Args:
             inputs (list[Tensor]): List of multi-level img features.
-        Returns:
-            Tensor: The transformed inputs
-        """
 
+        Returns:
+            Tensor: The transformed inputs.
+        """
+        # TODO (sungchul): consider tensor component, too
         if self.input_transform == "resize_concat":
             inputs = [inputs[i] for i in self.in_index]
             upsampled_inputs = [
@@ -230,22 +251,30 @@ class DetConB(nn.Module):
         return inputs
 
     def extract_feat(self, img: torch.Tensor):
-        """Extract features from images."""
+        """Extract features from images.
+        
+        Args:
+            img (Tensor): Input image.
 
+        Return:
+            Tensor: Features from the backbone.
+        """
         x = self.backbone(img)
-
         return x
 
     def sample_masked_feats(self, feats: Union[torch.Tensor, List, Tuple], masks: torch.Tensor, projector: nn.Module):
         """Sampled features from mask.
 
         Args:
-            feats (Tensor):
-            masks (Tensor):
-            projector (nn.Module):
+            feats (Tensor): Features from the backbone.
+            masks (Tensor): Ground truth masks to be sampled and to be used to filter `feats`.
+            projector (nn.Module): Projector MLP.
+
+        Returns:
+            tuple[Tensor, Tensor]: (proj, sampled_mask_ids), features from the projector and ids used to sample masks.
         """
         if isinstance(feats, (list, tuple)) and len(feats) > 1:
-            feats = self.get_transformed_features(feats)
+            feats = self.transform_inputs(feats)
 
         sampled_masks, sampled_mask_ids = self.mask_pool(masks)
 
@@ -263,13 +292,13 @@ class DetConB(nn.Module):
 
         Args:
             img (Tensor): Input images.
-            gt_semantic_seg (Tensor): Semantic segmentation masks
-                used if the architecture supports semantic segmentation task.
+            img_metas (list[dict]): Input information.
+            gt_semantic_seg (Tensor): Pseudo masks.
+                It is used to organize features among the same classes.
 
         Returns:
-            dict[str, Tensor]: a dictionary of loss components
+            dict[str, Tensor]: A dictionary of loss components.
         """
-
         assert img.ndim == 5 and gt_semantic_seg.ndim == 4
         img1, img2 = img[:, 0], img[:, 1]
         mask1, mask2 = gt_semantic_seg[:, 0], gt_semantic_seg[:, 1]
@@ -303,7 +332,7 @@ class DetConB(nn.Module):
 
         return loss
 
-    def train_step(self, data_batch, optimizer, **kwargs):
+    def train_step(self, data_batch: Dict[str, Any], optimizer: Union[torch.optim.Optimizer, Dict], **kwargs):
         """The iteration step during training.
 
         This method defines an iteration step during training, except for the
@@ -329,7 +358,6 @@ class DetConB(nn.Module):
                 DDP, it means the batch size on each GPU), which is used for
                 averaging the logs.
         """
-
         losses = self(**data_batch)
         loss, log_vars = self._parse_losses(losses)
 
@@ -337,10 +365,11 @@ class DetConB(nn.Module):
 
         return outputs
 
-    def val_step(self, data_batch, **kwargs):
+    def val_step(self, **kwargs):
+        """Disenable validation step during self-supervised learning."""
         pass
 
-    def _parse_losses(self, losses):
+    def _parse_losses(self, losses: Dict[str, Any]):
         """Parse the raw outputs (losses) of the network.
 
         Args:
@@ -380,6 +409,7 @@ class DetConB(nn.Module):
         return loss, log_vars
 
     def set_step_params(self, init_iter, epoch_size):
+        """`set_step_params` to be skipped."""
         pass
 
     @staticmethod

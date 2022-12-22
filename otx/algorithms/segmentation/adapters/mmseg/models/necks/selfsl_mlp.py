@@ -1,3 +1,12 @@
+"""Multi-layer Perceptron (MLP) for Self-supervised learning methods.
+
+This MLP consists of fc (conv) - norm - relu - fc (conv).
+"""
+
+# Copyright (C) 2022 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
+from typing import Dict, Any
 import torch
 import torch.nn as nn
 from mmcv.cnn import build_norm_layer, kaiming_init, normal_init
@@ -6,10 +15,26 @@ from mmseg.models.builder import NECKS
 
 @NECKS.register_module()
 class SelfSLMLP(nn.Module):
-    """The SelfSLMLP neck: fc/conv-bn-relu-fc/conv."""
+    """The SelfSLMLP neck: fc/conv-bn-relu-fc/conv.
+    
+    Args:
+        in_channels (int): The number of feature output channels from backbone.
+        hid_channels (int): The number of channels for a hidden layer.
+        out_channels (int): The number of output channels of SelfSLMLP.
+        norm_cfg (dict): Normalize configuration. Default: dict(type="BN1d").
+        use_conv (bool): Whether using conv instead of fc. Default: False.
+        with_avg_pool (bool): Whether using average pooling before passing MLP.
+                              Default: True.
+    """
 
     def __init__(
-        self, in_channels, hid_channels, out_channels, norm_cfg=dict(type="BN1d"), use_conv=False, with_avg_pool=True
+        self,
+        in_channels: int,
+        hid_channels: int,
+        out_channels: int,
+        norm_cfg: Dict[str, Any] = dict(type="BN1d"),
+        use_conv: bool = False,
+        with_avg_pool: bool = True
     ):
         super(SelfSLMLP, self).__init__()
 
@@ -33,7 +58,14 @@ class SelfSLMLP(nn.Module):
                 nn.Linear(hid_channels, out_channels),
             )
 
-    def init_weights(self, init_linear="normal", std=0.01, bias=0.0):
+    def init_weights(self, init_linear: str = "normal", std: float = 0.01, bias: float = 0.0):
+        """Initialize SelfSLMLP weights.
+
+        Args:
+            init_linear (str): Option to initialize weights. Default: "normal".
+            std (float): Standard deviation for normal initialization. Default: 0.01.
+            bias (float): Bias for normal initialization. Default: 0.
+        """
         if init_linear not in ["normal", "kaiming"]:
             raise ValueError("Undefined init_linear: {}".format(init_linear))
         for m in self.modules():
@@ -49,6 +81,15 @@ class SelfSLMLP(nn.Module):
                     nn.init.constant_(m.bias, 0)
 
     def forward(self, x):
+        """Forward SelfSLMLP.
+
+        Args:
+            x (Tensor, tuple, list): Inputs to pass MLP.
+                If a type of the inputs is tuple or list, just use the last index.
+
+        Return:
+            Tensor: Features passed SelfSLMLP.
+        """
         if isinstance(x, (tuple, list)):
             # using last output
             x = x[-1]

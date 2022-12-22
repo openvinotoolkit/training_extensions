@@ -30,7 +30,6 @@ class DetConLoss(nn.Module):
     """
 
     def __init__(self, temperature: float = 0.1, use_replicator_loss: bool = True, ignore_index: int = 255):
-
         super().__init__()
         assert temperature > 0
         self.temperature = torch.tensor(temperature)
@@ -40,18 +39,18 @@ class DetConLoss(nn.Module):
         """Forward loss.
 
         Args:
-            pred1: (b, num_samples, d) the prediction from first view.
-            pred2: (b, num_samples, d) the prediction from second view.
-            target1: (b, num_samples, d) the projection from first view.
-            target2: (b, num_samples, d) the projection from second view.
-            pind1: (b, num_samples) mask indices for first view's prediction.
-            pind2: (b, num_samples) mask indices for second view's prediction.
-            tind1: (b, num_samples) mask indices for first view's projection.
-            tind2: (b, num_samples) mask indices for second view's projection.
-            local_negatives (bool): whether to include local negatives
+            pred1 (Tensor): (b, num_samples, d) the prediction from first view.
+            pred2 (Tensor): (b, num_samples, d) the prediction from second view.
+            target1 (Tensor): (b, num_samples, d) the projection from first view.
+            target2 (Tensor): (b, num_samples, d) the projection from second view.
+            pind1 (Tensor): (b, num_samples) mask indices for first view's prediction.
+            pind2 (Tensor): (b, num_samples) mask indices for second view's prediction.
+            tind1 (Tensor): (b, num_samples) mask indices for first view's projection.
+            tind2 (Tensor): (b, num_samples) mask indices for second view's projection.
+            local_negatives (bool): whether to include local negatives.
 
         Returns:
-            A single scalar loss for the XT-NCE objective.
+            dict[str, Tensor]: A single scalar loss for the XT-NCE objective.
         """
         bs, num_samples, num_features = pred1.shape
         infinity_proxy = 1e9  # Used for masks to proxy a very large number.
