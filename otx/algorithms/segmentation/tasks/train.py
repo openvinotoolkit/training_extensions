@@ -21,6 +21,7 @@ import torch
 from mmcv.utils import ConfigDict
 
 from otx.algorithms.common.adapters.mmcv import OTXLoggerHook
+from otx.algorithms.common.configs import TrainType
 from otx.algorithms.common.utils.callback import TrainingProgressCallback
 from otx.algorithms.common.utils.data import get_unlabeled_dataset
 from otx.algorithms.segmentation.tasks import SegmentationInferenceTask
@@ -139,7 +140,7 @@ class SegmentationTrainTask(SegmentationInferenceTask, ITrainingTask):
 
     def _init_train_data_cfg(self, dataset: DatasetEntity):
         logger.info("init data cfg.")
-        if self._selfsl:
+        if self._hyperparams.algo_backend.train_type == TrainType.SELFSUPERVISED:
             data_cfg = ConfigDict(
                 data=ConfigDict(
                     train=ConfigDict(
