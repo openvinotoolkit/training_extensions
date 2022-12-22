@@ -33,6 +33,7 @@ root
 
 # pylint: disable=too-many-locals, c-extension-no-member, invalid-name, too-many-statements
 
+import argparse
 import csv
 import os
 import os.path as osp
@@ -159,11 +160,7 @@ def convert_jester_dataset_to_datumaro(src_path, dst_path):
 
                 shutil.copytree(
                     video_path,
-                    osp.join(
-                        dst_path,
-                        phase,
-                        f"video_{i}/images",
-                    ),
+                    osp.join(dst_path, phase, osp.join(f"video_{i}", "images")),
                 )
 
                 annotations, img_shape = generate_default_cvat_xml_fields(i, class_idx, video_path, frame_list)
@@ -179,7 +176,7 @@ def convert_jester_dataset_to_datumaro(src_path, dst_path):
 
                 et = etree.ElementTree(annotations)
                 et.write(
-                    osp.join(dst_path, phase, f"video_{i}/annotations.xml"),
+                    osp.join(dst_path, phase, osp.join(f"video_{i}", "annotations.xml")),
                     pretty_print=True,
                     xml_declaration=True,
                     encoding="utf-8",
@@ -193,7 +190,7 @@ def convert_ava_dataset_to_datumaro(src_path, dst_path):
 
     phases = ["train", "valid"]
     for phase in phases:
-        csv_path = osp.join(src_path, f"annotations/{phase}.csv")
+        csv_path = osp.join(src_path, osp.join("annotations", f"{phase}.csv"))
         with open(csv_path, "r", encoding="utf-8") as csv_file:
             csv_reader = csv.reader(csv_file, delimiter=",")
             pathlib.Path(osp.join(dst_path, phase)).mkdir(parents=True, exist_ok=True)
@@ -240,21 +237,35 @@ def convert_ava_dataset_to_datumaro(src_path, dst_path):
                     video_dict[video_id].append(track)
 
             for i, (_, v) in enumerate(video_dict.items()):
-                shutil.copytree(video_path, osp.join(dst_path, phase, f"video_{i}/images"))
+                shutil.copytree(video_path, osp.join(dst_path, phase, osp.join(f"video_{i}", "images")))
                 et = etree.ElementTree(v)
                 et.write(
-                    osp.join(dst_path, phase, f"video_{i}/annotations.xml"),
+                    osp.join(dst_path, phase, osp.join(f"video_{i}", "annotations.xml")),
                     pretty_print=True,
                     xml_declaration=True,
                     encoding="utf-8",
                 )
 
 
-def main(src_path, dst_path):
+def parse_args():
+    """Parses command line arguments."""
+    parser = argparse.ArgumentParser(add_help=False)
+    parser.add_argument("--input", required=True, type=str)
+    parser.add_argument("--output", required=True, type=str)
+    parser.add_argument("--data_format", required=True, type=str)
+    return parser.parse_args()
+
+
+def main():
     """Main function."""
-    # convert_jester_dataset_to_datumaro(src_path, dst_path)
-    convert_ava_dataset_to_datumaro(src_path, dst_path)
+    args = parse_args()
+    if args.data_format == "jester":
+        convert_jester_dataset_to_datumaro(args.input, args.output)
+    elif args.data_format == "ava":
+        convert_ava_dataset_to_datumaro(args.input, args.output)
+    else:
+        raise NotImplementedError()
 
 
 if __name__ == "__main__":
-    main("/local/sungmanc/datasets/ava_SC", "/local/sungmanc/datasets/ava_SC_cvat_multifolder_detection")
+    main()
