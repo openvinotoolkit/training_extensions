@@ -269,7 +269,7 @@ class BaseConfig(ConfigurableParameters):
             header="Enable tiling",
             description="Set to True to allow tiny objects to be better detected.",
             warning="Tiling trades off speed for accuracy as it increases the number of images to be processed.",
-            affects_outcome_of=ModelLifecycle.NONE
+            affects_outcome_of=ModelLifecycle.NONE,
         )
 
         enable_adaptive_params = configurable_boolean(
@@ -277,7 +277,7 @@ class BaseConfig(ConfigurableParameters):
             header="Enable adaptive tiling parameters",
             description="Config tile size and tile overlap adaptively based on annotated dataset statistic",
             warning="",
-            affects_outcome_of=ModelLifecycle.NONE
+            affects_outcome_of=ModelLifecycle.NONE,
         )
 
         tile_size = configurable_integer(
@@ -286,7 +286,7 @@ class BaseConfig(ConfigurableParameters):
             default_value=400,
             min_value=100,
             max_value=1024,
-            affects_outcome_of=ModelLifecycle.NONE
+            affects_outcome_of=ModelLifecycle.NONE,
         )
 
         tile_overlap = configurable_float(
@@ -295,7 +295,7 @@ class BaseConfig(ConfigurableParameters):
             default_value=0.2,
             min_value=0.0,
             max_value=1.0,
-            affects_outcome_of=ModelLifecycle.NONE
+            affects_outcome_of=ModelLifecycle.NONE,
         )
 
         tile_max_number = configurable_integer(
@@ -304,5 +304,5 @@ class BaseConfig(ConfigurableParameters):
             default_value=1500,
             min_value=1,
             max_value=10000,
-            affects_outcome_of=ModelLifecycle.NONE
+            affects_outcome_of=ModelLifecycle.NONE,
         )

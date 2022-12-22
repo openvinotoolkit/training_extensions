@@ -1,4 +1,4 @@
-""" NMS Module """
+"""NMS Module."""
 
 # Copyright (C) 2021-2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
@@ -8,7 +8,7 @@ import numpy as np
 
 
 def nms(boxes, scores, thresh):
-    """Adapted NMS implementation from OMZ: model_zoo/model_api/models/utils.py#L181"""
+    """Adapted NMS implementation from OMZ: model_zoo/model_api/models/utils.py#L181."""
     # pylint: disable=too-many-locals
 
     x1, y1, x2, y2 = boxes.T
@@ -47,7 +47,7 @@ def multiclass_nms(
     iou_threshold=0.45,
     max_num=200,
 ):
-    """Multi-class NMS
+    """Multi-class NMS.
 
     strategy: in order to perform NMS independently per class,
     we add an offset to all the boxes. The offset is dependent

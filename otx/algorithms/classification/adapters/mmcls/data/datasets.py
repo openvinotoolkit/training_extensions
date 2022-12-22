@@ -19,6 +19,7 @@ from otx.algorithms.common.utils import get_cls_img_indices, get_old_new_img_ind
 
 logger = get_logger()
 
+
 # pylint: disable=too-many-instance-attributes
 @DATASETS.register_module()
 class MPAClsDataset(BaseDataset):

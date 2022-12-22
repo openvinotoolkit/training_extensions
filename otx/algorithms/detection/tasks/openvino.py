@@ -76,11 +76,13 @@ from otx.api.usecases.tasks.interfaces.optimization_interface import (
     IOptimizationTask,
     OptimizationType,
 )
+from otx.api.utils import Tiler
 from otx.api.utils.argument_checks import (
     DatasetParamTypeCheck,
     check_input_parameters_type,
 )
 from otx.api.utils.dataset_utils import add_saliency_maps_to_dataset_item
+from otx.api.utils.detection_utils import detection2array
 
 logger = get_logger()
 
@@ -123,12 +125,12 @@ class BaseInferencerWithConverter(BaseInferencer):
                 "Could not find Feature Vector and Saliency Map in OpenVINO output. "
                 "Please rerun OpenVINO export or retrain the model."
             )
-            features = [None, None]
+            features = (None, None)
         else:
-            features = [
+            features = (
                 raw_predictions["feature_vector"].reshape(-1),
                 raw_predictions["saliency_map"][0],
-            ]
+            )
         return predictions, features
 
     @check_input_parameters_type()
@@ -139,13 +141,15 @@ class BaseInferencerWithConverter(BaseInferencer):
     @check_input_parameters_type()
     def predict_tile(
         self, image: np.ndarray, tile_size: int, overlap: float, max_number: int
-    ) -> Tuple[AnnotationSceneEntity, np.ndarray, np.ndarray]:
-        """ Run prediction by tiling image to small patches.
+    ) -> Tuple[AnnotationSceneEntity, Tuple[np.ndarray, np.ndarray]]:
+        """Run prediction by tiling image to small patches.
+
         Args:
             image (np.ndarray): input image
             tile_size (int): tile crop size
             overlap (float): overlap ratio between tiles
             max_number (int): max number of predicted objects allowed
+
         Returns:
             detections: AnnotationSceneEntity
             features: list including saliency map and feature vector
@@ -194,18 +198,16 @@ class OpenVINODetectionInferencer(BaseInferencerWithConverter):
             )
         }
         model = Model.create_model("OTX_SSD", model_adapter, configuration, preload=True)
-        converter = DetectionBoxToAnnotationConverter(label_schema)
+        converter = DetectionToAnnotationConverter(label_schema)
 
         super().__init__(configuration, model, converter)
 
         @check_input_parameters_type()
-	def post_process(
-	    self, prediction: Dict[str, np.ndarray], metadata: Dict[str, Any]
-	) -> AnnotationSceneEntity:
-	    """Detection specific post-process."""
-	    detections = self.model.postprocess(prediction, metadata)
-	    detections = detection2array(detections)
-	    return self.converter.convert_to_annotation(detections, metadata)
+        def post_process(self, prediction: Dict[str, np.ndarray], metadata: Dict[str, Any]) -> AnnotationSceneEntity:
+            """Detection specific post-process."""
+            detections = self.model.postprocess(prediction, metadata)
+            detections = detection2array(detections)
+            return self.converter.convert_to_annotation(detections, metadata)
 
 
 class OpenVINOMaskInferencer(BaseInferencerWithConverter):
@@ -310,6 +312,7 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
         self.model = self.task_environment.model
         self.task_type = self.task_environment.model_template.task_type
         self.confidence_threshold: float = 0.0
+        self.config = self.load_config()
         self.inferencer = self.load_inferencer()
         logger.info("OpenVINO task initialization completed")
 
@@ -319,13 +322,14 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
         return self.task_environment.get_hyper_parameters(DetectionConfig)
 
     def load_config(self) -> Dict:
-        """ Load configurable parameters from model adapter.
+        """Load configurable parameters from model adapter.
+
         Returns:
             Dict: config dictionary
         """
-        if self.model.get_data("config.json"):
+        if self.model is not None and self.model.get_data("config.json"):
             return json.loads(self.model.get_data("config.json"))
-        return dict()
+        return {}
 
     def load_inferencer(
         self,
@@ -338,7 +342,7 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
             np.frombuffer(self.model.get_data("confidence_threshold"), dtype=np.float32)[0]
         )
         _hparams.postprocessing.confidence_threshold = self.confidence_threshold
-	_hparams.tiling_parameters.enable_tiling = self.config["tiling_parameters"]["enable_tiling"]["value"]
+        _hparams.tiling_parameters.enable_tiling = self.config["tiling_parameters"]["enable_tiling"]["value"]
         args = [
             _hparams,
             self.task_environment.label_schema,
@@ -369,7 +373,7 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
             update_progress_callback = default_progress_callback
             add_saliency_map = True
 
-	if self.config and self.config["tiling_parameters"]["enable_tiling"]["value"]:
+        if self.config and self.config["tiling_parameters"]["enable_tiling"]["value"]:
             tile_size = self.config["tiling_parameters"]["tile_size"]["value"]
             tile_overlap = self.config["tiling_parameters"]["tile_overlap"]["value"]
             max_number = self.config["tiling_parameters"]["tile_max_number"]["value"]
@@ -377,7 +381,7 @@ class OpenVINODetectionTask(IDeploymentTask, IInferenceTask, IEvaluationTask, IO
 
         dataset_size = len(dataset)
         for i, dataset_item in enumerate(dataset, 1):
-	     if self.config["tiling_parameters"]["enable_tiling"]["value"]:
+            if self.config["tiling_parameters"]["enable_tiling"]["value"]:
                 predicted_scene, features = self.inferencer.predict_tile(
                     dataset_item.numpy,
                     tile_size=tile_size,

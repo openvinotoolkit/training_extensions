@@ -44,7 +44,9 @@ class OTXMaskRCNNModel(MaskRCNNModel):
 
     def postprocess(self, outputs, meta):
         """Post process function for OTX MaskRCNN model."""
-        resize_mask = meta.get('resize_mask', True)
+
+        # pylint: disable-msg=too-many-locals
+        resize_mask = meta.get("resize_mask", True)
 
         boxes = (
             outputs[self.output_blob_name["boxes"]]

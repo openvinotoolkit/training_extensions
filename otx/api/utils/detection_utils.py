@@ -1,6 +1,4 @@
-"""
-Detection utils
-"""
+"""Detection utils."""
 
 # Copyright (C) 2022 Intel Corporation
 #
@@ -22,7 +20,7 @@ import numpy as np
 
 
 def detection2array(detections: List) -> np.ndarray:
-    """Convert list of OpenVINO Detection to a numpy array
+    """Convert list of OpenVINO Detection to a numpy array.
 
     Args:
         detections (List): List of OpenVINO Detection containing score, id, xmin, ymin, xmax, ymax

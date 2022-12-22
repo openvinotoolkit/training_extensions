@@ -177,11 +177,13 @@ def ids_to_strings(config_dict: dict) -> dict:
 
 
 def config_to_bytes(config: ConfigurableParameters) -> bytes:
-    """
-    Converts ConfigurableParameters to bytes.
+    """Converts ConfigurableParameters to bytes.
 
-    :param config: configurable parameters
-    :return: JSON in bytes
+    Args:
+        config: configurable parameters
+
+    Retruns:
+        JSON in bytes
     """
     config_dict = convert(config, dict, enum_to_str=True)
     return json.dumps(config_dict, indent=4).encode()

@@ -27,8 +27,9 @@ try:
     from openvino.model_zoo.model_api.models.classification import Classification
     from openvino.model_zoo.model_api.models.types import BooleanValue, DictValue
     from openvino.model_zoo.model_api.models.utils import pad_image
-except ImportError as e:
+except ImportError:
     import warnings
+
     warnings.warn("ModelAPI was not found.")
 
 
@@ -40,9 +41,11 @@ class OTXClassification(Classification):
     def __init__(self, model_adapter, configuration=None, preload=False):
         super().__init__(model_adapter, configuration, preload)
         if self.hierarchical:
-            logits_range_dict = self.multihead_class_info.get('head_idx_to_logits_range', False)
-            if logits_range_dict:  #  json allows only string key, revert to integer.
-                self.multihead_class_info['head_idx_to_logits_range'] = {int(k):v for k,v in logits_range_dict.items()}
+            logits_range_dict = self.multihead_class_info.get("head_idx_to_logits_range", False)
+            if logits_range_dict:  # json allows only string key, revert to integer.
+                self.multihead_class_info["head_idx_to_logits_range"] = {
+                    int(k): v for k, v in logits_range_dict.items()
+                }
 
     @classmethod
     def parameters(cls):
@@ -128,6 +131,7 @@ class OTXClassification(Classification):
         act_score = float(np.max(probs) - np.min(probs))
         return probs, saliency_map, repr_vector, act_score
 
+
 @check_input_parameters_type()
 def sigmoid_numpy(x: np.ndarray):
     """Sigmoid numpy."""
@@ -141,7 +145,7 @@ def softmax_numpy(x: np.ndarray, eps: float = 1e-9):
     inf_ind = np.isinf(x)
     total_infs = np.sum(inf_ind)
     if total_infs > 0:
-        x[inf_ind] = 1. / total_infs
+        x[inf_ind] = 1.0 / total_infs
         x[~inf_ind] = 0
     else:
         x /= np.sum(x) + eps

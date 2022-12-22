@@ -15,9 +15,9 @@ Current version of OTX was tested under following environments
 1. Clone the training_extensions repository with the following commands:
 
    ```bash
-   $ git clone https://github.com/openvinotoolkit/training_extensions.git
-   $ cd training_extensions
-   $ git checkout develop
+   git clone https://github.com/openvinotoolkit/training_extensions.git
+   cd training_extensions
+   git checkout develop
    ```
 
 1. Install prerequisites with:
@@ -29,8 +29,8 @@ Current version of OTX was tested under following environments
 
    (Optional) You may also want to use Jupyter notebooks or OTX CLI tools:
 
-   ```
-   $ pip3 install notebook; cd ote_cli/notebooks/; jupyter notebook
+   ```bash
+   pip3 install notebook; cd ote_cli/notebooks/; jupyter notebook
    ```
 
    > **_Important note:_** You should confirm that the Python version that installed on your machine should be 3.8.X. For the future release of OTX will support wide range of the Python version.
@@ -39,9 +39,9 @@ Current version of OTX was tested under following environments
 
    ```bash
    # Create virtual env.
-   $ otx/algorithms/init_venv.sh .venv
+   otx/algorithms/init_venv.sh .venv
    # Activate virtual env.
-   $ source .venv/bin/activate
+   source .venv/bin/activate
    ```
 
 1. Once the package is installed to the virtual environment, you can use the
@@ -53,7 +53,7 @@ Current version of OTX was tested under following environments
 
 `find` lists model templates available for the given virtual environment.
 
-```
+```bash
 (otx) ...$ otx find --help
 usage: otx find [-h] [--root ROOT] [--task_type {classification,detection,segmentation,instance_segmantation,rotated_detection,anomaly_classification,anomaly_detection,anomaly_segmentation}]
                 [--experimental]
@@ -66,7 +66,7 @@ optional arguments:
 ```
 
 ```bash
-# example to find templates for the detection task
+# Example to find templates for the detection task
 (otx) ...$ otx find --task_type detection
 - id: Custom_Object_Detection_Gen3_SSD
   name: SSD
@@ -93,8 +93,8 @@ These files can be used by other commands: `export`, `eval`, and `demo`.
 
 `train` command requires `template` as a positional arguement. it could be taken from the output of the `find` command above.
 
-```
-usage: otx train template
+```bash
+otx train template
 ```
 
 And with the `--help` command along with `template`, you can list additional information, such as its parameters common to all model templates and model-specific hyper parameters.
@@ -102,7 +102,7 @@ And with the `--help` command along with `template`, you can list additional inf
 #### Common parameters
 
 ```bash
-# command example to get common paramters to any model templates
+# Command example to get common paramters to any model templates
 (otx) ...$ otx train otx/algorithms/detection/configs/detection/mobilenetv2_ssd/template.yaml --help
 usage: otx train [-h] --train-ann-files TRAIN_ANN_FILES --train-data-roots TRAIN_DATA_ROOTS --val-ann-files VAL_ANN_FILES --val-data-roots VAL_DATA_ROOTS [--load-weights LOAD_WEIGHTS] --save-model-to SAVE_MODEL_TO
                  [--enable-hpo] [--hpo-time-ratio HPO_TIME_RATIO]
@@ -240,7 +240,7 @@ Find more information about API v2.0 and IR v11 at https://docs.openvino.ai
 With the `--help` command, you can list additional information.
 command example:
 
-```
+```bash
 (otx) ...$ otx optimize otx/algorithms/detection/configs/detection/mobilenetv2_ssd/template.yaml --help
 usage: otx optimize [-h] --train-ann-files TRAIN_ANN_FILES --train-data-roots TRAIN_DATA_ROOTS --val-ann-files VAL_ANN_FILES --val-data-roots VAL_DATA_ROOTS --load-weights LOAD_WEIGHTS --save-model-to SAVE_MODEL_TO
                     [--save-performance SAVE_PERFORMANCE]
@@ -269,7 +269,7 @@ optional arguments:
                         Path to a json file where computed performance will be stored.
 ```
 
-#### Command example for optimizing a PyTorch model (.pth) with OpenVINO NNCF:
+#### Command example for optimizing a PyTorch model (.pth) with OpenVINO NNCF
 
 The command below performs optimization to the [trained model](#command-example-of-the-training) `outputs/weights.pth` in previous section and save optimized model to the `outputs/nncf` folder.
 
@@ -277,7 +277,7 @@ The command below performs optimization to the [trained model](#command-example-
 (otx) ...$ otx optimize otx/algorithms/detection/configs/detection/mobilenetv2_ssd/template.yaml --train-ann-files data/airport/annotation_person_train.json --train-data-roots data/airport/train/ --val-ann-files data/airport/annotation_person_val.json --val-data-roots data/airport/val/ --load-weights outputs/weights.pth --save-model-to outputs/nncf --save-performance outputs/nncf/performance.json
 ```
 
-#### Command example for optimizing OpenVINO model (.xml) with OpenVINO POT:
+#### Command example for optimizing OpenVINO model (.xml) with OpenVINO POT
 
 The command below performs optimization to the [exported model](#command-example-of-the-exporting) `outputs/ov/openvino.xml` in previous section and save optimized model to the `outputs/ov/pot` folder.
 
@@ -345,7 +345,7 @@ Performance(score: 0.8799999999999999, dashboard: (1 metric groups))
 `demo` runs model inference on images, videos, or webcam streams in order to see how it works with user's data
 
 > **_Note:_** `demo` command requires GUI backend to your system for displaying inference results.
-
+>
 > **_Note:_** The model optimzied with `NNCF` is not supported for the `demo` command.
 
 With the `--help` command, you can list additional information, such as its parameters common to all model templates:

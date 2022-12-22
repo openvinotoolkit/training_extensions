@@ -76,7 +76,7 @@ class DetectionConfig(BaseConfig):
 
     @attrs
     class __TilingParameters(BaseConfig.BaseTilingParameters):
-        header = string_attribute('Tiling Parameters')
+        header = string_attribute("Tiling Parameters")
         description = header
 
     learning_parameters = add_parameter_group(__LearningParameters)

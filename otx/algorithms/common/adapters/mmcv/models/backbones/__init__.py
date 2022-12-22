@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from . import torchvision_backbones
+from . import torchvision_backbones  # noqa: F401
 from .efficientnet import OTXEfficientNet
 from .efficientnetv2 import OTXEfficientNetV2
 from .mobilenetv3 import OTXMobileNetV3

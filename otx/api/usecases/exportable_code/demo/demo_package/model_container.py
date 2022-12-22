@@ -29,23 +29,18 @@ class ModelContainer:
 
     def __init__(self, model_dir: Path, device="CPU") -> None:
         self.parameters = get_parameters(model_dir / "config.json")
-        self._labels = LabelSchemaMapper.backward(
-            self.parameters["model_parameters"]["labels"]
-        )
+        self._labels = LabelSchemaMapper.backward(self.parameters["model_parameters"]["labels"])
         self._task_type = TaskType[self.parameters["converter_type"]]
 
         self.segm = bool(
-            self._task_type is TaskType.ROTATED_DETECTION
-            or self._task_type is TaskType.INSTANCE_SEGMENTATION
+            self._task_type is TaskType.ROTATED_DETECTION or self._task_type is TaskType.INSTANCE_SEGMENTATION
         )
 
         # labels for modelAPI wrappers can be empty, because unused in pre- and postprocessing
         self.model_parameters = self.parameters["model_parameters"]
         self.model_parameters["labels"] = []
 
-        model_adapter = OpenvinoAdapter(
-            create_core(), get_model_path(model_dir / "model.xml"), device=device
-        )
+        model_adapter = OpenvinoAdapter(create_core(), get_model_path(model_dir / "model.xml"), device=device)
 
         self._initialize_wrapper()
         self.core_model = Model.create_model(
@@ -95,6 +90,7 @@ class ModelContainer:
 
     def infer(self, frame):
         """Infer with original image.
+
         Args:
             frame (np.ndarray): image
         Returns:
@@ -111,6 +107,7 @@ class ModelContainer:
 
     def infer_tile(self, frame):
         """Infer by patching full image to tiles.
+
         Args:
             frame (np.ndarray): image
         Returns:
@@ -122,6 +119,7 @@ class ModelContainer:
         return detections, {"original_shape": frame.shape}
 
     def __call__(self, input_data: np.ndarray) -> Tuple[Any, dict]:
+        """Infer entry wrapper."""
         if self.tiler:
             return self.infer_tile(input_data)
         return self.infer(input_data)

@@ -3,14 +3,14 @@
 # Copyright (C) 2021-2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-from typing import Iterable, Union
+from typing import Union
 
 import cv2
 import numpy as np
 
 
 def get_actmap(
-    saliency_map: Union[np.ndarray, Iterable, int, float],
+    saliency_map: np.ndarray,
     output_res: Union[tuple, list],
 ) -> np.ndarray:
     """Get activation map (heatmap)  from saliency map.
@@ -18,7 +18,7 @@ def get_actmap(
     It will return activation map from saliency map
 
     Args:
-        saliency_map (Union[np.ndarray, Iterable, int, float]): Saliency map with pixel values from 0-255
+        saliency_map (np.ndarray): Saliency map with pixel values from 0-255
         output_res (Union[tuple, list]): Output resolution
 
     Returns:

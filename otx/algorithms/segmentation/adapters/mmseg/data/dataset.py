@@ -80,7 +80,7 @@ class OTXSegDataset(CustomDataset):
             self,
             otx_dataset,
             labels=None,
-            **kwargs,
+            **kwargs,  # pylint: disable=unused-argument
         ):
             self.otx_dataset = otx_dataset
             self.labels = labels

@@ -53,17 +53,14 @@ class DetectionToAnnotationConverter(IPredictionToAnnotationConverter):
     """
 
     def __init__(self, labels: Union[LabelSchemaEntity, List]):
-        self.labels = (
-            labels.get_labels(include_empty=False)
-            if isinstance(labels, LabelSchemaEntity)
-            else labels
-        )
+        self.labels = labels.get_labels(include_empty=False) if isinstance(labels, LabelSchemaEntity) else labels
         self.label_map = dict(enumerate(self.labels))
 
     def convert_to_annotation(
         self, predictions: np.ndarray, metadata: Optional[Dict[str, np.ndarray]] = None
     ) -> AnnotationSceneEntity:
-        """
+        """Convert predictions to annotation format.
+
         Args:
             predictions (np.ndarray): Prediction with shape [num_predictions, 6] or
                             [num_predictions, 7]
@@ -110,11 +107,7 @@ class DetectionToAnnotationConverter(IPredictionToAnnotationConverter):
                             (n, 7) or (n, 6)
         """
         annotations = []
-        if (
-            len(predictions)
-            and predictions.shape[1:] < (6,)
-            or predictions.shape[1:] > (7,)
-        ):
+        if len(predictions) and predictions.shape[1:] < (6,) or predictions.shape[1:] > (7,):
             raise ValueError(
                 f"Shape of prediction is not expected, expected (n, 7) or (n, 6) but got {predictions.shape}"
             )
@@ -262,7 +255,9 @@ class ClassificationToAnnotationConverter(IPredictionToAnnotationConverter):
             self.labels = label_schema.get_labels(include_empty=False)
         self.empty_label = get_empty_label(label_schema)
         multilabel = len(label_schema.get_groups(False)) > 1
-        multilabel = multilabel and len(label_schema.get_groups(False)) == len(label_schema.get_labels(include_empty=False))
+        multilabel = multilabel and len(label_schema.get_groups(False)) == len(
+            label_schema.get_labels(include_empty=False)
+        )
         self.hierarchical = not multilabel and len(label_schema.get_groups(False)) > 1
 
         self.label_schema = label_schema
@@ -446,9 +441,7 @@ class MaskToAnnotationConverter(IPredictionToAnnotationConverter):
                 annotations.append(
                     Annotation(
                         polygon,
-                        labels=[
-                            ScoredLabel(self.labels[int(class_idx) - 1], float(score))
-                        ],
+                        labels=[ScoredLabel(self.labels[int(class_idx) - 1], float(score))],
                     )
                 )
         annotation_scene = AnnotationSceneEntity(
@@ -500,9 +493,7 @@ class RotatedRectToAnnotationConverter(IPredictionToAnnotationConverter):
                 annotations.append(
                     Annotation(
                         polygon,
-                        labels=[
-                            ScoredLabel(self.labels[int(class_idx) - 1], float(score))
-                        ],
+                        labels=[ScoredLabel(self.labels[int(class_idx) - 1], float(score))],
                     )
                 )
         annotation_scene = AnnotationSceneEntity(

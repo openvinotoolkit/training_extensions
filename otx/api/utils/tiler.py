@@ -1,6 +1,4 @@
-"""
-Tiling Module
-"""
+"""Tiling Module."""
 
 # Copyright (C) 2021-2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
@@ -57,13 +55,11 @@ class Tiler:
             range(0, width - self.tile_size + 1, self.stride),
             range(0, height - self.tile_size + 1, self.stride),
         ):
-            coords.append(
-                [loc_j, loc_i, loc_j + self.tile_size, loc_i + self.tile_size]
-            )
+            coords.append([loc_j, loc_i, loc_j + self.tile_size, loc_i + self.tile_size])
         return coords
 
     def predict(self, image: np.ndarray):
-        """Predict by cropping full image to tiles
+        """Predict by cropping full image to tiles.
 
         Args:
             image (np.ndarray): full size image
@@ -73,7 +69,7 @@ class Tiler:
             features: saliency map and feature vector
         """
         detections = np.empty((0, 6), dtype=np.float32)
-        features = [None, None]
+        features = (None, None)
         masks: List[np.ndarray] = []
         for i, coord in enumerate(self.tile(image)):
             feats, output = self.predict_tile(image, coord, masks, i == 0)
@@ -91,7 +87,7 @@ class Tiler:
         return detections, features
 
     def resize_masks(self, masks: List, dets: np.ndarray, shape: List[int]):
-        """Resize Masks
+        """Resize Masks.
 
         Args:
             masks (List): list of raw np.ndarray masks
@@ -108,7 +104,7 @@ class Tiler:
         masks: List[np.ndarray],
         return_features=False,
     ):
-        """Predict on single tile
+        """Predict on single tile.
 
         Args:
             image (np.ndarray): full-res image
@@ -120,17 +116,17 @@ class Tiler:
             features: saliency map and feature vector
             output: single tile prediction
         """
-        features = [None, None]
+        features = (None, None)
         offset_x, offset_y, tile_dict, tile_meta = self.preprocess_tile(image, coord)
         raw_predictions = self.model.infer_sync(tile_dict)
         output = self.model.postprocess(raw_predictions, tile_meta)
         output = self.postprocess_tile(output, offset_x, offset_y, masks)
         if return_features:
             if "feature_vector" in raw_predictions or "saliency_map" in raw_predictions:
-                features = [
+                features = (
                     raw_predictions["feature_vector"].reshape(-1),
                     raw_predictions["saliency_map"][0],
-                ]
+                )
         return features, output
 
     def postprocess_tile(
@@ -140,7 +136,7 @@ class Tiler:
         offset_y: int,
         masks: List,
     ):
-        """Postprocess tile predictions
+        """Postprocess tile predictions.
 
         Args:
             output (Union[List, Tuple]): predictions
@@ -170,7 +166,7 @@ class Tiler:
         return out
 
     def preprocess_tile(self, image: np.ndarray, coord: List[int]):
-        """Preprocess Tile by cropping
+        """Preprocess Tile by cropping.
 
         Args:
             image (np.ndarray): full-res image
@@ -187,7 +183,7 @@ class Tiler:
 
     @staticmethod
     def detection2tuple(detections: np.ndarray):
-        """_summary_
+        """_summary_.
 
         Args:
             detections (np.ndarray): _description_

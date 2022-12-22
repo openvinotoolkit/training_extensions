@@ -43,7 +43,7 @@ def parse_args():
     """Parses command line arguments."""
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--task", help=f"Supported task types.", choices=SUPPORTED_TASKS)
+    parser.add_argument("--task", help="Supported task types.", choices=SUPPORTED_TASKS)
     parser.add_argument(
         "--template", action="store_true", help="Shows a list of templates that can be used immediately."
     )
