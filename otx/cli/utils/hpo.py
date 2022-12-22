@@ -38,7 +38,7 @@ from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment, TypeVariable
 from otx.api.entities.train_parameters import TrainParameters, UpdateProgressCallback
 from otx.cli.utils.importing import get_impl_class
-from otx.cli.utils.io import generate_label_schema, read_model, save_model_data
+from otx.cli.utils.io import read_model, save_model_data
 from otx.core.data import get_dataset_adapter
 
 try:
