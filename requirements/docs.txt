@@ -1,6 +1,6 @@
 furo==2021.7.31b41
 myst-parser
-sphinx>=4.1.2
+sphinx>=5.3.0
 sphinx-autoapi
 sphinxemoji==0.1.8
 nbsphinx
