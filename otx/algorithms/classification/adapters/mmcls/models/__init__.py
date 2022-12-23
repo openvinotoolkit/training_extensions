@@ -16,6 +16,6 @@
 
 from .heads import ConstrastiveHead
 from .necks import SelfSLMLP
-from .pretrainers import BYOL
+from .classifiers import BYOL
 
 __all__ = ["BYOL", "SelfSLMLP", "ConstrastiveHead"]

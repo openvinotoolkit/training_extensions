@@ -1,4 +1,4 @@
-"""OTX Algorithms - Classification Pretrainers."""
+"""OTX Algorithms - Classification Classifiers."""
 
 # Copyright (C) 2022 Intel Corporation
 #
