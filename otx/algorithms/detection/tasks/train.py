@@ -160,6 +160,7 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
             self._update_anchors(self._anchors, self._model_cfg.model.bbox_head.anchor_generator)
 
         # get prediction on validation set
+        self._is_training = False
         val_dataset = dataset.get_subset(Subset.VALIDATION)
         val_preds, val_map = self._infer_detector(val_dataset, InferenceParameters(is_evaluation=True))
 
@@ -197,7 +198,6 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
         self.save_model(output_model)
         output_model.performance = performance
         # output_model.model_status = ModelStatus.SUCCESS
-        self._is_training = False
         logger.info("train done.")
 
     def _init_train_data_cfg(self, dataset: DatasetEntity):
