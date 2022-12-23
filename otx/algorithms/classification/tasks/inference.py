@@ -18,7 +18,7 @@ from otx.algorithms.classification.configs import ClassificationConfig
 from otx.algorithms.classification.utils import (
     get_multihead_class_info as get_hierarchical_info,
 )
-from otx.algorithms.common.adapters.mmcv.utils import get_meta_keys
+from otx.algorithms.common.adapters.mmcv.utils import get_meta_keys, patch_data_pipeline
 from otx.algorithms.common.configs import TrainType
 from otx.algorithms.common.tasks import BaseTask
 from otx.api.entities.datasets import DatasetEntity
@@ -403,7 +403,7 @@ class ClassificationInferenceTask(
         )
         return data_cfg
 
-    def _patch_datasets(self, config: MPAConfig, domain=Domain.CLASSIFICATION):
+    def _patch_datasets(self, config: MPAConfig, domain=Domain.CLASSIFICATION):  # noqa: C901
         def patch_color_conversion(pipeline):
             # Default data format for OTX is RGB, while mmdet uses BGR, so negate the color conversion flag.
             for pipeline_step in pipeline:
