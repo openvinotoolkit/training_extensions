@@ -71,6 +71,10 @@ def otx_train_testing(template, root, otx_dir, args):
         command_line.extend(["--unlabeled-file-list"], f'{os.path.join(otx_dir, args["--unlabeled-file-list"])}')
     if "--load-weights" in args:
         command_line.extend(["--load-weights", f'{os.path.join(otx_dir, args["--load-weights"])}'])
+    if "--unlabeled-data-roots" in args:
+        command_line.extend(["--unlabeled-data-roots", f'{os.path.join(otx_dir, args["--unlabeled-data-roots"])}'])
+    if "--unlabeled-file-list" in args:
+        command_line.extend(["--unlabeled-file-list"], f'{os.path.join(otx_dir, args["--unlabeled-file-list"])}')
     command_line.extend(args["train_params"])
     assert run(command_line).returncode == 0
     assert os.path.exists(f"{template_work_dir}/trained_{template.model_template_id}/weights.pth")
