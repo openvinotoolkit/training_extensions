@@ -1,4 +1,4 @@
-"""Adapters of classification - mmcls."""
+"""OTX Algorithms - Classification Models."""
 
 # Copyright (C) 2022 Intel Corporation
 #
@@ -14,7 +14,8 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .data import MPAClsDataset, SelfSLDataset
-from .models import BYOL, ConstrastiveHead, SelfSLMLP
+from .classifiers import BYOL
+from .heads import ConstrastiveHead
+from .necks import SelfSLMLP
 
-__all__ = ["MPAClsDataset", "SelfSLDataset", "BYOL", "SelfSLMLP", "ConstrastiveHead"]
+__all__ = ["BYOL", "SelfSLMLP", "ConstrastiveHead"]
