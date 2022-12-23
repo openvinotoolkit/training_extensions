@@ -72,7 +72,7 @@ class DetConLoss(nn.Module):
         target2 = F.normalize(target2, dim=-1)
 
         num_gpus = torch.cuda.device_count()
-        if num_gpus > 1 and self.use_replicator_loss:
+        if num_gpus > 1 and torch.distributed.is_initialized() and self.use_replicator_loss:
             # Grab tensor across replicas and expand first dimension
             target1_large = [torch.zeros_like(target1) for _ in range(num_gpus)]
             target2_large = [torch.zeros_like(target2) for _ in range(num_gpus)]
