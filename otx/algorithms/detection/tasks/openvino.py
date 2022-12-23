@@ -202,12 +202,12 @@ class OpenVINODetectionInferencer(BaseInferencerWithConverter):
 
         super().__init__(configuration, model, converter)
 
-        @check_input_parameters_type()
-        def post_process(self, prediction: Dict[str, np.ndarray], metadata: Dict[str, Any]) -> AnnotationSceneEntity:
-            """Detection specific post-process."""
-            detections = self.model.postprocess(prediction, metadata)
-            detections = detection2array(detections)
-            return self.converter.convert_to_annotation(detections, metadata)
+    @check_input_parameters_type()
+    def post_process(self, prediction: Dict[str, np.ndarray], metadata: Dict[str, Any]) -> AnnotationSceneEntity:
+        """Detection specific post-process."""
+        detections = self.model.postprocess(prediction, metadata)
+        detections = detection2array(detections)
+        return self.converter.convert_to_annotation(detections, metadata)
 
 
 class OpenVINOMaskInferencer(BaseInferencerWithConverter):
