@@ -79,6 +79,10 @@ if [ "$DEBUG_CONTAINER" = true ]; then
         --ipc=host \
         --cpus=40 \
         --name "$CONTAINER_NAME" \
+<<<<<<< HEAD
+=======
+        -v "$(pwd)":/home/validation/training_extensions \
+>>>>>>> updated ci configuration
         registry.toolbox.iotg.sclab.intel.com/ote/ci/cu"$VER_CUDA"/runner:"$TAG_RUNNER"; RET=$?
 
     if [ $RET -ne 0 ]; then

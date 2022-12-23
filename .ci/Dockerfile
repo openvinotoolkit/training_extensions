@@ -35,6 +35,7 @@ ENV DEBIAN_FRONTEND="noninteractive"
 
 # added ninja-build for using CppExtension in the torch
 RUN apt-get update && apt-get install --no-install-recommends -y \
+<<<<<<< HEAD
         software-properties-common \
         wget \
         ffmpeg \
@@ -47,6 +48,19 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
         git \
         cron \
         ninja-build \
+=======
+        software-properties-common=0.99.9.8 \
+        wget=1.20.3-1ubuntu2 \
+        ffmpeg=7:4.2.7-0ubuntu0.1 \
+        libpython3.8=3.8.10-0ubuntu1\~20.04.6 \
+        curl=7.68.0-1ubuntu2.14 \
+        nodejs=10.19.0\~dfsg-3ubuntu1 \
+        unzip=6.0-25ubuntu1.1 \
+        npm=6.14.4+ds-1ubuntu2 \
+        ruby-dev=1:2.7+1 \
+        git=1:2.25.1-1ubuntu3.6 \
+        cron=3.0pl1-136ubuntu1 \
+>>>>>>> updated ci configuration
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -94,6 +108,18 @@ RUN mkdir actions-runner
 
 WORKDIR /home/validation/actions-runner
 
+<<<<<<< HEAD
+=======
+RUN pip install --no-cache-dir -r /tmp/otx/requirements/anomaly.txt \
+    -r /tmp/otx/requirements/base.txt \
+    -r /tmp/otx/requirements/dev.txt \
+    -r /tmp/otx/requirements/docs.txt \
+    -r /tmp/otx/requirements/openvino.txt && \
+    mkdir actions-runner
+
+WORKDIR /home/validation/actions-runner
+
+>>>>>>> updated ci configuration
 ARG action_runner_url
 RUN curl -o actions-runner-linux-x64.tar.gz -L ${action_runner_url} && \
     tar xzf ./actions-runner-linux-x64.tar.gz && \
