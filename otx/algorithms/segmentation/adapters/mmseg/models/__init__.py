@@ -17,6 +17,6 @@
 
 from .losses import DetConLoss
 from .necks import SelfSLMLP
-from .pretrainers import DetConB
+from .segmentors import DetConB
 
 __all__ = ["DetConLoss", "SelfSLMLP", "DetConB"]
