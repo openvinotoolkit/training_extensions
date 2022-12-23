@@ -150,11 +150,12 @@ def update_version_with_cuda_suffix(name: str, version: str) -> str:
         # we only need the major CUDA version such as 10 or 11, not the minor
         # version. That's why we use [:2] to get the major version.
         cuda = get_cuda_version()
+        print(f"[debug] cuda version = {cuda}")
         if cuda is not None:
             suffix = f"+cu{supported_torch_cuda_versions[name][version][cuda[:2]]}"
         else:
             suffix = "+cpu"
-
+    print(f"[debug] update_version_with_cuda_suffix() ret = {version}{suffix}")
     return f"{version}{suffix}"
 
 
@@ -194,8 +195,9 @@ def update_torch_requirement(requirement: Requirement) -> str:
 
     """
     name = requirement.name
-
+    print(f"[debug] requirement.name = {name}")
     for i, (operator, version) in enumerate(requirement.specs):
+        print(f"[debug] operator = {operator} / version = {version}")
         updated_version = update_version_with_cuda_suffix(name, version)
         requirement.specs[i] = (operator, updated_version)
 
@@ -203,6 +205,7 @@ def update_torch_requirement(requirement: Requirement) -> str:
     # [('<=', '1.9.1+cu111'), ('>=', '1.8.1+cu111')]
     # These are to be concatenated again for the updated version.
     specs = [spec[0] + spec[1] for spec in requirement.specs]
+    print(f"[debug] updated specs = {specs}")
     updated_requirement: str
 
     if specs:
@@ -218,7 +221,7 @@ def update_torch_requirement(requirement: Requirement) -> str:
                 f"For example it could be torch>=1.8.1 or torch>=1.8.1, <=1.9.1\n"
                 f"Got {specs} instead."
             )
-
+    print(f"[debug] updated_requirements = {updated_requirement}")
     return updated_requirement
 
 
