@@ -7,19 +7,11 @@
 # pylint: disable=invalid-name, too-many-locals, no-member
 import os
 import os.path as osp
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List
 
-from datumaro.components.annotation import AnnotationType as DatumaroAnnotationType
-from datumaro.components.annotation import Bbox as DatumaroBbox
-from datumaro.components.annotation import Label as DatumaroLabel
+from datumaro.components.annotation import AnnotationType
 from datumaro.components.dataset import Dataset as DatumaroDataset
 
-from otx.api.entities.annotation import (
-    Annotation,
-    AnnotationSceneEntity,
-    AnnotationSceneKind,
-    NullAnnotationSceneEntity,
-)
 from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.id import ID
@@ -27,16 +19,36 @@ from otx.api.entities.image import Image
 from otx.api.entities.label import LabelEntity
 from otx.api.entities.label_schema import LabelSchemaEntity
 from otx.api.entities.metadata import MetadataItemEntity, VideoMetadata
-from otx.api.entities.scored_label import ScoredLabel
-from otx.api.entities.shapes.rectangle import Rectangle
+from otx.api.entities.model_template import TaskType
 from otx.api.entities.subset import Subset
-from otx.core.data.base_dataset_adapter import BaseDatasetAdapter
+from otx.core.data.adapter.base_dataset_adapter import BaseDatasetAdapter
 
 
 class ActionBaseDatasetAdapter(BaseDatasetAdapter):
     """BaseDataset Adpater for Action tasks inherited by BaseDatasetAdapter."""
+    def __init__(
+        self,
+        task_type: TaskType,
+        train_data_roots: str = None,
+        val_data_roots: str = None,
+        test_data_roots: str = None,
+        unlabeled_data_roots: str = None,
+    ):
+        self.task_type = task_type
+        self.domain = task_type.domain
+        self.data_type = None  # type: Any
+        self.is_train_phase = None  # type: Any
 
-    def import_dataset(
+        self.dataset = self._import_dataset(
+            train_data_roots=train_data_roots,
+            val_data_roots=val_data_roots,
+            test_data_roots=test_data_roots,
+            unlabeled_data_roots=unlabeled_data_roots
+        )
+
+        self.label_schema = None # type: LabelSchemaEntity
+
+    def _import_dataset(
         self,
         train_data_roots: str = None,
         val_data_roots: str = None,
@@ -44,15 +56,15 @@ class ActionBaseDatasetAdapter(BaseDatasetAdapter):
         unlabeled_data_roots: str = None,
     ) -> Dict[Subset, DatumaroDataset]:
         """Import multiple videos that have CVAT format annotation."""
-        self.dataset = {}
+        dataset = {}
         if train_data_roots:
-            self.dataset[Subset.TRAINING] = self._prepare_cvat_pair_data(train_data_roots)
-        if val_data_roots:
-            self.dataset[Subset.VALIDATION] = self._prepare_cvat_pair_data(val_data_roots)
+            dataset[Subset.TRAINING] = self._prepare_cvat_pair_data(train_data_roots)
+            if val_data_roots:
+                dataset[Subset.VALIDATION] = self._prepare_cvat_pair_data(val_data_roots)
         if test_data_roots:
-            self.dataset[Subset.TESTING] = self._prepare_cvat_pair_data(test_data_roots)
+            dataset[Subset.TESTING] = self._prepare_cvat_pair_data(test_data_roots)
 
-        return self.dataset
+        return dataset
 
     def _prepare_cvat_pair_data(self, path: str) -> List[DatumaroDataset]:
         """Preparing a list of DatumaroDataset."""
@@ -86,7 +98,7 @@ class ActionBaseDatasetAdapter(BaseDatasetAdapter):
         category_list = []  # to check the duplicate case
         for cvat_data in datumaro_dataset[Subset.TRAINING]:
             # Making overall categories
-            categories = cvat_data.categories().get(DatumaroAnnotationType.label, None)
+            categories = cvat_data.categories().get(AnnotationType.label, None)
 
             if categories not in category_list:
                 outputs["category_items"].extend(categories.items)
@@ -109,34 +121,24 @@ class ActionBaseDatasetAdapter(BaseDatasetAdapter):
         ]
         return outputs
 
-    def convert_to_otx_format(self, datumaro_dataset: dict) -> Tuple[DatasetEntity, LabelSchemaEntity]:
-        """Convert DatumaroDataset to DatasetEntity for Acion tasks."""
-        raise NotImplementedError
-
-
 class ActionClassificationDatasetAdapter(ActionBaseDatasetAdapter):
     """Action classification adapter inherited by ActionBaseDatasetAdapter and BaseDatasetAdapter."""
 
-    def convert_to_otx_format(self, datumaro_dataset: dict) -> Tuple[DatasetEntity, LabelSchemaEntity]:
+    def get_otx_dataset(self) -> DatasetEntity:
         """Convert DatumaroDataset to DatasetEntity for Acion Classification."""
-        label_information = self._prepare_label_information(datumaro_dataset)
-        label_entities = label_information["label_entities"]
+        label_information = self._prepare_label_information(self.dataset)
+        self.label_entities = label_information["label_entities"]
 
-        label_schema = self._generate_default_label_schema(label_entities)
         dataset_items = []
-        for subset, subset_data in datumaro_dataset.items():
+        for subset, subset_data in self.dataset.items():
             for datumaro_items in subset_data:
                 for datumaro_item in datumaro_items:
                     image = Image(file_path=datumaro_item.media.path)
                     shapes = []
                     for ann in datumaro_item.annotations:
-                        # Action Classification
-                        if isinstance(ann, DatumaroLabel):
-                            shapes.append(
-                                Annotation(
-                                    Rectangle.generate_full_box(), labels=[ScoredLabel(label=label_entities[ann.label])]
-                                )
-                            )
+                        if ann.type == AnnotationType.label:
+                            shapes.append(self._get_label_entity(ann))
+                    
                     meta_item = MetadataItemEntity(
                         data=VideoMetadata(
                             name="video_meta",
@@ -144,56 +146,31 @@ class ActionClassificationDatasetAdapter(ActionBaseDatasetAdapter):
                             frame_idx=int(datumaro_item.media.path.split("/")[-1].split(".")[0].lstrip("0")),
                         )
                     )
-                    # Unlabeled dataset
-                    annotation_scene = None  # type: Any
-                    if len(shapes) == 0:
-                        annotation_scene = NullAnnotationSceneEntity()
-                    else:
-                        annotation_scene = AnnotationSceneEntity(
-                            kind=AnnotationSceneKind.ANNOTATION, annotations=shapes
-                        )
-                    dataset_item = DatasetItemEntity(image, annotation_scene, subset=subset, metadata=[meta_item])
+                    
+                    dataset_item = DatasetItemEntity(image, self._get_ann_scene_entity(shapes), subset=subset)
                     dataset_items.append(dataset_item)
-        return DatasetEntity(items=dataset_items), label_schema
+        return DatasetEntity(items=dataset_items)
 
 
 class ActionDetectionDatasetAdapter(ActionBaseDatasetAdapter):
     """Action Detection adapter inherited by ActionBaseDatasetAdapter and BaseDatasetAdapter."""
 
-    def convert_to_otx_format(self, datumaro_dataset: dict) -> Tuple[DatasetEntity, LabelSchemaEntity]:
+    def get_otx_dataset(self) -> DatasetEntity:
         """Convert DatumaroDataset to DatasetEntity for Acion Detection."""
-        label_information = self._prepare_label_information(datumaro_dataset)
-        label_entities = label_information["label_entities"]
+        label_information = self._prepare_label_information(self.dataset)
+        self.label_entities = label_information["label_entities"]
 
-        label_schema = self._generate_default_label_schema(label_entities)
         dataset_items = []
-        for subset, subset_data in datumaro_dataset.items():
+        for subset, subset_data in self.dataset.items():
             for datumaro_items in subset_data:
                 for datumaro_item in datumaro_items:
                     image = Image(file_path=datumaro_item.media.path)
                     shapes = []
                     for ann in datumaro_item.annotations:
-                        if isinstance(ann, DatumaroBbox):
-                            shapes.append(
-                                Annotation(
-                                    Rectangle(
-                                        x1=ann.points[0] / image.width,
-                                        y1=ann.points[1] / image.height,
-                                        x2=ann.points[2] / image.width,
-                                        y2=ann.points[3] / image.height,
-                                    ),
-                                    labels=[ScoredLabel(label=label_entities[ann.label])],
-                                )
-                            )
-                    # Unlabeled dataset
-                    annotation_scene = None  # type: Any
-                    if len(shapes) == 0:
-                        annotation_scene = NullAnnotationSceneEntity()
-                    else:
-                        annotation_scene = AnnotationSceneEntity(
-                            kind=AnnotationSceneKind.ANNOTATION, annotations=shapes
-                        )
-                    dataset_item = DatasetItemEntity(image, annotation_scene, subset=subset)
+                        if ann.type == AnnotationType.bbox:
+                            shapes.append(self._get_original_bbox_entity(ann))
+                    
+                    dataset_item = DatasetItemEntity(image, self._get_ann_scene_entity(shapes), subset=subset)
                     dataset_items.append(dataset_item)
 
-        return DatasetEntity(items=dataset_items), label_schema
+        return DatasetEntity(items=dataset_items)
