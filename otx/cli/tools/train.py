@@ -39,8 +39,7 @@ from otx.cli.utils.parser import (
     add_hyper_parameters_sub_parser,
     gen_params_dict_from_args,
 )
-from otx.core.data import get_dataset_adapter
-
+from otx.core.data.adapter import get_dataset_adapter
 
 def parse_args():
     """Parses command line arguments.
@@ -169,13 +168,14 @@ def main():  # pylint: disable=too-many-branches
         is_include_unlabel_data = True
 
     # Datumaro
-    datumaro_adapter = get_dataset_adapter(template.task_type)
-    datumaro_dataset = datumaro_adapter.import_dataset(
+    dataset_adapter = get_dataset_adapter(
+        template.task_type,
         train_data_roots=data_roots["train_subset"]["data_root"],
         val_data_roots=data_roots["val_subset"]["data_root"],
-        unlabeled_data_roots=data_roots["unlabeled_subset"]["data_root"] if is_include_unlabel_data else None,
+        unlabeled_data_roots=data_roots["unlabeled_subset"]["data_root"] if is_include_unlabel_data else None
     )
-    dataset, label_schema = datumaro_adapter.convert_to_otx_format(datumaro_dataset)
+    dataset = dataset_adapter.get_otx_dataset()
+    label_schema = dataset_adapter.get_label_schema()
 
     environment = TaskEnvironment(
         model=None,
