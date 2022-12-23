@@ -419,6 +419,6 @@ class DetConB(nn.Module):
         output = OrderedDict()
         for k, v in state_dict.items():
             if "online_backbone." in k:
-                k = k.replace("online_backbone.", "")
+                k = k.replace("online_backbone.", "backbone.")
                 output[k] = v
         return output
