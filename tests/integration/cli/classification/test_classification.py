@@ -574,7 +574,7 @@ def set_dummy_data(func):
 
 
 # Warmstart using data w/ 'intel', 'openvino', 'opencv' classes
-args_w = {
+args_selfsl = {
     "--data": "./data.yaml",
     "--train-data-roots": "data/text_recognition/IL_data",
     "train_params": [
@@ -594,7 +594,7 @@ class TestToolsMPASelfSLClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     @set_dummy_data
     def test_otx_selfsl_train(self, template, tmp_dir_path):
-        otx_train_testing(template, tmp_dir_path, otx_dir, args_w)
+        otx_train_testing(template, tmp_dir_path, otx_dir, args_selfsl)
         template_work_dir = get_template_dir(template, tmp_dir_path)
         args1 = args.copy()
         args1["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/weights.pth"
