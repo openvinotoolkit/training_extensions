@@ -68,6 +68,7 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         self._model_label_schema = []  # type: List[LabelEntity]
         self._optimization_methods = []  # type: List[OptimizationMethod]
         self._model_ckpt = None
+        self._data_pipeline_path = None
         self._anchors = {}  # type: Dict[str, int]
         if task_environment.model is not None:
             logger.info("loading the model from the task env.")
@@ -101,6 +102,7 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         # FIXME: Temporary remedy for CVS-88098
         export = kwargs.get("export", False)
         self._initialize(export=export)
+        stage_module = self._update_stage_module(stage_module)
         # update model config -> model label schema
         data_classes = [label.name for label in self._labels]
         model_classes = [label.name for label in self._model_label_schema]
@@ -171,10 +173,16 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
     @property
     def data_pipeline_path(self):
         """Base Data Pipeline file path."""
-        return os.path.join(
-            os.path.dirname(os.path.abspath(self.template_file_path)),
-            self._task_environment.model_template.data_pipeline_path,
-        )
+        if self._data_pipeline_path is None:
+            self._data_pipeline_path = os.path.join(
+                os.path.dirname(os.path.abspath(self.template_file_path)),
+                self._task_environment.model_template.data_pipeline_path,
+            )
+        return self._data_pipeline_path
+
+    @data_pipeline_path.setter
+    def data_pipeline_path(self, path):
+        self._data_pipeline_path = path
 
     @property
     def hyperparams(self):
@@ -292,6 +300,9 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
             ),
             runner=ConfigDict(max_epochs=int(params.num_iters)),
         )
+
+    def _update_stage_module(self, stage_module: str):
+        return stage_module
 
     def _load_model_state_dict(self, model: Optional[ModelEntity]):
         if model and "weights.pth" in model.model_adapters:

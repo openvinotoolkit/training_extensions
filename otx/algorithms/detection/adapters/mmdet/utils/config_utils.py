@@ -227,7 +227,7 @@ def patch_datasets(config: Config, domain: Domain):
     """Update dataset configs."""
 
     assert "data" in config
-    for subset in ("train", "val", "test"):
+    for subset in ("train", "val", "test", "unlabeled"):
         cfg = config.data.get(subset, None)
         if not cfg:
             continue

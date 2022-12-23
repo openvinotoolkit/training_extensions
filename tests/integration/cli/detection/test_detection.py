@@ -24,6 +24,8 @@ from otx.cli.utils.tests import (
     otx_eval_deployment_testing,
     otx_eval_openvino_testing,
     otx_eval_testing,
+    otx_explain_openvino_testing,
+    otx_explain_testing,
     otx_export_testing,
     otx_hpo_testing,
     otx_train_testing,
@@ -103,6 +105,18 @@ class TestToolsMPADetection:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_eval_openvino(self, template, tmp_dir_path):
         otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args, threshold=0.2)
+
+    @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_explain(self, template, tmp_dir_path):
+        otx_explain_testing(template, tmp_dir_path, otx_dir, args)
+
+    @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_explain_openvino(self, template, tmp_dir_path):
+        otx_explain_openvino_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
@@ -191,3 +205,19 @@ class TestToolsMPADetection:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_pot_eval(self, template, tmp_dir_path):
         pot_eval_testing(template, tmp_dir_path, otx_dir, args)
+
+
+class TestToolsMPASemiSLDetection:
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_train(self, template, tmp_dir_path):
+        args_semisl = args.copy()
+        args_semisl["--unlabeled-data-roots"] = args["--train-data-roots"]
+        args_semisl["train_params"].extend(["--algo_backend.train_type", "SEMISUPERVISED"])
+        otx_train_testing(template, tmp_dir_path, otx_dir, args_semisl)
+
+    @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_eval(self, template, tmp_dir_path):
+        otx_eval_testing(template, tmp_dir_path, otx_dir, args)
