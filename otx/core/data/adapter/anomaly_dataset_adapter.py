@@ -6,7 +6,7 @@
 
 # pylint: disable=invalid-name, too-many-locals, no-member
 import os
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List
 
 import cv2
 import numpy as np
@@ -28,14 +28,36 @@ from otx.api.entities.label_schema import LabelSchemaEntity
 from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.shapes.rectangle import Rectangle
 from otx.api.entities.subset import Subset
+from otx.api.entities.model_template import TaskType
 from otx.api.utils.segmentation_utils import create_annotation_from_segmentation_map
-from otx.core.data.base_dataset_adapter import BaseDatasetAdapter
+from otx.core.data.adapter.base_dataset_adapter import BaseDatasetAdapter
 
 
 class AnomalyBaseDatasetAdapter(BaseDatasetAdapter):
     """BaseDataset Adpater for Anomaly tasks inherited from BaseDatasetAdapter."""
+    def __init__(
+        self,
+        task_type: TaskType,
+        train_data_roots: str = None,
+        val_data_roots: str = None,
+        test_data_roots: str = None,
+        unlabeled_data_roots: str = None,
+    ):
+        self.task_type = task_type
+        self.domain = task_type.domain
+        self.data_type = None  # type: Any
+        self.is_train_phase = None  # type: Any
 
-    def import_dataset(
+        self.dataset = self._import_dataset(
+            train_data_roots=train_data_roots,
+            val_data_roots=val_data_roots,
+            test_data_roots=test_data_roots,
+            unlabeled_data_roots=unlabeled_data_roots
+        )
+
+        self.label_schema = None # type: LabelSchemaEntity
+
+    def _import_dataset(
         self,
         train_data_roots: str = None,
         val_data_roots: str = None,
@@ -55,11 +77,14 @@ class AnomalyBaseDatasetAdapter(BaseDatasetAdapter):
         """
         # Construct dataset for training, validation, unlabeled
         # TODO: currently, only MVTec dataset format can be used
-        self.dataset = {}
-        self.dataset[Subset.TRAINING] = DatumaroDataset.import_from(train_data_roots, format="image_dir")
-        if val_data_roots:
-            self.dataset[Subset.VALIDATION] = DatumaroDataset.import_from(val_data_roots, format="image_dir")
-        return self.dataset
+        dataset = {}
+        if train_data_roots:
+            dataset[Subset.TRAINING] = DatumaroDataset.import_from(train_data_roots, format="image_dir")
+            if val_data_roots:
+                dataset[Subset.VALIDATION] = DatumaroDataset.import_from(val_data_roots, format="image_dir")
+        if test_data_roots:
+            dataset[Subset.VALIDATION] = DatumaroDataset.import_from(test_data_roots, format="image_dir")
+        return dataset
 
     def _prepare_anomaly_label_information(self) -> List[LabelEntity]:
         """Prepare LabelEntity List."""
@@ -72,22 +97,17 @@ class AnomalyBaseDatasetAdapter(BaseDatasetAdapter):
         )
         return [normal_label, abnormal_label]
 
-    def convert_to_otx_format(self, datumaro_dataset: dict) -> Tuple[DatasetEntity, LabelSchemaEntity]:
-        """Convert DatumaroDataset to DatasetEntity for Anomalytasks."""
-        raise NotImplementedError
-
-
 class AnomalyClassificationDatasetAdapter(AnomalyBaseDatasetAdapter):
     """Anomaly classification adapter inherited from AnomalyBaseDatasetAdapter."""
 
-    def convert_to_otx_format(self, datumaro_dataset: dict) -> Tuple[DatasetEntity, LabelSchemaEntity]:
+    def get_otx_dataset(self) -> DatasetEntity:
         """Convert DatumaroDataset to DatasetEntity for Anomaly classification."""
         normal_label, abnormal_label = self._prepare_anomaly_label_information()
-        label_schema = self._generate_default_label_schema([normal_label, abnormal_label])
+        self.label_entities = [normal_label, abnormal_label]
 
         # Prepare
         dataset_items = []
-        for subset, subset_data in datumaro_dataset.items():
+        for subset, subset_data in self.dataset.items():
             for _, datumaro_items in subset_data.subsets().items():
                 for datumaro_item in datumaro_items:
                     image = Image(file_path=datumaro_item.media.path)
@@ -110,20 +130,20 @@ class AnomalyClassificationDatasetAdapter(AnomalyBaseDatasetAdapter):
                     dataset_item = DatasetItemEntity(image, annotation_scene, subset=subset)
                     dataset_items.append(dataset_item)
 
-        return DatasetEntity(items=dataset_items), label_schema
+        return DatasetEntity(items=dataset_items)
 
 
 class AnomalyDetectionDatasetAdapter(AnomalyBaseDatasetAdapter):
     """Anomaly detection adapter inherited from AnomalyBaseDatasetAdapter."""
 
-    def convert_to_otx_format(self, datumaro_dataset: dict) -> Tuple[DatasetEntity, LabelSchemaEntity]:
+    def get_otx_dataset(self) -> DatasetEntity:
         """Conver DatumaroDataset to DatasetEntity for Anomaly detection."""
         normal_label, abnormal_label = self._prepare_anomaly_label_information()
-        label_schema = self._generate_default_label_schema([normal_label, abnormal_label])
+        self.label_entities = [normal_label, abnormal_label]
 
         # Prepare
         dataset_items = []
-        for subset, subset_data in datumaro_dataset.items():
+        for subset, subset_data in self.dataset.items():
             for _, datumaro_items in subset_data.subsets().items():
                 for datumaro_item in datumaro_items:
                     image = Image(file_path=datumaro_item.media.path)
@@ -167,20 +187,20 @@ class AnomalyDetectionDatasetAdapter(AnomalyBaseDatasetAdapter):
                     dataset_item = DatasetItemEntity(image, annotation_scene, subset=subset)
                     dataset_items.append(dataset_item)
 
-        return DatasetEntity(items=dataset_items), label_schema
+        return DatasetEntity(items=dataset_items)
 
 
 class AnomalySegmentationDatasetAdapter(AnomalyBaseDatasetAdapter):
     """Anomaly segmentation adapter inherited by AnomalyBaseDatasetAdapter and BaseDatasetAdapter."""
 
-    def convert_to_otx_format(self, datumaro_dataset: dict) -> Tuple[DatasetEntity, LabelSchemaEntity]:
+    def get_otx_dataset(self) -> DatasetEntity:
         """Conver DatumaroDataset to DatasetEntity for Anomaly segmentation."""
         normal_label, abnormal_label = self._prepare_anomaly_label_information()
-        label_schema = self._generate_default_label_schema([normal_label, abnormal_label])
+        self.label_entities = [normal_label, abnormal_label]
 
         # Prepare
         dataset_items = []
-        for subset, subset_data in datumaro_dataset.items():
+        for subset, subset_data in self.dataset.items():
             for _, datumaro_items in subset_data.subsets().items():
                 for datumaro_item in datumaro_items:
                     image = Image(file_path=datumaro_item.media.path)
@@ -217,4 +237,4 @@ class AnomalySegmentationDatasetAdapter(AnomalyBaseDatasetAdapter):
                     dataset_item = DatasetItemEntity(image, annotation_scene, subset=subset)
                     dataset_items.append(dataset_item)
 
-        return DatasetEntity(items=dataset_items), label_schema
+        return DatasetEntity(items=dataset_items)
