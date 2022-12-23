@@ -6,7 +6,7 @@
 
 # pylint: disable=invalid-name, too-many-locals, no-member
 import os
-from typing import Dict, List, Optional
+from typing import Any, Dict, List
 
 import cv2
 import numpy as np
@@ -24,30 +24,53 @@ from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.id import ID
 from otx.api.entities.image import Image
 from otx.api.entities.label import LabelEntity
+from otx.api.entities.label_schema import LabelSchemaEntity
 from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.shapes.rectangle import Rectangle
 from otx.api.entities.subset import Subset
+from otx.api.entities.model_template import TaskType
 from otx.api.utils.segmentation_utils import create_annotation_from_segmentation_map
 from otx.core.data.adapter.base_dataset_adapter import BaseDatasetAdapter
 
 
 class AnomalyBaseDatasetAdapter(BaseDatasetAdapter):
     """BaseDataset Adpater for Anomaly tasks inherited from BaseDatasetAdapter."""
+    def __init__(
+        self,
+        task_type: TaskType,
+        train_data_roots: str = None,
+        val_data_roots: str = None,
+        test_data_roots: str = None,
+        unlabeled_data_roots: str = None,
+    ):
+        self.task_type = task_type
+        self.domain = task_type.domain
+        self.data_type = None  # type: Any
+        self.is_train_phase = None  # type: Any
+
+        self.dataset = self._import_dataset(
+            train_data_roots=train_data_roots,
+            val_data_roots=val_data_roots,
+            test_data_roots=test_data_roots,
+            unlabeled_data_roots=unlabeled_data_roots
+        )
+
+        self.label_schema = None # type: LabelSchemaEntity
 
     def _import_dataset(
         self,
-        train_data_roots: Optional[str] = None,
-        val_data_roots: Optional[str] = None,
-        test_data_roots: Optional[str] = None,
-        unlabeled_data_roots: Optional[str] = None,
+        train_data_roots: str = None,
+        val_data_roots: str = None,
+        test_data_roots: str = None,
+        unlabeled_data_roots: str = None,
     ) -> Dict[Subset, DatumaroDataset]:
-        """Import MVTec dataset.
+        """Import dataset by using Datumaro.import_from() method.
 
         Args:
-            train_data_roots (Optional[str]): Path for training data
-            val_data_roots (Optional[str]): Path for validation data
-            test_data_roots (Optional[str]): Path for test data
-            unlabeled_data_roots (Optional[str]): Path for unlabeled data
+            train_data_roots (str): Path for training data
+            val_data_roots (str): Path for validation data
+            test_data_roots (str): Path for test data
+            unlabeled_data_roots (str): Path for unlabeled data
 
         Returns:
             DatumaroDataset: Datumaro Dataset
@@ -55,17 +78,12 @@ class AnomalyBaseDatasetAdapter(BaseDatasetAdapter):
         # Construct dataset for training, validation, unlabeled
         # TODO: currently, only MVTec dataset format can be used
         dataset = {}
-        if train_data_roots is None and test_data_roots is None:
-            raise ValueError("At least 1 data_root is needed to train/test.")
-
         if train_data_roots:
             dataset[Subset.TRAINING] = DatumaroDataset.import_from(train_data_roots, format="image_dir")
             if val_data_roots:
                 dataset[Subset.VALIDATION] = DatumaroDataset.import_from(val_data_roots, format="image_dir")
-            else:
-                raise NotImplementedError("Anomaly task needs validation dataset.")
         if test_data_roots:
-            dataset[Subset.TESTING] = DatumaroDataset.import_from(test_data_roots, format="image_dir")
+            dataset[Subset.VALIDATION] = DatumaroDataset.import_from(test_data_roots, format="image_dir")
         return dataset
 
     def _prepare_anomaly_label_information(self) -> List[LabelEntity]:
@@ -79,11 +97,6 @@ class AnomalyBaseDatasetAdapter(BaseDatasetAdapter):
         )
         return [normal_label, abnormal_label]
 
-    def get_otx_dataset(self) -> DatasetEntity:
-        """Get DatasetEntity."""
-        raise NotImplementedError()
-
-
 class AnomalyClassificationDatasetAdapter(AnomalyBaseDatasetAdapter):
     """Anomaly classification adapter inherited from AnomalyBaseDatasetAdapter."""
 
@@ -93,20 +106,21 @@ class AnomalyClassificationDatasetAdapter(AnomalyBaseDatasetAdapter):
         self.label_entities = [normal_label, abnormal_label]
 
         # Prepare
-        dataset_items: List[DatasetItemEntity] = []
+        dataset_items = []
         for subset, subset_data in self.dataset.items():
             for _, datumaro_items in subset_data.subsets().items():
                 for datumaro_item in datumaro_items:
                     image = Image(file_path=datumaro_item.media.path)
-                    label = normal_label if os.path.dirname(datumaro_item.id) == "good" else abnormal_label
+
+                    label = normal_label if datumaro_item.id.split("/")[0] == "good" else abnormal_label
                     shapes = [
                         Annotation(
                             Rectangle.generate_full_box(),
                             labels=[ScoredLabel(label=label, probability=1.0)],
                         )
                     ]
-                    annotation_scene: Optional[AnnotationSceneEntity] = None
                     # Unlabeled dataset
+                    annotation_scene = None  # type: Any
                     if len(shapes) == 0:
                         annotation_scene = NullAnnotationSceneEntity()
                     else:
@@ -128,12 +142,12 @@ class AnomalyDetectionDatasetAdapter(AnomalyBaseDatasetAdapter):
         self.label_entities = [normal_label, abnormal_label]
 
         # Prepare
-        dataset_items: List[DatasetItemEntity] = []
+        dataset_items = []
         for subset, subset_data in self.dataset.items():
             for _, datumaro_items in subset_data.subsets().items():
                 for datumaro_item in datumaro_items:
                     image = Image(file_path=datumaro_item.media.path)
-                    label = normal_label if os.path.dirname(datumaro_item.id) == "good" else abnormal_label
+                    label = normal_label if datumaro_item.id.split("/")[0] == "good" else abnormal_label
                     shapes = [
                         Annotation(
                             Rectangle.generate_full_box(),
@@ -162,8 +176,8 @@ class AnomalyDetectionDatasetAdapter(AnomalyBaseDatasetAdapter):
                                     labels=[ScoredLabel(label=abnormal_label)],
                                 )
                             )
-                    annotation_scene: Optional[AnnotationSceneEntity] = None
                     # Unlabeled dataset
+                    annotation_scene = None  # type: Any
                     if len(shapes) == 0:
                         annotation_scene = NullAnnotationSceneEntity()
                     else:
@@ -185,12 +199,12 @@ class AnomalySegmentationDatasetAdapter(AnomalyBaseDatasetAdapter):
         self.label_entities = [normal_label, abnormal_label]
 
         # Prepare
-        dataset_items: List[DatasetItemEntity] = []
+        dataset_items = []
         for subset, subset_data in self.dataset.items():
             for _, datumaro_items in subset_data.subsets().items():
                 for datumaro_item in datumaro_items:
                     image = Image(file_path=datumaro_item.media.path)
-                    label = normal_label if os.path.dirname(datumaro_item.id) == "good" else abnormal_label
+                    label = normal_label if datumaro_item.id.split("/")[0] == "good" else abnormal_label
                     shapes = [
                         Annotation(
                             Rectangle.generate_full_box(),
@@ -212,8 +226,8 @@ class AnomalySegmentationDatasetAdapter(AnomalyBaseDatasetAdapter):
                                 label_map={0: normal_label, 1: abnormal_label},
                             )
                         )
-                    annotation_scene: Optional[AnnotationSceneEntity] = None
                     # Unlabeled dataset
+                    annotation_scene = None  # type: Any
                     if len(shapes) == 0:
                         annotation_scene = NullAnnotationSceneEntity()
                     else:

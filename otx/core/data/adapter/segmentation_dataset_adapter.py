@@ -5,12 +5,18 @@
 #
 
 # pylint: disable=invalid-name, too-many-locals, no-member, too-many-nested-blocks
+<<<<<<< HEAD
 from typing import List
 
 from datumaro.components.annotation import AnnotationType
 from datumaro.plugins.transforms import MasksToPolygons
 
 from otx.api.entities.annotation import Annotation
+=======
+from datumaro.plugins.transforms import MasksToPolygons
+from datumaro.components.annotation import AnnotationType
+
+>>>>>>> Refactoring: update base function w.r.t __init__ and simplify the converting process for annotations
 from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.image import Image

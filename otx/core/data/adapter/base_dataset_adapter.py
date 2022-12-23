@@ -4,143 +4,32 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-# pylint: disable=invalid-name, too-many-locals, no-member, too-many-instance-attributes, unused-argument
+# pylint: disable=invalid-name, too-many-locals, no-member, too-many-return-statements, unused-argument
 
 import abc
 from abc import abstractmethod
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Union
 
 import datumaro
+from datumaro.components.annotation import AnnotationType as DatumaroAnnotationType
 from datumaro.components.annotation import Annotation as DatumaroAnnotation
-from datumaro.components.annotation import AnnotationType as DatumaroAnnotationType
-from datumaro.components.annotation import Categories as DatumaroCategories
-from datumaro.components.dataset import Dataset as DatumaroDataset
-from datumaro.components.annotation import AnnotationType as DatumaroAnnotationType
 from datumaro.components.dataset import Dataset as DatumaroDataset
 
+from otx.api.entities.datasets import DatasetEntity
+from otx.api.entities.id import ID
+from otx.api.entities.label import LabelEntity
+from otx.api.entities.label_schema import LabelGroup, LabelGroupType, LabelSchemaEntity
+from otx.api.entities.model_template import TaskType
+from otx.api.entities.subset import Subset
+from otx.api.entities.scored_label import ScoredLabel
+from otx.api.entities.shapes.polygon import Point, Polygon
+from otx.api.entities.shapes.rectangle import Rectangle
 from otx.api.entities.annotation import (
     Annotation,
     AnnotationSceneEntity,
     AnnotationSceneKind,
     NullAnnotationSceneEntity,
 )
-from otx.api.entities.datasets import DatasetEntity
-from otx.api.entities.id import ID
-from otx.api.entities.label import LabelEntity
-from otx.api.entities.label_schema import LabelGroup, LabelGroupType, LabelSchemaEntity
-from otx.api.entities.model_template import TaskType
-from otx.api.entities.scored_label import ScoredLabel
-from otx.api.entities.shapes.polygon import Point, Polygon
-from otx.api.entities.shapes.rectangle import Rectangle
-from otx.api.entities.subset import Subset
-
-
-def get_dataset_adapter(task_type):
-    """Returns a dataset class by task type.
-    Args:
-        task_type: A task type such as ANOMALY_CLASSIFICATION, ANOMALY_DETECTION, ANOMALY_SEGMENTATION,
-        CLASSIFICATION, INSTANCE_SEGMENTATION, DETECTION, CLASSIFICATION, ROTATED_DETECTION, SEGMENTATION.
-    """
-    if task_type == TaskType.CLASSIFICATION:
-        from .classification_dataset_adapter import ClassificationDatasetAdapter
-
-        return ClassificationDatasetAdapter(task_type=task_type)
-
-    if task_type in [TaskType.DETECTION, TaskType.INSTANCE_SEGMENTATION]:
-        from .detection_dataset_adapter import DetectionDatasetAdapter
-
-        return DetectionDatasetAdapter(task_type=task_type)
-
-    if task_type == TaskType.SEGMENTATION:
-        from .segmentation_dataset_adapter import SegmentationDatasetAdapter
-
-        return SegmentationDatasetAdapter(task_type=task_type)
-
-    if task_type == TaskType.ACTION_CLASSIFICATION:
-        from .action_dataset_adapter import ActionClassificationDatasetAdapter
-
-        return ActionClassificationDatasetAdapter(task_type=task_type)
-
-    if task_type == TaskType.ANOMALY_CLASSIFICATION:
-        from .anomaly_dataset_adapter import AnomalyClassificationDatasetAdapter
-
-        return AnomalyClassificationDatasetAdapter(task_type=task_type)
-
-    if task_type == TaskType.ANOMALY_DETECTION:
-        from .anomaly_dataset_adapter import AnomalyDetectionDatasetAdapter
-
-        return AnomalyDetectionDatasetAdapter(task_type=task_type)
-
-    if task_type == TaskType.ANOMALY_SEGMENTATION:
-        from .anomaly_dataset_adapter import AnomalySegmentationDatasetAdapter
-
-        return AnomalySegmentationDatasetAdapter(task_type=task_type)
-
-    # TODO: Need to implement
-    # if task_type == TaskType.ACTION_DETECTION:
-    #    from .action_dataset_adapter import ActionDetectionDatasetAdapter
-    #
-    #    return ActionDetectionDatasetAdapter(task_type=task_type)
-    # if task_type == TaskType.ROTATED_DETECTION:
-    #    from .rotated_detection.dataset import RotatedDetectionDataset
-    #
-    #    return RotatedDetectionDataset
-
-    raise ValueError(f"Invalid task type: {task_type}")
-
-
-def get_dataset_adapter(task_type):
-    """Returns a dataset class by task type.
-    Args:
-        task_type: A task type such as ANOMALY_CLASSIFICATION, ANOMALY_DETECTION, ANOMALY_SEGMENTATION,
-        CLASSIFICATION, INSTANCE_SEGMENTATION, DETECTION, CLASSIFICATION, ROTATED_DETECTION, SEGMENTATION.
-    """
-    if task_type == TaskType.CLASSIFICATION:
-        from .classification_dataset_adapter import ClassificationDatasetAdapter
-
-        return ClassificationDatasetAdapter(task_type=task_type)
-
-    if task_type in [TaskType.DETECTION, TaskType.INSTANCE_SEGMENTATION]:
-        from .detection_dataset_adapter import DetectionDatasetAdapter
-
-        return DetectionDatasetAdapter(task_type=task_type)
-
-    if task_type == TaskType.SEGMENTATION:
-        from .segmentation_dataset_adapter import SegmentationDatasetAdapter
-
-        return SegmentationDatasetAdapter(task_type=task_type)
-
-    if task_type == TaskType.ACTION_CLASSIFICATION:
-        from .action_dataset_adapter import ActionClassificationDatasetAdapter
-
-        return ActionClassificationDatasetAdapter(task_type=task_type)
-
-    if task_type == TaskType.ANOMALY_CLASSIFICATION:
-        from .anomaly_dataset_adapter import AnomalyClassificationDatasetAdapter
-
-        return AnomalyClassificationDatasetAdapter(task_type=task_type)
-
-    if task_type == TaskType.ANOMALY_DETECTION:
-        from .anomaly_dataset_adapter import AnomalyDetectionDatasetAdapter
-
-        return AnomalyDetectionDatasetAdapter(task_type=task_type)
-
-    if task_type == TaskType.ANOMALY_SEGMENTATION:
-        from .anomaly_dataset_adapter import AnomalySegmentationDatasetAdapter
-
-        return AnomalySegmentationDatasetAdapter(task_type=task_type)
-
-    # TODO: Need to implement
-    # if task_type == TaskType.ACTION_DETECTION:
-    #    from .action_dataset_adapter import ActionDetectionDatasetAdapter
-    #
-    #    return ActionDetectionDatasetAdapter(task_type=task_type)
-    # if task_type == TaskType.ROTATED_DETECTION:
-    #    from .rotated_detection.dataset import RotatedDetectionDataset
-    #
-    #    return RotatedDetectionDataset
-
-    raise ValueError(f"Invalid task type: {task_type}")
 
 
 class BaseDatasetAdapter(metaclass=abc.ABCMeta):
@@ -150,69 +39,66 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
     And it could prepare common variable, function (EmptyLabelSchema, LabelSchema, ..) commonly consumed under all tasks
 
     Args:
-        task_type [TaskType]: type of the task
-        train_data_roots (Optional[str]): Path for training data
-        val_data_roots (Optional[str]): Path for validation data
-        test_data_roots (Optional[str]): Path for test data
-        unlabeled_data_roots (Optional[str]): Path for unlabeled data
+        task_type (TaskType): type of the task
+        train_data_roots (str): Path for training data
+        val_data_roots (str): Path for validation data
+        test_data_roots (str): Path for test data
+        unlabeled_data_roots (str): Path for unlabeled data
 
-    Since all adapters can be used for training and validation,
-    the default value of train/val/test_data_roots was set to None.
-
-    i.e)
-    For the training/validation phase, test_data_roots is not used.
-    For the test phase, train_data_roots and val_data_root are not used.
     """
 
     def __init__(
-        self,
+        self, 
         task_type: TaskType,
-        train_data_roots: Optional[str] = None,
-        val_data_roots: Optional[str] = None,
-        test_data_roots: Optional[str] = None,
-        unlabeled_data_roots: Optional[str] = None,
+        train_data_roots: str = None,
+        val_data_roots: str = None,
+        test_data_roots: str = None,
+        unlabeled_data_roots: str = None,
     ):
         self.task_type = task_type
         self.domain = task_type.domain
-        self.data_type: str
-        self.is_train_phase: bool
+        self.data_type = None  # type: Any
+        self.is_train_phase = None  # type: Any
 
         self.dataset = self._import_dataset(
             train_data_roots=train_data_roots,
             val_data_roots=val_data_roots,
             test_data_roots=test_data_roots,
-            unlabeled_data_roots=unlabeled_data_roots,
+            unlabeled_data_roots=unlabeled_data_roots
         )
 
-        self.category_items: Dict[DatumaroAnnotationType, DatumaroCategories]
-        self.label_groups: List[str]
-        self.label_entities: List[LabelEntity]
-        self.label_schema: LabelSchemaEntity
+        self.category_items = None # type: Any
+        self.label_groups = None # type: Any
+        self.label_entities = None # type: Any
+        self.label_schema = None # type: LabelSchemaEntity
 
     def _import_dataset(
         self,
-        train_data_roots: Optional[str] = None,
-        val_data_roots: Optional[str] = None,
-        test_data_roots: Optional[str] = None,
-        unlabeled_data_roots: Optional[str] = None,
+        train_data_roots: str = None,
+        val_data_roots: str = None,
+        test_data_roots: str = None,
+        unlabeled_data_roots: str = None,
     ) -> Dict[Subset, DatumaroDataset]:
         """Import dataset by using Datumaro.import_from() method.
 
         Args:
-            train_data_roots (Optional[str]): Path for training data
-            val_data_roots (Optional[str]): Path for validation data
-            test_data_roots (Optional[str]): Path for test data
-            unlabeled_data_roots (Optional[str]): Path for unlabeled data
+            train_data_roots (str): Path for training data
+            val_data_roots (str): Path for validation data
+            test_data_roots (str): Path for test data
+            unlabeled_data_roots (str): Path for unlabeled data
+            unlabeled_file_lists (str): Path for unlabeled file list
 
         Returns:
             DatumaroDataset: Datumaro Dataset
         """
-        self.dataset = {}
+        dataset = {}
+
         # Construct dataset for training, validation, testing, unlabeled
         if train_data_roots:
             # Find self.data_type and task_type
             data_type_candidates = self._detect_dataset_format(path=train_data_roots)
             self.data_type = self._select_data_type(data_type_candidates)
+
             datumaro_dataset = DatumaroDataset.import_from(train_data_roots, format=self.data_type)
 
             # Prepare subsets by using Datumaro dataset
@@ -232,6 +118,7 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
             if Subset.VALIDATION not in dataset:
                 # TODO: auto_split
                 pass
+
         if test_data_roots:
             test_data_candidates = self._detect_dataset_format(path=test_data_roots)
             test_data_type = self._select_data_type(test_data_candidates)
@@ -245,9 +132,16 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
 
     @abstractmethod
     def get_otx_dataset(self) -> DatasetEntity:
-        """Get DatasetEntity."""
-        raise NotImplementedError
+        """Get DatasetEntity.
 
+        Args:
+            datumaro_dataset (dict): A Dictionary that includes subset dataset(DatasetEntity)
+
+        Returns:
+            DatasetEntity:
+        """
+        raise NotImplementedError
+    
     def get_label_schema(self) -> LabelSchemaEntity:
         """Get Label Schema."""
         return self._generate_default_label_schema(self.label_entities)
@@ -262,7 +156,7 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
         empty_group = LabelGroup(name="empty", labels=[empty_label], group_type=LabelGroupType.EMPTY_LABEL)
         return empty_group
 
-    def _generate_default_label_schema(self, label_entities: List[LabelEntity]) -> LabelSchemaEntity:
+    def _generate_default_label_schema(self, label_entities: list) -> LabelSchemaEntity:
         """Generate Default Label Schema for Multi-class Classification, Detecion, Etc."""
         label_schema = LabelSchemaEntity()
         main_group = LabelGroup(
@@ -275,8 +169,8 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
 
     def _prepare_label_information(
         self,
-        datumaro_dataset: Dict[Subset, DatumaroDataset],
-    ) -> Dict[str, Any]:
+        datumaro_dataset: dict,
+    ) -> dict:
         # Get datumaro category information
         if self.is_train_phase:
             label_categories_list = (
@@ -287,7 +181,12 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
                 datumaro_dataset[Subset.TESTING].categories().get(DatumaroAnnotationType.label, None)
             )
         category_items = label_categories_list.items
-        label_groups = label_categories_list.label_groups
+
+        # Get the 'label_groups' information
+        if hasattr(label_categories_list, "label_groups"):
+            label_groups = label_categories_list.label_groups
+        else:
+            label_groups = None
 
         # LabelEntities
         label_entities = [
@@ -297,63 +196,80 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
 
         return {"category_items": category_items, "label_groups": label_groups, "label_entities": label_entities}
 
-    def _select_data_type(self, data_candidates: Union[List[str], str]) -> str:
+    def _select_data_type(self, data_candidates: Union[list, str]) -> str:
         """Select specific type among candidates.
 
         Args:
-            data_candidates (Union[List[str], str]): Type candidates made by Datumaro.Environment().detect_dataset()
+            data_candidates (list): Type candidates made by Datumaro.Environment().detect_dataset()
 
         Returns:
             str: Selected data type
         """
         return data_candidates[0]
 
+
     def _get_ann_scene_entity(self, shapes: List[Annotation]) -> AnnotationSceneEntity:
-        annotation_scene: Optional[AnnotationSceneEntity] = None
+        annotation_scene = None  # type: Union[NullAnnotationSceneEntity, AnnotationSceneEntity]
         if len(shapes) == 0:
             annotation_scene = NullAnnotationSceneEntity()
         else:
-            annotation_scene = AnnotationSceneEntity(kind=AnnotationSceneKind.ANNOTATION, annotations=shapes)
+            annotation_scene = AnnotationSceneEntity(
+                kind=AnnotationSceneKind.ANNOTATION, annotations=shapes
+            )
         return annotation_scene
-
-    def _get_label_entity(self, annotation: DatumaroAnnotation) -> Annotation:
-        """Get label entity."""
+    
+    def _get_label_entity(self, ann: DatumaroAnnotation) -> Annotation:
+        """ Get label entity"""
         return Annotation(
-            Rectangle.generate_full_box(), labels=[ScoredLabel(label=self.label_entities[annotation.label])]
+            Rectangle.generate_full_box(),
+            labels=[
+                ScoredLabel(
+                    label=self.label_entities[ann.label]
+                )
+            ]
         )
-
-    def _get_normalized_bbox_entity(self, annotation: DatumaroAnnotation, width: int, height: int) -> Annotation:
-        """Get bbox entity w/ normalization."""
-        return Annotation(
-            Rectangle(
-                x1=annotation.points[0] / width,
-                y1=annotation.points[1] / height,
-                x2=annotation.points[2] / width,
-                y2=annotation.points[3] / height,
-            ),
-            labels=[ScoredLabel(label=self.label_entities[annotation.label])],
-        )
-
-    def _get_original_bbox_entity(self, annotation: DatumaroAnnotation) -> Annotation:
-        """Get bbox entity w/o normalization."""
+    
+    def _get_normalized_bbox_entity(self, ann: DatumaroAnnotation, width: int, height: int) -> Annotation:
+        """ Get bbox entity w/ normalization."""
         return Annotation(
             Rectangle(
-                x1=annotation.points[0],
-                y1=annotation.points[1],
-                x2=annotation.points[2],
-                y2=annotation.points[3],
+                x1=ann.points[0] / width,
+                y1=ann.points[1] / height,
+                x2=ann.points[2] / width,
+                y2=ann.points[3] / height,
             ),
-            labels=[ScoredLabel(label=self.label_entities[annotation.label])],
+            labels=[
+                ScoredLabel(
+                    label=self.label_entities[ann.label]
+                )
+            ]
         )
-
-    def _get_polygon_entity(self, annotation: DatumaroAnnotation, width: int, height: int) -> Annotation:
-        """Get polygon entity."""
+    
+    def _get_original_bbox_entity(self, ann: DatumaroAnnotation) -> Annotation:
+        """ Get bbox entity w/o normalization."""
+        return Annotation(
+            Rectangle(
+                x1=ann.points[0],
+                y1=ann.points[1],
+                x2=ann.points[2],
+                y2=ann.points[3],
+            ),
+            labels=[
+                ScoredLabel(
+                    label=self.label_entities[ann.label]
+                )
+            ]
+        )
+    
+    def _get_polygon_entity(self, ann: DatumaroAnnotation, width: int, height: int) -> Annotation:
+        """ Get polygon entity."""
         return Annotation(
             Polygon(
                 points=[
-                    Point(x=annotation.points[i] / width, y=annotation.points[i + 1] / height)
-                    for i in range(0, len(annotation.points), 2)
+                    Point(x=ann.points[i] / width, y=ann.points[i + 1] / height)
+                    for i in range(0, len(ann.points), 2)
                 ]
             ),
-            labels=[ScoredLabel(label=self.label_entities[annotation.label - 1])],
+            labels=[ScoredLabel(label=self.label_entities[ann.label])],
         )
+    

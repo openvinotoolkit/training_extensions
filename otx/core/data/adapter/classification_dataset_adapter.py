@@ -7,16 +7,15 @@
 # pylint: disable=invalid-name, too-many-locals, no-member
 from typing import List, Union
 
-from datumaro.components.annotation import AnnotationType, LabelCategories
+from datumaro.components.annotation import LabelCategories
+from datumaro.components.annotation import AnnotationType
 
-from otx.api.entities.annotation import Annotation
 from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.image import Image
 from otx.api.entities.label import LabelEntity
 from otx.api.entities.label_schema import LabelGroup, LabelGroupType, LabelSchemaEntity
 from otx.core.data.adapter.base_dataset_adapter import BaseDatasetAdapter
-
 
 class ClassificationDatasetAdapter(BaseDatasetAdapter):
     """Classification adapter inherited from BaseDatasetAdapter.
@@ -28,20 +27,21 @@ class ClassificationDatasetAdapter(BaseDatasetAdapter):
     def get_otx_dataset(self) -> DatasetEntity:
         """Convert DatumaroDataset to DatasetEntity for Classification."""
         # Prepare label information
-        label_information = self._prepare_label_information(datumaro_dataset)
-        category_items = label_information["category_items"]
-        label_groups = label_information["label_groups"]
-        label_entities = label_information["label_entities"]
+        label_information = self._prepare_label_information(self.dataset)
+        self.category_items = label_information["category_items"]
+        self.label_groups = label_information["label_groups"]
+        self.label_entities = label_information["label_entities"]
+
         # Generate label schema
         self.label_schema = self._generate_classification_label_schema(self.label_groups, self.label_entities)
 
         # Set the DatasetItemEntity
-        dataset_items: List[DatasetItemEntity] = []
+        dataset_items = []
         for subset, subset_data in self.dataset.items():
             for _, datumaro_items in subset_data.subsets().items():
                 for datumaro_item in datumaro_items:
                     image = Image(file_path=datumaro_item.media.path)
-                    shapes: List[Annotation] = []
+                    shapes = []
                     for ann in datumaro_item.annotations:
                         if ann.type == AnnotationType.label:
                             shapes.append(self._get_label_entity(ann))
@@ -50,11 +50,11 @@ class ClassificationDatasetAdapter(BaseDatasetAdapter):
                     dataset_items.append(dataset_item)
 
         return DatasetEntity(items=dataset_items)
-
+    
     def get_label_schema(self) -> LabelSchemaEntity:
-        """Get Label Schema."""
+        """ Get Label Schema."""
         return self._generate_classification_label_schema(self.label_groups, self.label_entities)
-
+    
     def _generate_classification_label_schema(
         self, label_groups: List[LabelCategories.LabelGroup], label_entities: List[LabelEntity]
     ) -> LabelSchemaEntity:
