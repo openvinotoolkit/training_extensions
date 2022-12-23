@@ -19,9 +19,12 @@ import os
 from typing import List, Optional
 
 import cv2
+import tqdm
 import numpy as np
 from mmseg.datasets.custom import CustomDataset
+from skimage.segmentation import felzenszwalb
 
+from mpa.utils.logger import get_logger
 from otx.api.entities.annotation import (
     Annotation,
     AnnotationSceneEntity,
@@ -40,6 +43,8 @@ from otx.api.utils.argument_checks import (
     OptionalDirectoryPathCheck,
     check_input_parameters_type,
 )
+
+logger = get_logger()
 
 # pylint: disable=too-many-locals
 
@@ -151,14 +156,58 @@ def get_extended_label_names(labels: List[LabelEntity]):
     return all_labels
 
 
+@check_input_parameters_type()
+def create_pseudo_masks(ann_file_path: str, data_root_dir: str, mode="FH"):
+    """Create pseudo masks for Self-SL using DetCon."""
+    if not os.path.isdir(ann_file_path):
+        logger.info((
+            f"Creating pseudo masks with mode={mode} is required. "
+            f"It may take some time. Once this process has been performed, "
+            f"there is no need to proceed again with "
+            f"ann_file_path={ann_file_path} and data_root_dir={data_root_dir}."
+        ))
+        os.makedirs(ann_file_path, exist_ok=False)
+        img_list = os.listdir(data_root_dir)
+        total_labels = []
+        # create pseudo masks
+        for path in tqdm.tqdm(img_list, total=len(img_list)):
+            save_path = path.replace(".jpg", ".png") if path.endswith(".jpg") else path
+            img = cv2.imread(os.path.join(data_root_dir, path))[...,::-1]
+            if mode == "FH":
+                pseudo_mask = felzenszwalb(img, scale=1000, min_size=1000)
+            else:
+                raise ValueError((
+                    f"{mode} is not supported to create pseudo masks for DetCon."
+                    "Choose one of [\"FH\"]."
+                ))
+            cv2.imwrite(os.path.join(ann_file_path, save_path), pseudo_mask.astype(np.uint8))
+
+            # get labels to create meta.json
+            labels = np.unique(pseudo_mask)
+            for label in labels:
+                if label not in total_labels:
+                    total_labels.append(label)
+
+        # create meta.json
+        # TODO (sungchul): to be updated as max(total_labels) -> max(total_labels)+1
+        # Currently, background class is automatically added in the backend.
+        # Considering background class, labels_map in meta.json should have one less than the number of labels.
+        # If we don't need to consider background class, it will be updated to consider all labels.
+        meta = {"labels_map": [{"name": f"target{i+1}", "id": i+1} for i in range(max(total_labels))]}
+        json.dump(meta, open(os.path.join(ann_file_path, "meta.json"), "w"), indent=4)
+
+
 @check_input_parameters_type({"ann_file_path": DirectoryPathCheck, "data_root_dir": DirectoryPathCheck})
 def load_dataset_items(
     ann_file_path: str,
     data_root_dir: str,
     subset: Subset = Subset.NONE,
     labels_list: Optional[List[LabelEntity]] = None,
-):
+):  
     """Load dataset items."""
+    if "detcon" in ann_file_path: # TODO (sungchul): deterministic condition
+        create_pseudo_masks(ann_file_path, data_root_dir)
+
     ann_dir = abs_path_if_valid(ann_file_path)
     img_dir = abs_path_if_valid(data_root_dir)
 
@@ -173,13 +222,15 @@ def load_dataset_items(
 
     test_mode = subset in {Subset.VALIDATION, Subset.TESTING}
     pipeline = [dict(type="LoadAnnotations")]
-    # sungchul: temporary settings for target datasets
-    if "pascal_voc" in img_dir:
-        img_suffix = ".jpg"
-        seg_map_suffix = ".png"
-    elif "cityscapes" in img_dir:
+
+    # TODO (sungchul): temporary settings for target datasets
+    # 
+    if "cityscapes" in img_dir:
         img_suffix = "_leftImg8bit.png"
         seg_map_suffix = "_gtFine_labelTrainIds.png"
+    else:
+        img_suffix = ".jpg"
+        seg_map_suffix = ".png"
 
     dataset = CustomDataset(
         img_dir=img_dir,
