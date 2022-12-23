@@ -36,7 +36,6 @@ class DetectionDatasetAdapter(BaseDatasetAdapter):
                             shapes.append(self._get_polygon_entity(ann, image.width, image.height))
                         if ann.type == AnnotationType.bbox:
                             shapes.append(self._get_normalized_bbox_entity(ann, image.width, image.height))
-
                     dataset_item = DatasetItemEntity(image, self._get_ann_scene_entity(shapes), subset=subset)
                     dataset_items.append(dataset_item)
 

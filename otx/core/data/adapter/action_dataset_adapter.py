@@ -7,7 +7,7 @@
 # pylint: disable=invalid-name, too-many-locals, no-member
 import os
 import os.path as osp
-from typing import Dict, List
+from typing import Any, Dict, List
 
 from datumaro.components.annotation import AnnotationType
 from datumaro.components.dataset import Dataset as DatumaroDataset
@@ -17,13 +17,36 @@ from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.id import ID
 from otx.api.entities.image import Image
 from otx.api.entities.label import LabelEntity
+from otx.api.entities.label_schema import LabelSchemaEntity
 from otx.api.entities.metadata import MetadataItemEntity, VideoMetadata
+from otx.api.entities.model_template import TaskType
 from otx.api.entities.subset import Subset
 from otx.core.data.adapter.base_dataset_adapter import BaseDatasetAdapter
 
 
 class ActionBaseDatasetAdapter(BaseDatasetAdapter):
     """BaseDataset Adpater for Action tasks inherited by BaseDatasetAdapter."""
+    def __init__(
+        self,
+        task_type: TaskType,
+        train_data_roots: str = None,
+        val_data_roots: str = None,
+        test_data_roots: str = None,
+        unlabeled_data_roots: str = None,
+    ):
+        self.task_type = task_type
+        self.domain = task_type.domain
+        self.data_type = None  # type: Any
+        self.is_train_phase = None  # type: Any
+
+        self.dataset = self._import_dataset(
+            train_data_roots=train_data_roots,
+            val_data_roots=val_data_roots,
+            test_data_roots=test_data_roots,
+            unlabeled_data_roots=unlabeled_data_roots
+        )
+
+        self.label_schema = None # type: LabelSchemaEntity
 
     def _import_dataset(
         self,
@@ -64,7 +87,6 @@ class ActionBaseDatasetAdapter(BaseDatasetAdapter):
         In this case, if the label for 'video1/frame_000.jpg' is 2, then the index of label is set to 2.
         For the case of video2, if the label for 'video2/frame_000.jpg' is 4, then the index of label is set to 2.
         However, Since overall labels are [0, 1, 2, 4], 'video2/frame_000.jpg' should has the label index as 3.
-
         """
         outputs = {
             "category_items": [],
@@ -98,19 +120,11 @@ class ActionBaseDatasetAdapter(BaseDatasetAdapter):
         ]
         return outputs
 
-    def get_otx_dataset(self) -> DatasetEntity:
-        """Get DatasetEntity.
+    def convert_to_otx_format(self, datumaro_dataset: dict) -> Tuple[DatasetEntity, LabelSchemaEntity]:
+        """Convert DatumaroDataset to DatasetEntity for Acion tasks."""
+        raise NotImplementedError
 
-        Args:
-            datumaro_dataset (dict): A Dictionary that includes subset dataset(DatasetEntity)
-
-        Returns:
-            DatasetEntity:
-        """
-        raise NotImplementedError()
-
-
-class ActionClassificationDatasetAdapter(ActionBaseDatasetAdapter):
+class ActionClassificationDatasetAdapter(ActionBaseDatasetAdapter, BaseDatasetAdapter):
     """Action classification adapter inherited by ActionBaseDatasetAdapter and BaseDatasetAdapter."""
 
     def get_otx_dataset(self) -> DatasetEntity:
@@ -127,20 +141,16 @@ class ActionClassificationDatasetAdapter(ActionBaseDatasetAdapter):
                     for ann in datumaro_item.annotations:
                         if ann.type == AnnotationType.label:
                             shapes.append(self._get_label_entity(ann))
-
-                    meta_item = [
-                        MetadataItemEntity(
-                            data=VideoMetadata(
-                                name="video_meta",
-                                video_id=int(datumaro_item.media.path.split("/")[-3].split("_")[-1]),
-                                frame_idx=int(datumaro_item.media.path.split("/")[-1].split(".")[0].lstrip("0")),
-                            )
+                    
+                    meta_item = MetadataItemEntity(
+                        data=VideoMetadata(
+                            name="video_meta",
+                            video_id=int(datumaro_item.media.path.split("/")[-3].split("_")[-1]),
+                            frame_idx=int(datumaro_item.media.path.split("/")[-1].split(".")[0].lstrip("0")),
                         )
-                    ]
-
-                    dataset_item = DatasetItemEntity(
-                        image, self._get_ann_scene_entity(shapes), subset=subset, metadata=meta_item
                     )
+                    
+                    dataset_item = DatasetItemEntity(image, self._get_ann_scene_entity(shapes), subset=subset)
                     dataset_items.append(dataset_item)
         return DatasetEntity(items=dataset_items)
 
@@ -162,7 +172,7 @@ class ActionDetectionDatasetAdapter(ActionBaseDatasetAdapter):
                     for ann in datumaro_item.annotations:
                         if ann.type == AnnotationType.bbox:
                             shapes.append(self._get_original_bbox_entity(ann))
-
+                    
                     dataset_item = DatasetItemEntity(image, self._get_ann_scene_entity(shapes), subset=subset)
                     dataset_items.append(dataset_item)
 

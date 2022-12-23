@@ -24,15 +24,38 @@ from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.id import ID
 from otx.api.entities.image import Image
 from otx.api.entities.label import LabelEntity
+from otx.api.entities.label_schema import LabelSchemaEntity
 from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.shapes.rectangle import Rectangle
 from otx.api.entities.subset import Subset
+from otx.api.entities.model_template import TaskType
 from otx.api.utils.segmentation_utils import create_annotation_from_segmentation_map
 from otx.core.data.adapter.base_dataset_adapter import BaseDatasetAdapter
 
 
 class AnomalyBaseDatasetAdapter(BaseDatasetAdapter):
     """BaseDataset Adpater for Anomaly tasks inherited from BaseDatasetAdapter."""
+    def __init__(
+        self,
+        task_type: TaskType,
+        train_data_roots: str = None,
+        val_data_roots: str = None,
+        test_data_roots: str = None,
+        unlabeled_data_roots: str = None,
+    ):
+        self.task_type = task_type
+        self.domain = task_type.domain
+        self.data_type = None  # type: Any
+        self.is_train_phase = None  # type: Any
+
+        self.dataset = self._import_dataset(
+            train_data_roots=train_data_roots,
+            val_data_roots=val_data_roots,
+            test_data_roots=test_data_roots,
+            unlabeled_data_roots=unlabeled_data_roots
+        )
+
+        self.label_schema = None # type: LabelSchemaEntity
 
     def _import_dataset(
         self,
@@ -59,8 +82,6 @@ class AnomalyBaseDatasetAdapter(BaseDatasetAdapter):
             dataset[Subset.TRAINING] = DatumaroDataset.import_from(train_data_roots, format="image_dir")
             if val_data_roots:
                 dataset[Subset.VALIDATION] = DatumaroDataset.import_from(val_data_roots, format="image_dir")
-            else:
-                raise NotImplementedError("Anomaly task needs validation dataset.")
         if test_data_roots:
             dataset[Subset.VALIDATION] = DatumaroDataset.import_from(test_data_roots, format="image_dir")
         return dataset
@@ -76,18 +97,6 @@ class AnomalyBaseDatasetAdapter(BaseDatasetAdapter):
         )
         return [normal_label, abnormal_label]
 
-    def get_otx_dataset(self) -> DatasetEntity:
-        """Get DatasetEntity.
-
-        Args:
-            datumaro_dataset (dict): A Dictionary that includes subset dataset(DatasetEntity)
-
-        Returns:
-            DatasetEntity:
-        """
-        raise NotImplementedError()
-
-
 class AnomalyClassificationDatasetAdapter(AnomalyBaseDatasetAdapter):
     """Anomaly classification adapter inherited from AnomalyBaseDatasetAdapter."""
 
@@ -102,7 +111,8 @@ class AnomalyClassificationDatasetAdapter(AnomalyBaseDatasetAdapter):
             for _, datumaro_items in subset_data.subsets().items():
                 for datumaro_item in datumaro_items:
                     image = Image(file_path=datumaro_item.media.path)
-                    label = normal_label if os.path.dirname(datumaro_item.id) == "good" else abnormal_label
+
+                    label = normal_label if datumaro_item.id.split("/")[0] == "good" else abnormal_label
                     shapes = [
                         Annotation(
                             Rectangle.generate_full_box(),
@@ -137,7 +147,7 @@ class AnomalyDetectionDatasetAdapter(AnomalyBaseDatasetAdapter):
             for _, datumaro_items in subset_data.subsets().items():
                 for datumaro_item in datumaro_items:
                     image = Image(file_path=datumaro_item.media.path)
-                    label = normal_label if os.path.dirname(datumaro_item.id) == "good" else abnormal_label
+                    label = normal_label if datumaro_item.id.split("/")[0] == "good" else abnormal_label
                     shapes = [
                         Annotation(
                             Rectangle.generate_full_box(),
@@ -194,7 +204,7 @@ class AnomalySegmentationDatasetAdapter(AnomalyBaseDatasetAdapter):
             for _, datumaro_items in subset_data.subsets().items():
                 for datumaro_item in datumaro_items:
                     image = Image(file_path=datumaro_item.media.path)
-                    label = normal_label if os.path.dirname(datumaro_item.id) == "good" else abnormal_label
+                    label = normal_label if datumaro_item.id.split("/")[0] == "good" else abnormal_label
                     shapes = [
                         Annotation(
                             Rectangle.generate_full_box(),
