@@ -4,8 +4,10 @@
 ARG HTTP_PROXY
 ARG HTTPS_PROXY
 ARG NO_PROXY
+ARG action_runner_url
+ARG ver_cuda="11.1.1"
 
-FROM nvidia/cuda:10.2-devel-ubuntu18.04 AS python_base_cuda
+FROM nvidia/cuda:${ver_cuda}-devel-ubuntu20.04 AS python_base_cuda
 LABEL maintainer="OpenVINO Training Extensions Development Team"
 
 # Setup proxies
@@ -17,28 +19,29 @@ ENV DEBIAN_FRONTEND="noninteractive"
 
 # Update system and install dependencies
 RUN apt-get update && apt-get install --no-install-recommends -y \
-    software-properties-common=0.96.24.32.18 \
-        wget=1.19.4-1ubuntu2.2 \
-        ffmpeg=7:3.4.11-0ubuntu0.1 \
-        libpython3.8=3.8.0-3ubuntu1\~18.04.2 \
-        curl=7.58.0-2ubuntu3.20 \
-        nodejs=8.10.0\~dfsg-2ubuntu0.4 \
-        unzip=6.0-21ubuntu1.1 \
-        npm=3.5.2-0ubuntu4 \
-        ruby-dev=1:2.5.1 \
+        software-properties-common=0.99.9.8 \
+        wget=1.20.3-1ubuntu2 \
+        ffmpeg=7:4.2.7-0ubuntu0.1 \
+        libpython3.8=3.8.10-0ubuntu1\~20.04.6 \
+        curl=7.68.0-1ubuntu2.14 \
+        nodejs=10.19.0\~dfsg-3ubuntu1 \
+        unzip=6.0-25ubuntu1.1 \
+        npm=6.14.4+ds-1ubuntu2 \
+        ruby-dev=1:2.7+1 \
+        git=1:2.25.1-1ubuntu3.6 \
+        cron=3.0pl1-136ubuntu1 \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Install latest git for github actions
-RUN apt-get update && \
-    add-apt-repository ppa:git-core/ppa &&\
-    apt-get install --no-install-recommends -y git=1:2.37.3-0ppa1\~ubuntu18.04.1 &&\
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+# set /tmp folder cleaning schedule at 7PM every day which is older than a day
+RUN echo "0 19 * * * find /tmp/* -mtime +1 -exec rm -rf {} \;" >> ./cron_clean_tmp.txt && \
+    crontab cron_clean_tmp.txt && \
+    # Create a non-root user
+    useradd -m validation
 
-# Create a non-root user
-RUN useradd -m validation
 USER validation
+
+WORKDIR /home/validation
 
 # Install Conda
 RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh --quiet && \
@@ -65,6 +68,14 @@ RUN pip install --no-cache-dir -r /tmp/otx/requirements/anomaly.txt \
     -r /tmp/otx/requirements/base.txt \
     -r /tmp/otx/requirements/dev.txt \
     -r /tmp/otx/requirements/docs.txt \
-    -r /tmp/otx/requirements/openvino.txt
+    -r /tmp/otx/requirements/openvino.txt && \
+    mkdir actions-runner
+
+WORKDIR /home/validation/actions-runner
+
+ARG action_runner_url
+RUN curl -o actions-runner-linux-x64.tar.gz -L ${action_runner_url} && \
+    tar xzf ./actions-runner-linux-x64.tar.gz && \
+    rm actions-runner-linux-x64.tar.gz
 
 WORKDIR /home/validation
