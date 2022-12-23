@@ -59,27 +59,21 @@ def otx_train_testing(template, root, otx_dir, args):
         "otx",
         "train",
         template.model_template_path,
-        "--train-ann-file",
-        f'{os.path.join(otx_dir, args["--train-ann-file"])}',
-        "--train-data-roots",
-        f'{os.path.join(otx_dir, args["--train-data-roots"])}',
-        "--val-ann-file",
-        f'{os.path.join(otx_dir, args["--val-ann-file"])}',
-        "--val-data-roots",
-        f'{os.path.join(otx_dir, args["--val-data-roots"])}',
-        "--save-model-to",
-        f"{template_work_dir}/trained_{template.model_template_id}",
     ]
-    if "--unlabeled-data-roots" in args:
-        command_line.extend(["--unlabeled-data-roots", f'{os.path.join(otx_dir, args["--unlabeled-data-roots"])}'])
-    if "--unlabeled-file-list" in args:
-        command_line.extend(["--unlabeled-file-list"], f'{os.path.join(otx_dir, args["--unlabeled-file-list"])}')
-    if "--load-weights" in args:
-        command_line.extend(["--load-weights", f'{os.path.join(otx_dir, args["--load-weights"])}'])
-    if "--unlabeled-data-roots" in args:
-        command_line.extend(["--unlabeled-data-roots", f'{os.path.join(otx_dir, args["--unlabeled-data-roots"])}'])
-    if "--unlabeled-file-list" in args:
-        command_line.extend(["--unlabeled-file-list"], f'{os.path.join(otx_dir, args["--unlabeled-file-list"])}')
+    for option in [
+        "--data",
+        "--train-ann-file",
+        "--train-data-roots",
+        "--val-ann-file",
+        "--val-data-roots",
+        "--unlabeled-data-roots",
+        "--unlabeled-file-list",
+        "--load-weights",
+    ]:
+        if option in args:
+            command_line.extend([option, f"{os.path.join(otx_dir, args[option])}"])
+
+    command_line.extend(["--save-model-to", f"{template_work_dir}/trained_{template.model_template_id}"])
     command_line.extend(args["train_params"])
     check_run(command_line)
     assert os.path.exists(f"{template_work_dir}/trained_{template.model_template_id}/weights.pth")
