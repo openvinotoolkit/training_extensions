@@ -1,6 +1,6 @@
 pyyaml
 opencv-python
-numpy
+numpy<=1.23.5  # np.bool was removed in 1.24.0 which was used in openvino runtime
 nbmake
 pytest
 pytest-ordering

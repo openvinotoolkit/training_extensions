@@ -15,7 +15,7 @@
 import json
 import os
 import shutil
-from subprocess import run  # nosec
+import subprocess  # nosec
 
 import pytest
 
@@ -36,12 +36,9 @@ def get_some_vars(template, root):
 def create_venv(algo_backend_dir, work_dir):
     venv_dir = f"{work_dir}/venv"
     if not os.path.exists(venv_dir):
-        assert run([f"./{algo_backend_dir}/init_venv.sh", venv_dir]).returncode == 0
-        assert (
-            run(
-                [f"{work_dir}/venv/bin/python", "-m", "pip", "install", "-e", "ote_cli"]
-            ).returncode
-            == 0
+        check_run([f"./{algo_backend_dir}/init_venv.sh", venv_dir])
+        check_run(
+            [f"{work_dir}/venv/bin/python", "-m", "pip", "install", "-e", "ote_cli"]
         )
 
 
@@ -73,6 +70,11 @@ def collect_env_vars(work_dir):
     return vars
 
 
+def check_run(cmd, **kwargs):
+    result = subprocess.run(cmd, stderr=subprocess.PIPE, **kwargs)
+    assert result.returncode == 0, result.stderr.decode("utf=8")
+
+
 def ote_train_testing(template, root, ote_dir, args):
     work_dir, template_work_dir, _ = get_some_vars(template, root)
     command_line = [
@@ -95,7 +97,7 @@ def ote_train_testing(template, root, ote_dir, args):
             ["--load-weights", f'{os.path.join(ote_dir, args["--load-weights"])}']
         )
     command_line.extend(args["train_params"])
-    assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
+    check_run(command_line, env=collect_env_vars(work_dir))
     assert os.path.exists(
         f"{template_work_dir}/trained_{template.model_template_id}/weights.pth"
     )
@@ -127,7 +129,7 @@ def ote_hpo_testing(template, root, ote_dir, args):
         "1",
     ]
     command_line.extend(args["train_params"])
-    assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
+    check_run(command_line, env=collect_env_vars(work_dir))
     assert os.path.exists(f"{template_work_dir}/hpo/hpopt_status.json")
     with open(f"{template_work_dir}/hpo/hpopt_status.json", "r") as f:
         assert json.load(f).get("best_config_id", None) is not None
@@ -150,7 +152,7 @@ def ote_export_testing(template, root):
         "--save-model-to",
         f"{template_work_dir}/exported_{template.model_template_id}",
     ]
-    assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
+    check_run(command_line, env=collect_env_vars(work_dir))
     assert os.path.exists(
         f"{template_work_dir}/exported_{template.model_template_id}/openvino.xml"
     )
@@ -177,7 +179,7 @@ def ote_eval_testing(template, root, ote_dir, args):
         "--save-performance",
         f"{template_work_dir}/trained_{template.model_template_id}/performance.json",
     ]
-    assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
+    check_run(command_line, env=collect_env_vars(work_dir))
     assert os.path.exists(
         f"{template_work_dir}/trained_{template.model_template_id}/performance.json"
     )
@@ -198,7 +200,7 @@ def ote_eval_openvino_testing(template, root, ote_dir, args, threshold):
         "--save-performance",
         f"{template_work_dir}/exported_{template.model_template_id}/performance.json",
     ]
-    assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
+    check_run(command_line, env=collect_env_vars(work_dir))
     assert os.path.exists(
         f"{template_work_dir}/exported_{template.model_template_id}/performance.json"
     )
@@ -233,7 +235,7 @@ def ote_demo_testing(template, root, ote_dir, args):
         "--delay",
         "-1",
     ]
-    assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
+    check_run(command_line, env=collect_env_vars(work_dir))
 
 
 def ote_demo_openvino_testing(template, root, ote_dir, args):
@@ -249,7 +251,7 @@ def ote_demo_openvino_testing(template, root, ote_dir, args):
         "--delay",
         "-1",
     ]
-    assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
+    check_run(command_line, env=collect_env_vars(work_dir))
 
 
 def ote_deploy_openvino_testing(template, root, ote_dir, args):
@@ -264,63 +266,48 @@ def ote_deploy_openvino_testing(template, root, ote_dir, args):
         "--save-model-to",
         deployment_dir,
     ]
-    assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
-    assert run(["unzip", "-o", "openvino.zip"], cwd=deployment_dir).returncode == 0
-    assert (
-        run(
-            ["python3", "-m", "venv", "venv"],
-            cwd=os.path.join(deployment_dir, "python"),
-        ).returncode
-        == 0
+    check_run(command_line, env=collect_env_vars(work_dir))
+    check_run(["unzip", "-o", "openvino.zip"], cwd=deployment_dir)
+    check_run(
+        ["python3", "-m", "venv", "venv"],
+        cwd=os.path.join(deployment_dir, "python"),
     )
-    assert (
-        run(
-            ["python3", "-m", "pip", "install", "wheel"],
-            cwd=os.path.join(deployment_dir, "python"),
-            env=collect_env_vars(os.path.join(deployment_dir, "python")),
-        ).returncode
-        == 0
+    check_run(
+        ["python3", "-m", "pip", "install", "wheel"],
+        cwd=os.path.join(deployment_dir, "python"),
+        env=collect_env_vars(os.path.join(deployment_dir, "python")),
     )
 
-    assert (
-        run(
-            ["python3", "-m", "pip", "install", "pip", "--upgrade"],
-            cwd=os.path.join(deployment_dir, "python"),
-            env=collect_env_vars(os.path.join(deployment_dir, "python")),
-        ).returncode
-        == 0
+    check_run(
+        ["python3", "-m", "pip", "install", "pip", "--upgrade"],
+        cwd=os.path.join(deployment_dir, "python"),
+        env=collect_env_vars(os.path.join(deployment_dir, "python")),
     )
-    assert (
-        run(
-            [
-                "python3",
-                "-m",
-                "pip",
-                "install",
-                "-r",
-                os.path.join(deployment_dir, "python", "requirements.txt"),
-            ],
-            cwd=os.path.join(deployment_dir, "python"),
-            env=collect_env_vars(os.path.join(deployment_dir, "python")),
-        ).returncode
-        == 0
+    check_run(
+        [
+            "python3",
+            "-m",
+            "pip",
+            "install",
+            "-r",
+            os.path.join(deployment_dir, "python", "requirements.txt"),
+        ],
+        cwd=os.path.join(deployment_dir, "python"),
+        env=collect_env_vars(os.path.join(deployment_dir, "python")),
     )
 
-    assert (
-        run(
-            [
-                "python3",
-                "demo.py",
-                "-m",
-                "../model",
-                "-i",
-                os.path.join(ote_dir, args["--input"]),
-                "--no_show",
-            ],
-            cwd=os.path.join(deployment_dir, "python"),
-            env=collect_env_vars(os.path.join(deployment_dir, "python")),
-        ).returncode
-        == 0
+    check_run(
+        [
+            "python3",
+            "demo.py",
+            "-m",
+            "../model",
+            "-i",
+            os.path.join(ote_dir, args["--input"]),
+            "--no_show",
+        ],
+        cwd=os.path.join(deployment_dir, "python"),
+        env=collect_env_vars(os.path.join(deployment_dir, "python")),
     )
 
 
@@ -339,7 +326,7 @@ def ote_eval_deployment_testing(template, root, ote_dir, args, threshold):
         "--save-performance",
         f"{template_work_dir}/deployed_{template.model_template_id}/performance.json",
     ]
-    assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
+    check_run(command_line, env=collect_env_vars(work_dir))
     assert os.path.exists(
         f"{template_work_dir}/deployed_{template.model_template_id}/performance.json"
     )
@@ -373,7 +360,7 @@ def ote_demo_deployment_testing(template, root, ote_dir, args):
         "--delay",
         "-1",
     ]
-    assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
+    check_run(command_line, env=collect_env_vars(work_dir))
 
 
 def pot_optimize_testing(template, root, ote_dir, args):
@@ -395,7 +382,7 @@ def pot_optimize_testing(template, root, ote_dir, args):
         "--save-model-to",
         f"{template_work_dir}/pot_{template.model_template_id}",
     ]
-    assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
+    check_run(command_line, env=collect_env_vars(work_dir))
     assert os.path.exists(
         f"{template_work_dir}/pot_{template.model_template_id}/openvino.xml"
     )
@@ -422,7 +409,7 @@ def pot_eval_testing(template, root, ote_dir, args):
         "--save-performance",
         f"{template_work_dir}/pot_{template.model_template_id}/performance.json",
     ]
-    assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
+    check_run(command_line, env=collect_env_vars(work_dir))
     assert os.path.exists(
         f"{template_work_dir}/pot_{template.model_template_id}/performance.json"
     )
@@ -450,7 +437,7 @@ def nncf_optimize_testing(template, root, ote_dir, args):
         f"{template_work_dir}/nncf_{template.model_template_id}/train_performance.json",
     ]
     command_line.extend(args["train_params"])
-    assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
+    check_run(command_line, env=collect_env_vars(work_dir))
     assert os.path.exists(
         f"{template_work_dir}/nncf_{template.model_template_id}/weights.pth"
     )
@@ -470,7 +457,7 @@ def nncf_export_testing(template, root):
         "--save-model-to",
         f"{template_work_dir}/exported_nncf_{template.model_template_id}",
     ]
-    assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
+    check_run(command_line, env=collect_env_vars(work_dir))
     assert os.path.exists(
         f"{template_work_dir}/exported_nncf_{template.model_template_id}/openvino.xml"
     )
@@ -506,7 +493,7 @@ def nncf_eval_testing(template, root, ote_dir, args, threshold):
         "--save-performance",
         f"{template_work_dir}/nncf_{template.model_template_id}/performance.json",
     ]
-    assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
+    check_run(command_line, env=collect_env_vars(work_dir))
     assert os.path.exists(
         f"{template_work_dir}/nncf_{template.model_template_id}/performance.json"
     )
@@ -543,7 +530,7 @@ def nncf_eval_openvino_testing(template, root, ote_dir, args):
         "--save-performance",
         f"{template_work_dir}/exported_nncf_{template.model_template_id}/performance.json",
     ]
-    assert run(command_line, env=collect_env_vars(work_dir)).returncode == 0
+    check_run(command_line, env=collect_env_vars(work_dir))
     assert os.path.exists(
         f"{template_work_dir}/exported_nncf_{template.model_template_id}/performance.json"
     )

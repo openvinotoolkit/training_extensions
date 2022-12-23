@@ -13,12 +13,12 @@
 # and limitations under the License.
 
 import os
-from subprocess import run
 
 from ote_sdk.test_suite.e2e_test_system import e2e_pytest_component
+from ote_cli.utils.tests import check_run
 
 class TestCodeChecks:
     @e2e_pytest_component
     def test_code_checks(self):
         wd = os.path.join(os.path.dirname(__file__), "..", "..", "..")
-        assert run(["./tests/run_code_checks.sh"], cwd=wd, check=True).returncode == 0
+        check_run(["./tests/run_code_checks.sh"], cwd=wd)
