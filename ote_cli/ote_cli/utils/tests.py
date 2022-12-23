@@ -37,7 +37,9 @@ def create_venv(algo_backend_dir, work_dir):
     venv_dir = f"{work_dir}/venv"
     if not os.path.exists(venv_dir):
         check_run([f"./{algo_backend_dir}/init_venv.sh", venv_dir])
-        check_run([f"{work_dir}/venv/bin/python", "-m", "pip", "install", "-e", "ote_cli"])
+        check_run(
+            [f"{work_dir}/venv/bin/python", "-m", "pip", "install", "-e", "ote_cli"]
+        )
 
 
 def extract_export_vars(path):

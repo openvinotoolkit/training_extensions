@@ -2,9 +2,8 @@
 
 import os
 import sys
-from subprocess import run
 
-from ote_cli.utils.tests import collect_env_vars
+from ote_cli.utils.tests import collect_env_vars, check_run
 
 ALGO_ROOT_DIR = "external"
 ALGO_DIRS = [
@@ -59,7 +58,8 @@ def test(run_algo_tests):
     success = True
     command = ["pytest", os.path.join("tests", "ote_cli", "misc"), "-v"]
     try:
-        res = run(command, env=collect_env_vars(wd), check=True).returncode == 0
+        check_run(command, env=collect_env_vars(wd))
+        res = True
     except:
         res = False
     passed["misc"] = res
@@ -68,7 +68,8 @@ def test(run_algo_tests):
         if run_algo_tests[algo_dir]:
             command = ["pytest", os.path.join(algo_dir, "tests", "ote_cli"), "-v", "-rxXs", "--durations=10"]
             try:
-                res = run(command, env=collect_env_vars(wd), check=True).returncode == 0
+                check_run(command, env=collect_env_vars(wd))
+                res = True
             except:
                 res = False
             passed[algo_dir] = res
