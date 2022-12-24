@@ -5,15 +5,15 @@
 
 import torch
 import torch.distributed as dist
-import torch.nn as nn
 import torch.nn.functional as F
 from mmseg.models import LOSSES
+from torch import nn
 
 
 def manual_cross_entropy(logits, labels, weight):
     """Manually calculate weighted cross entropy."""
-    ce = -weight * torch.sum(labels * F.log_softmax(logits, dim=-1), dim=-1)
-    return torch.mean(ce)
+    cross_entropy = -weight * torch.sum(labels * F.log_softmax(logits, dim=-1), dim=-1)
+    return torch.mean(cross_entropy)
 
 
 @LOSSES.register_module
@@ -29,12 +29,15 @@ class DetConLoss(nn.Module):
         use_replicator_loss (bool): use cross-replica samples.
     """
 
-    def __init__(self, temperature: float = 0.1, use_replicator_loss: bool = True, ignore_index: int = 255):
+    def __init__(
+        self, temperature: float = 0.1, use_replicator_loss: bool = True, ignore_index: int = 255
+    ):  # pylint: disable=unused-argument
         super().__init__()
         assert temperature > 0
-        self.temperature = torch.tensor(temperature)
+        self.temperature = torch.Tensor(temperature)
         self.use_replicator_loss = use_replicator_loss
 
+    # pylint: disable=too-many-statements, too-many-locals, too-many-arguments
     def forward(self, pred1, pred2, target1, target2, pind1, pind2, tind1, tind2, local_negatives=True):
         """Forward loss.
 
@@ -52,11 +55,13 @@ class DetConLoss(nn.Module):
         Returns:
             dict[str, Tensor]: A single scalar loss for the XT-NCE objective.
         """
-        bs, num_samples, num_features = pred1.shape
+        batch_size, num_samples, num_features = pred1.shape
         infinity_proxy = 1e9  # Used for masks to proxy a very large number.
 
         def make_same_obj(ind_0, ind_1):
-            same_obj = torch.eq(ind_0.reshape([bs, num_samples, 1]), ind_1.reshape([bs, 1, num_samples]))
+            same_obj = torch.eq(
+                ind_0.reshape([batch_size, num_samples, 1]), ind_1.reshape([batch_size, 1, num_samples])
+            )
             same_obj = same_obj.unsqueeze(2).to(torch.float)
             return same_obj
 
@@ -87,13 +92,13 @@ class DetConLoss(nn.Module):
 
             # Create the labels by using the current replica ID and offsetting.
             replica_id = dist.get_rank()
-            labels_idx = torch.arange(bs) + replica_id * bs
+            labels_idx = torch.arange(batch_size) + replica_id * batch_size
             enlarged_bs = target1_large.shape[0]
             labels = F.one_hot(labels_idx, num_classes=enlarged_bs).to(pred1.device)
         else:
             target1_large = target1
             target2_large = target2
-            labels = F.one_hot(torch.arange(bs), num_classes=bs).to(pred1.device)
+            labels = F.one_hot(torch.arange(batch_size), num_classes=batch_size).to(pred1.device)
 
         labels = labels.unsqueeze(dim=2).unsqueeze(dim=1)
 
@@ -121,14 +126,14 @@ class DetConLoss(nn.Module):
         labels_abaa = torch.cat([labels_ab, labels_aa], dim=2)
         labels_babb = torch.cat([labels_ba, labels_bb], dim=2)
 
-        labels_0 = labels_abaa.reshape((bs, num_samples, -1))
-        labels_1 = labels_babb.reshape((bs, num_samples, -1))
+        labels_0 = labels_abaa.reshape((batch_size, num_samples, -1))
+        labels_1 = labels_babb.reshape((batch_size, num_samples, -1))
 
         num_positives_0 = torch.sum(labels_0, dim=-1, keepdim=True)
         num_positives_1 = torch.sum(labels_1, dim=-1, keepdim=True)
 
-        labels_0 = labels_0 / torch.maximum(num_positives_0, torch.tensor(1.0, device=num_positives_0.device))
-        labels_1 = labels_1 / torch.maximum(num_positives_1, torch.tensor(1.0, device=num_positives_0.device))
+        labels_0 = labels_0 / torch.maximum(num_positives_0, torch.Tensor(1.0, device=num_positives_0.device))
+        labels_1 = labels_1 / torch.maximum(num_positives_1, torch.Tensor(1.0, device=num_positives_0.device))
 
         obj_area_0 = torch.sum(make_same_obj(pind1, pind1), dim=(2, 3))
         obj_area_1 = torch.sum(make_same_obj(pind2, pind2), dim=(2, 3))
@@ -141,8 +146,8 @@ class DetConLoss(nn.Module):
         logits_abaa = torch.cat([logits_ab, logits_aa], dim=2)
         logits_babb = torch.cat([logits_ba, logits_bb], dim=2)
 
-        logits_abaa = logits_abaa.reshape((bs, num_samples, -1))
-        logits_babb = logits_babb.reshape((bs, num_samples, -1))
+        logits_abaa = logits_abaa.reshape((batch_size, num_samples, -1))
+        logits_babb = logits_babb.reshape((batch_size, num_samples, -1))
 
         loss_a = manual_cross_entropy(logits_abaa, labels_0, weight=weights_0)
         loss_b = manual_cross_entropy(logits_babb, labels_1, weight=weights_1)

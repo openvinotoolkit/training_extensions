@@ -6,17 +6,19 @@ Original papers:
 
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
+#
+# pylint: disable=unused-argument, invalid-name, unnecessary-pass
 
 from collections import OrderedDict
-from typing import Dict, List, Optional, Tuple, Union, Any
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import torch
 import torch.distributed as dist
-import torch.nn as nn
 from mmcv.runner import load_checkpoint
-from mmseg.models.builder import SEGMENTORS, build_backbone, build_loss, build_neck
+from mmseg.models import SEGMENTORS, build_backbone, build_loss, build_neck
 from mmseg.ops import resize
 from mpa.utils.logger import get_logger
+from torch import nn
 
 logger = get_logger()
 
@@ -106,11 +108,12 @@ class MaskPooling(nn.Module):
         binary_masks = self.pool_masks(masks)
         sampled_masks, sampled_mask_ids = self.sample_masks(binary_masks)
         areas = sampled_masks.sum(dim=-1, keepdim=True)
-        sampled_masks = sampled_masks / torch.maximum(areas, torch.tensor(1.0, device=areas.device))
+        sampled_masks = sampled_masks / torch.maximum(areas, torch.Tensor(1.0, device=areas.device))
 
         return sampled_masks, sampled_mask_ids
 
 
+# pylint: disable=too-many-arguments, dangerous-default-value, too-many-instance-attributes
 @SEGMENTORS.register_module()
 class DetConB(nn.Module):
     """Implementation of 'Efficient Visual Pretraining with Contrastive Detection' \
@@ -147,10 +150,10 @@ class DetConB(nn.Module):
         input_transform: str = "resize_concat",
         in_index: List[int] = [0],
         align_corners: bool = False,
-        loss_cfg: Dict[str, Any] = {},
+        loss_cfg: Optional[Dict[str, Any]] = None,
         **kwargs,
     ):
-        super(DetConB, self).__init__()
+        super().__init__()
 
         self.base_momentum = base_momentum
         self.momentum = base_momentum
@@ -226,11 +229,11 @@ class DetConB(nn.Module):
         for param_ol, param_tgt in zip(self.online_projector.parameters(), self.target_projector.parameters()):
             param_tgt.data = param_tgt.data * self.momentum + param_ol.data * (1.0 - self.momentum)
 
-    def transform_inputs(self, inputs: List[torch.Tensor]):
+    def transform_inputs(self, inputs: Union[List, Tuple]):
         """Transform inputs for decoder.
 
         Args:
-            inputs (list[Tensor]): List of multi-level img features.
+            inputs (list, tuple): List (or tuple) of multi-level img features.
 
         Returns:
             Tensor: The transformed inputs.
@@ -252,7 +255,7 @@ class DetConB(nn.Module):
 
     def extract_feat(self, img: torch.Tensor):
         """Extract features from images.
-        
+
         Args:
             img (Tensor): Input image.
 
@@ -287,6 +290,7 @@ class DetConB(nn.Module):
 
         return proj, sampled_mask_ids
 
+    # pylint: disable=too-many-locals
     def forward(self, img: torch.Tensor, img_metas: List[Dict], gt_semantic_seg: torch.Tensor):
         """Forward function for training.
 
@@ -312,6 +316,7 @@ class DetConB(nn.Module):
             proj2_tgt, id2_tgt = self.sample_masked_feats(self.target_backbone(img2), mask2, self.target_projector)
 
         # predictor
+        # TODO (sungchul): predictor + loss -> head?
         pred1, pred2 = self.predictor(proj1), self.predictor(proj2)
         pred1 = pred1.reshape((-1, self.num_samples, pred1.shape[-1]))
         pred2 = pred2.reshape((-1, self.num_samples, pred2.shape[-1]))

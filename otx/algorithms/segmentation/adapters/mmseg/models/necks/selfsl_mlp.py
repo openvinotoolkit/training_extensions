@@ -5,18 +5,20 @@ This MLP consists of fc (conv) - norm - relu - fc (conv).
 
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
+#
+# pylint: disable=dangerous-default-value
+from typing import Any, Dict
 
-from typing import Dict, Any
 import torch
-import torch.nn as nn
 from mmcv.cnn import build_norm_layer, kaiming_init, normal_init
 from mmseg.models.builder import NECKS
+from torch import nn
 
 
 @NECKS.register_module()
 class SelfSLMLP(nn.Module):
     """The SelfSLMLP neck: fc/conv-bn-relu-fc/conv.
-    
+
     Args:
         in_channels (int): The number of feature output channels from backbone.
         hid_channels (int): The number of channels for a hidden layer.
@@ -34,9 +36,9 @@ class SelfSLMLP(nn.Module):
         out_channels: int,
         norm_cfg: Dict[str, Any] = dict(type="BN1d"),
         use_conv: bool = False,
-        with_avg_pool: bool = True
+        with_avg_pool: bool = True,
     ):
-        super(SelfSLMLP, self).__init__()
+        super().__init__()
 
         self.with_avg_pool = with_avg_pool
         if with_avg_pool:
@@ -67,8 +69,8 @@ class SelfSLMLP(nn.Module):
             bias (float): Bias for normal initialization. Default: 0.
         """
         if init_linear not in ["normal", "kaiming"]:
-            raise ValueError("Undefined init_linear: {}".format(init_linear))
-        for m in self.modules():
+            raise ValueError(f"Undefined init_linear: {init_linear}")
+        for m in self.modules():  # pylint: disable=invalid-name
             if isinstance(m, nn.Linear):
                 if init_linear == "normal":
                     normal_init(m, std=std, bias=bias)
@@ -97,7 +99,7 @@ class SelfSLMLP(nn.Module):
             raise TypeError("neck inputs should be tuple or torch.tensor")
         if self.with_avg_pool:
             x = self.avgpool(x)
-        if self.use_conv:
+        if self.use_conv:  # pylint: disable=no-else-return
             return self.mlp(x)
         else:
             return self.mlp(x.view(x.size(0), -1))

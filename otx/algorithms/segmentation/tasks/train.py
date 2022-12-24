@@ -141,13 +141,7 @@ class SegmentationTrainTask(SegmentationInferenceTask, ITrainingTask):
     def _init_train_data_cfg(self, dataset: DatasetEntity):
         logger.info("init data cfg.")
         if self._hyperparams.algo_backend.train_type == TrainType.SELFSUPERVISED:
-            data_cfg = ConfigDict(
-                data=ConfigDict(
-                    train=ConfigDict(
-                        otx_dataset=dataset.get_subset(Subset.TRAINING)
-                    )
-                )
-            )
+            data_cfg = ConfigDict(data=ConfigDict(train=ConfigDict(otx_dataset=dataset.get_subset(Subset.TRAINING))))
         else:
             data_cfg = ConfigDict(
                 data=ConfigDict(

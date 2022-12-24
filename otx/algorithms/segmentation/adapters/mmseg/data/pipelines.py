@@ -148,13 +148,13 @@ class RandomResizedCrop(T.RandomResizedCrop):
         """
         img = Image.fromarray(results["img"])
 
-        i, j, h, w = self.get_params(img, self.scale, self.ratio)
-        img = np.array(F.resized_crop(img, i, j, h, w, self.size, self.interpolation))
+        i, j, height, width = self.get_params(img, self.scale, self.ratio)
+        img = np.array(F.resized_crop(img, i, j, height, width, self.size, self.interpolation))
         results["img"] = img
         results["img_shape"] = img.shape
         for key in results.get("seg_fields", []):
             results[key] = np.array(
-                F.resized_crop(Image.fromarray(results[key]), i, j, h, w, self.size, self.interpolation)
+                F.resized_crop(Image.fromarray(results[key]), i, j, height, width, self.size, self.interpolation)
             )
 
         w_scale = results["img_shape"][1] / results["ori_shape"][1]
