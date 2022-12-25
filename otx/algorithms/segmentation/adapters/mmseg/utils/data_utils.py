@@ -225,21 +225,11 @@ def load_dataset_items(
     test_mode = subset in {Subset.VALIDATION, Subset.TESTING}
     pipeline = [dict(type="LoadAnnotations")]
 
-    # TODO (sungchul): temporary settings for target datasets
-    if "cityscapes" in img_dir:
-        img_suffix = "_leftImg8bit.png"
-        seg_map_suffix = "_gtFine_labelTrainIds.png"
-    else:
-        img_suffix = ".jpg"
-        seg_map_suffix = ".png"
-
     dataset = CustomDataset(
         img_dir=img_dir,
         ann_dir=ann_dir,
         pipeline=pipeline,
         classes=get_extended_label_names(labels_list),
-        img_suffix=img_suffix,
-        seg_map_suffix=seg_map_suffix,
         test_mode=test_mode,
     )
     dataset.test_mode = False
