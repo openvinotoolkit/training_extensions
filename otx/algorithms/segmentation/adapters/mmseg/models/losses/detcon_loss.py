@@ -2,11 +2,12 @@
 
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-
+#
+# pylint: disable=no-name-in-module, not-callable
 import torch
 import torch.distributed as dist
 import torch.nn.functional as F
-from mmseg.models.builder import LOSSES  # pylint: disable=no-name-in-module
+from mmseg.models.builder import LOSSES
 from torch import nn
 
 

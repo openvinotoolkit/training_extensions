@@ -7,7 +7,7 @@ Original papers:
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-# pylint: disable=unused-argument, invalid-name, unnecessary-pass
+# pylint: disable=unused-argument, invalid-name, unnecessary-pass, not-callable
 
 from collections import OrderedDict
 from typing import Any, Dict, List, Optional, Tuple, Union
