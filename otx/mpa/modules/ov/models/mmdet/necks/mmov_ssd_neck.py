@@ -5,11 +5,12 @@
 from typing import Dict, List, Optional, Union
 
 import torch
-from mmdet.models.builder import NECKS
+
 #  from mmdet.models.necks.ssd_neck import SSDNeck
 import torch.nn as nn
 from mmcv.cnn import ConvModule, DepthwiseSeparableConvModule
 from mmcv.runner import BaseModule
+from mmdet.models.builder import NECKS
 
 from ...mmov_model import MMOVModel
 
@@ -37,47 +38,39 @@ class SSDNeck(BaseModule):
         init_cfg (dict or list[dict], optional): Initialization config dict.
     """
 
-    def __init__(self,
-                 in_channels,
-                 out_channels,
-                 level_strides,
-                 level_paddings,
-                 l2_norm_scale=20.,
-                 last_kernel_size=3,
-                 use_depthwise=False,
-                 conv_cfg=None,
-                 norm_cfg=None,
-                 act_cfg=dict(type='ReLU'),
-                 init_cfg=[
-                     dict(
-                         type='Xavier', distribution='uniform',
-                         layer='Conv2d'),
-                     dict(type='Constant', val=1, layer='BatchNorm2d'),
-                 ]):
+    def __init__(
+        self,
+        in_channels,
+        out_channels,
+        level_strides,
+        level_paddings,
+        l2_norm_scale=20.0,
+        last_kernel_size=3,
+        use_depthwise=False,
+        conv_cfg=None,
+        norm_cfg=None,
+        act_cfg=dict(type="ReLU"),
+        init_cfg=[
+            dict(type="Xavier", distribution="uniform", layer="Conv2d"),
+            dict(type="Constant", val=1, layer="BatchNorm2d"),
+        ],
+    ):
         super(SSDNeck, self).__init__(init_cfg)
         assert len(out_channels) > len(in_channels)
         assert len(out_channels) - len(in_channels) == len(level_strides)
         assert len(level_strides) == len(level_paddings)
-        assert in_channels == out_channels[:len(in_channels)]
+        assert in_channels == out_channels[: len(in_channels)]
 
         if l2_norm_scale:
             self.l2_norm = L2Norm(in_channels[0], l2_norm_scale)
-            self.init_cfg += [
-                dict(
-                    type='Constant',
-                    val=self.l2_norm.scale,
-                    override=dict(name='l2_norm'))
-            ]
+            self.init_cfg += [dict(type="Constant", val=self.l2_norm.scale, override=dict(name="l2_norm"))]
 
         self.extra_layers = nn.ModuleList()
-        extra_layer_channels = out_channels[len(in_channels):]
-        second_conv = DepthwiseSeparableConvModule if \
-            use_depthwise else ConvModule
+        extra_layer_channels = out_channels[len(in_channels) :]
+        second_conv = DepthwiseSeparableConvModule if use_depthwise else ConvModule
 
-        for i, (out_channel, stride, padding) in enumerate(
-                zip(extra_layer_channels, level_strides, level_paddings)):
-            kernel_size = last_kernel_size \
-                if i == len(extra_layer_channels) - 1 else 3
+        for i, (out_channel, stride, padding) in enumerate(zip(extra_layer_channels, level_strides, level_paddings)):
+            kernel_size = last_kernel_size if i == len(extra_layer_channels) - 1 else 3
             per_lvl_convs = nn.Sequential(
                 ConvModule(
                     out_channels[len(in_channels) - 1 + i],
@@ -85,7 +78,8 @@ class SSDNeck(BaseModule):
                     1,
                     conv_cfg=conv_cfg,
                     norm_cfg=norm_cfg,
-                    act_cfg=act_cfg),
+                    act_cfg=act_cfg,
+                ),
                 second_conv(
                     out_channel // 2,
                     out_channel,
@@ -94,13 +88,15 @@ class SSDNeck(BaseModule):
                     padding=padding,
                     conv_cfg=conv_cfg,
                     norm_cfg=norm_cfg,
-                    act_cfg=act_cfg))
+                    act_cfg=act_cfg,
+                ),
+            )
             self.extra_layers.append(per_lvl_convs)
 
     def forward(self, inputs):
         """Forward function."""
         outs = [feat for feat in inputs]
-        if hasattr(self, 'l2_norm'):
+        if hasattr(self, "l2_norm"):
             outs[0] = self.l2_norm(outs[0])
 
         feat = outs[-1]
@@ -111,8 +107,7 @@ class SSDNeck(BaseModule):
 
 
 class L2Norm(nn.Module):
-
-    def __init__(self, n_dims, scale=20., eps=1e-10):
+    def __init__(self, n_dims, scale=20.0, eps=1e-10):
         """L2 normalization layer.
 
         Args:
@@ -132,8 +127,7 @@ class L2Norm(nn.Module):
         # normalization layer convert to FP32 in FP16 training
         x_float = x.float()
         norm = x_float.pow(2).sum(1, keepdim=True).sqrt() + self.eps
-        return (self.weight[None, :, None, None].float().expand_as(x_float) *
-                x_float / norm).type_as(x)
+        return (self.weight[None, :, None, None].float().expand_as(x_float) * x_float / norm).type_as(x)
 
 
 @NECKS.register_module()
@@ -142,12 +136,8 @@ class MMOVSSDNeck(SSDNeck):
         self,
         model_path: str,
         weight_path: Optional[str] = None,
-        inputs: Optional[
-            Union[Dict[str, Union[str, List[str]]], List[str], str]
-        ] = None,
-        outputs: Optional[
-            Union[Dict[str, Union[str, List[str]]], List[str], str]
-        ] = None,
+        inputs: Optional[Union[Dict[str, Union[str, List[str]]], List[str], str]] = None,
+        outputs: Optional[Union[Dict[str, Union[str, List[str]]], List[str], str]] = None,
         init_weight: bool = False,
         verify_shape: bool = True,
     ):

@@ -3,7 +3,6 @@
 #
 
 import torch
-
 from mmcls.models.builder import HEADS
 from mmcls.models.heads.linear_head import LinearClsHead
 
@@ -26,23 +25,23 @@ class SemiSLClsHead(LinearClsHead):
         min_threshold (float): Minimum value of threshold determining pseudo-label, default is 0.5
     """
 
-    def __init__(self,
-                 num_classes,
-                 in_channels,
-                 loss=dict(type="CrossEntropyLoss", loss_weight=1.0),
-                 topk=(1, ),
-                 unlabeled_coef=1.0,
-                 use_dynamic_threshold=True,
-                 min_threshold=0.5):
+    def __init__(
+        self,
+        num_classes,
+        in_channels,
+        loss=dict(type="CrossEntropyLoss", loss_weight=1.0),
+        topk=(1,),
+        unlabeled_coef=1.0,
+        use_dynamic_threshold=True,
+        min_threshold=0.5,
+    ):
         if in_channels <= 0:
             raise ValueError(f"in_channels={in_channels} must be a positive integer")
         if num_classes <= 0:
             raise ValueError("at least one class must be exist num_classes.")
 
-        topk = (1, ) if num_classes < 5 else (1, 5)
-        super(SemiSLClsHead, self).__init__(
-            num_classes, in_channels, loss=loss, topk=topk
-        )
+        topk = (1,) if num_classes < 5 else (1, 5)
+        super(SemiSLClsHead, self).__init__(num_classes, in_channels, loss=loss, topk=topk)
         self.unlabeled_coef = unlabeled_coef
 
         # class wise accuracy for dynamic Threshold (min_thr ~ 1.0)
@@ -75,10 +74,7 @@ class SemiSLClsHead(LinearClsHead):
         lu = 0
         if len(logits_u_s) > 0:
             # compute unsupervised loss
-            lu = (
-                self.compute_loss(logits_u_s, pseudo_label, avg_factor=len(logits_u_s))
-                * mask
-            )
+            lu = self.compute_loss(logits_u_s, pseudo_label, avg_factor=len(logits_u_s)) * mask
         losses["loss"] = lx + self.unlabeled_coef * lu
 
         # compute accuracy
@@ -125,9 +121,7 @@ class SemiSLClsHead(LinearClsHead):
 
                     # update class-wise accuracy
                     for i in set(x_idx.tolist() + uw_idx.tolist()):
-                        current_conf = torch.tensor(
-                            [x_probs[x_idx == i].mean(), uw_probs[uw_idx == i].mean()]
-                        )
+                        current_conf = torch.tensor([x_probs[x_idx == i].mean(), uw_probs[uw_idx == i].mean()])
                         current_conf = current_conf[~current_conf.isnan()].mean()
                         self.classwise_acc[i] = max(current_conf, self.min_threshold)
 

@@ -2,8 +2,8 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import torch
 import numpy as np
+import torch
 
 from otx.mpa.utils.logger import get_logger
 
@@ -31,37 +31,36 @@ def map_class_names(src_classes, dst_classes):
 
 
 def class_sensitive_copy_state_dict(src_dict, src_classes, dst_dict, dst_classes, model_type):
-    if model_type in ['ImageClassifier', 'TaskIncrementalLwF', 'ClsIncrementalClassifier', 'SAMImageClassifier']:
+    if model_type in ["ImageClassifier", "TaskIncrementalLwF", "ClsIncrementalClassifier", "SAMImageClassifier"]:
         class_sensitive_copy_state_dict_cls(src_dict, src_classes, dst_dict, dst_classes)
     else:
-        logger.warning(f'Class-sensitive state_dict copy for {model_type} is not yet supported!')
+        logger.warning(f"Class-sensitive state_dict copy for {model_type} is not yet supported!")
 
 
 def class_sensitive_copy_state_dict_cls(src_dict, src_classes, dst_dict, dst_classes):
-    logger.info('Class sensitive weight copy called!')
+    logger.info("Class sensitive weight copy called!")
 
     # Strip 'module.' from state_dicts if any
     dst2src = map_class_names(dst_classes, src_classes)
-    logger.info(f'{src_classes} -> {dst_classes}')
-    src_dict = {k.replace('module.', ''): v for k, v in src_dict.items()}
-    dst_dict = {k.replace('module.', ''): v for k, v in dst_dict.items()}
+    logger.info(f"{src_classes} -> {dst_classes}")
+    src_dict = {k.replace("module.", ""): v for k, v in src_dict.items()}
+    dst_dict = {k.replace("module.", ""): v for k, v in dst_dict.items()}
     # (model, state_dict):
     for k, v_load in src_dict.items():
         if k in dst_dict:
             v = dst_dict[k]
             if torch.equal(torch.tensor(v.shape), torch.tensor(v_load.shape)):
                 v.copy_(v_load)
-            elif 'head' in k:
+            elif "head" in k:
                 if len(v.shape) > 1:
                     v_load = sync_transpose_tensor(v_load, v)
                 for dst_idx, src_idx in enumerate(dst2src):
                     v[dst_idx].copy_(v_load[src_idx])
             else:
-                raise ValueError('the size of model and checkpoint file are not matched key: '
-                                 f'{k}')
+                raise ValueError("the size of model and checkpoint file are not matched key: " f"{k}")
         else:
-            logger.warning(f'WARNING: can not find weight key: {k} in dst_model')
-    logger.info('copied state dict completely')
+            logger.warning(f"WARNING: can not find weight key: {k} in dst_model")
+    logger.info("copied state dict completely")
 
 
 def prob_extractor(model, data_loader):
@@ -72,7 +71,7 @@ def prob_extractor(model, data_loader):
         probs = []
         features = []
         for i, data_batch in enumerate(data_loader):
-            img = data_batch['img']
+            img = data_batch["img"]
             if torch.cuda.is_available():
                 img = img.cuda()
             p, f = model.extract_prob(img)
@@ -96,12 +95,12 @@ def refine_results(results):
 
 def extract_anchor_ratio(dataset, num_ratios=5):
     ratio_info = []
-    if hasattr(dataset, 'dataset'):  # to confirm dataset is wrapped.
+    if hasattr(dataset, "dataset"):  # to confirm dataset is wrapped.
         dataset = dataset.dataset
     for ds in dataset:
-        ori_shape = ds['img_metas'].data['ori_shape']
-        img_shape = ds['img_metas'].data['img_shape']
-        bboxes = ds['gt_bboxes'].data.numpy()
+        ori_shape = ds["img_metas"].data["ori_shape"]
+        img_shape = ds["img_metas"].data["img_shape"]
+        bboxes = ds["gt_bboxes"].data.numpy()
         for bbox in bboxes:
             w_o = bbox[2] - bbox[0]
             h_o = bbox[3] - bbox[1]
@@ -113,7 +112,7 @@ def extract_anchor_ratio(dataset, num_ratios=5):
     ratio_step = int(len(ratio_info) / num_ratios)
     proposal_ratio = []
     for i in range(num_ratios):
-        r = np.mean(ratio_info[i * ratio_step:(i + 1) * ratio_step])
+        r = np.mean(ratio_info[i * ratio_step : (i + 1) * ratio_step])
         proposal_ratio.append(r)
     return proposal_ratio
 
@@ -123,8 +122,8 @@ def map_cat_and_cls_as_order(classes, cats):
     cat_ids = []
     for i, cls in enumerate(classes):
         for _, cat in cats.items():
-            if cls == cat['name']:
-                cat_id = cat['id']
+            if cls == cat["name"]:
+                cat_id = cat["id"]
                 cat_ids.append(cat_id)
                 cat2label.update({cat_id: i})
     return cat2label, cat_ids
@@ -138,14 +137,14 @@ def sync_transpose_tensor(src_w, dst_w):
     elif src_shape[0] == dst_shape[1]:
         return src_w.t()
     else:
-        raise ValueError('the size of model and checkpoint file are not matched')
+        raise ValueError("the size of model and checkpoint file are not matched")
 
 
 def unwrap_dataset(dataset):
     times = 1
     target_dataset = dataset
-    while hasattr(target_dataset, 'dataset'):
-        if hasattr(target_dataset, 'times'):
+    while hasattr(target_dataset, "dataset"):
+        if hasattr(target_dataset, "times"):
             times = target_dataset.times
         target_dataset = target_dataset.dataset
     return target_dataset, times

@@ -1,10 +1,8 @@
-_base_ = [
-    './efficientnetb2b_maskrcnn.py'
-]
+_base_ = ["./efficientnetb2b_maskrcnn.py"]
 
 model = dict(
-    type='CustomMaskRCNN',
+    type="CustomMaskRCNN",
     roi_head=dict(
-        type='CustomRoIHead',
-    )
+        type="CustomRoIHead",
+    ),
 )

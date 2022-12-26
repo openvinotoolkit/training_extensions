@@ -1,11 +1,9 @@
-_base_ = [
-    './yolox.py'
-]
+_base_ = ["./yolox.py"]
 
 model = dict(
-    type='CustomYOLOX',
+    type="CustomYOLOX",
     bbox_head=dict(
-        type='CustomYOLOXHead',
+        type="CustomYOLOXHead",
     ),
 )
 

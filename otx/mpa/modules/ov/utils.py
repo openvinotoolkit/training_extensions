@@ -6,12 +6,12 @@ import errno
 import os
 from typing import List, Optional
 
-from otx.mpa.utils.logger import get_logger
 from openvino.pyopenvino import Model, Node
 from openvino.runtime import Core
 
-from .omz_wrapper import AVAILABLE_OMZ_MODELS, get_omz_model
+from otx.mpa.utils.logger import get_logger
 
+from .omz_wrapper import AVAILABLE_OMZ_MODELS, get_omz_model
 
 logger = get_logger()
 
@@ -80,9 +80,7 @@ def to_dynamic_model(ov_model: Model) -> Model:
     return ov_model
 
 
-def load_ov_model(
-    model_path: str, weight_path: Optional[str] = None, convert_dynamic: bool = False
-) -> Model:
+def load_ov_model(model_path: str, weight_path: Optional[str] = None, convert_dynamic: bool = False) -> Model:
     if model_path.startswith("omz://"):
         model_path = model_path.replace("omz://", "")
         assert model_path in AVAILABLE_OMZ_MODELS
@@ -145,6 +143,7 @@ def convert_op_to_torch(op: Node):
 
 def convert_op_to_torch_module(target_op: Node, ops: List[Node]):
     from .ops.modules import OperationModule
+
     ops_map = {}
     for op in ops:
         ops_map[get_op_name(op)] = op

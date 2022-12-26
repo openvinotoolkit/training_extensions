@@ -93,9 +93,7 @@ class ReshapeV1(Operation[ReshapeV1Attribute]):
                 target_shape[i] = origin_dim
             elif target_dim == -1:
                 break
-        for i, (origin_dim, target_dim) in enumerate(
-            zip(origin_shape[::-1], target_shape[::-1])
-        ):
+        for i, (origin_dim, target_dim) in enumerate(zip(origin_shape[::-1], target_shape[::-1])):
             if target_dim == 0:
                 target_shape[i] = origin_dim
             elif target_dim == -1:
@@ -126,10 +124,7 @@ class ShapeOfV3Attribute(Attribute):
         super().__post_init__()
         valid_output_type = ["i64", "i32"]
         if self.output_type not in valid_output_type:
-            raise ValueError(
-                f"Invalid output_type {self.output_type}. "
-                f"It must be one of {valid_output_type}."
-            )
+            raise ValueError(f"Invalid output_type {self.output_type}. " f"It must be one of {valid_output_type}.")
 
 
 @OPS.register()
@@ -139,6 +134,6 @@ class ShapeOfV3(Operation[ShapeOfV3Attribute]):
     ATTRIBUTE_FACTORY = ShapeOfV3Attribute
 
     def forward(self, input):
-        return ConvertV0(
-            "temp", shape=self.shape, destination_type=self.attrs.output_type
-        )(torch.tensor(input.shape, device=input.device))
+        return ConvertV0("temp", shape=self.shape, destination_type=self.attrs.output_type)(
+            torch.tensor(input.shape, device=input.device)
+        )

@@ -4,8 +4,8 @@
 
 import math
 
-from mmcv.runner import Hook, HOOKS
 from mmcv.parallel import is_module_wrapper
+from mmcv.runner import HOOKS, Hook
 
 
 @HOOKS.register_module()
@@ -25,10 +25,7 @@ class SemiSLClsHook(Hook):
             If False, Semi-SL uses 1 as unlabeled loss coefficient
     """
 
-    def __init__(self,
-                 total_steps=0,
-                 unlabeled_warmup=True,
-                 **kwargs):
+    def __init__(self, total_steps=0, unlabeled_warmup=True, **kwargs):
         self.unlabeled_warmup = unlabeled_warmup
         self.total_steps = total_steps
         self.current_step, self.unlabeled_coef = 0, 0
@@ -40,9 +37,7 @@ class SemiSLClsHook(Hook):
             if self.total_steps == 0:
                 self.total_steps = runner.max_iters
             self.unlabeled_coef = 0.5 * (
-                1 - math.cos(
-                    min(math.pi, (2 * math.pi * self.current_step) / self.total_steps)
-                )
+                1 - math.cos(min(math.pi, (2 * math.pi * self.current_step) / self.total_steps))
             )
             model = self._get_model(runner)
             model.head.unlabeled_coef = self.unlabeled_coef
@@ -56,8 +51,8 @@ class SemiSLClsHook(Hook):
     def after_epoch(self, runner):
         # Add data related to Semi-SL to the log
         if self.unlabeled_warmup:
-            runner.log_buffer.output.update({'unlabeled_loss': round(self.unlabeled_coef, 4)})
-        runner.log_buffer.output.update({'pseudo_label': self.num_pseudo_label})
+            runner.log_buffer.output.update({"unlabeled_loss": round(self.unlabeled_coef, 4)})
+        runner.log_buffer.output.update({"pseudo_label": self.num_pseudo_label})
         self.num_pseudo_label = 0
 
     def _get_model(self, runner):

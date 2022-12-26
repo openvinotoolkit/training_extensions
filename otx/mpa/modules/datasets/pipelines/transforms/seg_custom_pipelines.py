@@ -2,13 +2,11 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from mmseg.datasets import PIPELINES
-
 import mmcv
 import numpy as np
-from mmseg.datasets.pipelines.formating import to_tensor
-
 from mmcv.parallel import DataContainer as DC
+from mmseg.datasets import PIPELINES
+from mmseg.datasets.pipelines.formating import to_tensor
 
 
 @PIPELINES.register_module(force=True)
@@ -40,17 +38,16 @@ class Normalize(object):
                 result dict.
         """
 
-        for target in ['img', 'ul_w_img', 'aux_img']:
+        for target in ["img", "ul_w_img", "aux_img"]:
             if target in results:
                 results[target] = mmcv.imnormalize(results[target], self.mean, self.std, self.to_rgb)
-        results['img_norm_cfg'] = dict(mean=self.mean, std=self.std, to_rgb=self.to_rgb)
+        results["img_norm_cfg"] = dict(mean=self.mean, std=self.std, to_rgb=self.to_rgb)
 
         return results
 
     def __repr__(self):
         repr_str = self.__class__.__name__
-        repr_str += f'(mean={self.mean}, std={self.std}, to_rgb=' \
-                    f'{self.to_rgb})'
+        repr_str += f"(mean={self.mean}, std={self.std}, to_rgb=" f"{self.to_rgb})"
         return repr_str
 
 
@@ -76,7 +73,7 @@ class DefaultFormatBundle(object):
             dict: The result dict contains the data that is formatted with
                 default bundle.
         """
-        for target in ['img', 'ul_w_img', 'aux_img']:
+        for target in ["img", "ul_w_img", "aux_img"]:
             if target not in results:
                 continue
 
@@ -87,15 +84,12 @@ class DefaultFormatBundle(object):
 
             results[target] = DC(to_tensor(img), stack=True)
 
-        for trg_name in ['gt_semantic_seg', 'gt_class_borders', 'pixel_weights']:
+        for trg_name in ["gt_semantic_seg", "gt_class_borders", "pixel_weights"]:
             if trg_name not in results:
                 continue
 
-            out_type = np.float32 if trg_name == 'pixel_weights' else np.int64
-            results[trg_name] = DC(
-                to_tensor(results[trg_name][None, ...].astype(out_type)),
-                stack=True
-            )
+            out_type = np.float32 if trg_name == "pixel_weights" else np.int64
+            results[trg_name] = DC(to_tensor(results[trg_name][None, ...].astype(out_type)), stack=True)
 
         return results
 
@@ -112,8 +106,8 @@ class BranchImage(object):
         for k1, k2 in self.key_map.items():
             if k1 in results:
                 results[k2] = results[k1]
-            if k1 in results['img_fields']:
-                results['img_fields'].append(k2)
+            if k1 in results["img_fields"]:
+                results["img_fields"].append(k2)
         return results
 
     def __repr__(self):

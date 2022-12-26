@@ -117,10 +117,7 @@ class NormalizeL2V0Attribute(Attribute):
         super().__post_init__()
         valid_eps_mode = ["add", "max"]
         if self.eps_mode not in valid_eps_mode:
-            raise ValueError(
-                f"Invalid eps_mode {self.eps_mode}. "
-                f"It must be one of {valid_eps_mode}."
-            )
+            raise ValueError(f"Invalid eps_mode {self.eps_mode}. " f"It must be one of {valid_eps_mode}.")
 
 
 @OPS.register()
@@ -165,10 +162,7 @@ class MVNV6Attribute(Attribute):
         super().__post_init__()
         valid_eps_mode = ["INSIDE_SQRT", "OUTSIDE_SQRT"]
         if self.eps_mode not in valid_eps_mode:
-            raise ValueError(
-                f"Invalid eps_mode {self.eps_mode}. "
-                f"It must be one of {valid_eps_mode}."
-            )
+            raise ValueError(f"Invalid eps_mode {self.eps_mode}. " f"It must be one of {valid_eps_mode}.")
 
 
 @OPS.register()

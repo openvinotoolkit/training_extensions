@@ -19,12 +19,8 @@ class MMOVSSDHead(SSDHead):
         self,
         model_path: str,
         weight_path: Optional[str] = None,
-        inputs: Optional[
-            Union[Dict[str, Union[str, List[str]]], List[str], str]
-        ] = None,
-        outputs: Optional[
-            Union[Dict[str, Union[str, List[str]]], List[str], str]
-        ] = None,
+        inputs: Optional[Union[Dict[str, Union[str, List[str]]], List[str], str]] = None,
+        outputs: Optional[Union[Dict[str, Union[str, List[str]]], List[str], str]] = None,
         init_weight: bool = False,
         verify_shape: bool = True,
         transpose_cls: bool = False,
@@ -102,19 +98,13 @@ class MMOVSSDHead(SSDHead):
                 #   -> [B, num_anchors * cls_out_channels, H, W]
                 shape = cls_score.shape
                 cls_score = (
-                    cls_score.reshape(shape[0], self.cls_out_channels, -1, *shape[2:])
-                    .transpose(1, 2)
-                    .reshape(shape)
+                    cls_score.reshape(shape[0], self.cls_out_channels, -1, *shape[2:]).transpose(1, 2).reshape(shape)
                 )
 
             if self._transpose_reg:
                 # [B, 4 * num_anchors, H, W] -> [B, num_anchors * 4, H, W]
                 shape = bbox_pred.shape
-                bbox_pred = (
-                    bbox_pred.reshape(shape[0], 4, -1, *shape[2:])
-                    .transpose(1, 2)
-                    .reshape(shape)
-                )
+                bbox_pred = bbox_pred.reshape(shape[0], 4, -1, *shape[2:]).transpose(1, 2).reshape(shape)
 
             # since mmdet v2.0, SSDHead is supposed to be
             # that FG labels to [0, num_class-1] and BG labels to num_class
@@ -126,9 +116,9 @@ class MMOVSSDHead(SSDHead):
                 cls_score = cls_score.reshape(-1, self.cls_out_channels)
                 cls_score = torch.cat(
                     (
-                        cls_score[:, :self._background_index],
-                        cls_score[:, self._background_index + 1:],
-                        cls_score[:, self._background_index:self._background_index + 1],
+                        cls_score[:, : self._background_index],
+                        cls_score[:, self._background_index + 1 :],
+                        cls_score[:, self._background_index : self._background_index + 1],
                     ),
                     -1,
                 )

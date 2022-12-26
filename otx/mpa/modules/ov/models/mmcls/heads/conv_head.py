@@ -4,7 +4,6 @@
 
 import torch.nn as nn
 import torch.nn.functional as F
-
 from mmcls.models.builder import HEADS
 from mmcls.models.heads import ClsHead
 
@@ -21,20 +20,14 @@ class ConvClsHead(ClsHead):
             Defaults to use dict(type='Normal', layer='Linear', std=0.01).
     """
 
-    def __init__(self,
-                 num_classes,
-                 in_channels,
-                 init_cfg=dict(type='Kaiming', layer=['Conv2d']),
-                 *args,
-                 **kwargs):
+    def __init__(self, num_classes, in_channels, init_cfg=dict(type="Kaiming", layer=["Conv2d"]), *args, **kwargs):
         super(ConvClsHead, self).__init__(init_cfg=init_cfg, *args, **kwargs)
 
         self.in_channels = in_channels
         self.num_classes = num_classes
 
         if self.num_classes <= 0:
-            raise ValueError(
-                f'num_classes={num_classes} must be a positive integer')
+            raise ValueError(f"num_classes={num_classes} must be a positive integer")
 
         self.conv = nn.Conv2d(self.in_channels, self.num_classes, (1, 1))
 
@@ -67,8 +60,7 @@ class ConvClsHead(ClsHead):
         cls_score = self.conv(x).squeeze()
 
         if softmax:
-            pred = (
-                F.softmax(cls_score, dim=1) if cls_score is not None else None)
+            pred = F.softmax(cls_score, dim=1) if cls_score is not None else None
         else:
             pred = cls_score
 

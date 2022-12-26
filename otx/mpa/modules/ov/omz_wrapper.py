@@ -19,7 +19,6 @@ from requests.exceptions import HTTPError
 
 from otx.mpa.utils.file import MPA_CACHE
 
-
 MPA_OMZ_CACHE = os.path.join(MPA_CACHE, "omz")
 os.makedirs(MPA_OMZ_CACHE, exist_ok=True)
 
@@ -86,9 +85,7 @@ OMZ_PUBLIC_MODELS = dict(
 )
 
 
-AVAILABLE_OMZ_MODELS = [
-    model for models in OMZ_PUBLIC_MODELS.values() for model in models
-]
+AVAILABLE_OMZ_MODELS = [model for models in OMZ_PUBLIC_MODELS.values() for model in models]
 
 
 class NameSpace:
@@ -227,15 +224,9 @@ def convert_model(
         mo_path = Path(mo_executable)
     else:
         try:
-            mo_path = (
-                Path(os.environ["INTEL_OPENVINO_DIR"])
-                / "tools/mo/openvino/tools/mo/mo.py"
-            )
+            mo_path = Path(os.environ["INTEL_OPENVINO_DIR"]) / "tools/mo/openvino/tools/mo/mo.py"
             if not mo_path.exists():
-                mo_path = (
-                    Path(os.environ["INTEL_OPENVINO_DIR"])
-                    / "tools/model_optimizer/mo.py"
-                )
+                mo_path = Path(os.environ["INTEL_OPENVINO_DIR"]) / "tools/model_optimizer/mo.py"
         except KeyError:
             sys.exit(
                 "Unable to locate Model Optimizer. "
@@ -248,17 +239,13 @@ def convert_model(
     if str(mo_path).lower().endswith(".py"):
         mo_dir = mo_path.parent
     else:
-        mo_package_path, stderr = _common.get_package_path(
-            namespace.python, "openvino.tools.mo"
-        )
+        mo_package_path, stderr = _common.get_package_path(namespace.python, "openvino.tools.mo")
         mo_dir = mo_package_path
 
         if mo_package_path is None:
             mo_package_path, stderr = _common.get_package_path(args.python, "mo")
             if mo_package_path is None:
-                sys.exit(
-                    "Unable to load Model Optimizer. Errors occurred: {}".format(stderr)
-                )
+                sys.exit("Unable to load Model Optimizer. Errors occurred: {}".format(stderr))
             mo_dir = mo_package_path.parent
 
     reporter = _reporting.Reporter(_reporting.DirectOutputContext())
@@ -271,17 +258,13 @@ def convert_model(
 
     def convert(reporter, model, output_dir, namespace, mo_props, requested_precisions):
         if model.mo_args is None:
-            reporter.print_section_heading(
-                "Skipping {} (no conversions defined)", model.name
-            )
+            reporter.print_section_heading("Skipping {} (no conversions defined)", model.name)
             reporter.print()
             return True
 
         model_precisions = requested_precisions & model.precisions
         if not model_precisions:
-            reporter.print_section_heading(
-                "Skipping {} (all conversions skipped)", model.name
-            )
+            reporter.print_section_heading("Skipping {} (all conversions skipped)", model.name)
             reporter.print()
             return True
 
@@ -304,26 +287,18 @@ def convert_model(
         }
 
         if model.conversion_to_onnx_args:
-            if not convert_to_onnx(
-                reporter, model, output_dir, namespace, template_variables
-            ):
+            if not convert_to_onnx(reporter, model, output_dir, namespace, template_variables):
                 return False
             model_format = "onnx"
 
-        expanded_mo_args = [
-            string.Template(arg).substitute(template_variables) for arg in model.mo_args
-        ]
+        expanded_mo_args = [string.Template(arg).substitute(template_variables) for arg in model.mo_args]
 
         for model_precision in sorted(model_precisions):
             data_type = model_precision.split("-")[0]
             layout_string = ",".join(
-                "{}({})".format(input.name, input.layout)
-                for input in model.input_info
-                if input.layout
+                "{}({})".format(input.name, input.layout) for input in model.input_info if input.layout
             )
-            shape_string = ",".join(
-                str(input.shape) for input in model.input_info if input.shape
-            )
+            shape_string = ",".join(str(input.shape) for input in model.input_info if input.shape)
 
             if layout_string:
                 expanded_mo_args.append("--layout={}".format(layout_string))
@@ -334,9 +309,7 @@ def convert_model(
                 *mo_props.cmd_prefix,
                 "--framework={}".format(model_format),
                 "--data_type={}".format(data_type),
-                "--output_dir={}".format(
-                    output_dir / model.subdirectory / model_precision
-                ),
+                "--output_dir={}".format(output_dir / model.subdirectory / model_precision),
                 "--model_name={}".format(model.name),
                 "--input={}".format(",".join(input.name for input in model.input_info)),
                 *expanded_mo_args,
@@ -372,9 +345,7 @@ def convert_model(
         results.append(convert(reporter, model, *shared_convert_args))
         models.append(model)
 
-    failed_models = [
-        model.name for model, successful in zip(models, results) if not successful
-    ]
+    failed_models = [model.name for model, successful in zip(models, results) if not successful]
 
     if failed_models:
         reporter.print("FAILED:")
@@ -385,11 +356,7 @@ def convert_model(
     return _get_ir_path(output_dir / model.subdirectory)
 
 
-def get_omz_model(
-    model_name, download_dir=MPA_OMZ_CACHE, output_dir=MPA_OMZ_CACHE, force=False
-):
+def get_omz_model(model_name, download_dir=MPA_OMZ_CACHE, output_dir=MPA_OMZ_CACHE, force=False):
     model = get_model_configuration(model_name)
     download_model(model, download_dir=download_dir, force=force)
-    return convert_model(
-        model, download_dir=download_dir, output_dir=output_dir, force=force
-    )
+    return convert_model(model, download_dir=download_dir, output_dir=output_dir, force=force)

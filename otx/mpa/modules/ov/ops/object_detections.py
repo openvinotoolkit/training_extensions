@@ -30,10 +30,7 @@ class ProposalV4Attribute(Attribute):
         super().__post_init__()
         valid_framework = ["", "tensorflow"]
         if self.framework not in valid_framework:
-            raise ValueError(
-                f"Invalid framework {self.framework}. "
-                f"It must be one of {valid_framework}."
-            )
+            raise ValueError(f"Invalid framework {self.framework}. " f"It must be one of {valid_framework}.")
 
 
 @OPS.register()
@@ -74,9 +71,7 @@ class ROIPoolingV0Attribute(Attribute):
         super().__post_init__()
         valid_method = ["max", "bilinear"]
         if self.method not in valid_method:
-            raise ValueError(
-                f"Invalid method {self.method}. " f"It must be one of {valid_method}."
-            )
+            raise ValueError(f"Invalid method {self.method}. " f"It must be one of {valid_method}.")
 
 
 @OPS.register()
@@ -114,10 +109,7 @@ class DetectionOutputV0Attribute(Attribute):
             "caffe.PriorBoxParameter.CENTER_SIZE",
         ]
         if self.code_type not in valid_code_type:
-            raise ValueError(
-                f"Invalid code_type {self.code_type}. "
-                f"It must be one of {valid_code_type}."
-            )
+            raise ValueError(f"Invalid code_type {self.code_type}. " f"It must be one of {valid_code_type}.")
 
 
 @OPS.register()
@@ -126,9 +118,7 @@ class DetectionOutputV0(Operation[DetectionOutputV0Attribute]):
     VERSION = 0
     ATTRIBUTE_FACTORY = DetectionOutputV0Attribute
 
-    def forward(
-        self, loc_data, conf_data, prior_data, arm_conf_data=None, arm_loc_data=None
-    ):
+    def forward(self, loc_data, conf_data, prior_data, arm_conf_data=None, arm_loc_data=None):
         raise NotImplementedError
 
 

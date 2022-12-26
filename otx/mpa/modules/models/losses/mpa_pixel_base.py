@@ -3,19 +3,17 @@
 #
 
 import torch
-
 from mmseg.models.losses.pixel_base import BasePixelLoss
 from mmseg.models.losses.utils import weight_reduce_loss
 
 
 class MPABasePixelLoss(BasePixelLoss):
-    def __init__(self,
-                 **kwargs):
+    def __init__(self, **kwargs):
         super(MPABasePixelLoss, self).__init__(**kwargs)
 
     def _forward(self, output, labels, valid_label_mask, avg_factor=None, pixel_weights=None, reduction_override=None):
-        assert reduction_override in (None, 'none', 'mean', 'sum')
-        reduction = (reduction_override if reduction_override else self.reduction)
+        assert reduction_override in (None, "none", "mean", "sum")
+        reduction = reduction_override if reduction_override else self.reduction
 
         self._last_scale = self._scale_scheduler(self.iter, self.epoch_size)
 
@@ -23,6 +21,7 @@ class MPABasePixelLoss(BasePixelLoss):
             output = self._pr_product(output)
 
         import numpy as np
+
         _labels = labels.cpu().detach().numpy()
         _labels[np.where((_labels == self.ignore_index))] = 0
         num_classes = output.size(1)
@@ -49,12 +48,7 @@ class MPABasePixelLoss(BasePixelLoss):
             weight = self.sampler(losses, output, valid_labels, valid_mask)
             weight_sparsity = self._sparsity(weight, valid_mask)
 
-        loss = weight_reduce_loss(
-            losses,
-            weight=weight,
-            reduction=reduction,
-            avg_factor=avg_factor
-        )
+        loss = weight_reduce_loss(losses, weight=weight, reduction=reduction, avg_factor=avg_factor)
 
         meta = dict(
             weight=self.last_loss_weight,
@@ -62,7 +56,7 @@ class MPABasePixelLoss(BasePixelLoss):
             scale=self.last_scale,
             raw_sparsity=raw_sparsity,
             weight_sparsity=weight_sparsity,
-            invalid_ratio=invalid_ratio
+            invalid_ratio=invalid_ratio,
         )
 
         return loss, meta

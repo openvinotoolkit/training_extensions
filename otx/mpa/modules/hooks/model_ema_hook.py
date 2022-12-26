@@ -2,11 +2,13 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import torch
 import math
+
+import torch
+from mmcv.parallel import is_module_wrapper
 from mmcv.runner import HOOKS, Hook
 from mmcv.runner.hooks.ema import EMAHook
-from mmcv.parallel import is_module_wrapper
+
 from otx.mpa.utils.logger import get_logger
 
 logger = get_logger()
@@ -44,12 +46,12 @@ class DualModelEMAHook(Hook):
         epoch_momentum=0.0,
         interval=1,
         start_epoch=5,
-        src_model_name='model_s',
-        dst_model_name='model_t',
-        **kwargs
+        src_model_name="model_s",
+        dst_model_name="model_t",
+        **kwargs,
     ):
         super().__init__(**kwargs)
-        self.momentum = 1 - (1 - momentum)**interval
+        self.momentum = 1 - (1 - momentum) ** interval
         self.epoch_momentum = epoch_momentum
         self.interval = interval
         self.start_epoch = start_epoch
@@ -72,16 +74,16 @@ class DualModelEMAHook(Hook):
                 # (teacher model is main target of load/save)
                 # (if it's resuming there will be student weights in checkpoint. No need to copy)
                 self._sync_model()
-                logger.info('Initialized student model by teacher model')
-                logger.info(f'model_s model_t diff: {self._diff_model()}')
+                logger.info("Initialized student model by teacher model")
+                logger.info(f"model_s model_t diff: {self._diff_model()}")
 
     def before_train_epoch(self, runner):
         if self.epoch_momentum > 0.0:
             iter_per_epoch = len(runner.data_loader)
             epoch_decay = 1 - self.epoch_momentum
-            iter_decay = math.pow(epoch_decay, self.interval/iter_per_epoch)
+            iter_decay = math.pow(epoch_decay, self.interval / iter_per_epoch)
             self.momentum = 1 - iter_decay
-            logger.info(f'EMA: epoch_decay={epoch_decay} / iter_decay={iter_decay}')
+            logger.info(f"EMA: epoch_decay={epoch_decay} / iter_decay={iter_decay}")
             self.epoch_momentum = 0.0  # disable re-compute
 
     def after_train_iter(self, runner):
@@ -103,7 +105,7 @@ class DualModelEMAHook(Hook):
 
     def after_train_epoch(self, runner):
         if self.enabled:
-            logger.info(f'model_s model_t diff: {self._diff_model()}')
+            logger.info(f"model_s model_t diff: {self._diff_model()}")
 
     def _get_model(self, runner):
         model = runner.model
@@ -129,27 +131,21 @@ class DualModelEMAHook(Hook):
             for name, src_param in self.src_params.items():
                 dst_param = self.dst_params[name]
                 # dst_param.data.mul_(1 - momentum).add_(src_param.data, alpha=momentum)
-                dst_param.data.copy_(dst_param.data*(1 - momentum) + src_param.data*momentum)
+                dst_param.data.copy_(dst_param.data * (1 - momentum) + src_param.data * momentum)
 
     def _diff_model(self):
         diff_sum = 0.0
         with torch.no_grad():
             for name, src_param in self.src_params.items():
                 dst_param = self.dst_params[name]
-                diff = ((src_param - dst_param)**2).sum()
+                diff = ((src_param - dst_param) ** 2).sum()
                 diff_sum += diff
         return diff_sum
 
 
 @HOOKS.register_module()
 class CustomModelEMAHook(EMAHook):
-    def __init__(
-        self,
-        momentum=0.0002,
-        epoch_momentum=0.0,
-        interval=1,
-        **kwargs
-    ):
+    def __init__(self, momentum=0.0002, epoch_momentum=0.0, interval=1, **kwargs):
         super().__init__(momentum=momentum, interval=interval, **kwargs)
         self.momentum = momentum
         self.epoch_momentum = epoch_momentum
@@ -159,9 +155,9 @@ class CustomModelEMAHook(EMAHook):
         if self.epoch_momentum > 0.0:
             iter_per_epoch = len(runner.data_loader)
             epoch_decay = 1 - self.epoch_momentum
-            iter_decay = math.pow(epoch_decay, self.interval/iter_per_epoch)
+            iter_decay = math.pow(epoch_decay, self.interval / iter_per_epoch)
             self.momentum = 1 - iter_decay
-            logger.info(f'Update EMA momentum: {self.momentum}')
+            logger.info(f"Update EMA momentum: {self.momentum}")
             self.epoch_momentum = 0.0  # disable re-compute
 
         super().before_train_epoch(runner)

@@ -4,12 +4,11 @@
 
 import os.path as osp
 
-from mmseg.datasets import DATASETS
-from mmseg.datasets import CustomDataset
+import numpy as np
+from mmseg.datasets import DATASETS, CustomDataset
 
 from otx.mpa.modules.utils.task_adapt import map_class_names
 from otx.mpa.utils import logger
-import numpy as np
 
 
 @DATASETS.register_module()
@@ -24,7 +23,8 @@ class SegIncrVOCDataset(CustomDataset):
 
     def __init__(self, split, classes, new_classes, **kwargs):
         super(SegIncrVOCDataset, self).__init__(
-            img_suffix='.jpg', seg_map_suffix='.png', split=split, classes=classes, **kwargs)
+            img_suffix=".jpg", seg_map_suffix=".png", split=split, classes=classes, **kwargs
+        )
         assert osp.exists(self.img_dir) and self.split is not None
         self.classes = classes
         self.new_classes = new_classes
@@ -33,7 +33,7 @@ class SegIncrVOCDataset(CustomDataset):
 
     def statistics(self):
         gt_seg_maps = self.get_gt_seg_maps(False)
-        classes = ['background'] + self.classes
+        classes = ["background"] + self.classes
 
         new_class_indices = map_class_names(self.new_classes, classes)
         for idx in range(len(gt_seg_maps)):
@@ -47,6 +47,6 @@ class SegIncrVOCDataset(CustomDataset):
             model2data = map_class_names(classes, label_schema)
             new_class_values = [model2data[idx] for idx in new_class_indices]
             if any(value is not -1 for value in new_class_values):
-                self.img_indices['new'].append(idx)
+                self.img_indices["new"].append(idx)
             else:
-                self.img_indices['old'].append(idx)
+                self.img_indices["old"].append(idx)

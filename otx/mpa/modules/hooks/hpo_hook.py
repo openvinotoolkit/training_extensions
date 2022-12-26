@@ -7,7 +7,6 @@ from mmcv.runner import HOOKS, Hook
 
 @HOOKS.register_module()
 class HPOHook(Hook):
-
     def __init__(self, hp_config, metric):
         self.hp_config = hp_config
         self.metric = metric

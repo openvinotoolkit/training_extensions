@@ -2,8 +2,8 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from mmcv.runner import Hook, HOOKS
 from mmcv.parallel import is_module_wrapper
+from mmcv.runner import HOOKS, Hook
 
 
 @HOOKS.register_module()

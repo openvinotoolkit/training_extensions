@@ -17,12 +17,8 @@ class MMOVFPN(FPN):
         self,
         model_path: str,
         weight_path: Optional[str] = None,
-        inputs: Optional[
-            Union[Dict[str, Union[str, List[str]]], List[str], str]
-        ] = None,
-        outputs: Optional[
-            Union[Dict[str, Union[str, List[str]]], List[str], str]
-        ] = None,
+        inputs: Optional[Union[Dict[str, Union[str, List[str]]], List[str], str]] = None,
+        outputs: Optional[Union[Dict[str, Union[str, List[str]]], List[str], str]] = None,
         init_weight: bool = False,
         verify_shape: bool = True,
         *args,

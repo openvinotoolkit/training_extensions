@@ -57,11 +57,7 @@ class DivideV1(Operation[DivideV1Attribute]):
             raise NotImplementedError
 
         non_integer_types = [torch.float16, torch.float32, torch.float64, torch.bool]
-        if (
-            self.attrs.m_pythondiv
-            and input_0.dtype not in non_integer_types
-            and input_1.dtype not in non_integer_types
-        ):
+        if self.attrs.m_pythondiv and input_0.dtype not in non_integer_types and input_1.dtype not in non_integer_types:
             output = output.type(input_0.dtype)
 
         return output

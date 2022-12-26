@@ -1,9 +1,7 @@
-_base_ = [
-    './faster_rcnn.py'
-]
+_base_ = ["./faster_rcnn.py"]
 
-model= dict(
-    type='CustomTwoStageDetector',
+model = dict(
+    type="CustomTwoStageDetector",
 )
 
 __img_norm_cfg = dict(
@@ -21,13 +19,12 @@ data = dict(
             img_scale=(1333, 800),
             flip=False,
             transforms=[
-                dict(type='Resize', keep_ratio=False),
-                dict(type='Normalize', **__img_norm_cfg),
-                dict(type='Pad', size_divisor=32),
-                dict(type='ImageToTensor', keys=['img']),
-                dict(type='Collect', keys=['img'])
+                dict(type="Resize", keep_ratio=False),
+                dict(type="Normalize", **__img_norm_cfg),
+                dict(type="Pad", size_divisor=32),
+                dict(type="ImageToTensor", keys=["img"]),
+                dict(type="Collect", keys=["img"]),
             ],
         ),
     ),
 )
-

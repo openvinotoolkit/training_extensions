@@ -9,7 +9,6 @@ import torch
 from .builder import OPS
 from .op import Attribute, Operation
 
-
 _torch_to_ov = {
     torch.uint8: ["u1", "u4", "u8"],
     torch.int8: ["i4", "i8"],

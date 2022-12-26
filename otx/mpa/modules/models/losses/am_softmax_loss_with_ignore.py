@@ -5,19 +5,19 @@
 import numpy as np
 import torch
 import torch.nn.functional as F
-
 from mmseg.core import build_classification_loss, focal_loss
 from mmseg.models.builder import LOSSES
+
 from .mpa_pixel_base import MPABasePixelLoss
 
 
 @LOSSES.register_module()
 class AMSoftmaxLossWithIgnore(MPABasePixelLoss):
     """Computes the AM-Softmax loss with cos or arc margin"""
-    margin_types = ['cos', 'arc']
 
-    def __init__(self, margin_type='cos',
-                 margin=0.5, gamma=0.0, t=1.0, target_loss='ce', **kwargs):
+    margin_types = ["cos", "arc"]
+
+    def __init__(self, margin_type="cos", margin=0.5, gamma=0.0, t=1.0, target_loss="ce", **kwargs):
         super(AMSoftmaxLossWithIgnore, self).__init__(**kwargs)
 
         assert margin_type in AMSoftmaxLossWithIgnore.margin_types
@@ -35,7 +35,7 @@ class AMSoftmaxLossWithIgnore(MPABasePixelLoss):
 
     @property
     def name(self):
-        return 'am_softmax_with_ignore'
+        return "am_softmax_with_ignore"
 
     @staticmethod
     def _one_hot_mask(target, num_classes):
@@ -48,7 +48,7 @@ class AMSoftmaxLossWithIgnore(MPABasePixelLoss):
             cos_theta[i, 0] += nomatch.sum(dim=0)
             cos_theta[i, valid_label_mask[i] == 0] = 0
 
-        if self.margin_type == 'cos':
+        if self.margin_type == "cos":
             phi_theta = cos_theta - self.m
         else:
             sine = torch.sqrt(1.0 - torch.pow(cos_theta, 2))
@@ -62,9 +62,9 @@ class AMSoftmaxLossWithIgnore(MPABasePixelLoss):
 
         if self.t > 1.0:
             h_theta = self.t - 1 + self.t * cos_theta
-            support_vectors_mask = (~one_hot_mask) * \
-                torch.lt(torch.masked_select(phi_theta, one_hot_mask).view(-1,
-                         1).repeat(1, h_theta.shape[1]) - cos_theta, 0)
+            support_vectors_mask = (~one_hot_mask) * torch.lt(
+                torch.masked_select(phi_theta, one_hot_mask).view(-1, 1).repeat(1, h_theta.shape[1]) - cos_theta, 0
+            )
             output = torch.where(support_vectors_mask, h_theta, output)
 
         out_losses = self.target_loss(scale * output, target)

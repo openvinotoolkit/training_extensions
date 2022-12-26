@@ -2,13 +2,12 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from typing import Dict, List, Optional, Union, Callable, Tuple
+from typing import Callable, Dict, List, Optional, Tuple, Union
 
 from otx.mpa.utils.logger import get_logger
 
-from .ov_model import OVModel
 from ..graph.parsers.builder import PARSERS
-
+from .ov_model import OVModel
 
 logger = get_logger()
 
@@ -18,12 +17,8 @@ class ParserMixin:
         self,
         model_path: str,
         weight_path: Optional[str] = None,
-        inputs: Optional[
-            Union[Dict[str, Union[str, List[str]]], List[str], str]
-        ] = None,
-        outputs: Optional[
-            Union[Dict[str, Union[str, List[str]]], List[str], str]
-        ] = None,
+        inputs: Optional[Union[Dict[str, Union[str, List[str]]], List[str], str]] = None,
+        outputs: Optional[Union[Dict[str, Union[str, List[str]]], List[str], str]] = None,
         parser: Optional[Union[str, Callable]] = None,
         **kwargs,
     ) -> Tuple[Union[str, List[str]], Union[str, List[str]]]:
@@ -36,19 +31,11 @@ class ParserMixin:
             graph = OVModel.build_graph(model_path, weight_path)
             parsed = parser(graph, **kwargs)
 
-            if not isinstance(parsed, dict) or (
-                "inputs" not in parsed and "outputs" not in parsed
-            ):
-                raise ValueError(
-                    f"parser {parser} failed to find inputs and outputs of model. "
-                )
-            if isinstance(parsed["inputs"], dict) != isinstance(
-                parsed["outputs"], dict
-            ):
+            if not isinstance(parsed, dict) or ("inputs" not in parsed and "outputs" not in parsed):
+                raise ValueError(f"parser {parser} failed to find inputs and outputs of model. ")
+            if isinstance(parsed["inputs"], dict) != isinstance(parsed["outputs"], dict):
                 raise ValueError(f"output of parser ({parser}) is not consistent")
-            if isinstance(parsed["inputs"], dict) and isinstance(
-                parsed["outputs"], dict
-            ):
+            if isinstance(parsed["inputs"], dict) and isinstance(parsed["outputs"], dict):
                 if set(parsed["inputs"].keys()) != set(parsed["outputs"].keys()):
                     raise ValueError(
                         f"input keys {parsed['inputs'].keys()} and "
@@ -63,7 +50,5 @@ class ParserMixin:
         return inputs, outputs
 
     @staticmethod
-    def parser(
-        graph, **kwargs
-    ) -> Dict[str, Union[List[str], Dict[str, List[str]]]]:
+    def parser(graph, **kwargs) -> Dict[str, Union[List[str], Dict[str, List[str]]]]:
         return dict(inputs=[], outputs=[])

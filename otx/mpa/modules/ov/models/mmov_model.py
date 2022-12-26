@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from typing import List, Optional, Union, Dict
+from typing import Dict, List, Optional, Union
 
 import torch
 
@@ -15,12 +15,8 @@ class MMOVModel(OVModel, ParserMixin):
         self,
         model_path: str,
         weight_path: Optional[str] = None,
-        inputs: Optional[
-            Union[Dict[str, Union[str, List[str]]], List[str], str]
-        ] = None,
-        outputs: Optional[
-            Union[Dict[str, Union[str, List[str]]], List[str], str]
-        ] = None,
+        inputs: Optional[Union[Dict[str, Union[str, List[str]]], List[str], str]] = None,
+        outputs: Optional[Union[Dict[str, Union[str, List[str]]], List[str], str]] = None,
         *args,
         **kwargs
     ):

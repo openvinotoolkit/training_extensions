@@ -2,17 +2,16 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+import numpy as np
 import torch
 import torch.nn.functional as F
-import numpy as np
-
 from mmcls.models.builder import LOSSES
 from mmcls.models.losses import CrossEntropyLoss
 
 
 @LOSSES.register_module()
 class IBLoss(CrossEntropyLoss):
-    def __init__(self, num_classes, start=5, alpha=1000., **kwargs):
+    def __init__(self, num_classes, start=5, alpha=1000.0, **kwargs):
         """IB Loss
         https://arxiv.org/abs/2110.02444
 
@@ -55,6 +54,6 @@ class IBLoss(CrossEntropyLoss):
             feature = torch.sum(torch.abs(feature), 1).reshape(-1, 1)
             ib = grads * feature.reshape(-1)
             ib = self.alpha / (ib + self.epsilon)
-            ce_loss = F.cross_entropy(input, target, weight=self.weight.to(input.get_device()), reduction='none')
+            ce_loss = F.cross_entropy(input, target, weight=self.weight.to(input.get_device()), reduction="none")
             loss = ce_loss * ib
             return loss.mean()

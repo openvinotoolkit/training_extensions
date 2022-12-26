@@ -98,8 +98,8 @@ class MMOVBBoxHead(BBoxHead):
             cls_score = torch.cat(
                 (
                     cls_score[:, : self._background_index],
-                    cls_score[:, self._background_index + 1:],
-                    cls_score[:, self._background_index:self._background_index + 1],
+                    cls_score[:, self._background_index + 1 :],
+                    cls_score[:, self._background_index : self._background_index + 1],
                 ),
                 -1,
             )

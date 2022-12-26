@@ -1,6 +1,3 @@
-_base_ = './optimizer.py'
+_base_ = "./optimizer.py"
 
-optimizer = dict(
-    type='Adam',
-    lr=0.003
-)
+optimizer = dict(type="Adam", lr=0.003)

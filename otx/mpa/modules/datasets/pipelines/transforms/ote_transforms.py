@@ -4,10 +4,9 @@
 
 import random
 
-from torchvision.transforms import functional as F
-from PIL import Image
-
 from mmcls.datasets.builder import PIPELINES
+from PIL import Image
+from torchvision.transforms import functional as F
 
 
 @PIPELINES.register_module()

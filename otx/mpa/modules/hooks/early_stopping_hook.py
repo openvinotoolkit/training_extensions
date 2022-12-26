@@ -4,12 +4,12 @@
 
 from math import inf, isnan
 from typing import Optional
-from mmcv.runner.hooks import HOOKS, Hook
+
 from mmcv.runner import BaseRunner, LrUpdaterHook
+from mmcv.runner.hooks import HOOKS, Hook
 from mmcv.utils import print_log
 
 from otx.mpa.utils.logger import get_logger
-
 
 logger = get_logger()
 
@@ -42,21 +42,21 @@ class EarlyStoppingHook(Hook):
     :param min_delta: Minimal decay applied to lr. If the difference between new and old lr is
                       smaller than eps, the update is ignored
     """
-    rule_map = {'greater': lambda x, y: x > y, 'less': lambda x, y: x < y}
-    init_value_map = {'greater': -inf, 'less': inf}
-    greater_keys = [
-        'acc', 'top', 'AR@', 'auc', 'precision', 'mAP', 'mDice', 'mIoU',
-        'mAcc', 'aAcc', 'MHAcc'
-    ]
-    less_keys = ['loss']
 
-    def __init__(self,
-                 interval: int,
-                 metric: str = 'bbox_mAP',
-                 rule: Optional[str] = None,
-                 patience: int = 5,
-                 iteration_patience: int = 500,
-                 min_delta: float = 0.0):
+    rule_map = {"greater": lambda x, y: x > y, "less": lambda x, y: x < y}
+    init_value_map = {"greater": -inf, "less": inf}
+    greater_keys = ["acc", "top", "AR@", "auc", "precision", "mAP", "mDice", "mIoU", "mAcc", "aAcc", "MHAcc"]
+    less_keys = ["loss"]
+
+    def __init__(
+        self,
+        interval: int,
+        metric: str = "bbox_mAP",
+        rule: Optional[str] = None,
+        patience: int = 5,
+        iteration_patience: int = 500,
+        min_delta: float = 0.0,
+    ):
         super().__init__()
         self.patience = patience
         self.iteration_patience = iteration_patience
@@ -64,7 +64,7 @@ class EarlyStoppingHook(Hook):
         self.min_delta = min_delta
         self._init_rule(rule, metric)
 
-        self.min_delta *= 1 if self.rule == 'greater' else -1
+        self.min_delta *= 1 if self.rule == "greater" else -1
         self.last_iter = 0
         self.wait_count = 0
         self.best_score = self.init_value_map[self.rule]
@@ -89,20 +89,17 @@ class EarlyStoppingHook(Hook):
                 comparison rule.
         """
         if rule not in self.rule_map and rule is not None:
-            raise KeyError(f'rule must be greater, less or None, '
-                           f'but got {rule}.')
+            raise KeyError(f"rule must be greater, less or None, " f"but got {rule}.")
 
         if rule is None:
-            if key_indicator in self.greater_keys or any(
-                    key in key_indicator for key in self.greater_keys):
-                rule = 'greater'
-            elif key_indicator in self.less_keys or any(
-                    key in key_indicator for key in self.less_keys):
-                rule = 'less'
+            if key_indicator in self.greater_keys or any(key in key_indicator for key in self.greater_keys):
+                rule = "greater"
+            elif key_indicator in self.less_keys or any(key in key_indicator for key in self.less_keys):
+                rule = "less"
             else:
-                raise ValueError(f'Cannot infer the rule for key '
-                                 f'{key_indicator}, thus a specific rule '
-                                 f'must be specified.')
+                raise ValueError(
+                    f"Cannot infer the rule for key " f"{key_indicator}, thus a specific rule " f"must be specified."
+                )
         self.rule = rule
         self.key_indicator = key_indicator
         self.compare_func = self.rule_map[self.rule]
@@ -125,15 +122,14 @@ class EarlyStoppingHook(Hook):
             self._do_check_stopping(runner)
 
     def _do_check_stopping(self, runner):
-        if not self._should_check_stopping(
-                runner) or self.warmup_iters > runner.iter:
+        if not self._should_check_stopping(runner) or self.warmup_iters > runner.iter:
             return
 
         if runner.rank == 0:
             if self.key_indicator not in runner.log_buffer.output:
                 raise KeyError(
-                    f'metric {self.key_indicator} does not exist in buffer. Please check '
-                    f'{self.key_indicator} is cached in evaluation output buffer'
+                    f"metric {self.key_indicator} does not exist in buffer. Please check "
+                    f"{self.key_indicator} is cached in evaluation output buffer"
                 )
 
             key_score = runner.log_buffer.output[self.key_indicator]
@@ -150,13 +146,14 @@ class EarlyStoppingHook(Hook):
                             f"{runner.iter - self.last_iter} from the last "
                             f"improvement must be larger than {self.iteration_patience} to trigger "
                             f"Early Stopping.",
-                            logger=runner.logger)
+                            logger=runner.logger,
+                        )
                         return
                     stop_point = runner.epoch if self.by_epoch else runner.iter
                     print_log(
-                        f"\nEarly Stopping at :{stop_point} with "
-                        f"best {self.key_indicator}: {self.best_score}",
-                        logger=runner.logger)
+                        f"\nEarly Stopping at :{stop_point} with " f"best {self.key_indicator}: {self.best_score}",
+                        logger=runner.logger,
+                    )
                     runner.should_stop = True
 
     def _should_check_stopping(self, runner):
@@ -169,14 +166,16 @@ class EarlyStoppingHook(Hook):
 
 @HOOKS.register_module()
 class LazyEarlyStoppingHook(EarlyStoppingHook):
-    def __init__(self,
-                 interval: int,
-                 metric: str = 'bbox_mAP',
-                 rule: str = None,
-                 patience: int = 5,
-                 iteration_patience: int = 500,
-                 min_delta: float = 0.0,
-                 start: int = None):
+    def __init__(
+        self,
+        interval: int,
+        metric: str = "bbox_mAP",
+        rule: str = None,
+        patience: int = 5,
+        iteration_patience: int = 500,
+        min_delta: float = 0.0,
+        start: int = None,
+    ):
         self.start = start
         super(LazyEarlyStoppingHook, self).__init__(interval, metric, rule, patience, iteration_patience, min_delta)
 
@@ -229,23 +228,23 @@ class ReduceLROnPlateauLrUpdaterHook(LrUpdaterHook):
     :param factor: Factor to be multiply with the learning rate.
                    For example, new_lr = current_lr * factor
     """
-    rule_map = {'greater': lambda x, y: x > y, 'less': lambda x, y: x < y}
-    init_value_map = {'greater': -inf, 'less': inf}
-    greater_keys = [
-        'acc', 'top', 'AR@', 'auc', 'precision', 'mAP', 'mDice', 'mIoU',
-        'mAcc', 'aAcc'
-    ]
-    less_keys = ['loss']
 
-    def __init__(self,
-                 min_lr: float,
-                 interval: int,
-                 metric: str = 'bbox_mAP',
-                 rule: Optional[str] = None,
-                 factor: float = 0.1,
-                 patience: int = 3,
-                 iteration_patience: int = 300,
-                 **kwargs):
+    rule_map = {"greater": lambda x, y: x > y, "less": lambda x, y: x < y}
+    init_value_map = {"greater": -inf, "less": inf}
+    greater_keys = ["acc", "top", "AR@", "auc", "precision", "mAP", "mDice", "mIoU", "mAcc", "aAcc"]
+    less_keys = ["loss"]
+
+    def __init__(
+        self,
+        min_lr: float,
+        interval: int,
+        metric: str = "bbox_mAP",
+        rule: Optional[str] = None,
+        factor: float = 0.1,
+        patience: int = 3,
+        iteration_patience: int = 300,
+        **kwargs,
+    ):
         super().__init__(**kwargs)
         self.interval = interval
         self.min_lr = min_lr
@@ -279,20 +278,17 @@ class ReduceLROnPlateauLrUpdaterHook(LrUpdaterHook):
                 comparison rule.
         """
         if rule not in self.rule_map and rule is not None:
-            raise KeyError(f'rule must be greater, less or None, '
-                           f'but got {rule}.')
+            raise KeyError(f"rule must be greater, less or None, " f"but got {rule}.")
 
         if rule is None:
-            if key_indicator in self.greater_keys or any(
-                    key in key_indicator for key in self.greater_keys):
-                rule = 'greater'
-            elif key_indicator in self.less_keys or any(
-                    key in key_indicator for key in self.less_keys):
-                rule = 'less'
+            if key_indicator in self.greater_keys or any(key in key_indicator for key in self.greater_keys):
+                rule = "greater"
+            elif key_indicator in self.less_keys or any(key in key_indicator for key in self.less_keys):
+                rule = "less"
             else:
-                raise ValueError(f'Cannot infer the rule for key '
-                                 f'{key_indicator}, thus a specific rule '
-                                 f'must be specified.')
+                raise ValueError(
+                    f"Cannot infer the rule for key " f"{key_indicator}, thus a specific rule " f"must be specified."
+                )
         self.rule = rule
         self.key_indicator = key_indicator
         self.compare_func = self.rule_map[self.rule]
@@ -305,8 +301,7 @@ class ReduceLROnPlateauLrUpdaterHook(LrUpdaterHook):
         return True
 
     def get_lr(self, runner: BaseRunner, base_lr: float):
-        if not self._should_check_stopping(
-                runner) or self.warmup_iters > runner.iter:
+        if not self._should_check_stopping(runner) or self.warmup_iters > runner.iter:
             return self.current_lr if self.current_lr is not None else base_lr
 
         if self.current_lr is None:
@@ -320,7 +315,8 @@ class ReduceLROnPlateauLrUpdaterHook(LrUpdaterHook):
         print_log(
             f"\nBest Score: {self.best_score}, Current Score: {score}, Patience: {self.patience} "
             f"Count: {self.bad_count}",
-            logger=runner.logger)
+            logger=runner.logger,
+        )
         if self.compare_func(score, self.best_score):
             self.best_score = score
             self.bad_count = 0
@@ -335,14 +331,15 @@ class ReduceLROnPlateauLrUpdaterHook(LrUpdaterHook):
                     f"{runner.iter - self.last_iter} from the last "
                     f"improvement must be larger than {self.iteration_patience} to trigger "
                     f"LR dropping.",
-                    logger=runner.logger)
+                    logger=runner.logger,
+                )
                 return self.current_lr
             self.last_iter = runner.iter
             self.bad_count = 0
             print_log(
-                f"\nDrop LR from: {self.current_lr}, to: "
-                f"{max(self.current_lr * self.factor, self.min_lr)}",
-                logger=runner.logger)
+                f"\nDrop LR from: {self.current_lr}, to: " f"{max(self.current_lr * self.factor, self.min_lr)}",
+                logger=runner.logger,
+            )
             self.current_lr = max(self.current_lr * self.factor, self.min_lr)
         return self.current_lr
 
@@ -350,10 +347,8 @@ class ReduceLROnPlateauLrUpdaterHook(LrUpdaterHook):
         # TODO: remove overloaded method after fixing the issue
         #  https://github.com/open-mmlab/mmdetection/issues/6572
         for group in runner.optimizer.param_groups:
-            group.setdefault('initial_lr', group['lr'])
-        self.base_lr = [
-            group['initial_lr'] for group in runner.optimizer.param_groups
-        ]
+            group.setdefault("initial_lr", group["lr"])
+        self.base_lr = [group["initial_lr"] for group in runner.optimizer.param_groups]
         self.bad_count = 0
         self.last_iter = 0
         self.current_lr = None
@@ -362,8 +357,7 @@ class ReduceLROnPlateauLrUpdaterHook(LrUpdaterHook):
 
 @HOOKS.register_module()
 class StopLossNanTrainingHook(Hook):
-
     def after_train_iter(self, runner: BaseRunner):
-        if isnan(runner.outputs['loss'].item()):
-            logger.warning('Early Stopping since loss is NaN')
+        if isnan(runner.outputs["loss"].item()):
+            logger.warning("Early Stopping since loss is NaN")
             runner.should_stop = True

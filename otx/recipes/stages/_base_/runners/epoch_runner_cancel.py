@@ -1,4 +1,3 @@
-_base_ = './epoch_runner.py'
+_base_ = "./epoch_runner.py"
 
-runner = dict(type='EpochRunnerWithCancel', max_epochs=300)
-
+runner = dict(type="EpochRunnerWithCancel", max_epochs=300)

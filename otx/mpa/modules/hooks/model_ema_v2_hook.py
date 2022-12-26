@@ -2,12 +2,12 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import torch
-from mmcv.runner import HOOKS, Hook
-from mmcv.parallel import is_module_wrapper
-
 from copy import deepcopy
+
+import torch
 import torch.nn as nn
+from mmcv.parallel import is_module_wrapper
+from mmcv.runner import HOOKS, Hook
 
 from otx.mpa.utils.logger import get_logger
 
@@ -101,14 +101,10 @@ class ModelEmaV2(nn.Module):
 
     def _update(self, update_fn):
         with torch.no_grad():
-            for ema_v, model_v in zip(
-                self.dst_model.values(), self.src_model.values()
-            ):
+            for ema_v, model_v in zip(self.dst_model.values(), self.src_model.values()):
                 if self.device is not None:
                     model_v = model_v.to(device=self.device)
                 ema_v.copy_(update_fn(ema_v, model_v))
 
     def update(self):
-        self._update(
-            update_fn=lambda e, m: self.decay * e + (1.0 - self.decay) * m
-        )
+        self._update(update_fn=lambda e, m: self.decay * e + (1.0 - self.decay) * m)

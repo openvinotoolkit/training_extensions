@@ -1,8 +1,5 @@
-_base_ = '../model.py'
+_base_ = "../model.py"
 
-task = 'segmentation'
+task = "segmentation"
 
-model = dict(
-    train_cfg=dict(),
-    test_cfg=dict()
-)
+model = dict(train_cfg=dict(), test_cfg=dict())

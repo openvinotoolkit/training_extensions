@@ -3,5 +3,4 @@
 #
 
 # flake8: noqa
-from . import class_incr_segmentor
-from . import mean_teacher_segmentor
+from . import class_incr_segmentor, mean_teacher_segmentor

@@ -2,14 +2,14 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import os
 import copy
-import numpy as np
+import os
 
-from mmcv.utils.registry import build_from_cfg
-from mmcls.datasets.builder import DATASETS, PIPELINES
+import numpy as np
 from mmcls.datasets.base_dataset import BaseDataset
+from mmcls.datasets.builder import DATASETS, PIPELINES
 from mmcls.datasets.pipelines import Compose
+from mmcv.utils.registry import build_from_cfg
 
 from otx.mpa.utils.logger import get_logger
 
@@ -35,8 +35,8 @@ class ClsDirDataset(BaseDataset):
 
     def __init__(self, data_dir, pipeline=[], classes=[], new_classes=[], use_labels=True, **kwargs):
         self.data_dir = data_dir
-        self._samples_per_gpu = kwargs.pop('samples_per_gpu', 1)
-        self._workers_per_gpu = kwargs.pop('workers_per_gpu', 1)
+        self._samples_per_gpu = kwargs.pop("samples_per_gpu", 1)
+        self._workers_per_gpu = kwargs.pop("workers_per_gpu", 1)
         self.use_labels = use_labels
         self.img_indices = dict(old=[], new=[])
         self.class_acc = False
@@ -54,28 +54,28 @@ class ClsDirDataset(BaseDataset):
         if isinstance(pipeline, dict):
             self.pipeline = {}
             for k, v in pipeline.items():
-                _pipeline = [dict(type='LoadImageFromFile'), *v]
+                _pipeline = [dict(type="LoadImageFromFile"), *v]
                 _pipeline = [build_from_cfg(p, PIPELINES) for p in _pipeline]
                 self.pipeline[k] = Compose(_pipeline)
             self.num_pipes = len(pipeline)
         elif isinstance(pipeline, list):
             self.num_pipes = 1
-            _pipeline = [dict(type='LoadImageFromFile'), *pipeline]
+            _pipeline = [dict(type="LoadImageFromFile"), *pipeline]
             self.pipeline = Compose([build_from_cfg(p, PIPELINES) for p in _pipeline])
 
         self.data_infos = self.load_annotations()
         self.statistics()
 
     def statistics(self):
-        logger.info(f'ClsDirDataset - {self.num_classes} classes from {self.data_dir}')
-        logger.info(f'- Classes: {self.CLASSES}')
+        logger.info(f"ClsDirDataset - {self.num_classes} classes from {self.data_dir}")
+        logger.info(f"- Classes: {self.CLASSES}")
         if self.new_classes:
-            logger.info(f'- New Classes: {self.new_classes}')
-            old_data_length = len(self.img_indices['old'])
-            new_data_length = len(self.img_indices['new'])
-            logger.info(f'- # of old classes images: {old_data_length}')
-            logger.info(f'- # of New classes images: {new_data_length}')
-        logger.info(f'- # of images: {len(self)}')
+            logger.info(f"- New Classes: {self.new_classes}")
+            old_data_length = len(self.img_indices["old"])
+            new_data_length = len(self.img_indices["new"])
+            logger.info(f"- # of old classes images: {old_data_length}")
+            logger.info(f"- # of New classes images: {new_data_length}")
+        logger.info(f"- # of images: {len(self)}")
 
     def _read_dir(self):
         img_path, img_class, img_prefix = [], [], []
@@ -116,12 +116,12 @@ class ClsDirDataset(BaseDataset):
                 gt_label = np.array(self.class_to_idx[img_cls])
             else:
                 gt_label = np.array([-1])
-            info = {'img_prefix': img_prefix, 'img_info': {'filename': img_path}, 'gt_label': gt_label}
+            info = {"img_prefix": img_prefix, "img_info": {"filename": img_path}, "gt_label": gt_label}
             data_infos.append(info)
             if img_cls in self.new_classes:
-                self.img_indices['new'].append(i)
+                self.img_indices["new"].append(i)
             else:
-                self.img_indices['old'].append(i)
+                self.img_indices["old"].append(i)
         return data_infos
 
     def get_classes_from_dir(self, root):
@@ -147,9 +147,7 @@ class ClsDirDataset(BaseDataset):
         if self.pipeline is None:
             return self.data_infos[idx]
 
-        data_infos = [
-            copy.deepcopy(self.data_infos[idx]) for _ in range(self.num_pipes)
-        ]
+        data_infos = [copy.deepcopy(self.data_infos[idx]) for _ in range(self.num_pipes)]
         if isinstance(self.pipeline, dict):
             results = {}
             for i, (k, v) in enumerate(self.pipeline.items()):
@@ -159,11 +157,7 @@ class ClsDirDataset(BaseDataset):
 
         return results
 
-    def evaluate(self,
-                 results,
-                 metric='accuracy',
-                 metric_options=None,
-                 logger=None):
+    def evaluate(self, results, metric="accuracy", metric_options=None, logger=None):
         """Evaluate the dataset with new metric 'class_accuracy'
 
         Args:
@@ -180,15 +174,15 @@ class ClsDirDataset(BaseDataset):
             dict: evaluation results
         """
         if metric_options is None:
-            metric_options = {'topk': (1, 5) if self.num_classes >= 5 else (1, )}
+            metric_options = {"topk": (1, 5) if self.num_classes >= 5 else (1,)}
 
         if isinstance(metric, str):
             metrics = [metric]
         else:
             metrics = metric
 
-        if 'class_accuracy' in metrics:
-            metrics.remove('class_accuracy')
+        if "class_accuracy" in metrics:
+            metrics.remove("class_accuracy")
             self.class_acc = True
 
         eval_results = super().evaluate(results, metrics, metric_options, logger)
@@ -198,8 +192,8 @@ class ClsDirDataset(BaseDataset):
             results = np.vstack(results)
             gt_labels = self.get_gt_labels()
             accuracies = self.class_accuracy(results, gt_labels)
-            eval_results.update({f'{c} accuracy': a for c, a in zip(self.CLASSES, accuracies)})
-            eval_results.update({'mean accuracy': np.mean(accuracies)})
+            eval_results.update({f"{c} accuracy": a for c, a in zip(self.CLASSES, accuracies)})
+            eval_results.update({"mean accuracy": np.mean(accuracies)})
 
         return eval_results
 

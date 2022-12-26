@@ -5,7 +5,6 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-
 from mmcls.models.builder import HEADS, build_loss
 
 from .multi_classifier_head import MultiClsHead
@@ -13,16 +12,12 @@ from .multi_classifier_head import MultiClsHead
 
 @HEADS.register_module()
 class TaskIncLwfHead(MultiClsHead):
-    def __init__(self,
-                 old_tasks=None,
-                 distillation_loss=dict(type='LwfLoss', T=2.0, loss_weight=1.0),
-                 **kwargs):
+    def __init__(self, old_tasks=None, distillation_loss=dict(type="LwfLoss", T=2.0, loss_weight=1.0), **kwargs):
         super(TaskIncLwfHead, self).__init__(**kwargs)
         self.old_tasks = old_tasks
         if self.old_tasks is not None:  # old_tasks=None and do this by_han_5
             if len(self.old_tasks) <= 0:
-                raise ValueError(
-                    'at least one task must be exist.')
+                raise ValueError("at least one task must be exist.")
             self._init_old_layers()
 
         self.compute_dist_loss = build_loss(distillation_loss)
@@ -31,11 +26,10 @@ class TaskIncLwfHead(MultiClsHead):
         for t_key in self.old_tasks:
             cls = self.old_tasks[t_key]
             if t_key in self.tasks.keys():
-                raise Warning(f'existing task {t_key} is overwritten with new {t_key} task')
+                raise Warning(f"existing task {t_key} is overwritten with new {t_key} task")
             else:
                 if len(cls) == 0:
-                    raise ValueError(
-                        f'task={t_key} is empty task.')
+                    raise ValueError(f"task={t_key} is empty task.")
                 self.classifiers[t_key] = nn.Linear(self.in_channels, len(cls))
 
     def extract_prob(self, img):
@@ -58,7 +52,7 @@ class TaskIncLwfHead(MultiClsHead):
         cls_loss = 0.0
         dist_loss = 0.0
         gt_labels = gt_labels.t()
-        losses['accuracy'] = {}
+        losses["accuracy"] = {}
         for gt_label, t_key in zip(gt_labels, self.tasks):
             num_samples = len(cls_scores[t_key])
             cls_score = cls_scores[t_key]
@@ -68,7 +62,7 @@ class TaskIncLwfHead(MultiClsHead):
             # compute accuracy
             acc = self.compute_accuracy(cls_score, gt_label)
             assert len(acc) == len(self.topk)
-            losses['accuracy'].update({f'{t_key} top-{k}': a for k, a in zip(self.topk, acc)})
+            losses["accuracy"].update({f"{t_key} top-{k}": a for k, a in zip(self.topk, acc)})
 
         for t_key in self.old_tasks:
             num_samples = len(cls_scores[t_key])
@@ -81,8 +75,8 @@ class TaskIncLwfHead(MultiClsHead):
             # compute loss
             dist_loss += self.compute_dist_loss(cls_score, soft_label, avg_factor=num_samples)
 
-        losses['new_loss'] = cls_loss / len(self.tasks)
-        losses['old_loss'] = dist_loss / len(self.old_tasks)
+        losses["new_loss"] = cls_loss / len(self.tasks)
+        losses["old_loss"] = dist_loss / len(self.old_tasks)
         return losses
 
     def simple_test(self, img):

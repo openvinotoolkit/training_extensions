@@ -10,24 +10,19 @@ import os
 
 import torch.nn as nn
 import torch.nn.functional as F
-
-from mmcv.runner import load_checkpoint
-
-from mmcls.models.utils import make_divisible
 from mmcls.models.builder import BACKBONES
+from mmcls.models.utils import make_divisible
+from mmcv.runner import load_checkpoint
 
 from otx.mpa.utils.logger import get_logger
 
 logger = get_logger()
 
-pretrained_root = (
-    "https://github.com/d-li14/mobilenetv3.pytorch/blob/master/pretrained/"
-)
+pretrained_root = "https://github.com/d-li14/mobilenetv3.pytorch/blob/master/pretrained/"
 pretrained_urls = {
     "mobilenetv3_small": pretrained_root + "mobilenetv3-small-55df8e1f.pth?raw=true",
     "mobilenetv3_large": pretrained_root + "mobilenetv3-large-1cd25616.pth?raw=true",
-    "mobilenetv3_large_075": pretrained_root
-    + "mobilenetv3-large-0.75-9632d2a8.pth?raw=true",
+    "mobilenetv3_large_075": pretrained_root + "mobilenetv3-large-0.75-9632d2a8.pth?raw=true",
 }
 
 
@@ -208,9 +203,7 @@ class MobileNetV3Base(ModelInterface):
         super().__init__(**kwargs)
         self.in_size = input_size
         self.num_classes = num_classes
-        self.input_IN = (
-            nn.InstanceNorm2d(in_channels, affine=True) if IN_first else None
-        )
+        self.input_IN = nn.InstanceNorm2d(in_channels, affine=True) if IN_first else None
         self.pooling_type = pooling_type
         self.self_challenging_cfg = self_challenging_cfg
         self.width_mult = width_mult
@@ -224,9 +217,7 @@ class MobileNetV3Base(ModelInterface):
     def extract_features(self, x):
         raise NotImplementedError
 
-    def forward(
-        self, x, return_featuremaps=False, get_embeddings=False, gt_labels=None
-    ):
+    def forward(self, x, return_featuremaps=False, get_embeddings=False, gt_labels=None):
         if self.input_IN is not None:
             x = self.input_IN(x)
 
@@ -255,18 +246,14 @@ class MobileNetV3(MobileNetV3Base):
                 flag = False
             output_channel = make_divisible(c * self.width_mult, 8)
             exp_size = make_divisible(input_channel * t, 8)
-            layers.append(
-                block(input_channel, exp_size, output_channel, k, s, use_se, use_hs)
-            )
+            layers.append(block(input_channel, exp_size, output_channel, k, s, use_se, use_hs))
             input_channel = output_channel
         self.features = nn.Sequential(*layers)
         # building last several layers
         self.conv = conv_1x1_bn(input_channel, exp_size, self.loss)
         output_channel = {"large": 1280, "small": 1024}
         output_channel = (
-            make_divisible(output_channel[mode] * self.width_mult, 8)
-            if self.width_mult > 1.0
-            else output_channel[mode]
+            make_divisible(output_channel[mode] * self.width_mult, 8) if self.width_mult > 1.0 else output_channel[mode]
         )
         self._initialize_weights()
 
@@ -276,9 +263,7 @@ class MobileNetV3(MobileNetV3Base):
 
     def infer_head(self, x, skip_pool=False):
         if not skip_pool:
-            glob_features = self._glob_feature_vector(
-                x, self.pooling_type, reduce_dims=False
-            )
+            glob_features = self._glob_feature_vector(x, self.pooling_type, reduce_dims=False)
         else:
             glob_features = x
 

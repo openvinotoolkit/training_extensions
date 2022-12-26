@@ -3,10 +3,12 @@
 #
 
 import math
+
 from mmcv.runner import HOOKS, Hook, LrUpdaterHook
 from mmcv.runner.hooks.checkpoint import CheckpointHook
-from otx.mpa.utils.logger import get_logger
+
 from otx.mpa.modules.hooks.early_stopping_hook import EarlyStoppingHook
+from otx.mpa.utils.logger import get_logger
 
 logger = get_logger()
 
@@ -54,7 +56,7 @@ class AdaptiveTrainSchedulingHook(Hook):
             iter_per_epoch = len(runner.data_loader)
             adaptive_interval = self.get_adaptive_interval(iter_per_epoch)
             for hook in runner.hooks:
-                if 'EvalHook' in str(hook):
+                if "EvalHook" in str(hook):
                     hook.interval = adaptive_interval
                     logger.info(f"Update Validation Interval: {adaptive_interval}")
                 elif isinstance(hook, LrUpdaterHook):
@@ -77,7 +79,5 @@ class AdaptiveTrainSchedulingHook(Hook):
             self.initialized = True
 
     def get_adaptive_interval(self, iter_per_epoch):
-        adaptive_interval = max(
-            round(math.exp(self.decay * iter_per_epoch) * self.max_interval), 1
-        )
+        adaptive_interval = max(round(math.exp(self.decay * iter_per_epoch) * self.max_interval), 1)
         return adaptive_interval

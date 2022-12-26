@@ -5,27 +5,23 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from mmcv.cnn import normal_init
-
 from mmcls.models.builder import HEADS
 from mmcls.models.heads.cls_head import ClsHead
+from mmcv.cnn import normal_init
 
 
 @HEADS.register_module()
 class MultiClsHead(ClsHead):
-    def __init__(self,
-                 tasks,
-                 in_channels,
-                 loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
-                 topk=(1, ),
-                 num_classes=None):
+    def __init__(
+        self, tasks, in_channels, loss=dict(type="CrossEntropyLoss", loss_weight=1.0), topk=(1,), num_classes=None
+    ):
         super(MultiClsHead, self).__init__(loss=loss, topk=topk)
         self.in_channels = in_channels
         self.tasks = tasks
         if not isinstance(self.tasks, dict):
-            raise TypeError('tasks type must be dict')
+            raise TypeError("tasks type must be dict")
         if len(self.tasks) <= 0:
-            raise ValueError('at least one task must be exist.')
+            raise ValueError("at least one task must be exist.")
 
         self._init_layers()
 
@@ -34,8 +30,7 @@ class MultiClsHead(ClsHead):
         for t_key in self.tasks:
             cls = self.tasks[t_key]
             if len(cls) == 0:
-                raise ValueError(
-                    f'task={t_key} is empty task.')
+                raise ValueError(f"task={t_key} is empty task.")
             self.classifiers[t_key] = nn.Linear(self.in_channels, len(cls))
 
     def init_weights(self):
@@ -73,7 +68,7 @@ class MultiClsHead(ClsHead):
         losses = dict()
         loss = 0.0
         gt_labels = gt_labels.t()
-        losses['accuracy'] = {}
+        losses["accuracy"] = {}
         for cls_score, gt_label, task_name in zip(cls_scores, gt_labels, self.tasks):
             num_samples = len(cls_score)
 
@@ -82,7 +77,7 @@ class MultiClsHead(ClsHead):
             # compute accuracy
             acc = self.compute_accuracy(cls_score, gt_label)
             assert len(acc) == len(self.topk)
-            losses['accuracy'].update({f'{task_name} top-{k}': a for k, a in zip(self.topk, acc)})
+            losses["accuracy"].update({f"{task_name} top-{k}": a for k, a in zip(self.topk, acc)})
 
-        losses['loss'] = loss / len(cls_scores)
+        losses["loss"] = loss / len(cls_scores)
         return losses

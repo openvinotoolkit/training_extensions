@@ -2,21 +2,18 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from .model_ema_hook import DualModelEMAHook
 from mmcv.runner import HOOKS
+
 from otx.mpa.utils.logger import get_logger
+
+from .model_ema_hook import DualModelEMAHook
 
 logger = get_logger()
 
 
 @HOOKS.register_module()
 class UnbiasedTeacherHook(DualModelEMAHook):
-
-    def __init__(
-        self,
-        min_pseudo_label_ratio=0.1,
-        **kwargs
-    ):
+    def __init__(self, min_pseudo_label_ratio=0.1, **kwargs):
         super().__init__(**kwargs)
         self.min_pseudo_label_ratio = min_pseudo_label_ratio
         self.unlabeled_loss_enabled = False
@@ -30,11 +27,11 @@ class UnbiasedTeacherHook(DualModelEMAHook):
             return
 
         average_pseudo_label_ratio = self._get_average_pseudo_label_ratio(runner)
-        logger.info(f'avr_ps_ratio: {average_pseudo_label_ratio}')
+        logger.info(f"avr_ps_ratio: {average_pseudo_label_ratio}")
         if average_pseudo_label_ratio > self.min_pseudo_label_ratio:
             self._get_model(runner).enable_unlabeled_loss()
             self.unlabeled_loss_enabled = True
-            logger.info('---------- Enabled unlabeled loss')
+            logger.info("---------- Enabled unlabeled loss")
 
     def after_train_iter(self, runner):
         """Update ema parameter every self.interval iterations."""
@@ -54,7 +51,7 @@ class UnbiasedTeacherHook(DualModelEMAHook):
         output_backup = runner.log_buffer.output.copy()
         was_ready = runner.log_buffer.ready
         runner.log_buffer.average(100)
-        average_pseudo_label_ratio = runner.log_buffer.output.get('ps_ratio', 0.0)
+        average_pseudo_label_ratio = runner.log_buffer.output.get("ps_ratio", 0.0)
         runner.log_buffer.output = output_backup
         runner.ready = was_ready
         return average_pseudo_label_ratio

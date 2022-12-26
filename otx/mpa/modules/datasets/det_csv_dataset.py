@@ -2,12 +2,9 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import pandas as pd
 import numpy as np
-
-from mmdet.datasets import DATASETS
-from mmdet.datasets import CustomDataset
-from mmdet.datasets import CocoDataset
+import pandas as pd
+from mmdet.datasets import DATASETS, CocoDataset, CustomDataset
 
 
 @DATASETS.register_module()
@@ -25,26 +22,21 @@ class CSVDatasetDet(CustomDataset):
         df_anno = pd.read_csv(ann_file)
 
         # Filter images w/o annotations
-        image_ids = df_anno['ImageID'].unique()
-        df_sub_data = df_data.loc[df_data['ImageID'].isin(image_ids)]
-        print(f'{ann_file}: {len(image_ids)} -> {len(df_anno)}')
+        image_ids = df_anno["ImageID"].unique()
+        df_sub_data = df_data.loc[df_data["ImageID"].isin(image_ids)]
+        print(f"{ann_file}: {len(image_ids)} -> {len(df_anno)}")
 
         data_infos = []
         for _, data in df_sub_data.iterrows():
             # Get per-image annotations
-            df_sub_anno = df_anno.loc[df_anno['ImageID'] == data['ImageID']]
+            df_sub_anno = df_anno.loc[df_anno["ImageID"] == data["ImageID"]]
             bboxes = []
             labels = []
             person_label = 0
             for _, anno in df_sub_anno.iterrows():
-                if anno['IsOccluded']:
+                if anno["IsOccluded"]:
                     continue
-                bbox = [
-                    anno['Xmin'],
-                    anno['Ymin'],
-                    anno['Xmax'],
-                    anno['Ymax']
-                ]
+                bbox = [anno["Xmin"], anno["Ymin"], anno["Xmax"], anno["Ymax"]]
                 bboxes.append(bbox)
                 labels.append(person_label)  # TODO: parse labels
             if len(bboxes) == 0:
@@ -52,12 +44,10 @@ class CSVDatasetDet(CustomDataset):
             # Add structured annotation
             data_infos.append(
                 dict(
-                    filename=data['ImagePath'],
-                    height=data['Height'],
-                    width=data['Width'],
-                    ann=dict(
-                        bboxes=np.array(bboxes).astype(np.float32),
-                        labels=np.array(labels).astype(np.int64))
+                    filename=data["ImagePath"],
+                    height=data["Height"],
+                    width=data["Width"],
+                    ann=dict(bboxes=np.array(bboxes).astype(np.float32), labels=np.array(labels).astype(np.int64)),
                 )
             )
 

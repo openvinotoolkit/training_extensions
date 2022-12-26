@@ -22,7 +22,7 @@ class OperationModule(torch.nn.Module):
 
         self._dependents_with_defaults = []
         if spec.defaults:
-            self._dependents_with_defaults = spec.args[-len(spec.defaults):]
+            self._dependents_with_defaults = spec.args[-len(spec.defaults) :]
 
         if isinstance(dependent_ops, list):
             assert len(dependent_ops) == len(kwargs)
@@ -35,9 +35,7 @@ class OperationModule(torch.nn.Module):
             raise NotImplementedError
 
     def forward(self, *args, **kwargs):
-        inputs = {
-            k: v() if v is not None else None for k, v in self._dependent_ops.items()
-        }
+        inputs = {k: v() if v is not None else None for k, v in self._dependent_ops.items()}
 
         if args:
             empty_input_keys = [k for k, v in self._dependent_ops.items() if v is None]
@@ -49,11 +47,7 @@ class OperationModule(torch.nn.Module):
                     raise ValueError(f"duplicated key {key}")
                 inputs[key] = val
 
-        assert all(
-            v is not None
-            for v in inputs.values()
-            if v not in self._dependents_with_defaults
-        )
+        assert all(v is not None for v in inputs.values() if v not in self._dependents_with_defaults)
 
         return self.op(**inputs)
 

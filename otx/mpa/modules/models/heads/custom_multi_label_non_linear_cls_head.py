@@ -4,12 +4,12 @@
 
 import torch
 import torch.nn as nn
-from mmcv.cnn import normal_init, constant_init, build_activation_layer
-
 from mmcls.models.builder import HEADS
 from mmcls.models.heads import MultiLabelClsHead
+from mmcv.cnn import build_activation_layer, constant_init, normal_init
 
 from .custom_multi_label_linear_cls_head import AnglularLinear
+
 
 @HEADS.register_module()
 class CustomMultiLabelNonLinearClsHead(MultiLabelClsHead):
@@ -24,22 +24,19 @@ class CustomMultiLabelNonLinearClsHead(MultiLabelClsHead):
         normalized (bool): Normalize input features and weights in the last linar layer.
     """
 
-    def __init__(self,
-                 num_classes,
-                 in_channels,
-                 hid_channels=1280,
-                 act_cfg=dict(type='ReLU'),
-                 scale=1.0,
-                 loss=dict(
-                     type='CrossEntropyLoss',
-                     use_sigmoid=True,
-                     reduction='mean',
-                     loss_weight=1.0),
-                 dropout=False,
-                 normalized=False):
+    def __init__(
+        self,
+        num_classes,
+        in_channels,
+        hid_channels=1280,
+        act_cfg=dict(type="ReLU"),
+        scale=1.0,
+        loss=dict(type="CrossEntropyLoss", use_sigmoid=True, reduction="mean", loss_weight=1.0),
+        dropout=False,
+        normalized=False,
+    ):
 
-        super(CustomMultiLabelNonLinearClsHead, self).__init__(
-            loss=loss)
+        super(CustomMultiLabelNonLinearClsHead, self).__init__(loss=loss)
 
         self.in_channels = in_channels
         self.num_classes = num_classes
@@ -50,17 +47,12 @@ class CustomMultiLabelNonLinearClsHead(MultiLabelClsHead):
         self.scale = scale
 
         if self.num_classes <= 0:
-            raise ValueError(
-                f'num_classes={num_classes} must be a positive integer')
+            raise ValueError(f"num_classes={num_classes} must be a positive integer")
 
         self._init_layers()
 
     def _init_layers(self):
-        modules = [
-                   nn.Linear(self.in_channels, self.hid_channels),
-                   nn.BatchNorm1d(self.hid_channels),
-                   self.act
-                  ]
+        modules = [nn.Linear(self.in_channels, self.hid_channels), nn.BatchNorm1d(self.hid_channels), self.act]
         if self.dropout:
             modules.append(nn.Dropout(p=0.2))
         if self.normalized:
@@ -86,11 +78,11 @@ class CustomMultiLabelNonLinearClsHead(MultiLabelClsHead):
         _gt_label = torch.abs(gt_label)
         # compute loss
         loss = self.compute_loss(cls_score, _gt_label, valid_label_mask=valid_label_mask, avg_factor=num_samples)
-        losses['loss'] = loss / self.scale
+        losses["loss"] = loss / self.scale
         return losses
 
     def forward_train(self, x, gt_label, **kwargs):
-        img_metas = kwargs.get('img_metas', False)
+        img_metas = kwargs.get("img_metas", False)
         gt_label = gt_label.type_as(x)
         cls_score = self.classifier(x) * self.scale
         if img_metas:
@@ -115,8 +107,8 @@ class CustomMultiLabelNonLinearClsHead(MultiLabelClsHead):
         valid_label_mask = []
         for i, meta in enumerate(img_metas):
             mask = torch.Tensor([1 for _ in range(self.num_classes)])
-            if 'ignored_labels' in meta and meta['ignored_labels']:
-                mask[meta['ignored_labels']] = 0
+            if "ignored_labels" in meta and meta["ignored_labels"]:
+                mask[meta["ignored_labels"]] = 0
             mask = mask.cuda() if torch.cuda.is_available() else mask
             valid_label_mask.append(mask)
         valid_label_mask = torch.stack(valid_label_mask, dim=0)

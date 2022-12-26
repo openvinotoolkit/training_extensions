@@ -4,21 +4,22 @@
 
 import torch
 import torch.nn as nn
-
 from mmcls.models.builder import LOSSES
 from mmcls.models.losses.utils import weight_reduce_loss
 
 
-def asymmetric_angular_loss_with_ignore(pred,
-                                        target,
-                                        valid_label_mask=None,
-                                        weight=None,
-                                        gamma_pos=0.0,
-                                        gamma_neg=1.0,
-                                        clip=0.05,
-                                        k=0.8,
-                                        reduction='mean',
-                                        avg_factor=None):
+def asymmetric_angular_loss_with_ignore(
+    pred,
+    target,
+    valid_label_mask=None,
+    weight=None,
+    gamma_pos=0.0,
+    gamma_neg=1.0,
+    clip=0.05,
+    k=0.8,
+    reduction="mean",
+    avg_factor=None,
+):
     """asymmetric angular loss
     Args:
         pred (torch.Tensor): The prediction with shape (N, *).
@@ -39,8 +40,7 @@ def asymmetric_angular_loss_with_ignore(pred,
     Returns:
         torch.Tensor: Loss.
     """
-    assert pred.shape == \
-        target.shape, 'pred and target should be in the same shape.'
+    assert pred.shape == target.shape, "pred and target should be in the same shape."
 
     eps = 1e-8
     target = target.type_as(pred)
@@ -60,8 +60,7 @@ def asymmetric_angular_loss_with_ignore(pred,
         one_sided_gamma = gamma_pos * target + gamma_neg * anti_target
         one_sided_w = torch.pow(pt, one_sided_gamma)
 
-    loss = - k * target * torch.log(xs_pos.clamp(min=eps)) - \
-        (1 - k) * anti_target * torch.log(xs_neg.clamp(min=eps))
+    loss = -k * target * torch.log(xs_pos.clamp(min=eps)) - (1 - k) * anti_target * torch.log(xs_neg.clamp(min=eps))
 
     if asymmetric_focus:
         loss *= one_sided_w
@@ -74,7 +73,7 @@ def asymmetric_angular_loss_with_ignore(pred,
         weight = weight.float()
         if pred.dim() > 1:
             weight = weight.reshape(-1, 1)
-    if reduction != 'mean':
+    if reduction != "mean":
         avg_factor = None
     loss = weight_reduce_loss(loss, weight, reduction, avg_factor)
     return loss
@@ -93,15 +92,9 @@ class AsymmetricAngularLossWithIgnore(nn.Module):
         reduction (str): The method used to reduce the loss into
             a scalar.
         loss_weight (float): Weight of loss. Defaults to 1.0.
-        """
+    """
 
-    def __init__(self,
-                 gamma_pos=0.0,
-                 gamma_neg=1.0,
-                 k=0.8,
-                 clip=0.05,
-                 reduction='mean',
-                 loss_weight=1.0):
+    def __init__(self, gamma_pos=0.0, gamma_neg=1.0, k=0.8, clip=0.05, reduction="mean", loss_weight=1.0):
         super().__init__()
         self.gamma_pos = gamma_pos
         self.gamma_neg = gamma_neg
@@ -110,18 +103,10 @@ class AsymmetricAngularLossWithIgnore(nn.Module):
         self.reduction = reduction
         self.loss_weight = loss_weight
 
-    def forward(self,
-                pred,
-                target,
-                valid_label_mask=None,
-                weight=None,
-                avg_factor=None,
-                reduction_override=None):
-        """asymmetric angular loss
-        """
-        assert reduction_override in (None, 'none', 'mean', 'sum')
-        reduction = (
-            reduction_override if reduction_override else self.reduction)
+    def forward(self, pred, target, valid_label_mask=None, weight=None, avg_factor=None, reduction_override=None):
+        """asymmetric angular loss"""
+        assert reduction_override in (None, "none", "mean", "sum")
+        reduction = reduction_override if reduction_override else self.reduction
         loss_cls = self.loss_weight * asymmetric_angular_loss_with_ignore(
             pred,
             target,
@@ -132,5 +117,6 @@ class AsymmetricAngularLossWithIgnore(nn.Module):
             k=self.k,
             clip=self.clip,
             reduction=reduction,
-            avg_factor=avg_factor)
+            avg_factor=avg_factor,
+        )
         return loss_cls

@@ -4,8 +4,7 @@
 
 import torch
 import torch.nn as nn
-
-from mmcls.models.builder import CLASSIFIERS, build_backbone, build_neck, build_head
+from mmcls.models.builder import CLASSIFIERS, build_backbone, build_head, build_neck
 
 from otx.mpa.modules.models.classifiers.sam_classifier import SAMClassifier
 from otx.mpa.utils.logger import get_logger
@@ -15,7 +14,7 @@ logger = get_logger()
 
 @CLASSIFIERS.register_module()
 class SemiSLClassifier(SAMClassifier):
-    """ Semi-SL Classifier
+    """Semi-SL Classifier
 
     The classifier is a classifier that supports Semi-SL task
     that handles unlabeled data.
@@ -29,12 +28,7 @@ class SemiSLClassifier(SAMClassifier):
             or boolean True of pre-trained weight is performed.
     """
 
-    def __init__(self,
-                 backbone,
-                 neck=None,
-                 head=None,
-                 pretrained=None,
-                 **kwargs):
+    def __init__(self, backbone, neck=None, head=None, pretrained=None, **kwargs):
         super(SemiSLClassifier, self).__init__()
         self.backbone = build_backbone(backbone)
         if neck is not None:
@@ -52,7 +46,7 @@ class SemiSLClassifier(SAMClassifier):
         """
         super(SemiSLClassifier, self).init_weights(pretrained)
         if pretrained is not None:
-            logger.info('pretrained model: {}'.format(pretrained))
+            logger.info("pretrained model: {}".format(pretrained))
         self.backbone.init_weights(pretrained)
         if self.with_neck:
             if isinstance(self.neck, nn.Sequential):
@@ -83,24 +77,24 @@ class SemiSLClassifier(SAMClassifier):
                 Typically these should be mean centered and std scaled.
             kwargs (keyword arguments): Specific to concrete implementation
         """
-        if 'gt_label' not in kwargs:
+        if "gt_label" not in kwargs:
             raise ValueError("'gt_label' does not exist in the labeled image")
-        if 'extra_0' not in kwargs:
+        if "extra_0" not in kwargs:
             raise ValueError("'extra_0' does not exist in the dataset")
-        target = kwargs['gt_label']
-        unlabeled_data = kwargs['extra_0']
+        target = kwargs["gt_label"]
+        unlabeled_data = kwargs["extra_0"]
 
         x = {}
-        x['labeled'] = self.extract_feat(imgs)
+        x["labeled"] = self.extract_feat(imgs)
 
-        img_uw = unlabeled_data['weak']['img']
+        img_uw = unlabeled_data["weak"]["img"]
         # weakly augmented images are used only for getting the pseudo label.
         # not required to calculate gradients.
         with torch.no_grad():
-            x['unlabeled_weak'] = self.extract_feat(img_uw)
+            x["unlabeled_weak"] = self.extract_feat(img_uw)
 
-        img_us = unlabeled_data['strong']['img']
-        x['unlabeled_strong'] = self.extract_feat(img_us)
+        img_us = unlabeled_data["strong"]["img"]
+        x["unlabeled_strong"] = self.extract_feat(img_us)
 
         losses = dict()
         loss = self.head.forward_train(x, target)

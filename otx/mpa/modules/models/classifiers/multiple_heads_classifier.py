@@ -3,7 +3,6 @@
 #
 
 import torch.nn as nn
-
 from mmcls.models.builder import CLASSIFIERS, build_head
 from mmcls.models.classifiers.image import ImageClassifier
 
@@ -16,9 +15,7 @@ class MultipleHeadsClassifier(ImageClassifier):
         else:
             heads = [None]
 
-        super(MultipleHeadsClassifier, self).__init__(
-            backbone, neck=neck, head=heads[0], pretrained=pretrained
-        )
+        super(MultipleHeadsClassifier, self).__init__(backbone, neck=neck, head=heads[0], pretrained=pretrained)
         self.heads = nn.ModuleList()
         self.heads.append(self.head)
         delattr(self, "head")

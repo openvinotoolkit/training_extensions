@@ -5,10 +5,9 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from mmcv.cnn import normal_init, constant_init, build_activation_layer
-
 from mmcls.models.builder import HEADS
 from mmcls.models.heads.cls_head import ClsHead
+from mmcv.cnn import build_activation_layer, constant_init, normal_init
 
 
 @HEADS.register_module()
@@ -25,15 +24,17 @@ class NonLinearClsHead(ClsHead):
         topk (int | tuple): Top-k accuracy.
     """  # noqa: W605
 
-    def __init__(self,
-                 num_classes,
-                 in_channels,
-                 hid_channels=1280,
-                 act_cfg=dict(type='ReLU'),
-                 loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
-                 topk=(1, ),
-                 dropout=False):
-        topk = (1, ) if num_classes < 5 else (1, 5)
+    def __init__(
+        self,
+        num_classes,
+        in_channels,
+        hid_channels=1280,
+        act_cfg=dict(type="ReLU"),
+        loss=dict(type="CrossEntropyLoss", loss_weight=1.0),
+        topk=(1,),
+        dropout=False,
+    ):
+        topk = (1,) if num_classes < 5 else (1, 5)
         super(NonLinearClsHead, self).__init__(loss=loss, topk=topk)
         self.in_channels = in_channels
         self.hid_channels = hid_channels
@@ -42,8 +43,7 @@ class NonLinearClsHead(ClsHead):
         self.dropout = dropout
 
         if self.num_classes <= 0:
-            raise ValueError(
-                f'num_classes={num_classes} must be a positive integer')
+            raise ValueError(f"num_classes={num_classes} must be a positive integer")
 
         self._init_layers()
 
@@ -54,14 +54,14 @@ class NonLinearClsHead(ClsHead):
                 nn.BatchNorm1d(self.hid_channels),
                 self.act,
                 nn.Dropout(p=0.2),
-                nn.Linear(self.hid_channels, self.num_classes)
+                nn.Linear(self.hid_channels, self.num_classes),
             )
         else:
             self.classifier = nn.Sequential(
                 nn.Linear(self.in_channels, self.hid_channels),
                 nn.BatchNorm1d(self.hid_channels),
                 self.act,
-                nn.Linear(self.hid_channels, self.num_classes)
+                nn.Linear(self.hid_channels, self.num_classes),
             )
 
     def init_weights(self):

@@ -1,12 +1,10 @@
-_base_ = [
-    './classifiers/classifier.py'
-]
+_base_ = ["./classifiers/classifier.py"]
 
 model = dict(
-    type='SemiSLClassifier',
+    type="SemiSLClassifier",
     pretrained=None,
     backbone=dict(),
     head=dict(
-        type='SemiSLClsHead',
-    )
+        type="SemiSLClsHead",
+    ),
 )

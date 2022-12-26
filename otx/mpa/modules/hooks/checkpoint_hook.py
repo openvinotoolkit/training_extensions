@@ -32,14 +32,16 @@ class CheckpointHookWithValResults(Hook):
             gpus. Default: False.
     """
 
-    def __init__(self,
-                 interval=-1,
-                 by_epoch=True,
-                 save_optimizer=True,
-                 out_dir=None,
-                 max_keep_ckpts=-1,
-                 sync_buffer=False,
-                 **kwargs):
+    def __init__(
+        self,
+        interval=-1,
+        by_epoch=True,
+        save_optimizer=True,
+        out_dir=None,
+        max_keep_ckpts=-1,
+        sync_buffer=False,
+        **kwargs,
+    ):
         self.interval = interval
         self.by_epoch = by_epoch
         self.save_optimizer = save_optimizer
@@ -51,12 +53,12 @@ class CheckpointHookWithValResults(Hook):
     def after_train_epoch(self, runner):
         if not self.by_epoch or not self.every_n_epochs(runner, self.interval):
             return
-        if hasattr(runner, 'save_ckpt'):
+        if hasattr(runner, "save_ckpt"):
             if runner.save_ckpt:
                 if runner.save_ema_model:
                     backup_model = runner.model
                     runner.model = runner.ema_model
-                runner.logger.info(f'Saving checkpoint at {runner.epoch + 1} epochs')
+                runner.logger.info(f"Saving checkpoint at {runner.epoch + 1} epochs")
                 if self.sync_buffer:
                     allreduce_params(runner.model.buffers())
                 self._save_checkpoint(runner)
@@ -70,21 +72,20 @@ class CheckpointHookWithValResults(Hook):
         if not self.out_dir:
             self.out_dir = runner.work_dir
         runner.save_checkpoint(
-            self.out_dir, filename_tmpl='best_model.pth', save_optimizer=self.save_optimizer, **self.args)
+            self.out_dir, filename_tmpl="best_model.pth", save_optimizer=self.save_optimizer, **self.args
+        )
         if runner.meta is not None:
-            cur_ckpt_filename = 'best_model.pth'
-            runner.meta.setdefault('hook_msgs', dict())
-            runner.meta['hook_msgs']['last_ckpt'] = os.path.join(
-                self.out_dir, cur_ckpt_filename)
+            cur_ckpt_filename = "best_model.pth"
+            runner.meta.setdefault("hook_msgs", dict())
+            runner.meta["hook_msgs"]["last_ckpt"] = os.path.join(self.out_dir, cur_ckpt_filename)
 
     def after_train_iter(self, runner):
         if self.by_epoch or not self.every_n_iters(runner, self.interval):
             return
 
-        if hasattr(runner, 'save_ckpt'):
+        if hasattr(runner, "save_ckpt"):
             if runner.save_ckpt:
-                runner.logger.info(
-                    f'Saving checkpoint at {runner.iter + 1} iterations')
+                runner.logger.info(f"Saving checkpoint at {runner.iter + 1} iterations")
                 if self.sync_buffer:
                     allreduce_params(runner.model.buffers())
                 self._save_checkpoint(runner)

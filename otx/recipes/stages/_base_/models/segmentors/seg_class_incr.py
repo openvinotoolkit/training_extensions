@@ -1,10 +1,10 @@
-_base_ = './encoder_decoder.ote.py'
+_base_ = "./encoder_decoder.ote.py"
 
-__norm_cfg = dict(type='BN', requires_grad=True)
+__norm_cfg = dict(type="BN", requires_grad=True)
 model = dict(
-    type='ClassIncrSegmentor',
+    type="ClassIncrSegmentor",
     decode_head=dict(
-        type='FCNHead',
+        type="FCNHead",
         in_channels=40,
         in_index=0,
         channels=40,
@@ -18,14 +18,17 @@ model = dict(
         align_corners=False,
         enable_out_norm=False,
         loss_decode=[
-            dict(type='CrossEntropyLoss',
-                 reduction='mean',
-                 loss_jitter_prob=0.01,
-                 sampler=dict(type='MaxPoolingPixelSampler', ratio=0.25, p=1.7),
-                 loss_weight=1.0)
-        ]),
+            dict(
+                type="CrossEntropyLoss",
+                reduction="mean",
+                loss_jitter_prob=0.01,
+                sampler=dict(type="MaxPoolingPixelSampler", ratio=0.25, p=1.7),
+                loss_weight=1.0,
+            )
+        ],
+    ),
     test_cfg=dict(
-        mode='whole',
+        mode="whole",
         output_scale=3.0,
     ),
 )

@@ -4,10 +4,10 @@
 
 import torch
 import torch.nn.functional as F
-
 from mmseg.models.builder import LOSSES
-from .mpa_pixel_base import MPABasePixelLoss
 from mmseg.models.losses.utils import get_class_weight
+
+from .mpa_pixel_base import MPABasePixelLoss
 
 
 @LOSSES.register_module()
@@ -23,10 +23,7 @@ class CrossEntropyLossWithIgnore(MPABasePixelLoss):
         loss_weight (float, optional): Weight of the loss. Defaults to 1.0.
     """
 
-    def __init__(self,
-                 reduction='mean',
-                 loss_weight=None,
-                 **kwargs):
+    def __init__(self, reduction="mean", loss_weight=None, **kwargs):
         super(CrossEntropyLossWithIgnore, self).__init__(**kwargs)
 
         self.reduction = reduction
@@ -34,7 +31,7 @@ class CrossEntropyLossWithIgnore(MPABasePixelLoss):
 
     @property
     def name(self):
-        return 'ce_with_ignore'
+        return "ce_with_ignore"
 
     def _calculate(self, cls_score, label, valid_label_mask, scale):
         if cls_score.shape[0] == 0:
@@ -56,7 +53,7 @@ class CrossEntropyLossWithIgnore(MPABasePixelLoss):
             # X-entropy: NLL loss w/ log-probabilities & labels
             each_label = torch.unsqueeze(label[i], 0)
             each_label = each_label.to(cls_score.device)
-            loss = F.nll_loss(each_prob_log, each_label, reduction='none', ignore_index=self.ignore_index)
+            loss = F.nll_loss(each_prob_log, each_label, reduction="none", ignore_index=self.ignore_index)
             losses_l.append(loss)
 
         losses = torch.cat(losses_l, dim=0)

@@ -2,12 +2,11 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from mmcv.runner import HOOKS, Hook
-from mmcv.runner import get_dist_info
+from mmcv.runner import HOOKS, Hook, get_dist_info
 from torch.utils.data import DataLoader
 
-from otx.mpa.modules.datasets.samplers.cls_incr_sampler import ClsIncrSampler
 from otx.mpa.modules.datasets.samplers.balanced_sampler import BalancedSampler
+from otx.mpa.modules.datasets.samplers.cls_incr_sampler import ClsIncrSampler
 from otx.mpa.utils.logger import get_logger
 
 logger = get_logger()
@@ -25,13 +24,15 @@ class TaskAdaptHook(Hook):
         efficient_mode (bool): Flag about using efficient mode sampler
     """
 
-    def __init__(self,
-                 src_classes,
-                 dst_classes,
-                 model_type='FasterRCNN',
-                 sampler_flag=False,
-                 sampler_type='cls_incr',
-                 efficient_mode=False):
+    def __init__(
+        self,
+        src_classes,
+        dst_classes,
+        model_type="FasterRCNN",
+        sampler_flag=False,
+        sampler_type="cls_incr",
+        efficient_mode=False,
+    ):
         self.src_classes = src_classes
         self.dst_classes = dst_classes
         self.model_type = model_type
@@ -39,10 +40,10 @@ class TaskAdaptHook(Hook):
         self.sampler_type = sampler_type
         self.efficient_mode = efficient_mode
 
-        logger.info(f'Task Adaptation: {self.src_classes} => {self.dst_classes}')
-        logger.info(f'- Efficient Mode: {self.efficient_mode}')
-        logger.info(f'- Sampler type: {self.sampler_type}')
-        logger.info(f'- Sampler flag: {self.sampler_flag}')
+        logger.info(f"Task Adaptation: {self.src_classes} => {self.dst_classes}")
+        logger.info(f"- Efficient Mode: {self.efficient_mode}")
+        logger.info(f"- Sampler type: {self.sampler_type}")
+        logger.info(f"- Sampler flag: {self.sampler_flag}")
 
     def before_epoch(self, runner):
         if self.sampler_flag:
@@ -52,12 +53,14 @@ class TaskAdaptHook(Hook):
             collate_fn = runner.data_loader.collate_fn
             worker_init_fn = runner.data_loader.worker_init_fn
             rank, world_size = get_dist_info()
-            if self.sampler_type == 'balanced':
-                sampler = BalancedSampler(dataset, batch_size, efficient_mode=self.efficient_mode,
-                    num_replicas=world_size, rank=rank)
+            if self.sampler_type == "balanced":
+                sampler = BalancedSampler(
+                    dataset, batch_size, efficient_mode=self.efficient_mode, num_replicas=world_size, rank=rank
+                )
             else:
-                sampler = ClsIncrSampler(dataset, batch_size, efficient_mode=self.efficient_mode,
-                    num_replicas=world_size, rank=rank)
+                sampler = ClsIncrSampler(
+                    dataset, batch_size, efficient_mode=self.efficient_mode, num_replicas=world_size, rank=rank
+                )
             runner.data_loader = DataLoader(
                 dataset,
                 batch_size=batch_size,
@@ -65,4 +68,5 @@ class TaskAdaptHook(Hook):
                 num_workers=num_workers,
                 collate_fn=collate_fn,
                 pin_memory=False,
-                worker_init_fn=worker_init_fn)
+                worker_init_fn=worker_init_fn,
+            )

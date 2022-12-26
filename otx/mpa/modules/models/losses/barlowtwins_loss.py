@@ -3,8 +3,8 @@
 
 import torch
 import torch.nn as nn
-from torch import Tensor
 from mmcls.models.builder import LOSSES
+from torch import Tensor
 
 
 def off_diagonal(x: Tensor):

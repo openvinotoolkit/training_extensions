@@ -13,12 +13,14 @@
 # and limitations under the License.
 
 from __future__ import annotations
+
 from abc import ABC, abstractmethod
 from typing import List, Sequence, Tuple, Union
+
 import torch
 import torch.nn.functional as F
-
 from mmcls.models.necks.gap import GlobalAveragePooling
+
 from otx.mpa.modules.models.heads.custom_atss_head import CustomATSSHead
 from otx.mpa.modules.models.heads.custom_ssd_head import CustomSSDHead
 from otx.mpa.modules.models.heads.custom_vfnet_head import CustomVFNetHead
@@ -58,9 +60,7 @@ class BaseRecordingForwardHook(ABC):
         """
         raise NotImplementedError
 
-    def _recording_forward(
-        self, _: torch.nn.Module, input: torch.Tensor, output: torch.Tensor
-    ):
+    def _recording_forward(self, _: torch.nn.Module, input: torch.Tensor, output: torch.Tensor):
         tensors = self.func(output)
         tensors = tensors.detach().cpu().numpy()
         for tensor in tensors:
@@ -88,11 +88,7 @@ class EigenCamHook(BaseRecordingForwardHook):
         saliency_map = (reshaped_fmap @ V[:, 0][:, :, None]).squeeze(-1)
         max_values, _ = torch.max(saliency_map, -1)
         min_values, _ = torch.min(saliency_map, -1)
-        saliency_map = (
-            255
-            * (saliency_map - min_values[:, None])
-            / ((max_values - min_values + 1e-12)[:, None])
-        )
+        saliency_map = 255 * (saliency_map - min_values[:, None]) / ((max_values - min_values + 1e-12)[:, None])
         saliency_map = saliency_map.reshape((bs, h, w))
         saliency_map = saliency_map.to(torch.uint8)
         return saliency_map
@@ -100,9 +96,7 @@ class EigenCamHook(BaseRecordingForwardHook):
 
 class ActivationMapHook(BaseRecordingForwardHook):
     @staticmethod
-    def func(
-        feature_map: Union[torch.Tensor, Sequence[torch.Tensor]], fpn_idx: int = 0
-    ) -> torch.Tensor:
+    def func(feature_map: Union[torch.Tensor, Sequence[torch.Tensor]], fpn_idx: int = 0) -> torch.Tensor:
         """Generate the saliency map by average feature maps then normalizing to (0, 255)."""
         if isinstance(feature_map, (list, tuple)):
             assert fpn_idx < len(
@@ -115,11 +109,7 @@ class ActivationMapHook(BaseRecordingForwardHook):
         activation_map = activation_map.reshape((bs, h * w))
         max_values, _ = torch.max(activation_map, -1)
         min_values, _ = torch.min(activation_map, -1)
-        activation_map = (
-            255
-            * (activation_map - min_values[:, None])
-            / (max_values - min_values + 1e-12)[:, None]
-        )
+        activation_map = 255 * (activation_map - min_values[:, None]) / (max_values - min_values + 1e-12)[:, None]
         activation_map = activation_map.reshape((bs, h, w))
         activation_map = activation_map.to(torch.uint8)
         return activation_map
@@ -131,34 +121,32 @@ class FeatureVectorHook(BaseRecordingForwardHook):
         """Generate the feature vector by average pooling feature maps."""
         if isinstance(feature_map, (list, tuple)):
             # aggregate feature maps from Feature Pyramid Network
-            feature_vector = [
-                torch.nn.functional.adaptive_avg_pool2d(f, (1, 1)) for f in feature_map
-            ]
+            feature_vector = [torch.nn.functional.adaptive_avg_pool2d(f, (1, 1)) for f in feature_map]
             feature_vector = torch.cat(feature_vector, 1)
         else:
-            feature_vector = torch.nn.functional.adaptive_avg_pool2d(
-                feature_map, (1, 1)
-            )
+            feature_vector = torch.nn.functional.adaptive_avg_pool2d(feature_map, (1, 1))
         return feature_vector
 
 
 class DetSaliencyMapHook(BaseRecordingForwardHook):
     """Saliency map hook for object detection models."""
+
     def __init__(self, module: torch.nn.Module) -> None:
         super().__init__(module)
         self._neck = module.neck if module.with_neck else None
         self._bbox_head = module.bbox_head
         self._num_cls_out_channels = module.bbox_head.cls_out_channels  # SSD-like heads also have background class
-        if hasattr(module.bbox_head, 'anchor_generator'):
+        if hasattr(module.bbox_head, "anchor_generator"):
             self._num_anchors = module.bbox_head.anchor_generator.num_base_anchors
         else:
             self._num_anchors = [1] * 10
 
-    def func(self,
-             x: Union[torch.Tensor, List[torch.Tensor], Tuple[torch.Tensor]],
-             _: int = 0,
-             cls_scores_provided: bool = False
-        ) -> torch.Tensor:
+    def func(
+        self,
+        x: Union[torch.Tensor, List[torch.Tensor], Tuple[torch.Tensor]],
+        _: int = 0,
+        cls_scores_provided: bool = False,
+    ) -> torch.Tensor:
         """
         Generate the saliency map from raw classification head output, then normalizing to (0, 255).
 
@@ -177,31 +165,21 @@ class DetSaliencyMapHook(BaseRecordingForwardHook):
             cls_scores_anchorless = []
             for scale_idx, cls_scores_per_scale in enumerate(cls_scores):
                 cls_scores_anchor_grouped = cls_scores_per_scale[batch_idx].reshape(
-                    self._num_anchors[scale_idx],
-                    (self._num_cls_out_channels),
-                    *cls_scores_per_scale.shape[-2:]
+                    self._num_anchors[scale_idx], (self._num_cls_out_channels), *cls_scores_per_scale.shape[-2:]
                 )
                 cls_scores_out, _ = cls_scores_anchor_grouped.max(dim=0)
                 cls_scores_anchorless.append(cls_scores_out.unsqueeze(0))
             cls_scores_anchorless_resized = []
             for cls_scores_anchorless_per_level in cls_scores_anchorless:
                 cls_scores_anchorless_resized.append(
-                    F.interpolate(
-                        cls_scores_anchorless_per_level,
-                        (h, w),
-                        mode='bilinear'
-                    )
+                    F.interpolate(cls_scores_anchorless_per_level, (h, w), mode="bilinear")
                 )
             saliency_maps[batch_idx] = torch.cat(cls_scores_anchorless_resized, dim=0).mean(dim=0)
 
         saliency_maps = saliency_maps.reshape((bs, self._num_cls_out_channels, -1))
         max_values, _ = torch.max(saliency_maps, -1)
         min_values, _ = torch.min(saliency_maps, -1)
-        saliency_maps = (
-                255
-                * (saliency_maps - min_values[:, :, None])
-                / (max_values - min_values + 1e-12)[:, :, None]
-        )
+        saliency_maps = 255 * (saliency_maps - min_values[:, :, None]) / (max_values - min_values + 1e-12)[:, :, None]
         saliency_maps = saliency_maps.reshape((bs, self._num_cls_out_channels, h, w))
         saliency_maps = saliency_maps.to(torch.uint8)
         return saliency_maps
@@ -227,20 +205,23 @@ class DetSaliencyMapHook(BaseRecordingForwardHook):
                 # Not clear how to separate cls_scores from bbox_preds
                 cls_scores, _, _ = self._bbox_head(x)
             elif isinstance(self._bbox_head, CustomYOLOXHead):
+
                 def forward_single(x, cls_convs, conv_cls):
                     """Forward feature of a single scale level."""
                     cls_feat = cls_convs(x)
                     cls_score = conv_cls(cls_feat)
                     return cls_score
 
-                map_results = map(forward_single, x,
-                                  self._bbox_head.multi_level_cls_convs,
-                                  self._bbox_head.multi_level_conv_cls)
+                map_results = map(
+                    forward_single, x, self._bbox_head.multi_level_cls_convs, self._bbox_head.multi_level_conv_cls
+                )
                 cls_scores = list(map_results)
             else:
-                raise NotImplementedError("Not supported detection head provided. "
-                                          "DetSaliencyMapHook supports only the following single stage detectors: "
-                                          "YOLOXHead, ATSSHead, SSDHead, VFNetHead.")
+                raise NotImplementedError(
+                    "Not supported detection head provided. "
+                    "DetSaliencyMapHook supports only the following single stage detectors: "
+                    "YOLOXHead, ATSSHead, SSDHead, VFNetHead."
+                )
         return cls_scores
 
 
@@ -249,6 +230,7 @@ class ReciproCAMHook(BaseRecordingForwardHook):
     Implementation of recipro-cam for class-wise saliency map
     recipro-cam: gradient-free reciprocal class activation map (https://arxiv.org/pdf/2209.14074.pdf)
     """
+
     def __init__(self, module: torch.nn.Module, fpn_idx: int = 0) -> None:
         super().__init__(module, fpn_idx)
         self._neck = module.neck if module.with_neck else None
@@ -275,11 +257,7 @@ class ReciproCAMHook(BaseRecordingForwardHook):
         saliency_maps = saliency_maps.reshape((bs, self._num_classes, h * w))
         max_values, _ = torch.max(saliency_maps, -1)
         min_values, _ = torch.min(saliency_maps, -1)
-        saliency_maps = (
-            255
-            * (saliency_maps - min_values[:, :, None])
-            / (max_values - min_values + 1e-12)[:, :, None]
-        )
+        saliency_maps = 255 * (saliency_maps - min_values[:, :, None]) / (max_values - min_values + 1e-12)[:, :, None]
         saliency_maps = saliency_maps.reshape((bs, self._num_classes, h, w))
         saliency_maps = saliency_maps.to(torch.uint8)
         return saliency_maps

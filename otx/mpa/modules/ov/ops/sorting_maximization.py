@@ -19,15 +19,11 @@ class TopKV3Attribute(Attribute):
         super().__post_init__()
         valid_mode = ["min", "max"]
         if self.mode not in valid_mode:
-            raise ValueError(
-                f"Invalid mode {self.mode}. " f"It must be one of {valid_mode}."
-            )
+            raise ValueError(f"Invalid mode {self.mode}. " f"It must be one of {valid_mode}.")
 
         valid_sort = ["value", "index", "none"]
         if self.sort not in valid_sort:
-            raise ValueError(
-                f"Invalid sort {self.sort}. " f"It must be one of {valid_sort}."
-            )
+            raise ValueError(f"Invalid sort {self.sort}. " f"It must be one of {valid_sort}.")
 
         valid_index_element_type = ["i32", "i64"]
         if self.index_element_type not in valid_index_element_type:

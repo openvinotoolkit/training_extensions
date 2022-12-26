@@ -10,7 +10,6 @@ import random
 
 import numpy as np
 import PIL
-
 from mmcls.datasets.builder import PIPELINES
 
 PARAMETER_MAX = 10
@@ -47,8 +46,8 @@ def CutoutAbs(img, v, **kwarg):
     w, h = img.size
     x0 = np.random.uniform(0, w)
     y0 = np.random.uniform(0, h)
-    x0 = int(max(0, x0 - v / 2.))
-    y0 = int(max(0, y0 - v / 2.))
+    x0 = int(max(0, x0 - v / 2.0))
+    y0 = int(max(0, y0 - v / 2.0))
     x1 = int(min(w, x0 + v))
     y1 = int(min(h, y0 + v))
     xy = (x0, y0, x1, y1)
@@ -141,7 +140,7 @@ rand_augment_pool = [
     (ShearY, 0.3, 0),
     (Solarize, 256, 0),
     (TranslateX, 0.3, 0),
-    (TranslateY, 0.3, 0)
+    (TranslateY, 0.3, 0),
 ]
 
 
@@ -156,7 +155,7 @@ class MPARandAugment(object):
         self.augment_pool = rand_augment_pool
 
     def __call__(self, results):
-        for key in results.get('img_fields', ['img']):
+        for key in results.get("img_fields", ["img"]):
             img = results[key]
             if not PIL.Image.isImageType(img):
                 img = PIL.Image.fromarray(results[key])
@@ -165,8 +164,8 @@ class MPARandAugment(object):
                 v = np.random.randint(1, self.m)
                 if random.random() < 0.5:
                     img, v = op(img, v=v, max_v=max_v, bias=bias)
-                    results['rand_mc_{}'.format(op.__name__)] = v
+                    results["rand_mc_{}".format(op.__name__)] = v
             img, xy, color = CutoutAbs(img, self.cutout)
-            results['CutoutAbs'] = (xy, self.cutout, color)
+            results["CutoutAbs"] = (xy, self.cutout, color)
             results[key] = np.array(img)
         return results

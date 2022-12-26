@@ -1,6 +1,4 @@
-_base_ = [
-    './dist/dist.py'
-]
+_base_ = ["./dist/dist.py"]
 
 cudnn_benchmark = True
 
@@ -9,4 +7,4 @@ deterministic = False
 
 hparams = dict(dummy=0)
 
-task_adapt = dict(op='REPLACE')
+task_adapt = dict(op="REPLACE")
