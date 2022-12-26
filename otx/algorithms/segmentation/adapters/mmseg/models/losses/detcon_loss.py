@@ -6,7 +6,7 @@
 import torch
 import torch.distributed as dist
 import torch.nn.functional as F
-from mmseg.models import LOSSES
+from mmseg.models.builder import LOSSES  # pylint: disable=no-name-in-module
 from torch import nn
 
 

@@ -15,7 +15,12 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 import torch
 import torch.distributed as dist
 from mmcv.runner import load_checkpoint
-from mmseg.models import SEGMENTORS, build_backbone, build_loss, build_neck
+from mmseg.models.builder import (  # pylint: disable=no-name-in-module
+    SEGMENTORS,
+    build_backbone,
+    build_loss,
+    build_neck,
+)
 from mmseg.ops import resize
 from mpa.utils.logger import get_logger
 from torch import nn
@@ -249,7 +254,7 @@ class DetConB(nn.Module):
         elif self.input_transform == "multiple_select":
             inputs = [inputs[i] for i in self.in_index]
         else:
-            inputs = inputs[self.in_index]
+            inputs = inputs[self.in_index]  # type: ignore
 
         return inputs
 
@@ -269,7 +274,7 @@ class DetConB(nn.Module):
         """Sampled features from mask.
 
         Args:
-            feats (Tensor): Features from the backbone.
+            feats (list, tuple, Tensor): Features from the backbone.
             masks (Tensor): Ground truth masks to be sampled and to be used to filter `feats`.
             projector (nn.Module): Projector MLP.
 
@@ -281,8 +286,8 @@ class DetConB(nn.Module):
 
         sampled_masks, sampled_mask_ids = self.mask_pool(masks)
 
-        b, c, h, w = feats.shape
-        feats = feats.reshape((b, c, h * w)).transpose(1, 2)
+        b, c, h, w = feats.shape  # type: ignore
+        feats = feats.reshape((b, c, h * w)).transpose(1, 2)  # type: ignore
         sampled_feats = sampled_masks @ feats
         sampled_feats = sampled_feats.reshape((-1, c))
 
