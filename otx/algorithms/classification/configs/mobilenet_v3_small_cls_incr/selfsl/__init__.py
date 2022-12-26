@@ -1,4 +1,4 @@
-"""Adapters of classification - mmcls."""
+"""Initialization of MobileNet-V3-Small model for Classification Task with Self-Supervised Learning."""
 
 # Copyright (C) 2022 Intel Corporation
 #
@@ -13,8 +13,3 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions
 # and limitations under the License.
-
-from .data import MPAClsDataset, SelfSLDataset
-from .models import BYOL, ConstrastiveHead, SelfSLMLP
-
-__all__ = ["MPAClsDataset", "SelfSLDataset", "BYOL", "SelfSLMLP", "ConstrastiveHead"]

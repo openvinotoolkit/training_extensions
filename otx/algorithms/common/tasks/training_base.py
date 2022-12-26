@@ -32,6 +32,7 @@ from mpa.utils.config_utils import remove_custom_hook, update_or_add_custom_hook
 from mpa.utils.logger import get_logger
 
 from otx.algorithms.common.adapters.mmcv.hooks import OTXLoggerHook
+from otx.algorithms.common.configs import TrainType
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label import LabelEntity
 from otx.api.entities.model import ModelEntity, ModelPrecision, OptimizationMethod
@@ -103,6 +104,7 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         export = kwargs.get("export", False)
         self._initialize(export=export)
         stage_module = self._update_stage_module(stage_module)
+
         # update model config -> model label schema
         data_classes = [label.name for label in self._labels]
         model_classes = [label.name for label in self._model_label_schema]
@@ -233,7 +235,10 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         else:
             self._recipe_cfg.pop("adaptive_validation_interval", None)
 
-        self.set_early_stopping_hook()
+        # TODO (sungchul): it will be removed after an update that applies hparam.yaml
+        if self._hyperparams.algo_backend.train_type != TrainType.SELFSUPERVISED:
+            # to disenable early stopping during self-sl
+            self.set_early_stopping_hook()
 
         # add Cancel tranining hook
         update_or_add_custom_hook(

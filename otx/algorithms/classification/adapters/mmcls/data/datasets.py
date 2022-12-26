@@ -14,6 +14,7 @@ from mmcls.datasets.pipelines import Compose
 from mmcv.utils.registry import build_from_cfg
 from mpa.utils.logger import get_logger
 from sklearn.metrics import confusion_matrix as sklearn_confusion_matrix
+from torch.utils.data import Dataset
 
 from otx.algorithms.common.utils import get_cls_img_indices, get_old_new_img_indices
 
@@ -411,3 +412,48 @@ class MPAHierarchicalClsDataset(MPAMultilabelClsDataset):
         eval_results["accuracy"] = total_acc
 
         return eval_results
+
+
+@DATASETS.register_module()
+class SelfSLDataset(Dataset):
+    """SelfSL dataset that training with two pipelines and no label."""
+
+    CLASSES = None
+
+    def __init__(self, otx_dataset=None, pipeline=None, **kwargs):  # pylint: disable=unused-argument
+        super().__init__()
+        self.otx_dataset = otx_dataset
+
+        self.load_pipeline = build_from_cfg(dict(type="LoadImageFromOTXDataset"), PIPELINES)
+        self.view0 = Compose([build_from_cfg(p, PIPELINES) for p in pipeline["view0"]])
+        self.view1 = Compose([build_from_cfg(p, PIPELINES) for p in pipeline["view1"]])
+
+    def __len__(self):
+        """Get dataset length."""
+        return len(self.otx_dataset)
+
+    def __getitem__(self, index: int):
+        """Get item from dataset."""
+        dataset = self.otx_dataset
+        item = dataset[index]
+
+        height, width = item.height, item.width
+
+        data_info = dict(
+            dataset_item=item,
+            width=width,
+            height=height,
+            index=index,
+        )
+
+        loaded_results = self.load_pipeline(data_info)
+        results1 = self.view0(loaded_results.copy())
+        results2 = self.view1(loaded_results.copy())
+
+        results = {}
+        for k, v in results1.items():
+            results[k + "1"] = v
+        for k, v in results2.items():
+            results[k + "2"] = v
+
+        return results
