@@ -29,6 +29,7 @@ from otx.algorithms.common.adapters.mmcv.utils import (
     patch_color_conversion,
     prepare_work_dir,
     remove_from_config,
+    remove_from_configs_by_type,
     get_configs_by_dict,
     get_dataset_configs,
     get_configs_by_keys,
@@ -37,9 +38,7 @@ from otx.algorithms.common.adapters.mmcv.utils import (
 from otx.algorithms.segmentation.configs.base import SegmentationConfig
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label import Domain, LabelEntity
-from otx.api.usecases.reporting.time_monitor_callback import TimeMonitorCallback
 from otx.api.utils.argument_checks import (
-    DatasetParamTypeCheck,
     DirectoryPathCheck,
     check_input_parameters_type,
 )
@@ -48,35 +47,12 @@ logger = logging.getLogger(__name__)
 
 
 @check_input_parameters_type({"work_dir": DirectoryPathCheck})
-def patch_config(
+def patch_recipe_config(
     config: Config,
     work_dir: str,
     labels: List[LabelEntity],
-    domain: Domain,
 ):  # pylint: disable=too-many-branches
     """Update config function."""
-    # Set runner if not defined.
-    if "runner" not in config:
-        config.runner = ConfigDict({"type": "IterBasedRunner"})
-
-    # Check that there is no conflict in specification of number of training epochs.
-    # Move global definition of epochs inside runner config.
-    if "total_epochs" in config:
-        if is_epoch_based_runner(config.runner):
-            if config.runner.max_epochs != config.total_epochs:
-                logger.warning("Conflicting declaration of training epochs number.")
-            config.runner.max_epochs = config.total_epochs
-        else:
-            logger.warning(f"Total number of epochs set for an iteration based runner {config.runner.type}.")
-        remove_from_config(config, "total_epochs")
-
-    # Change runner's type.
-    if is_epoch_based_runner(config.runner):
-        logger.info(f"Replacing runner from {config.runner.type} to EpochRunnerWithCancel.")
-        config.runner.type = "EpochRunnerWithCancel"
-    else:
-        logger.info(f"Replacing runner from {config.runner.type} to IterBasedRunnerWithCancel.")
-        config.runner.type = "IterBasedRunnerWithCancel"
 
     # Add training cancelation hook.
     if "custom_hooks" not in config:
@@ -87,19 +63,14 @@ def patch_config(
     # Remove high level data pipelines definition leaving them only inside `data` section.
     remove_from_config(config, "train_pipeline")
     remove_from_config(config, "test_pipeline")
-    # Patch data pipeline, making it OTX-compatible.
-    patch_datasets(config, domain)
+    # Remove cancel interface hook
+    remove_from_configs_by_type(config.custom_hooks, "CancelInterfaceHook")
 
-    if "log_config" not in config:
-        config.log_config = ConfigDict()
-    if "evaluation" not in config:
-        config.evaluation = ConfigDict()
     config.evaluation["efficient_test"] = True
     evaluation_metric = config.evaluation.get("metric")
     if evaluation_metric is not None:
         config.evaluation.save_best = evaluation_metric
-    if "checkpoint_config" not in config:
-        config.checkpoint_config = ConfigDict()
+
     config.checkpoint_config.max_keep_ckpts = 5
     config.checkpoint_config.interval = config.evaluation.get("interval", 1)
 
@@ -237,27 +208,6 @@ def patch_adaptive_repeat_dataset(
 
 
 @check_input_parameters_type()
-def align_data_config_with_recipe(
-    data_config: ConfigDict,
-    config: Union[Config, ConfigDict]
-):
-    data_config = data_config.data
-    config = config.data
-    for subset in data_config.keys():
-        subset_config = data_config.get(subset, {})
-        for key in list(subset_config.keys()):
-            found_config = get_configs_by_keys(
-                config.get(subset),
-                key,
-                return_path=True
-            )
-            assert len(found_config) == 1
-            value = subset_config.pop(key)
-            path = list(found_config.keys())[0]
-            update_config(subset_config, {path: value})
-
-
-@check_input_parameters_type()
 def prepare_for_training(
     config: Config,
     data_config: ConfigDict,
@@ -349,7 +299,12 @@ def set_num_classes(config: Config, num_classes: int):
 
 
 @check_input_parameters_type()
-def patch_datasets(config: Config, domain=Domain.SEGMENTATION):
+def patch_datasets(
+    config: Config,
+    domain: Domain = Domain.SEGMENTATION,
+    subsets: List[str] = ["train", "val", "test"],
+    **kwargs
+):
     """Update dataset configs."""
 
     def update_pipeline(cfg):
@@ -358,19 +313,25 @@ def patch_datasets(config: Config, domain=Domain.SEGMENTATION):
                 pipeline_step.type = "LoadImageFromOTXDataset"
             if pipeline_step.type == "LoadAnnotations":
                 pipeline_step.type = "LoadAnnotationFromOTXDataset"
-                pipeline_step.domain = domain
             if subset == "train" and pipeline_step.type == "Collect":
                 pipeline_step = get_meta_keys(pipeline_step)
-        patch_color_conversion(cfg.pipeline)
 
     assert "data" in config
-    for subset in ("train", "val", "test"):
-        cfgs = get_dataset_configs(config, subset)
+    for subset in subsets:
+        if subset not in config.data:
+            continue
+        config.data[f"{subset}_dataloader"] = config.data.get(
+            f"{subset}_dataloader", ConfigDict()
+        )
 
+        cfgs = get_dataset_configs(config, subset)
         for cfg in cfgs:
-            cfg.type = "MPASegDataset"
+            cfg.domain = domain
             cfg.otx_dataset = None
             cfg.labels = None
+            cfg.type = "MPASegDataset"
+            cfg.update(kwargs)
+
             remove_from_config(cfg, "ann_dir")
             remove_from_config(cfg, "img_dir")
             remove_from_config(cfg, "data_root")
@@ -382,6 +343,8 @@ def patch_datasets(config: Config, domain=Domain.SEGMENTATION):
         # which we should update
         if len(cfgs) and config.data[subset].type == "MultiImageMixDataset":
             update_pipeline(config.data[subset])
+
+    patch_color_conversion(config)
 
 
 def patch_evaluation(config: Config):

@@ -21,6 +21,7 @@ import os
 import shutil
 import tempfile
 from typing import DefaultDict, Dict, List, Optional, Union
+from copy import deepcopy
 
 import numpy as np
 import torch
@@ -32,6 +33,7 @@ from mpa.utils.config_utils import remove_custom_hook, update_or_add_custom_hook
 from mpa.utils.logger import get_logger
 
 from otx.algorithms.common.adapters.mmcv.hooks import OTXLoggerHook
+from otx.algorithms.common.adapters.mmcv.utils import align_data_config_with_recipe
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label import LabelEntity
 from otx.api.entities.model import ModelEntity, ModelPrecision, OptimizationMethod
@@ -98,10 +100,7 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         self.override_configs = {}  # type: Dict[str, str]
 
     def _run_task(self, stage_module, mode=None, dataset=None, **kwargs):
-        # FIXME: Temporary remedy for CVS-88098
-        export = kwargs.get("export", False)
-        force = kwargs.get("force", False)
-        self._initialize(export=export, force=force)
+        self._initialize(kwargs)
         # update model config -> model label schema
         data_classes = [label.name for label in self._labels]
         model_classes = [label.name for label in self._model_label_schema]
@@ -114,7 +113,7 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
 
         logger.info(
             "running task... kwargs = " +
-            str({k: v if k != 'model' else object.__repr__(v) for k, v in kwargs.items()})
+            str({k: v if k != "model_builder" else object.__repr__(v) for k, v in kwargs.items()})
         )
         if self._recipe_cfg is None:
             raise RuntimeError("'recipe_cfg' is not initialized yet. call prepare() method before calling this method")
@@ -125,11 +124,16 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         common_cfg = ConfigDict(dict(output_path=self._output_path))
 
         # build workflow using recipe configuration
-        workflow = build(self._recipe_cfg, self._mode, stage_type=stage_module, common_cfg=common_cfg)
+        workflow = build(
+            deepcopy(self._recipe_cfg),
+            self._mode,
+            stage_type=stage_module,
+            common_cfg=common_cfg
+        )
 
         # run workflow with task specific model config and data config
         output = workflow.run(
-            model_cfg=self._model_cfg,
+            model_cfg=deepcopy(self._model_cfg),
             data_cfg=self._data_cfg,
             ir_path=None,
             model_ckpt=self._model_ckpt,
@@ -171,15 +175,15 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         """Hyper Parameters configuration."""
         return self._hyperparams
 
-    def _initialize(self, export=False, force=False):
+    def _initialize(self, options):
         """Prepare configurations to run a task through MPA's stage."""
-        if not force and getattr(self, "_recipe_cfg", None) is not None:
-            return
+        export = options.get("export", False)
 
         logger.info("initializing....")
         self._init_recipe()
 
         if not export:
+            # FIXME: Temporary remedy for CVS-88098
             recipe_hparams = self._init_recipe_hparam()
             if len(recipe_hparams) > 0:
                 self._recipe_cfg.merge_from_dict(recipe_hparams)
@@ -243,11 +247,14 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
                 dataloader_cfg["persistent_workers"] = False
                 data_cfg[f"{subset}_dataloader"] = dataloader_cfg
 
-        self._initialize_post_hook()
+        if self._data_cfg is not None:
+            align_data_config_with_recipe(self._data_cfg, self._recipe_cfg)
+
+        self._initialize_post_hook(options)
 
         logger.info("initialized.")
 
-    def _initialize_post_hook(self):
+    def _initialize_post_hook(self, options=dict()):
         pass
 
     @abc.abstractmethod

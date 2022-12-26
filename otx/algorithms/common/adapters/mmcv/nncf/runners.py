@@ -2,13 +2,13 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import copy
 import time
 
-from mmcv.runner import RUNNERS, EpochBasedRunner
+from mmcv.runner import RUNNERS
 from mmcv.runner.hooks.lr_updater import LrUpdaterHook
 from mmcv.runner.utils import get_host_info
 
+from otx.algorithms.common.adapters.mmcv.runner import EpochRunnerWithCancel
 from otx.algorithms.common.adapters.mmcv.nncf.hooks import CompressionHook
 from otx.algorithms.common.adapters.nncf import (
     AccuracyAwareLrUpdater,
@@ -16,19 +16,8 @@ from otx.algorithms.common.adapters.nncf import (
 )
 
 
-# Try monkey patching to steal validation result
-#from mmcv.runner.hooks import EvalHook
-import mmcv.runner.hooks
-old_evaluate = mmcv.runner.EvalHook.evaluate
-def new_evaluate(self, runner, result):
-    ret = old_evaluate(self, runner, result)
-    setattr(runner, "all_metrics", copy.deepcopy(runner.log_buffer.output))
-    return ret
-mmcv.runner.EvalHook.evaluate = new_evaluate
-
-
 @RUNNERS.register_module()
-class AccuracyAwareRunner(EpochBasedRunner):
+class AccuracyAwareRunner(EpochRunnerWithCancel):
     """
     An mmcv training runner to be used with NNCF-based accuracy-aware training.
     Inherited from the standard EpochBasedRunner with the overridden "run" method.
@@ -84,6 +73,10 @@ class AccuracyAwareRunner(EpochBasedRunner):
         self._max_epochs = params["maximal_total_epochs"]
         self._max_iters = self._max_epochs * len(self.train_data_loader)
 
+        self.logger.info('Start running, host: %s, work_dir: %s',
+                         get_host_info(), work_dir)
+        self.logger.info('Hooks will be executed in the following order:\n%s',
+                         self.get_hook_info())
         self.call_hook("before_run")
 
         def configure_optimizers_fn():

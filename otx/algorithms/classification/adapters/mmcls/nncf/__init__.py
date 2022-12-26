@@ -8,6 +8,9 @@ from .builder import (
 
 from .patches import *
 
+from .registers import *
+
 __all__ = [
     "build_nncf_model",
 ]
+
