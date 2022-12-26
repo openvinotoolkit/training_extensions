@@ -28,6 +28,7 @@ import torch
 from mmcv.utils import Registry, build_from_cfg
 from mpa.utils.config_utils import MPAConfig
 
+from otx.api.entities.model_template import TaskType
 from otx.cli.registry import Registry as OTXRegistry
 from otx.cli.utils.importing import (
     get_backbone_list,
@@ -86,13 +87,13 @@ def update_backbone_args(backbone_config, registry, backend):
     else:
         backbone_config["use_out_indices"] = False
 
-    # Patch missing_args
     updated_missing_args = []
     backbone_type = backbone_config["type"]
     backbone_list = get_backbone_list(backend)
     if backbone_type not in backbone_list:
         return missing_args
     backbone_data = backbone_list[backbone_type]
+    # Patch missing_args
     for arg in missing_args:
         if "options" in backbone_data and arg in backbone_data["options"]:
             backbone_config[arg] = backbone_data["options"][arg][0]
@@ -275,7 +276,7 @@ class Builder:
 
         # Build Backbone
         backbone = build_from_cfg(backbone_config, otx_registry, None)
-        if model_config.model.get("task", None) == "classification":
+        if model_config.model.get("task", None) == str(TaskType.CLASSIFICATION).lower():
             # Update model layer's in/out configuration in ClsStage.configure_model
             out_channels = -1
             if hasattr(model_config.model, "head"):

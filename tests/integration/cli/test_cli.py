@@ -21,18 +21,10 @@ otx_dir = os.getcwd()
 
 
 build_backbone_args = [
-    ("CLASSIFICATION", "mmdet.ResNet"),
-    ("CLASSIFICATION", "mmseg.MobileNetV2"),
     ("CLASSIFICATION", "torchvision.mobilenet_v3_large"),
     ("CLASSIFICATION", "mmcls.MMOVBackbone"),
-    ("DETECTION", "mmdet.ResNet"),
-    ("DETECTION", "mmseg.MobileNetV2"),
     ("DETECTION", "torchvision.mobilenet_v3_large"),
-    ("INSTANCE_SEGMENTATION", "mmdet.ResNet"),
-    ("INSTANCE_SEGMENTATION", "mmseg.MobileNetV2"),
     ("INSTANCE_SEGMENTATION", "torchvision.mobilenet_v3_large"),
-    ("SEGMENTATION", "mmdet.ResNet"),
-    ("SEGMENTATION", "mmseg.MobileNetV2"),
     ("SEGMENTATION", "torchvision.mobilenet_v3_large"),
 ]
 build_backbone_args_ids = [f"{task}_{backbone}" for task, backbone in build_backbone_args]
