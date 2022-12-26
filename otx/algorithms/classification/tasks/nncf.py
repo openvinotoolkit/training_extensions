@@ -35,11 +35,6 @@ logger = get_logger()
 
 
 class ClassificationNNCFTask(NNCFBaseTask, ClassificationInferenceTask):
-    @check_input_parameters_type()
-    def __init__(self, task_environment: TaskEnvironment):
-        super().__init__(task_environment)
-        self._label_dictionary = dict(enumerate(self._labels, 1))
-
     def _initialize_post_hook(self, options=dict()):
         super()._initialize_post_hook(options)
 
