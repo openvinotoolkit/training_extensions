@@ -1,0 +1,23 @@
+_base_: [
+    './train.yaml',
+    '../_base_/models/cls_task_incr.py'
+]
+
+optimizer:
+    _delete_: true
+    type: 'Adam'
+    lr: 0.003
+    weight_decay: 0.001
+
+lr_config:
+    min_lr_ratio: 0.0001
+
+runner:
+    max_epochs: 50
+
+evaluation:
+    metric: ['accuracy', 'f1_score']
+
+task_adapt:
+    op: 'MERGE'  # REPLACE | MERGE
+    type: 'lwf'

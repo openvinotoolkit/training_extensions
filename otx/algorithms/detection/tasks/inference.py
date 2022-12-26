@@ -20,9 +20,6 @@ from typing import Iterable, Optional, Tuple
 import cv2
 import numpy as np
 from mmcv.utils import ConfigDict
-from mpa import MPAConstants
-from mpa.utils.config_utils import MPAConfig
-from mpa.utils.logger import get_logger
 
 from otx.algorithms.common.adapters.mmcv.utils import patch_data_pipeline
 from otx.algorithms.common.configs.training_base import TrainType
@@ -65,6 +62,9 @@ from otx.api.utils.argument_checks import (
     check_input_parameters_type,
 )
 from otx.api.utils.dataset_utils import add_saliency_maps_to_dataset_item
+from otx.mpa import MPAConstants
+from otx.mpa.utils.config_utils import MPAConfig
+from otx.mpa.utils.logger import get_logger
 
 logger = get_logger()
 
