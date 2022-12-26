@@ -4,18 +4,18 @@
 
 from collections import OrderedDict
 from dataclasses import dataclass, field
-from typing import Tuple, Optional
+from typing import Optional, Tuple
 
-import torch
 import numpy as np
+import torch
+
 from otx.mpa.utils.logger import get_logger
 
+from ..utils import get_op_name
 from .builder import OPS
 from .op import Attribute, Operation
 from .type_conversions import ConvertV0
 from .utils import get_dynamic_shape
-from ..utils import get_op_name
-
 
 logger = get_logger()
 
@@ -52,10 +52,7 @@ class ParameterV0Attribute(Attribute):
         ]
         # fmt: on
         if self.element_type not in valid_element_type:
-            raise ValueError(
-                f"Invalid element_type {self.element_type}. "
-                f"It must be one of {valid_element_type}."
-            )
+            raise ValueError(f"Invalid element_type {self.element_type}. " f"It must be one of {valid_element_type}.")
 
 
 @OPS.register()
@@ -74,9 +71,7 @@ class ParameterV0(Operation[ParameterV0Attribute]):
             for ov_shape_, torch_shape_ in zip(ov_shape, torch_shape):
                 if ov_shape_ == -1:
                     continue
-                assert (
-                    ov_shape_ == torch_shape_
-                ), f"input shape {torch_shape} does not match with ov shape {ov_shape}"
+                assert ov_shape_ == torch_shape_, f"input shape {torch_shape} does not match with ov shape {ov_shape}"
 
         if self.attrs.permute:
             input = input.permute(self.attrs.permute)
@@ -177,10 +172,7 @@ class ConstantV0Attribute(Attribute):
         ]
         # fmt: on
         if self.element_type not in valid_element_type:
-            raise ValueError(
-                f"Invalid element_type {self.element_type}. "
-                f"It must be one of {valid_element_type}."
-            )
+            raise ValueError(f"Invalid element_type {self.element_type}. " f"It must be one of {valid_element_type}.")
 
 
 @OPS.register()

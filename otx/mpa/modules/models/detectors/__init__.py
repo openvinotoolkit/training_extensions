@@ -3,12 +3,14 @@
 #
 
 # flake8: noqa
-from . import sam_detector_mixin
-from . import l2sp_detector_mixin
-from . import custom_two_stage_detector
-from . import custom_single_stage_detector
-from . import unbiased_teacher
-from . import custom_vfnet_detector
-from . import custom_atss_detector
-from . import custom_yolox_detector
-from . import custom_maskrcnn_detector
+from . import (
+    custom_atss_detector,
+    custom_maskrcnn_detector,
+    custom_single_stage_detector,
+    custom_two_stage_detector,
+    custom_vfnet_detector,
+    custom_yolox_detector,
+    l2sp_detector_mixin,
+    sam_detector_mixin,
+    unbiased_teacher,
+)

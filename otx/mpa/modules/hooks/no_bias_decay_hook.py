@@ -3,8 +3,7 @@
 #
 
 import torch.nn as nn
-
-from mmcv.runner import Hook, HOOKS
+from mmcv.runner import HOOKS, Hook
 
 from otx.mpa.utils.logger import get_logger
 
@@ -18,6 +17,7 @@ class NoBiasDecayHook(Hook):
     This hook divides model's weight & bias to 3 parameter groups
     [weight with decay, weight without decay, bias without decay]
     """
+
     def before_train_epoch(self, runner):
         weight_decay, bias_no_decay, weight_no_decay = [], [], []
         for m in runner.model.modules():

@@ -1,4 +1,4 @@
-_base_ = './model.py'
+_base_ = "./model.py"
 
 model = dict(
     type="SupConClassifier",
@@ -20,6 +20,4 @@ model = dict(
     ),
 )
 
-checkpoint_config = dict(
-    type="CheckpointHookWithValResults"
-)
+checkpoint_config = dict(type="CheckpointHookWithValResults")

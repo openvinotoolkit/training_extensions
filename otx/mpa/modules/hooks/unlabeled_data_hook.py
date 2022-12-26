@@ -3,30 +3,19 @@
 #
 
 import importlib
-from mmcv.runner import get_dist_info
-from mmcv.runner import HOOKS, Hook
+
+from mmcv.runner import HOOKS, Hook, get_dist_info
+
 from otx.mpa.modules.datasets.composed_dataloader import ComposedDL
 from otx.mpa.utils.logger import get_logger
 
 logger = get_logger()
-TASK_LIB_NAME = {
-    "classification" : "mmcls", 
-    "detection" : "mmdet", 
-    "segmentation" : "mmseg"
-}
+TASK_LIB_NAME = {"classification": "mmcls", "detection": "mmdet", "segmentation": "mmseg"}
+
 
 @HOOKS.register_module()
 class UnlabeledDataHook(Hook):
-
-    def __init__(
-        self,
-        unlabeled_data_cfg,
-        samples_per_gpu,
-        workers_per_gpu,
-        model_task,
-        seed=None,
-        **kwargs
-    ):
+    def __init__(self, unlabeled_data_cfg, samples_per_gpu, workers_per_gpu, model_task, seed=None, **kwargs):
         super().__init__(**kwargs)
 
         # Build unlabeled dataset & loader
@@ -38,7 +27,7 @@ class UnlabeledDataHook(Hook):
 
         _, world_size = get_dist_info()
 
-        logger.info('In UnlabeledDataHook, creating unlabeled data_loader...')
+        logger.info("In UnlabeledDataHook, creating unlabeled data_loader...")
         self.unlabeled_loader = build_dataloader(
             self.unlabeled_dataset,
             samples_per_gpu,
@@ -46,13 +35,15 @@ class UnlabeledDataHook(Hook):
             num_gpus=world_size,
             dist=(world_size > 1),
             seed=seed,
-            **kwargs
+            **kwargs,
         )
         self.composed_loader = None
 
     def before_epoch(self, runner):
         if self.composed_loader is None:
-            logger.info('In UnlabeledDataHook.before_epoch, creating ComposedDL'
-                        f'([labeled({len(runner.data_loader.dataset)}, unlabeled({len(self.unlabeled_loader.dataset)})])')
+            logger.info(
+                "In UnlabeledDataHook.before_epoch, creating ComposedDL"
+                f"([labeled({len(runner.data_loader.dataset)}, unlabeled({len(self.unlabeled_loader.dataset)})])"
+            )
             self.composed_loader = ComposedDL([runner.data_loader, self.unlabeled_loader])
         runner.data_loader = self.composed_loader

@@ -1,14 +1,12 @@
-_base_ = [
-    './atss.py'
-]
+_base_ = ["./atss.py"]
 
 model = dict(
-    type='CustomATSS',
+    type="CustomATSS",
     bbox_head=dict(
-        type='CustomATSSHead',
+        type="CustomATSSHead",
         use_qfl=False,
         qfl_cfg=dict(
-            type='QualityFocalLoss',
+            type="QualityFocalLoss",
             use_sigmoid=True,
             beta=2.0,
             loss_weight=1.0,

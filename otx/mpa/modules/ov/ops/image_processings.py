@@ -5,12 +5,12 @@
 from dataclasses import dataclass, field
 from typing import List
 
-from torch.nn import functional as F
 import numpy as np
+from torch.nn import functional as F
 
 from .builder import OPS
-from .op import Attribute, Operation
 from .movements import PadV1
+from .op import Attribute, Operation
 
 
 @dataclass
@@ -28,9 +28,7 @@ class InterpolateV4Attribute(Attribute):
         super().__post_init__()
         valid_mode = ["nearest", "linear", "linear_onnx", "cubic"]
         if self.mode not in valid_mode:
-            raise ValueError(
-                f"Invalid mode {self.mode}. " f"It must be one of {valid_mode}."
-            )
+            raise ValueError(f"Invalid mode {self.mode}. " f"It must be one of {valid_mode}.")
         valid_shape_calculation_mode = ["sizes", "scales"]
         if self.shape_calculation_mode not in valid_shape_calculation_mode:
             raise ValueError(
@@ -44,10 +42,7 @@ class InterpolateV4Attribute(Attribute):
             "tf_half_pixel_for_nn",
             "align_corners",
         ]
-        if (
-            self.coordinate_transformation_mode
-            not in valid_coordinate_transformation_mode
-        ):
+        if self.coordinate_transformation_mode not in valid_coordinate_transformation_mode:
             raise ValueError(
                 f"Invalid coordinate_transformation_mode {self.coordinate_transformation_mode}. "
                 f"It must be one of {valid_coordinate_transformation_mode}."
@@ -60,10 +55,7 @@ class InterpolateV4Attribute(Attribute):
             "simple",
         ]
         if self.nearest_mode not in valid_nearest_mode:
-            raise ValueError(
-                f"Invalid nearest_mode {self.nearest_mode}. "
-                f"It must be one of {valid_nearest_mode}."
-            )
+            raise ValueError(f"Invalid nearest_mode {self.nearest_mode}. " f"It must be one of {valid_nearest_mode}.")
 
 
 @OPS.register()

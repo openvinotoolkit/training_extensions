@@ -28,15 +28,11 @@ class MaxPoolV0Attribute(Attribute):
         super().__post_init__()
         valid_auto_pad = ["explicit", "same_upper", "same_Lower", "valid"]
         if self.auto_pad not in valid_auto_pad:
-            raise ValueError(
-                f"Invalid auto_pad {self.auto_pad}. "
-                f"It must be one of {valid_auto_pad}."
-            )
+            raise ValueError(f"Invalid auto_pad {self.auto_pad}. " f"It must be one of {valid_auto_pad}.")
         valid_rounding_type = ["ceil", "floor"]
         if self.rounding_type not in valid_rounding_type:
             raise ValueError(
-                f"Invalid rounding_type {self.rounding_type}. "
-                f"It must be one of {valid_rounding_type}."
+                f"Invalid rounding_type {self.rounding_type}. " f"It must be one of {valid_rounding_type}."
             )
         valid_index_element_type = ["i32", "i64"]
         if self.index_element_type not in valid_index_element_type:
@@ -106,15 +102,11 @@ class AvgPoolV1Attribute(Attribute):
         super().__post_init__()
         valid_auto_pad = ["explicit", "same_upper", "same_Lower", "valid"]
         if self.auto_pad not in valid_auto_pad:
-            raise ValueError(
-                f"Invalid auto_pad {self.auto_pad}. "
-                f"It must be one of {valid_auto_pad}."
-            )
+            raise ValueError(f"Invalid auto_pad {self.auto_pad}. " f"It must be one of {valid_auto_pad}.")
         valid_rounding_type = ["ceil", "floor"]
         if self.rounding_type not in valid_rounding_type:
             raise ValueError(
-                f"Invalid rounding_type {self.rounding_type}. "
-                f"It must be one of {valid_rounding_type}."
+                f"Invalid rounding_type {self.rounding_type}. " f"It must be one of {valid_rounding_type}."
             )
 
 

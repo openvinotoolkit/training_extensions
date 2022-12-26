@@ -1,6 +1,4 @@
 # base optimizer settings
 optimizer = dict()
 
-optimizer_config = dict(
-    grad_clip=None
-)
+optimizer_config = dict(grad_clip=None)

@@ -19,9 +19,7 @@ def get_dynamic_shape(op):
     return shape
 
 
-def get_torch_padding(
-    pads_begin, pads_end, auto_pad, input_size, weight_size, stride, dilation=None
-):
+def get_torch_padding(pads_begin, pads_end, auto_pad, input_size, weight_size, stride, dilation=None):
     from .movements import PadV1
 
     if dilation is None:
@@ -33,13 +31,9 @@ def get_torch_padding(
         assert len(set(dilation)) == 1 and dilation[0] == 1
         pads_begin = []
         pads_end = []
-        for input_size_, weight_size_, stride_, dilation_ in zip(
-            input_size, weight_size, stride, dilation
-        ):
+        for input_size_, weight_size_, stride_, dilation_ in zip(input_size, weight_size, stride, dilation):
             out_size = math.ceil(input_size_ / stride_)
-            padding_needed = max(
-                0, (out_size - 1) * stride_ + weight_size_ - input_size_
-            )
+            padding_needed = max(0, (out_size - 1) * stride_ + weight_size_ - input_size_)
             padding_lhs = int(padding_needed / 2)
             padding_rhs = padding_needed - padding_lhs
 

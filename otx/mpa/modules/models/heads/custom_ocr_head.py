@@ -3,19 +3,18 @@
 #
 
 from mmcv.runner import force_fp32
-
-from mmseg.ops import resize
-from mmseg.models.builder import HEADS
-from mmseg.models.losses import accuracy
-from mmseg.models.decode_heads.ocr_head import OCRHead
 from mmseg.core import add_prefix
+from mmseg.models.builder import HEADS
+from mmseg.models.decode_heads.ocr_head import OCRHead
+from mmseg.models.losses import accuracy
+from mmseg.ops import resize
+
 from otx.mpa.modules.utils.seg_utils import get_valid_label_mask_per_batch
 
 
 @HEADS.register_module()
 class CustomOCRHead(OCRHead):
-    """Custom Object-Contextual Representations for Semantic Segmentation.
-    """
+    """Custom Object-Contextual Representations for Semantic Segmentation."""
 
     def forward_train(self, inputs, prev_output, img_metas, gt_semantic_seg, train_cfg, pixel_weights=None):
         """Forward function for training.
@@ -42,30 +41,20 @@ class CustomOCRHead(OCRHead):
 
         return losses, seg_logits
 
-    @force_fp32(apply_to=('seg_logit', ))
+    @force_fp32(apply_to=("seg_logit",))
     def losses(self, seg_logit, seg_label, valid_label_mask, train_cfg, pixel_weights=None):
         """Compute segmentation loss."""
 
         loss = dict()
 
-        seg_logit = resize(
-            input=seg_logit,
-            size=seg_label.shape[2:],
-            mode='bilinear',
-            align_corners=self.align_corners
-        )
+        seg_logit = resize(input=seg_logit, size=seg_label.shape[2:], mode="bilinear", align_corners=self.align_corners)
 
         seg_label = seg_label.squeeze(1)
         out_losses = dict()
         for loss_idx, loss_module in enumerate(self.loss_modules):
-            loss_value, loss_meta = loss_module(
-                seg_logit,
-                seg_label,
-                valid_label_mask,
-                pixel_weights=pixel_weights
-            )
+            loss_value, loss_meta = loss_module(seg_logit, seg_label, valid_label_mask, pixel_weights=pixel_weights)
 
-            loss_name = loss_module.name + f'-{loss_idx}'
+            loss_name = loss_module.name + f"-{loss_idx}"
             out_losses[loss_name] = loss_value
             loss.update(add_prefix(loss_meta, loss_name))
 
@@ -75,17 +64,13 @@ class CustomOCRHead(OCRHead):
         for loss_name, loss_value in out_losses.items():
             loss[loss_name] = loss_value
 
-        loss['loss_seg'] = sum(out_losses.values())
-        loss['acc_seg'] = accuracy(seg_logit, seg_label)
+        loss["loss_seg"] = sum(out_losses.values())
+        loss["acc_seg"] = accuracy(seg_logit, seg_label)
 
         if train_cfg.mix_loss.enable:
-            mix_loss = self._mix_loss(
-                seg_logit,
-                seg_label,
-                ignore_index=self.ignore_index
-            )
+            mix_loss = self._mix_loss(seg_logit, seg_label, ignore_index=self.ignore_index)
 
-            mix_loss_weight = train_cfg.mix_loss.get('weight', 1.0)
-            loss['loss_mix'] = mix_loss_weight * mix_loss
+            mix_loss_weight = train_cfg.mix_loss.get("weight", 1.0)
+            loss["loss_mix"] = mix_loss_weight * mix_loss
 
         return loss

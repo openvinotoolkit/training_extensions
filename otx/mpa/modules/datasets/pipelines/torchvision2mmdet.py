@@ -2,23 +2,25 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from mmdet.datasets import PIPELINES
-from mmcv.utils import build_from_cfg
-
 import numpy as np
-# import cv2 as cv
-from torchvision import transforms as T
+from mmcv.utils import build_from_cfg
+from mmdet.datasets import PIPELINES
+
 # import torchvision.transforms.functional as F
 from mmdet.datasets.pipelines.formating import ImageToTensor, to_tensor
+
 # from mmdet.datasets.pipelines.transforms import Normalize
 from PIL import Image, ImageFilter
+
+# import cv2 as cv
+from torchvision import transforms as T
 
 
 @PIPELINES.register_module()
 class ColorJitter(T.ColorJitter):
     """MMDet adapter"""
 
-    def __init__(self, key_maps=[('img', 'img')], **kwargs):
+    def __init__(self, key_maps=[("img", "img")], **kwargs):
         super().__init__(**kwargs)
         self.key_maps = key_maps
 
@@ -33,7 +35,7 @@ class ColorJitter(T.ColorJitter):
 class RandomGrayscale(T.RandomGrayscale):
     """MMDet adapter"""
 
-    def __init__(self, key_maps=[('img', 'img')], **kwargs):
+    def __init__(self, key_maps=[("img", "img")], **kwargs):
         super().__init__(**kwargs)
         self.key_maps = key_maps
 
@@ -48,7 +50,7 @@ class RandomGrayscale(T.RandomGrayscale):
 class RandomErasing(T.RandomErasing):
     """MMDet adapter"""
 
-    def __init__(self, key_maps=[('img', 'img')], **kwargs):
+    def __init__(self, key_maps=[("img", "img")], **kwargs):
         super().__init__(**kwargs)
         self.key_maps = key_maps
 
@@ -63,7 +65,7 @@ class RandomErasing(T.RandomErasing):
 class RandomGaussianBlur(object):
     """Gaussian blur augmentation in SimCLR https://arxiv.org/abs/2002.05709."""
 
-    def __init__(self, sigma_min, sigma_max, key_maps=[('img', 'img')]):
+    def __init__(self, sigma_min, sigma_max, key_maps=[("img", "img")]):
         self.sigma_min = sigma_min
         self.sigma_max = sigma_max
         self.key_maps = key_maps
@@ -149,13 +151,13 @@ class NDArrayToTensor(ImageToTensor):
 
 @PIPELINES.register_module()
 class NDArrayToPILImage(object):
-    def __init__(self, keys=['img']):
+    def __init__(self, keys=["img"]):
         self.keys = keys
 
     def __call__(self, results):
         for key in self.keys:
             img = results[key]
-            img = Image.fromarray(img, mode='RGB')
+            img = Image.fromarray(img, mode="RGB")
             results[key] = img
         return results
 
@@ -166,7 +168,7 @@ class NDArrayToPILImage(object):
 
 @PIPELINES.register_module()
 class PILImageToNDArray(object):
-    def __init__(self, keys=['img']):
+    def __init__(self, keys=["img"]):
         self.keys = keys
 
     def __call__(self, results):
@@ -190,8 +192,8 @@ class BranchImage(object):
         for k1, k2 in self.key_map.items():
             if k1 in results:
                 results[k2] = results[k1]
-            if k1 in results['img_fields']:
-                results['img_fields'].append(k2)
+            if k1 in results["img_fields"]:
+                results["img_fields"].append(k2)
         return results
 
     def __repr__(self):

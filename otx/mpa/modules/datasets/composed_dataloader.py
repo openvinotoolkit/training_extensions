@@ -21,10 +21,10 @@ class CDLIterator:
                     batches = next(it)
                 else:
                     try:
-                        batches[f'extra_{i-1}'] = next(it)
+                        batches[f"extra_{i-1}"] = next(it)
                     except StopIteration:
                         self._cdl_iter[1] = iter(self._cdl.loaders[1])
-                        batches[f'extra_{i-1}'] = next(self._cdl_iter[1])
+                        batches[f"extra_{i-1}"] = next(self._cdl_iter[1])
             self._index += 1
             return batches
         raise StopIteration
@@ -32,9 +32,10 @@ class CDLIterator:
 
 class ComposedDL(object):
     class DummySampler(object):
-        ''' dummy sampler class to relay set_epoch() call to the
-            list of data loaders in the CDL
-        '''
+        """dummy sampler class to relay set_epoch() call to the
+        list of data loaders in the CDL
+        """
+
         def __init__(self, cdl):
             self.cdl = cdl
 
@@ -46,7 +47,7 @@ class ComposedDL(object):
     def __init__(self, loaders=[]):
         self.loaders = loaders
         self.max_iter = len(self.loaders[0])
-        logger.info(f'possible max iterations = {self.max_iter}')
+        logger.info(f"possible max iterations = {self.max_iter}")
         self._sampler = ComposedDL.DummySampler(self)
 
     def __len__(self):

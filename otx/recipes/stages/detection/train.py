@@ -1,10 +1,10 @@
 _base_ = [
-    '../_base_/default.py',
-    '../_base_/data/data.py',
-    '../_base_/logs/tensorboard_logger.py',
-    '../_base_/optimizers/sgd.py',
-    '../_base_/runners/epoch_runner_cancel.py',
-    '../_base_/schedules/plateau.py',
+    "../_base_/default.py",
+    "../_base_/data/data.py",
+    "../_base_/logs/tensorboard_logger.py",
+    "../_base_/optimizers/sgd.py",
+    "../_base_/runners/epoch_runner_cancel.py",
+    "../_base_/schedules/plateau.py",
 ]
 
 # Disabling until evaluation bug resolved
@@ -21,30 +21,22 @@ optimizer = dict(
 
 optimizer_config = dict(
     _delete_=True,
-    type='SAMOptimizerHook',
+    type="SAMOptimizerHook",
     start_epoch=1000,  # set 1 ~ total_epochs to enable
-    grad_clip=dict(
-        max_norm=35,
-        norm_type=2
-    )
+    grad_clip=dict(max_norm=35, norm_type=2),
 )
 
 lr_config = dict(min_lr=1e-06)
 
-evaluation = dict(
-    interval=1,
-    metric='bbox',
-    classwise=True,
-    save_best='bbox_mAP'
-)
+evaluation = dict(interval=1, metric="bbox", classwise=True, save_best="bbox_mAP")
 
 custom_hooks = [
     dict(
-        type='LazyEarlyStoppingHook',
+        type="LazyEarlyStoppingHook",
         start=3,
         patience=10,
         iteration_patience=0,
-        metric='bbox_mAP',
+        metric="bbox_mAP",
         interval=1,
         priority=75,
     ),

@@ -3,5 +3,4 @@
 #
 
 # flake8: noqa
-from . import backbones
-from . import decode_heads
+from . import backbones, decode_heads

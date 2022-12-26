@@ -7,25 +7,25 @@ import subprocess
 import warnings
 
 import numpy as np
-from sklearn.metrics.pairwise import euclidean_distances, cosine_distances
-from sklearn.metrics import average_precision_score
 import torch
 import torch.distributed as dist
 import torch.multiprocessing as mp
 import torch.utils.data.distributed
+from sklearn.metrics import average_precision_score
+from sklearn.metrics.pairwise import cosine_distances, euclidean_distances
 from torch import nn
 
 
-def distance_metric(query, gallery, metric='euclidean'):
+def distance_metric(query, gallery, metric="euclidean"):
     if gallery is None:
         gallery = query
     m = len(query)
     n = len(gallery)
     x = np.reshape(query, (m, -1))
     y = np.reshape(gallery, (n, -1))
-    if metric == 'euclidean':
+    if metric == "euclidean":
         dist = euclidean_distances(x, y)
-    elif metric == 'cosine':
+    elif metric == "cosine":
         dist = cosine_distances(x, y)
     else:
         raise KeyError("Unsupported distance metric:", metric)
@@ -44,7 +44,7 @@ def mean_ap(distmat, query_ids, gallery_ids):
 
     # Sort and find correct matches
     indices = np.argsort(distmat, axis=1)
-    matches = (gallery_ids[indices] == query_ids[:, np.newaxis])
+    matches = gallery_ids[indices] == query_ids[:, np.newaxis]
     if cut:
         indices = indices[:, 1:]
         matches = matches[:, 1:]
@@ -74,7 +74,7 @@ def calculate_cmc(distmat, query_ids, gallery_ids, topk=100, first_match_break=T
 
     # Sort and find correct matches
     indices = np.argsort(distmat, axis=1)
-    matches = (gallery_ids[indices] == query_ids[:, np.newaxis])
+    matches = gallery_ids[indices] == query_ids[:, np.newaxis]
     # Compute CMC for each query
     ret = np.zeros(topk)
     num_valid_queries = 0
@@ -84,7 +84,7 @@ def calculate_cmc(distmat, query_ids, gallery_ids, topk=100, first_match_break=T
         repeat = 1
         for _ in range(repeat):
             index = np.nonzero(matches[i])[0]
-            delta = 1. / (len(index) * repeat)
+            delta = 1.0 / (len(index) * repeat)
             for j, k in enumerate(index):
                 if k - j >= topk:
                     break
@@ -118,8 +118,8 @@ def init_dist(args, backend="nccl"):
 
     elif args.launcher == "none":
         # DataParallel or single GPU
-        if 'CUDA_VISIBLE_DEVICES' in os.environ.keys():
-            args.total_gpus = len(os.environ['CUDA_VISIBLE_DEVICES'].split(','))
+        if "CUDA_VISIBLE_DEVICES" in os.environ.keys():
+            args.total_gpus = len(os.environ["CUDA_VISIBLE_DEVICES"].split(","))
         else:
             args.total_gpus = torch.cuda.device_count()
         if args.total_gpus > 1:
@@ -143,8 +143,8 @@ def get_dist_info():
 
 def init_dist_pytorch(args, backend="nccl"):
     args.rank = int(os.environ["LOCAL_RANK"])
-    if 'CUDA_VISIBLE_DEVICES' in os.environ.keys():
-        args.ngpus_per_node = len(os.environ['CUDA_VISIBLE_DEVICES'].split(','))
+    if "CUDA_VISIBLE_DEVICES" in os.environ.keys():
+        args.ngpus_per_node = len(os.environ["CUDA_VISIBLE_DEVICES"].split(","))
     else:
         args.ngpus_per_node = torch.cuda.device_count()
     assert args.ngpus_per_node > 0, "CUDA is not supported"
@@ -159,16 +159,14 @@ def init_dist_slurm(args, backend="nccl"):
     args.rank = int(os.environ["SLURM_PROCID"])
     args.world_size = int(os.environ["SLURM_NTASKS"])
     node_list = os.environ["SLURM_NODELIST"]
-    if 'CUDA_VISIBLE_DEVICES' in os.environ.keys():
-        args.ngpus_per_node = len(os.environ['CUDA_VISIBLE_DEVICES'].split(','))
+    if "CUDA_VISIBLE_DEVICES" in os.environ.keys():
+        args.ngpus_per_node = len(os.environ["CUDA_VISIBLE_DEVICES"].split(","))
     else:
         args.ngpus_per_node = torch.cuda.device_count()
     assert args.ngpus_per_node > 0, "CUDA is not supported"
     args.gpu = args.rank % args.ngpus_per_node
     torch.cuda.set_device(args.gpu)
-    addr = subprocess.getoutput(
-        "scontrol show hostname {} | head -n1".format(node_list)
-    )
+    addr = subprocess.getoutput("scontrol show hostname {} | head -n1".format(node_list))
     os.environ["MASTER_PORT"] = str(args.tcp_port)
     os.environ["MASTER_ADDR"] = addr
     os.environ["WORLD_SIZE"] = str(args.world_size)
@@ -184,11 +182,7 @@ def simple_group_split(world_size, rank, num_groups):
     for i in range(num_groups):
         groups.append(dist.new_group(rank_list[i]))
     group_size = world_size // num_groups
-    print(
-        "Rank no.{} start sync BN on the process group of {}".format(
-            rank, rank_list[rank // group_size]
-        )
-    )
+    print("Rank no.{} start sync BN on the process group of {}".format(rank, rank_list[rank // group_size]))
     return groups[rank // group_size]
 
 

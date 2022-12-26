@@ -9,6 +9,7 @@ from mmdet.models.builder import HEADS, build_head, build_roi_extractor
 from mmdet.models.losses import accuracy
 from mmdet.models.roi_heads.bbox_heads.convfc_bbox_head import Shared2FCBBoxHead
 from mmdet.models.roi_heads.standard_roi_head import StandardRoIHead
+
 from otx.mpa.modules.models.heads.cross_dataset_detector_head import (
     CrossDatasetDetectorHead,
 )
@@ -20,36 +21,35 @@ class CustomRoIHead(StandardRoIHead):
     def init_bbox_head(self, bbox_roi_extractor, bbox_head):
         """Initialize ``bbox_head``"""
         self.bbox_roi_extractor = build_roi_extractor(bbox_roi_extractor)
-        if bbox_head.type == 'Shared2FCBBoxHead':
-            bbox_head.type = 'CustomConvFCBBoxHead'
+        if bbox_head.type == "Shared2FCBBoxHead":
+            bbox_head.type = "CustomConvFCBBoxHead"
         self.bbox_head = build_head(bbox_head)
 
-    def _bbox_forward_train(self, x, sampling_results, gt_bboxes, gt_labels,
-                            img_metas):
+    def _bbox_forward_train(self, x, sampling_results, gt_bboxes, gt_labels, img_metas):
         """Run forward function and calculate loss for box head in training."""
         rois = bbox2roi([res.bboxes for res in sampling_results])
         bbox_results = self._bbox_forward(x, rois)
 
         labels, label_weights, bbox_targets, bbox_weights, valid_label_mask = self.bbox_head.get_targets(
-            sampling_results, gt_bboxes, gt_labels, img_metas, self.train_cfg)
-        loss_bbox = self.bbox_head.loss(bbox_results['cls_score'],
-                                        bbox_results['bbox_pred'],
-                                        rois, labels, label_weights,
-                                        bbox_targets, bbox_weights,
-                                        valid_label_mask=valid_label_mask)
+            sampling_results, gt_bboxes, gt_labels, img_metas, self.train_cfg
+        )
+        loss_bbox = self.bbox_head.loss(
+            bbox_results["cls_score"],
+            bbox_results["bbox_pred"],
+            rois,
+            labels,
+            label_weights,
+            bbox_targets,
+            bbox_weights,
+            valid_label_mask=valid_label_mask,
+        )
         bbox_results.update(loss_bbox=loss_bbox)
         return bbox_results
 
 
 @HEADS.register_module()
 class CustomConvFCBBoxHead(Shared2FCBBoxHead, CrossDatasetDetectorHead):
-    def get_targets(self,
-                    sampling_results,
-                    gt_bboxes,
-                    gt_labels,
-                    img_metas,
-                    rcnn_train_cfg,
-                    concat=True):
+    def get_targets(self, sampling_results, gt_bboxes, gt_labels, img_metas, rcnn_train_cfg, concat=True):
         """Calculate the ground truth for all samples in a batch according to
         the sampling_results.
 
@@ -102,7 +102,8 @@ class CustomConvFCBBoxHead(Shared2FCBBoxHead, CrossDatasetDetectorHead):
             neg_bboxes_list,
             pos_gt_bboxes_list,
             pos_gt_labels_list,
-            cfg=rcnn_train_cfg)
+            cfg=rcnn_train_cfg,
+        )
         valid_label_mask = self.get_valid_label_mask(img_metas=img_metas, all_labels=labels, use_bg=True)
 
         if concat:
@@ -113,38 +114,38 @@ class CustomConvFCBBoxHead(Shared2FCBBoxHead, CrossDatasetDetectorHead):
             valid_label_mask = torch.cat(valid_label_mask, 0)
         return labels, label_weights, bbox_targets, bbox_weights, valid_label_mask
 
-    @force_fp32(apply_to=('cls_score', 'bbox_pred'))
-    def loss(self,
-             cls_score,
-             bbox_pred,
-             rois,
-             labels,
-             label_weights,
-             bbox_targets,
-             bbox_weights,
-             reduction_override=None,
-             valid_label_mask=None):
+    @force_fp32(apply_to=("cls_score", "bbox_pred"))
+    def loss(
+        self,
+        cls_score,
+        bbox_pred,
+        rois,
+        labels,
+        label_weights,
+        bbox_targets,
+        bbox_weights,
+        reduction_override=None,
+        valid_label_mask=None,
+    ):
         with no_nncf_trace():
             losses = dict()
             if cls_score is not None and cls_score.numel() > 0:
-                avg_factor = max(torch.sum(label_weights > 0).float().item(), 1.)
+                avg_factor = max(torch.sum(label_weights > 0).float().item(), 1.0)
                 if isinstance(self.loss_cls, CrossSigmoidFocalLoss):
-                    losses['loss_cls'] = self.loss_cls(
+                    losses["loss_cls"] = self.loss_cls(
                         cls_score,
                         labels,
                         label_weights,
                         avg_factor=avg_factor,
                         reduction_override=reduction_override,
                         use_bg=True,
-                        valid_label_mask=valid_label_mask)
+                        valid_label_mask=valid_label_mask,
+                    )
                 else:
-                    losses['loss_cls'] = self.loss_cls(
-                        cls_score,
-                        labels,
-                        label_weights,
-                        avg_factor=avg_factor,
-                        reduction_override=reduction_override)
-                losses['acc'] = accuracy(cls_score, labels)
+                    losses["loss_cls"] = self.loss_cls(
+                        cls_score, labels, label_weights, avg_factor=avg_factor, reduction_override=reduction_override
+                    )
+                losses["acc"] = accuracy(cls_score, labels)
             if bbox_pred is not None:
                 bg_class_ind = self.num_classes
                 # 0~self.num_classes-1 are FG, self.num_classes is BG
@@ -158,19 +159,18 @@ class CustomConvFCBBoxHead(Shared2FCBBoxHead, CrossDatasetDetectorHead):
                         # already encoded coordinates to absolute format.
                         bbox_pred = self.bbox_coder.decode(rois[:, 1:], bbox_pred)
                     if self.reg_class_agnostic:
-                        pos_bbox_pred = bbox_pred.view(
-                            bbox_pred.size(0), 4)[pos_inds.type(torch.bool)]
+                        pos_bbox_pred = bbox_pred.view(bbox_pred.size(0), 4)[pos_inds.type(torch.bool)]
                     else:
-                        pos_bbox_pred = bbox_pred.view(
-                            bbox_pred.size(0), -1,
-                            4)[pos_inds.type(torch.bool),
-                               labels[pos_inds.type(torch.bool)]]
-                    losses['loss_bbox'] = self.loss_bbox(
+                        pos_bbox_pred = bbox_pred.view(bbox_pred.size(0), -1, 4)[
+                            pos_inds.type(torch.bool), labels[pos_inds.type(torch.bool)]
+                        ]
+                    losses["loss_bbox"] = self.loss_bbox(
                         pos_bbox_pred,
                         bbox_targets[pos_inds.type(torch.bool)],
                         bbox_weights[pos_inds.type(torch.bool)],
                         avg_factor=bbox_targets.size(0),
-                        reduction_override=reduction_override)
+                        reduction_override=reduction_override,
+                    )
                 else:
-                    losses['loss_bbox'] = bbox_pred[pos_inds].sum()
+                    losses["loss_bbox"] = bbox_pred[pos_inds].sum()
             return losses

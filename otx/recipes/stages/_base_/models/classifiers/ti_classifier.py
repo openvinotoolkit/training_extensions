@@ -1,8 +1,3 @@
-_base_ = './classifier.py'
+_base_ = "./classifier.py"
 
-model = dict(
-    type='TaskIncrementalLwF',
-    head=dict(
-        type='TaskIncLwfHead'
-    )
-)
+model = dict(type="TaskIncrementalLwF", head=dict(type="TaskIncLwfHead"))

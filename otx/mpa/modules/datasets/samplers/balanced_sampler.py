@@ -1,6 +1,8 @@
+import math
+
 import numpy as np
 from torch.utils.data.sampler import Sampler
-import math
+
 from otx.mpa.utils.logger import get_logger
 
 logger = get_logger()
@@ -18,13 +20,13 @@ class BalancedSampler(Sampler):
         samples_per_gpu (int): batch size of Sampling
         efficient_mode (bool): Flag about using efficient mode
     """
-    def __init__(self, dataset, batch_size, efficient_mode=True,
-                 num_replicas=1, rank=0, drop_last=False):
+
+    def __init__(self, dataset, batch_size, efficient_mode=True, num_replicas=1, rank=0, drop_last=False):
         self.batch_size = batch_size
         self.repeat = 1
-        if hasattr(dataset, 'times'):
+        if hasattr(dataset, "times"):
             self.repeat = dataset.times
-        if hasattr(dataset, 'dataset'):
+        if hasattr(dataset, "dataset"):
             self.dataset = dataset.dataset
         else:
             self.dataset = dataset
@@ -38,9 +40,9 @@ class BalancedSampler(Sampler):
         if efficient_mode:
             # Reduce the # of sampling (sampling data for a single epoch)
             self.num_tail = min([len(cls_indices) for cls_indices in self.img_indices.values()])
-            base = 1 - (1/self.num_tail)
+            base = 1 - (1 / self.num_tail)
             if base == 0:
-                raise ValueError('Required more than one sample per class')
+                raise ValueError("Required more than one sample per class")
             self.num_trials = int(math.log(0.001, base))
             if int(self.data_length / self.num_cls) < self.num_trials:
                 self.num_trials = int(self.data_length / self.num_cls)
@@ -63,7 +65,8 @@ class BalancedSampler(Sampler):
                 num_samples = math.ceil(
                     # `type:ignore` is required because Dataset cannot provide a default __len__
                     # see NOTE in pytorch/torch/utils/data/sampler.py
-                    (num_samples - self.num_replicas) / self.num_replicas  # type: ignore
+                    (num_samples - self.num_replicas)
+                    / self.num_replicas  # type: ignore
                 )
             else:
                 num_samples = math.ceil(num_samples / self.num_replicas)  # type: ignore
@@ -76,7 +79,8 @@ class BalancedSampler(Sampler):
         for _ in range(self.repeat):
             for i in range(self.num_trials):
                 indice = np.concatenate(
-                    [np.random.choice(self.img_indices[cls_indices], 1) for cls_indices in self.img_indices.keys()])
+                    [np.random.choice(self.img_indices[cls_indices], 1) for cls_indices in self.img_indices.keys()]
+                )
                 indices.append(indice)
 
         indices = np.concatenate(indices)
@@ -92,12 +96,14 @@ class BalancedSampler(Sampler):
                     indices += (indices * math.ceil(padding_size / len(indices)))[:padding_size]
             else:
                 # remove tail of data to make it evenly divisible.
-                indices = indices[:self.total_size]
+                indices = indices[: self.total_size]
             assert len(indices) == self.total_size
 
             # split and distribute indices
             len_indices = len(indices)
-            indices = indices[self.rank * len_indices // self.num_replicas : (self.rank+1) * len_indices // self.num_replicas]
+            indices = indices[
+                self.rank * len_indices // self.num_replicas : (self.rank + 1) * len_indices // self.num_replicas
+            ]
 
             assert len(indices) == self.num_samples
 

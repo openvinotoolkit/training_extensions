@@ -2,11 +2,10 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import torch
-from torch import nn
 import torch.nn.functional as F
-
 from mmcls.models.builder import HEADS, build_loss
 from mmcls.models.heads.base_head import BaseHead
+from torch import nn
 
 
 @HEADS.register_module()
@@ -32,7 +31,7 @@ class SupConClsHead(BaseHead):
             topk = (topk,)
         for _topk in topk:
             assert _topk > 0, "Top-k should be larger than 0"
-        topk = (1, ) if num_classes < 5 else (1, 5)
+        topk = (1,) if num_classes < 5 else (1, 5)
         super().__init__(init_cfg=init_cfg)
 
         self.topk = topk

@@ -18,12 +18,8 @@ class MMOVYOLOV3Neck(YOLOV3Neck, ParserMixin):
         self,
         model_path: str,
         weight_path: Optional[str] = None,
-        inputs: Optional[
-            Union[Dict[str, Union[str, List[str]]], List[str], str]
-        ] = None,
-        outputs: Optional[
-            Union[Dict[str, Union[str, List[str]]], List[str], str]
-        ] = None,
+        inputs: Optional[Union[Dict[str, Union[str, List[str]]], List[str], str]] = None,
+        outputs: Optional[Union[Dict[str, Union[str, List[str]]], List[str], str]] = None,
         init_weight: bool = False,
         verify_shape: bool = True,
     ):
@@ -55,7 +51,7 @@ class MMOVYOLOV3Neck(YOLOV3Neck, ParserMixin):
                         remove_normalize=False,
                         init_weight=init_weight,
                         verify_shape=verify_shape,
-                    )
+                    ),
                 )
             else:
                 self.add_module(key, torch.nn.Identity())

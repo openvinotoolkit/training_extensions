@@ -56,7 +56,7 @@ repos:
     rev: v2.7.1
     hooks:
       - id: prettier
-        exclude: "external/deep-object-reid"
+        exclude: "external/deep-object-reid|otx/mpa|otx/recipes"
 
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: "v0.971"
@@ -64,15 +64,17 @@ repos:
       - id: mypy
         files: '^(otx)/.*\.py'
         additional_dependencies:
-          - numpy==1.19.5
-          - types-PyYAML
-          - attrs==21.2.*
-          - types-requests
-          - types-Deprecated
-          - types-docutils
-          - types_futures
-          - types-python-dateutil
-        exclude: "^otx/algorithms/anomaly/tests"
+          [
+            numpy==1.19.5,
+            types-PyYAML,
+            attrs==21.2.*,
+            types-requests,
+            types-Deprecated,
+            types-docutils,
+            types_futures,
+            types-python-dateutil,
+          ]
+        exclude: "^otx/algorithms/anomaly/tests|otx/recipes|otx/mpa"
 
       # NOTE: ote-sdk and ote-cli will be deprecated. The following config
       # is to be removed.
@@ -109,7 +111,7 @@ repos:
       - id: pylint
         name: "pylint"
         files: '^(otx)/.*\.py'
-        exclude: "tests"
+        exclude: "tests|otx/mpa|otx/recipes"
         entry: pylint
         language: system
         types: [python]
@@ -136,7 +138,7 @@ repos:
         language: python
         types: [python]
         files: '^otx/.*\.py'
-        exclude: "otx/algorithms/anomaly/tests|external/anomaly/tests|otx/cli/utils/tests.py"
+        exclude: "otx/algorithms/anomaly/tests|external/anomaly/tests|otx/cli/utils/tests.py|otx/mpa|otx/recipes"
 
   - repo: https://github.com/jumanjihouse/pre-commit-hooks
     rev: 2.1.6

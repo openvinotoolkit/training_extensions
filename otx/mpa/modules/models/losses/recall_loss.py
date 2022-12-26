@@ -4,16 +4,12 @@
 
 import torch
 import torch.nn.functional as F
-
 from mmseg.models.builder import LOSSES
-from mmseg.models.losses.utils import get_class_weight
 from mmseg.models.losses.pixel_base import BasePixelLoss
+from mmseg.models.losses.utils import get_class_weight
 
 
-def recallCE(input,
-             target,
-             class_weight=None,
-             ignore_index=255):
+def recallCE(input, target, class_weight=None, ignore_index=255):
 
     _, c, _, _ = input.size()
 
@@ -41,22 +37,12 @@ def recallCE(input,
     else:
         class_weight = fn_counter / gt_counter
 
-    loss = F.cross_entropy(
-        input,
-        target,
-        weight=class_weight,
-        reduction='none',
-        ignore_index=ignore_index
-    )
+    loss = F.cross_entropy(input, target, weight=class_weight, reduction="none", ignore_index=ignore_index)
 
     return loss
 
 
-def recallprecisionCE(input,
-                      target,
-                      fn_weight=None,
-                      fp_weight=None,
-                      ignore_index=255):
+def recallprecisionCE(input, target, fn_weight=None, fp_weight=None, ignore_index=255):
 
     raise NotImplementedError()
 
@@ -75,10 +61,7 @@ class RecallLoss(BasePixelLoss):
             str format, read them from a file. Defaults to None.
     """
 
-    def __init__(self,
-                 use_precision=False,
-                 class_weight=None,
-                 **kwargs):
+    def __init__(self, use_precision=False, class_weight=None, **kwargs):
         super(RecallLoss, self).__init__(**kwargs)
 
         self.use_precision = use_precision
@@ -91,18 +74,13 @@ class RecallLoss(BasePixelLoss):
 
     @property
     def name(self):
-        return 'recall_loss'
+        return "recall_loss"
 
     def _calculate(self, cls_score, label, scale, weight=None):
         class_weight = None
         if self.class_weight is not None:
             class_weight = cls_score.new_tensor(self.class_weight)
 
-        loss = self.cls_criterion(
-            scale * cls_score,
-            label,
-            class_weight=class_weight,
-            ignore_index=self.ignore_index
-        )
+        loss = self.cls_criterion(scale * cls_score, label, class_weight=class_weight, ignore_index=self.ignore_index)
 
         return loss, cls_score

@@ -25,10 +25,7 @@ class ConvolutionV1Attribute(Attribute):
         super().__post_init__()
         valid_auto_pad = ["explicit", "same_upper", "same_Lower", "valid"]
         if self.auto_pad not in valid_auto_pad:
-            raise ValueError(
-                f"Invalid auto_pad {self.auto_pad}. "
-                f"It must be one of {valid_auto_pad}."
-            )
+            raise ValueError(f"Invalid auto_pad {self.auto_pad}. " f"It must be one of {valid_auto_pad}.")
 
 
 @OPS.register()

@@ -3,23 +3,24 @@
 #
 
 import torch
-
+from mmdet.core import images_to_levels, multi_apply
 from mmdet.models.builder import HEADS
 from mmdet.models.dense_heads.base_dense_head import BaseDenseHead
-from mmdet.core import images_to_levels, multi_apply
 
 
 @HEADS.register_module()
 class CrossDatasetDetectorHead(BaseDenseHead):
-    def get_atss_targets(self,
-                         anchor_list,
-                         valid_flag_list,
-                         gt_bboxes_list,
-                         img_metas,
-                         gt_bboxes_ignore_list=None,
-                         gt_labels_list=None,
-                         label_channels=1,
-                         unmap_outputs=True):
+    def get_atss_targets(
+        self,
+        anchor_list,
+        valid_flag_list,
+        gt_bboxes_list,
+        img_metas,
+        gt_bboxes_ignore_list=None,
+        gt_labels_list=None,
+        label_channels=1,
+        unmap_outputs=True,
+    ):
         """Get targets for Detection head.
 
         This method is almost the same as `AnchorHead.get_targets()`. Besides
@@ -46,18 +47,26 @@ class CrossDatasetDetectorHead(BaseDenseHead):
             gt_bboxes_ignore_list = [None for _ in range(num_imgs)]
         if gt_labels_list is None:
             gt_labels_list = [None for _ in range(num_imgs)]
-        (all_anchors, all_labels, all_label_weights, all_bbox_targets,
-         all_bbox_weights, pos_inds_list, neg_inds_list) = multi_apply(
-             self._get_target_single,
-             anchor_list,
-             valid_flag_list,
-             num_level_anchors_list,
-             gt_bboxes_list,
-             gt_bboxes_ignore_list,
-             gt_labels_list,
-             img_metas,
-             label_channels=label_channels,
-             unmap_outputs=unmap_outputs)
+        (
+            all_anchors,
+            all_labels,
+            all_label_weights,
+            all_bbox_targets,
+            all_bbox_weights,
+            pos_inds_list,
+            neg_inds_list,
+        ) = multi_apply(
+            self._get_target_single,
+            anchor_list,
+            valid_flag_list,
+            num_level_anchors_list,
+            gt_bboxes_list,
+            gt_bboxes_ignore_list,
+            gt_labels_list,
+            img_metas,
+            label_channels=label_channels,
+            unmap_outputs=unmap_outputs,
+        )
         # no valid anchors
         if any([labels is None for labels in all_labels]):
             return None
@@ -71,15 +80,19 @@ class CrossDatasetDetectorHead(BaseDenseHead):
         if len(valid_label_mask) > 0:
             valid_label_mask = images_to_levels(valid_label_mask, num_level_anchors)
 
-        label_weights_list = images_to_levels(all_label_weights,
-                                              num_level_anchors)
-        bbox_targets_list = images_to_levels(all_bbox_targets,
-                                             num_level_anchors)
-        bbox_weights_list = images_to_levels(all_bbox_weights,
-                                             num_level_anchors)
-        return (anchors_list, labels_list, label_weights_list,
-                bbox_targets_list, bbox_weights_list, valid_label_mask,
-                num_total_pos, num_total_neg)
+        label_weights_list = images_to_levels(all_label_weights, num_level_anchors)
+        bbox_targets_list = images_to_levels(all_bbox_targets, num_level_anchors)
+        bbox_weights_list = images_to_levels(all_bbox_weights, num_level_anchors)
+        return (
+            anchors_list,
+            labels_list,
+            label_weights_list,
+            bbox_targets_list,
+            bbox_weights_list,
+            valid_label_mask,
+            num_total_pos,
+            num_total_neg,
+        )
 
     def get_fcos_targets(self, points, gt_bboxes_list, gt_labels_list, img_metas):
         """Compute regression, classification and centerss targets for points
@@ -103,8 +116,7 @@ class CrossDatasetDetectorHead(BaseDenseHead):
         num_levels = len(points)
         # expand regress ranges to align with points
         expanded_regress_ranges = [
-            points[i].new_tensor(self.regress_ranges[i])[None].expand_as(
-                points[i]) for i in range(num_levels)
+            points[i].new_tensor(self.regress_ranges[i])[None].expand_as(points[i]) for i in range(num_levels)
         ]
         # concat all levels points and regress ranges
         concat_regress_ranges = torch.cat(expanded_regress_ranges, dim=0)
@@ -120,24 +132,20 @@ class CrossDatasetDetectorHead(BaseDenseHead):
             gt_labels_list,
             points=concat_points,
             regress_ranges=concat_regress_ranges,
-            num_points_per_lvl=num_points)
+            num_points_per_lvl=num_points,
+        )
 
         # split to per img, per level
         valid_label_mask = self.get_valid_label_mask(img_metas=img_metas, all_labels=labels_list)
         labels_list = [labels.split(num_points, 0) for labels in labels_list]
-        bbox_targets_list = [
-            bbox_targets.split(num_points, 0)
-            for bbox_targets in bbox_targets_list
-        ]
+        bbox_targets_list = [bbox_targets.split(num_points, 0) for bbox_targets in bbox_targets_list]
 
         # concat per level image
         concat_lvl_labels = []
         concat_lvl_bbox_targets = []
         for i in range(num_levels):
-            concat_lvl_labels.append(
-                torch.cat([labels[i] for labels in labels_list]))
-            bbox_targets = torch.cat(
-                [bbox_targets[i] for bbox_targets in bbox_targets_list])
+            concat_lvl_labels.append(torch.cat([labels[i] for labels in labels_list]))
+            bbox_targets = torch.cat([bbox_targets[i] for bbox_targets in bbox_targets_list])
             if self.norm_on_bbox:
                 bbox_targets = bbox_targets / self.strides[i]
             concat_lvl_bbox_targets.append(bbox_targets)
@@ -145,13 +153,7 @@ class CrossDatasetDetectorHead(BaseDenseHead):
         label_weights, bbox_weights = None, None
         return concat_lvl_labels, label_weights, concat_lvl_bbox_targets, bbox_weights, valid_label_mask
 
-    def vfnet_to_atss_targets(self,
-                              cls_scores,
-                              mlvl_points,
-                              gt_bboxes,
-                              gt_labels,
-                              img_metas,
-                              gt_bboxes_ignore=None):
+    def vfnet_to_atss_targets(self, cls_scores, mlvl_points, gt_bboxes, gt_labels, img_metas, gt_bboxes_ignore=None):
         """A wrapper for computing ATSS targets for points in multiple images.
 
         Args:
@@ -180,8 +182,7 @@ class CrossDatasetDetectorHead(BaseDenseHead):
         assert len(featmap_sizes) == self.anchor_generator.num_levels
 
         device = cls_scores[0].device
-        anchor_list, valid_flag_list = self.get_anchors(
-            featmap_sizes, img_metas, device=device)
+        anchor_list, valid_flag_list = self.get_anchors(featmap_sizes, img_metas, device=device)
         label_channels = self.cls_out_channels if self.use_sigmoid_cls else 1
 
         cls_reg_targets = self.get_atss_targets(
@@ -192,29 +193,31 @@ class CrossDatasetDetectorHead(BaseDenseHead):
             gt_bboxes_ignore_list=gt_bboxes_ignore,
             gt_labels_list=gt_labels,
             label_channels=label_channels,
-            unmap_outputs=True)
+            unmap_outputs=True,
+        )
         if cls_reg_targets is None:
             return None
 
-        (anchor_list, labels_list, label_weights_list, bbox_targets_list,
-         bbox_weights_list, valid_label_mask, num_total_pos, num_total_neg) = cls_reg_targets
+        (
+            anchor_list,
+            labels_list,
+            label_weights_list,
+            bbox_targets_list,
+            bbox_weights_list,
+            valid_label_mask,
+            num_total_pos,
+            num_total_neg,
+        ) = cls_reg_targets
 
-        bbox_targets_list = [
-            bbox_targets.reshape(-1, 4) for bbox_targets in bbox_targets_list
-        ]
+        bbox_targets_list = [bbox_targets.reshape(-1, 4) for bbox_targets in bbox_targets_list]
 
         num_imgs = len(img_metas)
         # transform bbox_targets (x1, y1, x2, y2) into (l, t, r, b) format
-        bbox_targets_list = self.transform_bbox_targets(
-            bbox_targets_list, mlvl_points, num_imgs)
+        bbox_targets_list = self.transform_bbox_targets(bbox_targets_list, mlvl_points, num_imgs)
 
         labels_list = [labels.reshape(-1) for labels in labels_list]
-        label_weights_list = [
-            label_weights.reshape(-1) for label_weights in label_weights_list
-        ]
-        bbox_weights_list = [
-            bbox_weights.reshape(-1) for bbox_weights in bbox_weights_list
-        ]
+        label_weights_list = [label_weights.reshape(-1) for label_weights in label_weights_list]
+        bbox_weights_list = [bbox_weights.reshape(-1) for bbox_weights in bbox_weights_list]
         label_weights = torch.cat(label_weights_list)
         bbox_weights = torch.cat(bbox_weights_list)
         return labels_list, label_weights, bbox_targets_list, bbox_weights, valid_label_mask
@@ -224,8 +227,8 @@ class CrossDatasetDetectorHead(BaseDenseHead):
         valid_label_mask = []
         for i, meta in enumerate(img_metas):
             mask = torch.Tensor([1 for _ in range(num_classes)])
-            if 'ignored_labels' in meta and len(meta['ignored_labels']) > 0:
-                mask[meta['ignored_labels']] = 0
+            if "ignored_labels" in meta and len(meta["ignored_labels"]) > 0:
+                mask[meta["ignored_labels"]] = 0
                 if use_bg:
                     mask[self.num_classes] = 0
             mask = mask.repeat(len(all_labels[i]), 1)

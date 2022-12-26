@@ -6,20 +6,22 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from mmdet.models import LOSSES
-from mmdet.models.losses.focal_loss import sigmoid_focal_loss, py_sigmoid_focal_loss
+from mmdet.models.losses.focal_loss import py_sigmoid_focal_loss, sigmoid_focal_loss
 from mmdet.models.losses.varifocal_loss import varifocal_loss
 
 
-def cross_sigmoid_focal_loss(inputs,
-                             targets,
-                             weight=None,
-                             num_classes=None,
-                             alpha=0.25,
-                             gamma=2,
-                             reduction="mean",
-                             avg_factor=None,
-                             use_vfl=False,
-                             valid_label_mask=None):
+def cross_sigmoid_focal_loss(
+    inputs,
+    targets,
+    weight=None,
+    num_classes=None,
+    alpha=0.25,
+    gamma=2,
+    reduction="mean",
+    avg_factor=None,
+    use_vfl=False,
+    valid_label_mask=None,
+):
     """
     Arguments:
        - inputs: inputs Tensor (N * C)
@@ -44,17 +46,14 @@ def cross_sigmoid_focal_loss(inputs,
             calculate_loss_func = sigmoid_focal_loss
         else:
             inputs_size = inputs.size(1)
-            targets = F.one_hot(targets, num_classes=inputs_size+1)
+            targets = F.one_hot(targets, num_classes=inputs_size + 1)
             targets = targets[:, :inputs_size]
             calculate_loss_func = py_sigmoid_focal_loss
 
-    loss = calculate_loss_func(inputs,
-                               targets,
-                               weight=weight,
-                               gamma=gamma,
-                               alpha=alpha,
-                               reduction='none',
-                               avg_factor=None) * cross_mask
+    loss = (
+        calculate_loss_func(inputs, targets, weight=weight, gamma=gamma, alpha=alpha, reduction="none", avg_factor=None)
+        * cross_mask
+    )
 
     if reduction == "mean":
         if avg_factor is None:
@@ -68,14 +67,16 @@ def cross_sigmoid_focal_loss(inputs,
 
 @LOSSES.register_module()
 class CrossSigmoidFocalLoss(nn.Module):
-    def __init__(self,
-                 use_sigmoid=True,
-                 num_classes=None,
-                 gamma=2.0,
-                 alpha=0.25,
-                 reduction='mean',
-                 loss_weight=1.0,
-                 ignore_index=None):
+    def __init__(
+        self,
+        use_sigmoid=True,
+        num_classes=None,
+        gamma=2.0,
+        alpha=0.25,
+        reduction="mean",
+        loss_weight=1.0,
+        ignore_index=None,
+    ):
         super(CrossSigmoidFocalLoss, self).__init__()
         self.reduction = reduction
         self.loss_weight = loss_weight
@@ -87,18 +88,19 @@ class CrossSigmoidFocalLoss(nn.Module):
 
         self.cls_criterion = cross_sigmoid_focal_loss
 
-    def forward(self,
-                pred,
-                targets,
-                weight=None,
-                reduction_override=None,
-                avg_factor=None,
-                use_vfl=False,
-                valid_label_mask=None,
-                **kwargs):
-        assert reduction_override in (None, 'none', 'mean', 'sum')
-        reduction = (
-            reduction_override if reduction_override else self.reduction)
+    def forward(
+        self,
+        pred,
+        targets,
+        weight=None,
+        reduction_override=None,
+        avg_factor=None,
+        use_vfl=False,
+        valid_label_mask=None,
+        **kwargs
+    ):
+        assert reduction_override in (None, "none", "mean", "sum")
+        reduction = reduction_override if reduction_override else self.reduction
         loss_cls = self.loss_weight * self.cls_criterion(
             pred,
             targets,
@@ -109,6 +111,6 @@ class CrossSigmoidFocalLoss(nn.Module):
             reduction=reduction,
             avg_factor=avg_factor,
             use_vfl=use_vfl,
-            valid_label_mask=valid_label_mask
-            )
+            valid_label_mask=valid_label_mask,
+        )
         return loss_cls

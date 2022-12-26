@@ -6,23 +6,24 @@ import logging
 import os
 import sys
 
-# import torch.distributed as dist
-
 from mmcv.runner.dist_utils import master_only
 
-# __all__ = ['config_logger', 'get_log_dir', 'get_logger']
-__all__ = ['config_logger', 'get_log_dir']
+# import torch.distributed as dist
 
-_LOGGING_FORMAT = '%(asctime)s | %(levelname)s : %(message)s'
+
+# __all__ = ['config_logger', 'get_log_dir', 'get_logger']
+__all__ = ["config_logger", "get_log_dir"]
+
+_LOGGING_FORMAT = "%(asctime)s | %(levelname)s : %(message)s"
 _LOG_DIR = None
 _FILE_HANDLER = None
 _CUSTOM_LOG_LEVEL = 31
 
-logging.addLevelName(_CUSTOM_LOG_LEVEL, 'LOG')
+logging.addLevelName(_CUSTOM_LOG_LEVEL, "LOG")
 
 
 def _get_logger():
-    logger = logging.getLogger('mpa')
+    logger = logging.getLogger("mpa")
     logger.propagate = False
 
     def print(message, *args, **kws):
@@ -50,7 +51,7 @@ _logger = _get_logger()
 #     __all__.append(fn)
 
 
-def config_logger(log_file, level='WARNING'):
+def config_logger(log_file, level="WARNING"):
     global _LOG_DIR, _FILE_HANDLER
     if _FILE_HANDLER is not None:
         _logger.removeHandler(_FILE_HANDLER)
@@ -58,7 +59,7 @@ def config_logger(log_file, level='WARNING'):
 
     _LOG_DIR = os.path.dirname(log_file)
     os.makedirs(_LOG_DIR, exist_ok=True)
-    file = logging.FileHandler(log_file, mode='w', encoding='utf-8')
+    file = logging.FileHandler(log_file, mode="w", encoding="utf-8")
     file.setFormatter(logging.Formatter(_LOGGING_FORMAT))
     _FILE_HANDLER = file
     _logger.addHandler(file)
@@ -73,8 +74,7 @@ def _get_log_level(level):
     # get level number
     level_number = logging.getLevelName(level.upper())
     if level_number not in [0, 10, 20, 30, 40, 50, _CUSTOM_LOG_LEVEL]:
-        msg = ('Log level must be one of DEBUG/INFO/WARN/ERROR/CRITICAL/LOG'
-               ', but {} is given.'.format(level))
+        msg = "Log level must be one of DEBUG/INFO/WARN/ERROR/CRITICAL/LOG" ", but {} is given.".format(level)
         raise ValueError(msg)
 
     return level_number
@@ -103,7 +103,7 @@ class _DummyLogger(logging.Logger):
 
 # apply decorator @master_only to the lower severity logging functions
 # TODO: need to check whether it works as expected
-_logging_methods = ['print', 'debug', 'info', 'warning']
+_logging_methods = ["print", "debug", "info", "warning"]
 for fn in _logging_methods:
     master_only(getattr(_logger, fn))
 

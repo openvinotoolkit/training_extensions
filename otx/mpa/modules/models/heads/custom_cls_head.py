@@ -4,22 +4,23 @@
 
 from mmcls.models.builder import HEADS
 from mmcls.models.heads import LinearClsHead
+
 from .non_linear_cls_head import NonLinearClsHead
 
 
 @HEADS.register_module()
 class CustomNonLinearClsHead(NonLinearClsHead):
-    """Custom Nonlinear classifier head.
-    """
+    """Custom Nonlinear classifier head."""
+
     def __init__(self, *args, **kwargs):
         super(CustomNonLinearClsHead, self).__init__(*args, **kwargs)
-        self.loss_type = kwargs.get('loss', dict(type='CrossEntropyLoss'))['type']
+        self.loss_type = kwargs.get("loss", dict(type="CrossEntropyLoss"))["type"]
 
     def loss(self, cls_score, gt_label, feature=None):
         num_samples = len(cls_score)
         losses = dict()
         # compute loss
-        if self.loss_type == 'IBLoss':
+        if self.loss_type == "IBLoss":
             loss = self.compute_loss(cls_score, gt_label, feature=feature)
         else:
             loss = self.compute_loss(cls_score, gt_label, avg_factor=num_samples)
@@ -27,11 +28,8 @@ class CustomNonLinearClsHead(NonLinearClsHead):
             # compute accuracy
             acc = self.compute_accuracy(cls_score, gt_label)
             assert len(acc) == len(self.topk)
-            losses['accuracy'] = {
-                f'top-{k}': a
-                for k, a in zip(self.topk, acc)
-            }
-        losses['loss'] = loss
+            losses["accuracy"] = {f"top-{k}": a for k, a in zip(self.topk, acc)}
+        losses["loss"] = loss
         return losses
 
     def forward_train(self, x, gt_label):
@@ -51,24 +49,18 @@ class CustomLinearClsHead(LinearClsHead):
         init_cfg (dict | optional): The extra init config of layers.
             Defaults to use dict(type='Normal', layer='Linear', std=0.01).
     """
-    def __init__(self,
-                 num_classes,
-                 in_channels,
-                 init_cfg=dict(type='Normal', layer='Linear', std=0.01),
-                 *args,
-                 **kwargs):
-        self.loss_type = kwargs.get('loss', dict(type='CrossEntropyLoss'))['type']
-        super(CustomLinearClsHead, self).__init__(num_classes,
-                                                  in_channels,
-                                                  init_cfg=init_cfg,
-                                                  *args,
-                                                  **kwargs)
+
+    def __init__(
+        self, num_classes, in_channels, init_cfg=dict(type="Normal", layer="Linear", std=0.01), *args, **kwargs
+    ):
+        self.loss_type = kwargs.get("loss", dict(type="CrossEntropyLoss"))["type"]
+        super(CustomLinearClsHead, self).__init__(num_classes, in_channels, init_cfg=init_cfg, *args, **kwargs)
 
     def loss(self, cls_score, gt_label, feature=None):
         num_samples = len(cls_score)
         losses = dict()
         # compute loss
-        if self.loss_type == 'IBLoss':
+        if self.loss_type == "IBLoss":
             loss = self.compute_loss(cls_score, gt_label, feature=feature)
         else:
             loss = self.compute_loss(cls_score, gt_label, avg_factor=num_samples)
@@ -76,11 +68,8 @@ class CustomLinearClsHead(LinearClsHead):
             # compute accuracy
             acc = self.compute_accuracy(cls_score, gt_label)
             assert len(acc) == len(self.topk)
-            losses['accuracy'] = {
-                f'top-{k}': a
-                for k, a in zip(self.topk, acc)
-            }
-        losses['loss'] = loss
+            losses["accuracy"] = {f"top-{k}": a for k, a in zip(self.topk, acc)}
+        losses["loss"] = loss
         return losses
 
     def forward_train(self, x, gt_label):

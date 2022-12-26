@@ -18,12 +18,10 @@ import os
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.nn.init as init
-
+from mmcls.models.builder import BACKBONES
 from mmcv.cnn import build_activation_layer
 from mmcv.cnn.bricks import ConvModule
 from mmcv.runner import load_checkpoint
-
-from mmcls.models.builder import BACKBONES
 
 from otx.mpa.utils.logger import get_logger
 
@@ -216,11 +214,7 @@ class SEBlock(nn.Module):
         super(SEBlock, self).__init__()
         self.use_conv = use_conv
         if mid_channels is None:
-            mid_channels = (
-                channels // reduction
-                if not round_mid
-                else round_channels(float(channels) / reduction)
-            )
+            mid_channels = channels // reduction if not round_mid else round_channels(float(channels) / reduction)
 
         self.pool = nn.AdaptiveAvgPool2d(output_size=1)
         if use_conv:
@@ -359,11 +353,7 @@ class EffiInvResUnit(nn.Module):
         self.residual = (in_channels == out_channels) and (stride == 1)
         self.use_se = se_factor > 0
         mid_channels = in_channels * exp_factor
-        dwconv_block_fn = (
-            dwconv3x3_block
-            if kernel_size == 3
-            else (dwconv5x5_block if kernel_size == 5 else None)
-        )
+        dwconv_block_fn = dwconv3x3_block if kernel_size == 3 else (dwconv5x5_block if kernel_size == 5 else None)
 
         self.conv1 = conv1x1_block(
             in_channels=in_channels,
@@ -399,9 +389,7 @@ class EffiInvResUnit(nn.Module):
         if self.tf_mode:
             x = F.pad(
                 x,
-                pad=calc_tf_padding(
-                    x, kernel_size=self.kernel_size, stride=self.stride
-                ),
+                pad=calc_tf_padding(x, kernel_size=self.kernel_size, stride=self.stride),
             )
         x = self.conv2(x)
         if self.use_se:
@@ -429,9 +417,7 @@ class EffiInitBlock(nn.Module):
         Whether to use TF-like mode.
     """
 
-    def __init__(
-        self, in_channels, out_channels, bn_eps, activation, tf_mode, IN_conv1
-    ):
+    def __init__(self, in_channels, out_channels, bn_eps, activation, tf_mode, IN_conv1):
         super(EffiInitBlock, self).__init__()
         self.tf_mode = tf_mode
 
@@ -483,25 +469,28 @@ class EfficientNet(nn.Module):
     num_classes : int, default 1000
         Number of classification classes.
     """
-    def __init__(self,
-                 channels,
-                 init_block_channels,
-                 final_block_channels,
-                 kernel_sizes,
-                 strides_per_stage,
-                 expansion_factors,
-                 tf_mode=False,
-                 bn_eps=1e-5,
-                 in_channels=3,
-                 in_size=(224, 224),
-                 dropout_cls=None,
-                 pooling_type='avg',
-                 bn_eval=False,
-                 bn_frozen=False,
-                 IN_first=False,
-                 IN_conv1=False,
-                 pretrained=False,
-                 **kwargs):
+
+    def __init__(
+        self,
+        channels,
+        init_block_channels,
+        final_block_channels,
+        kernel_sizes,
+        strides_per_stage,
+        expansion_factors,
+        tf_mode=False,
+        bn_eps=1e-5,
+        in_channels=3,
+        in_size=(224, 224),
+        dropout_cls=None,
+        pooling_type="avg",
+        bn_eval=False,
+        bn_frozen=False,
+        IN_first=False,
+        IN_conv1=False,
+        pretrained=False,
+        **kwargs,
+    ):
 
         super().__init__(**kwargs)
         self.num_classes = 1000
@@ -512,15 +501,19 @@ class EfficientNet(nn.Module):
         self.bn_frozen = bn_frozen
         self.pooling_type = pooling_type
         self.num_features = self.num_head_features = final_block_channels
-        activation = 'Swish'
+        activation = "Swish"
         self.features = nn.Sequential()
-        self.features.add_module("init_block", EffiInitBlock(
-            in_channels=in_channels,
-            out_channels=init_block_channels,
-            bn_eps=bn_eps,
-            activation=activation,
-            tf_mode=tf_mode,
-            IN_conv1=IN_conv1))
+        self.features.add_module(
+            "init_block",
+            EffiInitBlock(
+                in_channels=in_channels,
+                out_channels=init_block_channels,
+                bn_eps=bn_eps,
+                activation=activation,
+                tf_mode=tf_mode,
+                IN_conv1=IN_conv1,
+            ),
+        )
         in_channels = init_block_channels
         for i, channels_per_stage in enumerate(channels):
             kernel_sizes_per_stage = kernel_sizes[i]
@@ -531,32 +524,41 @@ class EfficientNet(nn.Module):
                 expansion_factor = expansion_factors_per_stage[j]
                 stride = strides_per_stage[i] if (j == 0) else 1
                 if i == 0:
-                    stage.add_module("unit{}".format(j + 1), EffiDwsConvUnit(
-                        in_channels=in_channels,
-                        out_channels=out_channels,
-                        stride=stride,
-                        bn_eps=bn_eps,
-                        activation=activation,
-                        tf_mode=tf_mode))
+                    stage.add_module(
+                        "unit{}".format(j + 1),
+                        EffiDwsConvUnit(
+                            in_channels=in_channels,
+                            out_channels=out_channels,
+                            stride=stride,
+                            bn_eps=bn_eps,
+                            activation=activation,
+                            tf_mode=tf_mode,
+                        ),
+                    )
                 else:
-                    stage.add_module("unit{}".format(j + 1), EffiInvResUnit(
-                        in_channels=in_channels,
-                        out_channels=out_channels,
-                        kernel_size=kernel_size,
-                        stride=stride,
-                        exp_factor=expansion_factor,
-                        se_factor=4,
-                        bn_eps=bn_eps,
-                        activation=activation,
-                        tf_mode=tf_mode))
+                    stage.add_module(
+                        "unit{}".format(j + 1),
+                        EffiInvResUnit(
+                            in_channels=in_channels,
+                            out_channels=out_channels,
+                            kernel_size=kernel_size,
+                            stride=stride,
+                            exp_factor=expansion_factor,
+                            se_factor=4,
+                            bn_eps=bn_eps,
+                            activation=activation,
+                            tf_mode=tf_mode,
+                        ),
+                    )
                 in_channels = out_channels
             self.features.add_module("stage{}".format(i + 1), stage)
             # activation = activation if self.loss == 'softmax': else lambda: nn.PReLU(init=0.25)
-        self.features.add_module("final_block", conv1x1_block(
-            in_channels=in_channels,
-            out_channels=final_block_channels,
-            bn_eps=bn_eps,
-            activation=activation))
+        self.features.add_module(
+            "final_block",
+            conv1x1_block(
+                in_channels=in_channels, out_channels=final_block_channels, bn_eps=bn_eps, activation=activation
+            ),
+        )
 
         """ Comment out unused part. Only use 'backbone' part in mpa.
         self.output = nn.Sequential()
@@ -590,9 +592,7 @@ class EfficientNet(nn.Module):
         if return_featuremaps:
             return y
 
-        glob_features = self._glob_feature_vector(
-            y, self.pooling_type, reduce_dims=False
-        )
+        glob_features = self._glob_feature_vector(y, self.pooling_type, reduce_dims=False)
 
         logits = self.output(glob_features.view(x.shape[0], -1))
 
@@ -704,37 +704,27 @@ def get_efficientnet(
     final_block_channels = 1280
 
     layers = [int(math.ceil(li * depth_factor)) for li in layers]
-    channels_per_layers = [
-        round_channels(ci * width_factor) for ci in channels_per_layers
-    ]
+    channels_per_layers = [round_channels(ci * width_factor) for ci in channels_per_layers]
 
     from functools import reduce
 
     channels = reduce(
-        lambda x, y: x + [[y[0]] * y[1]]
-        if y[2] != 0
-        else x[:-1] + [x[-1] + [y[0]] * y[1]],
+        lambda x, y: x + [[y[0]] * y[1]] if y[2] != 0 else x[:-1] + [x[-1] + [y[0]] * y[1]],
         zip(channels_per_layers, layers, downsample),
         [],
     )
     kernel_sizes = reduce(
-        lambda x, y: x + [[y[0]] * y[1]]
-        if y[2] != 0
-        else x[:-1] + [x[-1] + [y[0]] * y[1]],
+        lambda x, y: x + [[y[0]] * y[1]] if y[2] != 0 else x[:-1] + [x[-1] + [y[0]] * y[1]],
         zip(kernel_sizes_per_layers, layers, downsample),
         [],
     )
     expansion_factors = reduce(
-        lambda x, y: x + [[y[0]] * y[1]]
-        if y[2] != 0
-        else x[:-1] + [x[-1] + [y[0]] * y[1]],
+        lambda x, y: x + [[y[0]] * y[1]] if y[2] != 0 else x[:-1] + [x[-1] + [y[0]] * y[1]],
         zip(expansion_factors_per_layers, layers, downsample),
         [],
     )
     strides_per_stage = reduce(
-        lambda x, y: x + [[y[0]] * y[1]]
-        if y[2] != 0
-        else x[:-1] + [x[-1] + [y[0]] * y[1]],
+        lambda x, y: x + [[y[0]] * y[1]] if y[2] != 0 else x[:-1] + [x[-1] + [y[0]] * y[1]],
         zip(strides_per_stage, layers, downsample),
         [],
     )
@@ -743,9 +733,7 @@ def get_efficientnet(
     init_block_channels = round_channels(init_block_channels * width_factor)
 
     if width_factor > 1.0:
-        assert int(final_block_channels * width_factor) == round_channels(
-            final_block_channels * width_factor
-        )
+        assert int(final_block_channels * width_factor) == round_channels(final_block_channels * width_factor)
         final_block_channels = round_channels(final_block_channels * width_factor)
 
     net = EfficientNet(
@@ -764,9 +752,7 @@ def get_efficientnet(
 
     if pretrained:
         if (model_name is None) or (not model_name):
-            raise ValueError(
-                "Parameter `model_name` should be properly initialized for loading pretrained model."
-            )
+            raise ValueError("Parameter `model_name` should be properly initialized for loading pretrained model.")
         from .model_store import download_model
 
         download_model(net=net, model_name=model_name, local_model_store_dir_path=root)
@@ -787,9 +773,7 @@ def efficientnet_b0(in_size=(224, 224), **kwargs):
     root : str, default '~/.torch/models'
         Location for keeping the model parameters.
     """
-    return get_efficientnet(
-        version="b0", in_size=in_size, model_name="efficientnet_b0", **kwargs
-    )
+    return get_efficientnet(version="b0", in_size=in_size, model_name="efficientnet_b0", **kwargs)
 
 
 def efficientnet_b1(in_size=(240, 240), **kwargs):
@@ -805,9 +789,7 @@ def efficientnet_b1(in_size=(240, 240), **kwargs):
     root : str, default '~/.torch/models'
         Location for keeping the model parameters.
     """
-    return get_efficientnet(
-        version="b1", in_size=in_size, model_name="efficientnet_b1", **kwargs
-    )
+    return get_efficientnet(version="b1", in_size=in_size, model_name="efficientnet_b1", **kwargs)
 
 
 def efficientnet_b2(in_size=(260, 260), **kwargs):
@@ -823,9 +805,7 @@ def efficientnet_b2(in_size=(260, 260), **kwargs):
     root : str, default '~/.torch/models'
         Location for keeping the model parameters.
     """
-    return get_efficientnet(
-        version="b2", in_size=in_size, model_name="efficientnet_b2", **kwargs
-    )
+    return get_efficientnet(version="b2", in_size=in_size, model_name="efficientnet_b2", **kwargs)
 
 
 def efficientnet_b3(in_size=(300, 300), **kwargs):
@@ -841,9 +821,7 @@ def efficientnet_b3(in_size=(300, 300), **kwargs):
     root : str, default '~/.torch/models'
         Location for keeping the model parameters.
     """
-    return get_efficientnet(
-        version="b3", in_size=in_size, model_name="efficientnet_b3", **kwargs
-    )
+    return get_efficientnet(version="b3", in_size=in_size, model_name="efficientnet_b3", **kwargs)
 
 
 def efficientnet_b4(in_size=(380, 380), **kwargs):
@@ -859,9 +837,7 @@ def efficientnet_b4(in_size=(380, 380), **kwargs):
     root : str, default '~/.torch/models'
         Location for keeping the model parameters.
     """
-    return get_efficientnet(
-        version="b4", in_size=in_size, model_name="efficientnet_b4", **kwargs
-    )
+    return get_efficientnet(version="b4", in_size=in_size, model_name="efficientnet_b4", **kwargs)
 
 
 def efficientnet_b5(in_size=(456, 456), **kwargs):
@@ -877,9 +853,7 @@ def efficientnet_b5(in_size=(456, 456), **kwargs):
     root : str, default '~/.torch/models'
         Location for keeping the model parameters.
     """
-    return get_efficientnet(
-        version="b5", in_size=in_size, model_name="efficientnet_b5", **kwargs
-    )
+    return get_efficientnet(version="b5", in_size=in_size, model_name="efficientnet_b5", **kwargs)
 
 
 def efficientnet_b6(in_size=(528, 528), **kwargs):
@@ -895,9 +869,7 @@ def efficientnet_b6(in_size=(528, 528), **kwargs):
     root : str, default '~/.torch/models'
         Location for keeping the model parameters.
     """
-    return get_efficientnet(
-        version="b6", in_size=in_size, model_name="efficientnet_b6", **kwargs
-    )
+    return get_efficientnet(version="b6", in_size=in_size, model_name="efficientnet_b6", **kwargs)
 
 
 def efficientnet_b7(in_size=(600, 600), **kwargs):
@@ -913,9 +885,7 @@ def efficientnet_b7(in_size=(600, 600), **kwargs):
     root : str, default '~/.torch/models'
         Location for keeping the model parameters.
     """
-    return get_efficientnet(
-        version="b7", in_size=in_size, model_name="efficientnet_b7", **kwargs
-    )
+    return get_efficientnet(version="b7", in_size=in_size, model_name="efficientnet_b7", **kwargs)
 
 
 def efficientnet_b8(in_size=(672, 672), **kwargs):
@@ -931,9 +901,7 @@ def efficientnet_b8(in_size=(672, 672), **kwargs):
     root : str, default '~/.torch/models'
         Location for keeping the model parameters.
     """
-    return get_efficientnet(
-        version="b8", in_size=in_size, model_name="efficientnet_b8", **kwargs
-    )
+    return get_efficientnet(version="b8", in_size=in_size, model_name="efficientnet_b8", **kwargs)
 
 
 def efficientnet_b0b(in_size=(224, 224), **kwargs):
@@ -1467,37 +1435,27 @@ class OTEEfficientNet(EfficientNet):
         final_block_channels = 1280
 
         layers = [int(math.ceil(li * depth_factor)) for li in layers]
-        channels_per_layers = [
-            round_channels(ci * width_factor) for ci in channels_per_layers
-        ]
+        channels_per_layers = [round_channels(ci * width_factor) for ci in channels_per_layers]
 
         from functools import reduce
 
         channels = reduce(
-            lambda x, y: x + [[y[0]] * y[1]]
-            if y[2] != 0
-            else x[:-1] + [x[-1] + [y[0]] * y[1]],
+            lambda x, y: x + [[y[0]] * y[1]] if y[2] != 0 else x[:-1] + [x[-1] + [y[0]] * y[1]],
             zip(channels_per_layers, layers, downsample),
             [],
         )
         kernel_sizes = reduce(
-            lambda x, y: x + [[y[0]] * y[1]]
-            if y[2] != 0
-            else x[:-1] + [x[-1] + [y[0]] * y[1]],
+            lambda x, y: x + [[y[0]] * y[1]] if y[2] != 0 else x[:-1] + [x[-1] + [y[0]] * y[1]],
             zip(kernel_sizes_per_layers, layers, downsample),
             [],
         )
         expansion_factors = reduce(
-            lambda x, y: x + [[y[0]] * y[1]]
-            if y[2] != 0
-            else x[:-1] + [x[-1] + [y[0]] * y[1]],
+            lambda x, y: x + [[y[0]] * y[1]] if y[2] != 0 else x[:-1] + [x[-1] + [y[0]] * y[1]],
             zip(expansion_factors_per_layers, layers, downsample),
             [],
         )
         strides_per_stage = reduce(
-            lambda x, y: x + [[y[0]] * y[1]]
-            if y[2] != 0
-            else x[:-1] + [x[-1] + [y[0]] * y[1]],
+            lambda x, y: x + [[y[0]] * y[1]] if y[2] != 0 else x[:-1] + [x[-1] + [y[0]] * y[1]],
             zip(strides_per_stage, layers, downsample),
             [],
         )
@@ -1506,9 +1464,7 @@ class OTEEfficientNet(EfficientNet):
         init_block_channels = round_channels(init_block_channels * width_factor)
 
         if width_factor > 1.0:
-            assert int(final_block_channels * width_factor) == round_channels(
-                final_block_channels * width_factor
-            )
+            assert int(final_block_channels * width_factor) == round_channels(final_block_channels * width_factor)
             final_block_channels = round_channels(final_block_channels * width_factor)
 
         super().__init__(

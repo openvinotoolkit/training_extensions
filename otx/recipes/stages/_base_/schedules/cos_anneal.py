@@ -1,6 +1,3 @@
-_base_ = './schedule.py'
+_base_ = "./schedule.py"
 
-lr_config = dict(
-    policy='CosineAnnealing',
-    min_lr_ratio=0.0001
-)
+lr_config = dict(policy="CosineAnnealing", min_lr_ratio=0.0001)

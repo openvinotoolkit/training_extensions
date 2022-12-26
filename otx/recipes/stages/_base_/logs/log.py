@@ -1,1 +1,1 @@
-log_level = 'INFO'
+log_level = "INFO"

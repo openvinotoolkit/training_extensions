@@ -11,9 +11,10 @@ from mmseg.datasets import DATASETS
 def _concat_dataset(cfg, default_args=None):
     """Build :obj:`ConcatDataset by."""
     from mmseg.datasets.dataset_wrappers import ConcatDataset
-    img_dir = cfg['img_dir']
-    ann_dir = cfg.get('ann_dir', None)
-    split = cfg.get('split', None)
+
+    img_dir = cfg["img_dir"]
+    ann_dir = cfg.get("ann_dir", None)
+    split = cfg.get("split", None)
     num_img_dir = len(img_dir) if isinstance(img_dir, (list, tuple)) else 1
     if ann_dir is not None:
         num_ann_dir = len(ann_dir) if isinstance(ann_dir, (list, tuple)) else 1
@@ -34,11 +35,11 @@ def _concat_dataset(cfg, default_args=None):
     for i in range(num_dset):
         data_cfg = copy.deepcopy(cfg)
         if isinstance(img_dir, (list, tuple)):
-            data_cfg['img_dir'] = img_dir[i]
+            data_cfg["img_dir"] = img_dir[i]
         if isinstance(ann_dir, (list, tuple)):
-            data_cfg['ann_dir'] = ann_dir[i]
+            data_cfg["ann_dir"] = ann_dir[i]
         if isinstance(split, (list, tuple)):
-            data_cfg['split'] = split[i]
+            data_cfg["split"] = split[i]
         datasets.append(build_dataset(data_cfg, default_args))
 
     return ConcatDataset(datasets)
@@ -47,13 +48,12 @@ def _concat_dataset(cfg, default_args=None):
 def build_dataset(cfg, default_args=None):
     """Build datasets."""
     from mmseg.datasets.dataset_wrappers import ConcatDataset, RepeatDataset
+
     if isinstance(cfg, (list, tuple)):
         dataset = ConcatDataset([build_dataset(c, default_args) for c in cfg])
-    elif cfg['type'] == 'RepeatDataset':
-        dataset = RepeatDataset(
-            build_dataset(cfg['dataset'], default_args), cfg['times'])
-    elif isinstance(cfg.get('img_dir'), (list, tuple)) or isinstance(
-            cfg.get('split', None), (list, tuple)):
+    elif cfg["type"] == "RepeatDataset":
+        dataset = RepeatDataset(build_dataset(cfg["dataset"], default_args), cfg["times"])
+    elif isinstance(cfg.get("img_dir"), (list, tuple)) or isinstance(cfg.get("split", None), (list, tuple)):
         dataset = _concat_dataset(cfg, default_args)
     else:
         dataset = build_from_cfg(cfg, DATASETS, default_args)

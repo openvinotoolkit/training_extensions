@@ -8,8 +8,9 @@ from copy import deepcopy
 from typing import Callable, List, Optional, Union
 
 import torch
-from otx.mpa.utils.logger import get_logger
 from torch.nn import init
+
+from otx.mpa.utils.logger import get_logger
 
 from ..graph import Graph
 from ..graph.utils import (
@@ -19,7 +20,6 @@ from ..graph.utils import (
 )
 from ..ops import OPS
 from ..utils import load_ov_model, normalize_name
-
 
 logger = get_logger()
 
@@ -64,9 +64,7 @@ class OVModel(torch.nn.Module):
         # handle inputs
         if inputs:
             inputs = inputs if isinstance(inputs, list) else [inputs]
-            assert all(
-                isinstance(i, str) for i in inputs
-            ), f"input must be string but {inputs} is given"
+            assert all(isinstance(i, str) for i in inputs), f"input must be string but {inputs} is given"
             inputs = self.build_custom_inputs(graph, deepcopy(inputs))
         else:
             inputs = [node.name for node in graph.get_nodes_by_types(["Parameter"])]
@@ -75,9 +73,7 @@ class OVModel(torch.nn.Module):
         # handle outputs
         if outputs:
             outputs = outputs if isinstance(outputs, list) else [outputs]
-            assert all(
-                isinstance(i, str) for i in outputs
-            ), f"input must be string but {outputs} is given"
+            assert all(isinstance(i, str) for i in outputs), f"input must be string but {outputs} is given"
             outputs = self.build_custom_outputs(graph, deepcopy(outputs))
         else:
             outputs = [node.name for node in graph.get_nodes_by_types(["Result"])]
@@ -121,9 +117,7 @@ class OVModel(torch.nn.Module):
                         "MatMul",
                     ]:
                         for weight in graph.predecessors(m):
-                            if weight.TYPE == "Constant" and isinstance(
-                                weight.data, torch.nn.parameter.Parameter
-                            ):
+                            if weight.TYPE == "Constant" and isinstance(weight.data, torch.nn.parameter.Parameter):
                                 init.kaiming_uniform_(weight.data, a=math.sqrt(5))
                                 logger.info(f"Initialize {m.TYPE} -> {m.name}")
                     elif m.TYPE in [
@@ -133,9 +127,7 @@ class OVModel(torch.nn.Module):
                         "Subtract",
                     ]:
                         for weight in graph.predecessors(m):
-                            if weight.TYPE == "Constant" and isinstance(
-                                weight.data, torch.nn.parameter.Parameter
-                            ):
+                            if weight.TYPE == "Constant" and isinstance(weight.data, torch.nn.parameter.Parameter):
                                 fan_in, _ = init._calculate_fan_in_and_fan_out(weight.data)
                                 bound = 1 / math.sqrt(fan_in) if fan_in > 0 else 0
                                 init.uniform_(weight.data, -bound, bound)
@@ -234,9 +226,7 @@ class OVModel(torch.nn.Module):
 
                     output_result = cls_result(output_result, shape=src.shape)
                     for edge_attrs in edges_attrs:
-                        edges_to_add[src].append(
-                            {"node_from": src, "node_to": output_result, **edge_attrs}
-                        )
+                        edges_to_add[src].append({"node_from": src, "node_to": output_result, **edge_attrs})
                 if explicit_tgt and tgt != successor:
                     continue
                 nodes_to_remove.append(successor)
@@ -319,18 +309,12 @@ class OVModel(torch.nn.Module):
                     # it is assumed to be dim 0
                     new_shape = []
                     for shape in predecessor.shape:
-                        new_shape.append(
-                            [-1 if j == 0 else k for j, k in enumerate(shape)]
-                        )
+                        new_shape.append([-1 if j == 0 else k for j, k in enumerate(shape)])
                     new_shape = tuple(tuple(shape) for shape in new_shape)
                     input_parameter = cls_param(input_parameter, shape=new_shape)
                     for edge_attrs in edges_attrs:
-                        edges_to_add[src].append(
-                            {"node_from": input_parameter, "node_to": tgt, **edge_attrs}
-                        )
-                if (
-                    explicit_src and src != predecessor
-                ) or predecessor.type == "Constant":
+                        edges_to_add[src].append({"node_from": input_parameter, "node_to": tgt, **edge_attrs})
+                if (explicit_src and src != predecessor) or predecessor.type == "Constant":
                     continue
                 nodes_to_remove.append(predecessor)
 
@@ -413,14 +397,10 @@ class OVModel(torch.nn.Module):
 
         done = {}
         for node_name, node in self.model.items():
-            done[node_name] = {
-                node.name: False for node in self._graph.successors(node)
-            }
+            done[node_name] = {node.name: False for node in self._graph.successors(node)}
 
         for node_name, node in self.model.items():
-            predecessors_with_edge = list(
-                self._graph.predecessors(node, with_edge_data=True)
-            )
+            predecessors_with_edge = list(self._graph.predecessors(node, with_edge_data=True))
             if not predecessors_with_edge:
                 if node.type == "Parameter":
                     self._feature_dict[node_name] = node(inputs[node_name])
@@ -428,23 +408,17 @@ class OVModel(torch.nn.Module):
                     self._feature_dict[node_name] = node()
                 else:
                     raise ValueError(
-                        f"Broken graph. Node {node_name} is a type of {node.type} "
-                        "but it has no in edges."
+                        f"Broken graph. Node {node_name} is a type of {node.type} " "but it has no in edges."
                     )
             else:
                 input_nodes, edges = list(map(list, zip(*predecessors_with_edge)))
                 input_node_names = [input_node.name for input_node in input_nodes]
 
-                input_features = [
-                    edge["in_port"] for edges_ in edges for edge in edges_
-                ]
+                input_features = [edge["in_port"] for edges_ in edges for edge in edges_]
                 assert len(input_features) == len(set(input_features))
                 input_features = [None for _ in input_features]
                 for idx, input_node_name in enumerate(input_node_names):
-                    if (
-                        self._features_to_keep is not None
-                        and input_node_name in self._features_to_keep
-                    ):
+                    if self._features_to_keep is not None and input_node_name in self._features_to_keep:
                         input_feature = self._feature_dict.get(input_node_name)
                     else:
                         input_feature = self._feature_dict.pop(input_node_name)
@@ -454,15 +428,11 @@ class OVModel(torch.nn.Module):
 
                     if isinstance(input_feature, tuple):
                         for edges_ in edges[idx]:
-                            input_features[edges_["in_port"]] = input_feature[
-                                edges_["out_port"]
-                            ]
+                            input_features[edges_["in_port"]] = input_feature[edges_["out_port"]]
                     else:
                         for edges_ in edges[idx]:
                             input_features[edges_["in_port"]] = input_feature
-                assert all(
-                    input_feature is not None for input_feature in input_features
-                )
+                assert all(input_feature is not None for input_feature in input_features)
                 self._feature_dict[node_name] = node(*input_features)
 
         outputs = OrderedDict()

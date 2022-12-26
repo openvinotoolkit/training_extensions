@@ -9,7 +9,6 @@ from otx.mpa.utils.logger import get_logger
 from ..builder import PARSERS
 from ..parser import parameter_parser
 
-
 logger = get_logger()
 
 
@@ -27,9 +26,7 @@ NECK_TYPES = [
 
 
 @PARSERS.register()
-def cls_base_parser(
-    graph, component: str = "backbone"
-) -> Optional[Dict[str, List[str]]]:
+def cls_base_parser(graph, component: str = "backbone") -> Optional[Dict[str, List[str]]]:
     assert component in ["backbone", "neck", "head"]
 
     result_nodes = graph.get_nodes_by_types(["Result"])
@@ -61,15 +58,9 @@ def cls_base_parser(
             break
 
     if component == "backbone":
-        outputs = [
-            node.name
-            for node in graph.predecessors(neck_input)
-            if node.type != "Constant"
-        ]
+        outputs = [node.name for node in graph.predecessors(neck_input) if node.type != "Constant"]
         if len(outputs) != 1:
-            logger.debug(
-                f"neck_input {neck_input.name} has more than one predecessors."
-            )
+            logger.debug(f"neck_input {neck_input.name} has more than one predecessors.")
             return None
 
         inputs = parameter_parser(graph)
@@ -104,9 +95,7 @@ def cls_base_parser(
                 break
 
         if not graph.has_path(inputs[0], outputs[0]):
-            logger.debug(
-                f"input({inputs[0].name}) and output({outputs[0].name}) are reversed"
-            )
+            logger.debug(f"input({inputs[0].name}) and output({outputs[0].name}) are reversed")
             return None
 
         return dict(

@@ -10,12 +10,12 @@ from typing import Any, Dict, Generator, List, Optional, Tuple, Union
 
 import _collections_abc
 import networkx as nx
-from otx.mpa.utils.logger import get_logger
 from openvino.pyopenvino import Model
+
+from otx.mpa.utils.logger import get_logger
 
 from ..ops.op import Operation
 from ..utils import convert_op_to_torch, get_op_name
-
 
 logger = get_logger()
 
@@ -59,11 +59,7 @@ class SortedDict(dict):
     def __setitem__(self, key, value):
         assert len(value) == 1
         edge_key, edge_attr = next(iter(value.items()))
-        sort_value = (
-            float("inf")
-            if self._sort_key not in edge_attr
-            else edge_attr[self._sort_key]
-        )
+        sort_value = float("inf") if self._sort_key not in edge_attr else edge_attr[self._sort_key]
         self._sorted_keys.append([sort_value, key, edge_key])
         self._sorted_keys.sort(key=lambda x: x[0])
         if key in self:
@@ -189,30 +185,22 @@ class Graph(nx.MultiDiGraph):
                 out_port_id = out_port.get_index()
                 for in_port in out_port.get_target_inputs():
                     in_port_id = in_port.get_index()
-                    children_dict[op_name].append(
-                        [out_port_id, in_port_id, get_op_name(in_port.get_node())]
-                    )
+                    children_dict[op_name].append([out_port_id, in_port_id, get_op_name(in_port.get_node())])
 
             parents_dict[op_name] = []
             for in_port in ov_op.inputs():
                 in_port_id = in_port.get_index()
                 out_port = in_port.get_source_output()
                 out_port_id = out_port.get_index()
-                parents_dict[op_name].append(
-                    [out_port_id, in_port_id, get_op_name(out_port.get_node())]
-                )
+                parents_dict[op_name].append([out_port_id, in_port_id, get_op_name(out_port.get_node())])
 
         # validate graph
         for node, children in children_dict.items():
             for _, _, child in children:
-                assert node in [
-                    i[-1] for i in parents_dict[child]
-                ], f"{node} is not a parent of {child}"
+                assert node in [i[-1] for i in parents_dict[child]], f"{node} is not a parent of {child}"
         for node, parents in parents_dict.items():
             for _, _, parent in parents:
-                assert node in [
-                    i[-1] for i in children_dict[parent]
-                ], f"{node} is not a child of {parent}"
+                assert node in [i[-1] for i in children_dict[parent]], f"{node} is not a child of {parent}"
 
         # add edges
         for src, tgts in children_dict.items():
@@ -229,9 +217,7 @@ class Graph(nx.MultiDiGraph):
 
         return graph
 
-    def get_edge_data(
-        self, node_from: Operation, node_to: Operation, default=None
-    ) -> Optional[List[Dict[Any, Any]]]:
+    def get_edge_data(self, node_from: Operation, node_to: Operation, default=None) -> Optional[List[Dict[Any, Any]]]:
         edge_data = super().get_edge_data(node_from, node_to, None, default)
         if edge_data is not None:
             return list(edge_data.values())
@@ -241,11 +227,7 @@ class Graph(nx.MultiDiGraph):
     def remove_node(self, node: Operation, keep_connect: bool = False):
         edges_to_keep = []
         if keep_connect:
-            predecessors = [
-                predecessor
-                for predecessor in self.predecessors(node)
-                if predecessor.type != "Constant"
-            ]
+            predecessors = [predecessor for predecessor in self.predecessors(node) if predecessor.type != "Constant"]
             assert len(predecessors) == 1
             predecessor = predecessors[0]
 
@@ -301,7 +283,7 @@ class Graph(nx.MultiDiGraph):
                 for edge in self.get_edge_data(predecessor, node_to)
             ]
             assert len(occupied) == len(set(occupied))
-            for i, j in [occupied[i:i + 2] for i in range(len(occupied) - 1)]:
+            for i, j in [occupied[i : i + 2] for i in range(len(occupied) - 1)]:
                 if j - i != 1:
                     in_port = i + 1
             if in_port is None:
@@ -312,17 +294,12 @@ class Graph(nx.MultiDiGraph):
         if spec.varargs is None:
             valid_range = list(range(len(spec.args[1:])))
             if in_port not in valid_range:
-                raise ValueError(
-                    f"in_port {in_port} is not in valid range {valid_range} "
-                    f"for {node_to.name}."
-                )
+                raise ValueError(f"in_port {in_port} is not in valid range {valid_range} " f"for {node_to.name}.")
         occupied = []
         predecessors = list(self.predecessors(node_to))
         if predecessors:
             occupied = [
-                edge["in_port"]
-                for predecessor in predecessors
-                for edge in self.get_edge_data(predecessor, node_to)
+                edge["in_port"] for predecessor in predecessors for edge in self.get_edge_data(predecessor, node_to)
             ]
             assert len(occupied) == len(set(occupied))
         if occupied:
@@ -333,9 +310,7 @@ class Graph(nx.MultiDiGraph):
 
         # add edge
         key = f"{in_port}{out_port}"
-        super().add_edge(
-            node_from, node_to, key=key, in_port=in_port, out_port=out_port, **kwargs
-        )
+        super().add_edge(node_from, node_to, key=key, in_port=in_port, out_port=out_port, **kwargs)
 
     def predecessors(
         self,
@@ -368,11 +343,7 @@ class Graph(nx.MultiDiGraph):
 
     def bfs(
         self, node: Operation, reverse: bool = False, depth_limit: Optional[int] = None
-    ) -> Generator[
-        Union[Tuple[Operation, Operation], Tuple[Operation, Tuple[Operation]]],
-        None,
-        None,
-    ]:
+    ) -> Generator[Union[Tuple[Operation, Operation], Tuple[Operation, Tuple[Operation]]], None, None,]:
         if reverse:
             for s, t in nx.bfs_edges(self, node, reverse=True, depth_limit=depth_limit):
                 yield (t, s)
@@ -395,14 +366,10 @@ class Graph(nx.MultiDiGraph):
     #      else:
     #          return nx.dfs_predecessors(self, node, depth_limit)
 
-    def get_nodes_by_type_pattern(
-        self, pattern: List[str], start_node: Optional[Operation] = None, reverse=False
-    ):
+    def get_nodes_by_type_pattern(self, pattern: List[str], start_node: Optional[Operation] = None, reverse=False):
         if len(pattern) < 1:
-            raise ValueError(
-                f"pattern must be longer than 2 but {len(pattern)} is given"
-            )
-        pattern_pairs = [pattern[i:i + 2] for i in range(len(pattern) - 1)]
+            raise ValueError(f"pattern must be longer than 2 but {len(pattern)} is given")
+        pattern_pairs = [pattern[i : i + 2] for i in range(len(pattern) - 1)]
 
         if start_node is None:
             if reverse:
@@ -435,9 +402,7 @@ class Graph(nx.MultiDiGraph):
                 for pop_idx in pop_indices[::-1]:
                     founds.pop(pop_idx)
             else:
-                founds = [
-                    [s, t] for s, t in found_.items() if s is not None and t is not None
-                ]
+                founds = [[s, t] for s, t in found_.items() if s is not None and t is not None]
             start_nodes = [found[-1] for found in founds]
         return founds
 
@@ -445,9 +410,7 @@ class Graph(nx.MultiDiGraph):
         invariant_types = ["Transpose", "Convert"]
 
         def test_constant(node):
-            constant_nodes = [
-                node_ for node_ in self.predecessors(node) if node_.type == "Constant"
-            ]
+            constant_nodes = [node_ for node_ in self.predecessors(node) if node_.type == "Constant"]
             if len(constant_nodes) != 1:
                 return False
             constant_value = constant_nodes[0].data.squeeze()
@@ -544,19 +507,15 @@ class Graph(nx.MultiDiGraph):
                 # onnx, paddle
                 found = find_subtract_divide(node)
                 found_ = find_subtract_multiply(node)
-                if len([i for i in found if i is not None]) < len(
-                    [i for i in found_ if i is not None]
-                ):
+                if len([i for i in found if i is not None]) < len([i for i in found_ if i is not None]):
                     found = found_
 
             self._normalize_nodes.append(found)
             for normalize_node in found:
                 if normalize_node is not None:
-                    constant_node = [
-                        node_
-                        for node_ in self.predecessors(normalize_node)
-                        if node_.type == "Constant"
-                    ][0]
+                    constant_node = [node_ for node_ in self.predecessors(normalize_node) if node_.type == "Constant"][
+                        0
+                    ]
                     attrs = constant_node.attrs
                     attrs = asdict(attrs)
                     attrs["is_parameter"] = False

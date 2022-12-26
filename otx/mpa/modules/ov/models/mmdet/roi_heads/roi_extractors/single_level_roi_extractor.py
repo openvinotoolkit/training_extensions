@@ -19,12 +19,7 @@ class SingleRoIExtractor(OriginSingleRoIExtractor):
         if layer_cfg["type"] == "RoIInterpolationPool":
             cfg = layer_cfg.copy()
             cfg.pop("type")
-            return nn.ModuleList(
-                [
-                    RoIInterpolationPool(spatial_scale=1 / s, **cfg)
-                    for s in featmap_strides
-                ]
-            )
+            return nn.ModuleList([RoIInterpolationPool(spatial_scale=1 / s, **cfg) for s in featmap_strides])
         else:
             return super().build_roi_layers(layer_cfg, featmap_strides)
 
@@ -47,7 +42,7 @@ class RoIInterpolationPool(nn.Module):
             x2, y2 = roi[2:].ceil().to(dtype=torch.int)
             outs.append(
                 F.interpolate(
-                    input[batch_idx: batch_idx + 1, :, y1:y2, x1:x2],
+                    input[batch_idx : batch_idx + 1, :, y1:y2, x1:x2],
                     self.output_size,
                     mode=self.mode,
                     align_corners=True,

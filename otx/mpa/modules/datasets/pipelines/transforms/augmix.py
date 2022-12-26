@@ -4,11 +4,10 @@
 
 import random
 import re
+
 import numpy as np
-
-from PIL import Image, ImageOps, ImageEnhance
-
 from mmcls.datasets.builder import PIPELINES
+from PIL import Image, ImageEnhance, ImageOps
 
 _AUGMIX_TRANSFORMS_GREY = [
     "SharpnessIncreasing",  # not in paper
@@ -40,9 +39,7 @@ class OpsFabric:
         self.prob = prob
         self.hparams = hparams
         # kwargs for augment functions
-        self.aug_kwargs = dict(
-            fillcolor=hparams["img_mean"], resample=(Image.BILINEAR, Image.BICUBIC)
-        )
+        self.aug_kwargs = dict(fillcolor=hparams["img_mean"], resample=(Image.BILINEAR, Image.BICUBIC))
         self.LEVEL_TO_ARG = {
             "AutoContrast": None,
             "Equalize": None,
@@ -205,11 +202,7 @@ class OpsFabric:
             elif self.magnitude_std > 0:
                 magnitude = random.gauss(magnitude, self.magnitude_std)
         magnitude = min(self.max_level, max(0, magnitude))  # clip to valid range
-        level_args = (
-            self.level_fn(magnitude, self.hparams)
-            if self.level_fn is not None
-            else tuple()
-        )
+        level_args = self.level_fn(magnitude, self.hparams) if self.level_fn is not None else tuple()
         return self.aug_fn(img, *level_args, **self.aug_kwargs)
 
 
@@ -222,9 +215,7 @@ class AugMixAugment(object):
     """
 
     def __init__(self, config_str, image_mean=None, grey=False, **kwargs):
-        self.ops, self.alpha, self.width, self.depth = self._augmix_ops(
-            config_str, image_mean, grey=grey
-        )
+        self.ops, self.alpha, self.width, self.depth = self._augmix_ops(config_str, image_mean, grey=grey)
 
     def _apply_basic(self, img, mixing_weights, m):
         # This is a literal adaptation of the paper/official implementation without normalizations and

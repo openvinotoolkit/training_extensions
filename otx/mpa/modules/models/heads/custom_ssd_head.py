@@ -3,8 +3,8 @@
 #
 
 from mmdet.models.builder import HEADS, build_loss
-from mmdet.models.losses import smooth_l1_loss
 from mmdet.models.dense_heads.ssd_head import SSDHead
+from mmdet.models.losses import smooth_l1_loss
 
 
 @HEADS.register_module()
@@ -13,20 +13,16 @@ class CustomSSDHead(SSDHead):
         self,
         *args,
         bg_loss_weight=-1.0,
-        loss_cls=dict(
-            type='CrossEntropyLoss',
-            use_sigmoid=False,
-            reduction='none',
-            loss_weight=1.0
-        ),
+        loss_cls=dict(type="CrossEntropyLoss", use_sigmoid=False, reduction="none", loss_weight=1.0),
         **kwargs
     ):
         super().__init__(*args, **kwargs)
         self.loss_cls = build_loss(loss_cls)
         self.bg_loss_weight = bg_loss_weight
 
-    def loss_single(self, cls_score, bbox_pred, anchor, labels, label_weights,
-                    bbox_targets, bbox_weights, num_total_samples):
+    def loss_single(
+        self, cls_score, bbox_pred, anchor, labels, label_weights, bbox_targets, bbox_weights, num_total_samples
+    ):
         """Compute loss of a single image.
 
         Args:
@@ -52,14 +48,13 @@ class CustomSSDHead(SSDHead):
             dict[str, Tensor]: A dictionary of loss components.
         """
         # FG cat_id: [0, num_classes -1], BG cat_id: num_classes
-        pos_inds = ((labels >= 0) &
-                    (labels < self.num_classes)).nonzero().reshape(-1)
+        pos_inds = ((labels >= 0) & (labels < self.num_classes)).nonzero().reshape(-1)
         neg_inds = (labels == self.num_classes).nonzero().view(-1)
 
         # Re-weigting BG loss
         label_weights = label_weights.reshape(-1)
         if self.bg_loss_weight >= 0.0:
-            neg_indices = (labels == self.num_classes)
+            neg_indices = labels == self.num_classes
             label_weights = label_weights.clone()
             label_weights[neg_indices] = self.bg_loss_weight
 
@@ -83,9 +78,6 @@ class CustomSSDHead(SSDHead):
             bbox_pred = self.bbox_coder.decode(anchor, bbox_pred)
 
         loss_bbox = smooth_l1_loss(
-            bbox_pred,
-            bbox_targets,
-            bbox_weights,
-            beta=self.train_cfg.smoothl1_beta,
-            avg_factor=num_total_samples)
+            bbox_pred, bbox_targets, bbox_weights, beta=self.train_cfg.smoothl1_beta, avg_factor=num_total_samples
+        )
         return loss_cls[None], loss_bbox

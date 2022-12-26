@@ -268,14 +268,4 @@ class GeluV7(Operation[GeluV7Attribute]):
         if mode == "ERF":
             return F.gelu(input=input)
         elif mode == "tanh":
-            return (
-                input
-                * 0.5
-                * (
-                    1
-                    + F.tanh(
-                        torch.sqrt(2 / torch.tensor(math.pi))
-                        * (input + 0.044715 * input**3)
-                    )
-                )
-            )
+            return input * 0.5 * (1 + F.tanh(torch.sqrt(2 / torch.tensor(math.pi)) * (input + 0.044715 * input**3)))

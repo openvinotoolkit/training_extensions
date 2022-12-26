@@ -1,11 +1,11 @@
-_base_ = './segmentor.py'
+_base_ = "./segmentor.py"
 
-__norm_cfg = dict(type='BN', requires_grad=True)
+__norm_cfg = dict(type="BN", requires_grad=True)
 model = dict(
-    type='EncoderDecoder',
+    type="EncoderDecoder",
     pretrained=None,
     decode_head=dict(
-        type='FCNHead',
+        type="FCNHead",
         in_channels=40,
         in_index=0,
         channels=40,
@@ -17,12 +17,11 @@ model = dict(
         num_classes=21,
         norm_cfg=__norm_cfg,
         align_corners=False,
-        loss_decode=dict(
-            type='CrossEntropyLoss'
-        )
+        loss_decode=dict(type="CrossEntropyLoss"),
     ),
     # model training and testing settings
     train_cfg=dict(mix_loss=dict(enable=False, weight=0.1)),
-    test_cfg=dict(mode='whole'))
+    test_cfg=dict(mode="whole"),
+)
 
 find_unused_parameters = True

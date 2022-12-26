@@ -18,12 +18,8 @@ class MMOVYOLOV3Head(YOLOV3Head):
         self,
         model_path: str,
         weight_path: Optional[str] = None,
-        inputs: Optional[
-            Union[Dict[str, Union[str, List[str]]], List[str], str]
-        ] = None,
-        outputs: Optional[
-            Union[Dict[str, Union[str, List[str]]], List[str], str]
-        ] = None,
+        inputs: Optional[Union[Dict[str, Union[str, List[str]]], List[str], str]] = None,
+        outputs: Optional[Union[Dict[str, Union[str, List[str]]], List[str], str]] = None,
         init_weight: bool = False,
         verify_shape: bool = True,
         *args,
@@ -39,23 +35,16 @@ class MMOVYOLOV3Head(YOLOV3Head):
         # dummy input
         in_channels = (512, 256, 128)
         out_channels = (1024, 512, 256)
-        if 'featmap_strides' in kwargs:
-            in_channels = kwargs['featmap_strides']
-            out_channels = kwargs['featmap_strides']
-        super().__init__(
-            in_channels=in_channels,
-            out_channels=out_channels,
-            *args,
-            **kwargs
-        )
+        if "featmap_strides" in kwargs:
+            in_channels = kwargs["featmap_strides"]
+            out_channels = kwargs["featmap_strides"]
+        super().__init__(in_channels=in_channels, out_channels=out_channels, *args, **kwargs)
 
     def _init_layers(self):
         self.convs_bridge = torch.nn.ModuleList()
         self.convs_pred = torch.nn.ModuleList()
 
-        for inputs, outputs in zip(
-            self._inputs["convs_bridge"], self._outputs["convs_bridge"]
-        ):
+        for inputs, outputs in zip(self._inputs["convs_bridge"], self._outputs["convs_bridge"]):
             self.convs_bridge.append(
                 MMOVModel(
                     self._model_path,
@@ -68,9 +57,7 @@ class MMOVYOLOV3Head(YOLOV3Head):
                 )
             )
 
-        for inputs, outputs in zip(
-            self._inputs["convs_pred"], self._outputs["convs_pred"]
-        ):
+        for inputs, outputs in zip(self._inputs["convs_pred"], self._outputs["convs_pred"]):
             self.convs_pred.append(
                 MMOVModel(
                     self._model_path,

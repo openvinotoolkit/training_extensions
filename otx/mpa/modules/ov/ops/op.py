@@ -4,12 +4,12 @@
 
 import re
 from dataclasses import dataclass, fields
-from typing import Optional, Tuple, Union, Generic, TypeVar, Type
+from typing import Generic, Optional, Tuple, Type, TypeVar, Union
 
 import torch
 
-from .utils import get_dynamic_shape
 from ..utils import get_op_name
+from .utils import get_dynamic_shape
 
 
 @dataclass
@@ -18,9 +18,7 @@ class Attribute:
 
     def __post_init__(self):
         if self.shape is not None and not isinstance(self.shape, tuple):
-            raise ValueError(
-                "shape must be a tuple of ints or a tuple of tuples of ints."
-            )
+            raise ValueError("shape must be a tuple of ints or a tuple of tuples of ints.")
 
 
 _T = TypeVar("_T", bound=Attribute)

@@ -3,11 +3,11 @@
 #
 
 from os import path as osp
-import numpy as np
-import mmcv
-from mmcv.runner import Hook
 
+import mmcv
+import numpy as np
 import torch
+from mmcv.runner import Hook
 from torch.utils.data import DataLoader
 
 
@@ -21,8 +21,7 @@ class CustomEvalHook(Hook):
 
     def __init__(self, dataloader, interval=1, by_epoch=True, ema_eval_start_epoch=10, **eval_kwargs):
         if not isinstance(dataloader, DataLoader):
-            raise TypeError('dataloader must be a pytorch DataLoader, but got'
-                            f' {type(dataloader)}')
+            raise TypeError("dataloader must be a pytorch DataLoader, but got" f" {type(dataloader)}")
         self.dataloader = dataloader
         self.interval = interval
         self.ema_eval_start_epoch = ema_eval_start_epoch
@@ -30,18 +29,18 @@ class CustomEvalHook(Hook):
         self.by_epoch = by_epoch
         self.best_loss = 9999999.0
         self.best_score = 0.0
-        self.save_mode = eval_kwargs.get('save_mode', 'score')
-        metric = self.eval_kwargs['metric']
+        self.save_mode = eval_kwargs.get("save_mode", "score")
+        metric = self.eval_kwargs["metric"]
 
         self.metric = None
         if isinstance(metric, str):
-            self.metric = 'top-1' if metric == 'accuracy' else metric
+            self.metric = "top-1" if metric == "accuracy" else metric
         else:
             self.metric = metric[0]
-            if metric.count('class_accuracy') > 0:
-                self.metric = 'accuracy'
-            elif metric.count('accuracy') > 0:
-                self.metric = 'top-1'
+            if metric.count("class_accuracy") > 0:
+                self.metric = "accuracy"
+            elif metric.count("accuracy") > 0:
+                self.metric = "top-1"
 
     def after_train_epoch(self, runner):
         if not self.by_epoch or not self.every_n_epochs(runner, self.interval):
@@ -61,15 +60,13 @@ class CustomEvalHook(Hook):
         self.evaluate(runner, results)
 
     def evaluate(self, runner, results, results_ema=None):
-        eval_res = self.dataloader.dataset.evaluate(
-            results, logger=runner.logger, **self.eval_kwargs)
+        eval_res = self.dataloader.dataset.evaluate(results, logger=runner.logger, **self.eval_kwargs)
         score = self.call_score(eval_res)
         for name, val in eval_res.items():
             runner.log_buffer.output[name] = val
 
         if results_ema:
-            eval_res_ema = self.dataloader.dataset.evaluate(
-                results_ema, logger=runner.logger, **self.eval_kwargs)
+            eval_res_ema = self.dataloader.dataset.evaluate(results_ema, logger=runner.logger, **self.eval_kwargs)
             score_ema = self.call_score(eval_res_ema)
             for name, val in eval_res_ema.items():
                 runner.log_buffer.output[name + "_EMA"] = val
@@ -103,22 +100,16 @@ def single_gpu_test(model, data_loader):
             result = model(return_loss=False, **data)
         results.append(result)
 
-        batch_size = data['img'].size(0)
+        batch_size = data["img"].size(0)
         for _ in range(batch_size):
             prog_bar.update()
     return results
 
 
 class DistCustomEvalHook(CustomEvalHook):
-    def __init__(self,
-                 dataloader,
-                 interval=1,
-                 gpu_collect=False,
-                 by_epoch=True,
-                 **eval_kwargs):
+    def __init__(self, dataloader, interval=1, gpu_collect=False, by_epoch=True, **eval_kwargs):
         if not isinstance(dataloader, DataLoader):
-            raise TypeError('dataloader must be a pytorch DataLoader, but got '
-                            f'{type(dataloader)}')
+            raise TypeError("dataloader must be a pytorch DataLoader, but got " f"{type(dataloader)}")
         self.gpu_collect = gpu_collect
         super(DistCustomEvalHook, self).__init__(dataloader, interval, by_epoch=by_epoch, **eval_kwargs)
 
@@ -126,25 +117,23 @@ class DistCustomEvalHook(CustomEvalHook):
         if not self.by_epoch or not self.every_n_epochs(runner, self.interval):
             return
         from mmcls.apis import multi_gpu_test
+
         results = multi_gpu_test(
-            runner.model,
-            self.dataloader,
-            tmpdir=osp.join(runner.work_dir, '.eval_hook'),
-            gpu_collect=self.gpu_collect)
+            runner.model, self.dataloader, tmpdir=osp.join(runner.work_dir, ".eval_hook"), gpu_collect=self.gpu_collect
+        )
         if runner.rank == 0:
-            print('\n')
+            print("\n")
             self.evaluate(runner, results)
 
     def after_train_iter(self, runner):
         if self.by_epoch or not self.every_n_iters(runner, self.interval):
             return
         from mmcls.apis import multi_gpu_test
+
         runner.log_buffer.clear()
         results = multi_gpu_test(
-            runner.model,
-            self.dataloader,
-            tmpdir=osp.join(runner.work_dir, '.eval_hook'),
-            gpu_collect=self.gpu_collect)
+            runner.model, self.dataloader, tmpdir=osp.join(runner.work_dir, ".eval_hook"), gpu_collect=self.gpu_collect
+        )
         if runner.rank == 0:
-            print('\n')
+            print("\n")
             self.evaluate(runner, results)

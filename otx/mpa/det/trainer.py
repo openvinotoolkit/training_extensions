@@ -12,25 +12,23 @@ from mmdet.apis import train_detector
 from mmdet.datasets import build_dataset
 from mmdet.models import build_detector
 from mmdet.utils import collect_env
+from torch import nn
+
+from otx.mpa.det.incremental import IncrDetectionStage
 from otx.mpa.modules.utils.task_adapt import extract_anchor_ratio
 from otx.mpa.registry import STAGES
 from otx.mpa.utils.logger import get_logger
-from torch import nn
 
 from .stage import DetectionStage
 
 # TODO[JAEGUK]: Remove import detection_tasks
 # from detection_tasks.apis.detection.config_utils import cluster_anchors
 
-from otx.mpa.registry import STAGES
-from otx.mpa.modules.utils.task_adapt import extract_anchor_ratio
-from otx.mpa.utils.logger import get_logger
-from otx.mpa.det.incremental import IncrDetectionStage
 
 logger = get_logger()
 
 
-#FIXME DetectionTrainer does not inherit from stage
+# FIXME DetectionTrainer does not inherit from stage
 @STAGES.register_module()
 class DetectionTrainer(IncrDetectionStage):
     def __init__(self, **kwargs):
@@ -44,36 +42,36 @@ class DetectionTrainer(IncrDetectionStage):
         - Run training via MMDetection -> MMCV
         """
         self._init_logger()
-        mode = kwargs.get('mode', 'train')
+        mode = kwargs.get("mode", "train")
         if mode not in self.mode:
             return {}
 
         cfg = self.configure(model_cfg, model_ckpt, data_cfg, **kwargs)
-        logger.info('train!')
+        logger.info("train!")
 
         # # Work directory
         # mmcv.mkdir_or_exist(osp.abspath(cfg.work_dir))
 
-        timestamp = time.strftime('%Y%m%d_%H%M%S', time.localtime())
+        timestamp = time.strftime("%Y%m%d_%H%M%S", time.localtime())
 
         # Environment
-        logger.info(f'cfg.gpu_ids = {cfg.gpu_ids}, distributed = {self.distributed}')
+        logger.info(f"cfg.gpu_ids = {cfg.gpu_ids}, distributed = {self.distributed}")
         env_info_dict = collect_env()
-        env_info = '\n'.join([(f'{k}: {v}') for k, v in env_info_dict.items()])
-        dash_line = '-' * 60 + '\n'
-        logger.info('Environment info:\n' + dash_line + env_info + '\n' + dash_line)
+        env_info = "\n".join([(f"{k}: {v}") for k, v in env_info_dict.items()])
+        dash_line = "-" * 60 + "\n"
+        logger.info("Environment info:\n" + dash_line + env_info + "\n" + dash_line)
 
         # Data
         datasets = [build_dataset(cfg.data.train)]
 
-        if hasattr(cfg, 'hparams'):
-            if cfg.hparams.get('adaptive_anchor', False):
-                num_ratios = cfg.hparams.get('num_anchor_ratios', 5)
+        if hasattr(cfg, "hparams"):
+            if cfg.hparams.get("adaptive_anchor", False):
+                num_ratios = cfg.hparams.get("num_anchor_ratios", 5)
                 proposal_ratio = extract_anchor_ratio(datasets[0], num_ratios)
                 self.configure_anchor(cfg, proposal_ratio)
 
         # Dataset for HPO
-        hp_config = kwargs.get('hp_config', None)
+        hp_config = kwargs.get("hp_config", None)
         if hp_config is not None:
             import hpopt
 
@@ -84,23 +82,21 @@ class DetectionTrainer(IncrDetectionStage):
                 datasets[0] = hpopt.createHpoDataset(datasets[0], hp_config)
 
         # Target classes
-        if 'task_adapt' in cfg:
-            target_classes = cfg.task_adapt.get('final', [])
+        if "task_adapt" in cfg:
+            target_classes = cfg.task_adapt.get("final", [])
         else:
             target_classes = datasets[0].CLASSES
 
         # Metadata
         meta = dict()
-        meta['env_info'] = env_info
+        meta["env_info"] = env_info
         # meta['config'] = cfg.pretty_text
-        meta['seed'] = cfg.seed
-        meta['exp_name'] = cfg.work_dir
+        meta["seed"] = cfg.seed
+        meta["exp_name"] = cfg.work_dir
         if cfg.checkpoint_config is not None:
-            cfg.checkpoint_config.meta = dict(
-                mmdet_version=__version__ + get_git_hash()[:7],
-                CLASSES=target_classes)
-            if 'proposal_ratio' in locals():
-                cfg.checkpoint_config.meta.update({'anchor_ratio': proposal_ratio})
+            cfg.checkpoint_config.meta = dict(mmdet_version=__version__ + get_git_hash()[:7], CLASSES=target_classes)
+            if "proposal_ratio" in locals():
+                cfg.checkpoint_config.meta.update({"anchor_ratio": proposal_ratio})
 
         # Save config
         # cfg.dump(osp.join(cfg.work_dir, 'config.py'))
@@ -121,17 +117,12 @@ class DetectionTrainer(IncrDetectionStage):
         #         cfg, model = cluster_anchors(cfg, train_dataset, model)
 
         train_detector(
-            model,
-            datasets,
-            cfg,
-            distributed=self.distributed,
-            validate=True,
-            timestamp=timestamp,
-            meta=meta)
+            model, datasets, cfg, distributed=self.distributed, validate=True, timestamp=timestamp, meta=meta
+        )
 
         # Save outputs
-        output_ckpt_path = osp.join(cfg.work_dir, 'latest.pth')
-        best_ckpt_path = glob.glob(osp.join(cfg.work_dir, 'best_*.pth'))
+        output_ckpt_path = osp.join(cfg.work_dir, "latest.pth")
+        best_ckpt_path = glob.glob(osp.join(cfg.work_dir, "best_*.pth"))
         if len(best_ckpt_path) > 0:
             output_ckpt_path = best_ckpt_path[0]
         return dict(final_ckpt=output_ckpt_path)
@@ -139,8 +130,10 @@ class DetectionTrainer(IncrDetectionStage):
     def _modify_cfg_for_distributed(self, model, cfg):
         nn.SyncBatchNorm.convert_sync_batchnorm(model)
 
-        if cfg.dist_params.get('linear_scale_lr', False):
+        if cfg.dist_params.get("linear_scale_lr", False):
             new_lr = len(cfg.gpu_ids) * cfg.optimizer.lr
-            logger.info(f'enabled linear scaling rule to the learning rate. \
-                changed LR from {cfg.optimizer.lr} to {new_lr}')
+            logger.info(
+                f"enabled linear scaling rule to the learning rate. \
+                changed LR from {cfg.optimizer.lr} to {new_lr}"
+            )
             cfg.optimizer.lr = new_lr

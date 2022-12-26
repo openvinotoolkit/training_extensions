@@ -3,6 +3,4 @@
 #
 
 # flake8: noqa
-from . import backbones
-from . import necks
-from . import heads
+from . import backbones, heads, necks

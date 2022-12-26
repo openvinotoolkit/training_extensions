@@ -4,11 +4,10 @@
 
 import os.path as osp
 
-from mmseg.datasets import DATASETS
-from mmseg.datasets import CustomDataset
+import numpy as np
+from mmseg.datasets import DATASETS, CustomDataset
 
 from otx.mpa.modules.utils.task_adapt import map_class_names
-import numpy as np
 
 
 @DATASETS.register_module()
@@ -24,11 +23,12 @@ class SegIncrCityscapesDataset(CustomDataset):
 
     def __init__(self, split, classes, new_classes, **kwargs):
         super(SegIncrCityscapesDataset, self).__init__(
-            img_suffix='_leftImg8bit.png',
-            seg_map_suffix='_gtFine_labelTrainIds.png',
+            img_suffix="_leftImg8bit.png",
+            seg_map_suffix="_gtFine_labelTrainIds.png",
             split=split,
             classes=classes,
-            **kwargs)
+            **kwargs
+        )
         self.classes = classes
         self.new_classes = new_classes
         self.img_indices = dict(old=[], new=[])
@@ -36,7 +36,7 @@ class SegIncrCityscapesDataset(CustomDataset):
 
     def statistics(self):
         gt_seg_maps = self.get_gt_seg_maps(False)
-        classes = ['background'] + self.classes
+        classes = ["background"] + self.classes
 
         new_class_indices = map_class_names(self.new_classes, classes)
         for idx in range(len(gt_seg_maps)):
@@ -50,17 +50,11 @@ class SegIncrCityscapesDataset(CustomDataset):
             model2data = map_class_names(classes, label_schema)
             new_class_values = [model2data[idx] for idx in new_class_indices]
             if any(value is not -1 for value in new_class_values):
-                self.img_indices['new'].append(idx)
+                self.img_indices["new"].append(idx)
             else:
-                self.img_indices['old'].append(idx)
+                self.img_indices["old"].append(idx)
 
-    def evaluate(self,
-                 results,
-                 metric='mIoU',
-                 logger=None,
-                 imgfile_prefix=None,
-                 efficient_test=False,
-                 show_log=False):
+    def evaluate(self, results, metric="mIoU", logger=None, imgfile_prefix=None, efficient_test=False, show_log=False):
         """Evaluation in Cityscapes/default protocol.
 
         Args:
@@ -84,13 +78,13 @@ class SegIncrCityscapesDataset(CustomDataset):
 
         eval_results = dict()
         metrics = metric.copy() if isinstance(metric, list) else [metric]
-        if 'cityscapes' in metrics:
+        if "cityscapes" in metrics:
             eval_results.update(self._evaluate_cityscapes(results, logger, imgfile_prefix))
-            metrics.remove('cityscapes')
+            metrics.remove("cityscapes")
 
         if len(metrics) > 0:
-            eval_results.update(super(SegIncrCityscapesDataset, self).evaluate(
-                results, metrics, logger, efficient_test, show_log
-            ))
+            eval_results.update(
+                super(SegIncrCityscapesDataset, self).evaluate(results, metrics, logger, efficient_test, show_log)
+            )
 
         return eval_results

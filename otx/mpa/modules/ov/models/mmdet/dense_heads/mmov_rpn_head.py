@@ -8,10 +8,10 @@ from typing import Dict, List, Optional, Union
 import torch
 from mmdet.models.builder import HEADS
 from mmdet.models.dense_heads.rpn_head import RPNHead
+
 from otx.mpa.utils.logger import get_logger
 
 from ...mmov_model import MMOVModel
-
 
 logger = get_logger()
 
@@ -22,12 +22,8 @@ class MMOVRPNHead(RPNHead):
         self,
         model_path: str,
         weight_path: Optional[str] = None,
-        inputs: Optional[
-            Union[Dict[str, Union[str, List[str]]], List[str], str]
-        ] = None,
-        outputs: Optional[
-            Union[Dict[str, Union[str, List[str]]], List[str], str]
-        ] = None,
+        inputs: Optional[Union[Dict[str, Union[str, List[str]]], List[str], str]] = None,
+        outputs: Optional[Union[Dict[str, Union[str, List[str]]], List[str], str]] = None,
         init_weight: bool = False,
         verify_shape: bool = True,
         transpose_cls: bool = False,
@@ -71,20 +67,12 @@ class MMOVRPNHead(RPNHead):
         if self._transpose_reg:
             # [B, 4 * num_anchors, H, W] -> [B, num_anchors * 4, H, W]
             shape = rpn_bbox_pred.shape
-            rpn_bbox_pred = (
-                rpn_bbox_pred.reshape(shape[0], 4, -1, *shape[2:])
-                .transpose(1, 2)
-                .reshape(shape)
-            )
+            rpn_bbox_pred = rpn_bbox_pred.reshape(shape[0], 4, -1, *shape[2:]).transpose(1, 2).reshape(shape)
 
         if self._transpose_cls:
             # [B, 2 * num_anchors, H, W] -> [B, num_anchors * 2, H, W]
             shape = rpn_cls_score.shape
-            rpn_cls_score = (
-                rpn_cls_score.reshape(shape[0], 2, -1, *shape[2:])
-                .transpose(1, 2)
-                .reshape(shape)
-            )
+            rpn_cls_score = rpn_cls_score.reshape(shape[0], 2, -1, *shape[2:]).transpose(1, 2).reshape(shape)
 
         # We set FG labels to [0, num_class-1] and BG label to
         # num_class in RPN head since mmdet v2.5, which is unified to

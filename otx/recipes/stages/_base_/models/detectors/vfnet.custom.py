@@ -1,11 +1,9 @@
-_base_ = [
-    './vfnet.py'
-]
+_base_ = ["./vfnet.py"]
 
 model = dict(
-    type='CustomVFNet',
+    type="CustomVFNet",
     bbox_head=dict(
-        type='CustomVFNetHead',
+        type="CustomVFNetHead",
     ),
 )
 
@@ -20,18 +18,18 @@ data = dict(
         MinIouRandomCrop=dict(min_crop_size=0.1),
         Resize=dict(
             img_scale=[(1344, 480), (1344, 960)],
-            multiscale_mode='range',
+            multiscale_mode="range",
         ),
         Normalize=dict(**__img_norm_cfg),
         MultiScaleFlipAug=dict(
             img_scale=(1344, 800),
             flip=False,
             transforms=[
-                dict(type='Resize', keep_ratio=False),
-                dict(type='Normalize', **__img_norm_cfg),
-                dict(type='Pad', size_divisor=32),
-                dict(type='ImageToTensor', keys=['img']),
-                dict(type='Collect', keys=['img'])
+                dict(type="Resize", keep_ratio=False),
+                dict(type="Normalize", **__img_norm_cfg),
+                dict(type="Pad", size_divisor=32),
+                dict(type="ImageToTensor", keys=["img"]),
+                dict(type="Collect", keys=["img"]),
             ],
         ),
     ),

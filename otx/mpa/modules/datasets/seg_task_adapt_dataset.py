@@ -24,17 +24,17 @@ class SegTaskAdaptDataset(object):
     def __init__(self, classes, new_classes, with_background=True, **kwargs):
         self.classes = classes
         self.new_classes = new_classes
-        self.dataset_classes = [c for c in self.classes if c != 'background']
+        self.dataset_classes = [c for c in self.classes if c != "background"]
 
         dataset_cfg = kwargs.copy()
-        org_type = dataset_cfg.pop('org_type')
-        dataset_cfg['type'] = org_type
-        if 'dataset' in dataset_cfg:
-            dataset_cfg['dataset']['classes'] = self.dataset_classes
-            dataset_cfg['dataset']['new_classes'] = self.new_classes
+        org_type = dataset_cfg.pop("org_type")
+        dataset_cfg["type"] = org_type
+        if "dataset" in dataset_cfg:
+            dataset_cfg["dataset"]["classes"] = self.dataset_classes
+            dataset_cfg["dataset"]["new_classes"] = self.new_classes
         else:
-            dataset_cfg['classes'] = self.dataset_classes
-            dataset_cfg['new_classes'] = self.new_classes
+            dataset_cfg["classes"] = self.dataset_classes
+            dataset_cfg["new_classes"] = self.new_classes
 
         self.dataset = build_dataset(dataset_cfg)
 
@@ -43,12 +43,12 @@ class SegTaskAdaptDataset(object):
             # TODO : check if 'while' loop is required
             _dataset = self.dataset
             while True:
-                if hasattr(_dataset, 'CLASSES'):
-                    _dataset.CLASSES = [c for c in _dataset.CLASSES if c != 'background']
-                    _dataset.CLASSES = ['background'] + _dataset.CLASSES
+                if hasattr(_dataset, "CLASSES"):
+                    _dataset.CLASSES = [c for c in _dataset.CLASSES if c != "background"]
+                    _dataset.CLASSES = ["background"] + _dataset.CLASSES
                     _dataset.PALETTE = [[0, 0, 0]] + _dataset.PALETTE
 
-                if hasattr(_dataset, 'label_map'):
+                if hasattr(_dataset, "label_map"):
                     if _dataset.label_map is None:
                         _label_map = {}
                         for i, c in enumerate(_dataset.CLASSES):
@@ -57,9 +57,9 @@ class SegTaskAdaptDataset(object):
                             else:
                                 _label_map[i] = self.dataset_classes.index(c)
                         _dataset.label_map = _label_map
-                    _dataset.label_map = {k: v+1 for k, v in _dataset.label_map.items()}
+                    _dataset.label_map = {k: v + 1 for k, v in _dataset.label_map.items()}
 
-                if hasattr(_dataset, 'dataset'):
+                if hasattr(_dataset, "dataset"):
                     _dataset = _dataset.dataset
                 else:
                     break

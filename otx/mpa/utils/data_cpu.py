@@ -8,8 +8,8 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 import torch
-from mmcv.parallel.data_container import DataContainer
 from mmcv.parallel import MMDataParallel
+from mmcv.parallel.data_container import DataContainer
 
 
 def scatter_cpu(inputs):

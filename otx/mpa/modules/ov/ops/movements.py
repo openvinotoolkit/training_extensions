@@ -21,10 +21,7 @@ class PadV1Attribute(Attribute):
         super().__post_init__()
         valid_pad_mode = ["constant", "edge", "reflect", "symmetric"]
         if self.pad_mode not in valid_pad_mode:
-            raise ValueError(
-                f"Invalid pad_mode {self.pad_mode}. "
-                f"It must be one of {valid_pad_mode}."
-            )
+            raise ValueError(f"Invalid pad_mode {self.pad_mode}. " f"It must be one of {valid_pad_mode}.")
 
 
 @OPS.register()
@@ -56,14 +53,8 @@ class PadV1(Operation[PadV1Attribute]):
         return [val for tup in zip(pads_begin[::-1], pads_end[::-1]) for val in tup]
 
     def forward(self, input, pads_begin, pads_end, pad_value=0):
-        pads_begin = (
-            pads_begin
-            if isinstance(pads_begin, list)
-            else pads_begin.detach().cpu().tolist()
-        )
-        pads_end = (
-            pads_end if isinstance(pads_end, list) else pads_end.detach().cpu().tolist()
-        )
+        pads_begin = pads_begin if isinstance(pads_begin, list) else pads_begin.detach().cpu().tolist()
+        pads_end = pads_end if isinstance(pads_end, list) else pads_end.detach().cpu().tolist()
         pad = self.get_torch_pad_dim(pads_begin, pads_end)
         pad = list(map(math.ceil, pad))
         return F.pad(input=input, pad=pad, mode=self._pad_mode, value=pad_value)
@@ -152,9 +143,7 @@ class GatherV0(Operation[GatherV0Attribute]):
             output = output.squeeze(axis)
         else:
             output_shape = torch.tensor(output.shape)
-            output_target_shape = torch.cat(
-                (output_shape[:axis], indices_shape, output_shape[axis + 1:])
-            )
+            output_target_shape = torch.cat((output_shape[:axis], indices_shape, output_shape[axis + 1 :]))
             output = output.reshape(*output_target_shape)
 
         return output
@@ -317,17 +306,13 @@ class ShuffleChannelsV0(Operation[ShuffleChannelsV0Attribute]):
         ]
         if axis == 0:
             target_shape[0] = 1
-            target_shape[-1] = math.prod(
-                [origin_shape[i] for i in range(axis + 1, origin_dim)]
-            )
+            target_shape[-1] = math.prod([origin_shape[i] for i in range(axis + 1, origin_dim)])
         elif axis == input.dim() - 1:
             target_shape[0] = math.prod([origin_shape[i] for i in range(0, axis)])
             target_shape[-1] = 1
         else:
             target_shape[0] = math.prod([origin_shape[i] for i in range(0, axis)])
-            target_shape[-1] = math.prod(
-                [origin_shape[i] for i in range(axis + 1, origin_dim)]
-            )
+            target_shape[-1] = math.prod([origin_shape[i] for i in range(axis + 1, origin_dim)])
 
         output = input.reshape(target_shape)
         output = output.permute([0, 2, 1, 3])
@@ -343,9 +328,7 @@ class BroadcastV3Attribute(Attribute):
         super().__post_init__()
         valid_mode = ["numpy", "explicit", "bidirectional"]
         if self.mode not in valid_mode:
-            raise ValueError(
-                f"Invalid mode {self.mode}. " f"It must be one of {valid_mode}."
-            )
+            raise ValueError(f"Invalid mode {self.mode}. " f"It must be one of {valid_mode}.")
 
 
 @OPS.register()
@@ -383,9 +366,9 @@ class ScatterNDUpdateV3(Operation[ScatterNDUpdateV3Attribute]):
         last_dim = indicies.shape[-1]
         assert last_dim == 2
         assert indicies[..., -2].sum() == 0
-        input.shape[indicies.shape[-1]:]
+        input.shape[indicies.shape[-1] :]
         index = indicies[..., -1]
-        for i in input.shape[indicies.shape[-1]:]:
+        for i in input.shape[indicies.shape[-1] :]:
             index = index.unsqueeze(-1).tile((i,))
         output = torch.scatter(input, 1, index, updates)
 

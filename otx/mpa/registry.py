@@ -4,5 +4,5 @@
 
 from mmcv.utils import Registry
 
-STAGES = Registry('stages')
-EXPLAINERS = Registry('explainers')
+STAGES = Registry("stages")
+EXPLAINERS = Registry("explainers")

@@ -4,10 +4,10 @@
 
 import torch
 import torch.distributed as dist
+from mmcls.models.builder import LOSSES
 from torch import nn
 
 from otx.mpa.modules.utils.distance_utils import get_dist_info
-from mmcls.models.builder import LOSSES
 
 
 def euclidean_dist(x, y):
@@ -23,9 +23,9 @@ def euclidean_dist(x, y):
 def cosine_dist(x, y):
     bs1, bs2 = x.size(0), y.size(0)
     frac_up = torch.matmul(x, y.transpose(0, 1))
-    frac_down = (torch.sqrt(torch.sum(torch.pow(x, 2), 1))).view(bs1, 1).repeat(
-        1, bs2
-    ) * (torch.sqrt(torch.sum(torch.pow(y, 2), 1))).view(1, bs2).repeat(bs1, 1)
+    frac_down = (torch.sqrt(torch.sum(torch.pow(x, 2), 1))).view(bs1, 1).repeat(1, bs2) * (
+        torch.sqrt(torch.sum(torch.pow(y, 2), 1))
+    ).view(1, bs2).repeat(bs1, 1)
     cosine = frac_up / frac_down
     return 1 - cosine
 
@@ -59,7 +59,11 @@ class TripletLoss(nn.Module):
         "cosine": cosine_dist,
     }
 
-    def __init__(self, margin=0.3, dist_metric="euclidean", ):
+    def __init__(
+        self,
+        margin=0.3,
+        dist_metric="euclidean",
+    ):
         super(TripletLoss, self).__init__()
         self.margin = margin
         self.dist_metric = self.__dist_factory[dist_metric]
@@ -90,9 +94,7 @@ class TripletLoss(nn.Module):
         # assert mat_dist.size(0) == mat_dist.size(1)
         N, M = mat_dist.size()
         # mat_sim = targets.expand(N, N).eq(targets.expand(N, N).t()).float()
-        mat_sim = (
-            targets.view(N, 1).expand(N, M).eq(all_targets.view(M, 1).expand(M, N).t()).float()
-        )
+        mat_sim = targets.view(N, 1).expand(N, M).eq(all_targets.view(M, 1).expand(M, N).t()).float()
 
         dist_ap, dist_an = _batch_hard(mat_dist, mat_sim)
         assert dist_an.size(0) == dist_ap.size(0)
@@ -126,21 +128,15 @@ class SoftmaxTripletLoss(TripletLoss):
         mat_dist = self.dist_metric(emb, all_emb)
         N, M = mat_dist.size()
         # mat_sim = targets.expand(N, N).eq(targets.expand(N, N).t()).float()
-        mat_sim = (
-            targets.view(N, 1).expand(N, M).eq(all_targets.view(M, 1).expand(M, N).t()).float()
-        )
+        mat_sim = targets.view(N, 1).expand(N, M).eq(all_targets.view(M, 1).expand(M, N).t()).float()
 
-        dist_ap, dist_an, ap_idx, an_idx = _batch_hard(
-            mat_dist, mat_sim, return_indices=True
-        )
+        dist_ap, dist_an, ap_idx, an_idx = _batch_hard(mat_dist, mat_sim, return_indices=True)
         assert dist_an.size(0) == dist_ap.size(0), "debug"
         triple_dist = torch.stack((dist_ap, dist_an), dim=1)
         triple_dist = self.logsoftmax(triple_dist)
 
         # hard-label softmax triplet loss
-        loss = (
-                -self.margin * triple_dist[:, 0] - (1 - self.margin) * triple_dist[:, 1]
-        ).mean()
+        loss = (-self.margin * triple_dist[:, 0] - (1 - self.margin) * triple_dist[:, 1]).mean()
         return loss
 
 
@@ -174,13 +170,9 @@ class SoftSoftmaxTripletLoss(TripletLoss):
         mat_dist = self.dist_metric(emb1, all_emb1)
         N, M = mat_dist.size()
         # mat_sim = targets.expand(N, N).eq(targets.expand(N, N).t()).float()
-        mat_sim = (
-            targets.view(N, 1).expand(N, M).eq(all_targets.view(M, 1).expand(M, N).t()).float()
-        )
+        mat_sim = targets.view(N, 1).expand(N, M).eq(all_targets.view(M, 1).expand(M, N).t()).float()
 
-        dist_ap, dist_an, ap_idx, an_idx = _batch_hard(
-            mat_dist, mat_sim, return_indices=True
-        )
+        dist_ap, dist_an, ap_idx, an_idx = _batch_hard(mat_dist, mat_sim, return_indices=True)
         assert dist_an.size(0) == dist_ap.size(0), "debug"
         triple_dist = torch.stack((dist_ap, dist_an), dim=1)
         triple_dist = self.logsoftmax(triple_dist)
@@ -189,12 +181,8 @@ class SoftSoftmaxTripletLoss(TripletLoss):
         mat_dist_ref = self.dist_metric(emb2, all_emb2)
         # dist_ap_ref = torch.gather(mat_dist_ref, 1, ap_idx.view(N,1).expand(N,N))[:,0]
         # dist_an_ref = torch.gather(mat_dist_ref, 1, an_idx.view(N,1).expand(N,N))[:,0]
-        dist_ap_ref = torch.gather(mat_dist_ref, 1, ap_idx.view(N, 1).expand(N, M))[
-                      :, 0
-                      ]
-        dist_an_ref = torch.gather(mat_dist_ref, 1, an_idx.view(N, 1).expand(N, M))[
-                      :, 0
-                      ]
+        dist_ap_ref = torch.gather(mat_dist_ref, 1, ap_idx.view(N, 1).expand(N, M))[:, 0]
+        dist_an_ref = torch.gather(mat_dist_ref, 1, an_idx.view(N, 1).expand(N, M))[:, 0]
         triple_dist_ref = torch.stack((dist_ap_ref, dist_an_ref), dim=1)
         triple_dist_ref = self.softmax(triple_dist_ref).detach()
         # soft-label softmax triplet loss

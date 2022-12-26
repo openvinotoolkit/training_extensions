@@ -1,10 +1,8 @@
-_base_ = [
-    './resnet50_maskrcnn.py'
-]
+_base_ = ["./resnet50_maskrcnn.py"]
 
 model = dict(
-    type='CustomMaskRCNN',
+    type="CustomMaskRCNN",
     roi_head=dict(
-        type='CustomRoIHead',
-    )
+        type="CustomRoIHead",
+    ),
 )
