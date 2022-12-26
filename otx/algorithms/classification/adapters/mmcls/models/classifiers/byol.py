@@ -14,8 +14,9 @@ from typing import Any, Dict, Optional
 import torch
 import torch.distributed as dist
 from mmcls.models.builder import CLASSIFIERS, build_backbone, build_head, build_neck
-from mpa.utils.logger import get_logger
 from torch import nn
+
+from otx.mpa.utils.logger import get_logger
 
 logger = get_logger()
 

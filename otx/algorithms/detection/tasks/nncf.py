@@ -36,8 +36,6 @@ from mmdet.integration.nncf import (
 )
 from mmdet.integration.nncf.config import compose_nncf_config
 from mmdet.models import build_detector
-from mpa.utils.config_utils import remove_custom_hook
-from mpa.utils.logger import get_logger
 
 from otx.algorithms.common.adapters.mmcv.hooks import OTXLoggerHook
 from otx.algorithms.common.adapters.mmcv.utils import remove_from_config
@@ -75,6 +73,8 @@ from otx.api.utils.argument_checks import (
     DatasetParamTypeCheck,
     check_input_parameters_type,
 )
+from otx.mpa.utils.config_utils import remove_custom_hook
+from otx.mpa.utils.logger import get_logger
 
 from .inference import DetectionInferenceTask
 

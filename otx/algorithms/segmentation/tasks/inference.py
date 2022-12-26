@@ -19,9 +19,6 @@ from typing import Dict, Optional
 
 import numpy as np
 from mmcv.utils import ConfigDict
-from mpa import MPAConstants
-from mpa.utils.config_utils import MPAConfig
-from mpa.utils.logger import get_logger
 
 from otx.algorithms.common.adapters.mmcv.utils import (
     patch_data_pipeline,
@@ -64,6 +61,9 @@ from otx.api.utils.segmentation_utils import (
     create_annotation_from_segmentation_map,
     create_hard_prediction_from_soft_prediction,
 )
+from otx.mpa import MPAConstants
+from otx.mpa.utils.config_utils import MPAConfig
+from otx.mpa.utils.logger import get_logger
 
 logger = get_logger()
 

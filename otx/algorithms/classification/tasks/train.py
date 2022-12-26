@@ -12,7 +12,6 @@ from typing import List, Optional
 
 import torch
 from mmcv.utils import ConfigDict
-from mpa.utils.logger import get_logger
 
 from otx.algorithms.classification.configs import ClassificationConfig
 from otx.algorithms.common.adapters.mmcv import OTXLoggerHook
@@ -36,6 +35,7 @@ from otx.api.entities.train_parameters import (
     default_progress_callback as train_default_progress_callback,
 )
 from otx.api.serialization.label_mapper import label_schema_to_bytes
+from otx.mpa.utils.logger import get_logger
 
 from .inference import ClassificationInferenceTask
 

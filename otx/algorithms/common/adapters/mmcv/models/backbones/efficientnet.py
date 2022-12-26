@@ -18,9 +18,10 @@ import torch.nn.functional as F
 from mmcv.cnn import build_activation_layer
 from mmcv.cnn.bricks import ConvModule
 from mmcv.runner import load_checkpoint
-from mpa.utils.logger import get_logger
 from torch import nn
 from torch.nn import init
+
+from otx.mpa.utils.logger import get_logger
 
 from ..builder import BACKBONES
 

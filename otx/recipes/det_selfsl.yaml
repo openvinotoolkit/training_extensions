@@ -1,0 +1,41 @@
+stages:
+    - name: pre-training
+      mode: train
+      type: SelfSLTrainer
+      config: {{ fileDirname }}/stages/detection/pretrain.yaml
+      output:
+        - pretrained
+
+    - name: train
+      type: DetectionTrainer
+      task: detection
+      mode: train
+      config: {{ fileDirname }}/stages/detection/finetune.py
+      input:
+          pretrained:
+              stage_name: pre-training
+              output_key: pretrained
+      output:
+          - final_ckpt
+
+    - name: final-eval
+      type: DetectionEvaluator
+      task: detection
+      mode: train
+      config: {{ fileDirname }}/stages/detection/finetune.py
+      input:
+          pretrained:
+              stage_name: train
+              output_key: final_ckpt  # stage_name: output_key
+
+    - name: eval-only
+      type: DetectionEvaluator
+      task: detection
+      mode: eval
+      config: {{ fileDirname }}/stages/detection/finetune.py
+
+    - name: infer-only
+      type: DetectionInferrer
+      task: detection
+      mode: infer
+      config: {{ fileDirname }}/stages/detection/finetune.py

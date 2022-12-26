@@ -9,10 +9,6 @@ from typing import Optional
 
 import numpy as np
 from mmcv.utils import ConfigDict
-from mpa import MPAConstants
-from mpa.stage import Stage
-from mpa.utils.config_utils import MPAConfig
-from mpa.utils.logger import get_logger
 
 from otx.algorithms.classification.configs import ClassificationConfig
 from otx.algorithms.classification.utils import (
@@ -46,6 +42,10 @@ from otx.api.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from otx.api.usecases.tasks.interfaces.unload_interface import IUnload
 from otx.api.utils.dataset_utils import add_saliency_maps_to_dataset_item
 from otx.api.utils.labels_utils import get_empty_label
+from otx.mpa import MPAConstants
+from otx.mpa.stage import Stage
+from otx.mpa.utils.config_utils import MPAConfig
+from otx.mpa.utils.logger import get_logger
 
 # pylint: disable=invalid-name
 
