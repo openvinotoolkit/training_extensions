@@ -34,7 +34,7 @@ class DetConLoss(nn.Module):
     ):  # pylint: disable=unused-argument
         super().__init__()
         assert temperature > 0
-        self.temperature = torch.Tensor(temperature)
+        self.temperature = torch.tensor(temperature)
         self.use_replicator_loss = use_replicator_loss
 
     # pylint: disable=too-many-statements, too-many-locals, too-many-arguments
@@ -132,8 +132,8 @@ class DetConLoss(nn.Module):
         num_positives_0 = torch.sum(labels_0, dim=-1, keepdim=True)
         num_positives_1 = torch.sum(labels_1, dim=-1, keepdim=True)
 
-        labels_0 = labels_0 / torch.maximum(num_positives_0, torch.Tensor(1.0, device=num_positives_0.device))
-        labels_1 = labels_1 / torch.maximum(num_positives_1, torch.Tensor(1.0, device=num_positives_0.device))
+        labels_0 = labels_0 / torch.maximum(num_positives_0, torch.tensor(1.0, device=num_positives_0.device))
+        labels_1 = labels_1 / torch.maximum(num_positives_1, torch.tensor(1.0, device=num_positives_0.device))
 
         obj_area_0 = torch.sum(make_same_obj(pind1, pind1), dim=(2, 3))
         obj_area_1 = torch.sum(make_same_obj(pind2, pind2), dim=(2, 3))

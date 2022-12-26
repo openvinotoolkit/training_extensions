@@ -113,7 +113,7 @@ class MaskPooling(nn.Module):
         binary_masks = self.pool_masks(masks)
         sampled_masks, sampled_mask_ids = self.sample_masks(binary_masks)
         areas = sampled_masks.sum(dim=-1, keepdim=True)
-        sampled_masks = sampled_masks / torch.maximum(areas, torch.Tensor(1.0, device=areas.device))
+        sampled_masks = sampled_masks / torch.maximum(areas, torch.tensor(1.0, device=areas.device))
 
         return sampled_masks, sampled_mask_ids
 
