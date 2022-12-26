@@ -97,12 +97,13 @@ class SegTrainer(SegStage):
         if self.distributed:
             self._modify_cfg_for_distributed(model, cfg)
 
+        validate = True if cfg.data.get('val', None) else False
         train_segmentor(
             model,
             datasets,
             cfg,
             distributed=self.distributed,
-            validate=True,
+            validate=validate,
             timestamp=timestamp,
             meta=meta
         )
