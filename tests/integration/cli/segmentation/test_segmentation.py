@@ -104,15 +104,6 @@ class TestToolsMPASegmentation:
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
-    @pytest.mark.skipif(MULTI_GPU_UNAVAILABLE, reason="The number of gpu is insufficient")
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    def test_otx_multi_gpu_train(self, template, tmp_dir_path):
-        args1 = args.copy()
-        args1["--gpus"] = "0,1"
-        otx_train_testing(template, tmp_dir_path, otx_dir, args1)
-
-    @e2e_pytest_component
-    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_export(self, template, tmp_dir_path):
         otx_export_testing(template, tmp_dir_path)
@@ -222,3 +213,12 @@ class TestToolsMPASegmentation:
         if template.model_template_id.startswith("ClassIncremental_Semantic_Segmentation_Lite-HRNet-"):
             pytest.skip("CVS-82482")
         pot_eval_testing(template, tmp_dir_path, otx_dir, args)
+
+    @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.skipif(MULTI_GPU_UNAVAILABLE, reason="The number of gpu is insufficient")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_multi_gpu_train(self, template, tmp_dir_path):
+        args1 = args.copy()
+        args1["--gpus"] = "0,1"
+        otx_train_testing(template, tmp_dir_path, otx_dir, args1)
