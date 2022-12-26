@@ -1,0 +1,567 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Configs &#8212; OpenVINO Training Extensions  documentation</title>
+    
+  <link href="../../../_static/css/theme.css" rel="stylesheet" />
+  <link href="../../../_static/css/index.c5995385ac14fb8791e8eb36b4908be2.css" rel="stylesheet" />
+
+    
+  <link rel="stylesheet"
+    href="../../../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    
+      
+
+    
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/basic.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/tabs.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/panels-bootstrap.5fd3999ee7762ccc51105388f4a9d115.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/_static/css/custom.css" />
+    
+  <link rel="preload" as="script" href="../../../_static/js/index.1c5a1a01449ed65a7b51.js">
+
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/clipboard.min.js"></script>
+    <script src="../../../_static/copybutton.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Tasks" href="tasks.html" />
+    <link rel="prev" title="Exportable Code" href="adapters/exportable_code.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="en" />
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+    <nav class="navbar navbar-light navbar-expand-lg bg-light fixed-top bd-navbar" id="navbar-main"><div class="container-xl">
+
+  <div id="navbar-start">
+    
+    
+
+<a class="navbar-brand" href="../../../index.html">
+  <img src="../../../_static/otx-logo-black-mini.png" class="logo" alt="logo">
+</a>
+
+
+    
+  </div>
+
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar-collapsible" aria-controls="navbar-collapsible" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  
+  <div id="navbar-collapsible" class="col-lg-9 collapse navbar-collapse">
+    <div id="navbar-center" class="mr-auto">
+      
+    </div>
+
+    <div id="navbar-end">
+      
+      <div class="navbar-end-item">
+        <ul id="navbar-icon-links" class="navbar-nav" aria-label="Icon Links">
+      </ul>
+      </div>
+      
+    </div>
+  </div>
+</div>
+    </nav>
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+            
+            <!-- Only show if we have sidebars configured, else just a small margin  -->
+            <div class="col-12 col-md-3 bd-sidebar"><form class="bd-search d-flex align-items-center" action="../../../search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" >
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
+  <div class="bd-toc-item active">
+    <ul class="current nav bd-sidenav">
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../../api/index.html">
+   API
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
+  <label for="toctree-checkbox-1">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../api/configuration/index.html">
+     Configuration
+    </a>
+   </li>
+   <li class="toctree-l2 has-children">
+    <a class="reference internal" href="../../api/entities/index.html">
+     Entities
+    </a>
+    <input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/>
+    <label for="toctree-checkbox-2">
+     <i class="fas fa-chevron-down">
+     </i>
+    </label>
+    <ul>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../../api/entities/general.html">
+       General
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../../api/entities/shapes.html">
+       Shapes
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../../api/entities/interfaces.html">
+       Interfaces
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toctree-l2 has-children">
+    <a class="reference internal" href="../../api/usecases/index.html">
+     Usecases
+    </a>
+    <input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
+    <label for="toctree-checkbox-3">
+     <i class="fas fa-chevron-down">
+     </i>
+    </label>
+    <ul>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../../api/usecases/adapters.html">
+       Adapters
+      </a>
+     </li>
+     <li class="toctree-l3 has-children">
+      <a class="reference internal" href="../../api/usecases/evaluation.html">
+       Evaluation
+      </a>
+      <input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/>
+      <label for="toctree-checkbox-4">
+       <i class="fas fa-chevron-down">
+       </i>
+      </label>
+      <ul class="simple">
+      </ul>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../../api/usecases/exportable_code.html">
+       Exportable Code
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../../api/usecases/reporting.html">
+       Reporting
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../../api/usecases/tasks.html">
+       Task interfaces
+      </a>
+     </li>
+    </ul>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../cli/index.html">
+   CLI
+  </a>
+ </li>
+ <li class="toctree-l1 current active has-children">
+  <a class="reference internal" href="../index.html">
+   Algorithm
+  </a>
+  <input checked="" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
+  <label for="toctree-checkbox-5">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul class="current">
+   <li class="toctree-l2 current active has-children">
+    <a class="reference internal" href="index.html">
+     Anomaly
+    </a>
+    <input checked="" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/>
+    <label for="toctree-checkbox-6">
+     <i class="fas fa-chevron-down">
+     </i>
+    </label>
+    <ul class="current">
+     <li class="toctree-l3 has-children">
+      <a class="reference internal" href="adapters/index.html">
+       Adapters
+      </a>
+      <input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" type="checkbox"/>
+      <label for="toctree-checkbox-7">
+       <i class="fas fa-chevron-down">
+       </i>
+      </label>
+      <ul>
+       <li class="toctree-l4">
+        <a class="reference internal" href="adapters/config.html">
+         Config
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="adapters/data.html">
+         Data
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="adapters/callbacks.html">
+         Callbacks
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="adapters/logger.html">
+         Logger
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="adapters/exportable_code.html">
+         Exportable Code
+        </a>
+       </li>
+      </ul>
+     </li>
+     <li class="toctree-l3 current active has-children">
+      <a class="current reference internal" href="#">
+       Configs
+      </a>
+      <input checked="" class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" type="checkbox"/>
+      <label for="toctree-checkbox-8">
+       <i class="fas fa-chevron-down">
+       </i>
+      </label>
+      <ul class="simple">
+      </ul>
+     </li>
+     <li class="toctree-l3 has-children">
+      <a class="reference internal" href="tasks.html">
+       Tasks
+      </a>
+      <input class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" type="checkbox"/>
+      <label for="toctree-checkbox-9">
+       <i class="fas fa-chevron-down">
+       </i>
+      </label>
+      <ul class="simple">
+      </ul>
+     </li>
+     <li class="toctree-l3 has-children">
+      <a class="reference internal" href="tools.html">
+       Tools
+      </a>
+      <input class="toctree-checkbox" id="toctree-checkbox-10" name="toctree-checkbox-10" type="checkbox"/>
+      <label for="toctree-checkbox-10">
+       <i class="fas fa-chevron-down">
+       </i>
+      </label>
+      <ul class="simple">
+      </ul>
+     </li>
+    </ul>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../classification/index.html">
+     Classification
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../detection/index.html">
+     Detection
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../segmentation/index.html">
+     Segmentation
+    </a>
+   </li>
+  </ul>
+ </li>
+</ul>
+
+  </div>
+</nav>
+            </div>
+            
+          
+
+          
+          <div class="d-none d-xl-block col-xl-2 bd-toc">
+            
+              
+              <div class="toc-item">
+                
+
+<nav id="bd-toc-nav">
+    
+</nav>
+              </div>
+              
+              <div class="toc-item">
+                
+              </div>
+              
+            
+          </div>
+          
+
+          
+          
+            
+          
+          <main class="col-12 col-md-9 col-xl-7 py-md-5 pl-md-5 pr-md-4 bd-content" role="main">
+              
+              <div>
+                
+  <div class="section" id="configs">
+<h1>Configs<a class="headerlink" href="#configs" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+</div>
+<span class="target" id="module-otx.algorithms.anomaly.configs"></span><p>Model configurations.</p>
+<span class="target" id="module-otx.algorithms.anomaly.configs.base"></span><p>Base configurable parameter for anomaly tasks.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.algorithms.anomaly.configs.base.DraemAnomalyBaseConfig">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.anomaly.configs.base.</span></span><span class="sig-name descname"><span class="pre">DraemAnomalyBaseConfig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">visible_in_ui</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">otx.algorithms.anomaly.configs.base.configuration.BaseAnomalyConfig.DatasetParameters</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">NOTHING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pot_parameters</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">otx.algorithms.anomaly.configs.base.configuration.BaseAnomalyConfig.POTParameters</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">NOTHING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nncf_optimization</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">otx.algorithms.anomaly.configs.base.configuration.BaseAnomalyConfig.NNCFOptimization</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">NOTHING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">learning_parameters</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#otx.algorithms.anomaly.configs.base.DraemAnomalyBaseConfig.LearningParameters" title="otx.algorithms.anomaly.configs.base.draem.configuration.DraemAnomalyBaseConfig.LearningParameters"><span class="pre">otx.algorithms.anomaly.configs.base.draem.configuration.DraemAnomalyBaseConfig.LearningParameters</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">NOTHING</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.id.ID" title="otx.api.entities.id.ID"><span class="pre">otx.api.entities.id.ID</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">ID()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">header</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'Configuration</span> <span class="pre">for</span> <span class="pre">Draem'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'Configuration</span> <span class="pre">for</span> <span class="pre">Draem'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.anomaly.configs.base.DraemAnomalyBaseConfig" title="Permalink to this definition">¶</a></dt>
+<dd><p>Configurable parameters for DRAEM anomaly classification task.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.algorithms.anomaly.configs.base.DraemAnomalyBaseConfig.LearningParameters">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">LearningParameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">visible_in_ui</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_batch_size</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lr</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0.0001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">early_stopping</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#otx.algorithms.anomaly.configs.base.DraemAnomalyBaseConfig.LearningParameters.EarlyStoppingParameters" title="otx.algorithms.anomaly.configs.base.draem.configuration.DraemAnomalyBaseConfig.LearningParameters.EarlyStoppingParameters"><span class="pre">otx.algorithms.anomaly.configs.base.draem.configuration.DraemAnomalyBaseConfig.LearningParameters.EarlyStoppingParameters</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">NOTHING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_epochs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">700</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">header</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'Learning</span> <span class="pre">Parameters'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'Learning</span> <span class="pre">Parameters'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.anomaly.configs.base.DraemAnomalyBaseConfig.LearningParameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parameters that can be tuned using HPO.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.algorithms.anomaly.configs.base.DraemAnomalyBaseConfig.LearningParameters.EarlyStoppingParameters">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">EarlyStoppingParameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">visible_in_ui</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metric</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">otx.api.configuration.elements.utils.ConfigurableEnumTypeVar</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">EarlyStoppingMetrics.IMAGE_ROC_AUC</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">patience</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">header</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'Early</span> <span class="pre">Stopping</span> <span class="pre">Parameters'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'Early</span> <span class="pre">Stopping</span> <span class="pre">Parameters'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.anomaly.configs.base.DraemAnomalyBaseConfig.LearningParameters.EarlyStoppingParameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Early stopping parameters.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.algorithms.anomaly.configs.base.DraemAnomalyBaseConfig.LearningParameters.EarlyStoppingParameters.description">
+<span class="sig-name descname"><span class="pre">description</span></span><em class="property"><span class="pre">:</span> <span class="pre">str</span></em><a class="headerlink" href="#otx.algorithms.anomaly.configs.base.DraemAnomalyBaseConfig.LearningParameters.EarlyStoppingParameters.description" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.algorithms.anomaly.configs.base.DraemAnomalyBaseConfig.LearningParameters.EarlyStoppingParameters.header">
+<span class="sig-name descname"><span class="pre">header</span></span><em class="property"><span class="pre">:</span> <span class="pre">str</span></em><a class="headerlink" href="#otx.algorithms.anomaly.configs.base.DraemAnomalyBaseConfig.LearningParameters.EarlyStoppingParameters.header" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.algorithms.anomaly.configs.base.DraemAnomalyBaseConfig.LearningParameters.EarlyStoppingParameters.type">
+<span class="sig-name descname"><span class="pre">type</span></span><em class="property"><span class="pre">:</span> <span class="pre">otx.api.configuration.enums.config_element_type.ConfigElementType</span></em><a class="headerlink" href="#otx.algorithms.anomaly.configs.base.DraemAnomalyBaseConfig.LearningParameters.EarlyStoppingParameters.type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.algorithms.anomaly.configs.base.DraemAnomalyBaseConfig.LearningParameters.EarlyStoppingParameters.visible_in_ui">
+<span class="sig-name descname"><span class="pre">visible_in_ui</span></span><em class="property"><span class="pre">:</span> <span class="pre">bool</span></em><a class="headerlink" href="#otx.algorithms.anomaly.configs.base.DraemAnomalyBaseConfig.LearningParameters.EarlyStoppingParameters.visible_in_ui" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.algorithms.anomaly.configs.base.DraemAnomalyBaseConfig.LearningParameters.description">
+<span class="sig-name descname"><span class="pre">description</span></span><em class="property"><span class="pre">:</span> <span class="pre">str</span></em><a class="headerlink" href="#otx.algorithms.anomaly.configs.base.DraemAnomalyBaseConfig.LearningParameters.description" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.algorithms.anomaly.configs.base.DraemAnomalyBaseConfig.LearningParameters.header">
+<span class="sig-name descname"><span class="pre">header</span></span><em class="property"><span class="pre">:</span> <span class="pre">str</span></em><a class="headerlink" href="#otx.algorithms.anomaly.configs.base.DraemAnomalyBaseConfig.LearningParameters.header" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.algorithms.anomaly.configs.base.DraemAnomalyBaseConfig.LearningParameters.type">
+<span class="sig-name descname"><span class="pre">type</span></span><em class="property"><span class="pre">:</span> <span class="pre">otx.api.configuration.enums.config_element_type.ConfigElementType</span></em><a class="headerlink" href="#otx.algorithms.anomaly.configs.base.DraemAnomalyBaseConfig.LearningParameters.type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.algorithms.anomaly.configs.base.DraemAnomalyBaseConfig.LearningParameters.visible_in_ui">
+<span class="sig-name descname"><span class="pre">visible_in_ui</span></span><em class="property"><span class="pre">:</span> <span class="pre">bool</span></em><a class="headerlink" href="#otx.algorithms.anomaly.configs.base.DraemAnomalyBaseConfig.LearningParameters.visible_in_ui" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.algorithms.anomaly.configs.base.DraemAnomalyBaseConfig.id">
+<span class="sig-name descname"><span class="pre">id</span></span><em class="property"><span class="pre">:</span> <a class="reference internal" href="../../api/entities/general.html#otx.api.entities.id.ID" title="otx.api.entities.id.ID"><span class="pre">otx.api.entities.id.ID</span></a></em><a class="headerlink" href="#otx.algorithms.anomaly.configs.base.DraemAnomalyBaseConfig.id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.algorithms.anomaly.configs.base.DraemAnomalyBaseConfig.type">
+<span class="sig-name descname"><span class="pre">type</span></span><em class="property"><span class="pre">:</span> <span class="pre">otx.api.configuration.enums.config_element_type.ConfigElementType</span></em><a class="headerlink" href="#otx.algorithms.anomaly.configs.base.DraemAnomalyBaseConfig.type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.algorithms.anomaly.configs.base.PadimAnomalyBaseConfig">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.anomaly.configs.base.</span></span><span class="sig-name descname"><span class="pre">PadimAnomalyBaseConfig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">visible_in_ui</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">otx.algorithms.anomaly.configs.base.configuration.BaseAnomalyConfig.DatasetParameters</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">NOTHING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pot_parameters</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">otx.algorithms.anomaly.configs.base.configuration.BaseAnomalyConfig.POTParameters</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">NOTHING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nncf_optimization</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">otx.algorithms.anomaly.configs.base.configuration.BaseAnomalyConfig.NNCFOptimization</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">NOTHING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">learning_parameters</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#otx.algorithms.anomaly.configs.base.PadimAnomalyBaseConfig.LearningParameters" title="otx.algorithms.anomaly.configs.base.padim.configuration.PadimAnomalyBaseConfig.LearningParameters"><span class="pre">otx.algorithms.anomaly.configs.base.padim.configuration.PadimAnomalyBaseConfig.LearningParameters</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">NOTHING</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.id.ID" title="otx.api.entities.id.ID"><span class="pre">otx.api.entities.id.ID</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">ID()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">header</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'Configuration</span> <span class="pre">for</span> <span class="pre">Padim'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'Configuration</span> <span class="pre">for</span> <span class="pre">Padim'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.anomaly.configs.base.PadimAnomalyBaseConfig" title="Permalink to this definition">¶</a></dt>
+<dd><p>Configurable parameters for PADIM anomaly classification task.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.algorithms.anomaly.configs.base.PadimAnomalyBaseConfig.LearningParameters">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">LearningParameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">visible_in_ui</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_batch_size</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">backbone</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">otx.api.configuration.elements.utils.ConfigurableEnumTypeVar</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">ModelBackbone.RESNET18</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">header</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'Learning</span> <span class="pre">Parameters'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'Learning</span> <span class="pre">Parameters'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.anomaly.configs.base.PadimAnomalyBaseConfig.LearningParameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parameters that can be tuned using HPO.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.algorithms.anomaly.configs.base.PadimAnomalyBaseConfig.LearningParameters.description">
+<span class="sig-name descname"><span class="pre">description</span></span><em class="property"><span class="pre">:</span> <span class="pre">str</span></em><a class="headerlink" href="#otx.algorithms.anomaly.configs.base.PadimAnomalyBaseConfig.LearningParameters.description" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.algorithms.anomaly.configs.base.PadimAnomalyBaseConfig.LearningParameters.header">
+<span class="sig-name descname"><span class="pre">header</span></span><em class="property"><span class="pre">:</span> <span class="pre">str</span></em><a class="headerlink" href="#otx.algorithms.anomaly.configs.base.PadimAnomalyBaseConfig.LearningParameters.header" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.algorithms.anomaly.configs.base.PadimAnomalyBaseConfig.LearningParameters.type">
+<span class="sig-name descname"><span class="pre">type</span></span><em class="property"><span class="pre">:</span> <span class="pre">otx.api.configuration.enums.config_element_type.ConfigElementType</span></em><a class="headerlink" href="#otx.algorithms.anomaly.configs.base.PadimAnomalyBaseConfig.LearningParameters.type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.algorithms.anomaly.configs.base.PadimAnomalyBaseConfig.LearningParameters.visible_in_ui">
+<span class="sig-name descname"><span class="pre">visible_in_ui</span></span><em class="property"><span class="pre">:</span> <span class="pre">bool</span></em><a class="headerlink" href="#otx.algorithms.anomaly.configs.base.PadimAnomalyBaseConfig.LearningParameters.visible_in_ui" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.algorithms.anomaly.configs.base.PadimAnomalyBaseConfig.id">
+<span class="sig-name descname"><span class="pre">id</span></span><em class="property"><span class="pre">:</span> <a class="reference internal" href="../../api/entities/general.html#otx.api.entities.id.ID" title="otx.api.entities.id.ID"><span class="pre">otx.api.entities.id.ID</span></a></em><a class="headerlink" href="#otx.algorithms.anomaly.configs.base.PadimAnomalyBaseConfig.id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.algorithms.anomaly.configs.base.PadimAnomalyBaseConfig.type">
+<span class="sig-name descname"><span class="pre">type</span></span><em class="property"><span class="pre">:</span> <span class="pre">otx.api.configuration.enums.config_element_type.ConfigElementType</span></em><a class="headerlink" href="#otx.algorithms.anomaly.configs.base.PadimAnomalyBaseConfig.type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.algorithms.anomaly.configs.base.STFPMAnomalyBaseConfig">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.anomaly.configs.base.</span></span><span class="sig-name descname"><span class="pre">STFPMAnomalyBaseConfig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">visible_in_ui</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">otx.algorithms.anomaly.configs.base.configuration.BaseAnomalyConfig.DatasetParameters</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">NOTHING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pot_parameters</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">otx.algorithms.anomaly.configs.base.configuration.BaseAnomalyConfig.POTParameters</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">NOTHING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nncf_optimization</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">otx.algorithms.anomaly.configs.base.configuration.BaseAnomalyConfig.NNCFOptimization</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">NOTHING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">learning_parameters</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#otx.algorithms.anomaly.configs.base.STFPMAnomalyBaseConfig.LearningParameters" title="otx.algorithms.anomaly.configs.base.stfpm.configuration.STFPMAnomalyBaseConfig.LearningParameters"><span class="pre">otx.algorithms.anomaly.configs.base.stfpm.configuration.STFPMAnomalyBaseConfig.LearningParameters</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">NOTHING</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><a class="reference internal" href="../../api/entities/general.html#otx.api.entities.id.ID" title="otx.api.entities.id.ID"><span class="pre">otx.api.entities.id.ID</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">ID()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">header</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'Configuration</span> <span class="pre">for</span> <span class="pre">STFPM'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'Configuration</span> <span class="pre">for</span> <span class="pre">STFPM'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.anomaly.configs.base.STFPMAnomalyBaseConfig" title="Permalink to this definition">¶</a></dt>
+<dd><p>Configurable parameters for STFPM anomaly base task.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.algorithms.anomaly.configs.base.STFPMAnomalyBaseConfig.LearningParameters">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">LearningParameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">visible_in_ui</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_batch_size</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lr</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0.4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">momentum</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0.9</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight_decay</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">float</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">0.0001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">backbone</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">otx.api.configuration.elements.utils.ConfigurableEnumTypeVar</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">ModelBackbone.RESNET18</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">early_stopping</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#otx.algorithms.anomaly.configs.base.STFPMAnomalyBaseConfig.LearningParameters.EarlyStoppingParameters" title="otx.algorithms.anomaly.configs.base.stfpm.configuration.STFPMAnomalyBaseConfig.LearningParameters.EarlyStoppingParameters"><span class="pre">otx.algorithms.anomaly.configs.base.stfpm.configuration.STFPMAnomalyBaseConfig.LearningParameters.EarlyStoppingParameters</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">NOTHING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_epochs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">header</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'Learning</span> <span class="pre">Parameters'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'Learning</span> <span class="pre">Parameters'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.anomaly.configs.base.STFPMAnomalyBaseConfig.LearningParameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parameters that can be tuned using HPO.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="otx.algorithms.anomaly.configs.base.STFPMAnomalyBaseConfig.LearningParameters.EarlyStoppingParameters">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">EarlyStoppingParameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">visible_in_ui</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metric</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">otx.api.configuration.elements.utils.ConfigurableEnumTypeVar</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">EarlyStoppingMetrics.IMAGE_F1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">patience</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">header</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'Early</span> <span class="pre">Stopping</span> <span class="pre">Parameters'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'Early</span> <span class="pre">Stopping</span> <span class="pre">Parameters'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.anomaly.configs.base.STFPMAnomalyBaseConfig.LearningParameters.EarlyStoppingParameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Early stopping parameters.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.algorithms.anomaly.configs.base.STFPMAnomalyBaseConfig.LearningParameters.EarlyStoppingParameters.description">
+<span class="sig-name descname"><span class="pre">description</span></span><em class="property"><span class="pre">:</span> <span class="pre">str</span></em><a class="headerlink" href="#otx.algorithms.anomaly.configs.base.STFPMAnomalyBaseConfig.LearningParameters.EarlyStoppingParameters.description" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.algorithms.anomaly.configs.base.STFPMAnomalyBaseConfig.LearningParameters.EarlyStoppingParameters.header">
+<span class="sig-name descname"><span class="pre">header</span></span><em class="property"><span class="pre">:</span> <span class="pre">str</span></em><a class="headerlink" href="#otx.algorithms.anomaly.configs.base.STFPMAnomalyBaseConfig.LearningParameters.EarlyStoppingParameters.header" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.algorithms.anomaly.configs.base.STFPMAnomalyBaseConfig.LearningParameters.EarlyStoppingParameters.type">
+<span class="sig-name descname"><span class="pre">type</span></span><em class="property"><span class="pre">:</span> <span class="pre">otx.api.configuration.enums.config_element_type.ConfigElementType</span></em><a class="headerlink" href="#otx.algorithms.anomaly.configs.base.STFPMAnomalyBaseConfig.LearningParameters.EarlyStoppingParameters.type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.algorithms.anomaly.configs.base.STFPMAnomalyBaseConfig.LearningParameters.EarlyStoppingParameters.visible_in_ui">
+<span class="sig-name descname"><span class="pre">visible_in_ui</span></span><em class="property"><span class="pre">:</span> <span class="pre">bool</span></em><a class="headerlink" href="#otx.algorithms.anomaly.configs.base.STFPMAnomalyBaseConfig.LearningParameters.EarlyStoppingParameters.visible_in_ui" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.algorithms.anomaly.configs.base.STFPMAnomalyBaseConfig.LearningParameters.description">
+<span class="sig-name descname"><span class="pre">description</span></span><em class="property"><span class="pre">:</span> <span class="pre">str</span></em><a class="headerlink" href="#otx.algorithms.anomaly.configs.base.STFPMAnomalyBaseConfig.LearningParameters.description" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.algorithms.anomaly.configs.base.STFPMAnomalyBaseConfig.LearningParameters.header">
+<span class="sig-name descname"><span class="pre">header</span></span><em class="property"><span class="pre">:</span> <span class="pre">str</span></em><a class="headerlink" href="#otx.algorithms.anomaly.configs.base.STFPMAnomalyBaseConfig.LearningParameters.header" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.algorithms.anomaly.configs.base.STFPMAnomalyBaseConfig.LearningParameters.type">
+<span class="sig-name descname"><span class="pre">type</span></span><em class="property"><span class="pre">:</span> <span class="pre">otx.api.configuration.enums.config_element_type.ConfigElementType</span></em><a class="headerlink" href="#otx.algorithms.anomaly.configs.base.STFPMAnomalyBaseConfig.LearningParameters.type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.algorithms.anomaly.configs.base.STFPMAnomalyBaseConfig.LearningParameters.visible_in_ui">
+<span class="sig-name descname"><span class="pre">visible_in_ui</span></span><em class="property"><span class="pre">:</span> <span class="pre">bool</span></em><a class="headerlink" href="#otx.algorithms.anomaly.configs.base.STFPMAnomalyBaseConfig.LearningParameters.visible_in_ui" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.algorithms.anomaly.configs.base.STFPMAnomalyBaseConfig.id">
+<span class="sig-name descname"><span class="pre">id</span></span><em class="property"><span class="pre">:</span> <a class="reference internal" href="../../api/entities/general.html#otx.api.entities.id.ID" title="otx.api.entities.id.ID"><span class="pre">otx.api.entities.id.ID</span></a></em><a class="headerlink" href="#otx.algorithms.anomaly.configs.base.STFPMAnomalyBaseConfig.id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="otx.algorithms.anomaly.configs.base.STFPMAnomalyBaseConfig.type">
+<span class="sig-name descname"><span class="pre">type</span></span><em class="property"><span class="pre">:</span> <span class="pre">otx.api.configuration.enums.config_element_type.ConfigElementType</span></em><a class="headerlink" href="#otx.algorithms.anomaly.configs.base.STFPMAnomalyBaseConfig.type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+              </div>
+              
+              
+              <div class='prev-next-bottom'>
+                
+    <a class='left-prev' id="prev-link" href="adapters/exportable_code.html" title="previous page">Exportable Code</a>
+    <a class='right-next' id="next-link" href="tasks.html" title="next page">Tasks</a>
+
+              </div>
+              
+          </main>
+          
+
+      </div>
+    </div>
+  
+  <script src="../../../_static/js/index.1c5a1a01449ed65a7b51.js"></script>
+
+  <footer class="footer mt-5 mt-md-0">
+  <div class="container">
+    
+    <div class="footer-item">
+      <p class="copyright">
+    &copy; Copyright 2022, OpenVINO Training Extensions Contributors.<br/>
+</p>
+    </div>
+    
+    <div class="footer-item">
+      <p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 4.2.0.<br/>
+</p>
+    </div>
+    
+  </div>
+</footer>
+  </body>
+</html>

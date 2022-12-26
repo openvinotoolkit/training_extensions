@@ -1,14 +1,14 @@
 OpenVINO Training Extensions -- OTX
-===============================================
+===================================
 
 .. toctree::
    :maxdepth: 1
-   :caption: Contents:
 
+   get_started/index
    tutorials/index
-   how_to_guides/index
+   features/index
    reference/index
-   explanation/index
+   release_notes/index
 
 
 Indices and tables
