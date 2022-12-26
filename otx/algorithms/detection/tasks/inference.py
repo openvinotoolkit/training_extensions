@@ -17,18 +17,27 @@
 import os
 from collections.abc import Mapping
 from typing import Iterable, Optional, Tuple
+from functools import partial
 
 import cv2
 import numpy as np
 from mmcv.utils import ConfigDict
 
-from otx.algorithms.common.adapters.mmcv.utils import patch_data_pipeline
+from otx.algorithms.common.adapters.mmcv.utils import (
+    patch_default_config,
+    patch_runner,
+    patch_data_pipeline,
+)
 from otx.algorithms.common.configs.training_base import TrainType
 from otx.algorithms.common.tasks.training_base import BaseTask
 from otx.algorithms.common.utils.callback import InferenceProgressCallback
 from otx.algorithms.detection.adapters.mmdet.utils import (
     patch_datasets,
     patch_evaluation,
+)
+from otx.algorithms.detection.adapters.mmdet.utils.config_utils import (
+    cluster_anchors,
+    should_cluster_anchors,
 )
 from otx.algorithms.detection.configs.base import DetectionConfig
 from otx.api.configuration.helper.utils import config_to_bytes
@@ -150,13 +159,12 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         Returns:
             Tuple[Iterable, float]: Iterable prediction results for each sample and metric for on the given dataset
         """
-        self._initialize()
         stage_module = "DetectionInferrer"
         self._data_cfg = self._init_test_data_cfg(dataset)
         # Temporary disable dump (will be handled by 'otx explain')
         dump_features = False
         dump_saliency_map = False # not inference_parameters.is_evaluation if inference_parameters else True
-        model = getattr(self, "_model", None)
+
         results = self._run_task(
             stage_module,
             mode="train",
@@ -164,7 +172,6 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
             eval=inference_parameters.is_evaluation if inference_parameters else False,
             dump_features=dump_features,
             dump_saliency_map=dump_saliency_map,
-            model=model
         )
         # TODO: InferenceProgressCallback register
         logger.debug(f"result of run_task {stage_module} module = {results}")
@@ -297,6 +304,8 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         self._recipe_cfg = MPAConfig.fromfile(recipe)
         self.train_type = train_type
         patch_data_pipeline(self._recipe_cfg, self.data_pipeline_path)
+        patch_default_config(self._recipe_cfg)
+        patch_runner(self._recipe_cfg)
         patch_datasets(self._recipe_cfg, self._task_type.domain)  # for OTX compatibility
         patch_evaluation(self._recipe_cfg)  # for OTX compatibility
         logger.info(f"initialized recipe = {recipe}")
@@ -427,3 +436,18 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         logger.info("Updating anchors")
         origin["heights"] = new["heights"]
         origin["widths"] = new["widths"]
+
+    def _initialize_post_hook(self, options=dict()):
+        super()._initialize_post_hook(options)
+
+        # if self._anchors are set somewhere, anchors had already been clusted
+        # by this method or by loading trained model
+        if should_cluster_anchors(self._model_cfg) and len(self._anchors) == 0:
+            cluster_anchors(
+                self._model_cfg,
+                self._recipe_cfg,
+                self._data_cfg.data.train.otx_dataset,
+            )
+            self._update_anchors(
+                self._anchors, self._model_cfg.model.bbox_head.anchor_generator
+            )

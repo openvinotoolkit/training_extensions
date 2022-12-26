@@ -17,6 +17,14 @@ from otx.algorithms.classification.utils import (
 from otx.algorithms.common.adapters.mmcv.utils import get_meta_keys, patch_data_pipeline
 from otx.algorithms.common.configs import TrainType
 from otx.algorithms.common.tasks import BaseTask
+from otx.algorithms.common.adapters.mmcv.utils import (
+    patch_default_config,
+    patch_runner,
+)
+from otx.algorithms.classification.adapters.mmcls.utils.config_utils import (
+    patch_datasets,
+    patch_evaluation,
+)
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.inference_parameters import (
     InferenceParameters,
@@ -101,8 +109,12 @@ class ClassificationInferenceTask(
         self._data_cfg = self._init_test_data_cfg(dataset)
         dataset = dataset.with_empty_annotations()
 
-        dump_features = True
-        dump_saliency_map = not inference_parameters.is_evaluation if inference_parameters else True
+        # Temporary disable dump (will be handled by 'otx explain')
+        #  dump_features = True
+        #  dump_saliency_map = not inference_parameters.is_evaluation if inference_parameters else True
+        dump_features = False
+        dump_saliency_map = False
+
         results = self._run_task(
             stage_module,
             mode="eval",
@@ -364,9 +376,25 @@ class ClassificationInferenceTask(
         # FIXME[Soobee] : if train type is not in cfg, it raises an error in default INCREMENTAL mode.
         # During semi-implementation, this line should be fixed to -> self._recipe_cfg.train_type = train_type
         self._recipe_cfg.train_type = train_type.name
-        patch_data_pipeline(self._recipe_cfg, pipeline_path)
-        self._patch_datasets(self._recipe_cfg)  # for OTX compatibility
-        self._patch_evaluation(self._recipe_cfg)  # for OTX compatibility
+
+        options_for_patch_datasets = {
+            "type": "MPAClsDataset",
+            "empty_label": self._empty_label
+        }
+        options_for_patch_evaluation = {"task": "normal"}
+        if self._multilabel:
+            options_for_patch_datasets["type"] = "MPAMultilabelClsDataset"
+            options_for_patch_evaluation["task"] = "multilabel"
+        elif self._hierarchical:
+            options_for_patch_datasets["type"] = "MPAHierarchicalClsDataset"
+            options_for_patch_datasets["hierarchical_info"] = self._hierarchical_info
+            options_for_patch_evaluation["task"] = "hierarchical"
+        elif self._selfsl:
+            options_for_patch_datasets["type"] = "SelfSLDataset"
+        patch_default_config(self._recipe_cfg)
+        patch_runner(self._recipe_cfg)
+        patch_datasets(self._recipe_cfg, self._data_cfg, **options_for_patch_datasets)      # for OTX compatibility
+        patch_evaluation(self._recipe_cfg, **options_for_patch_evaluation)  # for OTX compatibility
         logger.info(f"initialized recipe = {recipe}")
 
     # TODO: make cfg_path loaded from custom model cfg file corresponding to train_type
@@ -401,76 +429,3 @@ class ClassificationInferenceTask(
             )
         )
         return data_cfg
-
-    def _patch_datasets(self, config: MPAConfig, domain=Domain.CLASSIFICATION):  # noqa: C901
-        def patch_color_conversion(pipeline):
-            # Default data format for OTX is RGB, while mmdet uses BGR, so negate the color conversion flag.
-            for pipeline_step in pipeline:
-                if pipeline_step.type == "Normalize":
-                    to_rgb = False
-                    if "to_rgb" in pipeline_step:
-                        to_rgb = pipeline_step.to_rgb
-                    to_rgb = not bool(to_rgb)
-                    pipeline_step.to_rgb = to_rgb
-                elif pipeline_step.type == "MultiScaleFlipAug":
-                    patch_color_conversion(pipeline_step.transforms)
-
-        assert "data" in config
-        for subset in ("train", "val", "test", "unlabeled"):
-            cfg = config.data.get(subset, None)
-            if not cfg:
-                continue
-            if cfg.type == "RepeatDataset":
-                cfg = cfg.dataset
-
-            else:
-                if self._multilabel:
-                    cfg.type = "MPAMultilabelClsDataset"
-                elif self._hierarchical:
-                    cfg.type = "MPAHierarchicalClsDataset"
-                    cfg.hierarchical_info = self._hierarchical_info
-                    if subset == "train":
-                        cfg.drop_last = True  # For stable hierarchical information indexing
-                elif self._selfsl:
-                    cfg.type = "SelfSLDataset"
-                else:
-                    cfg.type = "MPAClsDataset"
-
-            # In train dataset, when sample size is smaller than batch size
-            if subset == "train" and self._data_cfg:
-                train_data_cfg = Stage.get_data_cfg(self._data_cfg, "train")
-                if len(train_data_cfg.get("otx_dataset", [])) < self._recipe_cfg.data.get("samples_per_gpu", 2):
-                    cfg.drop_last = False
-
-            cfg.domain = domain
-            cfg.otx_dataset = None
-            cfg.labels = None
-            cfg.empty_label = self._empty_label
-            for pipeline_step in cfg.pipeline:
-                if self._selfsl:
-                    # TODO : refactoring
-                    # SelfSLDataset has pipelines={"view0": [...], "view1": [...]}.
-                    # To access `Normalize`, patch_color_conversion must be applied to both view0 and view1.
-                    for pipeline_view in cfg.pipeline[pipeline_step]:
-                        if subset == "train" and pipeline_view.type == "Collect":
-                            pipeline_view = get_meta_keys(pipeline_view)
-                    patch_color_conversion(cfg.pipeline[pipeline_step])
-                else:
-                    if subset == "train" and pipeline_step.type == "Collect":
-                        pipeline_step = get_meta_keys(pipeline_step)
-
-            if not self._selfsl:
-                patch_color_conversion(cfg.pipeline)
-
-    def _patch_evaluation(self, config: MPAConfig):
-        cfg = config.get("evaluation", None)
-        if cfg:
-            if self._multilabel:
-                cfg.metric = ["accuracy-mlc", "mAP", "CP", "OP", "CR", "OR", "CF1", "OF1"]
-                config.early_stop_metric = "mAP"
-            elif self._hierarchical:
-                cfg.metric = ["MHAcc", "avgClsAcc", "mAP"]
-                config.early_stop_metric = "MHAcc"
-            else:
-                cfg.metric = ["accuracy", "class_accuracy"]
-                config.early_stop_metric = "accuracy"

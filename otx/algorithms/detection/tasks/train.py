@@ -251,18 +251,3 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
         )
 
         return output
-
-    def _initialize_post_hook(self):
-        model_cfg = self._model_cfg
-        recipe_cfg = self._recipe_cfg
-        # if self._anchors are set somewhere, anchors had already been clusted
-        # by this method or by loading trained model
-        if should_cluster_anchors(model_cfg) and len(self._anchors) == 0:
-            cluster_anchors(
-                model_cfg,
-                recipe_cfg,
-                self._data_cfg.data.train.otx_dataset,
-            )
-            self._update_anchors(
-                self._anchors, self._model_cfg.model.bbox_head.anchor_generator
-            )

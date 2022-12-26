@@ -2,6 +2,9 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+import os
+
+import torch
 from mmcv.runner.dist_utils import master_only
 from mmcv.runner.hooks.hook import HOOKS, Hook
 
@@ -24,6 +27,17 @@ class CompressionHook(Hook):
         if runner.rank == 0:
             runner.logger.info(self.compression_ctrl.statistics().to_str())
 
+    @master_only
+    def after_run(self, runner):
+        compression_state = self.compression_ctrl.get_compression_state()
+        for algo_state in compression_state.get("ctrl_state", {}).values():
+            if not algo_state.get("scheduler_state"):
+                algo_state["scheduler_state"] = {"current_step": 0, "current_epoch": 0}
+        torch.save(
+            compression_state,
+            os.path.join(runner.work_dir, "compression_state.pth")
+        )
+
 
 @HOOKS.register_module()
 class CheckpointHookBeforeTraining(Hook):
@@ -37,8 +51,7 @@ class CheckpointHookBeforeTraining(Hook):
             specified, ``runner.work_dir`` will be used by default.
     """
 
-    def __init__(self, save_optimizer=True, out_dir=None, **kwargs):
-        self.save_optimizer = save_optimizer
+    def __init__(self, out_dir=None, **kwargs):
         self.out_dir = out_dir
         self.args = kwargs
 
@@ -50,6 +63,5 @@ class CheckpointHookBeforeTraining(Hook):
         runner.save_checkpoint(
             self.out_dir,
             filename_tmpl="before_training.pth",
-            save_optimizer=self.save_optimizer,
             **self.args,
         )

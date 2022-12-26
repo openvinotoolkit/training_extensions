@@ -2,13 +2,47 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+import os
+import pathlib
+from copy import deepcopy
+from typing import Any, Callable, Dict, Optional, Tuple
+
+import numpy as np
 import torch
-from mmcv.parallel import MMDataParallel, MMDistributedDataParallel
+import torch.nn as nn
+from torch.utils.data import DataLoader
+from mmcv import Config
+from mmcv.parallel import (
+    DataContainer,
+    MMDataParallel,
+    MMDistributedDataParallel,
+    collate,
+    scatter,
+)
+from mmcv.utils import get_logger
 
-from otx.algorithms.common.adapters.mmcv.data_cpu import MMDataCPU
+from otx.algorithms.common.adapters.mmcv.data_cpu import MMDataCPU, scatter_cpu
+from otx.algorithms.common.adapters.nncf.compression import (
+    COMPRESSION_STATE_NAME,
+    NNCF_STATE_NAME,
+    is_checkpoint_nncf,
+)
+from otx.algorithms.common.adapters.nncf.utils import (
+    check_nncf_is_enabled,
+    load_checkpoint,
+    no_nncf_trace,
+)
+from otx.algorithms.common.utils import get_arg_spec
 
 
-def prepare_model_for_execution(model, cfg, distributed=False):
+logger = get_logger(__name__)
+
+
+def prepare_model_for_execution(
+    model: nn.Module,
+    cfg: Config,
+    distributed: bool = False,
+):
     """
     Prepare model for execution.
     Return model import ast, MMDataParallel or MMDataCPU.
@@ -35,3 +69,274 @@ def prepare_model_for_execution(model, cfg, distributed=False):
     else:
         model = MMDataCPU(model)
     return model
+
+
+def get_fake_input(
+    preprocessor: Callable[..., Dict[str, Any]],
+    data: Optional[np.ndarray] = None,
+    shape: Tuple[int, ...] = (128, 128, 3),
+    device: str = "cpu",
+):
+    if data is None:
+        data = dict(img=np.zeros(shape, dtype=np.uint8))
+    else:
+        data = dict(img=data)
+    data = preprocessor(data)
+
+    for key, value in data.items():
+        if not isinstance(value, list):
+            data[key] = [value]
+
+    if device == torch.device("cpu"):
+        data = scatter_cpu(collate([data], samples_per_gpu=1))[0]
+    else:
+        data = scatter(collate([data], samples_per_gpu=1), [device.index])[0]
+    return data
+
+
+def build_dataloader(
+    config: Config,
+    subset: str,
+    distributed: bool,
+    dataloader_builder: Callable,
+    dataset_builder: Callable,
+):
+    loader_cfg = dict(
+        samples_per_gpu=config.data.get("samples_per_gpu", 1),
+        workers_per_gpu=config.data.get("workers_per_gpu", 0),
+        num_gpus=len(config.gpu_ids),
+        dist=distributed,
+        seed=config.get("seed", None),
+    )
+    if subset == "train":
+        default_args = dict(test_mode=False)
+    else:
+        default_args = dict(test_mode=True)
+        loader_cfg["shuffle"] = False
+        loader_cfg["samples_per_gpu"] = 1
+
+    dataset = dataset_builder(config.data.get(subset), default_args)
+
+    loader_cfg = {**loader_cfg, **config.data.get(f"{subset}_dataloader", {})}
+
+    dataloader = dataloader_builder(
+        dataset,
+        **loader_cfg,
+    )
+    return dataloader
+
+
+def model_eval(
+    model: nn.Module,
+    *,
+    config: Config,
+    val_dataloader: DataLoader,
+    evaluate_fn: Callable,
+    distributed: bool,
+):
+    """
+    Runs evaluation of the model on the validation set and
+    returns the target metric value.
+    Used to evaluate the original model before compression
+    if NNCF-based accuracy-aware training is used.
+    """
+    if val_dataloader is None:
+        raise RuntimeError(
+            "Cannot perform model evaluation on the validation "
+            "dataset since the validation data loader was not passed "
+            "to wrap_nncf_model"
+        )
+
+    nncf_config = config.get("nncf_config")
+    metric_name = nncf_config.get("target_metric_name")
+    prepared_model = prepare_model_for_execution(model, config, distributed)
+
+    logger.info("Calculating an original model accuracy")
+
+    evaluation_cfg = deepcopy(config.evaluation)
+    spec = get_arg_spec(val_dataloader.dataset.evaluate)
+    for key in list(evaluation_cfg.keys()):
+        if key not in spec:
+            evaluation_cfg.pop(key)
+    evaluation_cfg["metric"] = metric_name
+
+    if distributed:
+        dist_eval_res = [None]
+        results = evaluate_fn(prepared_model, val_dataloader, gpu_collect=True)
+        if torch.distributed.get_rank() == 0:
+            eval_res = val_dataloader.dataset.evaluate(results, **evaluation_cfg)
+            if metric_name not in eval_res:
+                raise RuntimeError(
+                    f"Cannot find {metric_name} metric in " "the evaluation result dict"
+                )
+            dist_eval_res[0] = eval_res
+
+        torch.distributed.broadcast_object_list(dist_eval_res, src=0)
+        return dist_eval_res[0][metric_name]
+    else:
+        results = evaluate_fn(prepared_model, val_dataloader, show=False)
+        eval_res = val_dataloader.dataset.evaluate(results, **evaluation_cfg)
+
+        if metric_name not in eval_res:
+            raise RuntimeError(
+                f"Cannot find {metric_name} metric in "
+                f"the evaluation result dict {eval_res.keys()}"
+            )
+
+        return eval_res[metric_name]
+
+
+def wrap_nncf_model(
+    config: Config,
+    model: nn.Module,
+    *,
+    model_eval_fn: Optional[Callable] = None,
+    dummy_forward_fn: Optional[Callable] = None,
+    get_fake_input_fn: Optional[Callable] = None,
+    wrap_inputs_fn: Optional[Callable] = None,
+    dataloader_for_init: Optional[DataLoader] = None,
+    init_state_dict: Optional[Dict[Any, Any]] = None,
+    is_accuracy_aware: bool = False,
+):
+    """
+    The function wraps mmcv model by NNCF
+    """
+
+    check_nncf_is_enabled()
+
+    from nncf import NNCFConfig
+    from nncf.torch import (
+        create_compressed_model,
+        load_state,
+        register_default_init_args,
+    )
+    from nncf.torch.dynamic_graph.io_handling import nncf_model_input
+    from nncf.torch.initialization import PTInitializingDataLoader
+
+    class MMInitializeDataLoader(PTInitializingDataLoader):
+        def get_inputs(self, dataloader_output):
+            # redefined PTInitializingDataLoader because
+            # of DataContainer format in mmdet
+            kwargs = {
+                k: v.data[0] if isinstance(v, DataContainer) else v
+                for k, v in dataloader_output.items()
+            }
+            return (), kwargs
+
+    pathlib.Path(config.work_dir).mkdir(parents=True, exist_ok=True)
+    nncf_config = NNCFConfig(config.nncf_config)
+    resuming_state_dict = None
+
+    if dataloader_for_init:
+        wrapped_loader = MMInitializeDataLoader(dataloader_for_init)
+        eval_fn = model_eval_fn if is_accuracy_aware else None
+        nncf_config = register_default_init_args(
+            nncf_config,
+            wrapped_loader,
+            model_eval_fn=eval_fn,
+            device=next(model.parameters()).device,
+        )
+
+    if config.get("resume_from"):
+        checkpoint_path = config.get("resume_from")
+        assert is_checkpoint_nncf(checkpoint_path), (
+            "It is possible to resume training with NNCF compression from NNCF checkpoints only. "
+            'Use "load_from" with non-compressed model for further compression by NNCF.'
+        )
+    elif config.get("load_from"):
+        checkpoint_path = config.get("load_from")
+        if not is_checkpoint_nncf(checkpoint_path):
+            checkpoint_path = None
+            logger.info(
+                "Received non-NNCF checkpoint to start training "
+                "-- initialization of NNCF fields will be done"
+            )
+    else:
+        checkpoint_path = None
+
+    if not dataloader_for_init and not checkpoint_path and not init_state_dict:
+        logger.warning(
+            "Either dataloader_for_init or NNCF pre-trained "
+            "model checkpoint should be set. Without this, "
+            "quantizers will not be initialized"
+        )
+
+    if checkpoint_path:
+        logger.info(f"Loading NNCF checkpoint from {checkpoint_path}")
+        logger.info(
+            "Please, note that this first loading is made before addition of "
+            "NNCF FakeQuantize nodes to the model, so there may be some "
+            "warnings on unexpected keys"
+        )
+        compression_state = load_checkpoint(model, checkpoint_path)
+        logger.info(f"Loaded NNCF checkpoint from {checkpoint_path}")
+    elif init_state_dict:
+        resuming_state_dict = init_state_dict.get(NNCF_STATE_NAME)
+        compression_state = init_state_dict.get(COMPRESSION_STATE_NAME)
+    else:
+        compression_state = None
+
+    if dummy_forward_fn is None:
+        assert get_fake_input_fn is not None
+
+        def _get_fake_data_for_forward(nncf_config):
+            device = next(model.parameters()).device
+
+            if (
+                nncf_config.get("input_info", None)
+                and nncf_config.get("input_info").get("sample_size", None)
+            ):
+                input_size = nncf_config.get("input_info").get("sample_size")
+                assert len(input_size) == 4 and input_size[0] == 1
+                H, W, C = input_size[2], input_size[3], input_size[1]
+                shape = tuple([H, W, C])
+            else:
+                shape = (128, 128, 3)
+
+            with no_nncf_trace():
+                return get_fake_input_fn(shape=shape, device=device)
+
+        def dummy_forward_fn(model):
+            fake_data = _get_fake_data_for_forward(nncf_config)
+            img, img_metas = fake_data["img"], fake_data["img_metas"]
+
+            ctx = model.nncf_trace_context(img_metas)
+            with ctx:
+                # The device where model is could be changed under this context
+                img = [i.to(next(model.parameters()).device) for i in img]
+                # Marking data as NNCF network input must be after device movement
+                img = [nncf_model_input(i) for i in img]
+                model(img)
+
+    if wrap_inputs_fn is None:
+
+        def wrap_inputs_fn(args, kwargs):
+            img = kwargs.get("img") if "img" in kwargs else args[0]
+            if isinstance(img, list):
+                assert len(img) == 1, "Input list must have a length 1"
+                assert torch.is_tensor(img[0]), "Input for a model must be a tensor"
+                img[0] = nncf_model_input(img[0])
+            else:
+                assert torch.is_tensor(img), "Input for a model must be a tensor"
+                img = nncf_model_input(img)
+            if "img" in kwargs:
+                kwargs["img"] = img
+            else:
+                args = (img, *args[1:])
+            return args, kwargs
+
+    if "log_dir" in nncf_config:
+        os.makedirs(nncf_config["log_dir"], exist_ok=True)
+
+    compression_ctrl, model = create_compressed_model(
+        model,
+        nncf_config,
+        dummy_forward_fn=dummy_forward_fn,
+        wrap_inputs_fn=wrap_inputs_fn,
+        compression_state=compression_state,
+    )
+
+    if resuming_state_dict:
+        load_state(model, resuming_state_dict, is_resume=True)
+
+    return compression_ctrl, model

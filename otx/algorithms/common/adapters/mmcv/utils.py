@@ -19,7 +19,7 @@ import glob
 import os
 import tempfile
 from collections.abc import Mapping
-from typing import Union, List, Any, Dict, Tuple
+from typing import Union, List, Literal, Any, Dict, Tuple, overload, TYPE_CHECKING
 
 from mmcv import Config, ConfigDict
 
@@ -28,6 +28,67 @@ from otx.api.utils.argument_checks import (
     DatasetParamTypeCheck,
     check_input_parameters_type,
 )
+
+from mpa.utils.logger import get_logger
+
+
+logger = get_logger()
+
+
+if TYPE_CHECKING:
+    @overload
+    def get_configs_by_dict(
+        config: Union[Config, ConfigDict],
+        pairs: Dict[Any, Any],
+        *,
+        return_path: bool,
+    ) -> Union[List[ConfigDict], Dict[Tuple[Any, ...], ConfigDict]]:
+        ...
+
+    @overload
+    def get_configs_by_dict(
+        config: Union[Config, ConfigDict],
+        pairs: Dict[Any, Any],
+        *,
+        return_path: Literal[True],
+    ) -> Dict[Tuple[Any, ...], ConfigDict]:
+        ...
+
+    @overload
+    def get_configs_by_dict(
+        config: Union[Config, ConfigDict],
+        pairs: Dict[Any, Any],
+        *,
+        return_path: Literal[False] = False,
+    ) -> List[ConfigDict]:
+        ...
+
+    @overload
+    def get_configs_by_keys(
+        config: Union[Config, ConfigDict],
+        keys: Union[Any, List[Any]],
+        *,
+        return_path: bool,
+    ) -> Union[List[ConfigDict], Dict[Tuple[Any, ...], ConfigDict]]:
+        ...
+
+    @overload
+    def get_configs_by_keys(
+        config: Union[Config, ConfigDict],
+        keys: Union[Any, List[Any]],
+        *,
+        return_path: Literal[True],
+    ) -> Dict[Tuple[Any, ...], ConfigDict]:
+        ...
+
+    @overload
+    def get_configs_by_keys(
+        config: Union[Config, ConfigDict],
+        keys: Union[Any, List[Any]],
+        *,
+        return_path: Literal[False] = False,
+    ) -> List[ConfigDict]:
+        ...
 
 
 @check_input_parameters_type()
@@ -42,6 +103,7 @@ def remove_from_config(config: Union[Config, ConfigDict], key: str):
             raise ValueError(f"Unknown config type {type(config)}")
 
 
+@check_input_parameters_type()
 def remove_from_configs_by_type(configs: List[ConfigDict], type: str):
     """Update & remove by type"""
     indices = []
@@ -191,6 +253,18 @@ def config_from_string(config_string: str) -> Config:
 
 
 @check_input_parameters_type()
+def patch_default_config(config: Config):
+    if "runner" not in config:
+        config.runner = ConfigDict({"type": "EpochBasedRunner"})
+    if "log_config" not in config:
+        config.log_config = ConfigDict()
+    if "evaluation" not in config:
+        config.evaluation = ConfigDict()
+    if "checkpoint_config" not in config:
+        config.checkpoint_config = ConfigDict()
+
+
+@check_input_parameters_type()
 def patch_data_pipeline(config: Config, data_pipeline: str = ""):
     """Replace data pipeline to data_pipeline.py if it exist."""
     if os.path.isfile(data_pipeline):
@@ -198,20 +272,63 @@ def patch_data_pipeline(config: Config, data_pipeline: str = ""):
         config.merge_from_dict(data_pipeline_cfg)
 
 
-def patch_color_conversion(pipeline):
-    """Default data format for OTX is RGB, while mmx uses BGR, so negate the color conversion flag."""
-    for pipeline_step in pipeline:
-        if pipeline_step.type == "Normalize":
-            to_rgb = False
-            if "to_rgb" in pipeline_step:
-                to_rgb = pipeline_step.to_rgb
-            to_rgb = not bool(to_rgb)
-            pipeline_step.to_rgb = to_rgb
-        elif pipeline_step.type == "MultiScaleFlipAug":
-            patch_color_conversion(pipeline_step.transforms)
-        elif pipeline_step.type == "TwoCropTransform":
-            patch_color_conversion(pipeline_step.view0)
-            patch_color_conversion(pipeline_step.view1)
+@check_input_parameters_type()
+def patch_color_conversion(config: Config):
+    assert "data" in config
+
+    for cfg in get_configs_by_dict(config.data, dict(type="Normalize")):
+        to_rgb = False
+        if "to_rgb" in cfg:
+            to_rgb = cfg.to_rgb
+        cfg.to_rgb = not bool(to_rgb)
+
+
+@check_input_parameters_type()
+def patch_runner(config: Config):
+    assert "runner" in config
+
+    # Check that there is no conflict in specification of number of training epochs.
+    # Move global definition of epochs inside runner config.
+    if "total_epochs" in config:
+        if is_epoch_based_runner(config.runner):
+            if config.runner.max_epochs != config.total_epochs:
+                logger.warning("Conflicting declaration of training epochs number.")
+            config.runner.max_epochs = config.total_epochs
+        else:
+            logger.warning(f"Total number of epochs set for an iteration based runner {config.runner.type}.")
+        remove_from_config(config, "total_epochs")
+
+    # Change runner's type.
+    if is_epoch_based_runner(config.runner):
+        logger.info(f"Replacing runner from {config.runner.type} to EpochRunnerWithCancel.")
+        config.runner.type = "EpochRunnerWithCancel"
+    else:
+        logger.info(f"Replacing runner from {config.runner.type} to IterBasedRunnerWithCancel.")
+        config.runner.type = "IterBasedRunnerWithCancel"
+
+
+@check_input_parameters_type()
+def align_data_config_with_recipe(
+    data_config: ConfigDict,
+    config: Union[Config, ConfigDict]
+):
+    # we assumed config has 'otx_dataset' and 'label' key in it
+    # by 'patch_datasets' function
+
+    data_config = data_config.data
+    config = config.data
+    for subset in data_config.keys():
+        subset_config = data_config.get(subset, {})
+        for key in list(subset_config.keys()):
+            found_config = get_configs_by_keys(
+                config.get(subset),
+                key,
+                return_path=True
+            )
+            assert len(found_config) == 1
+            value = subset_config.pop(key)
+            path = list(found_config.keys())[0]
+            update_config(subset_config, {path: value})
 
 
 DEFAULT_META_KEYS = (

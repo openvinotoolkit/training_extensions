@@ -29,6 +29,10 @@ from otx.algorithms.common.adapters.mmcv.utils import (
 from otx.algorithms.common.configs import TrainType
 from otx.algorithms.common.tasks import BaseTask
 from otx.algorithms.common.utils.callback import InferenceProgressCallback
+from otx.algorithms.common.adapters.mmcv.utils import (
+    patch_default_config,
+    patch_runner,
+)
 from otx.algorithms.segmentation.adapters.mmseg.utils import (
     patch_datasets,
     patch_evaluation,
@@ -83,15 +87,15 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         self.freeze = True
         self.metric = "mDice"
         self._label_dictionary = {}  # type: Dict
+
         super().__init__(SegmentationConfig, task_environment, **kwargs)
+        self._label_dictionary = dict(enumerate(self._labels, 1))
 
     def infer(
         self, dataset: DatasetEntity, inference_parameters: Optional[InferenceParameters] = None
     ) -> DatasetEntity:
         """Main infer function of OTX Segmentation."""
         logger.info("infer()")
-        # Temporary disable dump (will be handled by 'otx explain')
-        dump_features = False
 
         if inference_parameters is not None:
             update_progress_callback = inference_parameters.update_progress
@@ -102,17 +106,16 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
 
         self._time_monitor = InferenceProgressCallback(len(dataset), update_progress_callback)
 
-        self._initialize()
-        self._data_cfg = self._init_test_data_cfg(dataset)
-        self._label_dictionary = dict(enumerate(self._labels, 1))
         stage_module = "SegInferrer"
-        model = getattr(self, "_model", None)
+        self._data_cfg = self._init_test_data_cfg(dataset)
+        # Temporary disable dump (will be handled by 'otx explain')
+        dump_features = False
+
         results = self._run_task(
             stage_module,
             mode="train",
             dataset=dataset,
             dump_features=dump_features,
-            model=model
         )
         logger.debug(f"result of run_task {stage_module} module = {results}")
         predictions = results["outputs"]
@@ -228,7 +231,12 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         self._recipe_cfg = MPAConfig.fromfile(recipe)
         self.train_type = train_type
         patch_data_pipeline(self._recipe_cfg, pipeline_path)
-        patch_datasets(self._recipe_cfg)  # for OTX compatibility
+        patch_default_config(self._recipe_cfg)
+        patch_runner(self._recipe_cfg)
+        patch_datasets(
+            self._recipe_cfg,
+            self._task_type.domain,
+        )  # for OTX compatibility
         patch_evaluation(self._recipe_cfg)  # for OTX compatibility
         if self._recipe_cfg.get("evaluation", None):
             self.metric = self._recipe_cfg.evaluation.metric
@@ -253,10 +261,8 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         data_cfg = ConfigDict(
             data=ConfigDict(
                 train=ConfigDict(
-                    dataset=ConfigDict(
-                        otx_dataset=None,
-                        labels=self._labels,
-                    )
+                    otx_dataset=None,
+                    labels=self._labels,
                 ),
                 test=ConfigDict(
                     otx_dataset=dataset,

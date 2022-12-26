@@ -256,9 +256,6 @@ class MPASegDataset(OTXSegDataset):
         if test_mode is False:
             self.img_indices = get_old_new_img_indices(classes, new_classes, otx_dataset)
 
-        for action in pipeline:
-            if "domain" in action:
-                action.pop("domain")
         if classes:
             classes = [c.name for c in classes]
             classes = ["background"] + classes

@@ -105,6 +105,7 @@ class TestToolsMPAClassification:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.skip(reason="CVS-94794")
     def test_otx_export(self, template, tmp_dir_path):
         otx_export_testing(template, tmp_dir_path)
 
@@ -129,42 +130,49 @@ class TestToolsMPAClassification:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.skip(reason="CVS-94794")
     def test_otx_eval_openvino(self, template, tmp_dir_path):
         otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args, threshold=0.0)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.skip(reason="CVS-94794")
     def test_otx_demo(self, template, tmp_dir_path):
         otx_demo_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.skip(reason="CVS-94794")
     def test_otx_demo_openvino(self, template, tmp_dir_path):
         otx_demo_openvino_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.skip(reason="CVS-94794")
     def test_otx_deploy_openvino(self, template, tmp_dir_path):
         otx_deploy_openvino_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.skip(reason="CVS-94794")
     def test_otx_eval_deployment(self, template, tmp_dir_path):
         otx_eval_deployment_testing(template, tmp_dir_path, otx_dir, args, threshold=0.0)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.skip(reason="CVS-94794")
     def test_otx_demo_deployment(self, template, tmp_dir_path):
         otx_demo_deployment_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.skip(reason="CVS-94794")
     def test_otx_hpo(self, template, tmp_dir_path):
         otx_hpo_testing(template, tmp_dir_path, otx_dir, args)
 
@@ -180,6 +188,7 @@ class TestToolsMPAClassification:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.skip(reason="CVS-94794")
     def test_nncf_export(self, template, tmp_dir_path):
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
@@ -198,6 +207,7 @@ class TestToolsMPAClassification:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.skip(reason="CVS-94794")
     def test_nncf_eval_openvino(self, template, tmp_dir_path):
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
@@ -207,12 +217,14 @@ class TestToolsMPAClassification:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.skip(reason="CVS-94794")
     def test_pot_optimize(self, template, tmp_dir_path):
         pot_optimize_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.skip(reason="CVS-94794")
     def test_pot_eval(self, template, tmp_dir_path):
         pot_eval_testing(template, tmp_dir_path, otx_dir, args)
 
@@ -276,6 +288,7 @@ class TestToolsMPAMultilabelClassification:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.skip(reason="CVS-94794")
     def test_otx_export(self, template, tmp_dir_path):
         otx_export_testing(template, tmp_dir_path)
 
@@ -288,18 +301,24 @@ class TestToolsMPAMultilabelClassification:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+<<<<<<< HEAD
     def test_otx_explain(self, template, tmp_dir_path):
         otx_explain_testing(template, tmp_dir_path, otx_dir, args_m)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+||||||| parent of 9002dda17 ([OTX-MMCLS] Enable NNCF (#1435))
+=======
+    @pytest.mark.skip(reason="CVS-94794")
+>>>>>>> 9002dda17 ([OTX-MMCLS] Enable NNCF (#1435))
     def test_otx_eval_openvino(self, template, tmp_dir_path):
         otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args_m, threshold=0.0)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.skip(reason="CVS-94794")
     def test_otx_demo(self, template, tmp_dir_path):
         pytest.skip("Demo for multi-label classification is not supported now.")
         otx_demo_testing(template, tmp_dir_path, otx_dir, args_m)
@@ -307,6 +326,7 @@ class TestToolsMPAMultilabelClassification:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.skip(reason="CVS-94794")
     def test_otx_demo_openvino(self, template, tmp_dir_path):
         pytest.skip("Demo for multi-label classification is not supported now.")
         otx_demo_openvino_testing(template, tmp_dir_path, otx_dir, args_m)
@@ -314,18 +334,21 @@ class TestToolsMPAMultilabelClassification:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.skip(reason="CVS-94794")
     def test_otx_deploy_openvino(self, template, tmp_dir_path):
         otx_deploy_openvino_testing(template, tmp_dir_path, otx_dir, args_m)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.skip(reason="CVS-94794")
     def test_otx_eval_deployment(self, template, tmp_dir_path):
         otx_eval_deployment_testing(template, tmp_dir_path, otx_dir, args_m, threshold=0.0)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.skip(reason="CVS-94794")
     def test_otx_demo_deployment(self, template, tmp_dir_path):
         pytest.xfail("Demo for multi-label classification is not supported now.")
         otx_demo_deployment_testing(template, tmp_dir_path, otx_dir, args_m)
@@ -333,6 +356,7 @@ class TestToolsMPAMultilabelClassification:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.skip(reason="CVS-94794")
     def test_otx_hpo(self, template, tmp_dir_path):
         otx_hpo_testing(template, tmp_dir_path, otx_dir, args_m)
 
@@ -348,6 +372,7 @@ class TestToolsMPAMultilabelClassification:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.skip(reason="CVS-94794")
     def test_nncf_export(self, template, tmp_dir_path):
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
@@ -366,6 +391,7 @@ class TestToolsMPAMultilabelClassification:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.skip(reason="CVS-94794")
     def test_nncf_eval_openvino(self, template, tmp_dir_path):
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
@@ -375,12 +401,14 @@ class TestToolsMPAMultilabelClassification:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.skip(reason="CVS-94794")
     def test_pot_optimize(self, template, tmp_dir_path):
         pot_optimize_testing(template, tmp_dir_path, otx_dir, args_m)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.skip(reason="CVS-94794")
     def test_pot_eval(self, template, tmp_dir_path):
         pot_eval_testing(template, tmp_dir_path, otx_dir, args_m)
 
@@ -426,6 +454,7 @@ class TestToolsMPAHierarchicalClassification:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.skip(reason="CVS-94794")
     def test_otx_export(self, template, tmp_dir_path):
         otx_export_testing(template, tmp_dir_path)
 
@@ -438,18 +467,24 @@ class TestToolsMPAHierarchicalClassification:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+<<<<<<< HEAD
     def test_otx_explain(self, template, tmp_dir_path):
         otx_explain_testing(template, tmp_dir_path, otx_dir, args_h)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+||||||| parent of 9002dda17 ([OTX-MMCLS] Enable NNCF (#1435))
+=======
+    @pytest.mark.skip(reason="CVS-94794")
+>>>>>>> 9002dda17 ([OTX-MMCLS] Enable NNCF (#1435))
     def test_otx_eval_openvino(self, template, tmp_dir_path):
         otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args_h, threshold=0.02)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.skip(reason="CVS-94794")
     def test_otx_demo(self, template, tmp_dir_path):
         pytest.skip("Demo for hierarchical classification is not supported now.")
         otx_demo_testing(template, tmp_dir_path, otx_dir, args_h)
@@ -457,6 +492,7 @@ class TestToolsMPAHierarchicalClassification:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.skip(reason="CVS-94794")
     def test_otx_demo_openvino(self, template, tmp_dir_path):
         pytest.skip("Demo for hierarchical classification is not supported now.")
         otx_demo_openvino_testing(template, tmp_dir_path, otx_dir, args_h)
@@ -464,18 +500,21 @@ class TestToolsMPAHierarchicalClassification:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.skip(reason="CVS-94794")
     def test_otx_deploy_openvino(self, template, tmp_dir_path):
         otx_deploy_openvino_testing(template, tmp_dir_path, otx_dir, args_h)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.skip(reason="CVS-94794")
     def test_otx_eval_deployment(self, template, tmp_dir_path):
         otx_eval_deployment_testing(template, tmp_dir_path, otx_dir, args_h, threshold=0.0)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.skip(reason="CVS-94794")
     def test_otx_demo_deployment(self, template, tmp_dir_path):
         pytest.skip("Demo for hierarchical classification is not supported now.")
         otx_demo_deployment_testing(template, tmp_dir_path, otx_dir, args_h)
@@ -483,6 +522,7 @@ class TestToolsMPAHierarchicalClassification:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.skip(reason="CVS-94794")
     def test_otx_hpo(self, template, tmp_dir_path):
         otx_hpo_testing(template, tmp_dir_path, otx_dir, args_h)
 
@@ -498,6 +538,7 @@ class TestToolsMPAHierarchicalClassification:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.skip(reason="CVS-94794")
     def test_nncf_export(self, template, tmp_dir_path):
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
@@ -516,6 +557,7 @@ class TestToolsMPAHierarchicalClassification:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.skip(reason="CVS-94794")
     def test_nncf_eval_openvino(self, template, tmp_dir_path):
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
@@ -525,12 +567,14 @@ class TestToolsMPAHierarchicalClassification:
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.skip(reason="CVS-94794")
     def test_pot_optimize(self, template, tmp_dir_path):
         pot_optimize_testing(template, tmp_dir_path, otx_dir, args_h)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @pytest.mark.skip(reason="CVS-94794")
     def test_pot_eval(self, template, tmp_dir_path):
         pot_eval_testing(template, tmp_dir_path, otx_dir, args_h)
 

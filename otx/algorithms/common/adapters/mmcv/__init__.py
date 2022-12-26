@@ -28,7 +28,6 @@ from .runner import EpochRunnerWithCancel, IterBasedRunnerWithCancel
 
 from .nncf.hooks import CompressionHook, CheckpointHookBeforeTraining
 from .nncf.runners import AccuracyAwareRunner
-from .nncf.patches import *
 
 
 __all__ = [

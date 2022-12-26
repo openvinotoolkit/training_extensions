@@ -14,15 +14,50 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from otx.algorithms.classification.adapters.deep_object_reid.tasks import (
-    ClassificationNNCFTask,
-)
+from functools import partial
+from typing import Optional
+
+from mpa.utils.logger import get_logger
+
+from otx.algorithms.classification.adapters.mmcls.nncf import build_nncf_model
+from otx.algorithms.common.tasks.nncf_base import NNCFBaseTask
+from otx.api.entities.datasets import DatasetEntity
+from otx.api.entities.optimization_parameters import OptimizationParameters
 from otx.api.entities.task_environment import TaskEnvironment
+from otx.api.utils.argument_checks import check_input_parameters_type
+
+from .inference import ClassificationInferenceTask
 
 
-# pylint: disable=too-many-ancestors
-class OTXClassificationNNCFTask(ClassificationNNCFTask):
-    """Task for compressing classification models using NNCF."""
+logger = get_logger()
 
-    def __init__(self, task_environment: TaskEnvironment, **kwargs):  # pylint: disable=useless-parent-delegation
+
+class ClassificationNNCFTask(NNCFBaseTask, ClassificationInferenceTask):
+    @check_input_parameters_type()
+    def __init__(self, task_environment: TaskEnvironment, **kwargs):
         super().__init__(task_environment, **kwargs)
+        self._label_dictionary = dict(enumerate(self._labels, 1))
+
+    def _initialize_post_hook(self, options=dict()):
+        super()._initialize_post_hook(options)
+
+        export = options.get("export", False)
+        options["model_builder"] = partial(
+            self.model_builder,
+            nncf_model_builder=build_nncf_model,
+            return_compression_ctrl=False,
+            is_export=export,
+        )
+
+    def _optimize(
+        self,
+        dataset: DatasetEntity,
+        optimization_parameters: Optional[OptimizationParameters] = None,
+    ):
+        results = self._run_task(
+            "ClsTrainer",
+            mode="train",
+            dataset=dataset,
+            parameters=optimization_parameters,
+        )
+        return results

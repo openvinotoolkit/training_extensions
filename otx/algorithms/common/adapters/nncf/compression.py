@@ -7,6 +7,12 @@ import torch
 from .utils import check_nncf_is_enabled, get_nncf_version, is_nncf_enabled
 
 
+NNCF_STATE_NAME = "nncf_model_state"
+COMPRESSION_STATE_NAME = "compression_state"
+DATA_TO_BUILD_NAME = "data_to_build_nncf"
+STATE_TO_BUILD_NAME = "state_dict_to_build_nncf"
+
+
 def get_nncf_metadata():
     """
     The function returns NNCF metadata that should be stored into a checkpoint.
@@ -37,19 +43,6 @@ def is_checkpoint_nncf(path):
         return is_state_nncf(checkpoint)
     except FileNotFoundError:
         return False
-
-
-def extract_model_and_compression_states(resuming_checkpoint):
-    """
-    The function return from checkpoint state_dict and compression_state.
-    """
-    if resuming_checkpoint is None:
-        return None, None
-    model_state_dict = resuming_checkpoint.get(
-        "model" if "model" in resuming_checkpoint else "state_dict"
-    )
-    compression_state = resuming_checkpoint.get("compression_state")
-    return model_state_dict, compression_state
 
 
 def get_uncompressed_model(module):

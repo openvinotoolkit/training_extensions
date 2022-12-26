@@ -5,9 +5,6 @@
 from contextlib import contextmanager
 from functools import partial
 
-import torch
-from nncf.torch.dynamic_graph.io_handling import replicate_same_tensors
-
 from .patchers import NNCF_PATCHER, no_nncf_trace_wrapper
 
 
@@ -43,6 +40,9 @@ def nncf_trace_context(self, img_metas, nncf_compress_postprocessing=True):
 
 
 def nncf_train_step(self, data, optimizer):
+    import torch
+    from nncf.torch.dynamic_graph.io_handling import replicate_same_tensors
+
     with self._compressed_context as ctx:
         ctx.base_module_thread_local_replica = self
         _, data = replicate_same_tensors(((), data))

@@ -5,7 +5,7 @@
 
 from .config_utils import (
     cluster_anchors,
-    patch_config,
+    patch_recipe_config,
     patch_datasets,
     patch_evaluation,
     prepare_for_training,
@@ -14,7 +14,7 @@ from .config_utils import (
 
 __all__ = [
     "cluster_anchors",
-    "patch_config",
+    "patch_recipe_config",
     "patch_datasets",
     "patch_evaluation",
     "prepare_for_training",
