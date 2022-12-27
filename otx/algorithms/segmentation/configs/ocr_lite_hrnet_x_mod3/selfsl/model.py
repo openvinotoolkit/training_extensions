@@ -22,8 +22,8 @@ _base_ = [
 
 model = dict(
     type="DetConB",
-    pretrained="https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/\
-        custom_semantic_segmentation/litehrnetxv3_imagenet1k_rsc.pth",
+    pretrained="https://storage.openvinotoolkit.org/repositories/openvino_training_extensions\
+        /models/custom_semantic_segmentation/litehrnetxv3_imagenet1k_rsc.pth",
     num_classes=256,
     num_samples=16,
     downsample=2,
