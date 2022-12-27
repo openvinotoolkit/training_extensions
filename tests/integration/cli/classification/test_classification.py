@@ -561,7 +561,7 @@ def set_dummy_data(func):
             "data": {
                 "train": {"ann-files": None, "data-roots": None},
                 "val": {"ann-files": None, "data-roots": None},
-                "unlabeled": {"ann-files": None, "data-roots": None},
+                "unlabeled": {"file-list": None, "data-roots": None},
             },
         }
         yaml.dump(to_save_data_args, open("./data.yaml", "w"), default_flow_style=False)
