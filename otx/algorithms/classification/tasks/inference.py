@@ -59,9 +59,9 @@ class ClassificationInferenceTask(
 ):  # pylint: disable=too-many-instance-attributes
     """Inference Task Implementation of OTX Classification."""
 
-    def __init__(self, task_environment: TaskEnvironment):
+    def __init__(self, task_environment: TaskEnvironment, **kwargs):
         self._should_stop = False
-        super().__init__(TASK_CONFIG, task_environment)
+        super().__init__(TASK_CONFIG, task_environment, **kwargs)
 
         self._task_environment = task_environment
         if len(task_environment.get_labels(False)) == 1:

@@ -80,8 +80,8 @@ class SegmentationNNCFTask(SegmentationInferenceTask, IOptimizationTask):
     """Task for compressing object detection models using NNCF."""
 
     @check_input_parameters_type()
-    def __init__(self, task_environment: TaskEnvironment):
-        super().__init__(task_environment)
+    def __init__(self, task_environment: TaskEnvironment, **kwargs):
+        super().__init__(task_environment, **kwargs)
 
         self._val_dataloader = None
         self._compression_ctrl = None

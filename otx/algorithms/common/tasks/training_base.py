@@ -55,15 +55,13 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
     _task_environment: TaskEnvironment
 
     @check_input_parameters_type()
-    def __init__(self, task_config, task_environment: TaskEnvironment):
+    def __init__(self, task_config, task_environment: TaskEnvironment, output_path: Optional[str] = None):
         self._task_config = task_config
         self._task_environment = task_environment
         self._hyperparams = task_environment.get_hyper_parameters(self._task_config)  # type: ConfigDict
         self._model_name = task_environment.model_template.name
         self._task_type = task_environment.model_template.task_type
         self._labels = task_environment.get_labels(include_empty=False)
-        self._output_path = tempfile.mkdtemp(prefix="OTX-task-")
-        logger.info(f"created output path at {self._output_path}")
         self.confidence_threshold = self._get_confidence_threshold(self._hyperparams)
         # Set default model attributes.
         self._model_label_schema = []  # type: List[LabelEntity]
@@ -71,6 +69,10 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         self._model_ckpt = None
         self._data_pipeline_path = None
         self._anchors = {}  # type: Dict[str, int]
+        if output_path is None:
+            output_path = tempfile.mkdtemp(prefix="OTX-task-")
+        self._output_path = output_path
+        logger.info(f"created output path at {self._output_path}")
         if task_environment.model is not None:
             logger.info("loading the model from the task env.")
             state_dict = self._load_model_state_dict(self._task_environment.model)
