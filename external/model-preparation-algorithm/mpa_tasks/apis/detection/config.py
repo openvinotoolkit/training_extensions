@@ -54,6 +54,12 @@ class DetectionConfig(BaseConfig):
         header = string_attribute("Parameters for the MPA algo-backend")
         description = header
 
+    @attrs
+    class __TilingParameters(BaseConfig.BaseTilingParameters):
+        header = string_attribute("Tiling Parameters")
+        description = header
+
+    tiling_parameters = add_parameter_group(__TilingParameters)
     learning_parameters = add_parameter_group(__LearningParameters)
     postprocessing = add_parameter_group(__Postprocessing)
     nncf_optimization = add_parameter_group(__NNCFOptimization)

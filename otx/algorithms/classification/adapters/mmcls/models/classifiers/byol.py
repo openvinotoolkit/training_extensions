@@ -7,7 +7,7 @@ Original papers:
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-# pylint: disable=missing-module-docstring, too-many-instance-attributes, unused-argument, unnecessary-pass, invalid-name
+# pylint: disable=missing-module-docstring, too-many-instance-attributes, unused-argument, unnecessary-pass, invalid-name  # noqa: E501
 from collections import OrderedDict
 from typing import Any, Dict, Optional
 

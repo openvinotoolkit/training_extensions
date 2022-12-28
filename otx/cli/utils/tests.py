@@ -74,6 +74,10 @@ def otx_train_testing(template, root, otx_dir, args):
             command_line.extend([option, f"{os.path.join(otx_dir, args[option])}"])
 
     command_line.extend(["--save-model-to", f"{template_work_dir}/trained_{template.model_template_id}"])
+    if "--gpus" in args:
+        command_line.extend(["--gpus", args["--gpus"]])
+        if "--multi-gpu-port" in args:
+            command_line.extend(["--multi-gpu-port", args["--multi-gpu-port"]])
     command_line.extend(args["train_params"])
     check_run(command_line)
     assert os.path.exists(f"{template_work_dir}/trained_{template.model_template_id}/weights.pth")

@@ -14,7 +14,6 @@ framework: OTEDetection v2.9.1
 entrypoints:
   base: mpa_tasks.apis.detection.DetectionTrainTask
   openvino: detection_tasks.apis.detection.OpenVINODetectionTask
-  nncf: mpa_tasks.apis.detection.DetectionNNCFTask
 base_model_path: ../../../../mmdetection/configs/custom-counting-instance-seg/efficientnetb2b_maskrcnn/template_experimental.yaml
 
 # Capabilities.
@@ -41,7 +40,7 @@ hyper_parameters:
         default_value: 2
     nncf_optimization:
       enable_quantization:
-        default_value: true
+        default_value: false
       enable_pruning:
         default_value: false
       pruning_supported:

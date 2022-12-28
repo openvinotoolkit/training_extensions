@@ -90,6 +90,7 @@ def read_model(model_configuration: ModelConfiguration, path: str, train_dataset
         "pixel_threshold",
         "min",
         "max",
+        "config.json",
     )
 
     if path.endswith(".bin") or path.endswith(".xml"):
@@ -130,6 +131,7 @@ def read_model(model_configuration: ModelConfiguration, path: str, train_dataset
             config_path = os.path.join(temp_dir, "model", "config.json")
             with open(config_path, encoding="UTF-8") as f:
                 model_parameters = json.load(f)["model_parameters"]
+            model_adapters["config.json"] = ModelAdapter(read_binary(config_path))
 
             for key in model_adapter_keys:
                 if key in model_parameters:

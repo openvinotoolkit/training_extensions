@@ -39,6 +39,7 @@ from ote_sdk.entities.optimization_parameters import OptimizationParameters
 from ote_sdk.entities.tensor import TensorEntity
 from ote_sdk.entities.resultset import ResultSetEntity
 from ote_sdk.entities.result_media import ResultMediaEntity
+from ote_sdk.entities.subset import Subset
 from ote_sdk.entities.task_environment import TaskEnvironment
 from ote_sdk.usecases.evaluation.metrics_helper import MetricsHelper
 from ote_sdk.usecases.exportable_code.inference import BaseInferencer
@@ -184,7 +185,7 @@ class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask,
                         continue
                     current_label_soft_prediction = soft_prediction[:, :, label_index]
                     class_act_map = get_activation_map(current_label_soft_prediction)
-                    result_media = ResultMediaEntity(name='Soft Prediction',
+                    result_media = ResultMediaEntity(name=label.name,
                                                      type='soft_prediction',
                                                      label=label,
                                                      annotation_scene=dataset_item.annotation_scene,
@@ -252,6 +253,7 @@ class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask,
         if optimization_type is not OptimizationType.POT:
             raise ValueError("POT is the only supported optimization type for OpenVino models")
 
+        dataset = dataset.get_subset(Subset.TRAINING)
         data_loader = OTEOpenVinoDataLoader(dataset, self.inferencer)
 
         with tempfile.TemporaryDirectory() as tempdir:

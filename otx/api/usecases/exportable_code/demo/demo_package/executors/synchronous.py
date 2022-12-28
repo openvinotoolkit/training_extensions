@@ -24,7 +24,7 @@ class SyncExecutor:
     """
 
     def __init__(self, model: ModelContainer, visualizer: Visualizer) -> None:
-        self.model = model.core_model
+        self.model = model
         self.visualizer = visualizer
         self.converter = create_output_converter(model.task_type, model.labels)
 

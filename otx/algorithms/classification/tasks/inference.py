@@ -59,9 +59,9 @@ class ClassificationInferenceTask(
 ):  # pylint: disable=too-many-instance-attributes
     """Inference Task Implementation of OTX Classification."""
 
-    def __init__(self, task_environment: TaskEnvironment):
+    def __init__(self, task_environment: TaskEnvironment, **kwargs):
         self._should_stop = False
-        super().__init__(TASK_CONFIG, task_environment)
+        super().__init__(TASK_CONFIG, task_environment, **kwargs)
 
         self._task_environment = task_environment
         if len(task_environment.get_labels(False)) == 1:
@@ -106,7 +106,7 @@ class ClassificationInferenceTask(
         dump_saliency_map = not inference_parameters.is_evaluation if inference_parameters else True
         results = self._run_task(
             stage_module,
-            mode="train",
+            mode="eval",
             dataset=dataset,
             dump_features=dump_features,
             dump_saliency_map=dump_saliency_map,
@@ -403,7 +403,7 @@ class ClassificationInferenceTask(
         )
         return data_cfg
 
-    def _patch_datasets(self, config: MPAConfig, domain=Domain.CLASSIFICATION):
+    def _patch_datasets(self, config: MPAConfig, domain=Domain.CLASSIFICATION):  # noqa: C901
         def patch_color_conversion(pipeline):
             # Default data format for OTX is RGB, while mmdet uses BGR, so negate the color conversion flag.
             for pipeline_step in pipeline:
@@ -439,7 +439,7 @@ class ClassificationInferenceTask(
 
             # In train dataset, when sample size is smaller than batch size
             if subset == "train" and self._data_cfg:
-                train_data_cfg = Stage.get_train_data_cfg(self._data_cfg)
+                train_data_cfg = Stage.get_data_cfg(self._data_cfg, "train")
                 if len(train_data_cfg.get("otx_dataset", [])) < self._recipe_cfg.data.get("samples_per_gpu", 2):
                     cfg.drop_last = False
 

@@ -528,7 +528,7 @@ class TestDatasetItemEntity:
         # Check that get_annotations only returns the annotations whose center falls within the ROI
         partial_box_dataset_item = deepcopy(full_box_roi_dataset_item)
         partial_box_dataset_item.roi = Annotation(shape=Rectangle(x1=0.0, y1=0.0, x2=0.4, y2=0.5), labels=[])
-        expected_annotation = first_annotation
+        expected_annotation = deepcopy(first_annotation)
         expected_annotation.shape = expected_annotation.shape.denormalize_wrt_roi_shape(
             roi_shape=partial_box_dataset_item.roi.shape
         )
