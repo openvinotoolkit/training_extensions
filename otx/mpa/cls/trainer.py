@@ -105,10 +105,14 @@ class ClsTrainer(ClsStage):
 
         # prepare data loaders
         datasets = datasets if isinstance(datasets, (list, tuple)) else [datasets]
-        train_data_cfg = Stage.get_train_data_cfg(cfg)
-        drop_last = train_data_cfg.drop_last if train_data_cfg.get("drop_last", False) else False
-
-        # updated to adapt list of datasets for the 'train'
+        train_data_cfg = Stage.get_data_cfg(cfg, "train")
+        otx_dataset = train_data_cfg.get("otx_dataset", None)
+        drop_last = False
+        dataset_len = len(otx_dataset) if otx_dataset else 0
+        # if task == h-label & dataset size is bigger than batch size
+        if train_data_cfg.get("hierarchical_info", None) and dataset_len > cfg.data.get("samples_per_gpu", 2):
+            drop_last = True
+        # updated to adapt list of dataset for the 'train'
         data_loaders = []
         sub_loaders = []
         for ds in datasets:

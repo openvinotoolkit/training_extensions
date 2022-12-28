@@ -42,9 +42,9 @@ class DetectionInferrer(IncrDetectionStage):
         """
         self._init_logger()
         mode = kwargs.get("mode", "train")
-        eval = kwargs.get("eval", False)
-        dump_features = kwargs.get("dump_features", False)
-        dump_saliency_map = kwargs.get("dump_saliency_map", False)
+        eval = kwargs.pop("eval", False)
+        dump_features = kwargs.pop("dump_features", False)
+        dump_saliency_map = kwargs.pop("dump_saliency_map", False)
         if mode not in self.mode:
             return {}
 
@@ -90,7 +90,7 @@ class DetectionInferrer(IncrDetectionStage):
             input_source = cfg.get("input_source")
             logger.info(f"Inferring on input source: data.{input_source}")
             if input_source == "train":
-                src_data_cfg = self.get_train_data_cfg(cfg)
+                src_data_cfg = self.get_data_cfg(cfg, input_source)
             else:
                 src_data_cfg = cfg.data[input_source]
             data_cfg.test_mode = src_data_cfg.get("test_mode", False)

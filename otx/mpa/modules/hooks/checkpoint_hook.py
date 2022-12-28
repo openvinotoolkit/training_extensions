@@ -53,17 +53,17 @@ class CheckpointHookWithValResults(Hook):
     def after_train_epoch(self, runner):
         if not self.by_epoch or not self.every_n_epochs(runner, self.interval):
             return
-        if hasattr(runner, "save_ckpt"):
-            if runner.save_ckpt:
-                if runner.save_ema_model:
-                    backup_model = runner.model
-                    runner.model = runner.ema_model
-                runner.logger.info(f"Saving checkpoint at {runner.epoch + 1} epochs")
-                if self.sync_buffer:
-                    allreduce_params(runner.model.buffers())
-                self._save_checkpoint(runner)
-                if runner.save_ema_model:
-                    runner.model = backup_model
+        if hasattr(runner, "save_ckpt") and runner.save_ckpt:
+            if hasattr(runner, "save_ema_model") and runner.save_ema_model:
+                backup_model = runner.model
+                runner.model = runner.ema_model
+            runner.logger.info(f"Saving checkpoint at {runner.epoch + 1} epochs")
+            if self.sync_buffer:
+                allreduce_params(runner.model.buffers())
+            self._save_checkpoint(runner)
+            if hasattr(runner, "save_ema_model") and runner.save_ema_model:
+                runner.model = backup_model
+                runner.save_ema_model = False
             runner.save_ckpt = False
 
     @master_only
