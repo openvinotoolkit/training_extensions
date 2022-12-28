@@ -11,22 +11,25 @@ This format has the following structure:
 ::
 
     data
-    ├── class 0
-        ├── 0.png
-        ├── 1.png
+    ├── train
+        ├── class 0
+            ├── 0.png
+            ├── 1.png
+            ...
+            └── N.png
+        ├── class 1
+            ├── 0.png
+            ├── 1.png
+            ...
+            └── N.png
         ...
-        └── N.png
-    ├── class 1
-        ├── 0.png
-        ├── 1.png
+        └── class N
+            ├── 0.png
+            ├── 1.png
+            ...
+            └── N.png
+    └── val
         ...
-        └── N.png
-    ...
-    └── class N
-        ├── 0.png
-        ├── 1.png
-        ...
-        └── N.png
 
 *********
 Backbones
@@ -58,7 +61,7 @@ To see which public backbones are available for the task, the following command 
 Supervised Incremental Learning
 *********
 
-We solve the multi-class classification problem in a common fashion based on the feature extractor backbone and classifier head that tends to predict the probability of each label presented on the image.
+We solve the multi-class classification problem in a common fashion based on the feature extractor backbone and classifier head that predicts the probability of each label presented on the image.
 For supervised training we use the following algorithms components:
 
 - ``Augmentations``: Besides basic augmentations like random flip and random rotate, we use `Augmix <https://arxiv.org/abs/1912.02781>`_. This advanced type of augmentation helps to significantly expand the training distribution.
@@ -67,9 +70,9 @@ For supervised training we use the following algorithms components:
 
 - ``Learning rate schedule``: `Cosine Annealing <https://arxiv.org/abs/1608.03983v5>`_ . It is a common learning rate scheduler that tends to work well on average for this task on variety of different datasets.
 
-- ``Loss function``: We use `Influence-Balanced Loss <https://arxiv.org/pdf/2110.02444.pdf>`. This is a balancing training method that helps us to solve the imbalanced data problem.
+- ``Loss function``: We use `Influence-Balanced Loss <https://arxiv.org/abs/2110.02444>`_. This is a balancing training method that helps us to solve the imbalanced data problem.
 
-To add adaptability to the training pipeline we use early stopping to prevent overfitting and do not depend on the epochs number choice.
+Additionaly, we use `No Bias Decay (NBD) <https://arxiv.org/abs/1812.01187>`_ technique and **early stopping** to add adaptability to the training pipeline and prevent overfitting.
 To further enhance the performance of the algorithm in case when we have a small number of data we use `Supervised Contrastive Learning <https://arxiv.org/abs/2004.11362>`_. More concretely, we train a model with two heads: classification head with Influence-Balanced Loss and SupCon head with `Barlow Twins loss <https://arxiv.org/abs/2103.03230>`_
 
 In the table below the top-1 accuracy on some academic datasets is presented. The results were obtained on our templates without any changes. We use 240x240 image resolution, for other hyperparameters, please, refer to the related template. We train all models on 1 GPU Nvidia GeForce GTX3090.
