@@ -400,6 +400,8 @@
 </li>
       <li><a href="reference/api/entities/general.html#otx.api.entities.model_template.ModelTemplate.computes_uncertainty_score">computes_uncertainty_score() (otx.api.entities.model_template.ModelTemplate method)</a>
 </li>
+      <li><a href="reference/api/configuration/index.html#otx.api.configuration.helper.config_to_bytes">config_to_bytes() (in module otx.api.configuration.helper)</a>
+</li>
       <li><a href="reference/api/entities/general.html#otx.api.entities.model.ModelConfiguration.configurable_parameters">configurable_parameters (otx.api.entities.model.ModelConfiguration attribute)</a>
 </li>
       <li><a href="reference/api/configuration/index.html#otx.api.configuration.ConfigurableEnum">ConfigurableEnum (class in otx.api.configuration)</a>
@@ -1197,6 +1199,8 @@
       <ul>
         <li><a href="reference/algorithm/anomaly/tasks.html#otx.algorithms.anomaly.tasks.NNCFTask.load_model">(otx.algorithms.anomaly.tasks.NNCFTask method)</a>
 </li>
+        <li><a href="reference/algorithm/anomaly/tasks.html#otx.algorithms.anomaly.tasks.TrainingTask.load_model">(otx.algorithms.anomaly.tasks.TrainingTask method)</a>
+</li>
       </ul></li>
       <li><a href="reference/api/entities/general.html#otx.api.entities.model_template.HyperParameterData.load_parameters">load_parameters() (otx.api.entities.model_template.HyperParameterData method)</a>
 </li>
@@ -1256,6 +1260,12 @@
 </li>
       <li><a href="reference/api/entities/general.html#otx.api.entities.scored_label.LabelSource.model_id">model_id (otx.api.entities.scored_label.LabelSource attribute)</a>
 </li>
+      <li><a href="reference/algorithm/anomaly/tasks.html#otx.algorithms.anomaly.tasks.InferenceTask.model_info">model_info() (otx.algorithms.anomaly.tasks.InferenceTask method)</a>
+
+      <ul>
+        <li><a href="reference/algorithm/anomaly/tasks.html#otx.algorithms.anomaly.tasks.NNCFTask.model_info">(otx.algorithms.anomaly.tasks.NNCFTask method)</a>
+</li>
+      </ul></li>
       <li><a href="reference/api/entities/general.html#otx.api.entities.model_template.ModelTemplate.model_optimization_methods">model_optimization_methods (otx.api.entities.model_template.ModelTemplate attribute)</a>
 
       <ul>
@@ -1663,7 +1673,7 @@
       </ul></li>
       <li><a href="reference/algorithm/anomaly/adapters/callbacks.html#otx.algorithms.anomaly.adapters.anomalib.callbacks.ProgressCallback.on_train_start">on_train_start() (otx.algorithms.anomaly.adapters.anomalib.callbacks.ProgressCallback method)</a>
 </li>
-      <li><a href="reference/algorithm/anomaly/adapters/callbacks.html#otx.algorithms.anomaly.adapters.anomalib.callbacks.ScoreReportingCallback.on_validation_epoch_end">on_validation_epoch_end() (otx.algorithms.anomaly.adapters.anomalib.callbacks.ScoreReportingCallback method)</a>
+      <li><a href="reference/algorithm/anomaly/adapters/callbacks.html#otx.algorithms.anomaly.adapters.anomalib.callbacks.ProgressCallback.on_validation_epoch_end">on_validation_epoch_end() (otx.algorithms.anomaly.adapters.anomalib.callbacks.ProgressCallback method)</a>
 </li>
       <li><a href="reference/api/entities/general.html#otx.api.entities.model.ModelFormat.ONNX">ONNX (otx.api.entities.model.ModelFormat attribute)</a>
 </li>
@@ -2320,8 +2330,6 @@
 </li>
       <li><a href="reference/api/entities/general.html#otx.api.entities.metrics.ScoreMetric">ScoreMetric (class in otx.api.entities.metrics)</a>
 </li>
-      <li><a href="reference/algorithm/anomaly/adapters/callbacks.html#otx.algorithms.anomaly.adapters.anomalib.callbacks.ScoreReportingCallback">ScoreReportingCallback (class in otx.algorithms.anomaly.adapters.anomalib.callbacks)</a>
-</li>
       <li><a href="reference/api/entities/general.html#otx.api.entities.label.Domain.SEGMENTATION">SEGMENTATION (otx.api.entities.label.Domain attribute)</a>
 
       <ul>
@@ -2356,14 +2364,14 @@
 </li>
       <li><a href="reference/api/entities/shapes.html#otx.api.entities.shapes.shape.Shape">Shape (class in otx.api.entities.shapes.shape)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/api/entities/general.html#otx.api.entities.annotation.Annotation.shape">shape (otx.api.entities.annotation.Annotation property)</a>
 
       <ul>
         <li><a href="reference/api/entities/general.html#otx.api.entities.tensor.TensorEntity.shape">(otx.api.entities.tensor.TensorEntity property)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/api/entities/shapes.html#otx.api.entities.shapes.shape.ShapeEntity">ShapeEntity (class in otx.api.entities.shapes.shape)</a>
 </li>
       <li><a href="reference/api/entities/general.html#otx.api.entities.annotation.AnnotationSceneEntity.shapes">shapes (otx.api.entities.annotation.AnnotationSceneEntity property)</a>

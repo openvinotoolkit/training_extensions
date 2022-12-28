@@ -397,15 +397,9 @@
 <dd><p>Store max epochs and current epoch from trainer.</p>
 </dd></dl>
 
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="otx.algorithms.anomaly.adapters.anomalib.callbacks.ScoreReportingCallback">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">otx.algorithms.anomaly.adapters.anomalib.callbacks.</span></span><span class="sig-name descname"><span class="pre">ScoreReportingCallback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameters</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../../api/entities/general.html#otx.api.entities.train_parameters.TrainParameters" title="otx.api.entities.train_parameters.TrainParameters"><span class="pre">otx.api.entities.train_parameters.TrainParameters</span></a><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.anomaly.adapters.anomalib.callbacks.ScoreReportingCallback" title="Permalink to this definition">¶</a></dt>
-<dd><p>Callback for reporting score.</p>
 <dl class="py method">
-<dt class="sig sig-object py" id="otx.algorithms.anomaly.adapters.anomalib.callbacks.ScoreReportingCallback.on_validation_epoch_end">
-<span class="sig-name descname"><span class="pre">on_validation_epoch_end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trainer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pl_module</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.anomaly.adapters.anomalib.callbacks.ScoreReportingCallback.on_validation_epoch_end" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="otx.algorithms.anomaly.adapters.anomalib.callbacks.ProgressCallback.on_validation_epoch_end">
+<span class="sig-name descname"><span class="pre">on_validation_epoch_end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trainer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pl_module</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#otx.algorithms.anomaly.adapters.anomalib.callbacks.ProgressCallback.on_validation_epoch_end" title="Permalink to this definition">¶</a></dt>
 <dd><p>If score exists in trainer.logged_metrics, report the score.</p>
 </dd></dl>
 
