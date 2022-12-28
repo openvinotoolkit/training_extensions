@@ -26,5 +26,3 @@
 #      pass
 #  else:
 #      from . import mmseg
-
-from .ov_model import OVModel

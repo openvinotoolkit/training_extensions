@@ -343,7 +343,7 @@ class Graph(nx.MultiDiGraph):
 
     def bfs(
         self, node: Operation, reverse: bool = False, depth_limit: Optional[int] = None
-    ) -> Generator[Union[Tuple[Operation, Operation], Tuple[Operation, Tuple[Operation]]], None, None,]:
+    ) -> Generator[Union[Tuple[Operation, Operation], Tuple[Operation, Tuple[Operation]]], None, None]:
         if reverse:
             for s, t in nx.bfs_edges(self, node, reverse=True, depth_limit=depth_limit):
                 yield (t, s)
@@ -406,6 +406,7 @@ class Graph(nx.MultiDiGraph):
             start_nodes = [found[-1] for found in founds]
         return founds
 
+    # noqa: C901
     def _freeze_normalize_nodes(self):
         invariant_types = ["Transpose", "Convert"]
 

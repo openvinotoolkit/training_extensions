@@ -78,6 +78,7 @@ class DetectionInferrer(IncrDetectionStage):
         print(json_dump)
         """
 
+    # noqa: C901
     def infer(self, cfg, eval=False, dump_features=False, dump_saliency_map=False):
         samples_per_gpu = cfg.data.test.pop("samples_per_gpu", 1)
         if samples_per_gpu > 1:

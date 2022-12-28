@@ -10,7 +10,7 @@ import torch
 import torch.onnx
 from mmcls.datasets.pipelines import Compose
 from mmcls.models import build_classifier
-from mmcv.runner import load_checkpoint, wrap_fp16_model
+from mmcv.runner import load_checkpoint
 
 from otx.mpa.registry import STAGES
 from otx.mpa.utils import mo_wrapper

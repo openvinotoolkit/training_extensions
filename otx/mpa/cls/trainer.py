@@ -35,6 +35,7 @@ logger = get_logger()
 
 @STAGES.register_module()
 class ClsTrainer(ClsStage):
+    # noqa: C901
     def run(self, model_cfg, model_ckpt, data_cfg, **kwargs):
         """Run training stage"""
         self._init_logger()

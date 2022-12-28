@@ -26,7 +26,7 @@ repos:
         name: "flake8"
         files: '^(otx|tests)/.*\.py'
         args: ["--config", ".flake8", "--max-complexity", "20"]
-        exclude: "^(.*/protobuf|tests/ote_cli)"
+        exclude: "^(.*/protobuf|tests/ote_cli)|otx/mpa|otx/recipes"
 
   # yaml formatting
   - repo: https://github.com/pre-commit/mirrors-prettier

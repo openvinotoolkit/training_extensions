@@ -161,6 +161,7 @@ class ClsStage(Stage):
 
             # checking task incremental model configurations
 
+    # noqa: C901
     @staticmethod
     def configure_task(cfg, training, model_meta=None, **kwargs):
         """Configure for Task Adaptation Task"""

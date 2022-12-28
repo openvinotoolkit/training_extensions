@@ -6,7 +6,6 @@ from copy import deepcopy
 
 import torch
 import torch.nn as nn
-from mmcv.parallel import is_module_wrapper
 from mmcv.runner import HOOKS, Hook
 
 from otx.mpa.utils.logger import get_logger
