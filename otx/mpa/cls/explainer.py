@@ -8,7 +8,6 @@ import mmcv
 import torch
 from mmcls.datasets import build_dataloader, build_dataset
 from mmcls.models import build_classifier
-from mmcv.parallel import MMDataParallel
 from mmcv.runner import load_checkpoint, wrap_fp16_model
 
 from otx.mpa.cls.stage import ClsStage

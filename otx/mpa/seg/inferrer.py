@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import os
 import os.path as osp
 from contextlib import nullcontext
 

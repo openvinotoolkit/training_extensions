@@ -8,7 +8,6 @@ import numpy as np
 from mmseg.datasets import DATASETS, CustomDataset
 
 from otx.mpa.modules.utils.task_adapt import map_class_names
-from otx.mpa.utils import logger
 
 
 @DATASETS.register_module()
