@@ -28,6 +28,7 @@ repos:
         args: ["--config", ".flake8", "--max-complexity", "20"]
         exclude: "^(.*/protobuf|tests/ote_cli)|otx/mpa|otx/recipes"
 
+
   # yaml formatting
   - repo: https://github.com/pre-commit/mirrors-prettier
     rev: v2.7.1
