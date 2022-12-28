@@ -45,7 +45,7 @@ Output should be similar to that.
 The following example shows that creating virtual environment to the ``det_venv`` folder in your current directory for detection task.
 
 .. code-block::
-  
+
     # create virtual env
     bash ./otx/algorithms/detection/init_venv.sh det_venv
     # activate virtual env
@@ -114,50 +114,6 @@ Training
 These files can be used by other commands: ``export``, ``eval``, ``deploy`` and ``demo``.
 
 
-==================
-Сommon parameters
-==================
-
-Train function receives common parameters regardless of the task (for classification, detection, etc), which contains annotation information, unlabeled annotation for semi-supervised learning, where to save model and HPO (Hyperparameter optimization) [link?] enablement.
-
-.. code-block::
-
-  (detection)...$ otx train otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml --help
-
-  usage: otx train [-h] [--data DATA] --train-ann-files TRAIN_ANN_FILES --train-data-roots TRAIN_DATA_ROOTS --val-ann-files VAL_ANN_FILES --val-data-roots VAL_DATA_ROOTS [--unlabeled-data-roots UNLABELED_DATA_ROOTS] [--unlabeled-file-list UNLABELED_FILE_LIST] [--load-weights LOAD_WEIGHTS]
-                  [--save-model-to SAVE_MODEL_TO] [--save-logs-to SAVE_LOGS_TO] [--enable-hpo] [--hpo-time-ratio HPO_TIME_RATIO]
-                  template {params} ...
-
-  positional arguments:
-    template
-    {params}              sub-command help
-      params              Hyper parameters defined in template file.
-
-  optional arguments:
-    -h, --help            show this help message and exitfnxhn
-    --data DATA
-    --train-ann-files TRAIN_ANN_FILES
-                          Comma-separated paths to training annotation files.
-    --train-data-roots TRAIN_DATA_ROOTS
-                          Comma-separated paths to training data folders.
-    --val-ann-files VAL_ANN_FILES
-                          Comma-separated paths to validation annotation files.
-    --val-data-roots VAL_DATA_ROOTS
-                          Comma-separated paths to validation data folders.
-    --unlabeled-data-roots UNLABELED_DATA_ROOTS
-                          Comma-separated paths to unlabeled data folders
-    --unlabeled-file-list UNLABELED_FILE_LIST
-                          Comma-separated paths to unlabeled file list
-    --load-weights LOAD_WEIGHTS
-                          Load only weights from previously saved checkpoint
-    --save-model-to SAVE_MODEL_TO
-                          Location where trained model will be stored.
-    --save-logs-to SAVE_LOGS_TO
-                          Location where logs will be stored.
-    --enable-hpo          Execute hyper parameters optimization (HPO) before training.
-    --hpo-time-ratio HPO_TIME_RATIO
-                          Expected ratio of total time to run HPO to time taken for full fine-tuning.
-
 ============================
 Template-specific parameters
 ============================
@@ -225,29 +181,7 @@ Validation
 
 1. ``otx eval`` runs evaluation of a trained model on a particular dataset.
 
-Eval function receives test annotation information and folder containig a model snapshot and label schema.
-
-.. code-block::
-
-  (detection) ...$ otx eval otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml --help
-  usage: otx eval [-h] [--data DATA] --test-ann-files TEST_ANN_FILES --test-data-roots TEST_DATA_ROOTS --load-weights LOAD_WEIGHTS [--save-performance SAVE_PERFORMANCE] template {params} ...
-
-  positional arguments:
-    template
-    {params}              sub-command help
-      params              Hyper parameters defined in template file.
-
-  optional arguments:
-    -h, --help            show this help message and exit
-    --data DATA
-    --test-ann-files TEST_ANN_FILES
-                          Comma-separated paths to test annotation files.
-    --test-data-roots TEST_DATA_ROOTS
-                          Comma-separated paths to test data folders.
-    --load-weights LOAD_WEIGHTS
-                          Load only weights from previously saved checkpoint
-    --save-performance SAVE_PERFORMANCE
-                          Path to a json file where computed performance will be stored.
+Eval function receives test annotation information and folder that contains a model snapshot and label schema.
 
 The default metric measured is mAP and f1.
 
@@ -274,7 +208,7 @@ In order to tune testing parameters such as confidence threshold, a various set 
     ...
 
 
-2. The evaluation results of the trained snaphot in ``outputs`` folder on BCCD dataset can be received and saved to ``outputs/performance`` with:
+2. The command below evaluates snaphot in ``outputs`` folder on BCCD dataset and saves results to ``outputs/performance`` :
 
 .. code-block::
 
