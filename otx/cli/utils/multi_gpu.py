@@ -1,6 +1,6 @@
 """Multi GPU training utility."""
 
-# Copyright (C) 2021 Intel Corporation
+# Copyright (C) 2022 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -59,7 +59,7 @@ def get_gpu_ids(gpus: str) -> List[int]:
         gpu_ids.remove(wrong_gpu)
 
     if wrong_gpus:
-        logger.warning(f"Wrong gpu indeces are excluded. {','.join([str(val) for val in gpu_ids])} GPU will be used.")
+        logger.warning(f"Wrong gpu indices are excluded. {','.join([str(val) for val in gpu_ids])} GPU will be used.")
 
     return gpu_ids
 
@@ -101,7 +101,7 @@ class MultiGPUManager:
     def __init__(self, train_func: Callable, gpu_ids: str, multi_gpu_port: str):
         self._train_func = train_func
         self._gpu_ids = get_gpu_ids(gpu_ids)
-        self._multi_gpu_port = multi_gpu_port
+        self._port = multi_gpu_port
         self._main_pid = os.getpid()
         self._processes: Optional[List[mp.Process]] = None
 
@@ -133,7 +133,7 @@ class MultiGPUManager:
         signal.signal(signal.SIGINT, self._terminate_signal_handler)
         signal.signal(signal.SIGTERM, self._terminate_signal_handler)
 
-        self.initialize_multigpu_train(0, self._gpu_ids, self._multi_gpu_port)
+        self.initialize_multigpu_train(0, self._gpu_ids, self._port)
 
         threading.Thread(target=self._check_child_processes_alive, daemon=True).start()
 
@@ -186,7 +186,7 @@ class MultiGPUManager:
         for rank in range(1, len(self._gpu_ids)):
             task_p = spawned_mp.Process(
                 target=MultiGPUManager.run_child_process,
-                args=(self._train_func, rank, self._gpu_ids, output_path, self._multi_gpu_port),
+                args=(self._train_func, rank, self._gpu_ids, output_path, self._port),
             )
             task_p.start()
             processes.append(task_p)
