@@ -1,2 +1,0 @@
-Datumaro integration support
-=========

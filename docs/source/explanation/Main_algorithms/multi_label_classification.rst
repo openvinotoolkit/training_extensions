@@ -1,12 +1,54 @@
 Multi-label Classification
 =========
 
+*********
 Dataset format
+*********
 
+As it is a common practice to use object detection datasets in the academic area, we support the most popular object detection formats: `COCO <https://cocodataset.org/#format-data>`_ and `VOC <http://host.robots.ox.ac.uk/pascal/VOC/>`_.
+Concretely, these formats will be converted in our internal representation via the `Datumaro <https://github.com/openvinotoolkit/datumaro>`_ dataset handler.
+
+*********
 Backbones
+*********
+We use the same model templates as for multi-class Classification. Please, refer: :doc:`multi_class_classification`
 
+*********
 Supervised Incremental Learning
+*********
 
+The main goal of the task is to predict a set of labels per image. We solve this problem by optimizing small binary classification sub-tasks whether or not the exact class is presented on the given image.
+
+For supervised learning we use the following algorithms components:
+
+- Augmentations: Besides basic augmentations like random flip and random rotate, we use `Augmix <https://arxiv.org/abs/1912.02781>`_. This advanced type of augmentation helps to significantly expand the training distribution.
+
+- Optimizer: `Sharpness Aware Minimization (SAM) <https://arxiv.org/abs/2209.06585>`_. Wrapper upon the SGD that helps to achieve better generalization minimizing simultaneously loss value and loss sharpness.
+
+- Learning rate schedule: `One Cycle Learning Rate policy <https://arxiv.org/abs/1708.07120>`_ . It is the combination of gradually increasing the learning rate and gradually decreasing the momentum during the first half of the cycle, then gradually decreasing the learning rate and increasing the momentum during the latter half of the cycle.
+
+- Loss function: We use Asymmetric Angular Margin Loss. We can formulate this loss as follows: :math:`L_j (cos\Theta_j,y) = \frac{k}{s}y p_-^{\gamma^-}\log{p_+} + \frac{1-k}{s}(1-y)p_+^{\gamma^+}\log{p_-}`, where :math:`s` is a scale parameter, :math:`m` is an angular margin, :math:`k` is negative-positive weighting coefficient, :math:`\gamma^+` and :math:`\gamma^-` are weighting parameters. For further information about loss function, ablation studies, and experiments, please refer to our dedicated `paper <https://arxiv.org/abs/2209.06585>`_.
+
+In the table below the mAP on some academic datasets is presented. The results were obtained on our templates without any changes. We use 480x480 image resolution to make results comparable with academic papers, for other hyperparameters, please, refer to the related template. We train all models on 1 GPU Nvidia GeForce GTX3090.
+
++-----------------------+-----------------+-----------+-----------+-----------+
+| Model name            | Pascal-VOC 2007 |    COCO   |   VG500   | NUS-WIDE  |
++=======================+=================+===========+===========+===========+
+| MobileNet-V3-large-1x | N/A             | N/A       | N/A       | N/A       |
++-----------------------+-----------------+-----------+-----------+-----------+
+| EfficientNet-B0       | N/A             | N/A       | N/A       | N/A       |
++-----------------------+-----------------+-----------+-----------+-----------+
+| EfficientNet-V2-S     | N/A             | N/A       | N/A       | N/A       |
++-----------------------+-----------------+-----------+-----------+-----------+
+
+*********
 Semi-supervised Learning
+*********
 
+To be added soon
+
+*********
 Self-supervised Learning
+*********
+
+To be added soon

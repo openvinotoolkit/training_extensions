@@ -6,7 +6,6 @@ Additional Features
 
 
    Auto-configuration
-   Datumaro_support
    HPO
    Models_optimization
    Incremental_learning
