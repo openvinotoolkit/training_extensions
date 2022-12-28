@@ -80,7 +80,7 @@ class SemiSLDetectionInferrer(SemiSLDetectionStage):
             input_source = cfg.get("input_source")
             logger.info(f"Inferring on input source: data.{input_source}")
             if input_source == "train":
-                src_data_cfg = self.get_train_data_cfg(cfg)
+                src_data_cfg = self.get_data_cfg(cfg, "train")
             else:
                 src_data_cfg = cfg.data[input_source]
             data_cfg.test_mode = src_data_cfg.get("test_mode", False)

@@ -136,7 +136,7 @@ def run_hpo(args: Namespace, environment: TaskEnvironment, dataset: DatasetEntit
     task_class = get_impl_class(environment.model_template.entrypoints.base)
     task_class = get_train_wrapper_task(task_class, task_type)
 
-    task = task_class(task_environment=environment)
+    task = task_class(task_environment=environment, output_path=args.work_dir)
 
     hpopt_cfg = _load_hpopt_config(
         osp.join(
@@ -335,8 +335,8 @@ def get_train_wrapper_task(impl_class, task_type):
     class HpoTrainTask(impl_class):
         """wrapper class for the HPO."""
 
-        def __init__(self, task_environment):
-            super().__init__(task_environment)
+        def __init__(self, task_environment, **kwargs):
+            super().__init__(task_environment, **kwargs)
             self._task_type = task_type
 
         # TODO: need to check things below whether works on MPA tasks
@@ -487,12 +487,7 @@ class HpoManager:
             if _is_anomaly_framework_task(task_type):
                 impl_class = get_impl_class(environment.model_template.entrypoints.base)
                 task = impl_class(task_environment=environment)
-                model = ModelEntity(
-                    dataset,
-                    environment.get_model_configuration(),
-                )
-                task.save_model(model)
-                save_model_data(model, self.work_dir)
+                torch.save(task.model_info(), osp.join(self.work_dir, "weights.pth"))
         else:
             save_model_data(environment.model, self.work_dir)
 

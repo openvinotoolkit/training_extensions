@@ -190,7 +190,8 @@ nncf_optimization:
       operator: AND
       rules: []
       type: UI_RULES
-    visible_in_ui: true
+    value: false
+    visible_in_ui: false
     warning: null
   type: PARAMETER_GROUP
   visible_in_ui: true

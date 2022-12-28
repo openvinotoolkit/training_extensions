@@ -98,10 +98,6 @@ class ClsStage(Stage):
             if cfg.model.get("multilabel", False) or cfg.model.get("hierarchical", False):
                 cfg.model.head.pop("topk", None)
 
-        # Other hyper-parameters
-        if cfg.get("hyperparams", False):
-            self.configure_hyperparams(cfg, training, **kwargs)
-
         return cfg
 
     @staticmethod
@@ -173,7 +169,7 @@ class ClsStage(Stage):
 
         model_tasks, dst_classes = None, None
         model_classes, data_classes = [], []
-        train_data_cfg = Stage.get_train_data_cfg(cfg)
+        train_data_cfg = Stage.get_data_cfg(cfg, "train")
         if isinstance(train_data_cfg, list):
             train_data_cfg = train_data_cfg[0]
 
@@ -293,18 +289,6 @@ class ClsStage(Stage):
                 cfg.model.head.num_classes = len(train_data_cfg.dst_classes)
                 cfg.model.head.num_old_classes = len(old_classes)
         return model_tasks, dst_classes
-
-    @staticmethod
-    def configure_hyperparams(cfg, training, **kwargs):
-        hyperparams = kwargs.get("hyperparams", None)
-        if hyperparams is not None:
-            bs = hyperparams.get("bs", None)
-            if bs is not None:
-                cfg.data.samples_per_gpu = bs
-
-            lr = hyperparams.get("lr", None)
-            if lr is not None:
-                cfg.optimizer.lr = lr
 
     def _put_model_on_gpu(self, model, cfg):
         if torch.cuda.is_available():

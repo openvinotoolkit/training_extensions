@@ -240,7 +240,7 @@ class TestCreateConverter:
         label_group = LabelGroup(name="Detection labels group", labels=labels)
         label_schema = LabelSchemaEntity(label_groups=[label_group])
         converter = create_converter(converter_type=Domain.DETECTION, labels=label_schema)
-        assert isinstance(converter, DetectionBoxToAnnotationConverter)
+        assert isinstance(converter, DetectionToAnnotationConverter)
         assert converter.labels == labels
         # Checking "SegmentationToAnnotationConverter" returned by "create_converter" function when "SEGMENTATION"is
         # specified as "converter_type"

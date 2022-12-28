@@ -70,11 +70,11 @@ class ActionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask
     """Inference Task Implementation of OTX Action Task."""
 
     @check_input_parameters_type()
-    def __init__(self, task_environment: TaskEnvironment):
+    def __init__(self, task_environment: TaskEnvironment, **kwargs):
         # self._should_stop = False
         self._model = None
         self.task_environment = task_environment
-        super().__init__(ActionConfig, task_environment)
+        super().__init__(ActionConfig, task_environment, **kwargs)
 
     @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def infer(

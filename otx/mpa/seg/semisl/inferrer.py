@@ -66,7 +66,7 @@ class SemiSegInferrer(SemiSegStage):
         input_source = cfg.get("input_source", "test")
         self.logger.info(f"Inferring on input source: data.{input_source}")
         if input_source == "train":
-            src_data_cfg = Stage.get_train_data_cfg(cfg)
+            src_data_cfg = Stage.get_data_cfg(cfg, "train")
         else:
             src_data_cfg = cfg.data[input_source]
         data_cfg = cfg.data.test.copy()

@@ -117,7 +117,7 @@ class DetectionStage(Stage):
             cfg.data.train.type = super_type
         if training:
             if "dataset" in cfg.data.train:
-                train_cfg = self.get_train_data_cfg(cfg)
+                train_cfg = self.get_data_cfg(cfg, "train")
                 train_cfg.otx_dataset = cfg.data.train.pop("otx_dataset", None)
                 train_cfg.labels = cfg.data.train.get("labels", None)
                 train_cfg.data_classes = cfg.data.train.pop("data_classes", None)

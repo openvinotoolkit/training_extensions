@@ -266,19 +266,20 @@ class Stage(object):
         return meta
 
     @staticmethod
-    def get_train_data_cfg(cfg):
-        if "dataset" in cfg.data.train:  # Concat|RepeatDataset
-            dataset = cfg.data.train.dataset
+    def get_data_cfg(cfg, subset):
+        assert subset in ["train", "val", "test"], f"Unknown subset:{subset}"
+        if "dataset" in cfg.data[subset]:  # Concat|RepeatDataset
+            dataset = cfg.data[subset].dataset
             while hasattr(dataset, "dataset"):
                 dataset = dataset.dataset
             return dataset
         else:
-            return cfg.data.train
+            return cfg.data[subset]
 
     @staticmethod
     def get_data_classes(cfg):
         data_classes = []
-        train_cfg = Stage.get_train_data_cfg(cfg)
+        train_cfg = Stage.get_data_cfg(cfg, "train")
         if "data_classes" in train_cfg:
             data_classes = list(train_cfg.pop("data_classes", []))
         elif "classes" in train_cfg:
