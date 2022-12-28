@@ -49,7 +49,7 @@ class SemiSLDetectionStage(IncrDetectionStage):
             self.configure_task_adapt_hook(cfg, org_model_classes, model_classes)
             self.configure_val_interval(cfg)
         else:
-            src_data_cfg = self.get_train_data_cfg(cfg)
+            src_data_cfg = self.get_data_cfg(cfg, "train")
             src_data_cfg.pop("old_new_indices", None)
 
     @staticmethod

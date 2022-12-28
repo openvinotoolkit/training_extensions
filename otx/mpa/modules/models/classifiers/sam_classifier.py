@@ -107,9 +107,9 @@ class SAMImageClassifier(ImageClassifier):
         if backbone_type == "OTXMobileNetV3":
             for k, v in state_dict.items():
                 if k.startswith("backbone"):
-                    k = k.replace("backbone.", "")
+                    k = k.replace("backbone.", "", 1)
                 elif k.startswith("head"):
-                    k = k.replace("head.", "")
+                    k = k.replace("head.", "", 1)
                     if "3" in k:  # MPA uses "classifier.3", OTX uses "classifier.4". Convert for OTX compatibility.
                         k = k.replace("3", "4")
                         if module.multilabel and not module.is_export:
@@ -119,9 +119,9 @@ class SAMImageClassifier(ImageClassifier):
         elif backbone_type == "OTXEfficientNet":
             for k, v in state_dict.items():
                 if k.startswith("backbone"):
-                    k = k.replace("backbone.", "")
+                    k = k.replace("backbone.", "", 1)
                 elif k.startswith("head"):
-                    k = k.replace("head", "output")
+                    k = k.replace("head", "output", 1)
                     if not module.hierarchical and not module.is_export:
                         k = k.replace("fc", "asl")
                         v = v.t()
@@ -130,7 +130,7 @@ class SAMImageClassifier(ImageClassifier):
         elif backbone_type == "OTXEfficientNetV2":
             for k, v in state_dict.items():
                 if k.startswith("backbone"):
-                    k = k.replace("backbone.", "")
+                    k = k.replace("backbone.", "", 1)
                 elif k == "head.fc.weight":
                     k = k.replace("head.fc", "model.classifier")
                     if not module.hierarchical and not module.is_export:
