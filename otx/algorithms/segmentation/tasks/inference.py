@@ -273,7 +273,7 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
                     current_label_soft_prediction = soft_prediction[:, :, label_index]
                     class_act_map = get_activation_map(current_label_soft_prediction)
                     result_media = ResultMediaEntity(
-                        name="Soft Prediction",
+                        name=label.name,
                         type="soft_prediction",
                         label=label,
                         annotation_scene=dataset_item.annotation_scene,

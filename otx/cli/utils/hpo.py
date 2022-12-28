@@ -487,12 +487,7 @@ class HpoManager:
             if _is_anomaly_framework_task(task_type):
                 impl_class = get_impl_class(environment.model_template.entrypoints.base)
                 task = impl_class(task_environment=environment)
-                model = ModelEntity(
-                    dataset,
-                    environment.get_model_configuration(),
-                )
-                task.save_model(model)
-                save_model_data(model, self.work_dir)
+                torch.save(task.model_info(), osp.join(self.work_dir, "weights.pth"))
         else:
             save_model_data(environment.model, self.work_dir)
 

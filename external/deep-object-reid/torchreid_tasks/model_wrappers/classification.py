@@ -30,6 +30,13 @@ except ImportError as e:
 class OteClassification(Classification):
     __model__ = 'ote_classification'
 
+    def __init__(self, model_adapter, configuration=None, preload=False):
+        super().__init__(model_adapter, configuration, preload)
+        if self.hierarchical:
+            logits_range_dict = self.multihead_class_info.get('head_idx_to_logits_range', False)
+            if logits_range_dict:  #  json allows only string key, revert to integer.
+                self.multihead_class_info['head_idx_to_logits_range'] = {int(k):v for k,v in logits_range_dict.items()}
+
     @classmethod
     def parameters(cls):
         parameters = super().parameters()
@@ -91,29 +98,21 @@ class OteClassification(Classification):
 
     @check_input_parameters_type()
     def postprocess_aux_outputs(self, outputs: Dict[str, np.ndarray], metadata: Dict[str, Any]):
-        actmap = get_actmap(outputs['saliency_map'][0], (metadata['original_shape'][1], metadata['original_shape'][0]))
+        saliency_map = outputs['saliency_map'][0]
         repr_vector = outputs['feature_vector'].reshape(-1)
 
         logits = outputs[self.out_layer_name].squeeze()
 
         if self.multilabel:
             probs = sigmoid_numpy(logits)
+        elif self.hierarchical:
+            probs = activate_multihead_output(logits, self.multihead_class_info)
         else:
             probs = softmax_numpy(logits)
 
         act_score = float(np.max(probs) - np.min(probs))
 
-        return actmap, repr_vector, act_score
-
-
-@check_input_parameters_type()
-def get_actmap(features: Union[np.ndarray, Iterable, int, float],
-               output_res: Union[tuple, list]):
-    am = cv2.resize(features, output_res)
-    am = cv2.applyColorMap(am, cv2.COLORMAP_JET)
-    am = cv2.cvtColor(am, cv2.COLOR_BGR2RGB)
-    return am
-
+        return probs, saliency_map, repr_vector, act_score
 
 @check_input_parameters_type()
 def sigmoid_numpy(x: np.ndarray):
@@ -121,19 +120,35 @@ def sigmoid_numpy(x: np.ndarray):
 
 
 @check_input_parameters_type()
-def softmax_numpy(x: np.ndarray):
+def softmax_numpy(x: np.ndarray, eps: float = 1e-9):
     x = np.exp(x)
-    x /= np.sum(x)
+    inf_ind = np.isinf(x)
+    total_infs = np.sum(inf_ind)
+    if total_infs > 0:
+        x[inf_ind] = 1. / total_infs
+        x[~inf_ind] = 0
+    else:
+        x /= np.sum(x) + eps
     return x
+
+
+@check_input_parameters_type()
+def activate_multihead_output(logits: np.ndarray, multihead_class_info: dict):
+    for i in range(multihead_class_info['num_multiclass_heads']):
+        logits_begin, logits_end = multihead_class_info['head_idx_to_logits_range'][i]
+        logits[logits_begin : logits_end] = softmax_numpy(logits[logits_begin : logits_end])
+
+    if multihead_class_info['num_multilabel_classes']:
+        logits_begin, logits_end = multihead_class_info['num_single_label_classes'], -1
+        logits[logits_begin : logits_end] = softmax_numpy(logits[logits_begin : logits_end])
+
+    return logits
 
 
 @check_input_parameters_type()
 def get_hierarchical_predictions(logits: np.ndarray, multihead_class_info: dict,
                                  pos_thr: float = 0.5, activate: bool = True):
     predicted_labels = []
-    logits_range_dict = multihead_class_info.get('head_idx_to_logits_range', False)
-    if logits_range_dict:  #  json allows only string key, revert to integer.
-        multihead_class_info['head_idx_to_logits_range'] = {int(k):v for k,v in logits_range_dict.items()}
     for i in range(multihead_class_info['num_multiclass_heads']):
         logits_begin, logits_end = multihead_class_info['head_idx_to_logits_range'][i]
         head_logits = logits[logits_begin : logits_end]

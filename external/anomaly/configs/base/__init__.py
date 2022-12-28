@@ -14,6 +14,8 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .configuration import BaseAnomalyConfig
+from .draem import DraemAnomalyBaseConfig
+from .padim import PadimAnomalyBaseConfig
+from .stfpm import STFPMAnomalyBaseConfig
 
-__all__ = ["BaseAnomalyConfig"]
+__all__ = ["PadimAnomalyBaseConfig", "STFPMAnomalyBaseConfig", "DraemAnomalyBaseConfig"]

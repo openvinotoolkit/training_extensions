@@ -44,6 +44,10 @@ class OTXMaskRCNNModel(MaskRCNNModel):
 
     def postprocess(self, outputs, meta):
         """Post process function for OTX MaskRCNN model."""
+
+        # pylint: disable-msg=too-many-locals
+        resize_mask = meta.get("resize_mask", True)
+
         boxes = (
             outputs[self.output_blob_name["boxes"]]
             if self.is_segmentoly
@@ -75,9 +79,16 @@ class OTXMaskRCNNModel(MaskRCNNModel):
         resized_masks = []
         for box, cls, raw_mask in zip(boxes, classes, masks):
             raw_cls_mask = raw_mask[cls, ...] if self.is_segmentoly else raw_mask
-            resized_masks.append(self._segm_postprocess(box, raw_cls_mask, *meta["original_shape"][:-1]))
+            if resize_mask:
+                resized_masks.append(self._segm_postprocess(box, raw_cls_mask, *meta["original_shape"][:-1]))
+            else:
+                resized_masks.append(raw_cls_mask)
 
         return scores, classes, boxes, resized_masks
+
+    def segm_postprocess(self, *args, **kwargs):
+        """Post-process for segmentation masks."""
+        return self._segm_postprocess(*args, **kwargs)
 
 
 class OTXSSDModel(SSD):

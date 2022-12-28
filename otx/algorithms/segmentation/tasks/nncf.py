@@ -134,7 +134,7 @@ class SegmentationNNCFTask(SegmentationInferenceTask, IOptimizationTask):
         self._training_work_dir = None
         self._is_training = False
         self._should_stop = False
-        ### Exit
+        # Exit
         self._optimization_type = ModelOptimizationType.NNCF
 
     def _set_attributes_by_hyperparams(self):

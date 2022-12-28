@@ -129,8 +129,8 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
             AnomalyModule: Anomalib
                 classification or segmentation model with/without weights.
         """
-        model = get_model(config=self.config)
         if otx_model is None:
+            model = get_model(config=self.config)
             logger.info(
                 "No trained model in project yet. Created new model with '%s'",
                 self.model_name,
@@ -139,10 +139,16 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
             buffer = io.BytesIO(otx_model.get_data("weights.pth"))
             model_data = torch.load(buffer, map_location=torch.device("cpu"))
 
+            if model_data["config"]["model"]["backbone"] != self.config["model"]["backbone"]:
+                logger.warning(
+                    "Backbone of the model in the Task Environment is different from the one in the template. "
+                    f"creating model with backbone={model_data['config']['model']['backbone']}"
+                )
+                self.config["model"]["backbone"] = model_data["config"]["model"]["backbone"]
             try:
+                model = get_model(config=self.config)
                 model.load_state_dict(model_data["model"])
                 logger.info("Loaded model weights from Task Environment")
-
             except BaseException as exception:
                 raise ValueError("Could not load the saved model. The model file structure is invalid.") from exception
 
@@ -252,8 +258,8 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         logger.info("Exporting the OpenVINO model.")
         onnx_path = os.path.join(self.config.project.path, "onnx_model.onnx")
         self._export_to_onnx(onnx_path)
-        optimize_command = "mo --input_model " + onnx_path + " --output_dir " + self.config.project.path
-        subprocess.call(optimize_command, shell=True)
+        optimize_command = ["mo", "--input_model", onnx_path, "--output_dir", self.config.project.path]
+        subprocess.run(optimize_command, check=True)
         bin_file = glob(os.path.join(self.config.project.path, "*.bin"))[0]
         xml_file = glob(os.path.join(self.config.project.path, "*.xml"))[0]
         with open(bin_file, "rb") as file:
@@ -267,7 +273,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         output_model.set_data("label_schema.json", label_schema_to_bytes(self.task_environment.label_schema))
         self._set_metadata(output_model)
 
-    def _model_info(self) -> Dict:
+    def model_info(self) -> Dict:
         """Return model info to save the model weights.
 
         Returns:
@@ -286,7 +292,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
             output_model (ModelEntity): Output model onto which the weights are saved.
         """
         logger.info("Saving the model weights.")
-        model_info = self._model_info()
+        model_info = self.model_info()
         buffer = io.BytesIO()
         torch.save(model_info, buffer)
         output_model.set_data("weights.pth", buffer.getvalue())
@@ -302,8 +308,10 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         output_model.optimization_methods = self.optimization_methods
 
     def _set_metadata(self, output_model: ModelEntity):
-        output_model.set_data("image_threshold", self.model.image_threshold.value.cpu().numpy().tobytes())
-        output_model.set_data("pixel_threshold", self.model.pixel_threshold.value.cpu().numpy().tobytes())
+        if hasattr(self.model, "image_threshold"):
+            output_model.set_data("image_threshold", self.model.image_threshold.value.cpu().numpy().tobytes())
+        if hasattr(self.model, "pixel_threshold"):
+            output_model.set_data("pixel_threshold", self.model.pixel_threshold.value.cpu().numpy().tobytes())
         if hasattr(self.model, "normalization_metrics"):
             output_model.set_data("min", self.model.normalization_metrics.state_dict()["min"].cpu().numpy().tobytes())
             output_model.set_data("max", self.model.normalization_metrics.state_dict()["max"].cpu().numpy().tobytes())
