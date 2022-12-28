@@ -1,5 +1,5 @@
-How to train Classification  model
-================
+Classification  model
+================================
 
 <Guidelines for writing>
 

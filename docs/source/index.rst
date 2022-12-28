@@ -9,6 +9,7 @@ OpenVINO Training Extensions -- OTX
    features/index
    reference/index
    release_notes/index
+   README
 
 
 Indices and tables
