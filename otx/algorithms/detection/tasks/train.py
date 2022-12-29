@@ -69,7 +69,7 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
         labels = {label.name: label.color.rgb_tuple for label in self._labels}
         model_ckpt = torch.load(self._model_ckpt)
         modelinfo = {
-            "model": model_ckpt["state_dict"],
+            "model": model_ckpt,
             "config": hyperparams_str,
             "labels": labels,
             "confidence_threshold": self.confidence_threshold,
@@ -134,11 +134,13 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
         else:
             update_progress_callback = default_progress_callback
         self._time_monitor = TrainingProgressCallback(update_progress_callback)
-        self._learning_curves = DefaultDict(OTXLoggerHook.Curve)
+        self._learning_curves = DefaultDict(OTXLoggerHook.Curve)  # type: ignore
 
         self._data_cfg = self._init_train_data_cfg(dataset)
         self._is_training = True
-        results = self._run_task("DetectionTrainer", mode="train", dataset=dataset, parameters=train_parameters)
+        results = self._run_task(
+            "DetectionTrainer", mode="train", dataset=dataset, parameters=train_parameters, resume=self._resume
+        )
 
         # Check for stop signal when training has stopped. If should_stop is true, training was cancelled and no new
         if self._should_stop:

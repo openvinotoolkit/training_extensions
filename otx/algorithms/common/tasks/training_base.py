@@ -72,6 +72,7 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         self._model_label_schema = []  # type: List[LabelEntity]
         self._optimization_methods = []  # type: List[OptimizationMethod]
         self._model_ckpt = None
+        self._resume = False
         self._anchors = {}  # type: Dict[str, int]
         if output_path is None:
             output_path = tempfile.mkdtemp(prefix="OTX-task-")
@@ -79,13 +80,14 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         logger.info(f"created output path at {self._output_path}")
         if task_environment.model is not None:
             logger.info("loading the model from the task env.")
-            state_dict = self._load_model_state_dict(self._task_environment.model)
+            state_dict = self._load_model_ckpt(self._task_environment.model)
             if state_dict:
                 self._model_ckpt = os.path.join(self._output_path, "env_model_ckpt.pth")
                 if os.path.exists(self._model_ckpt):
                     os.remove(self._model_ckpt)
                 torch.save(state_dict, self._model_ckpt)
                 self._model_label_schema = self._load_model_label_schema(self._task_environment.model)
+                self._resume = self._load_resume_info(self._task_environment.model)
 
         # property below will be initialized by initialize()
         self._recipe_cfg = None
@@ -111,7 +113,7 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         # to override configuration at runtime
         self.override_configs = {}  # type: Dict[str, str]
 
-    def _run_task(self, stage_module, mode=None, dataset=None, **kwargs):
+    def _run_task(self, stage_module, mode=None, dataset=None, resume=False, **kwargs):
         # FIXME: Temporary remedy for CVS-88098
         export = kwargs.get("export", False)
         self._initialize(export=export)
@@ -134,7 +136,7 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         if mode is not None:
             self._mode = mode
 
-        common_cfg = ConfigDict(dict(output_path=self._output_path))
+        common_cfg = ConfigDict(dict(output_path=self._output_path, resume=resume))
 
         # build workflow using recipe configuration
         workflow = build(self._recipe_cfg, self._mode, stage_type=stage_module, common_cfg=common_cfg)
@@ -316,7 +318,7 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
     def _update_stage_module(self, stage_module: str):
         return stage_module
 
-    def _load_model_state_dict(self, model: Optional[ModelEntity]):
+    def _load_model_ckpt(self, model: Optional[ModelEntity]):
         if model and "weights.pth" in model.model_adapters:
             # If a model has been trained and saved for the task already, create empty model and load weights here
             buffer = io.BytesIO(model.get_data("weights.pth"))
@@ -327,7 +329,7 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
             if model_data.get("anchors"):
                 self._anchors = model_data["anchors"]
 
-            return model_data.get("model", model_data.get("state_dict", None))
+            return model_data
         return None
 
     def _load_model_label_schema(self, model: Optional[ModelEntity]):
@@ -339,6 +341,9 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
             model_label_schema = LabelSchemaMapper().backward(buffer)
             return model_label_schema.get_labels(include_empty=False)
         return self._labels
+
+    def _load_resume_info(self, model: ModelEntity):
+        return "resume" in model.model_adapters
 
     @staticmethod
     def _get_confidence_threshold(hyperparams):

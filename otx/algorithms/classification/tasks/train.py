@@ -61,7 +61,7 @@ class ClassificationTrainTask(ClassificationInferenceTask):
         labels = {label.name: label.color.rgb_tuple for label in self._labels}
         model_ckpt = torch.load(self._model_ckpt)
         modelinfo = {
-            "model": model_ckpt["state_dict"],
+            "model": model_ckpt,
             "config": hyperparams_str,
             "labels": labels,
             "VERSION": 1,
@@ -119,7 +119,9 @@ class ClassificationTrainTask(ClassificationInferenceTask):
         stage_module = "ClsTrainer"
         self._data_cfg = self._init_train_data_cfg(dataset)
         self._is_training = True
-        results = self._run_task(stage_module, mode="train", dataset=dataset, parameters=train_parameters)
+        results = self._run_task(
+            stage_module, mode="train", dataset=dataset, parameters=train_parameters, resume=self._resume
+        )
 
         # Check for stop signal between pre-eval and training.
         # If training is cancelled at this point,
