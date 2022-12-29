@@ -218,7 +218,7 @@ def main():  # pylint: disable=too-many-branches
         )
 
     if args.enable_hpo:
-        task = run_hpo(args, environment, dataset, template.task_type)
+        task = run_hpo(args, environment, dataset, data_roots)
         if task is None:
             print("cannot run HPO for this task. will train a model without HPO.")
             task = task_class(task_environment=environment, output_path=args.work_dir)
