@@ -45,7 +45,7 @@ class SemiSLDetectionStage(IncrDetectionStage):
         Semi supervised learning should support incrmental learning
         """
         if task_adapt_type == "mpa":
-            self.configure_bbox_head(cfg, model_classes)
+            self.configure_bbox_head(cfg, org_model_classes, model_classes)
             self.configure_task_adapt_hook(cfg, org_model_classes, model_classes)
             self.configure_val_interval(cfg)
         else:
