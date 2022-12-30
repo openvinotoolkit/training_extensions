@@ -5,9 +5,14 @@
 from mmcv.runner import HOOKS
 from mmcv.runner import EvalHook as SegEvalHook
 from mmcv.runner import Hook
-from mmdet.core.evaluation.eval_hooks import EvalHook as DetEvalHook
-from mpa.modules.hooks.checkpoint_hook import CheckpointHookWithValResults
-from mpa.modules.hooks.eval_hook import CustomEvalHook as ClsEvalHook
+
+from otx.mpa.modules.hooks.checkpoint_hook import CheckpointHookWithValResults
+from otx.mpa.modules.hooks.eval_hook import CustomEvalHook as ClsEvalHook
+
+try:
+    from mmdet.core.evaluation.eval_hooks import EvalHook as DetEvalHook
+except ImportError:
+    DetEvalHook = None
 
 
 @HOOKS.register_module()
@@ -37,7 +42,10 @@ class EvalBeforeTrainHook(Hook):
     @staticmethod
     def check_eval_hook(hook: Hook):
         """Check that the hook is an evaluation hook."""
-        return issubclass(type(hook), (ClsEvalHook, DetEvalHook, SegEvalHook))
+        eval_hook_types = (ClsEvalHook, SegEvalHook)
+        if DetEvalHook is not None:
+            eval_hook_types += (DetEvalHook,)
+        return issubclass(type(hook), eval_hook_types)
 
     @staticmethod
     def execute_hook(hook: Hook, runner):

@@ -243,7 +243,7 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
             self.set_early_stopping_hook()
 
         # add eval before train hook
-        update_or_add_custom_hook( self._recipe_cfg, ConfigDict(type="EvalBeforeTrainHook", priority="ABOVE_NORMAL"))
+        update_or_add_custom_hook(self._recipe_cfg, ConfigDict(type="EvalBeforeTrainHook", priority="ABOVE_NORMAL"))
 
         # add Cancel tranining hook
         update_or_add_custom_hook(

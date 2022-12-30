@@ -7,6 +7,7 @@ from . import (
     adaptive_training_hooks,
     checkpoint_hook,
     early_stopping_hook,
+    eval_before_train_hook,
     fp16_sam_optimizer_hook,
     gpu_monitor,
     hpo_hook,
@@ -25,5 +26,4 @@ from . import (
     unbiased_teacher_hook,
     unlabeled_data_hook,
     workflow_hooks,
-    eval_before_train_hook,
 )
