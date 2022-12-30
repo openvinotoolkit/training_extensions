@@ -19,7 +19,6 @@ import subprocess  # nosec
 
 import pytest
 
-from otx.cli.tools.build import SUPPORTED_TASKS as build_supported_tasks
 from otx.cli.tools.find import SUPPORTED_BACKBONE_BACKENDS as find_supported_backends
 from otx.cli.tools.find import SUPPORTED_TASKS as find_supported_tasks
 
