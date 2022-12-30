@@ -32,13 +32,10 @@ from otx.cli.utils.tests import (
 from tests.test_suite.e2e_test_system import e2e_pytest_component
 
 args = {
-    "--train-ann-file": "data/small_objects/annotations/instances_train.json",
-    "--train-data-roots": "data/small_objects/images/train",
-    "--val-ann-file": "data/small_objects/annotations/instances_val.json",
-    "--val-data-roots": "data/small_objects/images/val",
-    "--test-ann-files": "data/small_objects/annotations/instances_test.json",
-    "--test-data-roots": "data/small_objects/images/test",
-    "--input": "data/small_objects/images/train",
+    "--train-data-roots": "data/datumaro/coco_dataset/coco_instance_segmentation",
+    "--val-data-roots": "data/datumaro/coco_dataset/coco_instance_segmentation",
+    "--test-data-roots": "data/datumaro/coco_dataset/coco_instance_segmentation",
+    "--input": "data/datumaro/coco_dataset/coco_instance_segmentation/images",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",
