@@ -15,8 +15,9 @@ import os
 
 import timm
 from mmcv.runner import load_checkpoint
-from mpa.utils.logger import get_logger
 from torch import nn
+
+from otx.mpa.utils.logger import get_logger
 
 from ..builder import BACKBONES
 

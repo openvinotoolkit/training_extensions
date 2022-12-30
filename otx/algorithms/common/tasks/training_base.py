@@ -25,11 +25,6 @@ from typing import DefaultDict, Dict, List, Optional, Union
 import numpy as np
 import torch
 from mmcv.utils.config import Config, ConfigDict
-from mpa.builder import build
-from mpa.modules.hooks.cancel_interface_hook import CancelInterfaceHook
-from mpa.stage import Stage
-from mpa.utils.config_utils import remove_custom_hook, update_or_add_custom_hook
-from mpa.utils.logger import get_logger
 
 from otx.algorithms.common.adapters.mmcv.hooks import OTXLoggerHook
 from otx.algorithms.common.configs import TrainType
@@ -44,6 +39,11 @@ from otx.api.usecases.tasks.interfaces.export_interface import IExportTask
 from otx.api.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from otx.api.usecases.tasks.interfaces.unload_interface import IUnload
 from otx.api.utils.argument_checks import check_input_parameters_type
+from otx.mpa.builder import build
+from otx.mpa.modules.hooks.cancel_interface_hook import CancelInterfaceHook
+from otx.mpa.stage import Stage
+from otx.mpa.utils.config_utils import remove_custom_hook, update_or_add_custom_hook
+from otx.mpa.utils.logger import get_logger
 
 logger = get_logger()
 

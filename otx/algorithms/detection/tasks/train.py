@@ -20,7 +20,6 @@ from typing import Any, DefaultDict, Iterable, List, Optional
 import numpy as np
 import torch
 from mmcv.utils import ConfigDict
-from mpa.utils.logger import get_logger
 
 from otx.algorithms.common.adapters.mmcv.hooks import OTXLoggerHook
 from otx.algorithms.common.utils.callback import TrainingProgressCallback
@@ -46,6 +45,7 @@ from otx.api.entities.train_parameters import TrainParameters, default_progress_
 from otx.api.serialization.label_mapper import label_schema_to_bytes
 from otx.api.usecases.evaluation.metrics_helper import MetricsHelper
 from otx.api.usecases.tasks.interfaces.training_interface import ITrainingTask
+from otx.mpa.utils.logger import get_logger
 
 from .inference import DetectionInferenceTask
 

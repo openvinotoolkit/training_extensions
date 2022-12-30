@@ -26,7 +26,6 @@ import shutil
 import mmcv
 import torch
 from mmcv.utils import Registry, build_from_cfg
-from mpa.utils.config_utils import MPAConfig
 
 from otx.api.entities.model_template import TaskType
 from otx.cli.registry import Registry as OTXRegistry
@@ -35,6 +34,7 @@ from otx.cli.utils.importing import (
     get_backbone_registry,
     get_module_args,
 )
+from otx.mpa.utils.config_utils import MPAConfig
 
 DEFAULT_MODEL_TEMPLATE_ID = {
     "CLASSIFICATION": "Custom_Image_Classification_EfficinetNet-B0",

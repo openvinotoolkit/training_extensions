@@ -21,7 +21,6 @@ from typing import List, Optional, Union
 import torch
 from mmcv import Config, ConfigDict
 from mmdet.models.detectors import BaseDetector
-from mpa.utils.logger import get_logger
 
 from otx.algorithms.common.adapters.mmcv.utils import (
     get_meta_keys,
@@ -44,6 +43,7 @@ from otx.api.utils.argument_checks import (
     DirectoryPathCheck,
     check_input_parameters_type,
 )
+from otx.mpa.utils.logger import get_logger
 
 try:
     from sklearn.cluster import KMeans

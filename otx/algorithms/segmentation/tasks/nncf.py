@@ -36,7 +36,6 @@ from mmseg.integration.nncf import (
 )
 from mmseg.integration.nncf.config import compose_nncf_config
 from mmseg.models import build_segmentor
-from mpa.utils.config_utils import remove_custom_hook
 
 from otx.algorithms.common.adapters.mmcv.hooks import OTXLoggerHook
 from otx.algorithms.common.utils.callback import OptimizationProgressCallback
@@ -71,6 +70,7 @@ from otx.api.utils.argument_checks import (
     DatasetParamTypeCheck,
     check_input_parameters_type,
 )
+from otx.mpa.utils.config_utils import remove_custom_hook
 
 logger = logging.getLogger(__name__)
 

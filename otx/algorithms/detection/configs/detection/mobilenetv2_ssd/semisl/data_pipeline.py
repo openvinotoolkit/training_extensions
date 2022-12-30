@@ -16,7 +16,7 @@
 
 # pylint: disable=invalid-name
 
-# This is from mpa/recipes/stages/_base_/data/pipelines/ubt.py
+# This is from otx/mpa/recipes/stages/_base_/data/pipelines/ubt.py
 # This could be needed sync with incr-learning's data pipeline
 __img_scale = (864, 864)
 __img_norm_cfg = dict(mean=[0, 0, 0], std=[255, 255, 255], to_rgb=True)

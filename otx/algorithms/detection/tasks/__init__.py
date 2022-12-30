@@ -14,9 +14,8 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import mpa.det as MPADetection
-
 import otx.algorithms.common.adapters.mmcv.models as OTXBackbones
+import otx.mpa.det as MPADetection
 
 from .inference import DetectionInferenceTask
 from .nncf import DetectionNNCFTask
