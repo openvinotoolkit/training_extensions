@@ -33,13 +33,14 @@ from otx.cli.registry import find_and_parse_model_template
 from otx.cli.utils.config import configure_dataset, override_parameters
 from otx.cli.utils.hpo import run_hpo
 from otx.cli.utils.importing import get_impl_class
-from otx.cli.utils.multi_gpu import MultiGPUManager
 from otx.cli.utils.io import read_binary, read_label_schema, save_model_data
+from otx.cli.utils.multi_gpu import MultiGPUManager
 from otx.cli.utils.parser import (
     add_hyper_parameters_sub_parser,
     gen_params_dict_from_args,
 )
 from otx.core.data.adapter import get_dataset_adapter
+
 
 def parse_args():
     """Parses command line arguments.
@@ -172,7 +173,7 @@ def main():  # pylint: disable=too-many-branches
         template.task_type,
         train_data_roots=data_roots["train_subset"]["data_root"],
         val_data_roots=data_roots["val_subset"]["data_root"],
-        unlabeled_data_roots=data_roots["unlabeled_subset"]["data_root"] if is_include_unlabel_data else None
+        unlabeled_data_roots=data_roots["unlabeled_subset"]["data_root"] if is_include_unlabel_data else None,
     )
     dataset = dataset_adapter.get_otx_dataset()
     label_schema = dataset_adapter.get_label_schema()
