@@ -4,32 +4,32 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-# pylint: disable=invalid-name, too-many-locals, no-member, too-many-return-statements, unused-argument
+# pylint: disable=invalid-name, too-many-locals, no-member, too-many-instance-attributes, unused-argument
 
 import abc
 from abc import abstractmethod
 from typing import Any, Dict, List, Union
 
 import datumaro
-from datumaro.components.annotation import AnnotationType as DatumaroAnnotationType
 from datumaro.components.annotation import Annotation as DatumaroAnnotation
+from datumaro.components.annotation import AnnotationType as DatumaroAnnotationType
 from datumaro.components.dataset import Dataset as DatumaroDataset
 
-from otx.api.entities.datasets import DatasetEntity
-from otx.api.entities.id import ID
-from otx.api.entities.label import LabelEntity
-from otx.api.entities.label_schema import LabelGroup, LabelGroupType, LabelSchemaEntity
-from otx.api.entities.model_template import TaskType
-from otx.api.entities.subset import Subset
-from otx.api.entities.scored_label import ScoredLabel
-from otx.api.entities.shapes.polygon import Point, Polygon
-from otx.api.entities.shapes.rectangle import Rectangle
 from otx.api.entities.annotation import (
     Annotation,
     AnnotationSceneEntity,
     AnnotationSceneKind,
     NullAnnotationSceneEntity,
 )
+from otx.api.entities.datasets import DatasetEntity
+from otx.api.entities.id import ID
+from otx.api.entities.label import LabelEntity
+from otx.api.entities.label_schema import LabelGroup, LabelGroupType, LabelSchemaEntity
+from otx.api.entities.model_template import TaskType
+from otx.api.entities.scored_label import ScoredLabel
+from otx.api.entities.shapes.polygon import Point, Polygon
+from otx.api.entities.shapes.rectangle import Rectangle
+from otx.api.entities.subset import Subset
 
 
 class BaseDatasetAdapter(metaclass=abc.ABCMeta):
@@ -48,7 +48,7 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
     """
 
     def __init__(
-        self, 
+        self,
         task_type: TaskType,
         train_data_roots: str = None,
         val_data_roots: str = None,
@@ -64,13 +64,13 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
             train_data_roots=train_data_roots,
             val_data_roots=val_data_roots,
             test_data_roots=test_data_roots,
-            unlabeled_data_roots=unlabeled_data_roots
+            unlabeled_data_roots=unlabeled_data_roots,
         )
 
-        self.category_items = None # type: Any
-        self.label_groups = None # type: Any
-        self.label_entities = None # type: Any
-        self.label_schema = None # type: LabelSchemaEntity
+        self.category_items = None  # type: Any
+        self.label_groups = None  # type: Any
+        self.label_entities = None  # type: Any
+        self.label_schema = None  # type: Union[LabelSchemaEntity, None]
 
     def _import_dataset(
         self,
@@ -141,7 +141,7 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
             DatasetEntity:
         """
         raise NotImplementedError
-    
+
     def get_label_schema(self) -> LabelSchemaEntity:
         """Get Label Schema."""
         return self._generate_default_label_schema(self.label_entities)
@@ -181,12 +181,7 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
                 datumaro_dataset[Subset.TESTING].categories().get(DatumaroAnnotationType.label, None)
             )
         category_items = label_categories_list.items
-
-        # Get the 'label_groups' information
-        if hasattr(label_categories_list, "label_groups"):
-            label_groups = label_categories_list.label_groups
-        else:
-            label_groups = None
+        label_groups = label_categories_list.label_groups
 
         # LabelEntities
         label_entities = [
@@ -207,30 +202,20 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
         """
         return data_candidates[0]
 
-
     def _get_ann_scene_entity(self, shapes: List[Annotation]) -> AnnotationSceneEntity:
-        annotation_scene = None  # type: Union[NullAnnotationSceneEntity, AnnotationSceneEntity]
+        annotation_scene = None  # type: Union[NullAnnotationSceneEntity, AnnotationSceneEntity, None]
         if len(shapes) == 0:
             annotation_scene = NullAnnotationSceneEntity()
         else:
-            annotation_scene = AnnotationSceneEntity(
-                kind=AnnotationSceneKind.ANNOTATION, annotations=shapes
-            )
+            annotation_scene = AnnotationSceneEntity(kind=AnnotationSceneKind.ANNOTATION, annotations=shapes)
         return annotation_scene
-    
+
     def _get_label_entity(self, ann: DatumaroAnnotation) -> Annotation:
-        """ Get label entity"""
-        return Annotation(
-            Rectangle.generate_full_box(),
-            labels=[
-                ScoredLabel(
-                    label=self.label_entities[ann.label]
-                )
-            ]
-        )
-    
+        """Get label entity."""
+        return Annotation(Rectangle.generate_full_box(), labels=[ScoredLabel(label=self.label_entities[ann.label])])
+
     def _get_normalized_bbox_entity(self, ann: DatumaroAnnotation, width: int, height: int) -> Annotation:
-        """ Get bbox entity w/ normalization."""
+        """Get bbox entity w/ normalization."""
         return Annotation(
             Rectangle(
                 x1=ann.points[0] / width,
@@ -238,15 +223,11 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
                 x2=ann.points[2] / width,
                 y2=ann.points[3] / height,
             ),
-            labels=[
-                ScoredLabel(
-                    label=self.label_entities[ann.label]
-                )
-            ]
+            labels=[ScoredLabel(label=self.label_entities[ann.label])],
         )
-    
+
     def _get_original_bbox_entity(self, ann: DatumaroAnnotation) -> Annotation:
-        """ Get bbox entity w/o normalization."""
+        """Get bbox entity w/o normalization."""
         return Annotation(
             Rectangle(
                 x1=ann.points[0],
@@ -254,22 +235,16 @@ class BaseDatasetAdapter(metaclass=abc.ABCMeta):
                 x2=ann.points[2],
                 y2=ann.points[3],
             ),
-            labels=[
-                ScoredLabel(
-                    label=self.label_entities[ann.label]
-                )
-            ]
+            labels=[ScoredLabel(label=self.label_entities[ann.label])],
         )
-    
+
     def _get_polygon_entity(self, ann: DatumaroAnnotation, width: int, height: int) -> Annotation:
-        """ Get polygon entity."""
+        """Get polygon entity."""
         return Annotation(
             Polygon(
                 points=[
-                    Point(x=ann.points[i] / width, y=ann.points[i + 1] / height)
-                    for i in range(0, len(ann.points), 2)
+                    Point(x=ann.points[i] / width, y=ann.points[i + 1] / height) for i in range(0, len(ann.points), 2)
                 ]
             ),
             labels=[ScoredLabel(label=self.label_entities[ann.label])],
         )
-    
