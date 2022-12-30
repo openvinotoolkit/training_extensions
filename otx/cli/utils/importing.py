@@ -29,7 +29,7 @@ SUPPORTED_BACKBONE_BACKENDS = {
     "mmseg": "mmseg.models",
     "torchvision": "otx.algorithms.common.adapters.mmcv.models",
     "pytorchcv": "mmdet.models",
-    "omz.mmcls": "mpa.modules.ov.models.mmcls.backbones.mmov_backbone",
+    "omz.mmcls": "otx.mpa.modules.ov.models.mmcls.backbones.mmov_backbone",
 }
 
 
