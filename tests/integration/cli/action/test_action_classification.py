@@ -15,9 +15,9 @@ from tests.test_suite.e2e_test_system import e2e_pytest_component
 # Finetuning arguments
 # TODO: Need to change sample dataset
 args = {
-    "--train-data-roots": "data/cvat_dataset/action_detection",
-    "--val-data-roots": "data/cvat_dataset/action_detection",
-    "--test-data-roots": "data/cvat_dataset/action_detection",
+    "--train-data-roots": "data/cvat_dataset/action_classification",
+    "--val-data-roots": "data/cvat_dataset/action_classification",
+    "--test-data-roots": "data/cvat_dataset/action_classification",
     "train_params": ["params", "--learning_parameters.num_iters", "2", "--learning_parameters.batch_size", "4"],
 }
 
