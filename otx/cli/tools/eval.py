@@ -123,10 +123,7 @@ def main():
         }
     )
 
-    dataset_adapter = get_dataset_adapter(
-        template.task_type,
-        test_data_roots=data_roots["test_subset"]["data_root"]
-    )
+    dataset_adapter = get_dataset_adapter(template.task_type, test_data_roots=data_roots["test_subset"]["data_root"])
 
     dataset = dataset_adapter.get_otx_dataset()
     label_schema = dataset_adapter.get_label_schema()
