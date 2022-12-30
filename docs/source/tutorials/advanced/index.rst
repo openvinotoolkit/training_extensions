@@ -1,5 +1,5 @@
 Advanced tutorial
-================
+=================
 
 .. toctree::
    :maxdepth: 3

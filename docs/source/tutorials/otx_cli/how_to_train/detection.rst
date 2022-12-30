@@ -156,6 +156,8 @@ In order to tune training parameters such as batch size, learning rate, a variou
 
 3. For tutorial purposes, all examples will be run on the ATSS model. This comand line starts 1 GPU training of the medium object detection model on BCCD dataset.
 
+.. code-block::
+
   (detection) ...$ otx train otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml
                             --train-ann-files BBCD/train/_annotations.coco.json 
                             --train-data-roots  BBCD/train 
@@ -248,11 +250,6 @@ In order to tune testing parameters such as confidence threshold, a various set 
                             --test-data-roots  BBCD/valid 
                             --load-weights outputs/weights.pth
                             --save-performance outputs/performance.json
-
-  
-  ...
-
-  2022-12-29 01:31:51,710 | INFO : Confidence threshold 0.32500000000000007
   
   ...
 
@@ -299,6 +296,14 @@ Optimization
 - NNCF optimization used for trained snapshots in a framework-specific format such as checkpoint (pth) file from Pytorch. It starts training based on the weights from previous step in fewer precision.
 - POT optimization used for models exported in the OpenVINO IR format. It decreases the precision of the exported model and performs the post-training optimization.
 
+The function results with a following files, which could be used to run ``otx demo``[link]:
+
+- confidence_threshold
+- config.json
+- label_schema.json
+- openvino.bin
+- openvino.xml
+
 Read more about optimization in [#TODO link]
 
 2. Command example for optimizing a PyTorch model (.pth) with OpenVINO NNCF.
@@ -336,8 +341,10 @@ Read more about optimization in [#TODO link]
 
 
 #TODO significant drop of the loaded snapshot: 0.43 instead of 0.83
+
 #TODO show how to run evaluation of optimized model and its metrics?
-#TODO The optimized model isn't being saved
+
+#TODO The optimized model isn't being saved (TypeError: cannot pickle '_thread.lock' object)
 
 3. Command example for optimizing OpenVINO model (.xml) with OpenVINO POT:
 
@@ -353,13 +360,20 @@ Read more about optimization in [#TODO link]
 
   ...
 
-  2022-12-29 02:18:25,120 | INFO : Loading OpenVINO OTXDetectionTask
-  2022-12-29 02:18:26,294 | INFO : OpenVINO task initialization completed
-  2022-12-29 02:18:26,294 | INFO : Start POT optimization
+  2022-12-31 05:31:04,125 | INFO : Loading OpenVINO OTXDetectionTask
+  2022-12-31 05:31:05,470 | INFO : OpenVINO task initialization completed
+  2022-12-31 05:31:05,470 | INFO : Start POT optimization
 
   ...
 
-  
+  2022-12-31 05:37:51,004 | INFO : POT optimization completed
+  2022-12-31 05:37:51,219 | INFO : Start OpenVINO inference
+  2022-12-31 05:37:55,423 | INFO : OpenVINO inference completed
+  2022-12-31 05:37:55,423 | INFO : Start OpenVINO metric evaluation
+  2022-12-31 05:37:55,776 | INFO : OpenVINO metric evaluation completed
+  Performance(score: 0.8343621399176954, dashboard: (1 metric groups))
+
+The POT optimization will take 5-10 minutes without logging.
 
 
 The following stages how to deploy model and run demo are described in [link].
