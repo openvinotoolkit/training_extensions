@@ -12,11 +12,11 @@ from mmcls.datasets.base_dataset import BaseDataset
 from mmcls.datasets.builder import DATASETS, PIPELINES
 from mmcls.datasets.pipelines import Compose
 from mmcv.utils.registry import build_from_cfg
-from mpa.utils.logger import get_logger
 from sklearn.metrics import confusion_matrix as sklearn_confusion_matrix
 from torch.utils.data import Dataset
 
 from otx.algorithms.common.utils import get_cls_img_indices, get_old_new_img_indices
+from otx.mpa.utils.logger import get_logger
 
 logger = get_logger()
 
