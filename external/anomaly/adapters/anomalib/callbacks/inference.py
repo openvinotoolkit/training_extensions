@@ -45,6 +45,8 @@ class AnomalyInferenceCallback(Callback):
 
     def on_predict_epoch_end(self, _trainer: pl.Trainer, pl_module: AnomalyModule, outputs: List[Any]):
         """Call when the predict epoch ends."""
+        # TODO; refactor Ignore too many locals
+        # pylint: disable=too-many-locals
         outputs = outputs[0]
         pred_scores = np.hstack([output["pred_scores"].cpu() for output in outputs])
         pred_labels = np.hstack([output["pred_labels"].cpu() for output in outputs])
@@ -84,11 +86,11 @@ class AnomalyInferenceCallback(Callback):
                     numpy=anomaly_map_to_color_map(anomaly_map.squeeze(), normalize=False),
                 )
             )
-            logger.info(
-                "\n\tMin: %.3f, Max: %.3f, Threshold: %.3f, Assigned Label '%s', %.3f",
-                pl_module.min_max.min.item(),
-                pl_module.min_max.max.item(),
-                pl_module.image_threshold.value.item(),
-                label.name,
-                pred_score,
+            log_string = (
+                f"\n\tThreshold: {pl_module.image_threshold.value.item():.3f},"
+                f" Assigned Label '{label.name}', {pred_score:.3f}"
             )
+            if hasattr(pl_module, "normalization_metrics"):
+                for key, value in pl_module.normalization_metrics.state_dict().items():
+                    log_string += f" {key}: {value}"
+            logger.info(log_string)

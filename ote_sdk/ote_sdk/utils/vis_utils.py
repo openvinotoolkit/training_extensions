@@ -14,10 +14,9 @@ def get_actmap(
     saliency_map: np.ndarray,
     output_res: Union[tuple, list],
 ) -> np.ndarray:
-    """
-    Get activation map (heatmap)  from saliency map
+    """Get activation map (heatmap)  from saliency map
 
-    :param saliency_map: Saliency map with pixel values from 0-255 (np.ndarray)
+    :param saliency_map: Saliency map with pixel values from 0-255 (Union[np.ndarray, Iterable, int, float])
     :param output_res: Output resolution (Union[tuple, list])
     :return: activation map, heatmap (np.ndarray)
     """

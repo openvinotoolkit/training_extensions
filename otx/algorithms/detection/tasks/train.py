@@ -188,6 +188,7 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
             metric = MetricsHelper.compute_f_measure(result_set, vary_confidence_threshold=False)
 
         # compose performance statistics
+        # TODO[EUGENE]: HOW TO ADD A MAE CURVE FOR TaskType.COUNTING?
         performance = metric.get_performance()
         performance.dashboard_metrics.extend(
             DetectionTrainTask._generate_training_metrics(self._learning_curves, val_map)

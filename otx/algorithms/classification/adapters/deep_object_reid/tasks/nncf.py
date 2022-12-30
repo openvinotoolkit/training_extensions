@@ -116,9 +116,11 @@ class ClassificationInferenceTask(
     task_environment: TaskEnvironment
 
     @check_input_parameters_type()
-    def __init__(self, task_environment: TaskEnvironment):
+    def __init__(self, task_environment: TaskEnvironment, output_path: Optional[str] = None):
         logger.info("Loading ClassificationTask.")
-        self._scratch_space = tempfile.mkdtemp(prefix="otx-cls-scratch-")
+        if output_path is None:
+            output_path = tempfile.mkdtemp(prefix="otx-cls-scratch-")
+        self._scratch_space = output_path
         logger.info(f"Scratch space created at {self._scratch_space}")
 
         self._task_environment = task_environment
@@ -457,7 +459,7 @@ class ClassificationNNCFTask(
 ):  # pylint: disable=too-many-instance-attributes
     """Task for compressing classification models using NNCF."""
 
-    def __init__(self, task_environment: TaskEnvironment):
+    def __init__(self, task_environment: TaskEnvironment, **kwargs):
         curr_model_path = task_environment.model_template.model_template_path
         base_model_path = os.path.join(
             os.path.dirname(os.path.abspath(curr_model_path)),
@@ -468,7 +470,7 @@ class ClassificationNNCFTask(
             # Redirect to base model
             task_environment.model_template = parse_model_template(base_model_path)
         logger.info("Loading ClassificationNNCFTask.")
-        super().__init__(task_environment)
+        super().__init__(task_environment, **kwargs)
 
         check_nncf_is_enabled()
 

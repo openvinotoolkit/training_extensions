@@ -73,12 +73,12 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
     """Inference Task Implementation of OTX Segmentation."""
 
     @check_input_parameters_type()
-    def __init__(self, task_environment: TaskEnvironment):
+    def __init__(self, task_environment: TaskEnvironment, **kwargs):
         # self._should_stop = False
         self.freeze = True
         self.metric = "mDice"
         self._label_dictionary = {}  # type: Dict
-        super().__init__(SegmentationConfig, task_environment)
+        super().__init__(SegmentationConfig, task_environment, **kwargs)
 
     def infer(
         self, dataset: DatasetEntity, inference_parameters: Optional[InferenceParameters] = None
@@ -273,7 +273,7 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
                     current_label_soft_prediction = soft_prediction[:, :, label_index]
                     class_act_map = get_activation_map(current_label_soft_prediction)
                     result_media = ResultMediaEntity(
-                        name="Soft Prediction",
+                        name=label.name,
                         type="soft_prediction",
                         label=label,
                         annotation_scene=dataset_item.annotation_scene,
