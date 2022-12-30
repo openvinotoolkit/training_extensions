@@ -30,6 +30,10 @@ def get_dataset_adapter(
     Args:
         task_type: A task type such as ANOMALY_CLASSIFICATION, ANOMALY_DETECTION, ANOMALY_SEGMENTATION,
         CLASSIFICATION, INSTANCE_SEGMENTATION, DETECTION, CLASSIFICATION, ROTATED_DETECTION, SEGMENTATION.
+        train_data_roots: the path of data root for training data
+        val_data_roots: the path of data root for validation data
+        test_data_roots: the path of data root for test data
+        unlabeled_data_roots: the path of data root for unlabeled data
     """
     if task_type == TaskType.CLASSIFICATION:
         from .classification_dataset_adapter import ClassificationDatasetAdapter
@@ -39,7 +43,7 @@ def get_dataset_adapter(
             train_data_roots=train_data_roots,
             val_data_roots=val_data_roots,
             test_data_roots=test_data_roots,
-            unlabeled_data_roots=unlabeled_data_roots
+            unlabeled_data_roots=unlabeled_data_roots,
         )
 
     if task_type in [TaskType.DETECTION, TaskType.INSTANCE_SEGMENTATION]:
@@ -50,7 +54,7 @@ def get_dataset_adapter(
             train_data_roots=train_data_roots,
             val_data_roots=val_data_roots,
             test_data_roots=test_data_roots,
-            unlabeled_data_roots=unlabeled_data_roots
+            unlabeled_data_roots=unlabeled_data_roots,
         )
 
     if task_type == TaskType.SEGMENTATION:
@@ -61,7 +65,7 @@ def get_dataset_adapter(
             train_data_roots=train_data_roots,
             val_data_roots=val_data_roots,
             test_data_roots=test_data_roots,
-            unlabeled_data_roots=unlabeled_data_roots
+            unlabeled_data_roots=unlabeled_data_roots,
         )
 
     if task_type == TaskType.ACTION_CLASSIFICATION:
@@ -72,7 +76,7 @@ def get_dataset_adapter(
             train_data_roots=train_data_roots,
             val_data_roots=val_data_roots,
             test_data_roots=test_data_roots,
-            unlabeled_data_roots=unlabeled_data_roots
+            unlabeled_data_roots=unlabeled_data_roots,
         )
 
     if task_type == TaskType.ANOMALY_CLASSIFICATION:
@@ -83,7 +87,7 @@ def get_dataset_adapter(
             train_data_roots=train_data_roots,
             val_data_roots=val_data_roots,
             test_data_roots=test_data_roots,
-            unlabeled_data_roots=unlabeled_data_roots
+            unlabeled_data_roots=unlabeled_data_roots,
         )
 
     if task_type == TaskType.ANOMALY_DETECTION:
@@ -94,7 +98,7 @@ def get_dataset_adapter(
             train_data_roots=train_data_roots,
             val_data_roots=val_data_roots,
             test_data_roots=test_data_roots,
-            unlabeled_data_roots=unlabeled_data_roots
+            unlabeled_data_roots=unlabeled_data_roots,
         )
 
     if task_type == TaskType.ANOMALY_SEGMENTATION:
@@ -105,7 +109,7 @@ def get_dataset_adapter(
             train_data_roots=train_data_roots,
             val_data_roots=val_data_roots,
             test_data_roots=test_data_roots,
-            unlabeled_data_roots=unlabeled_data_roots
+            unlabeled_data_roots=unlabeled_data_roots,
         )
 
     # TODO: Need to implement

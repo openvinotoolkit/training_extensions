@@ -4,9 +4,10 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+from datumaro.components.annotation import AnnotationType
+
 # pylint: disable=invalid-name, too-many-locals, no-member, too-many-nested-blocks
 from datumaro.plugins.transforms import MasksToPolygons
-from datumaro.components.annotation import AnnotationType
 
 from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.datasets import DatasetEntity
@@ -34,11 +35,11 @@ class SegmentationDatasetAdapter(BaseDatasetAdapter):
                     shapes = []
                     for ann in datumaro_item.annotations:
                         if ann.type == AnnotationType.mask:
-                            #TODO: consider case -> didn't include the background information
+                            # TODO: consider case -> didn't include the background information
                             datumaro_polygons = MasksToPolygons.convert_mask(ann)
                             for d_polygon in datumaro_polygons:
                                 shapes.append(self._get_polygon_entity(d_polygon, image.width, image.height))
-                    
+
                     dataset_item = DatasetItemEntity(image, self._get_ann_scene_entity(shapes), subset=subset)
                     dataset_items.append(dataset_item)
 
