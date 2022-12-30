@@ -7,8 +7,7 @@
 # pylint: disable=invalid-name, too-many-locals, no-member
 from typing import List, Union
 
-from datumaro.components.annotation import LabelCategories
-from datumaro.components.annotation import AnnotationType
+from datumaro.components.annotation import AnnotationType, LabelCategories
 
 from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.datasets import DatasetEntity
@@ -16,6 +15,7 @@ from otx.api.entities.image import Image
 from otx.api.entities.label import LabelEntity
 from otx.api.entities.label_schema import LabelGroup, LabelGroupType, LabelSchemaEntity
 from otx.core.data.adapter.base_dataset_adapter import BaseDatasetAdapter
+
 
 class ClassificationDatasetAdapter(BaseDatasetAdapter):
     """Classification adapter inherited from BaseDatasetAdapter.
@@ -50,11 +50,11 @@ class ClassificationDatasetAdapter(BaseDatasetAdapter):
                     dataset_items.append(dataset_item)
 
         return DatasetEntity(items=dataset_items)
-    
+
     def get_label_schema(self) -> LabelSchemaEntity:
-        """ Get Label Schema."""
+        """Get Label Schema."""
         return self._generate_classification_label_schema(self.label_groups, self.label_entities)
-    
+
     def _generate_classification_label_schema(
         self, label_groups: List[LabelCategories.LabelGroup], label_entities: List[LabelEntity]
     ) -> LabelSchemaEntity:
