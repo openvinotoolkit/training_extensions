@@ -31,16 +31,19 @@ class LSTMEncoderDecoder(torch.nn.Module):
         i.e. number of the output channels of the CNN backbone
         positional_encodings (bool): use or not positional encodings from the transformer paper
         reduction (str): type of the dimension reduction
+        dropout_p (float): probability of dropout in LSTM layers
     """
 
     def __init__(self, out_size, cnn_encoder_height=1, encoder_hidden_size=256,
-                 encoder_input_size=512, positional_encodings=False, reduction='mean'):
+                 encoder_input_size=512, positional_encodings=False, reduction='mean',
+                 dropout_p=0):
         super().__init__()
         self.out_size = out_size
         self.encoder_hidden_size = encoder_hidden_size
         self.encoder_input_size = encoder_input_size
         self.cnn_encoder_height = cnn_encoder_height
         self.reduction_type = reduction
+        self.dropout_p = dropout_p
         if self.reduction_type in ('mean', 'flatten'):
             self.reduction = None
         elif self.reduction_type == 'weighted':
@@ -52,10 +55,10 @@ class LSTMEncoderDecoder(torch.nn.Module):
         self.num_directions = 2 if self.bidirectional else 1
         self.rnn_encoder = torch.nn.LSTM(self.encoder_input_size, self.encoder_hidden_size,
                                          bidirectional=True, num_layers=self.num_layers,
-                                         batch_first=True)
+                                         batch_first=True, dropout=self.dropout_p)
         self.rnn_decoder = torch.nn.LSTM(self.encoder_hidden_size * self.num_directions, self.encoder_hidden_size,
                                          bidirectional=True, num_layers=self.num_layers,
-                                         batch_first=True)
+                                         batch_first=True, dropout=self.dropout_p)
         self.fc = torch.nn.Linear(self.encoder_hidden_size * self.num_directions, out_features=self.out_size)
         if positional_encodings:
             self.pe = PositionalEncodingPermute2D(channels=self.encoder_input_size)

@@ -14,6 +14,7 @@
  limitations under the License.
 """
 import os
+import urllib
 
 ENCODER_INPUTS = "imgs"
 ENCODER_OUTPUTS = "row_enc_out,hidden,context,init_0"
@@ -30,4 +31,4 @@ def read_net(model_xml, ie):
 def download_checkpoint(model_path, url):
     os.makedirs(os.path.dirname(model_path), exist_ok=True)
     if not os.path.exists(model_path):
-        os.system(f'wget -nv {url} -O {model_path}')
+        urllib.request.urlretrieve(url, model_path)

@@ -66,7 +66,8 @@ model = dict(
         nms=dict(type='nms', iou_threshold=0.45),
         min_bbox_size=0,
         score_thr=0.02,
-        max_per_img=200))
+        max_per_img=200,
+        nms_pre_classwise=200))
 cudnn_benchmark = True
 # dataset settings
 dataset_type = 'CocoDataset'
@@ -133,11 +134,11 @@ optimizer = dict(type='SGD', lr=0.05, momentum=0.9, weight_decay=0.0005)
 optimizer_config = dict()
 # learning policy
 lr_config = dict(
-    policy='step',
+    policy='CosineAnnealing',
+    min_lr=0.00001,
     warmup='linear',
-    warmup_iters=1200,
-    warmup_ratio=1.0 / 3,
-    step=[8, 11, 13])
+    warmup_iters=100,
+    warmup_ratio=0.1)
 checkpoint_config = dict(interval=1)
 # yapf:disable
 log_config = dict(

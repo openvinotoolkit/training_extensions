@@ -83,7 +83,7 @@ class Vocab:
     def __len__(self):
         return self.length
 
-    def construct_phrase(self, indices, max_len=None, ignore_end_token=False):
+    def construct_phrase(self, indices, max_len=None, ignore_end_token=False, whitespace=True):
         phrase_converted = []
         if max_len is not None:
             indices_to_convert = indices[:max_len]
@@ -99,7 +99,10 @@ class Vocab:
                 break
             phrase_converted.append(self.id2sign.get(val, '?'))
 
-        return ' '.join(phrase_converted)
+        if whitespace:
+            return ' '.join(phrase_converted)
+
+        return ''.join(phrase_converted)
 
 
 def write_vocab(data_dir, as_json=True, annotation_file='formulas.norm.lst'):

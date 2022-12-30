@@ -1,4 +1,4 @@
 -r ../../external/mmaction2/requirements.txt
 joblib
-opencv-python==4.1.0.25
+opencv-python==4.5.*
 youtube-dl==2020.1.24

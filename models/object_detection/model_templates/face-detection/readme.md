@@ -4,12 +4,12 @@ Models that are able to detect faces.
 
 | Model Name          | Complexity (GFLOPs) | Size (Mp) | AP @ [IoU=0.50:0.95] (%) | AP for faces > 64x64 (%) | WiderFace Easy (%) | WiderFace Medium (%) | WiderFace Hard (%) | Links | GPU_NUM |
 | ------------------- | ------ | ----- | ---- | ------ | ------ | ------ | ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --- |
-| face-detection-0200 | 0.82   | 1.83  | 16.0 | 86.743 | 82.917 | 76.198 | 41.443 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/face-detection-0200.pth), [model template](./face-detection-0200/template.yaml) | 2   |
-| face-detection-0202 | 1.84   | 1.83  | 20.3 | 91.938 | 89.382 | 83.919 | 50.189 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/face-detection-0202.pth), [model template](./face-detection-0202/template.yaml) | 2   |
-| face-detection-0204 | 2.52   | 1.83  | 21.4 | 92.888 | 90.453 | 85.448 | 52.091 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/face-detection-0204.pth), [model template](./face-detection-0204/template.yaml) | 4   |
+| face-detection-0200 | 0.82   | 1.83  | 16.0 | 86.739 | 82.916 | 76.153 | 41.358 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/face-detection-0200.pth), [model template](./face-detection-0200/template.yaml) | 2   |
+| face-detection-0202 | 1.84   | 1.83  | 20.3 | 91.921 | 89.332 | 83.726 | 49.903 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/face-detection-0202.pth), [model template](./face-detection-0202/template.yaml) | 2   |
+| face-detection-0204 | 2.52   | 1.83  | 21.4 | 92.777 | 90.308 | 85.121 | 51.714 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/face-detection-0204.pth), [model template](./face-detection-0204/template.yaml) | 4   |
 | face-detection-0205 | 2.94   | 2.02  | 22.7 | 93.995 | 92.606 | 87.556 | 56.221 | [snapshot](https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/object_detection/v2/face-detection-0205-retrained.pth), [model template](./face-detection-0205/template.yaml) | 3   |
 | face-detection-0206 | 340.06 | 63.79 | 34.2 | 94.274 | 94.281 | 93.207 | 84.439 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/face-detection-0206.pth), [model template](./face-detection-0206/template.yaml) | 8   |
-| face-detection-0207 | 1.04   | 0.81  | 17.2 | 88.17  | 84.406 | 76.748 | 43.452 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/face-detection-0207.pth), [model template](./face-detection-0207/template.yaml) | 1   |
+| face-detection-0207 | 1.04   | 0.81  | 17.2 | 88.081  | 84.273 | 76.461 | 43.106 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/face-detection-0207.pth), [model template](./face-detection-0207/template.yaml) | 1   |
 
 Average Precision (AP) is defined as an area under the precision/recall curve.
 
@@ -132,3 +132,50 @@ Try both following variants and select the best one:
    * If you would like to start **training** from pre-trained weights use `--load-weights` pararmeter instead of `--resume-from`. Also you can use parameters such as `--epochs`, `--batch-size`, `--gpu-num`, `--base-learning-rate`, otherwise default values will be loaded from `${MODEL_TEMPLATE}`.
 
 As soon as training is completed, it is worth to re-evaluate trained model on test set (see Step 4.b).
+
+
+### 5. Optimization
+
+The models can be optimized -- compressed by [NNCF](https://github.com/openvinotoolkit/nncf) framework.
+
+To use NNCF to compress a face detection model, you should go to the root folder of this git repository
+and install compression requirements in your virtual environment by the command
+```bash
+pip install -r external/mmdetection/requirements/nncf_compression.txt
+```
+
+At the moment, only one compression method is supported for all face detection models:
+[int8 quantization](https://github.com/openvinotoolkit/nncf/blob/develop/docs/compression_algorithms/Quantization.md).
+Also the models face-detection-0200, face-detection-0202, face-detection-0204, and face-detection-0205
+support such NNCF compression method as
+[filter pruning](https://github.com/openvinotoolkit/nncf/blob/develop/docs/compression_algorithms/Pruning.md).
+
+To compress the model, 'compress.py' script should be used.
+
+Please, note that NNCF framework requires a dataset for compression, since it makes several steps of fine-tuning after
+compression to restore the quality of the model, so the command line parameters of the script `compress.py` are closer
+to the command line parameter of the training script for fine-tuning scenario 4.c stated above:
+```
+      python compress.py \
+         --load-weights ${SNAPSHOT} \
+         --train-ann-files ${TRAIN_ANN_FILE} \
+         --train-data-roots ${TRAIN_IMG_ROOT} \
+         --val-ann-files ${VAL_ANN_FILE} \
+         --val-data-roots ${VAL_IMG_ROOT} \
+         --save-checkpoints-to outputs \
+         --nncf-quantization
+```
+Note that the number of epochs required for NNCF compression should not be set by command line parameter, since it is
+calculated by the script `compress.py` itself.
+
+Also note that in the command above the parameter `--nncf-quantization` is used to make
+[int8 quantization](https://github.com/openvinotoolkit/nncf/blob/develop/docs/compression_algorithms/Quantization.md)
+of the model.
+If the model supports
+[filter pruning](https://github.com/openvinotoolkit/nncf/blob/develop/docs/compression_algorithms/Pruning.md),
+you can use the command line flag `--nncf-pruning` to turn on this compression method.
+
+(The combinations of two compression methods is also possible, but was not tested thoroughly.)
+
+The compressed model can be evaluated and exported to the OpenVINO™ format by the same commands as non-compressed model,
+see the items 4.b and 3.b above.

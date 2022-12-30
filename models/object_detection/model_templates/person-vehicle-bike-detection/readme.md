@@ -6,7 +6,7 @@ The crossroad-detection network model provides detection of three class objects:
 | --- | --- | --- | --- | --- | --- |
 | person-vehicle-bike-detection-2000 | 0.82 | 1.84 | 16.5 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/vehicle-person-bike-detection-2000-1.pth), [model template](./person-vehicle-bike-detection-2000/template.yaml) | 4 |
 | person-vehicle-bike-detection-2001 | 1.86 | 1.84 | 22.6 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/vehicle-person-bike-detection-2001-1.pth), [model template](./person-vehicle-bike-detection-2001/template.yaml) | 4 |
-| person-vehicle-bike-detection-2002 | 3.30 | 1.84 | 24.8 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/vehicle-person-bike-detection-2002-1.pth), [model template](./person-vehicle-bike-detection-2002/template.yaml) | 4 |
+| person-vehicle-bike-detection-2002 | 3.30 | 1.84 | 24.6 | [snapshot](https://download.01.org/opencv/openvino_training_extensions/models/object_detection/v2/vehicle-person-bike-detection-2002-1.pth), [model template](./person-vehicle-bike-detection-2002/template.yaml) | 4 |
 | person-vehicle-bike-detection-2003 | 6.78 | 1.95 | 33.6 | [snapshot](https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/object_detection/v2/vehicle-person-bike-detection-2003.pth), [model template](./person-vehicle-bike-detection-2003/template.yaml) | 2 |
 | person-vehicle-bike-detection-2004 | 1.88 | 1.95 | 27.4 | [snapshot](https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/object_detection/v2/vehicle-person-bike-detection-2004.pth), [model template](./person-vehicle-bike-detection-2004/template.yaml) | 2 |
 
@@ -129,3 +129,39 @@ Try both following variants and select the best one:
    * If you would like to start **training** from pre-trained weights use `--load-weights` pararmeter instead of `--resume-from`. Also you can use parameters such as `--epochs`, `--batch-size`, `--gpu-num`, `--base-learning-rate`, otherwise default values will be loaded from `${MODEL_TEMPLATE}`.
 
 As soon as training is completed, it is worth to re-evaluate trained model on test set (see Step 4.b).
+
+
+### 5. Optimization
+
+The models can be optimized -- compressed by [NNCF](https://github.com/openvinotoolkit/nncf) framework.
+
+To use NNCF to compress a crossroad person-vehicle-bike detection model, you should go to the root
+folder of this git repository and install compression requirements in your virtual environment by
+the command
+```bash
+pip install -r external/mmdetection/requirements/nncf_compression.txt
+```
+
+At the moment, only one compression method for the models is supported:
+[int8 quantization](https://github.com/openvinotoolkit/nncf/blob/develop/docs/compression_algorithms/Quantization.md).
+
+To compress the model, 'compress.py' script should be used.
+
+Please, note that NNCF framework requires a dataset for compression, since it makes several steps of fine-tuning after
+compression to restore the quality of the model, so the command line parameters of the script `compress.py` are closer
+to the command line parameter of the training script for fine-tuning scenario 4.c stated above:
+```
+      python compress.py \
+         --load-weights ${SNAPSHOT} \
+         --train-ann-files ${TRAIN_ANN_FILE} \
+         --train-data-roots ${TRAIN_IMG_ROOT} \
+         --val-ann-files ${VAL_ANN_FILE} \
+         --val-data-roots ${VAL_IMG_ROOT} \
+         --save-checkpoints-to outputs \
+         --nncf-quantization
+```
+Note that the number of epochs required for NNCF compression should not be set by command line parameter, since it is
+calculated by the script `compress.py` itself.
+
+The compressed model can be evaluated and exported to the OpenVINO™ format by the same commands as non-compressed model,
+see the items 4.b and 3.b above.

@@ -1,0 +1,15 @@
+{
+    "densenet":{
+        "url":"http://kliv.iitkgp.ac.in/projects/miriad/model_weights/bmi12/densenet.zip",
+        "dest_path":"model_weights/densenet.zip"
+
+    },
+    "densenet_eff":{
+        "url":"http://kliv.iitkgp.ac.in/projects/miriad/model_weights/bmi12/densenet_eff.zip",
+        "dest_path":"model_weights/densenet_eff.zip"
+    },
+    "test_data":{
+        "url":"http://kliv.iitkgp.ac.in/projects/miriad/model_weights/bmi12/sample_data.zip",
+        "dest_path":"test_data/sample_data.zip"
+    }
+}

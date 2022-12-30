@@ -31,14 +31,14 @@ if __name__ == '__main__':
     export_config = get_config(arguments.config, section='export')
     head_type = export_config.get('head').get('type')
     exporter = Exporter(export_config)
-    if head_type == 'AttentionBasedLSTM':
+    if head_type in ('AttentionBasedLSTM', 'TextRecognitionHeadAttention'):
         exporter.export_encoder()
         exporter.export_decoder()
     elif head_type == 'LSTMEncoderDecoder':
         exporter.export_complete_model()
     print('Model succesfully exported to ONNX')
     if export_config.get('export_ir'):
-        if head_type == 'AttentionBasedLSTM':
+        if head_type in ('AttentionBasedLSTM', 'TextRecognitionHeadAttention'):
             exporter.export_encoder_ir()
             exporter.export_decoder_ir()
         elif head_type == 'LSTMEncoderDecoder':

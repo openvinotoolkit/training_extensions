@@ -25,6 +25,7 @@ def parse_args():
     args = argparse.ArgumentParser()
     args.add_argument('--config')
     args.add_argument('--work_dir')
+    args.add_argument('--local_rank', default=0, type=int)
     return args.parse_args()
 
 
@@ -34,5 +35,5 @@ if __name__ == '__main__':
 
     train_config = get_config(arguments.config, section='train')
 
-    experiment = Trainer(work_dir=arguments.work_dir, config=train_config)
+    experiment = Trainer(work_dir=arguments.work_dir, config=train_config, rank=arguments.local_rank)
     experiment.train()

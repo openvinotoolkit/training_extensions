@@ -62,19 +62,19 @@ metrics:
 - display_name: AP for faces > 64x64
   key: ap_64x64
   unit: '%'
-  value: 86.743
+  value: 86.739
 - display_name: WiderFace Easy
   key: widerface_e
   unit: '%'
-  value: 82.917
+  value: 82.916
 - display_name: WiderFace Medium
   key: widerface_m
   unit: '%'
-  value: 76.198
+  value: 76.153
 - display_name: WiderFace Hard
   key: widerface_h
   unit: '%'
-  value: 41.443
+  value: 41.358
 - display_name: Size
   key: size
   unit: Mp

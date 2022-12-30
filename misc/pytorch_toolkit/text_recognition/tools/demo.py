@@ -33,7 +33,8 @@ class TextRecognitionDemo:
         self.vocab = read_vocab(config.get('vocab_path'))
         self.transform = create_list_of_transforms(config.get('transforms_list'))
         self.use_ctc = self.config.get('use_ctc')
-        self.model = TextRecognitionModel(config.get('backbone_config'), len(self.vocab), config.get('head', {}))
+        self.model = TextRecognitionModel(config.get('backbone_config'), len(
+            self.vocab), config.get('head', {}), config.get('transformation', {}))
         if self.model_path is not None:
             self.model.load_weights(self.model_path, map_location=config.get('map_location', 'cpu'))
         self.model.eval()

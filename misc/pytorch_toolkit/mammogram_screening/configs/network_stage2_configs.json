@@ -1,0 +1,38 @@
+{
+    "pred_all":{
+        "seg_model":"model_weights/checkpoint_stage1.pth",
+        "data_path":"test_data/prepared/",
+        "out_path":"test_data/prepared/mass_predictions/"
+    },
+    "get_patch":{
+        "tr_load_path":"test_data/prepared/mass_predictions/val_all_pred.npy",
+        "tr_save_path":"test_data/prepared/bags/val_bags_pred.npy",
+        "val_load_path":"test_data/prepared/mass_predictions/train_all_pred.npy",
+        "val_save_path":"test_data/prepared/bags/train_bags_pred.npy",
+        "save_folder":"test_data/prepared/bags/"
+    },
+    "train":{
+        "epochs": 5,
+        "num_workers": 10,
+        "lr": 1e-4,
+        "gpu":"True",
+        "model_save_path":"model_weights/",
+        "train_bags_path":"test_data/prepared/bags/train_bags_pred.npy",
+        "val_bags_path":"test_data/prepared/bags/val_bags_pred.npy",
+        "device":"cuda"
+    },
+    "export":{
+        "onnx_model":"model_weights/checkpoint_stage2.onnx",
+        "input_shape":"[5,1,64,64]",
+        "checkpoint": "model_weights/checkpoint_stage2.pth",
+        "model_name":"checkpoint_stage2"
+    },
+    "inference":{
+        "num_workers":10,
+        "gpu":"True",
+        "checkpoint":"model_weights/checkpoint_stage2.pth",
+        "test_bags_path":"test_data/prepared/bags/val_bags_pred.npy",
+        "out_pred_np":"model_weights/stage2_results.npy",
+        "onnx_checkpoint":"model_weights/checkpoint_stage2.onnx"
+    }
+}

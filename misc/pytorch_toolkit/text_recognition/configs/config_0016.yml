@@ -1,0 +1,104 @@
+backbone_config:
+  arch: resnext101_32x8d
+  disable_layer_3: false
+  disable_layer_4: true
+  one_ch_first_conv: true
+  output_channels: 1024
+head:
+  type: TextRecognitionHeadAttention
+  encoder_input_size: 1024
+  encoder_dim_internal: 1024
+  encoder_num_layers: 3
+  decoder_input_feature_size: [3,12]
+  decoder_max_seq_len: 28
+  decoder_dim_hidden: 1024
+  decoder_sos_index: 0
+  decoder_rnn_type: "GRU"
+  dropout_ratio: 0.3
+transformation:
+  type: tps
+  fiducial_num: 20
+  input_size: [64, 256]
+  output_size: [48, 192]
+  i_channel_num: 1
+val_transforms_list:
+  - name: TransformGrayscale
+device: "cuda"
+val_batch_size: 48
+num_workers: 4
+model_path: model_checkpoints/model_0016.pth
+model_url: https://storage.openvinotoolkit.org/repositories/openvino_training_extensions/models/text_recognition/text_recognition_0016.pth
+vocab_path: vocabs/vocab_alphanumeric.json
+train:
+  batch_size: 48
+  multi_gpu: true
+  learning_rate: 0.0001
+  clip_grad: 5.0
+  epochs: 15
+  loss_type: NLL
+  save_freq: 100000
+  val_freq: 10000
+  print_freq: 1000
+  optimizer: Adam
+  save_dir: model_checkpoints
+  datasets:
+    train:
+      - type: ICDAR2013RECDataset
+        case_sensitive: false
+        data_path: ../../../data/text_recognition/
+        annotation_file: ../../../data/text_recognition/annotation.txt
+        grayscale: true
+        fixed_img_shape:
+          - 64
+          - 256
+    validate:
+      - type: ICDAR2013RECDataset
+        case_sensitive: false
+        data_path: ../../../data/text_recognition/
+        annotation_file: ../../../data/text_recognition/annotation.txt
+        grayscale: true
+        fixed_img_shape:
+          - 64
+          - 256
+  train_transforms_list:
+    - name: TransformGrayscale
+eval:
+  dataset:
+    - type: ICDAR2013RECDataset
+      case_sensitive: false
+      data_path: ../../../data/text_recognition/
+      annotation_file: ../../../data/text_recognition/annotation.txt
+      grayscale: true
+      fixed_img_shape:
+        - 64
+        - 256
+  render: false
+  use_ctc: false
+demo:
+  transforms_list: []
+export:
+  res_encoder_name: model_0016_encoder.onnx
+  res_decoder_name: model_0016_decoder.onnx
+  encoder_input_names: 'imgs'
+  encoder_output_names: 'features,decoder_hidden'
+  decoder_input_names: 'hidden,features,decoder_input'
+  decoder_output_names: 'decoder_hidden,decoder_output'
+  decoder_input_shapes:
+    - # recurrent_state
+      - 1
+      - 1
+      - 1024
+    - # features
+      - 1
+      - 36
+      - 1024
+    - #  decoder_input
+      - 1
+  attn_type: 2d
+  export_ir: true
+  verbose_export: true
+  input_shape_encoder:
+    - 1
+    - 1
+    - 64
+    - 256

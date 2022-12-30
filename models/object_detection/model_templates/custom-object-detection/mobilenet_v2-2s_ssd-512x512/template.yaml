@@ -63,7 +63,7 @@ metrics:
 - display_name: AP @ [IoU=0.50:0.95]
   key: ap
   unit: '%'
-  value: 12.7
+  value: 12.6
 gpu_num: 3
 tensorboard: true
 config: model.py

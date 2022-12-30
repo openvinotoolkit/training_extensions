@@ -50,7 +50,8 @@ model = dict(
         nms=dict(type='nms', iou_threshold=0.45),
         min_bbox_size=0,
         score_thr=0.02,
-        max_per_img=200))
+        max_per_img=200,
+        nms_pre_classwise=200))
 cudnn_benchmark = True
 # dataset settings
 dataset_type = 'CocoDataset'

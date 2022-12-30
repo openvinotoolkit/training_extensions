@@ -62,7 +62,7 @@ metrics:
 - display_name: mAP @ [IoU=0.50:0.95]
   key: map
   unit: '%'
-  value: 24.8
+  value: 24.6
 gpu_num: 4
 tensorboard: true
 config: model.py
