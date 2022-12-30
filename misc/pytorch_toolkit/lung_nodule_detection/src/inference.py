@@ -1,5 +1,5 @@
-from infer_pack import infer_lung_seg
-from infer_pack import infer_patch_classifier
+from utils import infer_lung_seg
+from utils import infer_patch_classifier
 import argparse
 
 def main(args):
@@ -13,7 +13,7 @@ def main(args):
 	else:
 		savepath = args.savepath
 		imgpath = args.imgpath
-		patch_classifier.lungpatch_classifier(savepath,imgpath)
+		infer_patch_classifier.lungpatch_classifier(savepath,imgpath)
 
 
 if __name__ == '__main__':
@@ -35,7 +35,6 @@ if __name__ == '__main__':
 						help='Folder location where test images are stored')
 	parser.add_argument('--network',
 						help='Network to be trained')						
-
 
 	args= parser.parse_args()
 

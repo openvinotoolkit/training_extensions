@@ -1,14 +1,9 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-
 import SimpleITK as sitk
 import pylidc as pl
 import matplotlib.pyplot as plt
 import numpy as np
 from collections import defaultdict
 import os
-import glob
 import cv2
 from tqdm import tqdm as tq
 

@@ -34,7 +34,7 @@ class LungDataLoader(data.Dataset):
     def __init__(self,datapath,lung_path,json_file,split="train_set",is_transform= True,img_size= 512):
         
         self.split=split
-        self.path=path
+        self.path= datapath
         self.lung_path=lung_path
         self.json = json_file
         self.files = self.json[self.split]
@@ -49,12 +49,9 @@ class LungDataLoader(data.Dataset):
             [transforms.Resize(self.img_size),
             transforms.ToTensor()
             ])
-        
-        
+
     def __len__(self):
-        return len(self.files)
-        
-        
+        return len(self.files)    
         
     def __getitem__(self,index):
 
@@ -67,23 +64,19 @@ class LungDataLoader(data.Dataset):
             labels = torch.cat((1.-lung_mask,lung_mask)) #
 
         return img, labels
-  
+
     def transform(self,img,lung_mask):
         img = self.image_tf(img)
         img = img.type(torch.FloatTensor)
         lung_mask = self.lung_tf(lung_mask)
         lung_mask = lung_mask.type(torch.FloatTensor)
-        
-        
+
         return img,lung_mask
-
-
-
 
 
 class LungPatchDataLoader(data.Dataset):
 
-    def __init__(self,imgpath,split="train",is_transform= True):
+    def __init__(self,imgpath,split="train_set",is_transform= True):
         
         self.split = split
         

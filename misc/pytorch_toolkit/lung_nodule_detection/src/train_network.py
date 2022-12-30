@@ -1,6 +1,6 @@
-from train_pack import lung_seg
-from train_pack import lung_seg_adv
-from train_pack import patch_classifier
+from utils import lung_seg
+from utils import lung_seg_adv
+from utils import patch_classifier
 import argparse
 
 def main(args):

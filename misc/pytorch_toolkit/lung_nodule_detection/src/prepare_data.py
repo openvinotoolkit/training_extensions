@@ -1,8 +1,8 @@
 import argparse
-from prep_pack import visualize
-from prep_pack import generate_slices
-from prep_pack import create_folds
-from prep_pack import generate_patches
+from utils import visualize
+from utils import generate_slices
+from utils import create_folds
+from utils import generate_patches
 
 
 def main(args):
@@ -65,38 +65,38 @@ if __name__ == '__main__':
 	parser.add_argument('--genslice', default=False, action='store_true',
 						help='To create slices from 3D volume')
 	parser.add_argument('--createfolds', default=False, action='store_true',
-						help='Split dataset into 10 folds')	
+						help='Split dataset into 10 folds')
 	parser.add_argument('--genpatch', default=False, action='store_true',
 						help='To create patches from 2D slices')
 	parser.add_argument('--visualize', default=False, action='store_true',
-						help='Visualize any one of the slices')	
-
-
+						help='Visualize any one of the slices')
 	parser.add_argument('--savepath',
 						help='Folder location to save the files')
 	parser.add_argument('--masktype',
 						help='Type of mask to be generated. ie, nodule or lung')
 	parser.add_argument('--datasetpath',
-						help='Folder location of downloaded dataset')	
+						help='Folder location of downloaded dataset')
 	parser.add_argument('--foldno',
 						help='Fold number')
 	parser.add_argument('--additional', default=False, action='store_true',
-						help='Add additional slices')		
+						help='Add additional slices')
 	parser.add_argument('--category',
-						help='Category of data.[trainset,valset,testset]')	
+						help='Category of data.[trainset,valset,testset]')
 	parser.add_argument('--jsonpath',
 						help='Folder location where jsons are stored')
 	parser.add_argument('--datapath',
 						help='Folder location containing img and mask folders')
-	parser.add_argument('--lungsegpath', 
+	parser.add_argument('--lungsegpath',
 						help='Folder containing lung segmentation mask')
-	parser.add_argument('--patchtype', 
+	parser.add_argument('--patchtype',
 						help='positive or negative')
 	parser.add_argument('--sliceno',
 						help='Slice number to visualize')
 	parser.add_argument('--seriesuid',
 						help='Seriesuid of slice to visualize')
 
-	args= parser.parse_args()
+	args=parser.parse_args()
+
+	
 
 	main(args)

@@ -2,17 +2,21 @@
 
 Lung cancer is the most common form of cancer found worldwide with a high mortality rate. Early detection of pulmonary nodules by screening with a low-dose computed tomography (CT) scan is crucial for its effective clinical management. Nodules which are symptomatic of malignancy occupy about 0.0125 - 0.025% of volume in a CT scan of a patient. Manual screening of all slices is a tedious task and presents a high risk of human errors. To tackle this problem we propose a computationally efficient two-stage framework. In the first stage, a convolutional neural network (CNN) trained adversarially using Turing test loss segments the lung region.
 In the second stage, patches sampled from the segmented region are then classified to detect the presence of nodules. The proposed method is experimentally validated on the LUNA16 challenge dataset with a dice coefficient of **0.984 ± 0.0007** for 10-fold cross-validation.
-**Paper** : [arXiv](https://arxiv.org/abs/2006.09308v1) 
+
+>**Paper** : [IEEE Xplore](https://ieeexplore.ieee.org/abstract/document/9175649)
+
 BibTeX reference to cite, if you use it:
 
 ```bibtex
-@inproceedings{Sathish2020LungSA, 
-title={Lung Segmentation and Nodule Detection in
- Computed Tomography Scan using a Convolutional Neural Network
- Trained Adversarially using Turing Test Loss},
- author={Rakshith Sathish and Rachana Sathish
- and Ramanathan Sethuraman and Debdoot Sheet}, 
- year={2020} } 
+@INPROCEEDINGS{9175649,
+  author={Sathish, Rakshith and Sathish, Rachana and Sethuraman, Ramanathan and Sheet, Debdoot},
+  booktitle={2020 42nd Annual International Conference of the IEEE Engineering in Medicine & Biology Society (EMBC)}, 
+  title={Lung Segmentation and Nodule Detection in Computed Tomography Scan using a Convolutional Neural Network Trained Adversarially using Turing Test Loss}, 
+  year={2020},
+  volume={},
+  number={},
+  pages={1331-1334},
+  doi={10.1109/EMBC44109.2020.9175649}}
 ```
 ## Dataset used
 
@@ -34,11 +38,10 @@ The ground truth annotations were marked in a two-phase image annotation process
 Code directory is organised into 3 subfolders; Data preparation, Training and Evaluation. Each of these subfolders has a .py file and a package folder containing function definitions. 
 ## Requirements
 
-Create a conda virtual environment with
+Create a virtual environment with all dependencies using 
 ```
-conda create --name <env> --file requirements.txt
+sh init_venv.sh
 ```
-This would create a virtual environment with all the necessary packages of the same version used during development.
  
 ## Data preparation
 Follow the below steps to prepare and organise the data for training.
@@ -86,29 +89,31 @@ To evaluate the classifier network execute
 
 ## Pre-trained Models
 ## Results
-## Support
 
-If you face any issues while executing the codes, raise an issue with rakshith.sathish@gmail.com
 
-# Authors and Acknowledgment
-- Rakshith Sathish
-- Rachana Sathish
-- Ramanathan Sethuraman
-- Debdoot Sheet
-> This work was supported through a research grant from Intel India Grand
-Challenge 2016 for Project MIRIAD
+## Acknowledgement
 
- # License
-Copyright [2020] [IITKLIV]
+ This work is undertaken as part of Intel India Grand Challenge 2016 Project MIRIAD: Many Incarnations of Screening of Radiology for High Throughput Disease Screening via Multiple Instance Reinforcement Learning with Adversarial Deep Neural Networks, sponsored by Intel Technology India Pvt. Ltd., Bangalore, India.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+**Principal Investigators**
 
-    http://www.apache.org/licenses/LICENSE-2.0
+<a href="https://www.linkedin.com/in/debdoot/">Dr Debdoot Sheet</a>,<a href="http://www.iitkgp.ac.in/department/EE/faculty/ee-nirmalya"> Dr Nirmalya Ghosh (Co-PI) </a></br>
+Department of Electrical Engineering,</br>
+Indian Institute of Technology Kharagpur</br>
+email: debdoot@ee.iitkgp.ac.in, nirmalya@ee.iitkgp.ac.in
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+<a href="https://www.linkedin.com/in/ramanathan-sethuraman-27a12aba/">Dr Ramanathan Sethuraman</a>,</br>
+Intel Technology India Pvt. Ltd.</br>
+email: ramanathan.sethuraman@intel.com
+
+**Contributor**
+
+The codes/model was contributed to the OpenVINO project by
+
+<a href="https://github.com/Rakshith2597"> Rakshith Sathish</a>,</br>
+Advanced Technology Development Center,</br>
+Indian Institute of Technology Kharagpur</br>
+email: rakshith.sathish@kgpian.iitkgp.ac.in</br>
+Github username: Rakshith2597
+
+## References
