@@ -68,7 +68,7 @@ def generate_default_cvat_xml_fields(i, class_idx, video_path, frame_list):
     task.append(name)
 
     size = etree.Element("size")
-    size.text = str(n_frames)  ####
+    size.text = str(n_frames)
     task.append(size)
 
     mode = etree.Element("mode")
@@ -76,7 +76,7 @@ def generate_default_cvat_xml_fields(i, class_idx, video_path, frame_list):
     task.append(mode)
 
     overlap = etree.Element("overlap")
-    overlap.text = "2"  ####
+    overlap.text = "2"
     task.append(overlap)
 
     bugtracker = etree.Element("bugtracker")
@@ -143,7 +143,7 @@ def generate_default_cvat_xml_fields(i, class_idx, video_path, frame_list):
 # classification
 def convert_jester_dataset_to_datumaro(src_path, dst_path):
     """Convert Jester dataset to multi-video CVAT (Datumaro) format."""
-    ## Prepare dst_path
+    # Prepare dst_path
     frames_dir_path = osp.join(src_path, "frames")
 
     phases = ["train", "val", "test"]
@@ -185,7 +185,7 @@ def convert_jester_dataset_to_datumaro(src_path, dst_path):
 
 def convert_ava_dataset_to_datumaro(src_path, dst_path):
     """Convert AVA dataset to multi-video CVAT (Datumaro) format."""
-    ## Prepare dst_path
+    # Prepare dst_path
     frames_dir_path = osp.join(src_path, "frames")
 
     phases = ["train", "valid"]

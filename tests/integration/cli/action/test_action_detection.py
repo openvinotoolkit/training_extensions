@@ -15,9 +15,9 @@ from tests.test_suite.e2e_test_system import e2e_pytest_component
 # Finetuning arguments
 # TODO: Need to change sample dataset
 args = {
-    "--train-ann-file": "data/custom_action_recognition/custom_dataset/val.csv",
-    "--val-ann-file": "data/custom_action_recognition/custom_dataset/val.csv",
-    "--test-ann-files": "data/custom_action_recognition/custom_dataset/val.csv",
+    "--train-ann-file": "data/cvat_dataset/action_classification",
+    "--val-ann-file": "data/cvat_dataset/action_classification",
+    "--test-ann-files": "data/cvat_dataset/action_classification",
     "train_params": ["params", "--learning_parameters.num_iters", "2", "--learning_parameters.batch_size", "4"],
 }
 
