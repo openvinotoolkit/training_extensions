@@ -76,9 +76,9 @@ For the supervised training we use the following algorithms components:
 - ``Loss function``: `Influence-Balanced Loss <https://arxiv.org/abs/2110.02444>`_. This is a balancing training method that helps us to solve the imbalanced data problem.
 
 - Additionaly, we use `No Bias Decay (NBD) <https://arxiv.org/abs/1812.01187>`_ technique and **early stopping** to add adaptability to the training pipeline and prevent overfitting.
-To further enhance the performance of the algorithm in case when we have a small number of data we use `Supervised Contrastive Learning <https://arxiv.org/abs/2004.11362>`_. More concretely, we train a model with two heads: classification head with Influence-Balanced Loss and SupCon head with `Barlow Twins loss <https://arxiv.org/abs/2103.03230>`_.
+To further enhance the performance of the algorithm in case when we have a small number of data we use `Supervised Contrastive Learning <https://arxiv.org/abs/2004.11362>`_. More specifically, we train a model with two heads: classification head with Influence-Balanced Loss and SupCon head with `Barlow Twins loss <https://arxiv.org/abs/2103.03230>`_.
 
-In the table below the top-1 accuracy on some academic datasets is presented. The results were obtained on our templates without any changes. We use 240x240 image resolution, for other hyperparameters, please, refer to the related template. We train all models on 1 GPU Nvidia GeForce GTX3090.
+In the table below the top-1 accuracy on some academic datasets is presented. The results were obtained on our templates without any changes. We use 224x224 image resolution, for other hyperparameters, please, refer to the related template. We train all models on 1 GPU Nvidia GeForce GTX3090.
 
 +-----------------------+-----------------+-----------+-----------+-----------+-----------+
 | Model name            | CIFAR100        |cars       |flowers    | pets      |SVHN       |

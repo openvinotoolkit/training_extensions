@@ -80,17 +80,12 @@ We use the same model templates as for multi-class Classification. Please, refer
 Supervised Incremental Learning
 *******************************
 
-We solve this task by assigning a separate head for each label group on each hierarchical level. Concretely, we have two types of label groups:
-
-- **Exclusive label group**, where the classifier solves multi-class classification problem and assigns only one label from the tree level.\
-
-- **Inclusive label group**, where the classifier solves multi-label classification problem and can assign multiple labels from the tree level.
+| We solve this task by assigning a separate head for each label group on each hierarchical level. Spicifically, we have a classifier that solves multi-class classification problem and assigns one label from the given exclusive label group.
+| To have inclusive label group we can construct single-label exclusive groups for every label and each of them will be handled by an individual binary classifier.
+| In this fashion, we train different classifiers, one - for each label group. We use the same training strategy as for :doc:`multi_class_classification` task.
 
 
-In this fashion, we train different classifiers, one - for each tree level. We use the same training strategy as for :doc:`multi_class_classification` task.
-
-
-| In the inference stage, we traverse the tree from head to leaves and obtain labels predicted by the corresponding classifier.
+| At the inference stage, we traverse the tree from head to leaves and obtain labels predicted by the corresponding classifier.
 | Let's say we forward an image with the label tree pictured in the above section. On the first level, our corresponding classifier returns 3 predictions.
 | We perform an *argmax* operation and obtain, for example, class ``Cats``. Then, we choose a classifier related to ``{Siamse, Persian, Sphynx}`` label group, obtain its predictions, and after performing the *argmax* operation we choose our last leaf label.
 | After that, we can easily reconstruct the final predicted tree branch: ``Persian -> Cats -> Pets``.

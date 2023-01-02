@@ -6,7 +6,7 @@ Dataset format
 **************
 
 As it is a common practice to use object detection datasets in the academic area, we support the most popular object detection formats: `COCO <https://cocodataset.org/#format-data>`_ and `VOC <http://host.robots.ox.ac.uk/pascal/VOC/>`_.
-Concretely, these formats will be converted in our internal representation via the `Datumaro <https://github.com/openvinotoolkit/datumaro>`_ dataset handler.
+Specifically, these formats will be converted in our internal representation via the `Datumaro <https://github.com/openvinotoolkit/datumaro>`_ dataset handler.
 
 We also support our custom and simple dataset format for multi-label classificaiton. It has the following structure:
 
@@ -64,7 +64,7 @@ For supervised learning we use the following algorithms components:
 
 - Additionally, we use `No Bias Decay (NBD) <https://arxiv.org/abs/1812.01187>`_ technique, **Exponential Moving Average (EMA)** for the model's weights and adaptive **early stopping** to add adaptability and prevent overfitting.
 
-In the table below the mAP on some academic datasets is presented. The results were obtained on our templates without any changes. We use 480x480 image resolution to make results comparable with academic papers, for other hyperparameters, please, refer to the related template. We train all models on 1 GPU Nvidia GeForce GTX3090.
+In the table below the `mAP <https://en.wikipedia.org/w/index.php?title=Information_retrieval&oldid=793358396#Average_precision>` on some academic datasets is presented. The results were obtained on our templates without any changes. We use 448x448 image resolution to make results comparable with academic papers, for other hyperparameters, please, refer to the related template. We train all models on 1 GPU Nvidia GeForce GTX3090.
 
 +-----------------------+-----------------+-----------+-----------+-----------+
 | Model name            | Pascal-VOC 2007 |    COCO   |   VG500   | NUS-WIDE  |
