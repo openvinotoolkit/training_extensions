@@ -83,6 +83,24 @@ Dataset preparation
       └── <images>
 
 
+3. ``(Optional)`` To simplify the comand line functions calling, you may create a ``data.yaml`` file with annotations info and pass it as a parameter. The content of the ``training_extesions/data.yaml`` for BBCD dataset should have absolete paths and will be similar to that:
+
+.. code-block::
+
+  {'data': 
+    {'train': 
+      {'ann-files': '/home/gzalessk/training_extensions/BBCD/train/_annotations.coco.json',
+       'data-roots': '/home/gzalessk/training_extensions/datasets/BBCD/train'},
+    'val':
+      {'ann-files': '/home/gzalessk/training_extensions/datasets/BBCD/valid/_annotations.coco.json',
+       'data-roots': '/home/gzalessk/training_extensions/datasets/BBCD/valid'},
+    'test':
+      {'ann-files': '/home/gzalessk/training_extensions/datasets/BBCD/test/_annotations.coco.json',
+       'data-roots': '/home/gzalessk/training_extensions/datasets/BBCD/test'}
+    }
+  }
+
+
 *********
 Training
 *********
@@ -378,3 +396,9 @@ The POT optimization will take 5-10 minutes without logging.
 
 The following stages how to deploy model and run demo are described in [link].
 
+
+***************
+Troubleshooting
+***************
+
+#TODO possible error logs and their solution?
