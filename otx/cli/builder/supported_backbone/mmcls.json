@@ -1,0 +1,121 @@
+{
+  "backbones": {
+    "mmcls.RegNet": {
+      "required": ["arch"],
+      "options": {
+        "arch": [
+          "regnetx_400mf",
+          "regnetx_800mf",
+          "regnetx_1.6gf",
+          "regnetx_3.2gf",
+          "regnetx_4.0gf",
+          "regnetx_6.4gf",
+          "regnetx_8.0gf",
+          "regnetx_12gf"
+        ]
+      },
+      "available": []
+    },
+    "mmcls.ResNet": {
+      "required": ["depth"],
+      "options": {
+        "depth": [18, 34, 50, 101, 152]
+      },
+      "available": []
+    },
+    "mmcls.ResNetV1d": {
+      "required": ["depth"],
+      "options": {
+        "depth": [18, 34, 50, 101, 152]
+      },
+      "available": []
+    },
+    "mmcls.ResNeXt": {
+      "required": ["depth"],
+      "options": {
+        "depth": [50, 101, 152]
+      },
+      "available": []
+    },
+    "mmcls.ResNeSt": {
+      "required": ["depth"],
+      "options": {
+        "depth": [50, 101, 152, 200, 269]
+      },
+      "available": []
+    },
+    "mmcls.ResNet_CIFAR": {
+      "required": ["depth"],
+      "options": {
+        "depth": [18, 34, 50, 101, 152]
+      },
+      "available": []
+    },
+    "mmcls.SEResNet": {
+      "required": ["depth"],
+      "options": {
+        "depth": [50, 101, 152]
+      },
+      "available": []
+    },
+    "mmcls.SEResNeXt": {
+      "required": ["depth"],
+      "options": {
+        "depth": [50, 101, 152]
+      },
+      "available": []
+    },
+    "mmcls.VGG": {
+      "required": ["depth"],
+      "options": {
+        "depth": [11, 13, 16, 19]
+      },
+      "available": []
+    },
+    "mmcls.LeNet5": {
+      "required": [],
+      "options": {},
+      "available": []
+    },
+    "mmcls.AlexNet": {
+      "required": [],
+      "options": {},
+      "available": []
+    },
+    "mmcls.ShuffleNetV1": {
+      "required": [],
+      "options": {},
+      "available": []
+    },
+    "mmcls.ShuffleNetV2": {
+      "required": [],
+      "options": {},
+      "available": []
+    },
+    "mmcls.MobileNetV2": {
+      "required": [],
+      "options": {},
+      "available": []
+    },
+    "mmcls.MobileNetV3": {
+      "required": [],
+      "options": {},
+      "available": []
+    },
+    "mmcls.VisionTransformer": {
+      "required": [],
+      "options": {},
+      "available": []
+    },
+    "mmcls.SwinTransformer": {
+      "required": [],
+      "options": {},
+      "available": []
+    },
+    "mmcls.TNT": {
+      "required": [],
+      "options": {},
+      "available": []
+    }
+  }
+}

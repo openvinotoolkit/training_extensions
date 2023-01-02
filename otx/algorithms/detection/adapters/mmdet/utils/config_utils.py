@@ -15,14 +15,12 @@
 # and limitations under the License.
 
 import math
-import os
 from collections import defaultdict
 from typing import List, Optional, Union
 
 import torch
 from mmcv import Config, ConfigDict
 from mmdet.models.detectors import BaseDetector
-from mpa.utils.logger import get_logger
 
 from otx.algorithms.common.adapters.mmcv.utils import (
     get_meta_keys,
@@ -45,6 +43,7 @@ from otx.api.utils.argument_checks import (
     DirectoryPathCheck,
     check_input_parameters_type,
 )
+from otx.mpa.utils.logger import get_logger
 
 try:
     from sklearn.cluster import KMeans
@@ -228,7 +227,7 @@ def patch_datasets(config: Config, domain: Domain):
     """Update dataset configs."""
 
     assert "data" in config
-    for subset in ("train", "val", "test"):
+    for subset in ("train", "val", "test", "unlabeled"):
         cfg = config.data.get(subset, None)
         if not cfg:
             continue
@@ -262,16 +261,6 @@ def patch_evaluation(config: Config):
     cfg.save_best = "mAP"
     # EarlyStoppingHook
     config.early_stop_metric = "mAP"
-
-
-# TODO Replace this with function in common
-def patch_data_pipeline(config: Config, template_file_path: str):
-    """Update data_pipeline configs."""
-    base_dir = os.path.abspath(os.path.dirname(template_file_path))
-    data_pipeline_path = os.path.join(base_dir, "data_pipeline.py")
-    if os.path.exists(data_pipeline_path):
-        data_pipeline_cfg = Config.fromfile(data_pipeline_path)
-        config.merge_from_dict(data_pipeline_cfg)
 
 
 @check_input_parameters_type({"dataset": DatasetParamTypeCheck})

@@ -76,7 +76,6 @@ class OTXRawframeDataset(RawframeDataset):
         otx_dataset: DatasetEntity,
         labels: List[LabelEntity],
         pipeline: Sequence[dict],
-        data_prefix=str,
         test_mode: bool = False,
         filename_tmpl: str = "img_{:05}.jpg",
         start_index: int = 1,
@@ -84,7 +83,6 @@ class OTXRawframeDataset(RawframeDataset):
     ):
         self.otx_dataset = otx_dataset
         self.labels = labels
-        self.data_prefix = data_prefix
         self.test_mode = test_mode
         self.filename_tmpl = filename_tmpl
         self.start_index = start_index

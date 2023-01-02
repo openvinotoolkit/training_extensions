@@ -9,16 +9,12 @@ from typing import Optional
 
 import numpy as np
 from mmcv.utils import ConfigDict
-from mpa import MPAConstants
-from mpa.stage import Stage
-from mpa.utils.config_utils import MPAConfig
-from mpa.utils.logger import get_logger
 
 from otx.algorithms.classification.configs import ClassificationConfig
 from otx.algorithms.classification.utils import (
     get_multihead_class_info as get_hierarchical_info,
 )
-from otx.algorithms.common.adapters.mmcv.utils import get_meta_keys
+from otx.algorithms.common.adapters.mmcv.utils import get_meta_keys, patch_data_pipeline
 from otx.algorithms.common.configs import TrainType
 from otx.algorithms.common.tasks import BaseTask
 from otx.api.entities.datasets import DatasetEntity
@@ -33,7 +29,6 @@ from otx.api.entities.model import (  # ModelStatus
     ModelOptimizationType,
     ModelPrecision,
 )
-from otx.api.entities.result_media import ResultMediaEntity
 from otx.api.entities.resultset import ResultSetEntity
 from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.task_environment import TaskEnvironment
@@ -41,11 +36,16 @@ from otx.api.entities.tensor import TensorEntity
 from otx.api.serialization.label_mapper import label_schema_to_bytes
 from otx.api.usecases.evaluation.metrics_helper import MetricsHelper
 from otx.api.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
+from otx.api.usecases.tasks.interfaces.explain_interface import IExplainTask
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType, IExportTask
 from otx.api.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from otx.api.usecases.tasks.interfaces.unload_interface import IUnload
+from otx.api.utils.dataset_utils import add_saliency_maps_to_dataset_item
 from otx.api.utils.labels_utils import get_empty_label
-from otx.api.utils.vis_utils import get_actmap
+from otx.mpa import MPAConstants
+from otx.mpa.stage import Stage
+from otx.mpa.utils.config_utils import MPAConfig
+from otx.mpa.utils.logger import get_logger
 
 # pylint: disable=invalid-name
 
@@ -55,13 +55,13 @@ TASK_CONFIG = ClassificationConfig
 
 
 class ClassificationInferenceTask(
-    BaseTask, IInferenceTask, IExportTask, IEvaluationTask, IUnload
+    BaseTask, IInferenceTask, IExportTask, IEvaluationTask, IExplainTask, IUnload
 ):  # pylint: disable=too-many-instance-attributes
     """Inference Task Implementation of OTX Classification."""
 
-    def __init__(self, task_environment: TaskEnvironment):
+    def __init__(self, task_environment: TaskEnvironment, **kwargs):
         self._should_stop = False
-        super().__init__(TASK_CONFIG, task_environment)
+        super().__init__(TASK_CONFIG, task_environment, **kwargs)
 
         self._task_environment = task_environment
         if len(task_environment.get_labels(False)) == 1:
@@ -69,8 +69,12 @@ class ClassificationInferenceTask(
         else:
             self._labels = task_environment.get_labels(include_empty=False)
         self._empty_label = get_empty_label(task_environment.label_schema)
+
+        self.task_model_dir = None
+        self.task_pipeline_path = None
         self._multilabel = False
         self._hierarchical = False
+        self._selfsl = False
 
         self._multilabel = len(task_environment.label_schema.get_groups(False)) > 1 and len(
             task_environment.label_schema.get_groups(False)
@@ -82,6 +86,9 @@ class ClassificationInferenceTask(
         if not self._multilabel and len(task_environment.label_schema.get_groups(False)) > 1:
             self._hierarchical = True
             self._hierarchical_info = get_hierarchical_info(task_environment.label_schema)
+
+        if self._hyperparams.algo_backend.train_type == TrainType.SELFSUPERVISED:
+            self._selfsl = True
 
     def infer(
         self,
@@ -99,7 +106,7 @@ class ClassificationInferenceTask(
         dump_saliency_map = not inference_parameters.is_evaluation if inference_parameters else True
         results = self._run_task(
             stage_module,
-            mode="train",
+            mode="eval",
             dataset=dataset,
             dump_features=dump_features,
             dump_saliency_map=dump_saliency_map,
@@ -117,6 +124,32 @@ class ClassificationInferenceTask(
             update_progress_callback = inference_parameters.update_progress  # type: ignore
 
         self._add_predictions_to_dataset(prediction_results, dataset, update_progress_callback)
+        return dataset
+
+    def explain(
+        self,
+        dataset: DatasetEntity,
+        explain_parameters: Optional[InferenceParameters] = None,
+    ) -> DatasetEntity:
+        """Main explain function of OTX Classification Task."""
+        logger.info("called explain()")
+        stage_module = "ClsExplainer"
+        self._data_cfg = self._init_test_data_cfg(dataset)
+        dataset = dataset.with_empty_annotations()
+
+        results = self._run_task(
+            stage_module,
+            mode="train",
+            dataset=dataset,
+            explainer=explain_parameters.explainer if explain_parameters else None,
+        )
+        logger.debug(f"result of run_task {stage_module} module = {results}")
+        saliency_maps = results["outputs"]["saliency_maps"]
+        update_progress_callback = default_progress_callback
+        if explain_parameters is not None:
+            update_progress_callback = explain_parameters.update_progress  # type: ignore
+
+        self._add_saliency_maps_to_dataset(saliency_maps, dataset, update_progress_callback)
         return dataset
 
     def evaluate(
@@ -233,16 +266,26 @@ class ClassificationInferenceTask(
                 dataset_item.append_metadata_item(active_score, model=self._task_environment.model)
 
             if saliency_map is not None:
-                saliency_map = get_actmap(saliency_map, (dataset_item.width, dataset_item.height))
-                saliency_map_media = ResultMediaEntity(
-                    name="Saliency Map",
-                    type="saliency_map",
-                    annotation_scene=dataset_item.annotation_scene,
-                    numpy=saliency_map,
-                    roi=dataset_item.roi,
+                add_saliency_maps_to_dataset_item(
+                    dataset_item=dataset_item,
+                    saliency_map=saliency_map,
+                    model=self._task_environment.model,
+                    labels=self._labels,
+                    task="cls",
                 )
-                dataset_item.append_metadata_item(saliency_map_media, model=self._task_environment.model)
+            update_progress_callback(int(i / dataset_size * 100))
 
+    def _add_saliency_maps_to_dataset(self, saliency_maps, dataset, update_progress_callback):
+        """Loop over dataset again and assign saliency maps."""
+        dataset_size = len(dataset)
+        for i, (dataset_item, saliency_map) in enumerate(zip(dataset, saliency_maps)):
+            add_saliency_maps_to_dataset_item(
+                dataset_item=dataset_item,
+                saliency_map=saliency_map,
+                model=self._task_environment.model,
+                labels=self._labels,
+                task="cls",
+            )
             update_progress_callback(int(i / dataset_size * 100))
 
     def _init_recipe_hparam(self) -> dict:
@@ -264,6 +307,11 @@ class ClassificationInferenceTask(
         else:
             early_stop = False
 
+        if self._recipe_cfg.runner.get("type") == "IterBasedRunner":  # type: ignore
+            runner = ConfigDict(max_iters=int(self._hyperparams.learning_parameters.num_iters))
+        else:
+            runner = ConfigDict(max_epochs=int(self._hyperparams.learning_parameters.num_iters))
+
         return ConfigDict(
             optimizer=ConfigDict(lr=self._hyperparams.learning_parameters.learning_rate),
             lr_config=lr_config,
@@ -272,7 +320,7 @@ class ClassificationInferenceTask(
                 samples_per_gpu=int(self._hyperparams.learning_parameters.batch_size),
                 workers_per_gpu=int(self._hyperparams.learning_parameters.num_workers),
             ),
-            runner=ConfigDict(max_epochs=int(self._hyperparams.learning_parameters.num_iters)),
+            runner=runner,
         )
 
     def _init_recipe(self):
@@ -285,8 +333,10 @@ class ClassificationInferenceTask(
 
         train_type = self._hyperparams.algo_backend.train_type
         logger.info(f"train type = {train_type}")
+        self.task_model_dir = os.path.abspath(os.path.dirname(self.template_file_path))
+        self.task_pipeline_path = os.path.abspath(self.data_pipeline_path)
 
-        if train_type not in (TrainType.SEMISUPERVISED, TrainType.INCREMENTAL):
+        if train_type not in (TrainType.SEMISUPERVISED, TrainType.INCREMENTAL, TrainType.SELFSUPERVISED):
             raise NotImplementedError(f"Train type {train_type} is not implemented yet.")
         if train_type == TrainType.SEMISUPERVISED:
             if not self._multilabel and not self._hierarchical:
@@ -304,6 +354,12 @@ class ClassificationInferenceTask(
             recipe = os.path.join(recipe_root, "incremental.yaml")
             if self._hyperparams.learning_parameters.enable_supcon:
                 recipe = os.path.join(recipe_root, "supcon.yaml")
+                self.task_pipeline_path = os.path.join(os.path.dirname(self.task_pipeline_path), "supcon", "data_pipeline.py")
+
+        if train_type == TrainType.SELFSUPERVISED:
+            recipe = os.path.join(recipe_root, "selfsl.yaml")
+            self.task_model_dir = os.path.join(self.task_model_dir, "selfsl")
+            self.task_pipeline_path = os.path.join(os.path.dirname(self.task_pipeline_path), "selfsl", "data_pipeline.py")
 
         logger.info(f"train type = {train_type} - loading {recipe}")
 
@@ -312,6 +368,7 @@ class ClassificationInferenceTask(
         # FIXME[Soobee] : if train type is not in cfg, it raises an error in default INCREMENTAL mode.
         # During semi-implementation, this line should be fixed to -> self._recipe_cfg.train_type = train_type
         self._recipe_cfg.train_type = train_type.name
+        patch_data_pipeline(self._recipe_cfg, self.task_pipeline_path)
         self._patch_datasets(self._recipe_cfg)  # for OTX compatibility
         self._patch_evaluation(self._recipe_cfg)  # for OTX compatibility
         logger.info(f"initialized recipe = {recipe}")
@@ -320,18 +377,17 @@ class ClassificationInferenceTask(
     # model.py contains heads/classifier only for INCREMENTAL setting
     # error log : ValueError: Unexpected type of 'data_loader' parameter
     def _init_model_cfg(self):
-        base_dir = os.path.abspath(os.path.dirname(self.template_file_path))
 
         model_base_name = "model"
         if self._hyperparams.learning_parameters.enable_supcon:
             model_base_name = os.path.join("supcon", "model")
 
         if self._multilabel:
-            cfg_path = os.path.join(base_dir, "model_multilabel.py")
+            cfg_path = os.path.join(self.task_model_dir, "model_multilabel.py")
         elif self._hierarchical:
-            cfg_path = os.path.join(base_dir, "model_hierarchical.py")
+            cfg_path = os.path.join(self.task_model_dir, "model_hierarchical.py")
         else:
-            cfg_path = os.path.join(base_dir, model_base_name + ".py")
+            cfg_path = os.path.join(self.task_model_dir, model_base_name + ".py")
 
         cfg = MPAConfig.fromfile(cfg_path)
         cfg.model.multilabel = self._multilabel
@@ -355,7 +411,7 @@ class ClassificationInferenceTask(
         )
         return data_cfg
 
-    def _patch_datasets(self, config: MPAConfig, domain=Domain.CLASSIFICATION):
+    def _patch_datasets(self, config: MPAConfig, domain=Domain.CLASSIFICATION):  # noqa: C901
         def patch_color_conversion(pipeline):
             # Default data format for OTX is RGB, while mmdet uses BGR, so negate the color conversion flag.
             for pipeline_step in pipeline:
@@ -386,12 +442,14 @@ class ClassificationInferenceTask(
                     cfg.hierarchical_info = self._hierarchical_info
                     if subset == "train":
                         cfg.drop_last = True  # For stable hierarchical information indexing
+                elif self._selfsl:
+                    cfg.type = "SelfSLDataset"
                 else:
                     cfg.type = "MPAClsDataset"
 
             # In train dataset, when sample size is smaller than batch size
             if subset == "train" and self._data_cfg:
-                train_data_cfg = Stage.get_train_data_cfg(self._data_cfg)
+                train_data_cfg = Stage.get_data_cfg(self._data_cfg, "train")
                 if len(train_data_cfg.get("otx_dataset", [])) < self._recipe_cfg.data.get("samples_per_gpu", 2):
                     cfg.drop_last = False
 
@@ -400,18 +458,30 @@ class ClassificationInferenceTask(
             cfg.labels = None
             cfg.empty_label = self._empty_label
             for pipeline_step in cfg.pipeline:
-                if subset == "train" and pipeline_step.type == "Collect":
-                    pipeline_step = get_meta_keys(pipeline_step)
-            patch_color_conversion(cfg.pipeline)
+                if self._selfsl:
+                    # TODO : refactoring
+                    # SelfSLDataset has pipelines={"view0": [...], "view1": [...]}.
+                    # To access `Normalize`, patch_color_conversion must be applied to both view0 and view1.
+                    for pipeline_view in cfg.pipeline[pipeline_step]:
+                        if subset == "train" and pipeline_view.type == "Collect":
+                            pipeline_view = get_meta_keys(pipeline_view)
+                    patch_color_conversion(cfg.pipeline[pipeline_step])
+                else:
+                    if subset == "train" and pipeline_step.type == "Collect":
+                        pipeline_step = get_meta_keys(pipeline_step)
+
+            if not self._selfsl:
+                patch_color_conversion(cfg.pipeline)
 
     def _patch_evaluation(self, config: MPAConfig):
-        cfg = config.evaluation
-        if self._multilabel:
-            cfg.metric = ["accuracy-mlc", "mAP", "CP", "OP", "CR", "OR", "CF1", "OF1"]
-            config.early_stop_metric = "mAP"
-        elif self._hierarchical:
-            cfg.metric = ["MHAcc", "avgClsAcc", "mAP"]
-            config.early_stop_metric = "MHAcc"
-        else:
-            cfg.metric = ["accuracy", "class_accuracy"]
-            config.early_stop_metric = "accuracy"
+        cfg = config.get("evaluation", None)
+        if cfg:
+            if self._multilabel:
+                cfg.metric = ["accuracy-mlc", "mAP", "CP", "OP", "CR", "OR", "CF1", "OF1"]
+                config.early_stop_metric = "mAP"
+            elif self._hierarchical:
+                cfg.metric = ["MHAcc", "avgClsAcc", "mAP"]
+                config.early_stop_metric = "MHAcc"
+            else:
+                cfg.metric = ["accuracy", "class_accuracy"]
+                config.early_stop_metric = "accuracy"

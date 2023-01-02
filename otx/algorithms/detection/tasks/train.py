@@ -20,7 +20,6 @@ from typing import Any, DefaultDict, Iterable, List, Optional
 import numpy as np
 import torch
 from mmcv.utils import ConfigDict
-from mpa.utils.logger import get_logger
 
 from otx.algorithms.common.adapters.mmcv.hooks import OTXLoggerHook
 from otx.algorithms.common.utils.callback import TrainingProgressCallback
@@ -46,13 +45,14 @@ from otx.api.entities.train_parameters import TrainParameters, default_progress_
 from otx.api.serialization.label_mapper import label_schema_to_bytes
 from otx.api.usecases.evaluation.metrics_helper import MetricsHelper
 from otx.api.usecases.tasks.interfaces.training_interface import ITrainingTask
+from otx.mpa.utils.logger import get_logger
 
 from .inference import DetectionInferenceTask
 
 logger = get_logger()
 
 
-# pylint: disable=too-many-locals, too-many-instance-attributes
+# pylint: disable=too-many-locals, too-many-instance-attributes, too-many-ancestors
 class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
     """Train Task Implementation of OTX Detection."""
 
@@ -160,6 +160,7 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
             self._update_anchors(self._anchors, self._model_cfg.model.bbox_head.anchor_generator)
 
         # get prediction on validation set
+        self._is_training = False
         val_dataset = dataset.get_subset(Subset.VALIDATION)
         val_preds, val_map = self._infer_detector(val_dataset, InferenceParameters(is_evaluation=True))
 
@@ -187,6 +188,7 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
             metric = MetricsHelper.compute_f_measure(result_set, vary_confidence_threshold=False)
 
         # compose performance statistics
+        # TODO[EUGENE]: HOW TO ADD A MAE CURVE FOR TaskType.COUNTING?
         performance = metric.get_performance()
         performance.dashboard_metrics.extend(
             DetectionTrainTask._generate_training_metrics(self._learning_curves, val_map)
@@ -196,7 +198,6 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
         self.save_model(output_model)
         output_model.performance = performance
         # output_model.model_status = ModelStatus.SUCCESS
-        self._is_training = False
         logger.info("train done.")
 
     def _init_train_data_cfg(self, dataset: DatasetEntity):

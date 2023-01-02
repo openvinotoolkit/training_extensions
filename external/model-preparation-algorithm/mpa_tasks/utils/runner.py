@@ -58,7 +58,6 @@ class EpochRunnerWithCancel(EpochBasedRunner):
             if self.stop():
                 break
             self._iter += 1
-            self.save_ema_model = False  # revert ema status before new iter
         self.call_hook("after_train_epoch")
         self.stop()
         self._epoch += 1

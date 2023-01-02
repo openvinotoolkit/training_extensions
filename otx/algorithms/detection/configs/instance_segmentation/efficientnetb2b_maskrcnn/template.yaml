@@ -14,7 +14,7 @@ framework: OTEDetection v2.9.1
 entrypoints:
   base: otx.algorithms.detection.tasks.DetectionTrainTask
   openvino: otx.algorithms.detection.tasks.OpenVINODetectionTask
-  nncf: otx.algorithms.detection.tasks.DetectionNNCFTask
+data_pipeline_path: ./data_pipeline.py
 
 # Capabilities.
 capabilities:
@@ -40,7 +40,7 @@ hyper_parameters:
         default_value: 2
     nncf_optimization:
       enable_quantization:
-        default_value: true
+        default_value: false
       enable_pruning:
         default_value: false
       pruning_supported:

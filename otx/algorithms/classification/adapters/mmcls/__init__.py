@@ -14,8 +14,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .data import MPAClsDataset
+from .data import MPAClsDataset, SelfSLDataset
+from .models import BYOL, ConstrastiveHead, SelfSLMLP
 
-__all__ = [
-    "MPAClsDataset",
-]
+__all__ = ["MPAClsDataset", "SelfSLDataset", "BYOL", "SelfSLMLP", "ConstrastiveHead"]

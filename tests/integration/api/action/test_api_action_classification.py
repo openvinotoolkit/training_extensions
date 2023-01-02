@@ -5,40 +5,28 @@
 
 import glob
 import os.path as osp
-import random
 import time
-import warnings
 from concurrent.futures import ThreadPoolExecutor
 from typing import Optional
 
 import numpy as np
 import pytest
 
-from otx.algorithms.action.tasks import ActionClsInferenceTask, ActionClsTrainTask
+from otx.algorithms.action.tasks import ActionInferenceTask, ActionTrainTask
 from otx.algorithms.common.tasks.training_base import BaseTask
 from otx.api.configuration.helper import create
-from otx.api.entities.annotation import AnnotationSceneEntity, AnnotationSceneKind
-from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.datasets import DatasetEntity
-from otx.api.entities.image import Image
 from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.metrics import Performance
 from otx.api.entities.model import ModelEntity
-from otx.api.entities.model_template import (
-    TaskType,
-    parse_model_template,
-    task_type_to_label_domain,
-)
+from otx.api.entities.model_template import parse_model_template
 from otx.api.entities.resultset import ResultSetEntity
 from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.entities.train_parameters import TrainParameters
-from otx.api.usecases.tasks.interfaces.export_interface import ExportType
-from otx.api.utils.shape_factory import ShapeFactory
 from otx.cli.datasets import get_dataset_class
 from otx.cli.utils.io import generate_label_schema
 from tests.test_suite.e2e_test_system import e2e_pytest_api
-from tests.unit.api.test_helpers import generate_random_annotated_image
 
 DEFAULT_ACTION_TEMPLATE_DIR = osp.join("otx/algorithms/action/configs", "classification", "x3d")
 
@@ -121,7 +109,7 @@ class TestActionTaskAPI:
         )
         action_environment, dataset = self.init_environment(hyper_parameters, model_template)
 
-        action_task = ActionClsTrainTask(task_environment=action_environment)
+        action_task = ActionTrainTask(task_environment=action_environment)
 
         executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="train_thread")
 
@@ -163,7 +151,7 @@ class TestActionTaskAPI:
     def test_training_progress_tracking(self):
         hyper_parameters, model_template = self.setup_configurable_parameters(DEFAULT_ACTION_TEMPLATE_DIR, num_iters=5)
         action_environment, dataset = self.init_environment(hyper_parameters, model_template)
-        task = ActionClsTrainTask(task_environment=action_environment)
+        task = ActionTrainTask(task_environment=action_environment)
         print("Task initialized, model training starts.")
 
         training_progress_curve = []
@@ -187,7 +175,7 @@ class TestActionTaskAPI:
         hyper_parameters, model_template = self.setup_configurable_parameters(DEFAULT_ACTION_TEMPLATE_DIR, num_iters=10)
         action_environment, dataset = self.init_environment(hyper_parameters, model_template)
 
-        task = ActionClsInferenceTask(task_environment=action_environment)
+        task = ActionInferenceTask(task_environment=action_environment)
         print("Task initialized, model inference starts.")
         inference_progress_curve = []
 
@@ -209,7 +197,7 @@ class TestActionTaskAPI:
         action_environment, dataset = self.init_environment(hyper_parameters, model_template)
         val_dataset = dataset.get_subset(Subset.VALIDATION)
 
-        train_task = ActionClsTrainTask(task_environment=action_environment)
+        train_task = ActionTrainTask(task_environment=action_environment)
 
         training_progress_curve = []
 
@@ -227,7 +215,7 @@ class TestActionTaskAPI:
 
         # Create InferenceTask
         action_environment.model = trained_model
-        inference_task = ActionClsInferenceTask(task_environment=action_environment)
+        inference_task = ActionInferenceTask(task_environment=action_environment)
 
         performance_after_load = task_eval(inference_task, trained_model, val_dataset)
 

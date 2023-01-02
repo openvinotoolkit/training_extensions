@@ -363,9 +363,6 @@ class OTXTestPotAction(BaseOTXTestAction):
     _name = "pot"
     _depends_stages_names = ["export"]
 
-    def __init__(self, pot_subset=Subset.TRAINING):
-        self.pot_subset = pot_subset
-
     def _run_otx_pot(self, data_collector, model_template, dataset, environment_for_export):
         logger.debug("Creating environment and task for POT optimization")
         self.environment_for_pot = deepcopy(environment_for_export)
@@ -380,7 +377,7 @@ class OTXTestPotAction(BaseOTXTestAction):
         try:
             self.openvino_task_pot.optimize(
                 OptimizationType.POT,
-                dataset.get_subset(self.pot_subset),
+                dataset,
                 self.optimized_model_pot,
                 OptimizationParameters(),
             )

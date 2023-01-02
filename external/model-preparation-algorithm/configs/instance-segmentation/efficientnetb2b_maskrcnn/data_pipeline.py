@@ -1,7 +1,7 @@
 dataset_type = "CocoDataset"
 img_size = (1024, 1024)
 
-img_norm_cfg = dict(mean=(103.53, 116.28, 123.675), std=(1.0, 1.0, 1.0), to_rgb=False)
+img_norm_cfg = dict(mean=(103.53, 116.28, 123.675), std=(1.0, 1.0, 1.0), to_rgb=True)
 
 train_pipeline = [
     dict(type="LoadImageFromFile"),

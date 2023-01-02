@@ -16,6 +16,7 @@ entrypoints:
   openvino: otx.algorithms.classification.tasks.ClassificationOpenVINOTask
   nncf: otx.algorithms.classification.tasks.nncf.OTXClassificationNNCFTask
 base_model_path: ../../adapters/deep_object_reid/configs/mobilenet_v3_large_1/template_experimental.yaml
+data_pipeline_path: ../base/data/data_pipeline.py
 
 # Capabilities.
 capabilities:
@@ -29,8 +30,6 @@ hyper_parameters:
       batch_size:
         default_value: 64
         auto_hpo_state: POSSIBLE
-      num_workers:
-        default_value: 0
       learning_rate:
         default_value: 0.0058
         auto_hpo_state: POSSIBLE

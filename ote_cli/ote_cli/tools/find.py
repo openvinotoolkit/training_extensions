@@ -30,7 +30,17 @@ def parse_args():
     parser.add_argument(
         "--root", help="A root dir where templates should be searched.", default="."
     )
-    parser.add_argument("--task_type")
+    task_types = [
+        "classification",
+        "detection",
+        "segmentation",
+        "instance_segmantation",
+        "rotated_detection",
+        "anomaly_classification",
+        "anomaly_detection",
+        "anomaly_segmentation",
+    ]
+    parser.add_argument("--task_type", choices=task_types, type=str.lower)
     parser.add_argument("--experimental", action="store_true")
 
     return parser.parse_args()

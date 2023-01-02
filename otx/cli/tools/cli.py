@@ -17,9 +17,11 @@
 import argparse
 import sys
 
+from .build import main as otx_build
 from .demo import main as otx_demo
 from .deploy import main as otx_deploy
 from .eval import main as otx_eval
+from .explain import main as otx_explain
 from .export import main as otx_export
 from .find import main as otx_find
 from .optimize import main as otx_optimize
@@ -29,10 +31,12 @@ __all__ = [
     "otx_demo",
     "otx_deploy",
     "otx_eval",
+    "otx_explain",
     "otx_export",
     "otx_find",
     "otx_train",
     "otx_optimize",
+    "otx_build",
 ]
 
 
@@ -49,9 +53,11 @@ def main():
     """Entry point for OTX CLI.
 
     This function is a single entry point for all OTX CLI related operations:
+      - build
       - demo
       - deploy
       - eval
+      - explain
       - export
       - find
       - train

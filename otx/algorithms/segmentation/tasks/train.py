@@ -19,7 +19,6 @@ from typing import DefaultDict, List, Optional
 
 import torch
 from mmcv.utils import ConfigDict
-from mpa.utils.logger import get_logger
 
 from otx.algorithms.common.adapters.mmcv import OTXLoggerHook
 from otx.algorithms.common.utils.callback import TrainingProgressCallback
@@ -43,11 +42,12 @@ from otx.api.entities.subset import Subset
 from otx.api.entities.train_parameters import TrainParameters, default_progress_callback
 from otx.api.serialization.label_mapper import label_schema_to_bytes
 from otx.api.usecases.tasks.interfaces.training_interface import ITrainingTask
+from otx.mpa.utils.logger import get_logger
 
 logger = get_logger()
 
 
-# pylint: disable=too-many-locals, too-many-instance-attributes
+# pylint: disable=too-many-locals, too-many-instance-attributes, too-many-ancestors
 class SegmentationTrainTask(SegmentationInferenceTask, ITrainingTask):
     """Train Task Implementation of OTX Segmentation."""
 

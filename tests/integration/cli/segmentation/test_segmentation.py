@@ -8,6 +8,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 import pytest
+import torch
 
 from otx.api.entities.model_template import parse_model_template
 from otx.cli.registry import Registry
@@ -55,6 +56,7 @@ args = {
 
 otx_dir = os.getcwd()
 
+MULTI_GPU_UNAVAILABLE = torch.cuda.device_count() <= 1
 TT_STABILITY_TESTS = os.environ.get("TT_STABILITY_TESTS", False)
 if TT_STABILITY_TESTS:
     default_template = parse_model_template(
@@ -62,6 +64,7 @@ if TT_STABILITY_TESTS:
     )
     templates = [default_template] * 100
     templates_ids = [template.model_template_id + f"-{i+1}" for i, template in enumerate(templates)]
+
 else:
     templates = Registry("otx/algorithms/segmentation").filter(task_type="SEGMENTATION").templates
     templates_ids = [template.model_template_id for template in templates]
@@ -71,6 +74,22 @@ else:
 def tmp_dir_path():
     with TemporaryDirectory() as tmp_dir:
         yield Path(tmp_dir)
+
+
+class TestToolsMPASemiSLSegmentation:
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_train(self, template, tmp_dir_path):
+        args_semisl = args.copy()
+        args_semisl["--unlabeled-data-roots"] = "data/segmentation/custom/images/training"
+        args_semisl["train_params"].extend(["--algo_backend.train_type", "SEMISUPERVISED"])
+        otx_train_testing(template, tmp_dir_path, otx_dir, args_semisl)
+
+    @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_eval(self, template, tmp_dir_path):
+        otx_eval_testing(template, tmp_dir_path, otx_dir, args)
 
 
 class TestToolsMPASegmentation:
@@ -194,3 +213,12 @@ class TestToolsMPASegmentation:
         if template.model_template_id.startswith("ClassIncremental_Semantic_Segmentation_Lite-HRNet-"):
             pytest.skip("CVS-82482")
         pot_eval_testing(template, tmp_dir_path, otx_dir, args)
+
+    @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.skipif(MULTI_GPU_UNAVAILABLE, reason="The number of gpu is insufficient")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_multi_gpu_train(self, template, tmp_dir_path):
+        args1 = args.copy()
+        args1["--gpus"] = "0,1"
+        otx_train_testing(template, tmp_dir_path, otx_dir, args1)

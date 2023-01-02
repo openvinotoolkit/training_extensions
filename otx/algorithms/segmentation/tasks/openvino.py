@@ -29,7 +29,6 @@ from compression.engines.ie_engine import IEEngine
 from compression.graph import load_model, save_model
 from compression.graph.model_utils import compress_model_weights, get_nodes_by_type
 from compression.pipeline.initializer import create_pipeline
-from mpa.utils.logger import get_logger
 from openvino.model_zoo.model_api.adapters import OpenvinoAdapter, create_core
 from openvino.model_zoo.model_api.models import Model
 
@@ -55,6 +54,7 @@ from otx.api.entities.model import (
 from otx.api.entities.optimization_parameters import OptimizationParameters
 from otx.api.entities.result_media import ResultMediaEntity
 from otx.api.entities.resultset import ResultSetEntity
+from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.entities.tensor import TensorEntity
 from otx.api.serialization.label_mapper import LabelSchemaMapper, label_schema_to_bytes
@@ -75,6 +75,7 @@ from otx.api.utils.argument_checks import (
     DatasetParamTypeCheck,
     check_input_parameters_type,
 )
+from otx.mpa.utils.logger import get_logger
 
 logger = get_logger()
 
@@ -230,7 +231,7 @@ class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask,
                     current_label_soft_prediction = soft_prediction[:, :, label_index]
                     class_act_map = get_activation_map(current_label_soft_prediction)
                     result_media = ResultMediaEntity(
-                        name="Soft Prediction",
+                        name=label.name,
                         type="soft_prediction",
                         label=label,
                         annotation_scene=dataset_item.annotation_scene,
@@ -303,6 +304,7 @@ class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask,
         if optimization_type is not OptimizationType.POT:
             raise ValueError("POT is the only supported optimization type for OpenVino models")
 
+        dataset = dataset.get_subset(Subset.TRAINING)
         data_loader = OTXOpenVinoDataLoader(dataset, self.inferencer)
 
         with tempfile.TemporaryDirectory() as tempdir:

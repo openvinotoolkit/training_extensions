@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from otx.algorithms.action.utils.data import load_rawframe_dataset
+from otx.algorithms.action.utils.data import load_cls_dataset
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label import Domain
 from otx.api.entities.subset import Subset
@@ -35,7 +35,7 @@ class ActionClassificationDataset(DatasetEntity):
 
         if train_subset is not None:
             items.extend(
-                load_rawframe_dataset(
+                load_cls_dataset(
                     ann_file_path=train_subset["ann_file"],
                     data_root_dir=train_subset["data_root"],
                     domain=Domain.ACTION_CLASSIFICATION,
@@ -46,7 +46,7 @@ class ActionClassificationDataset(DatasetEntity):
 
         if val_subset is not None:
             items.extend(
-                load_rawframe_dataset(
+                load_cls_dataset(
                     ann_file_path=val_subset["ann_file"],
                     data_root_dir=val_subset["data_root"],
                     domain=Domain.ACTION_CLASSIFICATION,
@@ -57,7 +57,7 @@ class ActionClassificationDataset(DatasetEntity):
 
         if test_subset is not None:
             items.extend(
-                load_rawframe_dataset(
+                load_cls_dataset(
                     ann_file_path=test_subset["ann_file"],
                     data_root_dir=test_subset["data_root"],
                     domain=Domain.ACTION_CLASSIFICATION,

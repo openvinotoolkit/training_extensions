@@ -26,6 +26,7 @@ from otx.algorithms.common.adapters.mmcv.utils import (
 )
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label import LabelEntity
+from otx.api.entities.model_template import TaskType
 from otx.api.usecases.reporting.time_monitor_callback import TimeMonitorCallback
 from otx.api.utils.argument_checks import (
     DatasetParamTypeCheck,
@@ -34,18 +35,23 @@ from otx.api.utils.argument_checks import (
 
 
 @check_input_parameters_type()
-def patch_config(config: Config, base_dir: str, work_dir: str):
+def patch_config(config: Config, data_pipeline_path: str, work_dir: str, task_type: TaskType):
     """Patch recipe config suitable to mmaction."""
     # FIXME omnisource is hard coded
     config.omnisource = None
     config.work_dir = work_dir
-    patch_data_pipeline(config, base_dir)
-    patch_datasets(config)
+    patch_data_pipeline(config, data_pipeline_path)
+    if task_type == TaskType.ACTION_CLASSIFICATION:
+        patch_cls_datasets(config)
+    elif task_type == TaskType.ACTION_DETECTION:
+        patch_det_dataset(config)
+    else:
+        raise NotImplementedError(f"{task_type} is not supported in action task")
 
 
 @check_input_parameters_type()
-def patch_datasets(config: Config):
-    """Patch dataset config suitable to mmaction."""
+def patch_cls_datasets(config: Config):
+    """Patch cls dataset config suitable to mmaction."""
 
     # FIXME start_index and modality is hard-coded
     assert "data" in config
@@ -61,14 +67,30 @@ def patch_datasets(config: Config):
 
 
 @check_input_parameters_type()
-def set_data_classes(config: Config, labels: List[LabelEntity]):
+def patch_det_dataset(config: Config):
+    """Patch det dataset config suitable to mmaction."""
+    assert "data" in config
+    for subset in ("train", "val", "test", "unlabeled"):
+        cfg = config.data.get(subset, None)
+        if not cfg:
+            continue
+        cfg.type = "OTXActionDetDataset"
+
+
+@check_input_parameters_type()
+def set_data_classes(config: Config, labels: List[LabelEntity], task_type: TaskType):
     """Setter data classes into config."""
     for subset in ("train", "val", "test"):
         cfg = get_data_cfg(config, subset)
         cfg.labels = labels
 
     # FIXME classification head name is hard-coded
-    config.model["cls_head"].num_classes = len(labels)
+    if task_type == TaskType.ACTION_CLASSIFICATION:
+        config.model["cls_head"].num_classes = len(labels)
+    elif task_type == TaskType.ACTION_DETECTION:
+        config.model["roi_head"]["bbox_head"].num_classes = len(labels) + 1
+        if len(labels) < 5:
+            config.model["roi_head"]["bbox_head"]["topk"] = len(labels) - 1
 
 
 @check_input_parameters_type({"train_dataset": DatasetParamTypeCheck, "val_dataset": DatasetParamTypeCheck})

@@ -36,8 +36,6 @@ from mmdet.integration.nncf import (
 )
 from mmdet.integration.nncf.config import compose_nncf_config
 from mmdet.models import build_detector
-from mpa.utils.config_utils import remove_custom_hook
-from mpa.utils.logger import get_logger
 
 from otx.algorithms.common.adapters.mmcv.hooks import OTXLoggerHook
 from otx.algorithms.common.adapters.mmcv.utils import remove_from_config
@@ -75,19 +73,21 @@ from otx.api.utils.argument_checks import (
     DatasetParamTypeCheck,
     check_input_parameters_type,
 )
+from otx.mpa.utils.config_utils import remove_custom_hook
+from otx.mpa.utils.logger import get_logger
 
 from .inference import DetectionInferenceTask
 
 logger = get_logger()
 
 
-# pylint: disable=too-many-instance-attributes
+# pylint: disable=too-many-instance-attributes, too-many-ancestors
 class DetectionNNCFTask(DetectionInferenceTask, IOptimizationTask):
     """Task for compressing detection models using NNCF."""
 
     @check_input_parameters_type()
-    def __init__(self, task_environment: TaskEnvironment):
-        super().__init__(task_environment)
+    def __init__(self, task_environment: TaskEnvironment, **kwargs):
+        super().__init__(task_environment, **kwargs)
         self._val_dataloader = None
         self._compression_ctrl = None
         self._nncf_preset = "nncf_quantization"
@@ -245,6 +245,11 @@ class DetectionNNCFTask(DetectionInferenceTask, IOptimizationTask):
         :return model: ModelEntity in training mode
         """
         model_cfg = copy.deepcopy(config.model)
+
+        super_type = model_cfg.pop("super_type", None)
+        if super_type:
+            model_cfg.arch_type = model_cfg.type
+            model_cfg.type = super_type
 
         init_from = None if from_scratch else config.get("load_from", None)
         logger.warning(init_from)

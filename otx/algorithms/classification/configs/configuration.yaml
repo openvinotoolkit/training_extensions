@@ -33,7 +33,7 @@ learning_parameters:
       make it unstable.
     editable: true
     header: Learning rate
-    max_value: 0.1
+    max_value: 1.0
     min_value: 1.0e-07
     type: FLOAT
     ui_rules:
@@ -83,7 +83,7 @@ learning_parameters:
     warning: null
   num_workers:
     affects_outcome_of: NONE
-    default_value: 0
+    default_value: 2
     description:
       Increasing this value might improve training speed however it might
       cause out of memory errors. If the number of workers is set to zero, data loading
@@ -313,14 +313,16 @@ algo_backend:
   description: parameters for algo backend
   header: Algo backend parameters
   train_type:
-    affects_outcome_of: NONE
+    affects_outcome_of: TRAINING
     default_value: INCREMENTAL
-    description: Quantization preset that defines quantization scheme
-    editable: false
+    description: Training scheme option that determines how to train the model
+    editable: True
     enum_name: TrainType
     header: train type
     options:
       INCREMENTAL: "INCREMENTAL"
+      SEMISUPEVISED: "SEMISUPERVISED"
+      SELFSUPERVISED: "SELFSUPERVISED"
     type: SELECTABLE
     ui_rules:
       action: DISABLE_EDITING

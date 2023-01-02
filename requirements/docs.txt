@@ -1,6 +1,10 @@
 furo==2021.7.31b41
 myst-parser
-sphinx>=4.1.2
+sphinx==4.2.*
+pydata-sphinx-theme==0.6.*
+sphinx-tabs==3.2.0
+sphinx-panels==0.6.0
+sphinx-copybutton==0.4.0
 sphinx-autoapi
 sphinxemoji==0.1.8
 nbsphinx

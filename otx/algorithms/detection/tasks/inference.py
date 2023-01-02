@@ -20,19 +20,17 @@ from typing import Iterable, Optional, Tuple
 import cv2
 import numpy as np
 from mmcv.utils import ConfigDict
-from mpa import MPAConstants
-from mpa.utils.config_utils import MPAConfig
-from mpa.utils.logger import get_logger
 
+from otx.algorithms.common.adapters.mmcv.utils import patch_data_pipeline
 from otx.algorithms.common.configs.training_base import TrainType
 from otx.algorithms.common.tasks.training_base import BaseTask
 from otx.algorithms.common.utils.callback import InferenceProgressCallback
 from otx.algorithms.detection.adapters.mmdet.utils import (
-    patch_data_pipeline,
     patch_datasets,
     patch_evaluation,
 )
 from otx.algorithms.detection.configs.base import DetectionConfig
+from otx.api.configuration.helper.utils import config_to_bytes
 from otx.api.entities.annotation import Annotation
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.id import ID
@@ -45,7 +43,6 @@ from otx.api.entities.model import (
     ModelPrecision,
 )
 from otx.api.entities.model_template import TaskType
-from otx.api.entities.result_media import ResultMediaEntity
 from otx.api.entities.resultset import ResultSetEntity
 from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.shapes.polygon import Point, Polygon
@@ -56,6 +53,7 @@ from otx.api.entities.train_parameters import default_progress_callback
 from otx.api.serialization.label_mapper import label_schema_to_bytes
 from otx.api.usecases.evaluation.metrics_helper import MetricsHelper
 from otx.api.usecases.tasks.interfaces.evaluate_interface import IEvaluationTask
+from otx.api.usecases.tasks.interfaces.explain_interface import IExplainTask
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType, IExportTask
 from otx.api.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from otx.api.usecases.tasks.interfaces.unload_interface import IUnload
@@ -63,19 +61,27 @@ from otx.api.utils.argument_checks import (
     DatasetParamTypeCheck,
     check_input_parameters_type,
 )
-from otx.api.utils.vis_utils import get_actmap
+from otx.api.utils.dataset_utils import add_saliency_maps_to_dataset_item
+from otx.mpa import MPAConstants
+from otx.mpa.utils.config_utils import MPAConfig
+from otx.mpa.utils.logger import get_logger
 
 logger = get_logger()
 
 
-# pylint: disable=too-many-locals
-class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask, IUnload):
+# pylint: disable=too-many-locals, too-many-instance-attributes
+class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask, IExplainTask, IUnload):
     """Inference Task Implementation of OTX Detection."""
 
     @check_input_parameters_type()
-    def __init__(self, task_environment: TaskEnvironment):
+    def __init__(self, task_environment: TaskEnvironment, **kwargs):
         # self._should_stop = False
-        super().__init__(DetectionConfig, task_environment)
+        self.train_type = None
+        super().__init__(DetectionConfig, task_environment, **kwargs)
+        self.template_dir = os.path.abspath(os.path.dirname(self.template_file_path))
+        self.base_dir = self.template_dir
+        # TODO Move this to the common
+        self.supported_train_type = [TrainType.INCREMENTAL, TrainType.SEMISUPERVISED]
 
     @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def infer(
@@ -101,6 +107,26 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         prediction_results, _ = self._infer_detector(dataset, inference_parameters)
         self._add_predictions_to_dataset(prediction_results, dataset, self.confidence_threshold)
         logger.info("Inference completed")
+        return dataset
+
+    @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
+    def explain(
+        self,
+        dataset: DatasetEntity,
+        explain_parameters: Optional[InferenceParameters] = None,
+    ) -> DatasetEntity:
+        """Main explain function of OTX Detection."""
+        logger.info("explain()")
+
+        if explain_parameters:
+            update_progress_callback = explain_parameters.update_progress
+        else:
+            update_progress_callback = default_progress_callback
+
+        self._time_monitor = InferenceProgressCallback(len(dataset), update_progress_callback)
+        explain_results = self._explain_detector(dataset, explain_parameters)
+        self._add_explanations_to_dataset(explain_results, dataset)
+        logger.info("Explain completed")
         return dataset
 
     def _infer_detector(
@@ -146,6 +172,24 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         )
         prediction_results = zip(predictions, output["feature_vectors"], output["saliency_maps"])
         return prediction_results, metric
+
+    def _explain_detector(
+        self,
+        dataset: DatasetEntity,
+        explain_parameters: Optional[InferenceParameters] = None,
+    ) -> Tuple[Iterable, float]:
+        """Run explain stage and return saliency maps."""
+
+        stage_module = "DetectionExplainer"
+        self._data_cfg = self._init_test_data_cfg(dataset)
+        results = self._run_task(
+            stage_module,
+            mode="train",
+            dataset=dataset,
+            explainer=explain_parameters.explainer if explain_parameters else None,
+        )
+        explain_results = results["outputs"]["saliency_maps"]
+        return explain_results
 
     @check_input_parameters_type()
     def evaluate(
@@ -197,6 +241,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
                 "confidence_threshold",
                 np.array([self.confidence_threshold], dtype=np.float32).tobytes(),
             )
+            output_model.set_data("config.json", config_to_bytes(self._hyperparams))
             output_model.precision = [ModelPrecision.FP32]
             output_model.optimization_methods = self._optimization_methods
             output_model.set_data(
@@ -223,14 +268,21 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         train_type = self._hyperparams.algo_backend.train_type
         logger.info(f"train type = {train_type}")
 
-        if train_type not in (TrainType.SEMISUPERVISED, TrainType.INCREMENTAL):
+        if train_type not in self.supported_train_type:
             raise NotImplementedError(f"Train type {train_type} is not implemented yet.")
         if train_type == TrainType.SEMISUPERVISED:
-            if self._data_cfg.get("data", None) and self._data_cfg.data.get("unlabeled", None):
-                recipe = os.path.join(recipe_root, "semisl.py")
+            if self._is_training:
+                if self._data_cfg.get("data", None) and self._data_cfg.data.get("unlabeled", None):
+                    recipe = os.path.join(recipe_root, "semisl.py")
+                    self.base_dir = os.path.join(self.template_dir, "semisl")
+                    self.data_pipeline_path = os.path.join(self.base_dir, "data_pipeline.py")
+                else:
+                    logger.warning("Cannot find unlabeled data.. convert to INCREMENTAL.")
+                    train_type = TrainType.INCREMENTAL
             else:
-                logger.warning("Cannot find unlabeled data.. convert to INCREMENTAL.")
-                train_type = TrainType.INCREMENTAL
+                recipe = os.path.join(recipe_root, "semisl.py")
+                self.base_dir = os.path.join(self.template_dir, "semisl")
+                self.data_pipeline_path = os.path.join(self.base_dir, "data_pipeline.py")
 
         if train_type == TrainType.INCREMENTAL:
             recipe = os.path.join(recipe_root, "incremental.py")
@@ -238,16 +290,14 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         logger.info(f"train type = {train_type} - loading {recipe}")
 
         self._recipe_cfg = MPAConfig.fromfile(recipe)
-        patch_data_pipeline(self._recipe_cfg, self.template_file_path)
+        self.train_type = train_type
+        patch_data_pipeline(self._recipe_cfg, self.data_pipeline_path)
         patch_datasets(self._recipe_cfg, self._task_type.domain)  # for OTX compatibility
         patch_evaluation(self._recipe_cfg)  # for OTX compatibility
         logger.info(f"initialized recipe = {recipe}")
 
-    # TODO: make cfg_path loaded from custom model cfg file corresponding to train_type
-    # model.py contains head cfg only for INCREMENTAL setting
     def _init_model_cfg(self):
-        base_dir = os.path.abspath(os.path.dirname(self.template_file_path))
-        model_cfg = MPAConfig.fromfile(os.path.join(base_dir, "model.py"))
+        model_cfg = MPAConfig.fromfile(os.path.join(self.base_dir, "model.py"))
         if len(self._anchors) != 0:
             self._update_anchors(model_cfg.model.bbox_head.anchor_generator, self._anchors)
         return model_cfg
@@ -266,6 +316,14 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
             )
         )
         return data_cfg
+
+    def _update_stage_module(self, stage_module):
+        if self.train_type == TrainType.SEMISUPERVISED:
+            if stage_module == "DetectionTrainer":
+                stage_module = "SemiSLDetectionTrainer"
+            elif stage_module == "DetectionInferrer":
+                stage_module = "SemiSLDetectionInferrer"
+        return stage_module
 
     def _add_predictions_to_dataset(self, prediction_results, dataset, confidence_threshold=0.0):
         """Loop over dataset again to assign predictions. Convert from MMDetection format to OTX format."""
@@ -291,15 +349,13 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
                 dataset_item.append_metadata_item(active_score, model=self._task_environment.model)
 
             if saliency_map is not None:
-                saliency_map = get_actmap(saliency_map, (dataset_item.width, dataset_item.height))
-                saliency_map_media = ResultMediaEntity(
-                    name="Saliency Map",
-                    type="saliency_map",
-                    annotation_scene=dataset_item.annotation_scene,
-                    numpy=saliency_map,
-                    roi=dataset_item.roi,
+                add_saliency_maps_to_dataset_item(
+                    dataset_item=dataset_item,
+                    saliency_map=saliency_map,
+                    model=self._task_environment.model,
+                    labels=self._labels,
+                    task="det",
                 )
-                dataset_item.append_metadata_item(saliency_map_media, model=self._task_environment.model)
 
     def _det_add_predictions_to_dataset(self, all_results, width, height, confidence_threshold):
         shapes = []
@@ -349,6 +405,17 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
                     if cv2.contourArea(contour) > 0 and polygon.get_area() > 1e-12:
                         shapes.append(Annotation(polygon, labels=labels, id=ID(f"{label_idx:08}")))
         return shapes
+
+    def _add_explanations_to_dataset(self, explain_results, dataset):
+        """Add saliency map to the dataset."""
+        for dataset_item, saliency_map in zip(dataset, explain_results):
+            add_saliency_maps_to_dataset_item(
+                dataset_item=dataset_item,
+                saliency_map=saliency_map,
+                model=self._task_environment.model,
+                labels=self._labels,
+                task="det",
+            )
 
     @staticmethod
     def _update_anchors(origin, new):
