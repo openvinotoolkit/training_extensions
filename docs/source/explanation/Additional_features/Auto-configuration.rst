@@ -1,4 +1,4 @@
 Auto-configuration
-=========
+==================
 
 Coming soon...

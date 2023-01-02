@@ -1,5 +1,5 @@
 Additional Features
-=========
+===================
 
 .. toctree::
    :maxdepth: 2

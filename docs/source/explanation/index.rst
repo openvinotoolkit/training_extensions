@@ -1,14 +1,20 @@
 Explanation
-=========
+===========
 
 This section consist of main algorithms explanation and additional features description.
-``Main algorithms`` section inludes description of dataset format, available templates (backbones),
-description of supervised training pipelines as well as Semi-supervised and Self-supervised algorithms
-for each task separately.
+``Main algorithms`` section inludes:
 
-``Additional features`` section gives a brief overview of model optimization algorithms,
-hyper parameters optimization and Auto-configuration algorithm to select
-appropriate template for a given dataset.
+1. description of dataset format for the task;
+2. available templates (backbones);
+3. description of supervised training pipelines;
+4. Semi-supervised and Self-supervised algorithms.
+
+``Additional features`` section consists of:
+
+1. Brief overview of model optimization algorithms;
+2. Hyper parameters optimization (HPO);
+3. Incremental learning functionality;
+4. Auto-configuration algorithm to select appropriate template for a given dataset.
 
 
 .. toctree::

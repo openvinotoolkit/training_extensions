@@ -1,9 +1,9 @@
 Multi-label Classification
-=========
+==========================
 
-*********
+**************
 Dataset format
-*********
+**************
 
 As it is a common practice to use object detection datasets in the academic area, we support the most popular object detection formats: `COCO <https://cocodataset.org/#format-data>`_ and `VOC <http://host.robots.ox.ac.uk/pascal/VOC/>`_.
 Concretely, these formats will be converted in our internal representation via the `Datumaro <https://github.com/openvinotoolkit/datumaro>`_ dataset handler.
@@ -44,11 +44,11 @@ Below a simple example of 2 classes presented:
 *********
 Backbones
 *********
-We use the same model templates as for multi-class classification. Please, refer: :doc:`multi_class_classification`
+We use the same model templates as for multi-class classification. Please, refer: :doc:`multi_class_classification`.
 
-*********
+*******************************
 Supervised Incremental Learning
-*********
+*******************************
 
 The main goal of the task is to predict a set of labels per image. We solve this problem by optimizing small binary classification sub-tasks whether or not the exact class is presented on the given image.
 
@@ -62,7 +62,7 @@ For supervised learning we use the following algorithms components:
 
 - ``Loss function``: We use **Asymmetric Angular Margin Loss**. We can formulate this loss as follows: :math:`L_j (cos\Theta_j,y) = \frac{k}{s}y p_-^{\gamma^-}\log{p_+} + \frac{1-k}{s}(1-y)p_+^{\gamma^+}\log{p_-}`, where :math:`s` is a scale parameter, :math:`m` is an angular margin, :math:`k` is negative-positive weighting coefficient, :math:`\gamma^+` and :math:`\gamma^-` are weighting parameters. For further information about loss function, ablation studies, and experiments, please refer to our dedicated `paper <https://arxiv.org/abs/2209.06585>`_.
 
-Additionally, we use `No Bias Decay (NBD) <https://arxiv.org/abs/1812.01187>`_ technique, **Exponential Moving Average (EMA)** for the model`s weights and adaptive **early stopping** to add adaptability and prevent overfitting.
+- Additionally, we use `No Bias Decay (NBD) <https://arxiv.org/abs/1812.01187>`_ technique, **Exponential Moving Average (EMA)** for the model's weights and adaptive **early stopping** to add adaptability and prevent overfitting.
 
 In the table below the mAP on some academic datasets is presented. The results were obtained on our templates without any changes. We use 480x480 image resolution to make results comparable with academic papers, for other hyperparameters, please, refer to the related template. We train all models on 1 GPU Nvidia GeForce GTX3090.
 
@@ -76,14 +76,14 @@ In the table below the mAP on some academic datasets is presented. The results w
 | EfficientNet-V2-S     | N/A             | N/A       | N/A       | N/A       |
 +-----------------------+-----------------+-----------+-----------+-----------+
 
-*********
+************************
 Semi-supervised Learning
-*********
+************************
 
 To be added soon
 
-*********
+************************
 Self-supervised Learning
-*********
+************************
 
 To be added soon

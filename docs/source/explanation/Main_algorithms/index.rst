@@ -1,14 +1,12 @@
 Main algorithms
-=========
+===============
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
 
    anomaly_classification
-   multi_class_classification
-   multi_label_classification
-   hierarhical_classification
+   classification/index
    instance_segmentation
    semantic_segmentation
    object_detection
