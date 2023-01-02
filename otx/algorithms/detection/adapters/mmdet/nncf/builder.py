@@ -195,7 +195,6 @@ def build_nncf_detector(
             },
         )
     )
-    remove_from_configs_by_type(custom_hooks, "UnlabeledDataHook")
     remove_from_configs_by_type(custom_hooks, "CancelInterfaceHook")
     remove_from_configs_by_type(custom_hooks, "TaskAdaptHook")
     remove_from_configs_by_type(custom_hooks, "EMAHook")
