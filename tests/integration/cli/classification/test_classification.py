@@ -31,6 +31,7 @@ from otx.cli.utils.tests import (
     otx_explain_testing,
     otx_export_testing,
     otx_hpo_testing,
+    otx_resume_testing,
     otx_train_testing,
     pot_eval_testing,
     pot_optimize_testing,
@@ -73,6 +74,15 @@ args = {
     ],
 }
 
+# Training params for resume, num_iters*2
+resume_params = [
+    "params",
+    "--learning_parameters.num_iters",
+    "4",
+    "--learning_parameters.batch_size",
+    "4",
+]
+
 otx_dir = os.getcwd()
 
 
@@ -110,6 +120,16 @@ class TestToolsMultiClassClassification:
         args1 = args.copy()
         args1["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/weights.pth"
         otx_train_testing(template, tmp_dir_path, otx_dir, args1)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_resume(self, template, tmp_dir_path):
+        otx_resume_testing(template, tmp_dir_path, otx_dir, args0)
+        template_work_dir = get_template_dir(template, tmp_dir_path)
+        args1 = args0.copy()
+        args1["train_params"] = resume_params
+        args1["--resume-from"] = f"{template_work_dir}/trained_for_resume_{template.model_template_id}/weights.pth"
+        otx_resume_testing(template, tmp_dir_path, otx_dir, args1)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
@@ -299,6 +319,16 @@ class TestToolsMultilabelClassification:
         otx_train_testing(template, tmp_dir_path, otx_dir, args1)
 
     @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_resume(self, template, tmp_dir_path):
+        otx_resume_testing(template, tmp_dir_path, otx_dir, args0_m)
+        template_work_dir = get_template_dir(template, tmp_dir_path)
+        args1 = args0_m.copy()
+        args1["train_params"] = resume_params
+        args1["--resume-from"] = f"{template_work_dir}/trained_for_resume_{template.model_template_id}/weights.pth"
+        otx_resume_testing(template, tmp_dir_path, otx_dir, args1)
+
+    @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_export(self, template, tmp_dir_path):
@@ -447,6 +477,16 @@ class TestToolsHierarchicalClassification:
         args1 = args_h.copy()
         args1["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/weights.pth"
         otx_train_testing(template, tmp_dir_path, otx_dir, args1)
+
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_resume(self, template, tmp_dir_path):
+        otx_resume_testing(template, tmp_dir_path, otx_dir, args_h)
+        template_work_dir = get_template_dir(template, tmp_dir_path)
+        args1 = args_h.copy()
+        args1["train_params"] = resume_params
+        args1["--resume-from"] = f"{template_work_dir}/trained_for_resume_{template.model_template_id}/weights.pth"
+        otx_resume_testing(template, tmp_dir_path, otx_dir, args1)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
