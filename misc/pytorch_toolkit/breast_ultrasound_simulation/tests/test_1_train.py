@@ -14,23 +14,24 @@ class TestTrain(unittest.TestCase):
     data_config = net_config['data']
     gen_config = net_config['general']
     params = {'batch_size': train_config['batch_size'],
-            'shuffle': True,
-            'num_workers': train_config['num_workers'],
-            'drop_last': True}
+              'shuffle': True,
+              'num_workers': train_config['num_workers'],
+              'drop_last': True}
 
     def test_train(self):
 
         all_files = os.listdir(self.data_config['stage0_data'])
         self.assertTrue(all_files)
-        training_set = BUS_Dataset(all_files, self.data_config['stage0_data'],
-                          self.data_config['realUS_data'], resize=True)
+        training_set = BUS_Dataset(all_files,
+                                   self.data_config['stage0_data'],
+                                   self.data_config['realUS_data'], resize=True)
 
         training_gen = data.DataLoader(training_set, **self.params)
 
         val_all_files = os.listdir(self.data_config['val_stage0_data'])
         self.assertTrue(val_all_files)
         validation_set = BUS_Dataset(all_files, self.data_config['val_stage0_data'],
-                          self.data_config['val_realUS_data'], resize=True)
+                                     self.data_config['val_realUS_data'], resize=True)
 
         testing_gen = data.DataLoader(validation_set, **self.params)
 

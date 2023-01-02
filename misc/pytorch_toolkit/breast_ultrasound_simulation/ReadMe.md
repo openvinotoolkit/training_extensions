@@ -30,7 +30,7 @@ Plot between the inverse of power of band pass spectrum of simulated images and 
 
 ## **Model**
 
-Download `.pt` checkpoint for Stage1 Generator model with the following [link](model.pt model link here).
+Download `.pt` checkpoint for Stage1 Generator model with the following [link](http://kliv.iitkgp.ac.in/projects/miriad/model_weights/bmi6/model.pt).
 
 Inference models will be made available in the [open_model_zoo](https://github.com/openvinotoolkit/open_model_zoo/tree/master/models/public).
 
