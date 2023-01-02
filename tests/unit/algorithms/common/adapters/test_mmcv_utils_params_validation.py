@@ -4,12 +4,24 @@
 
 import pytest
 from mmcv import Config
-from otx.algorithms.common.adapters.mmcv.utils import config_from_string, get_data_cfg, is_epoch_based_runner, prepare_for_testing, prepare_work_dir, remove_from_config
+
+from otx.algorithms.common.adapters.mmcv.utils import (
+    config_from_string,
+    get_data_cfg,
+    is_epoch_based_runner,
+    patch_color_conversion,
+    prepare_for_testing,
+    prepare_work_dir,
+    remove_from_config,
+)
 from otx.api.entities.datasets import DatasetEntity
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
-from tests.unit.api.parameters_validation.validation_helper import check_value_error_exception_raised
+from tests.unit.api.parameters_validation.validation_helper import (
+    check_value_error_exception_raised,
+)
 
-## TODO: Need to add {patch_data_pipeline, patch_color_conversion, get_meta_keys} unit-test
+# TODO: Need to add {patch_data_pipeline, get_meta_keys} unit-test
+
 
 class TestMMCVUtilsInputParamsValidation:
     @e2e_pytest_unit
@@ -161,7 +173,7 @@ class TestMMCVUtilsInputParamsValidation:
         """
         correct_values_dict = {
             "config": Config(),
-            "data_pipeline": "otx/algorithms/classification/configs/base/data/data_pipeline.py"
+            "data_pipeline": "otx/algorithms/classification/configs/base/data/data_pipeline.py",
         }
         unexpected_int = 1
         unexpected_values = [
@@ -176,3 +188,26 @@ class TestMMCVUtilsInputParamsValidation:
             unexpected_values=unexpected_values,
             class_or_function=get_data_cfg,
         )
+
+    @e2e_pytest_unit
+    def test_patch_color_conversion_input_params_validation(self):
+        """
+        <b>Description:</b>
+        Check "patch_color_conversion" function input parameters validation
+
+        <b>Input data:</b>
+        "pipeline" unexpected type object
+
+        <b>Expected results:</b>
+        Test passes if ValueError exception is raised when unexpected type object is specified as input parameter for
+        "patch_color_conversion" function
+        """
+        unexpected_int = 1
+        for unexpected_value in [
+            # Unexpected integer is specified as "pipeline" parameter
+            unexpected_int,
+            # Unexpected integer is specified as nested pipeline
+            [{"correct": "dictionary"}, unexpected_int],
+        ]:
+            with pytest.raises(ValueError):
+                patch_color_conversion(pipeline=unexpected_value)  # type: ignore

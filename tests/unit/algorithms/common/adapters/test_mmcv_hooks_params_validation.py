@@ -5,22 +5,24 @@ from logging import Logger
 
 import pytest
 import torch.nn as nn
+from mmcv.runner import EpochBasedRunner
+
 from otx.algorithms.common.adapters.mmcv.hooks import (
     CancelTrainingHook,
     EarlyStoppingHook,
     EnsureCorrectBestCheckpointHook,
     OTXLoggerHook,
     OTXProgressHook,
-    StopLossNanTrainingHook,
     ReduceLROnPlateauLrUpdaterHook,
+    StopLossNanTrainingHook,
 )
-from mmcv.runner import EpochBasedRunner
-from tests.test_suite.e2e_test_system import e2e_pytest_unit
-from tests.unit.api.parameters_validation.validation_helper import check_value_error_exception_raised
 from otx.api.usecases.reporting.time_monitor_callback import TimeMonitorCallback
+from tests.test_suite.e2e_test_system import e2e_pytest_unit
+from tests.unit.api.parameters_validation.validation_helper import (
+    check_value_error_exception_raised,
+)
 
-
-## TODO: Need to add EMAMomentumUpdateHook unit-test
+# TODO: Need to add EMAMomentumUpdateHook unit-test
 
 
 class TestCancelTrainingHook:
@@ -157,9 +159,7 @@ class TestOTXLoggerHook:
 class TestOTXProgressHook:
     @staticmethod
     def time_monitor():
-        return TimeMonitorCallback(
-            num_epoch=10, num_train_steps=5, num_test_steps=5, num_val_steps=4
-        )
+        return TimeMonitorCallback(num_epoch=10, num_train_steps=5, num_test_steps=5, num_val_steps=4)
 
     def hook(self):
         return OTXProgressHook(time_monitor=self.time_monitor())
@@ -481,9 +481,7 @@ class TestReduceLROnPlateauLrUpdaterHook:
         input parameter for "get_lr" method
         """
         hook = self.hook()
-        runner = EpochBasedRunner(
-            model=self.MockModel(), logger=Logger(name="test logger")
-        )
+        runner = EpochBasedRunner(model=self.MockModel(), logger=Logger(name="test logger"))
         correct_values_dict = {"runner": runner, "base_lr": 0.2}
         unexpected_str = "unexpected string"
         unexpected_values = [

@@ -1,4 +1,4 @@
-# Copyright (C) 2021-2022 Intel Corporation
+# Copyright (C) 2021-2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 
@@ -7,20 +7,22 @@ from logging import Logger
 import pytest
 import torch.nn as nn
 from mmcv.runner import IterLoader
+from torch.utils.data.dataloader import DataLoader
+
 from otx.algorithms.common.adapters.mmcv.runner import (
     EpochRunnerWithCancel,
-    IterBasedRunnerWithCancel
+    IterBasedRunnerWithCancel,
 )
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
-from tests.unit.api.parameters_validation.validation_helper import check_value_error_exception_raised, load_test_dataset
-from torch.utils.data.dataloader import DataLoader
+from tests.unit.api.parameters_validation.validation_helper import (
+    check_value_error_exception_raised,
+    load_test_dataset,
+)
 
 
 class TestRunnersInputParamsValidation:
     def iter_based_runner(self):
-        return IterBasedRunnerWithCancel(
-            model=self.MockModel(), logger=Logger(name="test logger")
-        )
+        return IterBasedRunnerWithCancel(model=self.MockModel(), logger=Logger(name="test logger"))
 
     @staticmethod
     def data_loader():
@@ -45,9 +47,7 @@ class TestRunnersInputParamsValidation:
         Test passes if ValueError exception is raised when unexpected type object is specified as
         input parameter for "train" method
         """
-        runner = EpochRunnerWithCancel(
-            model=self.MockModel(), logger=Logger(name="test logger")
-        )
+        runner = EpochRunnerWithCancel(model=self.MockModel(), logger=Logger(name="test logger"))
         with pytest.raises(ValueError):
             runner.train(data_loader="unexpected string")  # type: ignore
 

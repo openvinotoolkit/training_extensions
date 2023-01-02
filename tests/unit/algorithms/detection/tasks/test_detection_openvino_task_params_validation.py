@@ -4,6 +4,8 @@
 
 import numpy as np
 import pytest
+from openvino.model_zoo.model_api.models import Model
+
 from otx.algorithms.detection.configs.base import DetectionConfig
 from otx.algorithms.detection.tasks.openvino import (
     BaseInferencerWithConverter,
@@ -13,19 +15,20 @@ from otx.algorithms.detection.tasks.openvino import (
     OpenVINORotatedRectInferencer,
     OTXOpenVinoDataLoader,
 )
-from openvino.model_zoo.model_api.models import Model
 from otx.api.configuration.configurable_parameters import ConfigurableParameters
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label import Domain, LabelEntity
 from otx.api.entities.label_schema import LabelSchemaEntity
 from otx.api.entities.model import ModelConfiguration, ModelEntity
 from otx.api.entities.resultset import ResultSetEntity
-from tests.test_suite.e2e_test_system import e2e_pytest_unit
-from tests.unit.api.parameters_validation.validation_helper import check_value_error_exception_raised
 from otx.api.usecases.exportable_code.prediction_to_annotation_converter import (
     DetectionToAnnotationConverter,
 )
 from otx.api.usecases.tasks.interfaces.optimization_interface import OptimizationType
+from tests.test_suite.e2e_test_system import e2e_pytest_unit
+from tests.unit.api.parameters_validation.validation_helper import (
+    check_value_error_exception_raised,
+)
 
 
 class MockOpenVinoTask(OpenVINODetectionTask):
@@ -349,9 +352,7 @@ class TestOTXOpenVinoDataLoaderInputParamsValidation:
         Test passes if ValueError exception is raised when unexpected type object is specified as
         input parameter for "__getitem__" method
         """
-        data_loader = OTXOpenVinoDataLoader(
-            dataset=DatasetEntity(), inferencer=MockDetectionInferencer()
-        )
+        data_loader = OTXOpenVinoDataLoader(dataset=DatasetEntity(), inferencer=MockDetectionInferencer())
         with pytest.raises(ValueError):
             data_loader.__getitem__("unexpected string")  # type: ignore
 
@@ -360,14 +361,10 @@ class TestOpenVINODetectionTaskInputParamsValidation:
     @staticmethod
     def model():
         model_configuration = ModelConfiguration(
-            configurable_parameters=ConfigurableParameters(
-                header="header", description="description"
-            ),
+            configurable_parameters=ConfigurableParameters(header="header", description="description"),
             label_schema=LabelSchemaEntity(),
         )
-        return ModelEntity(
-            train_dataset=DatasetEntity(), configuration=model_configuration
-        )
+        return ModelEntity(train_dataset=DatasetEntity(), configuration=model_configuration)
 
     @e2e_pytest_unit
     def test_openvino_task_init_params_validation(self):

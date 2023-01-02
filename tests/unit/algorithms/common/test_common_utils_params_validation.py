@@ -3,11 +3,10 @@
 #
 
 import pytest
-from otx.algorithms.common.utils import (
-    get_task_class,
-    load_template
-)
+
+from otx.algorithms.common.utils import get_task_class, load_template
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
+
 
 class TestCommonUtilsInputParamsValidation:
     @e2e_pytest_unit

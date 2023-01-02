@@ -11,9 +11,11 @@ from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.label_schema import LabelSchemaEntity
 from otx.api.entities.model import ModelConfiguration, ModelEntity
 from otx.api.entities.resultset import ResultSetEntity
-from tests.test_suite.e2e_test_system import e2e_pytest_unit
-from tests.unit.api.parameters_validation.validation_helper import check_value_error_exception_raised
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType
+from tests.test_suite.e2e_test_system import e2e_pytest_unit
+from tests.unit.api.parameters_validation.validation_helper import (
+    check_value_error_exception_raised,
+)
 
 
 class MockDetectionInferenceTask(DetectionInferenceTask):
@@ -25,14 +27,10 @@ class TestInferenceTaskInputParamsValidation:
     @staticmethod
     def model():
         model_configuration = ModelConfiguration(
-            configurable_parameters=ConfigurableParameters(
-                header="header", description="description"
-            ),
+            configurable_parameters=ConfigurableParameters(header="header", description="description"),
             label_schema=LabelSchemaEntity(),
         )
-        return ModelEntity(
-            train_dataset=DatasetEntity(), configuration=model_configuration
-        )
+        return ModelEntity(train_dataset=DatasetEntity(), configuration=model_configuration)
 
     @e2e_pytest_unit
     def test_otx_detection_inference_task_init_params_validation(self):

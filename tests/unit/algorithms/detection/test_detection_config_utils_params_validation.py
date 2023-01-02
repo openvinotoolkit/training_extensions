@@ -4,16 +4,27 @@
 
 from collections import defaultdict
 
-import pytest
-from otx.algorithms.detection.adapters.mmdet.utils import cluster_anchors, patch_config, patch_datasets
-from otx.algorithms.detection.adapters.mmdet.utils.config_utils import patch_adaptive_repeat_dataset, prepare_for_training, set_data_classes, set_hyperparams
-from otx.algorithms.detection.configs.base import DetectionConfig
 from mmcv import Config
+
+from otx.algorithms.detection.adapters.mmdet.utils import (
+    cluster_anchors,
+    patch_config,
+    patch_datasets,
+)
+from otx.algorithms.detection.adapters.mmdet.utils.config_utils import (
+    patch_adaptive_repeat_dataset,
+    prepare_for_training,
+    set_data_classes,
+    set_hyperparams,
+)
+from otx.algorithms.detection.configs.base import DetectionConfig
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label import Domain, LabelEntity
-from tests.test_suite.e2e_test_system import e2e_pytest_unit
-from tests.unit.api.parameters_validation.validation_helper import check_value_error_exception_raised
 from otx.api.usecases.reporting.time_monitor_callback import TimeMonitorCallback
+from tests.test_suite.e2e_test_system import e2e_pytest_unit
+from tests.unit.api.parameters_validation.validation_helper import (
+    check_value_error_exception_raised,
+)
 
 
 class TestConfigUtilsInputParamsValidation:
@@ -35,7 +46,7 @@ class TestConfigUtilsInputParamsValidation:
             "config": Config(),
             "work_dir": "./work_dir",
             "labels": [label],
-            "domain": Domain.DETECTION
+            "domain": Domain.DETECTION,
         }
         unexpected_float = 1.1
         unexpected_values = [
@@ -128,8 +139,6 @@ class TestConfigUtilsInputParamsValidation:
             class_or_function=patch_adaptive_repeat_dataset,
         )
 
-    
-
     @e2e_pytest_unit
     def test_prepare_for_training_input_params_validation(self):
         """
@@ -144,9 +153,7 @@ class TestConfigUtilsInputParamsValidation:
         "prepare_for_training" function
         """
         dataset = DatasetEntity()
-        time_monitor = TimeMonitorCallback(
-            num_epoch=5, num_train_steps=2, num_val_steps=1, num_test_steps=1
-        )
+        time_monitor = TimeMonitorCallback(num_epoch=5, num_train_steps=2, num_val_steps=1, num_test_steps=1)
         correct_values_dict = {
             "config": Config(),
             "train_dataset": dataset,

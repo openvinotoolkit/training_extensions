@@ -6,6 +6,7 @@ import tempfile
 
 import mmcv
 import pytest
+
 from otx.algorithms.detection.utils.data import (
     CocoDataset,
     LoadAnnotations,
@@ -14,15 +15,17 @@ from otx.algorithms.detection.utils.data import (
     get_anchor_boxes,
     get_classes_from_annotation,
     get_sizes_from_dataset_entity,
-    load_dataset_items_coco_format
+    load_dataset_items_coco_format,
 )
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label import Domain, LabelEntity
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
-from tests.unit.api.parameters_validation.validation_helper import check_value_error_exception_raised
+from tests.unit.api.parameters_validation.validation_helper import (
+    check_value_error_exception_raised,
+)
 
+# TODO: Need to add adaptive_tile_params unit-test
 
-## TODO: Need to add adaptive_tile_params unit-test
 
 def _create_dummy_coco_json(json_name):
     image = {

@@ -9,10 +9,12 @@ from otx.api.configuration.configurable_parameters import ConfigurableParameters
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label_schema import LabelSchemaEntity
 from otx.api.entities.model import ModelConfiguration, ModelEntity
-from tests.test_suite.e2e_test_system import e2e_pytest_unit
-from tests.unit.api.parameters_validation.validation_helper import check_value_error_exception_raised
 from otx.api.usecases.tasks.interfaces.export_interface import ExportType
 from otx.api.usecases.tasks.interfaces.optimization_interface import OptimizationType
+from tests.test_suite.e2e_test_system import e2e_pytest_unit
+from tests.unit.api.parameters_validation.validation_helper import (
+    check_value_error_exception_raised,
+)
 
 
 class MockNNCFTask(DetectionNNCFTask):
@@ -24,14 +26,10 @@ class TestNNCFTaskInputParamsValidation:
     @staticmethod
     def model():
         model_configuration = ModelConfiguration(
-            configurable_parameters=ConfigurableParameters(
-                header="header", description="description"
-            ),
+            configurable_parameters=ConfigurableParameters(header="header", description="description"),
             label_schema=LabelSchemaEntity(),
         )
-        return ModelEntity(
-            train_dataset=DatasetEntity(), configuration=model_configuration
-        )
+        return ModelEntity(train_dataset=DatasetEntity(), configuration=model_configuration)
 
     @e2e_pytest_unit
     def test_nncf_detection_task_init_params_validation(self):

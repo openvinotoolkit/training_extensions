@@ -3,12 +3,15 @@
 #
 
 import pytest
+
 from otx.algorithms.detection.adapters.mmdet.data.pipelines import (
     LoadAnnotationFromOTXDataset,
     LoadImageFromOTXDataset,
 )
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
-from tests.unit.api.parameters_validation.validation_helper import check_value_error_exception_raised
+from tests.unit.api.parameters_validation.validation_helper import (
+    check_value_error_exception_raised,
+)
 
 
 class TestLoadImageFromOTXDatasetInputParamsValidation:

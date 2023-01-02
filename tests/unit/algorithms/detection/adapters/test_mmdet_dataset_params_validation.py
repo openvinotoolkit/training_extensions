@@ -4,11 +4,11 @@
 
 import numpy as np
 import pytest
+
 from otx.algorithms.detection.adapters.mmdet.data.dataset import (
     MPADetDataset,
     get_annotation_mmdet_format,
 )
-
 from otx.api.entities.annotation import (
     Annotation,
     AnnotationSceneEntity,
@@ -21,7 +21,9 @@ from otx.api.entities.label import Domain, LabelEntity
 from otx.api.entities.scored_label import ScoredLabel
 from otx.api.entities.shapes.rectangle import Rectangle
 from tests.test_suite.e2e_test_system import e2e_pytest_unit
-from tests.unit.api.parameters_validation.validation_helper import check_value_error_exception_raised
+from tests.unit.api.parameters_validation.validation_helper import (
+    check_value_error_exception_raised,
+)
 
 
 def label_entity():
@@ -30,12 +32,8 @@ def label_entity():
 
 def dataset_item():
     image = Image(data=np.random.randint(low=0, high=255, size=(10, 16, 3)))
-    annotation = Annotation(
-        shape=Rectangle.generate_full_box(), labels=[ScoredLabel(label_entity())]
-    )
-    annotation_scene = AnnotationSceneEntity(
-        annotations=[annotation], kind=AnnotationSceneKind.ANNOTATION
-    )
+    annotation = Annotation(shape=Rectangle.generate_full_box(), labels=[ScoredLabel(label_entity())])
+    annotation_scene = AnnotationSceneEntity(annotations=[annotation], kind=AnnotationSceneKind.ANNOTATION)
     return DatasetItemEntity(media=image, annotation_scene=annotation_scene)
 
 
