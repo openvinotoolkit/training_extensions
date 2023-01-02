@@ -42,6 +42,10 @@ from otx.api.entities.subset import Subset
 from otx.api.entities.train_parameters import TrainParameters, default_progress_callback
 from otx.api.serialization.label_mapper import label_schema_to_bytes
 from otx.api.usecases.tasks.interfaces.training_interface import ITrainingTask
+from otx.api.utils.argument_checks import (
+    DatasetParamTypeCheck,
+    check_input_parameters_type,
+)
 from otx.mpa.utils.logger import get_logger
 
 logger = get_logger()
@@ -51,6 +55,7 @@ logger = get_logger()
 class SegmentationTrainTask(SegmentationInferenceTask, ITrainingTask):
     """Train Task Implementation of OTX Segmentation."""
 
+    @check_input_parameters_type()
     def save_model(self, output_model: ModelEntity):
         """Save best model weights in SegmentationTrainTask."""
         logger.info(f"called save_model: {self._model_ckpt}")
@@ -81,6 +86,7 @@ class SegmentationTrainTask(SegmentationInferenceTask, ITrainingTask):
             logger.info("but training was not started yet. reserved it to cancel")
             self.reserved_cancel = True
 
+    @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def train(
         self, dataset: DatasetEntity, output_model: ModelEntity, train_parameters: Optional[TrainParameters] = None
     ):

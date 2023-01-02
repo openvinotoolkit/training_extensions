@@ -77,7 +77,8 @@ def patch_data_pipeline(config: Config, data_pipeline: str = ""):
         config.merge_from_dict(data_pipeline_cfg)
 
 
-def patch_color_conversion(pipeline):
+@check_input_parameters_type()
+def patch_color_conversion(pipeline: Config):
     """Default data format for OTX is RGB, while mmx uses BGR, so negate the color conversion flag."""
     for pipeline_step in pipeline:
         if pipeline_step.type == "Normalize":
