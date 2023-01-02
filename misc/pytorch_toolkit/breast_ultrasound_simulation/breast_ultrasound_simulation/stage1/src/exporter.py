@@ -2,7 +2,6 @@ import torch
 from .model import GeneratorModel
 import argparse
 import os
-import subprocess
 
 def export_model_onnx(config_args):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -28,13 +27,14 @@ def export_model_ir(config_args):
         --input_model {input_model} \
         --input_shape "{input_shape}" \
         --output_dir {output_dir}"""
-    subprocess.run(export_command, shell=True, check=True)
+    os.system(export_command)
 
 def main(config_args):
     if config_args.onnx:
         export_model_onnx(config_args)
     if config_args.ir:
         export_model_ir(config_args)
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

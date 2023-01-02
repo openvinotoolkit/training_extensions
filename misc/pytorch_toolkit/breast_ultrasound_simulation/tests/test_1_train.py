@@ -1,13 +1,11 @@
 import unittest
 import os
-os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":4096:8"
-
 from torch.utils import data
 from breast_ultrasound_simulation.stage1.src.dataloader import BUS_Dataset
 from breast_ultrasound_simulation.stage1.src.solve import solver
 from breast_ultrasound_simulation.stage1.src.utils.read_config import load_config
-# from breast_ultrasound_simulation.stage1.src.utils.make_dirs import make_dirs
 from breast_ultrasound_simulation.stage1.src.utils.download_mdl_tdataset import download_data
+os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":4096:8"
 
 class TestTrain(unittest.TestCase):
     net_config_path = "configs/net_config.json"
@@ -47,6 +45,7 @@ class TestTrain(unittest.TestCase):
         self.realUS_path = self.data_config['realUS_data']
         self.assertTrue(os.path.exists(self.stage0_path))
         self.assertTrue(os.path.exists(self.realUS_path))
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -22,6 +22,7 @@ class ExportTest(unittest.TestCase):
         self.model_path = export_config['model_path']
         self.assertTrue(os.path.join(os.path.split(self.model_path)[0], export_config['ir_model_name']))
 
+
 if __name__ == '__main__':
 
     unittest.main()
