@@ -80,6 +80,21 @@ class ClsStage(Stage):
             cfg.merge_from_dict(data_cfg)
         self.configure_data(cfg, training, **kwargs)
 
+        if training:
+            if "unlabeled" in cfg.data and cfg.train_type == "SEMISUPERVISED":
+                update_or_add_custom_hook(
+                    cfg,
+                    ConfigDict(
+                        type="UnlabeledDataHook",
+                        unlabeled_data_cfg=cfg.data.unlabeled,
+                        samples_per_gpu=cfg.data.unlabeled.pop("samples_per_gpu", cfg.data.samples_per_gpu),
+                        workers_per_gpu=cfg.data.unlabeled.pop("workers_per_gpu", cfg.data.workers_per_gpu),
+                        model_task=cfg.model_task,
+                        seed=cfg.seed,
+                        persistent_workers=False,
+                    ),
+                )
+
         # Task
         if "task_adapt" in cfg:
             model_meta = self.get_model_meta(cfg)
