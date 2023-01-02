@@ -54,6 +54,7 @@ class OTXRawframeDataset(RawframeDataset):
         def _update_meta_data(self):
             """Update video metadata of each item in self.otx_dataset."""
             video_info = {}
+            start_index = 0
             for idx, item in enumerate(self.otx_dataset):
                 metadata = item.get_metadata()[0].data
                 if metadata.video_id in video_info:

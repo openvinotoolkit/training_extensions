@@ -2,12 +2,14 @@
 
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-#
 
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 import numpy as np
 from mmcls.datasets import PIPELINES
+from mmcv.utils.registry import build_from_cfg
+from PIL import Image, ImageFilter
+from torchvision import transforms as T
 
 from otx.api.utils.argument_checks import check_input_parameters_type
 
@@ -62,3 +64,76 @@ class LoadImageFromOTXDataset:
             results["img"] = results["img"].astype(np.float32)
 
         return results
+
+
+@PIPELINES.register_module()
+class RandomAppliedTrans:
+    """Randomly applied transformations.
+
+    :param transforms: List of transformations in dictionaries
+    :param p: Probability, defaults to 0.5
+    """
+
+    def __init__(self, transforms: List, p: float = 0.5):
+        t = [build_from_cfg(t, PIPELINES) for t in transforms]  # pylint: disable=invalid-name
+        self.trans = T.RandomApply(t, p=p)
+
+    @check_input_parameters_type()
+    def __call__(self, results: Dict[str, Any]):
+        """Callback function of RandomAppliedTrans.
+
+        :param results: Inputs to be transformed.
+        """
+        return self.trans(results)
+
+    def __repr__(self):
+        """Set repr of RandomAppliedTrans."""
+        repr_str = self.__class__.__name__
+        return repr_str
+
+
+@PIPELINES.register_module
+class OTXColorJitter(T.ColorJitter):
+    """Wrapper for ColorJitter in torchvision.transforms.
+
+    Use this instead of mmcls's because there is no `hue` parameter in mmcls ColorJitter.
+    """
+
+    def __call__(self, results):
+        """Callback function of OTXColorJitter.
+
+        :param results: Inputs to be transformed.
+        """
+        results["img"] = np.array(self.forward(Image.fromarray(results["img"])))
+        return results
+
+
+@PIPELINES.register_module()
+class GaussianBlur:
+    """Gaussian blur augmentation in SimCLR https://arxiv.org/abs/2002.05709.
+
+    :param sigma_min: Minimum value of sigma of gaussian filter.
+    :param sigma_max: Maximum value of sigma of gaussian filter.
+    """
+
+    @check_input_parameters_type()
+    def __init__(self, sigma_min: float, sigma_max: float):
+        self.sigma_min = sigma_min
+        self.sigma_max = sigma_max
+
+    @check_input_parameters_type()
+    def __call__(self, results: Dict[str, Any]):
+        """Callback function of GaussianBlur.
+
+        :param results: Inputs to be transformed.
+        """
+        for key in results.get("img_fields", ["img"]):
+            img = Image.fromarray(results[key])
+            sigma = np.random.uniform(self.sigma_min, self.sigma_max)
+            results[key] = np.array(img.filter(ImageFilter.GaussianBlur(radius=sigma)))
+        return results
+
+    def __repr__(self):
+        """Set repr of GaussianBlur."""
+        repr_str = self.__class__.__name__
+        return repr_str

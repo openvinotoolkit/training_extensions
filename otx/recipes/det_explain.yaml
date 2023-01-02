@@ -1,0 +1,10 @@
+workflow_hooks:
+    - type: WFProfileHook
+      name: profile_hook
+
+stages:
+  - name: cls-explanation
+    type: DetectionExplainer
+    task: detection
+    mode: explain
+    config: {{ fileDirname }}/stages/detection/imbalance.py

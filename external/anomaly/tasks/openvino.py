@@ -271,6 +271,12 @@ class OpenVINOTask(IInferenceTask, IEvaluationTask, IOptimizationTask, IDeployme
         if optimization_type is not OptimizationType.POT:
             raise ValueError("POT is the only supported optimization type for OpenVINO models")
 
+        # Training subset does not contain example of anomalous images.
+        # Anomalous examples from all dataset used to get statistics for quantization.
+        dataset = DatasetEntity(
+            items=[item for item in dataset if item.get_shapes_labels()[0].is_anomalous], purpose=dataset.purpose
+        )
+
         logger.info("Starting POT optimization.")
         data_loader = OTEOpenVINOAnomalyDataloader(config=self.config, dataset=dataset, inferencer=self.inferencer)
 

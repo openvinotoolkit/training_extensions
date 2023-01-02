@@ -29,7 +29,6 @@ from compression.engines.ie_engine import IEEngine
 from compression.graph import load_model, save_model
 from compression.graph.model_utils import compress_model_weights, get_nodes_by_type
 from compression.pipeline.initializer import create_pipeline
-from mpa.utils.logger import get_logger
 from openvino.model_zoo.model_api.adapters import OpenvinoAdapter, create_core
 from openvino.model_zoo.model_api.models import Model
 
@@ -76,6 +75,7 @@ from otx.api.utils.argument_checks import (
     DatasetParamTypeCheck,
     check_input_parameters_type,
 )
+from otx.mpa.utils.logger import get_logger
 
 logger = get_logger()
 
@@ -231,7 +231,7 @@ class OpenVINOSegmentationTask(IDeploymentTask, IInferenceTask, IEvaluationTask,
                     current_label_soft_prediction = soft_prediction[:, :, label_index]
                     class_act_map = get_activation_map(current_label_soft_prediction)
                     result_media = ResultMediaEntity(
-                        name="Soft Prediction",
+                        name=label.name,
                         type="soft_prediction",
                         label=label,
                         annotation_scene=dataset_item.annotation_scene,

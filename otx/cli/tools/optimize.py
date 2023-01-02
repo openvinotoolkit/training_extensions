@@ -26,15 +26,15 @@ from otx.api.entities.resultset import ResultSetEntity
 from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
 from otx.api.usecases.tasks.interfaces.optimization_interface import OptimizationType
-from otx.cli.datasets import get_dataset_class
 from otx.cli.registry import find_and_parse_model_template
 from otx.cli.utils.config import configure_dataset, override_parameters
 from otx.cli.utils.importing import get_impl_class
-from otx.cli.utils.io import generate_label_schema, read_model, save_model_data
+from otx.cli.utils.io import read_model, save_model_data
 from otx.cli.utils.parser import (
     add_hyper_parameters_sub_parser,
     gen_params_dict_from_args,
 )
+from otx.core.data.adapter import get_dataset_adapter
 
 # pylint: disable=too-many-locals
 
@@ -65,23 +65,13 @@ def parse_args():
     required = not os.path.exists("./data.yaml")
 
     parser.add_argument(
-        "--train-ann-files",
-        required=required,
-        help="Comma-separated paths to training annotation files.",
-    )
-    parser.add_argument(
         "--train-data-roots",
         required=required,
         help="Comma-separated paths to training data folders.",
     )
     parser.add_argument(
-        "--val-ann-files",
-        required=required,
-        help="Comma-separated paths to validation annotation files.",
-    )
-    parser.add_argument(
         "--val-data-roots",
-        required=required,
+        required=False,
         help="Comma-separated paths to validation data folders.",
     )
     parser.add_argument(
@@ -126,25 +116,30 @@ def main():
 
     # Get classes for Task, ConfigurableParameters and Dataset.
     task_class = get_impl_class(template.entrypoints.openvino if is_pot else template.entrypoints.nncf)
-    dataset_class = get_dataset_class(template.task_type)
-
     data_config = configure_dataset(args)
 
-    dataset = dataset_class(
+    data_roots = dict(
         train_subset={
-            "ann_file": data_config["data"]["train"]["ann-files"],
             "data_root": data_config["data"]["train"]["data-roots"],
         },
         val_subset={
-            "ann_file": data_config["data"]["val"]["ann-files"],
             "data_root": data_config["data"]["val"]["data-roots"],
         },
     )
 
+    # Datumaro
+    dataset_adapter = get_dataset_adapter(
+        template.task_type,
+        train_data_roots=data_roots["train_subset"]["data_root"],
+        val_data_roots=data_roots["val_subset"]["data_root"],
+    )
+    dataset = dataset_adapter.get_otx_dataset()
+    label_schema = dataset_adapter.get_label_schema()
+
     environment = TaskEnvironment(
         model=None,
         hyper_parameters=hyper_parameters,
-        label_schema=generate_label_schema(dataset, template.task_type),
+        label_schema=label_schema,
         model_template=template,
     )
 

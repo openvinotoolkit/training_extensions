@@ -70,11 +70,11 @@ class ActionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask
     """Inference Task Implementation of OTX Action Task."""
 
     @check_input_parameters_type()
-    def __init__(self, task_environment: TaskEnvironment):
+    def __init__(self, task_environment: TaskEnvironment, **kwargs):
         # self._should_stop = False
-        self._model = None
+        # self._model = None
         self.task_environment = task_environment
-        super().__init__(ActionConfig, task_environment)
+        super().__init__(ActionConfig, task_environment, **kwargs)
 
     @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def infer(
@@ -115,7 +115,7 @@ class ActionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask
 
     def _infer_model(
         self, dataset: DatasetEntity, inference_parameters: Optional[InferenceParameters] = None
-    ) -> Tuple[Iterable, float]:
+    ) -> Tuple[Iterable, Optional[float]]:
         """Inference wrapper.
 
         This method triggers the inference and returns `prediction_results` zipped with prediction results,
@@ -201,6 +201,7 @@ class ActionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask
 
         return predictions, metric
 
+    # pylint: disable=attribute-defined-outside-init
     def _init_task(self, **kwargs):
         # FIXME: Temporary remedy for CVS-88098
         export = kwargs.get("export", False)
@@ -219,7 +220,7 @@ class ActionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask
             buffer = io.BytesIO(model.get_data("weights.pth"))
             model_data = torch.load(buffer, map_location=torch.device("cpu"))
 
-            self.confidence_threshold = model_data.get("confidence_threshold", self.confidence_threshold)
+            self.confidence_threshold: float = model_data.get("confidence_threshold", self.confidence_threshold)
             model = self._create_model(self._recipe_cfg, from_scratch=True)
 
             try:

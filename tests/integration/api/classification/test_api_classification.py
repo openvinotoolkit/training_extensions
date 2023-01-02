@@ -56,17 +56,7 @@ def task_eval(task: BaseTask, model: ModelEntity, dataset: DatasetEntity) -> Per
     return result_set.performance
 
 
-class TestMPAClsAPI:
-    @e2e_pytest_api
-    def test_reading_classification_cls_incr_model_template(self):
-        classification_template = [
-            "efficientnet_b0_cls_incr",
-            "efficientnet_v2_s_cls_incr",
-            "mobilenet_v3_large_1_cls_incr",
-        ]
-        for model_template in classification_template:
-            parse_model_template(osp.join("otx/algorithms/classification", "configs", model_template, "template.yaml"))
-
+class ClassificationTaskAPIBase:
     @staticmethod
     def generate_label_schema(not_empty_labels, multilabel=False, hierarchical=False):
         assert len(not_empty_labels) > 1
@@ -188,6 +178,18 @@ class TestMPAClsAPI:
             model_template=model_template,
         )
         return environment, dataset
+
+
+class TestClassificationTaskAPI(ClassificationTaskAPIBase):
+    @e2e_pytest_api
+    def test_reading_classification_cls_incr_model_template(self):
+        classification_template = [
+            "efficientnet_b0_cls_incr",
+            "efficientnet_v2_s_cls_incr",
+            "mobilenet_v3_large_1_cls_incr",
+        ]
+        for model_template in classification_template:
+            parse_model_template(osp.join("otx/algorithms/classification", "configs", model_template, "template.yaml"))
 
     @e2e_pytest_api
     @pytest.mark.parametrize(

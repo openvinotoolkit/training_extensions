@@ -14,10 +14,9 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import mpa.cls as MPAClassification
-
 import otx.algorithms.classification.adapters.mmcls as MPAData
 import otx.algorithms.common.adapters.mmcv.models as OTXBackbones
+import otx.mpa.cls as MPAClassification
 
 from .inference import ClassificationInferenceTask
 from .nncf import OTXClassificationNNCFTask

@@ -14,9 +14,8 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import mpa.seg as MPASegmentation
-
 import otx.algorithms.common.adapters.mmcv.models as OTXBackbones
+import otx.mpa.seg as MPASegmentation
 
 from .inference import SegmentationInferenceTask
 from .nncf import SegmentationNNCFTask

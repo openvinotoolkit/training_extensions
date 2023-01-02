@@ -15,9 +15,11 @@ from otx.cli.utils.tests import otx_eval_testing, otx_train_testing
 from tests.test_suite.e2e_test_system import e2e_pytest_component
 
 # Finetuning arguments
+# TODO: Need to change sample dataset
 args = {
-    "--train-data-roots": "/local/sungmanc/datasets/jester_SC_cvat_multifolder_classification/train",
-    "--val-data-roots": "/local/sungmanc/datasets/jester_SC_cvat_multifolder_classification/train",
+    "--train-data-roots": "data/cvat_dataset/action_classification",
+    "--val-data-roots": "data/cvat_dataset/action_classification",
+    "--test-data-roots": "data/cvat_dataset/action_classification",
     "train_params": ["params", "--learning_parameters.num_iters", "2", "--learning_parameters.batch_size", "4"],
 }
 
@@ -41,7 +43,7 @@ def tmp_dir_path():
         yield Path(tmp_dir)
 
 
-class TestToolsMPADetection:
+class TestToolsOTXActionClassification:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train(self, template, tmp_dir_path):

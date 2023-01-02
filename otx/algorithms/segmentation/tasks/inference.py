@@ -19,9 +19,6 @@ from typing import Dict, Optional
 
 import numpy as np
 from mmcv.utils import ConfigDict
-from mpa import MPAConstants
-from mpa.utils.config_utils import MPAConfig
-from mpa.utils.logger import get_logger
 
 from otx.algorithms.common.adapters.mmcv.utils import (
     patch_data_pipeline,
@@ -64,21 +61,24 @@ from otx.api.utils.segmentation_utils import (
     create_annotation_from_segmentation_map,
     create_hard_prediction_from_soft_prediction,
 )
+from otx.mpa import MPAConstants
+from otx.mpa.utils.config_utils import MPAConfig
+from otx.mpa.utils.logger import get_logger
 
 logger = get_logger()
 
 
-# pylint: disable=too-many-locals
+# pylint: disable=too-many-locals, too-many-instance-attributes, attribute-defined-outside-init
 class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask, IUnload):
     """Inference Task Implementation of OTX Segmentation."""
 
     @check_input_parameters_type()
-    def __init__(self, task_environment: TaskEnvironment):
+    def __init__(self, task_environment: TaskEnvironment, **kwargs):
         # self._should_stop = False
         self.freeze = True
         self.metric = "mDice"
         self._label_dictionary = {}  # type: Dict
-        super().__init__(SegmentationConfig, task_environment)
+        super().__init__(SegmentationConfig, task_environment, **kwargs)
 
     def infer(
         self, dataset: DatasetEntity, inference_parameters: Optional[InferenceParameters] = None
@@ -186,23 +186,29 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         recipe_root = os.path.join(MPAConstants.RECIPES_PATH, "stages/segmentation")
         train_type = self._hyperparams.algo_backend.train_type
         logger.info(f"train type = {train_type}")
+        self.model_dir = os.path.abspath(os.path.dirname(self.template_file_path))
+        pipeline_path = os.path.abspath(self.data_pipeline_path)
 
         if train_type not in (TrainType.SEMISUPERVISED, TrainType.INCREMENTAL):
             raise NotImplementedError(f"Train type {train_type} is not implemented yet.")
         if train_type == TrainType.SEMISUPERVISED:
-            if self._data_cfg.get("data", None) and self._data_cfg.data.get("unlabeled", None):
+            if (
+                self._is_training and self._data_cfg.get("data", None) and self._data_cfg.data.get("unlabeled", None)
+            ) or self._is_training is False:
                 recipe = os.path.join(recipe_root, "semisl.py")
+                self.model_dir = os.path.join(self.model_dir, "semisl")
+                pipeline_path = os.path.join(os.path.dirname(pipeline_path), "semisl/data_pipeline.py")
             else:
                 logger.warning("Cannot find unlabeled data.. convert to INCREMENTAL.")
                 train_type = TrainType.INCREMENTAL
-
         if train_type == TrainType.INCREMENTAL:
             recipe = os.path.join(recipe_root, "incremental.py")
 
         logger.info(f"train type = {train_type} - loading {recipe}")
 
         self._recipe_cfg = MPAConfig.fromfile(recipe)
-        patch_data_pipeline(self._recipe_cfg, self.data_pipeline_path)
+        self.train_type = train_type
+        patch_data_pipeline(self._recipe_cfg, pipeline_path)
         patch_datasets(self._recipe_cfg)  # for OTX compatibility
         patch_evaluation(self._recipe_cfg)  # for OTX compatibility
         self.metric = self._recipe_cfg.evaluation.metric
@@ -210,12 +216,17 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
             remove_from_config(self._recipe_cfg, "params_config")
         logger.info(f"initialized recipe = {recipe}")
 
-    # TODO: make cfg_path loaded from custom model cfg file corresponding to train_type
-    # model.py contains heads/segmentor cfg only for INCREMENTAL setting
-    # error log : b[k]=v. TypeError: list indices must be integers or slices, not str
+    def _update_stage_module(self, stage_module: str):
+        if self.train_type == TrainType.SEMISUPERVISED:
+            if stage_module == "SegTrainer":
+                return "SemiSegTrainer"
+            if stage_module == "SegInferrer":
+                return "SemiSegInferrer"
+        return stage_module
+
     def _init_model_cfg(self):
-        base_dir = os.path.abspath(os.path.dirname(self.template_file_path))
-        return MPAConfig.fromfile(os.path.join(base_dir, "model.py"))
+        model_cfg = MPAConfig.fromfile(os.path.join(self.model_dir, "model.py"))
+        return model_cfg
 
     def _init_test_data_cfg(self, dataset: DatasetEntity):
         data_cfg = ConfigDict(
@@ -262,7 +273,7 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
                     current_label_soft_prediction = soft_prediction[:, :, label_index]
                     class_act_map = get_activation_map(current_label_soft_prediction)
                     result_media = ResultMediaEntity(
-                        name="Soft Prediction",
+                        name=label.name,
                         type="soft_prediction",
                         label=label,
                         annotation_scene=dataset_item.annotation_scene,

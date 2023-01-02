@@ -37,7 +37,7 @@ from otx.cli.utils.parser import (
 )
 
 ESC_BUTTON = 27
-SUPPORTED_EXPLAIN_ALGORITHMS = ["ActivationMap", "EigenCAM"]
+SUPPORTED_EXPLAIN_ALGORITHMS = ["activationmap", "eigencam", "classwisesaliencymap"]
 
 
 def parse_args():
@@ -72,16 +72,19 @@ def parse_args():
     parser.add_argument(
         "--load-weights",
         required=True,
-        help="Load only weights from previously saved checkpoint",
+        help="Load model weights from previously saved checkpoint.",
     )
     parser.add_argument(
         "--explain-algorithm",
-        default="EigenCAM",
-        help=f"Explain algorithm name, currently support {SUPPORTED_EXPLAIN_ALGORITHMS}",
+        default="ClassWiseSaliencyMap",
+        help=(
+            f"Explain algorithm name, currently support {SUPPORTED_EXPLAIN_ALGORITHMS}.",
+            "For Openvino task, default method will be selected.",
+        ),
     )
     parser.add_argument(
         "-w",
-        "--weight",
+        "--overlay-weight",
         type=float,
         default=0.5,
         help="weight of the saliency map when overlaying the saliency map",
@@ -104,7 +107,9 @@ def main():
     hyper_parameters = create(hyper_parameters)
 
     # Get classes for Task, ConfigurableParameters and Dataset.
-    if args.load_weights.endswith(".pth"):
+    if any(args.load_weights.endswith(x) for x in (".bin", ".xml", ".zip")):
+        task_class = get_impl_class(template.entrypoints.openvino)
+    elif args.load_weights.endswith(".pth"):
         if is_checkpoint_nncf(args.load_weights):
             task_class = get_impl_class(template.entrypoints.nncf)
         else:
@@ -120,10 +125,9 @@ def main():
     )
 
     environment.model = read_model(environment.get_model_configuration(), args.load_weights, None)
-
     task = task_class(task_environment=environment)
 
-    if args.explain_algorithm not in SUPPORTED_EXPLAIN_ALGORITHMS:
+    if args.explain_algorithm.lower() not in SUPPORTED_EXPLAIN_ALGORITHMS:
         raise NotImplementedError(
             f"{args.explain_algorithm} currently not supported. \
             Currently only support {SUPPORTED_EXPLAIN_ALGORITHMS}"
@@ -136,21 +140,24 @@ def main():
     explained_dataset = task.explain(
         dataset_to_explain.with_empty_annotations(),
         InferenceParameters(
-            is_evaluation=True,
+            is_evaluation=False,
             explainer=args.explain_algorithm,
         ),
     )
 
-    for explained_data, (_, fname) in zip(explained_dataset, image_files):
-        save_saliency_output(
-            explained_data.numpy,
-            explained_data.get_metadata()[0].data.numpy,
-            args.save_explanation_to,
-            os.path.splitext(os.path.basename(fname))[0],
-            weight=args.weight,
-        )
+    for explained_data, (_, filename) in zip(explained_dataset, image_files):
+        for metadata in explained_data.get_metadata():
+            saliency_data = metadata.data
+            fname = f"{os.path.splitext(os.path.basename(filename))[0]}_{saliency_data.name}".replace(" ", "_")
+            save_saliency_output(
+                img=explained_data.numpy,
+                saliency_map=saliency_data.numpy,
+                save_dir=args.save_explanation_to,
+                fname=fname,
+                weight=args.overlay_weight,
+            )
 
-    print(f"saliency maps saved to {args.save_explanation_to} for {len(image_files)} images...")
+    print(f"Saliency maps saved to {args.save_explanation_to} for {len(image_files)} images...")
 
 
 if __name__ == "__main__":

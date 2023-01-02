@@ -14,18 +14,18 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
+import io
 from typing import Optional
 
+import torch
+from anomalib.models import AnomalyModule, get_model
 from anomalib.utils.callbacks import (
     MetricsConfigurationCallback,
     MinMaxNormalizationCallback,
 )
 from pytorch_lightning import Trainer, seed_everything
 
-from otx.algorithms.anomaly.adapters.anomalib.callbacks import (
-    ProgressCallback,
-    ScoreReportingCallback,
-)
+from otx.algorithms.anomaly.adapters.anomalib.callbacks import ProgressCallback
 from otx.algorithms.anomaly.adapters.anomalib.data import OTXAnomalyDataModule
 from otx.algorithms.anomaly.adapters.anomalib.logger import get_logger
 from otx.api.entities.datasets import DatasetEntity
@@ -72,7 +72,6 @@ class TrainingTask(InferenceTask, ITrainingTask):
         callbacks = [
             ProgressCallback(parameters=train_parameters),
             MinMaxNormalizationCallback(),
-            ScoreReportingCallback(parameters=train_parameters),
             MetricsConfigurationCallback(
                 adaptive_threshold=config.metrics.threshold.adaptive,
                 default_image_threshold=config.metrics.threshold.image_default,
@@ -88,3 +87,42 @@ class TrainingTask(InferenceTask, ITrainingTask):
         self.save_model(output_model)
 
         logger.info("Training completed.")
+
+    def load_model(self, otx_model: Optional[ModelEntity]) -> AnomalyModule:
+        """Create and Load Anomalib Module from OTE Model.
+
+        This method checks if the task environment has a saved OTE Model,
+        and creates one. If the OTE model already exists, it returns the
+        the model with the saved weights.
+
+        Args:
+            otx_model (Optional[ModelEntity]): OTE Model from the
+                task environment.
+
+        Returns:
+            AnomalyModule: Anomalib
+                classification or segmentation model with/without weights.
+        """
+        model = get_model(config=self.config)
+        if otx_model is None:
+            logger.info(
+                "No trained model in project yet. Created new model with '%s'",
+                self.model_name,
+            )
+        else:
+            buffer = io.BytesIO(otx_model.get_data("weights.pth"))
+            model_data = torch.load(buffer, map_location=torch.device("cpu"))
+
+            try:
+                if model_data["config"]["model"]["backbone"] == self.config["model"]["backbone"]:
+                    model.load_state_dict(model_data["model"])
+                    logger.info("Loaded model weights from Task Environment")
+                else:
+                    logger.info(
+                        "Model backbone does not match. Created new model with '%s'",
+                        self.model_name,
+                    )
+            except BaseException as exception:
+                raise ValueError("Could not load the saved model. The model file structure is invalid.") from exception
+
+        return model

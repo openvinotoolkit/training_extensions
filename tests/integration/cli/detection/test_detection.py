@@ -1,4 +1,4 @@
-"""Tests for MPA Class-Incremental Learning for object detection with OTX CLI"""
+"""Tests for Class-Incremental Learning for object detection with OTX CLI"""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -8,6 +8,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 import pytest
+import torch
 
 from otx.api.entities.model_template import parse_model_template
 from otx.cli.registry import Registry
@@ -24,6 +25,8 @@ from otx.cli.utils.tests import (
     otx_eval_deployment_testing,
     otx_eval_openvino_testing,
     otx_eval_testing,
+    otx_explain_openvino_testing,
+    otx_explain_testing,
     otx_export_testing,
     otx_hpo_testing,
     otx_train_testing,
@@ -35,17 +38,24 @@ from tests.test_suite.e2e_test_system import e2e_pytest_component
 # Pre-train w/ 'person' class ##TODO: Currently, it is closed to sample test. need to change other sample
 args0 = {
     "--train-data-roots": "data/datumaro/coco_dataset/coco_detection",
+    "--val-data-roots": "data/datumaro/coco_dataset/coco_detection",
+    "--test-data-roots": "data/datumaro/coco_dataset/coco_detection",
+    "--input": "data/datumaro/coco_dataset/coco_detection/images/train",
     "train_params": ["params", "--learning_parameters.num_iters", "4", "--learning_parameters.batch_size", "4"],
 }
 
 # Class-Incremental learning w/ 'vehicle', 'person', 'non-vehicle' classes
 args = {
     "--train-data-roots": "data/datumaro/coco_dataset/coco_detection",
+    "--val-data-roots": "data/datumaro/coco_dataset/coco_detection",
+    "--test-data-roots": "data/datumaro/coco_dataset/coco_detection",
+    "--input": "data/datumaro/coco_dataset/coco_detection/images/train",
     "train_params": ["params", "--learning_parameters.num_iters", "2", "--learning_parameters.batch_size", "4"],
 }
 
 otx_dir = os.getcwd()
 
+MULTI_GPU_UNAVAILABLE = torch.cuda.device_count() <= 1
 TT_STABILITY_TESTS = os.environ.get("TT_STABILITY_TESTS", False)
 if TT_STABILITY_TESTS:
     default_template = parse_model_template(
@@ -91,6 +101,18 @@ class TestToolsMPADetection:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_eval_openvino(self, template, tmp_dir_path):
         otx_eval_openvino_testing(template, tmp_dir_path, otx_dir, args, threshold=0.2)
+
+    @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_explain(self, template, tmp_dir_path):
+        otx_explain_testing(template, tmp_dir_path, otx_dir, args)
+
+    @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_explain_openvino(self, template, tmp_dir_path):
+        otx_explain_openvino_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
@@ -179,3 +201,28 @@ class TestToolsMPADetection:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_pot_eval(self, template, tmp_dir_path):
         pot_eval_testing(template, tmp_dir_path, otx_dir, args)
+
+    @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.skipif(MULTI_GPU_UNAVAILABLE, reason="The number of gpu is insufficient")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_multi_gpu_train(self, template, tmp_dir_path):
+        args1 = args.copy()
+        args1["--gpus"] = "0,1"
+        otx_train_testing(template, tmp_dir_path, otx_dir, args1)
+
+
+class TestToolsMPASemiSLDetection:
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_train(self, template, tmp_dir_path):
+        args_semisl = args.copy()
+        args_semisl["--unlabeled-data-roots"] = args["--train-data-roots"]
+        args_semisl["train_params"].extend(["--algo_backend.train_type", "SEMISUPERVISED"])
+        otx_train_testing(template, tmp_dir_path, otx_dir, args_semisl)
+
+    @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_eval(self, template, tmp_dir_path):
+        otx_eval_testing(template, tmp_dir_path, otx_dir, args)

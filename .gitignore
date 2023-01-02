@@ -4,11 +4,12 @@ __pycache__
 .vscode/
 *.iml
 
-venv
+*venv*/
 env
 otx-workspace*
 .env
 .tox
+results/
 
 data/*
 .coverage

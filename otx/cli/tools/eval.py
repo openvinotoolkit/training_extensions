@@ -23,16 +23,16 @@ from otx.api.entities.inference_parameters import InferenceParameters
 from otx.api.entities.resultset import ResultSetEntity
 from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment
-from otx.cli.datasets import get_dataset_class
 from otx.cli.registry import find_and_parse_model_template
 from otx.cli.utils.config import configure_dataset, override_parameters
 from otx.cli.utils.importing import get_impl_class
-from otx.cli.utils.io import generate_label_schema, read_label_schema, read_model
+from otx.cli.utils.io import read_model
 from otx.cli.utils.nncf import is_checkpoint_nncf
 from otx.cli.utils.parser import (
     add_hyper_parameters_sub_parser,
     gen_params_dict_from_args,
 )
+from otx.core.data.adapter import get_dataset_adapter
 
 # pylint: disable=too-many-locals
 
@@ -59,11 +59,6 @@ def parse_args():
     parser.add_argument("--data", required=False, default="./data.yaml")
     required = not os.path.exists("./data.yaml")
     parser.add_argument(
-        "--test-ann-files",
-        required=required,
-        help="Comma-separated paths to test annotation files.",
-    )
-    parser.add_argument(
         "--test-data-roots",
         required=required,
         help="Comma-separated paths to test data folders.",
@@ -71,7 +66,8 @@ def parse_args():
     parser.add_argument(
         "--load-weights",
         required=True,
-        help="Load only weights from previously saved checkpoint",
+        help="Load model weights from previously saved checkpoint."
+        "It could be a trained/optimized model (POT only) or exported model.",
     )
     parser.add_argument(
         "--save-performance",
@@ -119,24 +115,23 @@ def main():
     else:
         raise ValueError(f"Unsupported file: {args.load_weights}")
 
-    dataset_class = get_dataset_class(template.task_type)
-
     data_config = configure_dataset(args)
 
-    dataset = dataset_class(
+    data_roots = dict(
         test_subset={
-            "ann_file": data_config["data"]["test"]["ann-files"],
             "data_root": data_config["data"]["test"]["data-roots"],
         }
     )
 
-    dataset_label_schema = generate_label_schema(dataset, template.task_type)
-    check_label_schemas(read_label_schema(args.load_weights), dataset_label_schema)
+    dataset_adapter = get_dataset_adapter(template.task_type, test_data_roots=data_roots["test_subset"]["data_root"])
+
+    dataset = dataset_adapter.get_otx_dataset()
+    label_schema = dataset_adapter.get_label_schema()
 
     environment = TaskEnvironment(
         model=None,
         hyper_parameters=hyper_parameters,
-        label_schema=dataset_label_schema,
+        label_schema=label_schema,
         model_template=template,
     )
 

@@ -37,9 +37,9 @@ from otx.api.entities.model_template import TaskType
 from otx.api.entities.subset import Subset
 from otx.api.entities.task_environment import TaskEnvironment, TypeVariable
 from otx.api.entities.train_parameters import TrainParameters, UpdateProgressCallback
-from otx.cli.datasets import get_dataset_class
 from otx.cli.utils.importing import get_impl_class
-from otx.cli.utils.io import generate_label_schema, read_model, save_model_data
+from otx.cli.utils.io import read_model, save_model_data
+from otx.core.data.adapter import get_dataset_adapter
 
 try:
     import hpopt
@@ -116,9 +116,7 @@ def run_hpo(args: Namespace, environment: TaskEnvironment, dataset: DatasetEntit
         return None
 
     dataset_paths = {
-        "train_ann_file": args.train_ann_files,
         "train_data_root": args.train_data_roots,
-        "val_ann_file": args.val_ann_files,
         "val_data_root": args.val_data_roots,
     }
 
@@ -136,7 +134,7 @@ def run_hpo(args: Namespace, environment: TaskEnvironment, dataset: DatasetEntit
     task_class = get_impl_class(environment.model_template.entrypoints.base)
     task_class = get_train_wrapper_task(task_class, task_type)
 
-    task = task_class(task_environment=environment)
+    task = task_class(task_environment=environment, output_path=args.work_dir)
 
     hpopt_cfg = _load_hpopt_config(
         osp.join(
@@ -232,23 +230,28 @@ def run_hpo_trainer(
     HpoManager.set_hyperparameter(hyper_parameters, hp_config["params"])
     print(f"hyper parameter of current trial : {hp_config['params']}")
 
-    dataset_class = get_dataset_class(task_type)
     # TODO remove None from dataset_paths
-    dataset = dataset_class(
+    data_roots = dict(
         train_subset={  # type: ignore
-            "ann_file": dataset_paths.get("train_ann_file", None),
             "data_root": dataset_paths.get("train_data_root", None),
         },
         val_subset={  # type: ignore
-            "ann_file": dataset_paths.get("val_ann_file", None),
             "data_root": dataset_paths.get("val_data_root", None),
         },
     )
 
+    # Datumaro
+    datumaro_adapter = get_dataset_adapter(task_type)
+    datumaro_dataset = datumaro_adapter.import_dataset(
+        train_data_roots=data_roots["train_subset"]["data_root"],
+        val_data_roots=data_roots["val_subset"]["data_root"],
+    )
+    dataset, label_schema = datumaro_adapter.convert_to_otx_format(datumaro_dataset)
+
     train_env = TaskEnvironment(
         model=None,
         hyper_parameters=hyper_parameters,
-        label_schema=generate_label_schema(dataset, task_type),
+        label_schema=label_schema,
         model_template=model_template,
     )
 
@@ -335,8 +338,8 @@ def get_train_wrapper_task(impl_class, task_type):
     class HpoTrainTask(impl_class):
         """wrapper class for the HPO."""
 
-        def __init__(self, task_environment):
-            super().__init__(task_environment)
+        def __init__(self, task_environment, **kwargs):
+            super().__init__(task_environment, **kwargs)
             self._task_type = task_type
 
         # TODO: need to check things below whether works on MPA tasks
@@ -487,12 +490,7 @@ class HpoManager:
             if _is_anomaly_framework_task(task_type):
                 impl_class = get_impl_class(environment.model_template.entrypoints.base)
                 task = impl_class(task_environment=environment)
-                model = ModelEntity(
-                    dataset,
-                    environment.get_model_configuration(),
-                )
-                task.save_model(model)
-                save_model_data(model, self.work_dir)
+                torch.save(task.model_info(), osp.join(self.work_dir, "weights.pth"))
         else:
             save_model_data(environment.model, self.work_dir)
 
