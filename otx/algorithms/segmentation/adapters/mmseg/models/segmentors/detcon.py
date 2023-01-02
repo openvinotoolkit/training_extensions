@@ -22,8 +22,9 @@ from mmseg.models.builder import (  # pylint: disable=no-name-in-module
     build_neck,
 )
 from mmseg.ops import resize
-from mpa.utils.logger import get_logger
 from torch import nn
+
+from otx.mpa.utils.logger import get_logger
 
 logger = get_logger()
 
