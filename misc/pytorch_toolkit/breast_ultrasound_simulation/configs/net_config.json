@@ -1,17 +1,25 @@
 {
     "train":{
-        "lr": 0.0002,
-        "epochs": 5,
+        "lr": 1e-5,
+        "name": "trained_model.pt",
+        "epochs": 3,
         "batch_size": 2,
         "model_name": "model_1",
         "model_weight": "model.pt",
         "log_step": 5,
         "tensor_board": 0,
         "vis_step": 2,
-        "beta_recovery": 1,
-        "beta_adv": 0.02,
-        "restore": 1,
-        "num_workers": 8
+        "beta_recovery": 0.9,
+        "beta_adv": 0.1,
+        "restore": 0,
+        "num_workers": 8,
+        "openvino": 1,
+        "test": 0,
+        "stage0_data": "downloads/data/stage0",
+        "realUS_data": "downloads/data/real_images",
+        "val_stage0_data": "downloads/val/stage0",
+        "val_realUS_data": "downloads/val/real_images",
+        "beta_reco": 0.9
     },
 
     "test":{
@@ -21,7 +29,9 @@
 
     "data":{
         "stage0_data": "downloads/data/stage0",
-        "realUS_data": "downloads/data/real_images"
+        "realUS_data": "downloads/data/real_images",
+        "val_stage0_data": "downloads/val/stage0",
+        "val_realUS_data": "downloads/val/real_images"
     },
     "general":{
         "test_flag": 1,
@@ -29,11 +39,16 @@
     },
 
     "infer":{
-        "exp_name": "exp_1",
-        "model_name": "model_1",
+        "openvino": 1,
+        "name": "",
+        "test": 1,
+        "model_name": "model.onnx",
         "dilation_factor": 0.0,
-        "infer_data": "BUS",
-        "onnx_checkpoint": "downloads/checkpoints/model.onnx"
+        "onnx_checkpoint": "downloads/checkpoints/model.onnx",
+        "infer_stage0_data": "downloads/test_inputs/stage0",
+        "infer_realUS_data": "downloads/test_inputs/real_images",
+        "exp_name": "exp_1",
+        "infer_data": "BUS"
     },
     "export":{
         "model_path": "downloads/checkpoints/model.pt",

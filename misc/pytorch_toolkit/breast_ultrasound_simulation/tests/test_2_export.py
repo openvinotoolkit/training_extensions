@@ -1,7 +1,7 @@
 import unittest
 import os
-from src.exporter import export_model_onnx, export_model_ir
-from src.utils.read_config import load_config
+from breast_ultrasound_simulation.stage1.src.exporter import export_model_onnx, export_model_ir
+from breast_ultrasound_simulation.stage1.src.utils.read_config import load_config
 
 class ExportTest(unittest.TestCase):
     def test_export_onnx(self):

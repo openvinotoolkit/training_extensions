@@ -9,19 +9,13 @@ fi
 
 cd ${work_dir}
 
-if [[ -e venv ]]; then
+if [ -e venv ]; then
   echo
   echo "Virtualenv already exists. Use command to start working:"
   echo "$ . venv/bin/activate"
 fi
 
-virtualenv ${venv_dir} -p python3.7 --prompt="(us_sim)"
-
-
-path_openvino_vars="${INTEL_OPENVINO_DIR:-/opt/intel/openvino}/bin/setupvars.sh"
-if [[ -e "${path_openvino_vars}" ]]; then
-  echo ". ${path_openvino_vars}" >>${venv_dir}/bin/activate
-fi
+virtualenv ${venv_dir} -p python3.9 --prompt="breast_us_sim"
 
 . ${venv_dir}/bin/activate
 
