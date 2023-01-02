@@ -163,7 +163,7 @@ class BYOL(nn.Module):
         return outputs
 
     def val_step(self, *args):
-        """Disenable validation step during self-supervised learning."""
+        """Disable validation step during self-supervised learning."""
         pass
 
     def _parse_losses(self, losses: Dict[str, Any]):
