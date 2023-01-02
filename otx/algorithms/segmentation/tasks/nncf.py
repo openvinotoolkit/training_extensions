@@ -35,7 +35,7 @@ from mmseg.integration.nncf import (
     wrap_nncf_model,
 )
 from mmseg.integration.nncf.config import compose_nncf_config
-from mmseg.models import build_segmentor
+from mmseg.models.builder import build_segmentor  # pylint: disable=no-name-in-module
 
 from otx.algorithms.common.adapters.mmcv.hooks import OTXLoggerHook
 from otx.algorithms.common.utils.callback import OptimizationProgressCallback

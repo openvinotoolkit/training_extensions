@@ -140,7 +140,7 @@ class TwoCropTransform:
 @PIPELINES.register_module
 class RandomResizedCrop(T.RandomResizedCrop):
     """Wrapper for RandomResizedCrop in torchvision.transforms.
-    
+
     Since this transformation is applied to PIL Image,
     `NDArrayToPILImage` must be applied first before this is applied.
     """
@@ -171,10 +171,10 @@ class RandomResizedCrop(T.RandomResizedCrop):
 @PIPELINES.register_module
 class RandomColorJitter(T.ColorJitter):
     """Wrapper for ColorJitter in torchvision.transforms.
-    
+
     Since this transformation is applied to PIL Image,
     `NDArrayToPILImage` must be applied first before this is applied.
-    
+
     :param p: Probability for transformation.
     """
 
@@ -196,7 +196,7 @@ class RandomColorJitter(T.ColorJitter):
 @PIPELINES.register_module
 class RandomGrayscale(T.RandomGrayscale):
     """Wrapper for RandomGrayscale in torchvision.transforms.
-    
+
     Since this transformation is applied to PIL Image,
     `NDArrayToPILImage` must be applied first before this is applied.
     """
@@ -216,7 +216,7 @@ class RandomGaussianBlur(T.GaussianBlur):
 
     Since this transformation is applied to PIL Image,
     `NDArrayToPILImage` must be applied first before this is applied.
-    
+
     :param p: Probability for transformation.
     """
 
@@ -268,16 +268,16 @@ class RandomSolarization:
 @PIPELINES.register_module()
 class NDArrayToPILImage:
     """Convert image from numpy to PIL.
-    
+
     :param keys: Keys to be transformed.
     """
 
-    def __init__(self, keys: List[str] = ['img']):
+    def __init__(self, keys: List[str]):
         self.keys = keys
 
     def __call__(self, results: Dict[str, Any]):
         """Callback function of NDArrayToPILImage.
-        
+
         :param results: inputs to be transformed.
         """
         for key in self.keys:
@@ -295,16 +295,16 @@ class NDArrayToPILImage:
 @PIPELINES.register_module()
 class PILImageToNDArray:
     """Convert image from PIL to numpy.
-    
+
     :param keys: Keys to be transformed.
     """
 
-    def __init__(self, keys: List[str] = ['img']):
+    def __init__(self, keys: List[str]):
         self.keys = keys
 
     def __call__(self, results: Dict[str, Any]):
         """Callback function of PILImageToNDArray.
-        
+
         :param results: inputs to be transformed.
         """
         for key in self.keys:

@@ -29,7 +29,7 @@ __train_pipeline = [
             dict(type="RandomResizedCrop", size=__resize_target_size),
             dict(type="RandomColorJitter", brightness=0.4, contrast=0.4, saturation=0.2, hue=0.1, p=0.8),
             dict(type="RandomGrayscale", p=0.2),
-            dict(type="RandomGaussianBlur", kernel_size=23, p=1.),
+            dict(type="RandomGaussianBlur", kernel_size=23, p=1.0),
             dict(type="PILImageToNDArray", keys=["img"]),
             dict(type="RandomFlip", prob=0.5, direction="horizontal"),
             dict(type="Normalize", **__img_norm_cfg),
