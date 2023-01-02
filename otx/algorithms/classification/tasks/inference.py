@@ -25,6 +25,9 @@ from otx.algorithms.classification.adapters.mmcls.utils.config_utils import (
     patch_datasets,
     patch_evaluation,
 )
+from otx.algorithms.classification.adapters.mmcls.utils.builder import (
+    build_classifier,
+)
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.inference_parameters import (
     InferenceParameters,
@@ -192,15 +195,20 @@ class ClassificationInferenceTask(
         output_model.optimization_type = ModelOptimizationType.MO
 
         stage_module = "ClsExporter"
-        results = self._run_task(stage_module, mode="train", precision="FP32", export=True)
-        logger.debug(f"results of run_task = {results}")
-        results = results.get("outputs")
-        logger.debug(f"results of run_task = {results}")
-        if results is None:
-            logger.error("Error while exporting model. Result is NoneType.")
+        results = self._run_task(
+            stage_module,
+            mode="train",
+            export=True
+        )
+        outputs = results.get("outputs")
+        logger.debug(f"results of run_task = {outputs}")
+        if outputs is None:
+            logger.error(
+                f"error while exporting model, result is None: {results.get('msg')}"
+            )
         else:
-            bin_file = results.get("bin")
-            xml_file = results.get("xml")
+            bin_file = outputs.get("bin")
+            xml_file = outputs.get("xml")
             if xml_file is None or bin_file is None:
                 raise RuntimeError("invalid status of exporting. bin and xml should not be None")
             with open(bin_file, "rb") as f:
@@ -429,3 +437,7 @@ class ClassificationInferenceTask(
             )
         )
         return data_cfg
+
+    def _initialize_post_hook(self, options=dict()):
+        super()._initialize_post_hook(options)
+        options["model_builder"] = build_classifier

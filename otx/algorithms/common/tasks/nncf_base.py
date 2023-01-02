@@ -78,25 +78,28 @@ logger = get_logger()
 
 class NNCFBaseTask(BaseTask, IOptimizationTask):
     @check_input_parameters_type()
-    def __init__(self, task_environment: TaskEnvironment):
-        super().__init__(task_environment)
-
-        self._nncf_preset = "nncf_quantization"
-        self._nncf_data_to_build = None
-        self._nncf_state_dict_to_build = dict()
-        check_nncf_is_enabled()
-        self._scratch_space = tempfile.mkdtemp(prefix="otx-nncf-scratch-")
-        logger.info(f"Scratch space created at {self._scratch_space}")
+    def __init__(self, task_environment: TaskEnvironment, **kwargs):
+        super().__init__(task_environment, **kwargs)
 
         # Set default model attributes.
+        check_nncf_is_enabled()
+        self._nncf_data_to_build = None
+        self._nncf_state_dict_to_build = dict()
+        self._nncf_preset = None
         self._optimization_methods = []  # type: List
         self._precision = [ModelPrecision.FP32]
+
+        self._scratch_space = tempfile.mkdtemp(prefix="otx-nncf-scratch-")
+        logger.info(f"Scratch space created at {self._scratch_space}")
 
         # Extra control variables.
         self._training_work_dir = None
         self._is_training = False
         self._should_stop = False
         self._optimization_type = ModelOptimizationType.NNCF
+
+        self._set_attributes_by_hyperparams()
+
         logger.info("Task initialization completed")
 
     def _set_attributes_by_hyperparams(self):
@@ -148,8 +151,6 @@ class NNCFBaseTask(BaseTask, IOptimizationTask):
 
         with open(nncf_config_path, encoding="UTF-8") as nncf_config_file:
             common_nncf_config = json.load(nncf_config_file)
-
-        self._set_attributes_by_hyperparams()
 
         optimization_config = compose_nncf_config(
             common_nncf_config, [self._nncf_preset]
@@ -224,11 +225,13 @@ class NNCFBaseTask(BaseTask, IOptimizationTask):
     @staticmethod
     def model_builder(
         config,
+        *args,
         nncf_model_builder,
         model_config=None,
         data_config=None,
         is_export=False,
         return_compression_ctrl=False,
+        **kwargs,
     ):
         if model_config is not None or data_config is not None:
             config = deepcopy(config)
@@ -240,6 +243,8 @@ class NNCFBaseTask(BaseTask, IOptimizationTask):
         compression_ctrl, model, = nncf_model_builder(
             config,
             distributed=False,
+            *args,
+            **kwargs,
         )
 
         if is_export:
@@ -256,6 +261,13 @@ class NNCFBaseTask(BaseTask, IOptimizationTask):
         optimization_parameters: Optional[OptimizationParameters] = None,
     ):
         raise NotImplementedError
+
+    def _optimize_post_hook(
+        self,
+        dataset: DatasetEntity,
+        output_model: ModelEntity,
+    ):
+        pass
 
     @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def optimize(
@@ -310,6 +322,8 @@ class NNCFBaseTask(BaseTask, IOptimizationTask):
         )
         torch.save(model_ckpt, self._model_ckpt)
 
+        self._optimize_post_hook(dataset, output_model)
+
         self.save_model(output_model)
 
         output_model.model_format = ModelFormat.BASE_FRAMEWORK
@@ -319,7 +333,7 @@ class NNCFBaseTask(BaseTask, IOptimizationTask):
 
         self._is_training = False
 
-    def _update_modelinfo_to_save(self, modelinfo):
+    def _save_model_post_hook(self, modelinfo):
         pass
 
     @check_input_parameters_type()
@@ -358,7 +372,7 @@ class NNCFBaseTask(BaseTask, IOptimizationTask):
                 "VERSION": 1,
             },
         )
-        self._update_modelinfo_to_save(modelinfo)
+        self._save_model_post_hook(modelinfo)
 
         torch.save(modelinfo, buffer)
         output_model.set_data("weights.pth", buffer.getvalue())

@@ -9,10 +9,12 @@ from .config_utils import (
     patch_evaluation,
     prepare_for_training,
 )
+from .builder import build_classifier
 
 __all__ = [
     "patch_recipe_config",
     "patch_datasets",
     "patch_evaluation",
     "prepare_for_training",
+    "build_classifier",
 ]

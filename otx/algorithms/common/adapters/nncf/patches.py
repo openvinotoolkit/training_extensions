@@ -5,16 +5,6 @@
 from contextlib import contextmanager
 from functools import partial
 
-from .patchers import NNCF_PATCHER, no_nncf_trace_wrapper
-
-
-NNCF_PATCHER.patch(
-    "mpa.modules.utils.export_helpers.get_saliency_map", no_nncf_trace_wrapper
-)
-NNCF_PATCHER.patch(
-    "mpa.modules.utils.export_helpers.get_feature_vector", no_nncf_trace_wrapper
-)
-
 
 @contextmanager
 def nncf_trace_context(self, img_metas, nncf_compress_postprocessing=True):

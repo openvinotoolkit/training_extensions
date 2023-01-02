@@ -33,6 +33,9 @@ class ModelPrecision(IntEnum):
     FP16 = auto()
     FP32 = auto()
 
+    def __str__(self):
+        return self.name
+
 
 class ModelConfiguration:
     """This class represents the task configuration which was used to generate a specific model.

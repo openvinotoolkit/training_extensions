@@ -4,7 +4,9 @@
 
 from copy import deepcopy
 from functools import partial
+from typing import Optional, Union
 
+import torch
 from mmcls.utils import get_root_logger
 from mmcv.runner import CheckpointLoader, load_state_dict
 from mmcv.utils import Config, ConfigDict
@@ -20,18 +22,23 @@ from otx.algorithms.common.adapters.nncf.compression import (
     NNCF_STATE_NAME,
     STATE_TO_BUILD_NAME,
 )
-from otx.algorithms.common.adapters.nncf.utils import load_checkpoint
+from otx.algorithms.classification.adapters.mmcls.utils import build_classifier
 
 
 logger = get_root_logger()
 
 
-def build_nncf_model(config, distributed=False):
+def build_nncf_classifier(
+    config: Config,
+    checkpoint: Optional[str] = None,
+    device: Union[str, torch.device] = "cpu",
+    cfg_options: Optional[Union[Config, ConfigDict]] = None,
+    distributed: bool = False,
+):
     from mmcls.apis import multi_gpu_test, single_gpu_test
     from mmcls.datasets import build_dataloader as mmcls_build_dataloader
     from mmcls.datasets import build_dataset
     from mmcls.datasets.pipelines import Compose
-    from mmcls.models import build_classifier
 
     from otx.algorithms.common.adapters.mmcv.nncf import (
         build_dataloader,
@@ -40,40 +47,18 @@ def build_nncf_model(config, distributed=False):
         wrap_nncf_model,
     )
 
-    def build_model(config: Config, from_scratch: bool = False):
-        """Creates a model, based on the configuration in config.
+    if cfg_options is not None:
+        config.merge_from_dict(cfg_options)
+    if checkpoint is None:
+        # load model in this function not in runner
+        checkpoint = config.load_from
+        config.load_from = None
+    assert checkpoint is not None
 
-        :param config: mmclassification configuration from which the model has to be built
-        :param from_scratch: bool, if True does not load any weights
+    model = build_classifier(config, from_scratch=True)
+    model = model.to(device)
 
-        :return model: ModelEntity in training mode
-        """
-
-        model_cfg = deepcopy(config.model)
-
-        init_from = None if from_scratch else config.get("load_from", None)
-        logger.warning(f"Init from: {init_from}")
-
-        if init_from is not None:
-            # No need to initialize backbone separately, if all weights are provided.
-            model_cfg.pretrained = None
-            logger.warning("build classifier")
-            model = build_classifier(model_cfg)
-
-            # Load all weights.
-            logger.warning("load checkpoint")
-            load_checkpoint(model, init_from, map_location="cpu")
-        else:
-            logger.warning("build classifier")
-            model = build_classifier(model_cfg)
-
-        return model
-
-    state_dict = CheckpointLoader.load_checkpoint(config.load_from, map_location="cpu")
-    # load model in this function not in runner
-    config.load_from = None
-
-    model = build_model(config, from_scratch=True)
+    state_dict = CheckpointLoader.load_checkpoint(checkpoint, map_location=device)
 
     is_acc_aware = is_accuracy_aware_training_set(config.get("nncf_config"))
 

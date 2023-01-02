@@ -3,7 +3,7 @@
 #
 
 from .builder import (
-    build_nncf_model,
+    build_nncf_classifier,
 )
 
 from .patches import *
@@ -11,6 +11,6 @@ from .patches import *
 from .registers import *
 
 __all__ = [
-    "build_nncf_model",
+    "build_nncf_classifier",
 ]
 

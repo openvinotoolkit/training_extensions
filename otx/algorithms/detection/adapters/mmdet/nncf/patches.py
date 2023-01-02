@@ -22,6 +22,7 @@ from otx.algorithms.common.adapters.nncf.patchers import (
     no_nncf_trace_wrapper,
 )
 from otx.algorithms.common.adapters.nncf.patches import nncf_trace_context
+from mpa.deploy.utils import is_mmdeploy_enabled
 
 
 HEADS_TARGETS = dict(
@@ -120,3 +121,20 @@ NNCF_PATCHER.patch("mmdet.core.bbox2roi", no_nncf_trace_wrapper)
 
 # add nncf context method that will be used when nncf tracing
 BaseDetector.nncf_trace_context = nncf_trace_context
+
+
+if is_mmdeploy_enabled():
+    import mmdeploy.codebase.mmdet
+    from mmdeploy.core import FUNCTION_REWRITER
+    from mmdeploy.core.rewriters.rewriter_utils import import_function
+
+    for fn_path, record_dicts in FUNCTION_REWRITER._registry._rewrite_records.items():
+        if fn_path.startswith("torch"):
+            continue
+        obj, obj_cls = import_function(fn_path)
+        fn_name = fn_path.split(".")[-1]
+        if should_wrap(obj_cls, fn_name, HEADS_TARGETS):
+            for record_dict in record_dicts:
+                record_dict["_object"] = partial(
+                    no_nncf_trace_wrapper, None, record_dict["_object"]
+                )

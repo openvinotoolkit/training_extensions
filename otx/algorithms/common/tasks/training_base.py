@@ -29,7 +29,10 @@ from mmcv.utils.config import Config, ConfigDict
 
 from otx.algorithms.common.adapters.mmcv.hooks import OTXLoggerHook
 from otx.algorithms.common.configs import TrainType
-from otx.algorithms.common.adapters.mmcv.utils import align_data_config_with_recipe
+from otx.algorithms.common.adapters.mmcv.utils import (
+    align_data_config_with_recipe,
+    get_configs_by_dict
+)
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label import LabelEntity
 from otx.api.entities.model import ModelEntity, ModelPrecision, OptimizationMethod
@@ -46,6 +49,7 @@ from otx.mpa.modules.hooks.cancel_interface_hook import CancelInterfaceHook
 from otx.mpa.stage import Stage
 from otx.mpa.utils.config_utils import remove_custom_hook, update_or_add_custom_hook
 from otx.mpa.utils.logger import get_logger
+from otx.mpa.utils.config_utils import MPAConfig
 
 logger = get_logger()
 
@@ -233,7 +237,6 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
                 del self._model_cfg._cfg_dict["fp16"]
             elif isinstance(self._model_cfg, ConfigDict):
                 del self._model_cfg["fp16"]
-        self._precision = [ModelPrecision.FP32]
 
         # Add/remove adaptive interval hook
         if self._recipe_cfg.get("use_adaptive_interval", False):
@@ -281,12 +284,17 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         if self._data_cfg is not None:
             align_data_config_with_recipe(self._data_cfg, self._recipe_cfg)
 
+        if export:
+            options["deploy_cfg"] = self._init_deploy_cfg()
+
         self._initialize_post_hook(options)
 
         logger.info("initialized.")
 
     def _initialize_post_hook(self, options=dict()):
-        pass
+        if options.get("export", False) and options.get("precision", None) is None:
+            assert len(self._precision) == 1
+            options["precision"] = str(self._precision[0])
 
     @abc.abstractmethod
     def _init_recipe(self):
@@ -337,6 +345,80 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
 
     def _update_stage_module(self, stage_module: str):
         return stage_module
+
+    def _init_deploy_cfg(self) -> Union[Config, None]:
+        base_dir = os.path.abspath(os.path.dirname(self.template_file_path))
+        deploy_cfg_path = os.path.join(base_dir, "deployment.py")
+        deploy_cfg = None
+        if os.path.exists(deploy_cfg_path):
+            deploy_cfg = MPAConfig.fromfile(deploy_cfg_path)
+
+            def patch_input_preprocessing(deploy_cfg):
+
+                normalize_cfg = get_configs_by_dict(
+                    self._recipe_cfg.data.test.pipeline,
+                    dict(type="Normalize")
+                )
+                assert len(normalize_cfg) == 1
+                normalize_cfg = normalize_cfg[0]
+
+                options = dict(flags=[], args={})
+                # NOTE: OTX loads image in RGB format
+                # so that `to_rgb=True` means a format change to BGR instead.
+                # Conventionally, OpenVINO IR expects a image in BGR format
+                # but OpenVINO IR under OTX assumes a image in RGB format.
+                #
+                # `to_rgb=True` -> a model was trained with images in BGR format
+                #                  and a OpenVINO IR needs to reverse input format from RGB to BGR
+                # `to_rgb=False` -> a model was trained with images in RGB format
+                #                   and a OpenVINO IR does not need to do a reverse
+                if normalize_cfg.get("to_rgb", False):
+                    options["flags"] += ["--reverse_input_channels"]
+                # value must be a list not a tuple
+                if normalize_cfg.get("mean", None) is not None:
+                    options["args"]["--mean_values"] = list(normalize_cfg.get("mean"))
+                if normalize_cfg.get("std", None) is not None:
+                    options["args"]["--scale_values"] = list(normalize_cfg.get("std"))
+
+                # fill default
+                backend_config = deploy_cfg.backend_config
+                if backend_config.get("mo_options") is None:
+                    backend_config.mo_options = ConfigDict()
+                mo_options = backend_config.mo_options
+                if mo_options.get("args") is None:
+                    mo_options.args = ConfigDict()
+                if mo_options.get("flags") is None:
+                    mo_options.flags = []
+
+                # already defiend options have higher priority
+                options["args"].update(mo_options.args)
+                mo_options.args = ConfigDict(options["args"])
+                # make sure no duplicates
+                mo_options.flags.extend(options["flags"])
+                mo_options.flags = list(set(mo_options.flags))
+
+            def patch_input_shape(deploy_cfg):
+                resize_cfg = get_configs_by_dict(
+                    self._recipe_cfg.data.test.pipeline,
+                    dict(type="Resize")
+                )
+                assert len(resize_cfg) == 1
+                resize_cfg = resize_cfg[0]
+                size = resize_cfg.size
+                if isinstance(size, int):
+                    size = (size, size)
+                assert all(isinstance(i, int) and i > 0 for i in size)
+                # default is static shape to prevent an unexpected error
+                # when converting to OpenVINO IR
+                deploy_cfg.backend_config.model_inputs = [
+                    ConfigDict(opt_shapes=ConfigDict(input=[1, 3, *size]))
+                ]
+
+            patch_input_preprocessing(deploy_cfg)
+            if not deploy_cfg.backend_config.get("model_inputs", []):
+                patch_input_shape(deploy_cfg)
+
+        return deploy_cfg
 
     def _load_model_state_dict(self, model: Optional[ModelEntity]):
         if model and "weights.pth" in model.model_adapters:

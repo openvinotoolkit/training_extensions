@@ -19,7 +19,9 @@ from typing import Optional
 
 from mpa.utils.logger import get_logger
 
-from otx.algorithms.classification.adapters.mmcls.nncf import build_nncf_model
+from otx.algorithms.classification.adapters.mmcls.nncf.builder import (
+    build_nncf_classifier,
+)
 from otx.algorithms.common.tasks.nncf_base import NNCFBaseTask
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.optimization_parameters import OptimizationParameters
@@ -33,18 +35,13 @@ logger = get_logger()
 
 
 class ClassificationNNCFTask(NNCFBaseTask, ClassificationInferenceTask):
-    @check_input_parameters_type()
-    def __init__(self, task_environment: TaskEnvironment, **kwargs):
-        super().__init__(task_environment, **kwargs)
-        self._label_dictionary = dict(enumerate(self._labels, 1))
-
     def _initialize_post_hook(self, options=dict()):
         super()._initialize_post_hook(options)
 
         export = options.get("export", False)
         options["model_builder"] = partial(
             self.model_builder,
-            nncf_model_builder=build_nncf_model,
+            nncf_model_builder=build_nncf_classifier,
             return_compression_ctrl=False,
             is_export=export,
         )

@@ -1,0 +1,10 @@
+_base_ = ["../base/deployments/base_segmentation_dynamic.py"]
+
+ir_config = dict(
+    output_names=["output", "feature_vector"],
+)
+
+backend_config = dict(
+    # dynamic batch causes openvino runtime error
+    model_inputs=[dict(opt_shapes=dict(input=[1, 3, 544, 544]))],
+)

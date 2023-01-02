@@ -19,7 +19,7 @@ from typing import Optional
 
 
 from otx.algorithms.common.tasks.nncf_base import NNCFBaseTask
-from otx.algorithms.segmentation.adapters.mmseg.nncf import build_nncf_model
+from otx.algorithms.segmentation.adapters.mmseg.nncf import build_nncf_segmentor
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.optimization_parameters import OptimizationParameters
 from otx.api.entities.task_environment import TaskEnvironment
@@ -33,18 +33,13 @@ logger = get_logger()
 
 
 class SegmentationNNCFTask(NNCFBaseTask, SegmentationInferenceTask):
-    @check_input_parameters_type()
-    def __init__(self, task_environment: TaskEnvironment):
-        super().__init__(task_environment)
-        self._label_dictionary = dict(enumerate(self._labels, 1))
-
     def _initialize_post_hook(self, options=dict()):
         super()._initialize_post_hook(options)
 
         export = options.get("export", False)
         options["model_builder"] = partial(
             self.model_builder,
-            nncf_model_builder=build_nncf_model,
+            nncf_model_builder=build_nncf_segmentor,
             return_compression_ctrl=False,
             is_export=export,
         )

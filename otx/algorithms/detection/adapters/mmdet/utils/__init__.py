@@ -11,6 +11,7 @@ from .config_utils import (
     prepare_for_training,
     set_hyperparams,
 )
+from .builder import build_detector
 
 __all__ = [
     "cluster_anchors",
@@ -19,4 +20,5 @@ __all__ = [
     "patch_evaluation",
     "prepare_for_training",
     "set_hyperparams",
+    "build_detector",
 ]

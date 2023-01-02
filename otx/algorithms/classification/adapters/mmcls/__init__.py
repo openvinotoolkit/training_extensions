@@ -17,4 +17,15 @@
 from .data import MPAClsDataset, SelfSLDataset
 from .models import BYOL, ConstrastiveHead, SelfSLMLP
 
-__all__ = ["MPAClsDataset", "SelfSLDataset", "BYOL", "SelfSLMLP", "ConstrastiveHead"]
+# FIXME: openvino pot library adds stream handlers to root logger
+# which makes annoying duplicated logging
+from mmcls.utils import get_root_logger
+get_root_logger().propagate = False
+
+__all__ = [
+    "MPAClsDataset",
+    "SelfSLDataset",
+    "BYOL",
+    "SelfSLMLP",
+    "ConstrastiveHead",
+]
