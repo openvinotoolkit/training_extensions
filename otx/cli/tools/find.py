@@ -57,7 +57,7 @@ def parse_args():
     return parser.parse_args()
 
 
-def generate_backbone_rows(index, backbone_type, meta_data):
+def generate_backbone_rows(index: int, backbone_type: str, meta_data: dict):
     """Generate table row for backbone json format.
 
     It expects a json file format from otx/cli/builder/supported_backbone.
@@ -79,12 +79,12 @@ def generate_backbone_rows(index, backbone_type, meta_data):
             row.append("")  # Index
             row.append("")  # backbone_type
         else:
-            row.append(index)  # Index
+            row.append(str(index))  # Index
             row.append(backbone_type)  # backbone_type
             use_backbone_type = True
         row.append(arg)  # Required-Args
-        options = ", ".join(options) if options else ""
-        row.append(fill(options, width=max_row_width))  # Options
+        option_str = ", ".join(options) if options else ""
+        row.append(fill(option_str, width=max_row_width))  # Options
         row.append(fill(available, width=max_row_width))  # Available
         rows.append(row)
     return rows

@@ -45,8 +45,7 @@ def get_impl_class(impl_path):
 
 def get_backbone_list(backend):
     """Gather available backbone list from json file & imported lib."""
-    available_backbone_path = os.path.join(get_otx_root_path(), "cli/builder/supported_backbone")
-    available_backbone_path = os.path.join(available_backbone_path, f"{backend}.json")
+    available_backbone_path = os.path.join(get_otx_root_path(), f"cli/builder/supported_backbone/{backend}.json")
     available_backbones = {}
     if os.path.exists(available_backbone_path):
         with open(available_backbone_path, "r", encoding="UTF-8") as f:
@@ -57,7 +56,6 @@ def get_backbone_list(backend):
         backbone_format = {"required": [], "options": {}, "available": []}
         for backbone in backbone_list:
             backbone_type = f"mmdet.{backbone}"
-            backbone_format = {"required": [], "options": {}, "available": []}
             available_backbones[backbone_type] = backbone_format
     else:
         raise ValueError(f"{backend} cannot be imported or supported.")

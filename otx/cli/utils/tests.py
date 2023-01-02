@@ -21,6 +21,7 @@ import pytest
 
 from otx.cli.tools.find import SUPPORTED_BACKBONE_BACKENDS as find_supported_backends
 from otx.cli.tools.find import SUPPORTED_TASKS as find_supported_tasks
+from otx.mpa.utils.config_utils import MPAConfig
 
 
 def get_template_rel_dir(template):
@@ -616,6 +617,12 @@ def otx_build_backbone_testing(root, backbone_args):
         task_workspace,
     ]
     check_run(command_line)
+    model_config = MPAConfig.fromfile(os.path.join(task_workspace, "model.py"))
+    assert "model" in model_config, "'model' is not in model configs"
+    assert "backbone" in model_config["model"], "'backbone' is not in model configs"
+    assert (
+        model_config["model"]["backbone"]["type"] == backbone
+    ), f"{model_config['model']['backbone']['type']} != {backbone}"
 
     # Build model.py from backbone type
     command_line = [
@@ -629,3 +636,9 @@ def otx_build_backbone_testing(root, backbone_args):
         task_workspace,
     ]
     check_run(command_line)
+    model_config = MPAConfig.fromfile(os.path.join(task_workspace, "model.py"))
+    assert "model" in model_config, "'model' is not in model configs"
+    assert "backbone" in model_config["model"], "'backbone' is not in model configs"
+    assert (
+        model_config["model"]["backbone"]["type"] == backbone
+    ), f"{model_config['model']['backbone']['type']} != {backbone}"
