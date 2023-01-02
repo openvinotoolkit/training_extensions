@@ -71,8 +71,6 @@ class ActionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask
 
     @check_input_parameters_type()
     def __init__(self, task_environment: TaskEnvironment, **kwargs):
-        # self._should_stop = False
-        # self._model = None
         self.task_environment = task_environment
         super().__init__(ActionConfig, task_environment, **kwargs)
 
