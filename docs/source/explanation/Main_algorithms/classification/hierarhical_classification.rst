@@ -7,7 +7,7 @@ Dataset format
 
 The goal of this task is to predict the hierarchical tree of the labels. Assume we have a label tree as below:
 
-.. image:: ../../../utils/images/label_tree.png
+.. image:: ../../../../utils/images/label_tree.png
   :width: 600
   :alt: image uploaded from this `source <https://towardsdatascience.com/https-medium-com-noa-weiss-the-hitchhikers-guide-to-hierarchical-classification-f8428ea1e076>`_
 

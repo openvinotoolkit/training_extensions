@@ -54,9 +54,10 @@ Besides this, we support public backbones from `torchvision <https://pytorch.org
 Please, refer to `tutorial <N/A>`_ how to run public backbones.
 
 To see which public backbones are available for the task, the following command can be executed:
-.. codeblock::
 
-   $ otx find --backbone {torchvision, pytorchcv, mmcls, omz.mmcls}
+.. code-block::
+
+        $ otx find --backbone {torchvision, pytorchcv, mmcls, omz.mmcls}
 
 
 *******************************
