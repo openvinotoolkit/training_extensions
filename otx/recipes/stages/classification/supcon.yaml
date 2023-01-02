@@ -1,0 +1,25 @@
+_base_:
+  [
+    "./train.yaml",
+    "../_base_/data/twocrop_data.py",
+    "../_base_/models/cls_supcon.py",
+  ]
+
+runner:
+  max_epochs: 20
+
+optimizer_config:
+  type: SAMOptimizerHook
+
+optimizer:
+  type: SGD
+  lr: 0.005
+  momentum: 0.9
+  weight_decay: 0.0005
+
+evaluation:
+  metric: ["accuracy", "class_accuracy"]
+
+task_adapt:
+  type: "mpa"
+  op: "REPLACE"

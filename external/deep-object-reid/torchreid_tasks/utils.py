@@ -626,3 +626,12 @@ class OTELoggerHook(LoggerHook):
         runner._iter -= 1
         super().after_train_epoch(runner)
         runner._iter += 1
+
+
+@check_input_parameters_type()
+def get_actmap(features: Union[np.ndarray, Iterable, int, float],
+               output_res: Union[tuple, list]):
+    am = cv.resize(features, output_res)
+    am = cv.applyColorMap(am, cv.COLORMAP_JET)
+    am = cv.cvtColor(am, cv.COLOR_BGR2RGB)
+    return am

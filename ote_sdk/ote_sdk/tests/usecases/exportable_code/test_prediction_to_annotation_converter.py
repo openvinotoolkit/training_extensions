@@ -244,7 +244,7 @@ class TestCreateConverter:
         converter = create_converter(
             converter_type=Domain.DETECTION, labels=label_schema
         )
-        assert isinstance(converter, DetectionBoxToAnnotationConverter)
+        assert isinstance(converter, DetectionToAnnotationConverter)
         assert converter.labels == labels
         # Checking "SegmentationToAnnotationConverter" returned by "create_converter" function when "SEGMENTATION"is
         # specified as "converter_type"

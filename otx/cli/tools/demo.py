@@ -70,7 +70,8 @@ def parse_args():
     parser.add_argument(
         "--load-weights",
         required=True,
-        help="Load only weights from previously saved checkpoint",
+        help="Load model weights from previously saved checkpoint."
+        "It could be a trained/optimized model (POT only) or exported model.",
     )
     parser.add_argument(
         "--fit-to-size",

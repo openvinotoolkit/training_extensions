@@ -88,7 +88,7 @@ def resnet_forward(self, x):
             outputs.append(y)
         if i == last_stage:
             break
-    return outputs
+    return tuple(outputs)
 
 
 def shufflenet_forward(self, x):
@@ -105,7 +105,7 @@ def shufflenet_forward(self, x):
             outputs.append(y)
         if i == last_stage:
             break
-    return outputs
+    return tuple(outputs)
 
 
 def multioutput_forward(self, x):
@@ -131,7 +131,7 @@ def multioutput_forward(self, x):
             print(temp_s)
         if i == last_stage:
             break
-    return outputs
+    return tuple(outputs)
 
 
 def train(self, mode=True):

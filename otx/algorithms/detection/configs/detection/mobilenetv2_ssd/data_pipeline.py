@@ -55,15 +55,10 @@ data = dict(
     samples_per_gpu=10,
     workers_per_gpu=4,
     train=dict(
-        type="RepeatDataset",
-        times=1,
-        adaptive_repeat_times=True,
-        dataset=dict(
-            type=__dataset_type,
-            ann_file="data/coco/annotations/instances_train2017.json",
-            img_prefix="data/coco/train2017",
-            pipeline=train_pipeline,
-        ),
+        type=__dataset_type,
+        ann_file="data/coco/annotations/instances_train2017.json",
+        img_prefix="data/coco/train2017",
+        pipeline=train_pipeline,
     ),
     val=dict(
         type=__dataset_type,

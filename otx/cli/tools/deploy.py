@@ -33,7 +33,7 @@ def parse_args():
     parser.add_argument(
         "--load-weights",
         required=True,
-        help="Load only weights from previously saved checkpoint.",
+        help="Load model weights from previously saved checkpoint.",
     )
     parser.add_argument(
         "--save-model-to",

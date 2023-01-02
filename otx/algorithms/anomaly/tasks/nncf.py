@@ -60,7 +60,7 @@ logger = get_logger(__name__)
 class NNCFTask(InferenceTask, IOptimizationTask):
     """Base Anomaly Task."""
 
-    def __init__(self, task_environment: TaskEnvironment) -> None:
+    def __init__(self, task_environment: TaskEnvironment, **kwargs) -> None:
         """Task for compressing models using NNCF.
 
         Args:
@@ -68,7 +68,7 @@ class NNCFTask(InferenceTask, IOptimizationTask):
         """
         self.compression_ctrl = None
         self.nncf_preset = "nncf_quantization"
-        super().__init__(task_environment)
+        super().__init__(task_environment, **kwargs)
         self.optimization_type = ModelOptimizationType.NNCF
 
     def _set_attributes_by_hyperparams(self):
@@ -202,7 +202,7 @@ class NNCFTask(InferenceTask, IOptimizationTask):
 
         logger.info("Training completed.")
 
-    def _model_info(self) -> Dict:
+    def model_info(self) -> Dict:
         """Return model info to save the model weights.
 
         Returns:

@@ -4,10 +4,13 @@
 #
 
 import os
+from functools import wraps
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
 import pytest
+import torch
+import yaml
 
 from otx.api.entities.model_template import parse_model_template
 from otx.cli.registry import Registry
@@ -79,6 +82,7 @@ def tmp_dir_path():
         yield Path(tmp_dir)
 
 
+MULTI_GPU_UNAVAILABLE = torch.cuda.device_count() <= 1
 TT_STABILITY_TESTS = os.environ.get("TT_STABILITY_TESTS", False)
 if TT_STABILITY_TESTS:
     default_template = parse_model_template(
@@ -219,6 +223,15 @@ class TestToolsMPAClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_pot_eval(self, template, tmp_dir_path):
         pot_eval_testing(template, tmp_dir_path, otx_dir, args)
+
+    @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.skipif(MULTI_GPU_UNAVAILABLE, reason="The number of gpu is insufficient")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_multi_gpu_train(self, template, tmp_dir_path):
+        args1 = args.copy()
+        args1["--gpus"] = "0,1"
+        otx_train_testing(template, tmp_dir_path, otx_dir, args1)
 
 
 # Pre-train w/ 'car', 'tree' classes
@@ -379,6 +392,15 @@ class TestToolsMPAMultilabelClassification:
     def test_pot_eval(self, template, tmp_dir_path):
         pot_eval_testing(template, tmp_dir_path, otx_dir, args_m)
 
+    @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.skipif(MULTI_GPU_UNAVAILABLE, reason="The number of gpu is insufficient")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_multi_gpu_train(self, template, tmp_dir_path):
+        args0 = args_m.copy()
+        args0["--gpus"] = "0,1"
+        otx_train_testing(template, tmp_dir_path, otx_dir, args0)
+
 
 # TODO: (Jihwan) Enable C-IL test without image loading via otx-cli.
 args_h = {
@@ -519,3 +541,67 @@ class TestToolsMPAHierarchicalClassification:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_pot_eval(self, template, tmp_dir_path):
         pot_eval_testing(template, tmp_dir_path, otx_dir, args_h)
+
+    @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.skipif(MULTI_GPU_UNAVAILABLE, reason="The number of gpu is insufficient")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_multi_gpu_train(self, template, tmp_dir_path):
+        args1 = args_h.copy()
+        args1["--gpus"] = "0,1"
+        otx_train_testing(template, tmp_dir_path, otx_dir, args1)
+
+
+# tmp: create & remove data.yaml to only use train-data-roots
+def set_dummy_data(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        # create data.yaml
+        to_save_data_args = {
+            "data": {
+                "train": {"ann-files": None, "data-roots": None},
+                "val": {"ann-files": None, "data-roots": None},
+                "unlabeled": {"ann-files": None, "data-roots": None},
+            },
+        }
+        yaml.dump(to_save_data_args, open("./data.yaml", "w"), default_flow_style=False)
+        # run test
+        func(*args, **kwargs)
+        # remove data.yaml
+        os.remove("./data.yaml")
+
+    return wrapper
+
+
+# Warmstart using data w/ 'intel', 'openvino', 'opencv' classes
+args_w = {
+    "--data": "./data.yaml",
+    "--train-data-roots": "data/text_recognition/IL_data",
+    "train_params": [
+        "params",
+        "--learning_parameters.num_iters",
+        "10",
+        "--learning_parameters.batch_size",
+        "4",
+        "--algo_backend.train_type",
+        "SELFSUPERVISED",
+    ],
+}
+
+
+class TestToolsMPASelfSLClassification:
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @set_dummy_data
+    def test_otx_selfsl_train(self, template, tmp_dir_path):
+        otx_train_testing(template, tmp_dir_path, otx_dir, args_w)
+        template_work_dir = get_template_dir(template, tmp_dir_path)
+        args1 = args.copy()
+        args1["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/weights.pth"
+        otx_train_testing(template, tmp_dir_path, otx_dir, args1)
+
+    @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_eval(self, template, tmp_dir_path):
+        otx_eval_testing(template, tmp_dir_path, otx_dir, args)

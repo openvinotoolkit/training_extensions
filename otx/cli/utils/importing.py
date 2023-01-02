@@ -22,14 +22,15 @@ import os
 
 # pylint: disable=protected-access
 
-SUPPORTED_BACKBONE_BACKENDS = (
-    "otx",
-    "mmcls",
-    "mmdet",
-    "mmseg",
-    "torchvision",
-    "pytorchcv",
-)
+SUPPORTED_BACKBONE_BACKENDS = {
+    "otx": "otx.algorithms.common.adapters.mmcv.models",
+    "mmcls": "mmcls.models",
+    "mmdet": "mmdet.models",
+    "mmseg": "mmseg.models",
+    "torchvision": "otx.algorithms.common.adapters.mmcv.models",
+    "pytorchcv": "mmdet.models",
+    "omz.mmcls": "otx.mpa.modules.ov.models.mmcls.backbones.mmov_backbone",
+}
 
 
 def get_impl_class(impl_path):
@@ -43,91 +44,49 @@ def get_impl_class(impl_path):
 
 
 def get_backbone_list(backend):
-    """Gather backbone list from backends."""
-    if backend in ("otx", "custom"):
-        otx_backbones = importlib.import_module("otx.algorithms.common.adapters.mmcv.models.backbones")
-        return otx_backbones.__all__
-    if backend in ("mmcls", "mmdet", "mmseg"):
-        if importlib.util.find_spec(backend):
-            mm_backbones = importlib.import_module(f"{backend}.models.backbones")
-            return mm_backbones.__all__
-    if backend == "pytorchcv":
-        if importlib.util.find_spec(backend):
-            pytorchcv_backbones = importlib.import_module(f"{backend}.model_provider")
-            return pytorchcv_backbones._models
-    if backend == "torchvision":
-        torchvision_backbone_module = "otx.algorithms.common.adapters.mmcv.models.backbones.torchvision_backbones"
-        torchvision_backbones = importlib.import_module(torchvision_backbone_module)
-        return [f"{backbone}" for backbone in torchvision_backbones.TORCHVISION_MODELS.keys()]
-    raise ValueError(f"{backend} cannot be imported.")
-
-
-def get_available_backbone_list(backend):
-    """Gather available backbone list from json file."""
-    available_backbone_path = os.path.join(get_otx_root_path(), "cli/builder/supported_backbone")
-    available_backbone_path = os.path.join(available_backbone_path, f"{backend}.json")
+    """Gather available backbone list from json file & imported lib."""
+    available_backbone_path = os.path.join(get_otx_root_path(), f"cli/builder/supported_backbone/{backend}.json")
     available_backbones = {}
     if os.path.exists(available_backbone_path):
         with open(available_backbone_path, "r", encoding="UTF-8") as f:
             available_backbones = json.load(f)
         available_backbones = available_backbones["backbones"]
-    elif backend in ("otx", "pytorchcv"):
-        backbone_list = get_backbone_list(backend)
-        registry, _ = get_backbone_registry(backend)
+    elif backend == "pytorchcv" and importlib.util.find_spec(backend):
+        backbone_list = importlib.import_module(f"{backend}.model_provider")._models
         backbone_format = {"required": [], "options": {}, "available": []}
         for backbone in backbone_list:
-            scope_name = "mmdet" if backend == "pytorchcv" else backend
-            backbone_type = f"{scope_name}.{backbone}"
-            backbone_format = {
-                "required": get_required_args(registry.get(backbone_type)),
-                "options": {},
-                "available": [],
-            }
+            backbone_type = f"mmdet.{backbone}"
             available_backbones[backbone_type] = backbone_format
+    else:
+        raise ValueError(f"{backend} cannot be imported or supported.")
     return available_backbones
 
 
-def get_backbone_registry(backends=None):
+def get_backbone_registry(backend=None):
     """Gather backbone list from backends."""
-    if backends not in SUPPORTED_BACKBONE_BACKENDS:
-        raise ValueError(f"{backends} is an unsupported backbone backend.")
+    if backend not in SUPPORTED_BACKBONE_BACKENDS:
+        raise ValueError(f"{backend} is an unsupported backbone backend.")
 
     custom_imports = []
-    # Get OTX Custom + Torchvision registry
-    otx_backend_path = "otx.algorithms.common.adapters.mmcv.models"
-    otx_backbones = importlib.import_module(otx_backend_path)
-    otx_registry = otx_backbones.BACKBONES
-    custom_imports.append(otx_backend_path)
-
-    if backends is None:
-        backend_list = ["mmcls", "mmdet", "mmseg"]
-    elif backends in ("otx", "torchvision"):
-        backend_list = []
-    elif backends in ("mmdet", "pytorchcv"):
-        backend_list = ["mmdet"]
-    else:
-        backend_list = [backends]
-
-    for backend in backend_list:
-        if importlib.util.find_spec(backend):
-            mm_backbones = importlib.import_module(f"{backend}.models")
-            mm_registry = mm_backbones.BACKBONES
-            if mm_registry.scope not in otx_registry.children:
-                otx_registry._add_children(mm_registry)
-            custom_imports.append(f"{backend}.models")
-    return otx_registry, custom_imports
+    backend_import_path = SUPPORTED_BACKBONE_BACKENDS[backend]
+    mm_backbones = importlib.import_module(backend_import_path)
+    mm_registry = mm_backbones.BACKBONES
+    custom_imports.append(backend_import_path)
+    return mm_registry, custom_imports
 
 
-def get_required_args(module):
-    """Gather backbone's Required Args."""
+def get_module_args(module):
+    """Gather module's Required Args."""
     if module is None:
         return []
     required_args = []
+    default_args = {}
     args_signature = inspect.signature(module)
     for arg_key, arg_value in args_signature.parameters.items():
         if arg_value.default is inspect.Parameter.empty:
             required_args.append(arg_key)
             continue
+        default_args[arg_key] = arg_value.default
     # Get args from parents
     parent_module = module.__bases__
     while len(parent_module):
@@ -140,7 +99,7 @@ def get_required_args(module):
                 continue
         parent_module = parent_module[0].__bases__
     required_args = [arg for arg in required_args if arg not in ("args", "kwargs", "self")]
-    return required_args
+    return required_args, default_args
 
 
 def get_otx_root_path():

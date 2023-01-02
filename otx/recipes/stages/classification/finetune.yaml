@@ -1,0 +1,25 @@
+_base_: ["./train.yaml", "../_base_/models/classifiers/classifier.py"]
+
+model:
+  type: SAMImageClassifier
+  head:
+    type: "LinearClsHead"
+    in_channels: -1
+    num_classes: -1
+    loss:
+      type: "CrossEntropyLoss"
+      loss_weight: 1.0
+    topk: !!python/tuple [1, 5]
+
+optimizer:
+  lr: 0.03
+  momentum: 0.9
+  weight_decay: 0.0005
+
+optimizer_config:
+  type: SAMOptimizerHook
+
+custom_hooks:
+  - type: NoBiasDecayHook
+deterministic: True
+seed: 1234

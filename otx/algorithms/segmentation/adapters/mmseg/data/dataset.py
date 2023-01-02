@@ -76,7 +76,12 @@ class OTXSegDataset(CustomDataset):
         convenient for mmsegmentation.
         """
 
-        def __init__(self, otx_dataset, labels=None):
+        def __init__(
+            self,
+            otx_dataset,
+            labels=None,
+            **kwargs,  # pylint: disable=unused-argument
+        ):
             self.otx_dataset = otx_dataset
             self.labels = labels
             self.label_idx = {label.id: i for i, label in enumerate(labels)}

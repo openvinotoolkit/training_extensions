@@ -37,13 +37,45 @@ from ote_cli.utils.parser import (
 )
 
 
+def init_arguments(parser, parse_template_only=False):
+    """
+    initialize arguments to parser. if 'parse_template_only' set as 'True',
+    'required' attribute to all arguments will be set as 'False' to simply get
+    the template argument.
+    """
+    parser.add_argument("template")
+    parser.add_argument(
+        "--test-ann-files",
+        required=not parse_template_only,
+        help="Comma-separated paths to test annotation files.",
+    )
+    parser.add_argument(
+        "--test-data-roots",
+        required=not parse_template_only,
+        help="Comma-separated paths to test data folders.",
+    )
+    parser.add_argument(
+        "--load-weights",
+        required=not parse_template_only,
+        help="Load weights to run the evaluation. It could be a trained/optimized model or exported model.",
+    )
+    parser.add_argument(
+        "--save-performance",
+        help="Path to a json file where computed performance will be stored.",
+    )
+    return parser
+
+
 def parse_args():
     """
     Parses command line arguments.
     """
 
     pre_parser = argparse.ArgumentParser(add_help=False)
-    pre_parser.add_argument("template")
+    # WA: added all available args to correctly parsing "template" positional arg
+    # to get the available hyper-parameters
+    pre_parser = init_arguments(pre_parser, parse_template_only=True)
+
     parsed, _ = pre_parser.parse_known_args()
     # Load template.yaml file.
     template = find_and_parse_model_template(parsed.template)
@@ -52,26 +84,7 @@ def parse_args():
     assert hyper_parameters
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("template")
-    parser.add_argument(
-        "--test-ann-files",
-        required=True,
-        help="Comma-separated paths to test annotation files.",
-    )
-    parser.add_argument(
-        "--test-data-roots",
-        required=True,
-        help="Comma-separated paths to test data folders.",
-    )
-    parser.add_argument(
-        "--load-weights",
-        required=True,
-        help="Load only weights from previously saved checkpoint",
-    )
-    parser.add_argument(
-        "--save-performance",
-        help="Path to a json file where computed performance will be stored.",
-    )
+    parser = init_arguments(parser)
 
     add_hyper_parameters_sub_parser(parser, hyper_parameters, modes=("INFERENCE",))
 

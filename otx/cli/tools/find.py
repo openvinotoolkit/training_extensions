@@ -18,6 +18,7 @@ Through this command, you can check the tasks, templates, and backbones availabl
 
 import argparse
 import os
+from textwrap import fill
 
 from prettytable import PrettyTable
 
@@ -29,6 +30,7 @@ from otx.cli.utils.importing import SUPPORTED_BACKBONE_BACKENDS, get_otx_root_pa
 SUPPORTED_TASKS = (
     "CLASSIFICATION",
     "DETECTION",
+    "ROTATED_DETECTION",
     "INSTANCE_SEGMENTATION",
     "SEGMENTATION",
     "ACTION_CLASSIFICATION",
@@ -42,21 +44,59 @@ def parse_args():
     """Parses command line arguments."""
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--task", help=f"The currently supported options: {SUPPORTED_TASKS}.")
+    parser.add_argument("--task", help="Supported task types.", choices=SUPPORTED_TASKS)
     parser.add_argument(
         "--template", action="store_true", help="Shows a list of templates that can be used immediately."
     )
     parser.add_argument(
         "--backbone",
-        action="append",
-        help=f"The currently supported options: {SUPPORTED_BACKBONE_BACKENDS}.",
+        nargs="+",
+        help=f"The currently supported options: {list(SUPPORTED_BACKBONE_BACKENDS.keys())}.",
     )
 
     return parser.parse_args()
 
 
+def generate_backbone_rows(index: int, backbone_type: str, meta_data: dict):
+    """Generate table row for backbone json format.
+
+    It expects a json file format from otx/cli/builder/supported_backbone.
+    index: The index of each backbone (int)
+    backbone_type: The backbone type want to add (str)
+    meta_data: This is the metadata of the backbone type (dict)
+        Metadata keys expect required, options, and available.
+    """
+    max_row_width = 40
+    rows = []
+    required_args = meta_data["required"] if meta_data["required"] else [""]
+    required_options = meta_data["options"]
+    available = ", ".join(meta_data["available"]) if meta_data["available"] else ""
+    use_backbone_type = False
+    for arg in required_args:
+        row = []
+        options = list(map(str, required_options[arg])) if arg in required_options else []
+        if use_backbone_type:
+            row.append("")  # Index
+            row.append("")  # backbone_type
+        else:
+            row.append(str(index))  # Index
+            row.append(backbone_type)  # backbone_type
+            use_backbone_type = True
+        row.append(arg)  # Required-Args
+        option_str = ", ".join(options) if options else ""
+        row.append(fill(option_str, width=max_row_width))  # Options
+        row.append(fill(available, width=max_row_width))  # Available
+        rows.append(row)
+    return rows
+
+
 def main():
-    """Main function for model templates searching."""
+    """Main function for model templates & backbone searching.
+
+    When the template argment is input, the templates based on the otx folder are displayed.
+    Given a backbone argument as input,
+    it displays a list of backbones available in the backend of the relevant task.
+    """
 
     args = parse_args()
 
@@ -79,26 +119,14 @@ def main():
             )
         print(template_table)
 
-    # TODO: Get params from cli args & Flow arrangement (for all tasks backbone usable)
     if args.backbone:
         all_backbones = otx_registry.get_backbones(args.backbone)
-        backbone_table = PrettyTable(["Index", "Backbone Type", "Required Args", "Confirmed model"])
-        row_index = 0
+        backbone_table = PrettyTable(["Index", "Backbone Type", "Required-Args", "Options", "Available"])
+        row_index = 1
         for _, backbone_meta in all_backbones.items():
             for backbone_type, meta_data in backbone_meta.items():
-                required_args = []
-                for arg in meta_data["required"]:
-                    output_arg = f"{arg}"
-                    if arg in meta_data["options"]:
-                        output_arg += f"={meta_data['options'][arg]}"
-                    required_args.append(output_arg)
-                row = [
-                    row_index + 1,
-                    backbone_type,
-                    ", ".join(required_args) if required_args else "",
-                    ", ".join(meta_data["available"]) if meta_data["available"] else "",
-                ]
-                backbone_table.add_row(row)
+                rows = generate_backbone_rows(row_index, backbone_type, meta_data)
+                backbone_table.add_rows(rows)
                 row_index += 1
         print(backbone_table)
 

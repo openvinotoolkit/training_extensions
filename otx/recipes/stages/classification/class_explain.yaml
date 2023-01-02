@@ -1,0 +1,4 @@
+_base_:
+  ["../_base_/data/cls_data.py", "../_base_/models/classifiers/classifier.py"]
+
+explainer: "ActivationMap"

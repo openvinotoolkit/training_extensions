@@ -213,7 +213,8 @@ def ote_eval_openvino_testing(template, root, ote_dir, args, threshold):
 
     for k in trained_performance.keys():
         assert (
-            abs(trained_performance[k] - exported_performance[k])
+            exported_performance[k] > trained_performance[k]
+            or abs(trained_performance[k] - exported_performance[k])
             / (trained_performance[k] + 1e-10)
             <= threshold
         ), f"{trained_performance[k]=}, {exported_performance[k]=}"
@@ -520,7 +521,8 @@ def nncf_eval_testing(template, root, ote_dir, args, threshold):
 
     for k in trained_performance.keys():
         assert (
-            abs(trained_performance[k] - evaluated_performance[k])
+            evaluated_performance[k] > trained_performance[k]
+            or abs(trained_performance[k] - evaluated_performance[k])
             / (trained_performance[k] + 1e-10)
             <= threshold
         ), f"{trained_performance[k]=}, {evaluated_performance[k]=}"

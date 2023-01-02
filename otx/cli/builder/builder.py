@@ -26,10 +26,15 @@ import shutil
 import mmcv
 import torch
 from mmcv.utils import Registry, build_from_cfg
-from mpa.utils.config_utils import MPAConfig
 
+from otx.api.entities.model_template import TaskType
 from otx.cli.registry import Registry as OTXRegistry
-from otx.cli.utils.importing import get_available_backbone_list, get_backbone_registry
+from otx.cli.utils.importing import (
+    get_backbone_list,
+    get_backbone_registry,
+    get_module_args,
+)
+from otx.mpa.utils.config_utils import MPAConfig
 
 DEFAULT_MODEL_TEMPLATE_ID = {
     "CLASSIFICATION": "Custom_Image_Classification_EfficinetNet-B0",
@@ -53,80 +58,42 @@ def get_backbone_out_channels(backbone):
     return out_channels
 
 
-def update_backbone_args(backbone_config, registry, skip_missing=False):
+def update_backbone_args(backbone_config, registry, backend):
     """Update Backbone required arguments.
 
     This function checks the init parameters of the corresponding backbone function (or class)
     and identifies the required arguments.
     Also, it distinguishes the argment needed for the build to add convenience to the user.
     """
-    backbone_function = registry.get(backbone_config["type"])
-    if not backbone_function:
+    backbone_module = registry.get(backbone_config["type"])
+    if not backbone_module:
         raise ValueError(f"{backbone_config['type']} is not supported backbone")
-    required_option = {}
-    required_args, missing_args = [], []
-    args_signature = inspect.signature(backbone_function)
-    use_out_indices = False
-    for arg_key, arg_value in args_signature.parameters.items():
-        if arg_key == "out_indices":
-            use_out_indices = True
-        if arg_value.default is inspect.Parameter.empty:
-            required_args.append(arg_key)
-            if hasattr(backbone_function, "arch_settings"):
-                arg_options = [str(option) for option in backbone_function.arch_settings.keys()]
-                required_option[arg_key] = ", ".join(arg_options)
-            continue
-        # Update Backbone config to defaults
-        backbone_config[arg_key] = arg_value.default
+    required_args, default_args = get_module_args(backbone_module)
+    for arg_key, default_value in default_args.items():
+        if arg_key not in backbone_config:
+            backbone_config[arg_key] = default_value
 
-    # Get args from parents
-    parent_function = backbone_function.__bases__
-    while len(parent_function):
-        parent_args_signature = inspect.signature(parent_function[0])
-        for arg_key, arg_value in parent_args_signature.parameters.items():
-            if arg_key == "out_indices":
-                use_out_indices = True
-            if arg_key == "depth" and "arch" in required_args:
-                continue
-            if arg_value.default is inspect.Parameter.empty and arg_key not in required_args:
-                required_args.append(arg_key)
-                continue
-            # Update Backbone out_indices to defaults
-            if arg_key not in backbone_config and arg_key in ("out_indices"):
-                backbone_config[arg_key] = arg_value.default
-        parent_function = parent_function[0].__bases__
-
+    missing_args = []
     for arg in required_args:
-        if arg not in backbone_config and arg not in ("args", "kwargs", "self"):
+        if arg not in backbone_config:
             missing_args.append(arg)
     if len(missing_args) > 0:
-        if not skip_missing:
-            raise ValueError(
-                f"[otx build] {backbone_config['type']} requires the argument : {missing_args}"
-                f"\n[otx build] Please refer to {inspect.getfile(backbone_function)}"
-            )
-        for arg in missing_args:
-            if arg in required_option:
-                backbone_config[arg] = f"!!!SELECT_OPTION: {required_option[arg]}"
-            else:
-                backbone_config[arg] = "!!!!!!!!!!!INPUT_HERE!!!!!!!!!!!"
         print(
             f"[otx build] {backbone_config['type']} requires the argument : {missing_args}"
-            f"\n[otx build] Please refer to {inspect.getfile(backbone_function)}"
+            f"\n[otx build] Please refer to {inspect.getfile(backbone_module)}"
         )
-    backbone_config["use_out_indices"] = use_out_indices
-    return missing_args
+    if "out_indices" in backbone_config:
+        backbone_config["use_out_indices"] = True
+    else:
+        backbone_config["use_out_indices"] = False
 
-
-def patch_missing_args(backbone_config, missing_args):
-    """Patch backbone's required arg configuration."""
     updated_missing_args = []
     backbone_type = backbone_config["type"]
-    backend, _ = Registry.split_scope_key(backbone_type)
-    available_backbones = get_available_backbone_list(backend)
-    if backbone_type not in available_backbones:
+    backbone_list = get_backbone_list(backend)
+    if backbone_type not in backbone_list:
         return missing_args
-    backbone_data = available_backbones[backbone_type]
+    backbone_data = backbone_list[backbone_type]
+    # Patch missing_args
     for arg in missing_args:
         if "options" in backbone_data and arg in backbone_data["options"]:
             backbone_config[arg] = backbone_data["options"][arg][0]
@@ -135,23 +102,34 @@ def patch_missing_args(backbone_config, missing_args):
                 f"\n[otx build] '{arg}' default value: {backbone_config[arg]}"
             )
         else:
+            backbone_config[arg] = "!!!!!!!!!!!INPUT_HERE!!!!!!!!!!!"
             updated_missing_args.append(arg)
     return updated_missing_args
 
 
-def update_in_channel(model_config, out_channels):
+def update_channels(model_config, out_channels):
     """Update in_channel of head or neck."""
     if hasattr(model_config.model, "neck"):
-        print(f"\tUpdate model.neck.in_channels: {out_channels}")
-        model_config.model.neck.in_channels = out_channels
-    elif hasattr(model_config.model, "bbox_head"):
-        raise NotImplementedError("This architecture currently does not support public backbone.")
+        if model_config.model.neck.type == "GlobalAveragePooling":
+            model_config.model.neck.pop("in_channels", None)
+        else:
+            print(f"\tUpdate model.neck.in_channels: {out_channels}")
+            model_config.model.neck.in_channels = out_channels
+
     elif hasattr(model_config.model, "decode_head"):
+        head_in_index = model_config.model.decode_head.get("in_index", None)
+        if head_in_index and len(out_channels) != len(head_in_index):
+            updated_in_index = list(range(len(out_channels)))
+            print(f"\tUpdate model.decode_head.in_index: {updated_in_index}")
+            model_config.model.decode_head.in_index = updated_in_index
         print(f"\tUpdate model.decode_head.in_channels: {out_channels}")
         model_config.model.decode_head.in_channels = out_channels
+
     elif hasattr(model_config.model, "head"):
         print(f"\tUpdate model.head.in_channels: {out_channels}")
         model_config.model.head.in_channels = out_channels
+    else:
+        raise NotImplementedError("This architecture currently does not support public backbone.")
 
 
 class Builder:
@@ -167,6 +145,7 @@ class Builder:
         workspace_path: This is the folder path of the workspace want to create (os.path)
         """
 
+        # TODO: OTX-workspace build with other tasks (semi, self, etc.)
         # Create OTX-workspace
         if workspace_path is None:
             workspace_path = f"./otx-workspace-{task_type}"
@@ -235,11 +214,13 @@ class Builder:
         """
         print(f"[otx build] Backbone Config: {backbone_type}")
 
-        backend, _ = Registry.split_scope_key(backbone_type)
-        backbone_config = {"type": backbone_type}
-        otx_registry, _ = get_backbone_registry(backend)
-        missing_args = update_backbone_args(backbone_config, otx_registry, skip_missing=True)
-        missing_args = patch_missing_args(backbone_config, missing_args)
+        backend, backbone_class = Registry.split_scope_key(backbone_type)
+        backbone_config = dict(type=backbone_type)
+        if backbone_class == "MMOVBackbone":
+            backend = f"omz.{backend}"
+            backbone_config["verify_shape"] = False
+        backbone_registry, _ = get_backbone_registry(backend)
+        missing_args = update_backbone_args(backbone_config, backbone_registry, backend)
         if output_path.endswith((".yml", ".yaml", ".json")):
             mmcv.dump({"backbone": backbone_config}, os.path.abspath(output_path))
             print(f"[otx build] Save backbone configuration: {os.path.abspath(output_path)}")
@@ -256,15 +237,12 @@ class Builder:
         backbone_config_path: backbone configuration file path (os.path)
         output_path: new model.py output path (os.path)
         """
-        print(f"[otx build] Model Config with {backbone_config_path}")
+        print(f"[otx build] Update {model_config_path} with {backbone_config_path}")
 
         # Get Model config from model config file
-        model_in_indices = []
         if os.path.exists(model_config_path):
             model_config = MPAConfig.fromfile(model_config_path)
             print(f"\tTarget Model: {model_config.model.type}")
-            if "backbone" in model_config.model:
-                model_in_indices = model_config.model.backbone.get("out_indices", [])
         else:
             raise ValueError(f"[otx build] The model is not properly defined or not found: {model_config_path}")
 
@@ -274,25 +252,22 @@ class Builder:
         else:
             raise ValueError(f"[otx build] The backbone is not found: {backbone_config_path}")
 
-        backbone_pretrained = None
-        if "model" in backbone_config:
-            backbone_config = backbone_config["model"]
         if "backbone" in backbone_config:
             backbone_config = backbone_config["backbone"]
         backbone_pretrained = backbone_config.pop("pretrained", None)
 
         # Get Backbone configuration
-        backend, _ = Registry.split_scope_key(backbone_config["type"])
+        backend, backbone_class = Registry.split_scope_key(backbone_config["type"])
+        backend = f"omz.{backend}" if backbone_class == "MMOVBackbone" else backend
         print(f"\tTarget Backbone: {backbone_config['type']}")
         otx_registry, custom_imports = get_backbone_registry(backend)
+
+        # Update out_indices of backbone
         if backbone_config["use_out_indices"]:
+            model_in_indices = []
+            if "backbone" in model_config.model:
+                model_in_indices = model_config.model.backbone.get("out_indices", [])
             backbone_out_indices = backbone_config.get("out_indices", None)
-            if (
-                isinstance(backbone_out_indices, (tuple, list))
-                and isinstance(model_in_indices, (tuple, list))
-                and len(backbone_out_indices) != len(model_in_indices)
-            ):
-                backbone_out_indices = backbone_out_indices[-len(model_in_indices) :]
             if not backbone_out_indices and model_in_indices:
                 # Check out_indices vs num_stage
                 backbone_config["out_indices"] = model_in_indices
@@ -301,7 +276,15 @@ class Builder:
 
         # Build Backbone
         backbone = build_from_cfg(backbone_config, otx_registry, None)
-        out_channels = get_backbone_out_channels(backbone)
+        if model_config.model.get("task", None) == str(TaskType.CLASSIFICATION).lower():
+            # Update model layer's in/out configuration in ClsStage.configure_model
+            out_channels = -1
+            if hasattr(model_config.model, "head"):
+                model_config.model.head.in_channels = -1
+        else:
+            # Need to update in/out channel configuration here
+            out_channels = get_backbone_out_channels(backbone)
+        update_channels(model_config, out_channels)
 
         # Update Model Configuration
         model_config.model.backbone = backbone_config
@@ -314,7 +297,6 @@ class Builder:
             model_config.model.pretrained = None
         if custom_imports:
             model_config["custom_imports"] = dict(imports=custom_imports, allow_failed_imports=False)
-        update_in_channel(model_config, out_channels)
 
         # Dump or create model config file
         if output_path is None:

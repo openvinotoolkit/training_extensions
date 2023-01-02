@@ -25,13 +25,9 @@ from typing import DefaultDict, Dict, List, Optional, Union
 import numpy as np
 import torch
 from mmcv.utils.config import Config, ConfigDict
-from mpa.builder import build
-from mpa.modules.hooks.cancel_interface_hook import CancelInterfaceHook
-from mpa.stage import Stage
-from mpa.utils.config_utils import remove_custom_hook, update_or_add_custom_hook
-from mpa.utils.logger import get_logger
 
 from otx.algorithms.common.adapters.mmcv.hooks import OTXLoggerHook
+from otx.algorithms.common.configs import TrainType
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label import LabelEntity
 from otx.api.entities.model import ModelEntity, ModelPrecision, OptimizationMethod
@@ -43,6 +39,11 @@ from otx.api.usecases.tasks.interfaces.export_interface import IExportTask
 from otx.api.usecases.tasks.interfaces.inference_interface import IInferenceTask
 from otx.api.usecases.tasks.interfaces.unload_interface import IUnload
 from otx.api.utils.argument_checks import check_input_parameters_type
+from otx.mpa.builder import build
+from otx.mpa.modules.hooks.cancel_interface_hook import CancelInterfaceHook
+from otx.mpa.stage import Stage
+from otx.mpa.utils.config_utils import remove_custom_hook, update_or_add_custom_hook
+from otx.mpa.utils.logger import get_logger
 
 logger = get_logger()
 
@@ -54,15 +55,13 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
     _task_environment: TaskEnvironment
 
     @check_input_parameters_type()
-    def __init__(self, task_config, task_environment: TaskEnvironment):
+    def __init__(self, task_config, task_environment: TaskEnvironment, output_path: Optional[str] = None):
         self._task_config = task_config
         self._task_environment = task_environment
         self._hyperparams = task_environment.get_hyper_parameters(self._task_config)  # type: ConfigDict
         self._model_name = task_environment.model_template.name
         self._task_type = task_environment.model_template.task_type
         self._labels = task_environment.get_labels(include_empty=False)
-        self._output_path = tempfile.mkdtemp(prefix="OTX-task-")
-        logger.info(f"created output path at {self._output_path}")
         self.confidence_threshold = self._get_confidence_threshold(self._hyperparams)
         # Set default model attributes.
         self._model_label_schema = []  # type: List[LabelEntity]
@@ -70,6 +69,10 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         self._model_ckpt = None
         self._data_pipeline_path = None
         self._anchors = {}  # type: Dict[str, int]
+        if output_path is None:
+            output_path = tempfile.mkdtemp(prefix="OTX-task-")
+        self._output_path = output_path
+        logger.info(f"created output path at {self._output_path}")
         if task_environment.model is not None:
             logger.info("loading the model from the task env.")
             state_dict = self._load_model_state_dict(self._task_environment.model)
@@ -109,7 +112,7 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         model_classes = [label.name for label in self._model_label_schema]
         self._model_cfg["model_classes"] = model_classes
         if dataset is not None:
-            train_data_cfg = Stage.get_train_data_cfg(self._data_cfg)
+            train_data_cfg = Stage.get_data_cfg(self._data_cfg, "train")
             train_data_cfg["data_classes"] = data_classes
             new_classes = np.setdiff1d(data_classes, model_classes).tolist()
             train_data_cfg["new_classes"] = new_classes
@@ -234,7 +237,10 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         else:
             self._recipe_cfg.pop("adaptive_validation_interval", None)
 
-        self.set_early_stopping_hook()
+        # TODO (sungchul): it will be removed after an update that applies hparam.yaml
+        if self._hyperparams.algo_backend.train_type != TrainType.SELFSUPERVISED:
+            # to disenable early stopping during self-sl
+            self.set_early_stopping_hook()
 
         # add Cancel tranining hook
         update_or_add_custom_hook(
