@@ -15,7 +15,52 @@
 # and limitations under the License.
 
 # pylint: disable=too-many-return-statements
+import importlib
+
 from otx.api.entities.model_template import TaskType
+
+ADAPTERS = {
+    TaskType.CLASSIFICATION: {
+        "module_name": "classification_dataset_adapter",
+        "class": "ClassificationDatasetAdapter",
+    },
+    TaskType.DETECTION: {
+        "module_name": "detection_dataset_adapter",
+        "class": "DetectionDatasetAdapter",
+    },
+    TaskType.ROTATED_DETECTION: {
+        "module_name": "detection_dataset_adapter",
+        "class": "DetectionDatasetAdapter",
+    },
+    TaskType.INSTANCE_SEGMENTATION: {
+        "module_name": "detection_dataset_adapter",
+        "class": "DetectionDatasetAdapter",
+    },
+    TaskType.SEGMENTATION: {
+        "module_name": "segmentation_dataset_adapter",
+        "class": "SegmentationDatasetAdapter",
+    },
+    TaskType.ACTION_CLASSIFICATION: {
+        "module_name": "action_dataset_adapter",
+        "class": "ActionClassificationDatasetAdapter",
+    },
+    TaskType.ACTION_DETECTION: {
+        "module_name": "action_dataset_adapter",
+        "class": "ActionDetectionDatasetAdapter",
+    },
+    TaskType.ANOMALY_CLASSIFICATION: {
+        "module_name": "anomaly_dataset_adapter",
+        "class": "AnomalyClassificationDatasetAdapter",
+    },
+    TaskType.ANOMALY_DETECTION: {
+        "module_name": "anomaly_dataset_adapter",
+        "class": "AnomalyDetectionDatasetAdapter",
+    },
+    TaskType.ANOMALY_SEGMENTATION: {
+        "module_name": "anomaly_dataset_adapter",
+        "class": "AnomalySegmentationDatasetAdapter",
+    },
+}
 
 
 def get_dataset_adapter(
@@ -35,91 +80,14 @@ def get_dataset_adapter(
         test_data_roots: the path of data root for test data
         unlabeled_data_roots: the path of data root for unlabeled data
     """
-    if task_type == TaskType.CLASSIFICATION:
-        from .classification_dataset_adapter import ClassificationDatasetAdapter
 
-        return ClassificationDatasetAdapter(
-            task_type=task_type,
-            train_data_roots=train_data_roots,
-            val_data_roots=val_data_roots,
-            test_data_roots=test_data_roots,
-            unlabeled_data_roots=unlabeled_data_roots,
-        )
+    module_root = "otx.core.data.adapter."
+    module = importlib.import_module(module_root + ADAPTERS[task_type]["module_name"])
 
-    if task_type in [TaskType.DETECTION, TaskType.INSTANCE_SEGMENTATION]:
-        from .detection_dataset_adapter import DetectionDatasetAdapter
-
-        return DetectionDatasetAdapter(
-            task_type=task_type,
-            train_data_roots=train_data_roots,
-            val_data_roots=val_data_roots,
-            test_data_roots=test_data_roots,
-            unlabeled_data_roots=unlabeled_data_roots,
-        )
-
-    if task_type == TaskType.SEGMENTATION:
-        from .segmentation_dataset_adapter import SegmentationDatasetAdapter
-
-        return SegmentationDatasetAdapter(
-            task_type=task_type,
-            train_data_roots=train_data_roots,
-            val_data_roots=val_data_roots,
-            test_data_roots=test_data_roots,
-            unlabeled_data_roots=unlabeled_data_roots,
-        )
-
-    if task_type == TaskType.ACTION_CLASSIFICATION:
-        from .action_dataset_adapter import ActionClassificationDatasetAdapter
-
-        return ActionClassificationDatasetAdapter(
-            task_type=task_type,
-            train_data_roots=train_data_roots,
-            val_data_roots=val_data_roots,
-            test_data_roots=test_data_roots,
-            unlabeled_data_roots=unlabeled_data_roots,
-        )
-
-    if task_type == TaskType.ANOMALY_CLASSIFICATION:
-        from .anomaly_dataset_adapter import AnomalyClassificationDatasetAdapter
-
-        return AnomalyClassificationDatasetAdapter(
-            task_type=task_type,
-            train_data_roots=train_data_roots,
-            val_data_roots=val_data_roots,
-            test_data_roots=test_data_roots,
-            unlabeled_data_roots=unlabeled_data_roots,
-        )
-
-    if task_type == TaskType.ANOMALY_DETECTION:
-        from .anomaly_dataset_adapter import AnomalyDetectionDatasetAdapter
-
-        return AnomalyDetectionDatasetAdapter(
-            task_type=task_type,
-            train_data_roots=train_data_roots,
-            val_data_roots=val_data_roots,
-            test_data_roots=test_data_roots,
-            unlabeled_data_roots=unlabeled_data_roots,
-        )
-
-    if task_type == TaskType.ANOMALY_SEGMENTATION:
-        from .anomaly_dataset_adapter import AnomalySegmentationDatasetAdapter
-
-        return AnomalySegmentationDatasetAdapter(
-            task_type=task_type,
-            train_data_roots=train_data_roots,
-            val_data_roots=val_data_roots,
-            test_data_roots=test_data_roots,
-            unlabeled_data_roots=unlabeled_data_roots,
-        )
-
-    # TODO: Need to implement
-    # if task_type == TaskType.ACTION_DETECTION:
-    #    from .action_dataset_adapter import ActionDetectionDatasetAdapter
-    #
-    #    return ActionDetectionDatasetAdapter(task_type=task_type)
-    # if task_type == TaskType.ROTATED_DETECTION:
-    #    from .rotated_detection.dataset import RotatedDetectionDataset
-    #
-    #    return RotatedDetectionDataset
-
-    raise ValueError(f"Invalid task type: {task_type}")
+    return getattr(module, ADAPTERS[task_type]["class"])(
+        task_type=task_type,
+        train_data_roots=train_data_roots,
+        val_data_roots=val_data_roots,
+        test_data_roots=test_data_roots,
+        unlabeled_data_roots=unlabeled_data_roots,
+    )
