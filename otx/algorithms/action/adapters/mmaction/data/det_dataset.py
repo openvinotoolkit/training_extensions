@@ -29,6 +29,7 @@ from mmaction.datasets.pipelines import Compose
 from mmaction.utils import get_root_logger
 from mmcv.utils import print_log
 
+from otx.algorithms.action.adapters.mmaction.data.pipelines import RawFrameDecode
 from otx.algorithms.action.adapters.mmaction.utils import det_eval
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label import LabelEntity
@@ -52,11 +53,14 @@ class OTXActionDetDataset(AVADataset):
 
     class _DataInfoProxy:
         def __init__(self, otx_dataset, labels, fps, test_mode):
-            self.otx_dataset = otx_dataset
+            self.otx_dataset = copy.deepcopy(otx_dataset)
             self.labels = labels
             self.label_idx = {label.id: i for i, label in enumerate(labels)}
             self.fps = fps
-            self.data_root = self.otx_dataset[0].media.data_root
+            self.data_root = "/" + os.path.join(
+                *os.path.abspath(self.otx_dataset[0].media._Image__file_path).split("/")[:-4]
+            )
+            self.video_info = {}
 
             if not test_mode:
                 self.proposal_file = os.path.join(self.data_root, "train.pkl")
@@ -68,8 +72,53 @@ class OTXActionDetDataset(AVADataset):
             else:
                 self.proposals = None
 
+            self._update_meta_data()
+
         def __len__(self):
             return len(self.otx_dataset)
+
+        def _update_meta_data(self):
+            """Update video metadata of each item in self.otx_dataset."""
+            video_info = {}
+            for idx, item in enumerate(self.otx_dataset):
+                metadata = item.get_metadata()[0].data
+                if metadata.video_id in video_info:
+                    video_info[metadata.video_id]["start_index"] = start_index
+                    if metadata.frame_idx < video_info[metadata.video_id]["timestamp_start"]:
+                        video_info[metadata.video_id]["timestamp_start"] = metadata.frame_idx
+                    if metadata.frame_idx > video_info[metadata.video_id]["timestamp_end"]:
+                        video_info[metadata.video_id]["timestamp_end"] = metadata.frame_idx
+                else:
+                    video_info[metadata.video_id] = {
+                        "start_index": idx,
+                        "timestamp_start": metadata.frame_idx,
+                        "timestamp_end": metadata.frame_idx,
+                    }
+                    start_index = idx
+
+            remove_indices = []
+            for idx, item in enumerate(self.otx_dataset):
+                metadata = item.get_metadata()[0].data
+                if metadata.is_empty_frame:
+                    remove_indices.append(idx)
+                    continue
+
+                for key, value in video_info[metadata.video_id].items():
+                    metadata.update(key, value)
+
+                shot_info = (0, (metadata.timestamp_end - metadata.timestamp_start)) * self.fps
+                img_key = f"{metadata.video_id},{metadata.frame_idx}"
+                ignored_labels = np.array([self.label_idx[lbs.id] for lbs in item.ignored_labels])
+                metadata.update("shot_info", shot_info)
+                metadata.update("img_key", img_key)
+                metadata.update("timestamp", metadata.frame_idx)
+                metadata.update("ignored_labels", ignored_labels)
+
+                anns = item.get_annotations()
+                self._update_annotations(metadata, anns)
+
+            self.otx_dataset.remove_at_indices(remove_indices)
+            self.video_info.update(video_info)
 
         def __getitem__(self, index):
             """Prepare a dict 'data_info' that is expected by the mmaction pipeline to handle images and annotations.
@@ -78,44 +127,14 @@ class OTXActionDetDataset(AVADataset):
             the objects in the image
             """
 
-            dataset = self.otx_dataset
-            item = dataset[index]
-            shot_info = (0, (item.media.timestamp_end - item.media.timestamp_start)) * self.fps
-            ignored_labels = np.array([self.label_idx[lbs.id] for lbs in item.ignored_labels])
+            item = self.otx_dataset[index]
+            metadata = item.get_metadata()[0].data
 
             data_info = dict(
-                **item.media,
-                shot_info=shot_info,
-                index=index,
+                **metadata.metadata,
                 ann_info=dict(label_list=self.labels),
-                ignored_labels=ignored_labels,
-                fps=self._FPS,
+                fps=self.fps,
             )
-
-            anns = item.media.data.get_annotations()
-            if len(anns) > 0:
-                bboxes, labels = [], []
-                for ann in anns:
-                    bbox = np.asarray([ann.shape.x1, ann.shape.y1, ann.shape.x2, ann.shape.y2])
-                    valid_labels = np.array([int(label.id) for label in ann.get_labels()], dtype=int)
-                    label = np.zeros(len(self.labels) + 1, dtype=np.float32)
-                    label[valid_labels] = 1.0
-                    bboxes.append(bbox)
-                    labels.append(label)
-                data_info["gt_bboxes"] = np.stack(bboxes)
-                data_info["gt_labels"] = np.stack(labels)
-            else:
-                # Insert dummy gt bboxes for data pipeline in mmaction
-                data_info["gt_bboxes"] = np.zeros((1, 4))
-
-            if self.proposals is not None:
-                img_key = data_info["img_key"]
-                if img_key in self.proposals:
-                    proposal = self.proposals[img_key]
-                else:
-                    proposal = np.array([[0, 0, 1, 1, 1]])
-                data_info["proposals"] = proposal[:, :4]
-                data_info["scores"] = proposal[:, 4]
 
             return data_info
 
@@ -132,6 +151,31 @@ class OTXActionDetDataset(AVADataset):
                 new_img_key = img_key.split(",")[0] + "," + str(int(img_key.split(",")[1]))
                 self.proposals[f"{new_img_key}"] = proposal
             root_logger.info("Done.")
+
+        def _update_annotations(self, metadata, anns):
+            """Update annotation information to item's metadata."""
+            if len(anns) > 0:
+                bboxes, labels = [], []
+                for ann in anns:
+                    bbox = np.asarray([ann.shape.x1, ann.shape.y1, ann.shape.x2, ann.shape.y2])
+                    valid_labels = np.array([int(label.id) for label in ann.get_labels()], dtype=int)
+                    label = np.zeros(len(self.labels) + 1, dtype=np.float32)
+                    label[valid_labels] = 1.0
+                    bboxes.append(bbox)
+                    labels.append(label)
+                metadata.update("gt_bboxes", np.stack(bboxes))
+                metadata.update("gt_labels", np.stack(labels))
+            else:
+                # Insert dummy gt bboxes for data pipeline in mmaction
+                metadata.update("gt_bboxes", np.zeros((1, 4)))
+
+            if self.proposals is not None:
+                if metadata.img_key in self.proposals:
+                    proposal = self.proposals[metadata.img_key]
+                else:
+                    proposal = np.array([[0, 0, 1, 1, 1]])
+                metadata.update("proposals", proposal[:, :4])
+                metadata.update("scores", proposal[:, 4])
 
     @check_input_parameters_type({"otx_dataset": DatasetParamTypeCheck})
     # TODO Remove duplicated codes with mmaction's AVADataset
@@ -183,6 +227,9 @@ class OTXActionDetDataset(AVADataset):
         self.video_infos = OTXActionDetDataset._DataInfoProxy(otx_dataset, labels, fps, test_mode)
 
         self.pipeline = Compose(pipeline)
+        for pip in self.pipeline.transforms:
+            if isinstance(pip, RawFrameDecode):
+                pip.otx_dataset = self.otx_dataset
 
         # if not test_mode:
         #     valid_indexes = self.filter_exclude_file()

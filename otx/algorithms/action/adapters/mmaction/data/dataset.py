@@ -22,6 +22,7 @@ from mmaction.datasets.builder import DATASETS
 from mmaction.datasets.pipelines import Compose
 from mmaction.datasets.rawframe_dataset import RawframeDataset
 
+from otx.algorithms.action.adapters.mmaction.data.pipelines import RawFrameDecode
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label import LabelEntity
 from otx.api.utils.argument_checks import (
@@ -44,9 +45,35 @@ class OTXRawframeDataset(RawframeDataset):
             self.otx_dataset = otx_dataset
             self.labels = labels
             self.label_idx = {label.id: i for i, label in enumerate(labels)}
+            self.video_info = {}
+            self._update_meta_data()
 
         def __len__(self):
-            return len(self.otx_dataset)
+            return len(self.video_info)
+
+        def _update_meta_data(self):
+            """Update video metadata of each item in self.otx_dataset."""
+            video_info = {}
+            for idx, item in enumerate(self.otx_dataset):
+                metadata = item.get_metadata()[0].data
+                if metadata.video_id in video_info:
+                    video_info[metadata.video_id]["total_frames"] += 1
+                    video_info[metadata.video_id]["start_index"] = start_index
+                else:
+                    if len(item.get_annotations()) > 0:
+                        label = int(item.get_roi_labels(self.labels)[0].id)
+                    else:
+                        label = None
+                    ignored_labels = np.array([self.label_idx[lbs.id] for lbs in item.ignored_labels])
+                    video_info[metadata.video_id] = {
+                        "total_frames": 1,
+                        "start_index": idx,
+                        "label": label,
+                        "ignored_labels": ignored_labels,
+                    }
+                    start_index = idx
+
+            self.video_info.update(video_info)
 
         def __getitem__(self, index):
             """Prepare a dict 'data_info' that is expected by the mmaction pipeline to handle images and annotations.
@@ -55,28 +82,8 @@ class OTXRawframeDataset(RawframeDataset):
             the objects in the image
             """
 
-            dataset = self.otx_dataset
-            item = dataset[index]
-            video = item.media["video"]
-            total_frames = item.media["total_frames"]
-            start_index = item.media["start_index"]
-            if len(item.get_annotations()) == 0:
-                label = None
-            else:
-                label = int(item.get_roi_labels(self.labels)[0].id)
-            ignored_labels = np.array([self.label_idx[lbs.id] for lbs in item.ignored_labels])
-
-            data_info = dict(
-                data=video,
-                label=label,
-                index=index,
-                ann_info=dict(label_list=self.labels),
-                total_frames=total_frames,
-                start_index=start_index,
-                ignored_labels=ignored_labels,
-            )
-
-            return data_info
+            item = self.video_info[list(self.video_info.keys())[index]]
+            return item
 
     @check_input_parameters_type({"otx_dataset": DatasetParamTypeCheck})
     # pylint: disable=too-many-arguments, invalid-name, super-init-not-called
@@ -101,6 +108,9 @@ class OTXRawframeDataset(RawframeDataset):
         self.video_infos = OTXRawframeDataset._DataInfoProxy(otx_dataset, labels)
 
         self.pipeline = Compose(pipeline)
+        for pip in self.pipeline.transforms:
+            if isinstance(pip, RawFrameDecode):
+                pip.otx_dataset = self.otx_dataset
 
     def __len__(self):
         """Return length of dataset."""

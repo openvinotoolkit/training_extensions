@@ -273,9 +273,12 @@ def convert_ava_dataset_to_datumaro(src_path, dst_path):
 
 def rename_and_copy(_src, _dst):
     """Change frame name to cvat format."""
-    img_name = dst.rsplit("/", maxsplit=1)[-1]
+    img_name = _dst.rsplit("/", maxsplit=1)[-1]
     # FIXME This only support AVA dataset name
-    frame_index = int(img_name.split(".")[0].split("_")[-1])
+    if "_" in img_name:
+        frame_index = int(img_name.split(".")[0].split("_")[-1])
+    else:
+        frame_index = int(img_name.split(".")[0])
     new_img_name = f"frame_{frame_index:06d}.png"
     _dst = _dst.replace(img_name, new_img_name)
     shutil.copy2(_src, _dst)

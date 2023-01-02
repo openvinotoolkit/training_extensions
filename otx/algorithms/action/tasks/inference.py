@@ -30,7 +30,6 @@ from mmcv.utils import Config
 
 from otx.algorithms.action.adapters.mmaction import patch_config, set_data_classes
 from otx.algorithms.action.configs.base import ActionConfig
-from otx.algorithms.action.utils.data import wrap_action_dataset
 from otx.algorithms.common.adapters.mmcv.utils import prepare_for_testing
 from otx.algorithms.common.tasks.training_base import BaseTask
 from otx.algorithms.common.utils.callback import InferenceProgressCallback
@@ -85,7 +84,6 @@ class ActionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask
     ) -> DatasetEntity:
         """Main infer function of OTX Action Task."""
         logger.info("infer()")
-        dataset = wrap_action_dataset(self._task_type, dataset)
 
         if inference_parameters:
             update_progress_callback = inference_parameters.update_progress
@@ -284,10 +282,6 @@ class ActionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask
     ):
         """Evaluate function of OTX Action Task."""
         logger.info("called evaluate()")
-        if len(output_resultset.ground_truth_dataset) != output_resultset.prediction_dataset:
-            output_resultset.ground_truth_dataset = wrap_action_dataset(
-                self._task_type, output_resultset.ground_truth_dataset
-            )
         metric = self._get_metric(output_resultset)
         performance = metric.get_performance()
         logger.info(f"Final model performance: {str(performance)}")
@@ -369,7 +363,15 @@ class ActionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask
 
     def _add_predictions_to_dataset(self, prediction_results, dataset):
         """Loop over dataset again to assign predictions. Convert from MM format to OTX format."""
-        for dataset_item, (all_results, feature_vector, saliency_map) in zip(dataset, prediction_results):
+        prediction_results = list(prediction_results)
+        video_info = {}
+        for dataset_item in dataset:
+            video_id = dataset_item.get_metadata()[0].data.video_id
+            if video_id not in video_info:
+                video_info[video_id] = len(video_info)
+        for dataset_item in dataset:
+            video_id = dataset_item.get_metadata()[0].data.video_id
+            all_results, feature_vector, saliency_map = prediction_results[video_info[video_id]]
             item_labels = []
             label = ScoredLabel(label=self._labels[all_results.argmax()], probability=all_results.max())
             item_labels.append(label)
