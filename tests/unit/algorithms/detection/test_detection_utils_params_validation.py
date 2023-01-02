@@ -64,7 +64,7 @@ class TestColorPaletteInputParamsValidation:
             color_palette.__getitem__("unexpected string")  # type: ignore
 
 
-class TestOTEUtilsFunctionsInputParamsValidation:
+class TestOTXUtilsFunctionsInputParamsValidation:
     @e2e_pytest_unit
     def test_generate_label_schema_input_params_validation(self):
         """
