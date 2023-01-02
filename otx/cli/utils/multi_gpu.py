@@ -169,6 +169,7 @@ class MultiGPUManager:
             output_path (str): output path where task output are saved.
             multi_gpu_port (str): port for communication between multi GPU processes.
         """
+        mp.set_start_method(None, True)  # set multi porcess method as default
         gpus_arg_idx = sys.argv.index("--gpus")
         for _ in range(2):
             sys.argv.pop(gpus_arg_idx)
