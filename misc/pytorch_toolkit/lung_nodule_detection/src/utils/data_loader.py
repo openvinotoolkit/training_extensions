@@ -1,15 +1,9 @@
-#!/usr/bin/env python
-# coding: utf-8
-
 import torch
 from torch.utils import data
 import os
 from torchvision import transforms
 from PIL import Image
 import numpy as np
-from glob import glob
-from natsort import natsorted
-
 
 
 class LungDataLoader(data.Dataset):
@@ -32,7 +26,7 @@ class LungDataLoader(data.Dataset):
 
     """
     def __init__(self,datapath,lung_path,json_file,split="train_set",is_transform= True,img_size= 512):
-        
+
         self.split=split
         self.path= datapath
         self.lung_path=lung_path
@@ -44,19 +38,19 @@ class LungDataLoader(data.Dataset):
             [transforms.Resize(self.img_size),
              transforms.ToTensor()
               ])
-        
+
         self.lung_tf = transforms.Compose(
             [transforms.Resize(self.img_size),
             transforms.ToTensor()
             ])
 
     def __len__(self):
-        return len(self.files)    
-        
+        return len(self.files)
+
     def __getitem__(self,index):
 
         filename = self.files[index]
-        img = Image.fromarray(np.load(self.path+'img/'+filename).astype(float))
+        img = Image.fromarray(np.load(self.path+'image/'+filename).astype(float))
         lung_mask = Image.fromarray(np.load(self.lung_path+filename).astype(float))
 
         if self.is_transform:
@@ -77,19 +71,15 @@ class LungDataLoader(data.Dataset):
 class LungPatchDataLoader(data.Dataset):
 
     def __init__(self,imgpath,split="train_set",is_transform= True):
-        
+
         self.split = split
-        
         self.imgpath = imgpath+self.split+'/img/'
         self.is_transform = is_transform
         self.files = os.listdir(self.imgpath)
 
-        
     def __len__(self):
         return len(self.files)
-        
-        
-        
+
     def __getitem__(self,index):
 
         filename = self.files[index]
@@ -97,24 +87,18 @@ class LungPatchDataLoader(data.Dataset):
         if l1 == 1: # Complement  operator ~ gave negative labels eg: for label 0 o/p was 1
             l2 = 0
         else:
-            l2 = 1  
+            l2 = 1
         label = torch.tensor([l1,l2])
         img = np.load(self.imgpath+filename)
-        size_dataset = len(os.listdir(self.imgpath))
-
-
 
         if self.is_transform:
             img= self.transform(img)
 
         return img,label
-            
-    
-    
+
     def transform(self,img):
         img = torch.Tensor(img).unsqueeze(0)
         img = img.type(torch.FloatTensor)
 
 
         return img
-        

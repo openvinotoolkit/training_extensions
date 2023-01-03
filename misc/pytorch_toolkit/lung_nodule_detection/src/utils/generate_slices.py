@@ -1,6 +1,5 @@
 import SimpleITK as sitk
 import pylidc as pl
-import matplotlib.pyplot as plt
 import numpy as np
 from collections import defaultdict
 import os
@@ -33,7 +32,7 @@ def make_mask(height,width,slice_list,*args, **kwargs):
     point_dictx=kwargs.get('ii', None)
     point_dicty=kwargs.get('jj', None)
 
- 
+
     if n in slice_list:
         temp_listx=point_dictx[n]
         temp_listy=point_dicty[n]
@@ -46,7 +45,7 @@ def make_mask(height,width,slice_list,*args, **kwargs):
     return mask
 
 def extract_slices(dataset_path,save_path,masktype='nodule'):
-    """Extracts induvidual slices from the CT volumes given 
+    """Extracts induvidual slices from the CT volumes given
     in the dataset, clips the max-min values and stores them
     as numpy arrays.
 
@@ -79,14 +78,14 @@ def extract_slices(dataset_path,save_path,masktype='nodule'):
         file_name=os.path.basename(file)
         series_instance_uid=os.path.splitext(file_name)[0]
         img_file=file
-        
-        itk_img = sitk.ReadImage(img_file) 
+
+        itk_img = sitk.ReadImage(img_file)
         img_array = sitk.GetArrayFromImage(itk_img)
         num_slice, height, width = img_array.shape
         #Has the image data
 
         scan = pl.query(pl.Scan).filter(pl.Scan.series_instance_uid== series_instance_uid).first()
-      
+
         #Maped the image data with annotation using series id
 
         nods = scan.cluster_annotations() #Function used to determine which annotation belongs to which nodule
@@ -99,13 +98,13 @@ def extract_slices(dataset_path,save_path,masktype='nodule'):
         points_dicty={}
         points_dictx = defaultdict(lambda:[],points_dictx)
         points_dicty = defaultdict(lambda:[],points_dicty)
-        for i,nod in enumerate(nods):
-            nodule_dict[i]=len(nods[i])  #Stores a dict which has count of annotation for each nodule
+        for nod in nods:
+            nodule_dict[i]=len(nod)  #Stores a dict which has count of annotation for each nodule
 
         for key,value in nodule_dict.items():
             #if value>=3 :    #Taking annotations provided by 3 or more annotator
                 for i in range(value):
-                    ann=nods[key][i] #-1 to keep index correct   
+                    ann=nods[key][i] #-1 to keep index correct
                     con=ann.contours[0] #All coutours for specific nodule collected
 
                     k = con.image_k_position # Returns the slice number/index which has the nodule
@@ -114,22 +113,16 @@ def extract_slices(dataset_path,save_path,masktype='nodule'):
                     points_dictx[k].append(ii)
                     points_dicty[k].append(jj)
 
-
-        '''
-        !!Note!! The pylidc package gives cordinates for single slices, If more than one annotaions are give then
-        Sum(x)/total no: of annotation for all provided pixel is given as input
-
-        '''    
-
+        # !!Note!! The pylidc package gives cordinates for single slices, If more than one annotaions are give then
+        # Sum(x)/total no: of annotation for all provided pixel is given as input
 
         for n in range(1,num_slice):
 
-            image=(img_array[n].copy()).astype(np.float32) 
+            image=(img_array[n].copy()).astype(np.float32)
             im_max = np.max(image)
-            im_min = np.min(image)
             if im_max != 0:
                 image[image>1000]=1000
-                image[image<-1000]=-1000 
+                image[image<-1000]=-1000
                 mask=make_mask(height,width,slice_list,ii=points_dictx,jj=points_dicty,n=n)
                 mask = np.array(mask, dtype=np.float32)
                 image = image - image.min()
@@ -151,7 +144,6 @@ def extract_slices(dataset_path,save_path,masktype='nodule'):
                     np.save(save_path+'/mask/'+series_instance_uid+'_slice'+str(n)+'.npy',mask)
 
 def generate_lungseg(dataset_path,save_path):
-    volume_list = os.listdir(dataset_path)
     file_list = []
 
     for file in os.listdir(dataset_path):
@@ -161,13 +153,12 @@ def generate_lungseg(dataset_path,save_path):
     for img_file in tq(file_list):
         file_name=os.path.basename(img_file)
         series_instance_uid=os.path.splitext(file_name)[0]
-        itk_img = sitk.ReadImage(img_file) 
+        itk_img = sitk.ReadImage(img_file)
         img_array = sitk.GetArrayFromImage(itk_img)
-        num_slice, height, width = img_array.shape
+        num_slice, _, _ = img_array.shape
         for n in range(1,num_slice):
             if not os.path.isdir(save_path+'/lungseg'):
                 os.makedirs(save_path+'/lungseg')
                 np.save(save_path+'/lungseg/'+series_instance_uid+'_slice'+str(n)+'.npy',img_array[n])
             else:
                 np.save(save_path+'/lungseg/'+series_instance_uid+'_slice'+str(n)+'.npy',img_array[n])
-

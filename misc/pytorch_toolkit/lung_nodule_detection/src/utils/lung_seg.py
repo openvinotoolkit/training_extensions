@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
 import numpy as np
 import torch
 import torch.nn as nn
@@ -12,15 +9,13 @@ import os
 import torch.nn.functional as F
 from torch.autograd import Variable
 import matplotlib.pyplot as plt
-plt.switch_backend('agg')
 from .sumnet_bn_vgg import SUMNet
 from .r2unet import R2U_Net
 from .r2unet import U_Net
-from torchvision import transforms
 import json
-from PIL import Image
 from .data_loader import LungDataLoader
 from .utils import dice_coefficient
+plt.switch_backend('agg')
 
 def train_network(fold_no,save_path,json_path,datapath,lung_segpath,network,epochs=35,lrate=1e-4):
     """Training function for SUMNet,UNet,R2Unet
@@ -53,7 +48,7 @@ def train_network(fold_no,save_path,json_path,datapath,lung_segpath,network,epoc
     fold = 'fold'+str(fold_no)
     savePath = save_path+'/'+network+'/'+fold+'/'
     if not os.path.isdir(savePath):
-    	os.makedirs(savePath)
+        os.makedirs(savePath)
 
     with open(json_path+fold+'_pos_neg_eq.json') as f:
         json_file = json.load(f)
@@ -76,9 +71,9 @@ def train_network(fold_no,save_path,json_path,datapath,lung_segpath,network,epoc
     use_gpu = torch.cuda.is_available()
 
     if use_gpu:
-    	net = net.cuda()
+        net = net.cuda()
 
-    	
+
     optimizer = optim.Adam(net.parameters(), lr = lrate, weight_decay = 1e-5)
 
     criterion = nn.BCEWithLogitsLoss()
@@ -120,26 +115,26 @@ def train_network(fold_no,save_path,json_path,datapath,lung_segpath,network,epoc
 
             BCE_Loss = criterion(net_out[:,1],labels[:,1])
 
-            net_loss = BCE_Loss  
+            net_loss = BCE_Loss
 
             optimizer.zero_grad()
 
-            net_loss.backward() 
-       
+            net_loss.backward()
+
             optimizer.step()
-                      
+
             trainRunningLoss += net_loss.item()
-     
+
             trainDice = dice_coefficient(net_out_sf,torch.argmax(labels,dim=1))
-            trainDice_lungs += trainDice[0]  
-             
-            trainBatches += 1 
+            trainDice_lungs += trainDice[0]
+
+            trainBatches += 1
     #         if trainBatches>1:
     #             break
 
         trainLoss.append(trainRunningLoss/trainBatches)
         trainDiceCoeff_lungs.append(trainDice_lungs/trainBatches)
-        
+
         with torch.no_grad():
             for data1 in tq(validDataLoader):
 
@@ -153,17 +148,17 @@ def train_network(fold_no,save_path,json_path,datapath,lung_segpath,network,epoc
                 net_out_sf = F.softmax(net_out.data,dim=1)
 
 
-                BCE_Loss = criterion(net_out[:,1],labels[:,1])            
+                BCE_Loss = criterion(net_out[:,1],labels[:,1])
 
-                net_loss = BCE_Loss 
+                net_loss = BCE_Loss
 
 
                 val_dice = dice_coefficient(net_out_sf,torch.argmax(labels,dim=1))
-                validDice_lungs += val_dice[0]                        
+                validDice_lungs += val_dice[0]
                 validRunningLoss += net_loss.item()
-                validBatches += 1 
+                validBatches += 1
     #             if validBatches>1:
-    #                 break   
+    #                 break
 
             validLoss.append(validRunningLoss/validBatches)
             validDiceCoeff_lungs.append(validDice_lungs/validBatches)
@@ -173,7 +168,7 @@ def train_network(fold_no,save_path,json_path,datapath,lung_segpath,network,epoc
         if (validDice_lungs.cpu() > bestValidDice_lungs):
             bestValidDice_lungs = validDice_lungs.cpu()
             torch.save(net.state_dict(), savePath+'sumnet_best_lungs.pt')
-       
+
         plot=plt.figure()
         plt.plot(range(len(trainLoss)),trainLoss,'-r',label='Train')
         plt.plot(range(len(validLoss)),validLoss,'-g',label='Valid')
@@ -184,7 +179,7 @@ def train_network(fold_no,save_path,json_path,datapath,lung_segpath,network,epoc
         plt.savefig(savePath+'LossPlot.png')
         plt.close()
         epochEnd = time.time()-epochStart
-        print('Epoch: {:.0f}/{:.0f} | Train Loss: {:.5f} | Valid Loss: {:.5f}' 
+        print('Epoch: {:.0f}/{:.0f} | Train Loss: {:.5f} | Valid Loss: {:.5f}'
               .format(epoch+1, epochs, trainRunningLoss/trainBatches, validRunningLoss/validBatches))
         print('Dice | Train  | Lung {:.3f}  | Valid | Lung {:.3f} | '
               .format(trainDice_lungs/trainBatches, validDice_lungs/validBatches))
@@ -247,6 +242,3 @@ def train_network(fold_no,save_path,json_path,datapath,lung_segpath,network,epoc
     plt.ylabel('Dice coefficient')
     plt.savefig(savePath+'Dice_final.png')
     plt.close()
-
-
-

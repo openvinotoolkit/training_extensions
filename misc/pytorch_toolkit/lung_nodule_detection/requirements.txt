@@ -7,3 +7,5 @@ onnxruntime==1.8.1
 wget
 tqdm
 pytest
+matplotlib
+natsort

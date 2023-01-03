@@ -22,10 +22,10 @@ import copy
 from PIL import Image
 from tqdm import tqdm_notebook as tq
 from sklearn.metrics import confusion_matrix
-from dataloader import LungPatchDataLoader
-from lenet import LeNet
+from .data_loader import LungPatchDataLoader
+from .lenet import LeNet
 
-def infer_classifier(modelpath,imgpath):
+def lungpatch_classifier(modelpath,imgpath):
 
     testDset = LungPatchDataLoader(imgpath,is_transform=True,split="test")
     testDataLoader = data.DataLoader(testDset,batch_size=1,shuffle=True,num_workers=4,pin_memory=True)

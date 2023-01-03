@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 
-work_dir=$(realpath "$(dirname $0)")
+work_dir= "$(realpath "$(dirname $0)")"
 
 venv_dir=$1
 if [ -z "$venv_dir" ]; then
   venv_dir=venv
 fi
 
-cd ${work_dir}
+cd "${work_dir}"
 
 if [ -e venv ]; then
   echo
@@ -15,9 +15,9 @@ if [ -e venv ]; then
   echo "$ . venv/bin/activate"
 fi
 
-virtualenv ${venv_dir} -p python3 --prompt="nodule"
+virtualenv "${venv_dir}" -p python3 --prompt="nodule"
 
-. ${venv_dir}/bin/activate
+. "${venv_dir}"/bin/activate
 
 
 cat requirements.txt | xargs -n 1 -L 1 pip3 install

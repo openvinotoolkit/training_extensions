@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
 import numpy as np
 import torch
 import torch.nn as nn
@@ -12,15 +9,13 @@ import os
 import torch.nn.functional as F
 from torch.autograd import Variable
 import matplotlib.pyplot as plt
-plt.switch_backend('agg')
 from .sumnet_bn_vgg import SUMNet
 from .r2unet import U_Net
 from .r2unet import R2U_Net
-from torchvision import transforms
 import json
-from PIL import Image
 from .utils import dice_coefficient
 from .data_loader import LungDataLoader
+plt.switch_backend('agg')
 
 class Discriminator(nn.Module):
     def __init__(self,in_ch, out_ch):
@@ -29,12 +24,12 @@ class Discriminator(nn.Module):
             # input is (nc) x 64 x 64
             nn.Conv2d(in_ch, 64, 3, 1, 0, bias=False),
             nn.LeakyReLU(0.2, inplace=True),
-	    nn.MaxPool2d(3),
+        nn.MaxPool2d(3),
             # state size. (64) x 32 x 32
             nn.Conv2d(64, 64 * 2, 3, 1, 0, bias=False),
             nn.BatchNorm2d(64 * 2),
             nn.LeakyReLU(0.2, inplace=True),
-	    nn.MaxPool2d(3),
+        nn.MaxPool2d(3),
             nn.Conv2d(64*2, 64 * 2, 3, 1, 0, bias=False),
             nn.BatchNorm2d(64 * 2),
             nn.LeakyReLU(0.2, inplace=True),
@@ -42,11 +37,11 @@ class Discriminator(nn.Module):
             nn.Conv2d(64 * 2, 64 * 4, 3, 1, 0, bias=False),
             nn.BatchNorm2d(64 * 4),
             nn.LeakyReLU(0.2, inplace=True),
-	    nn.MaxPool2d(3),
+        nn.MaxPool2d(3),
             nn.Conv2d(64 * 4, 64 * 4, 3, 1, 0, bias=False),
             nn.BatchNorm2d(64 * 4),
             nn.LeakyReLU(0.2, inplace=True),
-	    nn.MaxPool2d(2),
+        nn.MaxPool2d(2),
             # state size. (64*4) x 8 x 8
             nn.Conv2d(64 * 4, out_ch, 7, 1, 0, bias=False),
             nn.LeakyReLU(0.2, inplace=True),
@@ -58,7 +53,7 @@ class Discriminator(nn.Module):
 
 def ch_shuffle(x):
     shuffIdx1 = torch.from_numpy(np.random.randint(0,2,x.size(0)))
-    shuffIdx2 = 1-shuffIdx1        
+    shuffIdx2 = 1-shuffIdx1
     d_in = torch.Tensor(x.size()).cuda()
     d_in[:,shuffIdx1] = x[:,0]
     d_in[:,shuffIdx2] = x[:,1]
@@ -97,7 +92,7 @@ def train_advnetwork(fold_no,savepath,jsonpath,datapath,lung_segpath,network,epo
     fold = 'fold'+str(fold_no)
     savePath = savepath+'/'+network+'/'+fold+'/'
     if not os.path.isdir(savePath):
-    	os.makedirs(savePath)
+        os.makedirs(savePath)
 
     with open(jsonpath+fold+'_pos_neg_eq.json') as f:
         json_file = json.load(f)
@@ -118,7 +113,7 @@ def train_advnetwork(fold_no,savepath,jsonpath,datapath,lung_segpath,network,epo
         net = R2U_Net(img_ch=1,output_ch=2)
 
 
-    netD2 = Discriminator(in_ch=2,out_ch=2) 
+    netD2 = Discriminator(in_ch=2,out_ch=2)
 
     use_gpu = torch.cuda.is_available()
 
@@ -166,8 +161,8 @@ def train_advnetwork(fold_no,savepath,jsonpath,datapath,lung_segpath,network,epo
 
             net_out = net(Variable(inputs))
             net_out_sf = F.softmax(net_out,dim=1)
-            
-            
+
+
             ############################
             # DISCRIMINATOR 2 TRAINING #
             ############################
@@ -178,39 +173,39 @@ def train_advnetwork(fold_no,savepath,jsonpath,datapath,lung_segpath,network,epo
             # Shuffling aling dim 1: {real,fake} OR {fake,real}
             d_in,shuffLabel = ch_shuffle(d_in)
             # D2 prediction
-            confr = netD2(Variable(d_in)).view(d_in.size(0),-1)  
+            confr = netD2(Variable(d_in)).view(d_in.size(0),-1)
             # Compute loss
             LD2 = criterionD(confr,shuffLabel.float().cuda())
             # Compute gradients
             LD2.backward()
-            # Backpropagate   
+            # Backpropagate
             optimizerD2.step()
             # Appending loss for each batch into the list
-            D2_losses.append(LD2.item())            
+            D2_losses.append(LD2.item())
             optimizerD2.zero_grad()
             d2_in = torch.cat((net_out[:,1].unsqueeze(1),labels[:,1].unsqueeze(1).float()),dim=1)
-            d2_in, d2_lb = ch_shuffle(d2_in)  
+            d2_in, d2_lb = ch_shuffle(d2_in)
             conffs2 = netD2(d2_in).view(d2_in.size(0),-1)
             LGadv2 = criterionD(conffs2,d2_lb.float().cuda()) # Aversarial loss 2
 
-            
-            
+
+
             BCE_Loss = criterion(net_out[:,1],labels[:,1])
 
-            net_loss = BCE_Loss  - 0.001*LGadv2 
+            net_loss = BCE_Loss  - 0.001*LGadv2
 
             optimizer.zero_grad()
 
-            net_loss.backward() 
-       
+            net_loss.backward()
+
             optimizer.step()
-                      
+
             trainRunningLoss += net_loss.item()
-     
+
             trainDice = dice_coefficient(net_out_sf,torch.argmax(labels,dim=1))
-            trainDice_lungs += trainDice[0]  
-             
-            trainBatches += 1 
+            trainDice_lungs += trainDice[0]
+
+            trainBatches += 1
     #         if trainBatches>1:
     # #             break
 
@@ -218,7 +213,7 @@ def train_advnetwork(fold_no,savepath,jsonpath,datapath,lung_segpath,network,epo
         trainDiceCoeff_lungs.append(trainDice_lungs/trainBatches)
 
         print("\n{}][{}]| Net_loss: {:.4f}  | BCE_Loss: {:.4f} |adv_loss: {:.4f}"
-        .format(epoch,epochs,net_loss.item(),BCE_Loss,LGadv2) )    
+        .format(epoch,epochs,net_loss.item(),BCE_Loss,LGadv2) )
 
         with torch.no_grad():
             for data1 in tq(validDataLoader):
@@ -233,17 +228,17 @@ def train_advnetwork(fold_no,savepath,jsonpath,datapath,lung_segpath,network,epo
                 net_out_sf = F.softmax(net_out.data,dim=1)
 
 
-                BCE_Loss = criterion(net_out[:,1],labels[:,1])            
+                BCE_Loss = criterion(net_out[:,1],labels[:,1])
 
-                net_loss = BCE_Loss 
+                net_loss = BCE_Loss
 
 
                 val_dice = dice_coefficient(net_out_sf,torch.argmax(labels,dim=1))
-                validDice_lungs += val_dice[0]                        
+                validDice_lungs += val_dice[0]
                 validRunningLoss += net_loss.item()
-                validBatches += 1 
+                validBatches += 1
     #             if validBatches>1:
-    #                 break   
+    #                 break
 
             validLoss.append(validRunningLoss/validBatches)
             validDiceCoeff_lungs.append(validDice_lungs/validBatches)
@@ -253,7 +248,7 @@ def train_advnetwork(fold_no,savepath,jsonpath,datapath,lung_segpath,network,epo
         if (validDice_lungs.cpu() > bestValidDice_lungs):
             bestValidDice_lungs = validDice_lungs.cpu()
             torch.save(net.state_dict(), savePath+'sumnet_adv_best_lungs.pt')
-       
+
         plot=plt.figure()
         plt.plot(range(len(trainLoss)),trainLoss,'-r',label='Train')
         plt.plot(range(len(validLoss)),validLoss,'-g',label='Valid')
@@ -264,7 +259,7 @@ def train_advnetwork(fold_no,savepath,jsonpath,datapath,lung_segpath,network,epo
         plt.savefig(savePath+'LossPlot.png')
         plt.close()
         epochEnd = time.time()-epochStart
-        print('Epoch: {:.0f}/{:.0f} | Train Loss: {:.5f} | Valid Loss: {:.5f}' 
+        print('Epoch: {:.0f}/{:.0f} | Train Loss: {:.5f} | Valid Loss: {:.5f}'
               .format(epoch+1, epochs, trainRunningLoss/trainBatches, validRunningLoss/validBatches))
         print('Dice | Train  | Lung {:.3f}  | Valid | Lung {:.3f} | '
               .format(trainDice_lungs/trainBatches, validDice_lungs/validBatches))
@@ -327,4 +322,3 @@ def train_advnetwork(fold_no,savepath,jsonpath,datapath,lung_segpath,network,epo
     plt.ylabel('Dice coefficient')
     plt.savefig(savePath+'Dice_final.png')
     plt.close()
-

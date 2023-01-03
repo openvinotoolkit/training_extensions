@@ -1,6 +1,4 @@
-import numpy as np
 import torch
-from torch.utils import data
 
 def dice_coefficient(pred1, target):
     smooth = 1e-15
@@ -16,13 +14,12 @@ def dice_coefficient(pred1, target):
     m2_1 = target_1_hot[:,1,:,:].view(num, -1).float()
     m1_2 = pred_1_hot[:,2,:,:].view(num, -1).float()
     m2_2 = target_1_hot[:,2,:,:].view(num, -1).float()
-    
+
     intersection_1 = (m1_1*m2_1).sum(1)
     intersection_2 = (m1_2*m2_2).sum(1)
     union_1 = (m1_1+m2_1).sum(1) + smooth - intersection_1
     union_2 = (m1_2+m2_2).sum(1) + smooth - intersection_2
     score_1 = intersection_1/union_1
-    score_2 = intersection_2/union_2
 
     return [score_1.mean()]
     
