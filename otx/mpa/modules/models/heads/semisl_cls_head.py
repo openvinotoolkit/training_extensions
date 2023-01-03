@@ -60,7 +60,7 @@ class SemiClsHead:
         losses["accuracy"] = {f"top-{k}": a for k, a in zip(self.topk, acc)}
         return losses
 
-    def forward_train(self, x, gt_label, final_layer):
+    def forward_train(self, x, gt_label, final_layer=None):
         """forward_train head using pseudo-label selected through threshold
 
         Args:
@@ -154,7 +154,7 @@ class SemiLinearClsHead(SemiClsHead, LinearClsHead):
         SemiClsHead.__init__(self, unlabeled_coef, use_dynamic_threshold, min_threshold)
 
     def forward_train(self, x, gt_label):
-        return SemiClsHead.forward_train(self, x, gt_label, self.fc)
+        return SemiClsHead.forward_train(self, x, gt_label, final_layer=self.fc)
 
 
 @HEADS.register_module()
@@ -208,4 +208,4 @@ class SemiNonLinearClsHead(SemiClsHead, NonLinearClsHead):
         SemiClsHead.__init__(self, unlabeled_coef, use_dynamic_threshold, min_threshold)
 
     def forward_train(self, x, gt_label):
-        return SemiClsHead.forward_train(self, x, gt_label, self.classifier)
+        return SemiClsHead.forward_train(self, x, gt_label, final_layer=self.classifier)
