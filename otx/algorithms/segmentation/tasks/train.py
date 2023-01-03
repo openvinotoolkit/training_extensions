@@ -64,11 +64,19 @@ class SegmentationTrainTask(SegmentationInferenceTask, ITrainingTask):
         hyperparams_str = ids_to_strings(cfg_helper.convert(self._hyperparams, dict, enum_to_str=True))
         labels = {label.name: label.color.rgb_tuple for label in self._labels}
         model_ckpt = torch.load(self._model_ckpt)
-        modelinfo = {"model": model_ckpt, "config": hyperparams_str, "labels": labels, "VERSION": 1}
+        modelinfo = {
+            "model": model_ckpt,
+            "config": hyperparams_str,
+            "labels": labels,
+            "VERSION": 1,
+        }
 
         torch.save(modelinfo, buffer)
         output_model.set_data("weights.pth", buffer.getvalue())
-        output_model.set_data("label_schema.json", label_schema_to_bytes(self._task_environment.label_schema))
+        output_model.set_data(
+            "label_schema.json",
+            label_schema_to_bytes(self._task_environment.label_schema),
+        )
         output_model.precision = self._precision
 
     def cancel_training(self):
@@ -89,7 +97,10 @@ class SegmentationTrainTask(SegmentationInferenceTask, ITrainingTask):
 
     @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def train(
-        self, dataset: DatasetEntity, output_model: ModelEntity, train_parameters: Optional[TrainParameters] = None
+        self,
+        dataset: DatasetEntity,
+        output_model: ModelEntity,
+        train_parameters: Optional[TrainParameters] = None,
     ):
         """Train function in SegmentationTrainTask."""
         logger.info("train()")
@@ -111,9 +122,7 @@ class SegmentationTrainTask(SegmentationInferenceTask, ITrainingTask):
 
         self._data_cfg = self._init_train_data_cfg(dataset)
         self._is_training = True
-        results = self._run_task(
-            "SegTrainer", mode="train", dataset=dataset, parameters=train_parameters
-        )
+        results = self._run_task("SegTrainer", mode="train", dataset=dataset, parameters=train_parameters)
 
         # Check for stop signal when training has stopped.
         # If should_stop is true, training was cancelled and no new
@@ -135,7 +144,8 @@ class SegmentationTrainTask(SegmentationInferenceTask, ITrainingTask):
         # Get training metrics group from learning curves
         training_metrics, best_score = self._generate_training_metrics_group(self._learning_curves)
         performance = Performance(
-            score=ScoreMetric(value=best_score, name=self.metric), dashboard_metrics=training_metrics
+            score=ScoreMetric(value=best_score, name=self.metric),
+            dashboard_metrics=training_metrics,
         )
 
         logger.info(f"Final model performance: {str(performance)}")
@@ -173,6 +183,10 @@ class SegmentationTrainTask(SegmentationInferenceTask, ITrainingTask):
                     labels=self._labels,
                 )
 
+            unlabeled_dataset = get_unlabeled_dataset(dataset)
+            if unlabeled_dataset:
+                data_cfg.data.unlabeled = ConfigDict(otx_dataset=unlabeled_dataset, labels=self._labels)
+
             # Temparory remedy for cfg.pretty_text error
             for label in self._labels:
                 label.hotkey = "a"
@@ -190,7 +204,12 @@ class SegmentationTrainTask(SegmentationInferenceTask, ITrainingTask):
         visualization_info_architecture = VisualizationInfo(
             name="Model architecture", visualisation_type=VisualizationType.TEXT
         )
-        output.append(MetricsGroup(metrics=[architecture], visualization_info=visualization_info_architecture))
+        output.append(
+            MetricsGroup(
+                metrics=[architecture],
+                visualization_info=visualization_info_architecture,
+            )
+        )
         # Learning curves
         best_score = -1
         for key, curve in learning_curves.items():

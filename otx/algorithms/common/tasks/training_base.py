@@ -343,7 +343,9 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         return self._labels
 
     def _load_resume_info(self, model: Optional[ModelEntity]):
-        return model.model_adapters.get("resume", False)
+        if model and "resume" in model.model_adapters:
+            return model.model_adapters.get("resume", False)
+        return False
 
     @staticmethod
     def _get_confidence_threshold(hyperparams):

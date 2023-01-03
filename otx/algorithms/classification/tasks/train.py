@@ -119,9 +119,7 @@ class ClassificationTrainTask(ClassificationInferenceTask):
         stage_module = "ClsTrainer"
         self._data_cfg = self._init_train_data_cfg(dataset)
         self._is_training = True
-        results = self._run_task(
-            stage_module, mode="train", dataset=dataset, parameters=train_parameters
-        )
+        results = self._run_task(stage_module, mode="train", dataset=dataset, parameters=train_parameters)
 
         # Check for stop signal between pre-eval and training.
         # If training is cancelled at this point,
@@ -176,10 +174,7 @@ class ClassificationTrainTask(ClassificationInferenceTask):
             )
             unlabeled_dataset = get_unlabeled_dataset(dataset)
             if unlabeled_dataset:
-                data_cfg.data.unlabeled = ConfigDict(
-                    otx_dataset=unlabeled_dataset,
-                    labels=self._labels,
-                )
+                data_cfg.data.unlabeled = ConfigDict(otx_dataset=unlabeled_dataset, labels=self._labels)
 
             for label in self._labels:
                 label.hotkey = "a"
