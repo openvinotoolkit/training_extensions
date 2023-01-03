@@ -35,3 +35,8 @@ dmypy.json
 
 # python version
 .python-version
+
+# Cython generated C-code & html
+otx/mpa/modules/datasets/pipelines/transforms/cython_augments/*.c
+otx/mpa/modules/datasets/pipelines/transforms/cython_augments/*.html
+otx/mpa/modules/datasets/pipelines/transforms/cython_augments/*.so

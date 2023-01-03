@@ -1,1 +1,3 @@
 recursive-include requirements *
+exclude otx/mpa/modules/datasets/pipelines/transforms/cython_augments/*.c
+exclude otx/mpa/modules/datasets/pipelines/transforms/cython_augments/*.html
