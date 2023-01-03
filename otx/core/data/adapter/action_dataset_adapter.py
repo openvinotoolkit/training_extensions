@@ -82,8 +82,9 @@ class ActionBaseDatasetAdapter(BaseDatasetAdapter):
 
         # Making overall categories
         has_EmptyFrame = False
-        category_indices: Dict[str, int] = {}  # to check the duplicate case
-        for cvat_data in datumaro_dataset[Subset.TRAINING]:
+        category_names: List[str] = []  # to check the duplicate case
+        subset = list(datumaro_dataset.keys())[0]
+        for cvat_data in datumaro_dataset[subset]:
             categories = cvat_data.categories().get(AnnotationType.label, None)
             if categories is not None:
                 indices = categories._indices
@@ -91,11 +92,12 @@ class ActionBaseDatasetAdapter(BaseDatasetAdapter):
                     if name == "EmptyFrame":
                         has_EmptyFrame = True
                         continue
-                    if name not in category_indices:
-                        category_indices[name] = len(category_indices)
+                    if name not in category_names:
+                        category_names.append(name)
+        category_names.sort()
 
         if has_EmptyFrame:
-            category_indices["EmptyFrame"] = len(category_indices)
+            category_names.append("EmptyFrame")
 
         # Reindexing the each label index of multiple video datasets
         for subset_data in datumaro_dataset.values():
@@ -106,12 +108,12 @@ class ActionBaseDatasetAdapter(BaseDatasetAdapter):
                         for ann in cvat_data_item.annotations:
                             ann_name = self.find_ann_name(categories._indices, ann.label)
                             if ann_name is not None:
-                                ann.label = category_indices[ann_name]
+                                ann.label = self.find_ann_label(category_names, ann_name)
 
         # Generate label_entity list according to overall categories
         outputs["label_entities"] = [
             LabelEntity(name=name, domain=self.domain, is_empty=False, id=ID(index))
-            for name, index in category_indices.items()
+            for index, name in enumerate(category_names)
         ]
         return outputs
 
@@ -121,6 +123,14 @@ class ActionBaseDatasetAdapter(BaseDatasetAdapter):
         for _name, _label in indices.items():
             if _label == label:
                 return _name
+        return None
+
+    @staticmethod
+    def find_ann_label(category_names, ann_name):
+        """Get action index from name."""
+        for idx, name in enumerate(category_names):
+            if name == ann_name:
+                return idx
         return None
 
     def get_otx_dataset(self) -> DatasetEntity:
