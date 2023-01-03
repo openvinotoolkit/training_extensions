@@ -3,7 +3,9 @@ Object Detection model
 
 #TODO: Made Table of Content for this page?
 
-This tutorial reveals step by step procedure, how to install OTE CLI and train Object detection model on BBCD public dataset.
+This tutorial reveals end-to-end solution from installation to model deploying for object detection task. We show how to train, validate, export and optimize ATSS model on BBCD public dataset.
+To learn how to deploy the trained model refer to deploy tutorial [#TODO link].
+To learn, how to run the demo, refer to the demo tutorial [#TODO link].
 
 The process has been tested on the following configuration.
 
@@ -12,20 +14,14 @@ The process has been tested on the following configuration.
 - CUDA Toolkit 11.4 
 
 
-************************************
-Setup OpenVINO™ Training Extensions
-************************************
 
-1. Clone the training_extensions repository with the following commands:
+*************************
+Setup virtual environment
+*************************
 
-.. code-block::
+You can follow the installation process from a quick_start quide [#TODO link] to create a univesal virtual environment for all tasks. On other hand, to save memory and time, you can create task-specific environment following the process below.
 
-    git clone https://github.com/openvinotoolkit/training_extensions.git
-    cd training_extensions
-    git checkout develop
-
-
-2. Install prerequisites with:
+1. Install prerequisites with:
 
 .. code-block::
 
@@ -33,15 +29,10 @@ Setup OpenVINO™ Training Extensions
     # verify your python version
     python3 --version; pip3 --version; 
 
-
-Output should be similar to that.
-
-.. code-block::
-  
     Python 3.8.10
     pip 20.0.2 from /usr/lib/python3/dist-packages/pip (python 3.8)
 
-3. Create and activate a virtual environment for the obect detection task, then install the ote_cli.
+2. Create and activate a virtual environment for the obect detection task, then install the ote_cli.
 The following example shows that creating virtual environment to the ``det_venv`` folder in your current directory for detection task.
 
 .. code-block::
@@ -56,7 +47,7 @@ The following example shows that creating virtual environment to the ``det_venv`
 Dataset preparation
 ***************************
 
-1. Download a public `BCCD dataset <https://public.roboflow.com/object-detection/bccd/3>`_ (login required). Log in, put ``Download`` button and chose ``Terminal`` option. You will get the code line like this, but with your personal API key.
+1. Download a public `BCCD dataset <https://public.roboflow.com/object-detection/bccd/3>`_ (login required). Log in, click ``Download`` button and chose ``Terminal`` option. You will get the code line like this, but with your personal API key.
 
 .. code-block::
 
@@ -111,7 +102,7 @@ Training
 
   The characteristics and detailed comparison of the models could be found in Explanation section [#TODO link].
 
-  To modify the arhitucture of supported models with various backbones check the Advanced tutorial for dataset modification [#TODO link].
+  To modify the architecture of supported models with various backbones, please refer to the advanced tutorial for model customization  [#TODO link].
 
 .. code-block::
 
@@ -132,46 +123,6 @@ Training
 These files can be used by other commands: ``export``, ``eval``, ``deploy`` and ``demo``.
 
 
-============================
-Template-specific parameters
-============================
-
-In order to tune training parameters such as batch size, learning rate, a various set of parameters can be updated via comand line.
-
-.. code-block::
-
-  otx train otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml params --help
-  usage: otx train template params [-h] [--learning_parameters.batch_size BATCH_SIZE] [--learning_parameters.learning_rate LEARNING_RATE] [--learning_parameters.learning_rate_warmup_iters LEARNING_RATE_WARMUP_ITERS]
-                                  [--learning_parameters.num_iters NUM_ITERS] [--learning_parameters.enable_early_stopping ENABLE_EARLY_STOPPING] [--learning_parameters.early_stop_start EARLY_STOP_START]
-                                  [--learning_parameters.early_stop_patience EARLY_STOP_PATIENCE] [--learning_parameters.early_stop_iteration_patience EARLY_STOP_ITERATION_PATIENCE]
-                                  [--learning_parameters.use_adaptive_interval USE_ADAPTIVE_INTERVAL] [--postprocessing.confidence_threshold CONFIDENCE_THRESHOLD]
-                                  [--postprocessing.result_based_confidence_threshold RESULT_BASED_CONFIDENCE_THRESHOLD] [--algo_backend.train_type TRAIN_TYPE] [--nncf_optimization.enable_quantization ENABLE_QUANTIZATION]
-                                  [--nncf_optimization.enable_pruning ENABLE_PRUNING] [--nncf_optimization.pruning_supported PRUNING_SUPPORTED]
-
-  optional arguments:
-    -h, --help            show this help message and exit
-    --learning_parameters.batch_size BATCH_SIZE
-                          header: Batch size
-                          type: INTEGER
-                          default_value: 8
-                          max_value: 512
-                          min_value: 1
-    --learning_parameters.learning_rate LEARNING_RATE
-                          header: Learning rate
-                          type: FLOAT
-                          default_value: 0.004
-                          max_value: 0.1
-                          min_value: 1e-07
-    --learning_parameters.learning_rate_warmup_iters LEARNING_RATE_WARMUP_ITERS
-                          header: Number of iterations for learning rate warmup
-                          type: INTEGER
-                          default_value: 3
-                          max_value: 10000
-                          min_value: 0
-
-    ...
-
-
 3. For tutorial purposes, all examples will be run on the ATSS model. This comand line starts 1 GPU training of the medium object detection model on BCCD dataset.
 
 .. code-block::
@@ -185,14 +136,28 @@ In order to tune training parameters such as batch size, learning rate, a variou
                             --work-dir outputs/logs
                             --gpus 1
 
-To decrease batsch size or tune other trainig parameters, extend the comand line above with the following line.
+If you created ``data.yaml`` file in previous step, you can simplify the training by specifying it as a ``data`` parameter:
 
 .. code-block::
 
-                            params --learning_parameters.batch_size 4 ...
+  (detection) ...$ otx train otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml
+                            --data data.yaml
+                            --save-model-to outputs
+                            --work-dir outputs/logs
+                            --gpus 1
 
 
-The result of the training are weights.pth and label_schema.json, located in ``outputs`` folder, and logs in the ``outputs/logs`` dir.
+Additionally, you can tune training parameters such as batch size, learning rate, patience epochs or warm-up iteration. You can read more about template-specific parameters in quick start [#TODO link].
+It can be done by manual updating parameters in ``template.yaml`` file or via comand line. 
+
+For example, to decrease batsch size to 4, fix the number of epochs to 100 and disable early stopping, extend the comand line above with the following line.
+
+.. code-block::
+
+                            params --learning_parameters.batch_size 4 --learning_parameters.num_iters 100 --learning_parameters.enable_early_stopping false 
+
+
+The result of the training are ``weights.pth`` and ``label_schema.json``, located in ``outputs`` folder, and logs in the ``outputs/logs`` dir.
 
 .. code-block::
 
@@ -232,32 +197,10 @@ Validation
 
 1. ``otx eval`` runs evaluation of a trained model on a particular dataset.
 
-Eval function receives test annotation information and folder that contains a model snapshot and label schema.
+Eval function receives test annotation information and model snapshot, trained in previous step.
+Please note, that ``label schema.json`` file should be located in the same folder with model snaphot, as it contains meta information about the dataset .
 
-The default metric measured is f1.
-
-In order to tune testing parameters such as confidence threshold, a various set of parameters can be updated via comand line.
-
-.. code-block:: 
-
-  (detection) ...$ otx eval otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml params --help
-  usage: otx eval template params [-h] [--postprocessing.confidence_threshold CONFIDENCE_THRESHOLD] [--postprocessing.result_based_confidence_threshold RESULT_BASED_CONFIDENCE_THRESHOLD]
-                                  [--nncf_optimization.enable_quantization ENABLE_QUANTIZATION] [--nncf_optimization.enable_pruning ENABLE_PRUNING]
-
-  optional arguments:
-    -h, --help            show this help message and exit
-    --postprocessing.confidence_threshold CONFIDENCE_THRESHOLD
-                          header: Confidence threshold
-                          type: FLOAT
-                          default_value: 0.35
-                          max_value: 1
-                          min_value: 0
-    --postprocessing.result_based_confidence_threshold RESULT_BASED_CONFIDENCE_THRESHOLD
-                          header: Result based confidence threshold
-                          type: BOOLEAN
-                          default_value: True
-    ...
-
+The default metric measured is F1 measure.
 
 2. The command below evaluates snaphot in ``outputs`` folder on BCCD dataset and saves results to ``outputs/performance`` :
 
@@ -269,12 +212,43 @@ In order to tune testing parameters such as confidence threshold, a various set 
                             --load-weights outputs/weights.pth
                             --save-performance outputs/performance.json
   
-  ...
+
+If ``data.yaml`` was created, the command can be simplified by passing it for a ``--data`` parameter. Note, that this line will run validation on the test set (not validation set):
+
+.. code-block::
+
+  (detection) ...$ otx eval otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml
+                            --data data.yaml 
+                            --load-weights outputs/weights.pth
+                            --save-performance outputs/performance.json
+
+The validation output will look as following:
+
+.. code-block::
 
   2022-12-29 01:32:00,505 | INFO : run task done.
   2022-12-29 01:32:01,215 | INFO : Inference completed
   2022-12-29 01:32:01,216 | INFO : called evaluate()
   2022-12-29 01:32:01,527 | INFO : F-measure after evaluation: 0.8315842078960519
+
+
+
+Additionally, you can tune testing parameters such as confidence threshold via comand line. You can read more about template-specific parameters for validation in quick start [#TODO link].
+For example, to increase the confidence treshold to decrease the number of False Positive predictions (there you have prediction, but don't have annotated object for it) update the evaluation comand line as it's shown below. 
+Please note, that by default confidence treshold is detected automatically based on result to maximize final F1 metric. So, to set custom confidence trashold, please disable ``result_based_confidence_threshold`` option.
+
+.. code-block::
+
+  (detection) ...$ otx eval otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml
+                            --data data.yaml 
+                            --load-weights outputs/weights.pth
+                            params 
+                            --postprocessing.confidence_threshold 0.5
+                            --postprocessing.result_based_confidence_threshold false 
+
+...
+
+2023-01-03 18:55:01,956 | INFO : F-measure after evaluation: 0.6274238227146813
 
 3. The output of ``./outputs/performance.json`` consists of dict with target metric name and its value.
 
@@ -286,9 +260,9 @@ In order to tune testing parameters such as confidence threshold, a various set 
 *********
 Export
 *********
-1. ``otx export`` exports a trained pth model to the OpenVINO format in order to efficiently run it on Intel hardware. Also, the resulting IR model is required to run POT optimization in section below.
+1. ``otx export`` exports a trained Pytorch `.pth` model to the OpenVINO™ Intermediate Representation (IR) format in order to efficiently run it on Intel hardware. Also, the resulting IR model is required to run POT optimization in the section below.
 
-2. The command below performs exporting to the trained model ``outputs/weights.pth`` in previous section and save exported model to the ``outputs/openvino/`` folder.
+2. The command below performs exporting of the trained model ``outputs/weights.pth`` in previous section and saves the exported model to the ``outputs/openvino/`` folder.
 
 .. code-block::
 
@@ -303,7 +277,19 @@ Export
   2022-12-29 01:39:11,990 | INFO : Exporting completed
 
 
-#TODO show how to run evaluation of exported model?
+3. You can check the accuracy of exported model as simple as accuracy of the ``.pth`` model, using ``otx eval`` with the path of IR model.
+
+.. code-block::
+
+  (detection) ...$ otx eval otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml
+                            --test-ann-files BBCD/valid/_annotations.coco.json 
+                            --test-data-roots  BBCD/valid 
+                            --load-weights outputs/openvino/openvino.xml
+                            --save-performance outputs/openvino/performance.json
+  
+  ...
+
+
 
 *************
 Optimization
@@ -311,8 +297,8 @@ Optimization
 
 1. ``otx optimize`` optimizes a model using NNCF or POT depending on the model format.
 
-- NNCF optimization used for trained snapshots in a framework-specific format such as checkpoint (pth) file from Pytorch. It starts training based on the weights from previous step in fewer precision.
-- POT optimization used for models exported in the OpenVINO IR format. It decreases the precision of the exported model and performs the post-training optimization.
+- NNCF optimization is used for trained snapshots in a framework-specific format such as checkpoint (pth) file from Pytorch. It starts training-aware quantization based on the obtained weights from the training stage.
+- POT optimization is used for models exported in the OpenVINO™ IR format. It decreases floating-point precision to integer precision of the exported model by performing the post-training optimization.
 
 The function results with a following files, which could be used to run ``otx demo``[link]:
 
@@ -359,10 +345,8 @@ Read more about optimization in [#TODO link]
 
 
 #TODO significant drop of the loaded snapshot: 0.43 instead of 0.83
-
-#TODO show how to run evaluation of optimized model and its metrics?
-
 #TODO The optimized model isn't being saved (TypeError: cannot pickle '_thread.lock' object)
+#TODO rebase on feature/otx once NNCF will be fixed
 
 3. Command example for optimizing OpenVINO model (.xml) with OpenVINO POT:
 
@@ -396,6 +380,7 @@ The POT optimization will take 5-10 minutes without logging.
 
 The following stages how to deploy model and run demo are described in [link].
 
+4. You can evaluate the optimized model passing it to ``otx eval`` function.
 
 ***************
 Troubleshooting

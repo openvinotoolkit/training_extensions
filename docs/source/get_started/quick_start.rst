@@ -15,6 +15,34 @@ It can contain 1) model training 2) model evalaution 3) model inference 4) model
 Extra code that can be useful here
 ##################################
 
+************************************
+Setup OpenVINO™ Training Extensions
+************************************
+
+1. Clone the training_extensions repository with the following commands:
+
+.. code-block::
+
+    git clone https://github.com/openvinotoolkit/training_extensions.git
+    cd training_extensions
+    git checkout develop
+
+2. Install prerequisites with:
+
+.. code-block::
+
+    sudo apt-get install python3-pip python3-venv
+    # verify your python version
+    python3 --version; pip3 --version; 
+
+
+Output should be similar to that.
+
+.. code-block::
+  
+    Python 3.8.10
+    pip 20.0.2 from /usr/lib/python3/dist-packages/pip (python 3.8)
+
 *********
 Training
 *********
@@ -171,7 +199,7 @@ Export
 *********
 1. ``otx export`` exports a trained pth model to the OpenVINO format in order to efficiently run it on Intel hardware. Also, the resulting IR model is required to run POT optimization in section below.
 
-2. The command below performs exporting to the trained model ``outputs/weights.pth`` in previous section and save exported model to the ``outputs/openvino/`` folder.
+2. The command below performs exporting of the ``outputs/weights.pth`` trained in previous section and saves exported model to the ``outputs/openvino/`` folder.
 
 .. code-block::
 
@@ -185,7 +213,7 @@ Export
 Optimization
 *************
 
-1. ``otx optimize`` optimizes a model using NNCF or POT depending on the model format.
+1. ``otx optimize`` optimizes a model using NNCF or POT depending on the model format, using NNCF framework [#TODO link].
 
 - NNCF optimization used for trained snapshots in a framework-specific format such as checkpoint (pth) file from Pytorch. It optimizes model during training.
 - POT optimization used for models exported in the OpenVINO IR format. It performs post-training optimization.
