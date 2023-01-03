@@ -45,7 +45,7 @@ class MaskPooling(nn.Module):
         num_classes: int = 256,
         num_samples: int = 16,
         downsample: int = 32,
-        replacement: bool = False,
+        replacement: bool = True,
     ):
 
         super().__init__()
