@@ -19,9 +19,9 @@ import subprocess  # nosec
 
 import pytest
 
-from otx.cli.tools.build import SUPPORTED_TASKS as build_supported_tasks
 from otx.cli.tools.find import SUPPORTED_BACKBONE_BACKENDS as find_supported_backends
 from otx.cli.tools.find import SUPPORTED_TASKS as find_supported_tasks
+from otx.mpa.utils.config_utils import MPAConfig
 
 
 def get_template_rel_dir(template):
@@ -542,6 +542,7 @@ def otx_explain_openvino_testing(template, root, otx_dir, args):
 
 
 def otx_find_testing():
+    """Performs several options of available otx find."""
     # Find all model template
     command_line = ["otx", "find", "--template"]
     check_run(command_line)
@@ -562,57 +563,82 @@ def otx_find_testing():
         check_run(command_line)
 
 
-def otx_build_testing(root, args):
+def otx_build_task_testing(root, task):
+    """Build OTX-workspace per tasks.
+
+    Build and verify the otx-workspace corresponding to each task.
+    """
     # Build otx-workspace per tasks check - Default Model Template only
-    for task in build_supported_tasks:
-        command_line = [
-            "otx",
-            "build",
-            "--task",
-            task,
-            "--workspace-root",
-            os.path.join(root, f"otx-workspace-{task}"),
-        ]
-        check_run(command_line)
+    command_line = [
+        "otx",
+        "build",
+        "--task",
+        task,
+        "--workspace-root",
+        os.path.join(root, f"otx-workspace-{task}"),
+    ]
+    check_run(command_line)
 
-    for task, backbone in args.items():
-        task_workspace = os.path.join(root, f"otx-workspace-{task}")
-        # Build Backbone.yaml from backbone type
-        command_line = [
-            "otx",
-            "build",
-            "--backbone",
-            backbone,
-            "--workspace-root",
-            task_workspace,
-            "--save-backbone-to",
-            os.path.join(task_workspace, "backbone.yaml"),
-        ]
-        check_run(command_line)
-        assert os.path.exists(os.path.join(task_workspace, "backbone.yaml"))
 
-        # Build model.py from backbone.yaml
-        command_line = [
-            "otx",
-            "build",
-            "--model",
-            os.path.join(task_workspace, "model.py"),
-            "--backbone",
-            os.path.join(task_workspace, "backbone.yaml"),
-            "--workspace-root",
-            task_workspace,
-        ]
-        check_run(command_line)
+def otx_build_backbone_testing(root, backbone_args):
+    """Build backbone & Update model testing.
 
-        # Build model.py from backbone type
-        command_line = [
-            "otx",
-            "build",
-            "--model",
-            os.path.join(task_workspace, "model.py"),
-            "--backbone",
-            backbone,
-            "--workspace-root",
-            task_workspace,
-        ]
-        check_run(command_line)
+    Build each backbone to create backbone.yaml into workspace,
+    build for the default model for the task,
+    and even test updating the model config.
+    This is done on the premise that the otx_workspace
+    has been created well through otx_build_task_testing.
+    """
+    task, backbone = backbone_args
+    task_workspace = os.path.join(root, f"otx-workspace-{task}")
+    # Build Backbone.yaml from backbone type
+    command_line = [
+        "otx",
+        "build",
+        "--backbone",
+        backbone,
+        "--workspace-root",
+        task_workspace,
+        "--save-backbone-to",
+        os.path.join(task_workspace, "backbone.yaml"),
+    ]
+    check_run(command_line)
+    assert os.path.exists(os.path.join(task_workspace, "backbone.yaml"))
+
+    # Build model.py from backbone.yaml
+    command_line = [
+        "otx",
+        "build",
+        "--model",
+        os.path.join(task_workspace, "model.py"),
+        "--backbone",
+        os.path.join(task_workspace, "backbone.yaml"),
+        "--workspace-root",
+        task_workspace,
+    ]
+    check_run(command_line)
+    model_config = MPAConfig.fromfile(os.path.join(task_workspace, "model.py"))
+    assert "model" in model_config, "'model' is not in model configs"
+    assert "backbone" in model_config["model"], "'backbone' is not in model configs"
+    assert (
+        model_config["model"]["backbone"]["type"] == backbone
+    ), f"{model_config['model']['backbone']['type']} != {backbone}"
+
+    # Build model.py from backbone type
+    command_line = [
+        "otx",
+        "build",
+        "--model",
+        os.path.join(task_workspace, "model.py"),
+        "--backbone",
+        backbone,
+        "--workspace-root",
+        task_workspace,
+    ]
+    check_run(command_line)
+    model_config = MPAConfig.fromfile(os.path.join(task_workspace, "model.py"))
+    assert "model" in model_config, "'model' is not in model configs"
+    assert "backbone" in model_config["model"], "'backbone' is not in model configs"
+    assert (
+        model_config["model"]["backbone"]["type"] == backbone
+    ), f"{model_config['model']['backbone']['type']} != {backbone}"
