@@ -52,7 +52,15 @@ class OTXRawframeDataset(RawframeDataset):
             return len(self.video_info)
 
         def _update_meta_data(self):
-            """Update video metadata of each item in self.otx_dataset."""
+            """Update video metadata of each item in self.otx_dataset.
+
+            This function assumes that DatasetItemEntities in DatasetEntity are sorted by video id and frame idx
+            During iterating DatasetsetEntitiy, this fucnction generates video_info(dictionary)
+            video_info records metadata for each video, and it contains
+                - total_frame: Total frame number of the video, this value will be used to sample frames for training
+                - start_index: Offset for the video, this value will be added to sampled frame indices for the video
+                - label: Action category of the video
+            """
             video_info = {}
             start_index = 0
             for idx, item in enumerate(self.otx_dataset):
@@ -77,10 +85,9 @@ class OTXRawframeDataset(RawframeDataset):
             self.video_info.update(video_info)
 
         def __getitem__(self, index):
-            """Prepare a dict 'data_info' that is expected by the mmaction pipeline to handle images and annotations.
+            """Prepare training data item.
 
-            :return data_info: dictionary that contains the image and image metadata, as well as the labels of
-            the objects in the image
+            Action classification needs video for training, therefore this function generate item from video_info
             """
 
             item = self.video_info[list(self.video_info.keys())[index]]
@@ -97,7 +104,7 @@ class OTXRawframeDataset(RawframeDataset):
         test_mode: bool = False,
         filename_tmpl: str = "img_{:05}.jpg",
         start_index: int = 1,
-        modality: str = "RGB",
+        modality: str = "RGB",  # [RGB, FLOW(Optical flow)]
     ):
         self.otx_dataset = otx_dataset
         self.labels = labels

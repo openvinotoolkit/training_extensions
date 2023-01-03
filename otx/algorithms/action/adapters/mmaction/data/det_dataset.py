@@ -18,7 +18,7 @@ import copy
 import json
 import os
 from collections import defaultdict
-from typing import List, Optional, Sequence, Union
+from typing import Any, Dict, List, Optional, Sequence, Union
 
 import mmcv
 import numpy as np
@@ -41,7 +41,7 @@ from otx.api.utils.argument_checks import (
 root_logger = get_root_logger()
 
 
-# pylint: disable=too-many-instance-attributes, too-many-arguments, invalid-name, super-init-not-called, too-many-locals
+# pylint: disable=too-many-instance-attributes, too-many-arguments, too-many-locals, super-init-not-called
 @DATASETS.register_module()
 class OTXActionDetDataset(AVADataset):
     """Wrapper that allows using a OTX dataset to train action detection models.
@@ -52,15 +52,13 @@ class OTXActionDetDataset(AVADataset):
     """
 
     class _DataInfoProxy:
-        def __init__(self, otx_dataset, labels, fps, test_mode):
+        def __init__(self, otx_dataset: DatasetEntity, labels: List[LabelEntity], fps: int, test_mode: bool):
             self.otx_dataset = copy.deepcopy(otx_dataset)
             self.labels = labels
             self.label_idx = {label.id: i for i, label in enumerate(labels)}
             self.fps = fps
-            self.data_root = "/" + os.path.join(
-                *os.path.abspath(self.otx_dataset[0].media._Image__file_path).split("/")[:-4]
-            )
-            self.video_info = {}
+            self.data_root = "/" + os.path.join(*os.path.abspath(self.otx_dataset[0].media.path).split("/")[:-4])
+            self.video_info: Dict[str, Any] = {}
 
             if not test_mode:
                 self.proposal_file = os.path.join(self.data_root, "train.pkl")
@@ -78,8 +76,22 @@ class OTXActionDetDataset(AVADataset):
             return len(self.otx_dataset)
 
         def _update_meta_data(self):
-            """Update video metadata of each item in self.otx_dataset."""
+            """Update video metadata of each item in self.otx_dataset.
+
+            During iterating DatasetEntity, this function generate video_info(dictionary) to record metadata of video
+            After that, this function update metadata of each DatasetItemEntity of DatasetEntity
+                - start_index: Offset for the video, this value will be added to sampled frame indices
+                - timestamp: Timestamp of the DatasetItemEntity
+                - timestamp_start: Start timestamp of the video, this will be used to generate shot_info
+                - timestamp_end: End timestamp of the video, this will be used to generate shot_info
+                - shot_info = (0, (timestamp_end - timestamp_start)) * self.fps:
+                              Range of frame indices, this is used to sample frame indices
+                - img_key = "video_id,frame_idx": key of pre-proposal dictionary
+            This function removes empty frames(frame with no action), since they are only used for background of clips
+            """
+
             video_info = {}
+            start_index = 0
             for idx, item in enumerate(self.otx_dataset):
                 metadata = item.get_metadata()[0].data
                 if metadata.video_id in video_info:
@@ -125,6 +137,7 @@ class OTXActionDetDataset(AVADataset):
 
             :return data_info: dictionary that contains the image and image metadata, as well as the labels of
             the objects in the image
+            This iterates self.otx_dataset, which removes empty frames
             """
 
             item = self.otx_dataset[index]
