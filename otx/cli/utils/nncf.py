@@ -41,7 +41,6 @@ def get_number_of_fakequantizers_in_xml(path_to_xml: str):
     """
     num_fq = 0
     with open(path_to_xml, "r", encoding="UTF-8") as stream:
-        print(f"OPENED: {path_to_xml}")
         for line in stream.readlines():
             if 'type="FakeQuantize"' in line:
                 num_fq += 1

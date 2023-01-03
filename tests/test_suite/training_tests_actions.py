@@ -407,18 +407,18 @@ class OTXTestPotAction(BaseOTXTestAction):
         return results
 
 
-def check_fq_in_compressed_model(path_to_ref_data, compressed_type, model):
+def check_fq_in_compressed_model(path_to_ref, compressed_type, model):
     """
     Check number of FakeQuantize nodes in the compressed model.
     """
 
     num_fq = len(re.findall(r'type="FakeQuantize"', model))
 
-    assert os.path.exists(path_to_ref_data), (
-        f"Reference file does not exist: {path_to_ref_data}." f"Current: {num_fq} for {compressed_type}"
-    )
+    assert os.path.exists(
+        path_to_ref
+    ), f"Reference file does not exist: {path_to_ref}. Current: {num_fq} for {compressed_type}."
 
-    with open(path_to_ref_data, encoding="utf-8") as stream:
+    with open(path_to_ref, encoding="utf-8") as stream:
         ref_data = yaml.safe_load(stream)
     ref_num_fq = ref_data[compressed_type]["number_of_fakequantizers"]
     assert num_fq == ref_num_fq, f"Incorrect number of FQs in compressed model: {num_fq} != {ref_num_fq}"
@@ -439,9 +439,9 @@ class OTXTestPotValidationFQAction(BaseOTXTestAction):
     def _run_otx_pot_validate_fq(self, optimized_model_pot):
         logger.info("Begin validation FQs of pot model")
 
-        path_to_ref_data = os.path.join(self.reference_dir, "compressed_model.yml")
+        path_to_ref = os.path.join(self.reference_dir, "compressed_model.yml")
 
-        check_fq_in_compressed_model(path_to_ref_data, "pot", optimized_model_pot.get_data("openvino.xml"))
+        check_fq_in_compressed_model(path_to_ref, "pot", optimized_model_pot.get_data("openvino.xml"))
 
         logger.info("End validation FQs of pot model")
 
@@ -763,9 +763,9 @@ class OTXTestNNCFValidationFQAction(BaseOTXTestAction):
     def _run_otx_nncf_validate_fq(self, nncf_exported_model):
         logger.info("Begin validation FQs of nncf model")
 
-        path_to_ref_data = os.path.join(self.reference_dir, "compressed_model.yml")
+        path_to_ref = os.path.join(self.reference_dir, "compressed_model.yml")
 
-        check_fq_in_compressed_model(path_to_ref_data, "nncf", nncf_exported_model.get_data("openvino.xml"))
+        check_fq_in_compressed_model(path_to_ref, "nncf", nncf_exported_model.get_data("openvino.xml"))
 
         logger.info("End validation FQs of nncf model")
 

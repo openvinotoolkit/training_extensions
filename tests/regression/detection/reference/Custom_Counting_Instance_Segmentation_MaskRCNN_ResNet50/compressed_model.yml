@@ -1,0 +1,4 @@
+pot:
+  number_of_fakequantizers: 104
+nncf:
+  number_of_fakequantizers: -1
