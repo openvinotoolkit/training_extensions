@@ -352,11 +352,10 @@ def _validate_fq_in_xml(xml_path, path_to_ref_data, compression_type):
 
 def pot_validate_fq_testing(template, root, otx_dir, task_type):
     template_work_dir = get_template_dir(template, root)
-    xml_path = os.path.exists(f"{template_work_dir}/pot_{template.model_template_id}/openvino.xml")
+    xml_path = f"{template_work_dir}/pot_{template.model_template_id}/openvino.xml"
     path_to_ref_data = os.path.join(
-        otx_dir, "tests", "regression", task_type, template.model_template_id, "compressed_model.yml"
+        otx_dir, "tests", "regression", task_type, "reference", template.model_template_id, "compressed_model.yml"
     )
-
     _validate_fq_in_xml(xml_path, path_to_ref_data, "pot")
 
 
@@ -430,9 +429,9 @@ def nncf_export_testing(template, root):
 
 def nncf_validate_fq_testing(template, root, otx_dir, task_type):
     template_work_dir = get_template_dir(template, root)
-    xml_path = os.path.exists(f"{template_work_dir}/exported_nncf_{template.model_template_id}/openvino.xml")
+    xml_path = f"{template_work_dir}/exported_nncf_{template.model_template_id}/openvino.xml"
     path_to_ref_data = os.path.join(
-        otx_dir, "tests", "regression", task_type, template.model_template_id, "compressed_model.yml"
+        otx_dir, "tests", "regression", task_type, "reference", template.model_template_id, "compressed_model.yml"
     )
 
     _validate_fq_in_xml(xml_path, path_to_ref_data, "nncf")

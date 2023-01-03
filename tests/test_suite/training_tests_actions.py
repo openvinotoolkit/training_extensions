@@ -421,7 +421,7 @@ def check_fq_in_compressed_model(path_to_ref_data, compressed_type, model):
     with open(path_to_ref_data, encoding="utf-8") as stream:
         ref_data = yaml.safe_load(stream)
     ref_num_fq = ref_data[compressed_type]["number_of_fakequantizers"]
-    assert num_fq == ref_num_fq, f"Incorrect number of FQs in optimized model: {num_fq} != {ref_num_fq}"
+    assert num_fq == ref_num_fq, f"Incorrect number of FQs in compressed model: {num_fq} != {ref_num_fq}"
 
 
 class OTXTestPotValidationFQAction(BaseOTXTestAction):

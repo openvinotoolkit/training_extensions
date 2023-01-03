@@ -14,8 +14,6 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-import re
-
 import torch
 
 
@@ -23,7 +21,7 @@ def is_checkpoint_nncf(path):
     """Check if checkpoint is NNCF checkpoint.
 
     The function uses metadata stored in a checkpoint to check if the
-    checkpoint was the result of trainning of NNCF-compressed model.
+    checkpoint was the result of training of NNCF-compressed model.
     """
     state = torch.load(path, map_location="cpu")
     is_nncf = bool(state.get("meta", {}).get("nncf_enable_compression")) or "nncf_metainfo" in state
@@ -41,10 +39,10 @@ def get_number_of_fakequantizers_in_xml(path_to_xml: str):
     Returns:
         int: Number of FakeQuantize layers.
     """
-
     num_fq = 0
     with open(path_to_xml, "r", encoding="UTF-8") as stream:
+        print(f"OPENED: {path_to_xml}")
         for line in stream.readlines():
-            if re.match(r'<layer.*type="FakeQuantize".*>', line):
+            if 'type="FakeQuantize"' in line:
                 num_fq += 1
     return num_fq
