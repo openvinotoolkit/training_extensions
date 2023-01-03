@@ -83,8 +83,8 @@ class TestToolsTilingInstanceSegmentation:
         otx_train_testing(template, tmp_dir_path, otx_dir, args)
 
     @e2e_pytest_component
-    @pytest.mark.parametrize("template", templates, ids=templates_ids)
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_resume(self, template, tmp_dir_path):
         otx_resume_testing(template, tmp_dir_path, otx_dir, args)
         args1 = args.copy()
