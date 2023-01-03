@@ -1,6 +1,6 @@
-"""Base configurable parameter for anomaly tasks."""
+"""Configurable parameters for Padim anomaly Detection task."""
 
-# Copyright (C) 2022 Intel Corporation
+# Copyright (C) 2021 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,9 +14,11 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .configuration import BaseAnomalyConfig
-from .draem import DraemAnomalyBaseConfig
-from .padim import PadimAnomalyBaseConfig
-from .stfpm import STFPMAnomalyBaseConfig
+from attr import attrs
 
-__all__ = ["PadimAnomalyBaseConfig", "STFPMAnomalyBaseConfig", "DraemAnomalyBaseConfig", "BaseAnomalyConfig"]
+from otx.algorithms.anomaly.configs.base import BaseAnomalyConfig
+
+
+@attrs
+class RKDEAnomalyDetectionConfig(BaseAnomalyConfig):
+    """Configurable parameters for RKDE anomaly Detection task."""

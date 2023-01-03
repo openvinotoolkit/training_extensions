@@ -1,4 +1,4 @@
-"""Base configurable parameter for anomaly tasks."""
+"""Initialization of Configurable Parameters for PADIM Anomaly Detection Task."""
 
 # Copyright (C) 2022 Intel Corporation
 #
@@ -14,9 +14,6 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .configuration import BaseAnomalyConfig
-from .draem import DraemAnomalyBaseConfig
-from .padim import PadimAnomalyBaseConfig
-from .stfpm import STFPMAnomalyBaseConfig
+from .configuration import RKDEAnomalyDetectionConfig
 
-__all__ = ["PadimAnomalyBaseConfig", "STFPMAnomalyBaseConfig", "DraemAnomalyBaseConfig", "BaseAnomalyConfig"]
+__all__ = ["RKDEAnomalyDetectionConfig"]
