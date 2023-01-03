@@ -120,7 +120,7 @@ class ClassificationTrainTask(ClassificationInferenceTask):
         self._data_cfg = self._init_train_data_cfg(dataset)
         self._is_training = True
         results = self._run_task(
-            stage_module, mode="train", dataset=dataset, parameters=train_parameters, resume=self._resume
+            stage_module, mode="train", dataset=dataset, parameters=train_parameters
         )
 
         # Check for stop signal between pre-eval and training.

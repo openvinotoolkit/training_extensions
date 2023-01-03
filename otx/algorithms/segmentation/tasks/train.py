@@ -112,7 +112,7 @@ class SegmentationTrainTask(SegmentationInferenceTask, ITrainingTask):
         self._data_cfg = self._init_train_data_cfg(dataset)
         self._is_training = True
         results = self._run_task(
-            "SegTrainer", mode="train", dataset=dataset, parameters=train_parameters, resume=self._resume
+            "SegTrainer", mode="train", dataset=dataset, parameters=train_parameters
         )
 
         # Check for stop signal when training has stopped.

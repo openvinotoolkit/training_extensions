@@ -113,7 +113,7 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         # to override configuration at runtime
         self.override_configs = {}  # type: Dict[str, str]
 
-    def _run_task(self, stage_module, mode=None, dataset=None, resume=False, **kwargs):
+    def _run_task(self, stage_module, mode=None, dataset=None, **kwargs):
         # FIXME: Temporary remedy for CVS-88098
         export = kwargs.get("export", False)
         self._initialize(export=export)
@@ -136,7 +136,7 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         if mode is not None:
             self._mode = mode
 
-        common_cfg = ConfigDict(dict(output_path=self._output_path, resume=resume))
+        common_cfg = ConfigDict(dict(output_path=self._output_path, resume=self._resume))
 
         # build workflow using recipe configuration
         workflow = build(self._recipe_cfg, self._mode, stage_type=stage_module, common_cfg=common_cfg)
@@ -342,7 +342,7 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
             return model_label_schema.get_labels(include_empty=False)
         return self._labels
 
-    def _load_resume_info(self, model: ModelEntity):
+    def _load_resume_info(self, model: Optional[ModelEntity]):
         return model.model_adapters.get("resume", False)
 
     @staticmethod

@@ -93,6 +93,7 @@ class TestToolsMPADetection:
         otx_train_testing(template, tmp_dir_path, otx_dir, args1)
 
     @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_resume(self, template, tmp_dir_path):
         otx_resume_testing(template, tmp_dir_path, otx_dir, args0)

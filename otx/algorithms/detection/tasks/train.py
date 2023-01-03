@@ -139,7 +139,7 @@ class DetectionTrainTask(DetectionInferenceTask, ITrainingTask):
         self._data_cfg = self._init_train_data_cfg(dataset)
         self._is_training = True
         results = self._run_task(
-            "DetectionTrainer", mode="train", dataset=dataset, parameters=train_parameters, resume=self._resume
+            "DetectionTrainer", mode="train", dataset=dataset, parameters=train_parameters
         )
 
         # Check for stop signal when training has stopped. If should_stop is true, training was cancelled and no new
