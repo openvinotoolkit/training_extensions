@@ -100,7 +100,7 @@ else:
     templates_ids = [template.model_template_id for template in templates]
 
 
-class TestToolsClassification:
+class TestToolsMultiClassClassification:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train(self, template, tmp_dir_path):
@@ -234,7 +234,7 @@ class TestToolsClassification:
         otx_train_testing(template, tmp_dir_path, otx_dir, args1)
 
 
-class TestToolsSemiSLClassification:
+class TestToolsMultiClassSemiSLClassification:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train(self, template, tmp_dir_path):
