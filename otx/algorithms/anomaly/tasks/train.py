@@ -77,7 +77,7 @@ class TrainingTask(InferenceTask, ITrainingTask):
             MetricsConfigurationCallback(
                 task=config.dataset.task,
                 image_metrics=config.metrics.image,
-                pixel_metrics=config.metrics.pixel,
+                pixel_metrics=config.metrics.get("pixel"),
             ),
             PostProcessingConfigurationCallback(
                 normalization_method=NormalizationMethod.MIN_MAX,
