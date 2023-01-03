@@ -13,9 +13,7 @@ The goal of this task is to predict the hierarchical tree of the labels. Assume 
 
 The goal of our algorithm is to return the right branch of this tree. For example: ``Persian -> Cats -> Pets``
 
-
-This type of algorithm is not so common in the computer vision field and doesn't have academic datasets for research. Since that, we created our dataset
-format that is supported by `Datumaro <https://github.com/openvinotoolkit/datumaro>`_. An example of the annotations format and dataset structure can be found in our `sample <https://github.com/openvinotoolkit/training_extensions/tree/feature/otx/data/datumaro/datumaro_h-label>`_.
+For hierarchical image classificaiton we created our custom dataset format that is supported by `Datumaro <https://github.com/openvinotoolkit/datumaro>`_. An example of the annotations format and dataset structure can be found in our `sample <https://github.com/openvinotoolkit/training_extensions/tree/feature/otx/data/datumaro/datumaro_h-label>`_.
 
 Besides that we support the following dataset format:
 
