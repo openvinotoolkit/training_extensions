@@ -183,10 +183,6 @@ class SegmentationTrainTask(SegmentationInferenceTask, ITrainingTask):
                     labels=self._labels,
                 )
 
-            unlabeled_dataset = get_unlabeled_dataset(dataset)
-            if unlabeled_dataset:
-                data_cfg.data.unlabeled = ConfigDict(otx_dataset=unlabeled_dataset, labels=self._labels)
-
             # Temparory remedy for cfg.pretty_text error
             for label in self._labels:
                 label.hotkey = "a"
