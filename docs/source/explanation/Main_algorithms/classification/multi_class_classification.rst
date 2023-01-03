@@ -32,10 +32,10 @@ This format has the following structure:
         ...
 
 *********
-Backbones
+Models
 *********
 
-We support the following ready-to-use templates:
+We support the following ready-to-use model templates:
 
 +------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------+---------------------+-----------------+
 | Template ID                                                                                                                                                                                                                  | Name                   | Complexity (GFlops) | Model size (MB) |

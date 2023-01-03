@@ -42,7 +42,7 @@ Below a simple example of 2 classes presented:
 
 
 *********
-Backbones
+Models
 *********
 We use the same model templates as for multi-class classification. Please, refer: :doc:`multi_class_classification`.
 

@@ -69,9 +69,8 @@ Besides that we support the following dataset format:
     }
   ]
 
-
 *********
-Backbones
+Models
 *********
 
 We use the same model templates as for multi-class Classification. Please, refer: :doc:`multi_class_classification`.
