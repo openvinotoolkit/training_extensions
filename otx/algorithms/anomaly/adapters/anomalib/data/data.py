@@ -17,7 +17,7 @@
 from typing import Dict, List, Optional, Union
 
 import numpy as np
-from anomalib.pre_processing import PreProcessor
+from anomalib.data.utils.transform import get_transforms
 from omegaconf import DictConfig, ListConfig
 from pytorch_lightning.core.datamodule import LightningDataModule
 from torch import Tensor
@@ -64,11 +64,11 @@ class OTXAnomalyDataset(Dataset):
         self.task_type = task_type
 
         # TODO: distinguish between train and val config here
-        self.pre_processor = PreProcessor(
+        self.transform = get_transforms(
             config=config.dataset.transform_config.train,
             image_size=tuple(config.dataset.image_size),
-            to_tensor=True,
-        )
+            to_tensor=True
+            )
 
     def __len__(self) -> int:
         """Get size of the dataset.
@@ -96,13 +96,13 @@ class OTXAnomalyDataset(Dataset):
         if self.task_type in (TaskType.ANOMALY_CLASSIFICATION, TaskType.ANOMALY_DETECTION):
             # Detection currently relies on image labels only, meaning it'll use image
             #   threshold to find the predicted bounding boxes.
-            item["image"] = self.pre_processor(image=dataset_item.numpy)["image"]
+            item["image"] = self.transform(image=dataset_item.numpy)["image"]
         elif self.task_type == TaskType.ANOMALY_SEGMENTATION:
             if any((isinstance(annotation.shape, Polygon) for annotation in dataset_item.get_annotations())):
                 mask = mask_from_dataset_item(dataset_item, dataset_item.get_shapes_labels()).squeeze()
             else:
                 mask = np.zeros(dataset_item.numpy.shape[:2]).astype(np.int)
-            pre_processed = self.pre_processor(image=dataset_item.numpy, mask=mask)
+            pre_processed = self.transform(image=dataset_item.numpy, mask=mask)
             item["image"] = pre_processed["image"]
             item["mask"] = pre_processed["mask"]
         else:
