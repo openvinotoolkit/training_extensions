@@ -354,6 +354,10 @@ class ClassificationInferenceTask(
             if not self._multilabel and not self._hierarchical:
                 if self._data_cfg.get("data", None) and self._data_cfg.data.get("unlabeled", None):
                     recipe = os.path.join(recipe_root, "semisl.yaml")
+                    self.task_model_dir = os.path.join(self.task_model_dir, "semisl")
+                    self.task_pipeline_path = os.path.join(
+                        os.path.dirname(self.task_pipeline_path), "semisl/data_pipeline.py"
+                    )
                 else:
                     logger.warning("Cannot find unlabeled data.. convert to INCREMENTAL.")
                     train_type = TrainType.INCREMENTAL

@@ -1,4 +1,4 @@
-"""Tests for MPA Class-Incremental Learning for image classification with OTE CLI"""
+"""Tests for Classification with OTX CLI"""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -100,7 +100,7 @@ else:
     templates_ids = [template.model_template_id for template in templates]
 
 
-class TestToolsMPAClassification:
+class TestToolsClassification:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train(self, template, tmp_dir_path):
@@ -234,6 +234,22 @@ class TestToolsMPAClassification:
         otx_train_testing(template, tmp_dir_path, otx_dir, args1)
 
 
+class TestToolsSemiSLClassification:
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_train(self, template, tmp_dir_path):
+        args_semisl = args0.copy()
+        args_semisl["--unlabeled-data-roots"] = args["--train-data-roots"]
+        args_semisl["train_params"].extend(["--algo_backend.train_type", "SEMISUPERVISED"])
+        otx_train_testing(template, tmp_dir_path, otx_dir, args_semisl)
+
+    @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_eval(self, template, tmp_dir_path):
+        otx_eval_testing(template, tmp_dir_path, otx_dir, args0)
+
+
 # Pre-train w/ 'car', 'tree' classes
 args0_m = {
     "--train-ann-file": "data/car_tree_bug/annotations/multilabel_car_tree.json",
@@ -271,7 +287,7 @@ args_m = {
 }
 
 
-class TestToolsMPAMultilabelClassification:
+class TestToolsMultilabelClassification:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train(self, template, tmp_dir_path):
@@ -421,7 +437,7 @@ args_h = {
 }
 
 
-class TestToolsMPAHierarchicalClassification:
+class TestToolsHierarchicalClassification:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_train(self, template, tmp_dir_path):
@@ -589,7 +605,7 @@ args_w = {
 }
 
 
-class TestToolsMPASelfSLClassification:
+class TestToolsSelfSLClassification:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     @set_dummy_data
