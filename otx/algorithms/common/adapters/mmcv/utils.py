@@ -18,7 +18,7 @@ import copy
 import glob
 import os
 import tempfile
-from typing import Union
+from typing import List, Union
 
 from mmcv import Config, ConfigDict
 
@@ -78,7 +78,7 @@ def patch_data_pipeline(config: Config, data_pipeline: str = ""):
 
 
 @check_input_parameters_type()
-def patch_color_conversion(pipeline: Config):
+def patch_color_conversion(pipeline: Union[Config, ConfigDict, List]):
     """Default data format for OTX is RGB, while mmx uses BGR, so negate the color conversion flag."""
     for pipeline_step in pipeline:
         if pipeline_step.type == "Normalize":
