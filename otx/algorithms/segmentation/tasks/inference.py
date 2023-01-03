@@ -68,6 +68,9 @@ from otx.mpa.utils.logger import get_logger
 logger = get_logger()
 
 
+SUPPORTED_TRAIN_TYPE = (TrainType.SEMISUPERVISED, TrainType.INCREMENTAL, TrainType.SELFSUPERVISED)
+
+
 # pylint: disable=too-many-locals, too-many-instance-attributes, attribute-defined-outside-init
 class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask, IUnload):
     """Inference Task Implementation of OTX Segmentation."""
@@ -189,7 +192,7 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         self.model_dir = os.path.abspath(os.path.dirname(self.template_file_path))
         pipeline_path = os.path.abspath(self.data_pipeline_path)
 
-        if train_type not in (TrainType.SEMISUPERVISED, TrainType.INCREMENTAL, TrainType.SELFSUPERVISED):
+        if train_type not in SUPPORTED_TRAIN_TYPE:
             raise NotImplementedError(f"Train type {train_type} is not implemented yet.")
         if train_type == TrainType.SEMISUPERVISED:
             if (
