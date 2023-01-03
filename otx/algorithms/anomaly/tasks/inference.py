@@ -28,7 +28,9 @@ from anomalib.models import AnomalyModule, get_model
 from anomalib.utils.callbacks import (
     MetricsConfigurationCallback,
     MinMaxNormalizationCallback,
+    PostProcessingConfigurationCallback,
 )
+from anomalib.post_processing import NormalizationMethod, ThresholdMethod
 from omegaconf import DictConfig, ListConfig
 from pytorch_lightning import Trainer
 
@@ -188,13 +190,17 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         inference = AnomalyInferenceCallback(dataset, self.labels, self.task_type)
         normalize = MinMaxNormalizationCallback()
         metrics_configuration = MetricsConfigurationCallback(
-            adaptive_threshold=config.metrics.threshold.adaptive,
-            default_image_threshold=config.metrics.threshold.image_default,
-            default_pixel_threshold=config.metrics.threshold.pixel_default,
-            image_metric_names=config.metrics.image,
-            pixel_metric_names=config.metrics.pixel,
+            task=config.dataset.task,
+            image_metrics=config.metrics.image,
+            pixel_metrics=config.metrics.pixel,
         )
-        callbacks = [progress, normalize, inference, metrics_configuration]
+        post_processing_configuration = PostProcessingConfigurationCallback(
+            normalization_method=NormalizationMethod.MIN_MAX,
+            threshold_method=ThresholdMethod.ADAPTIVE,
+            manual_image_threshold=config.metrics.threshold.manual_image,
+            manual_pixel_threshold=config.metrics.threshold.manual_pixel,
+        )
+        callbacks = [progress, normalize, inference, metrics_configuration, post_processing_configuration]
 
         self.trainer = Trainer(**config.trainer, logger=False, callbacks=callbacks)
         self.trainer.predict(model=self.model, datamodule=datamodule)

@@ -218,7 +218,7 @@ class OTXAnomalyDataModule(LightningDataModule):
         return DataLoader(
             dataset,
             shuffle=False,
-            batch_size=self.config.dataset.test_batch_size,
+            batch_size=self.config.dataset.eval_batch_size,
             num_workers=self.config.dataset.num_workers,
         )
 
@@ -246,6 +246,6 @@ class OTXAnomalyDataModule(LightningDataModule):
         return DataLoader(
             dataset,
             shuffle=False,
-            batch_size=self.config.dataset.test_batch_size,
+            batch_size=self.config.dataset.eval_batch_size,
             num_workers=self.config.dataset.num_workers,
         )
