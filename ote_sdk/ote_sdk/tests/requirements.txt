@@ -1,4 +1,4 @@
 pylint==2.7.3
 pytest==6.2.*
 openmodelzoo-modelapi==2022.3.0
-openvino==2022.3
+openvino==2022.3.0
