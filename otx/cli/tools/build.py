@@ -22,6 +22,7 @@ import os
 
 from otx.cli.builder import Builder
 from otx.cli.utils.importing import get_otx_root_path
+from otx.core.auto_config.manager import AutoConfigManager
 
 SUPPORTED_TASKS = ("CLASSIFICATION", "DETECTION", "INSTANCE_SEGMENTATION", "SEGMENTATION")
 SUPPORTED_TRAIN_TYPE = ("incremental", "semisl", "selfsl")
@@ -30,6 +31,8 @@ SUPPORTED_TRAIN_TYPE = ("incremental", "semisl", "selfsl")
 def parse_args():
     """Parses command line arguments."""
     parser = argparse.ArgumentParser()
+    parser.add_argument("--train-data-roots", help="data root for training data", type=str, default=None )
+    parser.add_argument("--val-data-roots", help="data root for validation data", type=str, default=None )
     parser.add_argument("--task", help=f"The currently supported options: {SUPPORTED_TASKS}.")
     parser.add_argument(
         "--train-type",
@@ -52,9 +55,7 @@ def main():
 
     builder = Builder()
 
-    # Build with task_type -> Create User workspace
     otx_root = get_otx_root_path()
-
     if args.task and args.task.upper() in SUPPORTED_TASKS:
         builder.build_task_config(
             task_type=args.task,
