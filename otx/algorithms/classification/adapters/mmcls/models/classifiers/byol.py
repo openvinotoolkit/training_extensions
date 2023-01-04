@@ -170,10 +170,13 @@ class BYOL(nn.Module):
         """Parse loss dictionary.
 
         Args:
-            losses (dict): ...
+            losses (dict): Raw output of the network, which usually contain
+                losses and other necessary information.
 
         Returns:
-            tuple: ...
+            tuple[Tensor, dict]: (loss, log_vars), loss is the loss tensor
+                which may be a weighted sum of all losses, log_vars contains
+                all the variables to be sent to the logger.
         """
         log_vars = OrderedDict()
         for loss_name, loss_value in losses.items():

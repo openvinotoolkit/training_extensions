@@ -4,11 +4,14 @@
 #
 
 import os
+import shutil
+from functools import wraps
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
 import pytest
 import torch
+import yaml
 
 from otx.api.entities.model_template import parse_model_template
 from otx.cli.registry import Registry
@@ -220,3 +223,59 @@ class TestToolsMPASegmentation:
         args1 = args.copy()
         args1["--gpus"] = "0,1"
         otx_train_testing(template, tmp_dir_path, otx_dir, args1)
+
+
+# tmp: create & remove data.yaml to only use train-data-roots
+def set_dummy_data(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        # create data.yaml
+        to_save_data_args = {
+            "data": {
+                "train": {"ann-files": None, "data-roots": None},
+                "val": {"ann-files": None, "data-roots": None},
+                "unlabeled": {"file-list": None, "data-roots": None},
+            },
+        }
+        yaml.dump(to_save_data_args, open("./data.yaml", "w"), default_flow_style=False)
+        # run test
+        func(*args, **kwargs)
+        # remove data.yaml
+        os.remove("./data.yaml")
+
+    return wrapper
+
+
+args_selfsl = {
+    "--train-ann-file": "data/segmentation/custom/annotations/detcon_masks",
+    "--train-data-roots": "data/segmentation/custom/images/training",
+    "--input": "data/segmentation/custom/images/training",
+    "train_params": [
+        "params",
+        "--learning_parameters.num_iters",
+        "5",
+        "--learning_parameters.batch_size",
+        "4",
+        "--algo_backend.train_type",
+        "SELFSUPERVISED",
+    ],
+}
+
+
+class TestToolsMPASelfSLSegmentation:
+    @e2e_pytest_component
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    @set_dummy_data
+    def test_otx_train(self, template, tmp_dir_path):
+        otx_train_testing(template, tmp_dir_path, otx_dir, args_selfsl)
+        shutil.rmtree(os.path.join(otx_dir, args_selfsl["--train-ann-file"]))
+        template_work_dir = get_template_dir(template, tmp_dir_path)
+        args1 = args.copy()
+        args1["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/weights.pth"
+        otx_train_testing(template, tmp_dir_path, otx_dir, args1)
+
+    @e2e_pytest_component
+    @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
+    @pytest.mark.parametrize("template", templates, ids=templates_ids)
+    def test_otx_eval(self, template, tmp_dir_path):
+        otx_eval_testing(template, tmp_dir_path, otx_dir, args)

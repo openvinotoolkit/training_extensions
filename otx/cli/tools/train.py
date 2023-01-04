@@ -131,7 +131,7 @@ def parse_args():
     return parser.parse_args(), template, hyper_parameters
 
 
-def main():
+def main():  # pylint: disable=too-many-branches
     """Main function that is used for model training."""
     # Dynamically create an argument parser based on override parameters.
     args, template, hyper_parameters = parse_args()
