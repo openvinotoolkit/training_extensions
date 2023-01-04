@@ -3,9 +3,11 @@ Object Detection model
 
 #TODO: Made Table of Content for this page?
 
-This tutorial reveals end-to-end solution from installation to model deploying for object detection task. We show how to train, validate, export and optimize ATSS model on BBCD public dataset.
+This tutorial reveals end-to-end solution from installation to model deploying for object detection task on a certain example.
+On this page we show how to train, validate, export and optimize ATSS model on BCCD public dataset.
+
 To learn how to deploy the trained model refer to deploy tutorial [#TODO link].
-To learn, how to run the demo, refer to the demo tutorial [#TODO link].
+To learn, how to run the demo and visualize results, refer to the demo tutorial [#TODO link].
 
 The process has been tested on the following configuration.
 
@@ -32,8 +34,8 @@ You can follow the installation process from a quick_start quide [#TODO link] to
     Python 3.8.10
     pip 20.0.2 from /usr/lib/python3/dist-packages/pip (python 3.8)
 
-2. Create and activate a virtual environment for the obect detection task, then install the ote_cli.
-The following example shows that creating virtual environment to the ``det_venv`` folder in your current directory for detection task.
+2. Create and activate a virtual environment for the obect detection task.
+The following example creates a virtual environment in the ``det_venv`` folder for detection task.
 
 .. code-block::
 
@@ -54,9 +56,12 @@ Dataset preparation
   curl -L "https://public.roboflow.com/ds/<YOUR_API_KEY>" > bccd.zip;
   unzip bccd.zip; rm bccd.zip
 
-#TODO insert data Sample
+This dataset contains images of blood cells. It's a great example to start with, because the training model achieves high accuracy right grom the beginning due to large and focused objects. 
+.. image:: ../../../../utils/images/bccd_sample_image.png
+  :width: 600
+  :alt: this image uploaded from test set of this `source <https://public.roboflow.com/object-detection/bccd/3>`_
 
-2. Check the file structure of downloaded dataset, which should be as following.
+2. Check the file structure of downloaded dataset, which should look like this.
 
 .. code-block::
 
@@ -74,20 +79,20 @@ Dataset preparation
       └── <images>
 
 
-3. ``(Optional)`` To simplify the comand line functions calling, you may create a ``data.yaml`` file with annotations info and pass it as a parameter. The content of the ``training_extesions/data.yaml`` for BBCD dataset should have absolete paths and will be similar to that:
+3. ``(Optional)`` To simplify the command line functions calling, we may create a ``data.yaml`` file with annotations info and pass it as a ``--data`` parameter. The content of the ``training_extesions/data.yaml`` for BCCD dataset should have absolete paths and will be similar to that:
 
 .. code-block::
 
   {'data': 
     {'train': 
-      {'ann-files': '/home/gzalessk/training_extensions/BBCD/train/_annotations.coco.json',
-       'data-roots': '/home/gzalessk/training_extensions/datasets/BBCD/train'},
+      {'ann-files': '/home/<username>/training_extensions/BCCD/train/_annotations.coco.json',
+       'data-roots': '/home/<username>/training_extensions/datasets/BCCD/train'},
     'val':
-      {'ann-files': '/home/gzalessk/training_extensions/datasets/BBCD/valid/_annotations.coco.json',
-       'data-roots': '/home/gzalessk/training_extensions/datasets/BBCD/valid'},
+      {'ann-files': '/home/<username>/training_extensions/datasets/BCCD/valid/_annotations.coco.json',
+       'data-roots': '/home/<username>/training_extensions/datasets/BCCD/valid'},
     'test':
-      {'ann-files': '/home/gzalessk/training_extensions/datasets/BBCD/test/_annotations.coco.json',
-       'data-roots': '/home/gzalessk/training_extensions/datasets/BBCD/test'}
+      {'ann-files': '/home/<username>/training_extensions/datasets/BCCD/valid/_annotations.coco.json',
+       'data-roots': '/home/<username>/training_extensions/datasets/BCCD/valid'}
     }
   }
 
@@ -96,7 +101,7 @@ Dataset preparation
 Training
 *********
 
-1. Before training you need to chose, which object detection model will you use. The list of supported templates for object detection is available with the command line below. 
+1. First of all, we need to chose, which object detection model will we train. The list of supported templates for object detection is available with the command line below. 
 
 .. note::
 
@@ -115,28 +120,28 @@ Training
   | DETECTION | Custom_Object_Detection_Gen3_ATSS |  ATSS | otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml |
   +-----------+-----------------------------------+-------+---------------------------------------------------------------------------+
 
-2. ``otx train`` trains a model (a particular model template) on a dataset and saves results in two files:
+2. ``otx train`` trains a model (a particular model template) on a dataset and results in two files:
 
-- weights.pth - a model snapshot
-- label_schema.json - a label schema used in training, created from a dataset
+- ``weights.pth`` - a model snapshot
+- ``label_schema.json`` - a label schema used in training, created from a dataset
 
-These files can be used by other commands: ``export``, ``eval``, ``deploy`` and ``demo``.
+These are needed as inputs for the further commands: ``export``, ``eval``,  ``optimize``,  ``deploy`` and ``demo``.
 
 
-3. For tutorial purposes, all examples will be run on the ATSS model. This comand line starts 1 GPU training of the medium object detection model on BCCD dataset.
+3. To have a specific example in this tutorial, all commands will be run on the ATSS model. For instance, this command line starts 1 GPU training of the medium object detection model on BCCD dataset:
 
 .. code-block::
 
   (detection) ...$ otx train otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml
-                            --train-ann-files BBCD/train/_annotations.coco.json 
-                            --train-data-roots  BBCD/train 
-                            --val-ann-files BBCD/valid/_annotations.coco.json 
-                            --val-data-roots BBCD/valid 
+                            --train-ann-files BCCD/train/_annotations.coco.json 
+                            --train-data-roots  BCCD/train 
+                            --val-ann-files BCCD/valid/_annotations.coco.json 
+                            --val-data-roots BCCD/valid 
                             --save-model-to outputs
                             --work-dir outputs/logs
                             --gpus 1
 
-If you created ``data.yaml`` file in previous step, you can simplify the training by specifying it as a ``data`` parameter:
+If you created ``data.yaml`` file in previous step, you can simplify the training by passing it in ``--data`` parameter:
 
 .. code-block::
 
@@ -146,8 +151,9 @@ If you created ``data.yaml`` file in previous step, you can simplify the trainin
                             --work-dir outputs/logs
                             --gpus 1
 
+Looks much simplier, isn't it?
 
-Additionally, you can tune training parameters such as batch size, learning rate, patience epochs or warm-up iteration. You can read more about template-specific parameters in quick start [#TODO link].
+4. ``(Optional)`` Additionally, we can tune training parameters such as batch size, learning rate, patience epochs or warm-up iteration. More about template-specific parameters is in quick start [#TODO link].
 It can be done by manual updating parameters in ``template.yaml`` file or via comand line. 
 
 For example, to decrease batsch size to 4, fix the number of epochs to 100 and disable early stopping, extend the comand line above with the following line.
@@ -157,11 +163,9 @@ For example, to decrease batsch size to 4, fix the number of epochs to 100 and d
                             params --learning_parameters.batch_size 4 --learning_parameters.num_iters 100 --learning_parameters.enable_early_stopping false 
 
 
-The result of the training are ``weights.pth`` and ``label_schema.json``, located in ``outputs`` folder, and logs in the ``outputs/logs`` dir.
+5. The training results with ``weights.pth`` and ``label_schema.json`` files, located in ``outputs`` folder, while training logs can be found in the ``outputs/logs`` dir.
 
 .. code-block::
-
-  ...
 
   2022-12-29 00:59:51,961 - mmdet - INFO - workflow: [('train', 1)], max: 200 epochs
   [ INFO ] workflow: [('train', 1)], max: 200 epochs
@@ -190,6 +194,7 @@ The result of the training are ``weights.pth`` and ``label_schema.json``, locate
   2022-12-29 01:08:53,520 | INFO : Setting confidence threshold to 0.32500000000000007 based on results
   2022-12-29 01:08:53,521 | INFO : Final model performance: Performance(score: 0.8315842078960519, dashboard: (17 metric groups))
 
+Now we have the Pytorch object detection model trained with OTX, that we can use for evaliation, export, optimization and deployment. 
 
 ***********
 Validation
@@ -198,22 +203,23 @@ Validation
 1. ``otx eval`` runs evaluation of a trained model on a particular dataset.
 
 Eval function receives test annotation information and model snapshot, trained in previous step.
-Please note, that ``label schema.json`` file should be located in the same folder with model snaphot, as it contains meta information about the dataset .
+Please note, that ``label schema.json`` file should be located in the same folder with model snapshot, as it contains meta information about the dataset.
 
-The default metric measured is F1 measure.
+The default metric is F1 measure.
 
-2. The command below evaluates snaphot in ``outputs`` folder on BCCD dataset and saves results to ``outputs/performance`` :
+2. That's how we can evaluate the snaphot in ``outputs`` folder on BCCD dataset and save results to ``outputs/performance``:
 
 .. code-block::
 
   (detection) ...$ otx eval otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml
-                            --test-ann-files BBCD/valid/_annotations.coco.json 
-                            --test-data-roots  BBCD/valid 
+                            --test-ann-files BCCD/valid/_annotations.coco.json 
+                            --test-data-roots  BCCD/valid 
                             --load-weights outputs/weights.pth
                             --save-performance outputs/performance.json
   
 
-If ``data.yaml`` was created, the command can be simplified by passing it for a ``--data`` parameter. Note, that this line will run validation on the test set (not validation set):
+If you created ``data.yaml`` file in previous step, you can simplify the training by passing it in ``--data`` parameter. 
+Note, that this line will run validation on the test set (not validation set):
 
 .. code-block::
 
@@ -222,7 +228,7 @@ If ``data.yaml`` was created, the command can be simplified by passing it for a 
                             --load-weights outputs/weights.pth
                             --save-performance outputs/performance.json
 
-The validation output will look as following:
+We will get this validation output:
 
 .. code-block::
 
@@ -233,9 +239,16 @@ The validation output will look as following:
 
 
 
-Additionally, you can tune testing parameters such as confidence threshold via comand line. You can read more about template-specific parameters for validation in quick start [#TODO link].
-For example, to increase the confidence treshold to decrease the number of False Positive predictions (there you have prediction, but don't have annotated object for it) update the evaluation comand line as it's shown below. 
-Please note, that by default confidence treshold is detected automatically based on result to maximize final F1 metric. So, to set custom confidence trashold, please disable ``result_based_confidence_threshold`` option.
+3. The output of ``./outputs/performance.json`` consists of dict with target metric name and its value.
+
+.. code-block::
+
+  {"f-measure": 0.8315842078960519}
+
+4. ``Optional`` Additionally, we can tune testing parameters such as confidence threshold via comand line. Read more about template-specific parameters for validation in quick start [#TODO link].
+For example, to increase the confidence treshold and decrease the number of False Positive predictions (there we have prediction, but don't have annotated object for it) update the evaluation comand line as it's shown below. 
+
+Please note, that by default confidence treshold is detected automatically based on result to maximize the final F1 metric. So, to set custom confidence treshold, please disable ``result_based_confidence_threshold`` option.
 
 .. code-block::
 
@@ -250,19 +263,12 @@ Please note, that by default confidence treshold is detected automatically based
 
 2023-01-03 18:55:01,956 | INFO : F-measure after evaluation: 0.6274238227146813
 
-3. The output of ``./outputs/performance.json`` consists of dict with target metric name and its value.
-
-.. code-block::
-
-  {"f-measure": 0.8315842078960519}
-
-
 *********
 Export
 *********
-1. ``otx export`` exports a trained Pytorch `.pth` model to the OpenVINO™ Intermediate Representation (IR) format in order to efficiently run it on Intel hardware. Also, the resulting IR model is required to run POT optimization in the section below.
+1. ``otx export`` exports a trained Pytorch `.pth` model to the OpenVINO™ Intermediate Representation (IR) format. It allows to efficiently run it on Intel hardware, especially on CPU. Also, the resulting IR model is required to run POT optimization in the section below. IR model contains of 2 files: openvino.xml for weights and openvino.bin for architecture.
 
-2. The command below performs exporting of the trained model ``outputs/weights.pth`` in previous section and saves the exported model to the ``outputs/openvino/`` folder.
+2. That's how we can export the trained model ``outputs/weights.pth`` from the previous section and save the exported model to the ``outputs/openvino/`` folder.
 
 .. code-block::
 
@@ -277,13 +283,13 @@ Export
   2022-12-29 01:39:11,990 | INFO : Exporting completed
 
 
-3. You can check the accuracy of exported model as simple as accuracy of the ``.pth`` model, using ``otx eval`` with the path of IR model.
+3. We can check the accuracy of exported model as simple as accuracy of the ``.pth`` model, using ``otx eval`` and passing IR model to ``--load-weights`` parameter.
 
 .. code-block::
 
   (detection) ...$ otx eval otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml
-                            --test-ann-files BBCD/valid/_annotations.coco.json 
-                            --test-data-roots  BBCD/valid 
+                            --test-ann-files BCCD/valid/_annotations.coco.json 
+                            --test-data-roots  BCCD/valid 
                             --load-weights outputs/openvino/openvino.xml
                             --save-performance outputs/openvino/performance.json
   
@@ -295,9 +301,9 @@ Export
 Optimization
 *************
 
-1. ``otx optimize`` optimizes a model using NNCF or POT depending on the model format.
+1. We can even more optimize the model with ``otx optimize``. It uses NNCF or POT depending on the model format.
 
-- NNCF optimization is used for trained snapshots in a framework-specific format such as checkpoint (pth) file from Pytorch. It starts training-aware quantization based on the obtained weights from the training stage.
+- NNCF optimization is used for trained snapshots in a framework-specific format such as checkpoint (pth) file from Pytorch. It starts accuracy-aware quantization based on the obtained weights from the training stage. Generally, we will see the same output as during training.
 - POT optimization is used for models exported in the OpenVINO™ IR format. It decreases floating-point precision to integer precision of the exported model by performing the post-training optimization.
 
 The function results with a following files, which could be used to run ``otx demo``[link]:
@@ -315,10 +321,10 @@ Read more about optimization in [#TODO link]
 .. code-block::
 
   (detection) ...$ otx optimize otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml 
-                                --train-ann-files BBCD/train/_annotations.coco.json 
-                                --train-data-roots  BBCD/train 
-                                --val-ann-files BBCD/valid/_annotations.coco.json 
-                                --val-data-roots BBCD/valid 
+                                --train-ann-files BCCD/train/_annotations.coco.json 
+                                --train-data-roots  BCCD/train 
+                                --val-ann-files BCCD/valid/_annotations.coco.json 
+                                --val-data-roots BCCD/valid 
                                 --load-weights outputs/weights.pth
                                 --save-model-to outputs/nncf
                                 --save-performance outputs/nncf/performance.json
@@ -353,10 +359,10 @@ Read more about optimization in [#TODO link]
 .. code-block::
 
   (detection) ...$ otx optimize otx/algorithms/detection/configs/detection/mobilenetv2_atss/template.yaml 
-                                --train-ann-files BBCD/train/_annotations.coco.json 
-                                --train-data-roots  BBCD/train 
-                                --val-ann-files BBCD/valid/_annotations.coco.json 
-                                --val-data-roots BBCD/valid 
+                                --train-ann-files BCCD/train/_annotations.coco.json 
+                                --train-data-roots  BCCD/train 
+                                --val-ann-files BCCD/valid/_annotations.coco.json 
+                                --val-data-roots BCCD/valid 
                                 --load-weights outputs/openvino/openvino.xml
                                 --save-model-to outputs/pot
 
@@ -377,10 +383,11 @@ Read more about optimization in [#TODO link]
 
 The POT optimization will take 5-10 minutes without logging.
 
+4. We can evaluate the optimized model passing it to ``otx eval`` function.
 
-The following stages how to deploy model and run demo are described in [link].
+Now we have fully trained, optimized and exported in efficient model representation ready-to use object detection model.
 
-4. You can evaluate the optimized model passing it to ``otx eval`` function.
+Following tutorial [#TODO link] provides further steps how to deploy and use your model in the demonstration mode and visualize results.
 
 ***************
 Troubleshooting
