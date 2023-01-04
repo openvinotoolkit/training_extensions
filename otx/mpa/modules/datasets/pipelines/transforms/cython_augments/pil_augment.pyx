@@ -4,12 +4,17 @@
 # cython: language_level=3
 
 import cython
+
 from cython.view cimport array as cvarray
+
 import numpy as np
+
 cimport numpy as np
+
 import cv2
 from PIL import Image
 from PIL.Image import Resampling
+
 np.import_array()
 
 
