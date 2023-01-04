@@ -1,5 +1,5 @@
 # Description.
-model_template_id: otx_anomaly_detection_stfpm
+model_template_id: ote_anomaly_detection_stfpm
 name: STFPM
 task_type: ANOMALY_DETECTION
 task_family: VISION

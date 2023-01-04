@@ -1,5 +1,5 @@
 # Description.
-model_template_id: otx_anomaly_segmentation_draem
+model_template_id: ote_anomaly_segmentation_draem
 name: DRAEM
 task_type: ANOMALY_SEGMENTATION
 task_family: VISION
