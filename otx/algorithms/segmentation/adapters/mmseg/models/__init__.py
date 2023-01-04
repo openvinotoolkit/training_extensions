@@ -1,4 +1,4 @@
-"""OTX Algorithms - Segmentation Dataset."""
+"""Adapters for OTX Common Algorithm. - mmseg.model."""
 
 # Copyright (C) 2022 Intel Corporation
 #
@@ -14,17 +14,9 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .dataset import MPASegDataset, get_annotation_mmseg_format
-from .pipelines import (
-    LoadAnnotationFromOTXDataset,
-    LoadImageFromOTXDataset,
-    TwoCropTransform,
-)
 
-__all__ = [
-    "get_annotation_mmseg_format",
-    "LoadImageFromOTXDataset",
-    "LoadAnnotationFromOTXDataset",
-    "MPASegDataset",
-    "TwoCropTransform",
-]
+from .losses import DetConLoss
+from .necks import SelfSLMLP
+from .segmentors import DetConB
+
+__all__ = ["DetConLoss", "SelfSLMLP", "DetConB"]
