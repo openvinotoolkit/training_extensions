@@ -192,7 +192,7 @@ class InferenceTask(IInferenceTask, IEvaluationTask, IExportTask, IUnload):
         metrics_configuration = MetricsConfigurationCallback(
             task=config.dataset.task,
             image_metrics=config.metrics.image,
-            pixel_metrics=config.metrics.pixel,
+            pixel_metrics=config.metrics.get("pixel"),
         )
         post_processing_configuration = PostProcessingConfigurationCallback(
             normalization_method=NormalizationMethod.MIN_MAX,
