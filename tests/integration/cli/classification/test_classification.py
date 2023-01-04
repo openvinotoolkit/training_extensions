@@ -203,7 +203,7 @@ class TestToolsMPAClassification:
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
 
-        nncf_validate_fq_testing(template, tmp_dir_path, otx_dir, "classification")
+        nncf_validate_fq_testing(template, tmp_dir_path, otx_dir, "classification", type(self).__name__)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
@@ -233,7 +233,7 @@ class TestToolsMPAClassification:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_pot_validate_fq(self, template, tmp_dir_path):
-        pot_validate_fq_testing(template, tmp_dir_path, otx_dir, "classification")
+        pot_validate_fq_testing(template, tmp_dir_path, otx_dir, "classification", type(self).__name__)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
@@ -386,7 +386,7 @@ class TestToolsMPAMultilabelClassification:
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
 
-        nncf_validate_fq_testing(template, tmp_dir_path, otx_dir, "classification")
+        nncf_validate_fq_testing(template, tmp_dir_path, otx_dir, "classification", type(self).__name__)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
@@ -416,7 +416,7 @@ class TestToolsMPAMultilabelClassification:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_pot_validate_fq(self, template, tmp_dir_path):
-        pot_validate_fq_testing(template, tmp_dir_path, otx_dir, "classification")
+        pot_validate_fq_testing(template, tmp_dir_path, otx_dir, "classification", type(self).__name__)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
@@ -560,7 +560,7 @@ class TestToolsMPAHierarchicalClassification:
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
 
-        nncf_validate_fq_testing(template, tmp_dir_path, otx_dir, "classification")
+        nncf_validate_fq_testing(template, tmp_dir_path, otx_dir, "classification", type(self).__name__)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
@@ -587,7 +587,7 @@ class TestToolsMPAHierarchicalClassification:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_pot_validate_fq(self, template, tmp_dir_path):
-        pot_validate_fq_testing(template, tmp_dir_path, otx_dir, "classification")
+        pot_validate_fq_testing(template, tmp_dir_path, otx_dir, "classification", type(self).__name__)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")

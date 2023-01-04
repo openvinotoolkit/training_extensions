@@ -1,4 +1,10 @@
-pot:
-  number_of_fakequantizers: 165
-nncf:
-  number_of_fakequantizers: -1
+TestToolsMPAInstanceSegmentation:
+  pot:
+    number_of_fakequantizers: 165
+  nncf:
+    number_of_fakequantizers: -1
+TestToolsTilingDetection:
+  pot:
+    number_of_fakequantizers: 165
+  nncf:
+    number_of_fakequantizers: -1

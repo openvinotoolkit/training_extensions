@@ -133,7 +133,7 @@ class TestToolsAnomalyDetection:
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
 
-        nncf_validate_fq_testing(template, tmp_dir_path, otx_dir, "anomaly")
+        nncf_validate_fq_testing(template, tmp_dir_path, otx_dir, "anomaly", type(self).__name__)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
@@ -161,7 +161,7 @@ class TestToolsAnomalyDetection:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_pot_validate_fq(self, template, tmp_dir_path):
-        pot_validate_fq_testing(template, tmp_dir_path, otx_dir, "anomaly")
+        pot_validate_fq_testing(template, tmp_dir_path, otx_dir, "anomaly", type(self).__name__)
 
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)

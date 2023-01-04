@@ -1,4 +1,15 @@
-pot:
-  number_of_fakequantizers: 104
-nncf:
-  number_of_fakequantizers: 91
+TestToolsMPAClassification:
+  pot:
+    number_of_fakequantizers: 105
+  nncf:
+    number_of_fakequantizers: 91
+TestToolsMPAMultilabelClassification:
+  pot:
+    number_of_fakequantizers: 107
+  nncf:
+    number_of_fakequantizers: 97
+TestToolsMPAHierarchicalClassification:
+  pot:
+    number_of_fakequantizers: 105
+  nncf:
+    number_of_fakequantizers: 91

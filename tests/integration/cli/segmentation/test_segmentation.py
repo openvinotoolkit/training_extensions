@@ -186,7 +186,7 @@ class TestToolsMPASegmentation:
         if template.entrypoints.nncf is None:
             pytest.skip("nncf entrypoint is none")
 
-        nncf_validate_fq_testing(template, tmp_dir_path, otx_dir, "segmentation")
+        nncf_validate_fq_testing(template, tmp_dir_path, otx_dir, "segmentation", type(self).__name__)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
@@ -222,7 +222,9 @@ class TestToolsMPASegmentation:
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     @pytest.mark.skip(reason="Need to check POT with openvino 2022.2.0")
     def test_pot_validate_fq(self, template, tmp_dir_path):
-        pot_validate_fq_testing(template, tmp_dir_path, otx_dir, "segmentation")
+        if template.model_template_id.startswith("ClassIncremental_Semantic_Segmentation_Lite-HRNet-"):
+            pytest.skip("CVS-82482")
+        pot_validate_fq_testing(template, tmp_dir_path, otx_dir, "segmentation", type(self).__name__)
 
     @e2e_pytest_component
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
