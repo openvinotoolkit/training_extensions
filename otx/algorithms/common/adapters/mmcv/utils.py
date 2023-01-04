@@ -88,7 +88,7 @@ def patch_color_conversion(pipeline: Sequence[dict]):
             pipeline_step["to_rgb"] = to_rgb
         elif pipeline_type == "MultiScaleFlipAug":
             patch_color_conversion(pipeline_step.get("transforms", []))
-        elif pipeline_step.type == "TwoCropTransform":
+        elif pipeline_type == "TwoCropTransform":
             patch_color_conversion(pipeline_step.get("view0", []))
             patch_color_conversion(pipeline_step.get("view1", []))
 
