@@ -246,21 +246,23 @@ def get_requirements(requirement_files: Union[str, List[str]]) -> List[str]:
     return requirements
 
 
-def _cython_modules():
+def _cython_modules(src_dir: str = "otx"):
     Cython.Compiler.Options.annotate = True
 
-    cython_aug_root = "otx/mpa/modules/datasets/pipelines/transforms/cython_augments"
-    cython_aug_modl = cython_aug_root.replace("/", ".")
     ext_modules = []
+    print("_cython")
 
-    for fname in os.listdir(cython_aug_root):
-        name, ext = os.path.splitext(fname)
-        if ext == ".pyx":
+    for root, dirs, files in os.walk(src_dir):
+        for fname in files:
+            name, ext = os.path.splitext(fname)
+            if ext != ".pyx":
+                continue
+            cython_aug_modl = root.replace("/", ".")
             ext_modules += [
-                Extension(f"{cython_aug_modl}.{name}", [os.path.join(cython_aug_root, fname)],
+                Extension(f"{cython_aug_modl}.{name}", [os.path.join(root, fname)],
                         include_dirs=[numpy.get_include()], extra_compile_args=["-O3"])
             ]
-    
+
     return cythonize(ext_modules, annotate=True)
 
 
