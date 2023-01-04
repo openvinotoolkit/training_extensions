@@ -16,13 +16,16 @@
 
 from typing import Dict, List, Optional, Union
 
+import torch
 import numpy as np
+from anomalib.data.base.datamodule import collate_fn
 from anomalib.data.utils.transform import get_transforms
 from omegaconf import DictConfig, ListConfig
 from pytorch_lightning.core.datamodule import LightningDataModule
 from torch import Tensor
 from torch.utils.data import DataLoader, Dataset
 
+from otx.api.entities.shapes.rectangle import Rectangle
 from otx.algorithms.anomaly.adapters.anomalib.logger import get_logger
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.model_template import TaskType
@@ -93,10 +96,27 @@ class OTXAnomalyDataset(Dataset):
         dataset_item = self.dataset[index]
         item: Dict[str, Union[int, Tensor]] = {}
         item = {"index": index}
-        if self.task_type in (TaskType.ANOMALY_CLASSIFICATION, TaskType.ANOMALY_DETECTION):
+        if self.task_type == TaskType.ANOMALY_CLASSIFICATION:
             # Detection currently relies on image labels only, meaning it'll use image
             #   threshold to find the predicted bounding boxes.
             item["image"] = self.transform(image=dataset_item.numpy)["image"]
+        elif self.task_type == TaskType.ANOMALY_DETECTION:
+            item["image"] = self.transform(image=dataset_item.numpy)["image"]
+            item["boxes"] = torch.empty((0, 4))
+            height, width = item["image"].shape[-2:]
+            boxes = []
+            for annotation in dataset_item.get_annotations():
+                if not Rectangle.is_full_box(annotation.shape):  # ignore full image labels
+                    boxes.append(
+                        Tensor([
+                            annotation.shape.x1 * width,
+                            annotation.shape.y1 * height,
+                            annotation.shape.x2 * width,
+                            annotation.shape.y2 * height,
+                        ])
+                    )
+                if len(boxes) > 0:
+                    item["boxes"] = torch.stack(boxes)
         elif self.task_type == TaskType.ANOMALY_SEGMENTATION:
             if any((isinstance(annotation.shape, Polygon) for annotation in dataset_item.get_annotations())):
                 mask = mask_from_dataset_item(dataset_item, dataset_item.get_shapes_labels()).squeeze()
@@ -108,8 +128,10 @@ class OTXAnomalyDataset(Dataset):
         else:
             raise ValueError(f"Unsupported task type: {self.task_type}")
 
-        if len(dataset_item.get_shapes_labels()) > 0:
-            item["label"] = 1 if dataset_item.get_shapes_labels()[0].is_anomalous else 0
+        if len(dataset_item.get_shapes_labels()) > 0 and dataset_item.get_shapes_labels()[0].is_anomalous:
+            item["label"] = 1
+        else:
+            item["label"] = 0
         return item
 
 
@@ -198,6 +220,7 @@ class OTXAnomalyDataModule(LightningDataModule):
             shuffle=False,
             batch_size=self.config.dataset.train_batch_size,
             num_workers=self.config.dataset.num_workers,
+            collate_fn=collate_fn,
         )
 
     def val_dataloader(self) -> Union[DataLoader, List[DataLoader]]:
@@ -220,6 +243,7 @@ class OTXAnomalyDataModule(LightningDataModule):
             shuffle=False,
             batch_size=self.config.dataset.eval_batch_size,
             num_workers=self.config.dataset.num_workers,
+            collate_fn=collate_fn,
         )
 
     def test_dataloader(self) -> Union[DataLoader, List[DataLoader]]:
@@ -234,6 +258,7 @@ class OTXAnomalyDataModule(LightningDataModule):
             shuffle=False,
             batch_size=self.config.dataset.test_batch_size,
             num_workers=self.config.dataset.num_workers,
+            collate_fn=collate_fn,
         )
 
     def predict_dataloader(self) -> Union[DataLoader, List[DataLoader]]:
@@ -248,4 +273,5 @@ class OTXAnomalyDataModule(LightningDataModule):
             shuffle=False,
             batch_size=self.config.dataset.eval_batch_size,
             num_workers=self.config.dataset.num_workers,
+            collate_fn=collate_fn,
         )
