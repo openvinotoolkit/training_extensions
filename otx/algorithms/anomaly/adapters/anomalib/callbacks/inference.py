@@ -98,6 +98,8 @@ class AnomalyInferenceCallback(Callback):
             # generate annotations
             annotations: List[Annotation] = []
             for box, score, label in zip(im_boxes, im_box_scores, im_box_labels):
+                if box[0] >= box[2] or box[1] >= box[3]:  # discard 1-pixel boxes
+                    continue
                 shape = Rectangle(
                     x1=box[0].item() / width,
                     y1=box[1].item() / height,
