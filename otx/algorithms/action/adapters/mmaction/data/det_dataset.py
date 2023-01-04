@@ -52,18 +52,16 @@ class OTXActionDetDataset(AVADataset):
     """
 
     class _DataInfoProxy:
-        def __init__(self, otx_dataset: DatasetEntity, labels: List[LabelEntity], fps: int, test_mode: bool):
+        def __init__(self, otx_dataset: DatasetEntity, labels: List[LabelEntity], fps: int):
             self.otx_dataset = copy.deepcopy(otx_dataset)
             self.labels = labels
             self.label_idx = {label.id: i for i, label in enumerate(labels)}
             self.fps = fps
             self.data_root = "/" + os.path.join(*os.path.abspath(self.otx_dataset[0].media.path).split("/")[:-4])
+            self.proposal_file_name = os.path.abspath(self.otx_dataset[0].media.path).split("/")[-4]
+            self.proposal_file = os.path.join(self.data_root, f"{self.proposal_file_name}.pkl")
             self.video_info: Dict[str, Any] = {}
 
-            if not test_mode:
-                self.proposal_file = os.path.join(self.data_root, "train.pkl")
-            else:
-                self.proposal_file = os.path.join(self.data_root, "valid.pkl")
             if os.path.exists(self.proposal_file):
                 self.proposals = mmcv.load(self.proposal_file)
                 self.patch_proposals()
@@ -237,7 +235,7 @@ class OTXActionDetDataset(AVADataset):
         # OTX does not support custom_classes
         self.custom_classes = None
 
-        self.video_infos = OTXActionDetDataset._DataInfoProxy(otx_dataset, labels, fps, test_mode)
+        self.video_infos = OTXActionDetDataset._DataInfoProxy(otx_dataset, labels, fps)
 
         self.pipeline = Compose(pipeline)
         for pip in self.pipeline.transforms:
