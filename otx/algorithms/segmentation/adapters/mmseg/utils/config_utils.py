@@ -346,10 +346,11 @@ def patch_datasets(config: Config, domain=Domain.SEGMENTATION):
 
 def patch_evaluation(config: Config):
     """Update evaluation configs."""
-    cfg = config.evaluation
-    cfg.pop("classwise", None)
-    cfg.metric = "mDice"
-    cfg.save_best = "mDice"
-    cfg.rule = "greater"
-    # EarlyStoppingHook
-    config.early_stop_metric = "mDice"
+    cfg = config.get("evaluation", None)
+    if cfg:
+        cfg.pop("classwise", None)
+        cfg.metric = "mDice"
+        cfg.save_best = "mDice"
+        cfg.rule = "greater"
+        # EarlyStoppingHook
+        config.early_stop_metric = "mDice"
