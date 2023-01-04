@@ -1,7 +1,7 @@
 anomalib==0.3.6
-nncf==2.2.0
+nncf@ git+https://github.com/openvinotoolkit/nncf@e2848e58ca3608c9a7145d0b5f2b91277095b87a#egg=nncf
 onnx==1.10.1
-openmodelzoo-modelapi @ git+https://github.com/openvinotoolkit/open_model_zoo/@releases/2022/SCv1.1#egg=openmodelzoo-modelapi&subdirectory=demos/common/python
+openmodelzoo-modelapi==2022.3.0
 openvino==2022.3.0
 openvino-dev==2022.3
 pytorch-lightning>=1.6.0,<1.7.0
