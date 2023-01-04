@@ -71,7 +71,6 @@ class ClassificationInferenceTask(
         self._empty_label = get_empty_label(task_environment.label_schema)
 
         self.model_dir = None
-        self.pipeline_path = None
         self._multilabel = False
         self._hierarchical = False
         self._selfsl = False
@@ -346,7 +345,7 @@ class ClassificationInferenceTask(
         train_type = self._hyperparams.algo_backend.train_type
         logger.info(f"train type = {train_type}")
         self.model_dir = os.path.abspath(os.path.dirname(self.template_file_path))
-        self.pipeline_path = os.path.abspath(self.data_pipeline_path)
+        pipeline_path = os.path.abspath(self.data_pipeline_path)
 
         if train_type not in (TrainType.SEMISUPERVISED, TrainType.INCREMENTAL, TrainType.SELFSUPERVISED):
             raise NotImplementedError(f"Train type {train_type} is not implemented yet.")
@@ -355,7 +354,7 @@ class ClassificationInferenceTask(
                 if self._data_cfg.get("data", None) and self._data_cfg.data.get("unlabeled", None):
                     recipe = os.path.join(recipe_root, "semisl.yaml")
                     self.model_dir = os.path.join(self.model_dir, "semisl")
-                    self.pipeline_path = os.path.join(os.path.dirname(self.pipeline_path), "semisl/data_pipeline.py")
+                    pipeline_path = os.path.join(os.path.dirname(pipeline_path), "semisl/data_pipeline.py")
                 else:
                     logger.warning("Cannot find unlabeled data.. convert to INCREMENTAL.")
                     train_type = TrainType.INCREMENTAL
@@ -370,7 +369,7 @@ class ClassificationInferenceTask(
         if train_type == TrainType.SELFSUPERVISED:
             recipe = os.path.join(recipe_root, "selfsl.yaml")
             self.model_dir = os.path.join(self.model_dir, "selfsl")
-            self.pipeline_path = os.path.join(os.path.dirname(self.pipeline_path), "selfsl/data_pipeline.py")
+            pipeline_path = os.path.join(os.path.dirname(pipeline_path), "selfsl/data_pipeline.py")
 
         logger.info(f"train type = {train_type} - loading {recipe}")
 
@@ -379,7 +378,7 @@ class ClassificationInferenceTask(
         # FIXME[Soobee] : if train type is not in cfg, it raises an error in default INCREMENTAL mode.
         # During semi-implementation, this line should be fixed to -> self._recipe_cfg.train_type = train_type
         self._recipe_cfg.train_type = train_type.name
-        patch_data_pipeline(self._recipe_cfg, self.pipeline_path)
+        patch_data_pipeline(self._recipe_cfg, pipeline_path)
         self._patch_datasets(self._recipe_cfg)  # for OTX compatibility
         self._patch_evaluation(self._recipe_cfg)  # for OTX compatibility
         logger.info(f"initialized recipe = {recipe}")

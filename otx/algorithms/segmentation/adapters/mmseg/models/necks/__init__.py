@@ -1,4 +1,4 @@
-"""OTX Algorithms - Segmentation Dataset."""
+"""OTX Algorithms - Segmentation Necks."""
 
 # Copyright (C) 2022 Intel Corporation
 #
@@ -14,17 +14,6 @@
 # See the License for the specific language governing permissions
 # and limitations under the License.
 
-from .dataset import MPASegDataset, get_annotation_mmseg_format
-from .pipelines import (
-    LoadAnnotationFromOTXDataset,
-    LoadImageFromOTXDataset,
-    TwoCropTransform,
-)
+from .selfsl_mlp import SelfSLMLP
 
-__all__ = [
-    "get_annotation_mmseg_format",
-    "LoadImageFromOTXDataset",
-    "LoadAnnotationFromOTXDataset",
-    "MPASegDataset",
-    "TwoCropTransform",
-]
+__all__ = ["SelfSLMLP"]

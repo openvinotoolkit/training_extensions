@@ -6,12 +6,12 @@ This MLP consists of fc (conv) - norm - relu - fc (conv).
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-# pylint: disable=missing-module-docstring, dangerous-default-value
-from typing import Any, Dict, List, Tuple, Union
+# pylint: disable=dangerous-default-value
+from typing import Any, Dict
 
 import torch
-from mmcls.models.builder import NECKS
 from mmcv.cnn import build_norm_layer, kaiming_init, normal_init
+from mmseg.models.builder import NECKS  # pylint: disable=no-name-in-module
 from torch import nn
 
 
@@ -38,7 +38,6 @@ class SelfSLMLP(nn.Module):
         use_conv: bool = False,
         with_avg_pool: bool = True,
     ):
-
         super().__init__()
 
         self.with_avg_pool = with_avg_pool
@@ -83,7 +82,7 @@ class SelfSLMLP(nn.Module):
                 if m.bias is not None:
                     nn.init.constant_(m.bias, 0)
 
-    def forward(self, x: Union[torch.Tensor, Tuple, List]):
+    def forward(self, x):
         """Forward SelfSLMLP.
 
         Args:
