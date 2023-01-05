@@ -1,4 +1,4 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # Anomaly Requirements.                                                       #
-anomalib==0.3.6
+git+https://github.com/openvinotoolkit/anomalib/tree/feature/rbad
 pytorch-lightning>=1.6.0,<1.7.0
