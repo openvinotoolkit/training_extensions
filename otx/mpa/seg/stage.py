@@ -2,12 +2,11 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import numpy as np
 from mmcv import ConfigDict
 from mmseg.utils import get_root_logger
 
 from otx.mpa.stage import Stage
-from otx.mpa.utils.config_utils import recursively_update_cfg, update_or_add_custom_hook
+from otx.mpa.utils.config_utils import recursively_update_cfg
 from otx.mpa.utils.logger import get_logger
 
 logger = get_logger()
