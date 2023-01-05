@@ -353,16 +353,12 @@ class ClassificationInferenceTask(
             recipe = os.path.join(recipe_root, "incremental.yaml")
             if self._hyperparams.learning_parameters.enable_supcon:
                 recipe = os.path.join(recipe_root, "supcon.yaml")
-                self.task_pipeline_path = os.path.join(
-                    os.path.dirname(self.task_pipeline_path), "supcon", "data_pipeline.py"
-                )
+                pipeline_path = os.path.join(os.path.dirname(pipeline_path), "supcon", "data_pipeline.py")
 
         if train_type == TrainType.SELFSUPERVISED:
             recipe = os.path.join(recipe_root, "selfsl.yaml")
-            self.task_model_dir = os.path.join(self.task_model_dir, "selfsl")
-            self.task_pipeline_path = os.path.join(
-                os.path.dirname(self.task_pipeline_path), "selfsl", "data_pipeline.py"
-            )
+            self.model_dir = os.path.join(self.model_dir, "selfsl")
+            pipeline_path = os.path.join(os.path.dirname(pipeline_path), "selfsl", "data_pipeline.py")
 
         logger.info(f"train type = {train_type} - loading {recipe}")
 
@@ -390,7 +386,7 @@ class ClassificationInferenceTask(
         elif self._hierarchical:
             cfg_path = os.path.join(self.model_dir, "model_hierarchical.py")
         else:
-            cfg_path = os.path.join(self.task_model_dir, model_base_name + ".py")
+            cfg_path = os.path.join(self.model_dir, model_base_name + ".py")
 
         cfg = MPAConfig.fromfile(cfg_path)
         cfg.model.multilabel = self._multilabel
