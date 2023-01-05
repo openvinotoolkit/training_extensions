@@ -11,4 +11,3 @@ from .stage import IncrSegStage
 class IncrSegInferrer(IncrSegStage, SegInferrer):
     def __init__(self, **kwargs):
         IncrSegStage.__init__(self, **kwargs)
-
