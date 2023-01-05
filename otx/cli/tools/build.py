@@ -24,12 +24,16 @@ from otx.cli.builder import Builder
 from otx.cli.utils.importing import get_otx_root_path
 
 SUPPORTED_TASKS = ("CLASSIFICATION", "DETECTION", "INSTANCE_SEGMENTATION", "SEGMENTATION")
+SUPPORTED_TRAIN_TYPE = ("incremental", "semisl", "selfsl")
 
 
 def parse_args():
     """Parses command line arguments."""
     parser = argparse.ArgumentParser()
     parser.add_argument("--task", help=f"The currently supported options: {SUPPORTED_TASKS}.")
+    parser.add_argument(
+        "--train-type", help=f"The currently supported options: {SUPPORTED_TRAIN_TYPE}.", default="incremental"
+    )
     parser.add_argument("--workspace-root", help="The path to use as the workspace.")
     parser.add_argument("--model", help="Input OTX model config file (e.g model.py).", default=None)
     parser.add_argument("--backbone", help="Enter the backbone configuration file path or available backbone type.")
@@ -47,8 +51,15 @@ def main():
 
     # Build with task_type -> Create User workspace
     otx_root = get_otx_root_path()
+
     if args.task and args.task.upper() in SUPPORTED_TASKS:
-        builder.build_task_config(args.task, args.model, args.workspace_root, otx_root)
+        builder.build_task_config(
+            task_type=args.task,
+            model_type=args.model,
+            train_type=args.train_type,
+            workspace_path=args.workspace_root,
+            otx_root=otx_root,
+        )
 
     # Build Backbone related
     if args.backbone:
