@@ -187,36 +187,22 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         logger.info("called _init_recipe()")
 
         recipe_root = os.path.join(MPAConstants.RECIPES_PATH, "stages/segmentation")
-        train_type = self._hyperparams.algo_backend.train_type
-        logger.info(f"train type = {train_type}")
-        self.model_dir = os.path.abspath(os.path.dirname(self.template_file_path))
-        pipeline_path = os.path.abspath(self.data_pipeline_path)
+        logger.info(f"train type = {self._train_type}")
 
-        if train_type not in SUPPORTED_TRAIN_TYPE:
-            raise NotImplementedError(f"Train type {train_type} is not implemented yet.")
-        if train_type == TrainType.SEMISUPERVISED:
-            if (
-                self._is_training and self._data_cfg.get("data", None) and self._data_cfg.data.get("unlabeled", None)
-            ) or self._is_training is False:
-                recipe = os.path.join(recipe_root, "semisl.py")
-                self.model_dir = os.path.join(self.model_dir, "semisl")
-                pipeline_path = os.path.join(os.path.dirname(pipeline_path), "semisl/data_pipeline.py")
-            else:
-                logger.warning("Cannot find unlabeled data.. convert to INCREMENTAL.")
-                train_type = TrainType.INCREMENTAL
-        if train_type == TrainType.INCREMENTAL:
+        if self._train_type not in SUPPORTED_TRAIN_TYPE:
+            raise NotImplementedError(f"Train type {self._train_type} is not implemented yet.")
+
+        if self._train_type == TrainType.INCREMENTAL:
             recipe = os.path.join(recipe_root, "incremental.py")
-
-        if train_type == TrainType.SELFSUPERVISED:
+        elif self._train_type == TrainType.SELFSUPERVISED:
             recipe = os.path.join(recipe_root, "selfsl.py")
-            self.model_dir = os.path.join(self.model_dir, "selfsl")
-            pipeline_path = os.path.join(os.path.dirname(pipeline_path), "selfsl/data_pipeline.py")
+        elif self._train_type == TrainType.SEMISUPERVISED:
+            recipe = os.path.join(recipe_root, "semisl.py")
 
-        logger.info(f"train type = {train_type} - loading {recipe}")
+        logger.info(f"train type = {self._train_type} - loading {recipe}")
 
         self._recipe_cfg = MPAConfig.fromfile(recipe)
-        self.train_type = train_type
-        patch_data_pipeline(self._recipe_cfg, pipeline_path)
+        patch_data_pipeline(self._recipe_cfg, self.data_pipeline_path)
         patch_datasets(self._recipe_cfg)  # for OTX compatibility
         patch_evaluation(self._recipe_cfg)  # for OTX compatibility
         if self._recipe_cfg.get("evaluation", None):
@@ -227,7 +213,7 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         logger.info(f"initialized recipe = {recipe}")
 
     def _update_stage_module(self, stage_module: str):
-        if self.train_type == TrainType.SEMISUPERVISED:
+        if self._train_type == TrainType.SEMISUPERVISED:
             if stage_module == "SegTrainer":
                 return "SemiSegTrainer"
             if stage_module == "SegInferrer":
@@ -235,7 +221,7 @@ class SegmentationInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluati
         return stage_module
 
     def _init_model_cfg(self):
-        model_cfg = MPAConfig.fromfile(os.path.join(self.model_dir, "model.py"))
+        model_cfg = MPAConfig.fromfile(os.path.join(self._model_dir, "model.py"))
         return model_cfg
 
     def _init_test_data_cfg(self, dataset: DatasetEntity):
