@@ -15,10 +15,9 @@
 # and limitations under the License.
 
 import copy
-import json
 import os
 from collections import defaultdict
-from typing import Any, Dict, List, Optional, Sequence, Union
+from typing import Any, Dict, List, Sequence
 
 import mmcv
 import numpy as np
@@ -52,10 +51,21 @@ class OTXActionDetDataset(AVADataset):
     """
 
     class _DataInfoProxy:
-        def __init__(self, otx_dataset: DatasetEntity, labels: List[LabelEntity], fps: int):
+        def __init__(
+            self,
+            otx_dataset: DatasetEntity,
+            labels: List[LabelEntity],
+            person_det_score_thr: float = 0.9,
+            num_max_proposals: int = 1000,
+            modality: str = "RGB",
+            fps: int = 1,
+        ):
             self.otx_dataset = copy.deepcopy(otx_dataset)
             self.labels = labels
             self.label_idx = {label.id: i for i, label in enumerate(labels)}
+            self.person_det_score_thr = person_det_score_thr
+            self.num_max_proposals = num_max_proposals
+            self.modality = modality
             self.fps = fps
             self.data_root = "/" + os.path.join(*os.path.abspath(self.otx_dataset[0].media.path).split("/")[:-4])
             self.proposal_file_name = os.path.abspath(self.otx_dataset[0].media.path).split("/")[-4]
@@ -85,6 +95,7 @@ class OTXActionDetDataset(AVADataset):
                 - shot_info = (0, (timestamp_end - timestamp_start)) * self.fps:
                               Range of frame indices, this is used to sample frame indices
                 - img_key = "video_id,frame_idx": key of pre-proposal dictionary
+                - modality = Modality of data, 'RGB' or 'Flow(Optical Flow)'
             This function removes empty frames(frame with no action), since they are only used for background of clips
             """
 
@@ -123,6 +134,7 @@ class OTXActionDetDataset(AVADataset):
                 metadata.update("img_key", img_key)
                 metadata.update("timestamp", metadata.frame_idx)
                 metadata.update("ignored_labels", ignored_labels)
+                metadata.update("modality", self.modality)
 
                 anns = item.get_annotations()
                 self._update_annotations(metadata, anns)
@@ -182,11 +194,15 @@ class OTXActionDetDataset(AVADataset):
 
             if self.proposals is not None:
                 if metadata.img_key in self.proposals:
-                    proposal = self.proposals[metadata.img_key]
+                    proposals = self.proposals[metadata.img_key]
                 else:
-                    proposal = np.array([[0, 0, 1, 1, 1]])
-                metadata.update("proposals", proposal[:, :4])
-                metadata.update("scores", proposal[:, 4])
+                    proposals = np.array([[0, 0, 1, 1, 1]])
+                thr = min(self.person_det_score_thr, max(proposals[:, 4]))
+                positive_inds = proposals[:, 4] >= thr
+                proposals = proposals[positive_inds]
+                proposals = proposals[: self.num_max_proposals]
+                metadata.update("proposals", proposals[:, :4])
+                metadata.update("scores", proposals[:, 4])
 
     @check_input_parameters_type({"otx_dataset": DatasetParamTypeCheck})
     # TODO Remove duplicated codes with mmaction's AVADataset
@@ -195,67 +211,43 @@ class OTXActionDetDataset(AVADataset):
         otx_dataset: DatasetEntity,
         labels: List[LabelEntity],
         pipeline: Sequence[dict],
-        exclude_file: Optional[str],
-        proposal_file: Optional[str],
-        timestamp_start: Union[int, str],
-        timestamp_end: Union[int, str],
         test_mode: bool = False,
         person_det_score_thr: float = 0.9,
         num_max_proposals: int = 1000,
-        filename_tmpl: str = "_{:06}.jpg",
-        start_index: int = 1,
         modality: str = "RGB",
         fps: int = 30,
     ):
         self.otx_dataset = otx_dataset
         self.labels = labels
         self.test_mode = test_mode
-        self.filename_tmpl = filename_tmpl
-        self.start_index = start_index
         self.modality = modality
         self._FPS = fps
-        self.exclude_file = exclude_file
-        self.proposal_file = proposal_file
         self.person_det_score_thr = person_det_score_thr
         self.num_max_proposals = num_max_proposals
-
-        # Load start and end frame index
-        # This will be changed with CVAT annotation
-        if isinstance(timestamp_start, int):
-            self.timestamp_start = timestamp_start
-        else:
-            with open(timestamp_start, encoding="utf-8") as time_file:
-                self.timestamp_start = json.load(time_file)
-        if isinstance(timestamp_end, int):
-            self.timestamp_end = timestamp_end
-        else:
-            with open(timestamp_end, encoding="utf-8") as time_file:
-                self.timestamp_end = json.load(time_file)
 
         # OTX does not support custom_classes
         self.custom_classes = None
 
-        self.video_infos = OTXActionDetDataset._DataInfoProxy(otx_dataset, labels, fps)
+        self.video_infos = OTXActionDetDataset._DataInfoProxy(
+            otx_dataset, labels, person_det_score_thr, num_max_proposals, modality, fps
+        )
 
         self.pipeline = Compose(pipeline)
         for pip in self.pipeline.transforms:
             if isinstance(pip, RawFrameDecode):
                 pip.otx_dataset = self.otx_dataset
 
-        # if not test_mode:
-        #     valid_indexes = self.filter_exclude_file()
-        #     self.video_infos = [self.video_infos[i] for i in valid_indexes]
+        # TODO. Handle exclude file for AVA dataset
+        self.exclude_file = None
 
     def prepare_train_frames(self, idx):
         """Prepare the frames for training given the index."""
         results = copy.deepcopy(self.video_infos[idx])
-        results["modality"] = self.modality
         return self.pipeline(results)
 
     def prepare_test_frames(self, idx):
         """Prepare the frames for testing given the index."""
         results = copy.deepcopy(self.video_infos[idx])
-        results["modality"] = self.modality
         return self.pipeline(results)
 
     # pylint: disable=too-many-locals, unused-argument

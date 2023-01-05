@@ -15,7 +15,7 @@
 # and limitations under the License.
 
 from copy import copy
-from typing import List, Sequence
+from typing import Any, Dict, List, Sequence
 
 import numpy as np
 from mmaction.datasets.builder import DATASETS
@@ -41,11 +41,12 @@ class OTXRawframeDataset(RawframeDataset):
     """
 
     class _DataInfoProxy:
-        def __init__(self, otx_dataset, labels):
+        def __init__(self, otx_dataset: DatasetEntity, labels: List[LabelEntity], modality: str):
             self.otx_dataset = otx_dataset
             self.labels = labels
             self.label_idx = {label.id: i for i, label in enumerate(labels)}
-            self.video_info = {}
+            self.modality = modality
+            self.video_info: Dict[str, Any] = {}
             self._update_meta_data()
 
         def __len__(self):
@@ -60,6 +61,7 @@ class OTXRawframeDataset(RawframeDataset):
                 - total_frame: Total frame number of the video, this value will be used to sample frames for training
                 - start_index: Offset for the video, this value will be added to sampled frame indices for the video
                 - label: Action category of the video
+                - modality = Modality of data, 'RGB' or 'Flow(Optical Flow)'
             """
             video_info = {}
             start_index = 0
@@ -79,6 +81,7 @@ class OTXRawframeDataset(RawframeDataset):
                         "start_index": idx,
                         "label": label,
                         "ignored_labels": ignored_labels,
+                        "modality": self.modality,
                     }
                     start_index = idx
 
@@ -102,18 +105,14 @@ class OTXRawframeDataset(RawframeDataset):
         labels: List[LabelEntity],
         pipeline: Sequence[dict],
         test_mode: bool = False,
-        filename_tmpl: str = "img_{:05}.jpg",
-        start_index: int = 1,
         modality: str = "RGB",  # [RGB, FLOW(Optical flow)]
     ):
         self.otx_dataset = otx_dataset
         self.labels = labels
         self.test_mode = test_mode
-        self.filename_tmpl = filename_tmpl
-        self.start_index = start_index
         self.modality = modality
 
-        self.video_infos = OTXRawframeDataset._DataInfoProxy(otx_dataset, labels)
+        self.video_infos = OTXRawframeDataset._DataInfoProxy(otx_dataset, labels, modality)
 
         self.pipeline = Compose(pipeline)
         for pip in self.pipeline.transforms:
@@ -132,7 +131,6 @@ class OTXRawframeDataset(RawframeDataset):
         :return dict: Training data and annotation after pipeline with new keys introduced by pipeline.
         """
         item = copy(self.video_infos[idx])  # Copying dict(), not contents
-        item["modality"] = self.modality
         return self.pipeline(item)
 
     @check_input_parameters_type()
@@ -143,5 +141,4 @@ class OTXRawframeDataset(RawframeDataset):
         :return dict: Testing data after pipeline with new keys introduced by pipeline.
         """
         item = copy(self.video_infos[idx])  # Copying dict(), not contents
-        item["modality"] = self.modality
         return self.pipeline(item)
