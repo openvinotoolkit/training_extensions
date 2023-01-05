@@ -58,7 +58,7 @@ class OTXActionDetDataset(AVADataset):
             person_det_score_thr: float = 0.9,
             num_max_proposals: int = 1000,
             modality: str = "RGB",
-            fps: int = 1,
+            fps: int = 30,
         ):
             self.otx_dataset = copy.deepcopy(otx_dataset)
             self.labels = labels
