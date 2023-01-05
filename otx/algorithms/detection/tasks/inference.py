@@ -68,6 +68,8 @@ from otx.mpa.utils.logger import get_logger
 
 logger = get_logger()
 
+SUPPORTED_TRAIN_TYPE = (TrainType.SEMISUPERVISED, TrainType.INCREMENTAL)
+
 
 # pylint: disable=too-many-locals, too-many-instance-attributes
 class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationTask, IExplainTask, IUnload):
@@ -76,12 +78,8 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
     @check_input_parameters_type()
     def __init__(self, task_environment: TaskEnvironment, **kwargs):
         # self._should_stop = False
-        self.train_type = None
         super().__init__(DetectionConfig, task_environment, **kwargs)
         self.template_dir = os.path.abspath(os.path.dirname(self.template_file_path))
-        self.base_dir = self.template_dir
-        # TODO Move this to the common
-        self.supported_train_type = [TrainType.INCREMENTAL, TrainType.SEMISUPERVISED]
 
     @check_input_parameters_type({"dataset": DatasetParamTypeCheck})
     def infer(
@@ -265,39 +263,26 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         }:
             recipe_root = os.path.join(MPAConstants.RECIPES_PATH, "stages/instance-segmentation")
 
-        train_type = self._hyperparams.algo_backend.train_type
-        logger.info(f"train type = {train_type}")
+        logger.info(f"train type = {self._train_type}")
 
-        if train_type not in self.supported_train_type:
-            raise NotImplementedError(f"Train type {train_type} is not implemented yet.")
-        if train_type == TrainType.SEMISUPERVISED:
-            if self._is_training:
-                if self._data_cfg.get("data", None) and self._data_cfg.data.get("unlabeled", None):
-                    recipe = os.path.join(recipe_root, "semisl.py")
-                    self.base_dir = os.path.join(self.template_dir, "semisl")
-                    self.data_pipeline_path = os.path.join(self.base_dir, "data_pipeline.py")
-                else:
-                    logger.warning("Cannot find unlabeled data.. convert to INCREMENTAL.")
-                    train_type = TrainType.INCREMENTAL
-            else:
-                recipe = os.path.join(recipe_root, "semisl.py")
-                self.base_dir = os.path.join(self.template_dir, "semisl")
-                self.data_pipeline_path = os.path.join(self.base_dir, "data_pipeline.py")
+        if self._train_type not in SUPPORTED_TRAIN_TYPE:
+            raise NotImplementedError(f"Train type {self._train_type} is not implemented yet.")
 
-        if train_type == TrainType.INCREMENTAL:
+        if self._train_type == TrainType.INCREMENTAL:
             recipe = os.path.join(recipe_root, "incremental.py")
+        elif self._train_type == TrainType.SEMISUPERVISED:
+            recipe = os.path.join(recipe_root, "semisl.py")
 
-        logger.info(f"train type = {train_type} - loading {recipe}")
+        logger.info(f"train type = {self._train_type} - loading {recipe}")
 
         self._recipe_cfg = MPAConfig.fromfile(recipe)
-        self.train_type = train_type
         patch_data_pipeline(self._recipe_cfg, self.data_pipeline_path)
         patch_datasets(self._recipe_cfg, self._task_type.domain)  # for OTX compatibility
         patch_evaluation(self._recipe_cfg)  # for OTX compatibility
         logger.info(f"initialized recipe = {recipe}")
 
     def _init_model_cfg(self):
-        model_cfg = MPAConfig.fromfile(os.path.join(self.base_dir, "model.py"))
+        model_cfg = MPAConfig.fromfile(os.path.join(self._model_dir, "model.py"))
         if len(self._anchors) != 0:
             self._update_anchors(model_cfg.model.bbox_head.anchor_generator, self._anchors)
         return model_cfg
@@ -318,7 +303,7 @@ class DetectionInferenceTask(BaseTask, IInferenceTask, IExportTask, IEvaluationT
         return data_cfg
 
     def _update_stage_module(self, stage_module):
-        if self.train_type == TrainType.SEMISUPERVISED:
+        if self._train_type == TrainType.SEMISUPERVISED:
             if stage_module == "DetectionTrainer":
                 stage_module = "SemiSLDetectionTrainer"
             elif stage_module == "DetectionInferrer":
