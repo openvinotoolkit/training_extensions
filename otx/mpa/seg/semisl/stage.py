@@ -19,9 +19,9 @@ class SemiSegStage(SegStage):
         """Adjust settings for task adaptation"""
         super().configure_task(cfg, training, **kwargs)
 
-        self.configure_semi(cfg, **kwargs)
+        self.configure_semisl(cfg, **kwargs)
 
-    def configure_semi(self, cfg, **kwargs):
+    def configure_semisl(self, cfg, **kwargs):
         # Set unlabeled data hook
         if cfg.data.get("unlabeled", False) and cfg.data.unlabeled.get("otx_dataset", False):
             update_or_add_custom_hook(

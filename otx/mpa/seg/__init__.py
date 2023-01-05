@@ -17,3 +17,4 @@ import otx.mpa.modules.models.segmentors
 # flake8: noqa
 from . import evaluator, exporter, inferrer, stage, trainer
 from .semisl import inferrer, trainer
+from .incremental import inferrer, trainer
