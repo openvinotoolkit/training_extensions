@@ -60,7 +60,7 @@ class AnomalyInferenceCallback(Callback):
         pred_masks = torch.vstack([output["pred_masks"].cpu() for output in outputs])
 
         # add the predictions to the dataset item depending on the task type
-        if self.task_type == TaskType.ACTION_CLASSIFICATION:
+        if self.task_type == TaskType.ANOMALY_CLASSIFICATION:
             self._process_classification_predictions(pred_labels, pred_scores)
         elif self.task_type == TaskType.ANOMALY_DETECTION:
             # collect detection predictions
