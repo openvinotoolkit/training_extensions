@@ -13,7 +13,6 @@
 # and limitations under the License.
 
 import copy
-import fcntl
 
 from typing import Dict, Any, Optional
 import numpy as np
@@ -51,31 +50,42 @@ class LoadImageFromOTEDataset:
     def __init__(self, to_float32: bool = False):
         self.to_float32 = to_float32
         self._pid = os.getpid()
+        self._verify_dict = {}
 
     @staticmethod
     def _is_video_frame(media):
         # return "VideoFrame" in repr(media)
         return "Image" in repr(media)  # Uncomment for test
+    
+    @staticmethod
+    def _verify_array(filename):
+        try:
+            np.load(filename)
+            return True
+        except:
+            return False
 
     def _get_cached_image(self, results: Dict[str, Any]):
+        # for key, val in self._verify_dict.items():
+        #     if val == False:
+        #         print(key, val)
+
         if self._is_video_frame(results["dataset_item"].media):
             subset = results["dataset_item"].subset
             index = results["index"]
             filename = os.path.join(_CACHE_DIR, f"{self._pid}-{subset}-{index:06d}.npy")
-            if os.path.exists(filename):
+            if filename in self._verify_dict and self._verify_dict[filename]:
                 # Might be slower than dict key checking, but persitent
                 # FIXME: faster cache checking?
                 print(f"Loading cache {filename}")
-
-                # ORIGIN
-                # return np.load(filename)
-
-                # LOCK
-                with open(filename, "rb") as f:
-                    fcntl.flock(f, fcntl.LOCK_SH)
-                    cached_img = np.load(f)
-                    fcntl.flock(f, fcntl.LOCK_UN)
-                    return cached_img
+                try:
+                    for key, val in self._verify_dict.items():
+                        print(key, val)
+                    return np.load(filename)
+                except:
+                    for key, val in self._verify_dict.items():
+                        print(key, val)
+                    raise NotImplementedError
 
         img = results["dataset_item"].numpy  # this takes long for VideoFrame
         if self.to_float32:
@@ -83,22 +93,15 @@ class LoadImageFromOTEDataset:
 
         if self._is_video_frame(results["dataset_item"].media):
             print(f"Saving cache {filename}")
-
-            # ORIGIN
-            # np.save(filename, img)
-
-            # LOCK
-            with open(filename, "wb") as f:
-                fcntl.flock(f, fcntl.LOCK_EX)
-                np.save(f, img)
-                fcntl.flock(f, fcntl.LOCK_UN)
+            np.save(filename, img)
+            self._verify_dict[filename] = self._verify_array(filename)
 
         return img
 
     @check_input_parameters_type()
     def __call__(self, results: Dict[str, Any]):
         # Get image (possibly from cache)
-        img = self._get_cached_image(results)
+        img =  self._get_cached_image(results)
         shape = img.shape
 
         assert shape[0] == results["height"], f"{shape[0]} != {results['height']}"
