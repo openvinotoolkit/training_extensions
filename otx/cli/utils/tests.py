@@ -16,6 +16,7 @@ import json
 import os
 import shutil
 import subprocess  # nosec
+import copy
 
 import pytest
 
@@ -48,8 +49,13 @@ def get_template_dir(template, root) -> str:
     return template_work_dir
 
 
-def check_run(cmd, **kwargs):
-    result = subprocess.run(cmd, stderr=subprocess.PIPE, **kwargs)
+def check_run(cmd, tmp_dir_path=None, **kwargs):
+    if tmp_dir_path is not None:
+        env = copy.deepcopy(os.environ)
+        env["TMPDIR"] = str(tmp_dir_path)
+    else:
+        env = None
+    result = subprocess.run(cmd, stderr=subprocess.PIPE, env=env, **kwargs)
     assert result.returncode == 0, result.stderr.decode("utf=8")
 
 
@@ -79,7 +85,7 @@ def otx_train_testing(template, root, otx_dir, args):
         if "--multi-gpu-port" in args:
             command_line.extend(["--multi-gpu-port", args["--multi-gpu-port"]])
     command_line.extend(args["train_params"])
-    check_run(command_line)
+    check_run(command_line, tmp_dir_path=root)
     assert os.path.exists(f"{template_work_dir}/trained_{template.model_template_id}/weights.pth")
     assert os.path.exists(f"{template_work_dir}/trained_{template.model_template_id}/label_schema.json")
 
@@ -107,7 +113,7 @@ def otx_hpo_testing(template, root, otx_dir, args):
         "1",
     ]
     command_line.extend(args["train_params"])
-    check_run(command_line)
+    check_run(command_line, tmp_dir_path=root)
     assert os.path.exists(f"{template_work_dir}/hpo/hpopt_status.json")
     with open(f"{template_work_dir}/hpo/hpopt_status.json", "r") as f:
         assert json.load(f).get("best_config_id", None) is not None
@@ -126,7 +132,7 @@ def otx_export_testing(template, root):
         "--save-model-to",
         f"{template_work_dir}/exported_{template.model_template_id}",
     ]
-    check_run(command_line)
+    check_run(command_line, tmp_dir_path=root)
     assert os.path.exists(f"{template_work_dir}/exported_{template.model_template_id}/openvino.xml")
     assert os.path.exists(f"{template_work_dir}/exported_{template.model_template_id}/openvino.bin")
     assert os.path.exists(f"{template_work_dir}/exported_{template.model_template_id}/label_schema.json")
@@ -147,7 +153,7 @@ def otx_eval_testing(template, root, otx_dir, args):
         "--save-performance",
         f"{template_work_dir}/trained_{template.model_template_id}/performance.json",
     ]
-    check_run(command_line)
+    check_run(command_line, tmp_dir_path=root)
     assert os.path.exists(f"{template_work_dir}/trained_{template.model_template_id}/performance.json")
 
 
@@ -166,7 +172,7 @@ def otx_eval_openvino_testing(template, root, otx_dir, args, threshold):
         "--save-performance",
         f"{template_work_dir}/exported_{template.model_template_id}/performance.json",
     ]
-    check_run(command_line)
+    check_run(command_line, tmp_dir_path=root)
     assert os.path.exists(f"{template_work_dir}/exported_{template.model_template_id}/performance.json")
     with open(f"{template_work_dir}/trained_{template.model_template_id}/performance.json") as read_file:
         trained_performance = json.load(read_file)
@@ -193,7 +199,7 @@ def otx_demo_testing(template, root, otx_dir, args):
         "--delay",
         "-1",
     ]
-    check_run(command_line)
+    check_run(command_line, tmp_dir_path=root)
 
 
 def otx_demo_openvino_testing(template, root, otx_dir, args):
@@ -209,7 +215,7 @@ def otx_demo_openvino_testing(template, root, otx_dir, args):
         "--delay",
         "-1",
     ]
-    check_run(command_line)
+    check_run(command_line, tmp_dir_path=root)
 
 
 def otx_deploy_openvino_testing(template, root, otx_dir, args):
@@ -224,8 +230,8 @@ def otx_deploy_openvino_testing(template, root, otx_dir, args):
         "--save-model-to",
         deployment_dir,
     ]
-    check_run(command_line)
-    check_run(["unzip", "-o", "openvino.zip"], cwd=deployment_dir)
+    check_run(command_line, tmp_dir_path=root)
+    check_run(["unzip", "-o", "openvino.zip"], cwd=deployment_dir, tmp_dir_path=root)
     # TODO: Need to check Requirements.txt & new environment is working
     # check_run(
     #     ["python3", "-m", "venv", "venv"],
@@ -264,6 +270,7 @@ def otx_deploy_openvino_testing(template, root, otx_dir, args):
             os.path.join(otx_dir, args["--input"]),
             "--no_show",
         ],
+        tmp_dir_path=root,
         cwd=os.path.join(deployment_dir, "python"),
     )
 
@@ -283,7 +290,7 @@ def otx_eval_deployment_testing(template, root, otx_dir, args, threshold):
         "--save-performance",
         f"{template_work_dir}/deployed_{template.model_template_id}/performance.json",
     ]
-    check_run(command_line)
+    check_run(command_line, tmp_dir_path=root)
     assert os.path.exists(f"{template_work_dir}/deployed_{template.model_template_id}/performance.json")
     with open(f"{template_work_dir}/exported_{template.model_template_id}/performance.json") as read_file:
         exported_performance = json.load(read_file)
@@ -310,7 +317,7 @@ def otx_demo_deployment_testing(template, root, otx_dir, args):
         "--delay",
         "-1",
     ]
-    check_run(command_line)
+    check_run(command_line, tmp_dir_path=root)
 
 
 def pot_optimize_testing(template, root, otx_dir, args):
@@ -332,7 +339,7 @@ def pot_optimize_testing(template, root, otx_dir, args):
         "--save-model-to",
         f"{template_work_dir}/pot_{template.model_template_id}",
     ]
-    check_run(command_line)
+    check_run(command_line, tmp_dir_path=root)
     assert os.path.exists(f"{template_work_dir}/pot_{template.model_template_id}/openvino.xml")
     assert os.path.exists(f"{template_work_dir}/pot_{template.model_template_id}/openvino.bin")
     assert os.path.exists(f"{template_work_dir}/pot_{template.model_template_id}/label_schema.json")
@@ -353,7 +360,7 @@ def pot_eval_testing(template, root, otx_dir, args):
         "--save-performance",
         f"{template_work_dir}/pot_{template.model_template_id}/performance.json",
     ]
-    check_run(command_line)
+    check_run(command_line, tmp_dir_path=root)
     assert os.path.exists(f"{template_work_dir}/pot_{template.model_template_id}/performance.json")
 
 
@@ -379,7 +386,7 @@ def nncf_optimize_testing(template, root, otx_dir, args):
         f"{template_work_dir}/nncf_{template.model_template_id}/train_performance.json",
     ]
     command_line.extend(args["train_params"])
-    check_run(command_line)
+    check_run(command_line, tmp_dir_path=root)
     assert os.path.exists(f"{template_work_dir}/nncf_{template.model_template_id}/weights.pth")
     assert os.path.exists(f"{template_work_dir}/nncf_{template.model_template_id}/label_schema.json")
 
@@ -395,7 +402,7 @@ def nncf_export_testing(template, root):
         "--save-model-to",
         f"{template_work_dir}/exported_nncf_{template.model_template_id}",
     ]
-    check_run(command_line)
+    check_run(command_line, tmp_dir_path=root)
     assert os.path.exists(f"{template_work_dir}/exported_nncf_{template.model_template_id}/openvino.xml")
     assert os.path.exists(f"{template_work_dir}/exported_nncf_{template.model_template_id}/openvino.bin")
     assert os.path.exists(f"{template_work_dir}/exported_nncf_{template.model_template_id}/label_schema.json")
@@ -421,7 +428,7 @@ def nncf_eval_testing(template, root, otx_dir, args, threshold):
         "--save-performance",
         f"{template_work_dir}/nncf_{template.model_template_id}/performance.json",
     ]
-    check_run(command_line)
+    check_run(command_line, tmp_dir_path=root)
     assert os.path.exists(f"{template_work_dir}/nncf_{template.model_template_id}/performance.json")
     with open(f"{template_work_dir}/nncf_{template.model_template_id}/train_performance.json") as read_file:
         trained_performance = json.load(read_file)
@@ -450,7 +457,7 @@ def nncf_eval_openvino_testing(template, root, otx_dir, args):
         "--save-performance",
         f"{template_work_dir}/exported_nncf_{template.model_template_id}/performance.json",
     ]
-    check_run(command_line)
+    check_run(command_line, tmp_dir_path=root)
     assert os.path.exists(f"{template_work_dir}/exported_nncf_{template.model_template_id}/performance.json")
 
 
@@ -501,7 +508,7 @@ def otx_explain_testing(template, root, otx_dir, args):
         "--explain-algorithm",
         test_algorithm,
     ]
-    check_run(command_line)
+    check_run(command_line, tmp_dir_path=root)
     assert os.path.exists(output_dir)
     assert len(os.listdir(output_dir)) > 0
 
@@ -536,7 +543,7 @@ def otx_explain_openvino_testing(template, root, otx_dir, args):
         "--explain-algorithm",
         test_algorithm,
     ]
-    check_run(command_line)
+    check_run(command_line, tmp_dir_path=root)
     assert os.path.exists(output_dir)
     assert len(os.listdir(output_dir)) > 0
 
@@ -577,7 +584,7 @@ def otx_build_task_testing(root, task):
         "--workspace-root",
         os.path.join(root, f"otx-workspace-{task}"),
     ]
-    check_run(command_line)
+    check_run(command_line, tmp_dir_path=root)
 
 
 def otx_build_backbone_testing(root, backbone_args):
@@ -602,7 +609,7 @@ def otx_build_backbone_testing(root, backbone_args):
         "--save-backbone-to",
         os.path.join(task_workspace, "backbone.yaml"),
     ]
-    check_run(command_line)
+    check_run(command_line, tmp_dir_path=root)
     assert os.path.exists(os.path.join(task_workspace, "backbone.yaml"))
 
     # Build model.py from backbone.yaml
@@ -616,7 +623,7 @@ def otx_build_backbone_testing(root, backbone_args):
         "--workspace-root",
         task_workspace,
     ]
-    check_run(command_line)
+    check_run(command_line, tmp_dir_path=root)
     model_config = MPAConfig.fromfile(os.path.join(task_workspace, "model.py"))
     assert "model" in model_config, "'model' is not in model configs"
     assert "backbone" in model_config["model"], "'backbone' is not in model configs"
@@ -635,7 +642,7 @@ def otx_build_backbone_testing(root, backbone_args):
         "--workspace-root",
         task_workspace,
     ]
-    check_run(command_line)
+    check_run(command_line, tmp_dir_path=root)
     model_config = MPAConfig.fromfile(os.path.join(task_workspace, "model.py"))
     assert "model" in model_config, "'model' is not in model configs"
     assert "backbone" in model_config["model"], "'backbone' is not in model configs"
