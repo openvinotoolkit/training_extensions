@@ -7,26 +7,18 @@
 # pylint: disable=invalid-name, too-many-locals, no-member
 import os
 import os.path as osp
-from typing import Any, Dict, List
+from typing import Dict, List
 
 from datumaro.components.annotation import AnnotationType
 from datumaro.components.annotation import Bbox as DatumaroBbox
 from datumaro.components.dataset import Dataset as DatumaroDataset
 
-from otx.api.entities.annotation import (
-    Annotation,
-    AnnotationSceneEntity,
-    AnnotationSceneKind,
-    NullAnnotationSceneEntity,
-)
 from otx.api.entities.dataset_item import DatasetItemEntity
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.id import ID
 from otx.api.entities.image import Image
 from otx.api.entities.label import LabelEntity
 from otx.api.entities.metadata import MetadataItemEntity, VideoMetadata
-from otx.api.entities.scored_label import ScoredLabel
-from otx.api.entities.shapes.rectangle import Rectangle
 from otx.api.entities.subset import Subset
 from otx.core.data.adapter.base_dataset_adapter import BaseDatasetAdapter
 
@@ -204,29 +196,9 @@ class ActionDetectionDatasetAdapter(ActionBaseDatasetAdapter):
                         if isinstance(ann, DatumaroBbox):
                             if self.label_entities[ann.label].name == "EmptyFrame":
                                 is_empty_frame = True
-                                shapes.append(
-                                    Annotation(
-                                        Rectangle(
-                                            x1=0,
-                                            y1=0,
-                                            x2=1,
-                                            y2=1,
-                                        ),
-                                        labels=[ScoredLabel(label=self.label_entities[ann.label])],
-                                    )
-                                )
+                                shapes.append(self._get_label_entity(ann))
                             else:
-                                shapes.append(
-                                    Annotation(
-                                        Rectangle(
-                                            x1=ann.points[0],
-                                            y1=ann.points[1],
-                                            x2=ann.points[2],
-                                            y2=ann.points[3],
-                                        ),
-                                        labels=[ScoredLabel(label=self.label_entities[ann.label])],
-                                    )
-                                )
+                                shapes.append(self._get_original_bbox_entity(ann))
                     meta_item = MetadataItemEntity(
                         data=VideoMetadata(
                             video_id=video_name,
@@ -234,15 +206,9 @@ class ActionDetectionDatasetAdapter(ActionBaseDatasetAdapter):
                             is_empty_frame=is_empty_frame,
                         )
                     )
-                    # Unlabeled dataset
-                    annotation_scene = None  # type: Any
-                    if len(shapes) == 0:
-                        annotation_scene = NullAnnotationSceneEntity()
-                    else:
-                        annotation_scene = AnnotationSceneEntity(
-                            kind=AnnotationSceneKind.ANNOTATION, annotations=shapes
-                        )
-                    dataset_item = DatasetItemEntity(image, annotation_scene, subset=subset, metadata=[meta_item])
+                    dataset_item = DatasetItemEntity(
+                        image, self._get_ann_scene_entity(shapes), subset=subset, metadata=[meta_item]
+                    )
                     dataset_items.append(dataset_item)
 
         if self.label_entities[-1].name == "EmptyFrame":
