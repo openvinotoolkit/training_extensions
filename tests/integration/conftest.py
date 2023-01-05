@@ -1,6 +1,5 @@
 import pytest
 import os
-import copy
 
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -12,5 +11,10 @@ def tmp_dir_path():
 
 @pytest.fixture(autouse=True)
 def set_default_tmp_path(tmp_dir_path):
-    env = copy.deepcopy(os.environ)
-    env["TMPDIR"] = str(tmp_dir_path)
+    origin_tmp_dir = os.environ.get("TMPDIR", None)
+    os.environ["TMPDIR"] = str(tmp_dir_path)
+    yield
+    if origin_tmp_dir is None:
+        del os.environ["TMPDIR"]
+    else:
+        os.environ["TMPDIR"] = origin_tmp_dir
