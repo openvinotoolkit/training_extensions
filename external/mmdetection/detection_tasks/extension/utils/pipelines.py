@@ -13,9 +13,12 @@
 # and limitations under the License.
 
 import copy
+import fcntl
 
 from typing import Dict, Any, Optional
 import numpy as np
+import os
+import shutil
 
 from ote_sdk.entities.label import Domain
 from ote_sdk.utils.argument_checks import check_input_parameters_type
@@ -23,6 +26,12 @@ from ote_sdk.utils.argument_checks import check_input_parameters_type
 from mmdet.datasets.builder import PIPELINES
 
 from ..datasets import get_annotation_mmdet_format
+
+
+# Clean up cache directory per process launch
+_CACHE_DIR = "/tmp/img-cache"
+shutil.rmtree(_CACHE_DIR, ignore_errors=True)
+os.makedirs(_CACHE_DIR)
 
 
 @PIPELINES.register_module()
@@ -41,33 +50,76 @@ class LoadImageFromOTEDataset:
     @check_input_parameters_type()
     def __init__(self, to_float32: bool = False):
         self.to_float32 = to_float32
+        self._pid = os.getpid()
+
+    @staticmethod
+    def _is_video_frame(media):
+        # return "VideoFrame" in repr(media)
+        return "Image" in repr(media)  # Uncomment for test
+
+    def _get_cached_image(self, results: Dict[str, Any]):
+        if self._is_video_frame(results["dataset_item"].media):
+            subset = results["dataset_item"].subset
+            index = results["index"]
+            filename = os.path.join(_CACHE_DIR, f"{self._pid}-{subset}-{index:06d}.npy")
+            if os.path.exists(filename):
+                # Might be slower than dict key checking, but persitent
+                # FIXME: faster cache checking?
+                print(f"Loading cache {filename}")
+
+                # ORIGIN
+                # return np.load(filename)
+
+                # LOCK
+                with open(filename, "rb") as f:
+                    fcntl.flock(f, fcntl.LOCK_SH)
+                    cached_img = np.load(f)
+                    fcntl.flock(f, fcntl.LOCK_UN)
+                    return cached_img
+
+        img = results["dataset_item"].numpy  # this takes long for VideoFrame
+        if self.to_float32:
+            img = img.astype(np.float32)
+
+        if self._is_video_frame(results["dataset_item"].media):
+            print(f"Saving cache {filename}")
+
+            # ORIGIN
+            # np.save(filename, img)
+
+            # LOCK
+            with open(filename, "wb") as f:
+                fcntl.flock(f, fcntl.LOCK_EX)
+                np.save(f, img)
+                fcntl.flock(f, fcntl.LOCK_UN)
+
+        return img
 
     @check_input_parameters_type()
     def __call__(self, results: Dict[str, Any]):
-        dataset_item = results['dataset_item']
-        img = dataset_item.numpy
+        # Get image (possibly from cache)
+        img = self._get_cached_image(results)
         shape = img.shape
 
-        assert img.shape[0] == results['height'], f"{img.shape[0]} != {results['height']}"
-        assert img.shape[1] == results['width'], f"{img.shape[1]} != {results['width']}"
+        assert shape[0] == results["height"], f"{shape[0]} != {results['height']}"
+        assert shape[1] == results["width"], f"{shape[1]} != {results['width']}"
 
+        # Fill outputs
         filename = f"Dataset item index {results['index']}"
-        results['filename'] = filename
-        results['ori_filename'] = filename
-        results['img'] = img
-        results['img_shape'] = shape
-        results['ori_shape'] = shape
+        results["filename"] = filename
+        results["ori_filename"] = filename
+        results["img"] = img
+        results["img_shape"] = shape
+        results["ori_shape"] = shape
         # Set initial values for default meta_keys
-        results['pad_shape'] = shape
+        results["pad_shape"] = shape
         num_channels = 1 if len(shape) < 3 else shape[2]
-        results['img_norm_cfg'] = dict(
+        results["img_norm_cfg"] = dict(
             mean=np.zeros(num_channels, dtype=np.float32),
             std=np.ones(num_channels, dtype=np.float32),
-            to_rgb=False)
-        results['img_fields'] = ['img']
-
-        if self.to_float32:
-            results['img'] = results['img'].astype(np.float32)
+            to_rgb=False,
+        )
+        results["img_fields"] = ["img"]
 
         return results
 
