@@ -136,10 +136,22 @@ def parse_args():
               If there are more than one available GPU, then model is trained with multi GPUs.",
     )
     parser.add_argument(
-        "--multi-gpu-port",
-        default=25000,
+        "--rdzv-endpoint",
+        type=str,
+        default="localhost:0",
+        help="Rendezvous endpoint for multi-node training.",
+    )
+    parser.add_argument(
+        "--base-rank",
         type=int,
-        help="port for communication beteween multi GPU processes.",
+        default=0,
+        help="Base rank of the worker.",
+    )
+    parser.add_argument(
+        "--world-size",
+        type=int,
+        default=0,
+        help="Total number of workers in a worker group.",
     )
 
     add_hyper_parameters_sub_parser(parser, hyper_parameters)
@@ -213,7 +225,7 @@ def main():  # pylint: disable=too-many-branches
         task = task_class(task_environment=environment, output_path=args.work_dir)
 
     if args.gpus:
-        multigpu_manager = MultiGPUManager(main, args.gpus, str(args.multi_gpu_port))
+        multigpu_manager = MultiGPUManager(main, args.gpus, args.rdzv_endpoint, args.base_rank, args.world_size)
         if template.task_type in (TaskType.ACTION_CLASSIFICATION, TaskType.ACTION_DETECTION):
             print("Multi-GPU training for action tasks isn't supported yet. A single GPU will be used for a training.")
         elif (

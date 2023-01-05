@@ -17,9 +17,11 @@
 import logging
 import os
 import signal
+import socket
 import sys
 import threading
 import time
+from contextlib import closing
 from typing import Callable, List, Optional
 
 import torch
@@ -29,6 +31,13 @@ import torch.multiprocessing as mp
 from otx.api.configuration import ConfigurableParameters
 
 logger = logging.getLogger(__name__)
+
+
+def _get_free_port():
+    with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as sock:
+        sock.bind(("", 0))
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        return sock.getsockname()[1]
 
 
 def get_gpu_ids(gpus: str) -> List[int]:
@@ -95,13 +104,34 @@ class MultiGPUManager:
     Args:
         train_func (Callable): model training function.
         gpu_ids (str): GPU indices to use. Format should be Comma-separated indices.
-        multi_gpu_port (str): port for communication between multi GPU processes.
+        rdzv_endpoint (str): Rendezvous endpoint for multi-node training.
+        base_rank (int): Base rank of the worker.
+        world_size (int): Total number of workers in a worker group.
     """
 
-    def __init__(self, train_func: Callable, gpu_ids: str, multi_gpu_port: str):
+    def __init__(
+        self,
+        train_func: Callable,
+        gpu_ids: str,
+        rdzv_endpoint: str = "localhost:0",
+        base_rank: int = 0,
+        world_size: int = 0,
+    ):
+        if ":" not in rdzv_endpoint:
+            raise ValueError("rdzv_endpoint must be in form <host>:<port>.")
+        host, port = rdzv_endpoint.split(":")
+        if port == "0":
+            assert host in ["localhost", "127.0.0.1"]
+            port = _get_free_port()
+        rdzv_endpoint = f"{host}:{port}"
+
         self._train_func = train_func
         self._gpu_ids = get_gpu_ids(gpu_ids)
-        self._port = multi_gpu_port
+        self._rdzv_endpoint = rdzv_endpoint
+        self._base_rank = base_rank
+        if world_size == 0:
+            world_size = len(self._gpu_ids)
+        self._world_size = world_size
         self._main_pid = os.getpid()
         self._processes: Optional[List[mp.Process]] = None
 
@@ -112,7 +142,7 @@ class MultiGPUManager:
             bool:
                 whether multi GPU training is available.
         """
-        return len(self._gpu_ids) > 1
+        return torch.cuda.device_count() >= len(self._gpu_ids)
 
     def setup_multi_gpu_train(
         self,
@@ -133,7 +163,7 @@ class MultiGPUManager:
         signal.signal(signal.SIGINT, self._terminate_signal_handler)
         signal.signal(signal.SIGTERM, self._terminate_signal_handler)
 
-        self.initialize_multigpu_train(0, self._gpu_ids, self._port)
+        self.initialize_multigpu_train(self._rdzv_endpoint, self._base_rank, 0, self._gpu_ids, self._world_size)
 
         threading.Thread(target=self._check_child_processes_alive, daemon=True).start()
 
@@ -144,49 +174,86 @@ class MultiGPUManager:
                 p.join()
 
     @staticmethod
-    def initialize_multigpu_train(rank: int, gpu_ids: List[int], multi_gpu_port: str):
+    def initialize_multigpu_train(
+        rdzv_endpoint: str,
+        rank: int,
+        local_rank: int,
+        gpu_ids: List[int],
+        world_size: int,
+    ):
         """Initilization for multi GPU training.
 
         Args:
-            rank (int): index of multi GPU processes.
+            rdzv_endpoint (str): Rendezvous endpoint for multi-node training.
+            rank (int): The rank of worker within a worker group.
+            local_rank (int): The rank of worker within a local worker group.
             gpu_ids (List[int]): list including which GPU indeces will be used.
-            multi_gpu_port (str): port for communication between multi GPU processes.
+            world_size (int): Total number of workers in a worker group.
         """
-        os.environ["MASTER_ADDR"] = "localhost"
-        os.environ["MASTER_PORT"] = multi_gpu_port
-        torch.cuda.set_device(gpu_ids[rank])
-        dist.init_process_group(backend="nccl", world_size=len(gpu_ids), rank=rank)
+
+        host, port = rdzv_endpoint.split(":")
+        os.environ["MASTER_ADDR"] = host
+        os.environ["MASTER_PORT"] = port
+        os.environ["LOCAL_WORLD_SIZE"] = str(len(gpu_ids))
+        os.environ["WORLD_SIZE"] = str(world_size)
+        os.environ["LOCAL_RANK"] = str(local_rank)
+        os.environ["RANK"] = str(rank)
+        torch.cuda.set_device(gpu_ids[local_rank])
+        dist.init_process_group(backend="nccl", world_size=world_size, rank=rank)
         logger.info(f"dist info world_size = {dist.get_world_size()}, rank = {dist.get_rank()}")
 
     @staticmethod
-    def run_child_process(train_func: Callable, rank: int, gpu_ids: List[int], output_path: str, multi_gpu_port: str):
+    def run_child_process(
+        train_func: Callable,
+        output_path: str,
+        rdzv_endpoint: str,
+        rank: int,
+        local_rank: int,
+        gpu_ids: List[int],
+        world_size: int,
+    ):
         """Function for multi GPU child process to execute.
 
         Args:
             train_func (Callable): model training function.
-            rank (int): index of multi GPU processes.
-            gpu_ids (List[int]): list including which GPU indeces will be used.
             output_path (str): output path where task output are saved.
-            multi_gpu_port (str): port for communication between multi GPU processes.
+            rdzv_endpoint (str): Rendezvous endpoint for multi-node training.
+            rank (int): The rank of worker within a worker group.
+            local_rank (int): The rank of worker within a local worker group.
+            gpu_ids (List[int]): list including which GPU indeces will be used.
+            world_size (int): Total number of workers in a worker group.
         """
+
+        # initialize start method
+        mp.set_start_method(method=None, force=True)
+
         gpus_arg_idx = sys.argv.index("--gpus")
         for _ in range(2):
             sys.argv.pop(gpus_arg_idx)
         if "--enable-hpo" in sys.argv:
             sys.argv.remove("--enable-hpo")
         set_arguments_to_argv("--work-dir", output_path)
+        set_arguments_to_argv("--rdzv-endpoint", rdzv_endpoint)
 
-        MultiGPUManager.initialize_multigpu_train(rank, gpu_ids, multi_gpu_port)
+        MultiGPUManager.initialize_multigpu_train(rdzv_endpoint, rank, local_rank, gpu_ids, world_size)
 
         train_func()
 
     def _spawn_multi_gpu_processes(self, output_path: str) -> List[mp.Process]:
         processes = []
-        spawned_mp = mp.get_context("spawn")
+        ctx = mp.get_context("spawn")
         for rank in range(1, len(self._gpu_ids)):
-            task_p = spawned_mp.Process(
+            task_p = ctx.Process(
                 target=MultiGPUManager.run_child_process,
-                args=(self._train_func, rank, self._gpu_ids, output_path, self._port),
+                args=(
+                    self._train_func,
+                    output_path,
+                    self._rdzv_endpoint,
+                    self._base_rank + rank,
+                    rank,
+                    self._gpu_ids,
+                    self._world_size,
+                ),
             )
             task_p.start()
             processes.append(task_p)

@@ -69,6 +69,7 @@ class ClsExplainer(ClsStage):
             distributed=False,
             round_up=False,
         )
+        self.configure_samples_per_gpu(cfg, "test", distributed=False)
 
         # build the model and load checkpoint
         model = self.build_model(cfg, model_builder, fp16=cfg.get("fp16", False))

@@ -88,8 +88,10 @@ class ClsInferrer(ClsStage):
                 ),
                 gpu_ids=cfg.gpu_ids,
                 seed=cfg.get("seed", None),
+                model_task=cfg.model_task,
             )
         )
+        self.configure_samples_per_gpu(data_cfg, "test", distributed=False)
 
         # Data loader
         self.dataset = build_dataset(data_cfg, "test", mmcls_build_dataset)

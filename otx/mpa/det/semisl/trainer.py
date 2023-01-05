@@ -97,6 +97,7 @@ class SemiSLDetectionTrainer(SemiSLDetectionStage):
         # cfg.dump(osp.join(cfg.work_dir, 'config.py'))
         # logger.info(f'Config:\n{cfg.pretty_text}')
 
+        self.configure_samples_per_gpu(cfg, "train", self.distributed)
         self.configure_fp16_optimizer(cfg, self.distributed)
 
         # Model

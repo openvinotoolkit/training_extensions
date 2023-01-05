@@ -15,6 +15,8 @@ import numpy as np
 import torch
 from mmcv import Config, ConfigDict
 from mmcv.runner import CheckpointLoader, wrap_fp16_model
+from torch import distributed as dist
+from torch.utils.data import Dataset
 
 from otx.algorithms.common.adapters.mmcv.utils import build_dataloader, build_dataset
 
@@ -53,6 +55,8 @@ def get_available_types():
         types.append(k)
     return types
 
+
+MODEL_TASK = {"classification": "mmcls", "detection": "mmdet", "segmentation": "mmseg"}
 
 # @STAGES.register_module()
 class Stage(object):
@@ -158,7 +162,7 @@ class Stage(object):
     def __init_device(self):
         if torch.distributed.is_initialized():
             self._distributed = True
-            self.cfg.gpu_ids = [torch.distributed.get_rank(group=None)]
+            self.cfg.gpu_ids = [int(os.environ["LOCAL_RANK"])]
         elif "gpu_ids" not in self.cfg:
             gpu_ids = os.environ.get("CUDA_VISIBLE_DEVICES")
             logger.info(f"CUDA_VISIBLE_DEVICES = {gpu_ids}")
@@ -270,10 +274,26 @@ class Stage(object):
                     update_hook(opt, custom_hooks, idx, hook)
 
     @staticmethod
+    def configure_samples_per_gpu(
+        cfg: Config,
+        subset: str,
+        distributed: bool = False,
+    ):
+        task_lib_module = importlib.import_module(f"{MODEL_TASK[cfg.model_task]}.datasets")
+        dataset_builder = getattr(task_lib_module, "build_dataset")
+
+        dataloader_cfg = cfg.data.get(f"{subset}_dataloader", ConfigDict())
+        samples_per_gpu = dataloader_cfg.get("samples_per_gpu", cfg.data.get("samples_per_gpu", 1))
+        dataset_len = len(build_dataset(cfg, subset, dataset_builder))
+        if distributed:
+            dataset_len = dataset_len // dist.get_world_size()
+        if dataset_len < samples_per_gpu:
+            dataloader_cfg.samples_per_gpu = dataset_len
+        cfg.data[f"{subset}_dataloader"] = dataloader_cfg
+
+    @staticmethod
     def configure_fp16_optimizer(cfg: Config, distributed: bool = False):
-        """
-        Configure Fp16OptimizerHook and Fp16SAMOptimizerHook.
-        """
+        """Configure Fp16OptimizerHook and Fp16SAMOptimizerHook."""
 
         fp16_config = cfg.pop("fp16", None)
         if fp16_config is not None:
@@ -295,8 +315,6 @@ class Stage(object):
 
     @staticmethod
     def configure_unlabeled_dataloader(cfg: Config, distributed: bool = False):
-        MODEL_TASK = {"classification": "mmcls", "detection": "mmdet", "segmentation": "mmseg"}
-
         if "unlabeled" in cfg.data:
             task_lib_module = importlib.import_module(f"{MODEL_TASK[cfg.model_task]}.datasets")
             dataset_builder = getattr(task_lib_module, "build_dataset")

@@ -61,14 +61,6 @@ class SegInferrer(SegStage):
         # TODO: distributed inference
 
         data_cfg = cfg.data.test.copy()
-        samples_per_gpu = cfg.data.test_dataloader.get(
-            "samples_per_gpu",
-            cfg.data.get("samples_per_gpu", 1),
-        )
-        if samples_per_gpu > 1:
-            # Replace 'ImageToTensor' to 'DefaultFormatBundle'
-            data_cfg.pipeline = replace_ImageToTensor(data_cfg.pipeline)
-
         # Input source
         input_source = cfg.get("input_source", "test")
         logger.info(f"Inferring on input source: data.{input_source}")
@@ -92,8 +84,17 @@ class SegInferrer(SegStage):
                 ),
                 gpu_ids=cfg.gpu_ids,
                 seed=cfg.get("seed", None),
+                model_task=cfg.model_task,
             )
         )
+        self.configure_samples_per_gpu(data_cfg, "test", distributed=False)
+        samples_per_gpu = data_cfg.data.test_dataloader.get(
+            "samples_per_gpu",
+            data_cfg.data.get("samples_per_gpu", 1),
+        )
+        if samples_per_gpu > 1:
+            # Replace 'ImageToTensor' to 'DefaultFormatBundle'
+            data_cfg.data.test.pipeline = replace_ImageToTensor(data_cfg.data.test.pipeline)
 
         # Data loader
         self.dataset = build_dataset(data_cfg, "test", mmseg_build_dataset)
