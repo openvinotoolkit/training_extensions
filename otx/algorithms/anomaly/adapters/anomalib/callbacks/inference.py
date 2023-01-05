@@ -17,10 +17,12 @@
 from typing import Any, List
 
 import numpy as np
+import torch
 import pytorch_lightning as pl
 from anomalib.models import AnomalyModule
 from anomalib.post_processing import anomaly_map_to_color_map
 from pytorch_lightning.callbacks import Callback
+from torch import Tensor
 
 from otx.api.entities.shapes.rectangle import Rectangle
 from otx.api.entities.annotation import Annotation
@@ -51,24 +53,26 @@ class AnomalyInferenceCallback(Callback):
         # TODO; refactor Ignore too many locals
         # pylint: disable=too-many-locals
         outputs = outputs[0]
-        pred_scores = np.hstack([output["pred_scores"].cpu() for output in outputs])
-        pred_labels = np.hstack([output["pred_labels"].cpu() for output in outputs])
-        anomaly_maps = np.vstack([output["anomaly_maps"].cpu() for output in outputs])
-        pred_masks = np.vstack([output["pred_masks"].cpu() for output in outputs])
+        # collect generic predictions
+        pred_scores = torch.hstack([output["pred_scores"].cpu() for output in outputs])
+        pred_labels = torch.hstack([output["pred_labels"].cpu() for output in outputs])
+        anomaly_maps = torch.vstack([output["anomaly_maps"].cpu() for output in outputs])
+        pred_masks = torch.vstack([output["pred_masks"].cpu() for output in outputs])
 
+        # add the predictions to the dataset item depending on the task type
         if self.task_type == TaskType.ACTION_CLASSIFICATION:
             self._process_classification_predictions(pred_labels, pred_scores)
-
-        if self.task_type == TaskType.ANOMALY_DETECTION:
+        elif self.task_type == TaskType.ANOMALY_DETECTION:
+            # collect detection predictions
             pred_boxes = []
             box_scores = []
             box_labels = []
-            [pred_boxes.extend(output["pred_boxes"]) for output in outputs]
-            [box_scores.extend(output["box_scores"]) for output in outputs]
-            [box_labels.extend(output["box_labels"]) for output in outputs]
-            
-            self._process_detection_predictions(pred_boxes, box_scores, box_labels, pred_scores, pred_masks.shape[-2:])
+            for output in outputs:
+                pred_boxes.extend(output["pred_boxes"])
+                box_scores.extend(output["box_scores"])
+                box_labels.extend(output["box_labels"])
 
+            self._process_detection_predictions(pred_boxes, box_scores, box_labels, pred_scores, pred_masks.shape[-2:])
         elif self.task_type == TaskType.ANOMALY_SEGMENTATION:
             self._process_segmentation_predictions(pred_masks, anomaly_maps, pred_scores)
 
@@ -79,11 +83,12 @@ class AnomalyInferenceCallback(Callback):
                     name="Anomaly Map",
                     type="anomaly_map",
                     annotation_scene=dataset_item.annotation_scene,
-                    numpy=anomaly_map_to_color_map(anomaly_map.squeeze(), normalize=False),
+                    numpy=anomaly_map_to_color_map(anomaly_map.squeeze().numpy(), normalize=False),
                 )
             )
 
-    def _process_classification_predictions(self, pred_labels, pred_scores):
+    def _process_classification_predictions(self, pred_labels: Tensor, pred_scores: Tensor):
+
         for dataset_item, pred_label, pred_score in zip(self.otx_dataset, pred_labels, pred_scores):
             # get label
             label = self.anomalous_label if pred_label else self.normal_label
@@ -91,10 +96,18 @@ class AnomalyInferenceCallback(Callback):
             # update dataset item
             dataset_item.append_labels([ScoredLabel(label=label, probability=float(probability))])
 
-    def _process_detection_predictions(self, pred_boxes, box_scores, box_labels, pred_scores, image_size):
-
+    def _process_detection_predictions(
+        self,
+        pred_boxes: List[Tensor],
+        box_scores: List[Tensor],
+        box_labels: List[Tensor],
+        pred_scores: Tensor,
+        image_size: torch.Size,
+    ):
         height, width = image_size
-        for dataset_item, im_boxes, im_box_scores, im_box_labels, pred_score in zip(self.otx_dataset, pred_boxes, box_scores, box_labels, pred_scores):
+        for dataset_item, im_boxes, im_box_scores, im_box_labels, pred_score in zip(
+            self.otx_dataset, pred_boxes, box_scores, box_labels, pred_scores
+        ):
             # generate annotations
             annotations: List[Annotation] = []
             for box, score, label in zip(im_boxes, im_box_scores, im_box_labels):
@@ -116,13 +129,15 @@ class AnomalyInferenceCallback(Callback):
             dataset_item.append_annotations(annotations)
             dataset_item.append_labels([ScoredLabel(label=label, probability=float(probability))])
 
-    def _process_segmentation_predictions(self, pred_masks, anomaly_maps, pred_scores):
+    def _process_segmentation_predictions(self, pred_masks: Tensor, anomaly_maps: Tensor, pred_scores: Tensor):
 
-        for dataset_item, pred_mask, anomaly_map, pred_score in zip(self.otx_dataset, pred_masks, anomaly_maps, pred_scores):
+        for dataset_item, pred_mask, anomaly_map, pred_score in zip(
+            self.otx_dataset, pred_masks, anomaly_maps, pred_scores
+        ):
             # generate polygon annotations
             annotations = create_annotation_from_segmentation_map(
-                hard_prediction=pred_mask.squeeze().astype(np.uint8),
-                soft_prediction=anomaly_map.squeeze(),
+                hard_prediction=pred_mask.squeeze().numpy().astype(np.uint8),
+                soft_prediction=anomaly_map.squeeze().numpy(),
                 label_map=self.label_map,
             )
             # get label
