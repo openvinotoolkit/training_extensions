@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from os import path as osp
+import os.path as osp
 
 from otx.mpa.registry import STAGES
 from otx.mpa.utils.logger import get_logger
@@ -15,31 +15,32 @@ logger = get_logger()
 @STAGES.register_module()
 class ClsEvaluator(ClsInferrer):
     def run(self, model_cfg, model_ckpt, data_cfg, **kwargs):
-        """Run evaluation stage
+        """Run evaluation stage for classification
 
         - Run inference
-        - Run evaluation via MMDetection -> MMCV
+        - Run evaluation via MMClassification -> MMCV
         """
-        self.eval = True
         self._init_logger()
         mode = kwargs.get("mode", "train")
         if mode not in self.mode:
-            logger.warning(f"mode for this stage {mode}")
+            logger.warning(f"Supported modes are {self.mode} but '{mode}' is given.")
             return {}
 
         cfg = self.configure(model_cfg, model_ckpt, data_cfg, training=False, **kwargs)
-
-        # mmcv.mkdir_or_exist(osp.abspath(cfg.work_dir))
+        logger.info("evaluate!")
 
         # Save config
         cfg.dump(osp.join(cfg.work_dir, "config.yaml"))
         logger.info(f"Config:\n{cfg.pretty_text}")
 
         # Inference
-        infer_results = super()._infer(cfg)
+        model_builder = kwargs.get("model_builder", None)
+        infer_results = super().infer(cfg, model_builder)
 
-        eval_cfg = cfg.get("evaluation", {})
-        eval_cfg.pop("by_epoch", False)
-        results = self.dataset.evaluate(infer_results, **eval_cfg)
-        logger.info(f"\n{results}")
-        return results
+        # Evaluate inference results
+        eval_cfg = cfg.get("evaluation", {}).copy()
+        eval_cfg.pop("by_epoch", None)
+        eval_result = self.dataset.evaluate(infer_results, **eval_cfg)
+
+        logger.info(eval_result)
+        return eval_result

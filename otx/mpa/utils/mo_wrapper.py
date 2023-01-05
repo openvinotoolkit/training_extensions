@@ -75,11 +75,12 @@ MO_ARGS = [
     "scale",
     "model_name",
     "log_level",
-    "data_type",
+    "compress_to_fp16",
     "scale_values",
     "disable_fusing",
     "transformations_config",
     "reverse_input_channels",
+    "output_dir",
 ]
 
 
@@ -94,7 +95,13 @@ def generate_ir(output_path, model_path, silent, save_xml=True, **mo_kwargs):
         else:
             mo_args.append("--{}".format(key))
 
-    mo_args.append("--output_dir={}".format(model_path))
+    is_output_dir_provided = False
+    for mo_arg in mo_args:
+        if mo_arg.startswith("--output_dir"):
+            is_output_dir_provided = True
+            break
+    if not is_output_dir_provided:
+        mo_args.append("--output_dir={}".format(model_path))
     print("mo-args: {}".format(mo_args))
 
     if silent:

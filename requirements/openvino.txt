@@ -2,6 +2,7 @@
 # OpenVINO Requirements.                                                      #
 nncf==2.3.0
 onnx==1.10.1
-openmodelzoo-modelapi @ git+https://github.com/openvinotoolkit/open_model_zoo/@releases/2022/3#egg=openmodelzoo-modelapi&subdirectory=demos/common/python
+openmodelzoo-modelapi==2022.3.0
 openvino==2022.3.0
 openvino-dev[tensorflow2,mxnet,caffe]==2022.3.0
+mmdeploy @ git+https://git@github.com/open-mmlab/mmdeploy@v0.10.0

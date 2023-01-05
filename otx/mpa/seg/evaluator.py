@@ -4,38 +4,41 @@
 
 import os.path as osp
 
-import mmcv
 import torch
 
 from otx.mpa.registry import STAGES
+from otx.mpa.utils.logger import get_logger
 
 from .inferrer import SegInferrer
+
+logger = get_logger()
 
 
 @STAGES.register_module()
 class SegEvaluator(SegInferrer):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
     def run(self, model_cfg, model_ckpt, data_cfg, **kwargs):
+        """Run evaluation stage for segmentation
+
+        - Run inference
+        - Run evaluation via MMSegmentation -> MMCV
+        """
         self._init_logger()
         mode = kwargs.get("mode", "eval")
         if mode not in self.mode:
+            logger.warning(f"Supported modes are {self.mode} but '{mode}' is given.")
             return {}
 
         cfg = self.configure(model_cfg, model_ckpt, data_cfg, training=False, **kwargs)
-        self.logger.info("evaluate!")
+        logger.info("evaluate!")
 
-        mmcv.mkdir_or_exist(osp.abspath(cfg.work_dir))
+        # Save config
+        cfg.dump(osp.join(cfg.work_dir, "config.yaml"))
+        logger.info(f"Config:\n{cfg.pretty_text}")
 
         # Inference
-        infer_results = super().infer(cfg)
+        model_builder = kwargs.get("model_builder", None)
+        infer_results = super().infer(cfg, model_builder)
         segmentations = infer_results["segmentations"]
-
-        # Evaluate inference results
-        eval_kwargs = self.cfg.get("evaluation", {}).copy()
-        for key in ["interval", "tmpdir", "start", "gpu_collect"]:
-            eval_kwargs.pop(key, None)
 
         # Change soft-prediction to hard-prediction
         hard_predictions = []
@@ -46,7 +49,12 @@ class SegEvaluator(SegInferrer):
                 hard_predictions.append(hard_prediction.numpy())
             else:
                 hard_predictions.append(hard_prediction.cpu().detach().numpy())
-        eval_result = self.dataset.evaluate(hard_predictions, **eval_kwargs)
-        self.logger.info(eval_result)
 
+        # Evaluate inference results
+        eval_cfg = self.cfg.get("evaluation", {}).copy()
+        for key in ["interval", "tmpdir", "start", "gpu_collect"]:
+            eval_cfg.pop(key, None)
+        eval_result = self.dataset.evaluate(hard_predictions, **eval_cfg)
+
+        logger.info(eval_result)
         return dict(mAP=eval_result.get("bbox_mAP_50", 0.0))

@@ -4,24 +4,33 @@
 from typing import List, Tuple
 
 import torch
-from mmcv.parallel import MMDataParallel, is_module_wrapper
-from mmcv.runner import load_checkpoint
-from mmdet.datasets import build_dataloader, build_dataset, replace_ImageToTensor
-from mmdet.models import build_detector
-from mmdet.parallel import MMDataCPU
-from mmdet.utils.deployment import get_feature_vector, get_saliency_map
+from mmcv.utils import Config, ConfigDict
+from mmdet.datasets import build_dataloader as mmdet_build_dataloader
+from mmdet.datasets import build_dataset as mmdet_build_dataset
+from mmdet.datasets import replace_ImageToTensor
 
-from otx.mpa.det.semisl.stage import SemiSLDetectionStage
+from otx.algorithms.common.adapters.mmcv.utils import (
+    build_data_parallel,
+    build_dataloader,
+    build_dataset,
+)
+from otx.mpa.modules.hooks.recording_forward_hooks import (
+    ActivationMapHook,
+    FeatureVectorHook,
+)
 from otx.mpa.registry import STAGES
 from otx.mpa.utils.logger import get_logger
+
+from .stage import SemiSLDetectionStage
 
 logger = get_logger()
 
 
 @STAGES.register_module()
 class SemiSLDetectionInferrer(SemiSLDetectionStage):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.dataset = None
 
     def run(self, model_cfg, model_ckpt, data_cfg, **kwargs):
         """Run inference stage for detection
@@ -32,20 +41,24 @@ class SemiSLDetectionInferrer(SemiSLDetectionStage):
         """
         self._init_logger()
         mode = kwargs.get("mode", "train")
-        eval = kwargs.get("eval", False)
-        dump_features = kwargs.get("dump_features", False)
-        dump_saliency_map = kwargs.get("dump_saliency_map", False)
         if mode not in self.mode:
+            logger.warning(f"Supported modes are {self.mode} but '{mode}' is given.")
             return {}
 
         cfg = self.configure(model_cfg, model_ckpt, data_cfg, training=False, **kwargs)
-        # cfg.dump(osp.join(cfg.work_dir, 'config.py'))
-        # logger.info(f'Config:\n{cfg.pretty_text}')
-        # logger.info('infer!')
+        logger.info("infer!")
 
-        # mmcv.mkdir_or_exist(osp.abspath(cfg.work_dir))
-
-        outputs = self.infer(cfg, eval=eval, dump_features=dump_features, dump_saliency_map=dump_saliency_map)
+        model_builder = kwargs.get("model_builder", None)
+        dump_features = kwargs.get("dump_features", False)
+        dump_saliency_map = kwargs.get("dump_saliency_map", False)
+        eval = kwargs.get("eval", False)
+        outputs = self.infer(
+            cfg,
+            model_builder=model_builder,
+            eval=eval,
+            dump_features=dump_features,
+            dump_saliency_map=dump_saliency_map,
+        )
 
         # Save outputs
         # output_file_path = osp.join(cfg.work_dir, 'infer_result.npy')
@@ -68,19 +81,24 @@ class SemiSLDetectionInferrer(SemiSLDetectionStage):
         print(json_dump)
         """
 
-    def infer(self, cfg, eval=False, dump_features=False, dump_saliency_map=False):
-        samples_per_gpu = cfg.data.test.pop("samples_per_gpu", 1)
-        if samples_per_gpu > 1:
-            # Replace 'ImageToTensor' to 'DefaultFormatBundle'
-            cfg.data.test.pipeline = replace_ImageToTensor(cfg.data.test.pipeline)
+    def infer(self, cfg, model_builder=None, eval=False, dump_features=False, dump_saliency_map=False):
+        # TODO: distributed inference
 
         data_cfg = cfg.data.test.copy()
+        samples_per_gpu = cfg.data.test_dataloader.get(
+            "samples_per_gpu",
+            cfg.data.get("samples_per_gpu", 1),
+        )
+        if samples_per_gpu > 1:
+            # Replace 'ImageToTensor' to 'DefaultFormatBundle'
+            data_cfg.pipeline = replace_ImageToTensor(data_cfg.pipeline)
+
         # Input source
         if "input_source" in cfg:
             input_source = cfg.get("input_source")
             logger.info(f"Inferring on input source: data.{input_source}")
             if input_source == "train":
-                src_data_cfg = self.get_data_cfg(cfg, "train")
+                src_data_cfg = self.get_data_cfg(cfg, input_source)
             else:
                 src_data_cfg = cfg.data[input_source]
             data_cfg.test_mode = src_data_cfg.get("test_mode", False)
@@ -88,16 +106,28 @@ class SemiSLDetectionInferrer(SemiSLDetectionStage):
             data_cfg.img_prefix = src_data_cfg.img_prefix
             if "classes" in src_data_cfg:
                 data_cfg.classes = src_data_cfg.classes
-        self.dataset = build_dataset(data_cfg)
-        dataset = self.dataset
+
+        data_cfg = Config(
+            ConfigDict(
+                data=ConfigDict(
+                    samples_per_gpu=cfg.data.get("samples_per_gpu", 1),
+                    workers_per_gpu=cfg.data.get("workers_per_gpu", 0),
+                    test=data_cfg,
+                    test_dataloader=cfg.data.get("test_dataloader", {}).copy(),
+                ),
+                gpu_ids=cfg.gpu_ids,
+                seed=cfg.get("seed", None),
+            )
+        )
 
         # Data loader
-        data_loader = build_dataloader(
-            dataset,
-            samples_per_gpu=samples_per_gpu,
-            workers_per_gpu=cfg.data.workers_per_gpu,
-            dist=False,
-            shuffle=False,
+        self.dataset = build_dataset(data_cfg, "test", mmdet_build_dataset)
+        test_dataloader = build_dataloader(
+            self.dataset,
+            data_cfg,
+            "test",
+            mmdet_build_dataloader,
+            distributed=False,
         )
 
         # Target classes
@@ -106,10 +136,10 @@ class SemiSLDetectionInferrer(SemiSLDetectionStage):
             if len(target_classes) < 1:
                 raise KeyError(
                     f"target_classes={target_classes} is empty check the metadata from model ckpt or recipe "
-                    f"configuration"
+                    "configuration"
                 )
         else:
-            target_classes = dataset.CLASSES
+            target_classes = self.dataset.CLASSES
 
         # Model
         cfg.model.pretrained = None
@@ -122,27 +152,14 @@ class SemiSLDetectionInferrer(SemiSLDetectionStage):
             elif cfg.model.neck.get("rfp_backbone"):
                 if cfg.model.neck.rfp_backbone.get("pretrained"):
                     cfg.model.neck.rfp_backbone.pretrained = None
-
-        model = build_detector(cfg.model)
-        model.CLASSES = target_classes
-
         # TODO: Check Inference FP16 Support
-        # fp16_cfg = cfg.get('fp16', None)
-        # if fp16_cfg is not None:
-        #     wrap_fp16_model(model)
+        model = self.build_model(cfg, model_builder, fp16=False)
+        model.CLASSES = target_classes
+        model.eval()
+        model = build_data_parallel(model, cfg, distributed=False)
 
         # InferenceProgressCallback (Time Monitor enable into Infer task)
         self.set_inference_progress_callback(model, cfg)
-
-        # Checkpoint
-        if cfg.get("load_from", None):
-            load_checkpoint(model, cfg.load_from, map_location="cpu")
-
-        model.eval()
-        if torch.cuda.is_available():
-            eval_model = MMDataParallel(model.cuda(cfg.gpu_ids[0]), device_ids=cfg.gpu_ids)
-        else:
-            eval_model = MMDataCPU(model)
 
         eval_predictions = []
         feature_vectors = []
@@ -150,12 +167,11 @@ class SemiSLDetectionInferrer(SemiSLDetectionStage):
 
         def dump_features_hook(mod, inp, out):
             with torch.no_grad():
-                feature_vector = get_feature_vector(out)
-                assert feature_vector.size(0) == 1
-            feature_vectors.append(feature_vector.view(-1).detach().cpu().numpy())
+                feature_vector = FeatureVectorHook.func(out)
+            feature_vectors.extend([i.view(-1).detach().cpu().numpy() for i in feature_vector])
 
         def dummy_dump_features_hook(mod, inp, out):
-            feature_vectors.append(None)
+            feature_vectors.extend([None] * out[0].shape[0])
 
         def dump_saliency_hook(model: torch.nn.Module, input: Tuple, out: List[torch.Tensor]):
             """Dump the last feature map to `saliency_maps` cache
@@ -166,20 +182,20 @@ class SemiSLDetectionInferrer(SemiSLDetectionStage):
                 out (List[torch.Tensor]): a list of feature maps
             """
             with torch.no_grad():
-                saliency_map = get_saliency_map(out[-1])
-            saliency_maps.append(saliency_map.squeeze(0).detach().cpu().numpy())
+                saliency_map = ActivationMapHook.func(out[-1])
+            saliency_maps.extend([i.detach().cpu().numpy() for i in saliency_map])
 
         def dummy_dump_saliency_hook(model, input, out):
-            saliency_maps.append(None)
+            saliency_maps.extend([None] * out[0].shape[0])
 
         feature_vector_hook = dump_features_hook if dump_features else dummy_dump_features_hook
         saliency_map_hook = dump_saliency_hook if dump_saliency_map else dummy_dump_saliency_hook
 
-        with eval_model.module.model_t.backbone.register_forward_hook(feature_vector_hook):
-            with eval_model.module.model_t.backbone.register_forward_hook(saliency_map_hook):
-                for data in data_loader:
+        with model.module.model_t.backbone.register_forward_hook(feature_vector_hook):
+            with model.module.model_t.backbone.register_forward_hook(saliency_map_hook):
+                for data in test_dataloader:
                     with torch.no_grad():
-                        result = eval_model(return_loss=False, rescale=True, **data)
+                        result = model(return_loss=False, rescale=True, **data)
                     eval_predictions.extend(result)
 
         for key in ["interval", "tmpdir", "start", "gpu_collect", "save_best", "rule", "dynamic_intervals"]:
@@ -187,7 +203,7 @@ class SemiSLDetectionInferrer(SemiSLDetectionStage):
 
         metric = None
         if eval:
-            metric = dataset.evaluate(eval_predictions, **cfg.evaluation)[cfg.evaluation.metric]
+            metric = self.dataset.evaluate(eval_predictions, **cfg.evaluation)[cfg.evaluation.metric]
 
         outputs = dict(
             classes=target_classes,

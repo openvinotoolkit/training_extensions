@@ -406,8 +406,7 @@ class Graph(nx.MultiDiGraph):
             start_nodes = [found[-1] for found in founds]
         return founds
 
-    # noqa: C901
-    def _freeze_normalize_nodes(self):
+    def _freeze_normalize_nodes(self):  # noqa: C901
         invariant_types = ["Transpose", "Convert"]
 
         def test_constant(node):

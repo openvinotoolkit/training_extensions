@@ -35,3 +35,6 @@ dmypy.json
 
 # python version
 .python-version
+
+# torch cpp extension
+otx/**/*.so

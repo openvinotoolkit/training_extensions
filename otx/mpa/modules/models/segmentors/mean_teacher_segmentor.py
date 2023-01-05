@@ -12,10 +12,9 @@ logger = get_logger()
 
 
 @SEGMENTORS.register_module()
-class MeanTeacher(BaseSegmentor):
+class MeanTeacherSegmentor(BaseSegmentor):
     def __init__(self, orig_type=None, unsup_weight=0.1, semisl_start_iter=30, **kwargs):
-        logger.info("MeanTeacher Segmentor init!")
-        super(MeanTeacher, self).__init__()
+        super(MeanTeacherSegmentor, self).__init__()
         self.test_cfg = kwargs["test_cfg"]
         self.semisl_start_iter = semisl_start_iter
         self.count_iter = 0
@@ -30,6 +29,9 @@ class MeanTeacher(BaseSegmentor):
         # Hooks for super_type transparent weight load/save
         self._register_state_dict_hook(self.state_dict_hook)
         self._register_load_state_dict_pre_hook(functools.partial(self.load_state_dict_pre_hook, self))
+
+    def encode_decode(self, img, img_metas):
+        return self.model_s.encode_decode(img, img_metas)
 
     def extract_feat(self, imgs):
         return self.model_s.extract_feat(imgs)
@@ -47,7 +49,7 @@ class MeanTeacher(BaseSegmentor):
         self.count_iter += 1
         if self.semisl_start_iter > self.count_iter or "extra_0" not in kwargs:
             x = self.model_s.extract_feat(img)
-            loss_decode, _ = self.model_s._decode_head_forward_train(x, img_metas, gt_semantic_seg=gt_semantic_seg)
+            loss_decode = self.model_s._decode_head_forward_train(x, img_metas, gt_semantic_seg=gt_semantic_seg)
             return loss_decode
 
         ul_data = kwargs["extra_0"]
@@ -67,8 +69,8 @@ class MeanTeacher(BaseSegmentor):
 
         x = self.model_s.extract_feat(img)
         x_u = self.model_s.extract_feat(ul_s_img)
-        loss_decode, _ = self.model_s._decode_head_forward_train(x, img_metas, gt_semantic_seg=gt_semantic_seg)
-        loss_decode_u, _ = self.model_s._decode_head_forward_train(x_u, ul_img_metas, gt_semantic_seg=pl_from_teacher)
+        loss_decode = self.model_s._decode_head_forward_train(x, img_metas, gt_semantic_seg=gt_semantic_seg)
+        loss_decode_u = self.model_s._decode_head_forward_train(x_u, ul_img_metas, gt_semantic_seg=pl_from_teacher)
 
         for (k, v) in loss_decode_u.items():
             if v is None:
@@ -80,7 +82,7 @@ class MeanTeacher(BaseSegmentor):
     @staticmethod
     def state_dict_hook(module, state_dict, *args, **kwargs):
         """Redirect student model as output state_dict (teacher as auxilliary)"""
-        logger.info("----------------- MeanTeacher.state_dict_hook() called")
+        logger.info("----------------- MeanTeacherSegmentor.state_dict_hook() called")
         output = OrderedDict()
         for k, v in state_dict.items():
             if k.startswith("model_s."):
@@ -91,7 +93,7 @@ class MeanTeacher(BaseSegmentor):
     @staticmethod
     def load_state_dict_pre_hook(module, state_dict, *args, **kwargs):
         """Redirect input state_dict to teacher model"""
-        logger.info("----------------- MeanTeacher.load_state_dict_pre_hook() called")
+        logger.info("----------------- MeanTeacherSegmentor.load_state_dict_pre_hook() called")
         for k in list(state_dict.keys()):
             v = state_dict.pop(k)
             state_dict["model_s." + k] = v

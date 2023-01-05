@@ -3,8 +3,9 @@
 #
 
 import torch
-from mmseg.models.losses.pixel_base import BasePixelLoss
 from mmseg.models.losses.utils import weight_reduce_loss
+
+from .base_pixel_loss import BasePixelLoss
 
 
 class MPABasePixelLoss(BasePixelLoss):
@@ -45,7 +46,7 @@ class MPABasePixelLoss(BasePixelLoss):
 
         weight, weight_sparsity = None, 0.0
         if self.sampler is not None:
-            weight = self.sampler(losses, output, valid_labels, valid_mask)
+            weight = self.sampler.sample(output, valid_labels, losses, valid_mask)
             weight_sparsity = self._sparsity(weight, valid_mask)
 
         loss = weight_reduce_loss(losses, weight=weight, reduction=reduction, avg_factor=avg_factor)

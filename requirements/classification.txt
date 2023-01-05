@@ -1,4 +1,4 @@
 mmcv-full==1.6.1
 mmcls==0.23.2
 #otxreid==0.3.0
-timm
+timm==0.5.4

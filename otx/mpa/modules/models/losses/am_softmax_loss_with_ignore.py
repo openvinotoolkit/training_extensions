@@ -1,14 +1,47 @@
-# Copyright (C) 2021 Intel Corporation
+# Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 
 import numpy as np
 import torch
 import torch.nn.functional as F
-from mmseg.core import build_classification_loss, focal_loss
 from mmseg.models.builder import LOSSES
 
 from .mpa_pixel_base import MPABasePixelLoss
+
+
+def build_classification_loss(name, **kwargs):
+    # TODO: mmseg
+    if name == "ce":
+        from mmcls.models.losses import CrossEntropyLoss
+
+        return CrossEntropyLoss(**kwargs)
+    elif name == "ce_smooth":
+        from .cross_entropy_loss import CrossEntropySmoothLoss
+
+        return CrossEntropySmoothLoss(**kwargs)
+    elif name == "nce":
+        from .cross_entropy_loss import NormalizedCrossEntropyLoss
+
+        return NormalizedCrossEntropyLoss(**kwargs)
+    elif name == "rce":
+        from .cross_entropy_loss import ReverseCrossEntropyLoss
+
+        return ReverseCrossEntropyLoss(**kwargs)
+    elif name == "sl":
+        from .cross_entropy_loss import SymmetricCrossEntropyLoss
+
+        return SymmetricCrossEntropyLoss(**kwargs)
+    elif name == "apl":
+        from .cross_entropy_loss import ActivePassiveLoss
+
+        return ActivePassiveLoss(**kwargs)
+    else:
+        raise AttributeError("Unknown name of loss: {}".format(name))
+
+
+def focal_loss(input_values, gamma):
+    return (1.0 - torch.exp(-input_values)) ** gamma * input_values
 
 
 @LOSSES.register_module()

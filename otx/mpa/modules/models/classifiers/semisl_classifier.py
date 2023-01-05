@@ -5,15 +5,17 @@
 import torch
 import torch.nn as nn
 from mmcls.models.builder import CLASSIFIERS, build_backbone, build_head, build_neck
+from mmcls.models.classifiers.base import BaseClassifier
 
-from otx.mpa.modules.models.classifiers.sam_classifier import SAMClassifier
 from otx.mpa.utils.logger import get_logger
+
+from .sam_classifier_mixin import SAMClassifierMixin
 
 logger = get_logger()
 
 
 @CLASSIFIERS.register_module()
-class SemiSLClassifier(SAMClassifier):
+class SemiSLClassifier(SAMClassifierMixin, BaseClassifier):
     """Semi-SL Classifier
 
     The classifier is a classifier that supports Semi-SL task

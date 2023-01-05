@@ -2,62 +2,52 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-
 import os.path as osp
 import time
-import warnings
 
-import mmcv
 from mmcls import __version__
-from mmcls.core import DistOptimizerHook
+from mmcls.apis import train_model
 from mmcls.datasets import build_dataloader, build_dataset
-from mmcls.models import build_classifier
 from mmcls.utils import collect_env
-from mmcv.runner import (
-    HOOKS,
-    DistSamplerSeedHook,
-    Fp16OptimizerHook,
-    build_optimizer,
-    build_runner,
-)
 from torch import nn
 
-from otx.mpa.cls.stage import ClsStage
-from otx.mpa.modules.datasets.composed_dataloader import ComposedDL
-from otx.mpa.modules.hooks.eval_hook import CustomEvalHook, DistCustomEvalHook
-from otx.mpa.modules.hooks.fp16_sam_optimizer_hook import Fp16SAMOptimizerHook
 from otx.mpa.registry import STAGES
-from otx.mpa.stage import Stage
 from otx.mpa.utils.logger import get_logger
+
+from .stage import ClsStage
 
 logger = get_logger()
 
 
 @STAGES.register_module()
 class ClsTrainer(ClsStage):
-    # noqa: C901
-    def run(self, model_cfg, model_ckpt, data_cfg, **kwargs):
-        """Run training stage"""
+    def run(self, model_cfg, model_ckpt, data_cfg, **kwargs):  # noqa: C901
+        """Run training stage for classification
+
+        - Configuration
+        - Environment setup
+        - Run training via MMClassification -> MMCV
+        """
         self._init_logger()
         mode = kwargs.get("mode", "train")
         if mode not in self.mode:
+            logger.warning(f"Supported modes are {self.mode} but '{mode}' is given.")
             return {}
 
         cfg = self.configure(model_cfg, model_ckpt, data_cfg, training=True, **kwargs)
+        logger.info("train!")
 
         timestamp = time.strftime("%Y%m%d_%H%M%S", time.localtime())
 
         # Environment
+        logger.info(f"cfg.gpu_ids = {cfg.gpu_ids}, distributed = {self.distributed}")
         env_info_dict = collect_env()
         env_info = "\n".join([(f"{k}: {v}") for k, v in env_info_dict.items()])
         dash_line = "-" * 60 + "\n"
         logger.info("Environment info:\n" + dash_line + env_info + "\n" + dash_line)
 
         # Data
-        if "unlabeled" in cfg.data:
-            datasets = [[build_dataset(cfg.data.train), build_dataset(cfg.data.unlabeled)]]
-        else:
-            datasets = [build_dataset(cfg.data.train)]
+        datasets = [build_dataset(cfg.data.train)]
 
         # Dataset for HPO
         hp_config = kwargs.get("hp_config", None)
@@ -98,140 +88,70 @@ class ClsTrainer(ClsStage):
         # cfg.dump(osp.join(cfg.work_dir, 'config.yaml')) # FIXME bug to save
         # logger.info(f'Config:\n{cfg.pretty_text}')
 
-        # model
-        model = build_classifier(cfg.model)
+        self.configure_fp16_optimizer(cfg, self.distributed)
+
+        # Model
+        model_builder = kwargs.get("model_builder", None)
+        model = self.build_model(cfg, model_builder)
+        model.train()
 
         if self.distributed:
             self._modify_cfg_for_distributed(model, cfg)
 
-        # prepare data loaders
-        datasets = datasets if isinstance(datasets, (list, tuple)) else [datasets]
-        train_data_cfg = Stage.get_data_cfg(cfg, "train")
-        otx_dataset = train_data_cfg.get("otx_dataset", None)
-        drop_last = False
-        dataset_len = len(otx_dataset) if otx_dataset else 0
-        # if task == h-label & dataset size is bigger than batch size
-        if train_data_cfg.get("hierarchical_info", None) and dataset_len > cfg.data.get("samples_per_gpu", 2):
-            drop_last = True
-        # updated to adapt list of dataset for the 'train'
-        data_loaders = []
-        sub_loaders = []
-        for ds in datasets:
-            if isinstance(ds, list):
-                sub_loaders = [
-                    build_dataloader(
-                        sub_ds,
-                        sub_ds.samples_per_gpu if hasattr(sub_ds, "samples_per_gpu") else cfg.data.samples_per_gpu,
-                        sub_ds.workers_per_gpu if hasattr(sub_ds, "workers_per_gpu") else cfg.data.workers_per_gpu,
-                        num_gpus=len(cfg.gpu_ids),
-                        dist=self.distributed,
-                        round_up=True,
-                        seed=cfg.seed,
-                        drop_last=drop_last,
-                        persistent_workers=False,
-                    )
-                    for sub_ds in ds
-                ]
-                data_loaders.append(ComposedDL(sub_loaders))
-            else:
-                data_loaders.append(
-                    build_dataloader(
-                        ds,
-                        cfg.data.samples_per_gpu,
-                        cfg.data.workers_per_gpu,
-                        # cfg.gpus will be ignored if distributed
-                        num_gpus=len(cfg.gpu_ids),
-                        dist=self.distributed,
-                        round_up=True,
-                        seed=cfg.seed,
-                        drop_last=drop_last,
-                        persistent_workers=False,
-                    )
-                )
-
-        # put model on gpus
-        model = self._put_model_on_gpu(model, cfg)
-
-        # build runner
-        optimizer = build_optimizer(model, cfg.optimizer)
-
-        if cfg.get("runner") is None:
-            cfg.runner = {"type": "EpochBasedRunner", "max_epochs": cfg.total_epochs}
-            warnings.warn(
-                "config is now expected to have a `runner` section, " "please set `runner` in your config.", UserWarning
-            )
-
-        runner = build_runner(
-            cfg.runner,
-            default_args=dict(
-                model=model, batch_processor=None, optimizer=optimizer, work_dir=cfg.work_dir, logger=logger, meta=meta
-            ),
-        )
-
-        # an ugly walkaround to make the .log and .log.json filenames the same
-        runner.timestamp = f"{timestamp}"
-
-        # fp16 setting
-        fp16_cfg = cfg.get("fp16", None)
-        if fp16_cfg is not None:
-            if cfg.optimizer_config.get("type", False) == "SAMOptimizerHook":
-                opt_hook = Fp16SAMOptimizerHook
-            else:
-                opt_hook = Fp16OptimizerHook
-            cfg.optimizer_config.pop("type")
-            optimizer_config = opt_hook(**cfg.optimizer_config, **fp16_cfg, distributed=self.distributed)
-        elif self.distributed and "type" not in cfg.optimizer_config:
-            optimizer_config = DistOptimizerHook(**cfg.optimizer_config)
-        else:
-            optimizer_config = cfg.optimizer_config
-
-        # register hooks
-        runner.register_training_hooks(
-            cfg.lr_config, optimizer_config, None, cfg.log_config, cfg.get("momentum_config", None)
-        )
-        if cfg.get("checkpoint_config", False):
-            runner.register_hook(ClsTrainer.register_checkpoint_hook(cfg.checkpoint_config))
-
-        if self.distributed:
-            runner.register_hook(DistSamplerSeedHook())
-
-        for hook in cfg.get("custom_hooks", ()):
-            runner.register_hook_from_cfg(hook)
-
+        # register custom eval hooks
         validate = True if cfg.data.get("val", None) else False
-        # register eval hooks
         if validate:
             val_dataset = build_dataset(cfg.data.val, dict(test_mode=True))
-            val_dataloader = build_dataloader(
-                val_dataset,
-                samples_per_gpu=cfg.data.samples_per_gpu,
-                workers_per_gpu=cfg.data.workers_per_gpu,
-                dist=self.distributed,
-                shuffle=False,
-                round_up=True,
-                persistent_workers=False,
-            )
+            val_loader_cfg = {
+                "samples_per_gpu": cfg.data.samples_per_gpu,
+                "workers_per_gpu": cfg.data.workers_per_gpu,
+                # cfg.gpus will be ignored if distributed
+                "num_gpus": len(cfg.gpu_ids),
+                "dist": self.distributed,
+                "round_up": True,
+                "seed": cfg.seed,
+                "shuffle": False,  # Not shuffle by default
+                "sampler_cfg": None,  # Not use sampler by default
+                **cfg.data.get("val_dataloader", {}),
+            }
+            val_dataloader = build_dataloader(val_dataset, **val_loader_cfg)
             eval_cfg = cfg.get("evaluation", {})
             eval_cfg["by_epoch"] = cfg.runner["type"] != "IterBasedRunner"
-            eval_hook = DistCustomEvalHook if self.distributed else CustomEvalHook
-            runner.register_hook(eval_hook(val_dataloader, **eval_cfg), priority="ABOVE_NORMAL")
+            cfg.custom_hooks.append(
+                dict(
+                    type="DistCustomEvalHook" if self.distributed else "CustomEvalHook",
+                    dataloader=val_dataloader,
+                    priority="ABOVE_NORMAL",
+                    **eval_cfg,
+                )
+            )
 
-        if cfg.get("resume_from", False):
-            runner.resume(cfg.resume_from)
-        elif cfg.get("load_from", False):
-            if self.distributed:
-                runner.load_checkpoint(cfg.load_from, map_location=f"cuda:{cfg.gpu_ids[0]}")
-            else:
-                runner.load_checkpoint(cfg.load_from)
-        runner.run(data_loaders, cfg.workflow)
-
-        logger.info(f"called train_worker() distributed={self.distributed}, validate=True")
+        train_model(
+            model,
+            datasets,
+            cfg,
+            distributed=self.distributed,
+            validate=False,
+            timestamp=timestamp,
+            meta=meta,
+        )
 
         # Save outputs
         output_ckpt_path = osp.join(
             cfg.work_dir, "best_model.pth" if osp.exists(osp.join(cfg.work_dir, "best_model.pth")) else "latest.pth"
         )
-        return dict(final_ckpt=output_ckpt_path)
+        # NNCF model
+        compression_state_path = osp.join(cfg.work_dir, "compression_state.pth")
+        if not osp.exists(compression_state_path):
+            compression_state_path = None
+        before_ckpt_path = osp.join(cfg.work_dir, "before_training.pth")
+        if not osp.exists(before_ckpt_path):
+            before_ckpt_path = None
+        return dict(
+            final_ckpt=output_ckpt_path,
+            compression_state_path=compression_state_path,
+            before_ckpt_path=before_ckpt_path,
+        )
 
     def _modify_cfg_for_distributed(self, model, cfg):
         nn.SyncBatchNorm.convert_sync_batchnorm(model)
@@ -243,12 +163,3 @@ class ClsTrainer(ClsStage):
                 changed LR from {cfg.optimizer.lr} to {new_lr}"
             )
             cfg.optimizer.lr = new_lr
-
-    @staticmethod
-    def register_checkpoint_hook(checkpoint_config):
-        if checkpoint_config.get("type", False):
-            hook = mmcv.build_from_cfg(checkpoint_config, HOOKS)
-        else:
-            checkpoint_config.setdefault("type", "CheckpointHook")
-            hook = mmcv.build_from_cfg(checkpoint_config, HOOKS)
-        return hook

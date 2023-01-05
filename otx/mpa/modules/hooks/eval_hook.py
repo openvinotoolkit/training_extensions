@@ -7,10 +7,11 @@ from os import path as osp
 import mmcv
 import numpy as np
 import torch
-from mmcv.runner import Hook
+from mmcv.runner import HOOKS, Hook
 from torch.utils.data import DataLoader
 
 
+@HOOKS.register_module()
 class CustomEvalHook(Hook):
     """Custom Evaluation hook for the MPA
 
@@ -42,22 +43,25 @@ class CustomEvalHook(Hook):
             elif metric.count("accuracy") > 0:
                 self.metric = "top-1"
 
-    def after_train_epoch(self, runner):
-        if not self.by_epoch or not self.every_n_epochs(runner, self.interval):
-            return
+    def _do_evaluate(self, runner, ema=False):
+        """perform evaluation"""
         results = single_gpu_test(runner.model, self.dataloader)
-        if hasattr(runner, "ema_model") and (runner.epoch >= self.ema_eval_start_epoch):
+        if ema and hasattr(runner, "ema_model") and (runner.epoch >= self.ema_eval_start_epoch):
             results_ema = single_gpu_test(runner.ema_model.module, self.dataloader)
             self.evaluate(runner, results, results_ema)
         else:
             self.evaluate(runner, results)
 
+    def after_train_epoch(self, runner):
+        if not self.by_epoch or not self.every_n_epochs(runner, self.interval):
+            return
+        self._do_evaluate(runner, ema=True)
+
     def after_train_iter(self, runner):
         if self.by_epoch or not self.every_n_iters(runner, self.interval):
             return
         runner.log_buffer.clear()
-        results = single_gpu_test(runner.model, self.dataloader)
-        self.evaluate(runner, results)
+        self._do_evaluate(runner)
 
     def evaluate(self, runner, results, results_ema=None):
         eval_res = self.dataloader.dataset.evaluate(results, logger=runner.logger, **self.eval_kwargs)
@@ -106,6 +110,7 @@ def single_gpu_test(model, data_loader):
     return results
 
 
+@HOOKS.register_module()
 class DistCustomEvalHook(CustomEvalHook):
     def __init__(self, dataloader, interval=1, gpu_collect=False, by_epoch=True, **eval_kwargs):
         if not isinstance(dataloader, DataLoader):
@@ -113,9 +118,8 @@ class DistCustomEvalHook(CustomEvalHook):
         self.gpu_collect = gpu_collect
         super(DistCustomEvalHook, self).__init__(dataloader, interval, by_epoch=by_epoch, **eval_kwargs)
 
-    def after_train_epoch(self, runner):
-        if not self.by_epoch or not self.every_n_epochs(runner, self.interval):
-            return
+    def _do_evaluate(self, runner):
+        """perform evaluation"""
         from mmcls.apis import multi_gpu_test
 
         results = multi_gpu_test(
@@ -124,16 +128,14 @@ class DistCustomEvalHook(CustomEvalHook):
         if runner.rank == 0:
             print("\n")
             self.evaluate(runner, results)
+
+    def after_train_epoch(self, runner):
+        if not self.by_epoch or not self.every_n_epochs(runner, self.interval):
+            return
+        self._do_evaluate(runner)
 
     def after_train_iter(self, runner):
         if self.by_epoch or not self.every_n_iters(runner, self.interval):
             return
-        from mmcls.apis import multi_gpu_test
-
         runner.log_buffer.clear()
-        results = multi_gpu_test(
-            runner.model, self.dataloader, tmpdir=osp.join(runner.work_dir, ".eval_hook"), gpu_collect=self.gpu_collect
-        )
-        if runner.rank == 0:
-            print("\n")
-            self.evaluate(runner, results)
+        self._do_evaluate(runner)

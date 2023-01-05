@@ -7,11 +7,10 @@ import copy
 import numpy as np
 import torch
 from mmcv import ConfigDict, build_from_cfg
-from mmcv.parallel import MMDataParallel, MMDistributedDataParallel
 
+from otx.algorithms.classification.adapters.mmcls.utils.builder import build_classifier
 from otx.mpa.stage import Stage
 from otx.mpa.utils.config_utils import recursively_update_cfg, update_or_add_custom_hook
-from otx.mpa.utils.data_cpu import MMDataCPU
 from otx.mpa.utils.logger import get_logger
 
 logger = get_logger()
@@ -28,7 +27,9 @@ WEIGHT_MIX_CLASSIFIER = ["SAMImageClassifier"]
 
 
 class ClsStage(Stage):
-    def configure(self, model_cfg, model_ckpt, data_cfg, training=True, **kwargs):
+    MODEL_BUILDER = build_classifier
+
+    def configure(self, model_cfg, model_ckpt, data_cfg, training=True, **kwargs):  # noqa: C901
         """Create MMCV-consumable config from given inputs"""
         logger.info(f"configure: training={training}")
 
@@ -89,9 +90,7 @@ class ClsStage(Stage):
             if dst_classes is not None:
                 self.model_classes = dst_classes
         else:
-            if "num_classes" not in cfg.data:
-                cfg.data.num_classes = len(cfg.data.train.get("classes", []))
-            cfg.model.head.num_classes = cfg.data.num_classes
+            cfg.model.head.num_classes = len(cfg.data.train.get("data_classe", []))
 
         if cfg.model.head.get("topk", False) and isinstance(cfg.model.head.topk, tuple):
             cfg.model.head.topk = (1,) if cfg.model.head.num_classes < 5 else (1, 5)
@@ -161,9 +160,8 @@ class ClsStage(Stage):
 
             # checking task incremental model configurations
 
-    # noqa: C901
     @staticmethod
-    def configure_task(cfg, training, model_meta=None, **kwargs):
+    def configure_task(cfg, training, model_meta=None, **kwargs):  # noqa: C901
         """Configure for Task Adaptation Task"""
         task_adapt_type = cfg["task_adapt"].get("type", None)
         adapt_type = cfg["task_adapt"].get("op", "REPLACE")
@@ -290,27 +288,6 @@ class ClsStage(Stage):
                 cfg.model.head.num_classes = len(train_data_cfg.dst_classes)
                 cfg.model.head.num_old_classes = len(old_classes)
         return model_tasks, dst_classes
-
-    def _put_model_on_gpu(self, model, cfg):
-        if torch.cuda.is_available():
-            model = model.cuda()
-            if self.distributed:
-                # put model on gpus
-                find_unused_parameters = cfg.get("find_unused_parameters", False)
-                # Sets the `find_unused_parameters` parameter in
-                # torch.nn.parallel.DistributedDataParallel
-                model = MMDistributedDataParallel(
-                    model,
-                    device_ids=[torch.cuda.current_device()],
-                    broadcast_buffers=False,
-                    find_unused_parameters=find_unused_parameters,
-                )
-            else:
-                model = MMDataParallel(model.cuda(), device_ids=[0])
-        else:
-            model = MMDataCPU(model)
-
-        return model
 
 
 def refine_tasks(train_cfg, meta, adapt_type):

@@ -24,17 +24,7 @@ class SemiSLDetectionStage(IncrDetectionStage):
             if "unlabeled" in cfg.data:
                 if len(cfg.data.unlabeled.get("pipeline", [])) == 0:
                     cfg.data.unlabeled.pipeline = cfg.data.train.pipeline.copy()
-                update_or_add_custom_hook(
-                    cfg,
-                    ConfigDict(
-                        type="UnlabeledDataHook",
-                        unlabeled_data_cfg=cfg.data.unlabeled,
-                        samples_per_gpu=cfg.data.unlabeled.pop("samples_per_gpu", cfg.data.samples_per_gpu),
-                        workers_per_gpu=cfg.data.unlabeled.pop("workers_per_gpu", cfg.data.workers_per_gpu),
-                        model_task=cfg.model_task,
-                        seed=cfg.seed,
-                    ),
-                )
+                self.configure_unlabeled_dataloader(cfg, self.distributed)
 
     def configure_task(self, cfg, training, **kwargs):
         logger.info(f"Semi-SL task config!!!!: training={training}")

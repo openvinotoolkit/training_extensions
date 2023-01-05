@@ -2,7 +2,7 @@ _base_ = "./encoder_decoder.ote.py"
 
 __norm_cfg = dict(type="BN", requires_grad=True)
 model = dict(
-    type="ClassIncrSegmentor",
+    type="ClassIncrEncoderDecoder",
     decode_head=dict(
         type="FCNHead",
         in_channels=40,

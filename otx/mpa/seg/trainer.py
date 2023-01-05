@@ -4,30 +4,26 @@
 
 import glob
 import os
+import os.path as osp
 import time
 
-import mmcv
 from mmcv import get_git_hash
 from mmseg import __version__
-from mmseg.models import build_segmentor
+from mmseg.apis import train_segmentor
+from mmseg.datasets import build_dataset
 from mmseg.utils import collect_env
 from torch import nn
 
 from otx.mpa.registry import STAGES
 from otx.mpa.utils.logger import get_logger
 
-from .builder import build_dataset
 from .stage import SegStage
-from .train import train_segmentor
 
 logger = get_logger()
 
 
 @STAGES.register_module()
 class SegTrainer(SegStage):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
     def run(self, model_cfg, model_ckpt, data_cfg, **kwargs):
         """Run training stage for segmentation
 
@@ -38,17 +34,14 @@ class SegTrainer(SegStage):
         self._init_logger()
         mode = kwargs.get("mode", "train")
         if mode not in self.mode:
+            logger.warning(f"Supported modes are {self.mode} but '{mode}' is given.")
             return {}
 
         cfg = self.configure(model_cfg, model_ckpt, data_cfg, **kwargs)
+        logger.info("train!")
 
         if cfg.runner.type == "IterBasedRunner":
             cfg.runner = dict(type=cfg.runner.type, max_iters=cfg.runner.max_iters)
-
-        logger.info("train!")
-
-        # Work directory
-        mmcv.mkdir_or_exist(os.path.abspath(cfg.work_dir))
 
         timestamp = time.strftime("%Y%m%d_%H%M%S", time.localtime())
 
@@ -85,10 +78,17 @@ class SegTrainer(SegStage):
         meta["seed"] = cfg.seed
         meta["exp_name"] = cfg.work_dir
         if cfg.checkpoint_config is not None:
-            cfg.checkpoint_config.meta = dict(mmseg_version=__version__ + get_git_hash()[:7], CLASSES=target_classes)
+            cfg.checkpoint_config.meta = dict(
+                mmseg_version=__version__ + get_git_hash()[:7],
+                CLASSES=target_classes,
+            )
+
+        self.configure_fp16_optimizer(cfg, self.distributed)
 
         # Model
-        model = build_segmentor(cfg.model)
+        model_builder = kwargs.get("model_builder", None)
+        model = self.build_model(cfg, model_builder)
+        model.train()
         model.CLASSES = target_classes
 
         if self.distributed:
@@ -96,7 +96,13 @@ class SegTrainer(SegStage):
 
         validate = True if cfg.data.get("val", None) else False
         train_segmentor(
-            model, datasets, cfg, distributed=self.distributed, validate=validate, timestamp=timestamp, meta=meta
+            model,
+            datasets,
+            cfg,
+            distributed=self.distributed,
+            validate=validate,
+            timestamp=timestamp,
+            meta=meta,
         )
 
         # Save outputs
@@ -107,7 +113,18 @@ class SegTrainer(SegStage):
         best_ckpt_path = glob.glob(os.path.join(cfg.work_dir, "best_mIoU_*.pth"))
         if len(best_ckpt_path) > 0:
             output_ckpt_path = best_ckpt_path[0]
-        return dict(final_ckpt=output_ckpt_path)
+        # NNCF model
+        compression_state_path = osp.join(cfg.work_dir, "compression_state.pth")
+        if not os.path.exists(compression_state_path):
+            compression_state_path = None
+        before_ckpt_path = osp.join(cfg.work_dir, "before_training.pth")
+        if not os.path.exists(before_ckpt_path):
+            before_ckpt_path = None
+        return dict(
+            final_ckpt=output_ckpt_path,
+            compression_state_path=compression_state_path,
+            before_ckpt_path=before_ckpt_path,
+        )
 
     def _modify_cfg_for_distributed(self, model, cfg):
         nn.SyncBatchNorm.convert_sync_batchnorm(model)

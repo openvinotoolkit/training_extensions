@@ -7,6 +7,7 @@ import functools
 from mmdet.models.builder import DETECTORS
 from mmdet.models.detectors.atss import ATSS
 
+from otx.mpa.deploy.utils import is_mmdeploy_enabled
 from otx.mpa.modules.utils.task_adapt import map_class_names
 from otx.mpa.utils.logger import get_logger
 
@@ -68,3 +69,22 @@ class CustomATSS(SAMDetectorMixin, L2SPDetectorMixin, ATSS):
 
             # Replace checkpoint weight by mixed weights
             chkpt_dict[chkpt_name] = model_param
+
+
+if is_mmdeploy_enabled():
+    from mmdeploy.core import FUNCTION_REWRITER
+
+    from otx.mpa.modules.hooks.recording_forward_hooks import (
+        DetSaliencyMapHook,
+        FeatureVectorHook,
+    )
+
+    @FUNCTION_REWRITER.register_rewriter("otx.mpa.modules.models.detectors.custom_atss_detector.CustomATSS.simple_test")
+    def custom_atss__simple_test(ctx, self, img, img_metas, **kwargs):
+        feat = self.extract_feat(img)
+        outs = self.bbox_head(feat)
+        bbox_results = self.bbox_head.get_bboxes(*outs, img_metas=img_metas, cfg=self.test_cfg, **kwargs)
+        feature_vector = FeatureVectorHook.func(feat)
+        cls_scores = outs[0]
+        saliency_map = DetSaliencyMapHook(self).func(cls_scores, cls_scores_provided=True)
+        return (*bbox_results, feature_vector, saliency_map)

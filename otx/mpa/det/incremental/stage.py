@@ -8,7 +8,6 @@ from mmcv import ConfigDict
 from mmdet.datasets import build_dataset
 
 from otx.mpa.det.stage import DetectionStage
-from otx.mpa.stage import Stage
 from otx.mpa.utils.config_utils import update_or_add_custom_hook
 from otx.mpa.utils.logger import get_logger
 
@@ -17,9 +16,6 @@ logger = get_logger()
 
 class IncrDetectionStage(DetectionStage):
     """Patch config to support incremental learning for object detection"""
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
 
     def configure_task(self, cfg, training, **kwargs):
         """Patch config to support incremental learning"""
@@ -164,7 +160,7 @@ class IncrDetectionStage(DetectionStage):
             if cfg.data.train.type == "MultiImageMixDataset":
                 cfg.data.train.pop("ann_file", None)
                 cfg.data.train.pop("img_prefix", None)
-                cfg.data.train["labels"] = cfg.data.train.pop("labels", None)
+                cfg.data.train.pop("labels", None)
                 self.add_yolox_hooks(cfg)
 
         if cfg.get("ignore", False):
@@ -226,7 +222,7 @@ class IncrDetectionStage(DetectionStage):
         new_classes = np.setdiff1d(model_classes, org_model_classes).tolist()
         old_classes = np.intersect1d(org_model_classes, model_classes).tolist()
 
-        src_data_cfg = Stage.get_data_cfg(cfg, "train")
+        src_data_cfg = IncrDetectionStage.get_data_cfg(cfg, "train")
 
         ids_old, ids_new = [], []
         data_cfg = cfg.data.test.copy()
@@ -256,16 +252,32 @@ class IncrDetectionStage(DetectionStage):
 
     @staticmethod
     def add_yolox_hooks(cfg):
-        update_or_add_custom_hook(cfg, ConfigDict(type="YOLOXModeSwitchHook", num_last_epochs=15, priority=48))
         update_or_add_custom_hook(
             cfg,
             ConfigDict(
-                type="SyncRandomSizeHook",
-                ratio_range=(10, 20),
-                img_scale=(640, 640),
-                interval=1,
+                type="YOLOXModeSwitchHook",
+                num_last_epochs=15,
                 priority=48,
-                device="cuda" if torch.cuda.is_available() else "cpu",
             ),
         )
-        update_or_add_custom_hook(cfg, ConfigDict(type="SyncNormHook", num_last_epochs=15, interval=1, priority=48))
+        # FIXME: is this hook deprecated?
+        #  update_or_add_custom_hook(
+        #      cfg,
+        #      ConfigDict(
+        #          type="SyncRandomSizeHook",
+        #          ratio_range=(10, 20),
+        #          img_scale=(640, 640),
+        #          interval=1,
+        #          priority=48,
+        #          device="cuda" if torch.cuda.is_available() else "cpu",
+        #      ),
+        #  )
+        update_or_add_custom_hook(
+            cfg,
+            ConfigDict(
+                type="SyncNormHook",
+                num_last_epochs=15,
+                interval=1,
+                priority=48,
+            ),
+        )

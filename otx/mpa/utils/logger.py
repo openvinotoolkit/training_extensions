@@ -102,10 +102,9 @@ class _DummyLogger(logging.Logger):
 
 
 # apply decorator @master_only to the lower severity logging functions
-# TODO: need to check whether it works as expected
 _logging_methods = ["print", "debug", "info", "warning"]
 for fn in _logging_methods:
-    master_only(getattr(_logger, fn))
+    setattr(_logger, fn, master_only(getattr(_logger, fn)))
 
 
 def get_logger():

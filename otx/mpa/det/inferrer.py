@@ -1,22 +1,22 @@
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
+
 from contextlib import nullcontext
 
 import torch
-from mmcv.parallel import is_module_wrapper
-from mmcv.runner import load_checkpoint
-from mmdet.datasets import (
-    ImageTilingDataset,
+from mmcv.utils import Config, ConfigDict
+from mmdet.datasets import build_dataloader as mmdet_build_dataloader
+from mmdet.datasets import build_dataset as mmdet_build_dataset
+from mmdet.datasets import replace_ImageToTensor
+from mmdet.models.detectors import TwoStageDetector
+
+from otx.algorithms.common.adapters.mmcv.utils import (
+    build_data_parallel,
     build_dataloader,
     build_dataset,
-    replace_ImageToTensor,
 )
-from mmdet.models import build_detector
-from mmdet.models.detectors import TwoStageDetector
-from mmdet.utils.misc import prepare_mmdet_model_for_execution
-
-from otx.mpa.det.incremental import IncrDetectionStage
+from otx.mpa.modules.datasets.det_tiling_dataset import ImageTilingDataset
 from otx.mpa.modules.hooks.recording_forward_hooks import (
     ActivationMapHook,
     DetSaliencyMapHook,
@@ -25,13 +25,16 @@ from otx.mpa.modules.hooks.recording_forward_hooks import (
 from otx.mpa.registry import STAGES
 from otx.mpa.utils.logger import get_logger
 
+from .incremental import IncrDetectionStage
+
 logger = get_logger()
 
 
 @STAGES.register_module()
 class DetectionInferrer(IncrDetectionStage):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.dataset = None
 
     def run(self, model_cfg, model_ckpt, data_cfg, **kwargs):
         """Run inference stage for detection
@@ -42,20 +45,24 @@ class DetectionInferrer(IncrDetectionStage):
         """
         self._init_logger()
         mode = kwargs.get("mode", "train")
-        eval = kwargs.pop("eval", False)
-        dump_features = kwargs.pop("dump_features", False)
-        dump_saliency_map = kwargs.pop("dump_saliency_map", False)
         if mode not in self.mode:
+            logger.warning(f"Supported modes are {self.mode} but '{mode}' is given.")
             return {}
 
         cfg = self.configure(model_cfg, model_ckpt, data_cfg, training=False, **kwargs)
-        # cfg.dump(osp.join(cfg.work_dir, 'config.py'))
-        # logger.info(f'Config:\n{cfg.pretty_text}')
-        # logger.info('infer!')
+        logger.info("infer!")
 
-        # mmcv.mkdir_or_exist(osp.abspath(cfg.work_dir))
-
-        outputs = self.infer(cfg, eval=eval, dump_features=dump_features, dump_saliency_map=dump_saliency_map)
+        model_builder = kwargs.get("model_builder", None)
+        dump_features = kwargs.get("dump_features", False)
+        dump_saliency_map = kwargs.get("dump_saliency_map", False)
+        eval = kwargs.get("eval", False)
+        outputs = self.infer(
+            cfg,
+            model_builder=model_builder,
+            eval=eval,
+            dump_features=dump_features,
+            dump_saliency_map=dump_saliency_map,
+        )
 
         # Save outputs
         # output_file_path = osp.join(cfg.work_dir, 'infer_result.npy')
@@ -78,14 +85,18 @@ class DetectionInferrer(IncrDetectionStage):
         print(json_dump)
         """
 
-    # noqa: C901
-    def infer(self, cfg, eval=False, dump_features=False, dump_saliency_map=False):
-        samples_per_gpu = cfg.data.test.pop("samples_per_gpu", 1)
-        if samples_per_gpu > 1:
-            # Replace 'ImageToTensor' to 'DefaultFormatBundle'
-            cfg.data.test.pipeline = replace_ImageToTensor(cfg.data.test.pipeline)
+    def infer(self, cfg, model_builder=None, eval=False, dump_features=False, dump_saliency_map=False):
+        # TODO: distributed inference
 
         data_cfg = cfg.data.test.copy()
+        samples_per_gpu = cfg.data.test_dataloader.get(
+            "samples_per_gpu",
+            cfg.data.get("samples_per_gpu", 1),
+        )
+        if samples_per_gpu > 1:
+            # Replace 'ImageToTensor' to 'DefaultFormatBundle'
+            data_cfg.pipeline = replace_ImageToTensor(data_cfg.pipeline)
+
         # Input source
         if "input_source" in cfg:
             input_source = cfg.get("input_source")
@@ -99,16 +110,28 @@ class DetectionInferrer(IncrDetectionStage):
             data_cfg.img_prefix = src_data_cfg.img_prefix
             if "classes" in src_data_cfg:
                 data_cfg.classes = src_data_cfg.classes
-        self.dataset = build_dataset(data_cfg)
-        dataset = self.dataset
+
+        data_cfg = Config(
+            ConfigDict(
+                data=ConfigDict(
+                    samples_per_gpu=cfg.data.get("samples_per_gpu", 1),
+                    workers_per_gpu=cfg.data.get("workers_per_gpu", 0),
+                    test=data_cfg,
+                    test_dataloader=cfg.data.get("test_dataloader", {}).copy(),
+                ),
+                gpu_ids=cfg.gpu_ids,
+                seed=cfg.get("seed", None),
+            )
+        )
 
         # Data loader
-        data_loader = build_dataloader(
-            dataset,
-            samples_per_gpu=samples_per_gpu,
-            workers_per_gpu=cfg.data.workers_per_gpu,
-            dist=False,
-            shuffle=False,
+        self.dataset = build_dataset(data_cfg, "test", mmdet_build_dataset)
+        test_dataloader = build_dataloader(
+            self.dataset,
+            data_cfg,
+            "test",
+            mmdet_build_dataloader,
+            distributed=False,
         )
 
         # Target classes
@@ -117,10 +140,10 @@ class DetectionInferrer(IncrDetectionStage):
             if len(target_classes) < 1:
                 raise KeyError(
                     f"target_classes={target_classes} is empty check the metadata from model ckpt or recipe "
-                    f"configuration"
+                    "configuration"
                 )
         else:
-            target_classes = dataset.CLASSES
+            target_classes = self.dataset.CLASSES
 
         # Model
         cfg.model.pretrained = None
@@ -133,45 +156,29 @@ class DetectionInferrer(IncrDetectionStage):
             elif cfg.model.neck.get("rfp_backbone"):
                 if cfg.model.neck.rfp_backbone.get("pretrained"):
                     cfg.model.neck.rfp_backbone.pretrained = None
-
-        model = build_detector(cfg.model)
-        model.CLASSES = target_classes
-
         # TODO: Check Inference FP16 Support
-        # fp16_cfg = cfg.get('fp16', None)
-        # if fp16_cfg is not None:
-        #     wrap_fp16_model(model)
+        model = self.build_model(cfg, model_builder, fp16=False)
+        model.CLASSES = target_classes
+        model.eval()
+        model = build_data_parallel(model, cfg, distributed=False)
 
         # InferenceProgressCallback (Time Monitor enable into Infer task)
         self.set_inference_progress_callback(model, cfg)
 
-        # Checkpoint
-        if cfg.get("load_from", None):
-            load_checkpoint(model, cfg.load_from, map_location="cpu")
-
-        model.eval()
-        if torch.cuda.is_available():
-            model = model.cuda()
-        eval_model = prepare_mmdet_model_for_execution(model, cfg, self.distributed)
-
-        # Use a single gpu for testing. Set in both mm_val_dataloader and eval_model
-        if is_module_wrapper(model):
-            model = model.module
-
         # Class-wise Saliency map for Single-Stage Detector, otherwise use class-ignore saliency map.
         if not dump_saliency_map:
             saliency_hook = nullcontext()
-        elif isinstance(model, TwoStageDetector):
-            saliency_hook = ActivationMapHook(eval_model.module)
+        elif isinstance(model.module, TwoStageDetector):
+            saliency_hook = ActivationMapHook(model.module)
         else:
-            saliency_hook = DetSaliencyMapHook(eval_model.module)
+            saliency_hook = DetSaliencyMapHook(model.module)
 
         eval_predictions = []
-        with FeatureVectorHook(eval_model.module) if dump_features else nullcontext() as feature_vector_hook:
+        with FeatureVectorHook(model.module) if dump_features else nullcontext() as feature_vector_hook:
             with saliency_hook:
-                for data in data_loader:
+                for data in test_dataloader:
                     with torch.no_grad():
-                        result = eval_model(return_loss=False, rescale=True, **data)
+                        result = model(return_loss=False, rescale=True, **data)
                     eval_predictions.extend(result)
                 feature_vectors = feature_vector_hook.records if dump_features else [None] * len(self.dataset)
                 saliency_maps = saliency_hook.records if dump_saliency_map else [None] * len(self.dataset)
@@ -181,10 +188,11 @@ class DetectionInferrer(IncrDetectionStage):
 
         metric = None
         if eval:
-            metric = dataset.evaluate(eval_predictions, **cfg.evaluation)
+            metric = self.dataset.evaluate(eval_predictions, **cfg.evaluation)
             metric = metric["mAP"] if isinstance(cfg.evaluation.metric, list) else metric[cfg.evaluation.metric]
 
         # Check and unwrap ImageTilingDataset object from TaskAdaptEvalDataset
+        dataset = self.dataset
         while hasattr(dataset, "dataset") and not isinstance(dataset, ImageTilingDataset):
             dataset = dataset.dataset
 

@@ -2,17 +2,21 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+import importlib
 import json
 import os
 import os.path as osp
 import random
 import time
+from typing import Any, Callable, Dict, Optional
 
 import mmcv
 import numpy as np
 import torch
 from mmcv import Config, ConfigDict
-from mmcv.runner import CheckpointLoader
+from mmcv.runner import CheckpointLoader, wrap_fp16_model
+
+from otx.algorithms.common.adapters.mmcv.utils import build_dataloader, build_dataset
 
 from .registry import STAGES
 from .utils.config_utils import MPAConfig, update_or_add_custom_hook
@@ -52,6 +56,8 @@ def get_available_types():
 
 # @STAGES.register_module()
 class Stage(object):
+    MODEL_BUILDER = None
+
     def __init__(self, name, mode, config, common_cfg={}, index=0, **kwargs):
         logger.debug(f"init stage with: {name}, {mode}, {config}, {common_cfg}, {index}, {kwargs}")
         # the name of 'config' cannot be changed to such as 'config_file'
@@ -129,7 +135,7 @@ class Stage(object):
                         )
                         cfg.checkpoint_config.interval = max_epochs
 
-        if hasattr(cfg, "seed"):
+        if cfg.get("seed", None) is not None:
             _set_random_seed(cfg.seed, deterministic=cfg.get("deterministic", False))
         else:
             cfg.seed = None
@@ -147,9 +153,9 @@ class Stage(object):
 
         self.cfg = cfg
 
-        self.__init_gpu_usage()
+        self.__init_device()
 
-    def __init_gpu_usage(self):
+    def __init_device(self):
         if torch.distributed.is_initialized():
             self._distributed = True
             self.cfg.gpu_ids = [torch.distributed.get_rank(group=None)]
@@ -160,6 +166,13 @@ class Stage(object):
                 self.cfg.gpu_ids = range(len(gpu_ids.split(",")))
             else:
                 self.cfg.gpu_ids = range(1)
+
+        # consider "cuda" and "cpu" device only
+        if not torch.cuda.is_available():
+            self.cfg.device = "cpu"
+            self.cfg.gpu_ids = range(-1, 0)
+        else:
+            self.cfg.device = "cuda"
 
     @property
     def distributed(self):
@@ -255,6 +268,64 @@ class Stage(object):
             for opt_key, opt in custom_hook_options.items():
                 if hook["type"] == opt_key:
                     update_hook(opt, custom_hooks, idx, hook)
+
+    @staticmethod
+    def configure_fp16_optimizer(cfg: Config, distributed: bool = False):
+        """
+        Configure Fp16OptimizerHook and Fp16SAMOptimizerHook.
+        """
+
+        fp16_config = cfg.pop("fp16", None)
+        if fp16_config is not None:
+            optim_type = cfg.optimizer_config.get("type", "OptimizerHook")
+            opts: Dict[str, Any] = dict(
+                distributed=distributed,
+                **fp16_config,
+            )
+            if optim_type == "SAMOptimizerHook":
+                opts["type"] = "Fp16SAMOptimizerHook"
+            elif optim_type == "OptimizerHook":
+                opts["type"] = "Fp16OptimizerHook"
+            else:
+                # does not support optimizerhook type
+                # let mm library handle it
+                cfg.fp16 = fp16_config
+                opts = dict()
+            cfg.optimizer_config.update(opts)
+
+    @staticmethod
+    def configure_unlabeled_dataloader(cfg: Config, distributed: bool = False):
+        MODEL_TASK = {"classification": "mmcls", "detection": "mmdet", "segmentation": "mmseg"}
+
+        if "unlabeled" in cfg.data:
+            task_lib_module = importlib.import_module(f"{MODEL_TASK[cfg.model_task]}.datasets")
+            dataset_builder = getattr(task_lib_module, "build_dataset")
+            dataloader_builder = getattr(task_lib_module, "build_dataloader")
+
+            dataset = build_dataset(cfg, "unlabeled", dataset_builder, consume=True)
+            unlabeled_dataloader = build_dataloader(
+                dataset,
+                cfg,
+                "unlabeled",
+                dataloader_builder,
+                distributed=distributed,
+                consume=True,
+            )
+
+            custom_hooks = cfg.get("custom_hooks", [])
+            updated = False
+            for custom_hook in custom_hooks:
+                if custom_hook["type"] == "ComposedDataLoadersHook":
+                    custom_hook["data_loaders"] = [*custom_hook["data_loaders"], unlabeled_dataloader]
+                    updated = True
+            if not updated:
+                custom_hooks.append(
+                    ConfigDict(
+                        type="ComposedDataLoadersHook",
+                        data_loaders=unlabeled_dataloader,
+                    )
+                )
+            cfg.custom_hooks = custom_hooks
 
     @staticmethod
     def get_model_meta(cfg):
@@ -354,3 +425,20 @@ class Stage(object):
 
             model.register_forward_pre_hook(pre_hook)
             model.register_forward_hook(hook)
+
+    @classmethod
+    def build_model(
+        cls,
+        cfg: Config,
+        model_builder: Optional[Callable] = None,
+        *,
+        fp16: bool = False,
+        **kwargs,
+    ) -> torch.nn.Module:
+        if model_builder is None:
+            model_builder = cls.MODEL_BUILDER
+        assert model_builder is not None
+        model = model_builder(cfg, **kwargs)
+        if bool(fp16):
+            wrap_fp16_model(model)
+        return model

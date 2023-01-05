@@ -2,28 +2,34 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import os.path as osp
 from contextlib import nullcontext
 
-import mmcv
 import torch
-from mmcv.parallel import MMDataParallel, MMDistributedDataParallel
-from mmcv.runner import load_checkpoint, wrap_fp16_model
-from mmseg.datasets import build_dataloader, build_dataset
-from mmseg.models import build_segmentor
-from mmseg.parallel import MMDataCPU
+from mmcv.runner import wrap_fp16_model
+from mmcv.utils import Config, ConfigDict
+from mmseg.datasets import build_dataloader as mmseg_build_dataloader
+from mmseg.datasets import build_dataset as mmseg_build_dataset
 
+from otx.algorithms.common.adapters.mmcv.utils import (
+    build_data_parallel,
+    build_dataloader,
+    build_dataset,
+)
 from otx.mpa.modules.hooks.recording_forward_hooks import FeatureVectorHook
 from otx.mpa.registry import STAGES
 from otx.mpa.stage import Stage
+from otx.mpa.utils.logger import get_logger
 
 from .stage import SegStage
+
+logger = get_logger()
 
 
 @STAGES.register_module()
 class SegInferrer(SegStage):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.dataset = None
 
     def run(self, model_cfg, model_ckpt, data_cfg, **kwargs):
         """Run inference stage for segmentation
@@ -33,56 +39,79 @@ class SegInferrer(SegStage):
         - Run inference via MMSegmentation -> MMCV
         """
         self._init_logger()
-        dump_features = kwargs.get("dump_features", False)
         mode = kwargs.get("mode", "train")
         if mode not in self.mode:
+            logger.warning(f"Supported modes are {self.mode} but '{mode}' is given.")
             return {}
 
         cfg = self.configure(model_cfg, model_ckpt, data_cfg, training=False, **kwargs)
-        self.logger.info("infer!")
+        logger.info("infer!")
 
-        mmcv.mkdir_or_exist(osp.abspath(cfg.work_dir))
-
-        outputs = self.infer(cfg, dump_features)
+        model_builder = kwargs.get("model_builder", None)
+        dump_features = kwargs.get("dump_features", False)
+        outputs = self.infer(
+            cfg,
+            model_builder=model_builder,
+            dump_features=dump_features,
+        )
 
         return dict(outputs=outputs)
 
-    def infer(self, cfg, dump_features=False):
-        samples_per_gpu = cfg.data.test.pop("samples_per_gpu", 1)
+    def infer(self, cfg, model_builder=None, dump_features=False):
+        # TODO: distributed inference
+
+        data_cfg = cfg.data.test.copy()
+        samples_per_gpu = cfg.data.test_dataloader.get(
+            "samples_per_gpu",
+            cfg.data.get("samples_per_gpu", 1),
+        )
         if samples_per_gpu > 1:
             # Replace 'ImageToTensor' to 'DefaultFormatBundle'
-            cfg.data.test.pipeline = replace_ImageToTensor(cfg.data.test.pipeline)
+            data_cfg.pipeline = replace_ImageToTensor(data_cfg.pipeline)
 
         # Input source
         input_source = cfg.get("input_source", "test")
-        self.logger.info(f"Inferring on input source: data.{input_source}")
+        logger.info(f"Inferring on input source: data.{input_source}")
         if input_source == "train":
             src_data_cfg = Stage.get_data_cfg(cfg, "train")
         else:
             src_data_cfg = cfg.data[input_source]
-        data_cfg = cfg.data.test.copy()
         # data_cfg.ann_file = src_data_cfg.ann_file
         # data_cfg.img_prefix = src_data_cfg.img_prefix
         if "classes" in src_data_cfg:
             data_cfg.classes = src_data_cfg.classes
             data_cfg.new_classes = []
-        self.dataset = build_dataset(data_cfg)
-        dataset = self.dataset
+
+        data_cfg = Config(
+            ConfigDict(
+                data=ConfigDict(
+                    samples_per_gpu=cfg.data.get("samples_per_gpu", 1),
+                    workers_per_gpu=cfg.data.get("workers_per_gpu", 0),
+                    test=data_cfg,
+                    test_dataloader=cfg.data.get("test_dataloader", {}).copy(),
+                ),
+                gpu_ids=cfg.gpu_ids,
+                seed=cfg.get("seed", None),
+            )
+        )
 
         # Data loader
-        mm_val_dataloader = build_dataloader(
-            dataset,
-            samples_per_gpu=samples_per_gpu,
-            workers_per_gpu=cfg.data.workers_per_gpu,
-            dist=False,
-            shuffle=False,
+        self.dataset = build_dataset(data_cfg, "test", mmseg_build_dataset)
+        test_dataloader = build_dataloader(
+            self.dataset,
+            data_cfg,
+            "test",
+            mmseg_build_dataloader,
+            distributed=False,
+            # segmentor does not support various sized batch images
+            samples_per_gpu=1,
         )
 
         # Target classes
         if "task_adapt" in cfg:
             target_classes = cfg.task_adapt.final
         else:
-            target_classes = dataset.CLASSES
+            target_classes = self.dataset.CLASSES
 
         # Model
         cfg.model.pretrained = None
@@ -96,43 +125,18 @@ class SegInferrer(SegStage):
                 if cfg.model.neck.rfp_backbone.get("pretrained"):
                     cfg.model.neck.rfp_backbone.pretrained = None
         cfg.model.test_cfg.return_repr_vector = True
-        model = build_segmentor(cfg.model, train_cfg=None, test_cfg=None)
+        model = self.build_model(cfg, model_builder, fp16=cfg.get("fp16", False))
         model.CLASSES = target_classes
-
-        fp16_cfg = cfg.get("fp16", None)
-        if fp16_cfg is not None:
-            wrap_fp16_model(model)
-
-        # Checkpoint
-        if cfg.get("load_from", None):
-            _ = load_checkpoint(model, cfg.load_from, map_location="cpu")
-
-        # Inference
         model.eval()
-        if torch.cuda.is_available():
-            if self.distributed:
-                model = model.cuda()
-                find_unused_parameters = cfg.get("find_unused_parameters", False)
-                # Sets the `find_unused_parameters` parameter in
-                # torch.nn.parallel.DistributedDataParallel
-                model = MMDistributedDataParallel(
-                    model,
-                    device_ids=[torch.cuda.current_device()],
-                    broadcast_buffers=False,
-                    find_unused_parameters=find_unused_parameters,
-                )
-            else:
-                model = MMDataParallel(model.cuda(), device_ids=[0])
-        else:
-            model = MMDataCPU(model)
+        model = build_data_parallel(model, cfg, distributed=False)
 
         # InferenceProgressCallback (Time Monitor enable into Infer task)
-        SegStage.set_inference_progress_callback(model, cfg)
+        self.set_inference_progress_callback(model, cfg)
 
         eval_predictions = []
         feature_vectors = []
         with FeatureVectorHook(model.module) if dump_features else nullcontext() as fhook:
-            for data in mm_val_dataloader:
+            for data in test_dataloader:
                 with torch.no_grad():
                     result = model(return_loss=False, output_logits=True, **data)
                 eval_predictions.append(result)

@@ -7,12 +7,20 @@ import os
 import subprocess
 import sys
 import warnings
+from glob import glob
 from importlib.util import module_from_spec, spec_from_file_location
 from pathlib import Path
 from typing import List, Optional, Union
 
 from pkg_resources import Requirement
 from setuptools import find_packages, setup
+
+try:
+    from torch.utils.cpp_extension import CppExtension, BuildExtension
+    cmd_class = {'build_ext': BuildExtension}
+except ModuleNotFoundError:
+    cmd_class = {}
+    print('Skip building ext ops due to the absence of torch.')
 
 
 def load_module(name: str = "otx/__init__.py"):
@@ -243,6 +251,27 @@ def get_requirements(requirement_files: Union[str, List[str]]) -> List[str]:
     return requirements
 
 
+def get_extensions():
+    extensions = []
+
+    # prevent ninja from using too many resources
+    os.environ.setdefault('MAX_JOBS', '4')
+    extra_compile_args = {'cxx': []}
+
+    # mp.modules._mpl
+    op_files = glob("./otx/mpa/csrc/mpl/*.cpp")
+    include_path = os.path.abspath("./otx/mpa/csrc/mpl")
+    ext_ops = CppExtension(
+        name="otx.mpa.modules._mpl",
+        sources=op_files,
+        include_dirs=[include_path],
+        define_macros=[],
+        extra_compile_args=extra_compile_args)
+    extensions.append(ext_ops)
+
+    return extensions
+
+
 REQUIRED_PACKAGES = get_requirements(requirement_files=["base", "dev", "openvino"])
 EXTRAS_REQUIRE = {
     "action": get_requirements(requirement_files="action"),
@@ -261,6 +290,8 @@ setup(
     version=get_otx_version(),
     packages=find_packages(exclude=("tests",)),
     package_data={"": ["requirements.txt", "README.md", "LICENSE"]},  # Needed for exportable code
+    ext_modules=get_extensions(),
+    cmdclass=cmd_class,
     install_requires=REQUIRED_PACKAGES,
     extras_require=EXTRAS_REQUIRE,
     dependency_links=DEPENDENCY_LINKS,

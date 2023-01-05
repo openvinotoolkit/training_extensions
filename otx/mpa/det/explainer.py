@@ -1,18 +1,18 @@
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-import torch
-from mmcv.runner import load_checkpoint
-from mmdet.datasets import (
-    ImageTilingDataset,
+
+from mmcv.utils import Config, ConfigDict
+from mmdet.datasets import build_dataloader as mmdet_build_dataloader
+from mmdet.datasets import build_dataset as mmdet_build_dataset
+from mmdet.datasets import replace_ImageToTensor
+
+from otx.algorithms.common.adapters.mmcv.utils import (
+    build_data_parallel,
     build_dataloader,
     build_dataset,
-    replace_ImageToTensor,
 )
-from mmdet.models import build_detector
-from mmdet.utils.misc import prepare_mmdet_model_for_execution
-
-from otx.mpa.det.stage import DetectionStage
+from otx.mpa.modules.datasets.det_tiling_dataset import ImageTilingDataset
 from otx.mpa.modules.hooks.recording_forward_hooks import (
     ActivationMapHook,
     DetSaliencyMapHook,
@@ -20,6 +20,8 @@ from otx.mpa.modules.hooks.recording_forward_hooks import (
 )
 from otx.mpa.registry import STAGES
 from otx.mpa.utils.logger import get_logger
+
+from .stage import DetectionStage
 
 logger = get_logger()
 EXPLAINER_HOOK_SELECTOR = {
@@ -31,8 +33,9 @@ EXPLAINER_HOOK_SELECTOR = {
 
 @STAGES.register_module()
 class DetectionExplainer(DetectionStage):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.dataset = None
 
     def run(self, model_cfg, model_ckpt, data_cfg, **kwargs):
         """Run explain stage for detection
@@ -47,18 +50,27 @@ class DetectionExplainer(DetectionStage):
         if self.explainer_hook is None:
             raise NotImplementedError(f"Explainer algorithm {explainer} not supported!")
         logger.info(f"Explainer algorithm: {explainer}")
+
         cfg = self.configure(model_cfg, model_ckpt, data_cfg, training=False, **kwargs)
-        outputs = self.explain(cfg)
+        logger.info("explain!")
+
+        model_builder = kwargs.get("model_builder", None)
+        outputs = self.explain(cfg, model_builder)
 
         return dict(outputs=outputs)
 
-    def explain(self, cfg):
-        samples_per_gpu = cfg.data.test.pop("samples_per_gpu", 1)
-        if samples_per_gpu > 1:
-            # Replace 'ImageToTensor' to 'DefaultFormatBundle'
-            cfg.data.test.pipeline = replace_ImageToTensor(cfg.data.test.pipeline)
+    def explain(self, cfg, model_builder=None):
+        # TODO: distributed inference
 
         data_cfg = cfg.data.test.copy()
+        samples_per_gpu = cfg.data.test_dataloader.get(
+            "samples_per_gpu",
+            cfg.data.get("samples_per_gpu", 1),
+        )
+        if samples_per_gpu > 1:
+            # Replace 'ImageToTensor' to 'DefaultFormatBundle'
+            data_cfg.pipeline = replace_ImageToTensor(data_cfg.pipeline)
+
         # Input source
         if "input_source" in cfg:
             input_source = cfg.get("input_source")
@@ -69,20 +81,32 @@ class DetectionExplainer(DetectionStage):
             data_cfg.img_prefix = src_data_cfg.img_prefix
             if "classes" in src_data_cfg:
                 data_cfg.classes = src_data_cfg.classes
-        self.explain_dataset = build_dataset(data_cfg)
-        explain_dataset = self.explain_dataset
+
+        data_cfg = Config(
+            ConfigDict(
+                data=ConfigDict(
+                    samples_per_gpu=cfg.data.get("samples_per_gpu", 1),
+                    workers_per_gpu=cfg.data.get("workers_per_gpu", 0),
+                    test=data_cfg,
+                    test_dataloader=cfg.data.get("test_dataloader", {}).copy(),
+                ),
+                gpu_ids=cfg.gpu_ids,
+                seed=cfg.get("seed", None),
+            )
+        )
 
         # Data loader
-        explain_data_loader = build_dataloader(
-            explain_dataset,
-            samples_per_gpu=samples_per_gpu,
-            workers_per_gpu=cfg.data.workers_per_gpu,
-            dist=False,
-            shuffle=False,
+        self.dataset = build_dataset(data_cfg, "test", mmdet_build_dataset)
+        test_dataloader = build_dataloader(
+            self.dataset,
+            data_cfg,
+            "test",
+            mmdet_build_dataloader,
+            distributed=False,
         )
 
         # Target classes
-        target_classes = explain_dataset.CLASSES
+        target_classes = self.dataset.CLASSES
         head_names = ("mask_head", "bbox_head", "segm_head")
         num_classes = len(target_classes)
         if "roi_head" in cfg.model:
@@ -111,34 +135,29 @@ class DetectionExplainer(DetectionStage):
             elif cfg.model.neck.get("rfp_backbone"):
                 if cfg.model.neck.rfp_backbone.get("pretrained"):
                     cfg.model.neck.rfp_backbone.pretrained = None
-
-        model = build_detector(cfg.model)
+        # TODO: Check Inference FP16 Support
+        model = self.build_model(cfg, model_builder, fp16=False)
         model.CLASSES = target_classes
-
-        DetectionStage.set_inference_progress_callback(model, cfg)
-
-        # Checkpoint
-        if cfg.get("load_from", None):
-            load_checkpoint(model, cfg.load_from, map_location="cpu")
-
         model.eval()
-        if torch.cuda.is_available():
-            model = model.cuda()
-        eval_model = prepare_mmdet_model_for_execution(model, cfg, self.distributed)
+        model = build_data_parallel(model, cfg, distributed=False)
+
+        # InferenceProgressCallback (Time Monitor enable into Infer task)
+        self.set_inference_progress_callback(model, cfg)
 
         # Class-wise Saliency map for Single-Stage Detector, otherwise use class-ignore saliency map.
-        with self.explainer_hook(eval_model.module) as saliency_hook:
-            for data in explain_data_loader:
-                _ = eval_model(return_loss=False, rescale=True, **data)
+        with self.explainer_hook(model.module) as saliency_hook:
+            for data in test_dataloader:
+                _ = model(return_loss=False, rescale=True, **data)
             saliency_maps = saliency_hook.records
 
         # Check and unwrap ImageTilingDataset object from TaskAdaptEvalDataset
-        while hasattr(explain_dataset, "dataset") and not isinstance(explain_dataset, ImageTilingDataset):
-            explain_dataset = explain_dataset.dataset
+        dataset = self.dataset
+        while hasattr(dataset, "dataset") and not isinstance(dataset, ImageTilingDataset):
+            dataset = dataset.dataset
 
         # In the tiling case, select the first images which is map of the entire image
-        if isinstance(explain_dataset, ImageTilingDataset):
-            saliency_maps = [saliency_maps[i] for i in range(explain_dataset.num_samples)]
+        if isinstance(dataset, ImageTilingDataset):
+            saliency_maps = [saliency_maps[i] for i in range(dataset.num_samples)]
 
         outputs = dict(saliency_maps=saliency_maps)
         return outputs

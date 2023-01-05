@@ -2,13 +2,9 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import numpy as np
-import torch
-from mmcv import ConfigDict
-from mmdet.datasets import build_dataset
-
+from otx.algorithms.detection.adapters.mmdet.utils.builder import build_detector
 from otx.mpa.stage import Stage
-from otx.mpa.utils.config_utils import recursively_update_cfg, update_or_add_custom_hook
+from otx.mpa.utils.config_utils import recursively_update_cfg
 from otx.mpa.utils.logger import get_logger
 
 logger = get_logger()
@@ -17,8 +13,7 @@ logger = get_logger()
 class DetectionStage(Stage):
     """Patch config to support otx train."""
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+    MODEL_BUILDER = build_detector
 
     def configure(self, model_cfg, model_ckpt, data_cfg, training=True, **kwargs):
         """Create MMCV-consumable config from given inputs"""
@@ -34,7 +29,7 @@ class DetectionStage(Stage):
         self.configure_hook(cfg)
         return cfg
 
-    def configure_model(self, cfg, model_cfg, training, **kwargs):
+    def configure_model(self, cfg, model_cfg, training, **kwargs):  # noqa: C901
         """Patch config's model.
         Replace cfg.model to model_cfg
         Change model type to super type
@@ -101,7 +96,7 @@ class DetectionStage(Stage):
         if cfg.get("resume", False):
             cfg.resume_from = cfg.load_from
 
-    def configure_data(self, cfg, data_cfg, training, **kwargs):
+    def configure_data(self, cfg, data_cfg, training, **kwargs):  # noqa: C901
         """Patch cfg.data.
         Merge cfg and data_cfg
         Match cfg.data.train.type to super_type
@@ -118,12 +113,16 @@ class DetectionStage(Stage):
         if training:
             if "dataset" in cfg.data.train:
                 train_cfg = self.get_data_cfg(cfg, "train")
-                train_cfg.otx_dataset = cfg.data.train.pop("otx_dataset", None)
-                train_cfg.labels = cfg.data.train.get("labels", None)
-                train_cfg.data_classes = cfg.data.train.pop("data_classes", None)
-                train_cfg.new_classes = cfg.data.train.pop("new_classes", None)
+                if cfg.data.train.get("otx_dataset", None) is not None:
+                    train_cfg.otx_dataset = cfg.data.train.pop("otx_dataset")
+                if cfg.data.train.get("labels", None) is not None:
+                    train_cfg.labels = cfg.data.train.get("labels")
+                if cfg.data.train.get("data_classes", None) is not None:
+                    train_cfg.data_classes = cfg.data.train.pop("data_classes")
+                if cfg.data.train.get("new_classes", None) is not None:
+                    train_cfg.new_classes = cfg.data.train.pop("new_classes")
 
-    def configure_regularization(self, cfg, training):
+    def configure_regularization(self, cfg, training):  # noqa: C901
         """Patch regularization parameters."""
         if training:
             if cfg.model.get("l2sp_weight", 0.0) > 0.0:

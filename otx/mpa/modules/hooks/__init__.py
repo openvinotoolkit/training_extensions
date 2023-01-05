@@ -6,9 +6,11 @@
 from . import (
     adaptive_training_hooks,
     checkpoint_hook,
+    composed_dataloaders_hook,
     early_stopping_hook,
     eval_before_train_hook,
     fp16_sam_optimizer_hook,
+    freeze_layers_hook,
     gpu_monitor,
     hpo_hook,
     ib_loss_hook,
@@ -24,6 +26,5 @@ from . import (
     semisl_cls_hook,
     task_adapt_hook,
     unbiased_teacher_hook,
-    unlabeled_data_hook,
     workflow_hooks,
 )

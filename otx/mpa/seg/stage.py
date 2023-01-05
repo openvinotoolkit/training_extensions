@@ -3,9 +3,11 @@
 #
 
 import numpy as np
+import torch
 from mmcv import ConfigDict
-from mmseg.utils import get_root_logger
+from mmcv.runner import load_checkpoint
 
+from otx.algorithms.segmentation.adapters.mmseg.utils.builder import build_segmentor
 from otx.mpa.stage import Stage
 from otx.mpa.utils.config_utils import recursively_update_cfg, update_or_add_custom_hook
 from otx.mpa.utils.logger import get_logger
@@ -14,8 +16,7 @@ logger = get_logger()
 
 
 class SegStage(Stage):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+    MODEL_BUILDER = build_segmentor
 
     def configure(self, model_cfg, model_ckpt, data_cfg, training=True, **kwargs):
         """Create MMCV-consumable config from given inputs"""
@@ -89,9 +90,8 @@ class SegStage(Stage):
 
     def configure_task(self, cfg, training, **kwargs):
         """Adjust settings for task adaptation"""
-        self.logger = get_root_logger()
         if cfg.get("task_adapt", None):
-            self.logger.info(f"task config!!!!: training={training}")
+            logger.info(f"task config!!!!: training={training}")
             task_adapt_op = cfg["task_adapt"].get("op", "REPLACE")
 
             # Task classes

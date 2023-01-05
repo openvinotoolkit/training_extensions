@@ -3,4 +3,4 @@
 #
 
 # flake8: noqa
-from . import class_incr_segmentor, mean_teacher_segmentor
+from . import class_incr_encoder_decoder, mean_teacher_segmentor, otx_encoder_decoder
