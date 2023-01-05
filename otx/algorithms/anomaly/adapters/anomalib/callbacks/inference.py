@@ -88,7 +88,12 @@ class AnomalyInferenceCallback(Callback):
             )
 
     def _process_classification_predictions(self, pred_labels: Tensor, pred_scores: Tensor):
+        """Add classification predictions to the dataset items.
 
+        Args:
+            pred_labels (Tensor): Predicted image labels.
+            pred_scores (Tensor): Predicted image-level anomaly scores.
+        """
         for dataset_item, pred_label, pred_score in zip(self.otx_dataset, pred_labels, pred_scores):
             # get label
             label = self.anomalous_label if pred_label else self.normal_label
@@ -104,6 +109,15 @@ class AnomalyInferenceCallback(Callback):
         pred_scores: Tensor,
         image_size: torch.Size,
     ):
+        """Add detection predictions to the dataset items.
+
+        Args:
+            pred_boxes (List[Tensor]): Predicted bounding box locations.
+            box_scores (List[Tensor]): Predicted anomaly scores for the bounding boxes.
+            box_labels (List[Tensor]): Predicted labels for the bounding boxes.
+            pred_scores (Tensor): Predicted image-level anomaly scores.
+            image_size: (torch.Size): Image size of the original images.
+        """
         height, width = image_size
         for dataset_item, im_boxes, im_box_scores, im_box_labels, pred_score in zip(
             self.otx_dataset, pred_boxes, box_scores, box_labels, pred_scores
@@ -130,7 +144,13 @@ class AnomalyInferenceCallback(Callback):
             dataset_item.append_labels([ScoredLabel(label=label, probability=float(probability))])
 
     def _process_segmentation_predictions(self, pred_masks: Tensor, anomaly_maps: Tensor, pred_scores: Tensor):
+        """Add segmentation predictions to the dataset items.
 
+        Args:
+            pred_masks (Tensor): Predicted anomaly masks.
+            anomaly_maps (Tensor): Predicted pixel-level anomaly scores.
+            pred_scores (Tensor): Predicted image-level anomaly scores.
+        """
         for dataset_item, pred_mask, anomaly_map, pred_score in zip(
             self.otx_dataset, pred_masks, anomaly_maps, pred_scores
         ):
