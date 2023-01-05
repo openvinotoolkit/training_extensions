@@ -25,12 +25,10 @@
             }
           },
           "ignored_scopes": [
-            "PadimModel/sqrt_0",
-            "PadimModel/interpolate_2",
-            "PadimModel/__truediv___0",
-            "PadimModel/__truediv___1",
-            "PadimModel/matmul_1",
-            "PadimModel/conv2d_0"
+            "PadimModel/AnomalyMapGenerator[anomaly_map_generator]/sqrt_0",
+            "PadimModel/AnomalyMapGenerator[anomaly_map_generator]/interpolate_0",
+            "PadimModel/AnomalyMapGenerator[anomaly_map_generator]/matmul_0",
+            "PadimModel/AnomalyMapGenerator[anomaly_map_generator]/GaussianBlur2d[blur]/conv2d_0"
           ]
         }
       ]
