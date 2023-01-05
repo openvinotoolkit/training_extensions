@@ -16,6 +16,7 @@ import json
 import os
 import shutil
 import subprocess  # nosec
+import sys
 
 import pytest
 
@@ -49,8 +50,11 @@ def get_template_dir(template, root) -> str:
 
 
 def check_run(cmd, **kwargs):
-    result = subprocess.run(cmd, stderr=subprocess.PIPE, **kwargs)
-    assert result.returncode == 0, result.stderr.decode("utf=8")
+    p = subprocess.Popen(cmd, stderr=subprocess.PIPE, text=True, bufsize=1, **kwargs)
+    for c in iter(lambda: p.stderr.read(1), ""):
+        sys.stderr.write(c)
+    p.communicate()
+    assert p.returncode == 0, "The process returned non zero."
 
 
 def otx_train_testing(template, root, otx_dir, args):
@@ -147,6 +151,7 @@ def otx_eval_testing(template, root, otx_dir, args):
         "--save-performance",
         f"{template_work_dir}/trained_{template.model_template_id}/performance.json",
     ]
+    command_line.extend(args.get("eval_params", []))
     check_run(command_line)
     assert os.path.exists(f"{template_work_dir}/trained_{template.model_template_id}/performance.json")
 

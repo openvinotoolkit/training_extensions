@@ -1,3 +1,5 @@
+"""Detection models dynamic deploy config."""
+
 _base_ = ["./base_detection_static.py"]
 
 ir_config = dict(

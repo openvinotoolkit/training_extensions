@@ -18,7 +18,6 @@
 from functools import partial
 from typing import Optional
 
-
 from otx.algorithms.common.adapters.mmcv.utils import remove_from_config
 from otx.algorithms.common.tasks.nncf_base import NNCFBaseTask
 from otx.algorithms.detection.adapters.mmdet.nncf import build_nncf_detector
@@ -33,12 +32,13 @@ from otx.mpa.utils.logger import get_logger
 
 from .inference import DetectionInferenceTask
 
-
 logger = get_logger()
 
 
-class DetectionNNCFTask(NNCFBaseTask, DetectionInferenceTask):
-    def _initialize_post_hook(self, options=dict()):
+class DetectionNNCFTask(NNCFBaseTask, DetectionInferenceTask):  # pylint: disable=too-many-ancestors
+    """DetectionNNCFTask."""
+
+    def _initialize_post_hook(self, options=None):
         super()._initialize_post_hook(options)
 
         export = options.get("export", False)
@@ -50,10 +50,7 @@ class DetectionNNCFTask(NNCFBaseTask, DetectionInferenceTask):
         )
 
         # do not configure regularization
-        if (
-            "l2sp_weight" in self._recipe_cfg.model
-            or "l2sp_weight" in self._model_cfg.model
-        ):
+        if "l2sp_weight" in self._recipe_cfg.model or "l2sp_weight" in self._model_cfg.model:
             remove_from_config(self._recipe_cfg.model, "l2sp_weight")
             remove_from_config(self._model_cfg.model, "l2sp_weight")
 
@@ -78,9 +75,7 @@ class DetectionNNCFTask(NNCFBaseTask, DetectionInferenceTask):
     ):
         # get prediction on validation set
         val_dataset = dataset.get_subset(Subset.VALIDATION)
-        val_preds, val_map = self._infer_detector(
-            val_dataset, InferenceParameters(is_evaluation=True)
-        )
+        val_preds, _ = self._infer_detector(val_dataset, InferenceParameters(is_evaluation=True))
 
         preds_val_dataset = val_dataset.with_empty_annotations()
         self._add_predictions_to_dataset(val_preds, preds_val_dataset, 0.0)
@@ -95,29 +90,19 @@ class DetectionNNCFTask(NNCFBaseTask, DetectionInferenceTask):
         if self._hyperparams.postprocessing.result_based_confidence_threshold:
             best_confidence_threshold = None
             logger.info("Adjusting the confidence threshold")
-            metric = MetricsHelper.compute_f_measure(
-                result_set, vary_confidence_threshold=True
-            )
+            metric = MetricsHelper.compute_f_measure(result_set, vary_confidence_threshold=True)
             if metric.best_confidence_threshold:
                 best_confidence_threshold = metric.best_confidence_threshold.value
             if best_confidence_threshold is None:
-                raise ValueError(
-                    "Cannot compute metrics: Invalid confidence threshold!"
-                )
-            logger.info(
-                f"Setting confidence threshold to {best_confidence_threshold} based on results"
-            )
+                raise ValueError("Cannot compute metrics: Invalid confidence threshold!")
+            logger.info(f"Setting confidence threshold to {best_confidence_threshold} based on results")
             self.confidence_threshold = best_confidence_threshold
         else:
-            metric = MetricsHelper.compute_f_measure(
-                result_set, vary_confidence_threshold=False
-            )
+            metric = MetricsHelper.compute_f_measure(result_set, vary_confidence_threshold=False)
 
     def _save_model_post_hook(self, modelinfo):
         config = modelinfo["meta"]["config"]
-        if hasattr(config.model, "bbox_head") and hasattr(
-            config.model.bbox_head, "anchor_generator"
-        ):
+        if hasattr(config.model, "bbox_head") and hasattr(config.model.bbox_head, "anchor_generator"):
             if getattr(
                 config.model.bbox_head.anchor_generator,
                 "reclustering_anchors",

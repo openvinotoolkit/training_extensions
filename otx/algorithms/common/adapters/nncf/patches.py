@@ -1,3 +1,4 @@
+"""NNCFNetwork patch functions for mmcv models."""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -8,13 +9,11 @@ from functools import partial
 
 @contextmanager
 def nncf_trace_context(self, img_metas, nncf_compress_postprocessing=True):
-    """
-    A context manager for nncf graph tracing
-    """
+    """A context manager for nncf graph tracing."""
 
     # onnx_export in mmdet head has a bug on GPU
     # it must be on CPU
-    device_backup = next(self.parameters()).device
+    device_backup = next(self.parameters()).device  # pylint: disable=stop-iteration-return
     self = self.to("cpu")
 
     if nncf_compress_postprocessing:
@@ -29,8 +28,9 @@ def nncf_trace_context(self, img_metas, nncf_compress_postprocessing=True):
     self = self.to(device_backup)
 
 
+# pylint: disable=protected-access
 def nncf_train_step(self, data, optimizer):
-    import torch
+    """A helper function for train_step method of mmcv models."""
     from nncf.torch.dynamic_graph.io_handling import replicate_same_tensors
 
     with self._compressed_context as ctx:
@@ -46,5 +46,5 @@ def nncf_train_step(self, data, optimizer):
         if not self._in_user_dummy_forward:
             retval = self._wrap_outputs_fn(retval)
 
-    # TODO: deal with kd_loss_handler in forward method of  NNCFNEtwork
+    # TODO: deal with kd_loss_handler in forward method of NNCFNetwork
     return retval

@@ -1,3 +1,5 @@
+"""MobileNet-V3-large-1 for multi-class MMDeploy config."""
+
 _base_ = ["../base/deployments/base_classification_dynamic.py"]
 
 ir_config = dict(

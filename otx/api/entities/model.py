@@ -34,6 +34,7 @@ class ModelPrecision(IntEnum):
     FP32 = auto()
 
     def __str__(self):
+        """String."""
         return self.name
 
 

@@ -1,3 +1,5 @@
+"""Classification models static deploy config."""
+
 ir_config = dict(
     type="onnx",
     export_params=True,

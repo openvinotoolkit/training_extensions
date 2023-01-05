@@ -1,21 +1,15 @@
+"""NNCF utils for mmcv."""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from .utils import (
-    prepare_model_for_execution,
-    get_fake_input,
-    build_dataloader,
-    model_eval,
-    wrap_nncf_model,
-)
+# flake8: noqa
 
 from .patches import *
+from .utils import get_fake_input, model_eval, wrap_nncf_model
 
 __all__ = [
-    "prepare_model_for_execution",
     "get_fake_input",
-    "build_dataloader",
     "model_eval",
     "wrap_nncf_model",
 ]

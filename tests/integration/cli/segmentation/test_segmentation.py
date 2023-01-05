@@ -84,7 +84,8 @@ class TestToolsMPASemiSLSegmentation:
     @pytest.mark.skipif(TT_STABILITY_TESTS, reason="This is TT_STABILITY_TESTS")
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
     def test_otx_eval(self, template, tmp_dir_path):
-        otx_eval_testing(template, tmp_dir_path, otx_dir, args)
+        args_semisl = args.copy()
+        otx_eval_testing(template, tmp_dir_path, otx_dir, args_semisl)
 
 
 class TestToolsMPASegmentation:

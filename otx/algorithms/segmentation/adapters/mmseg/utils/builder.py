@@ -1,3 +1,4 @@
+"""MMseg model builder."""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -18,12 +19,20 @@ def build_segmentor(
     device: Union[str, torch.device] = "cpu",
     cfg_options: Optional[Union[Config, ConfigDict]] = None,
     from_scratch: bool = False,
-):
-    """Creates a model, based on the configuration in config.
+) -> torch.nn.Module:
+    """A builder function for mmseg model.
+
+    Creates a model, based on the configuration in config.
     Note that this function consumes/updates 'load_from' attribute of 'config'.
     """
 
-    from mmseg.models import build_segmentor as origin_build_segmentor
+    # fmt: off
+    # isort: off
+    # false positive (mypy, pylint)
+    # pylint: disable-next=no-name-in-module
+    from mmseg.models import build_segmentor as origin_build_segmentor  # type: ignore[attr-defined]
+    # isort: on
+    # fmt: on
 
     model_cfg = deepcopy(config.model)
 
@@ -42,4 +51,3 @@ def build_segmentor(
         config.load_from = checkpoint
 
     return model
-

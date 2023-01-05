@@ -1,25 +1,29 @@
+"""NNCF task related hooks."""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 
 import math
-from abc import abstractmethod
 
-from mmcv.runner.hooks import HOOKS
-from mmcv.runner.hooks import LrUpdaterHook
+from mmcv.runner.hooks import HOOKS, LrUpdaterHook
 
 
+# pylint: disable=abstract-method,too-many-instance-attributes
 class BaseLrUpdaterHook(LrUpdaterHook):
-    schedulers = ['constant', 'semi-constant', 'linear', 'cos']
+    """BaseLrUpdaterHook."""
 
-    def __init__(self,
-                 by_epoch=True,
-                 fixed=None,
-                 fixed_iters=0,
-                 fixed_ratio=1.0,
-                 warmup=None,
-                 warmup_iters=0,
-                 warmup_ratio=0.1):
+    schedulers = ["constant", "semi-constant", "linear", "cos"]
+
+    def __init__(  # pylint: disable=too-many-arguments
+        self,
+        by_epoch=True,
+        fixed=None,
+        fixed_iters=0,
+        fixed_ratio=1.0,
+        warmup=None,
+        warmup_iters=0,
+        warmup_ratio=0.1,
+    ):
         super().__init__(by_epoch, warmup, warmup_iters, warmup_ratio)
 
         if fixed is not None:
@@ -45,57 +49,44 @@ class BaseLrUpdaterHook(LrUpdaterHook):
     @staticmethod
     def _get_lr(policy, cur_iters, regular_lr, max_iters, start_scale, end_scale):
         progress = float(cur_iters) / float(max_iters)
-        if policy == 'constant':
+        if policy == "constant":
             k = start_scale
-        elif policy == 'semi-constant':
+        elif policy == "semi-constant":
             threshold = 0.8
             if progress < threshold:
                 k = start_scale
             else:
                 progress = (progress - threshold) / (1.0 - threshold)
                 k = (end_scale - start_scale) * progress + start_scale
-        elif policy == 'linear':
+        elif policy == "linear":
             k = (end_scale - start_scale) * progress + start_scale
-        elif policy == 'cos':
+        elif policy == "cos":
             k = end_scale + 0.5 * (start_scale - end_scale) * (math.cos(math.pi * progress) + 1.0)
         else:
-            raise ValueError(f'Unknown policy: {policy}')
+            raise ValueError(f"Unknown policy: {policy}")
 
         return [_lr * k for _lr in regular_lr]
 
     def get_regular_lr(self, runner):
+        """get_regular_lr."""
         if isinstance(runner.optimizer, dict):
             lr_groups = {}
             for k in runner.optimizer.keys():
-                _lr_group = [
-                    self.get_lr(runner, _base_lr)
-                    for _base_lr in self.base_lr[k]
-                ]
+                _lr_group = [self.get_lr(runner, _base_lr) for _base_lr in self.base_lr[k]]
                 lr_groups.update({k: _lr_group})
 
             return lr_groups
-        else:
-            return [self.get_lr(runner, _base_lr) for _base_lr in self.base_lr]
+        return [self.get_lr(runner, _base_lr) for _base_lr in self.base_lr]
 
     def get_fixed_lr(self, cur_iters, regular_lr):
+        """get_fixed_lr."""
         return self._get_lr(
-            self.fixed_policy,
-            cur_iters,
-            regular_lr,
-            self.fixed_iters,
-            self.fixed_start_ratio,
-            self.fixed_end_ratio
+            self.fixed_policy, cur_iters, regular_lr, self.fixed_iters, self.fixed_start_ratio, self.fixed_end_ratio
         )
 
     def get_warmup_lr(self, cur_iters, regular_lr):
-        return self._get_lr(
-            self.warmup,
-            cur_iters,
-            regular_lr,
-            self.warmup_iters,
-            self.warmup_ratio,
-            1.0
-        )
+        """get_warmup_lr."""
+        return self._get_lr(self.warmup, cur_iters, regular_lr, self.warmup_iters, self.warmup_ratio, 1.0)
 
     def _init_states(self, runner):
         if self.by_epoch:
@@ -110,6 +101,7 @@ class BaseLrUpdaterHook(LrUpdaterHook):
         runner.model.module.set_step_params(runner.iter, self.epoch_len)
 
     def before_train_iter(self, runner):
+        """before_train_iter."""
         if self.need_update:
             self._init_states(runner)
             self.need_update = False
@@ -129,12 +121,14 @@ class BaseLrUpdaterHook(LrUpdaterHook):
 
 @HOOKS.register_module()
 class CustomstepLrUpdaterHook(BaseLrUpdaterHook):
+    """CustomstepLrUpdaterHook."""
+
     def __init__(self, step, gamma=0.1, **kwargs):
-        super(CustomstepLrUpdaterHook, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
         assert isinstance(step, (list, int))
         if isinstance(step, list):
-            for s in step:
+            for s in step:  # pylint: disable=invalid-name
                 assert isinstance(s, int) and s >= 0
         elif isinstance(step, int):
             assert step >= 0
@@ -145,14 +139,13 @@ class CustomstepLrUpdaterHook(BaseLrUpdaterHook):
         self.gamma = gamma
 
     def _init_states(self, runner):
-        super(CustomstepLrUpdaterHook, self)._init_states(runner)
+        super()._init_states(runner)
 
         if self.by_epoch:
-            self.steps = [
-                step * self.epoch_len for step in self.steps
-            ]
+            self.steps = [step * self.epoch_len for step in self.steps]
 
     def get_lr(self, runner, base_lr):
+        """get_lr."""
         progress = runner.iter
 
         skip_iters = self.fixed_iters + self.warmup_iters
@@ -160,8 +153,8 @@ class CustomstepLrUpdaterHook(BaseLrUpdaterHook):
             return base_lr
 
         exp = len(self.steps)
-        for i, s in enumerate(self.steps):
-            if progress < s:
+        for i, step in enumerate(self.steps):
+            if progress < step:
                 exp = i
                 break
 

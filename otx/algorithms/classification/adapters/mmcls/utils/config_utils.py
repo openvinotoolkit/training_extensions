@@ -15,30 +15,28 @@
 # and limitations under the License.
 
 import math
-from typing import List, Union, Optional
+from typing import List, Optional, Union
 
-import torch
 from mmcv import Config, ConfigDict
-from mpa.utils.logger import get_logger
 
 from otx.algorithms.common.adapters.mmcv.utils import (
+    get_configs_by_keys,
+    get_configs_by_pairs,
+    get_dataset_configs,
     get_meta_keys,
     is_epoch_based_runner,
+    patch_color_conversion,
     prepare_work_dir,
-    get_dataset_configs,
-    get_configs_by_keys,
-    update_config,
     remove_from_config,
     remove_from_configs_by_type,
-    patch_color_conversion,
-    get_configs_by_dict,
+    update_config,
 )
 from otx.api.entities.label import Domain, LabelEntity
 from otx.api.utils.argument_checks import (
     DirectoryPathCheck,
     check_input_parameters_type,
 )
-
+from otx.mpa.utils.logger import get_logger
 
 logger = get_logger()
 
@@ -78,6 +76,7 @@ def patch_model_config(
     config: Config,
     labels: List[LabelEntity],
 ):
+    """Patch model config."""
     set_num_classes(config, len(labels))
 
 
@@ -155,6 +154,7 @@ def set_data_classes(config: Config, labels: List[LabelEntity]):
 
 @check_input_parameters_type()
 def set_num_classes(config: Config, num_classes: int):
+    """Set num classes."""
     head_names = ["head"]
     for head_name in head_names:
         if head_name in config.model:
@@ -164,21 +164,21 @@ def set_num_classes(config: Config, num_classes: int):
 @check_input_parameters_type()
 def patch_datasets(
     config: Config,
-    data_config: Optional[ConfigDict],
     domain: Domain = Domain.CLASSIFICATION,
-    subsets: List[str] = ["train", "val", "test", "unlabeled"],
-    **kwargs
+    subsets: Optional[List[str]] = None,
+    **kwargs,
 ):
     """Update dataset configs."""
     assert "data" in config
     assert "type" in kwargs
 
+    if subsets is None:
+        subsets = ["train", "val", "test", "unlabeled"]
+
     for subset in subsets:
         if subset not in config.data:
             continue
-        config.data[f"{subset}_dataloader"] = config.data.get(
-            f"{subset}_dataloader", ConfigDict()
-        )
+        config.data[f"{subset}_dataloader"] = config.data.get(f"{subset}_dataloader", ConfigDict())
 
         # For stable hierarchical information indexing
         if subset == "train" and kwargs["type"] == "MPAHierarchicalClsDataset":
@@ -192,19 +192,14 @@ def patch_datasets(
             cfg.update(kwargs)
 
             if subset == "train":
-                collect_cfg = get_configs_by_dict(cfg.pipeline, dict(type="Collect"))
-                assert len(collect_cfg) == 1
-                get_meta_keys(collect_cfg[0])
-                # In train dataset, when sample size is smaller than batch size
-                if data_config is not None:
-                    data_cfg = data_config.data.get(subset)
-                    if len(data_cfg.get("otx_dataset", [])) < config.data.get("samples_per_gpu", 2):
-                        config.data[f"{subset}_dataloader"].drop_last = False
+                for collect_cfg in get_configs_by_pairs(cfg.pipeline, dict(type="Collect")):
+                    get_meta_keys(collect_cfg)
 
     patch_color_conversion(config)
 
 
 def patch_evaluation(config: Config, task: str):
+    """Patch evaluation."""
     cfg = config.get("evaluation", None)
     if cfg:
         if task == "multilabel":

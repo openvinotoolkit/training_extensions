@@ -17,23 +17,21 @@
 from functools import partial
 from typing import Optional
 
-
 from otx.algorithms.common.tasks.nncf_base import NNCFBaseTask
 from otx.algorithms.segmentation.adapters.mmseg.nncf import build_nncf_segmentor
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.optimization_parameters import OptimizationParameters
-from otx.api.entities.task_environment import TaskEnvironment
-from otx.api.utils.argument_checks import check_input_parameters_type
 from otx.mpa.utils.logger import get_logger
 
 from .inference import SegmentationInferenceTask
 
-
 logger = get_logger()
 
 
-class SegmentationNNCFTask(NNCFBaseTask, SegmentationInferenceTask):
-    def _initialize_post_hook(self, options=dict()):
+class SegmentationNNCFTask(NNCFBaseTask, SegmentationInferenceTask):  # pylint: disable=too-many-ancestors
+    """SegmentationNNCFTask."""
+
+    def _initialize_post_hook(self, options=None):
         super()._initialize_post_hook(options)
 
         export = options.get("export", False)
@@ -56,4 +54,3 @@ class SegmentationNNCFTask(NNCFBaseTask, SegmentationInferenceTask):
             parameters=optimization_parameters,
         )
         return results
-

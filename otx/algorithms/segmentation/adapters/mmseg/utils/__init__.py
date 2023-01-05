@@ -3,15 +3,15 @@
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
+from .builder import build_segmentor
 from .config_utils import (
-    patch_recipe_config,
     patch_datasets,
     patch_evaluation,
+    patch_recipe_config,
     prepare_for_training,
     set_hyperparams,
 )
 from .data_utils import load_dataset_items
-from .builder import build_segmentor
 
 __all__ = [
     "patch_recipe_config",

@@ -1,3 +1,4 @@
+"""NNCF task related hooks."""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -11,31 +12,37 @@ from mmcv.runner.hooks.hook import HOOKS, Hook
 
 @HOOKS.register_module()
 class CompressionHook(Hook):
+    """CompressionHook."""
+
     def __init__(self, compression_ctrl=None):
         self.compression_ctrl = compression_ctrl
 
     def after_train_iter(self, runner):
+        """Called after train iter."""
         self.compression_ctrl.scheduler.step()
 
     def after_train_epoch(self, runner):
+        """Called after train epoch."""
         self.compression_ctrl.scheduler.epoch_step()
         if runner.rank == 0:
             runner.logger.info(self.compression_ctrl.statistics().to_str())
 
     def before_run(self, runner):
+        """Called before run."""
         runner.compression_ctrl = self.compression_ctrl
         if runner.rank == 0:
             runner.logger.info(self.compression_ctrl.statistics().to_str())
 
     @master_only
     def after_run(self, runner):
+        """Called after run."""
         compression_state = self.compression_ctrl.get_compression_state()
         for algo_state in compression_state.get("ctrl_state", {}).values():
             if not algo_state.get("scheduler_state"):
                 algo_state["scheduler_state"] = {"current_step": 0, "current_epoch": 0}
         torch.save(
             compression_state,
-            os.path.join(runner.work_dir, "compression_state.pth")
+            os.path.join(runner.work_dir, "compression_state.pth"),
         )
 
 
@@ -57,7 +64,8 @@ class CheckpointHookBeforeTraining(Hook):
 
     @master_only
     def before_run(self, runner):
-        runner.logger.info(f"Saving checkpoint before training")
+        """Called before run."""
+        runner.logger.info("Saving checkpoint before training")
         if not self.out_dir:
             self.out_dir = runner.work_dir
         runner.save_checkpoint(

@@ -1,3 +1,5 @@
+"""Segmentation models dynamic deploy config."""
+
 _base_ = ["./base_segmentation_static.py"]
 
 ir_config = dict(

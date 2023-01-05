@@ -1,3 +1,4 @@
+"""NNCF utils."""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -5,23 +6,16 @@
 import os
 import pathlib
 from copy import deepcopy
-from typing import Any, Callable, Dict, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 import numpy as np
 import torch
-import torch.nn as nn
 from mmcv import Config
-from mmcv.parallel import (
-    DataContainer,
-    MMDataParallel,
-    MMDistributedDataParallel,
-    collate,
-    scatter,
-)
-from mpa.utils.logger import get_logger
+from mmcv.parallel import DataContainer, collate, scatter
+from torch import nn
 from torch.utils.data import DataLoader
 
-from otx.algorithms.common.adapters.mmcv.data_cpu import MMDataCPU, scatter_cpu
+from otx.algorithms.common.adapters.mmcv.utils.builder import build_data_parallel
 from otx.algorithms.common.adapters.nncf.compression import (
     COMPRESSION_STATE_NAME,
     NNCF_STATE_NAME,
@@ -33,42 +27,9 @@ from otx.algorithms.common.adapters.nncf.utils import (
     no_nncf_trace,
 )
 from otx.algorithms.common.utils import get_arg_spec
-
+from otx.mpa.utils.logger import get_logger
 
 logger = get_logger()
-
-
-def prepare_model_for_execution(
-    model: nn.Module,
-    cfg: Config,
-    distributed: bool = False,
-):
-    """
-    Prepare model for execution.
-    Return model import ast, MMDataParallel or MMDataCPU.
-
-    :param model: Model.
-    :param cfg: training mmdet config.
-    :param distributed: Enable distributed training mode.
-    :return:
-    """
-    if torch.cuda.is_available():
-        if distributed:
-            # put model on gpus
-            find_unused_parameters = cfg.get("find_unused_parameters", False)
-            # Sets the `find_unused_parameters` parameter in
-            # torch.nn.parallel.DistributedDataParallel
-            model = MMDistributedDataParallel(
-                model,
-                device_ids=[torch.cuda.current_device()],
-                broadcast_buffers=False,
-                find_unused_parameters=find_unused_parameters,
-            )
-        else:
-            model = MMDataParallel(model.cuda(cfg.gpu_ids[0]), device_ids=[0])
-    else:
-        model = MMDataCPU(model)
-    return model
 
 
 def get_fake_input(
@@ -77,6 +38,7 @@ def get_fake_input(
     shape: Tuple[int, ...] = (128, 128, 3),
     device: str = "cpu",
 ):
+    """A function to generate fake data."""
     if data is None:
         data = dict(img=np.zeros(shape, dtype=np.uint8))
     else:
@@ -88,42 +50,10 @@ def get_fake_input(
             data[key] = [value]
 
     if device == torch.device("cpu"):
-        data = scatter_cpu(collate([data], samples_per_gpu=1))[0]
+        data = scatter(collate([data], samples_per_gpu=1), [-1])[0]
     else:
         data = scatter(collate([data], samples_per_gpu=1), [device.index])[0]
     return data
-
-
-def build_dataloader(
-    config: Config,
-    subset: str,
-    distributed: bool,
-    dataloader_builder: Callable,
-    dataset_builder: Callable,
-):
-    loader_cfg = dict(
-        samples_per_gpu=config.data.get("samples_per_gpu", 1),
-        workers_per_gpu=config.data.get("workers_per_gpu", 0),
-        num_gpus=len(config.gpu_ids),
-        dist=distributed,
-        seed=config.get("seed", None),
-    )
-    if subset == "train":
-        default_args = dict(test_mode=False)
-    else:
-        default_args = dict(test_mode=True)
-        loader_cfg["shuffle"] = False
-        loader_cfg["samples_per_gpu"] = 1
-
-    dataset = dataset_builder(config.data.get(subset), default_args)
-
-    loader_cfg = {**loader_cfg, **config.data.get(f"{subset}_dataloader", {})}
-
-    dataloader = dataloader_builder(
-        dataset,
-        **loader_cfg,
-    )
-    return dataloader
 
 
 def model_eval(
@@ -134,7 +64,8 @@ def model_eval(
     evaluate_fn: Callable,
     distributed: bool,
 ):
-    """
+    """A model evaluation function for NNCF.
+
     Runs evaluation of the model on the validation set and
     returns the target metric value.
     Used to evaluate the original model before compression
@@ -149,7 +80,7 @@ def model_eval(
 
     nncf_config = config.get("nncf_config")
     metric_name = nncf_config.get("target_metric_name")
-    prepared_model = prepare_model_for_execution(model, config, distributed)
+    prepared_model = build_data_parallel(model, config, distributed=distributed)
 
     logger.info("Calculating an original model accuracy")
 
@@ -160,15 +91,13 @@ def model_eval(
             evaluation_cfg.pop(key)
     evaluation_cfg["metric"] = metric_name
 
-    if distributed:
-        dist_eval_res = [None]
+    if distributed:  # pylint: disable=no-else-return
+        dist_eval_res: List[Dict[str, Any]] = [{}]
         results = evaluate_fn(prepared_model, val_dataloader, gpu_collect=True)
         if torch.distributed.get_rank() == 0:
             eval_res = val_dataloader.dataset.evaluate(results, **evaluation_cfg)
             if metric_name not in eval_res:
-                raise RuntimeError(
-                    f"Cannot find {metric_name} metric in " "the evaluation result dict"
-                )
+                raise RuntimeError(f"Cannot find {metric_name} metric in the evaluation result dict")
             dist_eval_res[0] = eval_res
 
         torch.distributed.broadcast_object_list(dist_eval_res, src=0)
@@ -178,15 +107,13 @@ def model_eval(
         eval_res = val_dataloader.dataset.evaluate(results, **evaluation_cfg)
 
         if metric_name not in eval_res:
-            raise RuntimeError(
-                f"Cannot find {metric_name} metric in "
-                f"the evaluation result dict {eval_res.keys()}"
-            )
+            raise RuntimeError(f"Cannot find {metric_name} metric in the evaluation result dict {eval_res.keys()}")
 
         return eval_res[metric_name]
 
 
-def wrap_nncf_model(
+# pylint: disable=too-many-branches,too-many-statements,too-many-locals
+def wrap_nncf_model(  # noqa: C901
     config: Config,
     model: nn.Module,
     *,
@@ -198,9 +125,7 @@ def wrap_nncf_model(
     init_state_dict: Optional[Dict[Any, Any]] = None,
     is_accuracy_aware: bool = False,
 ):
-    """
-    The function wraps mmcv model by NNCF
-    """
+    """The function wraps mmcv model by NNCF."""
 
     check_nncf_is_enabled()
 
@@ -213,14 +138,11 @@ def wrap_nncf_model(
     from nncf.torch.dynamic_graph.io_handling import nncf_model_input
     from nncf.torch.initialization import PTInitializingDataLoader
 
-    class MMInitializeDataLoader(PTInitializingDataLoader):
+    class _MMInitializeDataLoader(PTInitializingDataLoader):
         def get_inputs(self, dataloader_output):
             # redefined PTInitializingDataLoader because
             # of DataContainer format in mmdet
-            kwargs = {
-                k: v.data[0] if isinstance(v, DataContainer) else v
-                for k, v in dataloader_output.items()
-            }
+            kwargs = {k: v.data[0] if isinstance(v, DataContainer) else v for k, v in dataloader_output.items()}
             return (), kwargs
 
     pathlib.Path(config.work_dir).mkdir(parents=True, exist_ok=True)
@@ -228,7 +150,7 @@ def wrap_nncf_model(
     resuming_state_dict = None
 
     if dataloader_for_init:
-        wrapped_loader = MMInitializeDataLoader(dataloader_for_init)
+        wrapped_loader = _MMInitializeDataLoader(dataloader_for_init)
         eval_fn = model_eval_fn if is_accuracy_aware else None
         nncf_config = register_default_init_args(
             nncf_config,
@@ -247,10 +169,7 @@ def wrap_nncf_model(
         checkpoint_path = config.get("load_from")
         if not is_checkpoint_nncf(checkpoint_path):
             checkpoint_path = None
-            logger.info(
-                "Received non-NNCF checkpoint to start training "
-                "-- initialization of NNCF fields will be done"
-            )
+            logger.info("Received non-NNCF checkpoint to start training -- initialization of NNCF fields will be done")
     else:
         checkpoint_path = None
 
@@ -282,12 +201,10 @@ def wrap_nncf_model(
         def _get_fake_data_for_forward(nncf_config):
             device = next(model.parameters()).device
 
-            if nncf_config.get("input_info", None) and nncf_config.get(
-                "input_info"
-            ).get("sample_size", None):
+            if nncf_config.get("input_info", None) and nncf_config.get("input_info").get("sample_size", None):
                 input_size = nncf_config.get("input_info").get("sample_size")
                 assert len(input_size) == 4 and input_size[0] == 1
-                H, W, C = input_size[2], input_size[3], input_size[1]
+                H, W, C = input_size[2], input_size[3], input_size[1]  # pylint: disable=invalid-name
                 shape = tuple([H, W, C])
             else:
                 shape = (128, 128, 3)

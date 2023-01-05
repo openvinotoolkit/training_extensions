@@ -12,7 +12,15 @@ class MPABasePixelLoss(BasePixelLoss):
     def __init__(self, **kwargs):
         super(MPABasePixelLoss, self).__init__(**kwargs)
 
-    def _forward(self, output, labels, valid_label_mask, avg_factor=None, pixel_weights=None, reduction_override=None):
+    def _forward(
+        self,
+        output,
+        labels,
+        valid_label_mask,
+        avg_factor=None,
+        pixel_weights=None,
+        reduction_override=None,
+    ):
         assert reduction_override in (None, "none", "mean", "sum")
         reduction = reduction_override if reduction_override else self.reduction
 

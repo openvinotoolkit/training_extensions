@@ -17,25 +17,23 @@
 from functools import partial
 from typing import Optional
 
-from mpa.utils.logger import get_logger
-
 from otx.algorithms.classification.adapters.mmcls.nncf.builder import (
     build_nncf_classifier,
 )
 from otx.algorithms.common.tasks.nncf_base import NNCFBaseTask
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.optimization_parameters import OptimizationParameters
-from otx.api.entities.task_environment import TaskEnvironment
-from otx.api.utils.argument_checks import check_input_parameters_type
+from otx.mpa.utils.logger import get_logger
 
 from .inference import ClassificationInferenceTask
-
 
 logger = get_logger()
 
 
-class ClassificationNNCFTask(NNCFBaseTask, ClassificationInferenceTask):
-    def _initialize_post_hook(self, options=dict()):
+class ClassificationNNCFTask(NNCFBaseTask, ClassificationInferenceTask):  # pylint: disable=too-many-ancestors
+    """ClassificationNNCFTask."""
+
+    def _initialize_post_hook(self, options=None):
         super()._initialize_post_hook(options)
 
         export = options.get("export", False)

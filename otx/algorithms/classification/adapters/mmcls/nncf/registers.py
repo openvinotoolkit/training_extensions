@@ -1,9 +1,9 @@
+"""Register custom modules for mmcls models."""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 
 from otx.algorithms.common.adapters.nncf.utils import is_nncf_enabled
-
 
 if is_nncf_enabled():
     from nncf.torch import register_module

@@ -1,27 +1,30 @@
+"""NNCF utils."""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import importlib
 from collections import OrderedDict
 from contextlib import contextmanager
+from importlib.util import find_spec
 
 import torch
 
-
-_is_nncf_enabled = importlib.util.find_spec("nncf") is not None
+_is_nncf_enabled = find_spec("nncf") is not None
 
 
 def is_nncf_enabled():
+    """is_nncf_enabled."""
     return _is_nncf_enabled
 
 
 def check_nncf_is_enabled():
+    """check_nncf_is_enabled."""
     if not is_nncf_enabled():
         raise RuntimeError("Tried to use NNCF, but NNCF is not installed")
 
 
 def get_nncf_version():
+    """get_nncf_version."""
     if not is_nncf_enabled():
         return None
     import nncf
@@ -51,23 +54,19 @@ def load_checkpoint(model, filename, map_location=None, strict=False):
     elif isinstance(checkpoint, dict) and "state_dict" in checkpoint:
         state_dict = checkpoint["state_dict"]
     else:
-        raise RuntimeError("No state_dict found in checkpoint file {}".format(filename))
+        raise RuntimeError(f"No state_dict found in checkpoint file {filename}")
     _ = load_state(model, state_dict, strict)
     return checkpoint
 
 
 @contextmanager
 def nullcontext():
-    """
-    Context which does nothing
-    """
+    """Context which does nothing."""
     yield
 
 
 def no_nncf_trace():
-    """
-    Wrapper for original NNCF no_nncf_trace() context
-    """
+    """Wrapper for original NNCF no_nncf_trace context."""
 
     if is_nncf_enabled():
         from nncf.torch.dynamic_graph.context import (
@@ -79,10 +78,13 @@ def no_nncf_trace():
 
 
 def nncf_trace():
+    """Trace nncf context."""
     if is_nncf_enabled():
+
         @contextmanager
         def _nncf_trace():
             from nncf.torch.dynamic_graph.context import get_current_context
+
             ctx = get_current_context()
             if ctx is not None and not ctx.is_tracing:
                 ctx.enable_tracing()
@@ -90,11 +92,13 @@ def nncf_trace():
                 ctx.disable_tracing()
             else:
                 yield
+
         return _nncf_trace()
     return nullcontext()
 
 
 def is_in_nncf_tracing():
+    """is_in_nncf_tracing."""
     if not is_nncf_enabled():
         return False
 
@@ -108,6 +112,7 @@ def is_in_nncf_tracing():
 
 
 def is_accuracy_aware_training_set(nncf_config):
+    """is_accuracy_aware_training_set."""
     if not is_nncf_enabled():
         return False
     from nncf.config.utils import is_accuracy_aware_training

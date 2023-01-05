@@ -10,30 +10,27 @@ from typing import Optional
 import numpy as np
 from mmcv.utils import ConfigDict
 
-from otx.algorithms.classification.configs import ClassificationConfig
-from otx.algorithms.classification.utils import (
-    get_multihead_class_info as get_hierarchical_info,
-)
-from otx.algorithms.common.adapters.mmcv.utils import get_meta_keys, patch_data_pipeline
-from otx.algorithms.common.configs import TrainType
-from otx.algorithms.common.tasks import BaseTask
-from otx.algorithms.common.adapters.mmcv.utils import (
-    patch_default_config,
-    patch_runner,
-)
+from otx.algorithms.classification.adapters.mmcls.utils.builder import build_classifier
 from otx.algorithms.classification.adapters.mmcls.utils.config_utils import (
     patch_datasets,
     patch_evaluation,
 )
-from otx.algorithms.classification.adapters.mmcls.utils.builder import (
-    build_classifier,
+from otx.algorithms.classification.configs import ClassificationConfig
+from otx.algorithms.classification.utils import (
+    get_multihead_class_info as get_hierarchical_info,
 )
+from otx.algorithms.common.adapters.mmcv.utils import (
+    patch_data_pipeline,
+    patch_default_config,
+    patch_runner,
+)
+from otx.algorithms.common.configs import TrainType
+from otx.algorithms.common.tasks import BaseTask
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.inference_parameters import (
     InferenceParameters,
     default_progress_callback,
 )
-from otx.api.entities.label import Domain
 from otx.api.entities.model import (  # ModelStatus
     ModelEntity,
     ModelFormat,
@@ -54,7 +51,6 @@ from otx.api.usecases.tasks.interfaces.unload_interface import IUnload
 from otx.api.utils.dataset_utils import add_saliency_maps_to_dataset_item
 from otx.api.utils.labels_utils import get_empty_label
 from otx.mpa import MPAConstants
-from otx.mpa.stage import Stage
 from otx.mpa.utils.config_utils import MPAConfig
 from otx.mpa.utils.logger import get_logger
 
@@ -195,17 +191,11 @@ class ClassificationInferenceTask(
         output_model.optimization_type = ModelOptimizationType.MO
 
         stage_module = "ClsExporter"
-        results = self._run_task(
-            stage_module,
-            mode="train",
-            export=True
-        )
+        results = self._run_task(stage_module, mode="train", export=True)
         outputs = results.get("outputs")
         logger.debug(f"results of run_task = {outputs}")
         if outputs is None:
-            logger.error(
-                f"error while exporting model, result is None: {results.get('msg')}"
-            )
+            logger.error(f"error while exporting model, result is None: {results.get('msg')}")
         else:
             bin_file = outputs.get("bin")
             xml_file = outputs.get("xml")
@@ -308,36 +298,37 @@ class ClassificationInferenceTask(
             update_progress_callback(int(i / dataset_size * 100))
 
     def _init_recipe_hparam(self) -> dict:
-        warmup_iters = int(self._hyperparams.learning_parameters.learning_rate_warmup_iters)
+        params = self._hyperparams.learning_parameters
+        warmup_iters = int(params.learning_rate_warmup_iters)
         if self._multilabel:
             # hack to use 1cycle policy
-            lr_config = ConfigDict(max_lr=self._hyperparams.learning_parameters.learning_rate, warmup=None)
+            lr_config = ConfigDict(max_lr=params.learning_rate, warmup=None)
         else:
             lr_config = (
                 ConfigDict(warmup_iters=warmup_iters) if warmup_iters > 0 else ConfigDict(warmup_iters=0, warmup=None)
             )
 
-        if self._hyperparams.learning_parameters.enable_early_stopping:
+        if params.enable_early_stopping:
             early_stop = ConfigDict(
-                start=int(self._hyperparams.learning_parameters.early_stop_start),
-                patience=int(self._hyperparams.learning_parameters.early_stop_patience),
-                iteration_patience=int(self._hyperparams.learning_parameters.early_stop_iteration_patience),
+                start=int(params.early_stop_start),
+                patience=int(params.early_stop_patience),
+                iteration_patience=int(params.early_stop_iteration_patience),
             )
         else:
             early_stop = False
 
-        if self._recipe_cfg.runner.get("type") == "IterBasedRunner":  # type: ignore
-            runner = ConfigDict(max_iters=int(self._hyperparams.learning_parameters.num_iters))
+        if self._recipe_cfg.runner.get("type").startswith("IterBasedRunner"):  # type: ignore
+            runner = ConfigDict(max_iters=int(params.num_iters))
         else:
-            runner = ConfigDict(max_epochs=int(self._hyperparams.learning_parameters.num_iters))
+            runner = ConfigDict(max_epochs=int(params.num_iters))
 
         return ConfigDict(
-            optimizer=ConfigDict(lr=self._hyperparams.learning_parameters.learning_rate),
+            optimizer=ConfigDict(lr=params.learning_rate),
             lr_config=lr_config,
             early_stop=early_stop,
             data=ConfigDict(
-                samples_per_gpu=int(self._hyperparams.learning_parameters.batch_size),
-                workers_per_gpu=int(self._hyperparams.learning_parameters.num_workers),
+                samples_per_gpu=int(params.batch_size),
+                workers_per_gpu=int(params.num_workers),
             ),
             runner=runner,
         )
@@ -385,10 +376,7 @@ class ClassificationInferenceTask(
         # During semi-implementation, this line should be fixed to -> self._recipe_cfg.train_type = train_type
         self._recipe_cfg.train_type = train_type.name
 
-        options_for_patch_datasets = {
-            "type": "MPAClsDataset",
-            "empty_label": self._empty_label
-        }
+        options_for_patch_datasets = {"type": "MPAClsDataset", "empty_label": self._empty_label}
         options_for_patch_evaluation = {"task": "normal"}
         if self._multilabel:
             options_for_patch_datasets["type"] = "MPAMultilabelClsDataset"
@@ -401,7 +389,12 @@ class ClassificationInferenceTask(
             options_for_patch_datasets["type"] = "SelfSLDataset"
         patch_default_config(self._recipe_cfg)
         patch_runner(self._recipe_cfg)
-        patch_datasets(self._recipe_cfg, self._data_cfg, **options_for_patch_datasets)      # for OTX compatibility
+        patch_data_pipeline(self._recipe_cfg, pipeline_path)
+        patch_datasets(
+            self._recipe_cfg,
+            self._task_type.domain,
+            **options_for_patch_datasets,
+        )  # for OTX compatibility
         patch_evaluation(self._recipe_cfg, **options_for_patch_evaluation)  # for OTX compatibility
         logger.info(f"initialized recipe = {recipe}")
 
@@ -438,6 +431,6 @@ class ClassificationInferenceTask(
         )
         return data_cfg
 
-    def _initialize_post_hook(self, options=dict()):
+    def _initialize_post_hook(self, options=None):
         super()._initialize_post_hook(options)
         options["model_builder"] = build_classifier

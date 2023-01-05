@@ -1,3 +1,5 @@
+"""MMDeploy config of SSD model for Detection Task."""
+
 _base_ = ["../../base/deployments/base_detection_dynamic.py"]
 
 ir_config = dict(

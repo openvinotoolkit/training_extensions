@@ -1,8 +1,8 @@
+"""NNCF wrapped mmcls models builder."""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from copy import deepcopy
 from functools import partial
 from typing import Optional, Union
 
@@ -11,9 +11,10 @@ from mmcls.utils import get_root_logger
 from mmcv.runner import CheckpointLoader, load_state_dict
 from mmcv.utils import Config, ConfigDict
 
+from otx.algorithms.classification.adapters.mmcls.utils import build_classifier
 from otx.algorithms.common.adapters.mmcv.utils import (
-    get_configs_by_dict,
     get_configs_by_keys,
+    get_configs_by_pairs,
     remove_from_configs_by_type,
 )
 from otx.algorithms.common.adapters.nncf import is_accuracy_aware_training_set
@@ -22,29 +23,32 @@ from otx.algorithms.common.adapters.nncf.compression import (
     NNCF_STATE_NAME,
     STATE_TO_BUILD_NAME,
 )
-from otx.algorithms.classification.adapters.mmcls.utils import build_classifier
-
 
 logger = get_root_logger()
 
 
-def build_nncf_classifier(
+def build_nncf_classifier(  # pylint: disable=too-many-locals
     config: Config,
     checkpoint: Optional[str] = None,
     device: Union[str, torch.device] = "cpu",
     cfg_options: Optional[Union[Config, ConfigDict]] = None,
     distributed: bool = False,
 ):
+    """A function to build NNCF wrapped mmcls model."""
+
     from mmcls.apis import multi_gpu_test, single_gpu_test
     from mmcls.datasets import build_dataloader as mmcls_build_dataloader
-    from mmcls.datasets import build_dataset
+    from mmcls.datasets import build_dataset as mmcls_build_dataset
     from mmcls.datasets.pipelines import Compose
 
     from otx.algorithms.common.adapters.mmcv.nncf import (
-        build_dataloader,
         get_fake_input,
         model_eval,
         wrap_nncf_model,
+    )
+    from otx.algorithms.common.adapters.mmcv.utils.builder import (
+        build_dataloader,
+        build_dataset,
     )
 
     if cfg_options is not None:
@@ -80,21 +84,29 @@ def build_nncf_classifier(
         data_to_build_nncf = datasets[0][0].numpy
 
         init_dataloader = build_dataloader(
+            build_dataset(
+                config,
+                subset="train",
+                dataset_builder=mmcls_build_dataset,
+            ),
             config,
             subset="train",
-            distributed=distributed,
             dataloader_builder=mmcls_build_dataloader,
-            dataset_builder=build_dataset,
+            distributed=distributed,
         )
 
         val_dataloader = None
         if is_acc_aware:
             val_dataloader = build_dataloader(
+                build_dataset(
+                    config,
+                    subset="val",
+                    dataset_builder=mmcls_build_dataset,
+                ),
                 config,
                 subset="val",
-                distributed=distributed,
                 dataloader_builder=mmcls_build_dataloader,
-                dataset_builder=build_dataset,
+                distributed=distributed,
             )
 
         model_eval_fn = partial(
@@ -126,9 +138,7 @@ def build_nncf_classifier(
 
     # update custom hooks
     custom_hooks = config.get("custom_hooks", [])
-    custom_hooks.append(
-        ConfigDict(type="CompressionHook", compression_ctrl=compression_ctrl)
-    )
+    custom_hooks.append(ConfigDict(type="CompressionHook", compression_ctrl=compression_ctrl))
     custom_hooks.append(ConfigDict({"type": "CancelTrainingHook"}))
     custom_hooks.append(
         ConfigDict(
@@ -144,12 +154,9 @@ def build_nncf_classifier(
     remove_from_configs_by_type(custom_hooks, "TaskAdaptHook")
     remove_from_configs_by_type(custom_hooks, "AdaptiveTrainSchedulingHook")
 
-    for hook in get_configs_by_dict(custom_hooks, dict(type="OTXProgressHook")):
+    for hook in get_configs_by_pairs(custom_hooks, dict(type="OTXProgressHook")):
         time_monitor = hook.get("time_monitor", None)
-        if (
-            time_monitor
-            and getattr(time_monitor, "on_initialization_end", None) is not None
-        ):
+        if time_monitor and getattr(time_monitor, "on_initialization_end", None) is not None:
             time_monitor.on_initialization_end()
 
     return compression_ctrl, model

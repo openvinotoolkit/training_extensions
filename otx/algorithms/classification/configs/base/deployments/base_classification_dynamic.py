@@ -1,3 +1,5 @@
+"""Classification models dynamic deploy config."""
+
 _base_ = ["./base_classification_static.py"]
 
 ir_config = dict(

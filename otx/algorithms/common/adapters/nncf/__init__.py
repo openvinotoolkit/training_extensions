@@ -1,6 +1,9 @@
+"""Adapters for nncf support."""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
+
+# flake8: noqa
 
 from .compression import (
     AccuracyAwareLrUpdater,
@@ -9,6 +12,7 @@ from .compression import (
     is_checkpoint_nncf,
     is_state_nncf,
 )
+from .patches import *
 from .utils import (
     check_nncf_is_enabled,
     get_nncf_version,
@@ -16,9 +20,6 @@ from .utils import (
     is_in_nncf_tracing,
     no_nncf_trace,
 )
-
-from .patches import *
-
 
 __all__ = [
     "AccuracyAwareLrUpdater",

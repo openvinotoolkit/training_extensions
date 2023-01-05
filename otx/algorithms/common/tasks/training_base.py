@@ -20,19 +20,19 @@ import io
 import os
 import shutil
 import tempfile
-from typing import DefaultDict, Dict, List, Optional, Union
 from copy import deepcopy
+from typing import DefaultDict, Dict, List, Optional, Union
 
 import numpy as np
 import torch
 from mmcv.utils.config import Config, ConfigDict
 
 from otx.algorithms.common.adapters.mmcv.hooks import OTXLoggerHook
-from otx.algorithms.common.configs import TrainType
 from otx.algorithms.common.adapters.mmcv.utils import (
     align_data_config_with_recipe,
-    get_configs_by_dict
+    get_configs_by_pairs,
 )
+from otx.algorithms.common.configs import TrainType
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label import LabelEntity
 from otx.api.entities.model import ModelEntity, ModelPrecision, OptimizationMethod
@@ -47,9 +47,12 @@ from otx.api.utils.argument_checks import check_input_parameters_type
 from otx.mpa.builder import build
 from otx.mpa.modules.hooks.cancel_interface_hook import CancelInterfaceHook
 from otx.mpa.stage import Stage
-from otx.mpa.utils.config_utils import remove_custom_hook, update_or_add_custom_hook
+from otx.mpa.utils.config_utils import (
+    MPAConfig,
+    remove_custom_hook,
+    update_or_add_custom_hook,
+)
 from otx.mpa.utils.logger import get_logger
-from otx.mpa.utils.config_utils import MPAConfig
 
 logger = get_logger()
 
@@ -120,9 +123,9 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
             new_classes = np.setdiff1d(data_classes, model_classes).tolist()
             train_data_cfg["new_classes"] = new_classes
 
-        logger.info(
-            "running task... kwargs = " +
-            str({k: v if k != "model_builder" else object.__repr__(v) for k, v in kwargs.items()})
+        logger.info(  # pylint: disable=logging-not-lazy
+            "running task... kwargs = "
+            + str({k: v if k != "model_builder" else object.__repr__(v) for k, v in kwargs.items()})
         )
         if self._recipe_cfg is None:
             raise RuntimeError("'recipe_cfg' is not initialized yet. call prepare() method before calling this method")
@@ -137,7 +140,7 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
             deepcopy(self._recipe_cfg),
             self._mode,
             stage_type=stage_module,
-            common_cfg=common_cfg
+            common_cfg=common_cfg,
         )
 
         # run workflow with task specific model config and data config
@@ -204,8 +207,11 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         """Hyper Parameters configuration."""
         return self._hyperparams
 
-    def _initialize(self, options):
+    def _initialize(self, options=None):  # pylint: disable=too-many-branches  # noqa: C901
         """Prepare configurations to run a task through MPA's stage."""
+        if options is None:
+            options = {}
+
         export = options.get("export", False)
 
         logger.info("initializing....")
@@ -273,11 +279,15 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
 
         # if num_workers is 0, persistent_workers must be False
         data_cfg = self._recipe_cfg.data
-        if data_cfg.get("workers_per_gpu", 0) == 0:
-            for subset in ["train", "val", "test"]:
-                dataloader_cfg = data_cfg.get(
-                    f"{subset}_dataloader", ConfigDict()
-                )
+        for subset in ["train", "val", "test", "unlabeled"]:
+            if subset not in data_cfg:
+                continue
+            dataloader_cfg = data_cfg.get(f"{subset}_dataloader", ConfigDict())
+            workers_per_gpu = dataloader_cfg.get(
+                "workers_per_gpu",
+                data_cfg.get("workers_per_gpu", 0),
+            )
+            if workers_per_gpu == 0:
                 dataloader_cfg["persistent_workers"] = False
                 data_cfg[f"{subset}_dataloader"] = dataloader_cfg
 
@@ -291,7 +301,9 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
 
         logger.info("initialized.")
 
-    def _initialize_post_hook(self, options=dict()):
+    def _initialize_post_hook(self, options=None):
+        if options is None:
+            options = {}
         if options.get("export", False) and options.get("precision", None) is None:
             assert len(self._precision) == 1
             options["precision"] = str(self._precision[0])
@@ -315,6 +327,8 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
 
     def _init_recipe_hparam(self) -> dict:
         """Initialize recipe hyperparamter as dict."""
+        assert self._recipe_cfg is not None
+
         params = self._hyperparams.learning_parameters
         warmup_iters = int(params.learning_rate_warmup_iters)
         lr_config = (
@@ -332,6 +346,10 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
         else:
             early_stop = False
 
+        runner = ConfigDict(max_epochs=int(params.num_iters))
+        if self._recipe_cfg.get("runner", None) and self._recipe_cfg.runner.get("type").startswith("IterBasedRunner"):
+            runner = ConfigDict(max_iters=int(params.num_iters))
+
         return ConfigDict(
             optimizer=ConfigDict(lr=params.learning_rate),
             lr_config=lr_config,
@@ -340,7 +358,7 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
                 samples_per_gpu=int(params.batch_size),
                 workers_per_gpu=int(params.num_workers),
             ),
-            runner=ConfigDict(max_epochs=int(params.num_iters)),
+            runner=runner,
         )
 
     def _update_stage_module(self, stage_module: str):
@@ -355,9 +373,9 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
 
             def patch_input_preprocessing(deploy_cfg):
 
-                normalize_cfg = get_configs_by_dict(
+                normalize_cfg = get_configs_by_pairs(
                     self._recipe_cfg.data.test.pipeline,
-                    dict(type="Normalize")
+                    dict(type="Normalize"),
                 )
                 assert len(normalize_cfg) == 1
                 normalize_cfg = normalize_cfg[0]
@@ -398,9 +416,9 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
                 mo_options.flags = list(set(mo_options.flags))
 
             def patch_input_shape(deploy_cfg):
-                resize_cfg = get_configs_by_dict(
+                resize_cfg = get_configs_by_pairs(
                     self._recipe_cfg.data.test.pipeline,
-                    dict(type="Resize")
+                    dict(type="Resize"),
                 )
                 assert len(resize_cfg) == 1
                 resize_cfg = resize_cfg[0]
@@ -410,9 +428,7 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
                 assert all(isinstance(i, int) and i > 0 for i in size)
                 # default is static shape to prevent an unexpected error
                 # when converting to OpenVINO IR
-                deploy_cfg.backend_config.model_inputs = [
-                    ConfigDict(opt_shapes=ConfigDict(input=[1, 3, *size]))
-                ]
+                deploy_cfg.backend_config.model_inputs = [ConfigDict(opt_shapes=ConfigDict(input=[1, 3, *size]))]
 
             patch_input_preprocessing(deploy_cfg)
             if not deploy_cfg.backend_config.get("model_inputs", []):
@@ -492,14 +508,29 @@ class BaseTask(IInferenceTask, IExportTask, IEvaluationTask, IUnload):
 
         def __init__(self, task_instance):
             self.task_instance = task_instance
+            self.__findable = False  # a barrier to block segmentation fault
 
         def __call__(self, cancel_interface):
             """Function call in OnHookInitialized."""
+            if isinstance(self.task_instance, int) and self.__findable:
+                import ctypes
+
+                # NOTE: BE AWARE OF SEGMENTATION FAULT
+                self.task_instance = ctypes.cast(self.task_instance, ctypes.py_object).value
             self.task_instance.cancel_hook_initialized(cancel_interface)
 
         def __repr__(self):
             """Function repr in OnHookInitialized."""
             return f"'{__name__}.OnHookInitialized'"
+
+        def __deepcopy__(self, memo):
+            """Function deepcopy in OnHookInitialized."""
+            cls = self.__class__
+            result = cls.__new__(cls)
+            memo[id(self)] = result
+            result.task_instance = self.task_instance
+            result.__findable = True  # pylint: disable=unused-private-member
+            return result
 
         def __reduce__(self):
             """Function reduce in OnHookInitialized."""

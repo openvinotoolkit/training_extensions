@@ -6,9 +6,14 @@
 from .data import MPASegDataset
 from .models import DetConB, DetConLoss, SelfSLMLP
 
+# fmt: off
+# isort: off
 # FIXME: openvino pot library adds stream handlers to root logger
 # which makes annoying duplicated logging
-from mmseg.utils import get_root_logger
+# pylint: disable=no-name-in-module,wrong-import-order
+from mmseg.utils import get_root_logger  # type: ignore # (false positive)
 get_root_logger().propagate = False
+# fmt: off
+# isort: on
 
 __all__ = ["MPASegDataset", "DetConLoss", "SelfSLMLP", "DetConB"]

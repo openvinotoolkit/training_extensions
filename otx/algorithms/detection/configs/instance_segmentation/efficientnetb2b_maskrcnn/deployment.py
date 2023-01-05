@@ -1,3 +1,5 @@
+"""MMDeploy config of EfficientNetB2B model for Instance-Seg Task."""
+
 _base_ = ["../../base/deployments/base_instance_segmentation_dynamic.py"]
 
 ir_config = dict(

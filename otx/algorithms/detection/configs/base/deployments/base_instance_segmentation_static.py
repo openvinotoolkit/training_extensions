@@ -1,3 +1,5 @@
+"""Instance segmentation models static deploy config."""
+
 _base_ = ["./base_detection_static.py"]
 
 ir_config = dict(

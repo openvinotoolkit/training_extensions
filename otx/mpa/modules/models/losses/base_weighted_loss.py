@@ -100,7 +100,7 @@ class BaseWeightedLoss(nn.Module, metaclass=ABCMeta):
         # make sure meta data are tensor as well for aggregation
         # when parsing loss in sgementator
         for k, v in meta.items():
-            meta[k] = torch.tensor(v, dtype=loss.dtype)
+            meta[k] = torch.tensor(v, dtype=loss.dtype, device=loss.device)
 
         if self.with_loss_jitter and loss.numel() == 1:
             if self._smooth_loss is None:

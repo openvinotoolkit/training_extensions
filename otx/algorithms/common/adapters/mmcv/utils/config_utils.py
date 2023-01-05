@@ -19,7 +19,7 @@ import glob
 import os
 import tempfile
 from collections.abc import Mapping
-from typing import Union, List, Literal, Any, Dict, Tuple, overload, TYPE_CHECKING
+from typing import Any, Dict, List, Tuple, Union
 
 from mmcv import Config, ConfigDict
 
@@ -28,67 +28,12 @@ from otx.api.utils.argument_checks import (
     DatasetParamTypeCheck,
     check_input_parameters_type,
 )
+from otx.mpa.utils.logger import get_logger
 
-from mpa.utils.logger import get_logger
-
+from ._config_utils_get_configs_by_keys import get_configs_by_keys
+from ._config_utils_get_configs_by_pairs import get_configs_by_pairs
 
 logger = get_logger()
-
-
-if TYPE_CHECKING:
-    @overload
-    def get_configs_by_dict(
-        config: Union[Config, ConfigDict],
-        pairs: Dict[Any, Any],
-        *,
-        return_path: bool,
-    ) -> Union[List[ConfigDict], Dict[Tuple[Any, ...], ConfigDict]]:
-        ...
-
-    @overload
-    def get_configs_by_dict(
-        config: Union[Config, ConfigDict],
-        pairs: Dict[Any, Any],
-        *,
-        return_path: Literal[True],
-    ) -> Dict[Tuple[Any, ...], ConfigDict]:
-        ...
-
-    @overload
-    def get_configs_by_dict(
-        config: Union[Config, ConfigDict],
-        pairs: Dict[Any, Any],
-        *,
-        return_path: Literal[False] = False,
-    ) -> List[ConfigDict]:
-        ...
-
-    @overload
-    def get_configs_by_keys(
-        config: Union[Config, ConfigDict],
-        keys: Union[Any, List[Any]],
-        *,
-        return_path: bool,
-    ) -> Union[List[ConfigDict], Dict[Tuple[Any, ...], ConfigDict]]:
-        ...
-
-    @overload
-    def get_configs_by_keys(
-        config: Union[Config, ConfigDict],
-        keys: Union[Any, List[Any]],
-        *,
-        return_path: Literal[True],
-    ) -> Dict[Tuple[Any, ...], ConfigDict]:
-        ...
-
-    @overload
-    def get_configs_by_keys(
-        config: Union[Config, ConfigDict],
-        keys: Union[Any, List[Any]],
-        *,
-        return_path: Literal[False] = False,
-    ) -> List[ConfigDict]:
-        ...
 
 
 @check_input_parameters_type()
@@ -104,97 +49,23 @@ def remove_from_config(config: Union[Config, ConfigDict], key: str):
 
 
 @check_input_parameters_type()
-def remove_from_configs_by_type(configs: List[ConfigDict], type: str):
-    """Update & remove by type"""
+def remove_from_configs_by_type(configs: List[ConfigDict], type_name: str):
+    """Update & remove by type."""
     indices = []
     for i, config in enumerate(configs):
-        type_ = config.get("type", None)
-        if type_ == type:
+        type_name_ = config.get("type", None)
+        if type_name_ == type_name:
             indices.append(i)
     for i in reversed(indices):
         configs.pop(i)
 
 
-def get_configs_by_dict(  # noqa: C901
-    config: Union[Config, ConfigDict],
-    pairs: Dict[Any, Any],
-    *,
-    return_path: bool = False,
-) -> Union[List[ConfigDict], Dict[Tuple[Any, ...], ConfigDict]]:
-    # TODO: multiple instance
-
-    def get_config(config, path=()):
-        out = dict()
-        if isinstance(config, (Config, Mapping)):
-            if all(
-                [
-                    True if config.get(key, None) == value else False
-                    for key, value in pairs.items()
-                ]
-            ):
-                return {path: config}
-            for key, value in config.items():
-                out.update(get_config(value, (*path, key)))
-        elif isinstance(config, (list, tuple)):
-            for idx, value in enumerate(config):
-                out.update(get_config(value, (*path, idx)))
-        return out
-
-    out = get_config(config)
-    if return_path:
-        return out
-
-    out_ = []
-    for found in out.values():
-        if isinstance(found, (list, tuple)):
-            out_.extend(found)
-        else:
-            out_.append(found)
-    return out_
-
-
-def get_configs_by_keys(  # noqa: C901
-    config: Union[Config, ConfigDict],
-    keys: Union[Any, List[Any]],
-    *,
-    return_path: bool = False,
-) -> Union[List[ConfigDict], Dict[Tuple[Any, ...], ConfigDict]]:
-    """Return a list of configs based on key."""
-
-    if not isinstance(keys, list):
-        keys = [keys]
-
-    def get_config(config, path=()):
-        if path and path[-1] in keys:
-            return {path: config}
-
-        out = dict()
-        if isinstance(config, (Config, Mapping)):
-            for key, value in config.items():
-                out.update(get_config(value, (*path, key)))
-        elif isinstance(config, (list, tuple)):
-            for idx, value in enumerate(config):
-                out.update(get_config(value, (*path, idx)))
-        return out
-
-    out = get_config(config)
-    if return_path:
-        return out
-
-    out_ = []
-    for found in out.values():
-        if isinstance(found, (list, tuple)):
-            out_.extend(found)
-        else:
-            out_.append(found)
-    return out_
-
-
 def update_config(
     config: Union[Config, ConfigDict],
-    update_config: Dict[Tuple[Any, ...], Any],
+    pairs: Dict[Tuple[Any, ...], Any],
 ):
-    for path, value in update_config.items():
+    """Update configs by path as a key and value as a target."""
+    for path, value in pairs.items():
         path_ = list(reversed(path))
         ptr = config
         key = None
@@ -204,9 +75,7 @@ def update_config(
                 if key not in ptr:
                     ptr[key] = ConfigDict()
             elif isinstance(ptr, (list, tuple)):
-                assert isinstance(key, int), (
-                    f"{key} of {path} must be int for ({type(ptr)}: {ptr})"
-                )
+                assert isinstance(key, int), f"{key} of {path} must be int for ({type(ptr)}: {ptr})"
                 assert len(ptr) < key, f"{key} of {path} exceeds {len(ptr)}"
             if len(path_) == 0:
                 ptr[key] = value
@@ -214,9 +83,8 @@ def update_config(
 
 
 @check_input_parameters_type()
-def get_dataset_configs(
-    config: Union[Config, ConfigDict], subset: str = "train"
-) -> List[ConfigDict]:
+def get_dataset_configs(config: Union[Config, ConfigDict], subset: str) -> List[ConfigDict]:
+    """Get 'datasets' configs."""
     if config.data.get(subset, None) is None:
         return []
     data_cfg = config.data[subset]
@@ -254,6 +122,7 @@ def config_from_string(config_string: str) -> Config:
 
 @check_input_parameters_type()
 def patch_default_config(config: Config):
+    """Patch default config."""
     if "runner" not in config:
         config.runner = ConfigDict({"type": "EpochBasedRunner"})
     if "log_config" not in config:
@@ -274,9 +143,10 @@ def patch_data_pipeline(config: Config, data_pipeline: str = ""):
 
 @check_input_parameters_type()
 def patch_color_conversion(config: Config):
+    """Patch color conversion."""
     assert "data" in config
 
-    for cfg in get_configs_by_dict(config.data, dict(type="Normalize")):
+    for cfg in get_configs_by_pairs(config.data, dict(type="Normalize")):
         to_rgb = False
         if "to_rgb" in cfg:
             to_rgb = cfg.to_rgb
@@ -285,6 +155,7 @@ def patch_color_conversion(config: Config):
 
 @check_input_parameters_type()
 def patch_runner(config: Config):
+    """Patch runner."""
     assert "runner" in config
 
     # Check that there is no conflict in specification of number of training epochs.
@@ -308,10 +179,8 @@ def patch_runner(config: Config):
 
 
 @check_input_parameters_type()
-def align_data_config_with_recipe(
-    data_config: ConfigDict,
-    config: Union[Config, ConfigDict]
-):
+def align_data_config_with_recipe(data_config: ConfigDict, config: Union[Config, ConfigDict]):
+    """Align data_cfg with recipe_cfg."""
     # we assumed config has 'otx_dataset' and 'label' key in it
     # by 'patch_datasets' function
 
@@ -320,11 +189,7 @@ def align_data_config_with_recipe(
     for subset in data_config.keys():
         subset_config = data_config.get(subset, {})
         for key in list(subset_config.keys()):
-            found_config = get_configs_by_keys(
-                config.get(subset),
-                key,
-                return_path=True
-            )
+            found_config = get_configs_by_keys(config.get(subset), key, return_path=True)
             assert len(found_config) == 1
             value = subset_config.pop(key)
             path = list(found_config.keys())[0]

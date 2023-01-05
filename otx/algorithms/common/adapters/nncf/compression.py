@@ -1,3 +1,4 @@
+"""NNCF utils."""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -6,7 +7,6 @@ import torch
 
 from .utils import check_nncf_is_enabled, get_nncf_version, is_nncf_enabled
 
-
 NNCF_STATE_NAME = "nncf_model_state"
 COMPRESSION_STATE_NAME = "compression_state"
 DATA_TO_BUILD_NAME = "data_to_build_nncf"
@@ -14,7 +14,8 @@ STATE_TO_BUILD_NAME = "state_dict_to_build_nncf"
 
 
 def get_nncf_metadata():
-    """
+    """Get NNCF related metadata.
+
     The function returns NNCF metadata that should be stored into a checkpoint.
     The metadata is used to check in wrap_nncf_model if the checkpoint should be used
     to resume NNCF training or initialize NNCF fields of NNCF-wrapped model.
@@ -24,7 +25,8 @@ def get_nncf_metadata():
 
 
 def is_state_nncf(state):
-    """
+    """Check if state_dict is NNCF state_dict.
+
     The function uses metadata stored in a dict_state to check if the
     checkpoint was the result of trainning of NNCF-compressed model.
     See the function get_nncf_metadata above.
@@ -33,7 +35,8 @@ def is_state_nncf(state):
 
 
 def is_checkpoint_nncf(path):
-    """
+    """Check if path is NNCF checkpoint.
+
     The function uses metadata stored in a checkpoint to check if the
     checkpoint was the result of trainning of NNCF-compressed model.
     See the function get_nncf_metadata above.
@@ -46,6 +49,8 @@ def is_checkpoint_nncf(path):
 
 
 def get_uncompressed_model(module):
+    """Get uncompressed original model."""
+
     if not is_nncf_enabled():
         return module
     from nncf.torch.nncf_network import NNCFNetwork
@@ -56,15 +61,18 @@ def get_uncompressed_model(module):
 
 
 class AccuracyAwareLrUpdater:
+    """AccuracyAwareLrUpdater."""
+
     def __init__(self, lr_hook):
         self._lr_hook = lr_hook
         self._lr_hook.warmup_iters = 0
 
     def step(self, *args, **kwargs):
-        pass
+        """step."""
 
     @property
     def base_lrs(self):
+        """base_lrs."""
         return self._lr_hook.base_lr
 
     @base_lrs.setter

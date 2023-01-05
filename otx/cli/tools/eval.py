@@ -58,6 +58,7 @@ def parse_args():
         parser.add_argument("template")
     parser.add_argument("--data", required=False, default="./data.yaml")
     required = not os.path.exists("./data.yaml")
+
     parser.add_argument(
         "--test-ann-files",
         required=required,

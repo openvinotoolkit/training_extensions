@@ -15,23 +15,19 @@
 # and limitations under the License.
 
 import math
-from collections import defaultdict
-from collections.abc import Mapping
 from typing import List, Optional, Union
 
-import torch
 from mmcv import Config, ConfigDict
-from mmdet.models.detectors import BaseDetector
 
 from otx.algorithms.common.adapters.mmcv.utils import (
+    get_configs_by_keys,
+    get_dataset_configs,
     get_meta_keys,
     is_epoch_based_runner,
     patch_color_conversion,
     prepare_work_dir,
-    get_dataset_configs,
-    get_configs_by_keys,
-    update_config,
     remove_from_config,
+    update_config,
 )
 from otx.algorithms.detection.configs.base import DetectionConfig
 from otx.algorithms.detection.utils.data import (
@@ -96,6 +92,7 @@ def patch_model_config(
     config: Config,
     labels: List[LabelEntity],
 ):
+    """Patch model config."""
     set_num_classes(config, len(labels))
 
 
@@ -194,6 +191,7 @@ def set_data_classes(config: Config, labels: List[LabelEntity]):
 
 @check_input_parameters_type()
 def set_num_classes(config: Config, num_classes: int):
+    """Set num classes."""
     # Set proper number of classes in model's detection heads.
     head_names = ("mask_head", "bbox_head", "segm_head")
     if "roi_head" in config.model:
@@ -216,10 +214,15 @@ def set_num_classes(config: Config, num_classes: int):
 def patch_datasets(
     config: Config,
     domain: Domain = Domain.DETECTION,
-    subsets: List[str] = ["train", "val", "test", "unlabeled"],
-    **kwargs
+    subsets: Optional[List[str]] = None,
+    **kwargs,
 ):
     """Update dataset configs."""
+    assert "data" in config
+    assert "type" in kwargs
+
+    if subsets is None:
+        subsets = ["train", "val", "test", "unlabeled"]
 
     def update_pipeline(cfg):
         for pipeline_step in cfg.pipeline:
@@ -237,16 +240,13 @@ def patch_datasets(
     for subset in subsets:
         if subset not in config.data:
             continue
-        config.data[f"{subset}_dataloader"] = config.data.get(
-            f"{subset}_dataloader", ConfigDict()
-        )
+        config.data[f"{subset}_dataloader"] = config.data.get(f"{subset}_dataloader", ConfigDict())
 
         cfgs = get_dataset_configs(config, subset)
         for cfg in cfgs:
             cfg.domain = domain
             cfg.otx_dataset = None
             cfg.labels = None
-            cfg.type = "MPADetDataset"
             cfg.update(kwargs)
 
             remove_from_config(cfg, "ann_file")
@@ -256,7 +256,7 @@ def patch_datasets(
 
         # 'MultiImageMixDataset' wrapper dataset has pipeline as well
         # which we should update
-        if len(cfgs) and config.data[subset].type == "MultiImageMixDataset":
+        if len(cfgs) > 0 and config.data[subset].type == "MultiImageMixDataset":
             update_pipeline(config.data[subset])
 
     patch_color_conversion(config)
@@ -274,6 +274,7 @@ def patch_evaluation(config: Config):
 
 
 def should_cluster_anchors(model_cfg: Config):
+    """Check whether cluster anchors or not."""
     if (
         hasattr(model_cfg.model, "bbox_head")
         and hasattr(model_cfg.model.bbox_head, "anchor_generator")

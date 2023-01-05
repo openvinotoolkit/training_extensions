@@ -15,28 +15,25 @@
 # and limitations under the License.
 
 
-import copy
 import logging
 import math
-from collections import defaultdict
 from typing import List, Optional, Union
 
 from mmcv import Config, ConfigDict
 
 from otx.algorithms.common.adapters.mmcv.utils import (
+    get_configs_by_keys,
+    get_configs_by_pairs,
+    get_dataset_configs,
     get_meta_keys,
     is_epoch_based_runner,
     patch_color_conversion,
     prepare_work_dir,
     remove_from_config,
     remove_from_configs_by_type,
-    get_configs_by_dict,
-    get_dataset_configs,
-    get_configs_by_keys,
     update_config,
 )
 from otx.algorithms.segmentation.configs.base import SegmentationConfig
-from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label import Domain, LabelEntity
 from otx.api.utils.argument_checks import (
     DirectoryPathCheck,
@@ -89,6 +86,7 @@ def patch_model_config(
     labels: List[LabelEntity],
     distributed: bool = False,
 ):
+    """Patch model config."""
     label_names = ["background"] + [label.name for label in labels]
     set_num_classes(config, len(label_names))
 
@@ -111,13 +109,11 @@ def set_hyperparams(config: Config, hyperparams: SegmentationConfig):
     main_iters = int(hyperparams.learning_parameters.num_iters)
     total_iterations = fixed_iters + warmup_iters + main_iters
 
-    freeze_layer_config = get_configs_by_dict(
-        config.custom_hooks,
-        dict(type="FreezeLayers")
-    )
+    freeze_layer_config = get_configs_by_pairs(config.custom_hooks, dict(type="FreezeLayers"))
     assert len(freeze_layer_config) == 1
     freeze_layer_config = freeze_layer_config[0]
-    freeze_layer_config.iters = fixed_iters
+    # false positive (mypy)
+    freeze_layer_config.iters = fixed_iters  # type: ignore[attr-defined]
     if config.lr_config.get("policy", None) == "customstep":
         config.lr_config.fixed_iters = fixed_iters
     config.find_unused_parameters = fixed_iters > 0
@@ -302,10 +298,15 @@ def set_num_classes(config: Config, num_classes: int):
 def patch_datasets(
     config: Config,
     domain: Domain = Domain.SEGMENTATION,
-    subsets: List[str] = ["train", "val", "test"],
-    **kwargs
+    subsets: Optional[List[str]] = None,
+    **kwargs,
 ):
     """Update dataset configs."""
+    assert "data" in config
+    assert "type" in kwargs
+
+    if subsets is None:
+        subsets = ["train", "val", "test", "unlabeled"]
 
     def update_pipeline(cfg):
         for pipeline_step in cfg.pipeline:
@@ -320,16 +321,13 @@ def patch_datasets(
     for subset in subsets:
         if subset not in config.data:
             continue
-        config.data[f"{subset}_dataloader"] = config.data.get(
-            f"{subset}_dataloader", ConfigDict()
-        )
+        config.data[f"{subset}_dataloader"] = config.data.get(f"{subset}_dataloader", ConfigDict())
 
         cfgs = get_dataset_configs(config, subset)
         for cfg in cfgs:
             cfg.domain = domain
             cfg.otx_dataset = None
             cfg.labels = None
-            cfg.type = "MPASegDataset"
             cfg.update(kwargs)
 
             remove_from_config(cfg, "ann_dir")
@@ -341,7 +339,7 @@ def patch_datasets(
 
         # 'MultiImageMixDataset' wrapper dataset has pipeline as well
         # which we should update
-        if len(cfgs) and config.data[subset].type == "MultiImageMixDataset":
+        if len(cfgs) > 0 and config.data[subset].type == "MultiImageMixDataset":
             update_pipeline(config.data[subset])
 
     patch_color_conversion(config)

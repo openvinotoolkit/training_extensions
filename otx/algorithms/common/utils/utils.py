@@ -16,7 +16,7 @@
 
 import importlib
 import inspect
-from typing import Optional, Tuple, Callable
+from typing import Callable, Optional, Tuple
 
 import yaml
 
@@ -40,7 +40,12 @@ def get_task_class(path: str):
 
 
 @check_input_parameters_type()
-def get_arg_spec(fn: Callable, depth: Optional[int] = None) -> Tuple[str]:
+def get_arg_spec(  # noqa: C901  # pylint: disable=too-many-branches
+    fn: Callable,  # pylint: disable=invalid-name
+    depth: Optional[int] = None,
+) -> Tuple[str, ...]:
+    """Get argument spec of function."""
+
     args = set()
 
     cls_obj = None
@@ -56,7 +61,7 @@ def get_arg_spec(fn: Callable, depth: Optional[int] = None) -> Tuple[str]:
             cls_obj = globals()[".".join(names[:-1])]
 
     if cls_obj:
-        for obj in cls_obj.mro():
+        for obj in cls_obj.mro():  # type: ignore
             fn_obj = cls_obj.__dict__.get(fn_name, None)
             if fn_obj is not None:
                 if isinstance(fn_obj, staticmethod):
@@ -69,7 +74,7 @@ def get_arg_spec(fn: Callable, depth: Optional[int] = None) -> Tuple[str]:
         args.update(spec.args)
     else:
         # method, classmethod
-        for i, obj in enumerate(cls_obj.mro()):
+        for i, obj in enumerate(cls_obj.mro()):  # type: ignore
             if depth is not None and i == depth:
                 break
             method = getattr(obj, fn_name, None)

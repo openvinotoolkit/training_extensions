@@ -1,8 +1,8 @@
+"""NNCF wrapped mmdet models builder."""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from copy import deepcopy
 from functools import partial
 from typing import Optional, Union
 
@@ -12,8 +12,8 @@ from mmcv.utils import Config, ConfigDict
 from mmdet.utils import get_root_logger
 
 from otx.algorithms.common.adapters.mmcv.utils import (
-    get_configs_by_dict,
     get_configs_by_keys,
+    get_configs_by_pairs,
     remove_from_configs_by_type,
 )
 from otx.algorithms.common.adapters.nncf import is_accuracy_aware_training_set
@@ -25,11 +25,10 @@ from otx.algorithms.common.adapters.nncf.compression import (
 from otx.algorithms.common.adapters.nncf.utils import no_nncf_trace
 from otx.algorithms.detection.adapters.mmdet.utils import build_detector
 
-
 logger = get_root_logger()
 
 
-def build_nncf_detector(
+def build_nncf_detector(  # pylint: disable=too-many-locals,too-many-statements
     config: Config,
     train_cfg: Optional[Union[Config, ConfigDict]] = None,
     test_cfg: Optional[Union[Config, ConfigDict]] = None,
@@ -38,18 +37,23 @@ def build_nncf_detector(
     cfg_options: Optional[Union[Config, ConfigDict]] = None,
     distributed=False,
 ):
+    """A function to build NNCF wrapped mmdet model."""
+
     from mmdet.apis import multi_gpu_test, single_gpu_test
     from mmdet.apis.inference import LoadImage
     from mmdet.datasets import build_dataloader as mmdet_build_dataloader
-    from mmdet.datasets import build_dataset
+    from mmdet.datasets import build_dataset as mmdet_build_dataset
     from mmdet.datasets.pipelines import Compose
     from nncf.torch.dynamic_graph.io_handling import nncf_model_input
 
     from otx.algorithms.common.adapters.mmcv.nncf import (
-        build_dataloader,
         get_fake_input,
         model_eval,
         wrap_nncf_model,
+    )
+    from otx.algorithms.common.adapters.mmcv.utils.builder import (
+        build_dataloader,
+        build_dataset,
     )
 
     if cfg_options is not None:
@@ -60,9 +64,7 @@ def build_nncf_detector(
         config.load_from = None
     assert checkpoint is not None
 
-    model = build_detector(
-        config, train_cfg=train_cfg, test_cfg=test_cfg, from_scratch=True
-    )
+    model = build_detector(config, train_cfg=train_cfg, test_cfg=test_cfg, from_scratch=True)
     model = model.to(device)
 
     state_dict = CheckpointLoader.load_checkpoint(checkpoint, map_location=device)
@@ -87,21 +89,29 @@ def build_nncf_detector(
         data_to_build_nncf = datasets[0][0].numpy
 
         init_dataloader = build_dataloader(
+            build_dataset(
+                config,
+                subset="train",
+                dataset_builder=mmdet_build_dataset,
+            ),
             config,
             subset="train",
-            distributed=distributed,
             dataloader_builder=mmdet_build_dataloader,
-            dataset_builder=build_dataset,
+            distributed=distributed,
         )
 
         val_dataloader = None
         if is_acc_aware:
             val_dataloader = build_dataloader(
+                build_dataset(
+                    config,
+                    subset="val",
+                    dataset_builder=mmdet_build_dataset,
+                ),
                 config,
                 subset="val",
-                distributed=distributed,
                 dataloader_builder=mmdet_build_dataloader,
-                dataset_builder=build_dataset,
+                distributed=distributed,
             )
 
         model_eval_fn = partial(
@@ -133,9 +143,7 @@ def build_nncf_detector(
         #     When we manage to enable NNCF compression for sufficiently many models,
         #     we should keep one choice only.
         nncf_compress_postprocessing = config.get("nncf_compress_postprocessing")
-        logger.debug(
-            "set should_compress_postprocessing=" f"{nncf_compress_postprocessing}"
-        )
+        logger.debug(f"set should_compress_postprocessing={nncf_compress_postprocessing}")
     else:
         # TODO: Do we have to keep this configuration?
         # This configuration is not enabled in forked mmdetection library in the first place
@@ -145,7 +153,7 @@ def build_nncf_detector(
         def _get_fake_data_for_forward(nncf_config):
             input_size = nncf_config.get("input_info").get("sample_size")
             assert len(input_size) == 4 and input_size[0] == 1
-            H, W, C = input_size[2], input_size[3], input_size[1]
+            H, W, C = input_size[2], input_size[3], input_size[1]  # pylint: disable=invalid-name
             device = next(model.parameters()).device
             with no_nncf_trace():
                 return get_fake_input_fn(shape=tuple([H, W, C]), device=device)
@@ -159,13 +167,9 @@ def build_nncf_detector(
             # Marking data as NNCF network input must be after device movement
             img = [nncf_model_input(i) for i in img]
             if nncf_compress_postprocessing:
-                logger.debug(
-                    "NNCF will try to compress a postprocessing part of the model"
-                )
+                logger.debug("NNCF will try to compress a postprocessing part of the model")
             else:
-                logger.debug(
-                    "NNCF will NOT compress a postprocessing part of the model"
-                )
+                logger.debug("NNCF will NOT compress a postprocessing part of the model")
                 img = img[0]
             model(img)
 
@@ -181,9 +185,7 @@ def build_nncf_detector(
 
     # update custom hooks
     custom_hooks = config.get("custom_hooks", [])
-    custom_hooks.append(
-        ConfigDict(type="CompressionHook", compression_ctrl=compression_ctrl)
-    )
+    custom_hooks.append(ConfigDict(type="CompressionHook", compression_ctrl=compression_ctrl))
     custom_hooks.append(ConfigDict({"type": "CancelTrainingHook"}))
     custom_hooks.append(
         ConfigDict(
@@ -201,12 +203,9 @@ def build_nncf_detector(
     remove_from_configs_by_type(custom_hooks, "CustomModelEMAHook")
     remove_from_configs_by_type(custom_hooks, "AdaptiveTrainSchedulingHook")
 
-    for hook in get_configs_by_dict(custom_hooks, dict(type="OTXProgressHook")):
+    for hook in get_configs_by_pairs(custom_hooks, dict(type="OTXProgressHook")):
         time_monitor = hook.get("time_monitor", None)
-        if (
-            time_monitor
-            and getattr(time_monitor, "on_initialization_end", None) is not None
-        ):
+        if time_monitor and getattr(time_monitor, "on_initialization_end", None) is not None:
             time_monitor.on_initialization_end()
 
     return compression_ctrl, model

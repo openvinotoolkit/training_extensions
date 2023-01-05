@@ -1,6 +1,9 @@
+"""Patch mmdet."""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
+
+# pylint: disable=protected-access,redefined-outer-name
 
 from functools import partial
 
@@ -22,8 +25,7 @@ from otx.algorithms.common.adapters.nncf.patchers import (
     no_nncf_trace_wrapper,
 )
 from otx.algorithms.common.adapters.nncf.patches import nncf_trace_context
-from mpa.deploy.utils import is_mmdeploy_enabled
-
+from otx.mpa.deploy.utils import is_mmdeploy_enabled
 
 HEADS_TARGETS = dict(
     classes=(
@@ -48,7 +50,7 @@ SAMPLERS_TARGETS = dict(
 )
 
 
-def should_wrap(obj_cls, fn_name, targets):
+def _should_wrap(obj_cls, fn_name, targets):
     classes = targets["classes"]
     fn_names = targets["fn_names"]
 
@@ -61,57 +63,54 @@ def should_wrap(obj_cls, fn_name, targets):
     return False
 
 
-def wrap_mmdet_head(obj_cls):
+def _wrap_mmdet_head(obj_cls):
     for fn_name in HEADS_TARGETS["fn_names"]:
-        if should_wrap(obj_cls, fn_name, HEADS_TARGETS):
+        if _should_wrap(obj_cls, fn_name, HEADS_TARGETS):
             NNCF_PATCHER.patch(getattr(obj_cls, fn_name), no_nncf_trace_wrapper)
             # 'onnx_export' method calls 'forward' method which need to be traced
             NNCF_PATCHER.patch(getattr(obj_cls, "forward"), nncf_trace_wrapper)
 
 
-def wrap_mmdet_bbox_assigner(obj_cls):
+def _wrap_mmdet_bbox_assigner(obj_cls):
     for fn_name in BBOX_ASSIGNERS_TARGETS["fn_names"]:
-        if should_wrap(obj_cls, fn_name, BBOX_ASSIGNERS_TARGETS):
+        if _should_wrap(obj_cls, fn_name, BBOX_ASSIGNERS_TARGETS):
             NNCF_PATCHER.patch(getattr(obj_cls, fn_name), no_nncf_trace_wrapper)
 
 
-def wrap_mmdet_sampler(obj_cls):
+def _wrap_mmdet_sampler(obj_cls):
     for fn_name in SAMPLERS_TARGETS["fn_names"]:
-        if should_wrap(obj_cls, fn_name, SAMPLERS_TARGETS):
+        if _should_wrap(obj_cls, fn_name, SAMPLERS_TARGETS):
             NNCF_PATCHER.patch(getattr(obj_cls, fn_name), no_nncf_trace_wrapper)
 
 
-def wrap_register_module(self, fn, *args, **kwargs):
-    """
-    A function to wrap classes lazily defined such as custom ones.
-    """
+# pylint: disable=invalid-name,unused-argument
+def _wrap_register_module(self, fn, *args, **kwargs):
+    """A function to wrap classes lazily defined such as custom ones."""
 
     module = kwargs["module"]
-    wrap_mmdet_head(module)
-    wrap_mmdet_bbox_assigner(module)
-    wrap_mmdet_sampler(module)
+    _wrap_mmdet_head(module)
+    _wrap_mmdet_bbox_assigner(module)
+    _wrap_mmdet_sampler(module)
     return fn(*args, **kwargs)
 
 
 # for mmdet defined heads
-for head_cls in [BaseDenseHead, BaseMaskHead, BaseRoIHead] + list(
-    HEADS.module_dict.values()
-):
-    wrap_mmdet_head(head_cls)
+for head_cls in [BaseDenseHead, BaseMaskHead, BaseRoIHead] + list(HEADS.module_dict.values()):
+    _wrap_mmdet_head(head_cls)
 
 # for mmdet defined bbox assigners
 for bbox_assigner_cls in [BaseAssigner] + list(BBOX_ASSIGNERS.module_dict.values()):
-    wrap_mmdet_bbox_assigner(bbox_assigner_cls)
+    _wrap_mmdet_bbox_assigner(bbox_assigner_cls)
 
 # for mmdet defined samplers
 # NNCF can not trace this part with torch older 1.11.0
 for sampler_cls in [BaseSampler] + list(BBOX_SAMPLERS.module_dict.values()):
-    wrap_mmdet_sampler(sampler_cls)
+    _wrap_mmdet_sampler(sampler_cls)
 
 # for custom defined
-NNCF_PATCHER.patch(HEADS._register_module, wrap_register_module)
-NNCF_PATCHER.patch(BBOX_ASSIGNERS._register_module, wrap_register_module)
-NNCF_PATCHER.patch(BBOX_SAMPLERS._register_module, wrap_register_module)
+NNCF_PATCHER.patch(HEADS._register_module, _wrap_register_module)
+NNCF_PATCHER.patch(BBOX_ASSIGNERS._register_module, _wrap_register_module)
+NNCF_PATCHER.patch(BBOX_SAMPLERS._register_module, _wrap_register_module)
 NNCF_PATCHER.patch(
     "mmdet.models.roi_heads.roi_extractors.SingleRoIExtractor.map_roi_levels",
     no_nncf_trace_wrapper,
@@ -124,7 +123,7 @@ BaseDetector.nncf_trace_context = nncf_trace_context
 
 
 if is_mmdeploy_enabled():
-    import mmdeploy.codebase.mmdet
+    import mmdeploy.codebase.mmdet  # noqa: F401  # pylint: disable=unused-import
     from mmdeploy.core import FUNCTION_REWRITER
     from mmdeploy.core.rewriters.rewriter_utils import import_function
 
@@ -133,8 +132,6 @@ if is_mmdeploy_enabled():
             continue
         obj, obj_cls = import_function(fn_path)
         fn_name = fn_path.split(".")[-1]
-        if should_wrap(obj_cls, fn_name, HEADS_TARGETS):
+        if _should_wrap(obj_cls, fn_name, HEADS_TARGETS):
             for record_dict in record_dicts:
-                record_dict["_object"] = partial(
-                    no_nncf_trace_wrapper, None, record_dict["_object"]
-                )
+                record_dict["_object"] = partial(no_nncf_trace_wrapper, None, record_dict["_object"])

@@ -21,12 +21,10 @@ import os
 import tempfile
 from collections.abc import Mapping
 from copy import deepcopy
-from functools import partial
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 import torch
-from mmcv.utils import Config, ConfigDict
-from mpa.utils.logger import get_logger
+from mmcv.utils import ConfigDict
 
 from otx.algorithms.common.adapters.mmcv.utils import (
     get_configs_by_keys,
@@ -44,6 +42,7 @@ from otx.algorithms.common.adapters.nncf.compression import (
 )
 from otx.algorithms.common.adapters.nncf.config import compose_nncf_config
 from otx.algorithms.common.utils.callback import OptimizationProgressCallback
+from otx.algorithms.common.utils.data import get_dataset
 from otx.api.configuration import cfg_helper
 from otx.api.configuration.helper.utils import ids_to_strings
 from otx.api.entities.datasets import DatasetEntity
@@ -69,14 +68,16 @@ from otx.api.utils.argument_checks import (
     DatasetParamTypeCheck,
     check_input_parameters_type,
 )
+from otx.mpa.utils.logger import get_logger
 
 from .training_base import BaseTask
-
 
 logger = get_logger()
 
 
-class NNCFBaseTask(BaseTask, IOptimizationTask):
+class NNCFBaseTask(BaseTask, IOptimizationTask):  # pylint: disable=too-many-instance-attributes
+    """NNCFBaseTask."""
+
     @check_input_parameters_type()
     def __init__(self, task_environment: TaskEnvironment, **kwargs):
         super().__init__(task_environment, **kwargs)
@@ -84,9 +85,9 @@ class NNCFBaseTask(BaseTask, IOptimizationTask):
         # Set default model attributes.
         check_nncf_is_enabled()
         self._nncf_data_to_build = None
-        self._nncf_state_dict_to_build = dict()
+        self._nncf_state_dict_to_build: Dict[str, torch.Tensor] = {}
         self._nncf_preset = None
-        self._optimization_methods = []  # type: List
+        self._optimization_methods: List[OptimizationMethod] = []
         self._precision = [ModelPrecision.FP32]
 
         self._scratch_space = tempfile.mkdtemp(prefix="otx-nncf-scratch-")
@@ -127,18 +128,18 @@ class NNCFBaseTask(BaseTask, IOptimizationTask):
 
     def _init_train_data_cfg(self, dataset: DatasetEntity):
         logger.info("init data cfg.")
-        data_cfg = ConfigDict(
-            data=ConfigDict(
-                train=ConfigDict(
-                    otx_dataset=dataset.get_subset(Subset.TRAINING),
+        data_cfg = ConfigDict(data=ConfigDict())
+
+        for cfg_key, subset in zip(
+            ["train", "val"],
+            [Subset.TRAINING, Subset.VALIDATION],
+        ):
+            subset = get_dataset(dataset, subset)
+            if subset:
+                data_cfg.data[cfg_key] = ConfigDict(
+                    otx_dataset=subset,
                     labels=self._labels,
-                ),
-                val=ConfigDict(
-                    otx_dataset=dataset.get_subset(Subset.VALIDATION),
-                    labels=self._labels,
-                ),
-            )
-        )
+                )
 
         # Temparory remedy for cfg.pretty_text error
         for label in self._labels:
@@ -152,13 +153,9 @@ class NNCFBaseTask(BaseTask, IOptimizationTask):
         with open(nncf_config_path, encoding="UTF-8") as nncf_config_file:
             common_nncf_config = json.load(nncf_config_file)
 
-        optimization_config = compose_nncf_config(
-            common_nncf_config, [self._nncf_preset]
-        )
+        optimization_config = compose_nncf_config(common_nncf_config, [self._nncf_preset])
 
-        max_acc_drop = (
-            self._hyperparams.nncf_optimization.maximal_accuracy_degradation / 100
-        )
+        max_acc_drop = self._hyperparams.nncf_optimization.maximal_accuracy_degradation / 100
         if "accuracy_aware_training" in optimization_config["nncf_config"]:
             # Update maximal_absolute_accuracy_degradation
             (
@@ -173,7 +170,7 @@ class NNCFBaseTask(BaseTask, IOptimizationTask):
 
         return ConfigDict(optimization_config)
 
-    def _initialize_post_hook(self, options=dict()):
+    def _initialize_post_hook(self, options=None):
         super()._initialize_post_hook(options)
         assert self._recipe_cfg is not None and self._model_cfg is not None
 
@@ -183,9 +180,7 @@ class NNCFBaseTask(BaseTask, IOptimizationTask):
         # when initializing and training NNCF
         if self._data_cfg is not None:
             data_loader = self._recipe_cfg.data.get("train_dataloader", {})
-            samples_per_gpu = data_loader.get(
-                "samples_per_gpu", self._recipe_cfg.data.get("samples_per_gpu")
-            )
+            samples_per_gpu = data_loader.get("samples_per_gpu", self._recipe_cfg.data.get("samples_per_gpu"))
             otx_dataset = get_configs_by_keys(self._data_cfg.data.train, "otx_dataset")
             assert len(otx_dataset) == 1
             otx_dataset = otx_dataset[0]
@@ -210,10 +205,7 @@ class NNCFBaseTask(BaseTask, IOptimizationTask):
             if isinstance(metric_name, list):
                 metric_name = metric_name[0]
             nncf_config.target_metric_name = metric_name
-            logger.info(
-                "'target_metric_name' not found in nncf config. "
-                f"Using {metric_name} as target metric"
-            )
+            logger.info("'target_metric_name' not found in nncf config. Using {metric_name} as target metric")
 
         if is_accuracy_aware_training_set(nncf_config):
             # Prepare runner for Accuracy Aware
@@ -233,6 +225,8 @@ class NNCFBaseTask(BaseTask, IOptimizationTask):
         return_compression_ctrl=False,
         **kwargs,
     ):
+        """model_builder."""
+
         if model_config is not None or data_config is not None:
             config = deepcopy(config)
             if model_config is not None:
@@ -317,9 +311,7 @@ class NNCFBaseTask(BaseTask, IOptimizationTask):
         }
 
         # update checkpoint to the newly trained model
-        self._model_ckpt = os.path.join(
-            os.path.dirname(results.get("final_ckpt")), "temporary.pth"
-        )
+        self._model_ckpt = os.path.join(os.path.dirname(results.get("final_ckpt")), "temporary.pth")
         torch.save(model_ckpt, self._model_ckpt)
 
         self._optimize_post_hook(dataset, output_model)
@@ -339,10 +331,11 @@ class NNCFBaseTask(BaseTask, IOptimizationTask):
     @check_input_parameters_type()
     def save_model(self, output_model: ModelEntity):
         """Saving model function for NNCF Task."""
+        assert self._recipe_cfg is not None
+        assert self._model_cfg is not None
+
         buffer = io.BytesIO()
-        hyperparams_str = ids_to_strings(
-            cfg_helper.convert(self._hyperparams, dict, enum_to_str=True)
-        )
+        hyperparams_str = ids_to_strings(cfg_helper.convert(self._hyperparams, dict, enum_to_str=True))
         labels = {label.name: label.color.rgb_tuple for label in self._labels}
 
         # some custom hooks are not pickable
@@ -351,8 +344,8 @@ class NNCFBaseTask(BaseTask, IOptimizationTask):
         config.merge_from_dict(self._model_cfg)
         self._recipe_cfg.custom_hooks = custom_hooks
 
-        def update(d, u):
-            for k, v in u.items():
+        def update(d, u):  # pylint: disable=invalid-name
+            for k, v in u.items():  # pylint: disable=invalid-name
                 if isinstance(v, Mapping):
                     d[k] = update(d.get(k, {}), v)
                 else:

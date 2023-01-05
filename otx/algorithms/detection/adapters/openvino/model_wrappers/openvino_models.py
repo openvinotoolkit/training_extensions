@@ -99,11 +99,12 @@ class OTXSSDModel(SSD):
     __model__ = "OTX_SSD"
 
     def __init__(self, model_adapter, configuration=None, preload=False):
+        # pylint: disable-next=bad-super-call
         super(SSD, self).__init__(model_adapter, configuration, preload)
         self.image_info_blob_name = self.image_info_blob_names[0] if len(self.image_info_blob_names) == 1 else None
         self.output_parser = BatchBoxesLabelsParser(
             self.outputs,
-            self.inputs[self.image_blob_name].shape[2:][::-1]
+            self.inputs[self.image_blob_name].shape[2:][::-1],
         )
 
     def _get_outputs(self) -> Dict:
@@ -119,7 +120,9 @@ class OTXSSDModel(SSD):
 
 
 class BatchBoxesLabelsParser:
-    def __init__(self, layers, input_size, labels_layer='labels', default_label=0):
+    """Batched output parser."""
+
+    def __init__(self, layers, input_size, labels_layer="labels", default_label=0):
         try:
             self.labels_layer = find_layer_by_name(labels_layer, layers)
         except ValueError:
@@ -131,14 +134,16 @@ class BatchBoxesLabelsParser:
 
     @staticmethod
     def find_layer_bboxes_output(layers):
+        """find_layer_bboxes_output."""
         filter_outputs = [name for name, data in layers.items() if len(data.shape) == 3 and data.shape[-1] == 5]
         if not filter_outputs:
-            raise ValueError('Suitable output with bounding boxes is not found')
+            raise ValueError("Suitable output with bounding boxes is not found")
         if len(filter_outputs) > 1:
-            raise ValueError('More than 1 candidate for output with bounding boxes.')
+            raise ValueError("More than 1 candidate for output with bounding boxes.")
         return filter_outputs[0]
 
     def __call__(self, outputs):
+        """Parse bboxes."""
         # FIXME: here, batch dim of IR must be 1
         bboxes = outputs[self.bboxes_layer]
         bboxes = bboxes.squeeze(0)
@@ -153,9 +158,5 @@ class BatchBoxesLabelsParser:
             labels = np.full(len(bboxes), self.default_label, dtype=bboxes.dtype)
         labels = labels.squeeze(0)
 
-        detections = [
-            Detection(*bbox, score, label) for label,
-            score,
-            bbox in zip(labels, scores, bboxes)
-        ]
+        detections = [Detection(*bbox, score, label) for label, score, bbox in zip(labels, scores, bboxes)]
         return detections

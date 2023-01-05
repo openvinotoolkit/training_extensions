@@ -69,9 +69,8 @@ class BasePixelLoss(BaseWeightedLoss):
     def _sparsity(values, valid_mask):
         with torch.no_grad():
             valid_values = values[valid_mask]
-            sparsity = 1.0 - float(valid_values.count_nonzero().item()) / max(1.0, float(valid_mask.sum().item()))
-
-        return sparsity
+            sparsity = 1.0 - valid_values.count_nonzero() / max(1.0, valid_mask.sum())
+        return sparsity.item()
 
     @staticmethod
     def _pred_stat(output, labels, valid_mask, window_size=5, min_group_ratio=0.6):
@@ -96,9 +95,9 @@ class BasePixelLoss(BaseWeightedLoss):
 
             num_target = torch.sum(large_group_mask, dim=(1, 2))
             num_total = torch.sum(invalid_pred_mask, dim=(1, 2))
-            out_ratio = torch.mean(num_target / num_total.clamp_min(1)).item()
+            out_ratio = torch.mean(num_target / num_total.clamp_min(1))
 
-        return out_ratio
+        return out_ratio.item()
 
     def _forward(self, output, labels, avg_factor=None, pixel_weights=None, reduction_override=None):
         assert reduction_override in (None, "none", "mean", "sum")

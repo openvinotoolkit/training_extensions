@@ -1,34 +1,27 @@
 {
   "base": {
+    "find_unused_parameters": true,
     "nncf_config": {
+      "compression": [],
       "log_dir": "."
-    },
-    "lr_finder": {
-      "enable": false
-    },
-    "train": {
-      "batch_size": 64,
-      "lr_scheduler": "reduce_on_plateau",
-      "mix_precision": false
-    },
-    "test": {
-      "batch_size": 64
     }
   },
   "nncf_quantization": {
     "nncf_config": {
-      "compression": {
-        "algorithm": "quantization",
-        "preset": "mixed",
-        "initializer": {
-          "range": {
-            "num_init_samples": 8192
-          },
-          "batchnorm_adaptation": {
-            "num_bn_adaptation_samples": 8192
+      "compression": [
+        {
+          "algorithm": "quantization",
+          "preset": "mixed",
+          "initializer": {
+            "range": {
+              "num_init_samples": 8192
+            },
+            "batchnorm_adaptation": {
+              "num_bn_adaptation_samples": 8192
+            }
           }
         }
-      },
+      ],
       "accuracy_aware_training": {
         "mode": "early_exit",
         "params": {
@@ -44,6 +37,16 @@
     },
     "nncf_config": {
       "compression": [
+        {
+          "algorithm": "filter_pruning",
+          "pruning_init": 0.1,
+          "params": {
+            "schedule": "baseline",
+            "pruning_flops_target": 0.1,
+            "filter_importance": "geometric_median",
+            "prune_downsample_convs": true
+          }
+        },
         {
           "algorithm": "quantization",
           "preset": "mixed",

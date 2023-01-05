@@ -21,7 +21,7 @@ _base_ = [
 ]
 
 model = dict(
-    type="ClassIncrSegmentor",
+    type="ClassIncrEncoderDecoder",
     pretrained=None,
     decode_head=dict(
         type="CustomFCNHead",

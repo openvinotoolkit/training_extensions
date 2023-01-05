@@ -1,3 +1,4 @@
+"""AccuracyAwareRunner for NNCF task."""
 # Copyright (C) 2022 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -8,8 +9,8 @@ from mmcv.runner import RUNNERS
 from mmcv.runner.hooks.lr_updater import LrUpdaterHook
 from mmcv.runner.utils import get_host_info
 
-from otx.algorithms.common.adapters.mmcv.runner import EpochRunnerWithCancel
 from otx.algorithms.common.adapters.mmcv.nncf.hooks import CompressionHook
+from otx.algorithms.common.adapters.mmcv.runner import EpochRunnerWithCancel
 from otx.algorithms.common.adapters.nncf import (
     AccuracyAwareLrUpdater,
     check_nncf_is_enabled,
@@ -18,7 +19,8 @@ from otx.algorithms.common.adapters.nncf import (
 
 @RUNNERS.register_module()
 class AccuracyAwareRunner(EpochRunnerWithCancel):
-    """
+    """AccuracyAwareRunner for NNCF task.
+
     An mmcv training runner to be used with NNCF-based accuracy-aware training.
     Inherited from the standard EpochBasedRunner with the overridden "run" method.
     This runner does not use the "workflow" and "max_epochs" parameters that are
@@ -31,9 +33,11 @@ class AccuracyAwareRunner(EpochRunnerWithCancel):
         super().__init__(*args, **kwargs)
         self.nncf_config = nncf_config
         self.compression_ctrl = None
-        self._target_metric_name = nncf_config['target_metric_name']
+        self._target_metric_name = nncf_config["target_metric_name"]
+        self._train_data_loader = None
 
-    def run(self, data_loaders, *args, **kwargs):
+    def run(self, data_loaders, *args, **kwargs):  # pylint: disable=unused-argument
+        """run."""
         check_nncf_is_enabled()
 
         from nncf.common.accuracy_aware_training import (
@@ -49,34 +53,26 @@ class AccuracyAwareRunner(EpochRunnerWithCancel):
                 lr_update_hook.append(hook)
             if isinstance(hook, CompressionHook):
                 found_compression_hook = True
-        assert (
-            found_compression_hook
-        ), f"{CompressionHook} must be registered to {self}."
+        assert found_compression_hook, f"{CompressionHook} must be registered to {self}."
         assert len(lr_update_hook) <= 1, (
-            f"More than 1 lr update hooks ({len(lr_update_hook)} "
-            f"are registered to {self}"
+            f"More than 1 lr update hooks ({len(lr_update_hook)} " f"are registered to {self}"
         )
 
         work_dir = self.work_dir if self.work_dir is not None else "NONE"
-        self.logger.info(
-            "Start running, host: %s, work_dir: %s", get_host_info(), work_dir
-        )
+        self.logger.info("Start running, host: %s, work_dir: %s", get_host_info(), work_dir)
         self.logger.warning(
-            "Note that the workflow and max_epochs parameters "
-            "are not used in NNCF-based accuracy-aware training"
+            "Note that the workflow and max_epochs parameters are not used in NNCF-based accuracy-aware training"
         )
 
         # taking only the first data loader for NNCF training
-        self.train_data_loader = data_loaders[0]
+        self._train_data_loader = data_loaders[0]
         # Maximum possible number of iterations, needs for progress tracking
         params = self.nncf_config["accuracy_aware_training"]["params"]
         self._max_epochs = params["maximal_total_epochs"]
-        self._max_iters = self._max_epochs * len(self.train_data_loader)
+        self._max_iters = self._max_epochs * len(self._train_data_loader)
 
-        self.logger.info('Start running, host: %s, work_dir: %s',
-                         get_host_info(), work_dir)
-        self.logger.info('Hooks will be executed in the following order:\n%s',
-                         self.get_hook_info())
+        self.logger.info("Start running, host: %s, work_dir: %s", get_host_info(), work_dir)
+        self.logger.info("Hooks will be executed in the following order:\n%s", self.get_hook_info())
         self.call_hook("before_run")
 
         def configure_optimizers_fn():
@@ -85,7 +81,7 @@ class AccuracyAwareRunner(EpochRunnerWithCancel):
         if len(lr_update_hook) == 1:
             lr_update_hook = lr_update_hook[0]
 
-            def configure_optimizers_fn():
+            def configure_optimizers_fn():  # noqa: F811  # pylint: disable=function-redefined
                 return self.optimizer, AccuracyAwareLrUpdater(lr_update_hook)
 
         acc_aware_training_loop = create_accuracy_aware_training_loop(
@@ -103,15 +99,17 @@ class AccuracyAwareRunner(EpochRunnerWithCancel):
         self.call_hook("after_run")
         return model
 
-    def train_fn(self, *args, **kwargs):
-        """
+    def train_fn(self, *args, **kwargs):  # pylint: disable=unused-argument
+        """train_fn.
+
         Train the model for a single epoch.
         This method is used in NNCF-based accuracy-aware training.
         """
-        self.train(self.train_data_loader)
+        self.train(self._train_data_loader)
 
-    def validation_fn(self, *args, **kwargs):
-        """
+    def validation_fn(self, *args, **kwargs):  # pylint: disable=unused-argument
+        """validation_fn.
+
         Return the target metric value on the validation dataset.
         Evaluation is assumed to be already done at this point since EvalHook was called.
         This method is used in NNCF-based accuracy-aware training.
@@ -119,9 +117,9 @@ class AccuracyAwareRunner(EpochRunnerWithCancel):
         # Get metric from runner's attributes that set in EvalHook.evaluate() function
         all_metrics = getattr(self, "all_metrics", {})
         if len(all_metrics) == 0:
-            evalhook = [hook for hook in self.hooks if getattr(hook, '_do_evaluate', None)]
+            evalhook = [hook for hook in self.hooks if getattr(hook, "_do_evaluate", None)]
             assert len(evalhook) == 1
-            evalhook[0]._do_evaluate(self)
+            evalhook[0]._do_evaluate(self)  # pylint: disable=protected-access
             all_metrics = getattr(self, "all_metrics", {})
         metric = all_metrics.get(self._target_metric_name, None)
         if metric is None:

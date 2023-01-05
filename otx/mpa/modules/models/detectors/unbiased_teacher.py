@@ -165,15 +165,20 @@ class UnbiasedTeacher(SAMDetectorMixin, BaseDetector):
         return torch.Tensor(recall)
 
     @staticmethod
-    def state_dict_hook(module, state_dict, *args, **kwargs):
+    def state_dict_hook(module, state_dict, prefix, *args, **kwargs):
         """Redirect teacher model as output state_dict (student as auxilliary)"""
         logger.info("----------------- UnbiasedTeacher.state_dict_hook() called")
-        output = OrderedDict()
-        for k, v in state_dict.items():
-            if "model_t." in k:
-                k = k.replace("model_t.", "")
-            output[k] = v
-        return output
+        for k in list(state_dict.keys()):
+            v = state_dict.pop(k)
+            if not prefix or k.startswith(prefix):
+                k = k.replace(prefix, "", 1)
+                if k.startswith("model_t."):
+                    k = k.replace("model_t.", "", 1)
+                elif k.startswith("model_s."):
+                    continue
+                k = prefix + k
+            state_dict[k] = v
+        return state_dict
 
     @staticmethod
     def load_state_dict_pre_hook(module, state_dict, *args, **kwargs):
