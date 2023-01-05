@@ -23,10 +23,10 @@ class SelfSLMLP(nn.Module):
         in_channels (int): The number of feature output channels from backbone.
         hid_channels (int): The number of channels for a hidden layer.
         out_channels (int): The number of output channels of SelfSLMLP.
-        norm_cfg (dict): Normalize configuration. Default: dict(type="BN1d")
-        use_conv (bool): Whether using conv instead of fc. Default: False
+        norm_cfg (dict): Normalize configuration. Default: dict(type="BN1d").
+        use_conv (bool): Whether using conv instead of fc. Default: False.
         with_avg_pool (bool): Whether using average pooling before passing MLP.
-                              Default: True
+                              Default: True.
     """
 
     def __init__(
@@ -65,8 +65,8 @@ class SelfSLMLP(nn.Module):
         """Initialize SelfSLMLP weights.
 
         Args:
-            init_linear (str): Option to initialize weights. Default: 'normal'
-            std (float): Standard deviation for normal initialization. Default: 0.01
+            init_linear (str): Option to initialize weights. Default: "normal".
+            std (float): Standard deviation for normal initialization. Default: 0.01.
             bias (float): Bias for normal initialization. Default: 0.
         """
         if init_linear not in ["normal", "kaiming"]:
@@ -91,7 +91,7 @@ class SelfSLMLP(nn.Module):
                 If a type of the inputs is tuple or list, just use the last index.
 
         Return:
-            Tensor
+            Tensor: Features passed SelfSLMLP.
         """
         if isinstance(x, (tuple, list)):
             # using last output
