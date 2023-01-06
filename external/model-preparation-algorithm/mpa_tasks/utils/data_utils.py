@@ -53,9 +53,13 @@ def get_cached_image(results: Dict[str, Any], cache_dir: str, to_float32=False):
             # Might be slower than dict key checking, but persitent
             with open(filename, "rb") as f:
                 fcntl.flock(f, fcntl.LOCK_SH)
-                cached_img = np.load(f)
-                fcntl.flock(f, fcntl.LOCK_UN)
-                return cached_img['img']
+                try:
+                    cached_img = np.load(f)
+                    return cached_img['img']
+                except Exception as e:
+                    logger.warning(f"Skip loading cached {filename} \nError msg: {e}")
+                finally:
+                    fcntl.flock(f, fcntl.LOCK_UN)
 
     img = results["dataset_item"].numpy  # this takes long for VideoFrame
     if to_float32:
@@ -64,6 +68,10 @@ def get_cached_image(results: Dict[str, Any], cache_dir: str, to_float32=False):
     if is_video_frame(results["dataset_item"].media) and not os.path.exists(filename):
         with open(filename, "wb") as f:
             fcntl.flock(f, fcntl.LOCK_EX)
-            np.savez_compressed(f, img=img)
-            fcntl.flock(f, fcntl.LOCK_UN)
+            try:
+                np.savez_compressed(f, img=img)
+            except Exception as e:
+                logger.warning(f"Skip caching for {filename} \nError msg: {e}")
+            finally:
+                fcntl.flock(f, fcntl.LOCK_UN)
     return img
