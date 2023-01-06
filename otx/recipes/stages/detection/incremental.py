@@ -35,4 +35,8 @@ lr_config = dict(
 )
 
 ignore = True
-adaptive_validation_interval = dict(max_interval=5)
+adaptive_validation_interval = dict(
+    max_interval=5,
+    eval_before_train=True,
+    eval_after_train=True,
+)
