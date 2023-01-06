@@ -2,13 +2,13 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from mpa.utils.logger import get_logger
-from typing import Dict, Any
-import numpy as np
-import os
 import fcntl
+import os
 import shutil
+from typing import Any, Dict
 
+import numpy as np
+from mpa.utils.logger import get_logger
 
 logger = get_logger()
 
@@ -40,8 +40,8 @@ def clean_up_cache_dir(cache_dir: str):
     shutil.rmtree(cache_dir, ignore_errors=True)
     os.makedirs(cache_dir)
 
-def get_cached_image(results: Dict[str, Any], cache_dir: str, to_float32=False):
 
+def get_cached_image(results: Dict[str, Any], cache_dir: str, to_float32=False):
     def is_video_frame(media):
         return "VideoFrame" in repr(media)
 

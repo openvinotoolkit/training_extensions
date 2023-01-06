@@ -3,10 +3,11 @@
 #
 
 from typing import Any, Dict
+
 import numpy as np
 from mmcls.datasets import PIPELINES
-from ote_sdk.utils.argument_checks import check_input_parameters_type
 from mpa_tasks.utils.data_utils import clean_up_cache_dir, get_cached_image
+from ote_sdk.utils.argument_checks import check_input_parameters_type
 
 _CACHE_DIR = "/tmp/cls-img-cache"
 clean_up_cache_dir(_CACHE_DIR)  # Clean up cache directory per process launch
