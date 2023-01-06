@@ -316,8 +316,8 @@ the existing packages on your system.</p>
 <h3>Via Conda<a class="headerlink" href="#via-conda" title="Permalink to this headline">¶</a></h3>
 <p>To install the library via conda, the following snippet could be used.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create a virtual env via Conda.</span>
-yes<span class="w"> </span><span class="p">|</span><span class="w"> </span>conda<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>otx<span class="w"> </span><span class="nv">python</span><span class="o">=</span><span class="m">3</span>.8
-conda<span class="w"> </span>activate<span class="w"> </span>otx
+yes <span class="p">|</span> conda create -n otx <span class="nv">python</span><span class="o">=</span><span class="m">3</span>.8
+conda activate otx
 </pre></div>
 </div>
 </div>
@@ -326,8 +326,8 @@ conda<span class="w"> </span>activate<span class="w"> </span>otx
 <p>Pyenv is another virtual environment manager to handle various virtual
 environments with different Python versions.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create a virtual env via pyenv</span>
-pyenv<span class="w"> </span>virtualenv<span class="w"> </span><span class="m">3</span>.8.13<span class="w"> </span>otx
-pyenv<span class="w"> </span><span class="nb">local</span><span class="w"> </span>otx
+pyenv virtualenv <span class="m">3</span>.8.13 otx
+pyenv <span class="nb">local</span> otx
 </pre></div>
 </div>
 <p>It is also possible a install a virtual environment via other tools such as
@@ -341,9 +341,9 @@ Python’s <code class="docutils literal notranslate"><span class="pre">virtuale
 <h3>Local Install<a class="headerlink" href="#local-install" title="Permalink to this headline">¶</a></h3>
 <p>Local install is currently the best approach to install the library since it
 will also allow the user to edit the changes within the codebase.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/openvinotoolkit/training_extensions.git
-<span class="nb">cd</span><span class="w"> </span>training_extensions
-pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.<span class="o">[</span>full<span class="o">]</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git clone https://github.com/openvinotoolkit/training_extensions.git
+<span class="nb">cd</span> training_extensions
+pip install -e .<span class="o">[</span>full<span class="o">]</span>
 </pre></div>
 </div>
 <div class="admonition note">
@@ -360,7 +360,7 @@ try installing the library via <code class="docutils literal notranslate"><span 
 local install instead. With future otx versions, this feature will be more
 stable, such that the user could install the library via,</p>
 </div>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>otx<span class="o">[</span>full<span class="o">]</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install otx<span class="o">[</span>full<span class="o">]</span>
 </pre></div>
 </div>
 </div>
@@ -377,7 +377,7 @@ completely optional, depending on the algorithmic needs.</p>
 cli modules. For those who are only interested in the api and cli capabilities
 could install this option.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Install API and CLI only.</span>
-pip<span class="w"> </span>install<span class="w"> </span>otx
+pip install otx
 </pre></div>
 </div>
 </div>
@@ -385,7 +385,7 @@ pip<span class="w"> </span>install<span class="w"> </span>otx
 <h4>Classification Task Installation<a class="headerlink" href="#classification-task-installation" title="Permalink to this headline">¶</a></h4>
 <p>Classification option would install <code class="docutils literal notranslate"><span class="pre">otx</span></code> with classification algorithms only.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Install only otx classification library</span>
-pip<span class="w"> </span>install<span class="w"> </span>otx<span class="o">[</span>classification<span class="o">]</span>
+pip install otx<span class="o">[</span>classification<span class="o">]</span>
 </pre></div>
 </div>
 </div>
@@ -395,7 +395,7 @@ pip<span class="w"> </span>install<span class="w"> </span>otx<span class="o">[</
 on <a class="reference external" href="https://github.com/open-mmlab/mmdetection">mmdetection</a> library but with a
 lot more features.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Install otx detection library</span>
-pip<span class="w"> </span>install<span class="w"> </span>otx<span class="o">[</span>detection<span class="o">]</span>
+pip install otx<span class="o">[</span>detection<span class="o">]</span>
 </pre></div>
 </div>
 </div>
@@ -405,7 +405,7 @@ pip<span class="w"> </span>install<span class="w"> </span>otx<span class="o">[</
 algorithms that utilizes <a class="reference external" href="https://github.com/open-mmlab/mmsegmentation">mmsegmentation</a>
 library, but again with more end-to-end functionality such as OpenVINO export.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Install segmentation library</span>
-pip<span class="w"> </span>install<span class="w"> </span>otx<span class="o">[</span>segmentation<span class="o">]</span>
+pip install otx<span class="o">[</span>segmentation<span class="o">]</span>
 </pre></div>
 </div>
 </div>
@@ -417,7 +417,7 @@ Users would train models within a one-class classification fashion by utilizing
 only the <code class="docutils literal notranslate"><span class="pre">normal</span></code> class during training to find any <code class="docutils literal notranslate"><span class="pre">abnormality</span></code> during the
 validation, test or inference.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Install otx anomaly library</span>
-pip<span class="w"> </span>install<span class="w"> </span>otx<span class="o">[</span>anomaly<span class="o">]</span>
+pip install otx<span class="o">[</span>anomaly<span class="o">]</span>
 </pre></div>
 </div>
 </div>
@@ -428,7 +428,7 @@ a complete library that a user could train a supervised, semi-supervised or
 self-supervised classification, detection or segmentation algorithms with full
 OpenVINO capabilities.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Install full otx library</span>
-pip<span class="w"> </span>install<span class="w"> </span>otx<span class="o">[</span>full<span class="o">]</span>
+pip install otx<span class="o">[</span>full<span class="o">]</span>
 </pre></div>
 </div>
 </div>
