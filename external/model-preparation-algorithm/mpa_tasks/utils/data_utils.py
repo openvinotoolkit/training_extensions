@@ -52,7 +52,7 @@ def get_cached_image(results: Dict[str, Any], cache_dir: str, to_float32=False):
         if os.path.exists(filename):
             # Might be slower than dict key checking, but persitent
             with open(filename, "rb") as f:
-                fcntl.flock(f, fcntl.LOCK_EX)
+                fcntl.flock(f, fcntl.LOCK_SH)
                 cached_img = np.load(f)
                 fcntl.flock(f, fcntl.LOCK_UN)
                 return cached_img
