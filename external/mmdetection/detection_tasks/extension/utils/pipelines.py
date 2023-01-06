@@ -13,6 +13,7 @@
 # and limitations under the License.
 
 import copy
+import fcntl
 
 from typing import Dict, Any, Optional
 import numpy as np
@@ -49,38 +50,39 @@ class LoadImageFromOTEDataset:
     @check_input_parameters_type()
     def __init__(self, to_float32: bool = False):
         self.to_float32 = to_float32
-        self._pid = os.getpid()
 
     @staticmethod
     def _is_video_frame(media):
         return "VideoFrame" in repr(media)
-        #return "Image" in repr(media)  # Uncomment for test
 
     def _get_cached_image(self, results: Dict[str, Any]):
         if self._is_video_frame(results["dataset_item"].media):
             subset = results["dataset_item"].subset
             index = results["index"]
-            filename = os.path.join(_CACHE_DIR, f"{self._pid}-{subset}-{index:06d}.npy")
+            filename = os.path.join(_CACHE_DIR, f"{subset}-{index:06d}.npy")
             if os.path.exists(filename):
                 # Might be slower than dict key checking, but persitent
-                # FIXME: faster cache checking?
-                print(f"Loading cache {filename}")
-                return np.load(filename)
+                with open(filename, "rb") as f:
+                    fcntl.flock(f, fcntl.LOCK_EX)
+                    cached_img = np.load(f)
+                    fcntl.flock(f, fcntl.LOCK_UN)
+                    return cached_img
 
         img = results["dataset_item"].numpy  # this takes long for VideoFrame
         if self.to_float32:
             img = img.astype(np.float32)
 
-        if self._is_video_frame(results["dataset_item"].media):
-            print(f"Saving cache {filename}")
-            np.save(filename, img)
-
+        if self._is_video_frame(results["dataset_item"].media) and not os.path.exists(filename):
+            with open(filename, "wb") as f:
+                fcntl.flock(f, fcntl.LOCK_EX)
+                np.save(f, img)
+                fcntl.flock(f, fcntl.LOCK_UN)
         return img
 
     @check_input_parameters_type()
     def __call__(self, results: Dict[str, Any]):
         # Get image (possibly from cache)
-        img =  self._get_cached_image(results)
+        img = self._get_cached_image(results)
         shape = img.shape
 
         assert shape[0] == results["height"], f"{shape[0]} != {results['height']}"
