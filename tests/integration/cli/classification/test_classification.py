@@ -9,7 +9,6 @@ from functools import wraps
 
 import pytest
 import torch
-import yaml
 
 from otx.api.entities.model_template import parse_model_template
 from otx.cli.registry import Registry
