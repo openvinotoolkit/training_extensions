@@ -3,10 +3,13 @@
 #
 
 from typing import Any, Dict
-
 import numpy as np
 from mmcls.datasets import PIPELINES
 from ote_sdk.utils.argument_checks import check_input_parameters_type
+from mpa_tasks.utils.data_utils import clean_up_cache_dir, get_cached_image
+
+_CACHE_DIR = "/tmp/cls-img-cache"
+clean_up_cache_dir(_CACHE_DIR)  # Clean up cache directory per process launch
 
 
 # Temporary copy from detection_tasks
@@ -30,8 +33,8 @@ class LoadImageFromOTEDataset:
 
     @check_input_parameters_type()
     def __call__(self, results: Dict[str, Any]):
-        dataset_item = results["dataset_item"]
-        img = dataset_item.numpy
+        # Get image (possibly from cache)
+        img = get_cached_image(results, _CACHE_DIR, to_float32=self.to_float32)
         shape = img.shape
 
         assert img.shape[0] == results["height"], f"{img.shape[0]} != {results['height']}"
@@ -52,8 +55,5 @@ class LoadImageFromOTEDataset:
             to_rgb=False,
         )
         results["img_fields"] = ["img"]
-
-        if self.to_float32:
-            results["img"] = results["img"].astype(np.float32)
 
         return results
