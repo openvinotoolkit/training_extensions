@@ -37,7 +37,7 @@ args = {
     "--train-data-roots": "data/datumaro/coco_dataset/coco_instance_segmentation",
     "--val-data-roots": "data/datumaro/coco_dataset/coco_instance_segmentation",
     "--test-data-roots": "data/datumaro/coco_dataset/coco_instance_segmentation",
-    "--input": "data/datumaro/coco_dataset/coco_instance_segmentation/images",
+    "--input": "data/datumaro/coco_dataset/coco_instance_segmentation/images/train",
     "train_params": [
         "params",
         "--learning_parameters.num_iters",

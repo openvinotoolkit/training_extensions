@@ -597,27 +597,6 @@ class TestToolsHierarchicalClassification:
         otx_train_testing(template, tmp_dir_path, otx_dir, args1)
 
 
-# tmp: create & remove data.yaml to only use train-data-roots
-def set_dummy_data(func):
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        # create data.yaml
-        to_save_data_args = {
-            "data": {
-                "train": {"ann-files": None, "data-roots": None},
-                "val": {"ann-files": None, "data-roots": None},
-                "unlabeled": {"file-list": None, "data-roots": None},
-            },
-        }
-        yaml.dump(to_save_data_args, open("./data.yaml", "w"), default_flow_style=False)
-        # run test
-        func(*args, **kwargs)
-        # remove data.yaml
-        os.remove("./data.yaml")
-
-    return wrapper
-
-
 # Warmstart using data w/ 'intel', 'openvino', 'opencv' classes
 args_selfsl = {
     "--data": "./data.yaml",
@@ -637,7 +616,6 @@ args_selfsl = {
 class TestToolsSelfSLClassification:
     @e2e_pytest_component
     @pytest.mark.parametrize("template", templates, ids=templates_ids)
-    @set_dummy_data
     def test_otx_selfsl_train(self, template, tmp_dir_path):
         otx_train_testing(template, tmp_dir_path, otx_dir, args_selfsl)
         template_work_dir = get_template_dir(template, tmp_dir_path)
