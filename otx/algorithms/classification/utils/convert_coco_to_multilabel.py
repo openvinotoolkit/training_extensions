@@ -3,6 +3,9 @@
 It contains lots of hard-coded to make .json file consumed on Datumaro.
 """
 
+import argparse
+import json
+
 # Copyright (C) 2022 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,28 +19,24 @@ It contains lots of hard-coded to make .json file consumed on Datumaro.
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions
 # and limitations under the License.
+from typing import Any, Dict, List
 
-import argparse
-import json
 from otx.algorithms.detection.utils.data import CocoDataset
 
 multilabel_ann_format = {
     "info": {},
     "categories": {
-        "label":{
-            "label_groups" : [],
+        "label": {
+            "label_groups": [],
             "labels": [],
             "attributes": [],
         }
     },
-    "items":[]
-}
+    "items": [],
+}  # type: Dict[str, Any]
 
-def coco_to_datumaro_multilabel(
-    ann_file_path: str, 
-    data_root_dir: str, 
-    output: str
-):
+
+def coco_to_datumaro_multilabel(ann_file_path: str, data_root_dir: str, output: str):
     """Convert coco dataset to datumaro multi-label format.
 
     Args:
@@ -45,7 +44,7 @@ def coco_to_datumaro_multilabel(
         data_root_dir (str): The path of images folder (COCO)
         output (str): Destination path of converted data (CVAT multi-label format)
     """
-    
+
     # Prepare COCO dataset to load annotations
     coco_dataset = CocoDataset(
         ann_file=ann_file_path,
@@ -54,63 +53,46 @@ def coco_to_datumaro_multilabel(
         test_mode=False,
         with_mask=False,
     )
-    
+
     # Fill the categories part
-    # For the multi-label classification, 
+    # For the multi-label classification,
     # Datumaro will make label_groups and labels
-    overall_classes = coco_dataset.get_classes()
-    for cl in overall_classes:
+    overall_classes = coco_dataset.get_classes()  # type: List
+    for class_name in overall_classes:
         multilabel_ann_format["categories"]["label"]["label_groups"].append(
-            {
-                "name": str(cl),
-                "group_type": "exclusive",
-                "labels": [str(cl)]
-            }
+            {"name": str(class_name), "group_type": "exclusive", "labels": [str(class_name)]}
         )
+
         multilabel_ann_format["categories"]["label"]["labels"].append(
-            {
-                "name": cl,
-                "parent": "",
-                "attributes": []
-            }
+            {"name": class_name, "parent": "", "attributes": []}
         )
-    
+
     # Fill the items part
     for item in coco_dataset:
         filename = item["img_info"]["filename"]
-        file_id = filename.split('.')[0]
-        labels = item["gt_labels"] 
-        
+        file_id = filename.split(".")[0]
+        labels = item["gt_labels"]
+
         annotations = []
         for i, label in enumerate(labels):
-            annotation = {
-                "id": int(i),
-                "type": "label",
-                "group": 0,
-                "label_id": int(label)
-            }
+            annotation = {"id": int(i), "type": "label", "group": 0, "label_id": int(label)}
             annotations.append(annotation)
-            
+
         multilabel_ann_format["items"].append(
-            {
-                "id": str(file_id),
-                "annotations": str(annotations),
-                "image":{
-                    "path": str(filename)
-                }
-            }
+            {"id": str(file_id), "annotations": str(annotations), "image": {"path": str(filename)}}
         )
     print(f"Saving logfile to: {output}")
-    with open(output, "w") as out_file:
+    with open(output, "w", encoding="utf-8") as out_file:
         json.dump(multilabel_ann_format, out_file)
-    
+
+
 def parse_args():
     """Parses command line arguments."""
     parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument("--ann_file_path", required=True, type=str)
     parser.add_argument("--data_root_dir", required=True, type=str)
     parser.add_argument("--output", required=True, type=str)
-    parser.add_argument("--data_format", type=str, default='coco')
+    parser.add_argument("--data_format", type=str, default="coco")
     return parser.parse_args()
 
 

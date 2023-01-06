@@ -167,7 +167,9 @@ def main():  # pylint: disable=too-many-branches
         template.task_type,
         train_data_roots=data_roots["train_subset"]["data_root"],
         val_data_roots=data_roots["val_subset"]["data_root"] if data_config["data"]["val"]["data-roots"] else None,
-        unlabeled_data_roots=data_roots["unlabeled_subset"]["data_root"] if data_config["data"]["unlabeled"]["data-roots"] else None,
+        unlabeled_data_roots=data_roots["unlabeled_subset"]["data_root"]
+        if data_config["data"]["unlabeled"]["data-roots"]
+        else None,
     )
     dataset = dataset_adapter.get_otx_dataset()
     label_schema = dataset_adapter.get_label_schema()
