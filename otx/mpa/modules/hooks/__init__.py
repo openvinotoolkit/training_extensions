@@ -8,7 +8,6 @@ from . import (
     checkpoint_hook,
     composed_dataloaders_hook,
     early_stopping_hook,
-    eval_before_train_hook,
     fp16_sam_optimizer_hook,
     freeze_layers_hook,
     gpu_monitor,
