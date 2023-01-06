@@ -48,14 +48,14 @@ def get_cached_image(results: Dict[str, Any], cache_dir: str, to_float32=False):
     if is_video_frame(results["dataset_item"].media):
         subset = results["dataset_item"].subset
         index = results["index"]
-        filename = os.path.join(cache_dir, f"{subset}-{index:06d}.npy")
+        filename = os.path.join(cache_dir, f"{subset}-{index:06d}.npz")
         if os.path.exists(filename):
             # Might be slower than dict key checking, but persitent
             with open(filename, "rb") as f:
                 fcntl.flock(f, fcntl.LOCK_SH)
                 cached_img = np.load(f)
                 fcntl.flock(f, fcntl.LOCK_UN)
-                return cached_img
+                return cached_img['img']
 
     img = results["dataset_item"].numpy  # this takes long for VideoFrame
     if to_float32:
@@ -64,6 +64,6 @@ def get_cached_image(results: Dict[str, Any], cache_dir: str, to_float32=False):
     if is_video_frame(results["dataset_item"].media) and not os.path.exists(filename):
         with open(filename, "wb") as f:
             fcntl.flock(f, fcntl.LOCK_EX)
-            np.save(f, img)
+            np.savez_compressed(f, img=img)
             fcntl.flock(f, fcntl.LOCK_UN)
     return img
