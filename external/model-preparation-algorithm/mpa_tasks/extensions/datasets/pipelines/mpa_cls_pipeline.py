@@ -6,7 +6,7 @@ from typing import Any, Dict
 
 import numpy as np
 from mmcls.datasets import PIPELINES
-from mpa_tasks.utils.data_utils import clean_up_cache_dir, get_cached_image
+from mpa_tasks.utils.data_utils import clean_up_cache_dir, get_image
 from ote_sdk.utils.argument_checks import check_input_parameters_type
 
 _CACHE_DIR = "/tmp/cls-img-cache"
@@ -35,7 +35,7 @@ class LoadImageFromOTEDataset:
     @check_input_parameters_type()
     def __call__(self, results: Dict[str, Any]):
         # Get image (possibly from cache)
-        img = get_cached_image(results, _CACHE_DIR, to_float32=self.to_float32)
+        img = get_image(results, _CACHE_DIR, to_float32=self.to_float32)
         shape = img.shape
 
         assert img.shape[0] == results["height"], f"{img.shape[0]} != {results['height']}"
