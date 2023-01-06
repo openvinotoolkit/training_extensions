@@ -44,7 +44,6 @@ def coco_to_datumaro_multilabel(ann_file_path: str, data_root_dir: str, output: 
         data_root_dir (str): The path of images folder (COCO)
         output (str): Destination path of converted data (CVAT multi-label format)
     """
-
     # Prepare COCO dataset to load annotations
     coco_dataset = CocoDataset(
         ann_file=ann_file_path,

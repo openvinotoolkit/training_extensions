@@ -33,11 +33,8 @@ from otx.cli.registry import find_and_parse_model_template
 from otx.cli.utils.config import configure_dataset, override_parameters
 from otx.cli.utils.hpo import run_hpo
 from otx.cli.utils.importing import get_impl_class
-<<<<<<< HEAD
 from otx.cli.utils.io import read_binary, read_label_schema, save_model_data
 from otx.cli.utils.multi_gpu import MultiGPUManager
-=======
->>>>>>> Delte hasattr line, edit anomaly parts, edit for pre-commit
 from otx.cli.utils.io import read_binary, read_label_schema, save_model_data
 from otx.cli.utils.multi_gpu import MultiGPUManager
 from otx.cli.utils.parser import (
