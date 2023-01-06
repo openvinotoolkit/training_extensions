@@ -338,11 +338,8 @@ class NNCFBaseTask(BaseTask, IOptimizationTask):  # pylint: disable=too-many-ins
         hyperparams_str = ids_to_strings(cfg_helper.convert(self._hyperparams, dict, enum_to_str=True))
         labels = {label.name: label.color.rgb_tuple for label in self._labels}
 
-        # some custom hooks are not pickable
-        custom_hooks = self._recipe_cfg.pop("custom_hooks")
         config = deepcopy(self._recipe_cfg)
         config.merge_from_dict(self._model_cfg)
-        self._recipe_cfg.custom_hooks = custom_hooks
 
         def update(d, u):  # pylint: disable=invalid-name
             for k, v in u.items():  # pylint: disable=invalid-name
