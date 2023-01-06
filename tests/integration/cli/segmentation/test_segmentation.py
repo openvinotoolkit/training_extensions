@@ -39,10 +39,10 @@ from tests.test_suite.e2e_test_system import e2e_pytest_component
 
 # TODO: Currently, it is closed to sample test. need to change other sample
 args = {
-    "--train-data-roots": "data/datumaro/common_semantic_segmentation_dataset/dataset",
-    "--val-data-roots": "data/datumaro/common_semantic_segmentation_dataset/dataset",
-    "--test-data-roots": "data/datumaro/common_semantic_segmentation_dataset/dataset",
-    "--input": "data/datumaro/common_semantic_segmentation_dataset/dataset/images",
+    "--train-data-roots": "data/datumaro/common_semantic_segmentation_dataset/train",
+    "--val-data-roots": "data/datumaro/common_semantic_segmentation_dataset/val",
+    "--test-data-roots": "data/datumaro/common_semantic_segmentation_dataset/val",
+    "--input": "data/datumaro/common_semantic_segmentation_dataset/train/images",
     "train_params": [
         "params",
         "--learning_parameters.learning_rate_fixed_iters",
@@ -294,9 +294,7 @@ class TestToolsMPASemiSLSegmentation:
 
 
 args_selfsl = {
-    "--data": "./data.yaml",
-    "--train-ann-file": "data/segmentation/custom/annotations/detcon_masks",
-    "--train-data-roots": "data/segmentation/custom/images/training",
+    "--train-data-roots": "data/datumaro/common_semantic_segmentation_dataset/train",
     "--input": "data/segmentation/custom/images/training",
     "train_params": [
         "params",
@@ -316,7 +314,6 @@ class TestToolsMPASelfSLSegmentation:
     @set_dummy_data
     def test_otx_train(self, template, tmp_dir_path):
         otx_train_testing(template, tmp_dir_path, otx_dir, args_selfsl)
-        shutil.rmtree(os.path.join(otx_dir, args_selfsl["--train-ann-file"]))
         template_work_dir = get_template_dir(template, tmp_dir_path)
         args1 = copy.deepcopy(args)
         args1["--load-weights"] = f"{template_work_dir}/trained_{template.model_template_id}/weights.pth"
