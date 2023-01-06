@@ -25,12 +25,12 @@ from typing import Dict, List, Optional, Union
 
 import torch
 from anomalib.models import AnomalyModule, get_model
+from anomalib.post_processing import NormalizationMethod, ThresholdMethod
 from anomalib.utils.callbacks import (
     MetricsConfigurationCallback,
     MinMaxNormalizationCallback,
     PostProcessingConfigurationCallback,
 )
-from anomalib.post_processing import NormalizationMethod, ThresholdMethod
 from omegaconf import DictConfig, ListConfig
 from pytorch_lightning import Trainer
 

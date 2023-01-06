@@ -16,8 +16,8 @@
 
 from typing import Dict, List, Optional, Union
 
-import torch
 import numpy as np
+import torch
 from anomalib.data.base.datamodule import collate_fn
 from anomalib.data.utils.transform import get_transforms
 from omegaconf import DictConfig, ListConfig
@@ -25,11 +25,11 @@ from pytorch_lightning.core.datamodule import LightningDataModule
 from torch import Tensor
 from torch.utils.data import DataLoader, Dataset
 
-from otx.api.entities.shapes.rectangle import Rectangle
 from otx.algorithms.anomaly.adapters.anomalib.logger import get_logger
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.model_template import TaskType
 from otx.api.entities.shapes.polygon import Polygon
+from otx.api.entities.shapes.rectangle import Rectangle
 from otx.api.entities.subset import Subset
 from otx.api.utils.dataset_utils import (
     contains_anomalous_images,
@@ -68,10 +68,8 @@ class OTXAnomalyDataset(Dataset):
 
         # TODO: distinguish between train and val config here
         self.transform = get_transforms(
-            config=config.dataset.transform_config.train,
-            image_size=tuple(config.dataset.image_size),
-            to_tensor=True
-            )
+            config=config.dataset.transform_config.train, image_size=tuple(config.dataset.image_size), to_tensor=True
+        )
 
     def __len__(self) -> int:
         """Get size of the dataset.
@@ -108,12 +106,14 @@ class OTXAnomalyDataset(Dataset):
             for annotation in dataset_item.get_annotations():
                 if not Rectangle.is_full_box(annotation.shape):  # ignore full image labels
                     boxes.append(
-                        Tensor([
-                            annotation.shape.x1 * width,
-                            annotation.shape.y1 * height,
-                            annotation.shape.x2 * width,
-                            annotation.shape.y2 * height,
-                        ])
+                        Tensor(
+                            [
+                                annotation.shape.x1 * width,
+                                annotation.shape.y1 * height,
+                                annotation.shape.x2 * width,
+                                annotation.shape.y2 * height,
+                            ]
+                        )
                     )
                 if len(boxes) > 0:
                     item["boxes"] = torch.stack(boxes)

@@ -17,22 +17,21 @@
 from typing import Any, List
 
 import numpy as np
-import torch
 import pytorch_lightning as pl
+import torch
 from anomalib.models import AnomalyModule
 from anomalib.post_processing import anomaly_map_to_color_map
 from pytorch_lightning.callbacks import Callback
 from torch import Tensor
 
-from otx.api.entities.shapes.rectangle import Rectangle
-from otx.api.entities.annotation import Annotation
 from otx.algorithms.anomaly.adapters.anomalib.logger import get_logger
+from otx.api.entities.annotation import Annotation
 from otx.api.entities.datasets import DatasetEntity
 from otx.api.entities.label import LabelEntity
 from otx.api.entities.model_template import TaskType
 from otx.api.entities.result_media import ResultMediaEntity
 from otx.api.entities.scored_label import ScoredLabel
-from otx.api.utils.anomaly_utils import create_detection_annotation_from_anomaly_heatmap
+from otx.api.entities.shapes.rectangle import Rectangle
 from otx.api.utils.segmentation_utils import create_annotation_from_segmentation_map
 
 logger = get_logger(__name__)
@@ -118,6 +117,8 @@ class AnomalyInferenceCallback(Callback):
             pred_scores (Tensor): Predicted image-level anomaly scores.
             image_size: (torch.Size): Image size of the original images.
         """
+        # TODO; refactor Ignore too many locals
+        # pylint: disable=too-many-locals
         height, width = image_size
         for dataset_item, im_boxes, im_box_scores, im_box_labels, pred_score in zip(
             self.otx_dataset, pred_boxes, box_scores, box_labels, pred_scores

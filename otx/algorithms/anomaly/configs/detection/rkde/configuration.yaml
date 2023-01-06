@@ -6,7 +6,8 @@ dataset:
     auto_hpo_state: not_possible
     auto_hpo_value: null
     default_value: 8
-    description: Increasing this value might improve training speed however it might
+    description:
+      Increasing this value might improve training speed however it might
       cause out of memory errors. If the number of workers is set to zero, data loading
       will happen in the main training thread.
     editable: true
@@ -33,7 +34,8 @@ learning_parameters:
     auto_hpo_state: not_possible
     auto_hpo_value: null
     default_value: 32
-    description: The number of training samples seen in each iteration of training.
+    description:
+      The number of training samples seen in each iteration of training.
       Increasing this value improves training time and may make the training more
       stable. A larger batch size has higher memory requirements.
     editable: true
@@ -47,7 +49,8 @@ learning_parameters:
       rules: []
       type: UI_RULES
     visible_in_ui: true
-    warning: Increasing this value may cause the system to use more memory than available,
+    warning:
+      Increasing this value may cause the system to use more memory than available,
       potentially causing out of memory errors, please update with caution.
   type: PARAMETER_GROUP
   visible_in_ui: true

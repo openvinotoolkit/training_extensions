@@ -19,12 +19,12 @@ from typing import Optional
 
 import torch
 from anomalib.models import AnomalyModule, get_model
+from anomalib.post_processing import NormalizationMethod, ThresholdMethod
 from anomalib.utils.callbacks import (
     MetricsConfigurationCallback,
     MinMaxNormalizationCallback,
     PostProcessingConfigurationCallback,
 )
-from anomalib.post_processing import NormalizationMethod, ThresholdMethod
 from pytorch_lightning import Trainer, seed_everything
 
 from otx.algorithms.anomaly.adapters.anomalib.callbacks import ProgressCallback
@@ -84,7 +84,7 @@ class TrainingTask(InferenceTask, ITrainingTask):
                 threshold_method=ThresholdMethod.ADAPTIVE,
                 manual_image_threshold=config.metrics.threshold.manual_image,
                 manual_pixel_threshold=config.metrics.threshold.manual_pixel,
-            )
+            ),
         ]
 
         self.trainer = Trainer(**config.trainer, logger=False, callbacks=callbacks)
